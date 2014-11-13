@@ -26,19 +26,18 @@ import org.scalatest.FunSpec
 
 class MaxSpec extends FunSpec
     with TestEnvironment
-    with TestFiles    
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Max Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile
-      val decreasing = DecreasingTestFile
-      val allHundreds = AllHundredsTestFile
+      val inc = IncreasingTestFile
+      val dec = DecreasingTestFile
+      val hundreds = AllHundredsTestFile
 
       val tots = 2342523;
 
       it("should max a raster with an integer") {
-        val inc = increasing
         val thresh = tots / 2
         val res = inc.localMax(thresh)
 
@@ -51,7 +50,6 @@ class MaxSpec extends FunSpec
       }
 
       it("should max a raster with a double") {
-        val inc = increasing
         val thresh = tots / 2.0
         val res = inc.localMax(thresh)
 
@@ -64,8 +62,6 @@ class MaxSpec extends FunSpec
       }
 
       it("should max two rasters") {
-        val inc = increasing
-        val dec = decreasing
         val res = inc.localMax(dec)
 
         rasterShouldBe(
@@ -82,9 +78,6 @@ class MaxSpec extends FunSpec
       }
 
       it("should max three rasters as a seq") {
-        val inc = increasing
-        val dec = decreasing
-        val hundreds = allHundreds
         val res = inc.localMax(Seq(dec, hundreds))
 
         rasterShouldBe(

@@ -18,7 +18,6 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
@@ -30,11 +29,10 @@ class LessSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Less Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile
-      val allOnes = AllOnesTestFile
+      val inc = IncreasingTestFile
+      val ones = AllOnesTestFile
 
       it("should check less between an integer and a raster") {
-        val inc = increasing
         val res = inc < 1
 
         rasterShouldBe(
@@ -46,7 +44,6 @@ class LessSpec extends FunSpec
       }
 
       it("should check less right associative between an integer and a raster") {
-        val inc = increasing
         val res = 1 <<: inc
 
         rasterShouldBe(
@@ -58,7 +55,6 @@ class LessSpec extends FunSpec
       }
 
       it("should check less between a double and a raster") {
-        val inc = increasing
         val res = inc < 1.0
 
         rasterShouldBe(
@@ -70,7 +66,6 @@ class LessSpec extends FunSpec
       }
 
       it("should check less right associative between a double and a raster") {
-        val inc = increasing
         val res = 1.0 <<: inc
 
         rasterShouldBe(
@@ -82,8 +77,6 @@ class LessSpec extends FunSpec
       }
 
       it("should check less between two rasters") {
-        val inc = increasing
-        val ones = allOnes
         val res = inc < ones
 
         rasterShouldBe(

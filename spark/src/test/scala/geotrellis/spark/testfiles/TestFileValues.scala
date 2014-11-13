@@ -48,3 +48,8 @@ class EveryOther1ElseMinus1(cols: Int) extends TestFileValues {
   override def value(y: Int, x: Int): Float =
     if ((y * cols + x)  % 2 == 0) -1 else 1
 }
+
+class Mod(cols: Int, rows: Int, mod: Int) extends IncreasingTestFileValues(cols, rows) {
+  override def value(y: Int, x: Int) = super.value(y, x) % mod
+
+}

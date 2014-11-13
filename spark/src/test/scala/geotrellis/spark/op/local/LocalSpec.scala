@@ -30,22 +30,19 @@ class LocalSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Local Operations") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile
-      val increasing = IncreasingTestFile
-      val everyOtherUndefined = EveryOtherUndefinedTestFile
-      val everyOther0Point99Else1Point01 =
+      val ones = AllOnesTestFile
+      val inc = IncreasingTestFile
+      val evo = EveryOtherUndefinedTestFile
+      val evo1Point01Else0Point99 =
         EveryOther0Point99Else1Point01TestFile
-      val everyOther1ElseMinus1 = EveryOther1ElseMinus1TestFile
+      val evo1Minus1 = EveryOther1ElseMinus1TestFile
 
       val (cols: Int, rows: Int) = {
-        val tile = allOnes.stitch
+        val tile = ones.stitch
         (tile.cols, tile.rows)
       }
 
       it("should local mask two rasters") {
-        val inc = increasing
-        val ones = allOnes
-
         val res = ones.localMask(inc, 1, -1337)
 
         rasterShouldBe(
@@ -57,9 +54,6 @@ class LocalSpec extends FunSpec
       }
 
       it("should local inverse mask two rasters") {
-        val inc = increasing
-        val ones = allOnes
-
         val res = ones.localInverseMask(inc, 1, -1337)
 
         rasterShouldBe(
@@ -71,34 +65,28 @@ class LocalSpec extends FunSpec
       }
 
       it("should set all undefined values to 0 and the rest to one") {
-        val everyOther = everyOtherUndefined
-
-        val res = everyOther.localDefined
+        val res = evo.localDefined
 
         rasterShouldBe(
           res,
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIdsAndTileCount(everyOther, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should set all defined values to 0 and the rest to one") {
-        val everyOther = everyOtherUndefined
-
-        val res = everyOther.localUndefined
+        val res = evo.localUndefined
 
         rasterShouldBe(
           res,
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIdsAndTileCount(everyOther, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should square root all values in raster") {
-        val inc = increasing
-
         val res = inc.localSqrt
 
         rasterShouldBeAbout(
@@ -109,24 +97,19 @@ class LocalSpec extends FunSpec
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
-      
-      //TODO fix this test
-      ignore("should root all values in raster") {
-        val evo = everyOther1ElseMinus1
 
-        val res = evo.localRound
+      it("should round all values in raster") {
+        val res = evo1Point01Else0Point99.localRound
 
         rasterShouldBe(
           res,
           (x: Int, y: Int) => 1
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should log all values in raster") {
-        val inc = increasing
-
         val res = inc.localLog
 
         rasterShouldBeAbout(
@@ -139,8 +122,6 @@ class LocalSpec extends FunSpec
       }
 
       it("should log base 10 all values in raster") {
-        val inc = increasing
-
         val res = inc.localLog10
 
         rasterShouldBeAbout(
@@ -152,37 +133,29 @@ class LocalSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
-      //TODO fix this test
-      ignore("should floor all values in raster") {
-        val evo = everyOther1ElseMinus1
-
-        val res = evo.localFloor
+      it("should floor all values in raster") {
+        val res = evo1Point01Else0Point99.localFloor
 
         rasterShouldBe(
           res,
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
-      //TODO fix this test
-      ignore("should ceil all values in raster") {
-        val evo = everyOther1ElseMinus1
-
-        val res = evo.localCeil
+      it("should ceil all values in raster") {
+        val res = evo1Point01Else0Point99.localCeil
 
         rasterShouldBe(
           res,
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 2
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should negate all values in raster") {
-        val inc = increasing
-
         val res = inc.localNegate
 
         rasterShouldBe(
@@ -194,8 +167,6 @@ class LocalSpec extends FunSpec
       }
 
       it("should negate with unary operator all values in raster") {
-        val inc = increasing
-
         val res = -inc
 
         rasterShouldBe(
@@ -207,8 +178,6 @@ class LocalSpec extends FunSpec
       }
 
       it("should not all values in raster") {
-        val inc = increasing
-
         val res = inc.localNot
 
         rasterShouldBe(
@@ -220,22 +189,18 @@ class LocalSpec extends FunSpec
       }
 
       it("should abs all values in raster") {
-        val evo = everyOther1ElseMinus1
-
-        val res = evo.localAbs
+        val res = evo1Minus1.localAbs
 
         rasterShouldBe(
           res,
           (x: Int, y: Int) => 1
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Minus1, res)
       }
 
       it("should arc cos all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localAcos
+        val res = evo1Point01Else0Point99.localAcos
 
         rasterShouldBeAbout(
           res,
@@ -243,13 +208,11 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should arc sin all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localAsin
+        val res = evo1Point01Else0Point99.localAsin
 
         rasterShouldBeAbout(
           res,
@@ -257,14 +220,11 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should arc tangent 2 all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-        val evoOneMinusOne = everyOther1ElseMinus1
-
-        val res = evo.localAtan2(evoOneMinusOne)
+        val res = evo1Point01Else0Point99.localAtan2(evo1Minus1)
 
         rasterShouldBeAbout(
           res,
@@ -279,13 +239,11 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should arc tan all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localAtan
+        val res = evo1Point01Else0Point99.localAtan
 
         rasterShouldBeAbout(
           res,
@@ -293,12 +251,10 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should cos all values in raster") {
-        val inc = increasing
-
         val res = inc.localCos
 
         rasterShouldBeAbout(
@@ -311,9 +267,7 @@ class LocalSpec extends FunSpec
       }
 
       it("should hyperbolic cos all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localCosh
+        val res = evo1Point01Else0Point99.localCosh
 
         rasterShouldBeAbout(
           res,
@@ -321,12 +275,10 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should sin all values in raster") {
-        val inc = increasing
-
         val res = inc.localSin
 
         rasterShouldBeAbout(
@@ -339,9 +291,7 @@ class LocalSpec extends FunSpec
       }
 
       it("should hyperbolic sin all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localSinh
+        val res = evo1Point01Else0Point99.localSinh
 
         rasterShouldBeAbout(
           res,
@@ -349,13 +299,11 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should tan all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localTan
+        val res = evo1Point01Else0Point99.localTan
 
         rasterShouldBeAbout(
           res,
@@ -363,13 +311,11 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
 
       it("should hyperbolic tan all values in raster") {
-        val evo = everyOther0Point99Else1Point01
-
-        val res = evo.localTanh
+        val res = evo1Point01Else0Point99.localTanh
 
         rasterShouldBeAbout(
           res,
@@ -377,7 +323,7 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIdsAndTileCount(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo1Point01Else0Point99, res)
       }
     }
   }

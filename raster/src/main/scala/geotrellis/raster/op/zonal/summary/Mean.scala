@@ -29,7 +29,8 @@ object MeanResult {
   }
 }
 
-object Mean extends TileIntersectionHandler[MeanResult, Double] {
+object Mean extends TileIntersectionHandler[MeanResult, Double]
+    with Serializable {
   def handlePartialTile(pt: PartialTileIntersection): MeanResult = {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent

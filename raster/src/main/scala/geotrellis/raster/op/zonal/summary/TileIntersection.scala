@@ -1,4 +1,3 @@
-
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
@@ -6,7 +5,7 @@ import geotrellis.vector.{Extent, Polygon}
 
 abstract sealed trait TileIntersection
 
-case class PartialTileIntersection(tile: Tile, extent: Extent, intersection: Polygon) 
+case class PartialTileIntersection(tile: Tile, extent: Extent, intersection: Polygon)
     extends TileIntersection {
   lazy val rasterExtent = RasterExtent(extent, tile.cols, tile.rows)
 }

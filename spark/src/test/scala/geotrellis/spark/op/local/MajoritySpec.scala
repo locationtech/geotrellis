@@ -32,15 +32,11 @@ class MajoritySpec extends FunSpec
 
   describe("Majority Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile
-      val allTwos = AllTwosTestFile
-      val allHundreds = AllHundredsTestFile
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should assign the majority of each raster, as a traversable") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones.localMajority(List(twos, hundreds, hundreds))
 
         rasterShouldBe(res, (100, 100))
@@ -48,10 +44,6 @@ class MajoritySpec extends FunSpec
       }
 
       it("should assign the majority of each raster, as a vararg") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones.localMajority(twos, twos, hundreds)
 
         rasterShouldBe(res, (2, 2))
@@ -59,10 +51,6 @@ class MajoritySpec extends FunSpec
       }
 
       it("should assign the nth majority of each raster, as a traversable") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones.localMajority(1, List(twos, hundreds, ones, twos, twos))
 
         rasterShouldBe(res, (1, 1))
@@ -70,10 +58,6 @@ class MajoritySpec extends FunSpec
       }
 
       it("should assign the nth majority of each raster, as a vararg") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones.localMajority(1, twos, hundreds, ones, twos, twos)
 
         rasterShouldBe(res, (1, 1))

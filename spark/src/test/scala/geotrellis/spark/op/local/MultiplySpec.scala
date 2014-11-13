@@ -29,10 +29,9 @@ class MultiplySpec extends FunSpec
 
   describe("Multiply Operation") {
     ifCanRunSpark {
-      val allTwos = AllTwosTestFile
+      val twos = AllTwosTestFile
 
       it("should multiply a constant by a raster") {
-        val twos = allTwos
         val fours = twos * 2
 
         rasterShouldBe(fours, (4, 4))
@@ -40,7 +39,6 @@ class MultiplySpec extends FunSpec
       }
 
       it("should multiply a raster by a constant") {
-        val twos = allTwos
         val fours = 2 *: twos
 
         rasterShouldBe(fours, (4, 4))
@@ -48,7 +46,6 @@ class MultiplySpec extends FunSpec
       }
 
       it("should multiply multiple rasters") {
-        val twos = allTwos
         val eights = twos * twos * twos
 
         rasterShouldBe(eights, (8, 8))
@@ -56,7 +53,6 @@ class MultiplySpec extends FunSpec
       }
 
       it("should multiply multiple rasters as a seq") {
-        val twos = allTwos
         val eights = twos * Seq(twos, twos)
 
         rasterShouldBe(eights, (8, 8))

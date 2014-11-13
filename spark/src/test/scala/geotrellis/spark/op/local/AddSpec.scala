@@ -31,19 +31,17 @@ class AddSpec extends FunSpec
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Add Operation") {
-    ifCanRunSpark { 
-      val allOnes = AllOnesTestFile.cache
+    ifCanRunSpark {
+      val ones = AllOnesTestFile
 
       it("should add a constant to a raster") {
-        val ones = allOnes
         val twos = ones + 1
-        
+
         rasterShouldBe(twos, (2, 2))
         rastersShouldHaveSameIdsAndTileCount(ones, twos)
       }
 
       it("should add a raster to a constant") {
-        val ones = allOnes
         val twos = 1 +: ones
 
         rasterShouldBe(twos, (2, 2))
@@ -51,7 +49,6 @@ class AddSpec extends FunSpec
       }
 
       it("should add multiple rasters") {
-        val ones = allOnes
         val threes = ones + ones + ones
 
         rasterShouldBe(threes, (3, 3))
@@ -59,7 +56,6 @@ class AddSpec extends FunSpec
       }
 
       it("should add multiple rasters as a seq") {
-        val ones = allOnes
         val threes = ones + Array(ones, ones)
 
         rasterShouldBe(threes, (3, 3))

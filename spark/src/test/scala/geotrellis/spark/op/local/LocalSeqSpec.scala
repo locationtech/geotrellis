@@ -30,20 +30,18 @@ class LocalSeqSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Local Seq Operations") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile
-      val allTwos = AllTwosTestFile
-      val allHundreds = AllHundredsTestFile
-      val increasing = IncreasingTestFile
-      val decreasing = DecreasingTestFile
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
+      val inc = IncreasingTestFile
+      val dec = DecreasingTestFile
 
       val (cols: Int, rows: Int) = {
-        val tile = allOnes.stitch
+        val tile = ones.stitch
         (tile.cols, tile.rows)
       }
 
       it("should test raster rdd seq with one element") {
-        val ones = allOnes
-
         val res = Seq(ones).localAdd
 
         rasterShouldBe(res, (1, 1))
@@ -51,9 +49,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should add rasters") {
-        val ones = allOnes
-        val hundreds = allHundreds
-
         val res = Seq(ones, hundreds, ones).localAdd
 
         rasterShouldBe(res, (102, 102))
@@ -61,9 +56,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should get variety of rasters") {
-        val ones = allOnes
-        val hundreds = allHundreds
-
         val res = Seq(ones, hundreds, ones).localVariety
 
         rasterShouldBe(res, (2, 2))
@@ -71,9 +63,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should get mean of rasters") {
-        val ones = allOnes
-        val hundreds = allHundreds
-
         val res = Seq(ones, hundreds, ones).localMean
 
         rasterShouldBe(res, (34, 34))
@@ -81,10 +70,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should min three rasters as a seq") {
-        val inc = increasing
-        val dec = decreasing
-        val hundreds = allHundreds
-
         val res = Seq(inc, dec, hundreds).localMin
 
         rasterShouldBe(
@@ -101,10 +86,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should min three rasters as a seq and take n:th smallest") {
-        val inc = increasing
-        val dec = decreasing
-        val hundreds = allHundreds
-
         val res = Seq(inc, dec, hundreds).localMinN(1)
 
         rasterShouldBe(
@@ -122,10 +103,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should max three rasters as a seq") {
-        val inc = increasing
-        val dec = decreasing
-        val hundreds = allHundreds
-
         val res = Seq(inc, dec, hundreds).localMax
 
         rasterShouldBe(
@@ -142,10 +119,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should max three rasters as a seq and take n:th smallest") {
-        val inc = increasing
-        val dec = decreasing
-        val hundreds = allHundreds
-
         val res = Seq(inc, dec, hundreds).localMaxN(1)
 
         rasterShouldBe(
@@ -163,10 +136,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the minority of each raster") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = Seq(ones, twos, twos, hundreds, hundreds).localMinority()
 
         rasterShouldBe(res, (1, 1))
@@ -174,10 +143,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the nth minority of each raster") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = Seq(ones, twos, twos, twos, hundreds, hundreds).localMinority(1)
 
         rasterShouldBe(res, (100, 100))
@@ -185,10 +150,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the majority of each raster") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = Seq(ones, ones, ones, twos, twos, hundreds).localMajority()
 
         rasterShouldBe(res, (1, 1))
@@ -196,10 +157,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the nth majority of each raster") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = Seq(ones, ones, ones, twos, twos, hundreds).localMajority(1)
 
         rasterShouldBe(res, (2, 2))

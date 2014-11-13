@@ -4,7 +4,8 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
-object Sum extends TileIntersectionHandler[Long, Long] {
+object Sum extends TileIntersectionHandler[Long, Long]
+    with Serializable {
   def handlePartialTile(pt: PartialTileIntersection): Long = {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
@@ -32,7 +33,8 @@ object Sum extends TileIntersectionHandler[Long, Long] {
     rs.foldLeft(0L)(_+_)
 }
 
-object SumDouble extends TileIntersectionHandler[Double, Double] {
+object SumDouble extends TileIntersectionHandler[Double, Double]
+    with Serializable {
   def handlePartialTile(pt: PartialTileIntersection): Double = {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent

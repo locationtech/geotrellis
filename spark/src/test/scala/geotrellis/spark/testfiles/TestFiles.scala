@@ -13,7 +13,7 @@ object TestFiles extends Logging {
     val conf = sc.hadoopConfiguration
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
-    val needGenerate = !localFS.exists(catalogPath)    
+    val needGenerate = !localFS.exists(catalogPath)
     val catalog = HadoopCatalog(sc, catalogPath)
 
     if (needGenerate) {
@@ -27,32 +27,35 @@ object TestFiles extends Logging {
 
 trait TestFiles { self: OnlyIfCanRunSpark =>
   lazy val testCatalog = TestFiles.catalog
-  
+
   def testFile(layerName: String): RasterRDD[SpatialKey] = {
     testCatalog.load(LayerId(layerName, 10)).get.cache
   }
 
-  def AllOnesTestFile = 
+  def AllOnesTestFile =
     testFile("all-ones")
 
-  def AllTwosTestFile = 
+  def AllTwosTestFile =
     testFile("all-twos")
 
-  def AllHundredsTestFile = 
+  def AllHundredsTestFile =
     testFile("all-hundreds")
 
-  def IncreasingTestFile = 
+  def IncreasingTestFile =
     testFile("increasing")
 
-  def DecreasingTestFile = 
+  def DecreasingTestFile =
     testFile("decreasing")
 
-  def EveryOtherUndefinedTestFile = 
+  def EveryOtherUndefinedTestFile =
     testFile("every-other-undefined")
 
-  def EveryOther0Point99Else1Point01TestFile = 
+  def EveryOther0Point99Else1Point01TestFile =
     testFile("every-other-0.99-else-1.01")
 
-  def EveryOther1ElseMinus1TestFile = 
+  def EveryOther1ElseMinus1TestFile =
     testFile("every-other-1-else-1")
+
+  def Mod10000TestFile =
+    testFile("mod-10000")
 }

@@ -8,7 +8,7 @@ import geotrellis.spark._
 
 import geotrellis.vector._
 
-import reflect._
+import reflect.ClassTag
 
 trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
@@ -28,17 +28,20 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
       val extent = bcMetaData.value.mapTransform(t.id)
       val tile = t.tile
 
-      if (p.contains(extent)) handleTileIntersection(FullTileIntersection(tile))
-      else {
-        val polys = p.intersection(extent) match {
-          case PolygonResult(intersectionPoly) => Seq(intersectionPoly)
-          case MultiPolygonResult(mp) => mp.polygons.toSeq
-          case _ => Seq()
+      val rs =
+        if (p.contains(extent)) handleTileIntersection(FullTileIntersection(tile))
+        else {
+          val polys = p.intersection(extent) match {
+            case PolygonResult(intersectionPoly) => Seq(intersectionPoly)
+            case MultiPolygonResult(mp) => mp.polygons.toSeq
+            case _ => Seq()
+          }
+
+          polys.map(PartialTileIntersection(tile, extent, _))
+            .map(handleTileIntersection).fold(zeroValue)(combineOp)
         }
 
-        polys.map(PartialTileIntersection(tile, extent, _))
-          .map(handleTileIntersection).fold(zeroValue)(combineOp)
-      }
+      combineOp(v, rs)
     }
 
     rasterRDD.aggregate(zeroValue)(seqOp, combineOp)
@@ -57,7 +60,7 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
   }
 
   def zonalHistogram(polygon: Polygon): Histogram =
-    zonalSummary(polygon, FastMapHistogram.asInstanceOf[Histogram], Histogram)
+    zonalSummary(polygon, FastMapHistogram(), Histogram)
 
   def zonalMax(polygon: Polygon): Int =
     zonalSummary(polygon, Int.MinValue, Max)

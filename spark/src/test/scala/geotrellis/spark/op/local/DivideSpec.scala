@@ -30,12 +30,10 @@ class DivideSpec extends FunSpec
 
   describe("Divide Operation") {
     ifCanRunSpark {
-      val allTwos = AllTwosTestFile
-      val allHundreds = AllHundredsTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should divide raster values by a constant") {
-        val twos = allTwos
-
         val ones = twos / 2
 
         rasterShouldBe(ones, (1, 1))
@@ -43,8 +41,6 @@ class DivideSpec extends FunSpec
       }
 
       it("should divide from a constant, raster values") {
-        val twos = allTwos
-
         val ones = 2 /: twos
 
         rasterShouldBe(ones, (1, 1))
@@ -52,8 +48,6 @@ class DivideSpec extends FunSpec
       }
 
       it("should divide multiple rasters") {
-        val hundreds = allHundreds
-        val twos = allTwos
         val res = hundreds / twos / twos
 
         rasterShouldBe(res, (25, 25))
@@ -61,8 +55,6 @@ class DivideSpec extends FunSpec
       }
 
       it("should divide multiple rasters as a seq") {
-        val hundreds = allHundreds
-        val twos = allTwos
         val res = hundreds / Seq(twos, twos)
 
         rasterShouldBe(res, (25, 25))

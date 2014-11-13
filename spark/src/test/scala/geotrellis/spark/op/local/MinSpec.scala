@@ -25,18 +25,16 @@ import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec
     with TestEnvironment
-    with TestFiles    
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Min Operation") {
-    ifCanRunSpark { 
-      val increasing = IncreasingTestFile
-      val decreasing = DecreasingTestFile
-      val allHundreds = AllHundredsTestFile
+    ifCanRunSpark {
+      val inc = IncreasingTestFile
+      val dec = DecreasingTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should min a raster with an integer") {
-        val inc = increasing
-
         val thresh = 721.1
         val res = inc.localMin(thresh)
         rasterShouldBeAbout(
@@ -49,7 +47,6 @@ class MinSpec extends FunSpec
       }
 
       it("should min a raster with a double") {
-        val inc = increasing
         val thresh = 873.4
         val res = inc.localMin(thresh)
 
@@ -63,8 +60,6 @@ class MinSpec extends FunSpec
       }
 
       it("should min two rasters") {
-        val inc = increasing
-        val dec = decreasing
         val res = inc.localMin(dec)
 
         rasterShouldBe(
@@ -81,9 +76,6 @@ class MinSpec extends FunSpec
       }
 
       it("should min three rasters as a seq") {
-        val inc = increasing
-        val dec = decreasing
-        val hundreds = allHundreds
         val res = inc.localMin(Seq(dec, hundreds))
 
         rasterShouldBe(
