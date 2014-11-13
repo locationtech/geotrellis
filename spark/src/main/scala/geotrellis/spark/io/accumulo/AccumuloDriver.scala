@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
-import geotrellis.spark.io.LayerMetaData
 import org.apache.accumulo.core.client.BatchWriterConfig
 import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, AccumuloInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Value, Key, Mutation}
