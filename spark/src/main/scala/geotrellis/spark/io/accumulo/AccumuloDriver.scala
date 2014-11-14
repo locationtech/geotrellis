@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
-import geotrellis.spark.io.LayerMetaData
 import org.apache.accumulo.core.client.BatchWriterConfig
 import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, AccumuloInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Value, Key, Mutation}
@@ -20,14 +19,14 @@ trait AccumuloDriver[K] {
   def setFilters(job: Job, layerId: LayerId, filters: FilterSet[K])
 
   def load(sc: SparkContext, accumulo: AccumuloInstance)
-          (metaData: LayerMetaData, table: String, filters: FilterSet[K]): Try[RasterRDD[K]] =
+          (id: LayerId, metaData: RasterMetaData, table: String, filters: FilterSet[K]): Try[RasterRDD[K]] =
   Try {
     val job = Job.getInstance(sc.hadoopConfiguration)
     accumulo.setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, table)
-    setFilters(job, metaData.id, filters)
+    setFilters(job, id, filters)
     val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
-    decode(rdd, metaData.rasterMetaData)
+    decode(rdd, metaData)
   }
 
   /** NOTE: Accumulo will always perform destructive update, clobber param is not followed */

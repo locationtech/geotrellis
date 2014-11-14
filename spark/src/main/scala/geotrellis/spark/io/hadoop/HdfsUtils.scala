@@ -30,13 +30,28 @@ import org.apache.hadoop.io._
 import java.io._
 import java.util.Scanner
 
+import org.apache.spark.Logging
+
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.reflect._
 
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
-object HdfsUtils {
+object HdfsUtils extends Logging {
+
+  def ensurePathExists(path: Path, conf: Configuration): Unit = {
+    val fs = path.getFileSystem(conf)
+    if(!fs.exists(path))
+      fs.mkdirs(path)
+    else
+      if(!fs.isDirectory(path)) sys.error(s"Directory $path does not exist on ${fs.getUri}")
+  }
+
+  def deletePath(path: Path, conf: Configuration): Unit = {
+    val fs = path.getFileSystem(conf)
+    fs.delete(path, true)
+  }
 
   def putFilesInConf(filesAsCsv: String, inConf: Configuration): Configuration = {
     val job = Job.getInstance(inConf)
@@ -147,8 +162,9 @@ object HdfsUtils {
   def readArray[T: HadoopWritable: ClassTag](path: Path, conf: Configuration): Array[T] = {
     val writable = implicitly[HadoopWritable[T]]
     import writable.implicits._
-
-    val in = new DataInputStream(new ByteArrayInputStream(readBytes(path, conf)))
+    logDebug(s"Reading array form $path")
+    val fs = path.getFileSystem(conf)
+    val in = new ObjectInputStream(fs.open(path))
     try {
       val size = in.readInt
       val arr = Array.ofDim[T](size)
@@ -168,11 +184,13 @@ object HdfsUtils {
   def writeArray[T: HadoopWritable](path: Path, conf: Configuration, arr: Array[T]): Unit = {
     val writable = implicitly[HadoopWritable[T]]
     import writable.implicits._
+    logDebug(s"Writing array of size ${arr.size} to $path")
+    val fs = path.getFileSystem(conf)
 
-    val fs = FileSystem.get(conf)
     val out = new ObjectOutputStream(fs.create(path))
     try {
       val size = arr.size
+
       out.writeInt(size)
       var i = 0
       while(i < size) {

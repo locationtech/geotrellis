@@ -1,7 +1,5 @@
 package geotrellis.spark
 
-import geotrellis.spark.io.LayerMetaData
-import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.json._
 import geotrellis.vector.Extent
@@ -59,25 +57,6 @@ package object json {
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
-      }
-  }
-
-  implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
-    def write(metaData: LayerMetaData) =
-      JsObject(
-        "id" -> metaData.id.toJson,
-        "rasterMetaData" -> metaData.rasterMetaData.toJson
-      )
-
-    def read(value: JsValue): LayerMetaData =
-      value.asJsObject.getFields("id", "rasterMetaData") match {
-        case Seq(layerId, rasterMetaData) =>
-          LayerMetaData(
-            layerId.convertTo[LayerId],
-            rasterMetaData.convertTo[RasterMetaData]
-          )
-        case _ =>
-          throw new DeserializationException("LayerMetaData expected")
       }
   }
 }

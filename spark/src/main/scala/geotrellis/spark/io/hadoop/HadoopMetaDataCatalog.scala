@@ -2,7 +2,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.hadoop.json._
+import geotrellis.spark.json._
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
@@ -11,12 +11,25 @@ import spray.json._
 import java.io.PrintWriter
 import scala.util.Try
 
-class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path, metaDataFileName: LayerId => String) extends MetaDataCatalog[Path] {
-  def metaDataPath(layerId: LayerId) = new Path(metaDataFolder, metaDataFileName(layerId))
+class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: LayerId => String, metaDataFileName: String)
+  extends MetaDataCatalog[String] with Logging
+{
+  val fs = catalogRoot.getFileSystem(sc.hadoopConfiguration)
 
-  def load(layerId: LayerId): Try[(LayerMetaData, Path)] = 
+  def metaDataPath(layerId: LayerId, subDir: String) =
+    if (subDir == "")
+      new Path(new Path(catalogRoot, layerDataDir(layerId)) , metaDataFileName)
+    else
+      new Path(new Path(new Path(catalogRoot, subDir), layerDataDir(layerId)) , metaDataFileName)
+
+
+  def load(layerId: LayerId): Try[(RasterMetaData, String)] =
+    load(layerId, "").map(_ -> "")
+
+  def load(layerId: LayerId, subDir: String): Try[RasterMetaData] =
     Try {
-      val path = metaDataPath(layerId)
+      val path = metaDataPath(layerId, subDir)
+
       val txt = HdfsUtils.getLineScanner(path, sc.hadoopConfiguration) match {
         case Some(in) =>
           try {
@@ -26,18 +39,19 @@ class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path, metaDataFile
             in.close
           }
         case None =>
-          sys.error(s"Metadata file for layer $layerId not found at ${path.toUri.toString}")
-      }
-      txt.parseJson.convertTo[(LayerMetaData, Path)]
+          throw new LayerNotFoundError(layerId)
       }
 
-  def save(layerMetaData: LayerMetaData, path: Path, clobber: Boolean): Try[Unit] = 
+      txt.parseJson.convertTo[RasterMetaData]
+    }
+
+
+  def save(id: LayerId, subDir: String, metaData: RasterMetaData, clobber: Boolean): Try[Unit] =
     Try {
-      val metaPath = metaDataPath(layerMetaData.id)
+      val metaPath = metaDataPath(id, subDir)
+      logDebug(s"Saving ${id} to $metaPath")
 
-      val fs = metaPath.getFileSystem(sc.hadoopConfiguration)
-
-      if(!fs.exists(metaPath)) {
+      if(fs.exists(metaPath)) {
         if(clobber)
           fs.delete(metaPath, false)
         else
@@ -47,7 +61,7 @@ class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path, metaDataFile
       val fdos = fs.create(metaPath)
       val out = new PrintWriter(fdos)
       try {
-        out.println((layerMetaData, path).toJson)
+        out.println(metaData.toJson)
       } finally {
         out.close()
         fdos.close()

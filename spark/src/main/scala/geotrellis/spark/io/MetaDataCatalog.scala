@@ -11,6 +11,12 @@ import org.apache.spark.Logging
 import scala.util.Try
 
 trait MetaDataCatalog[Params] {
-  def load(layerId: LayerId): Try[(LayerMetaData, Params)]
-  def save(metaData: LayerMetaData, params: Params, clobber: Boolean): Try[Unit]
+  /** Return [[geotrellis.spark.RasterMetaData]] and matching Params if unique match is found based on [[LayerId]] */
+  def load(layerId: LayerId): Try[(RasterMetaData, Params)]
+
+  /** Return [[geotrellis.spark.RasterMetaData]] matching both LayerId and params. */
+  def load(layerId: LayerId, params: Params): Try[RasterMetaData]
+
+  /** Save [[geotrellis.spark.RasterMetaData]] such that it can be found by the load functions */
+  def save(layerId: LayerId, params: Params,  metaData: RasterMetaData, clobber: Boolean): Try[Unit]
 }

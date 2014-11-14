@@ -39,6 +39,14 @@ package object hadoop {
     def newWritable = new SpatialKeyWritable
   }
 
+implicit object SpaceTimeKeyHadoopWritable extends HadoopWritable[SpaceTimeKey] {
+    type Writable = SpaceTimeKeyWritable
+    val writableClassTag = classTag[SpaceTimeKeyWritable]
+    def toWritable(key: SpaceTimeKey) = SpaceTimeKeyWritable(key)
+    def toValue(writable: SpaceTimeKeyWritable) = writable.get
+    def newWritable = new SpaceTimeKeyWritable
+  }
+
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 
   implicit class HadoopConfigurationWrapper(config: Configuration) {
