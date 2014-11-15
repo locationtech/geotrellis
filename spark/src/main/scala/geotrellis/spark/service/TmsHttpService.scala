@@ -40,7 +40,11 @@ trait TmsHttpService extends HttpService {
     pathPrefix("tms" / Segment / Segment / IntNumber / IntNumber / IntNumber ) { (layer, timeStr, zoom, x , y) =>
       val rdd: Try[RasterRDD[SpaceTimeKey]] = {
         val time = DateTime.parse(timeStr)
-        catalog.load(LayerId(layer, zoom), SpaceFilter[SpaceTimeKey](x, y), TimeFilter[SpaceTimeKey](time))
+        val filters =  new FilterSet[SpaceTimeKey]
+          .withFilter(SpaceFilter[SpaceTimeKey](x, y))
+          .withFilter(TimeFilter[SpaceTimeKey](time))
+
+        catalog.load(LayerId(layer, zoom), filters)
       }
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {

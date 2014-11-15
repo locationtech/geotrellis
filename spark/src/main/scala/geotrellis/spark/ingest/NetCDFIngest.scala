@@ -1,13 +1,19 @@
 package geotrellis.spark.ingest
 
+import geotrellis.raster.CellType
 import geotrellis.spark._
+import geotrellis.spark.cmd.args.{AccumuloArgs, SparkArgs}
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats.NetCdfBand
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import com.quantifind.sumac.ArgMain
+import org.apache.spark.rdd.PairRDDFunctions
+
+import scala.reflect.ClassTag
 
 /**
  * Ingests raw multi-band NetCDF tiles into a re-projected and tiled RasterRDD
@@ -35,13 +41,13 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val (level, rdd) =  Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme)
 
     val save = { (rdd: RasterRDD[SpaceTimeKey], level: LayoutLevel) =>
-      accumulo.catalog.save(LayerId(args.layerName, level.zoom), rdd, args.table, true)
+      accumulo.catalog.save(LayerId(args.layerName, level.zoom), args.table, rdd, args.clobber)
     }
 
     if (args.pyramid) {
       Pyramid.saveLevels(rdd, level, layoutScheme)(save).get // expose exceptions
     } else{
-      save(rdd, level)
+      save(rdd, level).get
     }
   }
 }

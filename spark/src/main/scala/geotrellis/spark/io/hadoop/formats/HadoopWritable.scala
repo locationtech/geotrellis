@@ -12,8 +12,8 @@ abstract class HadoopWritable[K: Ordering] extends Serializable {
 
   val writableClassTag: ClassTag[Writable]
 
-  protected def toWritable(key: K): Writable
-  protected def toValue(writable: Writable): K
+  def toWritable(key: K): Writable
+  def toValue(writable: Writable): K
   
   def newWritable(): Writable
 

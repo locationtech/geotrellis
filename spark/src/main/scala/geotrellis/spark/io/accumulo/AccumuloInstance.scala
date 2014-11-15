@@ -1,6 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
+import geotrellis.spark.io.DefaultParams
 import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}
@@ -31,11 +32,11 @@ case class AccumuloInstance(
 
   val metaDataCatalog = new AccumuloMetaDataCatalog(connector, catalogTable)
 
-  def catalog(config: AccumuloCatalog.Config)(implicit sc: SparkContext) = 
+  def catalog(config: DefaultParams[String])(implicit sc: SparkContext) =
     AccumuloCatalog(sc, this, metaDataCatalog, config)
 
-def catalog(implicit sc: SparkContext) = 
-    AccumuloCatalog(sc, this, metaDataCatalog, AccumuloCatalog.BaseConfig)
+  def catalog(implicit sc: SparkContext) =
+    AccumuloCatalog(sc, this, metaDataCatalog, AccumuloCatalog.BaseParamsConfig)
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {
