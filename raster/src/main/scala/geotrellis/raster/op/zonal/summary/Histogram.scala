@@ -5,8 +5,7 @@ import geotrellis.vector._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.stats._
 
-object Histogram extends TileIntersectionHandler[Histogram, Histogram]
-    with Serializable {
+object Histogram extends TileIntersectionHandler[Histogram, Histogram] {
   def handlePartialTile(pt: PartialTileIntersection): Histogram = {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent

@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
-object Max extends TileIntersectionHandler[Int, Int] with Serializable {
+object Max extends TileIntersectionHandler[Int, Int] {
   def handlePartialTile(pt: PartialTileIntersection): Int = {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
@@ -38,7 +38,7 @@ object Max extends TileIntersectionHandler[Int, Int] with Serializable {
       }
 }
 
-object MaxDouble extends TileIntersectionHandler[Double, Double] with Serializable {
+object MaxDouble extends TileIntersectionHandler[Double, Double] {
   def handlePartialTile(pt: PartialTileIntersection): Double = {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent

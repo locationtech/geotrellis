@@ -16,7 +16,8 @@ object FullTileIntersection {
     FullTileIntersection(tile)
 }
 
-trait TileIntersectionHandler[T,U] extends Function[TileIntersection, T] {
+trait TileIntersectionHandler[T,U] extends Function[TileIntersection, T]
+    with Serializable {
   def apply(ti: TileIntersection): T =
     ti match {
       case pt: PartialTileIntersection => handlePartialTile(pt)
