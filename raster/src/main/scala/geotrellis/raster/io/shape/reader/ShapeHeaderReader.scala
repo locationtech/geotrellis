@@ -4,7 +4,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 
-case class MalformedShapeHeaderException(msg: String) extends RuntimeException(msg)
+case class MalformedShapeFileHeaderException(msg: String) extends RuntimeException(msg)
 
 trait ShapeHeaderReader {
 
@@ -18,26 +18,26 @@ trait ShapeHeaderReader {
 
     val fileCode = byteBuffer.getInt
     if (fileCode != 9994)
-      throw new MalformedShapeFileException(s"Wrong file code, $fileCode != 9994.")
+      throw new MalformedShapeFileHeaderException(s"Wrong file code, $fileCode != 9994.")
 
     for (i <- 0 until 5)
       if (byteBuffer.getInt != 0)
-        throw new MalformedShapeFileException("Malformed file header.")
+        throw new MalformedShapeFileHeaderException("Malformed file header.")
 
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
 
     val fileSize = byteBuffer.getInt
     if (fileSize != byteBuffer.limit)
-      throw new MalformedShapeFileException(
+      throw new MalformedShapeFileHeaderException(
         s"Malformed file size, $fileSize != ${byteBuffer.limit}.")
 
     val version = byteBuffer.getInt
     if (version != 1000)
-      throw new MalformedShapeFileException(s"Wrong version, $fileCode != 1000.")
+      throw new MalformedShapeFileHeaderException(s"Wrong version, $fileCode != 1000.")
 
     val shapeType = byteBuffer.getInt
     if (!ValidValues.contains(shapeType))
-      throw new MalformedShapeFileException(s"Malformed shape type $shapeType.")
+      throw new MalformedShapeFileHeaderException(s"Malformed shape type $shapeType.")
 
     cfor(0)(_ < boundingBox.size, _ + 1) { i =>
       boundingBox(i) = byteBuffer.getDouble
