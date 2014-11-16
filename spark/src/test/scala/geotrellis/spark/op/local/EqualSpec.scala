@@ -29,11 +29,10 @@ class EqualSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Equal Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile
-      val allOnes = AllOnesTestFile
+      val inc = IncreasingTestFile
+      val ones = AllOnesTestFile
 
       it("should check equal between an integer and a raster") {
-        val inc = increasing
         val res = inc.localEqual(1)
 
         rasterShouldBe(
@@ -45,7 +44,6 @@ class EqualSpec extends FunSpec
       }
 
       it("should check equal between an double and a raster") {
-        val inc = increasing
         val res = inc.localEqual(1.0)
 
         rasterShouldBe(
@@ -57,8 +55,6 @@ class EqualSpec extends FunSpec
       }
 
       it("should check equal between two rasters") {
-        val inc = increasing
-        val ones = allOnes
         val res = inc.localEqual(ones)
 
         rasterShouldBe(

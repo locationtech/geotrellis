@@ -115,7 +115,7 @@ object GeotrellisBuild extends Build {
       .dependsOn(raster, vector, proj4)
       .aggregate(raster, vector, proj4, spark, rasterTest, vectorTest)
       .settings(
-        initialCommands in console:= 
+        initialCommands in console:=
           """
           import geotrellis.raster._
           import geotrellis.vector._
@@ -403,13 +403,13 @@ object GeotrellisBuild extends Build {
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       ),
-      initialCommands in console := 
+      initialCommands in console :=
         """
         import geotrellis.raster._
         import geotrellis.vector._
         import geotrellis.proj4._
         import geotrellis.spark._
-        import geotrellis.spark.utils._      
+        import geotrellis.spark.utils._
         import geotrellis.spark.tiling._
         """
     ) ++
@@ -686,5 +686,5 @@ object GeotrellisBuild extends Build {
         }
       }
     ) ++
-  defaultAssemblySettings  
+  defaultAssemblySettings
 }

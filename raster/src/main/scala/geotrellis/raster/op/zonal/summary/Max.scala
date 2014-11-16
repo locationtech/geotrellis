@@ -30,7 +30,7 @@ object Max extends TileIntersectionHandler[Int, Int] {
 
   def combineResults(rs: Seq[Int]): Int =
     if(rs.isEmpty) NODATA
-    else 
+    else
       rs.reduce { (a, b) =>
         if(isNoData(a)) { b }
         else if(isNoData(b)) { a }
@@ -57,7 +57,7 @@ object MaxDouble extends TileIntersectionHandler[Double, Double] {
 
   def handleFullTile(ft: FullTileIntersection): Double = {
     var max = Double.NaN
-    ft.tile.foreachDouble { (x: Double) => 
+    ft.tile.foreachDouble { (x: Double) =>
       if (isData(x) && (x > max || isNoData(max))) { max = x }
     }
     max
@@ -65,7 +65,7 @@ object MaxDouble extends TileIntersectionHandler[Double, Double] {
 
   def combineResults(rs: Seq[Double]) =
     if(rs.isEmpty) Double.NaN
-    else 
+    else
       rs.reduce { (a, b) =>
         if(isNoData(a)) { b }
         else if(isNoData(b)) { a }

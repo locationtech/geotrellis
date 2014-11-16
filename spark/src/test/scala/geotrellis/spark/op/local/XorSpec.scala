@@ -30,12 +30,11 @@ class XorSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Xor Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile
-      val allTwos = AllTwosTestFile
-      val allHundreds = AllHundredsTestFile
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should xor a raster with a constant") {
-        val ones = allOnes
         val res = ones ^ 1
 
         rasterShouldBe(res, (0, 0))
@@ -43,7 +42,6 @@ class XorSpec extends FunSpec
       }
 
       it("should xor a constant with a raster") {
-        val ones = allOnes
         val res = 2 ^: ones
 
         rasterShouldBe(res, (3, 3))
@@ -51,10 +49,6 @@ class XorSpec extends FunSpec
       }
 
       it("should xor three different rasters") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones ^ twos ^ hundreds
 
         rasterShouldBe(res, (103, 103))
@@ -62,10 +56,6 @@ class XorSpec extends FunSpec
       }
 
       it("should xor three different rasters as a seq") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones ^ Seq(twos, hundreds)
 
         rasterShouldBe(res, (103, 103))

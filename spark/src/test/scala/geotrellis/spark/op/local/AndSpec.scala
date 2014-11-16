@@ -25,17 +25,16 @@ import org.scalatest.FunSpec
 
 class AndSpec extends FunSpec
     with TestEnvironment
-    with TestFiles  
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("And Operation") {
-    ifCanRunSpark { 
-      val allOnes = AllOnesTestFile
-      val allTwos = AllTwosTestFile
-      val allHundreds = AllHundredsTestFile
+    ifCanRunSpark {
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should and a raster with a constant") {
-        val ones = allOnes
         val res = ones & 1
 
         rasterShouldBe(res, (1, 1))
@@ -43,7 +42,6 @@ class AndSpec extends FunSpec
       }
 
       it("should and a constant with a raster") {
-        val ones = allOnes
         val res = 1 &: ones
 
         rasterShouldBe(res, (1, 1))
@@ -51,10 +49,6 @@ class AndSpec extends FunSpec
       }
 
       it("should and three different rasters") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones & twos & hundreds
 
         rasterShouldBe(res, (0, 0))
@@ -62,10 +56,6 @@ class AndSpec extends FunSpec
       }
 
       it("should and three different rasters as a seq") {
-        val ones = allOnes
-        val twos = allTwos
-        val hundreds = allHundreds
-
         val res = ones & Seq(twos, hundreds)
 
         rasterShouldBe(res, (0, 0))

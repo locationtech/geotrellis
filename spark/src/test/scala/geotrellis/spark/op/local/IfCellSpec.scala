@@ -30,16 +30,15 @@ class IfCellSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("IfCell Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile
-      val decreasing = DecreasingTestFile
+      val inc = IncreasingTestFile
+      val dec = DecreasingTestFile
 
       val (cols: Int, rows: Int, tots: Int) = {
-        val tile = increasing.stitch
+        val tile = inc.stitch
         (tile.cols, tile.rows, tile.cols * tile.rows - 1)
       }
 
       it("should change values mod 2 to 1, testing integer method") {
-        val inc = increasing
         val res = inc.localIf((a: Int) => a % 2 == 0, 1)
 
         rasterShouldBe(
@@ -51,7 +50,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should change values mod 2 to 1 else 0, testing integer method") {
-        val inc = increasing
         val res = inc.localIf((a: Int) => a % 2 == 0, 1, 0)
 
         rasterShouldBe(
@@ -63,7 +61,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should change values mod 2 to 1, testing double method") {
-        val inc = increasing
         val res = inc.localIf((a: Double) => a % 2 == 0, 1)
 
         rasterShouldBe(
@@ -75,7 +72,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should change values mod 2 to 1 else 0, testing double method") {
-        val inc = increasing
         val res = inc.localIf((a: Double) => a % 2 == 0, 1, 0)
 
         rasterShouldBe(
@@ -87,9 +83,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 integer method") {
-        val inc = increasing
-        val dec = decreasing
-
         val thres = tots / 2.0
 
         val res = inc.localIf(dec, (a: Int, b: Int) => math.abs(a - b) <= 1, 0)
@@ -103,9 +96,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 else 1 integer method") {
-        val inc = increasing
-        val dec = decreasing
-
         val thres = tots / 2.0
 
         val res = inc.localIf(dec, (a: Int, b: Int) => math.abs(a - b) <= 1, 0, 0)
@@ -119,9 +109,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 double method") {
-        val inc = increasing
-        val dec = decreasing
-
         val thres = tots / 2.0
 
         val res = inc.localIf(dec, (a: Double, b: Double) => math.abs(a - b) <= 1, 0)
@@ -135,9 +122,6 @@ class IfCellSpec extends FunSpec
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 else 1 double method") {
-        val inc = increasing
-        val dec = decreasing
-
         val thres = tots / 2.0
 
         val res = inc.localIf(dec, (a: Double, b: Double) => math.abs(a - b) <= 1, 0, 0)

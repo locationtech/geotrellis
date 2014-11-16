@@ -29,11 +29,10 @@ class GreaterSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Greater Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile
-      val allOnes = AllOnesTestFile
+      val inc = IncreasingTestFile
+      val ones = AllOnesTestFile
 
       it("should check greater between an integer and a raster") {
-        val inc = increasing
         val res = inc > 1
 
         rasterShouldBe(
@@ -45,7 +44,6 @@ class GreaterSpec extends FunSpec
       }
 
       it("should check greater right associative between an integer and a raster") {
-        val inc = increasing
         val res = 1 >>: inc
 
         rasterShouldBe(
@@ -57,7 +55,6 @@ class GreaterSpec extends FunSpec
       }
 
       it("should check greater between a double and a raster") {
-        val inc = increasing
         val res = inc > 1.0
 
         rasterShouldBe(
@@ -69,7 +66,6 @@ class GreaterSpec extends FunSpec
       }
 
       it("should check greater right associative between a double and a raster") {
-        val inc = increasing
         val res = 1.0 >>: inc
 
         rasterShouldBe(
@@ -81,8 +77,6 @@ class GreaterSpec extends FunSpec
       }
 
       it("should check greater or equal between two rasters") {
-        val inc = increasing
-        val ones = allOnes
         val res = inc > ones
 
         rasterShouldBe(
