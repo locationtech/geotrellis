@@ -94,7 +94,7 @@ case class Circle(radius:Double) extends Neighborhood {
  *
  * @param   extent   Extent of the neighborhood.
  *                   The extent is how many cells past the focus the bounding box goes.
- *                   (e.g., 1 for 9x9 square)
+ *                   (e.g., 1 for 3x3 square)
  */
 case class Nesw(extent:Int) extends Neighborhood {
   val hasMask = true
