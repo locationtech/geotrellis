@@ -34,7 +34,7 @@ import Angles._
  * of the neighborhood (or kernel) to be used in a focal operation.
  */
 trait Neighborhood { 
-  /** How many cells past the focus the bounding box goes. (e.g., 1 for 9x9 square) */
+  /** How many cells past the focus the bounding box goes. (e.g., 1 for 3x3 square) */
   val extent:Int 
 
   /** Whether or not this neighborhood has a mask the cursor of it's bounding box */
