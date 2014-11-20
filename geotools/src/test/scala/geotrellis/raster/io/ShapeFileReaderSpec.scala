@@ -10,7 +10,7 @@ class ShapeFileReaderSpec extends FunSpec with Matchers {
       val path = "geotools/data/shapefiles/demographics/demographics.shp"
       val features = ShapeFileReader.readMultiPolygonFeatures(path)
       features.size should be (160)
-      for(MultiPolygonFeature(polygon, data) <- features) {
+      for(MultiPolygonFeature(mp, data) <- features) {
         data.keys.toSeq should be (Seq("LowIncome", "gbcode", "ename", "WorkingAge", "TotalPop", "Employment"))
       }
     }

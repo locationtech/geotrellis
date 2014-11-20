@@ -112,20 +112,23 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
   }
 
   private def readMultiPoint = MultiPoint(readPoints)
+  var anus = 0
 
   private def readLines = {
     val numParts = byteBuffer.getInt
     val numPoints = byteBuffer.getInt
 
     val lines = Array.ofDim[Array[Point]](numParts)
-    var start = { byteBuffer.get; byteBuffer.get }
-    lines(0) = readPoints(start)
+    val offsets = Array.ofDim[Int](numParts)
 
-    cfor(1)(_ < numParts - 1, _ + 1) { i =>
-      val offset = byteBuffer.get
-      val size = offset - start
-      start = offset
-      lines(i) = readPoints(size)
+    cfor(0)(_ < numParts, _ + 1) { i =>
+      offsets(i) = byteBuffer.getInt
+    }
+
+    cfor(0)(_ < numParts, _ + 1) { i =>
+      val start = offsets(i)
+      val end = if (i == numParts - 1) numPoints else offsets(i + 1)
+      lines(i) = readPoints(end - start)
     }
 
     lines
@@ -159,14 +162,21 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
 
     var idx = 0
     val holes = Array.ofDim[Line](lines.size - 1)
-    cfor(0)(_ < lines.size + 1, _ + 1) { i =>
+    cfor(0)(_ < lines.size, _ + 1) { i =>
       if (yMaxLineIndex != i) {
         holes(idx) = Line(lines(i))
         idx += 1
       }
     }
 
-    Polygon(Line(lines(yMaxLineIndex)), holes)
+
+    val p = Polygon(Line(lines(yMaxLineIndex)), holes)
+    if (anus == 34) {
+      println("outer line: " + Line(lines(yMaxLineIndex)))
+      println("hole line: " + holes.head)
+    }
+    anus += 1
+    p
   }
 
   private def moveByteBufferForward(steps: Int) =
@@ -261,8 +271,8 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
 
     var idx = 0
     def calcSize(idx: Int) = {
-        if (idx != numParts - 1) partIndices(idx + 1) - partIndices(idx)
-        else numPoints
+      if (idx != numParts - 1) partIndices(idx + 1) - partIndices(idx)
+      else numPoints
     }
 
     while (idx < numParts) {

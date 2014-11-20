@@ -24,12 +24,12 @@ trait ShapeHeaderReader {
       if (byteBuffer.getInt != 0)
         throw new MalformedShapeFileHeaderException("Malformed file header.")
 
-    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-    val fileSize = byteBuffer.getInt
-    if (fileSize != byteBuffer.limit)
+    val fileSize = byteBuffer.getInt // This is in 16 bit words.
+    if (fileSize * 2 != byteBuffer.limit)
       throw new MalformedShapeFileHeaderException(
         s"Malformed file size, $fileSize != ${byteBuffer.limit}.")
+
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
 
     val version = byteBuffer.getInt
     if (version != 1000)

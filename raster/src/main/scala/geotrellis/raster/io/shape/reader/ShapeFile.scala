@@ -16,8 +16,8 @@ case class ShapeIndexFile(offsets: Array[Int], sizes: Array[Int]) {
   val size = sizes.size
 }
 
-case class ShapeDBaseFile(records: Array[Option[ShapeDBaseRecord]]) {
+case class ShapeDBaseFile(records: Array[Map[String, ShapeDBaseRecord]]) {
   val size = records.size
 
-  def apply(i: Int): Option[ShapeDBaseRecord] = records(i)
+  def apply(i: Int): Map[String, ShapeDBaseRecord] = records(i)
 }

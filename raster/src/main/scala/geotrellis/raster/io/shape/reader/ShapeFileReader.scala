@@ -30,6 +30,8 @@ class ShapeFileReader(path: String) {
 
   private val ShapeIndexFileExtension = ".shx"
 
+  private val CodePageFileExtension = ".cpg"
+
   private val ShapeDBaseFileExtension = ".dbf"
 
   /**
@@ -43,8 +45,10 @@ class ShapeFileReader(path: String) {
         ShapePointFileReader(path + ShapePointFileExtension).read
       val shapeIndexFile =
         ShapeIndexFileReader(path + ShapeIndexFileExtension).read
+      val charset =
+        CodePageFileReader(path + CodePageFileExtension).read
       val shapeDBaseFile =
-        ShapeDBaseFileReader(path + ShapeDBaseFileExtension).read
+        ShapeDBaseFileReader(path + ShapeDBaseFileExtension, charset).read
 
       val (s1, s2, s3) = (shapePointFile.size, shapeIndexFile.size, shapeDBaseFile.size)
       if (s1 != s2 || s1 != s3 || s2 != s3)

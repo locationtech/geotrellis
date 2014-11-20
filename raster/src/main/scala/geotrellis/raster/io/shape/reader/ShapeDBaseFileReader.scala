@@ -2,6 +2,8 @@ package geotrellis.raster.io.shape.reader
 
 import geotrellis.raster.io.Filesystem
 
+import collection.immutable.HashMap
+
 import java.nio.{ByteBuffer, ByteOrder}
 
 import java.util.{Calendar, Date}
@@ -10,27 +12,27 @@ import spire.syntax.cfor._
 
 case class MalformedShapeDBaseFileException(msg: String) extends RuntimeException(msg)
 
+import Charset._
+
 /**
   * Reads a DBase III file (.dbf) for shape files.
-  *
-  * TODO: Charset crap?
   */
 object ShapeDBaseFileReader {
 
-  def apply(path: String): ShapeDBaseFileReader =
-    if (path.endsWith(".dbf")) apply(Filesystem.slurp(path))
+  def apply(path: String, charset: Charset = Charset.Ascii): ShapeDBaseFileReader =
+    if (path.endsWith(".dbf")) apply(Filesystem.slurp(path), charset)
     else throw new MalformedShapeDBaseFileException("Bad file ending (must be .dbf).")
 
-  def apply(bytes: Array[Byte]): ShapeDBaseFileReader =
-    new ShapeDBaseFileReader(ByteBuffer.wrap(bytes, 0, bytes.size))
+  def apply(bytes: Array[Byte], charset: Charset): ShapeDBaseFileReader =
+    new ShapeDBaseFileReader(ByteBuffer.wrap(bytes, 0, bytes.size), charset)
 
 }
 
-class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
+class ShapeDBaseFileReader(byteBuffer: ByteBuffer, charset: Charset = Charset.Ascii) {
 
   case class DBaseField(
-    fieldName: String,
-    fieldType: Char,
+    name: String,
+    typ: Char,
     offset: Int,
     length: Int,
     decimalCount: Int)
@@ -42,6 +44,8 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
   private val MillisPerDay = 1000 * 60 * 60 * 24
 
   private val MillisSince4713 = -210866803200000L
+
+  private def readString(buffer: Array[Byte]) = new String(buffer, charset.code)
 
   lazy val read: ShapeDBaseFile = {
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
@@ -64,21 +68,18 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
 
     val headerLength = (byteBuffer.get & 0xff) | ((byteBuffer.get & 0xff) << 8)
 
-    val recordLength = (byteBuffer.get & 0xff)| ((byteBuffer.get & 0xff) << 8)
+    val recordLength = (byteBuffer.get & 0xff) | ((byteBuffer.get & 0xff) << 8)
 
     byteBuffer.position(byteBuffer.position + 20)
 
-    val records = (headerLength - FileDescriptorSize - 1) / FileDescriptorSize
+    val columns = (headerLength - FileDescriptorSize - 1) / FileDescriptorSize
 
-    println(records)
-
-    val fields = Array.ofDim[Option[DBaseField]](records)
+    val fields = Array.ofDim[Option[DBaseField]](columns)
 
     val nameBuffer = Array.ofDim[Byte](11)
-    var largestField = 0
-    cfor(0)(_ < records, _ + 1) { i =>
+    cfor(0)(_ < columns, _ + 1) { i =>
       byteBuffer.get(nameBuffer)
-      var nameBufferString = new String(nameBuffer)
+      var nameBufferString = readString(nameBuffer)
       val nullPoint = nameBufferString.indexOf(0)
 
       val name =
@@ -91,12 +92,9 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
       val offset = byteBuffer.getInt
 
       val lengthByte = byteBuffer.get.toInt
-      println(lengthByte)
       val length =
         if (lengthByte < 0) lengthByte + 256
         else lengthByte
-
-      largestField = math.max(largestField, length)
 
       val decimalCount = byteBuffer.get.toInt
 
@@ -107,21 +105,45 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
       byteBuffer.position(byteBuffer.position + 14)
     }
 
-    ShapeDBaseFile(fields.map(readDBaseRecord(_)).toArray)
+    val rows = Array.ofDim[Map[String, ShapeDBaseRecord]](recordCount)
+    var fieldOffsets = Array.ofDim[Int](columns)
+
+    cfor(1)(_ < columns, _ + 1) { i =>
+      val length = fields(i - 1) match {
+        case Some(f) => f.length
+        case None => 0
+      }
+      fieldOffsets(i) = fieldOffsets(i - 1) + length
+    }
+
+    cfor(0)(_ < rows.size, _ + 1) { i =>
+      var map = HashMap[String, ShapeDBaseRecord]()
+      cfor(0)(_ < columns, _ + 1) { j =>
+        val offset = headerLength + i * recordLength + fieldOffsets(j) + 1
+        map = readDBaseRecord(fields(j), offset) match {
+          case Some(r) => map + r
+          case None => map
+        }
+      }
+
+      rows(i) = map
+    }
+
+    ShapeDBaseFile(rows)
   }
 
-  private def readDBaseRecord(fieldOption: Option[DBaseField]) = fieldOption match {
+  private def readDBaseRecord(fieldOption: Option[DBaseField], offset: Int) = fieldOption match {
     case Some(field) => {
-      byteBuffer.position(field.offset)
+      byteBuffer.position(offset)
 
-      field.fieldType match {
+      val fieldValue: Option[ShapeDBaseRecord] = field.typ match {
         case 'l' | 'L' => readLogicalRecord(field)
         case 'c' | 'C' => readStringRecord(field)
         case 'd' | 'D' => readDateRecord(field)
         case '@' => readTimestampRecord(field)
         case 'n' | 'N' => readLongRecord(field) match {
           case None => {
-            byteBuffer.position(field.offset)
+            byteBuffer.position(offset)
             readDoubleRecord(field)
           }
           case x => x
@@ -130,6 +152,11 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
         case invalidFieldType => throw new MalformedShapeDBaseFileException(
           s"Invalid field type $invalidFieldType."
         )
+      }
+
+      fieldValue match {
+        case Some(f) => Some(field.name -> f)
+        case None => None
       }
     }
     case None => None
@@ -149,19 +176,19 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
   }
 
   private def readStringRecord(field: DBaseField) = {
-    val bytes = readBytes(field.length)
+    val bytes = readBytes(field.length).takeWhile(_ != '\0')
 
-    if (bytes(0) == '\0') None
-    else Some(StringDBaseRecord(new String(bytes, "ASCII")))
+    if (bytes.isEmpty) None
+    else Some(StringDBaseRecord(readString(bytes).trim))
   }
 
   private def readDateRecord(field: DBaseField) = {
     val bytes = readBytes(8)
     if (bytes.filter(_ != '0').isEmpty) None
     else {
-      val year = new String(bytes.take(4)).toInt
-      val month = new String(bytes.drop(4).take(2)).toInt
-      val day = new String(bytes.drop(6).take(2)).toInt
+      val year = readString(bytes.take(4)).toInt
+      val month = readString(bytes.drop(4).take(2)).toInt
+      val day = readString(bytes.drop(6).take(2)).toInt
 
       val c = Calendar.getInstance
       c.set(Calendar.YEAR, year)
@@ -186,13 +213,15 @@ class ShapeDBaseFileReader(byteBuffer: ByteBuffer) {
   }
 
   private def readLongRecord(field: DBaseField) = try {
-    Some(LongDBaseRecord(new String(readBytes(field.length)).toLong))
+    val s = readString(readBytes(field.length)).trim
+    Some(LongDBaseRecord(s.toLong))
   } catch {
     case e: NumberFormatException => None
   }
 
   private def readDoubleRecord(field: DBaseField) = try {
-    Some(DoubleDBaseRecord(new String(readBytes(field.length)).toDouble))
+    val s = readString(readBytes(field.length)).trim
+    Some(DoubleDBaseRecord(s.toDouble))
   } catch {
     case e: NumberFormatException => None
   }

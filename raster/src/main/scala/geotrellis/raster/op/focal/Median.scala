@@ -60,6 +60,3 @@ class CellwiseMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], e
 
   def setValue(x: Int, y: Int) = { tile.setDouble(x, y, median) }
 }
-
-
-
