@@ -19,9 +19,17 @@ import Charset._
   */
 object ShapeDBaseFileReader {
 
-  def apply(path: String, charset: Charset = Charset.Ascii): ShapeDBaseFileReader =
-    if (path.endsWith(".dbf")) apply(Filesystem.slurp(path), charset)
-    else throw new MalformedShapeDBaseFileException("Bad file ending (must be .dbf).")
+  val FileExtension = ".dbf"
+
+  def apply(path: String): ShapeDBaseFileReader =
+    if (path.endsWith(FileExtension)) {
+      val charset = CodePageFileReader(path.take(path.length - 4) +
+        CodePageFileReader.FileExtension).read
+      apply(Filesystem.slurp(path), charset)
+    }
+    else throw new MalformedShapeDBaseFileException(
+      s"Bad file ending (must be $FileExtension)."
+    )
 
   def apply(bytes: Array[Byte], charset: Charset): ShapeDBaseFileReader =
     new ShapeDBaseFileReader(ByteBuffer.wrap(bytes, 0, bytes.size), charset)

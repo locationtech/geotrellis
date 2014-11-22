@@ -1,22 +1,18 @@
 package geotrellis.raster.io.shape.reader
 
-import geotrellis.testkit._
-
 import org.scalatest._
 
 /**
   * Tests reading .dbf files.
   */
-class ShapeDBaseFileReaderSpec extends FunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with TestEngine {
+class ShapeDBaseFileReaderSpec extends FunSpec with Matchers {
+
+  def read(path: String) = ShapeDBaseFileReader(path).read
 
   describe("should read shape DBase files correctly") {
 
     it("should read demographics.dbf correctly") {
-      val path = "raster-test/data/shapefiles/demographics/demographics.dbf"
-      val dBaseFile = ShapeDBaseFileReader(path).read
+      val dBaseFile = read("raster-test/data/shapefiles/demographics/demographics.dbf")
 
       testDemographicsMap(dBaseFile(0), 605, "410104003", "Nan Guan Jie Dao", 28894, 44931, 941)
       testDemographicsMap(dBaseFile(1), 754, "410103200", "Qi Li Yan Xiang", 55538, 87009, 2722)
@@ -194,24 +190,66 @@ class ShapeDBaseFileReaderSpec extends FunSpec
         case Some(LongDBaseRecord(v)) => v should be (lowIncome)
         case _ => fail
       }
+
       map.get("gbcode") match {
         case Some(StringDBaseRecord(v)) => v should be (gbCode)
         case _ => fail
       }
+
       map.get("ename") match {
         case Some(StringDBaseRecord(v)) => v should be (ename)
         case _ => fail
       }
+
       map.get("WorkingAge") match {
         case Some(LongDBaseRecord(v)) => v should be (workingAge)
         case _ => fail
       }
+
       map.get("TotalPop") match {
         case Some(LongDBaseRecord(v)) => v should be (totalPop)
         case _ => fail
       }
+
       map.get("Employment") match {
         case Some(LongDBaseRecord(v)) => v should be (employment)
+        case _ => fail
+      }
+    }
+
+    // Since the file is so big, we just run a test
+    // with some sample tests.
+    it("should read countries.dbf correctly") {
+      val dBaseFile = read("raster-test/data/shapefiles/countries/countries.dbf")
+      dBaseFile.size should be(255)
+
+      dBaseFile(0)("GU_A3") match {
+        case StringDBaseRecord(s) => s should be("ABW")
+        case _ => fail
+      }
+
+      dBaseFile(23)("NAME_LEN") match {
+        case DoubleDBaseRecord(d) => d should be(8.0)
+        case _ => fail
+      }
+
+      dBaseFile(41)("WOE_ID_EH") match {
+        case DoubleDBaseRecord(d) => d should be(2.3424782E7)
+        case _ => fail
+      }
+
+      dBaseFile(65)("WOE_NOTE") match {
+        case StringDBaseRecord(s) => s should be("Exact WOE match as country")
+        case _ => fail
+      }
+
+      dBaseFile(150)("GDP_MD_EST") match {
+        case DoubleDBaseRecord(d) => d should be(9962)
+        case _ => fail
+      }
+
+      dBaseFile(254)("SUBREGION") match {
+        case StringDBaseRecord(s) => s should be("Eastern Africa")
         case _ => fail
       }
     }

@@ -10,6 +10,4 @@ case class MultiPointPointRecord(multiPoint: MultiPoint) extends ShapePointRecor
 
 case class MultiLinePointRecord(multiLine: MultiLine) extends ShapePointRecord
 
-case class PolygonPointRecord(polygon: Polygon) extends ShapePointRecord
-
 case class MultiPolygonPointRecord(multiPolygon: MultiPolygon) extends ShapePointRecord

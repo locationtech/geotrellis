@@ -213,6 +213,15 @@ object GeotrellisBuild extends Build {
       name := "geotrellis-raster-test",
       parallelExecution := false,
       fork in test := false,
+      //fork := true,
+      // If wanted, we can connect to the Java Mission Control to find Hot Methods.
+      // If wanted, un-comment this:
+      /*javaOptions ++= Seq(
+        "-XX:+UnlockCommercialFeatures",
+        "-XX:+FlightRecorder",
+        "-XX:FlightRecorderOptions=dumponexit=true,defaultrecording=true,dumponexitpath=/Users/johanstenberg/Documents/programmering/geotrellis/geotrellis/shape-file-bench.jfr",
+        "-XX:StartFlightRecording=duration=60s"
+      ),*/
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++=
         Seq("-optimize"),

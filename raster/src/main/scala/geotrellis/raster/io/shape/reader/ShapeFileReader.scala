@@ -26,43 +26,33 @@ case class MalformedShapeFileException(msg: String) extends RuntimeException(msg
 
 class ShapeFileReader(path: String) {
 
-  private val ShapePointFileExtension = ".shp"
-
-  private val ShapeIndexFileExtension = ".shx"
-
-  private val CodePageFileExtension = ".cpg"
-
-  private val ShapeDBaseFileExtension = ".dbf"
-
   /**
     * Reads a shape file.
     *
     * Returns a class containing records of the shape file.
     */
   lazy val read: ShapeFile = {
-    val (spf, sif, sdf) = {
-      val shapePointFile =
-        ShapePointFileReader(path + ShapePointFileExtension).read
-      val shapeIndexFile =
-        ShapeIndexFileReader(path + ShapeIndexFileExtension).read
-      val charset =
-        CodePageFileReader(path + CodePageFileExtension).read
-      val shapeDBaseFile =
-        ShapeDBaseFileReader(path + ShapeDBaseFileExtension, charset).read
+    val p = if (path.endsWith(".shp")) path.substring(0, path.size - 4) else path
 
-      val (s1, s2, s3) = (shapePointFile.size, shapeIndexFile.size, shapeDBaseFile.size)
-      if (s1 != s2 || s1 != s3 || s2 != s3)
-        throw new MalformedShapeFileException("Files has different number of elements.")
+    val (spf, sdf) = {
+     val shapePointFile =
+     ShapePointFileReader(p + ShapePointFileReader.FileExtension).read
+     val shapeDBaseFile =
+     ShapeDBaseFileReader(p + ShapeDBaseFileReader.FileExtension).read
 
-      (shapePointFile, shapeIndexFile, shapeDBaseFile)
-    }
+     val (s1, s2) = (shapePointFile.size, shapeDBaseFile.size)
+     if (s1 != s2)
+     throw new MalformedShapeFileException("Files has different number of elements.")
 
-    val res = Array.ofDim[ShapeRecord](spf.size)
-    cfor(0)(_ < spf.size, _ + 1) { i =>
-      res(i) = ShapeRecord(spf(i), sdf(i))
-    }
+     (shapePointFile, shapeDBaseFile)
+     }
 
-    ShapeFile(res)
+     val res = Array.ofDim[ShapeRecord](spf.size)
+     cfor(0)(_ < spf.size, _ + 1) { i =>
+     res(i) = ShapeRecord(spf(i), sdf(i))
+     }
+
+     ShapeFile(res)
   }
 
 }

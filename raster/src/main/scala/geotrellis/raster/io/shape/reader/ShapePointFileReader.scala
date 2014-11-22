@@ -1,7 +1,6 @@
 package geotrellis.raster.io.shape.reader
 
 import geotrellis.raster.io.Filesystem
-
 import geotrellis.vector._
 
 import java.nio.{ByteBuffer, ByteOrder}
@@ -14,9 +13,13 @@ case class MalformedShapePointFileException(msg: String) extends RuntimeExceptio
 
 object ShapePointFileReader {
 
+  val FileExtension = ".shp"
+
   def apply(path: String): ShapePointFileReader =
-    if (path.endsWith(".shp")) apply(Filesystem.slurp(path))
-    else throw new MalformedShapePointFileException("Bad file ending (must be .shp).")
+    if (path.endsWith(FileExtension)) apply(Filesystem.slurp(path))
+    else throw new MalformedShapePointFileException(
+      s"Bad file ending (must be $FileExtension)."
+    )
 
   def apply(bytes: Array[Byte]): ShapePointFileReader =
     new ShapePointFileReader(ByteBuffer.wrap(bytes, 0, bytes.size))
@@ -70,12 +73,14 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     ShapePointFile(recordBuffer.toArray, boundingBox)
   }
 
-  private def readPointRecord: ShapePointRecord = {
+  @inline
+  private final def readPointRecord: ShapePointRecord = {
     byteBuffer.order(ByteOrder.BIG_ENDIAN)
     val nr = byteBuffer.getInt
     val size = byteBuffer.getInt
 
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+
     byteBuffer.getInt match {
       case PointType => readPointPointRecord
       case MultiPointType => readMultiPointPointRecord
@@ -97,11 +102,14 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
 
   }
 
-  private def readPoint = Point(byteBuffer.getDouble, byteBuffer.getDouble)
+  @inline
+  private final def readPoint = Point(byteBuffer.getDouble, byteBuffer.getDouble)
 
-  private def readPoints(): Array[Point] = readPoints(byteBuffer.getInt)
+  @inline
+  private final def readPoints(): Array[Point] = readPoints(byteBuffer.getInt)
 
-  private def readPoints(numPoints: Int): Array[Point] = {
+  @inline
+  private final def readPoints(numPoints: Int): Array[Point] = {
     val points = Array.ofDim[Point](numPoints)
 
     cfor(0)(_ < numPoints, _ + 1) { i =>
@@ -111,14 +119,15 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     points
   }
 
-  private def readMultiPoint = MultiPoint(readPoints)
-  var anus = 0
+  @inline
+  private final def readMultiPoint = MultiPoint(readPoints)
 
-  private def readLines = {
+  @inline
+  private final def readLines = {
     val numParts = byteBuffer.getInt
     val numPoints = byteBuffer.getInt
 
-    val lines = Array.ofDim[Array[Point]](numParts)
+    val lines = Array.ofDim[Line](numParts)
     val offsets = Array.ofDim[Int](numParts)
 
     cfor(0)(_ < numParts, _ + 1) { i =>
@@ -128,61 +137,76 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     cfor(0)(_ < numParts, _ + 1) { i =>
       val start = offsets(i)
       val end = if (i == numParts - 1) numPoints else offsets(i + 1)
-      lines(i) = readPoints(end - start)
+      lines(i) = Line(readPoints(end - start))
     }
 
     lines
   }
 
-  private def readMultiLine = {
-    val lines = readLines
-    val res = Array.ofDim[Line](lines.size)
-    cfor(0)(_ < lines.size, _ + 1) { i =>
-      res(i) = Line(lines(i))
+  @inline
+  private final def readMultiLine = MultiLine(readLines)
+
+  // TODO: Add to line class?
+  @inline
+  private final def isLineClockWise(line: Line) = {
+    val points = line.points
+    var s = 0.0
+
+    cfor(0)(_ < points.size - 1, _ + 1) { i =>
+      val p1 = points(i)
+      val p2 = points(i + 1)
+      s += (p2.x - p1.x) * (p2.y + p1.y)
     }
 
-    MultiLine(res)
+    s > 0
   }
 
-  private def readPolygon = {
+  @inline
+  private final def readPolygon = {
     val lines = readLines
+    val used = Array.ofDim[Boolean](lines.size)
+    val outersBuffer = ArrayBuffer[Polygon]()
+    val innersBuffer = ArrayBuffer[Line]()
 
-    var yMaxLineIndex = -1
-    var yMax = Double.NegativeInfinity
 
     cfor(0)(_ < lines.size, _ + 1) { i =>
-      cfor(0)(_ < lines(i).size, _ + 1) { j =>
-        val y = lines(i)(j).y
-        if (y > yMax) {
-          yMaxLineIndex = i
-          yMax = y
+      val line = lines(i)
+      if (isLineClockWise(line)) outersBuffer += Polygon(line)
+      else innersBuffer += line
+    }
+
+    val outers = outersBuffer.toArray
+    val inners = innersBuffer.toArray
+    val holes = Array.ofDim[ArrayBuffer[Line]](outers.size)
+    cfor(0)(_ < holes.size, _ + 1) { i =>
+      holes(i) = ArrayBuffer[Line]()
+    }
+
+    cfor(0)(_ < inners.size, _ + 1) { i =>
+      val innerLine = inners(i)
+      var found = false
+      cfor(0)(_ < outers.size && !found, _ + 1) { j =>
+        if (outers(j).contains(innerLine)) {
+          holes(j) += innerLine
+          found = true
         }
       }
     }
 
-    var idx = 0
-    val holes = Array.ofDim[Line](lines.size - 1)
-    cfor(0)(_ < lines.size, _ + 1) { i =>
-      if (yMaxLineIndex != i) {
-        holes(idx) = Line(lines(i))
-        idx += 1
-      }
+    val polygons = Array.ofDim[Polygon](outers.size)
+    cfor(0)(_ < polygons.size, _ + 1) { i =>
+      polygons(i) = Polygon(outers(i).exterior, holes(i).toArray)
     }
 
-
-    val p = Polygon(Line(lines(yMaxLineIndex)), holes)
-    if (anus == 34) {
-      println("outer line: " + Line(lines(yMaxLineIndex)))
-      println("hole line: " + holes.head)
-    }
-    anus += 1
-    p
+    MultiPolygon(polygons)
   }
 
-  private def moveByteBufferForward(steps: Int) =
+  @inline
+  private final def moveByteBufferForward(steps: Int) =
     byteBuffer.position(byteBuffer.position + steps)
 
-  private def readPointPointRecord(forwardSteps: Int): PointPointRecord = {
+  @inline
+  private final def readPointPointRecord(forwardSteps: Int): PointPointRecord = {
     val res = PointPointRecord(readPoint)
 
     moveByteBufferForward(forwardSteps)
@@ -190,13 +214,17 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     res
   }
 
-  private def readPointPointRecord: PointPointRecord = readPointPointRecord(0)
+  @inline
+  private final def readPointPointRecord: PointPointRecord = readPointPointRecord(0)
 
-  private def readPointMPointRecord: PointPointRecord = readPointPointRecord(8)
+  @inline
+  private final def readPointMPointRecord: PointPointRecord = readPointPointRecord(8)
 
-  private def readPointZPointRecord: PointPointRecord = readPointPointRecord(16)
+  @inline
+  private final def readPointZPointRecord: PointPointRecord = readPointPointRecord(16)
 
-  private def readMultiPointPointRecord(forwardStepsMult: Int): MultiPointPointRecord = {
+  @inline
+  private final def readMultiPointPointRecord(forwardStepsMult: Int): MultiPointPointRecord = {
     moveByteBufferForward(32)
 
     val multiPoint = readMultiPoint
@@ -206,13 +234,20 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     MultiPointPointRecord(multiPoint)
   }
 
-  private def readMultiPointPointRecord: MultiPointPointRecord = readMultiPointPointRecord(0)
+  @inline
+  private final def readMultiPointPointRecord: MultiPointPointRecord =
+    readMultiPointPointRecord(0)
 
-  private def readMultiPointMPointRecord: MultiPointPointRecord = readMultiPointPointRecord(1)
+  @inline
+  private final def readMultiPointMPointRecord: MultiPointPointRecord =
+    readMultiPointPointRecord(1)
 
-  private def readMultiPointZPointRecord: MultiPointPointRecord = readMultiPointPointRecord(2)
+  @inline
+  private final def readMultiPointZPointRecord: MultiPointPointRecord =
+    readMultiPointPointRecord(2)
 
-  private def readMultiLine(forwardStepsMult: Int): MultiLine = {
+  @inline
+  private final def readMultiLine(forwardStepsMult: Int): MultiLine = {
     moveByteBufferForward(32)
 
     val multiLine = readMultiLine
@@ -222,34 +257,49 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     multiLine
   }
 
-  private def readMultiLinePointRecord(forwardStepsMult: Int): MultiLinePointRecord =
+  @inline
+  private final def readMultiLinePointRecord(forwardStepsMult: Int): MultiLinePointRecord =
     MultiLinePointRecord(readMultiLine(forwardStepsMult))
 
-  private def readMultiLinePointRecord: MultiLinePointRecord = readMultiLinePointRecord(0)
+  @inline
+  private final def readMultiLinePointRecord: MultiLinePointRecord =
+    readMultiLinePointRecord(0)
 
-  private def readMultiLineMPointRecord: MultiLinePointRecord = readMultiLinePointRecord(1)
+  @inline
+  private final def readMultiLineMPointRecord: MultiLinePointRecord =
+    readMultiLinePointRecord(1)
 
-  private def readMultiLineZPointRecord: MultiLinePointRecord = readMultiLinePointRecord(2)
+  @inline
+  private final def readMultiLineZPointRecord: MultiLinePointRecord =
+    readMultiLinePointRecord(2)
 
-  private def readPolygonPointRecord(forwardStepsMult: Int): PolygonPointRecord = {
+  @inline
+  private final def readPolygonPointRecord(forwardStepsMult: Int): MultiPolygonPointRecord = {
     moveByteBufferForward(32)
 
-    val polygon = readPolygon
+    val multiPolygon = readPolygon
 
-    moveByteBufferForward((16 + 8 * polygon.vertexCount) * forwardStepsMult)
+    moveByteBufferForward((16 + 8 * multiPolygon.vertexCount) * forwardStepsMult)
 
-    PolygonPointRecord(polygon)
+    MultiPolygonPointRecord(multiPolygon)
   }
 
-  private def readPolygonPointRecord: PolygonPointRecord = readPolygonPointRecord(0)
+  @inline
+  private final def readPolygonPointRecord: MultiPolygonPointRecord =
+    readPolygonPointRecord(0)
 
-  private def readPolygonMPointRecord: PolygonPointRecord = readPolygonPointRecord(1)
+  @inline
+  private final def readPolygonMPointRecord: MultiPolygonPointRecord =
+    readPolygonPointRecord(1)
 
-  private def readPolygonZPointRecord: PolygonPointRecord = readPolygonPointRecord(2)
+  @inline
+  private final def readPolygonZPointRecord: MultiPolygonPointRecord =
+    readPolygonPointRecord(2)
 
   import MultiPolygonPartType._
 
-  private def readMultiPolygonPointRecord = {
+  @inline
+  private final def readMultiPolygonPointRecord = {
     moveByteBufferForward(32)
 
     val numParts = byteBuffer.getInt

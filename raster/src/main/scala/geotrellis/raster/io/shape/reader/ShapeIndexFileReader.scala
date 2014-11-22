@@ -14,9 +14,13 @@ case class MalformedShapeIndexFileException(msg: String) extends RuntimeExceptio
 
 object ShapeIndexFileReader {
 
+  val FileExtension = ".shx"
+
   def apply(path: String): ShapeIndexFileReader =
-    if (path.endsWith(".shx")) apply(Filesystem.slurp(path))
-    else throw new MalformedShapeIndexFileException("Bad file ending (must be .shx).")
+    if (path.endsWith(FileExtension)) apply(Filesystem.slurp(path))
+    else throw new MalformedShapeIndexFileException(
+      s"Bad file ending (must be .$FileExtension)."
+    )
 
   def apply(bytes: Array[Byte]): ShapeIndexFileReader =
     new ShapeIndexFileReader(ByteBuffer.wrap(bytes, 0, bytes.size))
