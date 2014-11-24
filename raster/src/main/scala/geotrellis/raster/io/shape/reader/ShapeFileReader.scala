@@ -35,24 +35,24 @@ class ShapeFileReader(path: String) {
     val p = if (path.endsWith(".shp")) path.substring(0, path.size - 4) else path
 
     val (spf, sdf) = {
-     val shapePointFile =
-     ShapePointFileReader(p + ShapePointFileReader.FileExtension).read
-     val shapeDBaseFile =
-     ShapeDBaseFileReader(p + ShapeDBaseFileReader.FileExtension).read
+      val shapePointFile =
+        ShapePointFileReader(p + ShapePointFileReader.FileExtension).read
+      val shapeDBaseFile =
+        ShapeDBaseFileReader(p + ShapeDBaseFileReader.FileExtension).read
 
-     val (s1, s2) = (shapePointFile.size, shapeDBaseFile.size)
-     if (s1 != s2)
-     throw new MalformedShapeFileException("Files has different number of elements.")
+      val (s1, s2) = (shapePointFile.size, shapeDBaseFile.size)
+      if (s1 != s2)
+        throw new MalformedShapeFileException("Files has different number of elements.")
 
-     (shapePointFile, shapeDBaseFile)
-     }
+      (shapePointFile, shapeDBaseFile)
+    }
 
-     val res = Array.ofDim[ShapeRecord](spf.size)
-     cfor(0)(_ < spf.size, _ + 1) { i =>
-     res(i) = ShapeRecord(spf(i), sdf(i))
-     }
+    val res = Array.ofDim[ShapeRecord](spf.size)
+    cfor(0)(_ < spf.size, _ + 1) { i =>
+      res(i) = ShapeRecord(spf(i), sdf(i))
+    }
 
-     ShapeFile(res)
+    ShapeFile(res)
   }
 
 }

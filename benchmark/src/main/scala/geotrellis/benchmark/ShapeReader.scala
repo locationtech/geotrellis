@@ -65,9 +65,10 @@ trait ShapeFileBenchmark extends SimpleBenchmark {
 
 }
 
-object ReadCountriesShapeFile extends BenchmarkRunner(classOf[ReadCountriesShapeFile])
+object CountriesShapeFileBenchmark
+    extends BenchmarkRunner(classOf[CountriesShapeFileBenchmark])
 
-class ReadCountriesShapeFile extends ShapeFileBenchmark {
+class CountriesShapeFileBenchmark extends ShapeFileBenchmark {
 
   val path = "../raster-test/data/shapefiles/countries/countries.shp"
 

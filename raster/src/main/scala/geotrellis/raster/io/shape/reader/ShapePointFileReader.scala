@@ -5,7 +5,7 @@ import geotrellis.vector._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import collection.mutable.{ArrayBuffer, ListBuffer}
+import collection.mutable.ArrayBuffer
 
 import spire.syntax.cfor._
 
@@ -69,7 +69,6 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
     val recordBuffer = ArrayBuffer[ShapePointRecord]()
     while (byteBuffer.remaining > 0) recordBuffer += readPointRecord
-
     ShapePointFile(recordBuffer.toArray, boundingBox)
   }
 
@@ -80,8 +79,7 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     val size = byteBuffer.getInt
 
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-    byteBuffer.getInt match {
+    byteBuffer.getInt  match {
       case PointType => readPointPointRecord
       case MultiPointType => readMultiPointPointRecord
       case MultiLineType => readMultiLinePointRecord
@@ -195,7 +193,9 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
 
     val polygons = Array.ofDim[Polygon](outers.size)
     cfor(0)(_ < polygons.size, _ + 1) { i =>
-      polygons(i) = Polygon(outers(i).exterior, holes(i).toArray)
+      polygons(i) =
+        if (!holes(i).isEmpty) Polygon(outers(i).exterior, holes(i).toArray)
+        else outers(i)
     }
 
     MultiPolygon(polygons)
@@ -317,7 +317,7 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
       partTypes(i) = byteBuffer.getInt
     }
 
-    val polygons = ListBuffer[Polygon]()
+    val polygons = ArrayBuffer[Polygon]()
 
     var idx = 0
     def calcSize(idx: Int) = {
@@ -333,7 +333,7 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
           val size = calcSize(idx)
 
           val outer = Line(readPoints(size))
-          var inners = ListBuffer[Line]()
+          var inners = ArrayBuffer[Line]()
 
           idx += 1
           while (partTypes(idx) == InnerRing) {
@@ -348,7 +348,7 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
           val size = calcSize(idx)
 
           val first = Line(readPoints(size))
-          var rings = ListBuffer[Line]()
+          var rings = ArrayBuffer[Line]()
 
           idx += 1
           while (partTypes(idx) == Ring) {

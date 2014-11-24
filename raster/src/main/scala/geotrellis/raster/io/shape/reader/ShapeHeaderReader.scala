@@ -20,9 +20,10 @@ trait ShapeHeaderReader {
     if (fileCode != 9994)
       throw new MalformedShapeFileHeaderException(s"Wrong file code, $fileCode != 9994.")
 
-    for (i <- 0 until 5)
+    cfor(0)(_ < 5, _ + 1) { i =>
       if (byteBuffer.getInt != 0)
         throw new MalformedShapeFileHeaderException("Malformed file header.")
+    }
 
     val fileSize = byteBuffer.getInt // This is in 16 bit words.
     if (fileSize * 2 != byteBuffer.limit)
