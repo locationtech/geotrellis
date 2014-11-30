@@ -2,24 +2,22 @@ package geotrellis.spark.op.focal
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testfiles._
-
 import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
 class FocalRasterRDDMethodsSpec extends FunSpec
     with TestEnvironment
-    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark
     with RasterRDDBuilders {
 
   describe("Focal RasterRDD zipWithNeighbors") {
+
     ifCanRunSpark {
 
       it("should get correct neighbors for 3 x 2 tiles") {
-        val rasterRDD = createRasterRDD(
+        val rdd = createRasterRDD(
           sc,
           ArrayTile(Array(
             1,  1,  1,   2,  2,  2,   3,  3,  3,
@@ -32,13 +30,14 @@ class FocalRasterRDDMethodsSpec extends FunSpec
             7,  7,  7,   8,  8,  8,   9,  9,  9,
 
             10, 10, 10,  11, 11, 11,  12, 12, 12,
-            10, 10, 10,  11, 11, 11,  12, 12, 12
-          ), 9, 8),
+            10, 10, 10,  11, 11, 11,  12, 12, 12), 9, 8),
           3, 2, 3, 4
         )
 
-        val res = rasterRDD.zipWithNeighbors
+        val res = rdd.zipWithNeighbors
           .map { case(k, t, n) => (k, t, n.getNeighbors) }.collect
+
+        res.size should be (rdd.collect.size)
 
         for((key, tile, neighbors) <- res) {
           tile.get(0, 0) match {

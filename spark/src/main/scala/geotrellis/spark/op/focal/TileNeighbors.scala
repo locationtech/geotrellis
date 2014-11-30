@@ -26,6 +26,7 @@ trait TileNeighbors extends Serializable {
 }
 
 case class SeqTileNeighbors(seq: Seq[Option[Tile]]) extends TileNeighbors {
+
   def n = seq(0)
   def ne = seq(1)
   def e = seq(2)

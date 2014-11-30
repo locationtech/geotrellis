@@ -7,8 +7,11 @@ import geotrellis.raster.op.focal._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
-import collection.mutable.ListBuffer
+import spire.syntax.cfor._
 
+import annotation.tailrec
+
+// TODO: after tile gridbounds are correct change to inclusive
 trait FocalOperation[K] extends RasterRDDMethods[K] {
 
   val _sc: SpatialComponent[K]
@@ -16,66 +19,97 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
   def zipWithNeighbors: RDD[(K, Tile, TileNeighbors)] = {
     val sc = rasterRDD.sparkContext
     val bcMetadata = sc.broadcast(rasterRDD.metaData)
-    rasterRDD.map { case (key, tile) =>
+    val tilesWithNeighborIndices = rasterRDD.map { case (key, tile) =>
       val metadata = bcMetadata.value
       val gridBounds = metadata.gridBounds
-      val SpatialKey(row, col) = key
+      val SpatialKey(col, row) = key
 
-      val b = (
-        (if (col == gridBounds.colMin) 1 else 0) |
-          (if (col == gridBounds.colMax) 2 else 0) |
-          (if (row == gridBounds.rowMin) 4 else 0) |
-          (if (row == gridBounds.rowMax) 8 else 0)
-      )
+      (key, tile, getTileNeighbors(gridBounds, col, row))
+    }
 
-      def getCoords(idx: Int) = (col + (idx % 3 - 1), row + (idx / 3) - 1)
+    fetchTiles(tilesWithNeighborIndices)
+  }
 
-      def getTile(idx: Int): Option[Tile] =
-        if (idx == -1) None
-        else {
-          val bcCoords = rasterRDD.sparkContext.broadcast(getCoords(idx))
-          val (k, t) = rasterRDD.filter { case (k, t) =>
-            val (targetCol, targetRow) = bcCoords.value
-            val SpatialKey(row, col) = k
+  private def coordsToIndex(col: Int, row: Int) =
+    (row % 3) * 3 + (col % 3)
 
-            targetCol == col && targetRow == row
-          }.first
+  private def getTileNeighbors(gridBounds: GridBounds, col: Int, row: Int) = {
+    val (colMax, rowMax) = (
+      gridBounds.colMax - gridBounds.colMin,
+      gridBounds.rowMax - gridBounds.rowMin
+    )
 
-          Some(t)
-        }
+    val index = coordsToIndex(col, row)
 
-      /* TileNeighbors Index Scheme:
-       *  0 1 2
-       *  3 X 5
-       *  6 7 8
-       *
-       * Only 9 scenarios:
-       * 0 => no bounds collided.
-       * 1 => left bound collided.
-       * 2 => right bound collided.
-       * 4 => top bound collided.
-       * 5 => top left bound collided.
-       * 6 => top right bound collided.
-       * 8 => bottom bound collided.
-       * 9 => bottom left bound collided.
-       * 10 => bottom right bound collided.
-       */
-      val tileNeighborIndices = b match {
-        case 0 => Seq(0, 1, 2, 3, 5, 6, 7, 8)
-        case 1 => Seq(-1, 1, 2, -1, 5, -1, 7, 8)
-        case 2 => Seq(0, 1, -1, 3, -1, 6, 7, -1)
-        case 4 => Seq(-1, -1, -1, 3, 5, 6, 7, 8)
-        case 5 => Seq(-1, -1, -1, -1, 5, -1, 7, 8)
-        case 6 => Seq(-1, -1, -1, 3, -1, 6, 7, -1)
-        case 8 => Seq(0, 1, 2, 3, 5, -1, -1, -1)
-        case 9 => Seq(-1, 1, 2, -1, 5, -1, -1, -1)
-        case 10 => Seq(0, 1, -1, 3, -1, -1, -1, -1)
-        case w => throw new IllegalStateException(
-          s"Wrong tile neighbor config $w, programmer error."
-        )
-      }
+    val neighborCoordinates = Array.ofDim[Option[(Int, Int)]](9)
+    cfor(0)(_ < 9, _ + 1) { i =>
+      val (dy, dx) = indicesDifferenceToCoords(index, i)
+      val (r, c) = (row + dy, col + dx)
 
-      (key, tile, SeqTileNeighbors(tileNeighborIndices.map(getTile)))
+      neighborCoordinates(i) =
+        if (c >= colMax || r >= rowMax || c < 0 || r < 0) None
+        else Some((r, c))
+    }
+
+    neighborCoordinates.toSeq
+  }
+
+  private def indicesDifferenceToCoords(from: Int, to: Int) = {
+    val xStart = if (from % 3 == 0) 0 else if (from % 3 == 1) -1 else 1
+    val yStart = if (from / 3 == 0) 0 else if (from / 3 == 1) -1 else 1
+
+    val y = (yStart + to / 3) % 3 match {
+      case 2 => -1
+      case y => y
+    }
+
+    val x = (xStart + to % 3) % 3 match {
+      case 2 => -1
+      case x => x
+    }
+
+    (y, x)
+  }
+
+  private def fetchTiles(
+    rdd: RDD[(K, Tile, Seq[Option[(Int, Int)]])],
+    idx: Int = 0): RDD[(K, Tile, TileNeighbors)] = {
+    val sc = rdd.sparkContext
+    if (idx == 9) sc.parallelize(Seq[(K, Tile, TileNeighbors)]())
+    else {
+      val bcIdx = sc.broadcast(idx)
+      val bcMetadata = sc.broadcast(rasterRDD.metaData)
+
+      rdd.groupBy { case(key, tile, seq) => seq(bcIdx.value) }
+        .filter { case(k, it) => !k.isEmpty }
+        .map { case(k, it) => (k.get, it) }
+        .map { case((row, col), seq) =>
+          val index = bcIdx.value
+          val gridBounds = bcMetadata.value.gridBounds
+
+          val neighborMap: Map[(Int, Int), (K, Tile)] =
+            seq.map { case(k, t, _) =>
+              val SpatialKey(col, row) = k
+              (k, t, (row, col))
+            }.groupBy(_._3).map(t => {
+              val k = t._1
+              val v = t._2.head
+              (k, (v._1, v._2))
+            })
+
+          val (key, tile) = neighborMap((row, col))
+
+          val tileNeighborsSeq = Seq(
+            (-1, 0), (-1, 1), (0, 1), (1, 1),
+            (1, 0), (1, -1), (0, -1), (-1, -1)
+          ).map { case(dy, dx) =>
+              neighborMap.get((row + dy, col + dx)).map(_._2)
+          }
+
+          val tileNeighbors: TileNeighbors = SeqTileNeighbors(tileNeighborsSeq)
+
+          (key, tile, tileNeighbors)
+      } ++ fetchTiles(rdd, idx + 1)
     }
   }
 
