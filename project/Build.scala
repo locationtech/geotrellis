@@ -174,10 +174,13 @@ object GeotrellisBuild extends Build {
   lazy val proj4Settings =
     Seq(
       name := "geotrellis-proj4",
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
         "org.parboiled" %% "parboiled" % "2.0.0" % "test",
         scalatest   % "test",
         scalacheck  % "test",
+        monocleCore,
+        monocleMacro,
         openCSV
       )
     )

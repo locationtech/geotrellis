@@ -42,8 +42,9 @@ object AngleFormat {
 
 }
 
-case class AngleFormat(pattern: String = AngleFormat.ddmmssPattern, isDegrees: Boolean = false)
-    extends NumberFormat {
+case class AngleFormat(
+  pattern: String = AngleFormat.ddmmssPattern,
+  isDegrees: Boolean = false) extends NumberFormat {
 
   import AngleFormat._
 
@@ -80,10 +81,10 @@ case class AngleFormat(pattern: String = AngleFormat.ddmmssPattern, isDegrees: B
     result
   }
 
-  def format(number: Long, result: StringBuffer, position: java.text.FieldPosition): StringBuffer = 
+  def format(number: Long, result: StringBuffer, position: java.text.FieldPosition): StringBuffer =
     format(number, result)
 
-  def format(number: Double, result: StringBuffer, position: java.text.FieldPosition): StringBuffer = 
+  def format(number: Double, result: StringBuffer, position: java.text.FieldPosition): StringBuffer =
     format(number, result)
 
   def parse(text: String, position: java.text.ParsePosition): Number = {

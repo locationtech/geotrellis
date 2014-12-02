@@ -62,7 +62,7 @@ object Proj4Keyword {
   val no_defs = "no_defs"
   val wktext = "wktext"
 
-  private val supportedParams = 
+  private val supportedParams =
     Set(
       a, rf, f, alpha, es, b, datum, ellps,
       R_A,

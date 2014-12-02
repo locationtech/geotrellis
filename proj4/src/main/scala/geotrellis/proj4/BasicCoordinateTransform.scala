@@ -32,7 +32,7 @@ class BasicCoordinateTransform(
     GeocentricConverter(targetCRS.datum.ellipsoid)
 
   // TODO: Remove
-  private def dummy = ProjCoordinate(0,0)
+  private def dummy = ProjCoordinate(0, 0)
 
   def transform(source: ProjCoordinate): ProjCoordinate = {
     val geoCoord: ProjCoordinate = {

@@ -61,7 +61,7 @@ case class Unit(name: String, plural: String, abbreviation: String, value: Doubl
 
   override def toString: String = plural
 
-  override def equals(that: Any): Boolean = 
+  override def equals(that: Any): Boolean =
     that match {
       case unit: Unit => unit.value == value
       case _ => false
