@@ -1,131 +1,73 @@
-/*
- * Copyright (c) 2014 DigitalGlobe.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package geotrellis.spark.ingest
 
-import geotrellis.raster._
-import geotrellis.vector.Extent
-import geotrellis.proj4._
-
 import geotrellis.spark._
-import geotrellis.spark.utils._
-import geotrellis.spark.rdd._
+import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.reader.RasterReader
+import geotrellis.spark.io.hadoop.formats.NetCdfBand
 import geotrellis.spark.tiling._
+import geotrellis.proj4.LatLng
+import geotrellis.spark.utils.SparkUtils
 
+import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io._
+import org.joda.time.DateTime
 import org.scalatest._
 
-import java.awt.image.DataBuffer
 
-/*
- * Tests both local and spark ingest mode
- */
-class IngestSpec extends FunSpec 
-                    with TestEnvironment 
-                    with RasterVerifyMethods 
-                    with OnlyIfCanRunSpark {
+class IngestSpec extends FunSpec
+  with Matchers
+  with TestEnvironment
+  with OnlyIfCanRunSpark
+{
 
-  // subdirectories under the test directory for each of the two modes
-  val sparkTestOutput = new Path(outputLocal, "spark")
-
-  clearTestDirectory()
-
-  describe("Spark Ingest") {
+  describe("Ingest") {
     ifCanRunSpark { 
-      val allOnes = new Path(inputHome, "all-ones.tif")
 
-      val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
-      HadoopIngestCommand.main(cmd.split(' '))
 
-      val rasterPath = new Path(sparkTestOutput, "10")
-      val metaData = HadoopUtils.readLayerMetaData(rasterPath, conf)
+      it("should ingest GeoTiff"){
+        val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
+        val (level, rdd) = Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme())
 
-      it("should create the correct metadata") {
-        verifyMetadata(metaData)
+        level.zoom should be (10)
+        rdd.count should be (18)
       }
 
-      it("should have the right zoom level directory") {
-        verifyZoomLevelDirectory(rasterPath)
-      }
+      it("should ingest time-band NetCDF") {
+        implicit val tiler: Tiler[NetCdfBand, SpaceTimeKey] = {
+          val getExtent = (inKey: NetCdfBand) => inKey.extent
+          val createKey = (inKey: NetCdfBand, spatialComponent: SpatialKey) =>
+            SpaceTimeKey(spatialComponent, inKey.time)
 
-      it("should have the right number of splits for the base zoom level") {
-        verifyPartitions(rasterPath)
-      }
+          Tiler(getExtent, createKey)
+        }
 
-      it("should have the correct tiles (checking tileIds)") {
-        verifyTiles(rasterPath, metaData)
-      }
+        val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
+        val (md, rdd) = Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, ZoomedLayoutScheme())
 
-      it("should have its data files compressed") {
-        verifyCompression(rasterPath)
-      }
+        val expectedKeys = List(
+          SpaceTimeKey(SpatialKey(1,1),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(2,0),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(2,1),TemporalKey(DateTime.parse("2006-02-15T00:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(0,0),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(2,1),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(2,1),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(0,1),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(0,1),TemporalKey(DateTime.parse("2006-02-15T00:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(0,1),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(1,0),TemporalKey(DateTime.parse("2006-02-15T00:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(1,0),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(0,0),TemporalKey(DateTime.parse("2006-02-15T00:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(1,0),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(1,1),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(1,1),TemporalKey(DateTime.parse("2006-02-15T00:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(2,0),TemporalKey(DateTime.parse("2006-02-15T00:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(2,0),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
+          SpaceTimeKey(SpatialKey(0,0),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z")))
+        )
 
-      it("should have its block size set correctly") {
-        verifyBlockSize(rasterPath)
+        val ingestKeys = rdd.map(_._1).collect
+        ingestKeys should contain only (expectedKeys: _*)
       }
     }
-  }
-
-  private def verifyMetadata(actualMeta: LayerMetaData): Unit = {
-    val expectedMeta = LayerMetaData(
-      TypeFloat,
-      Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001),
-      LatLng,
-      TilingScheme.TMS.level(10),
-      RowIndexScheme
-    )
-
-    actualMeta should be(expectedMeta)
-  }
-}
-
-trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
-  def verifyZoomLevelDirectory(raster: Path): Unit =
-    localFS.exists(raster) should be(true)
-
-  def verifyPartitions(raster: Path): Unit = {
-    val partitioner = TileIdPartitioner(HadoopUtils.readSplits(raster, conf))
-    partitioner.numPartitions should be(1)
-  }
-
-  def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
-    val expectedTileIds = meta.transform.mapToIndex(meta.extent)
-
-    val reader = RasterReader(raster, conf)
-    val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
-    reader.close()
-
-    actualTileIds should be(expectedTileIds)
-  }
-
-  def verifyCompression(raster: Path): Unit = {
-    val dataFile = new Path(new Path(raster, "part-00000"), "data")
-    val dataReader = 
-      HdfsUtils.getSequenceFileReader(localFS, dataFile, conf)
-    val isCompressed = dataReader.isCompressed()
-    dataReader.close()
-    isCompressed should be(true)
-  }
-
-  def verifyBlockSize(raster: Path): Unit = {
-    val expectedBlockSize = localFS.getDefaultBlockSize(raster)
-    val actualBlockSize = localFS.getFileStatus(raster).getBlockSize()
-    actualBlockSize should be(expectedBlockSize)
   }
 }

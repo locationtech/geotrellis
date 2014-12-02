@@ -2,7 +2,13 @@
 # vi: set ft=ruby :
 
 def local_ip
-  `ipconfig getifaddr eth0 || ipconfig getifaddr en0`.strip
+  `which ipconfig`
+
+  if $?.exitstatus == 0
+    `ipconfig getifaddr en0`
+  else
+    `ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1`
+  end.strip
 end
 
 VAGRANTFILE_API_VERSION = "2"
@@ -19,12 +25,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
   if Vagrant.has_plugin?("vagrant-proxyconf")
     cluster.proxy.http     = "http://#{local_ip}:8123/"
     cluster.proxy.https    = "http://#{local_ip}:8123/"
-    cluster.proxy.no_proxy = "localhost,127.0.0.1"
+    cluster.proxy.no_proxy = "localhost,127.0.0.1,*.maven.org,repo.typesafe.com,repo.scala-sbt.org,oss.sonatype.org"
   end
 
   cluster.vm.define "master" do |machine|
     machine.vm.hostname = "master"
     machine.vm.synced_folder "../../", "/home/vagrant/geotrellis"
+    machine.vm.synced_folder "~/.ivy2", "/home/vagrant/.ivy2"
     machine.vm.network "private_network", ip: "33.33.33.10"
 
     machine.vm.provider "virtualbox" do |v|

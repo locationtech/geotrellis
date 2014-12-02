@@ -23,10 +23,12 @@ import com.esotericsoftware.kryo.Kryo
 
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
-    kryo.register(classOf[TileIdWritable])
-    kryo.register(classOf[ArgWritable])
-    kryo.register(classOf[TileIdZoomWritable])
-    kryo.register(classOf[PayloadArgWritable])
+    kryo.register(classOf[SpatialKeyWritable])
+    kryo.register(classOf[TileWritable])
     kryo.register(classOf[org.apache.accumulo.core.client.impl.ConnectorImpl])
+    kryo.register(classOf[org.apache.accumulo.core.client.mock.MockConnector])
+    kryo.register(classOf[geotrellis.spark.SpatialKey])
+    kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
+    kryo.register(classOf[org.joda.time.DateTime])
   }
 }

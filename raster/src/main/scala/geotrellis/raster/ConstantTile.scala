@@ -64,7 +64,7 @@ trait ConstantTile extends Tile {
 }
 
 object BitConstantTile { def apply(i: Int, cols: Int, rows: Int): BitConstantTile = BitConstantTile(if(i == 0) false else true, cols, rows) }
-final case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTile {
+case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = if(v) 1 else NODATA
   protected val dVal = if(v) 1.0 else Double.NaN
 
@@ -78,7 +78,7 @@ final case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends Const
     BitConstantTile(v, target.cols, target.rows)
 }
 
-final case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
+case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = b2i(v)
   protected val dVal = b2d(v)
 
@@ -92,7 +92,7 @@ final case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends Constan
     ByteConstantTile(v, target.cols, target.rows)
 }
 
-final case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
+case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = s2i(v)
   protected val dVal = s2d(v)
 
@@ -110,7 +110,7 @@ final case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends Const
     ShortConstantTile(v, target.cols, target.rows)
 }
 
-final case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
+case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = v
   protected val dVal = i2d(v)
 
@@ -128,7 +128,7 @@ final case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantT
     IntConstantTile(v, target.cols, target.rows)
 }
 
-final case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTile {
+case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = f2i(v)
   protected val dVal = f2d(v)
 
@@ -146,7 +146,7 @@ final case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends Const
     FloatConstantTile(v, target.cols, target.rows)
 }
 
-final case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantTile {
+case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = d2i(v)
   protected val dVal = v
 

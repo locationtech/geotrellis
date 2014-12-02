@@ -24,23 +24,12 @@ import scala.slick.driver.PostgresDriver
 import util._
 
 
-class ProjectedSpec extends FlatSpec with ShouldMatchers with BeforeAndAfter {
+class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase {
   val driver = PostgresDriver
   import driver.simple._
   //import support for Subclasses of ProjectedGeometry
   val projected = new PostGisProjectionSupport(driver)
   import projected._
-
-  val pguser = scala.util.Properties.envOrElse("PGUSER","postgres")
-  val pgpass = scala.util.Properties.envOrElse("PGPASS","postgres")
-  val pgdb = scala.util.Properties.envOrElse("PGDB","chicago_gtfs")
-  val pghost = scala.util.Properties.envOrElse("PGHOST","localhost:5432")
-
-  val db = Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
-                           driver="org.postgresql.Driver",
-                           user=pguser,
-                           password=pgpass)
-
 
   class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {      
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
@@ -84,4 +73,27 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with BeforeAndAfter {
       q.list.head should equal (2.0)
     }
   }
+
+  it should "support PostGIS multi points" in {
+    class MPRow(tag: Tag) extends Table[(Int,Projected[MultiPoint])](tag, "points") {
+      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+      def geom = column[Projected[MultiPoint]]("geom")
+      def * = (id, geom)
+    }
+    val MPTable = TableQuery[MPRow]
+
+    db withSession { implicit s =>
+      try { MPTable.ddl.drop } catch { case e: Throwable =>  }
+      MPTable.ddl.create
+
+      MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))
+
+      val q = for {
+        mp <- MPTable
+      } yield {mp.geom.centroid}
+
+     q.list.head should equal ( Projected(Point(1.5, 1.5), 3131) )
+    }
+  }
+
 }

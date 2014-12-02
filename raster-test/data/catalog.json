@@ -24,6 +24,14 @@
      "path": "sbn",
      "cacheAll": "no"
     }
+  },
+  {
+   "store": "reproject:fs",
+   "params": {
+     "type": "fs",
+     "path": "reproject",
+     "cacheAll": "no"
+    }
   }
  ]
 }

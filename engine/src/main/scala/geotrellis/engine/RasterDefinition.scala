@@ -34,13 +34,13 @@ case class RasterDefinition(layerId: LayerId,
     new RasterDefinition(layerId, target, TileLayout.singleTile(target), cellType, catalogued)
 
   def tileExtent(tileCol: Int, tileRow: Int): Extent = {
-    val minCol = tileCol * tileLayout.pixelCols
-    val minRow = tileRow * tileLayout.pixelRows
+    val minCol = tileCol * tileLayout.tileCols
+    val minRow = tileRow * tileLayout.tileRows
     val grid = GridBounds(
       minCol,
       minRow,
-      minCol + tileLayout.pixelCols - 1,
-      minRow + tileLayout.pixelRows - 1
+      minCol + tileLayout.tileCols - 1,
+      minRow + tileLayout.tileRows - 1
     )
     rasterExtent.extentFor(grid)
   }

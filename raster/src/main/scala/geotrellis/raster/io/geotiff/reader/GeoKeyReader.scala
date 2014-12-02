@@ -80,7 +80,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
       case ProjectionGeoKey =>
         geoKeyDirectory |-> projectionLens set(Some(short))
       case ProjCoordTransGeoKey =>
-        geoKeyDirectory |-> projCoordTransLens set(short)
+        geoKeyDirectory |-> projCoordTransLens set(Some(short))
       case ProjLinearUnitsGeoKey =>
         geoKeyDirectory |-> projLinearUnitsLens set(Some(short))
       case VerticalCSTypeGeoKey =>

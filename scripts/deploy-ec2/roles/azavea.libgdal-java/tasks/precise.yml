@@ -1,0 +1,6 @@
+---
+- name: Configure the UbuntuGIS APT repository
+  apt_repository: repo="ppa:ubuntugis/ppa" state=present
+
+- name: Install libgdal-java
+  apt: pkg=libgdal-java={{ libgdal_java_version }} state=present

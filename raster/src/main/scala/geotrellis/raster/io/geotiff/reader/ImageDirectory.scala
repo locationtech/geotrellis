@@ -29,6 +29,8 @@ import geotrellis.raster.io.geotiff.reader.utils.ParseUtils._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent
+import geotrellis.proj4.CRS
+import geotrellis.proj4.LatLng
 
 import scala.collection.immutable.{HashMap, Map}
 
@@ -84,8 +86,8 @@ object Orientations {
 
   val TopLeft = 1
   val TopRight = 2
-  val BottomLeft = 3
-  val BottomRight = 4
+  val BottomRight = 3
+  val BottomLeft = 4
   val LeftTop = 5
   val RightTop = 6
   val RightBottom = 7
@@ -384,7 +386,6 @@ case class ImageDirectory(
     case None => this |-> samplesPerPixelLens get
   }
 
-  // TODO: Isn't this just row size? Rows need to all be the same length.
   def imageSegmentByteSize(index: Option[Int] = None): Long =
     (imageSegmentBitsSize(index) + 7) / 8
 
@@ -396,7 +397,7 @@ case class ImageDirectory(
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt
 
-  def getRasterBoundaries: Array[Pixel3D] = {
+  lazy val getRasterBoundaries: Array[Pixel3D] = {
     val imageWidth = (this |-> imageWidthLens get).toInt
     val imageLength = (this |-> imageLengthLens get).toInt
 
@@ -430,7 +431,7 @@ case class ImageDirectory(
   }
 
   // What about multiple samples?
-  def cellType(): CellType =
+  lazy val cellType: CellType =
     (this |-> bitsPerSampleLens get, this |-> sampleFormatLens get) match {
       case (Some(bitsPerSampleArray), sampleFormatArray)
           if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
@@ -455,19 +456,19 @@ case class ImageDirectory(
       case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
     }
 
-  def toRaster(): (ArrayTile, Extent) = {
+  lazy val toRaster: (ArrayTile, Extent, CRS) = {
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
     val tile =
       this |-> gdalInternalNoDataLens get match {
         case Some(gdalNoData) =>
-          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
+          ArrayTile.fromBytes(imageBytes, cellType, cols, rows, gdalNoData)
         case None =>
-          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+          ArrayTile.fromBytes(imageBytes, cellType, cols, rows)
       }
 
-    (tile, extent)
+    (tile, extent, crs)
   }
 
   def writeRasterToArg(path: String, imageName: String): Unit = {
@@ -576,6 +577,10 @@ case class ImageDirectory(
 
   lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
 
+  lazy val crs: CRS = proj4String match {
+    case Some(s) => CRS.fromString(s)
+    case None => LatLng
+  }
 }
 
 object ImageDirectoryLenses {

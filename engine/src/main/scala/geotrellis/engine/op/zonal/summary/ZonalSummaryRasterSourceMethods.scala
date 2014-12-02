@@ -46,8 +46,8 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
     val newOp = 
       (rasterSource.rasterDefinition, rasterSource.tiles).map { (rd, tiles) =>
         val tileExtents = TileExtents(rd.rasterExtent.extent, rd.tileLayout)
-        val tileCols = rd.tileLayout.tileCols
-        val tileRows = rd.tileLayout.tileRows
+        val tileCols = rd.tileLayout.layoutCols
+        val tileRows = rd.tileLayout.layoutRows
         val filtered = mutable.ListBuffer[Op[B]]()
 
         val handleFullTile: Int => Op[B] =

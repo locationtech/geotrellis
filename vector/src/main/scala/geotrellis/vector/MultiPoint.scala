@@ -20,6 +20,8 @@ import GeomFactory._
 
 import com.vividsolutions.jts.{geom => jts}
 
+import spire.syntax.cfor._
+
 object MultiPoint {
   lazy val EMPTY = MultiPoint(Seq[Point]())
 
@@ -43,18 +45,20 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def normalized(): MultiPoint = { jtsGeom.normalize ; MultiPoint(jtsGeom) }
 
   /** Returns the Points contained in MultiPoint. */
-  lazy val points: Array[Point] = {
-    for (i <- 0 until jtsGeom.getNumPoints) yield {
-      Point(jtsGeom.getGeometryN(i).asInstanceOf[jts.Point])
-    }
-  }.toArray
+  lazy val points: Array[Point] = vertices
 
-  /**
-   * Returns the minimum extent that contains all the points
-   * of this MultiPoint.
-   */
-  lazy val envelope: Extent =
-    jtsGeom.getEnvelopeInternal
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
+    }
+    arr
+  }
+
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   // -- Intersection
 
@@ -103,6 +107,12 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
   // -- Union
 
+  /**
+    * Computes the union of the contained points.
+    * Useful for de-duplication.
+    */
+  def union(): MultiPointMultiPointUnionResult =
+    jtsGeom.union
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in

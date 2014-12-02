@@ -19,34 +19,7 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 import scala.math.{min, max, round, ceil, floor}
 
-import spire.syntax.cfor._
-
 case class GeoAttrsError(msg: String) extends Exception(msg)
-
-/**
- * Represents grid coordinates of a subsection of a RasterExtent.
- * These coordinates are inclusive.
- */
-case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
-  val width = colMax - colMin + 1
-  val height = rowMax - rowMin + 1
-
-  def coords: Array[(Int, Int)] = {
-    val arr = Array.ofDim[(Int, Int)](width*height)
-    cfor(0)(_ < height, _ + 1) { row =>
-      cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) = 
-          (col + colMin, row + rowMin)
-      }
-    }
-    arr
-  }
-}
-
-object GridBounds {
-  def apply(r: Tile): GridBounds = 
-    GridBounds(0, 0, r.cols-1, r.rows-1)
-}
 
 case class CellSize(width: Double, height: Double) {
   lazy val resolution: Double = math.sqrt(width*height)
@@ -55,6 +28,11 @@ case class CellSize(width: Double, height: Double) {
 object CellSize {
   def apply(extent: Extent, cols: Int, rows: Int): CellSize =
     CellSize(extent.width / cols, extent.height / rows)
+
+  def apply(extent: Extent, dims: (Int, Int)): CellSize = {
+    val (cols, rows) = dims
+    apply(extent, cols, rows)
+  }     
 }
 
 /**
@@ -147,8 +125,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-   * Gets the GridBounds for this RasterExtent that is the smallest subgrid
-   * containing all points within the extent. The extent is considered inclusive
+   * Gets the tile GridBounds for this RasterExtent that is the smallest subgrid
+   * of tiles containing all points within the extent. The extent is considered inclusive
    * on it's north and west borders, exclusive on it's east and south borders.
    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
@@ -235,8 +213,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * west borders
     */
   def adjustTo(tileLayout: TileLayout) = {
-    val totalCols = tileLayout.pixelCols * tileLayout.tileCols
-    val totalRows = tileLayout.pixelRows * tileLayout.tileRows
+    val totalCols = tileLayout.tileCols * tileLayout.layoutCols
+    val totalRows = tileLayout.tileRows * tileLayout.layoutRows
 
     val warpedExtent = Extent(extent.xmin, extent.ymax - (cellheight*totalRows),
                         extent.xmin + (cellwidth*totalCols), extent.ymax)

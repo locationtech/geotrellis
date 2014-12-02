@@ -111,7 +111,6 @@ object Warp {
     val src_xmax = current.extent.xmax
     val src_ymax = current.extent.ymax
 
-
     val dst_cols = target.cols
     val dst_rows = target.rows
 
