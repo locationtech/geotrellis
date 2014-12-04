@@ -12,10 +12,10 @@ object GallProjection extends Projection with HasInverse {
 
   lazy val RXF = 1.41421356237309504880
 
-  def project(lplam: Double, lpphi: Double) =
+  override def project(lplam: Double, lpphi: Double) =
     ProjCoordinate(XF * lplam, YF * math.atan(0.5 * lpphi))
 
-  def projectInverse(xyx: Double, xyy: Double) =
+  override def projectInverse(xyx: Double, xyy: Double) =
     ProjCoordinate(RXF * xyx, YF * math.atan(xyy * RYF))
 
 }

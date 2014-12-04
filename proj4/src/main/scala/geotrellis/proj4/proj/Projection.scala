@@ -6,4 +6,6 @@ trait Projection {
 
   def project(lplam: Double, lpphi: Double): ProjCoordinate
 
+  def EPSGCode: Int = 0
+
 }

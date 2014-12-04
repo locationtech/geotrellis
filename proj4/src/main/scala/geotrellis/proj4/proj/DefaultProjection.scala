@@ -12,9 +12,9 @@ class DefaultProjection(pb: ProjectionBuilder) extends Projection {
 
   protected val spherical = e == 0
 
-  protected val one_es = 1 - es
+  protected val oneEs = 1 - es
 
-  protected val rone_es = 1 / one_es
+  protected val roneEs = 1 / oneEs
 
   protected val totalScale = a * pb.fromMetres
 
