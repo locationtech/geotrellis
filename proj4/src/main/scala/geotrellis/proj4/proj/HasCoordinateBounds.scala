@@ -2,12 +2,12 @@ package geotrellis.proj4.proj
 
 trait HasCoordinateBounds {
 
-  val minLatitude: Double
+  val minLatitude: Double = math.toRadians(-60)
 
-  val maxLatitiude: Double
+  val maxLatitiude: Double = math.toRadians(60)
 
-  val minLongitude: Double
+  val minLongitude: Double = math.toRadians(-90)
 
-  val maxLongitude: Double
+  val maxLongitude: Double = math.toRadians(90)
 
 }

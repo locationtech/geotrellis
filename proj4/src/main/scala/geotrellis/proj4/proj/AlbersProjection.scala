@@ -142,4 +142,6 @@ class AlbersProjection(pb: ProjectionBuilder) extends DefaultProjection(pb)
 
   override def EPSGCode: Int = 9822
 
+  override def toString() = "Albers Equal Area"
+
 }
