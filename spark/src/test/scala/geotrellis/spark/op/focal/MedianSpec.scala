@@ -14,32 +14,36 @@ class MedianSpec extends FunSpec with TestEnvironment
 
   describe("Median Focal Spec") {
 
-    val nd = NODATA
+    ifCanRunSpark {
 
-    it("should square median for raster rdd") {
-      val rasterRDD = createRasterRDD(
-        sc,
-        ArrayTile(Array(
-          nd,7, 1,   1, 3, 5,   9, 8, 2,
-          9, 1, 1,   2, 2, 2,   4, 3, 5,
+      val nd = NODATA
 
-          3, 8, 1,   3, 3, 3,   1, 2, 2,
-          2, 4, 7,   1,nd, 1,   8, 4, 3
-        ), 9, 4),
-        3, 2, 3, 2
-      )
+      it("should square median for raster rdd") {
+        val rasterRDD = createRasterRDD(
+          sc,
+          ArrayTile(Array(
+            nd,7, 1,   1, 3, 5,   9, 8, 2,
+            9, 1, 1,   2, 2, 2,   4, 3, 5,
 
-      val res = rasterRDD.focalMedian(Square(1)).stitch.toArray
+            3, 8, 1,   3, 3, 3,   1, 2, 2,
+            2, 4, 7,   1,nd, 1,   8, 4, 3
+          ), 9, 4),
+          3, 2, 3, 2
+        )
 
-      val expected = Array(
-        7, 1, 1,    1, 2, 3,    4, 4, 4,
-        7, 2, 1,    2, 3, 3,    3, 3, 2,
+        val res = rasterRDD.focalMedian(Square(1)).stitch.toArray
 
-        3, 3, 2,    2, 2, 2,    3, 3, 3,
-        3, 3, 3,    3, 3, 3,    2, 2, 2
-      )
+        val expected = Array(
+          7, 1, 1,    1, 2, 3,    4, 4, 4,
+          7, 2, 1,    2, 3, 3,    3, 3, 2,
 
-      res should be (expected)
+          3, 3, 2,    2, 2, 2,    3, 3, 3,
+          3, 3, 3,    3, 3, 3,    2, 2, 2
+        )
+
+        res should be (expected)
+      }
+
     }
 
   }

@@ -14,33 +14,36 @@ class ModeSpec extends FunSpec with TestEnvironment
 
   describe("Mode Focal Spec") {
 
-    val nd = NODATA
+    ifCanRunSpark {
 
-    it("should square mode for raster rdd") {
-      val rasterRDD = createRasterRDD(
-        sc,
-        ArrayTile(Array(
-          nd,7, 1,   1, 3, 5,   9, 8, 2,
-          9, 1, 1,   2, 2, 2,   4, 3, 5,
+      val nd = NODATA
 
-          3, 8, 1,   3, 3, 3,   1, 2, 2,
-          2, 4, 7,   1,nd, 1,   8, 4, 3
-        ), 9, 4),
-        3, 2, 3, 2
-      )
+      it("should square mode for raster rdd") {
+        val rasterRDD = createRasterRDD(
+          sc,
+          ArrayTile(Array(
+            nd,7, 1,   1, 3, 5,   9, 8, 2,
+            9, 1, 1,   2, 2, 2,   4, 3, 5,
 
-      val res = rasterRDD.focalMode(Square(1)).stitch.toArray
+            3, 8, 1,   3, 3, 3,   1, 2, 2,
+            2, 4, 7,   1,nd, 1,   8, 4, 3
+          ), 9, 4),
+          3, 2, 3, 2
+        )
 
-      val expected = Array(
-        nd, 1, 1,    1, 2, 2,   nd,nd,nd,
-        nd, 1, 1,    1, 3, 3,   nd, 2, 2,
+        val res = rasterRDD.focalMode(Square(1)).stitch.toArray
 
-        nd, 1, 1,    1,nd,nd,   nd,nd,nd,
-        nd,nd, 1,   nd, 3,nd,    1, 2, 2
-      )
+        val expected = Array(
+          nd, 1, 1,    1, 2, 2,   nd,nd,nd,
+          nd, 1, 1,    1, 3, 3,   nd, 2, 2,
 
-      res should be (expected)
+          nd, 1, 1,    1,nd,nd,   nd,nd,nd,
+          nd,nd, 1,   nd, 3,nd,    1, 2, 2
+        )
+
+        res should be (expected)
+      }
+
     }
-
   }
 }

@@ -1,11 +1,12 @@
-package geotrellis.engine.op.elevation
+package geotrellis.spark.op.elevation
 
-import geotrellis.engine._
-import geotrellis.engine.op.focal._
+import geotrellis.spark._
+import geotrellis.spark.op.focal._
 import geotrellis.raster.op.elevation._
 import geotrellis.raster.op.focal._
 
-trait ElevationRasterSourceMethods extends RasterSourceMethods with FocalOperation {
+trait ElevationRasterRDDMethods[K] extends RasterRDDMethods[K]
+    with FocalOperation[K] {
 
   def aspect() =
     focalWithExtent(Square(1)){ (tile, hood, bounds,re) =>

@@ -34,10 +34,6 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
     (row % 3) * 3 + (col % 3)
 
   private def getTileNeighbors(gridBounds: GridBounds, col: Int, row: Int) = {
-    val (colMax, rowMax) = (
-      gridBounds.colMax - gridBounds.colMin,
-      gridBounds.rowMax - gridBounds.rowMin
-    )
 
     val index = coordsToIndex(col, row)
 
@@ -47,7 +43,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val (r, c) = (row + dy, col + dx)
 
       neighborCoordinates(i) =
-        if (c >= colMax || r >= rowMax || c < 0 || r < 0) None
+        if (c > gridBounds.width || r > gridBounds.height || c < 0 || r < 0) None
         else Some((r, c))
     }
 
@@ -116,16 +112,44 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
   def focal(n: Neighborhood)
     (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
     val sc = rasterRDD.sparkContext
-    val scCalc = sc.broadcast(calc)
-    val scNeighborhood = sc.broadcast(n)
+    val bcCalc = sc.broadcast(calc)
+    val bcNeighborhood = sc.broadcast(n)
 
     val rdd = zipWithNeighbors.map { case (key, center, neighbors) =>
-      val calc = scCalc.value
-      val neighborhood = scNeighborhood.value
+      val calc = bcCalc.value
+      val neighborhood = bcNeighborhood.value
 
       val (neighborhoodTile, analysisArea) =
         TileWithNeighbors(center, neighbors.getNeighbors)
       (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
+    }
+
+    new RasterRDD(rdd, rasterRDD.metaData)
+  }
+
+  def focalWithExtent(n: Neighborhood)
+    (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
+    val sc = rasterRDD.sparkContext
+    val bcCalc = sc.broadcast(calc)
+    val bcNeighborhood = sc.broadcast(n)
+    val bcMetadata = sc.broadcast(rasterRDD.metaData)
+
+    val rdd = zipWithNeighbors.map { case (key, center, neighbors) =>
+      val calc = bcCalc.value
+      val neighborhood = bcNeighborhood.value
+      val metadata = bcMetadata.value
+
+      val (neighborhoodTile, analysisArea) =
+        TileWithNeighbors(center, neighbors.getNeighbors)
+
+      val res = calc(
+        neighborhoodTile,
+        neighborhood,
+        Some(analysisArea),
+        metadata.rasterExtent
+      )
+
+      (key, res)
     }
 
     new RasterRDD(rdd, rasterRDD.metaData)
