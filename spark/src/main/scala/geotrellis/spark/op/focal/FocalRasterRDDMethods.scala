@@ -15,11 +15,4 @@ trait FocalRasterRDDMethods[K] extends RasterRDDMethods[K] with FocalOperation[K
   def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation.apply)
   def focalConway() = focal(Square(1))(Conway.apply)
 
-  /*def tileMoransI(n: Neighborhood) =
-    rasterSource.globalOp(TileMoransICalculation.apply(_, n, None))
-
-  def scalarMoransI(n: Neighborhood): ValueSource[Double] = {
-    rasterSource.converge.map(ScalarMoransICalculation(_, n, None))
-  }*/
-
 }

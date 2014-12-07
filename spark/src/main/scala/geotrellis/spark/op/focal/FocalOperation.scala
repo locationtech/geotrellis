@@ -11,24 +11,7 @@ import spire.syntax.cfor._
 
 import annotation.tailrec
 
-// TODO: after tile gridbounds are correct change to inclusive
-trait FocalOperation[K] extends RasterRDDMethods[K] {
-
-  val _sc: SpatialComponent[K]
-
-  def zipWithNeighbors: RDD[(K, Tile, TileNeighbors)] = {
-    val sc = rasterRDD.sparkContext
-    val bcMetadata = sc.broadcast(rasterRDD.metaData)
-    val tilesWithNeighborIndices = rasterRDD.map { case (key, tile) =>
-      val metadata = bcMetadata.value
-      val gridBounds = metadata.gridBounds
-      val SpatialKey(col, row) = key
-
-      (key, tile, getTileNeighbors(gridBounds, col, row))
-    }
-
-    fetchTiles(tilesWithNeighborIndices)
-  }
+object FocalOperation {
 
   private def coordsToIndex(col: Int, row: Int) =
     (row % 3) * 3 + (col % 3)
@@ -43,7 +26,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val (r, c) = (row + dy, col + dx)
 
       neighborCoordinates(i) =
-        if (c > gridBounds.width || r > gridBounds.height || c < 0 || r < 0) None
+        if (c >= gridBounds.width - 1 || r >= gridBounds.height - 1 || c < 0 || r < 0) None
         else Some((r, c))
     }
 
@@ -65,6 +48,29 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
     }
 
     (y, x)
+  }
+
+}
+
+trait FocalOperation[K] extends RasterRDDMethods[K] {
+
+  import FocalOperation._
+
+  val _sc: SpatialComponent[K]
+
+  def zipWithNeighbors: RDD[(K, Tile, TileNeighbors)] = {
+    val sc = rasterRDD.sparkContext
+    val bcMetadata = sc.broadcast(rasterRDD.metaData)
+
+    val tilesWithNeighborIndices = rasterRDD.map { case (key, tile) =>
+      val metadata = bcMetadata.value
+      val gridBounds = metadata.gridBounds
+      val SpatialKey(col, row) = key
+
+      (key, tile, getTileNeighbors(gridBounds, col, row))
+    }
+
+    fetchTiles(tilesWithNeighborIndices)
   }
 
   private def fetchTiles(

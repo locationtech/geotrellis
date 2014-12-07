@@ -31,7 +31,7 @@ class SumSpec extends FunSpec
             1, 1, 1,   3, 3, 3,   1, 1, 1,
             1, 1, 1,   1,nd, 1,   1, 1, 1
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalSum(Square(1)).stitch.toArray
@@ -57,7 +57,7 @@ class SumSpec extends FunSpec
             1, 1, 1,   3, 3, 3,    1, 1, 1,
             1, 1, 1,   1,nd, 1,    1, 1, 1
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalSum(Square(2)).stitch.toArray
@@ -83,7 +83,7 @@ class SumSpec extends FunSpec
             1, 1, 1,   3, 3, 3,    1, 1, 1,
             1, 1, 1,   1,nd, 1,    1, 1, 1
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalSum(Circle(1)).stitch.toArray

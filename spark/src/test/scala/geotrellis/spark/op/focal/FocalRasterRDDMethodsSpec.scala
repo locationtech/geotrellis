@@ -31,7 +31,7 @@ class FocalRasterRDDMethodsSpec extends FunSpec
 
             10, 10, 10,  11, 11, 11,  12, 12, 12,
             10, 10, 10,  11, 11, 11,  12, 12, 12), 9, 8),
-          3, 2, 3, 4
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rdd.zipWithNeighbors

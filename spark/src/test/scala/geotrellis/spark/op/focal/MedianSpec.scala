@@ -28,7 +28,7 @@ class MedianSpec extends FunSpec with TestEnvironment
             3, 8, 1,   3, 3, 3,   1, 2, 2,
             2, 4, 7,   1,nd, 1,   8, 4, 3
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalMedian(Square(1)).stitch.toArray

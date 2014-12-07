@@ -8,7 +8,6 @@ import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with ArrayMatchers
     with OnlyIfCanRunSpark
     with RasterRDDBuilders {
 
@@ -30,7 +29,7 @@ class MinSpec extends FunSpec with TestEnvironment
             3, 8, 1,   3, 3, 3,   1, 2, 2,
             2, 4, 7,   1,nd, 1,   8, 4, 3
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalMin(Square(1)).stitch.toArray
@@ -56,7 +55,7 @@ class MinSpec extends FunSpec with TestEnvironment
             3.4, 8.2, 1.9,   3.8, 3.1, 3.0,   1.3, 2.1, 2.5,
             2.5, 4.9, 7.1,   1.4, NaN, 1.1,   8.0, 4.8, 3.0
           ), 9, 4),
-          3, 2, 3, 2, TypeDouble
+          TileLayout(3, 4, 3, 2), TypeDouble
         )
 
         val res = rasterRDD.focalMin(Square(1)).stitch.toArrayDouble
@@ -82,7 +81,7 @@ class MinSpec extends FunSpec with TestEnvironment
             3, 8, 7,   3, 3, 3,   7, 4, 5,
             9, 4, 7,   7,nd, 7,   8, 4, 3
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalMin(Square(2)).stitch.toArray
@@ -108,7 +107,7 @@ class MinSpec extends FunSpec with TestEnvironment
             3, 8, 4,   3, 3, 3,   3, 9, 2,
             2, 9, 7,   4,nd, 9,   8, 8, 4
           ), 9, 4),
-          3, 2, 3, 2
+          TileLayout(3, 4, 3, 2)
         )
 
         val res = rasterRDD.focalMin(Circle(1)).stitch.toArray
