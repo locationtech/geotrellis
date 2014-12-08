@@ -13,16 +13,13 @@ import annotation.tailrec
 
 object FocalOperation {
 
-  private def coordsToIndex(col: Int, row: Int) =
-    (row % 3) * 3 + (col % 3)
-
   private def getTileNeighbors(gridBounds: GridBounds, col: Int, row: Int) = {
 
-    val index = coordsToIndex(col, row)
+    val index = (row % 3) * 3 + (col % 3)
 
     val neighborCoordinates = Array.ofDim[Option[(Int, Int)]](9)
     cfor(0)(_ < 9, _ + 1) { i =>
-      val (dy, dx) = indicesDifferenceToCoords(index, i)
+      val (dy, dx) = FocalOperation.indicesDifferenceToCoords(index, i)
       val (r, c) = (row + dy, col + dx)
 
       neighborCoordinates(i) =
@@ -54,8 +51,6 @@ object FocalOperation {
 
 trait FocalOperation[K] extends RasterRDDMethods[K] {
 
-  import FocalOperation._
-
   val _sc: SpatialComponent[K]
 
   def zipWithNeighbors: RDD[(K, Tile, TileNeighbors)] = {
@@ -67,7 +62,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val gridBounds = metadata.gridBounds
       val SpatialKey(col, row) = key
 
-      (key, tile, getTileNeighbors(gridBounds, col, row))
+      (key, tile, FocalOperation.getTileNeighbors(gridBounds, col, row))
     }
 
     fetchTiles(tilesWithNeighborIndices)
@@ -79,14 +74,12 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
     val sc = rdd.sparkContext
     if (idx == 9) sc.parallelize(Seq[(K, Tile, TileNeighbors)]())
     else {
-      val bcIdx = sc.broadcast(idx)
       val bcMetadata = sc.broadcast(rasterRDD.metaData)
 
-      rdd.groupBy { case(key, tile, seq) => seq(bcIdx.value) }
+      rdd.groupBy { case(key, tile, seq) => seq(idx) }
         .filter { case(k, it) => !k.isEmpty }
         .map { case(k, it) => (k.get, it) }
         .map { case((row, col), seq) =>
-          val index = bcIdx.value
           val gridBounds = bcMetadata.value.gridBounds
 
           val neighborMap: Map[(Int, Int), (K, Tile)] =

@@ -4,6 +4,8 @@ import geotrellis.raster.Tile
 
 import org.scalatest._
 
+import spire.syntax.cfor._
+
 trait RasterMatchers extends Matchers {
 
   val Eps = 1e-3
@@ -15,15 +17,18 @@ trait RasterMatchers extends Matchers {
 
   def tilesEqual(ta: Tile, tb: Tile, eps: Double): Unit = {
     val (cols, rows) = (ta.cols, ta.rows)
+
       (cols, rows) should be((tb.cols, tb.rows))
-    for (i <- 0 until cols)
-      for (j <- 0 until rows) {
+
+    cfor(0)(_ < cols, _ + 1) { i =>
+      cfor(0)(_ < rows, _ + 1) { j =>
         val v1 = ta.getDouble(i, j)
         val v2 = tb.getDouble(i, j)
         if (v1.isNaN) v2.isNaN should be (true)
         else if (21.isNaN) v1.isNaN should be (true)
         else v1 should be (v2 +- eps)
       }
+    }
   }
 
 }

@@ -20,9 +20,9 @@ class KryoClosure2[T1, T2, R](f: (T1,T2)=>R) extends KryoWrapper[(T1, T2)=>R] wi
 }
 
 object KryoClosure {
-//  import com.esotericsoftware.minlog.Log
-//  import com.esotericsoftware.minlog.Log._
-//  Log.set(LEVEL_TRACE)
+  //import com.esotericsoftware.minlog.Log
+  //import com.esotericsoftware.minlog.Log._
+  //Log.set(LEVEL_TRACE)
 
   def apply[T1, R](f: T1 => R)  = new KryoClosure1[T1, R](f)
   def apply[T1, T2, R](f: (T1,T2) => R)  = new KryoClosure2[T1, T2, R](f)

@@ -1,6 +1,7 @@
 package geotrellis.spark.op.elevation
 
 import geotrellis.spark._
+import geotrellis.spark.utils.KryoClosure
 
 import geotrellis.raster.op.elevation._
 import geotrellis.raster._
