@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis._
 
 /**
- * Supplies functionaltiy to operations that do convolution.
+ * Supplies functionality to operations that do convolution.
  */
 case class Convolver(cols: Int, rows: Int, k: Kernel) {
 
@@ -40,7 +40,7 @@ case class Convolver(cols: Int, rows: Int, k: Kernel) {
 
       val rowmin = row - kernelrows / 2
       val rowmax = math.min(row + kernelrows / 2 + 1, rows)
-      
+
       val colmin = col - kernelcols / 2
       val colmax = math.min(col + kernelcols / 2 + 1, cols)
 

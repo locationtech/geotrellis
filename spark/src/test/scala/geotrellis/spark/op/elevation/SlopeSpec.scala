@@ -7,8 +7,6 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-import org.apache.hadoop.fs.Path
-
 class SlopeSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
     with OnlyIfCanRunSpark
