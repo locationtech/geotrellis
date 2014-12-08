@@ -4,6 +4,8 @@ import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
+import geotrellis.testkit.RasterMatchers
+
 import java.io.File
 
 import org.apache.spark._

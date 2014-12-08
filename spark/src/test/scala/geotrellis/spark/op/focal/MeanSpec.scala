@@ -5,6 +5,8 @@ import geotrellis.spark._
 import geotrellis.raster.op.focal._
 import geotrellis.raster._
 
+import geotrellis.testkit.RasterMatchers
+
 import org.scalatest.FunSpec
 
 class MeanSpec extends FunSpec with TestEnvironment
@@ -29,7 +31,7 @@ class MeanSpec extends FunSpec with TestEnvironment
             3, 8, 1,   3, 3, 3,   1, 2, 2,
             2, 4, 7,   1,nd, 1,   8, 4, 3
           ), 9, 4),
-          TileLayout(3, 4, 3, 2)
+          TileLayout(3, 2, 3, 2)
         )
 
         val res = rasterRDD.focalMean(Square(1)).stitch.toArrayDouble
@@ -55,7 +57,7 @@ class MeanSpec extends FunSpec with TestEnvironment
             4.5,  4.0, 3.111,    2.5, 2.125,   3.0,    3.111, 3.555, 3.166,
             4.25, 4.166, 4.0,    3.0,   2.2,   3.2,    3.166, 3.333,  2.75
           ), 9, 4),
-          TileLayout(3, 4, 3, 2), TypeDouble
+          TileLayout(3, 2, 3, 2), TypeDouble
         )
 
         val res = rasterRDD.focalMean(Circle(1)).stitch.toArrayDouble

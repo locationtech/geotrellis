@@ -15,7 +15,9 @@ class MaxDoubleSpec extends FunSpec
     with OnlyIfCanRunSpark {
 
   describe("Max Double Zonal Summary Operation") {
+
     ifCanRunSpark {
+
       val inc = IncreasingTestFile
 
       val tileLayout = inc.metaData.tileLayout

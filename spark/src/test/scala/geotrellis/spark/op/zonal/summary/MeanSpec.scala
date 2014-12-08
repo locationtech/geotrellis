@@ -15,7 +15,9 @@ class MeanSpec extends FunSpec
     with OnlyIfCanRunSpark {
 
   describe("Mean Zonal Summary Operation") {
+
     ifCanRunSpark {
+
       val inc = IncreasingTestFile
 
       val tileLayout = inc.metaData.tileLayout

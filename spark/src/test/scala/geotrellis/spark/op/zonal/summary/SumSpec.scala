@@ -15,7 +15,9 @@ class SumSpec extends FunSpec
     with OnlyIfCanRunSpark {
 
   describe("Sum Zonal Summary Operation") {
+
     ifCanRunSpark {
+
       val ones = AllOnesTestFile
 
       val tileLayout = ones.metaData.tileLayout

@@ -20,6 +20,7 @@ class PercentageSpec extends FunSpec
     with RasterRDDBuilders {
 
   describe("Percentage Zonal Operation") {
+
     ifCanRunSpark {
 
       it("gives correct percentage for example raster rdds") {

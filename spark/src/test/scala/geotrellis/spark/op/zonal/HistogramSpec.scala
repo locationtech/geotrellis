@@ -21,6 +21,7 @@ class HistogramSpec extends FunSpec
     with RasterRDDBuilders {
 
   describe("Histogram Zonal Operation") {
+
     ifCanRunSpark {
 
       it("gives correct histogram for example raster rdds") {
