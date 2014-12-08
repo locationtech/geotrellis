@@ -13,7 +13,7 @@ import annotation.tailrec
 
 object FocalOperation {
 
-  private def getTileNeighbors(gridBounds: GridBounds, col: Int, row: Int) = {
+  private def getNeighborCoordinates(gridBounds: GridBounds, col: Int, row: Int) = {
 
     val index = (row % 3) * 3 + (col % 3)
 
@@ -62,21 +62,32 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val gridBounds = metadata.gridBounds
       val SpatialKey(col, row) = key
 
-      (key, tile, FocalOperation.getTileNeighbors(gridBounds, col, row))
+      (key, tile, FocalOperation.getNeighborCoordinates(gridBounds, col, row))
     }
 
-    fetchTiles(tilesWithNeighborIndices)
+    getNeighbors(tilesWithNeighborIndices)
   }
 
-  private def fetchTiles(
-    rdd: RDD[(K, Tile, Seq[Option[(Int, Int)]])],
-    idx: Int = 0): RDD[(K, Tile, TileNeighbors)] = {
+  private def getNeighbors(
+    rdd: RDD[(K, Tile, Seq[Option[(Int, Int)]])]
+  ): RDD[(K, Tile, TileNeighbors)] = {
     val sc = rdd.sparkContext
-    if (idx == 9) sc.parallelize(Seq[(K, Tile, TileNeighbors)]())
+    val start = sc.parallelize(Seq[(K, Tile, TileNeighbors)]())
+
+    getNeighbors(rdd, start)
+  }
+
+  @tailrec
+  private def getNeighbors(
+    rdd: RDD[(K, Tile, Seq[Option[(Int, Int)]])],
+    res: RDD[(K, Tile, TileNeighbors)],
+    idx: Int = 0): RDD[(K, Tile, TileNeighbors)] =
+    if (idx == 9) res
     else {
+      val sc = rdd.sparkContext
       val bcMetadata = sc.broadcast(rasterRDD.metaData)
 
-      rdd.groupBy { case(key, tile, seq) => seq(idx) }
+      val part = rdd.groupBy { case(key, tile, seq) => seq(idx) }
         .filter { case(k, it) => !k.isEmpty }
         .map { case(k, it) => (k.get, it) }
         .map { case((row, col), seq) =>
@@ -104,9 +115,10 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
           val tileNeighbors: TileNeighbors = SeqTileNeighbors(tileNeighborsSeq)
 
           (key, tile, tileNeighbors)
-      } ++ fetchTiles(rdd, idx + 1)
+      }
+
+      getNeighbors(rdd, res ++ part, idx + 1)
     }
-  }
 
   def focal(n: Neighborhood)
     (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
