@@ -7,8 +7,7 @@ object Sum {
     if (tile.cellType.isFloatingPoint) n match {
       case Square(ext) => new CellwiseDoubleSumCalc(tile, n, bounds)
       case _ =>           new CursorDoubleSumCalc(tile, n, bounds)
-    }
-    else n match {
+    } else n match {
       case Square(ext) => new CellwiseSumCalc(tile, n, bounds)
       case _ =>           new CursorSumCalc(tile, n, bounds)
     }
@@ -28,12 +27,12 @@ class CursorSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
 
     cursor.addedCells.foreach { (x, y) =>
       val v = r.get(x, y)
-      if(isData(v)) total += v
+      if (isData(v)) total += v
     }
 
     cursor.removedCells.foreach { (x, y) =>
       val v = r.get(x, y)
-      if(isData(v)) total -= v
+      if (isData(v)) total -= v
     }
 
     tile.set(cursor.col, cursor.row, total)
@@ -68,12 +67,12 @@ class CursorDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   def calc(r: Tile, cursor: Cursor) = {
     cursor.addedCells.foreach { (x, y) =>
       val v = r.getDouble(x, y)
-      if(isData(v)) total += v
+      if (isData(v)) total += v
     }
 
     cursor.removedCells.foreach { (x, y) =>
       val v = r.getDouble(x, y)
-      if(isData(v)) total -= v
+      if (isData(v)) total -= v
     }
 
     tile.setDouble(cursor.col, cursor.row, total)
@@ -87,12 +86,12 @@ class CellwiseDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds]
 
   def add(r: Tile, x: Int, y: Int) = {
     val v = r.getDouble(x, y)
-    if(isData(v)) total += v
+    if (isData(v)) total += v
   }
 
   def remove(r: Tile, x: Int, y: Int) = {
     val v = r.getDouble(x, y)
-    if(isData(v)) total -= v
+    if (isData(v)) total -= v
   }
 
   def reset() = total = 0.0
