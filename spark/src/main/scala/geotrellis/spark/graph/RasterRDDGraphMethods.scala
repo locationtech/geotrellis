@@ -11,69 +11,15 @@ import spire.syntax.cfor._
 
 import collection.mutable.ArrayBuffer
 
-object GraphRasterRDDMethods {
-
-  private val Sqrt2 = math.sqrt(2)
-
-  private def getCost(tile: Tile)(start: (Int, Int))(end: (Int, Int)): Int =
-    getCost(tile, tile)(start)(end)
-
-  private def getCost(t1: Tile, t2: Tile)(start: (Int, Int))(end: (Int, Int)): Int = {
-    val (sc, sr) = start
-    val (ec, er) = end
-    val v1 = t1.get(sc, sr)
-    val v2 = t2.get(ec, er)
-
-    if (v1 == NODATA || v2 == NODATA) NODATA
-    else {
-      val r = v1 + v2
-
-      if (math.abs(sc - ec) == 1 && math.abs(sr - er) == 1) (r / Sqrt2).toInt
-      else r / 2
-    }
-  }
-
-  private def constructEdges(offset: Long, tile: Tile) = {
-    val (cols, rows) = tile.dimensions
-
-    val cost = getCost(tile)(_)
-    val edges = new ArrayBuffer[Edge[Int]](cols * rows * 5)
-    var vertexId = offset
-    cfor(0)(_ < rows, _ + 1) { i =>
-      cfor(0)(_ < cols, _ + 1) { j =>
-        val c = cost(j, i)
-        val isRight = j == cols - 1
-        val isLeft = j == 0
-        val isBottom = i == rows - 1
-
-        if (!isRight)
-          edges += Edge(vertexId, vertexId + 1, c(j + 1, i))
-
-        if (!isRight && !isBottom)
-          edges += Edge(vertexId, vertexId + 1 + cols, c(j + 1, i + 1))
-
-        if (!isLeft && !isBottom)
-          edges += Edge(vertexId, vertexId - 1 + cols, c(j - 1, i + 1))
-
-        if (!isBottom)
-          edges += Edge(vertexId, vertexId + cols, c(j, i + 1))
-
-        vertexId += 1
-      }
-    }
-
-    edges
-  }
-
-}
-
 trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   import GraphRasterRDDMethods._
 
   val _sc: SpatialComponent[K]
 
-  // Nodata?
+  /**
+    * This method turns a cost-distance raster to a graph.
+    */
   def toGraph: Graph[K, Int] = {
     val metaData = rasterRDD.metaData
     val gridBounds = metaData.gridBounds
