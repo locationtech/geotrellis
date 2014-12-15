@@ -32,7 +32,29 @@ trait GraphRDDMethods[K] {
     new RasterRDD(tileRDD, graphRDD.metaData)
   }
 
-  def shortestPath(sources: Seq[(Int, Int)]): GraphRDD[K] =
-    ShortestPath(graphRDD, sources.map { case((c, r)) => c.toLong * r.toLong } )
+  def shortestPath(sources: Seq[(Int, Int)]): GraphRDD[K] = {
+    val metaData = graphRDD.metaData
+    val gridBounds = metaData.gridBounds
+    val tileLayout = metaData.tileLayout
+
+    val layoutCols = gridBounds.width - 1
+    val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
+    val area = tileCols * tileRows
+
+    def getOffsetByColAndRow(col: Long, row: Long) =
+      area * layoutCols * row + area * col
+
+    def getVertexIdByColAndRow(col: Long, row: Long) = {
+      val tc = col / tileCols
+      val tr = row / tileRows
+
+      val offset = getOffsetByColAndRow(tc, tr)
+      offset + (row - tr * tileCols) * tileCols + col - tc
+    }
+
+    ShortestPath(graphRDD, sources.map { case((c, r)) =>
+      getVertexIdByColAndRow(c, r)
+    })
+  }
 
 }

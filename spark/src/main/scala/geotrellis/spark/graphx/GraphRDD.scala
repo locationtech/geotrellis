@@ -7,5 +7,5 @@ import org.apache.spark.graphx._
 import reflect.ClassTag
 
 class GraphRDD[K: ClassTag](
-  val graph: Graph[(K, Int), Int],
+  val graph: Graph[(K, Double), Double],
   val metaData: RasterMetaData)
