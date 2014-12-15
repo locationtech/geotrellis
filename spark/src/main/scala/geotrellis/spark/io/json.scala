@@ -14,16 +14,16 @@ import spray.json.DefaultJsonProtocol._
 
 package object json {
   implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
-    override def write(obj: LayerMetaData): JsObject =
+    def write(obj: LayerMetaData): JsObject =
       JsObject(
         "keyClass" -> JsString(obj.keyClass),
         "rasterMetaData" -> obj.rasterMetaData.toJson,
         "histogram" -> obj.histogram.toJson
       )
 
-    override def read(json: JsValue): LayerMetaData =
+    def read(json: JsValue): LayerMetaData =
       json.asJsObject.getFields("keyClass", "rasterMetaData", "histogram") match {
-        case Seq(JsString(keyClass), md: JsObject, hist: JsObject) =>
+        case Seq(JsString(keyClass), md: JsObject, hist: JsArray) =>
           LayerMetaData(
             keyClass = keyClass,
             rasterMetaData = md.convertTo[RasterMetaData],
@@ -38,7 +38,7 @@ package object json {
           )
 
         case _ =>
-          throw new DeserializationException("LayerMetaData expected")
+          throw new DeserializationException(s"LayerMetaData expected")
       }
   }
 }
