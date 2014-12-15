@@ -7,7 +7,7 @@ import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 
 object ZoomedLayoutScheme {
-  val DEFAULT_TILE_SIZE = 512
+  val DEFAULT_TILE_SIZE = 256
 
   def apply(tileSize: Int = DEFAULT_TILE_SIZE) =
     new ZoomedLayoutScheme(tileSize)
