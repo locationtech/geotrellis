@@ -44,11 +44,11 @@ class AccumuloCatalogSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
-      val layoutScheme = ZoomedLayoutScheme()
+      val layoutScheme = ZoomedLayoutScheme(512)
       tableOps.create("tiles")
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
-     
+
       ignore("should fail writing to no table"){
         // we actually try to create table now, ehh ?
         intercept[TableNotFoundError] {
