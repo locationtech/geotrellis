@@ -41,7 +41,7 @@ trait ZonalRasterRDDMethods[K] extends RasterRDDMethods[K] {
     val bcZoneHistogramMap = sc.broadcast(zoneHistogramMap)
     val bcZoneSumMap = sc.broadcast(zoneSumMap)
 
-    rasterRDD.combineTiles(zonesRasterRDD) { case (t, z) =>
+    rasterRDD.combineRows(zonesRasterRDD) { case (t, z) =>
       val zhm = bcZoneHistogramMap.value
       val zsm = bcZoneSumMap.value
 
