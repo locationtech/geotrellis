@@ -3,7 +3,7 @@ package geotrellis.spark.cmd.args
 import com.quantifind.sumac.FieldArgs
 import com.quantifind.sumac.validation.Required
 
-trait AccumuloArgs extends FieldArgs with ArgsParser {
+trait AccumuloArgs extends FieldArgs {
   @Required var zookeeper: String = _
   @Required var instance: String = _
   @Required var user: String = _

@@ -10,6 +10,7 @@ import geotrellis.spark.io.accumulo._
 import geotrellis.spark.cmd.TmsArgs
 
 import akka.actor._
+import geotrellis.spark.utils.SparkUtils
 import org.joda.time.DateTime
 
 import spray.routing._
@@ -30,7 +31,7 @@ class TmsHttpActor(val args: TmsArgs) extends Actor with TmsHttpService {
 
 trait TmsHttpService extends HttpService {
   val args: TmsArgs
-  implicit val sc = args.sparkContext("TMS Service")
+  implicit val sc = SparkUtils.createSparkContext("TMS Service")
 
   val accumulo = AccumuloInstance(
     args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
