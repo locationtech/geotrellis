@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.utils._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
-import geotrellis.vector._
+import geotrellis.vector.{Extent}
 import geotrellis.proj4._
 import org.apache.spark.rdd._
 
