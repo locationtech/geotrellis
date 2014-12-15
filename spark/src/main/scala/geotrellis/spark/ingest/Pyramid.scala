@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 
+import org.apache.spark.Logging
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 
@@ -13,7 +14,7 @@ import monocle.syntax._
 import scala.reflect.ClassTag
 import scala.util.Try
 
-object Pyramid {
+object Pyramid extends Logging {
   /**
    * Save layers up, until level 1 is reached
    * @param rdd           RDD containing original level to be pyramided
@@ -22,6 +23,7 @@ object Pyramid {
    */
   def saveLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme)
                                                (save: (RasterRDD[K], LayoutLevel) => Try[Unit]): Try[Unit] = Try {
+    logInfo(s"Saving raster at $level")
     save(rdd, level).get // force errors on save
     if (level.zoom > 1) {
       val (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)
@@ -44,50 +46,41 @@ object Pyramid {
       )
 
     // Functions for combine step
-    def createTiles(tile: (K, Double, Double, Tile)): Seq[(K, Double, Double, Tile)] =
+    def createTiles(tile: (K, Tile)): Seq[(K, Tile)] =
       Seq(tile)
 
-    def mergeTiles1(tiles: Seq[(K, Double, Double, Tile)], tile: (K, Double, Double, Tile)): Seq[(K, Double, Double, Tile)] = 
+    def mergeTiles1(tiles: Seq[(K, Tile)], tile: (K, Tile)): Seq[(K, Tile)] = 
       tiles :+ tile
 
-    def mergeTiles2(tiles1: Seq[(K, Double, Double, Tile)], tiles2: Seq[(K, Double, Double, Tile)]): Seq[(K, Double, Double, Tile)] =
+    def mergeTiles2(tiles1: Seq[(K, Tile)], tiles2: Seq[(K, Tile)]): Seq[(K, Tile)] =
       tiles1 ++ tiles2
   
-    val nextRdd: RDD[(K, Tile)] =
+    val firstMap =
       rdd
         .map { case (key, tile: Tile) =>
           val extent = metaData.mapTransform(key)
-          val newSpatialKey = metaData.mapTransform(extent.xmin, extent.ymax)
-          (newSpatialKey, (key, extent.xmin, extent.ymax, tile))
+          val newSpatialKey = nextMetaData.mapTransform(extent.center)
+          (newSpatialKey, (key, tile))
          }
+
+    val combined =
+      firstMap
         .combineByKey(createTiles, mergeTiles1, mergeTiles2)
-        .map { case (spatialKey: SpatialKey, seq: Seq[(K, Double, Double, Tile)]) =>
+
+    val nextRdd: RDD[(K, Tile)] =
+        combined.map { case (spatialKey: SpatialKey, seq: Seq[(K, Tile)]) =>
           val key = seq.head._1
-          val orderedTiles = 
-            seq
-              .sortBy { case (_, x, y, _) => (x, -y) }
-              .map { case (_, _, _, tile) => tile }
 
-          val (xs, ys) =
-            seq
-              .foldLeft((Set[Double](),Set[Double]())) { (sets, tileTup) =>
-                val (xs, ys) = sets
-                val (_, x, y, _) = tileTup
-                (xs + x, ys + y)
-              }
+          val newExtent = nextMetaData.mapTransform(spatialKey)
+          val newTile = ArrayTile.empty(nextMetaData.cellType, nextMetaData.tileLayout.tileCols, nextMetaData.tileLayout.tileRows)
 
-          val (cols, rows) = (xs.size, ys.size)
-
-          val tile = 
-            CompositeTile(
-              orderedTiles,
-              TileLayout(cols, rows, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
-            )
+          for( (oldKey, tile) <- seq) {
+            val oldExtent = metaData.mapTransform(oldKey)
+            newTile.merge(newExtent, oldExtent, tile)
+          }
 
           val newKey = key.updateSpatialComponent(spatialKey)
-          val warped = tile.warp(nextMetaData.tileLayout.tileCols, nextMetaData.tileLayout.tileRows)
-
-          (newKey, warped)
+          (newKey, newTile: Tile)
         }
 
     new RasterRDD(nextRdd, nextMetaData) -> nextLevel
