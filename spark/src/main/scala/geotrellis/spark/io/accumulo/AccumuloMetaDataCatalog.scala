@@ -1,17 +1,28 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.raster.stats.Histogram
+import geotrellis.raster.json._
 import geotrellis.spark._
+import geotrellis.spark.json._
 import geotrellis.spark.io._
 
 import org.apache.accumulo.core.client.Connector
-import org.apache.accumulo.core.data.{Key, Value, Mutation}
+import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.hadoop.io.Text
 import org.apache.spark.Logging
+import spray.json._
+import DefaultJsonProtocol._
+import scala.util.{Success, Failure, Try}
 
-import scala.util.Try
-import scala.collection.mutable
 
+
+/**
+ * Accumulo Catalog Table Structure:
+ *  - RowId:            $table__$layer
+ *  - ColumnFamily:     zoom
+ *  - ColumnQualifier:  field
+ *  - Value:            field value
+ */
 class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
   //create the metadata table if it does not exist
   {
@@ -20,62 +31,79 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
       ops.create(catalogTable)
   }
 
-  private val idToMetaData: mutable.Map[LayerId, (RasterMetaData, String)] =
-    mutable.Map(fetchAll.toSeq: _*)
+  type TableName = String
+  val catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
 
-  def save(id: LayerId, table: String, metaData: RasterMetaData, clobber: Boolean): Try[Unit] =
-    Try {
-      if (idToMetaData.contains(id)) {
-        // If we want to clobber, by default Accumulo will overwrite it.
-        // If not, let the user know.
-        if (!clobber) {
-          throw new LayerExistsError(id)
-        }
+  def save(id: LayerId, table: TableName, metaData: LayerMetaData, clobber: Boolean): Try[Unit] = Try {
+    if (catalog.contains(id -> table)) {
+      // If we want to clobber, by default Accumulo will overwrite it.
+      // If not, let the user know.
+      if (!clobber) {
+        throw new LayerExistsError(id)
       }
-
-      connector.write(catalogTable, AccumuloMetaDataCatalog.encodeMetaData(table, id, metaData))
-      idToMetaData(id) = (metaData, table)
     }
 
-  def load(layerId: LayerId): Try[(RasterMetaData, String)] =
-    idToMetaData
-      .get(layerId)
+    val mutation = new Mutation(s"${table}__${id.name}")
+    mutation.put( //RasterMetaData
+      id.zoom.toString, "metadata", System.currentTimeMillis(),
+      new Value(metaData.rasterMetaData.toJson.compactPrint.getBytes)
+    )
+    mutation.put( //Histogram
+      id.zoom.toString, "histogram", System.currentTimeMillis(),
+      new Value(metaData.histogram.toJson.compactPrint.getBytes)
+    )
+    mutation.put( //Key ClassTag
+      id.zoom.toString, "keyClass", System.currentTimeMillis(),
+      new Value(metaData.keyClass.getBytes)
+    )
+
+    connector.write(catalogTable, mutation)
+  }
+
+
+  def load(layerId: LayerId): Try[(LayerMetaData, TableName)] = {
+    val candidates = catalog
+      .filterKeys( key => key._1 == layerId)
+
+    candidates.size match {
+      case 0 =>
+        Failure(new LayerNotFoundError(layerId))
+      case 1 =>
+        val (key, value) = candidates.toList.head
+        Success(value -> key._2)
+      case _ =>
+        Failure(new MultipleMatchError(layerId))
+    }
+  }
+
+  def load(layerId: LayerId, table: String): Try[LayerMetaData] =
+    catalog
+      .get(layerId -> table)
       .toTry(new LayerNotFoundError(layerId))
 
-  // TODO there should be a way to treat this consistently
-  def load(layerId: LayerId, params: String): Try[RasterMetaData] =
-    load(layerId).map(_._1)
 
-  def fetchAll: Map[LayerId, (RasterMetaData, String)] = {
-    val scan = connector.createScanner(catalogTable, new Authorizations())
+  def fetchAll: Map[(LayerId, TableName), LayerMetaData] = {
+    var data: Map[(LayerId, TableName), Map[String, Value]] =
+      Map.empty.withDefaultValue(Map.empty)
 
-    scan.map { case (key, value) =>
-      val meta: RasterMetaData = AccumuloMetaDataCatalog.decodeMetaData(key, value)
-      val table = key.getRow.toString
-      val name: String = key.getColumnFamily.toString
-      val zoom: Int = key.getColumnQualifier.toString.toInt
+    connector.createScanner(catalogTable, new Authorizations()).foreach { case (key, value) =>
+      val Array(table, name) = key.getRow.toString.split("__")
+      val zoom: Int = key.getColumnFamily.toString.toInt
       val layerId = LayerId(name, zoom)
-      layerId ->(meta, table)
-    }.toMap
+      val field = key.getColumnQualifier.toString
+
+      val k = layerId -> table
+      data = data updated (k, data(k) updated (field, value))
+    }
+
+    def readLayerMetaData(map: Map[String, Value]): LayerMetaData =
+      LayerMetaData(
+        keyClass =  map("keyClass").toString,
+        rasterMetaData = map("metadata").toString.parseJson.convertTo[RasterMetaData],
+        histogram = map.get("histogram").map(_.toString.parseJson.convertTo[Histogram])
+      )
+
+    data map { case (key, fieldMap) => key -> readLayerMetaData(fieldMap)}
   }
 }
 
-
-object AccumuloMetaDataCatalog {
-  import spray.json._
-  import geotrellis.spark.json._
-
-  def encodeMetaData(table: String, id: LayerId,  md: RasterMetaData): Mutation = {
-    val mutation = new Mutation(new Text(table))
-    mutation.put(
-      new Text(id.name), new Text(id.zoom.toString),
-      System.currentTimeMillis(),
-      new Value(md.toJson.prettyPrint.getBytes)
-    )
-    mutation
-  }
-
-  def decodeMetaData(key: Key, value: Value): RasterMetaData = {
-    new String(value.get().map(_.toChar)).parseJson.convertTo[RasterMetaData]
-  }
-}

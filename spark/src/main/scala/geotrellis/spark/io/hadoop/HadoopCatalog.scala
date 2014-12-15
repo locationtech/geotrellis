@@ -3,18 +3,16 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.utils.KryoClosure
-
+import geotrellis.spark.op.stats._
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
-import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat
+import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFileOutputFormat}
 import org.apache.hadoop.mapreduce.{JobContext, Job}
 import org.apache.spark._
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
+import org.apache.spark.SparkContext._
 import scala.reflect._
 import scala.util.{Failure, Success, Try}
 
@@ -186,7 +184,12 @@ class HadoopCatalog private (
 
       writeSplits(splits, path, conf)
       logInfo(s"Finished saving tiles to ${path}")
-      metaDataCatalog.save(id, subDir, rdd.metaData, clobber)
+      val metaData = LayerMetaData(
+        keyClass = classTag[K].toString,
+        rasterMetaData = rdd.metaData,
+        histogram = Some(rdd.histogram)
+      )
+      metaDataCatalog.save(id, subDir, metaData, clobber)
     }
 }
 
@@ -211,8 +214,6 @@ object HadoopCatalog {
     final val SEQFILE_GLOB = "/*[0-9]*/data"
   }
 
-
-
   object Config {
     val DEFAULT = 
       Config(
@@ -221,7 +222,8 @@ object HadoopCatalog {
         metaDataFileName = "metadata.json",
         layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" }
       )
-}
+  }
+  
   /** Use val as base in Builder pattern to make your own table mappings. */
   val BaseParams = new DefaultParams[String](Map.empty.withDefaultValue(""), Map.empty)
 

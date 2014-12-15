@@ -21,7 +21,10 @@ package object io {
   class LayerNotFoundError(layerId: LayerId)
       extends CatalogError(s"LayerMetaData not found for layer $layerId")
 
+  class MultipleMatchError(layerId: LayerId)
+    extends CatalogError(s"Multiple layers match id of $layerId")
+
   class LayerExistsError(layerId: LayerId) 
-      extends CatalogError(s"Layer ${layerId} already exists in the catalog.")
+      extends CatalogError(s"Layer ${layerId} already exists in the catalog")
 
 }
