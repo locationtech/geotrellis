@@ -32,7 +32,7 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
   }
 
   type TableName = String
-  val catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
+  var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
 
   def save(id: LayerId, table: TableName, metaData: LayerMetaData, clobber: Boolean): Try[Unit] = Try {
     if (catalog.contains(id -> table)) {
@@ -42,6 +42,8 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
         throw new LayerExistsError(id)
       }
     }
+
+    catalog = catalog updated ((id -> table), metaData)
 
     val mutation = new Mutation(s"${table}__${id.name}")
     mutation.put( //RasterMetaData
