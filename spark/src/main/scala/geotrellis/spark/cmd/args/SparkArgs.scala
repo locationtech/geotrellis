@@ -14,6 +14,6 @@ trait SparkArgs extends FieldArgs with ArgsParser {
       sparkArgs.foreach { case (k, v) => println(s"key=${k}, val=${v}") }
       sparkArgs.foreach { case (k, v) => sparkConf.set(k, v) }
     }
-    SparkUtils.createSparkContext(sparkMaster, appName, sparkConf)
+    SparkUtils.createLocalSparkContext(sparkMaster, appName, sparkConf)
   }
 }
