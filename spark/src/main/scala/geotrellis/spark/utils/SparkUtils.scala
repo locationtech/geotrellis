@@ -39,8 +39,12 @@ object SparkUtils extends Logging {
           _geoTrellisHome = Some(path)
         }
     }
-  
-  def createSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
+
+  /**
+   * TODO: decide if this needs to be removed
+   * It's not clear if this way of driving spark will continue to be support, perhaps for debugging
+   */
+  def createSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf) = {
     val sparkHome = scala.util.Properties.envOrNone("SPARK_HOME") match {
       case Some(value) => value
       case None        => throw new Error("Oops, SPARK_HOME is not defined")
@@ -73,7 +77,25 @@ object SparkUtils extends Logging {
 
     new SparkContext(sparkConf)
   }
-  
+
+  /**
+   * This overload is to be used with spark-submit, which will provide the rest of the conf
+   */
+  def createSparkContext(appName: String, sparkConf: SparkConf = createSparkConf) = {
+    sparkConf
+      .setAppName(appName)
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
+
+    new SparkContext(sparkConf)
+  }
+
+
+  /**
+   * This is basically unused now.
+   * The only possible reasons to use this is to include HDFS config with the jar.
+   * That seems strange and confusing, we do not do that.
+   */
   def hadoopConfiguration = {
     Configuration.addDefaultResource("core-site.xml")
     Configuration.addDefaultResource("mapred-site.xml")
