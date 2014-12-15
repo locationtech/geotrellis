@@ -58,7 +58,7 @@ class PercentageSpec extends FunSpec
         val expected = Map(
           1 -> Map(
             1 -> 33,
-            2 -> 44,
+            2 -> 45,
             3 -> 22
           ),
           2 -> Map(
