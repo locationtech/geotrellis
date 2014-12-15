@@ -29,7 +29,7 @@ with OnlyIfCanRunSpark
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
-      val layoutScheme = ZoomedLayoutScheme()
+      val layoutScheme = ZoomedLayoutScheme(512)
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
 
