@@ -18,7 +18,6 @@ package geotrellis.spark
 
 import org.scalatest._
 import geotrellis.raster._
-import geotrellis.testkit.RasterMatchers
 
 import scala.reflect.ClassTag
 
