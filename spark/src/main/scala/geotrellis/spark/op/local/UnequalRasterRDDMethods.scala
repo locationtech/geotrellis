@@ -9,7 +9,7 @@ trait UnequalRasterRDDMethods[K] extends RasterRDDMethods[K] {
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
-  def localUnequal(i: Int): RasterRDD[K] = rasterRDD.mapTiles {
+  def localUnequal(i: Int): RasterRDD[K] = rasterRDD.mapRows {
     case (t, r) => (t, Unequal(r, i))
   }
   /**
@@ -29,7 +29,7 @@ trait UnequalRasterRDDMethods[K] extends RasterRDDMethods[K] {
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def localUnequal(d: Double): RasterRDD[K] = rasterRDD.mapTiles {
+  def localUnequal(d: Double): RasterRDD[K] = rasterRDD.mapRows {
     case (t, r) => (t, Unequal(r, d))
   }
   /**
@@ -48,7 +48,7 @@ trait UnequalRasterRDDMethods[K] extends RasterRDDMethods[K] {
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localUnequal(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineRows(other) {
     case ((t1, r1), (t2, r2)) => (t1, Unequal(r1, r2))
   }
   /**

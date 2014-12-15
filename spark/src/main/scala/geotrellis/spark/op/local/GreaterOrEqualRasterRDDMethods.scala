@@ -11,7 +11,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqual(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapRows { case (t, r) =>
         (t, GreaterOrEqual(r, i))
       }
 
@@ -22,7 +22,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqualRightAssociative(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapRows { case (t, r) =>
         (t, GreaterOrEqual(i, r))
       }
 
@@ -47,7 +47,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqual(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapRows { case (t, r) =>
         (t, GreaterOrEqual(r, d))
       }
 
@@ -58,7 +58,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqualRightAssociative(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapRows { case (t, r) =>
         (t, GreaterOrEqual(d, r))
       }
 
@@ -83,7 +83,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqual(other: RasterRDD[K]): RasterRDD[K] =
     rasterRDD
-      .combineTiles(other) { case ((t1, r1), (t2, r2)) => 
+      .combineRows(other) { case ((t1, r1), (t2, r2)) =>
         (t1, GreaterOrEqual(r1, r2))
       }
   /**

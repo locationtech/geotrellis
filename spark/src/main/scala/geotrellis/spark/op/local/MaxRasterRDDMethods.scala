@@ -6,20 +6,20 @@ import geotrellis.raster.op.local.Max
 
 trait MaxRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Max a constant Int value to each cell. */
-  def localMax(i: Int): RasterRDD[K] = rasterRDD.mapTiles {
+  def localMax(i: Int): RasterRDD[K] = rasterRDD.mapRows {
     case (t, r) => (t, Max(r, i))
   }
   /** Max a constant Double value to each cell. */
-  def localMax(d: Double): RasterRDD[K] = rasterRDD.mapTiles {
+  def localMax(d: Double): RasterRDD[K] = rasterRDD.mapRows {
     case (t, r) => (t, Max(r, d))
   }
   /** Max the values of each cell in each raster.  */
-  def localMax(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localMax(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineRows(other) {
     case ((t1, r1), (t2, r2)) => (t1, Max(r1, r2))
   }
   /** Max the values of each cell in each raster.  */
   def localMax(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineTiles(others) {
+    rasterRDD.combineRows(others) {
       case tiles =>
         (tiles.head.id, Max(tiles.map(_.tile)))
     }

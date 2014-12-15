@@ -22,34 +22,34 @@ import geotrellis.raster.op.local.Subtract
 trait SubtractRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Subtract a constant value from each cell.*/
   def localSubtract(i: Int): RasterRDD[K] =
-    rasterRDD.mapTiles { case (t, r) => (t, Subtract(r, i)) }
+    rasterRDD.mapRows { case (t, r) => (t, Subtract(r, i)) }
   /** Subtract a constant value from each cell.*/
   def -(i: Int): RasterRDD[K] = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
   def localSubtractFrom(i: Int): RasterRDD[K] =
-    rasterRDD.mapTiles { case (t, r) => (t, Subtract(i, r)) }
+    rasterRDD.mapRows { case (t, r) => (t, Subtract(i, r)) }
   /** Subtract each value of a cell from a constant value. */
   def -:(i: Int): RasterRDD[K] = localSubtractFrom(i)
   /** Subtract a double constant value from each cell.*/
   def localSubtract(d: Double): RasterRDD[K] =
-    rasterRDD.mapTiles { case (t, r) => (t, Subtract(r, d)) }
+    rasterRDD.mapRows { case (t, r) => (t, Subtract(r, d)) }
   /** Subtract a double constant value from each cell.*/
   def -(d: Double): RasterRDD[K] = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
   def localSubtractFrom(d: Double) =
-    rasterRDD.mapTiles { case (t, r) => (t, Subtract(d, r)) }
+    rasterRDD.mapRows { case (t, r) => (t, Subtract(d, r)) }
   /** Subtract each value of a cell from a double constant value. */
   def -:(d: Double): RasterRDD[K] = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
   def localSubtract(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) {
+    rasterRDD.combineRows(other) {
       case ((t1, r1), (t2, r2)) => (t1, Subtract(r1, r2))
     }
   /** Subtract the values of each cell in each raster. */
   def -(other: RasterRDD[K]): RasterRDD[K] = localSubtract(other)
   /** Subtract the values of each cell in each raster. */
   def localSubtract(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineTiles(others) {
+    rasterRDD.combineRows(others) {
       case tiles =>
         (tiles.head.id, Subtract(tiles.map(_.tile)))
     }
