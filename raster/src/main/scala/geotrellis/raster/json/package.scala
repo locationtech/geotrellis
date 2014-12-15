@@ -1,11 +1,29 @@
 package geotrellis.raster
 
+import geotrellis.raster.stats.{FastMapHistogram, MapHistogram, Histogram}
 import geotrellis.vector.Extent
 import geotrellis.vector.json._
 
 import spray.json._
 
 package object json {
+  implicit object HistogramFormat extends RootJsonFormat[Histogram] {
+    def write(h: Histogram): JsValue = {
+      var pairs: List[JsArray] = Nil
+      h.foreach{ (value, count) => pairs = JsArray(JsNumber(value), JsNumber(count)) :: pairs }
+      JsArray(pairs)
+    }
+
+    def read(json: JsValue): FastMapHistogram = json match {
+      case JsArray(pairs) =>
+        val hist = FastMapHistogram()
+        pairs.foreach { case JsArray(JsNumber(item) :: JsNumber(count) :: Nil) =>  hist.countItem(item.toInt, count.toInt)}
+        hist
+      case _ =>
+        throw new DeserializationException("Array of [value, count] pairs expected")
+    }
+  }
+
   implicit object CellTypeFormat extends RootJsonFormat[CellType] {
     def write(cellType: CellType) = 
       JsString(cellType.toString)
