@@ -33,6 +33,7 @@ class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Seri
   def apply(extent: Extent): GridBounds = {
     val SpatialKey(colMin, rowMin) = apply(extent.xmin, extent.ymax)
     val SpatialKey(colMax, rowMax) = apply(extent.xmax, extent.ymin)
+
     GridBounds(colMin, rowMin, colMax, rowMax)
   }
 

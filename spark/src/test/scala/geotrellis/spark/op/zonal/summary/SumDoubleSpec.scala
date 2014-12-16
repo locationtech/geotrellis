@@ -15,7 +15,9 @@ class SumDoubleSpec extends FunSpec
     with OnlyIfCanRunSpark {
 
   describe("Sum Double Zonal Summary Operation") {
+
     ifCanRunSpark {
+
       val ones = AllOnesTestFile
 
       val tileLayout = ones.metaData.tileLayout

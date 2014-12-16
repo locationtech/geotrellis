@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,7 @@ object CellSize {
   def apply(extent: Extent, dims: (Int, Int)): CellSize = {
     val (cols, rows) = dims
     apply(extent, cols, rows)
-  }     
+  }
 }
 
 /**
@@ -77,7 +77,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   def size = cols * rows
 
   lazy val cellSize = CellSize(cellwidth, cellheight)
-  
+
   /**
    * Convert map coordinates (x, y) to grid coordinates (col, row).
    */
@@ -92,24 +92,24 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
    */
   final def mapXToGrid(x: Double) = mapXToGridDouble(x).toInt
   final def mapXToGridDouble(x: Double) = (x - extent.xmin) / cellwidth
-    
+
   /**
    * Convert map coordinate y to grid coordinate row.
    */
   final def mapYToGrid(y: Double) = mapYToGridDouble(y).toInt
   final def mapYToGridDouble(y: Double) = (extent.ymax - y ) / cellheight
-  
+
   /**
    * Convert map coordinate tuple (x, y) to grid coordinates (col, row).
    */
   final def mapToGrid(mapCoord: (Double, Double)): (Int, Int) = {
-    val (x, y) = mapCoord;
+    val (x, y) = mapCoord
     mapToGrid(x, y)
   }
 
   /**
     * The map coordinate of a grid cell is the center point.
-    */  
+    */
   final def gridToMap(col: Int, row: Int) = {
     val x = max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
     val y = min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
@@ -140,13 +140,13 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     // contains the point.
     val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
     val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
-    
+
     GridBounds(colMin,
                rowMin,
                colMax,
                rowMax)
   }
-  
+
   /**
    * Combine two different RasterExtents (which must have the same cellsizes).
    * The result is a new extent at the same resolution.
@@ -186,7 +186,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
    * Returns a RasterExtent that lines up with this RasterExtent's resolution,
    * and grid layout.
    * i.e., the resulting RasterExtent will not have the given extent,
-   * but will have the smallest extent such that the whole of 
+   * but will have the smallest extent such that the whole of
    * the given extent is covered, that lines up with the grid.
    */
   def createAligned(targetExtent: Extent): RasterExtent = {

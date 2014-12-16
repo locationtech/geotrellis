@@ -381,6 +381,10 @@ object GeotrellisBuild extends Build {
         Seq(
           "org.apache.spark" %% "spark-core" % Version.spark % "provided", 
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
+          "org.apache.spark" %% "spark-graphx" % Version.spark
+            excludeAll (
+            ExclusionRule(organization = "org.apache.hadoop"),
+            ExclusionRule(organization = "com.google.code.findbugs")),
           "com.quantifind" %% "sumac" % "0.2.3",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           spire,

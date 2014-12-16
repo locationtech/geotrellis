@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,7 @@ import scala.collection.mutable
 
 object ToVector {
   def apply(
-    tile: Tile, 
+    tile: Tile,
     extent: Extent,
     regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
   ): List[PolygonFeature[Int]] = {
@@ -64,6 +64,9 @@ object ToVector {
     val rgr = RegionGroup(tile, regionGroupOptions)
 
     val r = rgr.raster
+
+
+
     val regionMap = rgr.regionMap
     val rasterExtent = RasterExtent(extent, r.cols, r.rows)
     val polyizer = new Polygonizer(r, rasterExtent)
@@ -134,7 +137,7 @@ object ToVector {
  * Start with top left. Mark point on Top Left corner
  * Check adjacent cells in counter clockwise starting from left:
  *   - left, down, right, up
- * 
+ *
  *  On move, if the previous move is in the same direction, make no marks.
  *  If the previous move and this move make a right hand turn,
  *  a mark is made on the border of this cell and the previous cell
@@ -144,21 +147,21 @@ object ToVector {
  *  If the previous move was in the opposite direction, mark the two
  *  corners of the edge opposite of the border of this cell and the
  *  previous cell.
- * 
+ *
  *  Marks are signified by TL, TR, BL, BR based on previous cell.
- * 
- *  TL = Top Left  TR = Top Right  BL = Bottom Left   BR = Bottom Right 
+ *
+ *  TL = Top Left  TR = Top Right  BL = Bottom Left   BR = Bottom Right
  *  D = Down  U = Up  L = Left  R = Right
  *  PM = Previous Move   LHT = Left Hand Turn   RHT = Right Hand Turn
  *                        RT = Reverse Turn
- * 
+ *
  *  Move   PM RHT  Mark   PM LHT  Mark    PM RT  Mark
  * ------ -------------- --------------- -------------
- *  D        R      BL      L      TL       U    TL, TR 
+ *  D        R      BL      L      TL       U    TL, TR
  *  R        U      BR      D      BL       L    TL, BL
  *  U        L      TR      R      BR       D    BL, BR
  *  L        D      TL      U      TR       R    BR, TR
- * 
+ *
  */
 class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
   val cols = r.cols
@@ -181,7 +184,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
   val BOTTOMRIGHT = 2
   val TOPRIGHT = 3
 
-  def sd(d: Int) = 
+  def sd(d: Int) =
     d match {
       case NOTFOUND => "NOTFOUND"
       case LEFT => "LEFT"
@@ -191,7 +194,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
       case _ => "BAD"
     }
 
-  def sm(d: Int) = 
+  def sm(d: Int) =
     d match {
       case TOPLEFT => "TOPLEFT"
       case BOTTOMLEFT => "BOTTOMLEFT"
@@ -218,7 +221,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
 
   /*  Move   PM RHT  Mark   PM LHT  Mark    PM RT  Mark
    * ------ -------------- --------------- -------------
-   *  D        R      BL      L      TL       U    TL, TR 
+   *  D        R      BL      L      TL       U    TL, TR
    *  R        U      BR      D      BL       L    BL, TL
    *  U        L      TR      R      BR       D    BR, BL
    *  L        D      TL      U      TR       R    TR, BR
@@ -346,7 +349,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
     val startCol = startPoint._1
     val startRow = startPoint._2
 
-    // First check down and right of first. 
+    // First check down and right of first.
     var direction = NOTFOUND
     if(startRow+1 < rows) {
       if(r.get(startCol, startRow + 1) == v) {
@@ -395,7 +398,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
         if(col == startCol && row == startRow) {
           if(previousDirection == LEFT || previousDirection == DOWN) {
             break = true
-          } else if((previousDirection == UP || previousDirection == RIGHT) && 
+          } else if((previousDirection == UP || previousDirection == RIGHT) &&
                     (direction == DOWN || direction == LEFT)) {
             break = true
           }
