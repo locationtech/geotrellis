@@ -73,7 +73,7 @@ with OnlyIfCanRunSpark
         val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
         val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
         val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
-        val out = rdd1.combineRows(rdd2){case (tms1, tms2) =>
+        val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)
           val res = tms1.tile.localAdd(tms2.tile)
           (tms1.id, res)

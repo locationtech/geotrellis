@@ -10,7 +10,7 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * integer, else 0.
     */
   def localLess(i: Int): RasterRDD[K] = 
-    rasterRDD.mapRows { case (t, r) =>
+    rasterRDD.mapPairs { case (t, r) =>
       (t, Less(r, i))
     }
 
@@ -27,7 +27,7 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * integer, else 0.
     */
   def localLessRightAssociative(i: Int): RasterRDD[K] = 
-    rasterRDD.mapRows { case (t, r) =>
+    rasterRDD.mapPairs { case (t, r) =>
       (t, Less(i, r))
     }
 
@@ -45,7 +45,7 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell value of the input raster is less than the input
     * double, else 0.
     */
-  def localLess(d: Double): RasterRDD[K] = rasterRDD.mapRows {
+  def localLess(d: Double): RasterRDD[K] = rasterRDD.mapPairs {
     case (t, r) => (t, Less(r, d))
   }
   /**
@@ -53,7 +53,7 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell value of the input raster is less than the input
     * double, else 0.
     */
-  def localLessRightAssociative(d: Double): RasterRDD[K] = rasterRDD.mapRows {
+  def localLessRightAssociative(d: Double): RasterRDD[K] = rasterRDD.mapPairs {
     case (t, r) => (t, Less(d, r))
   }
   /**
@@ -75,7 +75,7 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def localLess(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineRows(other) {
+  def localLess(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combinePairs(other) {
     case ((t1, r1), (t2, r2)) => (t1, Less(r1, r2))
   }
   /**
