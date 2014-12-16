@@ -15,7 +15,9 @@ class MinDoubleSpec extends FunSpec
     with OnlyIfCanRunSpark {
 
   describe("Min Double Zonal Summary Operation") {
+
     ifCanRunSpark {
+
       val inc = IncreasingTestFile
 
       val tileLayout = inc.metaData.tileLayout

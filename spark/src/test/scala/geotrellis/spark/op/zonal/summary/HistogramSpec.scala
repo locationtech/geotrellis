@@ -17,7 +17,9 @@ class HistogramSpec extends FunSpec
     with OnlyIfCanRunSpark {
 
   describe("Histogram Zonal Summary Operation") {
+
     ifCanRunSpark {
+
       val modHundred = Mod10000TestFile
       val ones = AllOnesTestFile
 
