@@ -41,7 +41,7 @@ trait RasterMatchers extends Matchers {
         val v1 = ta.getDouble(i, j)
         val v2 = tb.getDouble(i, j)
         if (v1.isNaN) v2.isNaN should be (true)
-        else if (21.isNaN) v1.isNaN should be (true)
+        else if (v2.isNaN) v1.isNaN should be (true)
         else v1 should be (v2 +- eps)
       }
     }
