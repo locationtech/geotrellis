@@ -2,18 +2,18 @@ package geotrellis.spark.tiling
 
 import geotrellis.spark._
 import geotrellis.raster._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 object MapKeyTransform {
-  def apply(crs: CRS, tileDimensions: Dimensions): MapKeyTransform =
+  def apply(crs: CRS, tileDimensions: (Int, Int)): MapKeyTransform =
     apply(crs.worldExtent, tileDimensions)
 
   def apply(crs: CRS, tileCols: Int, tileRows: Int): MapKeyTransform =
     apply(crs.worldExtent, tileCols, tileRows)
 
-  def apply(extent: Extent, tileDimensions: Dimensions): MapKeyTransform =
+  def apply(extent: Extent, tileDimensions: (Int, Int)): MapKeyTransform =
     apply(extent, tileDimensions._1, tileDimensions._2)
 
   def apply(extent: Extent, tileCols: Int, tileRows: Int): MapKeyTransform =
@@ -35,6 +35,9 @@ class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Seri
     val SpatialKey(colMax, rowMax) = apply(extent.xmax, extent.ymin)
     GridBounds(colMin, rowMin, colMax, rowMax)
   }
+
+  def apply(p: Point): SpatialKey =
+    apply(p.x, p.y)
 
   def apply(x: Double, y: Double): SpatialKey = {
     val tcol =

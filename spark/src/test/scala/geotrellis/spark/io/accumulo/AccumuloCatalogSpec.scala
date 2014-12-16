@@ -44,11 +44,11 @@ class AccumuloCatalogSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
-      val layoutScheme = ZoomedLayoutScheme()
+      val layoutScheme = ZoomedLayoutScheme(512)
       tableOps.create("tiles")
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
-     
+
       ignore("should fail writing to no table"){
         // we actually try to create table now, ehh ?
         intercept[TableNotFoundError] {
@@ -76,7 +76,7 @@ class AccumuloCatalogSpec extends FunSpec
         val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
         val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
 
-        val out = rdd1.combineTiles(rdd2){case (tms1, tms2) =>
+        val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)
           val res = tms1.tile.localAdd(tms2.tile)
           (tms1.id, res)

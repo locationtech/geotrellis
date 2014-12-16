@@ -33,26 +33,36 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
   override def compute(split: Partition, context: TaskContext) =
     firstParent[(K, Tile)].iterator(split, context)
 
-  def mapTiles(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
+  def convert(cellType: CellType): RasterRDD[K] =
+    mapTiles(_.convert(cellType))
+
+  def reduceByKey(f: (Tile, Tile) => Tile): RasterRDD[K] =
+    asRasterRDD(metaData) { tileRdd.reduceByKey(f) }
+
+
+  def mapKeys[R: ClassTag](f: K => R): RasterRDD[R] =
     asRasterRDD(metaData) {
-      mapPartitions({ partition =>
-        partition.map { tile =>
-          f(tile)
-        }
-      }, true)
+      tileRdd map { case (key, tile) => f(key) -> tile }
     }
 
-  def combineTiles[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
+  def mapTiles(f: Tile => Tile): RasterRDD[K] =
+    asRasterRDD(metaData) {
+      tileRdd map { case (key, tile) => key -> f(tile) }
+    }
+
+  def mapPairs(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
+    asRasterRDD(metaData) {
+      tileRdd map { row => f(row) }
+    }
+
+  def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
       zipPartitions(other, true) { (partition1, partition2) =>
-        partition1.zip(partition2).map {
-          case (tile1, tile2) =>
-            f(tile1, tile2)
-        }
+        partition1.zip(partition2) map { case (row1, row2) => f(row1, row2) }
       }
     }
 
-  def combineTiles(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
+  def combineRows(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
     def create(t: (K, Tile)) = Seq(t)
     def mergeValue(ts: Seq[(K, Tile)], t: (K, Tile)) = ts :+ t
     def mergeContainers(ts1: Seq[(K, Tile)], ts2: Seq[(K, Tile)]) = ts1 ++ ts2

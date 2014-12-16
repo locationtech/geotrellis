@@ -126,7 +126,7 @@ object HdfsUtils extends Logging {
         LocalPath.Original(path)
       case _ =>
         val tmp = HdfsUtils.createTempFile(conf, "local-copy")
-        val fs = tmp.getFileSystem(conf)
+        val fs = path.getFileSystem(conf)
         fs.copyToLocalFile(path, tmp)
         LocalPath.Temporary(tmp)
     }

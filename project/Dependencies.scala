@@ -69,5 +69,5 @@ object Dependencies {
 
   val caliper       = "com.google.caliper" % "caliper"     % "1.0-beta-1"
 
-  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.4.0"
+  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 }

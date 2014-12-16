@@ -39,41 +39,44 @@ object SparkUtils extends Logging {
           _geoTrellisHome = Some(path)
         }
     }
-  
-  def createSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
+
+  /**
+   * TODO: decide if this needs to be removed
+   * It's not clear if this way of driving spark will continue to be support, perhaps for debugging
+   */
+  def createLocalSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf) = {
     val sparkHome = scala.util.Properties.envOrNone("SPARK_HOME") match {
       case Some(value) => value
       case None        => throw new Error("Oops, SPARK_HOME is not defined")
     }
 
-    val gtHome = 
-      _geoTrellisHome match {
-        case Some(s) => s
-        case None => 
-          scala.util.Properties.envOrNone("GEOTRELLIS_HOME") match {
-            case Some(value) => value
-            case None        => throw new Error("Oops, GEOTRELLIS_HOME is not defined")
-          }
-      }
-   
-    val geoTrellisJar = 
-      findGeoTrellisJar(gtHome) match {
-        case Some(p) => p
-        case None => 
-          sys.error(s"Couldn't find geotrellis jar at $gtHome")
-      }
-
     sparkConf
       .setMaster(sparkMaster)
       .setAppName(appName)
-      .setSparkHome(sparkHome)
-      .set("spark.executor.extraClassPath", geoTrellisJar)
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
 
     new SparkContext(sparkConf)
   }
-  
+
+  /**
+   * This overload is to be used with spark-submit, which will provide the rest of the conf
+   */
+  def createSparkContext(appName: String, sparkConf: SparkConf = createSparkConf) = {
+    sparkConf
+      .setAppName(appName)
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
+
+    new SparkContext(sparkConf)
+  }
+
+
+  /**
+   * This is basically unused now.
+   * The only possible reasons to use this is to include HDFS config with the jar.
+   * That seems strange and confusing, we do not do that.
+   */
   def hadoopConfiguration = {
     Configuration.addDefaultResource("core-site.xml")
     Configuration.addDefaultResource("mapred-site.xml")
