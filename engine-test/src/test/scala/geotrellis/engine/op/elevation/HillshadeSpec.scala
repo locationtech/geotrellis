@@ -85,8 +85,8 @@ class HillshadeSpec extends FunSuite
 
     val rs = RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)
 
-    val expected = source.hillshade().get
-    rs.hillshade().run match {
+    val expected = source.hillshade.get
+    rs.hillshade.run match {
       case Complete(value, hist) =>
         // Dont check last col or last row.
         // Reason is, because the offsetting of the tiles, the tiled version
