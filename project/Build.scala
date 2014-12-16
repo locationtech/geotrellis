@@ -361,8 +361,6 @@ object GeotrellisBuild extends Build {
     defaultAssemblySettings
 
   // Project: spark
-   
-  val Unprovided = config("unprovided") extend Runtime
   
   lazy val spark: Project =
     Project("spark", file("spark"))
