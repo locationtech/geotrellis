@@ -3,10 +3,10 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.ingest.ProjectedExtent
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
+
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.hadoop.fs.Path
-import org.joda.time.{DateTimeZone, DateTime}
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
@@ -49,7 +49,7 @@ trait HadoopSparkContextMethods {
 
     gdalRDD(path)
       .map { case (info, tile) =>
-      val band = NetCdfBand(
+      val band = NetCdfBand( //TODO: Remove varname
         extent = info.file.rasterExtent.extent,
         crs = info.file.crs,
         varName = info.bandMeta("NETCDF_VARNAME"),
