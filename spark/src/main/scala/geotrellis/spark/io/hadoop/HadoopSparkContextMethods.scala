@@ -37,12 +37,14 @@ trait HadoopSparkContextMethods {
     )
   }
 
-  def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
+  def netCdfRDD(
+    path: Path,
+    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(NetCdfBand, Tile)] = {
     val makeTime = (info: GdalRasterInfo) => {
-      require(info.file.meta("Time#units") == "days since 1950-01-01")
-      val base = new DateTime(1950, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-      val days = info.bandMeta("NETCDF_DIM_Time").toDouble
-      base.plusDays(days.toInt).plusHours((days % 1 * 24).toInt)
+      val baseString = info.file.meta(inputFormat.baseDateMetaDataKey)
+      val (typ, base) = NetCdfInputFormat.readTypeAndDate(baseString)
+      val v = info.bandMeta("NETCDF_DIM_Time").toDouble
+      NetCdfInputFormat.incrementDate(typ, v, base)
     }
 
     gdalRDD(path)
