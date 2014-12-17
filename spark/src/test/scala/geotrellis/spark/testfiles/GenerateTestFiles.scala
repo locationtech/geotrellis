@@ -95,9 +95,11 @@ object GenerateTestFiles {
     }
 
   }
+
   def main(args: Array[String]): Unit = {
     val sc = new SparkContext("local", "create-test-files")
     val catalog = TestFiles.catalog(sc)
     // creation of catalog will trigger generation if files aren't there
+    generate(catalog, sc)
   }
 }

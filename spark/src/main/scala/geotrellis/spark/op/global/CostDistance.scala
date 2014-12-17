@@ -1,7 +1,7 @@
 package geotrellis.spark.op.global
 
 import geotrellis.spark._
-import geotrellis.spark.graphx._
+import geotrellis.spark.graph._
 
 import reflect.ClassTag
 

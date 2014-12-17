@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 
 class TableNotFoundError(table: String) extends Exception(s"Target Accumulo table `$table` does not exist.")
 
-trait AccumuloDriver[K] {
+trait AccumuloDriver[K] extends Serializable {
   def encode(layerId: LayerId, raster: RasterRDD[K]): RDD[(Text, Mutation)]
   def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[K]
   def setFilters(job: Job, layerId: LayerId, filters: FilterSet[K])

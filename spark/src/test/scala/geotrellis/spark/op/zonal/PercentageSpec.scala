@@ -5,6 +5,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 
 import geotrellis.raster._
+import geotrellis.raster.op.zonal._
 
 import geotrellis.vector._
 
@@ -58,60 +59,18 @@ class PercentageSpec extends FunSpec
           TileLayout(3, 4, 3, 2)
         )
 
-        val expected = Map(
-          1 -> Map(
-            1 -> 33,
-            2 -> 45,
-            3 -> 22
-          ),
-          2 -> Map(
-            7 -> 47,
-            2 -> 13,
-            5 -> 33,
-            1 ->  7
-          ),
-          3 -> Map(
-            1 -> 8,
-            6 -> 50,
-            3 -> 25,
-            2 -> 17
-          ),
-          4 -> Map(
-            1 -> 17,
-            2 -> 33,
-            3 -> 50
-          ),
-          5 -> Map(
-            6 -> 100
-          ),
-          6 -> Map(
-            1 -> 17,
-            5 -> 83
-          ),
-          7 -> Map(
-            3 -> 25,
-            4 -> 33,
-            5 -> 42
-          ),
-          8 -> Map(
-            2 -> 33,
-            4 -> 67
-          )
-        )
+        val actual = rdd.zonalPercentage(zonesRDD).stitch
+        val expected = rdd.stitch.zonalPercentage(zonesRDD.stitch)
 
-        val result = rdd.zonalPercentage(zonesRDD).stitch
-        val r = rdd.stitch
-        val zones = zonesRDD.stitch
-        val (cols, rows) = (r.cols, r.rows)
+        (actual.cols, actual.rows) should be (expected.cols, expected.rows)
+
+        val (cols, rows) = (actual.cols, actual.rows)
 
         for(col <- 0 until cols) {
           for(row <- 0 until rows) {
-            val zone = zones.get(col, row)
-            val value = r.get(col, row)
-            val percentage = result.get(col, row)
-            withClue(s"Expected($zone)($value) = ${expected(zone)(value)}, Actual = $percentage") {
-              percentage should be (expected(zone)(value))
-            }
+            val actualValue = actual.getDouble(col, row)
+            val expectedValue = expected.getDouble(col, row)
+            actualValue should be (expectedValue)
           }
         }
       }

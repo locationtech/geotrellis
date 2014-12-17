@@ -49,13 +49,6 @@ class AccumuloCatalogSpec extends FunSpec
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
 
-      ignore("should fail writing to no table"){
-        // we actually try to create table now, ehh ?
-        intercept[TableNotFoundError] {
-          catalog.save(LayerId("ones", level.zoom), "NOTiles", onesRdd).get
-        }
-      }
-
       it("should succeed writing to a table"){
         catalog.save(LayerId("ones", level.zoom), "tiles", onesRdd).get
       }
