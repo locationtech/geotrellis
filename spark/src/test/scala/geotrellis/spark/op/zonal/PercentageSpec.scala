@@ -20,6 +20,7 @@ class PercentageSpec extends FunSpec
     with RasterRDDBuilders {
 
   describe("Percentage Zonal Operation") {
+
     ifCanRunSpark {
 
       it("gives correct percentage for example raster rdds") {
@@ -37,7 +38,8 @@ class PercentageSpec extends FunSpec
 
             7, 7, 5,  5, 5, 4,  3, 4, 2,
             7, 2, 2,  5, 4, 4,  3, 4, 4), 9, 8),
-          3, 2, 3, 4)
+          TileLayout(3, 4, 3, 2)
+        )
 
         val zonesRDD = createRasterRDD(
           sc,
@@ -53,7 +55,8 @@ class PercentageSpec extends FunSpec
 
             2, 2, 2,  7, 7, 7,  7, 8, 8,
             2, 2, 2,  7, 7, 7,  7, 8, 8), 9, 8),
-          3, 2, 3, 4)
+          TileLayout(3, 4, 3, 2)
+        )
 
         val expected = Map(
           1 -> Map(

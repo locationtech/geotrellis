@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ class MeanSpec extends FunSpec with TileBuilders
 
 
   describe("Mean") {
-    it("should square min for raster source") {
+    it("should square mean for raster source") {
       val rs1 = createRasterSource(
         Array( nd,7,1,      1,3,5,      9,8,2,
                 9,1,1,      2,2,2,      4,3,5,
@@ -51,7 +51,7 @@ class MeanSpec extends FunSpec with TileBuilders
                     5.6,3.875,2.777,    1.888, 2.666, 3.555,    4.111,   4.0, 3.666,
 
                     4.5,  4.0,3.111,      2.5, 2.125,   3.0,    3.111, 3.555, 3.166,
-                   4.25,4.166,  4.0,      3.0,   2.2,   3.2,    3.166, 3.333,  2.75), 
+                   4.25,4.166,  4.0,      3.0,   2.2,   3.2,    3.166, 3.333,  2.75),
             threshold = 0.001)
         case Error(msg,failure) =>
           println(msg)
@@ -62,7 +62,7 @@ class MeanSpec extends FunSpec with TileBuilders
     }
 
 
-    it("should circle min for raster source") {
+    it("should circle mean for raster source") {
       val rs1 = createRasterSource(
             Array(5.666,  3.8,2.166,    1.666,   2.5, 4.166,    5.166, 5.166,   4.5,
                     5.6,3.875,2.777,    1.888, 2.666, 3.555,    4.111,   4.0, 3.666,
