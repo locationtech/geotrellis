@@ -49,7 +49,7 @@ trait SubtractRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def -(other: RasterRDD[K]): RasterRDD[K] = localSubtract(other)
   /** Subtract the values of each cell in each raster. */
   def localSubtract(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others) {
+    rasterRDD.combinePairs(others) {
       case tiles =>
         (tiles.head.id, Subtract(tiles.map(_.tile)))
     }

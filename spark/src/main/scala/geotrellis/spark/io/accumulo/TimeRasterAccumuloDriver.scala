@@ -103,17 +103,4 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
 
     InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
   }
-
-
-  def getSplits(id: LayerId, rdd: RasterRDD[SpaceTimeKey], num: Int = 24): Seq[String] = {
-    import org.apache.spark.SparkContext._
-
-    rdd
-      .map( row => rowId(id, row._1) -> null)
-      .sortByKey(ascending=true, numPartitions = num)
-      .map(_._1)      
-      .mapPartitions{ iter => iter.take(1) }
-      .collect
-  }
-
 }

@@ -20,7 +20,7 @@ trait OrRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def |(r: RasterRDD[K]): RasterRDD[K] = localOr(r)
   /** Or the values of each cell in each raster.  */
   def localOr(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
     case tiles =>
       (tiles.head.id, Or(tiles.map(_.tile)))
   }

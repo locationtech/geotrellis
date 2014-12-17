@@ -21,7 +21,6 @@ trait AccumuloDriver[K] {
   def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[K]
   def setFilters(job: Job, layerId: LayerId, filters: FilterSet[K])
   def rowId(id: LayerId, key: K): String
-  def getSplits(id: LayerId, rdd: RasterRDD[K], num: Int = 24): Seq[String]
   
   def load(sc: SparkContext, accumulo: AccumuloInstance)(id: LayerId, metaData: RasterMetaData, table: String, filters: FilterSet[K]): Try[RasterRDD[K]] =
     Try {
@@ -56,4 +55,15 @@ trait AccumuloDriver[K] {
       encode(layerId, raster)
         .saveAsNewAPIHadoopFile(accumulo.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
     }
+
+ def getSplits(id: LayerId, rdd: RasterRDD[K], num: Int = 24): Seq[String] = {
+    import org.apache.spark.SparkContext._
+
+    rdd
+      .map { case (key, _) => rowId(id, key) -> null }
+      .sortByKey(ascending = true, numPartitions = num)
+      .map(_._1)
+      .mapPartitions{ iter => iter.take(1) }
+      .collect
+  }
 }

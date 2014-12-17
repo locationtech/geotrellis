@@ -19,7 +19,7 @@ trait MaxRasterRDDMethods[K] extends RasterRDDMethods[K] {
   }
   /** Max the values of each cell in each raster.  */
   def localMax(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others) {
+    rasterRDD.combinePairs(others) {
       case tiles =>
         (tiles.head.id, Max(tiles.map(_.tile)))
     }

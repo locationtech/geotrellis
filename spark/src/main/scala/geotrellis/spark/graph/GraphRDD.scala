@@ -1,4 +1,4 @@
-package geotrellis.spark.graphx
+package geotrellis.spark.graph
 
 import geotrellis.spark._
 

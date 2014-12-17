@@ -44,7 +44,7 @@ trait MultiplyRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def *(other: RasterRDD[K]): RasterRDD[K] = localMultiply(other)
   /** Multiply the values of each cell in each raster. */
   def localMultiply(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others) {
+    rasterRDD.combinePairs(others) {
       case tiles =>
         (tiles.head.id, Multiply(tiles.map(_.tile)))
     }

@@ -79,7 +79,7 @@ class PreFilteredHadoopRDD[K, V](
       reader.initialize(split.serializableHadoopSplit.value, hadoopAttemptContext)
 
       // Register an on-task-completion callback to close the input stream.
-      context.addOnCompleteCallback(() => close())
+      context.addTaskCompletionListener(cxt => close())
       var havePair = false
       var finished = false
 

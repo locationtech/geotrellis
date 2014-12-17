@@ -18,7 +18,7 @@ trait MinRasterRDDMethods[K] extends RasterRDDMethods[K] {
   }
   /** Min the values of each cell in each raster.  */
   def localMin(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Min(tiles.map(_.tile)))
     }

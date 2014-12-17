@@ -44,7 +44,7 @@ trait DivideRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   def localDivide(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD
-      .combineRows(others.toSeq) { case tiles =>
+      .combinePairs(others.toSeq) { case tiles =>
         (tiles.head.id, Divide(tiles.map(_.tile)))
       }
 

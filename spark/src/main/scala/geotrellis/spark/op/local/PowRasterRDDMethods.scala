@@ -36,7 +36,7 @@ trait PowRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def **(other: RasterRDD[K]): RasterRDD[K] = localPow(other)
   /** Pow the values of each cell in each raster. */
   def localPow(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Pow(tiles.map(_.tile)))
     }

@@ -37,7 +37,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   def localAdd(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD
-      .combineRows(others.toSeq) { case tiles: Seq[(K, Tile)] =>
+      .combinePairs(others.toSeq) { case tiles: Seq[(K, Tile)] =>
         (tiles.head.id, Add(tiles.map(_.tile)))
       }
 

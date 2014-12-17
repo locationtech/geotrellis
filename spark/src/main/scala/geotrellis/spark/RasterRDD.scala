@@ -62,7 +62,7 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
       }
     }
 
-  def combineRows(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
+  def combinePairs(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
     def create(t: (K, Tile)) = Seq(t)
     def mergeValue(ts: Seq[(K, Tile)], t: (K, Tile)) = ts :+ t
     def mergeContainers(ts1: Seq[(K, Tile)], ts2: Seq[(K, Tile)]) = ts1 ++ ts2

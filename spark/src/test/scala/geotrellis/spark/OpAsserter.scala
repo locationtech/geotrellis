@@ -4,18 +4,17 @@ import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
-import geotrellis.testkit.RasterMatchers
-
 import java.io.File
 
 import org.apache.spark._
 
 import org.scalatest._
+import spire.syntax.cfor._
 
 trait OpAsserter extends FunSpec
     with RasterRDDBuilders
-    with TestEnvironment
-    with RasterMatchers {
+    with TestEnvironment 
+    with Matchers {
 
   val basePath = localFS
     .getWorkingDirectory
@@ -114,4 +113,26 @@ trait OpAsserter extends FunSpec
 
   private def default(whole: Int) = (Default, (whole + (Default - 1)) / Default)
 
+  val Eps = 1e-3
+
+  def tilesEqual(ta: Tile, tb: Tile): Unit = tilesEqual(ta, tb, Eps)
+
+  def tilesEqual(ta: Tile, tb: Tile, eps: Double): Unit = {
+    val (cols, rows) = (ta.cols, ta.rows)
+
+    (cols, rows) should be((tb.cols, tb.rows))
+
+    cfor(0)(_ < cols, _ + 1) { i =>
+      cfor(0)(_ < rows, _ + 1) { j =>
+        val v1 = ta.getDouble(i, j)
+        val v2 = tb.getDouble(i, j)
+        if (v1.isNaN) v2.isNaN should be (true)
+        else if (v2.isNaN) v1.isNaN should be (true)
+        else v1 should be (v2 +- eps)
+      }
+    }
+  }
+
+  def arraysEqual(a1: Array[Double], a2: Array[Double], eps: Double = Eps) =
+    a1.zipWithIndex.foreach { case (v, i) => v should be (a2(i) +- eps) }
 }

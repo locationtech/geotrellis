@@ -13,7 +13,7 @@ trait MajorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * most numerous.
     */
   def localMajority(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Majority(tiles.map(_.tile)))
     }
@@ -28,7 +28,7 @@ trait MajorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * nth most numerous.
     */
   def localMajority(n: Int, others: Traversable[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineRows(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Majority(n, tiles.map(_.tile)))
     }
