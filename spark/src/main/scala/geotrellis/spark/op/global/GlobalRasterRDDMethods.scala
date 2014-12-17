@@ -10,11 +10,10 @@ import annotation.tailrec
 
 trait GlobalRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
-  val _sc: SpatialComponent[K]
+  implicit val _sc: SpatialComponent[K]
 
   def verticalFlip: RasterRDD[K] = VerticalFlip(rasterRDD)
 
-  def costDistance(points: Seq[(Int, Int)]): RasterRDD[K] =
-    CostDistance(rasterRDD, points)
+  def costDistance(points: Seq[(Int, Int)]): RasterRDD[K] = CostDistance(rasterRDD, points)
 
 }
