@@ -1,4 +1,4 @@
-package geotrellis.spark.op
+package geotrellis.spark.op.local.temporal
 
 import geotrellis.spark._
 
@@ -6,7 +6,7 @@ import org.joda.time.{DateTimeZone, DateTime}
 
 import reflect.ClassTag
 
-object TemporalWindow {
+object TemporalWindowHelper {
 
   val Seconds = 1
   val Minutes = 2
@@ -46,7 +46,7 @@ case class TemporalWindowState[K](
     _sc: SpatialComponent[K],
     _tc: TemporalComponent[K]) {
 
-  import TemporalWindow._
+  import TemporalWindowHelper._
 
   private lazy val state =
     if (periodStep.isEmpty && unit.isEmpty) 0
