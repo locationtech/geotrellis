@@ -6,13 +6,14 @@ import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.op._
 
-import org.joda.time.DateTime
+import org.joda.time._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
 import annotation.tailrec
 
+// TODO: break out stuff to companion object.
 trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializable {
 
   import TemporalWindowHelper._
@@ -21,65 +22,98 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
 
   implicit val _tc: TemporalComponent[K]
 
-  private def reduceOp(tileReducer: (Tile, Tile) => Tile)(
-    reduce: (K, Tile, Boolean), next: (K, Tile, Boolean)) = {
-    val (k1, t1, firstIsCorrectKey) = reduce
-    val (k2, t2, secondIsCorrectKey) = next
+  def temporalMin(
+    windowSize: Int,
+    unit: Int,
+    start: DateTime,
+    end: DateTime): RasterRDD[K] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end)(minReduceOp)
 
-    val tile = tileReducer(t1, t2)
+  def temporalMax(
+    windowSize: Int,
+    unit: Int,
+    start: DateTime,
+    end: DateTime): RasterRDD[K] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end)(maxReduceOp)
 
-    val (key, isCorrectKey) =
-      if (firstIsCorrectKey) (k1, true)
-      else if (secondIsCorrectKey) (k2, true)
-      else (k1, false)
+  def temporalMean(
+    windowSize: Int,
+    unit: Int,
+    start: DateTime,
+    end: DateTime): RasterRDD[K] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end)(meanReduceOp)
 
-    (key, tile, isCorrectKey)
-  }
-
-  private def minReduceOp = reduceOp(minTileReduceOp) _
-
-  private def minTileReduceOp(t1: Tile, t2: Tile) = t1.localMin(t2)
-
-  private def maxReduceOp = reduceOp(maxTileReduceOp) _
-
-  private def maxTileReduceOp(t1: Tile, t2: Tile) = t1.localMax(t2)
-
-  def temporalMin(periodStep: Int, unit: Int, start: DateTime): RasterRDD[K] =
-    aggregateWithTemporalWindow(periodStep, unit, start)(minReduceOp)
-
-  def temporalMax(periodStep: Int, unit: Int, start: DateTime): RasterRDD[K] =
-    aggregateWithTemporalWindow(periodStep, unit, start)(maxReduceOp)
+  def temporalVariance(
+    windowSize: Int,
+    unit: Int,
+    start: DateTime,
+    end: DateTime): RasterRDD[K] = ???
 
   private def aggregateWithTemporalWindow(
-    periodStep: Int,
+    windowSize: Int,
     unit: Int,
-    start: DateTime)(
-    reduceOp: ((K, Tile, Boolean), (K, Tile, Boolean)) => (K, Tile, Boolean)
+    base: DateTime,
+    end: DateTime)(
+    reduceOp: Seq[Tile] => Tile
   ): RasterRDD[K] = {
     val sc = rasterRDD.sparkContext
 
     @tailrec
     def recurse(index: Int = 0, tail: RDD[(K, Tile)] = sc.emptyRDD): RasterRDD[K] =
-      if (index == periodStep) new RasterRDD[K](tail, rasterRDD.metaData)
+      if (index == windowSize) new RasterRDD[K](tail, rasterRDD.metaData)
       else {
-        val reducedRDD = rasterRDD.map { case (key, tile) =>
-          val SpatialKey(col, row) = key.spatialComponent
-          val TemporalKey(time) = key.temporalComponent
+        val reducedRDD = rasterRDD
+          .filter { case(key, tile) =>
+            val TemporalKey(time) = key.temporalComponent
+            val diff = getDifferenceByUnit(unit, base, time)
+            val endDiff = getDifferenceByUnit(unit, time, end)
+            diff >= index && endDiff >= 0
+        }
+          .map { case (key, tile) =>
+            val SpatialKey(col, row) = key.spatialComponent
+            val TemporalKey(time) = key.temporalComponent
 
-          val year = time.getYear
-          val diff = start.getYear - year
+            val diff = getDifferenceByUnit(unit, base, time)
 
-          val timeDelimiter = diff % periodStep + index
-          val newKey = (timeDelimiter, col, row)
+            val timeDelimiter = (diff - index) / windowSize
+            val newKey = (timeDelimiter, col, row)
 
-          (newKey, (key, tile, timeDelimiter == year))
-        }.reduceByKey(reduceOp)
-          .map { case(_, (key, tile, _)) => (key, tile) }
+            (newKey, (key, tile, diff % windowSize == index))
+        }
+          .groupByKey
+          .map { case(tempKey, iter) =>
+            val seq = iter.toSeq
+            val key = seq.filter(_._3).head._1
+            val tiles = seq.map(_._2)
+            (key, reduceOp(tiles))
+        }
 
         recurse(index + 1, tail ++ reducedRDD)
       }
 
     recurse()
   }
+
+  private def getDifferenceByUnit(unit: Int, base: DateTime, time: DateTime) =
+    unit match {
+      case UnitSeconds => Seconds.secondsBetween(base, time).getSeconds
+      case UnitMinutes => Minutes.minutesBetween(base, time).getMinutes
+      case UnitHours => Hours.hoursBetween(base, time).getHours
+      case UnitDays => Days.daysBetween(base, time).getDays
+      case UnitWeeks => Weeks.weeksBetween(base, time).getWeeks
+      case UnitMonths => Months.monthsBetween(base, time).getMonths
+      case UnitYears => Years.yearsBetween(base, time).getYears
+      case _ => throw new IllegalStateException(s"Bad unit $unit.")
+    }
+
+
+  // If the raster local operations doesn't have the operation you need as
+  // a operation on tile sequences, just create it through a reduce.
+
+  private def minReduceOp(tiles: Seq[Tile]) = tiles.localMin
+
+  private def maxReduceOp(tiles: Seq[Tile]) = tiles.localMax
+
+  private def meanReduceOp(tiles: Seq[Tile]) = tiles.localMean
 
 }

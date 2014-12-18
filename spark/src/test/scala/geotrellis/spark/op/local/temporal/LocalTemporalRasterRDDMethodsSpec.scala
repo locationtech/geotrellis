@@ -43,16 +43,10 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
         new RasterRDD(combinedRDDs, metaData)
       }
 
-      it("should work for a ten year period where the window is 3 years.") {
-        val dates = (1 to 10).map(i => new DateTime(i, 1, 1, 0, 0, 0, DateTimeZone.UTC))
-        val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+      def groupRasterRDDToRastersByTemporalKey(rasterRDD: RasterRDD[SpaceTimeKey]) = {
+        val metaData = rasterRDD.metaData
 
-        val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-        val res = rasterRDD.minimum.per (3) ("years") from (start)
-
-        val metaData = res.metaData
-
-        val rasters = res.groupBy { case (key, tile) =>
+        rasterRDD.groupBy { case (key, tile) =>
           val SpaceTimeKey(_, TemporalKey(time)) = key
           time
         }
@@ -67,11 +61,67 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
 
             new RasterRDD(rdd, metaData).stitch
           })
+      }
 
+      it("should work with min for a 9 year period where the window is 3 years.") {
+        val dates = (1 to 10).map(i => new DateTime(i, 1, 1, 0, 0, 0, DateTimeZone.UTC))
+        val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+
+        val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val end = new DateTime(9, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val res = rasterRDD.minimum.per (3) ("years") from (start) to (end)
+
+        val rasters = groupRasterRDDToRastersByTemporalKey(res)
+
+        rasters.size should be (9)
 
         rasters.zipWithIndex.foreach { case(tile, idx) =>
           val tileArray = tile.toArray
           val correct = (idx to (idx + 80)).toArray
+          tileArray should be(correct)
+        }
+      }
+
+      it("should work with max for a 10 month period where the window is 5 months.") {
+        val dates = (1 to 10).map(i => new DateTime(1, i, 1, 0, 0, 0, DateTimeZone.UTC))
+        val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+
+        val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val periodStep = 5
+        val res = rasterRDD.maximum.per (periodStep) ("months") from (start) to (end)
+
+        val rasters = groupRasterRDDToRastersByTemporalKey(res)
+
+        rasters.size should be (10)
+
+        rasters.zipWithIndex.foreach { case(tile, idx) =>
+          val tileArray = tile.toArray
+          val start = math.min(rasters.size - 1, idx + periodStep - 1)
+          val end = math.min(80 + rasters.size - 1, idx + 79 + periodStep)
+          val correct = (start to end).toArray
+          tileArray should be(correct)
+        }
+      }
+
+      it("should work with mean for a 25 days period where the window is 7 days.") {
+        val dates = (1 to 25).map(i => new DateTime(1, 1, i, 0, 0, 0, DateTimeZone.UTC))
+        val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+
+        val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val periodStep = 7
+        val res = rasterRDD.average.per (periodStep) ("days") from (start) to (end)
+
+        val rasters = groupRasterRDDToRastersByTemporalKey(res)
+
+        rasters.size should be (25)
+
+        rasters.zipWithIndex.foreach { case(tile, idx) =>
+          val tileArray = tile.toArray
+          val start = math.min(rasters.size - 1, idx + periodStep - 1)
+          val end = math.min(80 + rasters.size - 1, idx + 79 + periodStep)
+          val correct = (start to end).toArray
           tileArray should be(correct)
         }
       }

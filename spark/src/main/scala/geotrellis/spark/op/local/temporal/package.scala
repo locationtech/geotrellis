@@ -24,7 +24,7 @@ package object temporal {
 
     def maximum: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Maximum)
 
-    def mode: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Mode)
+    def variance: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Variance)
 
   }
 
