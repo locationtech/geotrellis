@@ -35,6 +35,7 @@
         region:         "{{ region }}"
         instance_tags:  
           spark-role: "{{ cluster_name }}-master"
+          Name: "{{ cluster_name }}-master"
         count_tag:
           spark-role: "{{ cluster_name }}-master"
         exact_count:    1
@@ -63,6 +64,7 @@
         region:         "{{ region }}"
         instance_tags:  
           spark-role: "{{ cluster_name }}-worker"
+          Name: "{{ cluster_name }}-worker"
         count_tag:      
           spark-role: "{{ cluster_name }}-worker"
         exact_count:    "{{ worker_count }}"

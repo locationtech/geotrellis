@@ -2,7 +2,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.json._
+import geotrellis.spark.io.json._
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
@@ -23,13 +23,12 @@ class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: L
       new Path(new Path(new Path(catalogRoot, subDir), layerDataDir(layerId)) , metaDataFileName)
 
 
-  def load(layerId: LayerId): Try[(RasterMetaData, String)] =
+  def load(layerId: LayerId): Try[(LayerMetaData, String)] =
     load(layerId, "").map(_ -> "")
 
-  def load(layerId: LayerId, subDir: String): Try[RasterMetaData] =
+  def load(layerId: LayerId, subDir: String): Try[LayerMetaData] =
     Try {
       val path = metaDataPath(layerId, subDir)
-
       val txt = HdfsUtils.getLineScanner(path, sc.hadoopConfiguration) match {
         case Some(in) =>
           try {
@@ -42,11 +41,11 @@ class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: L
           throw new LayerNotFoundError(layerId)
       }
 
-      txt.parseJson.convertTo[RasterMetaData]
+      txt.parseJson.convertTo[LayerMetaData]
     }
 
 
-  def save(id: LayerId, subDir: String, metaData: RasterMetaData, clobber: Boolean): Try[Unit] =
+  def save(id: LayerId, subDir: String, metaData: LayerMetaData, clobber: Boolean): Try[Unit] =
     Try {
       val metaPath = metaDataPath(id, subDir)
       logDebug(s"Saving ${id} to $metaPath")

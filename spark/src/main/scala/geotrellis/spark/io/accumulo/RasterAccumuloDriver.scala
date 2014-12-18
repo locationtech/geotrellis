@@ -13,7 +13,12 @@ import scala.collection.JavaConversions._
 
 object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
   val rowIdRx = """(\d+)_(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
-  def rowId(layerId: LayerId, col: Int, row: Int) = new Text(s"${layerId.zoom}_${col}_${row}")
+  def rowId(layerId: LayerId, col: Int, row: Int) = new Text(f"${layerId.zoom}%02d_${col}%06d_${row}%06d")
+
+  def rowId(id: LayerId, key: SpatialKey): String = {
+    val SpatialKey(col, row) = key    
+    f"${id.zoom}%02d_${col}%06d_${row}%06d"
+  }
 
   def encode(layerId: LayerId, raster: RasterRDD[SpatialKey]): RDD[(Text, Mutation)] =
     raster.map { case (key, tile) =>
@@ -47,8 +52,8 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
 
   def setZoomBounds(job: Job, layerId: LayerId): Unit = {
     val range = new ARange(
-      new Text(s"${layerId.zoom}"),
-      new Text(s"${layerId.zoom+1}")
+      new Text(f"${layerId.zoom}%02d"),
+      new Text(f"${layerId.zoom+1}%02d")
     ) :: Nil
 
     InputFormatBase.setRanges(job, range)

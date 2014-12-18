@@ -3,13 +3,13 @@
 - name: Master
   hosts: master
   vars:
-    spark_master: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
+    spark_master: "{{ hostvars['master']['private_dns_name'] }}"
   roles:
     - spark
 
 - name: Workers
   hosts: workers
   vars:
-    spark_master: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
+    spark_master: "{{ hostvars['master']['private_dns_name'] }}"
   roles:
     - spark

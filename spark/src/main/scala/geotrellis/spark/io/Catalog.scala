@@ -22,12 +22,12 @@ trait Catalog {
 
   def load[K: SupportedKey: ClassTag](id: LayerId, filters: FilterSet[K]): Try[RasterRDD[K]] =
     metaDataCatalog.load(id).flatMap { case (metaData, params) =>
-      load(id, metaData, params, filters)
+      load(id, metaData.rasterMetaData, params, filters)
     }
 
   def load[K: SupportedKey: ClassTag](id: LayerId, params: Params, filters: FilterSet[K]): Try[RasterRDD[K]] = {
-    metaDataCatalog.load(id, params).flatMap { metaData: RasterMetaData =>
-      load(id, metaData, params, filters)
+    metaDataCatalog.load(id, params).flatMap { metaData =>
+      load(id, metaData.rasterMetaData, params, filters)
     }
   }
 

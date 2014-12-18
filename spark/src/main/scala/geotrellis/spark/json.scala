@@ -1,11 +1,10 @@
 package geotrellis.spark
 
+import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.json._
 import geotrellis.vector.Extent
 import geotrellis.vector.json._
-import geotrellis.proj4.CRS
-
 import spray.json._
 
 package object json {

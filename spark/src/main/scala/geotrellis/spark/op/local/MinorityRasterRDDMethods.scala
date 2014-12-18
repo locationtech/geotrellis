@@ -10,7 +10,7 @@ trait MinorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * numerous.
     */
   def localMinority(others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineTiles(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Minority(tiles.map(_.tile)))
     }
@@ -27,7 +27,7 @@ trait MinorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * least numerous.
     */
   def localMinority(n: Int, others: Seq[RasterRDD[K]]): RasterRDD[K] =
-    rasterRDD.combineTiles(others.toSeq) {
+    rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Minority(n, tiles.map(_.tile)))
     }

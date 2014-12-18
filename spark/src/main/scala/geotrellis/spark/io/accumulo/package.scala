@@ -1,5 +1,6 @@
 package geotrellis.spark.io
 
+import org.apache.hadoop.io.Text
 import org.apache.spark._
 
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
@@ -11,6 +12,8 @@ import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => C
 import scala.collection.JavaConversions._
 
 package object accumulo {
+  implicit def stringToText(s: String) = new Text(s)
+
   implicit val rasterAccumuloDriver = RasterAccumuloDriver
   implicit val timeRasterAccumuloDriver = TimeRasterAccumuloDriver
 

@@ -8,7 +8,7 @@ trait LocalRasterRDDSeqMethods[K] extends RasterRDDSeqMethods[K] {
 
   private def r(f: Seq[(K, Tile)] => (K, Tile)): RasterRDD[K] =
     rasterRDDs.headOption match {
-      case Some(head) => head.combineTiles(rasterRDDs.tail.toSeq)(f)
+      case Some(head) => head.combinePairs(rasterRDDs.tail.toSeq)(f)
       case None => sys.error("raster rdd operations can't be applied to empty seq!")
     }
 

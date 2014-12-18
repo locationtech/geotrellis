@@ -7,7 +7,7 @@ import geotrellis.raster.op.local.Add
 trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Add a constant Int value to each cell. */
   def localAdd(i: Int): RasterRDD[K] =
-    rasterRDD.mapTiles { case (t, r) => (t, Add(r, i)) }
+    rasterRDD.mapPairs { case (t, r) => (t, Add(r, i)) }
 
   /** Add a constant Int value to each cell. */
   def +(i: Int): RasterRDD[K] = localAdd(i)
@@ -17,7 +17,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   /** Add a constant Double value to each cell. */
   def localAdd(d: Double): RasterRDD[K] =
-    rasterRDD.mapTiles { case (t, r) => (t, Add(r, d)) }
+    rasterRDD.mapPairs { case (t, r) => (t, Add(r, d)) }
 
   /** Add a constant Double value to each cell. */
   def +(d: Double): RasterRDD[K] = localAdd(d)
@@ -28,7 +28,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Add the values of each cell in each raster.  */
   def localAdd(other: RasterRDD[K]): RasterRDD[K] =
     rasterRDD
-      .combineTiles(other) { case ((t1, r1), (t2, r2)) =>
+      .combinePairs(other) { case ((t1, r1), (t2, r2)) =>
         (t1, Add(r1, r2))
       }
 
@@ -37,7 +37,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   def localAdd(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD
-      .combineTiles(others.toSeq) { case tiles: Seq[(K, Tile)] =>
+      .combinePairs(others.toSeq) { case tiles: Seq[(K, Tile)] =>
         (tiles.head.id, Add(tiles.map(_.tile)))
       }
 

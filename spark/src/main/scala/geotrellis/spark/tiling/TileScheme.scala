@@ -20,7 +20,7 @@ object TileScheme {
 trait TileScheme extends Serializable { 
   def tag: String 
 
-  def apply(gridDimensions: Dimensions): TileKeyTransform =
+  def apply(gridDimensions: (Int, Int)): TileKeyTransform =
     apply(gridDimensions._1, gridDimensions._2)
 
   def apply(tileCols: Int, tileRows: Int): TileKeyTransform

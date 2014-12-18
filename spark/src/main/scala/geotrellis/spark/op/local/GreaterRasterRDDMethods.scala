@@ -11,7 +11,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreater(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) =>
+      .mapPairs { case (t, r) =>
         (t, Greater(r, i))
       }
 
@@ -22,7 +22,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterRightAssociative(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapPairs { case (t, r) =>
         (t, Greater(i, r))
       }
 
@@ -49,7 +49,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreater(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapPairs { case (t, r) =>
         (t, Greater(r, d))
       }
 
@@ -60,7 +60,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterRightAssociative(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapTiles { case (t, r) => 
+      .mapPairs { case (t, r) =>
         (t, Greater(d, r))
       }
 
@@ -87,7 +87,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreater(other: RasterRDD[K]): RasterRDD[K] = 
     rasterRDD
-      .combineTiles(other) { case ((t1, r1), (t2, r2)) => 
+      .combinePairs(other) { case ((t1, r1), (t2, r2)) =>
         (t1, Greater(r1, r2))
       }
 

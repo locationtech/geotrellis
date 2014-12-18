@@ -1,9 +1,7 @@
-package geotrellis.spark.graphx.lib
+package geotrellis.spark.graph.op
 
 import geotrellis.spark._
-import geotrellis.spark.graphx._
-import geotrellis.spark.graphx.lib._
-
+import geotrellis.spark.graph._
 import geotrellis.raster._
 import geotrellis.raster.op.global._
 
