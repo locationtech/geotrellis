@@ -14,7 +14,7 @@ object VerticalFlip {
     val rowMax = gridBounds.height - 1
 
 
-    val resRDD = rasterRDD.mapTiles {
+    val resRDD = rasterRDD.map {
       case(key, tile) => (key, VerticalTileFlip(tile))
     }.groupBy {
       case(key, tile) => {

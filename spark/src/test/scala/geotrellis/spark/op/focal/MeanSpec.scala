@@ -5,8 +5,6 @@ import geotrellis.spark._
 import geotrellis.raster.op.focal._
 import geotrellis.raster._
 
-import geotrellis.testkit.RasterMatchers
-
 import org.scalatest.FunSpec
 
 class MeanSpec extends FunSpec with TestEnvironment

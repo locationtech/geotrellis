@@ -11,13 +11,15 @@ import org.joda.time.DateTime
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
-trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] {
+import annotation.tailrec
+
+trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializable {
 
   import TemporalWindowHelper._
 
-  val _sc: SpatialComponent[K]
+  implicit val _sc: SpatialComponent[K]
 
-  val _tc: TemporalComponent[K]
+  implicit val _tc: TemporalComponent[K]
 
   private def reduceOp(tileReducer: (Tile, Tile) => Tile)(
     reduce: (K, Tile, Boolean), next: (K, Tile, Boolean)) = {
@@ -42,24 +44,27 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   private def maxTileReduceOp(t1: Tile, t2: Tile) = t1.localMax(t2)
 
-  def min(periodStep: Int, unit: Int, start: DateTime): RasterRDD[K] =
+  def temporalMin(periodStep: Int, unit: Int, start: DateTime): RasterRDD[K] =
     aggregateWithTemporalWindow(periodStep, unit, start)(minReduceOp)
+
+  def temporalMax(periodStep: Int, unit: Int, start: DateTime): RasterRDD[K] =
+    aggregateWithTemporalWindow(periodStep, unit, start)(maxReduceOp)
 
   private def aggregateWithTemporalWindow(
     periodStep: Int,
     unit: Int,
     start: DateTime)(
-    reduceOp: (
-      (K, Tile, Boolean), (K, Tile, Boolean)) => (K, Tile, Boolean)
+    reduceOp: ((K, Tile, Boolean), (K, Tile, Boolean)) => (K, Tile, Boolean)
   ): RasterRDD[K] = {
     val sc = rasterRDD.sparkContext
 
+    @tailrec
     def recurse(index: Int = 0, tail: RDD[(K, Tile)] = sc.emptyRDD): RasterRDD[K] =
       if (index == periodStep) new RasterRDD[K](tail, rasterRDD.metaData)
       else {
         val reducedRDD = rasterRDD.map { case (key, tile) =>
-          val SpatialKey(col, row) = key
-          val TemporalKey(time) = key
+          val SpatialKey(col, row) = key.spatialComponent
+          val TemporalKey(time) = key.temporalComponent
 
           val year = time.getYear
           val diff = start.getYear - year

@@ -8,8 +8,8 @@ package object temporal {
 
   implicit class LocalTemporalRasterRDDExtensions[K](val rasterRDD: RasterRDD[K])(
     implicit val keyClassTag: ClassTag[K],
-    val _sc: SpatialComponent[K],
-    val _tc: TemporalComponent[K]) extends LocalTemporalRasterRDDMethods[K] { }
+    implicit val _sc: SpatialComponent[K],
+    implicit val _tc: TemporalComponent[K]) extends LocalTemporalRasterRDDMethods[K] { }
 
   implicit class TemporalWindow[K](val rasterRDD: RasterRDD[K])(
     implicit val keyClassTag: ClassTag[K],
@@ -20,9 +20,9 @@ package object temporal {
 
     def average: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Average)
 
-    def min: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Minimum)
+    def minimum: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Minimum)
 
-    def max: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Maximum)
+    def maximum: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Maximum)
 
     def mode: TemporalWindowState[K] = TemporalWindowState(rasterRDD, Mode)
 

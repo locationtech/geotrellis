@@ -4,8 +4,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
-import geotrellis.testkit.RasterMatchers
-
 import java.io.File
 
 import org.apache.spark._
@@ -77,7 +75,7 @@ trait OpAsserter extends FunSpec
     val (cols, rows) = (input.cols, input.rows)
 
     val tileLayout = if (tileCols >= cols || tileRows >= rows)
-      TileLayout(cols, rows, cols, rows)
+      TileLayout(1, 1, cols, rows)
     else getTileLayout(cols, rows, tileCols, tileRows)
 
     createRasterRDD(sc, input, tileLayout)

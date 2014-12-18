@@ -31,6 +31,7 @@ object TemporalWindowHelper {
     case "weeks" => Weeks
     case "months" => Months
     case "years" => Years
+    case _ => throw new IllegalArgumentException("Unknown unit: $s.")
   }
 
 }
@@ -39,9 +40,8 @@ case class TemporalWindowState[K](
   rasterRDD: RasterRDD[K],
   method: Int,
   periodStep: Option[Int] = None,
-  unit: Option[Int] = None,
-  start: Option[DateTime] = None,
-  end: Option[DateTime] = None)(
+  unit: Option[Int] = None
+)(
   implicit val keyClassTag: ClassTag[K],
     _sc: SpatialComponent[K],
     _tc: TemporalComponent[K]) {
@@ -50,9 +50,7 @@ case class TemporalWindowState[K](
 
   private lazy val state =
     if (periodStep.isEmpty && unit.isEmpty) 0
-    else if (start.isEmpty) 2
-    else if (end.isEmpty) 3
-    else 4
+    else 2
 
   def per(p: Int)(unitString: String): TemporalWindowState[K] =
     if (state != 0) badState
@@ -61,15 +59,14 @@ case class TemporalWindowState[K](
       copy(periodStep = Some(p), unit = Some(u))
     }
 
-  def from(s: DateTime): TemporalWindowState[K] =
+  def from(start: DateTime): RasterRDD[K] =
     if (state != 2) badState
-    else copy(start = Some(s))
-
-  def to(e: DateTime): RasterRDD[K] =
-    if (state != 3) badState
-    else {
-      val (p, u, s) = (periodStep.get, unit.get, start.get)
-      ???
+    else method match {
+      case Average => ???
+      case Minimum => rasterRDD.temporalMin(periodStep.get, unit.get, start)
+      case Maximum => rasterRDD.temporalMax(periodStep.get, unit.get, start)
+      case Mode => ???
+      case _ => throw new IllegalStateException("Bad method $method.")
     }
 
 }
