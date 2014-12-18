@@ -91,7 +91,7 @@ object GenerateTestFiles {
           sc.parallelize(tmsTiles)
         }
 
-      catalog.save(LayerId(name, 10), rdd, clobber = true).get
+      catalog.save(LayerId(name, 10), rdd, clobber = true)
     }
 
   }

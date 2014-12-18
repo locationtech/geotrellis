@@ -41,9 +41,9 @@ object NetCDFIngestHDFSCommand extends ArgMain[HadoopIngestArgs] with Logging {
     }
 
     if (args.pyramid) {
-      Pyramid.saveLevels(rdd, level, layoutScheme)(save) // expose exceptions
+      Pyramid.saveLevels(rdd, level, layoutScheme)(save)
     } else{
-      save(rdd, level).get
+      save(rdd, level)
     }
   }
 }

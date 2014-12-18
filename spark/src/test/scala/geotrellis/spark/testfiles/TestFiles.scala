@@ -29,7 +29,7 @@ trait TestFiles { self: OnlyIfCanRunSpark =>
   lazy val testCatalog = TestFiles.catalog
 
   def testFile(layerName: String): RasterRDD[SpatialKey] = {
-    testCatalog.load[SpatialKey](LayerId(layerName, 10)).get.cache
+    testCatalog.load[SpatialKey](LayerId(layerName, 10)).cache
   }
 
   def AllOnesTestFile =
