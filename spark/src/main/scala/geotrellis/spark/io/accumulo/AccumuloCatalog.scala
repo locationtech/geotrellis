@@ -20,14 +20,14 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance,
       case None => sys.error(s"Default Params for '$id' not found.")
     }
 
-  def load[K: AccumuloDriver: ClassTag](id: LayerId, metaData: RasterMetaData, table: String, filters: FilterSet[K]): Try[RasterRDD[K]] = {
+  def load[K: AccumuloDriver: ClassTag](id: LayerId, metaData: RasterMetaData, table: String, filters: FilterSet[K]): RasterRDD[K] = {
     val driver = implicitly[AccumuloDriver[K]]
     driver.load(sc, instance)(id, metaData, table, filters)
   }
 
-  def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Try[Unit] = {
+  def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {
     val driver = implicitly[AccumuloDriver[K]]
-    driver.save(sc, instance)(id, rdd, table, clobber).get
+    driver.save(sc, instance)(id, rdd, table, clobber)
 
     val metaData = LayerMetaData(
       rasterMetaData = rdd.metaData,

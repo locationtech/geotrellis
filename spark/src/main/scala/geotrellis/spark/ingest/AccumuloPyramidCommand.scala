@@ -25,7 +25,7 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
     val catalog = accumulo.catalog
 
-    val rdd = catalog.load[SpatialKey](LayerId(args.layerName, args.startLevel)).get
+    val rdd = catalog.load[SpatialKey](LayerId(args.layerName, args.startLevel))
 
     val layoutScheme = ZoomedLayoutScheme(256)
     val level = layoutScheme.levelFor(args.startLevel)

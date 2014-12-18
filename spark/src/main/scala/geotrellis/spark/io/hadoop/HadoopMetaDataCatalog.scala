@@ -9,7 +9,6 @@ import org.apache.spark._
 import spray.json._
 
 import java.io.PrintWriter
-import scala.util.Try
 
 class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: LayerId => String, metaDataFileName: String)
   extends MetaDataCatalog[String] with Logging
@@ -23,47 +22,45 @@ class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: L
       new Path(new Path(new Path(catalogRoot, subDir), layerDataDir(layerId)) , metaDataFileName)
 
 
-  def load(layerId: LayerId): Try[(LayerMetaData, String)] =
-    load(layerId, "").map(_ -> "")
+  def load(layerId: LayerId): (LayerMetaData, String) =
+    (load(layerId, ""), "")
 
-  def load(layerId: LayerId, subDir: String): Try[LayerMetaData] =
-    Try {
-      val path = metaDataPath(layerId, subDir)
-      val txt = HdfsUtils.getLineScanner(path, sc.hadoopConfiguration) match {
-        case Some(in) =>
-          try {
-            in.mkString
-          }
-          finally {
-            in.close
-          }
-        case None =>
-          throw new LayerNotFoundError(layerId)
-      }
-
-      txt.parseJson.convertTo[LayerMetaData]
+  def load(layerId: LayerId, subDir: String): LayerMetaData = {
+    val path = metaDataPath(layerId, subDir)
+    val txt = HdfsUtils.getLineScanner(path, sc.hadoopConfiguration) match {
+      case Some(in) =>
+        try {
+          in.mkString
+        }
+        finally {
+          in.close
+        }
+      case None =>
+        throw new LayerNotFoundError(layerId)
     }
 
+    txt.parseJson.convertTo[LayerMetaData]
+  }
 
-  def save(id: LayerId, subDir: String, metaData: LayerMetaData, clobber: Boolean): Try[Unit] =
-    Try {
-      val metaPath = metaDataPath(id, subDir)
-      logDebug(s"Saving ${id} to $metaPath")
 
-      if(fs.exists(metaPath)) {
-        if(clobber)
-          fs.delete(metaPath, false)
-        else
-          sys.error(s"Metadata at $metaPath already exists")
-      }
+  def save(id: LayerId, subDir: String, metaData: LayerMetaData, clobber: Boolean): Unit = {
+    val metaPath = metaDataPath(id, subDir)
+    logDebug(s"Saving ${id} to $metaPath")
 
-      val fdos = fs.create(metaPath)
-      val out = new PrintWriter(fdos)
-      try {
-        out.println(metaData.toJson)
-      } finally {
-        out.close()
-        fdos.close()
-      }
+    if(fs.exists(metaPath)) {
+      if(clobber)
+        fs.delete(metaPath, false)
+      else
+        sys.error(s"Metadata at $metaPath already exists")
     }
+
+    val fdos = fs.create(metaPath)
+    val out = new PrintWriter(fdos)
+    try {
+      out.println(metaData.toJson)
+    } finally {
+      out.close()
+      fdos.close()
+    }
+  }
 }

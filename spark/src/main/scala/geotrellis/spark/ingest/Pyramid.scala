@@ -12,7 +12,6 @@ import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
-import scala.util.Try
 
 object Pyramid extends Logging {
   /**
@@ -22,9 +21,9 @@ object Pyramid extends Logging {
    * @param save          Function(rdd, layoutLevel) that will be called for zoom each level, including original
    */
   def saveLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme)
-                                               (save: (RasterRDD[K], LayoutLevel) => Try[Unit]): Try[Unit] = Try {
+                                               (save: (RasterRDD[K], LayoutLevel) => Unit): Unit = {
     logInfo(s"Saving raster at $level")
-    save(rdd, level).get // force errors on save
+    save(rdd, level)
     if (level.zoom > 1) {
       val (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)
       saveLevels(nextRdd, nextLevel, layoutScheme)(save)
