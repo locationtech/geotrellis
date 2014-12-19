@@ -6,6 +6,8 @@ import geotrellis.spark._
 
 import org.joda.time.{DateTime, DateTimeZone}
 
+import spire.syntax.cfor._
+
 import org.scalatest.FunSpec
 
 class LocalTemporalSpec extends FunSpec with TestEnvironment
@@ -110,8 +112,8 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
 
         val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
         val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-        val periodStep = 7
-        val res = rasterRDD.average.per (periodStep) ("days") from (start) to (end)
+        val windowSize = 7
+        val res = rasterRDD.average.per (windowSize) ("days") from (start) to (end)
 
         val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
@@ -119,9 +121,21 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
 
         rasters.zipWithIndex.foreach { case(tile, idx) =>
           val tileArray = tile.toArray
-          val start = math.min(rasters.size - 1, idx + periodStep - 1)
-          val end = math.min(80 + rasters.size - 1, idx + 79 + periodStep)
-          val correct = (start to end).toArray
+          val base = (idx to (idx + 80)).toSeq
+
+          val adjustedWindowSize = math.min(windowSize, 25 - idx)
+          val matrix = for (i <- 0 until adjustedWindowSize) yield (base.map(_ + i))
+          val correct = Array.ofDim[Int](81)
+
+          cfor(0)(_ < 81, _ + 1) { i =>
+            var acc = 0
+            cfor(0)(_ < adjustedWindowSize, _ + 1) { j =>
+              acc += matrix(j)(i)
+            }
+
+            correct(i) = acc / adjustedWindowSize
+          }
+
           tileArray should be(correct)
         }
       }
