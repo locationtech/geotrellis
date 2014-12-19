@@ -39,7 +39,7 @@ trait TmsHttpService extends HttpService {
 
   def rootRoute =
     pathPrefix("tms" / Segment / Segment / IntNumber / IntNumber / IntNumber ) { (layer, timeStr, zoom, x , y) =>
-      val rdd: Try[RasterRDD[SpaceTimeKey]] = {
+      val rdd: RasterRDD[SpaceTimeKey] = {
         val time = DateTime.parse(timeStr)
         val filters =  new FilterSet[SpaceTimeKey]
           .withFilter(SpaceFilter[SpaceTimeKey](x, y))
@@ -49,7 +49,7 @@ trait TmsHttpService extends HttpService {
       }
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
-        val tile = rdd.get.first.tile
+        val tile = rdd.first.tile
         Encoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
       } }
     }

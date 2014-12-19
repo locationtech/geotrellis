@@ -50,19 +50,19 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
       tileRdd map { case (key, tile) => key -> f(tile) }
     }
 
-  def mapRows(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
+  def mapPairs(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
     asRasterRDD(metaData) {
       tileRdd map { row => f(row) }
     }
 
-  def combineRows[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
+  def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
       zipPartitions(other, true) { (partition1, partition2) =>
         partition1.zip(partition2) map { case (row1, row2) => f(row1, row2) }
       }
     }
 
-  def combineRows(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
+  def combinePairs(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
     def create(t: (K, Tile)) = Seq(t)
     def mergeValue(ts: Seq[(K, Tile)], t: (K, Tile)) = ts :+ t
     def mergeContainers(ts1: Seq[(K, Tile)], ts2: Seq[(K, Tile)]) = ts1 ++ ts2

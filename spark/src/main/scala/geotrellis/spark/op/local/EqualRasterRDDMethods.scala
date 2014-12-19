@@ -11,7 +11,7 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localEqual(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapRows { case (t, r) =>
+      .mapPairs { case (t, r) =>
         (t, Equal(r, i))
       }
   
@@ -22,7 +22,7 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localEqual(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapRows { case (t, r) =>
+      .mapPairs { case (t, r) =>
         (t, Equal(r, d))
       }
 
@@ -33,7 +33,7 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localEqual(other: RasterRDD[K]): RasterRDD[K] = 
     rasterRDD
-      .combineRows(other) { case ((t1, r1), (t2, r2)) =>
+      .combinePairs(other) { case ((t1, r1), (t2, r2)) =>
         (t1, Equal(r1, r2))
       }
 }

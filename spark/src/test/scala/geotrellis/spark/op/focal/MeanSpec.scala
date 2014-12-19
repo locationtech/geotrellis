@@ -11,6 +11,7 @@ class MeanSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
     with RasterMatchers
     with OnlyIfCanRunSpark
+    with OpAsserter
     with RasterRDDBuilders {
 
   describe("Mean Focal Spec") {

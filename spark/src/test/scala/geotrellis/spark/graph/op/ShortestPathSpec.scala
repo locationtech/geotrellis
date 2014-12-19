@@ -1,9 +1,7 @@
-package geotrellis.spark.graphx.lib
+package geotrellis.spark.graph.op
 
 import geotrellis.spark._
-import geotrellis.spark.graphx._
-import geotrellis.spark.graphx.lib._
-
+import geotrellis.spark.graph._
 import geotrellis.raster._
 import geotrellis.raster.op.global._
 
@@ -76,7 +74,29 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
         testTile(sc, tile, 3, 2)(rasterOp, sparkOp)
       }
 
+      it("should perform as the single raster operation on raster #3") {
+        val tile = ArrayTile(Array(
+          2 , 2 , 1 , 1 , 5 , 5 , 5 ,
+          2 , 2 , 8 , 8 , 5 , 2 , 1 ,
+          7 , 1 , 1 , 8 , 2 , 2 , 2 ,
+          8 , 7 , 8 , 8 , 8 , 8 , 5 ,
+          8 , 8 , 1 , 1 , 5 , 3 , 9 ,
+          8 , 1 , 1 , 2 , 5 , 3 , 9), 7, 6)
+
+        val points = Seq((5, 4))
+
+        val rasterOp = (tile: Tile, re: RasterExtent) => CostDistance(tile, points)
+
+        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd
+          .toGraph
+          .shortestPath(points)
+          .toRaster
+
+        testTile(sc, tile, 7, 6)(rasterOp, sparkOp)
+      }
+
     }
 
   }
+
 }

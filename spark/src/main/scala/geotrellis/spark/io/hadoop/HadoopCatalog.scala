@@ -14,7 +14,6 @@ import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 import scala.reflect._
-import scala.util.{Failure, Success, Try}
 
 /** Provides a catalog for storing rasters in any Hadoop supported file system.
   * 
@@ -62,37 +61,36 @@ class HadoopCatalog private (
     HdfsUtils.readArray[K](splitFile, conf)
   }
 
-  def load[K: HadoopWritable : ClassTag](id: LayerId, metaData: RasterMetaData, subDir: String, filters: FilterSet[K]): Try[RasterRDD[K]] =
-    Try {
-      val keyWritable = implicitly[HadoopWritable[K]]
-      import keyWritable.implicits._
+  def load[K: HadoopWritable : ClassTag](id: LayerId, metaData: RasterMetaData, subDir: String, filters: FilterSet[K]): RasterRDD[K] = {
+    val keyWritable = implicitly[HadoopWritable[K]]
+    import keyWritable.implicits._
 
-      val path = pathFor(id, subDir)
-      val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
+    val path = pathFor(id, subDir)
+    val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
-      logDebug(s"Loading $id from $dataPath")
+    logDebug(s"Loading $id from $dataPath")
 
-      val conf = sc.hadoopConfiguration
-      val inputConf = sc.hadoopConfiguration.withInputPath(path.suffix(catalogConfig.SEQFILE_GLOB))
+    val conf = sc.hadoopConfiguration
+    val inputConf = sc.hadoopConfiguration.withInputPath(path.suffix(catalogConfig.SEQFILE_GLOB))
 
-      val writableRdd: RDD[(keyWritable.Writable, TileWritable)] =
-        if(filters.isEmpty) {
-          sc.newAPIHadoopRDD[keyWritable.Writable, TileWritable, SequenceFileInputFormat[keyWritable.Writable, TileWritable]](
-            inputConf,
-            classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
-            classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]], // ¯\_(ツ)_/¯
-            classOf[TileWritable]
-          )
-        } else {
-          val partitioner = KeyPartitioner[K](readSplits(path, conf))
+    val writableRdd: RDD[(keyWritable.Writable, TileWritable)] =
+      if(filters.isEmpty) {
+        sc.newAPIHadoopRDD[keyWritable.Writable, TileWritable, SequenceFileInputFormat[keyWritable.Writable, TileWritable]](
+          inputConf,
+          classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
+          classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]], // ¯\_(ツ)_/¯
+          classOf[TileWritable]
+        )
+      } else {
+        val partitioner = KeyPartitioner[K](readSplits(path, conf))
 
-          val _filters = sc.broadcast(filters)
-          val includeKey: keyWritable.Writable => Boolean =
+        val _filters = sc.broadcast(filters)
+        val includeKey: keyWritable.Writable => Boolean =
           { writable =>
             _filters.value.includeKey(keyWritable.toValue(writable))
           }
 
-          val includePartition: Partition => Boolean =
+        val includePartition: Partition => Boolean =
           { partition =>
             val minKey = partitioner.minKey(partition.index)
             val maxKey = partitioner.maxKey(partition.index)
@@ -100,97 +98,95 @@ class HadoopCatalog private (
             _filters.value.includePartition(minKey, maxKey)
           }
 
-          new PreFilteredHadoopRDD[keyWritable.Writable, TileWritable](
-            sc,
-            classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
-            classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]],
-            classOf[TileWritable],
-            inputConf
-          )(includePartition)(includeKey)
-        }
-      val md = metaData // else $outer will refer to HadoopCatalog
-      asRasterRDD(md) {
-        writableRdd
-          .map  { case (keyWritable, tileWritable) =>
-            (keyWritable.toValue, tileWritable.toTile(md))
-        }
-      }
-
-    }
-
-  def save[K: HadoopWritable : ClassTag](id: LayerId, subDir: String, rdd: RasterRDD[K], clobber: Boolean): Try[Unit] =
-    Try {
-      val keyWritable = implicitly[HadoopWritable[K]]
-      import keyWritable.implicits._
-
-      val conf = rdd.context.hadoopConfiguration
-      val path: Path = pathFor(id, subDir)
-      val fs = rootPath.getFileSystem(sc.hadoopConfiguration)
-      logDebug(s"Exists: $path, ${fs.exists(path)}")
-      if(fs.exists(path)) {
-        if(clobber) {
-          logDebug(s"Deleting $path")
-          fs.delete(path, true)
-        } else
-          sys.error(s"Directory already exists: $path")
-      }
-
-      val job = Job.getInstance(conf)
-      job.getConfiguration.set("io.map.index.interval", "1")
-      SequenceFileOutputFormat.setOutputCompressionType(job, SequenceFile.CompressionType.RECORD)
-
-      logInfo(s"Saving RasterRDD for $id to ${path}")
-
-      // Figure out how many partitions there should be based on block size.
-      val partitions = {
-        val blockSize = fs.getDefaultBlockSize(path)
-        val tileCount = rdd.count
-        val tileSize = rdd.metaData.tileLayout.tileSize * rdd.metaData.cellType.bytes
-        val tilesPerBlock = {
-          val tpb = (blockSize / tileSize) * catalogConfig.compressionFactor
-          if(tpb == 0) {
-            logWarning(s"Tile size is too large for this filesystem (tile size: $tileSize, block size: $blockSize)")
-            1
-          } else tpb
-        }
-
-        math.ceil(tileCount / tilesPerBlock.toDouble).toInt
-      }
-
-      // Sort the writables, and cache as we'll be computing this RDD twice.
-      val sortedWritable =
-        rdd
-          .map { case (key, tile) => (key.toWritable, TileWritable(tile)) }
-          .sortByKey(numPartitions = partitions)
-          .cache
-
-      // Run over the partitions and collect the first values, as they will be named the split values.
-      val splits: Array[K] = 
-        sortedWritable
-          .mapPartitions { iter =>
-            if(iter.hasNext) Seq(iter.next._1.toValue).iterator else sys.error(s"Empty partition.")
-           }
-          .collect
-
-      // Write the RDD.      
-      sortedWritable
-        .saveAsNewAPIHadoopFile(
-          path.toUri.toString,
-          implicitly[ClassTag[keyWritable.Writable]].runtimeClass,
+        new PreFilteredHadoopRDD[keyWritable.Writable, TileWritable](
+          sc,
+          classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
+          classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]],
           classOf[TileWritable],
-          classOf[MapFileOutputFormat],
-          job.getConfiguration
-        )
-
-      writeSplits(splits, path, conf)
-      logInfo(s"Finished saving tiles to ${path}")
-      val metaData = LayerMetaData(
-        keyClass = classTag[K].toString,
-        rasterMetaData = rdd.metaData,
-        histogram = Some(rdd.histogram)
-      )
-      metaDataCatalog.save(id, subDir, metaData, clobber)
+          inputConf
+        )(includePartition)(includeKey)
+      }
+    val md = metaData // else $outer will refer to HadoopCatalog
+    asRasterRDD(md) {
+      writableRdd
+        .map  { case (keyWritable, tileWritable) =>
+          (keyWritable.toValue, tileWritable.toTile(md))
+         }
     }
+  }
+
+  def save[K: HadoopWritable : ClassTag](id: LayerId, subDir: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {
+    val keyWritable = implicitly[HadoopWritable[K]]
+    import keyWritable.implicits._
+
+    val conf = rdd.context.hadoopConfiguration
+    val path: Path = pathFor(id, subDir)
+    val fs = rootPath.getFileSystem(sc.hadoopConfiguration)
+    logDebug(s"Exists: $path, ${fs.exists(path)}")
+    if(fs.exists(path)) {
+      if(clobber) {
+        logDebug(s"Deleting $path")
+        fs.delete(path, true)
+      } else
+        sys.error(s"Directory already exists: $path")
+    }
+
+    val job = Job.getInstance(conf)
+    job.getConfiguration.set("io.map.index.interval", "1")
+    SequenceFileOutputFormat.setOutputCompressionType(job, SequenceFile.CompressionType.RECORD)
+
+    logInfo(s"Saving RasterRDD for $id to ${path}")
+
+    // Figure out how many partitions there should be based on block size.
+    val partitions = {
+      val blockSize = fs.getDefaultBlockSize(path)
+      val tileCount = rdd.count
+      val tileSize = rdd.metaData.tileLayout.tileSize * rdd.metaData.cellType.bytes
+      val tilesPerBlock = {
+        val tpb = (blockSize / tileSize) * catalogConfig.compressionFactor
+        if(tpb == 0) {
+          logWarning(s"Tile size is too large for this filesystem (tile size: $tileSize, block size: $blockSize)")
+          1
+        } else tpb
+      }
+
+      math.ceil(tileCount / tilesPerBlock.toDouble).toInt
+    }
+
+    // Sort the writables, and cache as we'll be computing this RDD twice.
+    val sortedWritable =
+      rdd
+        .map { case (key, tile) => (key.toWritable, TileWritable(tile)) }
+        .sortByKey(numPartitions = partitions)
+        .cache
+
+    // Run over the partitions and collect the first values, as they will be named the split values.
+    val splits: Array[K] =
+      sortedWritable
+        .mapPartitions { iter =>
+          if(iter.hasNext) Seq(iter.next._1.toValue).iterator else sys.error(s"Empty partition.")
+         }
+        .collect
+
+    // Write the RDD.
+    sortedWritable
+      .saveAsNewAPIHadoopFile(
+        path.toUri.toString,
+        implicitly[ClassTag[keyWritable.Writable]].runtimeClass,
+        classOf[TileWritable],
+        classOf[MapFileOutputFormat],
+        job.getConfiguration
+      )
+
+    writeSplits(splits, path, conf)
+    logInfo(s"Finished saving tiles to ${path}")
+    val metaData = LayerMetaData(
+      keyClass = classTag[K].toString,
+      rasterMetaData = rdd.metaData,
+      histogram = Some(rdd.histogram)
+    )
+    metaDataCatalog.save(id, subDir, metaData, clobber)
+  }
 }
 
 object HadoopCatalog {

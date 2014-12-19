@@ -1,6 +1,6 @@
-package geotrellis.spark.graphx.lib
+package geotrellis.spark.graph.op
 
-import geotrellis.spark.graphx._
+import geotrellis.spark.graph._
 
 import org.apache.spark.graphx._
 

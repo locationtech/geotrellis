@@ -22,7 +22,6 @@ import org.scalatest.Matchers._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 import org.apache.hadoop.fs.Path
-import scala.util.{Try, Success, Failure}
 
 class AccumuloCatalogSpec extends FunSpec
   with Matchers
@@ -49,34 +48,27 @@ class AccumuloCatalogSpec extends FunSpec
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
 
-      ignore("should fail writing to no table"){
-        // we actually try to create table now, ehh ?
-        intercept[TableNotFoundError] {
-          catalog.save(LayerId("ones", level.zoom), "NOTiles", onesRdd).get
-        }
-      }
-
       it("should succeed writing to a table"){
-        catalog.save(LayerId("ones", level.zoom), "tiles", onesRdd).get
+        catalog.save(LayerId("ones", level.zoom), "tiles", onesRdd)
       }
 
       it("should load out saved tiles"){
-        catalog.load[SpatialKey](LayerId("ones", 10)).get.count should be > 0l
+        catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
       }
 
       it("should load out saved tiles, but only for the right zoom"){
         intercept[LayerNotFoundError] {
-          catalog.load[SpatialKey](LayerId("ones", 9)).get.count()
+          catalog.load[SpatialKey](LayerId("ones", 9)).count()
         }
       }
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,305,916,306)
         val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
-        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
+        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
 
-        val out = rdd1.combineRows(rdd2){case (tms1, tms2) =>
+        val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)
           val res = tms1.tile.localAdd(tms2.tile)
           (tms1.id, res)

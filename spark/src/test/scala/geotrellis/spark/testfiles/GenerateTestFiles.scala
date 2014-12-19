@@ -91,13 +91,15 @@ object GenerateTestFiles {
           sc.parallelize(tmsTiles)
         }
 
-      catalog.save(LayerId(name, 10), rdd, clobber = true).get
+      catalog.save(LayerId(name, 10), rdd, clobber = true)
     }
 
   }
+
   def main(args: Array[String]): Unit = {
     val sc = new SparkContext("local", "create-test-files")
     val catalog = TestFiles.catalog(sc)
     // creation of catalog will trigger generation if files aren't there
+    generate(catalog, sc)
   }
 }

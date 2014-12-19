@@ -8,7 +8,7 @@ trait AndRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** And a constant Int value to each cell. */
   def localAnd(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapRows { case (t, r) =>
+      .mapPairs { case (t, r) =>
         (t, And(r, i))
       }
 
@@ -21,7 +21,7 @@ trait AndRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** And the values of each cell in each raster.  */
   def localAnd(other: RasterRDD[K]): RasterRDD[K] =
     rasterRDD
-      .combineRows(other) { case ((t1, r1), (t2, r2)) =>
+      .combinePairs(other) { case ((t1, r1), (t2, r2)) =>
         (t1, And(r1, r2))
       }
 
@@ -31,7 +31,7 @@ trait AndRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** And the values of each cell in each raster.  */
   def localAnd(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD
-      .combineRows(others.toSeq) { case tiles: Seq[(K, Tile)] =>
+      .combinePairs(others.toSeq) { case tiles: Seq[(K, Tile)] =>
         (tiles.head.id, And(tiles.map(_.tile)))
       }
 

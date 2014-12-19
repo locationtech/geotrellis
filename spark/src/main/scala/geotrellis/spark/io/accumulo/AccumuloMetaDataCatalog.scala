@@ -12,9 +12,6 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.spark.Logging
 import spray.json._
 import DefaultJsonProtocol._
-import scala.util.{Success, Failure, Try}
-
-
 
 /**
  * Accumulo Catalog Table Structure:
@@ -34,7 +31,7 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
   type TableName = String
   var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
 
-  def save(id: LayerId, table: TableName, metaData: LayerMetaData, clobber: Boolean): Try[Unit] = Try {
+  def save(id: LayerId, table: TableName, metaData: LayerMetaData, clobber: Boolean): Unit = {
     if (catalog.contains(id -> table)) {
       // If we want to clobber, by default Accumulo will overwrite it.
       // If not, let the user know.
@@ -63,26 +60,27 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
   }
 
 
-  def load(layerId: LayerId): Try[(LayerMetaData, TableName)] = {
+  def load(layerId: LayerId): (LayerMetaData, TableName) = {
     val candidates = catalog
       .filterKeys( key => key._1 == layerId)
 
     candidates.size match {
       case 0 =>
-        Failure(new LayerNotFoundError(layerId))
+        throw new LayerNotFoundError(layerId)
       case 1 =>
         val (key, value) = candidates.toList.head
-        Success(value -> key._2)
+        (value, key._2)
       case _ =>
-        Failure(new MultipleMatchError(layerId))
+        throw new MultipleMatchError(layerId)
     }
   }
 
-  def load(layerId: LayerId, table: String): Try[LayerMetaData] =
-    catalog
-      .get(layerId -> table)
-      .toTry(new LayerNotFoundError(layerId))
-
+  def load(layerId: LayerId, table: String): LayerMetaData =
+    catalog.get(layerId -> table) match {
+      case Some(md) => md
+      case None =>
+        throw new LayerNotFoundError(layerId)
+    }
 
   def fetchAll: Map[(LayerId, TableName), LayerMetaData] = {
     var data: Map[(LayerId, TableName), Map[String, Value]] =

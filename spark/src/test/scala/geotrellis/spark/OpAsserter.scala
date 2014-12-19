@@ -9,11 +9,12 @@ import java.io.File
 import org.apache.spark._
 
 import org.scalatest._
+import spire.syntax.cfor._
 
 trait OpAsserter extends FunSpec
     with RasterRDDBuilders
     with TestEnvironment
-    with RasterMatchers {
+    with RasterMatchers  {
 
   val basePath = localFS
     .getWorkingDirectory

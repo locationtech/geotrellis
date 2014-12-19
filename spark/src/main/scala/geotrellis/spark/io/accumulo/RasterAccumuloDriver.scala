@@ -81,16 +81,4 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
     //Set the filter for layer we need
     InputFormatBase.fetchColumns(job, new JPair(new Text(layerId.name), null: Text) :: Nil)
   }
-
-  def getSplits(id: LayerId, rdd: RasterRDD[SpatialKey], num: Int = 24): Seq[String] = {
-    import org.apache.spark.SparkContext._
-
-    rdd
-      .map( row => rowId(id, row._1) -> null)
-      .sortByKey()
-      .map(_._1)
-      .repartition(num)
-      .mapPartitions{ iter => iter.take(1) }
-      .collect
-  }
 }

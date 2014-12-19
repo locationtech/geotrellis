@@ -12,7 +12,6 @@ import geotrellis.raster.op.local._
 import geotrellis.proj4.LatLng
 import org.scalatest._
 import org.apache.hadoop.fs.Path
-import scala.util.{Try, Success, Failure}
 
 class HadoopCatalogSpec extends FunSpec
 with Matchers
@@ -35,45 +34,45 @@ with OnlyIfCanRunSpark
 
 
       it("should succeed saving with default Props"){
-        catalog.save(LayerId("ones", level.zoom), onesRdd).get
+        catalog.save(LayerId("ones", level.zoom), onesRdd)
         assert(fs.exists(new Path(catalogPath, "ones")))
       }
 
       it("should succeed saving with single path Props"){
-        catalog.save(LayerId("ones", level.zoom), "sub1", onesRdd).get
+        catalog.save(LayerId("ones", level.zoom), "sub1", onesRdd)
         assert(fs.exists(new Path(catalogPath, "sub1/ones")))
       }
 
       it("should succeed saving with double path Props"){
-        catalog.save(LayerId("ones", level.zoom), "sub1/sub2", onesRdd).get
+        catalog.save(LayerId("ones", level.zoom), "sub1/sub2", onesRdd)
         assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
       }
 
       it("should load out saved tiles"){
-        catalog.load[SpatialKey](LayerId("ones", 10)).get.count should be > 0l
+        catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
       }
 
       it("should succeed loading with single path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").get.count should be > 0l
+        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
       }
 
       it("should succeed loading with double path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").get.count should be > 0l
+        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
       }
 
 
       it("should load out saved tiles, but only for the right zoom"){
         intercept[LayerNotFoundError] {
-          catalog.load[SpatialKey](LayerId("ones", 9)).get.count()
+          catalog.load[SpatialKey](LayerId("ones", 9)).count()
         }
       }
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,611,917,616)
         val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
-        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
-        val out = rdd1.combineRows(rdd2){case (tms1, tms2) =>
+        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)
           val res = tms1.tile.localAdd(tms2.tile)
           (tms1.id, res)
@@ -86,7 +85,7 @@ with OnlyIfCanRunSpark
       it("should find default params based on key") {
         val defaultParams = HadoopCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
         val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
-        cat.save(LayerId("spatial-ones", level.zoom), onesRdd).get
+        cat.save(LayerId("spatial-ones", level.zoom), onesRdd)
         assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
       }
 
@@ -97,7 +96,7 @@ with OnlyIfCanRunSpark
 
         //LayerParams should take priority
         val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
-        cat.save(LayerId("onesSpecial", level.zoom), onesRdd).get
+        cat.save(LayerId("onesSpecial", level.zoom), onesRdd)
         assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
       }
     }

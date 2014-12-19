@@ -4,8 +4,6 @@ import geotrellis.spark._
 
 import scala.reflect.ClassTag
 
-import scala.util.Try
-
 trait Catalog {
   type Params
   type SupportedKey[K]
@@ -14,34 +12,33 @@ trait Catalog {
 
   def paramsFor[K: SupportedKey: ClassTag](layerId: LayerId): Params
 
-  def load[K: SupportedKey: ClassTag](id: LayerId): Try[RasterRDD[K]] =
+  def load[K: SupportedKey: ClassTag](id: LayerId): RasterRDD[K] =
     load(id, new FilterSet[K])
 
-  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params): Try[RasterRDD[K]] =
+  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params): RasterRDD[K] =
     load(id, params, new FilterSet[K])
 
-  def load[K: SupportedKey: ClassTag](id: LayerId, filters: FilterSet[K]): Try[RasterRDD[K]] =
-    metaDataCatalog.load(id).flatMap { case (metaData, params) =>
-      load(id, metaData.rasterMetaData, params, filters)
-    }
-
-  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params, filters: FilterSet[K]): Try[RasterRDD[K]] = {
-    metaDataCatalog.load(id, params).flatMap { metaData =>
-      load(id, metaData.rasterMetaData, params, filters)
-    }
+  def load[K: SupportedKey: ClassTag](id: LayerId, filters: FilterSet[K]): RasterRDD[K] = {
+    val (metaData, params) = metaDataCatalog.load(id)
+    load(id, metaData.rasterMetaData, params, filters)
   }
 
-  def load[K: SupportedKey: ClassTag](id: LayerId, metaData: RasterMetaData, params: Params, filters: FilterSet[K]): Try[RasterRDD[K]]
+  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params, filters: FilterSet[K]): RasterRDD[K] = {
+    val metaData = metaDataCatalog.load(id, params)
+    load(id, metaData.rasterMetaData, params, filters)
+  }
 
-  def save[K: SupportedKey: ClassTag](id: LayerId, rdd: RasterRDD[K]): Try[Unit] =
+  def load[K: SupportedKey: ClassTag](id: LayerId, metaData: RasterMetaData, params: Params, filters: FilterSet[K]): RasterRDD[K]
+
+  def save[K: SupportedKey: ClassTag](id: LayerId, rdd: RasterRDD[K]): Unit =
     save(id, rdd, false)
 
-  def save[K: SupportedKey: ClassTag](id: LayerId, rdd: RasterRDD[K], clobber: Boolean): Try[Unit] =
+  def save[K: SupportedKey: ClassTag](id: LayerId, rdd: RasterRDD[K], clobber: Boolean): Unit =
     save(id, paramsFor(id), rdd, clobber)
 
-  def save[K: SupportedKey: ClassTag](id: LayerId, params: Params, rdd: RasterRDD[K]): Try[Unit] =
+  def save[K: SupportedKey: ClassTag](id: LayerId, params: Params, rdd: RasterRDD[K]): Unit =
     save(id, params, rdd, false)
 
   /** The implementer of this method is responsible for saving the metaData to the metaDataCatalog */
-  def save[K: SupportedKey: ClassTag](id: LayerId, params: Params, rdd: RasterRDD[K], clobber: Boolean): Try[Unit]
+  def save[K: SupportedKey: ClassTag](id: LayerId, params: Params, rdd: RasterRDD[K], clobber: Boolean): Unit
 }
