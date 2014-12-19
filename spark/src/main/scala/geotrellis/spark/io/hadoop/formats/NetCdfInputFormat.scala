@@ -18,7 +18,7 @@ object NetCdfInputFormat {
 
   val validTimeTypes = Seq(Seconds, Minutes, Hours, Days, Months, Years)
 
-  private val DefaultDateTimeFormat =
+  val DefaultDateTimeFormat =
     s"$Type$Type$Type$Type*******$Year$Year$Year$Year*$Day$Day*$Month$Month"
 
 
@@ -114,6 +114,15 @@ object NetCdfInputFormat {
 
 }
 
-class NetCdfInputFormat(val baseDateMetaDataKey: String) extends Serializable
+class NetCdfInputFormat(
+  val baseDateMetaDataKey: String,
+  val dateTimeFormat: String,
+  val yearOffset: Int = 0,
+  val monthOffset: Int = 0,
+  val dayOffset: Int = 0
+) extends Serializable
 
-object DefaultNetCdfInputFormat extends NetCdfInputFormat("Time#units")
+object DefaultNetCdfInputFormat extends NetCdfInputFormat(
+  "Time#units",
+  NetCdfInputFormat.DefaultDateTimeFormat
+)

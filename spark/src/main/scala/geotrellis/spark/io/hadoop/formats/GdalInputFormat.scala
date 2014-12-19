@@ -65,10 +65,10 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
 case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
 case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
 
-case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: DateTime)
+case class NetCdfBand(extent: Extent, crs: CRS, time: DateTime)
 object NetCdfBand {
-  implicit def ingestKey: IngestKey[NetCdfBand] = 
-    KeyLens[NetCdfBand, ProjectedExtent](band => ProjectedExtent(band.extent, band.crs), (band, pe) => NetCdfBand(pe.extent, pe.crs, band.varName, band.time))
+  implicit def ingestKey: IngestKey[NetCdfBand] =
+    KeyLens[NetCdfBand, ProjectedExtent](band => ProjectedExtent(band.extent, band.crs), (band, pe) => NetCdfBand(pe.extent, pe.crs, band.time))
 }
 
 object GdalInputFormat {
