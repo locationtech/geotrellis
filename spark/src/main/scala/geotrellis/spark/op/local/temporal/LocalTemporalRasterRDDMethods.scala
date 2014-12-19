@@ -47,7 +47,8 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): RasterRDD[K] = ???
+    end: DateTime): RasterRDD[K] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end)(varianceReduceOp)
 
   private def aggregateWithTemporalWindow(
     windowSize: Int,
@@ -115,5 +116,7 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
   private def maxReduceOp(tiles: Seq[Tile]) = tiles.localMax
 
   private def meanReduceOp(tiles: Seq[Tile]) = tiles.localMean
+
+  private def varianceReduceOp(tiles: Seq[Tile]) = tiles.localVariance
 
 }

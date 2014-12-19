@@ -139,6 +139,52 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
           tileArray should be(correct)
         }
       }
+
+      it("should work with variance for a 12 hours period where the window is 3 hours.") {
+        val dates = (0 until 11).map(i => new DateTime(1, 1, 1, i, 0, 0, DateTimeZone.UTC))
+        val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+
+        val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+        val windowSize = 3
+        val res = rasterRDD.variance.per (windowSize) ("hours") from (start) to (end)
+
+        val rasters = groupRasterRDDToRastersByTemporalKey(res)
+
+        rasters.size should be (11)
+
+        rasters.zipWithIndex.foreach { case(tile, idx) =>
+          val tileArray = tile.toArray
+          val base = (idx to (idx + 80)).toSeq
+
+          val adjustedWindowSize = math.min(windowSize, 11 - idx)
+          val matrix = for (i <- 0 until adjustedWindowSize) yield (base.map(_ + i))
+          val correct = Array.ofDim[Int](81)
+
+          cfor(0)(_ < 81, _ + 1) { i =>
+            val n = adjustedWindowSize
+            if (n == 1) correct(i) = NODATA
+            else {
+              var s1 = 0.0
+              cfor(0)(_ < n, _ + 1) { j =>
+                s1 += matrix(j)(i)
+              }
+
+              val mean = s1 / n
+              var s2 = 0.0
+
+              cfor(0)(_ < n, _ + 1) { j =>
+                val v = matrix(j)(i)
+                s2 += (v - mean) * (v - mean)
+              }
+
+              correct(i) = (s2 / (n - 1)).round.toInt
+            }
+          }
+
+          tileArray should be(correct)
+        }
+      }
     }
 
   }

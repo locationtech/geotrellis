@@ -45,10 +45,10 @@ object Variance extends Serializable {
           }
 
           if (newCellType.isFloatingPoint) {
-            if (count > 0) tile.setDouble(col, row, m2 / (count - 1))
+            if (count > 1) tile.setDouble(col, row, m2 / (count - 1))
             else tile.setDouble(col, row, Double.NaN)
           } else {
-            if (count > 0) tile.set(col, row, (m2 / (count - 1)).round.toInt)
+            if (count > 1) tile.set(col, row, (m2 / (count - 1)).round.toInt)
             else tile.set(col, row, NODATA)
           }
         }
