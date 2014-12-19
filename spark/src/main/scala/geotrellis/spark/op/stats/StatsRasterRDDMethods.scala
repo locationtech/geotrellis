@@ -33,4 +33,5 @@ trait StatsRasterRDDMethods[K] extends RasterRDDMethods[K] {
       .map{ case (key, tile) => tile.histogram }
       .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1,h2)) }
   }
+
 }

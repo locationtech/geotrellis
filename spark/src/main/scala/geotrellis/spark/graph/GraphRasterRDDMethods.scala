@@ -15,10 +15,16 @@ object GraphRasterRDDMethods {
 
   private val Sqrt2 = math.sqrt(2)
 
-  private def getCost(tile: Tile)(start: (Int, Int))(end: (Int, Int)): Double =
-    getCost(tile, tile)(start)(end)
+  private def getCost(tile: Tile)(
+    start: (Int, Int))(
+    end: (Int, Int))(
+    diagonal: Boolean): Double =
+      getCost(tile, tile)(start)(end)(diagonal)
 
-  private def getCost(t1: Tile, t2: Tile)(start: (Int, Int))(end: (Int, Int)): Double = {
+  private def getCost(t1: Tile, t2: Tile)(
+    start: (Int, Int))(
+    end: (Int, Int))(
+    diagonal: Boolean): Double = {
     val (sc, sr) = start
     val (ec, er) = end
     val v1 = t1.get(sc, sr)
@@ -28,7 +34,7 @@ object GraphRasterRDDMethods {
     else {
       val r = v1 + v2
 
-      if (sc != ec && sr != er) (r / Sqrt2)
+      if (diagonal) r / Sqrt2
       else r / 2.0
     }
   }
@@ -47,16 +53,16 @@ object GraphRasterRDDMethods {
         val isBottom = i == rows - 1
 
         if (!isRight)
-          edges += Edge(vertexId, vertexId + 1, c(j + 1, i))
+          edges += Edge(vertexId, vertexId + 1, c(j + 1, i)(false))
 
         if (!isRight && !isBottom)
-          edges += Edge(vertexId, vertexId + 1 + cols, c(j + 1, i + 1))
+          edges += Edge(vertexId, vertexId + 1 + cols, c(j + 1, i + 1)(true))
 
         if (!isLeft && !isBottom)
-          edges += Edge(vertexId, vertexId - 1 + cols, c(j - 1, i + 1))
+          edges += Edge(vertexId, vertexId - 1 + cols, c(j - 1, i + 1)(true))
 
         if (!isBottom)
-          edges += Edge(vertexId, vertexId + cols, c(j, i + 1))
+          edges += Edge(vertexId, vertexId + cols, c(j, i + 1)(false))
 
         vertexId += 1
       }
@@ -116,7 +122,7 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
           edges += Edge(
             lowerLeftOffset,
             otherOffset,
-            getCost(tile, t)(0, rows - 1)(cols - 1, 0)
+            getCost(tile, t)(0, rows - 1)(cols - 1, 0)(true)
           )
         }
         case _ =>
@@ -130,7 +136,7 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
           edges += Edge(
             lowerRightOffset,
             otherOffset,
-            getCost(tile, t)(cols - 1, rows - 1)(0, 0)
+            getCost(tile, t)(cols - 1, rows - 1)(0, 0)(true)
           )
         }
         case _ =>
@@ -146,12 +152,12 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
             val cOff = upperRightOffset + i * cols
             val c = cost(cols - 1, i)(_)
             if (i != 0)
-              edges += Edge(cOff, otherOffset + (i - 1) * cols, c(0, i - 1))
+              edges += Edge(cOff, otherOffset + (i - 1) * cols, c(0, i - 1)(true))
 
             if (i != rows - 1)
-              edges += Edge(cOff, otherOffset + (i + 1) * cols, c(0, i + 1))
+              edges += Edge(cOff, otherOffset + (i + 1) * cols, c(0, i + 1)(true))
 
-            edges += Edge(cOff, otherOffset + i * cols, c(0, i))
+            edges += Edge(cOff, otherOffset + i * cols, c(0, i)(false))
           }
         }
         case _ =>
@@ -165,12 +171,12 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
             val cOff = lowerLeftOffset + i
             val c = cost(i, rows - 1)(_)
             if (i != 0)
-              edges += Edge(cOff, otherOffset + i - 1, c(i - 1, 0))
+              edges += Edge(cOff, otherOffset + i - 1, c(i - 1, 0)(true))
 
-            if (i != rows - 1)
-              edges += Edge(cOff, otherOffset + i + 1, c(i + 1, 0))
+            if (i != cols - 1)
+              edges += Edge(cOff, otherOffset + i + 1, c(i + 1, 0)(true))
 
-            edges += Edge(cOff, otherOffset + i, c(i, 0))
+            edges += Edge(cOff, otherOffset + i, c(i, 0)(false))
           }
         }
         case _ =>

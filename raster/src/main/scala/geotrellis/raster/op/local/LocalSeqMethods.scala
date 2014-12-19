@@ -36,4 +36,6 @@ trait LocalSeqMethods extends TileSeqMethods {
 
   def localMajority(level: Int): Tile =
     Majority(level, tiles.toSeq)
+
+  def localVariance(): Tile = Variance(tiles)
 }

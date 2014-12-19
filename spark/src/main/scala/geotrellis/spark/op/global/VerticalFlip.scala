@@ -16,24 +16,24 @@ object VerticalFlip {
     asRasterRDD(rasterRDD.metaData) {
       rasterRDD
         .mapTiles { tile =>
-          VerticalTileFlip(tile)
-         }
+        VerticalTileFlip(tile)
+      }
         .groupBy { case (key, tile) =>
           val SpatialKey(col, row) = key
           val flippedRow = rowMax - row - 1
           if (row > flippedRow) (col, flippedRow)
           else (col, row)
-         }
+      }
         .flatMap { case ((c, r), seq) =>
           seq match {
             case Seq(first) => seq
-            case Seq((firstKey, firstTile), (secondKey, secondTile)) => 
+            case Seq((firstKey, firstTile), (secondKey, secondTile)) =>
               Seq(
                 (firstKey, secondTile),
                 (secondKey, firstTile)
               )
           }
-        }
+      }
     }
   }
 }

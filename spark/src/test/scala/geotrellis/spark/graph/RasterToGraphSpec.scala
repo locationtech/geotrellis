@@ -115,14 +115,12 @@ class RasterToGraphSpec extends FunSpec with TestEnvironment
 
         testGraph(rasterRDD, graphRDD)
 
-        val edges = Seq(
-          (0L, 1L, Double.NaN),
-          (5L, 24L, 4 / math.sqrt(2)),
-          (15L, 26L, 4 / math.sqrt(2)),
-          (33L, 34L, 4.5),
-          (27L, 28L, Double.NaN),
-          (24L, 27L, 2.0),
-          (5L, 24L, 4 / math.sqrt(2))
+        val edges = Seq[(Long, Long, Double)](
+          (0, 1, Double.NaN),
+          (5, 24, 4 / math.sqrt(2)),
+          (5, 19, 9 / math.sqrt(2)),
+          (4, 19, 9 / 2.0),
+          (4, 20, math.sqrt(2))
         )
 
         testEdges(graphRDD, edges)
