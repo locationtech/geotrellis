@@ -49,7 +49,7 @@ trait GraphRDDMethods[K] {
       val tr = row / tileRows
 
       val offset = getOffsetByColAndRow(tc, tr)
-      offset + (row - tr * tileCols) * tileCols + col - tc
+      offset + (row % tileRows) * tileCols + col % tileCols
     }
 
     ShortestPath(graphRDD, sources.map { case((c, r)) =>

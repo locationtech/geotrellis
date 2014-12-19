@@ -50,7 +50,6 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
         testTile(sc, tile, 3, 3)(rasterOp, sparkOp)
       }
 
-      //TODO: this should work right?
       it("should perform as the single raster operation on raster #2") {
         val tile = ArrayTile(Array(
           n, 7, 1,   1, 1, 1,   1, 1, 1,
@@ -61,10 +60,10 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
         ), 9, 4)
 
         val points = Seq(
-          (1, 0)//,
-                //(2, 0)
-                //(3, 3),
-                //(8, 2)
+          (1, 0),
+          (2, 0),
+          (3, 3),
+          (8, 2)
         )
 
         val rasterOp = (tile: Tile, re: RasterExtent) => CostDistance(tile, points)

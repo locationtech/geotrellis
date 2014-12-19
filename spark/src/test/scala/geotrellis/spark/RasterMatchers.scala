@@ -42,7 +42,9 @@ trait RasterMatchers extends Matchers {
         val v2 = tb.getDouble(i, j)
         if (v1.isNaN) v2.isNaN should be (true)
         else if (v2.isNaN) v1.isNaN should be (true)
-        else v1 should be (v2 +- eps)
+        else withClue(s"Failed at col: $i and row: $j") {
+          v1 should be (v2 +- eps)
+        }
       }
     }
   }
