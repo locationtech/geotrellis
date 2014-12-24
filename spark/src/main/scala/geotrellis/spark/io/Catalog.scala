@@ -4,44 +4,31 @@ import geotrellis.spark._
 
 import scala.reflect.ClassTag
 
-object Catalog {
-  object AttributeKeys {
-    val rasterMetaData = "raster-metadata"
-  }
-}
-
-trait RasterCatalog {
-  type SupportedKey[K]
-
-  def load[K: SupportedKey: ClassTag](layerId: LayerId, metaData: RasterMetaData): RasterRDD[K]
-  def save[K: SupportedKey: ClassTag](layerId: LayerId, rdd: RasterRDD[K]): Unit
-}
-
 trait Catalog {
   type Params
   type SupportedKey[K]
 
-  def attributeCatalog: AttributeCatalog
+  def metaDataCatalog: MetaDataCatalog[Params]
 
   def paramsFor[K: SupportedKey: ClassTag](layerId: LayerId): Params
 
-  def load[K: SupportedKey: ClassTag](layerId: LayerId): RasterRDD[K] =
-    load(layerId, paramsFor[K](layerId), new FilterSet[K])
+  def load[K: SupportedKey: ClassTag](id: LayerId): RasterRDD[K] =
+    load(id, new FilterSet[K])
 
-  def load[K: SupportedKey: ClassTag](layerId: LayerId, params: Params): RasterRDD[K] =
-    load(layerId, params, new FilterSet[K])
+  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params): RasterRDD[K] =
+    load(id, params, new FilterSet[K])
 
-  def load[K: SupportedKey: ClassTag](layerId: LayerId, filters: FilterSet[K]): RasterRDD[K] = {
-    val metaData = attributeCatalog.load[RasterMetaData](layerId, Catalog.AttributeKeys.rasterMetaData)
-    load(layerId, metaData.rasterMetaData, paramsFor(layerId), filters)
+  def load[K: SupportedKey: ClassTag](id: LayerId, filters: FilterSet[K]): RasterRDD[K] = {
+    val (metaData, params) = metaDataCatalog.load(id)
+    load(id, metaData.rasterMetaData, params, filters)
   }
 
-  def load[K: SupportedKey: ClassTag](layerId: LayerId, params: Params, filters: FilterSet[K]): RasterRDD[K] = {
-    val metaData = attributeCatalog.load[RasterMetaData](layerId, Catalog.AttributeKeys.rasterMetaData)
-    load(layerId, metaData.rasterMetaData, params, filters)
+  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params, filters: FilterSet[K]): RasterRDD[K] = {
+    val metaData = metaDataCatalog.load(id, params)
+    load(id, metaData.rasterMetaData, params, filters)
   }
 
-  def load[K: SupportedKey: ClassTag](layerId: LayerId, metaData: RasterMetaData, params: Params, filters: FilterSet[K]): RasterRDD[K]
+  def load[K: SupportedKey: ClassTag](id: LayerId, metaData: RasterMetaData, params: Params, filters: FilterSet[K]): RasterRDD[K]
 
   def save[K: SupportedKey: ClassTag](id: LayerId, rdd: RasterRDD[K]): Unit =
     save(id, rdd, false)

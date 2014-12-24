@@ -1,6 +1,7 @@
 package geotrellis.spark
 
 import monocle.SimpleLens
+import org.joda.time.DateTime
 
 case class SpaceTimeKey(spatialKey: SpatialKey, temporalKey: TemporalKey)
 
@@ -13,4 +14,7 @@ object SpaceTimeKey {
 
   implicit def ordering: Ordering[SpaceTimeKey] =
     Ordering.by(stk => (stk.spatialKey, stk.temporalKey))
+
+  def apply(col: Int, row: Int, time: DateTime): SpaceTimeKey =
+    SpaceTimeKey(SpatialKey(col, row), TemporalKey(time))
 }

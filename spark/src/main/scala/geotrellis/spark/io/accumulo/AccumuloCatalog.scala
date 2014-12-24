@@ -2,6 +2,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.raster._
 import org.apache.spark.SparkContext
 import scala.reflect._
 import scala.util.{Failure, Success, Try}
@@ -23,6 +24,16 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance,
   def load[K: AccumuloDriver: ClassTag](id: LayerId, metaData: RasterMetaData, table: String, filters: FilterSet[K]): RasterRDD[K] = {
     val driver = implicitly[AccumuloDriver[K]]
     driver.load(sc, instance)(id, metaData, table, filters)
+  }
+
+  def loadTile[K: AccumuloDriver: ClassTag](id: LayerId, key: K): Tile = {
+    val (metaData, table) = metaDataCatalog.load(id)
+    loadTile(id, metaData, table, key)
+  }
+
+  def loadTile[K: AccumuloDriver: ClassTag](id: LayerId, metaData: LayerMetaData, table: String, key: K): Tile = {
+    val driver = implicitly[AccumuloDriver[K]]
+    driver.loadTile(instance)(id, metaData.rasterMetaData, table, key)
   }
 
   def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {

@@ -37,7 +37,7 @@ class AccumuloAttributeCatalog(connector: Connector, val catalogTable: String) e
 
   def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation()
-      mutation.put( //RasterMetaData
+      mutation.put( 
         new Text(attributeName), new Text(), System.currentTimeMillis(),
         new Value(value.toJson.compactPrint.getBytes)
       )
