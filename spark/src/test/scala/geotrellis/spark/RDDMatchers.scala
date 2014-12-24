@@ -22,6 +22,7 @@ import geotrellis.raster._
 import scala.reflect.ClassTag
 
 trait RasterRDDMatchers extends RasterMatchers {
+
   implicit def rddToTile(rdd: RasterRDD[SpatialKey]) = rdd.stitch
   /*
    * Takes a 3-tuple, min, max, and count and checks
