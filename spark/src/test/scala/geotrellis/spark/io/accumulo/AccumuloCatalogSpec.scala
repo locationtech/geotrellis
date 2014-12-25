@@ -54,7 +54,6 @@ class AccumuloCatalogSpec extends FunSpec
 
       it("should load out saved tiles"){
         catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
-        catalog.load[SpatialKey](LayerId("ones", 10)).collect.foreach { case (key, tile) => println(s"KEY $key") }
       }
 
       it("should load out a single tile"){

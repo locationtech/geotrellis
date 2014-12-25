@@ -13,11 +13,18 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
 
-class AccumuloAttributeCatalog(connector: Connector, val catalogTable: String) extends AttributeCatalog with Logging {
+class AccumuloAttributeCatalog(connector: Connector, val attributeTable: String) extends AttributeCatalog with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
 
+  //create the attribute table if it does not exist
+  {
+    val ops = connector.tableOperations()
+    if (!ops.exists(attributeTable))
+      ops.create(attributeTable)
+  }
+
   private def fetch(layerId: LayerId, attributeName: String): List[Value] = {
-    val scanner  = connector.createScanner(catalogTable, new Authorizations())
+    val scanner  = connector.createScanner(attributeTable, new Authorizations())
     scanner.setRange(new Range(new Text(layerId.toString)))
     scanner.fetchColumnFamily(new Text(attributeName))
     scanner.iterator.toList.map(_.getValue)
@@ -36,12 +43,12 @@ class AccumuloAttributeCatalog(connector: Connector, val catalogTable: String) e
   }
 
   def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    val mutation = new Mutation()
-      mutation.put( 
-        new Text(attributeName), new Text(), System.currentTimeMillis(),
-        new Value(value.toJson.compactPrint.getBytes)
-      )
+    val mutation = new Mutation(layerId.toString)
+    mutation.put(
+      new Text(attributeName), new Text(), System.currentTimeMillis(),
+      new Value(value.toJson.compactPrint.getBytes)
+    )
 
-    connector.write(catalogTable, mutation)
+    connector.write(attributeTable, mutation)
   }
 }
