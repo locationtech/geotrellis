@@ -33,6 +33,10 @@ with OnlyIfCanRunSpark
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
       catalog.save(LayerId("ones", level.zoom), onesRdd)
 
+      it("should list layers"){
+        catalog.attributes.listLayers should contain (LayerId("ones", 10))
+      }
+
       it("should load out saved tiles"){
         catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
       }

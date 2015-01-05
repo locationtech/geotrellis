@@ -50,6 +50,12 @@ class HadoopAttributeCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: 
   }
 
   def listLayers: List[LayerId] = {
-    ???
+    val path = catalogRoot.suffix("/*/*/metadata.json")   
+    val files = HdfsUtils.listFiles(path,  sc.hadoopConfiguration)
+    files map { file =>
+      val name = file.getParent.getParent.getName
+      val zoom = file.getParent.getName.toInt
+      LayerId(name, zoom)
+    }  
   }
 }
