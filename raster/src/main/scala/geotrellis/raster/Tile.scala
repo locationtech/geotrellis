@@ -22,8 +22,6 @@ import spire.syntax.cfor._
 
 import java.util.Locale
 
-import java.math.{BigDecimal => JBigDecimal}
-
 import math.BigDecimal
 
 import collection.mutable.ArrayBuffer
@@ -32,6 +30,8 @@ import collection.mutable.ArrayBuffer
   * Base trait for a Tile.
   */
 trait Tile {
+
+  val gridBounds = GridBounds(0, 0, cols - 1, rows - 1)
 
   def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
     if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)
@@ -271,23 +271,23 @@ trait Tile {
   def asciiDrawDouble(significantDigits: Int = Int.MaxValue): String = {
     val buff = ArrayBuffer[String]()
     val mc = new java.math.MathContext(significantDigits)
-      var max = 0
-      cfor(0)(_ < rows, _ + 1) { row =>
-        cfor(0)(_ < cols, _ + 1) { col =>
-          val v = getDouble(col, row)
-          val s = if (isNoData(v)) "ND" else {
-            val s = s"$v"
-            if (s.size > significantDigits) BigDecimal(s).round(mc).toString
-            else s
-          }
-
-          max = math.max(s.size, max)
-          buff += s
+    var max = 0
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val v = getDouble(col, row)
+        val s = if (isNoData(v)) "ND" else {
+          val s = s"$v"
+          if (s.size > significantDigits) BigDecimal(s).round(mc).toString
+          else s
         }
-      }
 
-      createAsciiTileString(buff.toArray, max)
+        max = math.max(s.size, max)
+        buff += s
+      }
     }
+
+    createAsciiTileString(buff.toArray, max)
+  }
 
   private def createAsciiTileString(buff: Array[String], maxSize: Int) = {
     val sb = new StringBuilder
