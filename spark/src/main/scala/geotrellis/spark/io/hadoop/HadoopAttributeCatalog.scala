@@ -49,5 +49,7 @@ class HadoopAttributeCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: 
     }
   }
 
-  def listLayers: List[(LayerId, String)] = ???
+  def listLayers: List[LayerId] = {
+    ???
+  }
 }

@@ -7,7 +7,7 @@ import spray.json._
 trait AttributeCatalog {
   def load[T: JsonFormat](id: LayerId, attributeName: String): T
   def save[T: JsonFormat](id: LayerId, attributeName: String, value: T): Unit
-  def listLayers: List[(LayerId, String)]
+  def listLayers: List[LayerId]
 }
 
 object AttributeCatalog {

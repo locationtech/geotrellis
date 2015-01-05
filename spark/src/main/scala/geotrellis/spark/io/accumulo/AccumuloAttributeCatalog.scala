@@ -65,11 +65,11 @@ class AccumuloAttributeCatalog(connector: Connector, val attributeTable: String)
     cache put (layerId -> attributeName, value)
   }
 
-  def listLayers: List[(LayerId, String)] = {
+  def listLayers: List[LayerId] = {
     val scanner = getScanner
     scanner.fetchColumnFamily(AttributeCatalog.KEYCLASS_FIELD)
     scanner.iterator.toList.map{ row => 
-      LayerId.fromString(row.getKey.toString) -> row.getValue.toString
+      LayerId.fromString(row.getKey.toString)
     }
   }
 }
