@@ -1,6 +1,8 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.raster.json._
+import geotrellis.spark.json._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.op.stats._
@@ -14,6 +16,7 @@ import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 import scala.reflect._
+import AttributeCatalog._
 
 /** Provides a catalog for storing rasters in any Hadoop supported file system.
   * 
@@ -33,7 +36,7 @@ import scala.reflect._
   */
 class HadoopCatalog private (
     sc: SparkContext,
-    val metaDataCatalog: HadoopMetaDataCatalog,
+    val attributes: HadoopAttributeCatalog,
     rootPath: Path,
     paramsConfig: DefaultParams[String],
     catalogConfig: HadoopCatalog.Config)
@@ -45,11 +48,8 @@ class HadoopCatalog private (
   def paramsFor[K: HadoopWritable: ClassTag](id: LayerId): String =
     paramsConfig.paramsFor[K](id).getOrElse("")
 
-  def pathFor(id: LayerId, subDir: String) =
-    if (subDir == "")
-      new Path(rootPath, catalogConfig.layerDataDir(id))
-    else
-      new Path(new Path(rootPath, subDir), catalogConfig.layerDataDir(id))
+  def pathFor(id: LayerId) =
+    new Path(rootPath, catalogConfig.layerDataDir(id))
 
   private def writeSplits[K: HadoopWritable](splits: Array[K], raster: Path, conf: Configuration): Unit = {
     val splitFile = new Path(raster, catalogConfig.splitsFile)
@@ -61,11 +61,12 @@ class HadoopCatalog private (
     HdfsUtils.readArray[K](splitFile, conf)
   }
 
-  def load[K: HadoopWritable : ClassTag](id: LayerId, metaData: RasterMetaData, subDir: String, filters: FilterSet[K]): RasterRDD[K] = {
+  def load[K: HadoopWritable : ClassTag](id: LayerId, filters: FilterSet[K]): RasterRDD[K] = {
+    val metaData = attributes.load[RasterMetaData](id, "metadata")
     val keyWritable = implicitly[HadoopWritable[K]]
     import keyWritable.implicits._
 
-    val path = pathFor(id, subDir)
+    val path = pathFor(id)
     val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
     logDebug(s"Loading $id from $dataPath")
@@ -120,7 +121,7 @@ class HadoopCatalog private (
     import keyWritable.implicits._
 
     val conf = rdd.context.hadoopConfiguration
-    val path: Path = pathFor(id, subDir)
+    val path: Path = pathFor(id)
     val fs = rootPath.getFileSystem(sc.hadoopConfiguration)
     logDebug(s"Exists: $path, ${fs.exists(path)}")
     if(fs.exists(path)) {
@@ -185,7 +186,9 @@ class HadoopCatalog private (
       rasterMetaData = rdd.metaData,
       histogram = Some(rdd.histogram)
     )
-    metaDataCatalog.save(id, subDir, metaData, clobber)
+    
+    attributes.save(id, METADATA_FIELD, rdd.metaData)
+    attributes.save(id, HISTOGRAM_FIELD, rdd.histogram)
   }
 }
 
@@ -227,7 +230,7 @@ object HadoopCatalog {
             paramsConfig: DefaultParams[String] = HadoopCatalog.BaseParams,
             catalogConfig: HadoopCatalog.Config = Config.DEFAULT): HadoopCatalog = {
     HdfsUtils.ensurePathExists(rootPath, sc.hadoopConfiguration)
-    val metaDataCatalog = new HadoopMetaDataCatalog(sc, rootPath, catalogConfig.layerDataDir, catalogConfig.metaDataFileName)
-    new HadoopCatalog(sc, metaDataCatalog, rootPath, paramsConfig, catalogConfig)
+    val attributeCatalog = new HadoopAttributeCatalog(sc, rootPath, catalogConfig.layerDataDir, catalogConfig.metaDataFileName)
+    new HadoopCatalog(sc, attributeCatalog, rootPath, paramsConfig, catalogConfig)
   }
 }
