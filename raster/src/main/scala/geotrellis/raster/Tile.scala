@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,15 @@ import spire.syntax.cfor._
 
 import java.util.Locale
 
+import java.math.{BigDecimal => JBigDecimal}
+
+import math.BigDecimal
+
+import collection.mutable.ArrayBuffer
+
 /**
- * Base trait for a Tile.
- */
+  * Base trait for a Tile.
+  */
 trait Tile {
 
   def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
@@ -58,17 +64,17 @@ trait Tile {
 
   val cellType: CellType
 
-  def convert(cellType: CellType): Tile = 
+  def convert(cellType: CellType): Tile =
     LazyConvertedTile(this, cellType)
 
   /**
-   * Get value at given coordinates.
-   */
+    * Get value at given coordinates.
+    */
   def get(col: Int, row: Int): Int
 
   /**
-   * Get value at given coordinates.
-   */
+    * Get value at given coordinates.
+    */
   def getDouble(col: Int, row: Int): Double
 
   def toArrayTile(): ArrayTile
@@ -97,13 +103,13 @@ trait Tile {
   def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile
 
   /**
-   * Normalizes the values of this raster, given the current min and max, to a new min and max.
-   * 
-   *   @param oldMin    Old mininum value
-   *   @param oldMax    Old maximum value
-   *   @param newMin     New minimum value
-   *   @param newMax     New maximum value
-   */
+    * Normalizes the values of this raster, given the current min and max, to a new min and max.
+    *
+    *   @param oldMin    Old mininum value
+    *   @param oldMax    Old maximum value
+    *   @param newMin     New minimum value
+    *   @param newMax     New maximum value
+    */
   def normalize(oldMin: Int, oldMax: Int, newMin: Int, newMax: Int): Tile = {
     val dnew = newMax - newMin
     val dold = oldMax - oldMin
@@ -112,13 +118,13 @@ trait Tile {
   }
 
   /**
-   * Normalizes the values of this raster, given the current min and max, to a new min and max.
-   * 
-   *   @param oldMin    Old mininum value
-   *   @param oldMax    Old maximum value
-   *   @param newMin     New minimum value
-   *   @param newMax     New maximum value
-   */
+    * Normalizes the values of this raster, given the current min and max, to a new min and max.
+    *
+    *   @param oldMin    Old mininum value
+    *   @param oldMax    Old maximum value
+    *   @param newMin     New minimum value
+    *   @param newMax     New maximum value
+    */
   def normalize(oldMin: Double, oldMax: Double, newMin: Double, newMax: Double): Tile = {
     val dnew = newMax - newMin
     val dold = oldMax - oldMin
@@ -148,18 +154,18 @@ trait Tile {
   def warp(targetCols: Int, targetRows: Int): Tile =
     warp(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
 
-  def crop(srcExtent: Extent, extent: Extent): Tile = 
+  def crop(srcExtent: Extent, extent: Extent): Tile =
     CroppedTile(this, RasterExtent(srcExtent, cols, rows).gridBoundsFor(extent))
 
   def downsample(newCols: Int, newRows: Int)(f: CellSet => Int): Tile = {
     val colsPerBlock = math.ceil(cols / newCols.toDouble).toInt
     val rowsPerBlock = math.ceil(rows / newRows.toDouble).toInt
-    
+
     val tile = ArrayTile.empty(cellType, newCols, newRows)
 
     trait DownsampleCellSet extends CellSet { def focusOn(col: Int, row: Int): Unit }
 
-    val cellSet = 
+    val cellSet =
       new DownsampleCellSet {
         private var focusCol = 0
         private var focusRow = 0
@@ -168,7 +174,7 @@ trait Tile {
           focusCol = col
           focusRow = row
         }
-        
+
         def foreach(f: (Int, Int)=>Unit): Unit = {
           var col = 0
           while(col < colsPerBlock) {
@@ -180,7 +186,7 @@ trait Tile {
             col += 1
           }
         }
-    }
+      }
 
     var col = 0
     while(col < newCols) {
@@ -196,18 +202,18 @@ trait Tile {
   }
 
   /**
-   * Return tuple of highest and lowest value in raster.
-   *
-   * @note   Currently does not support double valued raster data types
-   *         (TypeFloat, TypeDouble). Calling findMinMax on rasters of those
-   *         types will give the integer min and max of the rounded values of
-   *         their cells.
-   */
+    * Return tuple of highest and lowest value in raster.
+    *
+    * @note   Currently does not support double valued raster data types
+    *         (TypeFloat, TypeDouble). Calling findMinMax on rasters of those
+    *         types will give the integer min and max of the rounded values of
+    *         their cells.
+    */
   def findMinMax = {
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
 
-    foreach { 
+    foreach {
       z => if (isData(z)) {
         zmin = math.min(zmin, z)
         zmax = math.max(zmax, z)
@@ -216,11 +222,11 @@ trait Tile {
 
     if(zmin == Int.MaxValue) { zmin = NODATA }
     (zmin, zmax)
-  } 
+  }
 
   /**
-   * Return tuple of highest and lowest value in raster.
-   */
+    * Return tuple of highest and lowest value in raster.
+    */
   def findMinMaxDouble = {
     var zmin = Double.NaN
     var zmax = Double.NaN
@@ -241,30 +247,67 @@ trait Tile {
   }
 
   /**
-   * Return ascii art of this raster.
-   */
-  def asciiDraw(): String = { 
-    val sb = new StringBuilder
-    for(row <- 0 until rows) {
-      for(col <- 0 until cols) {
+    * Return ascii art of this raster.
+    */
+  def asciiDraw(): String = {
+    val buff = ArrayBuffer[String]()
+    var max = 0
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val v = get(col, row)
-        val s = if(isNoData(v)) {
-          "ND"
-        } else {
-          s"$v"
+        val s = if (isNoData(v)) "ND" else s"$v"
+        max = math.max(max, s.size)
+        buff += s
+      }
+    }
+
+    createAsciiTileString(buff.toArray, max)
+  }
+
+  /**
+    * Return ascii art of this raster. The single int parameter indicates the
+    * number of significant digits to be printed.
+    */
+  def asciiDrawDouble(significantDigits: Int = Int.MaxValue): String = {
+    val buff = ArrayBuffer[String]()
+    val mc = new java.math.MathContext(significantDigits)
+      var max = 0
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
+          val v = getDouble(col, row)
+          val s = if (isNoData(v)) "ND" else {
+            val s = s"$v"
+            if (s.size > significantDigits) BigDecimal(s).round(mc).toString
+            else s
+          }
+
+          max = math.max(s.size, max)
+          buff += s
         }
-        val pad = " " * math.max(6 - s.length, 0) 
+      }
+
+      createAsciiTileString(buff.toArray, max)
+    }
+
+  private def createAsciiTileString(buff: Array[String], maxSize: Int) = {
+    val sb = new StringBuilder
+    val limit = math.max(6, maxSize)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val s = buff(row * cols + col)
+        val pad = " " * math.max(limit - s.length, 1)
         sb.append(s"$pad$s")
       }
+
       sb += '\n'
-    }      
+    }
     sb += '\n'
     sb.toString
   }
 
   /**
-   * Return ascii art of a range from this raster.
-   */
+    * Return ascii art of a range from this raster.
+    */
   def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int) = {
     var s = "";
     for (row <- rowMin to rowMax) {
