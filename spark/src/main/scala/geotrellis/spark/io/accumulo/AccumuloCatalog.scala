@@ -27,7 +27,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance,
 
   def load[K: AccumuloDriver: ClassTag](id: LayerId, filters: FilterSet[K]): RasterRDD[K] = {
     val metaData = attributes.load[RasterMetaData](id, METADATA_FIELD)    
-    val table = attributes.load[String](id, TABLENAME_FIELD)    
+    val table = attributes.load[String](id, TABLENAME_FIELD)
 
     val driver = implicitly[AccumuloDriver[K]]
     driver.load(sc, instance)(id, metaData, table, filters)
