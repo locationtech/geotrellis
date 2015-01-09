@@ -40,24 +40,33 @@ trait HadoopSparkContextMethods {
   def netCdfRDD(
     path: Path,
     inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(NetCdfBand, Tile)] = {
-    val makeTime = (info: GdalRasterInfo) => {
-      val baseString = info.file.meta(inputFormat.baseDateMetaDataKey)
+    val makeTime = (info: GdalRasterInfo) =>
+    info.file.meta.find {
+      case(key, value) => key.toLowerCase == inputFormat.baseDateMetaDataKey.toLowerCase
+    }.map(_._2) match {
+      case Some(baseString) => {
 
-      val (typ, base) = NetCdfInputFormat.readTypeAndDate(
-        baseString,
-        inputFormat.dateTimeFormat,
-        inputFormat.yearOffset,
-        inputFormat.monthOffset,
-        inputFormat.dayOffset
-      )
+        val (typ, base) = NetCdfInputFormat.readTypeAndDate(
+          baseString,
+          inputFormat.dateTimeFormat,
+          inputFormat.yearOffset,
+          inputFormat.monthOffset,
+          inputFormat.dayOffset
+        )
 
-      val v = info.bandMeta("NETCDF_DIM_Time").toDouble
-      NetCdfInputFormat.incrementDate(typ, v, base)
+        info.bandMeta.find {
+          case(key, value) => key.toLowerCase == "netcdf_dim_time"
+        }.map(_._2) match {
+          case Some(s) => NetCdfInputFormat.incrementDate(typ, s.toDouble, base)
+          case _ => base
+        }
+      }
+      case None => throw new IllegalArgumentException("Can't find base date!")
     }
 
     gdalRDD(path)
       .map { case (info, tile) =>
-        val band = NetCdfBand( //TODO: Remove varname
+        val band = NetCdfBand(
           extent = info.file.rasterExtent.extent,
           crs = info.file.crs,
           time = makeTime(info)
