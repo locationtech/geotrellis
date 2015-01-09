@@ -25,9 +25,11 @@ import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 
 import geotrellis.raster.op.zonal.summary._
 
+import geotrellis.vector.Extent
+
 import geotrellis.testkit._
 
-import geotrellis.proj4.CRS
+import geotrellis.proj4.{CRS, LatLng}
 
 import scala.io.{Source, Codec}
 
@@ -83,15 +85,15 @@ class GeoTiffReaderSpec extends FunSpec
     }
   }
 
-  describe ("reading file and saving output") {
+  describe("reading file and saving output") {
 
-    it ("must read aspect.tif and save") {
+    it("must read aspect.tif and save") {
       readAndSave("aspect.tif")
     }
 
   }
 
-  describe ("reading an ESRI generated Float32 geotiff with 0 NoData value") {
+  describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
 
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
       val (readTile, _, _) =
@@ -106,7 +108,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  describe ("reading slope.tif") {
+  describe("reading slope.tif") {
     it("should match the ARG version") {
       val path = "slope.tif"
       val argPath = s"$filePathToTestData/data/slope.json"
@@ -124,55 +126,55 @@ class GeoTiffReaderSpec extends FunSpec
 
   // Apparently GDAL supports a ton of different compressions.
   // In the coming days we will work to add support for as many as possible.
-  describe ("reading compressed file must yield same image array as uncompressed file") {
+  describe("reading compressed file must yield same image array as uncompressed file") {
 
     ignore ("must read aspect_jpeg.tif and match uncompressed file") {
 
     }
 
-    it ("must read econic_lzw.tif and match uncompressed file") {
+    it("must read econic_lzw.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/econic_lzw.tif")
       val uncomp = read("econic.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("must read econic_packbits.tif and match uncompressed file") {
+    it("must read econic_packbits.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/econic_packbits.tif")
       val uncomp = read("econic.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("must read econic_zlib.tif and match uncompressed file") {
+    it("must read econic_zlib.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/econic_zlib.tif")
       val uncomp = read("econic.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("must read bilevel_CCITTRLE.tif and match uncompressed file") {
+    it("must read bilevel_CCITTRLE.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/bilevel_CCITTRLE.tif")
       val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("must read bilevel_CCITTFAX3.tif and match uncompressed file") {
+    it("must read bilevel_CCITTFAX3.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX3.tif")
       val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("must read bilevel_CCITTFAX4.tif and match uncompressed file") {
+    it("must read bilevel_CCITTFAX4.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
       val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("must read all-ones.tif and match uncompressed file") {
+    it("must read all-ones.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/all-ones.tif")
       val uncomp = read("geotiff-reader-tiffs/all-ones-no-comp.tif")
 
@@ -180,16 +182,16 @@ class GeoTiffReaderSpec extends FunSpec
     }
   }
 
-  describe ("reading tiled file must yield same image as strip files") {
+  describe("reading tiled file must yield same image as strip files") {
 
-    it ("must read bilevel_tiled.tif and match strip file") {
+    it("must read bilevel_tiled.tif and match strip file") {
       val tiled = read("geotiff-reader-tiffs/bilevel_tiled.tif")
       val striped = read("geotiff-reader-tiffs/bilevel.tif")
 
       compareGeoTiffImages(tiled, striped)
     }
 
-    it ("must read us_ext_clip_esri.tif and match strip file") {
+    it("must read us_ext_clip_esri.tif and match strip file") {
       val tiled = read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
       val striped = read("geotiff-reader-tiffs/us_ext_clip_esri_stripes.tif")
 
@@ -198,9 +200,9 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  describe ("match tiff tags and geokeys correctly") {
+  describe("match tiff tags and geokeys correctly") {
 
-    it ("must match aspect.tif tiff tags") {
+    it("must match aspect.tif tiff tags") {
       val aspect = read("aspect.tif")
 
       val ifd = aspect.imageDirectories(0)
@@ -269,7 +271,7 @@ class GeoTiffReaderSpec extends FunSpec
       }
     }
 
-    it ("must match aspect.tif geokeys") {
+    it("must match aspect.tif geokeys") {
       val aspect = read("aspect.tif")
 
       val ifd = aspect.imageDirectories(0)
@@ -302,7 +304,7 @@ class GeoTiffReaderSpec extends FunSpec
 
     }
 
-    it ("must match colormap.tif colormap") {
+    it("must match colormap.tif colormap") {
       val colorMappedTiff = read("geotiff-reader-tiffs/colormap.tif")
 
       val ifd = colorMappedTiff.imageDirectories(0)
@@ -361,9 +363,9 @@ class GeoTiffReaderSpec extends FunSpec
    The listgeo command sometimes drops precision compared to our generator,
    therefore we sometimes increase the epsilon double comparison value.
    */
-  describe ("reads GeoTiff CS correctly") {
+  describe("reads GeoTiff CS correctly") {
 
-    it ("should read slope.tif CS correctly") {
+    it("should read slope.tif CS correctly") {
       val tiff = read("slope.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -373,7 +375,7 @@ class GeoTiffReaderSpec extends FunSpec
       crs should equal(correctCRS)
     }
 
-    it ("should read aspect.tif CS correctly") {
+    it("should read aspect.tif CS correctly") {
       val tiff = read("aspect.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -385,7 +387,7 @@ class GeoTiffReaderSpec extends FunSpec
       crs should equal(crs)
     }
 
-    it ("should read econic.tif CS correctly") {
+    it("should read econic.tif CS correctly") {
       val tiff = read("econic.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -397,7 +399,7 @@ class GeoTiffReaderSpec extends FunSpec
       crs should equal(correctCRS)
     }
 
-    it ("should read bilevel.tif CS correctly") {
+    it("should read bilevel.tif CS correctly") {
       val tiff = read("geotiff-reader-tiffs/bilevel.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -409,7 +411,7 @@ class GeoTiffReaderSpec extends FunSpec
       crs should equal(correctCRS)
     }
 
-    it ("should read all-ones.tif CS correctly") {
+    it("should read all-ones.tif CS correctly") {
       val tiff = read("geotiff-reader-tiffs/all-ones.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -419,7 +421,7 @@ class GeoTiffReaderSpec extends FunSpec
       crs should equal(correctCRS)
     }
 
-    it ("should read colormap.tif CS correctly") {
+    it("should read colormap.tif CS correctly") {
       val tiff = read("geotiff-reader-tiffs/colormap.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -429,7 +431,7 @@ class GeoTiffReaderSpec extends FunSpec
       crs should equal(correctCRS)
     }
 
-    it ("should read us_ext_clip_esri.tif CS correctly") {
+    it("should read us_ext_clip_esri.tif CS correctly") {
       val tiff = read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
 
       val crs = tiff.imageDirectories.head.crs
@@ -441,7 +443,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  describe ("reads file data correctly") {
+  describe("reads file data correctly") {
 
     val MeanEpsilon = 1e-8
 
@@ -454,7 +456,7 @@ class GeoTiffReaderSpec extends FunSpec
       tile.zonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
     }
 
-    it ("should read UINT 16 little endian files correctly") {
+    it("should read UINT 16 little endian files correctly") {
       val min = 71
       val max = 237
       val mean = 210.66777801514
@@ -463,13 +465,25 @@ class GeoTiffReaderSpec extends FunSpec
       testMinMaxAndMean(min, max, mean, file)
     }
 
-    it ("should read FLOAT 32 little endian files correctly") {
+    it("should read FLOAT 32 little endian files correctly") {
       val min = 0
       val max = 360
       val mean = 190.02287812187
       val file = "/aspect.tif"
 
       testMinMaxAndMean(min, max, mean, file)
+    }
+
+    it("should read GeoTiff without GeoKey Directory correctly") {
+      val (tile, extent, crs) = read("geotiff-reader-tiffs/no-geokey-dir.tif").imageDirectories.head.toRaster
+      crs should be (LatLng)
+      extent should be (Extent(307485, 3911490, 332505, 3936510))
+
+      val (max, min, mean) = (74032, -20334, 17.023709809131)
+
+      tile.zonalMax(extent, extent.toPolygon) should be (max)
+      tile.zonalMin(extent, extent.toPolygon) should be (min)
+      tile.zonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
     }
 
   }
