@@ -29,9 +29,7 @@ object ShortestPath {
 
     def vertexProgram(id: VertexId, attr: (K, Double), msg: Double): (K, Double) = {
       val (key, before) = attr
-      if (before.isNaN) (key, msg)
-      else if (msg.isNaN) (key, before)
-      else (key, math.min(before, msg))
+      (key, math.min(before, msg))
     }
 
     def sendMessage(
@@ -56,29 +54,23 @@ object ShortestPath {
     new GraphRDD(res, graphRDD.metaData)
   }
 
-  def apply[K](graphRDD: GraphRDD[K], source: VertexId, goal: VertexId)
-    (implicit keyClassTag: ClassTag[K]): Seq[Seq[VertexId]] = {
+  def apply[K](graphRDD: GraphRDD[K], source: VertexId, dest: VertexId)
+    (implicit keyClassTag: ClassTag[K]): Set[Seq[VertexId]] = {
     val verticesCount = graphRDD.vertices.count
     if (source >= verticesCount)
       throw new IllegalArgumentException(s"Too large source vertexId: $source")
-    if (goal >= verticesCount)
-      throw new IllegalArgumentException(s"Too large goal vertexId: $goal")
+    if (dest >= verticesCount)
+      throw new IllegalArgumentException(s"Too large dest vertexId: $dest")
 
     val shortestPathWithRememberParentGraph =
-      shortestPathWithRememberParent(graphRDD, source, goal)
+      shortestPathWithRememberParent(graphRDD, source)
 
-    // Now we want to extract the friggin path too then it's GG
-    // Need to pregel this crap too? NOPE accum under the way
-
-    accumulatePath(shortestPathWithRememberParentGraph)
-
-    ???
+    accumulatePath(shortestPathWithRememberParentGraph, source, dest)
   }
 
   private def shortestPathWithRememberParent[K](
     graphRDD: GraphRDD[K],
-    source: VertexId,
-    goal: VertexId)(
+    source: VertexId)(
     implicit keyClassTag: ClassTag[K]
   ): Graph[(K, (Double, Set[VertexId], Set[VertexId])), Double] = {
     val initValue = Double.MaxValue
@@ -103,7 +95,7 @@ object ShortestPath {
       val (key, (oldCost, bestNeighborSet, id)) = attr
       val (newCost, _, incomingIds) = msg
 
-      if (oldCost.isNaN || newCost < oldCost)
+      if (newCost < oldCost)
         (key, (newCost, incomingIds, id))
       else if (newCost == oldCost)
         (key, (newCost, incomingIds ++ bestNeighborSet, id))
@@ -113,7 +105,7 @@ object ShortestPath {
 
     def sendMessage(
       edge: EdgeTriplet[(K, (Double, Set[VertexId], Set[VertexId])), Double]
-    ):  Iterator[(VertexId, (Double, Set[VertexId], Set[VertexId]))] = {
+    ): Iterator[(VertexId, (Double, Set[VertexId], Set[VertexId]))] = {
       val (srcKey, (srcAttr, _, froms)) = edge.srcAttr
       if (srcAttr.isNaN) Iterator.empty
       else {
@@ -140,7 +132,75 @@ object ShortestPath {
   }
 
   private def accumulatePath[K](
-    graph: Graph[(K, (Double, Set[VertexId], Set[VertexId])), Double]
-  ): Seq[Seq[VertexId]] = ??? // Create the paths from dest to src.
+    graph: Graph[(K, (Double, Set[VertexId], Set[VertexId])), Double],
+    source: Long,
+    dest: Long
+  ): Set[Seq[VertexId]] = {
+
+    val vertices = graph.vertices.map { case(id, (key, (v, later, ids))) =>
+      if (id == dest)
+        (id, (key, (later, Set[Seq[VertexId]](Seq(id)), Set[VertexId](), true)))
+      else
+        (id, (key, (later, Set[Seq[VertexId]](), Set[VertexId](), false)))
+    }
+
+    val g = Graph(vertices, graph.edges)
+
+    def vertexProgram(
+      id: VertexId,
+      attr: (K, (Set[VertexId], Set[Seq[VertexId]], Set[VertexId], Boolean)),
+      msg: (Set[VertexId], Set[Seq[VertexId]], Boolean)
+    ): (K, (Set[VertexId], Set[Seq[VertexId]], Set[VertexId], Boolean)) = {
+      val (key, (prev, paths, takenFrom, shouldSend)) = attr
+      val (from, prevPaths, shouldAccept) = msg
+
+      if (shouldAccept) {
+        val newPaths =
+          if (prevPaths.isEmpty) paths ++ Set(Seq(id))
+          else prevPaths.map(id +: _) ++ paths
+
+        (key, (prev, newPaths, takenFrom ++ from, true))
+      } else
+        (key, (prev, paths, takenFrom, shouldSend))
+    }
+
+    def sendMessage(
+      edge: EdgeTriplet[(K, (Set[VertexId], Set[Seq[VertexId]], Set[VertexId], Boolean)), Double]
+    ): Iterator[(VertexId, (Set[VertexId], Set[Seq[VertexId]], Boolean))] = {
+      val (_, (goals, paths, _, shouldSendMessage)) = edge.srcAttr
+      val (_, (_, _, takenFrom, _)) = edge.dstAttr
+
+      val srcId = edge.srcId
+      val dstId = edge.dstId
+
+      if (shouldSendMessage && goals.contains(dstId) && !takenFrom.contains(srcId))
+        Iterator((dstId, (Set(srcId), paths, true)))
+      else
+        Iterator.empty
+    }
+
+    def mergeMessage(
+      a: (Set[VertexId], Set[Seq[VertexId]], Boolean),
+      b: (Set[VertexId], Set[Seq[VertexId]], Boolean)
+    ): (Set[VertexId], Set[Seq[VertexId]], Boolean) = {
+      val (aIds, aPaths, aShouldSendMessage) = a
+      val (bIds, bPaths, bShouldSendMessage) = b
+
+      if (aShouldSendMessage && bShouldSendMessage)
+        (aIds ++ bIds, aPaths ++ bPaths, true)
+      else if (aShouldSendMessage) a
+      else if (bShouldSendMessage) b
+      else (Set[VertexId](), Set[Seq[VertexId]](), false)
+    }
+
+    val init = (Set[VertexId](), Set[Seq[VertexId]](), false)
+
+    val res = g.pregel(init)(vertexProgram, sendMessage, mergeMessage)
+
+    val (_, (_, (_, paths, _, _ ))) =
+      res.vertices.filter { case (id, _) => id == source }.collect.head
+
+    paths
+  }
 
 }
