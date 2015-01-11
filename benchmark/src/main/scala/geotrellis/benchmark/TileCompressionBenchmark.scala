@@ -12,7 +12,7 @@ trait TileCompressionBenchmark extends OperationBenchmark {
 
   val tileDoubleName = "mtsthelens_tiled"
 
-  @Param(Array("64", "128", "256", "512", "1024"))
+  @Param(Array("256"))
   var size = 0
 
   var tile: Tile = null

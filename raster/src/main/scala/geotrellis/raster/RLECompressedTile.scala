@@ -24,7 +24,10 @@ object RLECompressor extends Compressor {
             val c = doubleArray(i)
             val oi = i
             i += 1
-            while (i < doubleArray.size && doubleArray(i) == c) i += 1
+            if (c.isNaN)
+              while (i < doubleArray.size && doubleArray(i).isNaN) i += 1
+            else
+              while (i < doubleArray.size && doubleArray(i) == c) i += 1
 
             val count = i - oi
 
