@@ -391,6 +391,7 @@ object GeotrellisBuild extends Build {
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
+          scalaz,
           sprayRouting, sprayCan,
           scalatest % "test"
         ),
