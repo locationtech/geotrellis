@@ -15,13 +15,15 @@ object GraphRasterRDDMethods {
 
   private val Sqrt2 = math.sqrt(2)
 
-  private def getCost(tile: Tile)(
+  @inline
+  private final def getCost(tile: Tile)(
     start: (Int, Int))(
     end: (Int, Int))(
     diagonal: Boolean): Double =
-      getCost(tile, tile)(start)(end)(diagonal)
+    getCost(tile, tile)(start)(end)(diagonal)
 
-  private def getCost(t1: Tile, t2: Tile)(
+  @inline
+  private final def getCost(t1: Tile, t2: Tile)(
     start: (Int, Int))(
     end: (Int, Int))(
     diagonal: Boolean): Double = {
@@ -39,32 +41,53 @@ object GraphRasterRDDMethods {
     }
   }
 
-  private def constructEdges(offset: Long, tile: Tile) = {
+  @inline
+  private final def constructEdges(tile: Tile, getVertexId: (Int, Int) => Long) = {
     val (cols, rows) = tile.dimensions
 
     val cost = getCost(tile)(_)
     val edges = new ArrayBuffer[Edge[Double]](cols * rows * 5)
-    var vertexId = offset
-    cfor(0)(_ < rows, _ + 1) { i =>
-      cfor(0)(_ < cols, _ + 1) { j =>
-        val c = cost(j, i)
-        val isRight = j == cols - 1
-        val isLeft = j == 0
-        val isBottom = i == rows - 1
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val vertexId = getVertexId(col, row)
 
-        if (!isRight)
-          edges += Edge(vertexId, vertexId + 1, c(j + 1, i)(false))
+        val c = cost(col, row)(_)
 
-        if (!isRight && !isBottom)
-          edges += Edge(vertexId, vertexId + 1 + cols, c(j + 1, i + 1)(true))
+        val isRight = col == cols - 1
+        val isLeft = col == 0
+        val isBottom = row == rows - 1
 
-        if (!isLeft && !isBottom)
-          edges += Edge(vertexId, vertexId - 1 + cols, c(j - 1, i + 1)(true))
+        if (!isRight) {
+          val otherVertexId = getVertexId(col + 1, row)
+          val edgeCost = c(col + 1, row)(false)
 
-        if (!isBottom)
-          edges += Edge(vertexId, vertexId + cols, c(j, i + 1)(false))
+          edges += Edge(vertexId, otherVertexId, edgeCost)
+          edges += Edge(otherVertexId, vertexId, edgeCost)
+        }
 
-        vertexId += 1
+        if (!isRight && !isBottom) {
+          val otherVertexId = getVertexId(col + 1, row + 1)
+          val edgeCost = c(col + 1, row + 1)(true)
+
+          edges += Edge(vertexId, otherVertexId, edgeCost)
+          edges += Edge(otherVertexId, vertexId, edgeCost)
+        }
+
+        if (!isLeft && !isBottom) {
+          val otherVertexId = getVertexId(col - 1, row + 1)
+          val edgeCost = c(col - 1, row + 1)(true)
+
+          edges += Edge(vertexId, otherVertexId, edgeCost)
+          edges += Edge(otherVertexId, vertexId, edgeCost)
+        }
+
+        if (!isBottom) {
+          val otherVertexId = getVertexId(col, row + 1)
+          val edgeCost = c(col, row + 1)(false)
+
+          edges += Edge(vertexId, otherVertexId, edgeCost)
+          edges += Edge(otherVertexId, vertexId, edgeCost)
+        }
       }
     }
 
@@ -85,23 +108,23 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
     val tileLayout = metaData.tileLayout
 
     val (layoutCols, layoutRows) = (gridBounds.width - 1, gridBounds.height - 1)
-    val (cols, rows) = (tileLayout.tileCols, tileLayout.tileRows)
-    val area = cols * rows
+    val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
 
-    def getOffset[K](key: K) = {
-      val SpatialKey(col, row) = key
-      getOffsetByColAndRow(col, row)
-    }
-
-    def getOffsetByColAndRow(col: Long, row: Long) =
-      area * layoutCols * row + area * col
+    def getVertexId(layoutCol: Long, layoutRow: Long)
+      (tileCol: Int, tileRow: Int) = ((layoutRow * tileRows + tileRow)
+        * tileCols * layoutCols + layoutCol * tileCols + tileCol)
 
     val verticesRDD = rasterRDD.flatMap { case(key, tile) =>
-      val offset = getOffset(key)
-      val vertices = Array.ofDim[(VertexId, (K, Double))](area)
-      cfor(0)(_ < area, _ + 1) { i =>
-        val v = tile.get(i % cols, i / cols)
-        vertices(i) = (offset + i, (key, if (v == NODATA) Double.NaN else v))
+      val SpatialKey(layoutCol, layoutRow) = key
+      val getVertexIdForTile = getVertexId(layoutCol, layoutRow) _
+
+      val vertices = Array.ofDim[(VertexId, (K, Double))](tile.size)
+
+      cfor(0)(_ < tile.size, _ + 1) { i =>
+        val (tileCol, tileRow) = (i % tileCols, i / tileCols)
+        val v = tile.get(tileCol, tileRow)
+        val vertexId = getVertexIdForTile(tileCol, tileRow)
+        vertices(i) = (vertexId, (key, if (v == NODATA) Double.NaN else v))
       }
 
       vertices
@@ -109,74 +132,110 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
     implicit val _scImplicit = _sc
     val edgesRDD = rasterRDD.zipWithNeighbors.flatMap { case(key, tile, neighbors) =>
-      val SpatialKey(col, row) = key
-      val upperLeftOffset = getOffsetByColAndRow(col, row)
+      val SpatialKey(layoutCol, layoutRow) = key
+      val getVertexIdForTile = getVertexId(layoutCol, layoutRow) _
 
-      val edges = constructEdges(upperLeftOffset, tile)
-
-      val lowerLeftOffset = upperLeftOffset + (rows - 1) * cols
+      val edges = constructEdges(tile, getVertexIdForTile)
 
       neighbors.sw match {
-        case Some(t) => {
-          val otherOffset = getOffsetByColAndRow(col - 1, row + 1) + cols - 1
-          edges += Edge(
-            lowerLeftOffset,
-            otherOffset,
-            getCost(tile, t)(0, rows - 1)(cols - 1, 0)(true)
-          )
+        case Some(otherTile) => {
+          val vertexId = getVertexIdForTile(0, tileRows - 1)
+          val otherVertexId = getVertexId(layoutCol - 1, layoutRow + 1)(tileCols - 1, 0)
+
+          val cost = getCost(tile, otherTile)(0, tileRows - 1)(tileCols - 1, 0)(true)
+
+          edges += Edge(vertexId, otherVertexId, cost)
+          edges += Edge(otherVertexId, vertexId, cost)
         }
         case _ =>
       }
-
-      val lowerRightOffset = upperLeftOffset + area - 1
 
       neighbors.se match {
-        case Some(t) => {
-          val otherOffset = getOffsetByColAndRow(col + 1, row + 1)
-          edges += Edge(
-            lowerRightOffset,
-            otherOffset,
-            getCost(tile, t)(cols - 1, rows - 1)(0, 0)(true)
-          )
+        case Some(otherTile) => {
+          val vertexId = getVertexIdForTile(tileCols - 1, tileRows - 1)
+          val otherVertexId = getVertexId(layoutCol + 1, layoutRow + 1)(0, 0)
+
+          val cost = getCost(tile, otherTile)(tileCols - 1, tileRows - 1)(0, 0)(true)
+
+          edges += Edge(vertexId, otherVertexId, cost)
+          edges += Edge(otherVertexId, vertexId, cost)
         }
         case _ =>
       }
 
-      val upperRightOffset = upperLeftOffset + cols - 1
-
       neighbors.e match {
-        case Some(t) => {
-          val otherOffset = getOffsetByColAndRow(col + 1, row)
-          val cost = getCost(tile, t)(_)
-          cfor(0)(_ < rows, _ + 1) { i =>
-            val cOff = upperRightOffset + i * cols
-            val c = cost(cols - 1, i)(_)
-            if (i != 0)
-              edges += Edge(cOff, otherOffset + (i - 1) * cols, c(0, i - 1)(true))
+        case Some(otherTile) => {
+          val cost = getCost(tile, otherTile) _
+          val getVertexIdForOtherTile = getVertexId(layoutCol + 1, layoutRow) _
 
-            if (i != rows - 1)
-              edges += Edge(cOff, otherOffset + (i + 1) * cols, c(0, i + 1)(true))
+          cfor(0)(_ < tileRows, _ + 1) { row =>
+            val vertexId = getVertexIdForTile(tileCols - 1, row)
 
-            edges += Edge(cOff, otherOffset + i * cols, c(0, i)(false))
+            val c = cost(tileCols - 1, row)(_)
+
+            val isTop = row == 0
+            val isBottom = row == tileRows - 1
+
+            if (!isTop) {
+              val otherVertexId = getVertexIdForOtherTile(0, row - 1)
+              val edgeCost = c(0, row - 1)(true)
+
+              edges += Edge(vertexId, otherVertexId, edgeCost)
+              edges += Edge(otherVertexId, vertexId, edgeCost)
+            }
+
+            if (!isBottom) {
+              val otherVertexId = getVertexIdForOtherTile(0, row + 1)
+              val edgeCost = c(0, row + 1)(true)
+
+              edges += Edge(vertexId, otherVertexId, edgeCost)
+              edges += Edge(otherVertexId, vertexId, edgeCost)
+            }
+
+            val otherVertexId = getVertexIdForOtherTile(0, row)
+            val edgeCost = c(0, row)(false)
+
+            edges += Edge(vertexId, otherVertexId, edgeCost)
+            edges += Edge(otherVertexId, vertexId, edgeCost)
           }
         }
         case _ =>
       }
 
       neighbors.s match {
-        case Some(t) => {
-          val otherOffset = getOffsetByColAndRow(col, row + 1)
-          val cost = getCost(tile, t)(_)
-          cfor(0)(_ < cols, _ + 1) { i =>
-            val cOff = lowerLeftOffset + i
-            val c = cost(i, rows - 1)(_)
-            if (i != 0)
-              edges += Edge(cOff, otherOffset + i - 1, c(i - 1, 0)(true))
+        case Some(otherTile) => {
+          val cost = getCost(tile, otherTile)(_)
+          val getVertexIdForOtherTile = getVertexId(layoutCol, layoutRow + 1) _
 
-            if (i != cols - 1)
-              edges += Edge(cOff, otherOffset + i + 1, c(i + 1, 0)(true))
+          cfor(0)(_ < tileCols, _ + 1) { col =>
+            val vertexId = getVertexIdForTile(col, tileRows - 1)
 
-            edges += Edge(cOff, otherOffset + i, c(i, 0)(false))
+            val c = cost(col, tileRows - 1)(_)
+
+            val isLeft = col == 0
+            val isRight = col == tileCols - 1
+
+            if (!isLeft) {
+              val otherVertexId = getVertexIdForOtherTile(col - 1, 0)
+              val edgeCost = c(col - 1, 0)(true)
+
+              edges += Edge(vertexId, otherVertexId, edgeCost)
+              edges += Edge(otherVertexId, vertexId, edgeCost)
+            }
+
+            if (!isRight) {
+              val otherVertexId = getVertexIdForOtherTile(col + 1, 0)
+              val edgeCost = c(col + 1, 0)(true)
+
+              edges += Edge(vertexId, otherVertexId, edgeCost)
+              edges += Edge(otherVertexId, vertexId, edgeCost)
+            }
+
+            val otherVertexId = getVertexIdForOtherTile(col, 0)
+            val edgeCost = c(col, 0)(false)
+
+            edges += Edge(vertexId, otherVertexId, edgeCost)
+            edges += Edge(otherVertexId, vertexId, edgeCost)
           }
         }
         case _ =>

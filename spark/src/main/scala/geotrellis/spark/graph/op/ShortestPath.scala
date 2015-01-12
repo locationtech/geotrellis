@@ -17,15 +17,13 @@ object ShortestPath {
 
     val init = Double.MaxValue
 
-    val edges = graphRDD.edges.flatMap(e => Seq(e, Edge(e.dstId, e.srcId, e.attr)))
-
     val vertices = graphRDD.vertices.map { case(id, (key, v)) =>
       if (sources.contains(id)) (id, (key, 0.0))
       else if (v.isNaN) (id, (key, v))
       else (id, (key, init))
     }
 
-    val g = Graph(vertices, edges)
+    val g = Graph(vertices, graphRDD.edges)
 
     def vertexProgram(id: VertexId, attr: (K, Double), msg: Double): (K, Double) = {
       val (key, before) = attr
@@ -34,20 +32,17 @@ object ShortestPath {
 
     def sendMessage(
       edge: EdgeTriplet[(K, Double), Double]): Iterator[(VertexId, Double)] = {
-      val (srcKey, srcAttr) = edge.srcAttr
-      if (srcAttr.isNaN) Iterator.empty
+      val (_, srcAttr) = edge.srcAttr
+      val (_, dstAttr) = edge.dstAttr
+      if (srcAttr.isNaN || dstAttr.isNaN) Iterator.empty
       else {
         val newAttr = srcAttr + edge.attr
-        val (_, destAttr) = edge.dstAttr
-        if (destAttr > newAttr) Iterator((edge.dstId, newAttr))
+        if (dstAttr > newAttr) Iterator((edge.dstId, newAttr))
         else Iterator.empty
       }
     }
 
-    def mergeMsg(a: Double, b: Double): Double =
-      if (a.isNaN) b
-      else if (b.isNaN) a
-      else math.min(a, b)
+    def mergeMsg(a: Double, b: Double): Double = math.min(a, b)
 
     val res = g.pregel(init)(vertexProgram, sendMessage, mergeMsg)
 
@@ -72,72 +67,71 @@ object ShortestPath {
     graphRDD: GraphRDD[K],
     source: VertexId)(
     implicit keyClassTag: ClassTag[K]
-  ): Graph[(K, (Double, Set[VertexId], Set[VertexId])), Double] = {
+  ): Graph[(K, (Double, Set[VertexId])), Double] = {
     val initValue = Double.MaxValue
 
-    val init = (initValue, Set[VertexId](), Set[VertexId]())
-
-    val edges = graphRDD.edges.flatMap(e => Seq(e, Edge(e.dstId, e.srcId, e.attr)))
+    val init = (initValue, Set[VertexId]())
 
     val vertices = graphRDD.vertices.map { case(id, (key, v)) =>
-      if (source == id) (id, (key, (0.0, Set[VertexId](), Set(id))))
-      else if (v.isNaN) (id, (key, (v, Set[VertexId](), Set(id))))
-      else (id, (key, (initValue, Set[VertexId](), Set(id))))
+      if (source == id) (id, (key, (0.0, Set[VertexId]())))
+      else if (v.isNaN) (id, (key, (v, Set[VertexId]())))
+      else (id, (key, (initValue, Set[VertexId]())))
     }
 
-    val g = Graph(vertices, edges)
+    val g = Graph(vertices, graphRDD.edges).subgraph { edge =>
+      val (_, (srcAttr, _)) = edge.srcAttr
+      val (_, (dstAttr, _)) = edge.dstAttr
+      !srcAttr.isNaN && !dstAttr.isNaN
+    }
 
     def vertexProgram(
       id: VertexId,
-      attr: (K, (Double, Set[VertexId], Set[VertexId])),
-      msg: (Double, Set[VertexId], Set[VertexId])
-    ): (K, (Double, Set[VertexId], Set[VertexId])) = {
-      val (key, (oldCost, bestNeighborSet, id)) = attr
-      val (newCost, _, incomingIds) = msg
+      attr: (K, (Double, Set[VertexId])),
+      msg: (Double, Set[VertexId])
+    ): (K, (Double, Set[VertexId])) = {
+      val (key, (oldCost, bestNeighborSet)) = attr
+      val (newCost, incomingIds) = msg
 
       if (newCost < oldCost)
-        (key, (newCost, incomingIds, id))
+        (key, (newCost, incomingIds))
       else if (newCost == oldCost)
-        (key, (newCost, incomingIds ++ bestNeighborSet, id))
+        (key, (newCost, incomingIds ++ bestNeighborSet))
       else
         attr
     }
 
     def sendMessage(
-      edge: EdgeTriplet[(K, (Double, Set[VertexId], Set[VertexId])), Double]
-    ): Iterator[(VertexId, (Double, Set[VertexId], Set[VertexId]))] = {
-      val (srcKey, (srcAttr, _, froms)) = edge.srcAttr
-      if (srcAttr.isNaN) Iterator.empty
-      else {
-        val newAttr = srcAttr + edge.attr
-        val (_, (destAttr, _, _)) = edge.dstAttr
-        if (destAttr > newAttr) Iterator((edge.dstId, (newAttr, Set(), froms)))
-        else Iterator.empty
-      }
+      edge: EdgeTriplet[(K, (Double, Set[VertexId])), Double]
+    ): Iterator[(VertexId, (Double, Set[VertexId]))] = {
+      val (_, (srcAttr, _)) = edge.srcAttr
+      val (_, (dstAttr, _)) = edge.dstAttr
+
+      val newAttr = srcAttr + edge.attr
+      if (dstAttr > newAttr) Iterator((edge.dstId, (newAttr, Set(edge.srcId))))
+      else Iterator.empty
     }
 
     def mergeMessage(
-      a: (Double, Set[VertexId], Set[VertexId]),
-      b: (Double, Set[VertexId], Set[VertexId])
-    ): (Double, Set[VertexId], Set[VertexId]) = {
-      val (aCost, aSet, aIds) = a
-      val (bCost, bSet, bIds) = b
+      a: (Double, Set[VertexId]),
+      b: (Double, Set[VertexId])): (Double, Set[VertexId]) = {
+      val (ac, as) = a
+      val (bc, bs) = b
 
-      if (aCost.isNaN || bCost < aCost) a
-      else if (bCost.isNaN || aCost < bCost) b
-      else (aCost, Set(), aIds ++ bIds)
+      if (bc < ac) b
+      else if (ac < bc) a
+      else (ac, as ++ bs)
     }
 
     g.pregel(init)(vertexProgram, sendMessage, mergeMessage)
   }
 
   private def accumulatePath[K](
-    graph: Graph[(K, (Double, Set[VertexId], Set[VertexId])), Double],
+    graph: Graph[(K, (Double, Set[VertexId])), Double],
     source: Long,
     dest: Long
   ): Set[Seq[VertexId]] = {
 
-    val vertices = graph.vertices.map { case(id, (key, (v, later, ids))) =>
+    val vertices = graph.vertices.map { case(id, (key, (v, later))) =>
       if (id == dest)
         (id, (key, (later, Set[Seq[VertexId]](Seq(id)), Set[VertexId](), true)))
       else

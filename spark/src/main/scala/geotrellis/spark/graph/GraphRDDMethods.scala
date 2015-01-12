@@ -27,7 +27,7 @@ trait GraphRDDMethods[K] {
     val tileRDD: RDD[(K, Tile)] = graphRDD.vertices
       .groupBy { case(vertexId, (key, value)) => key }
       .map { case(key, iter) =>
-        val arr = iter.toSeq.sortWith(_._1 < _._1).map(_._2._2).toArray
+        val arr = iter.toSeq.sortWith(_._1 < _._1).map(_._2._2).toArray // TODO: fix
         (key, ArrayTile(arr, tileCols, tileRows))
     }
 
@@ -39,16 +39,18 @@ trait GraphRDDMethods[K] {
     val gridBounds = metaData.gridBounds
     val tileLayout = metaData.tileLayout
 
-    val layoutCols = gridBounds.width - 1
+    val (layoutCols, layoutRows) = (gridBounds.width - 1, gridBounds.height - 1)
     val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
-    val area = tileCols * tileRows
 
     (col: Long, row: Long) => {
-      val tc = col / tileCols
-      val tr = row / tileRows
+      val layoutCol = col / tileCols
+      val layoutRow = row / tileRows
 
-      val offset = area * layoutCols * tr + area * tc
-      offset + (row % tileRows) * tileCols + col % tileCols
+      val tileCol = col % tileCols
+      val tileRow = row % tileRows
+
+      ((layoutRow * tileRows + tileRow)
+        * tileCols * layoutCols + layoutCol * tileCols + tileCol)
     }
   }
 
@@ -57,24 +59,9 @@ trait GraphRDDMethods[K] {
     val gridBounds = metaData.gridBounds
     val tileLayout = metaData.tileLayout
 
-    val layoutCols = gridBounds.width - 1
-    val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
-    val area = tileCols * tileRows
+    val totalCols = tileLayout.tileCols * (gridBounds.width - 1)
 
-    (vertexId: VertexId) => {
-      val tileIndex = vertexId / area
-      val tc = tileIndex % layoutCols
-      val tr = tileIndex / layoutCols
-
-      val (startCol, startRow) = (tc * tileCols, tr * layoutCols)
-
-      val offset = area * tileIndex
-      val diff = vertexId - offset
-      val colInsideTile = diff % tileCols
-      val rowInsideTile = diff / tileCols
-
-      (startCol + colInsideTile, startRow + rowInsideTile)
-    }
+    (vertexId: VertexId) => (vertexId % totalCols, vertexId / totalCols)
   }
 
   def shortestPath(sources: Seq[(Long, Long)]): GraphRDD[K] =
@@ -88,8 +75,13 @@ trait GraphRDDMethods[K] {
       getVertexIdByColAndRow(source._1, source._2),
       getVertexIdByColAndRow(dest._1, dest._2)
     )
-      .map(_.map(vertexId => getColAndRowFromVertexId(vertexId)))
-      .map(_.map { case(c, r) => (c.toDouble, r.toDouble) })
-      .map(Line(_))
+      .map(seq => {
+        val doubleCoordinates = seq.map(vertexId => {
+          val (c, r) = getColAndRowFromVertexId(vertexId)
+          (c.toDouble, r.toDouble)
+        })
+
+        Line(doubleCoordinates)
+      })
 
 }

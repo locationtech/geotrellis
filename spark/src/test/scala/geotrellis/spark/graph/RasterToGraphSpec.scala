@@ -3,9 +3,13 @@ package geotrellis.spark.graph
 import geotrellis.spark._
 import geotrellis.raster._
 
+import collection.mutable.ArrayBuffer
+
 import org.apache.spark.graphx._
 
 import org.scalatest.FunSpec
+
+import spire.syntax.cfor._
 
 class RasterToGraphSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
@@ -24,7 +28,8 @@ class RasterToGraphSpec extends FunSpec with TestEnvironment
         graphRDD.numVertices should be (tile.size)
 
         val (cols, rows) = tile.dimensions
-        val edges = (rows - 1) * cols + (cols - 1) * rows + (cols - 1) * (rows - 1) * 2
+        val edges = ((rows - 1) * cols + (cols - 1) *
+          rows + (cols - 1) * (rows - 1) * 2) * 2
 
         graphRDD.numEdges should be (edges)
 
@@ -40,14 +45,20 @@ class RasterToGraphSpec extends FunSpec with TestEnvironment
           .map { case(key, iter) => (key, iter.map(_._1).toSeq) }
           .collect
 
-        val base = 0 to (tileCols * tileRows - 1)
         var coordinatesSet = (for (c <- 0 until layoutCols;
           r <- 0 until layoutRows) yield ((r, c))).toSet
-        val tileArea = tileCols * tileRows
 
         for ((key, vertices) <- groupedVertices) {
-          val SpatialKey(col, row) = key
-          val correctVertices = base.map(_ + (row * tileArea * layoutCols + col * tileArea))
+          val SpatialKey(layoutCol, layoutRow) = key
+          val buff = ArrayBuffer[Long]()
+          cfor(0)(_ < tileRows, _ + 1) { tileRow =>
+            cfor(0)(_ < tileCols, _ + 1) { tileCol =>
+              buff += ((layoutRow * tileRows + tileRow)
+                * tileCols * layoutCols + layoutCol * tileCols + tileCol)
+            }
+          }
+
+          val correctVertices = buff.toArray
 
           vertices
             .sortWith(_ < _)
@@ -56,7 +67,7 @@ class RasterToGraphSpec extends FunSpec with TestEnvironment
               v1 should be (v2)
           }
 
-          coordinatesSet = coordinatesSet - ((row, col))
+          coordinatesSet = coordinatesSet - ((layoutRow, layoutCol))
         }
 
         coordinatesSet.size should be (0)
@@ -117,10 +128,10 @@ class RasterToGraphSpec extends FunSpec with TestEnvironment
 
         val edges = Seq[(Long, Long, Double)](
           (0, 1, Double.NaN),
-          (5, 24, 4 / math.sqrt(2)),
-          (5, 19, 9 / math.sqrt(2)),
-          (4, 19, 9 / 2.0),
-          (4, 20, math.sqrt(2))
+          (11, 21, 4 / math.sqrt(2)),
+          (11, 19, 9 / math.sqrt(2)),
+          (10, 19, 9 / 2.0),
+          (10, 20, math.sqrt(2))
         )
 
         testEdges(graphRDD, edges)
@@ -148,8 +159,8 @@ class RasterToGraphSpec extends FunSpec with TestEnvironment
         val edges = Seq(
           (0L, 1L, 2.0),
           (15L, 20L, 10 / math.sqrt(2)),
-          (8L, 27L, Double.NaN),
-          (27L, 31L, Double.NaN)
+          (14L, 21L, Double.NaN),
+          (21L, 28L, Double.NaN)
         )
 
         testEdges(graphRDD, edges)
