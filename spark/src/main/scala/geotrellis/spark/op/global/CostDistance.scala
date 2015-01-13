@@ -14,7 +14,7 @@ object CostDistance {
     rasterRDD.toGraph.shortestPath(points).toRaster
 
   def apply[K](rasterRDD: RasterRDD[K], start: (Long, Long), dest: (Long, Long))
-    (implicit keyClassTag: ClassTag[K], _sc: SpatialComponent[K]): Set[Line] =
+    (implicit keyClassTag: ClassTag[K], _sc: SpatialComponent[K]): Seq[Line] =
     rasterRDD.toGraph.shortestPath(start, dest)
 
 }

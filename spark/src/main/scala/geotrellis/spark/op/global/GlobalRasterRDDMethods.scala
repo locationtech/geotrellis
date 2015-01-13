@@ -23,13 +23,13 @@ trait GlobalRasterRDDMethods[K] extends RasterRDDMethods[K] {
     CostDistance(rasterRDD, points)
 
   def costDistanceWithPath(start: (Int, Int), dest: (Int, Int))
-    (implicit dummy: DI): Set[Line] =
+    (implicit dummy: DI): Seq[Line] =
     costDistanceWithPath(
       (start._1.toLong, start._2.toLong),
       (dest._1.toLong, dest._2.toLong)
     )
 
-  def costDistanceWithPath(start: (Long, Long), dest: (Long, Long)): Set[Line] =
+  def costDistanceWithPath(start: (Long, Long), dest: (Long, Long)): Seq[Line] =
     CostDistance(rasterRDD, start, dest)
 
 }

@@ -166,7 +166,49 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
 
         val paths = rasterRDD.costDistanceWithPath(start, end)
         paths.size should be (2)
-        paths should be (cheapestPaths)
+        paths.toSet should be (cheapestPaths)
+      }
+
+      it("should recreate path on a simple raster #3") {
+        val rasterRDD = createRasterRDD(
+          sc,
+          ArrayTile(Array(
+            1,   100, 100,  100, 100, 100,  100, 100, 1,
+            100, 1,   100,  100, 100, 100,  100, 1  , 1,
+            100, 100, 1,    100, 100, 100,  1,   100, 1,
+            100, 100, 100,  1,   100, 1,    100, 100, 1,
+            100, 100, 100,  100, 1,   100,  100, 100, 1,
+            100, 100, 100,  1,   100, 100,  100, 100, 1,
+            100, 100, 1,    100, 100, 100,  100, 100, 1,
+            100, 1,   100,  100, 100, 100,  100, 100, 1,
+            1,   1,   1,    1,   1,   1,    1,   1,   1
+          ), 9, 9),
+          TileLayout(3, 3, 3, 3)
+        )
+
+        val start = (0, 0)
+        val end = (8, 8)
+
+        val cheapestPaths = Set(
+          Line(Seq(
+            (0.0, 0.0), (1.0, 1.0), (2.0, 2.0),
+            (3.0, 3.0), (4.0, 4.0), (3.0, 5.0),
+            (2.0, 6.0), (1.0, 7.0), (2.0, 8.0),
+            (3.0, 8.0), (4.0, 8.0), (5.0, 8.0),
+            (6.0, 8.0), (7.0, 8.0), (8.0, 8.0)
+          )),
+          Line(Seq(
+            (0.0, 0.0), (1.0, 1.0), (2.0, 2.0),
+            (3.0, 3.0), (4.0, 4.0), (5.0, 3.0),
+            (6.0, 2.0), (7.0, 1.0), (8.0, 2.0),
+            (8.0, 3.0), (8.0, 4.0), (8.0, 5.0),
+            (8.0, 6.0), (8.0, 7.0), (8.0, 8.0)
+          ))
+        )
+
+        val paths = rasterRDD.costDistanceWithPath(start, end)
+        paths.size should be (2)
+        paths.toSet should be (cheapestPaths)
       }
 
     }

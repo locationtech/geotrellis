@@ -43,7 +43,7 @@ trait GraphRDDMethods[K] {
       case (vertexId, (key, value)) => (key, (vertexId, value))
     }.combineByKey(createCombiner, mergeValue, mergeCombiners)
     .map { case(key, iter) =>
-        val in = iter.toList.toArray.sortWith(_._1 < _._1)
+        val in = iter.toList.toArray.sortWith(_._1 < _._1) // TODO: rebuild with nodata absent.
         val out = Array.ofDim[Double](in.size)
         cfor(0)(_  < in.size, _ + 1) { i =>
           out(i) = in(i)._2
@@ -90,7 +90,7 @@ trait GraphRDDMethods[K] {
       getVertexIdByColAndRow(c, r)
     })
 
-  def shortestPath(source: (Long, Long), dest: (Long, Long)): Set[Line] =
+  def shortestPath(source: (Long, Long), dest: (Long, Long)): Seq[Line] =
     ShortestPath(
       graphRDD,
       getVertexIdByColAndRow(source._1, source._2),
