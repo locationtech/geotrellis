@@ -575,7 +575,11 @@ case class ImageDirectory(
   def setGDALNoData(input: String) =
     this |-> gdalInternalNoDataLens set (parseGDALNoDataString(input))
 
-  lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
+  lazy val proj4String: Option[String] = try {
+    GeoTiffCSParser(this).getProj4String
+  } catch {
+    case e: Exception => None
+  }
 
   lazy val crs: CRS = proj4String match {
     case Some(s) => CRS.fromString(s)

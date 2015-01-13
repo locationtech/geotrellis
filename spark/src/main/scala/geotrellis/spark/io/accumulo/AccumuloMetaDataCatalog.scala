@@ -106,4 +106,3 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
     data map { case (key, fieldMap) => key -> readLayerMetaData(fieldMap)}
   }
 }
-

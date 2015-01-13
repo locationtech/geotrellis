@@ -56,6 +56,11 @@ class AccumuloCatalogSpec extends FunSpec
         catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
       }
 
+      it("should load out a single tile"){
+        val tile = catalog.loadTile(LayerId("ones", 10), SpatialKey(917, 616))
+        (tile.cols, tile.rows) should be ((512, 512))
+      }
+
       it("should load out saved tiles, but only for the right zoom"){
         intercept[LayerNotFoundError] {
           catalog.load[SpatialKey](LayerId("ones", 9)).count()

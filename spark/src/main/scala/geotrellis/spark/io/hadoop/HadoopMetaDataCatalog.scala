@@ -11,8 +11,7 @@ import spray.json._
 import java.io.PrintWriter
 
 class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: LayerId => String, metaDataFileName: String)
-  extends MetaDataCatalog[String] with Logging
-{
+  extends MetaDataCatalog[String] with Logging {
   val fs = catalogRoot.getFileSystem(sc.hadoopConfiguration)
 
   def metaDataPath(layerId: LayerId, subDir: String) =
@@ -20,7 +19,6 @@ class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: L
       new Path(new Path(catalogRoot, layerDataDir(layerId)) , metaDataFileName)
     else
       new Path(new Path(new Path(catalogRoot, subDir), layerDataDir(layerId)) , metaDataFileName)
-
 
   def load(layerId: LayerId): (LayerMetaData, String) =
     (load(layerId, ""), "")
@@ -41,7 +39,6 @@ class HadoopMetaDataCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: L
 
     txt.parseJson.convertTo[LayerMetaData]
   }
-
 
   def save(id: LayerId, subDir: String, metaData: LayerMetaData, clobber: Boolean): Unit = {
     val metaPath = metaDataPath(id, subDir)

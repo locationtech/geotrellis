@@ -9,11 +9,12 @@ import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.util.{Pair => JPair}
+import org.apache.accumulo.core.security.Authorizations
 import scala.collection.JavaConversions._
+import scala.reflect._
 
 object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
   val rowIdRx = """(\d+)_(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
-  def rowId(layerId: LayerId, col: Int, row: Int) = new Text(f"${layerId.zoom}%02d_${col}%06d_${row}%06d")
 
   def rowId(id: LayerId, key: SpatialKey): String = {
     val SpatialKey(col, row) = key    
@@ -22,7 +23,7 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
 
   def encode(layerId: LayerId, raster: RasterRDD[SpatialKey]): RDD[(Text, Mutation)] =
     raster.map { case (key, tile) =>
-      val mutation = new Mutation(rowId(layerId, key.col, key.row))
+      val mutation = new Mutation(rowId(layerId, key))
       mutation.put(
         new Text(layerId.name), new Text(),
         System.currentTimeMillis(),
@@ -50,6 +51,28 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
     new RasterRDD(tileRdd, rasterMetaData)
   }
 
+  def loadTile(accumulo: AccumuloInstance)(layerId: LayerId, metaData: RasterMetaData, table: String, key: SpatialKey): Tile = {
+    val scanner  = accumulo.connector.createScanner(table, new Authorizations())
+    scanner.setRange(new ARange(rowId(layerId, key)))
+    scanner.fetchColumnFamily(new Text(layerId.name))
+    val values = scanner.iterator.toList.map(_.getValue)
+    val value = 
+      if(values.size == 0) {
+        sys.error(s"Tile with key $key not found for layer $layerId")
+      } else if(values.size > 1) {
+        sys.error(s"Multiple tiles found for $key for layer $layerId")
+      } else {
+        values.head
+      }
+
+    ArrayTile.fromBytes(
+      value.get,
+      metaData.cellType,
+      metaData.tileLayout.tileCols,
+      metaData.tileLayout.tileRows
+    )
+  }
+
   def setZoomBounds(job: Job, layerId: LayerId): Unit = {
     val range = new ARange(
       new Text(f"${layerId.zoom}%02d"),
@@ -69,7 +92,7 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
 
           val ranges =
             for(row <- bounds.rowMin to bounds.rowMax) yield {
-              new ARange(rowId(layerId, bounds.colMin, row), rowId(layerId, bounds.colMax, row))
+              new ARange(rowId(layerId, SpatialKey(bounds.colMin, row)), rowId(layerId, SpatialKey(bounds.colMax, row)))
             }
 
           InputFormatBase.setRanges(job, ranges)
