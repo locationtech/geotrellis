@@ -8,41 +8,24 @@ import spire.syntax.cfor._
 
 import reflect.ClassTag
 
-// TODO: remove all NODATA vertices?
-// Can rebuild later and skips a lot of crap
 object ShortestPath {
 
   def apply[K](graphRDD: GraphRDD[K], sources: Seq[VertexId])
     (implicit keyClassTag: ClassTag[K]): GraphRDD[K] = {
-    val verticesCount = graphRDD.vertices.count
-    sources.foreach { id => if (id >= verticesCount)
-      throw new IllegalArgumentException(s"Too large vertexId: $id")
-    }
-
     val init = Double.MaxValue
 
-    val g = graphRDD.subgraph { edge =>
-      val (_, srcAttr) = edge.srcAttr
-      val (_, dstAttr) = edge.dstAttr
-      !srcAttr.isNaN && !dstAttr.isNaN
-    }.mapVertices { case(id, (key, v)) =>
-        if (sources.contains(id)) (key, 0.0)
-        else if (v.isNaN) (key, v)
-        else (key, init)
+    val g = graphRDD.mapVertices { case(id, v) =>
+      if (sources.contains(id)) 0.0
+      else init
     }
 
-    def vertexProgram(id: VertexId, attr: (K, Double), msg: Double): (K, Double) = {
-      val (key, before) = attr
-      (key, math.min(before, msg))
-    }
+    def vertexProgram(id: VertexId, attr: Double, msg: Double): Double =
+      math.min(attr, msg)
 
     def sendMessage(
-      edge: EdgeTriplet[(K, Double), Double]): Iterator[(VertexId, Double)] = {
-      val (_, srcAttr) = edge.srcAttr
-      val (_, dstAttr) = edge.dstAttr
-
-      val newAttr = srcAttr + edge.attr
-      if (dstAttr > newAttr) Iterator((edge.dstId, newAttr))
+      edge: EdgeTriplet[Double, Double]): Iterator[(VertexId, Double)] = {
+      val newAttr = edge.srcAttr + edge.attr
+      if (newAttr < edge.dstAttr) Iterator((edge.dstId, newAttr))
       else Iterator.empty
     }
 
@@ -51,17 +34,11 @@ object ShortestPath {
     val res = g.pregel(initialMsg = init, activeDirection = EdgeDirection.Out)(
       vertexProgram, sendMessage, mergeMsg)
 
-    new GraphRDD(res, graphRDD.metaData)
+    new GraphRDD(res, graphRDD.keysRDD, graphRDD.metaData)
   }
 
   def apply[K](graphRDD: GraphRDD[K], source: VertexId, dest: VertexId)
     (implicit keyClassTag: ClassTag[K]): Seq[Seq[VertexId]] = {
-    val verticesCount = graphRDD.vertices.count
-    if (source >= verticesCount)
-      throw new IllegalArgumentException(s"Too large source vertexId: $source")
-    if (dest >= verticesCount)
-      throw new IllegalArgumentException(s"Too large dest vertexId: $dest")
-
     val shortestPathWithRememberParentGraph =
       shortestPathWithRememberParent(graphRDD, source)
 
@@ -72,40 +49,32 @@ object ShortestPath {
     graphRDD: GraphRDD[K],
     source: VertexId)(
     implicit keyClassTag: ClassTag[K]
-  ): Graph[(K, (Double, Seq[VertexId])), Double] = {
+  ): Graph[(Double, Seq[VertexId]), Double] = {
     val initValue = Double.MaxValue
 
-    val g = graphRDD.subgraph { edge =>
-      val (_, srcAttr) = edge.srcAttr
-      val (_, dstAttr) = edge.dstAttr
-      !srcAttr.isNaN && !dstAttr.isNaN
-    }.mapVertices { case(id, (key, v)) =>
-        if (source == id) (key, (0.0, Seq[VertexId]()))
-        else if (v.isNaN) (key, (v, Seq[VertexId]()))
-        else (key, (initValue, Seq[VertexId]()))
+    val g = graphRDD.mapVertices { case(id, v) =>
+      if (source == id) (0.0, Seq[VertexId]())
+      else (initValue, Seq[VertexId]())
     }
 
     def vertexProgram(
       id: VertexId,
-      attr: (K, (Double, Seq[VertexId])),
+      attr: (Double, Seq[VertexId]),
       msg: (Double, Seq[VertexId])
-    ): (K, (Double, Seq[VertexId])) = {
-      val (key, (oldCost, bestNeighborSet)) = attr
+    ): (Double, Seq[VertexId]) = {
+      val (oldCost, bestNeighborSet) = attr
       val (newCost, incomingIds) = msg
 
-      if (newCost < oldCost)
-        (key, (newCost, incomingIds))
-      else if (newCost == oldCost)
-        (key, (newCost, incomingIds ++ bestNeighborSet))
-      else
-        attr
+      if (newCost < oldCost) (newCost, incomingIds)
+      else if (newCost == oldCost) (newCost, incomingIds ++ bestNeighborSet)
+      else attr
     }
 
     def sendMessage(
-      edge: EdgeTriplet[(K, (Double, Seq[VertexId])), Double]
+      edge: EdgeTriplet[(Double, Seq[VertexId]), Double]
     ): Iterator[(VertexId, (Double, Seq[VertexId]))] = {
-      val (_, (srcAttr, _)) = edge.srcAttr
-      val (_, (dstAttr, _)) = edge.dstAttr
+      val (srcAttr, _) = edge.srcAttr
+      val (dstAttr, _) = edge.dstAttr
 
       val newAttr = srcAttr + edge.attr
       if (dstAttr > newAttr) Iterator((edge.dstId, (newAttr, Seq(edge.srcId))))
@@ -130,35 +99,32 @@ object ShortestPath {
   }
 
   private def accumulatePath[K](
-    graph: Graph[(K, (Double, Seq[VertexId])), Double],
+    graph: Graph[(Double, Seq[VertexId]), Double],
     source: Long,
     dest: Long
   ): Seq[Seq[VertexId]] = {
 
     val g = graph.subgraph { edge =>
-      val (_, (_, previous)) = edge.srcAttr
+      val (_, previous) = edge.srcAttr
       previous.contains(edge.dstId)
-    }.mapVertices { case(id, (key, (v, previous))) =>
-        if (id == dest) (key, (Seq[Seq[VertexId]](Seq(id))))
-        else (key, (Seq[Seq[VertexId]]()))
+    }.mapVertices { case(id, (v, previous)) =>
+        if (id == dest) Seq[Seq[VertexId]](Seq(id))
+        else Seq[Seq[VertexId]]()
     }
 
     def vertexProgram(
       id: VertexId,
-      attr: (K, Seq[Seq[VertexId]]),
+      attr: Seq[Seq[VertexId]],
       msg: Seq[Seq[VertexId]]
-    ): (K, Seq[Seq[VertexId]]) = {
-      val (key, paths) = attr
-
-      if (!msg.isEmpty) (key, msg.map(id +: _) ++ paths)
+    ): Seq[Seq[VertexId]] =
+      if (!msg.isEmpty) msg.map(id +: _) ++ attr
       else attr
-    }
 
     def sendMessage(
-      edge: EdgeTriplet[(K, Seq[Seq[VertexId]]), Double]
+      edge: EdgeTriplet[Seq[Seq[VertexId]], Double]
     ): Iterator[(VertexId, Seq[Seq[VertexId]])] = {
-      val (_, paths) = edge.srcAttr
-      val (_, destPaths) = edge.dstAttr
+      val paths = edge.srcAttr
+      val destPaths = edge.dstAttr
 
       val srcId = edge.srcId
       val dstId = edge.dstId
@@ -185,7 +151,7 @@ object ShortestPath {
     val res = g.pregel(initialMsg = init, activeDirection = EdgeDirection.Out)(
       vertexProgram, sendMessage, mergeMessage)
 
-    val (_, (_, paths)) =
+    val (_, paths) =
       res.vertices.filter { case (id, _) => id == source }.collect.head
 
     paths

@@ -5,14 +5,14 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class GraphToRasterSpec extends FunSpec with TestEnvironment
+class GraphConversionSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
     with OnlyIfCanRunSpark
     with RasterRDDBuilders {
 
-  describe("Graph to Raster Spec") {
+  describe("Graph Conversion Spec") {
 
-    def assertCorrectGraphToRaster(rasterRDD: RasterRDD[SpatialKey]) = {
+    def assertCorrectGraphConversion(rasterRDD: RasterRDD[SpatialKey]) = {
       val resultRDD = rasterRDD.toGraph.toRaster
 
       val resultArray = resultRDD.stitch.toArray
@@ -27,7 +27,7 @@ class GraphToRasterSpec extends FunSpec with TestEnvironment
 
       val nd = NODATA
 
-      it("should successfully convert a graph to the correct raster #1") {
+      it("should successfully convert a raster to a graph and back #1") {
         val rasterRDD = createRasterRDD(
           sc,
           ArrayTile(Array(
@@ -40,23 +40,23 @@ class GraphToRasterSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        assertCorrectGraphToRaster(rasterRDD)
+        assertCorrectGraphConversion(rasterRDD)
       }
 
-      it("should successfully convert a graph to the correct raster #2") {
+      it("should successfully convert a raster to a graph and back #2") {
         val rasterRDD = createRasterRDD(
           sc,
           ArrayTile(Array(
-            nd,7, 1,   1, 1, 1,   1, 1, 1,
-            9, 1, 1,   2, 2, 2,   1, 3, 1,
+            nd, nd, nd,   1, 1, 1,   1, 1, 1,
+            nd, nd, nd,   2, 1, 2,   1, 3, 1,
 
-            3, 8, 1,   3, 3, 3,   1, 1, 2,
-            2, 1, 7,   1, nd,1,   8, 1, 1
+            3,  8,  1,    3, 3, 3,   nd, nd, nd,
+            2,  1,  7,    1, nd,1,   nd, nd, nd
           ), 9, 4),
           TileLayout(3, 2, 3, 2)
         )
 
-        assertCorrectGraphToRaster(rasterRDD)
+        assertCorrectGraphConversion(rasterRDD)
       }
 
     }

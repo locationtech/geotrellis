@@ -27,34 +27,6 @@ trait GraphRDDMethods[K] {
 
   val _sc: SpatialComponent[K]
 
-  def toRaster: RasterRDD[K] = {
-    val tileLayout = graphRDD.metaData.tileLayout
-    val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
-
-    def createCombiner(v: (VertexId, Double)) = DList(v)
-
-    def mergeValue(f: DList[(VertexId, Double)], v: (VertexId, Double)) = v +: f
-
-    def mergeCombiners(
-      f: DList[(VertexId, Double)],
-      s: DList[(VertexId, Double)]) = f ++ s
-
-    val tileRDD: RDD[(K, Tile)] = graphRDD.vertices.map {
-      case (vertexId, (key, value)) => (key, (vertexId, value))
-    }.combineByKey(createCombiner, mergeValue, mergeCombiners)
-    .map { case(key, iter) =>
-        val in = iter.toList.toArray.sortWith(_._1 < _._1) // TODO: rebuild with nodata absent.
-        val out = Array.ofDim[Double](in.size)
-        cfor(0)(_  < in.size, _ + 1) { i =>
-          out(i) = in(i)._2
-        }
-
-        (key, ArrayTile(out, tileCols, tileRows))
-    }
-
-    new RasterRDD(tileRDD, graphRDD.metaData)
-  }
-
   private lazy val getVertexIdByColAndRow: (Long, Long) => VertexId = {
     val metaData = graphRDD.metaData
     val gridBounds = metaData.gridBounds
@@ -83,6 +55,46 @@ trait GraphRDDMethods[K] {
     val totalCols = tileLayout.tileCols * (gridBounds.width - 1)
 
     (vertexId: VertexId) => (vertexId % totalCols, vertexId / totalCols)
+  }
+
+  def toRaster: RasterRDD[K] = {
+    val metaData = graphRDD.metaData
+
+    val tileLayout = metaData.tileLayout
+
+    val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
+    val tileSize = tileCols * tileRows
+
+    val verticesGroupedByTile = graphRDD.vertices.map {
+      case (vertexId, value) =>
+        val (c, r) = getColAndRowFromVertexId(vertexId)
+        ((c, r), value)
+    }.groupBy {
+      case ((c, r), value) => (c.toInt / tileCols, r.toInt / tileRows)
+    }
+
+    val keysAsPairRDD = graphRDD.keysRDD.map(k => {
+      val SpatialKey(col, row) = k
+      ((col, row), k)
+    })
+
+    val resRDD: RDD[(K, Tile)] = keysAsPairRDD
+      .join(verticesGroupedByTile)
+      .map { case(_, (key, iter)) =>
+        val in = iter.toArray
+        val tile = ArrayTile.empty(TypeDouble, tileCols, tileRows)
+        cfor(0)(_  < in.size, _ + 1) { i =>
+          val ((c, r), v) = in(i)
+          val (tileCol, tileRow) = ((c % tileCols).toInt, (r % tileRows).toInt)
+          val idx = tileRow * tileCols + tileCol
+
+          tile.updateDouble(idx, v)
+        }
+
+        (key, tile)
+    }
+
+    new RasterRDD(resRDD, metaData)
   }
 
   def shortestPath(sources: Seq[(Long, Long)]): GraphRDD[K] =

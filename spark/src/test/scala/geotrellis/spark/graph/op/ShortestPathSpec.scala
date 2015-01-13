@@ -19,9 +19,9 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
 
   ifCanRunSpark {
 
-    describe("Shortest Path Spec") {
+    val n = NODATA
 
-      val n = NODATA
+    describe("Shortest Path Spec") {
 
       it("should perform as the single raster operation on raster #1") {
         val tile = ArrayTile(Array(
@@ -179,7 +179,7 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
             100, 100, 100,  1,   100, 1,    100, 100, 1,
             100, 100, 100,  100, 1,   100,  100, 100, 1,
             100, 100, 100,  1,   100, 100,  100, 100, 1,
-            100, 100, 1,    100, 100, 100,  100, 100, 1,
+            100, 100, 1,    100, 100, 100,  n,   100, 1,
             100, 1,   100,  100, 100, 100,  100, 100, 1,
             1,   1,   1,    1,   1,   1,    1,   1,   1
           ), 9, 9),

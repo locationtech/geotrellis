@@ -37,8 +37,6 @@ object Dependencies {
 
   val openCSV       = "net.sf.opencsv" % "opencsv"      % "2.3"
 
-  val scalaz        = "org.scalaz"        %% "scalaz-core"  % "7.1.0"
-
   val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
   val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % Version.akka
