@@ -28,10 +28,8 @@ object Zipper {
 
 object UnZipper {
 
-  val DoubleNaN = 2.247117487993712E307
-
   def apply(in: Array[Byte]): Array[Byte] = {
-    val baos = new ByteArrayOutputStream((in.size * 1.2f).toInt)
+    val baos = new ByteArrayOutputStream(in.size * 2)
 
     val decompressor = new Inflater
     decompressor.setInput(in)
@@ -44,6 +42,7 @@ object UnZipper {
 
     decompressor.end
 
+    baos.close
     baos.toByteArray
   }
 
@@ -61,14 +60,7 @@ object ZipDecompressor extends Decompressor {
     in: Array[Byte],
     cellType: CellType,
     cols: Int,
-    rows: Int): Tile = {
-    val out = UnZipper(in)
-
-    if (cellType.isFloatingPoint)
-      ArrayTile.fromBytes(out, cellType, cols, rows, UnZipper.DoubleNaN)
-    else
-      ArrayTile.fromBytes(out, cellType, cols, rows)
-  }
+    rows: Int): Tile = ArrayTile.fromBytes(UnZipper(in), cellType, cols, rows)
 
 }
 

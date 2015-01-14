@@ -136,10 +136,7 @@ object RLEDecompressor extends Decompressor {
         out
       }
 
-    if (cellType.isFloatingPoint)
-      ArrayTile.fromBytes(out, cellType, cols, rows, UnZipper.DoubleNaN)
-    else
-      ArrayTile.fromBytes(out, cellType, cols, rows)
+    ArrayTile.fromBytes(out, cellType, cols, rows)
   }
 
   @inline
