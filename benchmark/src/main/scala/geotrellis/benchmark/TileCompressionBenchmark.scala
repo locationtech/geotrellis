@@ -19,16 +19,30 @@ trait TileCompressionBenchmark extends OperationBenchmark {
 
   var tileDouble: Tile = null
 
+  var compressedTile: CompressedTile = null
+
+  var compressedTileDouble: CompressedTile = null
+
   override def setUp() {
     tile = get(loadRaster(tileName, size, size))
     tileDouble = get(loadRaster(tileDoubleName, size, size))
+
+    compressedTile = tile.compress(compression)
+    compressedTileDouble = tileDouble.compress(compression)
   }
 
   def timeCompressAndDecompress(reps: Int) = run(reps)(compressAndDecompress)
 
   def timeCompressAndDecompressDouble(reps: Int) = run(reps)(compressAndDecompress)
 
-  def compressAndDecompress =
-    tile.compress(compression).decompress
+  def compressAndDecompress = tile.compress(compression).decompress
+
+  def timeDecompress(reps: Int) = run(reps)(decompress)
+
+  def timeDecompressDouble(reps: Int) = run(reps)(decompressDouble)
+
+  def decompress = compressedTile.decompress
+
+  def decompressDouble = compressedTileDouble.decompress
 
 }
