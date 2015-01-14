@@ -71,4 +71,6 @@ object Dependencies {
     from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
   val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
+
+  val xz            = "org.tukaani"            %   "xz"         % "1.5"
 }

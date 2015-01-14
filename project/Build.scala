@@ -207,7 +207,8 @@ object GeotrellisBuild extends Build {
         monocleCore,
         monocleMacro,
         sprayClient, // for reading args from URLs,
-        openCSV
+        openCSV,
+        xz
       )
     ) ++
   defaultAssemblySettings

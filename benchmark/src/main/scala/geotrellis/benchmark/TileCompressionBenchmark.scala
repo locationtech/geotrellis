@@ -4,9 +4,14 @@ import geotrellis.raster._
 
 import com.google.caliper.Param
 
-trait TileCompressionBenchmark extends OperationBenchmark {
+object TileCompressionBenchmark extends BenchmarkRunner(classOf[TileCompressionBenchmark])
 
-  def compression: TileCompression
+class TileCompressionBenchmark extends OperationBenchmark {
+
+  @Param(Array("Zip", "XZ"))
+  var compressionName: String = null
+
+  var compression: TileCompression = null
 
   val tileName = "SBN_farm_mkt"
 
@@ -28,6 +33,12 @@ trait TileCompressionBenchmark extends OperationBenchmark {
   var tileDoubleByteArray: Array[Byte] = null
 
   override def setUp() {
+    compression = compressionName match {
+      case "Zip" => Zip
+      case "XZ" => XZ
+      case _ => sys.error("Bad compression name.")
+    }
+
     tile = get(loadRaster(tileName, size, size))
     tileDouble = get(loadRaster(tileDoubleName, size, size))
 
