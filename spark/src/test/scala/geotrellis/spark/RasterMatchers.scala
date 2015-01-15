@@ -21,7 +21,6 @@ import geotrellis.raster._
 
 import spire.syntax.cfor._
 
-
 trait RasterMatchers extends Matchers {
 
   val Eps = 1e-3

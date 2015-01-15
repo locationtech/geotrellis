@@ -8,6 +8,9 @@ object NetCdfInputFormat {
   val Year = 'Y'
   val Month = 'M'
   val Day = 'D'
+  val Hour = 'h'
+  val Minute = 'm'
+  val Second = 's'
 
   val Seconds = "seconds"
   val Minutes = "minutes"
@@ -35,7 +38,8 @@ object NetCdfInputFormat {
     * This String needs to specify where the type is, and where
     * the year is declared. It can also declare the months and days.
     * For our example string above the DateTimeFormat should look be
-    * "TTTT*******YYYY*MM*DD".
+    * "TTTT*******YYYY*MM*DD". You can also use hours (h),
+    * minutes (m) or seconds 's'.
     *
     * @param yearOffset The year offset for the date time.
     *
@@ -63,10 +67,19 @@ object NetCdfInputFormat {
     val year = parseFormatString(zipped, Year).toInt
 
     val monthString = parseFormatString(zipped, Month)
-    val month = if (monthString.isEmpty) 0 else monthString.mkString.toInt
+    val month = if (monthString.isEmpty) 0 else monthString.toInt
 
     val dayString = parseFormatString(zipped, Day)
-    val day = if (dayString.isEmpty) 0 else dayString.mkString.toInt
+    val day = if (dayString.isEmpty) 0 else dayString.toInt
+
+    val hourString = parseFormatString(zipped, Hour)
+    val hour = if (hourString.isEmpty) 0 else hourString.toInt
+
+    val minuteString = parseFormatString(zipped, Minute)
+    val minute = if (minuteString.isEmpty) 0 else minuteString.toInt
+
+    val secondString = parseFormatString(zipped, Second)
+    val second = if (secondString.isEmpty) 0 else secondString.toInt
 
     if (!validTimeTypes.contains(timeType)) invalidTimeType(timeType)
 
@@ -74,7 +87,10 @@ object NetCdfInputFormat {
       year + yearOffset,
       month + monthOffset,
       day + dayOffset,
-      0, 0, 0, DateTimeZone.UTC)
+      hour,
+      minute,
+      second,
+      DateTimeZone.UTC)
 
     (timeType, base)
   }
@@ -92,15 +108,15 @@ object NetCdfInputFormat {
     s"The type $timeType is not recognized."
   )
 
-/**
-  * Increments the base date given by v time-type time steps.
-  *
-  * @param timeType The type of the time step.
-  * @param v The float value of the number of time-type time steps.
-  * @param base The date to be incremented.
-  *
-  * @return The incremented DateTime.
-  */
+  /**
+    * Increments the base date given by v time-type time steps.
+    *
+    * @param timeType The type of the time step.
+    * @param v The float value of the number of time-type time steps.
+    * @param base The date to be incremented.
+    *
+    * @return The incremented DateTime.
+    */
   def incrementDate(timeType: String, v: Double, base: DateTime): DateTime =
     timeType match {
       case Seconds => base.plusSeconds(v.toInt)
