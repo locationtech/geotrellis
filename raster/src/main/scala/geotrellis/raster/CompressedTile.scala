@@ -45,7 +45,7 @@ abstract class CompressedTile(
 
   val size: Int = data.size
 
-  def compressionRatio: Double = uncompressedSize.toDouble / size
+  def compressionRatio: Double = size / uncompressedSize.toDouble
 
   def decompress: Tile = decompressor.decompress(data, cellType, cols, rows)
 

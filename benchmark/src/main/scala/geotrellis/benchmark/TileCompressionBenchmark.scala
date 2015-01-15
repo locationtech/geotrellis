@@ -4,6 +4,10 @@ import geotrellis.raster._
 
 import com.google.caliper.Param
 
+import spire.syntax.cfor._
+
+import util.Random
+
 object TileCompressionBenchmark extends BenchmarkRunner(classOf[TileCompressionBenchmark])
 
 class TileCompressionBenchmark extends OperationBenchmark {
@@ -32,6 +36,8 @@ class TileCompressionBenchmark extends OperationBenchmark {
 
   var tileDoubleByteArray: Array[Byte] = null
 
+  var randomizedCompressedTile: CompressedTile = null
+
   override def setUp() {
     compression = compressionName match {
       case "Zip" => Zip
@@ -47,6 +53,13 @@ class TileCompressionBenchmark extends OperationBenchmark {
 
     tileByteArray = tile.toBytes
     tileDoubleByteArray = tileDouble.toBytes
+
+    val arr = Array.ofDim[Double](size * size)
+    cfor(0)(_ < size * size, _ + 1) { i =>
+      arr(i) = Random.nextDouble
+    }
+
+    randomizedCompressedTile = ArrayTile(arr, size, size).compress(compression)
   }
 
   def timeCompressAndDecompress(reps: Int) = run(reps)(compressAndDecompress)
@@ -80,5 +93,9 @@ class TileCompressionBenchmark extends OperationBenchmark {
     tileDouble.cols,
     tileDouble.rows
   )
+
+  def timeDecompressRandomTile(reps: Int) = run(reps)(decompressRandomTile)
+
+  def decompressRandomTile = randomizedCompressedTile.decompress
 
 }
