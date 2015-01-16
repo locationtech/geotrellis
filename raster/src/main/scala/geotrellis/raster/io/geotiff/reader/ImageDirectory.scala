@@ -16,23 +16,24 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import monocle.syntax._
-import monocle.Macro._
-
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgWriter
-
 import geotrellis.raster.io.geotiff.reader.utils.ArrayUtils._
 import geotrellis.raster.io.geotiff.reader.utils.MatrixUtils._
 import geotrellis.raster.io.geotiff.reader.utils.ParseUtils._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent
+
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
 import scala.collection.immutable.{HashMap, Map}
+
+import scala.xml._
+
+import monocle.syntax._
+import monocle.Macro._
 
 object CompressionType {
 
@@ -176,6 +177,7 @@ object Tags {
   val GeoKeyDirectoryTag = 34735
   val DoublesTag = 34736
   val AsciisTag = 34737
+  val MetadataTag = 42112
   val GDALInternalNoDataTag = 42113
 
 }
@@ -258,6 +260,7 @@ case class GeoTiffTags(
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
   doubles: Option[Array[Double]] = None,
   asciis: Option[String] = None,
+  metadata: Option[String] = None,
   gdalInternalNoData: Option[Double] = None
 
 )
@@ -585,6 +588,13 @@ case class ImageDirectory(
     case Some(s) => CRS.fromString(s)
     case None => LatLng
   }
+
+  lazy val metadata: Map[String, String] = (this |-> metadataLens get) match {
+    case Some(str) =>
+      val xml = XML.loadString(str.trim)
+      (xml \ "Item").map(s => ((s \ "@name").text -> s.text)).toMap
+    case None => Map()
+  }
 }
 
 object ImageDirectoryLenses {
@@ -686,6 +696,8 @@ object ImageDirectoryLenses {
     Option[Array[Double]]]("doubles")
   val asciisLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[String]]("asciis")
+  val metadataLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
+    Option[String]]("metadata")
   val gdalInternalNoDataLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[Double]]("gdalInternalNoData")
 

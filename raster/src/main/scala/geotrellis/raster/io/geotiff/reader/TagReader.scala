@@ -157,6 +157,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case HostComputerTag => directory |-> hostComputerLens set(Some(string))
       case CopyrightTag => directory |-> copyrightLens set(Some(string))
       case AsciisTag => directory |-> asciisLens set(Some(string))
+      case MetadataTag => directory |-> metadataLens set(Some(string))
       case GDALInternalNoDataTag => directory.setGDALNoData(string)
       case tag => directory |-> asciisMapLens modify(_ + (tag -> string))
     }

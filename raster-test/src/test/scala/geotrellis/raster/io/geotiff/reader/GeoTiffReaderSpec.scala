@@ -486,6 +486,21 @@ class GeoTiffReaderSpec extends FunSpec
       tile.zonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
     }
 
+    it("should read GeoTiff with GDAL Metadata correctly") {
+      val metadata = read("geotiff-reader-tiffs/gdal-metadata.tif")
+        .imageDirectories
+        .head
+        .metadata
+
+      println(metadata)
+
+      metadata("TILE_COL") should be ("6")
+      metadata("units") should be ("kg m-2 s-1")
+      metadata("lon#axis") should be ("X")
+      metadata("_FillValue") should be ("1e+20")
+      metadata("NC_GLOBAL#driving_model_ensemble_member") should be("r1i1p1")
+    }
+
   }
 
 }
