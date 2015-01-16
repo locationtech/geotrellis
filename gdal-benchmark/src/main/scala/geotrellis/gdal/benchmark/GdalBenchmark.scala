@@ -5,12 +5,13 @@ import java.lang.System.currentTimeMillis
 import geotrellis.raster._
 
 import com.google.caliper.Benchmark
-import com.google.caliper.runner.CaliperMain
+import com.google.caliper.Runner
+import com.google.caliper.SimpleBenchmark
 
 import scala.io._
 
 object Bench {
-  def bench[T](name: String, times:Int,body: T => Unit, v:T):Long = {
+  def bench[T](name: String, times: Int, body: T => Unit, v: T): Long = {
     // One warmup
     body(v)
 
@@ -29,9 +30,9 @@ object Bench {
     total / times
   }
 
-  def bench[T1,T2](name: String, times:Int,body: (T1,T2)=> Unit, v1:T1,v2:T2):Long = {
+  def bench[T1, T2](name: String, times: Int, body: (T1, T2) => Unit, v1: T1,v2: T2): Long = {
     // One warmup
-    body(v1,v2)
+    body(v1, v2)
 
     var i = 0
     var total = 0L
@@ -53,10 +54,10 @@ object Bench {
  * Extend this to create a main object which will run 'cls' (a benchmark).
  */
 class BenchmarkRunner(cls: java.lang.Class[_ <: Benchmark]) {
-  def main(args: Array[String]): Unit = CaliperMain.main(cls, args)
+  def main(args: Array[String]): Unit = Runner.main(cls, args: _*)
 }
 
-trait GeoTiffReadBenchmark extends Benchmark {
+trait GeoTiffReadBenchmark extends SimpleBenchmark {
   /**
    * Sugar to run 'f' for 'reps' number of times.
    */
@@ -245,4 +246,3 @@ object RasterReadProfile {
     }
   }
 }
-

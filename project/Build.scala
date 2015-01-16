@@ -207,7 +207,8 @@ object GeotrellisBuild extends Build {
         monocleCore,
         monocleMacro,
         sprayClient, // for reading args from URLs,
-        openCSV
+        openCSV,
+        xz
       )
     ) ++
   defaultAssemblySettings
@@ -626,7 +627,7 @@ object GeotrellisBuild extends Build {
   lazy val benchmark: Project =
     Project("benchmark", file("benchmark"))
       .settings(benchmarkSettings: _*)
-      .dependsOn(raster,engine,geotools)
+      .dependsOn(raster, engine, geotools, jetty)
 
   def benchmarkSettings =
     Seq(
