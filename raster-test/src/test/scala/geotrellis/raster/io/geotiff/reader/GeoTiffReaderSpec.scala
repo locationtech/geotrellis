@@ -47,42 +47,25 @@ class GeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   val argPath = "/tmp/"
-  val filePathToTestData = "raster-test/data/"
+  val filePath = "raster-test/data"
 
   override def afterAll = purge
 
-  private def read(fileName: String): GeoTiff = {
-    val filePath = filePathToTestData + fileName
-    GeoTiffReader(filePath).read
-  }
-
   private def readAndSave(fileName: String) {
-    val geoTiff = read(fileName)
+    val geoTiff = GeoTiffReader.read(s"$filePath/$fileName")
 
-    geoTiff.imageDirectories.foreach(ifd => {
-      val currentFileName = math.abs(ifd.hashCode) + "-" + fileName.substring(0,
-        fileName.length - 4)
+    val ifd = geoTiff.imageDirectory
 
-      val corePath = argPath + currentFileName
-      val pathArg = corePath + ".arg"
-      val pathJson = corePath + ".json"
-      ifd.writeRasterToArg(corePath, currentFileName)
+    val currentFileName = math.abs(ifd.hashCode) + "-" + fileName.substring(0,
+      fileName.length - 4)
 
-      addToPurge(pathArg)
-      addToPurge(pathJson)
-    })
-  }
+    val corePath = argPath + currentFileName
+    val pathArg = corePath + ".arg"
+    val pathJson = corePath + ".json"
+    ifd.writeRasterToArg(corePath, currentFileName)
 
-  private def compareGeoTiffImages(first: GeoTiff, second: GeoTiff) {
-    first.imageDirectories.size should equal (second.imageDirectories.size)
-
-    first.imageDirectories zip second.imageDirectories foreach {
-      case (firstIFD, secondIFD) =>
-
-        firstIFD.imageBytes.size should equal (secondIFD.imageBytes.size)
-
-        firstIFD.imageBytes should equal (secondIFD.imageBytes)
-    }
+    addToPurge(pathArg)
+    addToPurge(pathJson)
   }
 
   describe("reading file and saving output") {
@@ -96,32 +79,28 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
 
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val (readTile, _, _) =
-        read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
-          .imageDirectories.head.toRaster
+      val tile = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif").tile
 
-      val expectedTile =
-        ArgReader.read(s"$filePathToTestData/geotiff-reader-tiffs/us_ext_clip_esri.json")
+      val expectedTile = ArgReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.json")
 
-      assertEqual(readTile, expectedTile)
+      assertEqual(tile, expectedTile)
     }
 
   }
 
   describe("reading slope.tif") {
+
     it("should match the ARG version") {
       val path = "slope.tif"
-      val argPath = s"$filePathToTestData/data/slope.json"
+      val argPath = s"$filePath/data/slope.json"
 
-      val (readTile, _, _) =
-        read(path)
-          .imageDirectories.head.toRaster
+      val tile = GeoTiffReader.read(s"$filePath/$path").tile
 
-      val expectedTile =
-        ArgReader.read(argPath)
+      val expectedTile = ArgReader.read(argPath)
 
-      assertEqual(readTile, expectedTile)
+      assertEqual(tile, expectedTile)
     }
+
   }
 
   // Apparently GDAL supports a ton of different compressions.
@@ -133,69 +112,79 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must read econic_lzw.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/econic_lzw.tif")
-      val uncomp = read("econic.tif")
+      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/econic_lzw.tif")
+      val uncomp = GeoTiffReader.read(s"$filePath/econic.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
 
     it("must read econic_packbits.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/econic_packbits.tif")
-      val uncomp = read("econic.tif")
+      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/econic_packbits.tif")
+      val uncomp = GeoTiffReader.read(s"$filePath/econic.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
 
     it("must read econic_zlib.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/econic_zlib.tif")
-      val uncomp = read("econic.tif")
+      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/econic_zlib.tif")
+      val uncomp = GeoTiffReader.read(s"$filePath/econic.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
 
     it("must read bilevel_CCITTRLE.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/bilevel_CCITTRLE.tif")
-      val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
+      val decomp = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTRLE.tif")
+      val uncomp = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
 
-    it("must read bilevel_CCITTFAX3.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX3.tif")
-      val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
+    it(s"$filePath/must GeoTiffReader.read bilevel_CCITTFAX3.tif and match uncompressed file") {
+      val decomp = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTFAX3.tif")
+      val uncomp = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
 
-    it("must read bilevel_CCITTFAX4.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
-      val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
+    it(s"$filePath/must GeoTiffReader.read bilevel_CCITTFAX4.tif and match uncompressed file") {
+      val decomp = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
+      val uncomp = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
 
     it("must read all-ones.tif and match uncompressed file") {
-      val decomp = read("geotiff-reader-tiffs/all-ones.tif")
-      val uncomp = read("geotiff-reader-tiffs/all-ones-no-comp.tif")
+      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/all-ones.tif")
+      val uncomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/all-ones-no-comp.tif")
 
-      compareGeoTiffImages(decomp, uncomp)
+      decomp.tile should equal(uncomp.tile)
     }
   }
 
   describe("reading tiled file must yield same image as strip files") {
 
     it("must read bilevel_tiled.tif and match strip file") {
-      val tiled = read("geotiff-reader-tiffs/bilevel_tiled.tif")
-      val striped = read("geotiff-reader-tiffs/bilevel.tif")
+      val tiled = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel_tiled.tif")
+      val striped = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
-      compareGeoTiffImages(tiled, striped)
+      tiled.tile should equal(striped.tile)
     }
 
     it("must read us_ext_clip_esri.tif and match strip file") {
-      val tiled = read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
-      val striped = read("geotiff-reader-tiffs/us_ext_clip_esri_stripes.tif")
+      val tiled = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif")
+      val striped = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri_stripes.tif")
 
-      compareGeoTiffImages(tiled, striped)
+      tiled.tile should equal(striped.tile)
     }
 
   }
@@ -203,9 +192,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("match tiff tags and geokeys correctly") {
 
     it("must match aspect.tif tiff tags") {
-      val aspect = read("aspect.tif")
-
-      val ifd = aspect.imageDirectories(0)
+      val ifd = GeoTiffReader.read(s"$filePath/aspect.tif").imageDirectory
 
       (ifd |-> imageWidthLens get) should equal (1500L)
 
@@ -272,9 +259,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must match aspect.tif geokeys") {
-      val aspect = read("aspect.tif")
-
-      val ifd = aspect.imageDirectories(0)
+      val ifd = GeoTiffReader.read(s"$filePath/aspect.tif").imageDirectory
 
       ifd.hasPixelArea should be (true)
 
@@ -305,9 +290,9 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must match colormap.tif colormap") {
-      val colorMappedTiff = read("geotiff-reader-tiffs/colormap.tif")
-
-      val ifd = colorMappedTiff.imageDirectories(0)
+      val ifd = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/colormap.tif")
+        .imageDirectory
 
       val colorMap = (ifd |-> colorMapLens get) getOrElse fail
 
@@ -366,9 +351,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reads GeoTiff CS correctly") {
 
     it("should read slope.tif CS correctly") {
-      val tiff = read("slope.tif")
-
-      val crs = tiff.imageDirectories.head.crs
+      val crs = GeoTiffReader.read(s"$filePath/slope.tif").crs
 
       val correctCRS = CRS.fromString("+proj=utm +zone=10 +datum=NAD27 +units=m +no_defs")
 
@@ -376,33 +359,29 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read aspect.tif CS correctly") {
-      val tiff = read("aspect.tif")
+      val crs = GeoTiffReader.read(s"$filePath/aspect.tif").crs
 
-      val crs = tiff.imageDirectories.head.crs
+      val correctProj4String = "+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs"
 
-      val correctProj4String =
-        "+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs"
       val correctCRS = CRS.fromString(correctProj4String)
 
       crs should equal(crs)
     }
 
     it("should read econic.tif CS correctly") {
-      val tiff = read("econic.tif")
+      val crs = GeoTiffReader.read(s"$filePath/econic.tif").crs
 
-      val crs = tiff.imageDirectories.head.crs
+      val correctProj4String = "+proj=eqdc +lat_0=33.76446202777777 +lon_0=-117.4745428888889 +lat_1=33.90363402777778 +lat_2=33.62529002777778 +x_0=0 +y_0=0 +datum=NAD27 +units=m +no_defs"
 
-      val correctProj4String =
-        "+proj=eqdc +lat_0=33.76446202777777 +lon_0=-117.4745428888889 +lat_1=33.90363402777778 +lat_2=33.62529002777778 +x_0=0 +y_0=0 +datum=NAD27 +units=m +no_defs"
       val correctCRS = CRS.fromString(correctProj4String)
 
       crs should equal(correctCRS)
     }
 
     it("should read bilevel.tif CS correctly") {
-      val tiff = read("geotiff-reader-tiffs/bilevel.tif")
-
-      val crs = tiff.imageDirectories.head.crs
+      val crs = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
+        .crs
 
       val correctProj4String = "+proj=tmerc +lat_0=0 +lon_0=-3.45233333 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs"
 
@@ -412,9 +391,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read all-ones.tif CS correctly") {
-      val tiff = read("geotiff-reader-tiffs/all-ones.tif")
-
-      val crs = tiff.imageDirectories.head.crs
+      val crs = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/all-ones.tif").crs
 
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
@@ -422,9 +399,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read colormap.tif CS correctly") {
-      val tiff = read("geotiff-reader-tiffs/colormap.tif")
-
-      val crs = tiff.imageDirectories.head.crs
+      val crs = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/colormap.tif").crs
 
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
@@ -432,9 +407,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read us_ext_clip_esri.tif CS correctly") {
-      val tiff = read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
-
-      val crs = tiff.imageDirectories.head.crs
+      val crs = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif").crs
 
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
@@ -448,8 +421,7 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val (tile, extent, _) = read(file)
-        .imageDirectories.head.toRaster
+      val (tile, extent, _) = GeoTiffReader.read(s"$filePath/$file").toRaster
 
       tile.zonalMax(extent, extent.toPolygon) should be (max)
       tile.zonalMin(extent, extent.toPolygon) should be (min)
@@ -475,7 +447,10 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val (tile, extent, crs) = read("geotiff-reader-tiffs/no-geokey-dir.tif").imageDirectories.head.toRaster
+      val (tile, extent, crs) = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/no-geokey-dir.tif")
+        .toRaster
+
       crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))
 
@@ -487,12 +462,9 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with GDAL Metadata correctly") {
-      val metadata = read("geotiff-reader-tiffs/gdal-metadata.tif")
-        .imageDirectories
-        .head
+      val metadata = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/gdal-metadata.tif")
         .metadata
-
-      println(metadata)
 
       metadata("TILE_COL") should be ("6")
       metadata("units") should be ("kg m-2 s-1")
@@ -501,6 +473,16 @@ class GeoTiffReaderSpec extends FunSpec
       metadata("NC_GLOBAL#driving_model_ensemble_member") should be("r1i1p1")
     }
 
+    it("should read GeoTiff with multiple bands with metadata correctly") {
+      val id = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/multi-tag.tif")
+        .imageDirectory
+
+      val (tile, _, _) = id.toRaster
+      println(tile.cellType)
+      println(tile.dimensions)
+      println(id.imageBytes.size)
+    }
   }
 
 }

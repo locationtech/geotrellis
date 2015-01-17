@@ -14,8 +14,8 @@ import org.scalatest._
 import spire.syntax.cfor._
 
 class RowTransformSpec extends FunSpec
-                          with TileBuilders
-                          with TestEngine {
+    with TileBuilders
+    with TestEngine {
   val path = "raster-test/data/schoolgeo.json"
 
   val LLtoWM = Transform(LatLng, WebMercator)
@@ -62,8 +62,10 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate WebMercator -> LatLng for raster extent") {
-      val (expected, expectedExtent, _) =
-        GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent, _) = GeoTiffReader
+        .read("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif")
+        .toRaster
+
       val re = RasterExtent(expected, expectedExtent)
 
       val threshold = ReprojectOptions.DEFAULT.errorThreshold
@@ -91,8 +93,10 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate EPSG:32618 -> WebMercator for raster extent") {
-      val (expected, expectedExtent, _) =
-        GeoTiffReader("raster-test/data/reproject/slope_epsg32618.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent, _) = GeoTiffReader
+        .read("raster-test/data/reproject/slope_epsg32618.tif")
+        .toRaster
+
       val re = RasterExtent(expected, expectedExtent)
 
       val threshold = ReprojectOptions.DEFAULT.errorThreshold

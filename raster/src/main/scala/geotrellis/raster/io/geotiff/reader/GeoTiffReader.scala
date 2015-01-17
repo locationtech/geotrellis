@@ -29,11 +29,11 @@ class GeoTiffReaderLimitationException(msg: String)
     extends RuntimeException(msg)
 
 object GeoTiffReader {
-  def apply(path: String): GeoTiffReader =
-    apply(Filesystem.slurp(path))
 
-  def apply(bytes: Array[Byte]): GeoTiffReader =
-    GeoTiffReader(ByteBuffer.wrap(bytes, 0, bytes.size))
+  def read(path: String): GeoTiff = read(Filesystem.slurp(path))
+
+  def read(bytes: Array[Byte]): GeoTiff =
+    GeoTiffReader(ByteBuffer.wrap(bytes, 0, bytes.size)).read
 }
 
 case class GeoTiffReader(byteBuffer: ByteBuffer) {
@@ -42,12 +42,12 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
 
   val imageReader = ImageReader(byteBuffer)
 
-  def read(): GeoTiff = {
+  def read: GeoTiff = {
     setByteBufferPosition
     setByteOrder
     validateTiffVersion
     byteBuffer.position(byteBuffer.getInt)
-    GeoTiff(readImageDirectories.toVector)
+    GeoTiff(readImageDirectory)
   }
 
   private def setByteBufferPosition = byteBuffer.position(0)
@@ -62,17 +62,10 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
   private def validateTiffVersion = if (byteBuffer.getChar != 42)
     throw new MalformedGeoTiffException("bad identification number (not 42)")
 
-  private def readImageDirectories: List[ImageDirectory] =
-    byteBuffer.position match {
-      case 0 => Nil
-      case _ => {
-        val current = byteBuffer.position
-        val entries = byteBuffer.getShort
-        val directory = readImageDirectory(ImageDirectory(count = entries), 0)
-        byteBuffer.goToNextImageDirectory(current, entries)
-        directory :: readImageDirectories
-      }
-    }
+  private def readImageDirectory: ImageDirectory = {
+    val entries = byteBuffer.getShort
+    readImageDirectory(ImageDirectory(count = entries), 0)
+  }
 
   private def readImageDirectory(directory: ImageDirectory, index: Int,
     geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =

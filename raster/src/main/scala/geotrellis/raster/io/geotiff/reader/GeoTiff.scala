@@ -16,4 +16,19 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-case class GeoTiff(imageDirectories: Vector[ImageDirectory])
+/**
+  * Represents a tif file.
+  */
+case class GeoTiff(imageDirectory: ImageDirectory) {
+
+  val (tile, extent, crs) = imageDirectory.toRaster
+
+  val toRaster = (tile, extent, crs)
+
+  val bands = imageDirectory.bands
+
+  val hasBands = bands.size > 1
+
+  val metadata = imageDirectory.metadata
+
+}

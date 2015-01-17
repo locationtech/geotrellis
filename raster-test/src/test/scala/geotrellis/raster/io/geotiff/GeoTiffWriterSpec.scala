@@ -51,9 +51,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val ifd = GeoTiffReader(path).read.imageDirectories.head
-
-      val (raster, extent, crs) = ifd.toRaster
+      val (raster, extent, crs) = GeoTiffReader.read(path).toRaster
 
       extent should equal (e)
       raster should equal (r)
@@ -70,9 +68,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val ifd = GeoTiffReader(path).read.imageDirectories.head
-
-      val (raster, extent, crs) = ifd.toRaster
+      val (raster, extent, crs) = GeoTiffReader.read(path).toRaster
 
       extent should equal (e)
       raster should equal (r)

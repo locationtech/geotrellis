@@ -71,7 +71,7 @@ trait GeoTiffReadBenchmark extends Benchmark {
 
   @inline
   final def readNative(path: String) =
-    geotrellis.raster.io.geotiff.reader.GeoTiffReader(path).read().imageDirectories.head.toRaster
+    geotrellis.raster.io.geotiff.reader.GeoTiffReader.read(path).toRaster
 
   @inline
   final def readGeoTools(path: String) =
@@ -239,10 +239,9 @@ object RasterReadProfile {
     var i = 1
     while(true) {
       println(s"Reading $i...")
-      val x = geotrellis.raster.io.geotiff.reader.GeoTiffReader(path).read().imageDirectories.head.toRaster
+      val x = geotrellis.raster.io.geotiff.reader.GeoTiffReader.read(path).toRaster
       println(s"  got $x")
       i += 1
     }
   }
 }
-

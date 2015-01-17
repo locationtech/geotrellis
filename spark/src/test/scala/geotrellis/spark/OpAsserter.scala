@@ -43,7 +43,7 @@ trait OpAsserter extends FunSpec
       sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
-    val tile = GeoTiffReader(basePath + path).read.imageDirectories.head.toRaster._1
+    val tile = GeoTiffReader.read(basePath + path).tile
     testTile(sc, tile, tileCols, tileRows)(rasterOp, sparkOp, asserter)
   }
 

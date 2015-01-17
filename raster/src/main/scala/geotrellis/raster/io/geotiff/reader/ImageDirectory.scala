@@ -28,12 +28,16 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
-import scala.collection.immutable.{HashMap, Map}
+import collection.immutable.{HashMap, Map}
 
-import scala.xml._
+import collection.mutable.ListBuffer
+
+import xml._
 
 import monocle.syntax._
 import monocle.Macro._
+
+import spire.syntax.cfor._
 
 object CompressionType {
 
@@ -459,24 +463,24 @@ case class ImageDirectory(
       case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
     }
 
-  lazy val toRaster: (ArrayTile, Extent, CRS) = {
-    val cols = this |-> imageWidthLens get
-    val rows = this |-> imageLengthLens get
+  lazy val toRaster: (Tile, Extent, CRS) = (tile, extent, crs)
 
-    val tile =
-      this |-> gdalInternalNoDataLens get match {
-        case Some(gdalNoData) =>
-          ArrayTile.fromBytes(imageBytes, cellType, cols, rows, gdalNoData)
-        case None =>
-          ArrayTile.fromBytes(imageBytes, cellType, cols, rows)
-      }
+  lazy val cols = this |-> imageWidthLens get
 
-    (tile, extent, crs)
-  }
+  lazy val rows = this |-> imageLengthLens get
 
-  def writeRasterToArg(path: String, imageName: String): Unit = {
-    writeRasterToArg(path, imageName, cellType, toRaster._1)
-  }
+  lazy val tile: ArrayTile = toTile(imageBytes)
+
+  private def toTile(bytes: Array[Byte]): ArrayTile =
+    this |-> gdalInternalNoDataLens get match {
+      case Some(gdalNoData) =>
+        ArrayTile.fromBytes(bytes, cellType, cols, rows, gdalNoData)
+      case None =>
+        ArrayTile.fromBytes(bytes, cellType, cols, rows)
+    }
+
+  def writeRasterToArg(path: String, imageName: String): Unit =
+    writeRasterToArg(path, imageName, cellType, tile)
 
   def writeRasterToArg(path: String, imageName: String, cellType: CellType,
     raster: ArrayTile): Unit =
@@ -592,8 +596,26 @@ case class ImageDirectory(
   lazy val metadata: Map[String, String] = (this |-> metadataLens get) match {
     case Some(str) =>
       val xml = XML.loadString(str.trim)
-      (xml \ "Item").map(s => ((s \ "@name").text -> s.text)).toMap
+        (xml \ "Item").map(s => ((s \ "@name").text -> s.text)).toMap
     case None => Map()
+  }
+
+  lazy val bands: Seq[Tile] = {
+    val size = (this |-> samplesPerPixelLens get)
+    val tileBuffer = ListBuffer[Tile]()
+    tileBuffer += tile
+    val tileSize = cols * rows
+    cfor(1)(_ < size, _ + 1) { i =>
+      val arr = Array.ofDim[Byte](size)
+
+      cfor (0)(_ < tileSize, _ + 1) { j =>
+        arr(j) = imageBytes(i * tileSize)
+      }
+
+      tileBuffer += toTile(arr)
+    }
+
+    tileBuffer.toList
   }
 }
 

@@ -37,11 +37,6 @@ object ByteBufferUtils {
       int.toLong + (if (int < 0) 4294967296L else 0L)
 
     @inline
-    final def goToNextImageDirectory(current: Int, entries: Int) =
-      byteBuffer.position(entries * 12 +
-        current + 2).position(byteBuffer.getInt)
-
-    @inline
     final def getUnsignedShort: Int = byteBuffer.getChar.toInt
 
     final def getByteArray(length: Int): Array[Short] = {
