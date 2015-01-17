@@ -19,7 +19,8 @@ import scala.reflect._
 object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
   val rowIdRx = new Regex("""(\d+)_(\d+)_(\d+)_(\d+)""", "zoom", "col", "row", "year")
 
-  def timeChunk(time: DateTime): String = time.toString.substring(0, 4) // grab only the year
+  def timeChunk(time: DateTime): String =
+    time.getYear.toString
 
   def rowId(id: LayerId, key: SpaceTimeKey): String = {
     val SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) = key
@@ -113,7 +114,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
 
     InputFormatBase.setRanges(job, ranges)
 
-    assert(timeFilters.length == 0, "Only one TimeFilter supported at this time")
+    assert(timeFilters.length == 1, "Only one TimeFilter supported at this time")
 
     for ( (start, end) <- timeFilters) {
       val props =  Map(
