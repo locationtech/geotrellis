@@ -114,7 +114,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
 
     InputFormatBase.setRanges(job, ranges)
 
-    assert(timeFilters.length == 1, "Only one TimeFilter supported at this time")
+    assert(timeFilters.length <= 1, "Only one TimeFilter supported at this time")
 
     for ( (start, end) <- timeFilters) {
       val props =  Map(
