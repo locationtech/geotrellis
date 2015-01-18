@@ -22,7 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
-
 import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector.Extent
@@ -36,7 +35,10 @@ import scala.io.{Source, Codec}
 import scala.collection.immutable.HashMap
 
 import java.util.BitSet
+
 import java.nio.ByteBuffer
+
+import spire.syntax.cfor._
 
 import org.scalatest._
 
@@ -473,15 +475,50 @@ class GeoTiffReaderSpec extends FunSpec
       metadata("NC_GLOBAL#driving_model_ensemble_member") should be("r1i1p1")
     }
 
-    it("should read GeoTiff with multiple bands with metadata correctly") {
-      val id = GeoTiffReader
-        .read(s"$filePath/geotiff-reader-tiffs/multi-tag.tif")
-        .imageDirectory
+    it("should read GeoTiff with no extent data correctly") {
+      val (tile, extent, _) = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/gdal-metadata.tif")
+        .toRaster
 
-      val (tile, _, _) = id.toRaster
-      println(tile.cellType)
-      println(tile.dimensions)
-      println(id.imageBytes.size)
+      extent should be (Extent(0, 0, tile.cols, tile.rows))
+    }
+
+    it("should read GeoTiff with multiple bands correctly") {
+      val bands = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/multi-tag.tif")
+        .bands
+
+      bands.size should be (4)
+
+      cfor(0)(_ < 4, _ + 1) { i =>
+        val band = bands(i)
+        band.cellType should be (TypeByte)
+        band.dimensions should be ((500, 500))
+      }
+    }
+
+    it("should read GeoTiff with bands metadata correctly") {
+      val geoTiff = GeoTiffReader
+        .read(s"$filePath/geotiff-reader-tiffs/multi-tag.tif")
+
+      val (metadata, bandsMetadata) = (geoTiff.metadata, geoTiff.bandsMetadata)
+
+      geoTiff.hasBands should be (true)
+
+      metadata("HEADTAG") should be ("1")
+      metadata("TAG_TYPE") should be ("HEAD")
+      metadata.size should be (2)
+
+      bandsMetadata.size should be (4)
+
+      cfor(0)(_ < 4, _ + 1) { i =>
+        val correctMetadata = Map(
+          "BANDTAG" -> (i + 1).toString,
+          "TAG_TYPE" -> s"BAND${i + 1}"
+        )
+
+        bandsMetadata(i) should be (correctMetadata)
+      }
     }
   }
 

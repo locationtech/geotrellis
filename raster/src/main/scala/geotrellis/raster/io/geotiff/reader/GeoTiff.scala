@@ -17,7 +17,15 @@
 package geotrellis.raster.io.geotiff.reader
 
 /**
-  * Represents a tif file.
+  * Represents a GeoTiff file.
+  *
+  * This class provides a basic interface for the GeoTiff data that is most
+  * commonly used. The data includes the tile, the extends, the coordinate
+  * system and the metadata. Also multiple bands are supported.
+  *
+  * If access to other tags are required, this class also exposes the
+  * image directory class for accessing all parsed Tiff tags and GeoTiff
+  * directory keys.
   */
 case class GeoTiff(imageDirectory: ImageDirectory) {
 
@@ -30,5 +38,7 @@ case class GeoTiff(imageDirectory: ImageDirectory) {
   val hasBands = bands.size > 1
 
   val metadata = imageDirectory.metadata
+
+  val bandsMetadata = imageDirectory.bandsMetadata
 
 }

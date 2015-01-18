@@ -32,8 +32,8 @@ object Dependencies {
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
-  val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
-  val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
+  val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % Version.monocle
+  val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % Version.monocle
 
   val openCSV       = "net.sf.opencsv" % "opencsv"      % "2.3"
 

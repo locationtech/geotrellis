@@ -496,9 +496,7 @@ case class ImageDirectory(
     case _ => (this |-> modelTiePointsLens get) match {
       case Some(tiePoints) if (!tiePoints.isEmpty) =>
         tiePointsModelSpace(tiePoints, this |-> modelPixelScaleLens get)
-      case _ => throw new MalformedGeoTiffException(
-        "neither model transformation nor tiepoints, or malformed ones."
-      )
+      case _ => Extent(0, 0, cols, rows)
     }
   }
 
@@ -593,24 +591,56 @@ case class ImageDirectory(
     case None => LatLng
   }
 
-  lazy val metadata: Map[String, String] = (this |-> metadataLens get) match {
-    case Some(str) =>
-      val xml = XML.loadString(str.trim)
-        (xml \ "Item").map(s => ((s \ "@name").text -> s.text)).toMap
-    case None => Map()
-  }
+  lazy val (metadata, bandsMetadata): (Map[String, String], Seq[Map[String, String]]) =
+    (this |-> metadataLens get) match {
+      case Some(str) => {
+        val xml = XML.loadString(str.trim)
+        val (metadataXML, bandsMetadataXML) = (xml \ "Item")
+          .groupBy(_ \ "@sample")
+          .partition(_._1.isEmpty)
+
+        val metadata = metadataXML
+          .map(_._2)
+          .headOption match {
+          case Some(ns) => metadataNodeSeqToMap(ns)
+          case None => Map[String, String]()
+        }
+
+        val bandsMetadata = bandsMetadataXML
+          .map { case(key, ns) => (key.toString.toInt, metadataNodeSeqToMap(ns)) }
+          .toSeq
+          .sortWith(_._1 < _._1)
+          .map(_._2)
+
+
+        (metadata, bandsMetadata)
+      }
+      case None => (Map(), Seq())
+    }
+
+  private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
+    ns.map(s => ((s \ "@name").text -> s.text)).toMap
+
+  /*lazy val metadata: Map[String, String] = (this |-> metadataLens get) match {
+   case Some(str) => (XML.loadString(str.trim) \ "Item")
+   .map(s => ((s \ "@name").text -> s.text)).toMap
+   case None => Map()
+   }*/
+
+  /*lazy val bandsMetadata: Seq[Map[String, String]] = (this |-> metadataLens get) match {
+   case Some(str) => (XML.loadString(str.trim) \ "Item")
+   .map(s => ((s \ "@name").text -> s.text)).toMap
+   case None => Seq()
+   }*/
 
   lazy val bands: Seq[Tile] = {
-    val size = (this |-> samplesPerPixelLens get)
+    val numberOfBands = (this |-> samplesPerPixelLens get)
     val tileBuffer = ListBuffer[Tile]()
     tileBuffer += tile
     val tileSize = cols * rows
-    cfor(1)(_ < size, _ + 1) { i =>
-      val arr = Array.ofDim[Byte](size)
-
-      cfor (0)(_ < tileSize, _ + 1) { j =>
-        arr(j) = imageBytes(i * tileSize)
-      }
+    cfor(1)(_ < numberOfBands, _ + 1) { i =>
+      val arr = Array.ofDim[Byte](tileSize)
+      System.arraycopy(imageBytes, i * tileSize, arr, 0, tileSize)
 
       tileBuffer += toTile(arr)
     }
