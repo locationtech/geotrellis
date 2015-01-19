@@ -16,7 +16,6 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
 import geotrellis.raster.io.geotiff.reader.Tags._
 import geotrellis.raster.io.geotiff.reader.TiffFieldType._
 

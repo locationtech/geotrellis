@@ -24,8 +24,10 @@ import spire.syntax.cfor._
 
 case class T6Options(options: Int = 0, fillOrder: Int)
 
-object GroupFourDecompression {
+trait GroupFourDecompression {
+
   implicit class GroupFour(matrix: Array[Array[Byte]]) {
+
     def uncompressGroupFour(implicit directory: ImageDirectory): Array[Array[Byte]] = {
       val options = (directory &|->
         ImageDirectory._nonBasicTags ^|->

@@ -22,7 +22,7 @@ import monocle.syntax._
 
 import spire.syntax.cfor._
 
-object PackBitsDecompression {
+trait PackBitsDecompression {
 
   implicit class PackBits(matrix: Array[Array[Byte]]) {
 

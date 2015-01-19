@@ -54,7 +54,7 @@ object JpegHeaderLenses {
 
 case class JpegTables()
 
-object JpegDecompression {
+trait JpegDecompression {
 
   implicit class Jpeg(matrix: Array[Array[Byte]]) {
 

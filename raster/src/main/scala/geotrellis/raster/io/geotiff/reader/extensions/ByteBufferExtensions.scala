@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.utils
+package geotrellis.raster.io.geotiff.reader.extensions
 
 import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
 
-object ByteBufferUtils {
+trait ByteBufferExtensions {
 
   implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
 

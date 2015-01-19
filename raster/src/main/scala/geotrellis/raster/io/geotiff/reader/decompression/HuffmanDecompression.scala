@@ -22,7 +22,8 @@ import monocle.syntax._
 
 import spire.syntax.cfor._
 
-object HuffmanDecompression {
+trait HuffmanDecompression {
+
   implicit class Huffman(matrix: Array[Array[Byte]]) {
 
     def uncompressHuffman(implicit directory: ImageDirectory): Array[Array[Byte]] = {

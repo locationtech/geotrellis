@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.utils
+package geotrellis.raster.io.geotiff.reader.extensions
 
-object ParseUtils {
+trait GDALNoDataParser {
 
   val gdalNoDataNaNs = List("-1.#QNAN", "1.#QNAN", "-1.#IND", "nan")
   val gdalNoDataNegInfinity = List("-inf", "-1.#INF")

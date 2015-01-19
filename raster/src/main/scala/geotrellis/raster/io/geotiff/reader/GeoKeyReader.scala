@@ -16,15 +16,13 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
+import geotrellis.raster.io.geotiff.reader.Tags._
+import geotrellis.raster.io.geotiff.reader.GeoKeys._
 
 import java.nio.ByteBuffer
 
 import monocle.syntax._
 import monocle.macros.Lenses
-
-import geotrellis.raster.io.geotiff.reader.Tags._
-import geotrellis.raster.io.geotiff.reader.GeoKeys._
 
 case class GeoKeyReader(byteBuffer: ByteBuffer,
   directory: ImageDirectory) {

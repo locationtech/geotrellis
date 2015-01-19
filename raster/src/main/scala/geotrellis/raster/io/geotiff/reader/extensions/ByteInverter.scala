@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.utils
+package geotrellis.raster.io.geotiff.reader.extensions
 
-object ByteInverterUtils {
+trait ByteInverter {
 
   val reverseTable: Array[Byte] = Array[Int](
     0x00, 0x80, 0x40, 0xC0, 0x20, 0xA0, 0x60, 0xE0, 0x10, 0x90, 0x50, 0xD0, 0x30,

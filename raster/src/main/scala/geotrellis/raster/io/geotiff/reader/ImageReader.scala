@@ -18,14 +18,7 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.CompressionType._
-import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
-import geotrellis.raster.io.geotiff.reader.decompression.HuffmanDecompression._
-import geotrellis.raster.io.geotiff.reader.decompression.GroupThreeDecompression._
-import geotrellis.raster.io.geotiff.reader.decompression.GroupFourDecompression._
-import geotrellis.raster.io.geotiff.reader.decompression.LZWDecompression._
-import geotrellis.raster.io.geotiff.reader.decompression.JpegDecompression._
-import geotrellis.raster.io.geotiff.reader.decompression.ZLibDecompression._
-import geotrellis.raster.io.geotiff.reader.decompression.PackBitsDecompression._
+import geotrellis.raster.io.geotiff.reader.decompression._
 
 import monocle.syntax._
 

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.utils
+package geotrellis.raster.io.geotiff.reader.extensions
 
 import java.util.BitSet
 
-object MatrixUtils {
+trait MatrixExtensions {
 
   implicit class MatrixUtilities(matrix: Array[Array[Double]]) {
 

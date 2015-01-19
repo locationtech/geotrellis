@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.reader.decompression
 
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils
 
 import monocle.syntax._
 
@@ -27,7 +26,8 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-object LZWDecompression {
+trait LZWDecompression {
+
   implicit class LZW(matrix: Array[Array[Byte]]) {
     val tableLimit = 4096
 

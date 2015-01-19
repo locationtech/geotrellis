@@ -22,7 +22,7 @@ import geotrellis.raster.io.geotiff.reader._
 
 import spire.syntax.cfor._
 
-object ZLibDecompression {
+trait ZLibDecompression {
 
   implicit class ZLib(matrix: Array[Array[Byte]]) {
     def uncompressZLib(directory: ImageDirectory): Array[Array[Byte]] = {

@@ -16,10 +16,6 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import scala.collection.immutable.HashMap
-
-import monocle.syntax._
-
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 import geotrellis.raster.io.geotiff.reader.GeoKeys._
 import geotrellis.raster.io.geotiff.reader.ModelTypes._
@@ -37,6 +33,10 @@ import geotrellis.raster.io.geotiff.reader.CoordinateTransformTypes._
 
 import geotrellis.proj4.EPSGCSVReader
 import geotrellis.proj4.CSVFileConstants._
+
+import scala.collection.immutable.HashMap
+
+import monocle.syntax._
 
 case class GeoTiffGDALParameters(
   var model: Int = UserDefinedCPV,

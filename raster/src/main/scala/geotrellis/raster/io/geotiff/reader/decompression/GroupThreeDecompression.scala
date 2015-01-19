@@ -22,9 +22,10 @@ import monocle.syntax._
 
 import spire.syntax.cfor._
 
-object GroupThreeDecompression {
+trait GroupThreeDecompression {
 
   implicit class GroupThree(matrix: Array[Array[Byte]]) {
+
     def uncompressGroupThree(implicit directory: ImageDirectory): Array[Array[Byte]] = {
       val options = (directory &|->
         ImageDirectory._nonBasicTags ^|->

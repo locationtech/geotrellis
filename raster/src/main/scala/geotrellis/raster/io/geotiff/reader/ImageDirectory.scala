@@ -18,9 +18,6 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgWriter
-import geotrellis.raster.io.geotiff.reader.utils.ArrayUtils._
-import geotrellis.raster.io.geotiff.reader.utils.MatrixUtils._
-import geotrellis.raster.io.geotiff.reader.utils.ParseUtils._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent

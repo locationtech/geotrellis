@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.reader
 
 import monocle.syntax._
+
 import monocle.macros.Lenses
 
 import scala.collection.immutable.HashMap

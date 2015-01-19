@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.utils
+package geotrellis.raster.io.geotiff.reader.extensions
 
 import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 
-object ArrayUtils {
+trait ArrayExtensions {
 
   implicit class ArrayUtilities(arr: Array[Byte]) {
 

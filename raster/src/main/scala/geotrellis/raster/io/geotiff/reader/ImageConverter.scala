@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
 import monocle.syntax._
 
