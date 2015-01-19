@@ -20,7 +20,6 @@ import scala.collection.immutable.HashMap
 
 import monocle.syntax._
 
-import geotrellis.raster.io.geotiff.reader.GeoKeyDirectoryLenses._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 import geotrellis.raster.io.geotiff.reader.GeoKeys._
 import geotrellis.raster.io.geotiff.reader.ModelTypes._
@@ -70,7 +69,6 @@ object GeoTiffCSParser {
 /**
   * This class is indirectly ported from the GDAL github repository.
   */
-
 class GeoTiffCSParser(directory: ImageDirectory) {
 
   private val geoKeyDirectory = directory.geoKeyDirectory
@@ -82,20 +80,27 @@ class GeoTiffCSParser(directory: ImageDirectory) {
   private def createGeoTiffGDALParameters: GeoTiffGDALParameters = {
     val gtgp = GeoTiffGDALParameters()
 
-    gtgp.model = geoKeyDirectory |-> gtModelTypeLens get match {
+    gtgp.model = (geoKeyDirectory &|->
+      GeoKeyDirectory._configKeys ^|->
+      ConfigKeys._gtModelType get) match {
       case -1 => UserDefinedCPV
       case modelType => modelType
     }
 
-    val linearUnits = (geoKeyDirectory |-> geogLinearUnitsLens get) getOrElse 9001
+    val linearUnits = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogLinearUnits get) getOrElse 9001
 
-    gtgp.pcs = geoKeyDirectory |-> projectedCSTypeLens get match {
+    gtgp.pcs = (geoKeyDirectory &|->
+      GeoKeyDirectory._projectedCSParameterKeys ^|->
+      ProjectedCSParameterKeys._projectedCSType get) match {
       case pcs if (pcs != -1 && pcs != UserDefinedCPV) => {
         getPCSData(pcs, gtgp)
         pcs
       }
       case _ => UserDefinedCPV
     }
+
     if (gtgp.pcs != UserDefinedCPV && gtgp.projCode == UserDefinedCPV) {
       val (optDatum, optZone, optMapSystem) = pcsToDatumZoneAndMapSystem(gtgp.pcs)
 
@@ -108,7 +113,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     }
 
     if (gtgp.projCode == UserDefinedCPV)
-      gtgp.projCode = (geoKeyDirectory |-> projectionLens get) getOrElse gtgp.projCode
+      gtgp.projCode = (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projection get) getOrElse gtgp.projCode
 
     if (gtgp.projCode != UserDefinedCPV) {
       val (optProjection, optProjectionParameters) =
@@ -126,7 +133,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       setGTParameterIdentities(gtgp.ctProjection, gtgp.projectionParameters)
     }
 
-    gtgp.gcs = (geoKeyDirectory |-> geogTypeLens get) getOrElse gtgp.gcs
+    gtgp.gcs = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogType get) getOrElse gtgp.gcs
 
     if (gtgp.gcs != UserDefinedCPV) {
       val (optPm, optAngle, optDatum) = getGCSInfo(gtgp.gcs)
@@ -135,21 +144,25 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       gtgp.datum = optDatum getOrElse gtgp.datum
     }
 
-    gtgp.angle = (geoKeyDirectory |-> geogAngularUnitsLens get) getOrElse gtgp.angle
+    gtgp.angle = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogAngularUnits get) getOrElse gtgp.angle
 
     if (gtgp.angle != UserDefinedCPV) {
       val optAngleInDegrees = getAngleInfo(gtgp.angle)
       gtgp.angleInDegrees = optAngleInDegrees getOrElse UserDefinedCPV
     }
 
-    gtgp.datum = (geoKeyDirectory |-> geogGeodeticDatumLens get) getOrElse gtgp.datum
+    gtgp.datum = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogGeodeticDatum get) getOrElse gtgp.datum
 
-    if (gtgp.datum != UserDefinedCPV) {
-      val optEllipsoid = getDatumInfo(gtgp.datum)
-      gtgp.ellipsoid = optEllipsoid getOrElse gtgp.ellipsoid
-    }
+    if (gtgp.datum != UserDefinedCPV)
+      gtgp.ellipsoid = getDatumInfo(gtgp.datum) getOrElse gtgp.ellipsoid
 
-    gtgp.ellipsoid = (geoKeyDirectory |-> geogEllipsoidLens get) getOrElse gtgp.ellipsoid
+    gtgp.ellipsoid = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogEllipsoid get) getOrElse gtgp.ellipsoid
 
     if (gtgp.ellipsoid != UserDefinedCPV) {
       val (optSemiMajor, optSemiMinor) = getEllipsoidInfo(gtgp.ellipsoid)
@@ -158,7 +171,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       gtgp.semiMinor = optSemiMinor getOrElse gtgp.semiMinor
     } else {
       gtgp.ellipsoid =
-        (geoKeyDirectory |-> geogCitationLens get)
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._geogCSParameterKeys ^|->
+          GeogCSParameterKeys._geogCitation get)
           .map(x => x.filter(_.contains("Ellipsoid"))).map(_.headOption) match {
           case Some(Some(s)) =>
             if (s.contains("International")) 7022 // same code for all "international" ellipsoids.
@@ -167,40 +182,55 @@ class GeoTiffCSParser(directory: ImageDirectory) {
         }
     }
 
-    gtgp.semiMajor = (geoKeyDirectory |-> geogSemiMajorAxisLens get) getOrElse gtgp.semiMajor
-    gtgp.semiMinor = (geoKeyDirectory |-> geogSemiMinorAxisLens get) getOrElse gtgp.semiMinor
+    gtgp.semiMajor = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogSemiMajorAxis get) getOrElse gtgp.semiMajor
 
-    val optInvFlattning = geoKeyDirectory |-> geogInvFlatteningLens get
+    gtgp.semiMinor = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogSemiMinorAxis get) getOrElse gtgp.semiMinor
 
-    if (!optInvFlattning.isEmpty) {
-      val invFlattening = optInvFlattning.get
+    val optInvFlattening = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogInvFlattening get)
+
+    if (!optInvFlattening.isEmpty) {
+      val invFlattening = optInvFlattening.get
 
       gtgp.semiMinor =
         if (invFlattening != 0.0) semiMinorComp(gtgp.semiMajor, invFlattening)
         else gtgp.semiMajor
     }
 
-    gtgp.pm = (geoKeyDirectory |-> geogPrimeMeridianLens get) getOrElse gtgp.pm
+    gtgp.pm = (geoKeyDirectory &|->
+      GeoKeyDirectory._geogCSParameterKeys ^|->
+      GeogCSParameterKeys._geogPrimeMeridian get) getOrElse gtgp.pm
 
     if (gtgp.pm != UserDefinedCPV) {
       val optPMLongToGreenwich = getPrimeMeridianInfo(gtgp.pm)
       gtgp.pmLongToGreenwich = optPMLongToGreenwich getOrElse gtgp.pmLongToGreenwich
     } else {
-      gtgp.pmLongToGreenwich =
-        (geoKeyDirectory |-> geogPrimeMeridianLongLens get) getOrElse gtgp.pmLongToGreenwich
+      gtgp.pmLongToGreenwich = (geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogPrimeMeridianLong get) getOrElse gtgp.pmLongToGreenwich
 
       gtgp.pmLongToGreenwich = angleToDD(gtgp.pmLongToGreenwich, gtgp.angle)
     }
 
-    gtgp.length = (geoKeyDirectory |-> projLinearUnitsLens get) getOrElse UserDefinedCPV
+    gtgp.length = (geoKeyDirectory &|->
+      GeoKeyDirectory._projectedCSParameterKeys ^|->
+      ProjectedCSParameterKeys._projLinearUnits get) getOrElse UserDefinedCPV
 
     if (gtgp.length != UserDefinedCPV) {
       val optLengthInMeters = getLengthInfo(gtgp.length)
       gtgp.lengthInMeters = optLengthInMeters getOrElse gtgp.lengthInMeters
-    } else gtgp.lengthInMeters =
-      (geoKeyDirectory |-> projLinearUnitSizeLens get) getOrElse gtgp.lengthInMeters
+    } else gtgp.lengthInMeters = (geoKeyDirectory &|->
+      GeoKeyDirectory._projectedCSParameterKeys ^|->
+      ProjectedCSParameterKeys._projLinearUnitSize get) getOrElse gtgp.lengthInMeters
 
-    gtgp.ctProjection = (geoKeyDirectory |-> projCoordTransLens get) getOrElse gtgp.ctProjection
+    gtgp.ctProjection = (geoKeyDirectory &|->
+      GeoKeyDirectory._projectedCSParameterKeys ^|->
+      ProjectedCSParameterKeys._projCoordTrans get) getOrElse gtgp.ctProjection
 
     if (gtgp.ctProjection != UserDefinedCPV) setProjectionParameters(gtgp)
 
@@ -630,26 +660,49 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     var stdParallel1, stdParallel2, azimuth = 0.0
 
     val eastingList = List(
-      geoKeyDirectory |-> projFalseEastingLens get,
-      geoKeyDirectory |-> projCenterEastingLens get,
-      geoKeyDirectory |-> projFalseOriginEastingLens get
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseEasting get),
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCenterEasting get),
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseOriginEasting get)
     )
 
     falseEasting = getOptDoubleValue(eastingList, 0.0)
 
     val northingList = List(
-      geoKeyDirectory |-> projFalseNorthingLens get,
-      geoKeyDirectory |-> projCenterNorthingLens get,
-      geoKeyDirectory |-> projFalseOriginNorthingLens get
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseNorthing get),
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCenterNorthing get),
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseOriginNorthing get)
     )
 
     falseNorthing = getOptDoubleValue(northingList, 0.0)
 
     def setOriginLong = {
       val originLongList = List(
-        geoKeyDirectory |-> projNatOriginLongLens get,
-        geoKeyDirectory |-> projFalseOriginLongLens get,
-        geoKeyDirectory |-> projCenterLongLens get
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projNatOriginLong get),
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projectedFalsings ^|->
+          ProjectedFalsings._projFalseOriginLong get),
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projCenterLong get)
       )
 
       originLong = getOptDoubleValue(originLongList, 0.0)
@@ -657,22 +710,33 @@ class GeoTiffCSParser(directory: ImageDirectory) {
 
     def setOriginLat = {
       val originLatList = List(
-        geoKeyDirectory |-> projNatOriginLatLens get,
-        geoKeyDirectory |-> projFalseOriginLatLens get,
-        geoKeyDirectory |-> projCenterLatLens get
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projNatOriginLat get),
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projectedFalsings ^|->
+          ProjectedFalsings._projFalseOriginLat get),
+        (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projCenterLat get)
       )
 
       originLat = getOptDoubleValue(originLatList, 0.0)
     }
 
     def setOriginScaleNatOrigin =
-      originScale = (geoKeyDirectory |-> projScaleAtNatOriginLens get) getOrElse 1.0
+      originScale = (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projScaleAtNatOrigin get) getOrElse 1.0
 
     def setOriginScale = {
       setOriginScaleNatOrigin
 
       if (originScale == 1.0)
-        originScale = (geoKeyDirectory |-> projScaleAtCenterLens get) getOrElse 1.0
+        originScale = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projScaleAtCenter get) getOrElse 1.0
     }
 
     gtgp.ctProjection match {
@@ -707,8 +771,15 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       case CT_ObliqueMercator | CT_HotineObliqueMercatorAzimuthCenter => {
         setOriginLong
         setOriginLat
-        azimuth = (geoKeyDirectory |-> projAzimuthAngleLens get) getOrElse 0.0
-        rectGridAngle = (geoKeyDirectory |-> projRectifiedGridAngleLens get) getOrElse 90.0
+
+        azimuth = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projAzimuthAngle get) getOrElse 0.0
+
+        rectGridAngle = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projRectifiedGridAngle get) getOrElse 90.0
+
         setOriginScale
 
         gtgp.projectionParameters = Array.ofDim[(Int, Double)](7)
@@ -750,7 +821,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       case CT_Equirectangular => {
         setOriginLong
         setOriginLat
-        stdParallel1 = (geoKeyDirectory |-> projStdParallel1Lens get) getOrElse 0.0
+        stdParallel1 = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStdParallel1 get) getOrElse 0.0
 
         gtgp.projectionParameters = Array.ofDim[(Int, Double)](7)
 
@@ -770,7 +843,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
         gtgp.projectionParameters(6) = (ProjFalseNorthingGeoKey, falseNorthing)
       }
       case CT_PolarStereographic => {
-        originLong = (geoKeyDirectory |-> projStraightVertPoleLongLens get) getOrElse 0.0
+        originLong = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStraightVertPoleLong get) getOrElse 0.0
 
         if (originLong == 0.0) setOriginLong
         setOriginLat
@@ -785,8 +860,13 @@ class GeoTiffCSParser(directory: ImageDirectory) {
         gtgp.projectionParameters(6) = (ProjFalseNorthingGeoKey, falseNorthing)
       }
       case CT_LambertConfConic_2SP => {
-        stdParallel1 = (geoKeyDirectory |-> projStdParallel1Lens get) getOrElse 0.0
-        stdParallel2 = (geoKeyDirectory |-> projStdParallel2Lens get) getOrElse 0.0
+        stdParallel1 = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStdParallel1 get) getOrElse 0.0
+
+        stdParallel2 = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStdParallel2 get) getOrElse 0.0
 
         setOriginLong
         setOriginLat
@@ -801,8 +881,13 @@ class GeoTiffCSParser(directory: ImageDirectory) {
         gtgp.projectionParameters(6) = (ProjFalseNorthingGeoKey, falseNorthing)
       }
       case CT_AlbersEqualArea | CT_EquidistantConic => {
-        stdParallel1 = (geoKeyDirectory |-> projStdParallel1Lens get) getOrElse 0.0
-        stdParallel2 = (geoKeyDirectory |-> projStdParallel2Lens get) getOrElse 0.0
+        stdParallel1 = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStdParallel1 get) getOrElse 0.0
+
+        stdParallel2 = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStdParallel2 get) getOrElse 0.0
 
         setOriginLong
         setOriginLat
@@ -817,7 +902,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
         gtgp.projectionParameters(6) = (ProjFalseNorthingGeoKey, falseNorthing)
       }
       case CT_CylindricalEqualArea => {
-        stdParallel1 = (geoKeyDirectory |-> projStdParallel1Lens get) getOrElse 0.0
+        stdParallel1 = (geoKeyDirectory &|->
+          GeoKeyDirectory._projectedCSParameterKeys ^|->
+          ProjectedCSParameterKeys._projStdParallel1 get) getOrElse 0.0
 
         setOriginLong
 

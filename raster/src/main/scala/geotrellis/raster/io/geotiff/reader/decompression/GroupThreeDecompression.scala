@@ -16,11 +16,9 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import monocle.syntax._
-import monocle.Macro._
-
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
+
+import monocle.syntax._
 
 import spire.syntax.cfor._
 
@@ -28,8 +26,13 @@ object GroupThreeDecompression {
 
   implicit class GroupThree(matrix: Array[Array[Byte]]) {
     def uncompressGroupThree(implicit directory: ImageDirectory): Array[Array[Byte]] = {
-      val options = directory |-> t4OptionsLens get
-      val fillOrder = directory |-> fillOrderLens get
+      val options = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._t4Options get)
+      val fillOrder = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._fillOrder get)
+
       val len = matrix.length
       var arr = Array.ofDim[Array[Byte]](len)
 

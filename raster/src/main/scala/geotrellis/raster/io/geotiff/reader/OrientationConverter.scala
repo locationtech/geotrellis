@@ -16,10 +16,9 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import monocle.syntax._
-
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 import geotrellis.raster.io.geotiff.reader.Orientations._
+
+import monocle.syntax._
 
 import spire.syntax.cfor._
 
@@ -27,9 +26,11 @@ object OrientationConverter {
 
   def apply(directory: ImageDirectory) = new OrientationConverter(
     directory.bitsPerPixel,
-    directory |-> orientationLens get,
-    directory |-> imageLengthLens get,
-    directory |-> imageWidthLens get
+    (directory &|->
+      ImageDirectory._nonBasicTags ^|->
+      NonBasicTags._orientation get),
+    directory.rows,
+    directory.cols
   )
 
 }

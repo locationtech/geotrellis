@@ -16,10 +16,9 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import monocle.syntax._
+import geotrellis.raster.io.geotiff.reader._
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 import geotrellis.raster.op.zonal.summary._
@@ -29,6 +28,8 @@ import geotrellis.vector.Extent
 import geotrellis.testkit._
 
 import geotrellis.proj4.{CRS, LatLng}
+
+import monocle.syntax._
 
 import scala.io.{Source, Codec}
 
@@ -196,43 +197,52 @@ class GeoTiffReaderSpec extends FunSpec
     it("must match aspect.tif tiff tags") {
       val ifd = GeoTiffReader.read(s"$filePath/aspect.tif").imageDirectory
 
-      (ifd |-> imageWidthLens get) should equal (1500L)
+      ifd.cols should equal (1500L)
 
-      (ifd |-> imageLengthLens get) should equal (1350L)
+      ifd.rows should equal (1350L)
 
-      ifd |-> bitsPerSampleLens get match {
+      (ifd &|-> ImageDirectory._basicTags ^|->
+        BasicTags._bitsPerSample get) match {
         case Some(v) if (v.size == 1) => v(0) should equal (32)
         case None => fail
       }
 
-      (ifd |-> compressionLens get) should equal (1)
+      ifd.compression should equal (1)
 
-      (ifd |-> photometricInterpLens get) should equal (1)
+      (ifd &|-> ImageDirectory._basicTags ^|->
+        BasicTags._photometricInterp get) should equal (1)
 
-      ifd |-> stripOffsetsLens get match {
+      (ifd &|-> ImageDirectory._basicTags ^|->
+        BasicTags._stripOffsets get) match {
         case Some(stripOffsets) => stripOffsets.size should equal (1350)
         case None => fail
       }
 
-      (ifd |-> samplesPerPixelLens get) should equal (1)
+      (ifd &|-> ImageDirectory._basicTags ^|->
+        BasicTags._samplesPerPixel get) should equal (1)
 
-      (ifd |-> rowsPerStripLens get) should equal (1L)
+      (ifd &|-> ImageDirectory._basicTags ^|->
+        BasicTags._rowsPerStrip get) should equal (1L)
 
-      ifd |-> stripByteCountsLens get match {
+      (ifd &|-> ImageDirectory._basicTags ^|->
+        BasicTags._stripByteCounts get) match {
         case Some(stripByteCounts) => stripByteCounts.size should equal (1350)
         case None => fail
       }
 
-      ifd |-> planarConfigurationLens get match {
+      (ifd &|-> ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._planarConfiguration get) match {
         case Some(planarConfiguration) => planarConfiguration should equal (1)
         case None => fail
       }
 
-      val sampleFormats = (ifd |-> sampleFormatLens get)
+      val sampleFormats = (ifd &|-> ImageDirectory._dataSampleFormatTags
+        ^|-> DataSampleFormatTags._sampleFormat get)
       sampleFormats.size should equal (1)
       sampleFormats(0) should equal (3)
 
-      ifd |-> modelPixelScaleLens get match {
+      (ifd &|-> ImageDirectory._geoTiffTags
+        ^|-> GeoTiffTags._modelPixelScale get) match {
         case Some(modelPixelScales) => {
           modelPixelScales._1 should equal (10.0)
           modelPixelScales._2 should equal (10.0)
@@ -241,7 +251,8 @@ class GeoTiffReaderSpec extends FunSpec
         case None => fail
       }
 
-      ifd |-> modelTiePointsLens get match {
+      (ifd &|-> ImageDirectory._geoTiffTags
+        ^|-> GeoTiffTags._modelTiePoints get) match {
         case Some(modelTiePoints) if (modelTiePoints.size == 1) => {
           val (p1, p2) = modelTiePoints(0)
           p1.x should equal (0.0)
@@ -254,7 +265,8 @@ class GeoTiffReaderSpec extends FunSpec
         case None => fail
       }
 
-      ifd |-> gdalInternalNoDataLens get match {
+      (ifd &|-> ImageDirectory._geoTiffTags
+        ^|-> GeoTiffTags._gdalInternalNoData get) match {
         case Some(gdalInternalNoData) => gdalInternalNoData should equal (-9999.0)
         case None => fail
       }
@@ -296,7 +308,9 @@ class GeoTiffReaderSpec extends FunSpec
         .read(s"$filePath/geotiff-reader-tiffs/colormap.tif")
         .imageDirectory
 
-      val colorMap = (ifd |-> colorMapLens get) getOrElse fail
+      val colorMap = (ifd &|->
+        ImageDirectory._basicTags ^|->
+        BasicTags._colorMap get) getOrElse fail
 
       val nonCommonsMap = collection.immutable.HashMap[Int, (Byte, Byte, Byte)](
         1 -> (0.toByte, 249.toByte, 0.toByte),

@@ -16,13 +16,12 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
+
 import java.nio.ByteBuffer
 
 import monocle.syntax._
-
-import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
-
-import geotrellis.raster.io.geotiff.reader.GeoKeyDirectoryLenses._
+import monocle.macros.Lenses
 
 import geotrellis.raster.io.geotiff.reader.Tags._
 import geotrellis.raster.io.geotiff.reader.GeoKeys._
@@ -49,132 +48,202 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
 
   private def readGeoKeyEntry(keyMetadata: GeoKeyMetadata,
     geoKeyDirectory: GeoKeyDirectory)  = keyMetadata.tiffTagLocation match {
-      case 0 => readShort(keyMetadata, geoKeyDirectory)
-      case DoublesTag => readDoubles(keyMetadata, geoKeyDirectory)
-      case AsciisTag => readAsciis(keyMetadata, geoKeyDirectory)
-    }
+    case 0 => readShort(keyMetadata, geoKeyDirectory)
+    case DoublesTag => readDoubles(keyMetadata, geoKeyDirectory)
+    case AsciisTag => readAsciis(keyMetadata, geoKeyDirectory)
+  }
 
   private def readShort(keyMetadata: GeoKeyMetadata,
     geoKeyDirectory: GeoKeyDirectory) = {
     val short = keyMetadata.valueOffset
 
     keyMetadata.keyID match {
-      case GTModelTypeGeoKey => geoKeyDirectory |-> gtModelTypeLens set(short)
-      case GTRasterTypeGeoKey =>
-        geoKeyDirectory |-> gtRasterTypeLens set(Some(short))
-      case GeogTypeGeoKey => geoKeyDirectory |-> geogTypeLens set(Some(short))
-      case GeogGeodeticDatumGeoKey =>
-        geoKeyDirectory |-> geogGeodeticDatumLens set(Some(short))
-      case GeogPrimeMeridianGeoKey =>
-        geoKeyDirectory |-> geogPrimeMeridianLens set(Some(short))
-      case GeogLinearUnitsGeoKey =>
-        geoKeyDirectory |-> geogLinearUnitsLens set(Some(short))
-      case GeogAngularUnitsGeoKey =>
-        geoKeyDirectory |-> geogAngularUnitsLens set(Some(short))
-      case GeogEllipsoidGeoKey =>
-        geoKeyDirectory |-> geogEllipsoidLens set(Some(short))
-      case GeogAzimuthUnitsGeoKey =>
-        geoKeyDirectory |-> geogAzimuthUnitsLens set(Some(short))
-      case ProjectedCSTypeGeoKey =>
-        geoKeyDirectory |-> projectedCSTypeLens set(short)
-      case ProjectionGeoKey =>
-        geoKeyDirectory |-> projectionLens set(Some(short))
-      case ProjCoordTransGeoKey =>
-        geoKeyDirectory |-> projCoordTransLens set(Some(short))
-      case ProjLinearUnitsGeoKey =>
-        geoKeyDirectory |-> projLinearUnitsLens set(Some(short))
-      case VerticalCSTypeGeoKey =>
-        geoKeyDirectory |-> verticalCSTypeLens set(Some(short))
-      case VerticalDatumGeoKey =>
-        geoKeyDirectory |-> verticalDatumLens set(Some(short))
-      case VerticalUnitsGeoKey =>
-        geoKeyDirectory |-> verticalUnitsLens set(Some(short))
-      case tag => geoKeyDirectory |-> geoKeyShortMapLens modify (_ + (tag
-          -> short))
+      case GTModelTypeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._configKeys ^|->
+        ConfigKeys._gtModelType set(short)
+      case GTRasterTypeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._configKeys ^|->
+        ConfigKeys._gtRasterType set(Some(short))
+      case GeogTypeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogType set(Some(short))
+      case GeogGeodeticDatumGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogGeodeticDatum set(Some(short))
+      case GeogPrimeMeridianGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogPrimeMeridian set(Some(short))
+      case GeogLinearUnitsGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogLinearUnits set(Some(short))
+      case GeogAngularUnitsGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogAngularUnits set(Some(short))
+      case GeogEllipsoidGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogEllipsoid set(Some(short))
+      case GeogAzimuthUnitsGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogAzimuthUnits set(Some(short))
+      case ProjectedCSTypeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedCSType set(short)
+      case ProjectionGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projection set(Some(short))
+      case ProjCoordTransGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCoordTrans set(Some(short))
+      case ProjLinearUnitsGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projLinearUnits set(Some(short))
+      case VerticalCSTypeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._verticalCSKeys ^|->
+        VerticalCSKeys._verticalCSType set(Some(short))
+      case VerticalDatumGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._verticalCSKeys ^|->
+        VerticalCSKeys._verticalDatum set(Some(short))
+      case VerticalUnitsGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._verticalCSKeys ^|->
+        VerticalCSKeys._verticalUnits set(Some(short))
+      case tag => geoKeyDirectory &|->
+        GeoKeyDirectory._nonStandardizedKeys ^|->
+        NonStandardizedKeys._shortMap modify (
+          _ + (tag -> short)
+        )
     }
   }
 
   private def readDoubles(keyMetadata: GeoKeyMetadata,
     geoKeyDirectory: GeoKeyDirectory) = {
-    val doubles = directory.geoTiffTags.doubles.get.drop(
-      keyMetadata.valueOffset).take(keyMetadata.count)
+    val doubles = directory
+      .geoTiffTags
+      .doubles
+      .get
+      .drop(keyMetadata.valueOffset)
+      .take(keyMetadata.count)
 
     keyMetadata.keyID match {
-      case GeogLinearUnitSizeGeoKey =>
-        geoKeyDirectory |-> geogLinearUnitSizeLens set(Some(doubles(0)))
-      case GeogAngularUnitSizeGeoKey =>
-        geoKeyDirectory |-> geogAngularUnitSizeLens set(Some(doubles(0)))
-      case GeogSemiMajorAxisGeoKey =>
-        geoKeyDirectory |-> geogSemiMajorAxisLens set(Some(doubles(0)))
-      case GeogSemiMinorAxisGeoKey =>
-        geoKeyDirectory |-> geogSemiMinorAxisLens set(Some(doubles(0)))
-      case GeogInvFlatteningGeoKey =>
-        geoKeyDirectory |-> geogInvFlatteningLens set(Some(doubles(0)))
-      case GeogPrimeMeridianLongGeoKey =>
-        geoKeyDirectory |-> geogPrimeMeridianLongLens set(Some(doubles(0)))
-      case ProjLinearUnitSizeGeoKey =>
-        geoKeyDirectory |-> projLinearUnitSizeLens set(Some(doubles(0)))
-      case ProjStdParallel1GeoKey =>
-        geoKeyDirectory |-> projStdParallel1Lens set(Some(doubles(0)))
-      case ProjStdParallel2GeoKey =>
-        geoKeyDirectory |-> projStdParallel2Lens set(Some(doubles(0)))
-      case ProjNatOriginLongGeoKey =>
-        geoKeyDirectory |-> projNatOriginLongLens set(Some(doubles(0)))
-      case ProjNatOriginLatGeoKey =>
-        geoKeyDirectory |-> projNatOriginLatLens set(Some(doubles(0)))
-      case ProjFalseEastingGeoKey =>
-        geoKeyDirectory |-> projFalseEastingLens set(Some(doubles(0)))
-      case ProjFalseNorthingGeoKey =>
-        geoKeyDirectory |-> projFalseNorthingLens set(Some(doubles(0)))
-      case ProjFalseOriginLongGeoKey =>
-        geoKeyDirectory |-> projFalseOriginLongLens set(Some(doubles(0)))
-      case ProjFalseOriginLatGeoKey =>
-        geoKeyDirectory |-> projFalseOriginLatLens set(Some(doubles(0)))
-      case ProjFalseOriginEastingGeoKey =>
-        geoKeyDirectory |-> projFalseOriginEastingLens set(Some(doubles(0)))
-      case ProjFalseOriginNorthingGeoKey =>
-        geoKeyDirectory |-> projFalseOriginNorthingLens set(Some(doubles(0)))
-      case ProjCenterLongGeoKey =>
-        geoKeyDirectory |-> projCenterLongLens set(Some(doubles(0)))
-      case ProjCenterLatGeoKey =>
-        geoKeyDirectory |-> projCenterLatLens set(Some(doubles(0)))
-      case ProjCenterEastingGeoKey =>
-        geoKeyDirectory |-> projCenterEastingLens set(Some(doubles(0)))
-      case ProjCenterNorthingGeoKey =>
-        geoKeyDirectory |-> projCenterNorthingLens set(Some(doubles(0)))
-      case ProjScaleAtNatOriginGeoKey =>
-        geoKeyDirectory |-> projScaleAtNatOriginLens set(Some(doubles(0)))
-      case ProjScaleAtCenterGeoKey =>
-        geoKeyDirectory |-> projScaleAtCenterLens set(Some(doubles(0)))
-      case ProjAzimuthAngleGeoKey =>
-        geoKeyDirectory |-> projAzimuthAngleLens set(Some(doubles(0)))
-      case ProjStraightVertPoleLongGeoKey =>
-        geoKeyDirectory |-> projStraightVertPoleLongLens set(Some(doubles(0)))
-      case ProjRectifiedGridAngleGeoKey =>
-        geoKeyDirectory |-> projRectifiedGridAngleLens set(Some(doubles(0)))
-      case tag => geoKeyDirectory |-> geoKeyDoublesMapLens modify (_ + (tag
-          -> doubles))
+      case GeogLinearUnitSizeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogLinearUnitSize set(Some(doubles(0)))
+      case GeogAngularUnitSizeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogAngularUnitSize set(Some(doubles(0)))
+      case GeogSemiMajorAxisGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogSemiMajorAxis set(Some(doubles(0)))
+      case GeogSemiMinorAxisGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogSemiMinorAxis set(Some(doubles(0)))
+      case GeogInvFlatteningGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogInvFlattening set(Some(doubles(0)))
+      case GeogPrimeMeridianLongGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogPrimeMeridianLong set(Some(doubles(0)))
+      case ProjLinearUnitSizeGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projLinearUnitSize set(Some(doubles(0)))
+      case ProjStdParallel1GeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projStdParallel1 set(Some(doubles(0)))
+      case ProjStdParallel2GeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projStdParallel2 set(Some(doubles(0)))
+      case ProjNatOriginLongGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projNatOriginLong set(Some(doubles(0)))
+      case ProjNatOriginLatGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projNatOriginLat set(Some(doubles(0)))
+      case ProjFalseEastingGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseEasting set(Some(doubles(0)))
+      case ProjFalseNorthingGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseNorthing set(Some(doubles(0)))
+      case ProjFalseOriginLongGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseOriginLong set(Some(doubles(0)))
+      case ProjFalseOriginLatGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseOriginLat set(Some(doubles(0)))
+      case ProjFalseOriginEastingGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseOriginEasting set(Some(doubles(0)))
+      case ProjFalseOriginNorthingGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projectedFalsings ^|->
+        ProjectedFalsings._projFalseOriginNorthing set(Some(doubles(0)))
+      case ProjCenterLongGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCenterLong set(Some(doubles(0)))
+      case ProjCenterLatGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCenterLat set(Some(doubles(0)))
+      case ProjCenterEastingGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCenterEasting set(Some(doubles(0)))
+      case ProjCenterNorthingGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projCenterNorthing set(Some(doubles(0)))
+      case ProjScaleAtNatOriginGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projScaleAtNatOrigin set(Some(doubles(0)))
+      case ProjScaleAtCenterGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projScaleAtCenter set(Some(doubles(0)))
+      case ProjAzimuthAngleGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projAzimuthAngle set(Some(doubles(0)))
+      case ProjStraightVertPoleLongGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projStraightVertPoleLong set(Some(doubles(0)))
+      case ProjRectifiedGridAngleGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._projRectifiedGridAngle set(Some(doubles(0)))
+      case tag => geoKeyDirectory &|->
+        GeoKeyDirectory._nonStandardizedKeys ^|->
+        NonStandardizedKeys._doublesMap modify (
+          _ + (tag -> doubles)
+        )
     }
   }
 
   private def readAsciis(metadata: GeoKeyMetadata,
     geoKeyDirectory: GeoKeyDirectory) = {
-    val strings = directory.geoTiffTags.asciis.get.substring(
-      metadata.valueOffset,
-      metadata.count + metadata.valueOffset
-    ).split("\\|").toArray
+    val strings = directory
+      .geoTiffTags
+      .asciis
+      .get
+      .substring(metadata.valueOffset, metadata.count + metadata.valueOffset)
+      .split("\\|")
+      .toArray
 
     metadata.keyID match {
-      case GTCitationGeoKey =>
-        geoKeyDirectory |-> gtCitationLens set(Some(strings))
-      case GeogCitationGeoKey =>
-        geoKeyDirectory |-> geogCitationLens set(Some(strings))
-      case PCSCitationGeoKey =>
-        geoKeyDirectory |-> pcsCitationLens set(Some(strings))
-      case VerticalCitationGeoKey =>
-        geoKeyDirectory |-> verticalCitationLens set(Some(strings))
-      case tag => geoKeyDirectory |-> geoKeyAsciisMapLens modify (_ + (tag
-          -> strings))
+      case GTCitationGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._configKeys ^|->
+        ConfigKeys._gtCitation set(Some(strings))
+      case GeogCitationGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._geogCSParameterKeys ^|->
+        GeogCSParameterKeys._geogCitation set(Some(strings))
+      case PCSCitationGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._pcsCitation set(Some(strings))
+      case VerticalCitationGeoKey => geoKeyDirectory &|->
+        GeoKeyDirectory._verticalCSKeys ^|->
+        VerticalCSKeys._verticalCitation set(Some(strings))
+      case tag => geoKeyDirectory &|->
+        GeoKeyDirectory._nonStandardizedKeys ^|->
+        NonStandardizedKeys._asciisMap modify (
+          _ + (tag -> strings)
+        )
     }
   }
 

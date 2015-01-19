@@ -16,14 +16,12 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import monocle.syntax._
-import monocle.Macro._
-
-import scala.collection.immutable.HashMap
-
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
+
+import monocle.syntax._
+
+import scala.collection.immutable.HashMap
 
 import java.util.BitSet
 
@@ -53,15 +51,23 @@ object LZWDecompression {
     val EoICode = 257
 
     def uncompressLZW(directory: ImageDirectory): Array[Array[Byte]] = {
-      val horizontalPredictor = directory |-> predictorLens get match {
+      val horizontalPredictor = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._predictor get) match {
         case Some(2) => true
         case None | Some(1) => false
         case Some(i) =>
           throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1 or 2)")
       }
 
+      val samplesPerPixel = (directory &|->
+        ImageDirectory._basicTags ^|->
+        BasicTags._samplesPerPixel get)
+
       if (horizontalPredictor) {
-        val v = directory |-> bitsPerSampleLens get match {
+        val v = (directory &|->
+          ImageDirectory._basicTags ^|->
+          BasicTags._bitsPerSample get) match {
           case Some(vector) => vector
           case None => throw new MalformedGeoTiffException("no bits per sample tag!")
         }
@@ -151,8 +157,6 @@ object LZWDecompression {
           // Convert to horizontal predictor
           val width = directory.rowSize
           val height = directory.rowsInSegment(i)
-
-          val samplesPerPixel = directory |-> samplesPerPixelLens get
 
           cfor(0)(_ < height, _ + 1) { j =>
             var count = samplesPerPixel * (j * width + 1)

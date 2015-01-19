@@ -16,17 +16,9 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import monocle.syntax._
-import monocle.Macro._
-
-import java.nio.{ByteBuffer, ByteOrder}
-
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.CompressionType._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
-
 import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
-
 import geotrellis.raster.io.geotiff.reader.decompression.HuffmanDecompression._
 import geotrellis.raster.io.geotiff.reader.decompression.GroupThreeDecompression._
 import geotrellis.raster.io.geotiff.reader.decompression.GroupFourDecompression._
@@ -34,6 +26,10 @@ import geotrellis.raster.io.geotiff.reader.decompression.LZWDecompression._
 import geotrellis.raster.io.geotiff.reader.decompression.JpegDecompression._
 import geotrellis.raster.io.geotiff.reader.decompression.ZLibDecompression._
 import geotrellis.raster.io.geotiff.reader.decompression.PackBitsDecompression._
+
+import monocle.syntax._
+
+import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 
@@ -43,7 +39,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
     val matrix = readMatrix(directory)
 
     val uncompressedImage: Array[Array[Byte]] =
-      directory |-> compressionLens get match {
+      directory.compression match {
         case Uncompressed => matrix
         case HuffmanCoded => matrix.uncompressHuffman(directory)
         case GroupThreeCoded => matrix.uncompressGroupThree(directory)
@@ -63,7 +59,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
     val imageBytes = ImageConverter(directory,
       byteBuffer.order == ByteOrder.BIG_ENDIAN).convert(uncompressedImage)
 
-    directory |-> imageBytesLens set(imageBytes)
+    (directory &|-> ImageDirectory._imageBytes set(imageBytes))
   }
 
   def readMatrix(directory: ImageDirectory): Array[Array[Byte]] =
@@ -71,15 +67,25 @@ case class ImageReader(byteBuffer: ByteBuffer) {
     else readTiles(directory)
 
   def readStrips(directory: ImageDirectory): Array[Array[Byte]] = {
-    val stripOffsets = directory |-> stripOffsetsLens get
-    val stripByteCounts = directory |-> stripByteCountsLens get
+    val stripOffsets = (directory &|->
+      ImageDirectory._basicTags ^|->
+      BasicTags._stripOffsets get)
+
+    val stripByteCounts = (directory &|->
+      ImageDirectory._basicTags ^|->
+      BasicTags._stripByteCounts get)
 
     readSections(stripOffsets.get, stripByteCounts.get)
   }
 
   private def readTiles(directory: ImageDirectory) = {
-    val tileOffsets = directory |-> tileOffsetsLens get
-    val tileByteCounts = directory |-> tileByteCountsLens get
+    val tileOffsets = (directory &|->
+      ImageDirectory._tileTags ^|->
+      TileTags._tileOffsets get)
+
+    val tileByteCounts = (directory &|->
+      ImageDirectory._tileTags ^|->
+      TileTags._tileByteCounts get)
 
     readSections(tileOffsets.get, tileByteCounts.get)
   }

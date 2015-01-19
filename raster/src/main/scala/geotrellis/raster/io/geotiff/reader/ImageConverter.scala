@@ -16,16 +16,14 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import geotrellis.raster._
+import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
+
 import monocle.syntax._
 
 import java.util.BitSet
+
 import java.nio.ByteBuffer
-
-import geotrellis._
-import geotrellis.raster._
-
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
 import spire.syntax.cfor._
 
@@ -83,8 +81,8 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
     val tileWidth = directory.rowSize
     val tileLength = directory.rowsInSegment(0)
 
-    val imageWidth = (directory |-> imageWidthLens get).toInt
-    val imageLength = (directory |-> imageLengthLens get).toInt
+    val imageWidth = directory.cols
+    val imageLength = directory.rows
 
     val widthRes = imageWidth % tileWidth
 
@@ -133,8 +131,8 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
     val tileWidth = directory.rowSize
     val tileLength = directory.rowsInSegment(0)
 
-    val imageWidth = (directory |-> imageWidthLens get).toInt
-    val imageLength = (directory |-> imageLengthLens get).toInt
+    val imageWidth = directory.cols
+    val imageLength = directory.rows
 
     val widthRes = imageWidth % tileWidth
 
@@ -170,9 +168,8 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
   }
 
   private def stripBitImageOverflow(image: Array[Array[Byte]]) = {
-
-    val imageWidth = (directory |-> imageWidthLens get).toInt
-    val imageLength = (directory |-> imageLengthLens get).toInt
+    val imageWidth = directory.cols
+    val imageLength = directory.rows
 
     val rowBitSetsArray = Array.ofDim[BitSet](imageLength)
     var rowBitSetsIndex = 0
