@@ -24,7 +24,7 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
     val sc = rasterRDD.sparkContext
     val bcPolygon = sc.broadcast(polygon)
     val bcMetaData = sc.broadcast(rasterRDD.metaData)
-    
+
     def seqOp(v: T, t: (K, Tile)): T = {
       val p = bcPolygon.value
       val extent = bcMetaData.value.mapTransform(t.id)
@@ -88,7 +88,7 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
     val sc = rasterRDD.sparkContext
     val bcPolygon = sc.broadcast(polygon)
     val bcMetaData = sc.broadcast(rasterRDD.metaData)
-    
+
     def seqOp(v: T, t: (K, Tile)): T = {
       val p = bcPolygon.value
       val extent = bcMetaData.value.mapTransform(t.id)
@@ -109,7 +109,7 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
       combineOp(v, rs)
     }
-    
+
     rasterRDD
       .map { case (key, tile) => fKey(key) -> (key -> tile) }
       .aggregateByKey(zeroValue)(seqOp, combineOp)

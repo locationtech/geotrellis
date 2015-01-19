@@ -16,6 +16,11 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+// CTRL ALT SEMICOLON to comment out stuff
+// Look at rasterio
+// case class GeoTiff(bands: Seq[GeoTiffBand]) //
+// case class GeoTiffBand(i: Int) // only band
+
 /**
   * Represents a GeoTiff file.
   *

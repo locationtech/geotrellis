@@ -1,13 +1,12 @@
 package geotrellis.spark
 
-import monocle.SimpleLens
 import org.joda.time.DateTime
 
 import com.github.nscala_time.time.Imports._
 
 object TemporalKey {
   implicit def _temporalComponent: TemporalComponent[TemporalKey] =
-    KeyLens[TemporalKey, TemporalKey](k => k, (_, k) => k)
+    KeyLens[TemporalKey, TemporalKey](k => k, _ => k => k)
 
   implicit def dateTimeToKey(time: DateTime): TemporalKey =
     TemporalKey(time)
