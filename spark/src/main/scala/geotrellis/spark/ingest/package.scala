@@ -17,16 +17,16 @@ package object ingest {
     val _projectedExtent = implicitly[IngestKey[T]]
 
     def projectedExtent: ProjectedExtent =
-      key |-> _projectedExtent get
+      key &|-> _projectedExtent get
 
     def updateProjectedExtent(pe: ProjectedExtent): T =
-      key |-> _projectedExtent set(pe)
+      key &|-> _projectedExtent set(pe)
   }
 
   // TODO: Move this to geotrellis.vector
   case class ProjectedExtent(extent: Extent, crs: CRS)
   object ProjectedExtent {
-    implicit def ingestKey: IngestKey[ProjectedExtent] = KeyLens(x => x, (_, x) => x)
+    implicit def ingestKey: IngestKey[ProjectedExtent] = KeyLens(x => x, _ => x => x)
   }
 
   implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] = {
