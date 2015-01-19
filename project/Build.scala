@@ -389,6 +389,7 @@ object GeotrellisBuild extends Build {
               ExclusionRule(organization = "com.google.code.findbugs")),
           "com.quantifind" %% "sumac" % "0.2.3",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
+          "de.javakaffee" % "kryo-serializers" % "0.27",
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
@@ -627,7 +628,7 @@ object GeotrellisBuild extends Build {
   lazy val benchmark: Project =
     Project("benchmark", file("benchmark"))
       .settings(benchmarkSettings: _*)
-      .dependsOn(raster,engine,geotools)
+      .dependsOn(raster,engine,geotools,jetty)
 
   def benchmarkSettings =
     Seq(

@@ -29,6 +29,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[org.apache.accumulo.core.client.mock.MockConnector])
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
-    kryo.register(classOf[org.joda.time.DateTime])
+    kryo.register(classOf[org.joda.time.DateTime], new de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer)
+    kryo.register(classOf[org.joda.time.Interval], new de.javakaffee.kryoserializers.jodatime.JodaIntervalSerializer)
   }
 }
