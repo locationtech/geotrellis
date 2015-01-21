@@ -16,34 +16,32 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-// CTRL ALT SEMICOLON to comment out stuff
-// Look at rasterio
-// case class GeoTiff(bands: Seq[GeoTiffBand]) //
-// case class GeoTiffBand(i: Int) // only band
+import geotrellis.raster.Tile
+
+import geotrellis.vector.Extent
+
+import geotrellis.proj4.CRS
+
+import monocle.syntax._
 
 /**
-  * Represents a GeoTiff file.
-  *
-  * This class provides a basic interface for the GeoTiff data that is most
-  * commonly used. The data includes the tile, the extends, the coordinate
-  * system and the metadata. Also multiple bands are supported.
-  *
-  * If access to other tags are required, this class also exposes the
-  * image directory class for accessing all parsed Tiff tags and GeoTiff
-  * directory keys.
+  * Represents a GeoTiff. Has a sequence of bands and the metadata.
   */
-case class GeoTiff(imageDirectory: ImageDirectory) {
+case class GeoTiff(
+  bands: Seq[GeoTiffBand],
+  metadata: Map[String, String],
+  imageDirectory: ImageDirectory) {
 
-  val (tile, extent, crs) = imageDirectory.toRaster
+  lazy val firstBand: GeoTiffBand = bands.head
 
-  val toRaster = (tile, extent, crs)
-
-  val bands = imageDirectory.bands
-
-  val hasBands = bands.size > 1
-
-  val metadata = imageDirectory.metadata
-
-  val bandsMetadata = imageDirectory.bandsMetadata
+  lazy val colorMap: Seq[(Short, Short, Short)] = (imageDirectory &|->
+    ImageDirectory._basicTags ^|->
+    BasicTags._colorMap get)
 
 }
+
+/**
+  * Represents a band in a GeoTiff. Contains a tile, the extent and the crs for
+  * the band. Also holds the optional metadata for each band.
+  */
+case class GeoTiffBand(tile: Tile, extent: Extent, crs: CRS, metadata: Map[String, String])

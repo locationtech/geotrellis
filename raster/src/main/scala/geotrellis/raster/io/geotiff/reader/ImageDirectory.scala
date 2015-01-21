@@ -226,7 +226,7 @@ case class MetadataTags(
 @Lenses("_")
 case class BasicTags(
   bitsPerSample: Option[Array[Int]] = None,
-  colorMap: Option[Array[(Short, Short, Short)]] = None,
+  colorMap: Seq[(Short, Short, Short)] = Seq(),
   imageLength: Int = 0,
   imageWidth: Int = 0,
   compression: Int = 1,
@@ -623,65 +623,79 @@ case class ImageDirectory(
   def setGDALNoData(input: String) = (this &|-> ImageDirectory._geoTiffTags
     ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
 
-    lazy val proj4String: Option[String] = try {
-      GeoTiffCSParser(this).getProj4String
-    } catch {
-      case e: Exception => None
-    }
+  lazy val proj4String: Option[String] = try {
+    GeoTiffCSParser(this).getProj4String
+  } catch {
+    case e: Exception => None
+  }
 
-    lazy val crs: CRS = proj4String match {
-      case Some(s) => CRS.fromString(s)
-      case None => LatLng
-    }
+  lazy val crs: CRS = proj4String match {
+    case Some(s) => CRS.fromString(s)
+    case None => LatLng
+  }
 
-    lazy val (metadata, bandsMetadata): (Map[String, String], Seq[Map[String, String]]) =
+  lazy val (metadata, bandsMetadata): (Map[String, String], Seq[Map[String, String]]) =
+    (
+      (this &|->
+        ImageDirectory._basicTags ^|->
+        BasicTags._samplesPerPixel get),
       (this &|->
         ImageDirectory._geoTiffTags ^|->
-        GeoTiffTags._metadata get) match {
-        case Some(str) => {
-          val xml = XML.loadString(str.trim)
-          val (metadataXML, bandsMetadataXML) = (xml \ "Item")
-            .groupBy(_ \ "@sample")
-            .partition(_._1.isEmpty)
+        GeoTiffTags._metadata get)
+    ) match {
+      case (numberOfBands, Some(str)) => {
+        val xml = XML.loadString(str.trim)
+        val (metadataXML, bandsMetadataXML) = (xml \ "Item")
+          .groupBy(_ \ "@sample")
+          .partition(_._1.isEmpty)
 
-          val metadata = metadataXML
-            .map(_._2)
-            .headOption match {
-            case Some(ns) => metadataNodeSeqToMap(ns)
-            case None => Map[String, String]()
-          }
-
-          val bandsMetadata = bandsMetadataXML
-            .map { case(key, ns) => (key.toString.toInt, metadataNodeSeqToMap(ns)) }
-            .toSeq
-            .sortWith(_._1 < _._1)
-            .map(_._2)
-
-
-          (metadata, bandsMetadata)
+        val metadata = metadataXML
+          .map(_._2)
+          .headOption match {
+          case Some(ns) => metadataNodeSeqToMap(ns)
+          case None => Map[String, String]()
         }
-        case None => (Map(), Seq())
+
+        val bandsMetadataMap = bandsMetadataXML.map { case(key, ns) =>
+          (key.toString.toInt, metadataNodeSeqToMap(ns))
+        }
+
+        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](numberOfBands)
+
+        cfor(0)(_ < numberOfBands, _ + 1) { i =>
+          bandsMetadataMap.get(i) match {
+            case Some(map) => bandsMetadataBuffer(i) = map
+            case None => bandsMetadataBuffer(i) = Map()
+          }
+        }
+
+        (metadata, bandsMetadataBuffer)
       }
-
-    private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
-      ns.map(s => ((s \ "@name").text -> s.text)).toMap
-
-    lazy val bands: Seq[Tile] = {
-      val numberOfBands = (this &|->
-        ImageDirectory._basicTags ^|->
-        BasicTags._samplesPerPixel get
+      case (numberOfBands, None) => (
+        Map(),
+        Array.ofDim[Map[String, String]](numberOfBands)
       )
-
-      val tileBuffer = ListBuffer[Tile]()
-      tileBuffer += tile
-      val tileSize = cols * rows
-      cfor(1)(_ < numberOfBands, _ + 1) { i =>
-        val arr = Array.ofDim[Byte](tileSize)
-        System.arraycopy(imageBytes, i * tileSize, arr, 0, tileSize)
-
-        tileBuffer += toTile(arr)
-      }
-
-      tileBuffer.toList
     }
+
+  private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
+    ns.map(s => ((s \ "@name").text -> s.text)).toMap
+
+  lazy val bands: Seq[Tile] = {
+    val numberOfBands = (this &|->
+      ImageDirectory._basicTags ^|->
+      BasicTags._samplesPerPixel get
+    )
+
+    val tileBuffer = ListBuffer[Tile]()
+    tileBuffer += tile
+    val tileSize = cols * rows
+    cfor(1)(_ < numberOfBands, _ + 1) { i =>
+      val arr = Array.ofDim[Byte](tileSize)
+      System.arraycopy(imageBytes, i * tileSize, arr, 0, tileSize)
+
+      tileBuffer += toTile(arr)
+    }
+
+    tileBuffer.toList
   }
+}

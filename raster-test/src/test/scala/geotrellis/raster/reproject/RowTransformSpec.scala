@@ -62,9 +62,9 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate WebMercator -> LatLng for raster extent") {
-      val (expected, expectedExtent, _) = GeoTiffReader
+      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
         .read("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif")
-        .toRaster
+        .firstBand
 
       val re = RasterExtent(expected, expectedExtent)
 
@@ -93,9 +93,9 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate EPSG:32618 -> WebMercator for raster extent") {
-      val (expected, expectedExtent, _) = GeoTiffReader
+      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
         .read("raster-test/data/reproject/slope_epsg32618.tif")
-        .toRaster
+        .firstBand
 
       val re = RasterExtent(expected, expectedExtent)
 

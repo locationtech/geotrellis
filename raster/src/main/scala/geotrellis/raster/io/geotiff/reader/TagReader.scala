@@ -327,16 +327,18 @@ case class TagReader(byteBuffer: ByteBuffer) {
       BasicTags._photometricInterp get) == 3) {
       val divider = shorts.size / 3
 
-      var i = 0
       val arr = Array.ofDim[(Short, Short, Short)](divider)
-
-      for (i <- 0 until divider)
-        arr(i) = (shorts(i).toShort, shorts(i + divider).toShort,
-          shorts(i + 2 * divider).toShort)
+      cfor(0)(_ < divider, _ + 1) { i =>
+        arr(i) = (
+          shorts(i).toShort,
+          shorts(i + divider).toShort,
+          shorts(i + 2 * divider).toShort
+        )
+      }
 
       (directory &|->
         ImageDirectory._basicTags ^|->
-        BasicTags._colorMap set Some(arr))
+        BasicTags._colorMap set arr.toSeq)
     } else throw new MalformedGeoTiffException(
       "Colormap without Photometric Interpetation = 3."
     )

@@ -72,7 +72,7 @@ trait GeoTiffReadBenchmark extends SimpleBenchmark {
 
   @inline
   final def readNative(path: String) =
-    geotrellis.raster.io.geotiff.reader.GeoTiffReader.read(path).toRaster
+    geotrellis.raster.io.geotiff.reader.GeoTiffReader.read(path)
 
   @inline
   final def readGeoTools(path: String) =
