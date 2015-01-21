@@ -11,22 +11,22 @@ import spire.syntax.cfor._
 
 package object ingest {
   type Tiler[T, K] = (RDD[(T, Tile)], RasterMetaData) => RasterRDD[K]
-  type IngestKey[T] = KeyLens[T, ProjectedExtent]
+  type IngestKey[T] = KeyComponent[T, ProjectedExtent]
 
   implicit class IngestKeyWrapper[T: IngestKey](key: T) {
     val _projectedExtent = implicitly[IngestKey[T]]
 
     def projectedExtent: ProjectedExtent =
-      key &|-> _projectedExtent get
+      key &|-> _projectedExtent.lens get
 
     def updateProjectedExtent(pe: ProjectedExtent): T =
-      key &|-> _projectedExtent set(pe)
+      key &|-> _projectedExtent.lens set(pe)
   }
 
   // TODO: Move this to geotrellis.vector
   case class ProjectedExtent(extent: Extent, crs: CRS)
   object ProjectedExtent {
-    implicit def ingestKey: IngestKey[ProjectedExtent] = KeyLens(x => x, _ => x => x)
+    implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
   }
 
   implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] = {
