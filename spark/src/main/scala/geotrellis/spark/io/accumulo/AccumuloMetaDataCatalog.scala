@@ -31,6 +31,10 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
   type TableName = String
   var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
 
+  def zoomLevelsFor(layerName: String): Seq[Int] = {
+    catalog.keys.filter(_._1.name == layerName).map(_._1.zoom).toSeq
+  }
+
   def save(id: LayerId, table: TableName, metaData: LayerMetaData, clobber: Boolean): Unit = {
     if (catalog.contains(id -> table)) {
       // If we want to clobber, by default Accumulo will overwrite it.
