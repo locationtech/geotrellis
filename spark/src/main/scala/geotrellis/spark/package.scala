@@ -33,31 +33,27 @@ import scala.reflect.ClassTag
 
 package object spark {
 
-  type KeyLens[T, K] = SerializableLens[T, T, K, K]
+  type ComponentLens[K, C] = PLens[K, K, C, C]
 
-  type SpatialComponent[K] = Lens[K, SpatialKey]
-  type TemporalComponent[K] = Lens[K, TemporalKey]
-
-  implicit def toPLens[S, T, A, B](lens: SerializableLens[S, T, A, B]): PLens[S, T, A, B] =
-    lens.lens
+  type SpatialComponent[K] = KeyComponent[K, SpatialKey]
+  type TemporalComponent[K] = KeyComponent[K, TemporalKey]
 
   implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
     val _spatialComponent = implicitly[SpatialComponent[K]]
 
-    def spatialComponent: SpatialKey = key &|-> _spatialComponent get
+    def spatialComponent: SpatialKey = key &|-> _spatialComponent.lens get
 
     def updateSpatialComponent(spatialKey: SpatialKey): K =
-      key &|-> _spatialComponent set(spatialKey)
+      key &|-> _spatialComponent.lens set(spatialKey)
   }
 
   implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
     val _temporalComponent = implicitly[TemporalComponent[K]]
 
-    def temporalComponent: TemporalKey =
-      (key &|-> _temporalComponent get)
+    def temporalComponent: TemporalKey = key &|-> _temporalComponent.lens get
 
     def updateTemporalComponent(temporalKey: TemporalKey): K =
-      (key &|-> _temporalComponent set(temporalKey))
+      key &|-> _temporalComponent.lens set(temporalKey)
   }
 
   type TileBounds = GridBounds

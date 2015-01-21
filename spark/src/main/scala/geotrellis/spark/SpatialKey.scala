@@ -1,9 +1,7 @@
 package geotrellis.spark
 
 object SpatialKey {
-
-  implicit def _spatialComponent: SpatialComponent[SpatialKey] =
-    KeyLens[SpatialKey, SpatialKey](k => k, k => _ => k)
+  implicit object SpatialComponent extends IdentityComponent[SpatialKey]
 
   implicit def tupToKey(tup: (Int, Int)): SpatialKey =
     SpatialKey(tup._1, tup._2)
