@@ -5,6 +5,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
+import org.apache.accumulo.core.client.{ Scanner }
 import org.apache.accumulo.core.data.{Range => ARange, Key, Value, Mutation}
 import org.apache.accumulo.core.util.{Pair => APair}
 import org.apache.accumulo.core.security.Authorizations
@@ -53,8 +54,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
     new RasterRDD(tileRdd, metaData)
   }
 
-  def loadTile(accumulo: AccumuloInstance)(layerId: LayerId, metaData: RasterMetaData, table: String, key: SpaceTimeKey): Tile = {
-    val scanner  = accumulo.connector.createScanner(table, new Authorizations())
+  def loadTile(scanner: Scanner)(layerId: LayerId, metaData: RasterMetaData, key: SpaceTimeKey): Tile = {
     scanner.setRange(new ARange(rowId(layerId, key)))
     scanner.fetchColumn(new Text(layerId.name), timeText(key))
     val values = scanner.iterator.toList.map(_.getValue)

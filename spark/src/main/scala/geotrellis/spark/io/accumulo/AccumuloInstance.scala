@@ -30,13 +30,13 @@ case class AccumuloInstance(
     ConfigFactory.load().getString("geotrellis.accumulo.catalog")
   }
 
-  val metaDataCatalog = new AccumuloMetaDataCatalog(connector, catalogTable)
+  val attributeCatalog = new AccumuloAttributeCatalog(connector, catalogTable)
 
   def catalog(config: DefaultParams[String])(implicit sc: SparkContext) =
-    AccumuloCatalog(sc, this, metaDataCatalog, config)
+    AccumuloCatalog(sc, this, attributeCatalog, config)
 
   def catalog(implicit sc: SparkContext) =
-    AccumuloCatalog(sc, this, metaDataCatalog, AccumuloCatalog.BaseParamsConfig)
+    AccumuloCatalog(sc, this, attributeCatalog, AccumuloCatalog.BaseParamsConfig)
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {

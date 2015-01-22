@@ -31,35 +31,15 @@ with OnlyIfCanRunSpark
       val layoutScheme = ZoomedLayoutScheme(512)
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
+      catalog.save(LayerId("ones", level.zoom), onesRdd)
 
-
-      it("should succeed saving with default Props"){
-        catalog.save(LayerId("ones", level.zoom), onesRdd)
-        assert(fs.exists(new Path(catalogPath, "ones")))
-      }
-
-      it("should succeed saving with single path Props"){
-        catalog.save(LayerId("ones", level.zoom), "sub1", onesRdd)
-        assert(fs.exists(new Path(catalogPath, "sub1/ones")))
-      }
-
-      it("should succeed saving with double path Props"){
-        catalog.save(LayerId("ones", level.zoom), "sub1/sub2", onesRdd)
-        assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
+      it("should list layers"){
+        catalog.attributes.listLayers should contain (LayerId("ones", 10))
       }
 
       it("should load out saved tiles"){
         catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
       }
-
-      it("should succeed loading with single path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
-      }
-
-      it("should succeed loading with double path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
-      }
-
 
       it("should load out saved tiles, but only for the right zoom"){
         intercept[LayerNotFoundError] {

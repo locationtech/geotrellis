@@ -9,16 +9,13 @@ import org.apache.spark._
 import java.io.PrintWriter
 
 class HadoopAttributeCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: LayerId => String, metaDataFileName: String) extends AttributeCatalog {
-  type ReadableWritable[T] = RootJsonFormat[T]
-
   val fs = catalogRoot.getFileSystem(sc.hadoopConfiguration)
 
   def attributePath(layerId: LayerId, attributeName: String): Path = 
     new Path(new Path(catalogRoot, layerDataDir(layerId)), s"${attributeName}.json")
 
-  def load[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
+  def load[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     val path = attributePath(layerId, attributeName)
-
     val txt = HdfsUtils.getLineScanner(path, sc.hadoopConfiguration) match {
       case Some(in) =>
         try {
@@ -35,7 +32,7 @@ class HadoopAttributeCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: 
 
   }
 
-  def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def save[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {
@@ -50,5 +47,15 @@ class HadoopAttributeCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: 
       out.close()
       fdos.close()
     }
+  }
+
+  def listLayers: List[LayerId] = {
+    val path = catalogRoot.suffix("/*/*/metadata.json")   
+    val files = HdfsUtils.listFiles(path,  sc.hadoopConfiguration)
+    files map { file =>
+      val name = file.getParent.getParent.getName
+      val zoom = file.getParent.getName.toInt
+      LayerId(name, zoom)
+    }  
   }
 }

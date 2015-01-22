@@ -4,6 +4,7 @@ import geotrellis.raster.{Tile, CellType, ArrayTile}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase}
+import org.apache.accumulo.core.client.{ Scanner }
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -51,8 +52,7 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
     new RasterRDD(tileRdd, rasterMetaData)
   }
 
-  def loadTile(accumulo: AccumuloInstance)(layerId: LayerId, metaData: RasterMetaData, table: String, key: SpatialKey): Tile = {
-    val scanner  = accumulo.connector.createScanner(table, new Authorizations())
+  def loadTile(scanner: Scanner)(layerId: LayerId, metaData: RasterMetaData, key: SpatialKey): Tile = {        
     scanner.setRange(new ARange(rowId(layerId, key)))
     scanner.fetchColumnFamily(new Text(layerId.name))
     val values = scanner.iterator.toList.map(_.getValue)
