@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Regents of The University California. 
+ * Copyright (C) 2012 The Regents of The University California.
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +52,7 @@ class KryoWrapper[T: ClassTag] extends Serializable {
     in.defaultReadObject()
     setValueSerialized(valueSerialized)
   }
+
 }
 
 object KryoWrapper {

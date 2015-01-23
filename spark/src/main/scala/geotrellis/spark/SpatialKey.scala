@@ -1,10 +1,7 @@
 package geotrellis.spark
 
-import monocle._
-
 object SpatialKey {
-  implicit def _spatialComponent: SpatialComponent[SpatialKey] = 
-    KeyLens[SpatialKey, SpatialKey](k => k, (_, k) => k)
+  implicit object SpatialComponent extends IdentityComponent[SpatialKey]
 
   implicit def tupToKey(tup: (Int, Int)): SpatialKey =
     SpatialKey(tup._1, tup._2)
@@ -14,6 +11,7 @@ object SpatialKey {
 
   implicit def ordering[A <: SpatialKey]: Ordering[A] =
     Ordering.by(sk => (sk.col, sk.row))
+
 }
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */

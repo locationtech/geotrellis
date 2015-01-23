@@ -195,8 +195,8 @@ object GeotrellisBuild extends Build {
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
-      scalacOptions in compile ++=
-        Seq("-optimize"),
+      scalacOptions in compile ++= Seq("-optimize"),
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
         "com.typesafe" % "config" % "1.2.1",
         scalaReflect,
@@ -221,6 +221,7 @@ object GeotrellisBuild extends Build {
   lazy val rasterTestSettings =
     Seq(
       name := "geotrellis-raster-test",
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",

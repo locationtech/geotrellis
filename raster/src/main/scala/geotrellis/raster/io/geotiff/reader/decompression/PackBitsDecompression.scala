@@ -16,14 +16,13 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import monocle.syntax._
-
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
+
+import monocle.syntax._
 
 import spire.syntax.cfor._
 
-object PackBitsDecompression {
+trait PackBitsDecompression {
 
   implicit class PackBits(matrix: Array[Array[Byte]]) {
 
@@ -45,7 +44,7 @@ object PackBitsDecompression {
           val n = segment(j)
           j += 1
           if (n >= 0 && n <= 127) {
-            cfor(0)(_ <= n, _ + 1) { k => 
+            cfor(0)(_ <= n, _ + 1) { k =>
               rowArray(total + k) = segment(j + k)
             }
             j += n + 1

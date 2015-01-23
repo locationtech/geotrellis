@@ -16,4 +16,32 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-case class GeoTiff(imageDirectories: Vector[ImageDirectory])
+import geotrellis.raster.Tile
+
+import geotrellis.vector.Extent
+
+import geotrellis.proj4.CRS
+
+import monocle.syntax._
+
+/**
+  * Represents a GeoTiff. Has a sequence of bands and the metadata.
+  */
+case class GeoTiff(
+  bands: Seq[GeoTiffBand],
+  metadata: Map[String, String],
+  imageDirectory: ImageDirectory) {
+
+  lazy val firstBand: GeoTiffBand = bands.head
+
+  lazy val colorMap: Seq[(Short, Short, Short)] = (imageDirectory &|->
+    ImageDirectory._basicTags ^|->
+    BasicTags._colorMap get)
+
+}
+
+/**
+  * Represents a band in a GeoTiff. Contains a tile, the extent and the crs for
+  * the band. Also holds the optional metadata for each band.
+  */
+case class GeoTiffBand(tile: Tile, extent: Extent, crs: CRS, metadata: Map[String, String])

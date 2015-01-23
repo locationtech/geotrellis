@@ -150,8 +150,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val neighborhood = bcNeighborhood.value
       val metadata = bcMetadata.value
 
-      val (neighborhoodTile, analysisArea) =
-        TileWithNeighbors(center, neighbors.getNeighbors)
+      val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors.getNeighbors)
 
       val res = calc(
         neighborhoodTile,

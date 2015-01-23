@@ -32,8 +32,8 @@ object Dependencies {
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
-  val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
-  val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
+  val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % Version.monocle
+  val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % Version.monocle
 
   val openCSV       = "net.sf.opencsv" % "opencsv"      % "2.3"
 
@@ -67,7 +67,9 @@ object Dependencies {
   val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
-  val caliper       = "com.google.caliper" % "caliper"     % "1.0-beta-1"
+
+  val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
+   from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
   val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 }

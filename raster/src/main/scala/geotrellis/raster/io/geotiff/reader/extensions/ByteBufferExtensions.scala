@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.utils
+package geotrellis.raster.io.geotiff.reader.extensions
 
 import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
 
-object ByteBufferUtils {
+trait ByteBufferExtensions {
 
   implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
 
@@ -35,11 +35,6 @@ object ByteBufferUtils {
     @inline
     final private def ui2l(int: Int): Long =
       int.toLong + (if (int < 0) 4294967296L else 0L)
-
-    @inline
-    final def goToNextImageDirectory(current: Int, entries: Int) =
-      byteBuffer.position(entries * 12 +
-        current + 2).position(byteBuffer.getInt)
 
     @inline
     final def getUnsignedShort: Int = byteBuffer.getChar.toInt
