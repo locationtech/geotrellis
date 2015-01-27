@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.Tile
+import geotrellis.raster._
 
 import geotrellis.vector.Extent
 
@@ -24,12 +24,19 @@ import geotrellis.proj4.CRS
 
 import monocle.syntax._
 
+case class GeoTiffMetaData(rasterExtent:RasterExtent, crs: CRS, cellType: CellType) {
+  def extent: Extent = rasterExtent.extent
+  def cols: Int = rasterExtent.cols
+  def rows: Int = rasterExtent.rows
+}
+
 /**
   * Represents a GeoTiff. Has a sequence of bands and the metadata.
   */
 case class GeoTiff(
+  metaData: GeoTiffMetaData,
   bands: Seq[GeoTiffBand],
-  metadata: Map[String, String],
+  tags: Map[String, String],
   imageDirectory: ImageDirectory) {
 
   lazy val firstBand: GeoTiffBand = bands.head
@@ -44,4 +51,4 @@ case class GeoTiff(
   * Represents a band in a GeoTiff. Contains a tile, the extent and the crs for
   * the band. Also holds the optional metadata for each band.
   */
-case class GeoTiffBand(tile: Tile, extent: Extent, crs: CRS, metadata: Map[String, String])
+case class GeoTiffBand(tile: Tile, extent: Extent, crs: CRS, tags: Map[String, String])

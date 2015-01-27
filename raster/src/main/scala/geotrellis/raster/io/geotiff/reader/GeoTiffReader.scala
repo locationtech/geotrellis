@@ -48,15 +48,15 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
     byteBuffer.position(byteBuffer.getInt)
     val imageDirectory = readImageDirectory
 
-    val (_, extent, crs) = imageDirectory.toRaster
+    val metaData = imageDirectory.metaData
     val bands = imageDirectory.bands
-    val metadata = imageDirectory.metadata
-    val bandsMetadata = imageDirectory.bandsMetadata
+    val tags = imageDirectory.tags
+    val bandTags = imageDirectory.bandTags
 
-    val geoTiffBands = (for ((band, bandMetadata) <- bands.zip(bandsMetadata))
-    yield (GeoTiffBand(band, extent, crs, bandMetadata)))
+    val geoTiffBands =
+      for ((band, tags) <- bands.zip(bandTags)) yield GeoTiffBand(band, metaData.rasterExtent.extent, metaData.crs, tags)
 
-    GeoTiff(geoTiffBands, metadata, imageDirectory)
+    GeoTiff(metaData, geoTiffBands, tags, imageDirectory)
   }
 
   private def setByteBufferPosition = byteBuffer.position(0)
