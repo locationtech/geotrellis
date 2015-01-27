@@ -31,15 +31,6 @@ case class ImageReader(byteBuffer: ByteBuffer) {
   def read(directory: ImageDirectory): ImageDirectory = {
     val matrix = readMatrix(directory)
 
-    directory.compression match {
-      case Uncompressed => println("UNCOMPRESSED")
-      case HuffmanCoded => println("HUFFMAN")
-      case LZWCoded => println("LZW")
-      case ZLibCoded | PkZipCoded => println("ZLIB")
-      case  x => println(x)
-    }
-
-
     val uncompressedImage: Array[Array[Byte]] =
       directory.compression match {
         case Uncompressed => matrix

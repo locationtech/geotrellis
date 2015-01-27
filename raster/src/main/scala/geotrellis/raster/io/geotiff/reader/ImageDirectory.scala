@@ -346,7 +346,7 @@ case class NonStandardizedTags(
 )
 
 @Lenses("_")
-private[reader] 
+private[reader]
 case class ImageDirectory(
   count: Int,
   metadataTags: MetadataTags = MetadataTags(),
@@ -410,7 +410,7 @@ case class ImageDirectory(
     }
   } else None
 
-  def rowsInSegment(index: Int): Int = 
+  def rowsInSegment(index: Int): Int =
     if (hasStripStorage)
       rowsInStrip(index).get.toInt
     else
@@ -432,7 +432,7 @@ case class ImageDirectory(
 
   def imageSegmentBitsSize(index: Option[Int] = None): Long =
     if (hasStripStorage && !index.isEmpty)
-      rowsInStrip(index.get).get * rows * bitsPerPixel
+      rowsInStrip(index.get).get * cols * bitsPerPixel
     else tileBitsSize.get * bitsPerPixel
 
   def rowSize: Int =
@@ -500,7 +500,7 @@ case class ImageDirectory(
               )
             }
 
-        case _ => 
+        case _ =>
           throw new MalformedGeoTiffException("no bitsPerSample values!")
       }
 
@@ -657,7 +657,7 @@ case class ImageDirectory(
         ArrayTile.fromBytes(bytes, metaData.cellType, cols, rows)
     }
 
-  lazy val bandCount: Int = 
+  lazy val bandCount: Int =
     this &|->
       ImageDirectory._basicTags ^|->
       BasicTags._samplesPerPixel get
@@ -665,7 +665,7 @@ case class ImageDirectory(
   lazy val bands: Seq[Tile] = {
     val tileBuffer = ListBuffer[Tile]()
     val tileSize = metaData.cellType.numBytes(cols * rows)
-    println(s"IMAGE BYTES: ${imageBytes.size}   TILE SIZE: $tileSize  BANDS: $bandCount  COLS: $cols  ROWS: $rows")
+
     cfor(0)(_ < bandCount, _ + 1) { i =>
       val arr = Array.ofDim[Byte](tileSize)
       System.arraycopy(imageBytes, i * tileSize, arr, 0, tileSize)
