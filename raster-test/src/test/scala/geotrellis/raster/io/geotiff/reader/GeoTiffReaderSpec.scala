@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster.io.geotiff.reader._
 
 import geotrellis.raster._
-import geotrellis.raster.io.arg.ArgReader
+import geotrellis.raster.io.arg._
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 import geotrellis.raster.op.zonal.summary._
 
@@ -54,6 +54,13 @@ class GeoTiffReaderSpec extends FunSpec
 
   override def afterAll = purge
 
+  def writeRasterToArg(imgDir: ImageDirectory, path: String, imageName: String): Unit = {
+    val tile = imgDir.bands.head.tile
+    val extent = imgDir.metaData.extent
+    val cellType = imgDir.metaData.cellType
+    new ArgWriter(cellType).write(path, tile, extent, imageName)
+  }
+
   private def readAndSave(fileName: String) {
     val geoTiff = GeoTiffReader.read(s"$filePath/$fileName")
 
@@ -65,7 +72,7 @@ class GeoTiffReaderSpec extends FunSpec
     val corePath = argPath + currentFileName
     val pathArg = corePath + ".arg"
     val pathJson = corePath + ".json"
-    ifd.writeRasterToArg(corePath, currentFileName)
+    writeRasterToArg(ifd, corePath, currentFileName)
 
     addToPurge(pathArg)
     addToPurge(pathJson)
@@ -113,7 +120,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reading compressed file must yield same image array as uncompressed file") {
 
     ignore ("must read aspect_jpeg.tif and match uncompressed file") {
-
+      ??? // Need to implement JPEG decompression
     }
 
     it("must read econic_lzw.tif and match uncompressed file") {
@@ -269,12 +276,14 @@ class GeoTiffReaderSpec extends FunSpec
 
       ifd.hasPixelArea should be (true)
 
-      val minX = ifd.extent.xmin should equal (630000.0)
-      val minY = ifd.extent.ymin should equal (215000.0)
-      val maxX = ifd.extent.xmax should equal (645000.0)
-      val maxY = ifd.extent.ymax should equal (228500.0)
+      val metaData = ifd.metaData
 
-      ifd.cellType should equal (TypeFloat)
+      val minX = metaData.extent.xmin should equal (630000.0)
+      val minY = metaData.extent.ymin should equal (215000.0)
+      val maxX = metaData.extent.xmax should equal (645000.0)
+      val maxY = metaData.extent.ymax should equal (228500.0)
+
+      metaData.cellType should equal (TypeFloat)
 
       val knownNoData = -9999f
 
@@ -484,7 +493,7 @@ class GeoTiffReaderSpec extends FunSpec
     it("should read GeoTiff with GDAL Metadata correctly") {
       val metadata = GeoTiffReader
         .read(s"$filePath/geotiff-reader-tiffs/gdal-metadata.tif")
-        .metadata
+        .tags
 
       metadata("TILE_COL") should be ("6")
       metadata("units") should be ("kg m-2 s-1")
@@ -519,11 +528,11 @@ class GeoTiffReaderSpec extends FunSpec
       val geoTiff = GeoTiffReader
         .read(s"$filePath/geotiff-reader-tiffs/multi-tag.tif")
 
-      val metadata = geoTiff.metadata
+      val tags = geoTiff.tags
 
-      metadata("HEADTAG") should be ("1")
-      metadata("TAG_TYPE") should be ("HEAD")
-      metadata.size should be (2)
+      tags("HEADTAG") should be ("1")
+      tags("TAG_TYPE") should be ("HEAD")
+      tags.size should be (2)
 
       val bands = geoTiff.bands
 
@@ -535,9 +544,19 @@ class GeoTiffReaderSpec extends FunSpec
           "TAG_TYPE" -> s"BAND${i + 1}"
         )
 
-        bands(i).metadata should be (correctMetadata)
+        bands(i).tags should be (correctMetadata)
+      }
+    }
+
+    it("should read GeoTiff with ZLIB compression and needs exact segment sizes") {
+      val geoTiff = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/nex-pr-tile.tif")
+
+      val tile = geoTiff.firstBand.tile
+      cfor(0)(_ < tile.cols, _ + 1) { i =>
+        cfor(0)(_ < tile.rows, _ + 1) { j =>
+          isNoData(tile.get(i, j)) should be (true)
+        }
       }
     }
   }
-
 }

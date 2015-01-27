@@ -346,6 +346,7 @@ case class NonStandardizedTags(
 )
 
 @Lenses("_")
+private[reader]
 case class ImageDirectory(
   count: Int,
   metadataTags: MetadataTags = MetadataTags(),
@@ -363,7 +364,7 @@ case class ImageDirectory(
   imageBytes: Array[Byte] = Array[Byte]()
 ) {
 
-  lazy val compression = (this &|->
+  val compression = (this &|->
     ImageDirectory._basicTags ^|->
     BasicTags._compression get)
 
@@ -409,12 +410,13 @@ case class ImageDirectory(
     }
   } else None
 
-  def rowsInSegment(index: Int): Int = if (hasStripStorage)
-    rowsInStrip(index).get.toInt
-  else
-    (this &|->
-      ImageDirectory._tileTags ^|->
-      TileTags._tileLength get).get.toInt
+  def rowsInSegment(index: Int): Int =
+    if (hasStripStorage)
+      rowsInStrip(index).get.toInt
+    else
+      (this &|->
+        ImageDirectory._tileTags ^|->
+        TileTags._tileLength get).get.toInt
 
   def bitsPerPixel(): Int = (this &|->
     ImageDirectory._basicTags ^|->
@@ -430,7 +432,7 @@ case class ImageDirectory(
 
   def imageSegmentBitsSize(index: Option[Int] = None): Long =
     if (hasStripStorage && !index.isEmpty)
-      rowsInStrip(index.get).get * rows * bitsPerPixel
+      rowsInStrip(index.get).get * cols * bitsPerPixel
     else tileBitsSize.get * bitsPerPixel
 
   def rowSize: Int =
@@ -442,104 +444,75 @@ case class ImageDirectory(
     val imageLength = rows
 
     Array(
-      Pixel3D(0, imageLength, getDoubleValue(0, imageLength - 1)),
-      Pixel3D(imageWidth, 0, getDoubleValue(imageWidth - 1, 0))
+      Pixel3D(0, imageLength, 0),
+      Pixel3D(imageWidth, 0, 0)
     )
   }
 
-  def getDoubleValue(x: Int, y: Int): Double = {
-    val imageWidth = cols
-    val imageLength = rows
-
-    val index = y * imageWidth + x
-
-    if (x >= imageWidth || y >= imageLength) throw new IllegalArgumentException(
-      s"x or y out of bounds x: $x, y: $y, imageWidth: $imageWidth, imageLength: $imageLength"
-    ) else cellType match {
-      case TypeBit => {
-        val byteIndex = index / 8
-        val bitIndex = index % 8
-
-        ((imageBytes(byteIndex) & (1 << bitIndex)) >> bitIndex).toDouble
-      }
-      case TypeByte => imageBytes.readIntNumber(1, index).toDouble
-      case TypeShort => imageBytes.readIntNumber(2, index).toDouble
-      case TypeInt => imageBytes.readIntNumber(4, index).toDouble
-      case TypeFloat => imageBytes.readFloatPointNumber(4, index)
-      case TypeDouble => imageBytes.readFloatPointNumber(8, index)
-    }
-  }
-
-  lazy val cellType: CellType =
-    ((this &|-> ImageDirectory._basicTags
-      ^|-> BasicTags._bitsPerSample get),
-      (this &|-> ImageDirectory._dataSampleFormatTags
-        ^|-> DataSampleFormatTags._sampleFormat get)) match {
-      case (Some(bitsPerSampleArray), sampleFormatArray)
-          if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
-            val bitsPerSample = bitsPerSampleArray(0)
-
-            val sampleFormat = sampleFormatArray(0)
-
-            import SampleFormat._
-
-            if (bitsPerSample == 1) TypeBit
-            else if (bitsPerSample <= 8) TypeByte
-            else if (bitsPerSample <= 16) TypeShort
-            else if (bitsPerSample == 32 && sampleFormat == UnsignedInt
-              || sampleFormat == SignedInt) TypeInt
-            else if (bitsPerSample == 32 && sampleFormat == FloatingPoint) TypeFloat
-            else if (bitsPerSample == 64 && sampleFormat == FloatingPoint) TypeDouble
-            else throw new MalformedGeoTiffException(
-              s"bad/unsupported bitspersample or sampleformat: $bitsPerSample or $sampleFormat"
-            )
-          }
-
-      case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
-    }
-
-  lazy val toRaster: (Tile, Extent, CRS) = (tile, extent, crs)
-
   lazy val cols = (this &|-> ImageDirectory._basicTags ^|-> BasicTags._imageWidth get)
-
   lazy val rows = (this &|-> ImageDirectory._basicTags ^|-> BasicTags._imageLength get)
 
-  lazy val tile: ArrayTile = toTile(imageBytes)
-
-  private def toTile(bytes: Array[Byte]): ArrayTile =
-    (this &|-> ImageDirectory._geoTiffTags
-      ^|-> GeoTiffTags._gdalInternalNoData get) match {
-      case Some(gdalNoData) =>
-        ArrayTile.fromBytes(bytes, cellType, cols, rows, gdalNoData)
-      case None =>
-        ArrayTile.fromBytes(bytes, cellType, cols, rows)
+  lazy val metaData: GeoTiffMetaData = {
+    val extent: Extent = (this &|-> ImageDirectory._geoTiffTags
+      ^|-> GeoTiffTags._modelTransformation get) match {
+      case Some(trans) if (trans.validateAsMatrix && trans.size == 4
+          && trans(0).size == 4) => transformationModelSpace(trans)
+      case _ => (this &|-> ImageDirectory._geoTiffTags
+          ^|-> GeoTiffTags._modelTiePoints get) match {
+        case Some(tiePoints) if (!tiePoints.isEmpty) =>
+          tiePointsModelSpace(
+            tiePoints,
+            (this &|-> ImageDirectory._geoTiffTags
+              ^|-> GeoTiffTags._modelPixelScale get)
+          )
+        case _ => Extent(0, 0, cols, rows)
+      }
     }
 
-  def writeRasterToArg(path: String, imageName: String): Unit =
-    writeRasterToArg(path, imageName, cellType, tile)
+    lazy val crs: CRS = proj4String match {
+      case Some(s) => CRS.fromString(s)
+      case None => LatLng
+    }
 
-  def writeRasterToArg(path: String, imageName: String, cellType: CellType,
-    raster: ArrayTile): Unit =
-    new ArgWriter(cellType).write(path, raster, extent, imageName)
+
+    lazy val cellType: CellType =
+      ((this &|-> ImageDirectory._basicTags
+        ^|-> BasicTags._bitsPerSample get),
+        (this &|-> ImageDirectory._dataSampleFormatTags
+          ^|-> DataSampleFormatTags._sampleFormat get)) match {
+        case (Some(bitsPerSampleArray), sampleFormatArray)
+            if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
+              val bitsPerSample = bitsPerSampleArray(0)
+
+              val sampleFormat = sampleFormatArray(0)
+
+              import SampleFormat._
+
+              if (bitsPerSample == 1) TypeBit
+              else if (bitsPerSample <= 8) TypeByte
+              else if (bitsPerSample <= 16) TypeShort
+              else if (bitsPerSample == 32 && sampleFormat == UnsignedInt
+                || sampleFormat == SignedInt) TypeInt
+              else if (bitsPerSample == 32 && sampleFormat == FloatingPoint) TypeFloat
+              else if (bitsPerSample == 64 && sampleFormat == FloatingPoint) TypeDouble
+              else throw new MalformedGeoTiffException(
+                s"bad/unsupported bitspersample or sampleformat: $bitsPerSample or $sampleFormat"
+              )
+            }
+
+        case _ =>
+          throw new MalformedGeoTiffException("no bitsPerSample values!")
+      }
+
+    GeoTiffMetaData(
+      RasterExtent(extent, cols, rows),
+      crs,
+      cellType
+    )
+  }
 
   lazy val geoKeyDirectory = geoTiffTags.geoKeyDirectory.getOrElse {
     throw new IllegalAccessException("no geo key directory present")
-  }
-
-  lazy val extent: Extent = (this &|-> ImageDirectory._geoTiffTags
-    ^|-> GeoTiffTags._modelTransformation get) match {
-    case Some(trans) if (trans.validateAsMatrix && trans.size == 4
-        && trans(0).size == 4) => transformationModelSpace(trans)
-    case _ => (this &|-> ImageDirectory._geoTiffTags
-        ^|-> GeoTiffTags._modelTiePoints get) match {
-      case Some(tiePoints) if (!tiePoints.isEmpty) =>
-        tiePointsModelSpace(
-          tiePoints,
-          (this &|-> ImageDirectory._geoTiffTags
-            ^|-> GeoTiffTags._modelPixelScale get)
-        )
-      case _ => Extent(0, 0, cols, rows)
-    }
   }
 
   private def transformationModelSpace(modelTransformation: Array[Array[Double]]) = {
@@ -629,12 +602,7 @@ case class ImageDirectory(
     case e: Exception => None
   }
 
-  lazy val crs: CRS = proj4String match {
-    case Some(s) => CRS.fromString(s)
-    case None => LatLng
-  }
-
-  lazy val (metadata, bandsMetadata): (Map[String, String], Seq[Map[String, String]]) =
+  lazy val (tags, bandTags): (Map[String, String], Seq[Map[String, String]]) =
     (
       (this &|->
         ImageDirectory._basicTags ^|->
@@ -680,16 +648,25 @@ case class ImageDirectory(
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
     ns.map(s => ((s \ "@name").text -> s.text)).toMap
 
-  lazy val bands: Seq[Tile] = {
-    val numberOfBands = (this &|->
+  private def toTile(bytes: Array[Byte]): ArrayTile =
+    (this &|-> ImageDirectory._geoTiffTags
+      ^|-> GeoTiffTags._gdalInternalNoData get) match {
+      case Some(gdalNoData) =>
+        ArrayTile.fromBytes(bytes, metaData.cellType, cols, rows, gdalNoData)
+      case None =>
+        ArrayTile.fromBytes(bytes, metaData.cellType, cols, rows)
+    }
+
+  lazy val bandCount: Int =
+    this &|->
       ImageDirectory._basicTags ^|->
       BasicTags._samplesPerPixel get
-    )
 
+  lazy val bands: Seq[Tile] = {
     val tileBuffer = ListBuffer[Tile]()
-    tileBuffer += tile
-    val tileSize = cols * rows
-    cfor(1)(_ < numberOfBands, _ + 1) { i =>
+    val tileSize = metaData.cellType.numBytes(cols * rows)
+
+    cfor(0)(_ < bandCount, _ + 1) { i =>
       val arr = Array.ofDim[Byte](tileSize)
       System.arraycopy(imageBytes, i * tileSize, arr, 0, tileSize)
 
