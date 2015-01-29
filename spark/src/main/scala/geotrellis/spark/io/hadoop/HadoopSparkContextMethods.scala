@@ -7,6 +7,7 @@ import geotrellis.raster._
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.Job
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
@@ -74,4 +75,10 @@ trait HadoopSparkContextMethods {
         band -> tile
     }
   }
+
+  def newJob: Job = 
+    Job.getInstance(sc.hadoopConfiguration)  
+
+  def newJob(name: String) = 
+    Job.getInstance(sc.hadoopConfiguration, name)  
 }
