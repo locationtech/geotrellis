@@ -413,6 +413,21 @@ object GeotrellisBuild extends Build {
   defaultAssemblySettings ++
   net.virtualvoid.sbt.graph.Plugin.graphSettings
 
+  // Project: index
+  lazy val index: Project =
+    Project("index", file("index"))
+      .settings(indexSettings: _*)
+
+  lazy val indexSettings =
+    defaultAssemblySettings ++
+    Seq(
+      name := "geotrellis-index",
+      libraryDependencies ++=
+        Seq(
+          scalatest % "test"
+        )
+    )
+
   // Project: gdal
 
   lazy val gdal: Project =
