@@ -73,7 +73,13 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] {
       list.asScala.map { case (keyExtent, extentRanges) =>        
         val tabletRange = keyExtent.toDataRange        
         val split = new MultiRangeInputSplit()
-        split.ranges = extentRanges.asScala map { tabletRange.clip }
+        val exr = extentRanges.asScala
+        split.ranges = 
+          if (exr.isEmpty)
+            List(new ARange())
+          else 
+            exr map { tabletRange.clip }
+        split.iterators = IC.getIterators(CLASS, conf).asScala.toList
         split.location = location
         split.table = tableName
         split.instanceName = instance.getInstanceName
