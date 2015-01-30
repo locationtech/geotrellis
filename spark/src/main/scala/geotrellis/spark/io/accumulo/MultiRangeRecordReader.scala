@@ -33,8 +33,8 @@ class MultiRangeRecordReader extends RecordReader[Key, Value] {
     iterator = scanner.iterator().asScala
   }
 
-  def getProgress: Float = ???
-
+  def getProgress: Float = 0 //not sure how this is used
+  
   def nextKeyValue(): Boolean = {
     val hasNext = iterator.hasNext
     if (hasNext) {
