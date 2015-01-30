@@ -54,24 +54,25 @@ class BatchAccumuloInputFormatSpec extends FunSpec
     Row("2", "col", "a"), Row("2", "col", "b"), Row("2", "col", "c"),
     Row("3", "col", "a"), Row("3", "col", "b"), Row("3", "col", "c")
   )
-  val table = "data"
-  val accumulo = new AccumuloInstance(
-    instanceName = "fake",
-    zookeeper = "localhost",
-    user = "root",
-    token = new PasswordToken("")
-  )
-  val job = sc.newJob
-  val jconf = job.getConfiguration
-  CB.setMockInstance(classOf[AccumuloInputFormat], jconf, "fake")
-  CB.setConnectorInfo(classOf[AccumuloInputFormat], jconf, "root", new PasswordToken(""))
-  InputFormatBase.setInputTableName(job, table)
-  accumulo.connector.tableOperations().create(table)
-  val writer = accumulo.connector.createBatchWriter(table, new BatchWriterConfig())
-  data map { _.mutation } foreach { writer.addMutation }
   
   describe("BatchAccumuloInputFormat") {
     ifCanRunSpark {
+      val table = "data"
+      val accumulo = new AccumuloInstance(
+        instanceName = "fake",
+        zookeeper = "localhost",
+        user = "root",
+        token = new PasswordToken("")
+      )
+      val job = sc.newJob
+      val jconf = job.getConfiguration
+      CB.setMockInstance(classOf[AccumuloInputFormat], jconf, "fake")
+      CB.setConnectorInfo(classOf[AccumuloInputFormat], jconf, "root", new PasswordToken(""))
+      InputFormatBase.setInputTableName(job, table)
+      accumulo.connector.tableOperations().create(table)
+      val writer = accumulo.connector.createBatchWriter(table, new BatchWriterConfig())
+      data map { _.mutation } foreach { writer.addMutation }
+
       it("full table scan") {
         val ifSet = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value]).collect.toSet        
         val bifSet = sc.newAPIHadoopRDD(job.getConfiguration, classOf[BatchAccumuloInputFormat], classOf[Key], classOf[Value]).collect.toSet
