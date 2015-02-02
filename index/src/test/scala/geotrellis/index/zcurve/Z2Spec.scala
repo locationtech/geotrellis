@@ -27,7 +27,7 @@ class Z2Spec extends FunSpec with Matchers {
       y should be (5)
     }    
 
-    it("replaces example in Herzog apper"){
+    it("replaces example in Tropf, Herzog paper"){
       // Herzog example inverts x and y, with x getting higher sigfigs
       val rmin = Z2(5,3)
       val rmax = Z2(10,5)
