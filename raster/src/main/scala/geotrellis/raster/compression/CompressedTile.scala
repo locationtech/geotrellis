@@ -1,10 +1,11 @@
-package geotrellis.raster
+package geotrellis.raster.compression
+
+import geotrellis.raster._
 
 trait TileCompression
 
 case object Zip extends TileCompression
 case object RLE extends TileCompression
-case object XZ  extends TileCompression
 
 object CompressedTile {
 
@@ -12,7 +13,6 @@ object CompressedTile {
     compression match {
       case Zip => new ZipCompressedTile(tile)
       case RLE => new RLECompressedTile(tile)
-      case XZ => new XZCompressedTile(tile)
       case _ => sys.error(s"Compression type $compression is not supported.")
     }
 

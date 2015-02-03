@@ -1,7 +1,8 @@
-package geotrellis.raster
+package geotrellis.raster.compression
+
+import geotrellis.raster._
 
 import java.io.ByteArrayOutputStream
-
 import java.util.zip.{Deflater, Inflater}
 
 object Zipper {

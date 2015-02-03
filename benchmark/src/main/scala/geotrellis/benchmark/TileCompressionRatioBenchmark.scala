@@ -6,7 +6,7 @@ import java.text.DecimalFormat
 
 object TileCompressionRatioBenchmark extends GeoTrellisBenchmark {
 
-  val compressions = Seq(Zip, XZ)
+  val compressions = Seq(Zip, RLE)
 
   val files = Seq(
     "SBN_farm_mkt",

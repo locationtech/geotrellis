@@ -12,7 +12,7 @@ object TileCompressionBenchmark extends BenchmarkRunner(classOf[TileCompressionB
 
 class TileCompressionBenchmark extends OperationBenchmark {
 
-  @Param(Array("Zip", "XZ"))
+  @Param(Array("Zip", "RLE"))
   var compressionName: String = null
 
   var compression: TileCompression = null
@@ -41,7 +41,7 @@ class TileCompressionBenchmark extends OperationBenchmark {
   override def setUp() {
     compression = compressionName match {
       case "Zip" => Zip
-      case "XZ" => XZ
+      case "RLE" => RLE
       case _ => sys.error("Bad compression name.")
     }
 

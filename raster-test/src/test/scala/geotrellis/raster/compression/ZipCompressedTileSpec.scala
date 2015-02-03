@@ -1,4 +1,4 @@
-package geotrellis.raster
+package geotrellis.raster.compression
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
@@ -50,8 +50,7 @@ class ZipCompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress aspect.tif with Zip correctly") {
-      val (tile, _, _) = GeoTiffReader("raster-test/data/aspect.tif")
-        .read.imageDirectories.head.toRaster
+      val tile = GeoTiffReader.read("raster-test/data/aspect.tif").bands.head.tile
 
       val compressedTile = tile.compress(Zip)
 
@@ -63,8 +62,7 @@ class ZipCompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress slope.tif with Zip correctly") {
-      val (tile, _, _) = GeoTiffReader("raster-test/data/slope.tif")
-        .read.imageDirectories.head.toRaster
+      val tile = GeoTiffReader.read("raster-test/data/slope.tif").bands.head.tile
 
       val compressedTile = tile.compress(Zip)
 

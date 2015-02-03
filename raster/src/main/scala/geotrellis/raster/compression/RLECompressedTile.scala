@@ -1,7 +1,8 @@
-package geotrellis.raster
+package geotrellis.raster.compression
+
+import geotrellis.raster._
 
 import collection.mutable.ArrayBuffer
-
 import java.nio.ByteBuffer
 
 import spire.syntax.cfor._

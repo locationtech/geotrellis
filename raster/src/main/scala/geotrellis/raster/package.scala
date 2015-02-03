@@ -91,13 +91,4 @@ package object raster {
           s"${t._1.dimensions} does not match ${t._2.dimensions}")
       }
   }
-
-  implicit class TileCompressor(tile: Tile) {
-
-    def compress: CompressedTile = compress()
-
-    def compress(compression: TileCompression = Zip): CompressedTile =
-      CompressedTile(tile, compression)
-
-  }
 }
