@@ -85,5 +85,64 @@ class SumSpec extends FunSpec with TestEngine with TileBuilders with FocalOpSpec
         6, 9,12,   14,17,14,   12, 9, 6,
         4, 6, 8,    9,11, 9,    8, 6, 4))
     }
+
+
+
+    it("should square sum r=1") {
+      assertEqual(r.focalSum(Square(1)), Array(4, 6, 6, 4,
+                                           6, 9, 9, 6,
+                                           6, 9, 9, 6,
+                                           4, 6, 6, 4))
+    }
+
+    it("should square sum r=1 double") {
+      assertEqual(rd.focalSum(Square(1)), Array(4.4, 6.6, 6.6, 4.4,
+                                            6.6, 9.9, 9.9, 6.6,
+                                            6.6, 9.9, 9.9, 6.6,
+                                            4.4, 6.6, 6.6, 4.4))
+    }
+
+    it("should square sum r=2") {
+      assertEqual(r.focalSum(Square(2)), Array(9, 12, 12, 9,
+                                           12, 16, 16, 12,
+                                           12, 16, 16, 12,
+                                           9, 12, 12, 9))
+    }
+
+    it("should square sum r=3+") {
+      assertEqual(r.focalSum(Square(3)), data16)
+      assertEqual(r.focalSum(Square(4)), data16)
+      assertEqual(r.focalSum(Square(5)), data16)
+    }
+
+    it("should circle sum r=1") {
+      assertEqual(r.focalSum(Circle(1)), Array(3, 4, 4, 3,
+                                           4, 5, 5, 4,
+                                           4, 5, 5, 4,
+                                           3, 4, 4, 3))
+    }
+
+    it("should circle sum r=2") {
+      assertEqual(r.focalSum(Circle(2)), Array(6, 8, 8, 6,
+                                           8, 11, 11, 8,
+                                           8, 11, 11, 8,
+                                           6, 8, 8, 6))
+    }
+
+    it("should circle sum r=3") {
+      assertEqual(r.focalSum(Circle(3)), Array(11, 13, 13, 11,
+                                           13, 16, 16, 13,
+                                           13, 16, 16, 13,
+                                           11, 13, 13, 11))
+    }
+
+    it("should circle sum r=4+") {
+      assertEqual(r.focalSum(Circle(4)), Array(15, 16, 16, 15,
+                                           16, 16, 16, 16,
+                                           16, 16, 16, 16,
+                                           15, 16, 16, 15))
+      assertEqual(r.focalSum(Circle(5)), data16)
+      assertEqual(r.focalSum(Circle(6)), data16)
+    }
   }
 }

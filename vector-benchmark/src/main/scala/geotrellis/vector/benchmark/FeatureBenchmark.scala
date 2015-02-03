@@ -1,8 +1,8 @@
 package geotrellis.vector.benchmark
 
 import com.google.caliper.Benchmark
-import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark
+import com.google.caliper.Runner
 
 /**
  * Extend this to create a main object which will run 'cls' (a benchmark).

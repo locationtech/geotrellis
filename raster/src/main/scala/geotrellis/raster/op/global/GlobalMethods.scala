@@ -10,6 +10,9 @@ trait GlobalMethods extends TileMethods {
   def costDistance(points: Seq[(Int, Int)]): Tile =
     CostDistance(tile, points)
 
+  def costDistanceWithPaths(point: (Int, Int)): CostDistanceWithPathsResult =
+    CostDistanceWithPaths(tile, point)
+
   def toVector(extent: Extent): List[PolygonFeature[Int]] =
     toVector(extent, RegionGroupOptions.default.connectivity)
 

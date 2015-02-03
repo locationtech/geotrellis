@@ -16,13 +16,11 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
+import geotrellis.raster.io.geotiff.reader._
+
 import java.nio.{ByteBuffer, ByteOrder}
 
 import monocle.syntax._
-import monocle.Macro._
-
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 
 import spire.syntax.cfor._
 
@@ -56,32 +54,14 @@ object JpegHeaderLenses {
 
 case class JpegTables()
 
-object JpegDecompression {
+trait JpegDecompression {
 
   implicit class Jpeg(matrix: Array[Array[Byte]]) {
 
     import JpegTags._
 
-    def uncompressJpeg(directory: ImageDirectory): Array[Array[Byte]] = {
-      ??? // TODO: IMPLIMENT THIS
-      val jpegTables = directory |-> jpegTablesLens get match {
-        case Some(v) => Some(JpegTables())
-        case None => None
-      }
-
-      val len = matrix.length
-      val arr = Array.ofDim[Array[Byte]](len)
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        val segment = matrix(i)
-        val byteBuffer = ByteBuffer.wrap(segment).order(ByteOrder.BIG_ENDIAN)
-        validateHeader(byteBuffer)
-
-        arr(i) = segment
-      }
-
-      arr
-    }
+    // TODO: IMPLIMENT THIS
+    def uncompressJpeg(directory: ImageDirectory): Array[Array[Byte]] = ???
 
     private def readJpegHeader(byteBuffer: ByteBuffer,
       header: JpegHeader): JpegHeader = {

@@ -18,24 +18,23 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
 class OrSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Or Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should or a raster with a constant") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = ones | 1
 
         rasterShouldBe(res, (1, 1))
@@ -43,7 +42,6 @@ class OrSpec extends FunSpec
       }
 
       it("should or a constant with a raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = 1 |: ones
 
         rasterShouldBe(res, (1, 1))
@@ -51,10 +49,6 @@ class OrSpec extends FunSpec
       }
 
       it("should or three different rasters") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = ones | twos | hundreds
 
         rasterShouldBe(res, (103, 103))
@@ -62,10 +56,6 @@ class OrSpec extends FunSpec
       }
 
       it("should or three different rasters as a seq") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = ones | Seq(twos, hundreds)
 
         rasterShouldBe(res, (103, 103))

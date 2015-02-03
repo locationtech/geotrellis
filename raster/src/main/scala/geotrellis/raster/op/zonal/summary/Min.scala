@@ -30,7 +30,7 @@ object Min extends TileIntersectionHandler[Int, Int] {
 
   def combineResults(rs: Seq[Int]): Int =
     if(rs.isEmpty) NODATA
-    else 
+    else
       rs.reduce { (a, b) =>
         if(isNoData(a)) { b }
         else if(isNoData(b)) { a }
@@ -57,8 +57,8 @@ object MinDouble extends TileIntersectionHandler[Double, Double] {
 
   def handleFullTile(ft: FullTileIntersection): Double = {
     var min = Double.NaN
-    ft.tile.foreachDouble { (x: Double) => 
-      if (isData(x) && (x < min || isNoData(min))) { min = x  
+    ft.tile.foreachDouble { (x: Double) =>
+      if (isData(x) && (x < min || isNoData(min))) { min = x
       }
     }
     min
@@ -66,7 +66,7 @@ object MinDouble extends TileIntersectionHandler[Double, Double] {
 
   def combineResults(rs: Seq[Double]): Double =
     if(rs.isEmpty) Double.NaN
-    else 
+    else
       rs.reduce { (a, b) =>
         if(isNoData(a)) { b }
         else if(isNoData(b)) { a }

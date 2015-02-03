@@ -21,26 +21,21 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
-
 import org.scalatest.FunSpec
 
 class MinoritySpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
 
   describe("Minority Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should assign the minority of each raster, as a traversable") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = ones.localMinority(List(twos, twos, twos, hundreds, hundreds))
 
         rasterShouldBe(res, (1, 1))
@@ -48,10 +43,6 @@ class MinoritySpec extends FunSpec
       }
 
       it("should assign the minority of each raster, as a vararg") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = ones.localMinority(twos, twos, hundreds, hundreds)
 
         rasterShouldBe(res, (1, 1))
@@ -59,10 +50,6 @@ class MinoritySpec extends FunSpec
       }
 
       it("should assign the nth minority of each raster, as a traversable") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = ones.localMinority(1, List(twos, hundreds, ones, twos, twos))
 
         rasterShouldBe(res, (1, 1))
@@ -70,10 +57,6 @@ class MinoritySpec extends FunSpec
       }
 
       it("should assign the nth minority of each raster, as a vararg") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = ones.localMinority(1, twos, hundreds, ones, twos, twos)
 
         rasterShouldBe(res, (1, 1))

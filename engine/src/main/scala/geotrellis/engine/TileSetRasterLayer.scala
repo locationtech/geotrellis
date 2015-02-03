@@ -102,8 +102,8 @@ extends RasterLayer(info) {
         val targetExtent = re.extent
         val tileExtents = TileExtents(info.rasterExtent.extent, tileLayout)
         val loader = getTileLoader()
-        cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
-          cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
+        cfor(0)(_ < tileLayout.layoutRows, _ + 1) { trow =>
+          cfor(0)(_ < tileLayout.layoutCols, _ + 1) { tcol =>
             val sourceExtent = tileExtents(tcol, trow)
             sourceExtent.intersection(targetExtent) match {
               case Some(ext) =>
@@ -138,8 +138,8 @@ extends RasterLayer(info) {
       case None => 
         val loader = getTileLoader()
         val tiles = mutable.ListBuffer[Tile]()
-        cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
-          cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
+        cfor(0)(_ < tileLayout.layoutRows, _ + 1) { row =>
+          cfor(0)(_ < tileLayout.layoutCols, _ + 1) { col =>
             tiles += loader.getTile(col, row, None)
           }
         }
@@ -161,8 +161,8 @@ extends RasterLayer(info) {
       new DiskTileLoader(info, tileLayout, tileDirPath)
 
   def cache(c: Cache[String]) = {
-    for(col <- 0 until tileLayout.tileCols) {
-      for(row <- 0 until tileLayout.tileRows) {
+    for(col <- 0 until tileLayout.layoutCols) {
+      for(row <- 0 until tileLayout.layoutRows) {
         val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, col, row)
         c.insert(TileSetRasterLayer.tileName(info.id, col, row), Filesystem.slurp(path))
       }
@@ -177,9 +177,9 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
   val rasterExtent = tileSetInfo.rasterExtent
 
   def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]): Tile = {
-    val re = RasterExtent(tileExtents(col, row), tileLayout.pixelCols, tileLayout.pixelRows)
+    val re = RasterExtent(tileExtents(col, row), tileLayout.tileCols, tileLayout.tileRows)
     if(col < 0 || row < 0 ||
-       tileLayout.tileCols <= col || tileLayout.tileRows <= row) {
+       tileLayout.layoutCols <= col || tileLayout.layoutRows <= row) {
       val tre = 
         targetExtent match {
           case Some(x) => x

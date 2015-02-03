@@ -16,10 +16,10 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.utils.HdfsUtils
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.vector.Extent
 import geotrellis.vector.Extent
 import geotrellis.proj4._
 
@@ -35,19 +35,17 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit
 
 import java.nio.ByteBuffer
 
-class GeotiffInputFormat extends FileInputFormat[(Extent, CRS), Tile] {
+class GeotiffInputFormat extends FileInputFormat[ProjectedExtent, Tile] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
   override def createRecordReader(
     split: InputSplit,
-    context: TaskAttemptContext): RecordReader[(Extent, CRS), Tile] = new GeotiffRecordReader
+    context: TaskAttemptContext): RecordReader[ProjectedExtent, Tile] = new GeotiffRecordReader
 
 }
 
-case class GeotiffData(cellType: CellType, userNoData: Double)
-
-class GeotiffRecordReader extends RecordReader[(Extent, CRS), Tile] {
-  private var tup: ((Extent, CRS), Tile) = null
+class GeotiffRecordReader extends RecordReader[ProjectedExtent, Tile] {
+  private var tup: (ProjectedExtent, Tile) = null
   private var hasNext: Boolean = true
 
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
@@ -55,10 +53,9 @@ class GeotiffRecordReader extends RecordReader[(Extent, CRS), Tile] {
     val conf = context.getConfiguration()
     val bytes = HdfsUtils.readBytes(path, conf)
 
-    val (tile, extent, crs) =
-      GeoTiffReader(bytes).read().imageDirectories.head.toRaster
+    val GeoTiffBand(tile, extent, crs, _) = GeoTiffReader.read(bytes).firstBand
 
-    tup = ((extent, crs), tile)
+    tup = (ProjectedExtent(extent, crs), tile)
   }
 
   def close = {}

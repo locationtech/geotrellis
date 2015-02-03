@@ -18,25 +18,21 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingTestFile, AllOnesTestFile}
-
+import geotrellis.spark.RasterRDD
+import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
 class LessOrEqualSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Less Or Equal Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val allOnes = AllOnesTestFile(inputHome, conf)
-
-      val cols = increasing.metaData.cols
+      val inc = IncreasingTestFile
+      val ones = AllOnesTestFile
 
       it("should check less or equal between an integer and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
         val res = inc <= 1
 
         rasterShouldBe(
@@ -48,7 +44,6 @@ class LessOrEqualSpec extends FunSpec
       }
 
       it("should check less or equal right associative between an integer and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
         val res = 1 <=: inc
 
         rasterShouldBe(
@@ -60,7 +55,6 @@ class LessOrEqualSpec extends FunSpec
       }
 
       it("should check less or equal between a double and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
         val res = inc <= 1.0
 
         rasterShouldBe(
@@ -72,7 +66,6 @@ class LessOrEqualSpec extends FunSpec
       }
 
       it("should check less or equal right associative between a double and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
         val res = 1.0 <=: inc
 
         rasterShouldBe(
@@ -84,8 +77,6 @@ class LessOrEqualSpec extends FunSpec
       }
 
       it("should check less or equal between two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = inc <= ones
 
         rasterShouldBe(

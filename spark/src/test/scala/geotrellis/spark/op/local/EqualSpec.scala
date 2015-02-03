@@ -18,25 +18,21 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingTestFile, AllOnesTestFile}
-
+import geotrellis.spark.RasterRDD
+import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
 class EqualSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Equal Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val allOnes = AllOnesTestFile(inputHome, conf)
-
-      val cols = increasing.metaData.cols
+      val inc = IncreasingTestFile
+      val ones = AllOnesTestFile
 
       it("should check equal between an integer and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
         val res = inc.localEqual(1)
 
         rasterShouldBe(
@@ -48,7 +44,6 @@ class EqualSpec extends FunSpec
       }
 
       it("should check equal between an double and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
         val res = inc.localEqual(1.0)
 
         rasterShouldBe(
@@ -60,8 +55,6 @@ class EqualSpec extends FunSpec
       }
 
       it("should check equal between two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = inc.localEqual(ones)
 
         rasterShouldBe(

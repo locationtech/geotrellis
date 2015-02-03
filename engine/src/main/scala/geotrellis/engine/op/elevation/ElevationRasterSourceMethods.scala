@@ -6,35 +6,24 @@ import geotrellis.raster.op.elevation._
 import geotrellis.raster.op.focal._
 
 trait ElevationRasterSourceMethods extends RasterSourceMethods with FocalOperation {
+
   def aspect() =
     focalWithExtent(Square(1)){ (tile, hood, bounds,re) =>
       Aspect(tile, hood, bounds, re.cellSize)
     }
 
-  def slope(zFactor: Double) =
+  def slope: RasterSource = slope()
+
+  def slope(zFactor: Double = 1.0): RasterSource =
     focalWithExtent(Square(1)){ (tile, hood, bounds, re) =>
       Slope(tile, hood, bounds, re.cellSize, zFactor)
     }
 
-  /**
-   * Creates a slope operation with a default zFactor of 1.0.
-   */
-  def slope() =
-    focalWithExtent(Square(1)){ (tile, hood, bounds,re) =>
-      Slope(tile, hood, bounds, re.cellSize, 1.0)
-    }
+  def hillshade: RasterSource = hillshade()
 
-  def hillshade(azimuth: Double, altitude: Double, zFactor: Double) =
+  def hillshade(azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1): RasterSource =
     focalWithExtent(Square(1)){ (tile, hood, bounds,re) =>
       Hillshade(tile, hood, bounds, re.cellSize, azimuth, altitude, zFactor)
     }
 
-  /**
-   * Create a default hillshade raster, using a default azimuth of 315 degrees,
-   * altitude of 45 degrees, and z factor of 1.0.
-   */
-  def hillshade() =
-    focalWithExtent(Square(1)){ (tile, hood, bounds,re) =>
-      Hillshade(tile, hood, bounds, re.cellSize,  315.0, 45.0, 1.0)
-    }
 }

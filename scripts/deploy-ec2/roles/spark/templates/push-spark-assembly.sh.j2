@@ -8,10 +8,10 @@ zip -d $ASSEMBLY_DIR/$ASSEMBLY_JAR META-INF/*.SF
 zip -d $ASSEMBLY_DIR/$ASSEMBLY_JAR META-INF/*.RSA
 
 {% for host in groups['workers'] %}
-ssh ubuntu@{{hostvars[host]['ansible_' + eth]['ipv4']['address']}} mkdir -p $ASSEMBLY_DIR
+ssh ubuntu@{{hostvars[host]['private_dns_name']}} mkdir -p $ASSEMBLY_DIR
 {% endfor %}
 
 #PUSH!
 {% for host in groups['workers'] %}
-rsync -v -e ssh $ASSEMBLY_DIR/$ASSEMBLY_JAR ubuntu@{{hostvars[host]['ansible_' + eth]['ipv4']['address']}}:$ASSEMBLY_DIR/$ASSEMBLY_JAR
+rsync -v -e ssh $ASSEMBLY_DIR/$ASSEMBLY_JAR ubuntu@{{hostvars[host]['private_dns_name']}}:$ASSEMBLY_DIR/$ASSEMBLY_JAR
 {% endfor %}

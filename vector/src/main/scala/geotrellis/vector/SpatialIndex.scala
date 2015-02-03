@@ -63,12 +63,12 @@ class SpatialIndex[T](val measure: Measure) extends Serializable {
   }
 
   def pointsInExtent(extent: Extent): Seq[T] = {
-    rtree.query(new Envelope(extent.ymin, extent.ymax, extent.xmin, extent.xmax))
+    rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax))
          .map(_.asInstanceOf[T])
   }
 
   def pointsInExtentAsJavaList(extent: Extent): List[_] = {
-    rtree.query(new Envelope(extent.ymin, extent.ymax, extent.xmin, extent.xmax)).toList
+    rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).toList
   }
 }
 

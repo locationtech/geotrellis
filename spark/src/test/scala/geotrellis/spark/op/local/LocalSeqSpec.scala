@@ -18,30 +18,30 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
 class LocalSeqSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Local Seq Operations") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val decreasing = DecreasingTestFile(inputHome, conf)
+      val ones = AllOnesTestFile
+      val twos = AllTwosTestFile
+      val hundreds = AllHundredsTestFile
+      val inc = IncreasingTestFile
+      val dec = DecreasingTestFile
 
-      val cols = allOnes.metaData.cols
-      val rows = allOnes.metaData.rows
+      val (cols: Int, rows: Int) = {
+        val tile = ones.stitch
+        (tile.cols, tile.rows)
+      }
 
       it("should test raster rdd seq with one element") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-
         val res = Seq(ones).localAdd
 
         rasterShouldBe(res, (1, 1))
@@ -49,9 +49,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should add rasters") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, hundreds, ones).localAdd
 
         rasterShouldBe(res, (102, 102))
@@ -59,9 +56,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should get variety of rasters") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, hundreds, ones).localVariety
 
         rasterShouldBe(res, (2, 2))
@@ -69,9 +63,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should get mean of rasters") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, hundreds, ones).localMean
 
         rasterShouldBe(res, (34, 34))
@@ -79,10 +70,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should min three rasters as a seq") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(inc, dec, hundreds).localMin
 
         rasterShouldBe(
@@ -99,10 +86,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should min three rasters as a seq and take n:th smallest") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(inc, dec, hundreds).localMinN(1)
 
         rasterShouldBe(
@@ -120,10 +103,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should max three rasters as a seq") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(inc, dec, hundreds).localMax
 
         rasterShouldBe(
@@ -140,10 +119,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should max three rasters as a seq and take n:th smallest") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(inc, dec, hundreds).localMaxN(1)
 
         rasterShouldBe(
@@ -161,10 +136,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the minority of each raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, twos, twos, hundreds, hundreds).localMinority()
 
         rasterShouldBe(res, (1, 1))
@@ -172,10 +143,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the nth minority of each raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, twos, twos, twos, hundreds, hundreds).localMinority(1)
 
         rasterShouldBe(res, (100, 100))
@@ -183,10 +150,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the majority of each raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, ones, ones, twos, twos, hundreds).localMajority()
 
         rasterShouldBe(res, (1, 1))
@@ -194,10 +157,6 @@ class LocalSeqSpec extends FunSpec
       }
 
       it("should assign the nth majority of each raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-
         val res = Seq(ones, ones, ones, twos, twos, hundreds).localMajority(1)
 
         rasterShouldBe(res, (2, 2))

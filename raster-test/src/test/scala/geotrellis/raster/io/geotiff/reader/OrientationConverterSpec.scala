@@ -17,14 +17,14 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.reader.Orientations._
+
 import geotrellis.testkit._
 
 import scala.io.{Source, Codec}
 
 import java.util.BitSet
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
-
-import geotrellis.raster.io.geotiff.reader.Orientations._
 
 import org.scalatest._
 

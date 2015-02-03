@@ -17,6 +17,7 @@
 package geotrellis.geotools
 
 import geotrellis.engine._
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffWriter
 import geotrellis.vector.Extent

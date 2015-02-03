@@ -1,13 +1,10 @@
 package geotrellis.spark
 
-import geotrellis.spark.rdd.LayerMetaData
-import geotrellis.spark.tiling._
+import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.json._
 import geotrellis.vector.Extent
 import geotrellis.vector.json._
-import geotrellis.proj4.CRS
-
 import spray.json._
 
 package object json {
@@ -23,44 +20,42 @@ package object json {
       }
   }
 
-  implicit object LayoutLeveFormat extends RootJsonFormat[LayoutLevel] {
-    def write(layoutLevel: LayoutLevel) =
+  implicit object LayerIdFormat extends RootJsonFormat[LayerId] {
+    def write(id: LayerId) =
       JsObject(
-        "id" -> JsNumber(layoutLevel.id),
-        "tileLayout" -> layoutLevel.tileLayout.toJson
+        "name" -> JsString(id.name),
+        "zoom" -> JsNumber(id.zoom)
       )
 
-    def read(value: JsValue): LayoutLevel =
-      value.asJsObject.getFields("id", "tileLayout") match {
-        case Seq(JsNumber(id), tileLayout) =>
-          LayoutLevel(id.toInt, tileLayout.convertTo[TileLayout])
+    def read(value: JsValue): LayerId =
+      value.asJsObject.getFields("name", "zoom") match {
+        case Seq(JsString(name), JsNumber(zoom)) =>
+          LayerId(name, zoom.toInt)
         case _ =>
-          throw new DeserializationException("LayoutLevel expected")
+          throw new DeserializationException("LayerId expected")
       }
   }
 
-  implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
-    def write(metaData: LayerMetaData) = 
+  implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
+    def write(metaData: RasterMetaData) = 
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,
         "crs" -> metaData.crs.toJson,
-        "layoutLevel" -> metaData.level.toJson,
-        "tileIndexScheme" -> JsString(metaData.tileIndexScheme.tag)
+        "tileLayout" -> metaData.tileLayout.toJson
       )
 
-    def read(value: JsValue): LayerMetaData =
-      value.asJsObject.getFields("cellType", "extent", "crs", "layoutLevel", "tileIndexScheme") match {
-        case Seq(cellType, extent, crs, layoutLevel, JsString(tileIndexSchemeTag)) =>
-          LayerMetaData(
+    def read(value: JsValue): RasterMetaData =
+      value.asJsObject.getFields("cellType", "extent", "crs", "tileLayout") match {
+        case Seq(cellType, extent, crs, tileLayout) =>
+          RasterMetaData(
             cellType.convertTo[CellType],
             extent.convertTo[Extent],
             crs.convertTo[CRS],
-            layoutLevel.convertTo[LayoutLevel],
-            TileIndexScheme.fromTag(tileIndexSchemeTag)
+            tileLayout.convertTo[TileLayout]
           )
         case _ =>
-          throw new DeserializationException("LayerMetaData expected")
+          throw new DeserializationException("RasterMetaData expected")
       }
   }
 }

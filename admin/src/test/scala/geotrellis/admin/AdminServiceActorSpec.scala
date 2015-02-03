@@ -16,13 +16,13 @@
 
 package geotrellis.admin
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
+import org.scalatest.matchers._
 import spray.routing.HttpService
 import spray.testkit.ScalatestRouteTest
 import spray.http._
 import akka.testkit.TestActorRef
-import geotrellis.GeoTrellis
+import geotrellis.engine.GeoTrellis
 import java.io.File
 
 /**
@@ -30,7 +30,7 @@ import java.io.File
  * @author jchien
  */
 class AdminServiceActorSpec extends FunSpec with ScalatestRouteTest
-                                            with ShouldMatchers
+                                            with Matchers
                                             with HttpService {
   def actorRefFactory = system
   val data = Array(1.toByte, 2.toByte, 3.toByte)
@@ -39,7 +39,7 @@ class AdminServiceActorSpec extends FunSpec with ScalatestRouteTest
   describe("AdminServiceActor") {
 
     it("should upload files to the correct datastore") {
-      val file = new File(GeoTrellis.server.catalog.getStore("test:fs").get.path + "/" + "reservedfilename7.arg")
+      val file = new File(GeoTrellis.engine.catalog.getStore("test:fs").get.path + "/" + "reservedfilename7.arg")
 
       Post("/gt/upload", FormData(Seq("name" -> "reservedfilename7.arg",
         "store" -> "test:fs",

@@ -14,8 +14,8 @@ import org.scalatest._
 import spire.syntax.cfor._
 
 class RowTransformSpec extends FunSpec
-                          with TileBuilders
-                          with TestEngine {
+    with TileBuilders
+    with TestEngine {
   val path = "raster-test/data/schoolgeo.json"
 
   val LLtoWM = Transform(LatLng, WebMercator)
@@ -62,8 +62,10 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate WebMercator -> LatLng for raster extent") {
-      val (expected, expectedExtent, _) =
-        GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").read.imageDirectories.head.toRaster
+      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
+        .read("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif")
+        .firstBand
+
       val re = RasterExtent(expected, expectedExtent)
 
       val threshold = ReprojectOptions.DEFAULT.errorThreshold
@@ -80,6 +82,38 @@ class RowTransformSpec extends FunSpec
 
         val actualPoints = srcX.zip(srcY).map { case (x, y) => Point(x, y) }
         val actualProjected = actualPoints.map(_.reproject(WMtoLL))
+        val actualDestX = actualProjected.map(_.x).toArray
+        val actualDestY = actualProjected.map(_.y).toArray
+
+        for(col <- 0 until re.cols) {
+          destX(col) should be (actualDestX(col) +- threshold)
+          destY(col) should be (actualDestY(col) +- threshold)
+        }
+      }
+    }
+
+    it("should approximate EPSG:32618 -> WebMercator for raster extent") {
+      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
+        .read("raster-test/data/reproject/slope_epsg32618.tif")
+        .firstBand
+
+      val re = RasterExtent(expected, expectedExtent)
+
+      val threshold = ReprojectOptions.DEFAULT.errorThreshold
+
+      val transform = Transform(CRS.fromName("EPSG:32618"), WebMercator)
+      val rowTransform = RowTransform.approximate(transform, threshold)
+
+      for(row <- 0 until re.rows) {
+        val srcX = (0 until re.cols).map { i => re.gridColToMap(i) }.toArray
+        val srcY = (0 until re.cols).map { i => re.gridRowToMap(row) }.toArray
+        val destX = Array.ofDim[Double](srcX.size)
+        val destY = Array.ofDim[Double](srcX.size)
+
+        rowTransform(srcX, srcY, destX, destY)
+
+        val actualPoints = srcX.zip(srcY).map { case (x, y) => Point(x, y) }
+        val actualProjected = actualPoints.map(_.reproject(transform))
         val actualDestX = actualProjected.map(_.x).toArray
         val actualDestY = actualProjected.map(_.y).toArray
 

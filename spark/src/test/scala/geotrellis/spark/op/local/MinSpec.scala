@@ -18,63 +18,55 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
-
+import geotrellis.raster.Tile
 import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Min Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val decreasing = DecreasingTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
-
-      val cols = increasing.metaData.cols
-      val rows = increasing.metaData.rows
-
-      val tots = cols * rows;
+      val inc = IncreasingTestFile
+      val dec = DecreasingTestFile
+      val hundreds = AllHundredsTestFile
 
       it("should min a raster with an integer") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val thresh = tots / 2
+        val thresh = 721.1
         val res = inc.localMin(thresh)
-
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
-          (x: Int, y: Int) => math.min(y * cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.min(y * tile.cols + x, thresh),
+          1e-3
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should min a raster with a double") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val thresh = tots / 2.0
+        val thresh = 873.4
         val res = inc.localMin(thresh)
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
-          (x: Int, y: Int) => math.min(y * cols + x, thresh)
+          (t: Tile, x: Int, y: Int) => math.min(y * t.cols + x, thresh),
+          1e-3
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should min two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
         val res = inc.localMin(dec)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (t: Tile, x: Int, y: Int) => {
+            val decV = t.cols * t.rows - (y * t.cols + x) - 1
+            val incV = y * t.cols + x
 
             math.min(decV, incV)
           }
@@ -84,16 +76,13 @@ class MinSpec extends FunSpec
       }
 
       it("should min three rasters as a seq") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
         val res = inc.localMin(Seq(dec, hundreds))
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (t: Tile, x: Int, y: Int) => {
+            val decV = t.cols * t.rows - (y * t.cols + x) - 1
+            val incV = y * t.cols + x
 
             math.min(math.min(decV, incV), 100)
           }
