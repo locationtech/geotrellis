@@ -71,49 +71,4 @@ object Ingest {
 
     (layoutLevel, rasterRdd)
   }
-
-  def mosaic(sourceTiles: RDD[(Extent, Tile)], metaData: LayerMetaData): (RDD[TmsTile], LayerMetaData) = {
-    val bcMetaData = sc.broadcast(metaData)
-    val tiles =
-      sourceTiles
-        .flatMap { case (extent, tile) =>
-          val metaData = bcMetaData.value
-          metaData
-            .transform
-            .mapToIndex(extent)
-            .map { tileId =>
-              (tileId, (tileId, extent, tile)) 
-            }
-         }
-        .combineByKey( 
-          { case (tileId, extent, tile) =>
-            val metaData = bcMetaData.value
-            val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-            tmsTile.merge(metaData.transform.indexToMap(tileId), extent, tile)
-          },
-          { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
-            val metaData = bcMetaData.value
-            val (tileId, extent, tile) = tup
-            tmsTile.merge(metaData.transform.indexToMap(tileId), extent, tile)
-          },
-          { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
-            tmsTile1.merge(tmsTile2)
-          }
-         )
-        .map { case (id, tile) => TmsTile(id, tile) }
-    (tiles, metaData)
-  }
-
-  def apply(source: =>RDD[(Extent, Tile)], sink:  Sink, sourceCRS: CRS, destCRS: CRS, tilingScheme: TilingScheme): Unit =
-    source |>
-    reproject(sourceCRS, destCRS) |>
-    setMetaData(destCRS, tilingScheme) |>
-    mosaic |>
-    sink
-
-  // def apply(source: =>RDD[(Extent, Tile)], pyramid: (Sink) => (RDD[TmsTile], LayerMetaData) => Unit, sink:  Sink): Unit =
-  //   source |>
-  //   setMetaData |>
-  //   mosaic |>
-  //   pyramid(sink)
 }

@@ -16,21 +16,22 @@ class MosaicSpec extends FunSpec
     it("should mosaic a tile split by CompositeTile back into itself") {
       val totalCols = 1000
       val totalRows = 1500
-      val tileCols = 2
-      val tileRows = 1
-      val pixelCols = totalCols / tileCols
-      val pixelRows = totalRows / tileRows
+      val layoutCols = 2
+      val layoutRows = 1
+      val tileCols = totalCols / layoutCols
+      val tileRows = totalRows / layoutRows
 
-      if( (pixelCols*tileCols, pixelRows*tileRows) != (totalCols, totalRows) )
+      if( (tileCols*layoutCols, tileRows*layoutRows) != (totalCols, totalRows) )
         sys.error("This test requirest that the total col\rows be divisible by the tile col\rows")
 
       val (tile, extent) = {
         val rs = RasterSource("SBN_inc_percap")
         val (t, e) = (get(rs), get(rs.rasterExtent).extent)
-        (t.resample(e, totalCols, totalRows), e)
+        val resampled = t.resample(e, totalCols, totalRows)
+        (resampled, e)
       }
 
-      val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
+      val tileLayout = TileLayout(layoutCols, layoutRows, tileCols, tileRows)
 
       val rasters: Seq[(Extent, Tile)] = {
         val tileExtents = TileExtents(extent, tileLayout)
@@ -43,9 +44,6 @@ class MosaicSpec extends FunSpec
       rasters.foreach(builder += _)
       val result = builder.result.tile
 
-      assertEqual(result.crop(GridBounds(0, 0, 0, 1491)), tile.crop(GridBounds(0, 0, 0, 1491)))
-
-      println(s"(${tile.cols}, ${tile.rows}")
       assertEqual(result, tile)
     }
   }

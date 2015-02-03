@@ -52,7 +52,7 @@ trait RasterRDDBuilders {
             rows = tileLayout.tileRows
           )
 
-        val subTile: Tile = adjustedRaster.warp(extent, targetRasterExtent)
+        val subTile: Tile = adjustedRaster.resample(extent, targetRasterExtent)
 
         (SpatialKey(col, row), subTile)
       }
@@ -104,7 +104,7 @@ trait RasterRDDBuilders {
               rows = tileLayout.tileRows
             )
 
-          val subTile: Tile = adjustedRaster.warp(extent, targetRasterExtent)
+          val subTile: Tile = adjustedRaster.resample(extent, targetRasterExtent)
 
           (SpaceTimeKey(col, row, time), subTile)
         }

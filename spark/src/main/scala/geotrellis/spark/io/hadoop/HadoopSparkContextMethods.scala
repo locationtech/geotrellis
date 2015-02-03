@@ -1,8 +1,8 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.ingest.ProjectedExtent
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
+import geotrellis.vector._
 
 import org.apache.spark._
 import org.apache.spark.rdd._

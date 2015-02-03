@@ -1,5 +1,8 @@
 package geotrellis.vector
 
+import geotrellis.vector.reproject._
+import geotrellis.proj4.CRS
+
 import com.vividsolutions.jts.{geom => jts}
 
 case class ExtentRangeError(msg:String) extends Exception(msg)
@@ -18,9 +21,6 @@ object Extent {
 
   implicit def toPolygon(extent: Extent): Polygon =
     extent.toPolygon
-
-  implicit def geom2Extent(g: Geometry): Extent =
-    Extent(g.jtsGeom.getEnvelopeInternal)
 
   implicit def jts2Extent(env: jts.Envelope): Extent =
     Extent(env)
@@ -158,6 +158,9 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       Some(Extent(xminNew, yminNew, xmaxNew, ymaxNew))
     } else { None }
   }
+
+  def &(other: Extent): Option[Extent] = 
+    intersection(other)
 
   def buffer(d: Double): Extent =
     Extent(xmin - d, ymin - d, xmax + d, ymax + d)

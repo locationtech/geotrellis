@@ -160,15 +160,16 @@ trait Tile {
   def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): Tile =
     resample(source, RasterExtent(source, targetCols, targetRows), method)
 
+  /** Only changes the resolution */
+  def resample(targetCols: Int, targetRows: Int): Tile =
+    resample(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
+
+
   def crop(cols: Int, rows: Int): Tile = 
     CroppedTile(this, GridBounds(0, 0, cols - 1, rows - 1))
 
   def crop(gb: GridBounds): Tile = 
     CroppedTile(this, gb)
-
-  /** Only changes the resolution */
-  def warp(targetCols: Int, targetRows: Int): Tile =
-    warp(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
 
   def crop(srcExtent: Extent, extent: Extent): Tile =
     CroppedTile(this, RasterExtent(srcExtent, cols, rows).gridBoundsFor(extent))

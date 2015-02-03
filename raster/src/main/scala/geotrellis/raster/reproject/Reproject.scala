@@ -14,7 +14,7 @@ object ReprojectOptions {
 }
 
 object Reproject {
-  def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): Raster(Tile, Extent) =
+  def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): Raster =
     if(src == dest) {
       (tile.toArrayTile.copy, extent)
     } else {

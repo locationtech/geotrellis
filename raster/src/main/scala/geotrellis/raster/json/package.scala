@@ -17,7 +17,12 @@ package object json {
     def read(json: JsValue): FastMapHistogram = json match {
       case JsArray(pairs) =>
         val hist = FastMapHistogram()
-        pairs.foreach { case JsArray(JsNumber(item) :: JsNumber(count) :: Nil) =>  hist.countItem(item.toInt, count.toInt)}
+        for(pair <- pairs) {
+          pair match {
+            case JsArray(JsNumber(item) :: JsNumber(count) :: Nil) =>  hist.countItem(item.toInt, count.toInt)
+            case _ => throw new DeserializationException("Array of [value, count] pairs expected")
+          }
+        }
         hist
       case _ =>
         throw new DeserializationException("Array of [value, count] pairs expected")

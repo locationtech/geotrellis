@@ -138,13 +138,22 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     // what is to the West and\or North of the point. However if the border point
     // is not directly on a grid division, include the whole row and/or column that
     // contains the point.
-    val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
-    val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
-    
+    val colMax = {
+      val colMaxDouble = mapXToGridDouble(subExtent.xmax)
+      if(math.abs(colMaxDouble - math.floor(colMaxDouble)) < RasterExtent.epsilon) colMaxDouble.toInt - 1
+      else colMaxDouble.toInt
+    }
+
+    val rowMax = {
+      val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
+      if(math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < RasterExtent.epsilon) rowMaxDouble.toInt - 1
+      else rowMaxDouble.toInt
+    }
+
     GridBounds(math.max(colMin, 0),
                math.max(rowMin, 0),
                math.min(colMax, cols - 1),
-               math.min(rowMax, cols - 1))
+               math.min(rowMax, rows - 1))
   }
 
   /**
@@ -224,6 +233,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
 }
 
 object RasterExtent {
+  final val epsilon = 0.0000001
+
   def apply(extent: Extent, cols: Int, rows: Int): RasterExtent = {
     val cw = extent.width / cols
     val ch = extent.height / rows

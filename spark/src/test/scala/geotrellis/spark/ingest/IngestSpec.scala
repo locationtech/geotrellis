@@ -4,13 +4,13 @@ import geotrellis.raster._
 import geotrellis.raster.reproject._
 import geotrellis.raster.mosaic._
 import geotrellis.raster.io.arg.ArgReader
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.proj4._
-import geotrellis.testkit._
 
 import geotrellis.spark._
-import geotrellis.spark.rdd._
 import geotrellis.spark.tiling._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.hadoop.formats._
 import geotrellis.proj4.LatLng
 import geotrellis.spark.utils.SparkUtils
 

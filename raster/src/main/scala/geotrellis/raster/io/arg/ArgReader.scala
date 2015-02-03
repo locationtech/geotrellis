@@ -62,12 +62,12 @@ object ArgReader {
     if(layerType == "constant") {
       val v = json.getDouble("constant")
       cellType match {
-        case TypeBit => BitConstantTile(d2i(v), cols, rows)
-        case TypeByte => ByteConstantTile(d2b(v), cols, rows)
-        case TypeShort => ShortConstantTile(d2s(v), cols, rows)
-        case TypeInt => IntConstantTile(d2i(v), cols, rows)
-        case TypeFloat => FloatConstantTile(d2f(v), cols, rows)
-        case TypeDouble => DoubleConstantTile(v, cols, rows)
+        case TypeBit => Raster(BitConstantTile(d2i(v), cols, rows), extent)
+        case TypeByte => Raster(ByteConstantTile(d2b(v), cols, rows), extent)
+        case TypeShort => Raster(ShortConstantTile(d2s(v), cols, rows), extent)
+        case TypeInt => Raster(IntConstantTile(d2i(v), cols, rows), extent)
+        case TypeFloat => Raster(FloatConstantTile(d2f(v), cols, rows), extent)
+        case TypeDouble => Raster(DoubleConstantTile(v, cols, rows), extent)
       }
     } else {
 
@@ -98,12 +98,13 @@ object ArgReader {
           case "float64" => TypeDouble
           case s => sys.error("unsupported datatype '%s'" format s)
         }
-
-    targetRasterExtent match {
-      case Some(te) =>
-        Raster(read(argPath, cellType, RasterExtent(extent, cols, rows), te), te.extent)
-      case None =>
-        Raster(read(argPath, cellType, cols, rows), extent)
+    
+      targetRasterExtent match {
+        case Some(te) =>
+          Raster(read(argPath, cellType, RasterExtent(extent, cols, rows), te), te.extent)
+        case None =>
+          Raster(read(argPath, cellType, cols, rows), extent)
+      }
     }
   }
 
