@@ -1,4 +1,4 @@
-package geotrellis.raster.io.shape.reader
+package geotrellis.vector.io.shape.reader
 
 case class ShapeFile(records: Array[ShapeRecord]) {
   val size = records.size

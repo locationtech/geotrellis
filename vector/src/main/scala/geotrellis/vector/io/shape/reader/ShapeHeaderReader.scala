@@ -1,4 +1,4 @@
-package geotrellis.raster.io.shape.reader
+package geotrellis.vector.io.shape.reader
 
 import java.nio.{ByteBuffer, ByteOrder}
 

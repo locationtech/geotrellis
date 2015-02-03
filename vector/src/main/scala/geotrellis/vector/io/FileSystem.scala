@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io
+package geotrellis.vector.io
 
 import java.io.{File, FileInputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 import scala.math.min
 
-object Filesystem {
+object FileSystem {
   def slurp(path: String, bs: Int = 262144): Array[Byte] = {
     val f = new File(path)
     val fis = new FileInputStream(f)

@@ -1,8 +1,7 @@
-package geotrellis.raster.io.shape.reader
-
-import geotrellis.raster.io.Filesystem
+package geotrellis.vector.io.shape.reader
 
 import geotrellis.vector._
+import geotrellis.vector.io.FileSystem
 
 import java.nio.{ByteBuffer, ByteOrder}
 
@@ -17,7 +16,7 @@ object ShapeIndexFileReader {
   val FileExtension = ".shx"
 
   def apply(path: String): ShapeIndexFileReader =
-    if (path.endsWith(FileExtension)) apply(Filesystem.slurp(path))
+    if (path.endsWith(FileExtension)) apply(FileSystem.slurp(path))
     else throw new MalformedShapeIndexFileException(
       s"Bad file ending (must be .$FileExtension)."
     )

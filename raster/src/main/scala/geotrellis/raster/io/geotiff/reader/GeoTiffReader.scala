@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io.FileSystem
 import geotrellis.raster.io.geotiff.reader.Tags._
 
 import scala.io._
@@ -29,7 +29,7 @@ class GeoTiffReaderLimitationException(msg: String)
 
 object GeoTiffReader {
 
-  def read(path: String): GeoTiff = read(Filesystem.slurp(path))
+  def read(path: String): GeoTiff = read(FileSystem.slurp(path))
 
   def read(bytes: Array[Byte]): GeoTiff =
     GeoTiffReader(ByteBuffer.wrap(bytes, 0, bytes.size)).read

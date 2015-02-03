@@ -1,6 +1,6 @@
-package geotrellis.raster.io.shape.reader
+package geotrellis.vector.io.shape.reader
 
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io.FileSystem
 
 import collection.immutable.HashMap
 
@@ -25,7 +25,7 @@ object ShapeDBaseFileReader {
     if (path.endsWith(FileExtension)) {
       val charset = CodePageFileReader(path.take(path.length - 4) +
         CodePageFileReader.FileExtension).read
-      apply(Filesystem.slurp(path), charset)
+      apply(FileSystem.slurp(path), charset)
     }
     else throw new MalformedShapeDBaseFileException(
       s"Bad file ending (must be $FileExtension)."

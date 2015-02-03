@@ -1,7 +1,7 @@
-package geotrellis.raster.io.shape.reader
+package geotrellis.vector.io.shape.reader
 
-import geotrellis.raster.io.Filesystem
 import geotrellis.vector._
+import geotrellis.vector.io.FileSystem
 
 import java.nio.{ByteBuffer, ByteOrder}
 
@@ -16,7 +16,7 @@ object ShapePointFileReader {
   val FileExtension = ".shp"
 
   def apply(path: String): ShapePointFileReader =
-    if (path.endsWith(FileExtension)) apply(Filesystem.slurp(path))
+    if (path.endsWith(FileExtension)) apply(FileSystem.slurp(path))
     else throw new MalformedShapePointFileException(
       s"Bad file ending (must be $FileExtension)."
     )

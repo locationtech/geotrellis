@@ -1,12 +1,11 @@
-package geotrellis.raster.io.shape.reader
+package geotrellis.vector.io.shape.reader
 
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io.FileSystem
 
 import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.{Charset => JavaCharset}
 
 import java.io.FileNotFoundException
-
 
 object Charset {
   val Ascii = Charset("US-ASCII")
@@ -20,7 +19,7 @@ object CodePageFileReader {
 
   def apply(path: String): CodePageFileReader =
     if (path.endsWith(FileExtension)) try {
-      apply(Filesystem.slurp(path))
+      apply(FileSystem.slurp(path))
     } catch {
       case e: FileNotFoundException => apply(Array[Byte]())
     } else apply(Array[Byte]())
