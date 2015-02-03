@@ -16,24 +16,28 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import monocle.syntax._
-import monocle.Macro._
-
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
+
+import monocle.syntax._
 
 import spire.syntax.cfor._
 
 case class T6Options(options: Int = 0, fillOrder: Int)
 
-object GroupFourDecompression {
+trait GroupFourDecompression {
+
   implicit class GroupFour(matrix: Array[Array[Byte]]) {
+
     def uncompressGroupFour(implicit directory: ImageDirectory): Array[Array[Byte]] = {
-      val options = directory |-> t6OptionsLens get match {
+      val options = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._t6Options get) match {
         case Some(t6OptionsInt) => t6OptionsInt
         case None => throw new MalformedGeoTiffException("no T6Options tag")
       }
-      val fillOrder = directory |-> fillOrderLens get
+      val fillOrder = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._fillOrder get)
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
 

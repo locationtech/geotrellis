@@ -53,8 +53,7 @@ class GeotiffRecordReader extends RecordReader[ProjectedExtent, Tile] {
     val conf = context.getConfiguration()
     val bytes = HdfsUtils.readBytes(path, conf)
 
-    val (tile, extent, crs) =
-      GeoTiffReader(bytes).read().imageDirectories.head.toRaster
+    val GeoTiffBand(tile, extent, crs, _) = GeoTiffReader.read(bytes).firstBand
 
     tup = (ProjectedExtent(extent, crs), tile)
   }

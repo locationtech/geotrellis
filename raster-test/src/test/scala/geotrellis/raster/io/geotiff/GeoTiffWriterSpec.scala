@@ -17,8 +17,10 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader._
+
 import geotrellis.vector.Extent
+
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
@@ -51,9 +53,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val ifd = GeoTiffReader(path).read.imageDirectories.head
-
-      val (raster, extent, crs) = ifd.toRaster
+      val GeoTiffBand(raster, extent, crs, _) = GeoTiffReader.read(path).firstBand
 
       extent should equal (e)
       raster should equal (r)
@@ -70,9 +70,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val ifd = GeoTiffReader(path).read.imageDirectories.head
-
-      val (raster, extent, crs) = ifd.toRaster
+      val GeoTiffBand(raster, extent, crs, _) = GeoTiffReader.read(path).firstBand
 
       extent should equal (e)
       raster should equal (r)

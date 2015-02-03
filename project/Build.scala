@@ -195,8 +195,8 @@ object GeotrellisBuild extends Build {
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
-      scalacOptions in compile ++=
-        Seq("-optimize"),
+      scalacOptions in compile ++= Seq("-optimize"),
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
         "com.typesafe" % "config" % "1.2.1",
         scalaReflect,
@@ -207,8 +207,7 @@ object GeotrellisBuild extends Build {
         monocleCore,
         monocleMacro,
         sprayClient, // for reading args from URLs,
-        openCSV,
-        xz
+        openCSV
       )
     ) ++
   defaultAssemblySettings
@@ -222,6 +221,7 @@ object GeotrellisBuild extends Build {
   lazy val rasterTestSettings =
     Seq(
       name := "geotrellis-raster-test",
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
@@ -389,6 +389,8 @@ object GeotrellisBuild extends Build {
               ExclusionRule(organization = "com.google.code.findbugs")),
           "com.quantifind" %% "sumac" % "0.2.3",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
+          "de.javakaffee" % "kryo-serializers" % "0.27",
+          logging, awsSdkS3,
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
@@ -410,6 +412,21 @@ object GeotrellisBuild extends Build {
     ) ++
   defaultAssemblySettings ++
   net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+  // Project: index
+  lazy val index: Project =
+    Project("index", file("index"))
+      .settings(indexSettings: _*)
+
+  lazy val indexSettings =
+    defaultAssemblySettings ++
+    Seq(
+      name := "geotrellis-index",
+      libraryDependencies ++=
+        Seq(
+          scalatest % "test"
+        )
+    )
 
   // Project: gdal
 

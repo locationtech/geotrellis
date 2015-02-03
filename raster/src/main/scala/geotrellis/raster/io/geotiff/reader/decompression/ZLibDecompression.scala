@@ -22,7 +22,7 @@ import geotrellis.raster.io.geotiff.reader._
 
 import spire.syntax.cfor._
 
-object ZLibDecompression {
+trait ZLibDecompression {
 
   implicit class ZLib(matrix: Array[Array[Byte]]) {
     def uncompressZLib(directory: ImageDirectory): Array[Array[Byte]] = {
@@ -33,13 +33,11 @@ object ZLibDecompression {
         cfor(0)(_ < len, _ + 1) { i =>
           val segment = matrix(i)
 
-
           val decompressor = new Inflater()
 
           decompressor.setInput(segment, 0, segment.length)
 
-          // This would *have* to be 'cols' across, or else it's invalid.
-          val resultSize = directory.imageSegmentBitsSize(Some(i)) / 8
+          val resultSize = directory.imageSegmentByteSize(Some(i))
           val result = new Array[Byte](resultSize.toInt)
           decompressor.inflate(result)
           arr(i) = result

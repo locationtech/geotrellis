@@ -65,6 +65,36 @@ class NetCdfInputFormatSpec extends FunSpec with Matchers {
       date should be (new DateTime(1971, 3, 3, 0, 0, 0, DateTimeZone.UTC))
     }
 
+    it("should read input with hours included") {
+      val (typ, date) = NetCdfInputFormat.readTypeAndDate(
+        "1971-3-3 with DaYs  23",
+        "YYYY*M*D******TTTT**hh"
+      )
+
+      typ should be ("days")
+      date should be (new DateTime(1971, 3, 3, 23, 0, 0, DateTimeZone.UTC))
+    }
+
+    it("should read input with minutes included") {
+      val (typ, date) = NetCdfInputFormat.readTypeAndDate(
+        "1971-3-3 with DaYs  23",
+        "YYYY*M*D******TTTT**mm"
+      )
+
+      typ should be ("days")
+      date should be (new DateTime(1971, 3, 3, 0, 23, 0, DateTimeZone.UTC))
+    }
+
+    it("should read input with seconds included") {
+      val (typ, date) = NetCdfInputFormat.readTypeAndDate(
+        "1971-3-3 with DaYs  23",
+        "YYYY*M*D******TTTT**ss"
+      )
+
+      typ should be ("days")
+      date should be (new DateTime(1971, 3, 3, 0, 0, 23, DateTimeZone.UTC))
+    }
+
   }
 
   describe("Date Incrementer") {

@@ -34,3 +34,4 @@ abstract class BenchmarkRunner(cls: java.lang.Class[_ <: Benchmark]) {
  * Extend this to create an actual benchmarking class.
  */
 trait OperationBenchmark extends SimpleBenchmark with GeoTrellisBenchmark
+

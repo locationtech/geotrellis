@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import java.util.PriorityQueue
   * @note    Operation will only work with integer typed Cost Tiles (TypeBit, TypeByte, TypeShort, TypeInt).
   *          If a double typed Cost Tile (TypeFloat, TypeDouble) is passed in, those costs will be rounded
   *          to their floor integer values.
-  * 
+  *
   */
 object CostDistance {
   def apply(cost: Tile, points: Seq[(Int, Int)]): Tile = {
@@ -46,21 +46,14 @@ object CostDistance {
           def compare(a: Cost, b: Cost) = a._3.compareTo(b._3)
         })
 
+
     for((c, r) <- points) {
       calcNeighbors(c, r, cost, output, pqueue)
     }
 
-    var head: Cost = pqueue.poll
-    while(head != null) {
-      val c = head._1
-      val r = head._2
-      val v = head._3
-
-      if (v == output.getDouble(c, r)) {
-        calcNeighbors(c, r, cost, output, pqueue)
-      }
-
-      head = pqueue.poll
+    while (!pqueue.isEmpty) {
+      val (c, r, v) = pqueue.poll
+      if (v == output.getDouble(c, r)) calcNeighbors(c, r, cost, output, pqueue)
     }
 
     output
@@ -92,15 +85,15 @@ object CostDistance {
 
 
   /**
-    * Input: 
+    * Input:
     * (c, r) => Source cell
     * (dc, dr) => Delta (direction)
     * cost => Cost raster
     * d => C - D output raster
-    * 
+    *
     * Output:
     * List((c, r)) <- list of cells set
-    */    
+    */
   def calcCostCell(c: Int, r: Int, dir: Dir, cost: Tile, d: DoubleArrayTile) = {
     val cr = dir(c, r)
 
@@ -121,7 +114,7 @@ object CostDistance {
         if (baseCostOpt.isDefined) {
           curMinCost = source + baseCostOpt.get
         }
-                
+
         // Alternative solutions (going around the corner)
         // Generally you can check diags directly:
         // +---+---+---+
@@ -203,7 +196,7 @@ object CostDistance {
   def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Tile): DOption =
     calcCost(c, r, cr2._1, cr2._2, cost)
 
-  def calcCost(c: Int, r: Int, dir: Dir, cost: Tile): DOption = 
+  def calcCost(c: Int, r: Int, dir: Dir, cost: Tile): DOption =
     calcCost(c, r, dir(c, r), cost)
 }
 
@@ -211,7 +204,7 @@ object CostDistance {
   * Represents an optional integer
   * using 'Tile NODATA' as a flag
   */
-private [global] 
+private [global]
 class IOption(val v: Int) extends AnyVal {
   def map(f: Int => Int) = if (isDefined) new IOption(f(v)) else this
   def flatMap(f: Int => IOption) = if (isDefined) f(v) else this

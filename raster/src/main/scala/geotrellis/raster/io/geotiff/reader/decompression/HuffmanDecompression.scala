@@ -16,22 +16,25 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import monocle.syntax._
-import monocle.Macro._
-
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
+
+import monocle.syntax._
 
 import spire.syntax.cfor._
 
-object HuffmanDecompression {
+trait HuffmanDecompression {
+
   implicit class Huffman(matrix: Array[Array[Byte]]) {
+
     def uncompressHuffman(implicit directory: ImageDirectory): Array[Array[Byte]] = {
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
+      val fillOrder = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._fillOrder get)
+
       cfor(0)(_ < len, _ + 1) { i =>
         val segment = matrix(i)
-        val fillOrder = directory |-> fillOrderLens get
         val length = directory.rowsInSegment(i)
         val width = directory.rowSize
         val decompressor = TiffFaxDecompressor(fillOrder, width, length)
@@ -45,5 +48,6 @@ object HuffmanDecompression {
 
       arr
     }
+
   }
 }

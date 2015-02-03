@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.KeyLens
+import geotrellis.spark.KeyComponent
 import geotrellis.spark.ingest.{IngestKey, ProjectedExtent}
 import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
@@ -67,8 +67,12 @@ case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
 
 case class NetCdfBand(extent: Extent, crs: CRS, time: DateTime)
 object NetCdfBand {
-  implicit def ingestKey: IngestKey[NetCdfBand] =
-    KeyLens[NetCdfBand, ProjectedExtent](band => ProjectedExtent(band.extent, band.crs), (band, pe) => NetCdfBand(pe.extent, pe.crs, band.time))
+  implicit object IngestKey extends KeyComponent[NetCdfBand, ProjectedExtent] {
+    def lens = createLens(
+      band => ProjectedExtent(band.extent, band.crs),
+      pe => band => NetCdfBand(pe.extent, pe.crs, band.time)
+    )
+  }
 }
 
 object GdalInputFormat {

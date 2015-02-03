@@ -25,17 +25,17 @@ object Dependencies {
     "spray repo"              at "http://repo.spray.io/",
     "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
   )
-
+  val logging       = "com.typesafe"        %% "scalalogging-slf4j" % "1.1.0"
   val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.2.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
-  val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
-  val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
+  val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % Version.monocle
+  val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % Version.monocle
 
-  val openCSV       = "net.sf.opencsv"       % "opencsv"    % "2.3"
+  val openCSV       = "net.sf.opencsv" % "opencsv"      % "2.3"
 
   val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
@@ -72,5 +72,6 @@ object Dependencies {
 
   val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 
-  val xz            = "org.tukaani"            %   "xz"         % "1.5"
+  // val xz            = "org.tukaani"            %   "xz"         % "1.5"
+  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.16"
 }

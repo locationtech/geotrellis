@@ -7,30 +7,35 @@ import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.accumulo.core.data.{Range => ARange, Key, Value, Mutation}
 import org.apache.accumulo.core.util.{Pair => APair}
+import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
+import scala.reflect._
 
 object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
   val rowIdRx = new Regex("""(\d+)_(\d+)_(\d+)_(\d+)""", "zoom", "col", "row", "year")
 
-  def timeChunk(time: DateTime): String = time.toString.substring(0, 4) // grab only the year
+  def timeChunk(time: DateTime): String =
+    time.getYear.toString
 
   def rowId(id: LayerId, key: SpaceTimeKey): String = {
     val SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) = key
     f"${id.zoom}%02d_${col}%06d_${row}%06d_${timeChunk(time)}"
   }
 
+  def timeText(key: SpaceTimeKey): Text = 
+    new Text(key.temporalKey.time.withZone(DateTimeZone.UTC).toString)
+
   /** Map rdd of indexed tiles to tuples of (table name, row mutation) */
   def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey]): RDD[(Text, Mutation)] =
     raster.map {
       case (key, tile) =>    
-        val time = key.temporalKey.time.withZone(DateTimeZone.UTC).toString
         val mutation = new Mutation(rowId(layerId, key))
-        mutation.put(new Text(layerId.name), new Text(time),
+        mutation.put(new Text(layerId.name), timeText(key),
           System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
@@ -46,6 +51,28 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
         SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
     }
     new RasterRDD(tileRdd, metaData)
+  }
+
+  def loadTile(accumulo: AccumuloInstance)(layerId: LayerId, metaData: RasterMetaData, table: String, key: SpaceTimeKey): Tile = {
+    val scanner  = accumulo.connector.createScanner(table, new Authorizations())
+    scanner.setRange(new ARange(rowId(layerId, key)))
+    scanner.fetchColumn(new Text(layerId.name), timeText(key))
+    val values = scanner.iterator.toList.map(_.getValue)
+    val value = 
+      if(values.size == 0) {
+        sys.error(s"Tile with key $key not found for layer $layerId")
+      } else if(values.size > 1) {
+        sys.error(s"Multiple tiles found for $key for layer $layerId")
+      } else {
+        values.head
+      }
+
+    ArrayTile.fromBytes(
+      value.get,
+      metaData.cellType,
+      metaData.tileLayout.tileCols,
+      metaData.tileLayout.tileRows
+    )
   }
 
   def tileSlugs(filters: List[GridBounds]): List[(String, String)] = filters match {
@@ -87,7 +114,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
 
     InputFormatBase.setRanges(job, ranges)
 
-    assert(timeFilters.length == 0, "Only one TimeFilter supported at this time")
+    assert(timeFilters.length <= 1, "Only one TimeFilter supported at this time")
 
     for ( (start, end) <- timeFilters) {
       val props =  Map(

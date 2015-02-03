@@ -54,12 +54,12 @@ object Pyramid extends Logging {
     def mergeTiles2(tiles1: Seq[(K, Tile)], tiles2: Seq[(K, Tile)]): Seq[(K, Tile)] =
       tiles1 ++ tiles2
   
-    val firstMap =
+    val firstMap: RDD[(K, (K, Tile))] =
       rdd
         .map { case (key, tile: Tile) =>
           val extent = metaData.mapTransform(key)
           val newSpatialKey = nextMetaData.mapTransform(extent.center)
-          (newSpatialKey, (key, tile))
+          (key.updateSpatialComponent(newSpatialKey), (key, tile))
          }
 
     val combined =
@@ -67,10 +67,10 @@ object Pyramid extends Logging {
         .combineByKey(createTiles, mergeTiles1, mergeTiles2)
 
     val nextRdd: RDD[(K, Tile)] =
-        combined.map { case (spatialKey: SpatialKey, seq: Seq[(K, Tile)]) =>
+        combined.map { case (newKey: K, seq: Seq[(K, Tile)]) =>
           val key = seq.head._1
 
-          val newExtent = nextMetaData.mapTransform(spatialKey)
+          val newExtent = nextMetaData.mapTransform(newKey)
           val newTile = ArrayTile.empty(nextMetaData.cellType, nextMetaData.tileLayout.tileCols, nextMetaData.tileLayout.tileRows)
 
           for( (oldKey, tile) <- seq) {
@@ -78,7 +78,6 @@ object Pyramid extends Logging {
             newTile.merge(newExtent, oldExtent, tile)
           }
 
-          val newKey = key.updateSpatialComponent(spatialKey)
           (newKey, newTile: Tile)
         }
 
