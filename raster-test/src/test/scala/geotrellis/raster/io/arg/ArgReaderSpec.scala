@@ -46,5 +46,26 @@ class ArgReaderSpec extends FunSpec
 
       assertEqual(fromArgReader, fromRasterSource)
     }
+
+    it("should read a constant tile") {
+      val tile = ArgReader.read("raster-test/data/data/constant.json")
+      tile match {
+        case ct: ConstantTile => 
+          tile.cellType should be (TypeInt)
+          tile.get(0,0) should be (5)
+        case _ => sys.error(s"Tile should be constant tile, is actually ${tile.getClass.getSimpleName}")
+      }
+    }
+
+    it("should read a constant tile with a NaN value") {
+      val tile = ArgReader.read("raster-test/data/data/constant-nan.json")
+      tile match {
+        case ct: ConstantTile => 
+          tile.cellType should be (TypeDouble)
+          isNoData(tile.getDouble(0,0)) should be (true)
+        case _ => sys.error(s"Tile should be constant tile, is actually ${tile.getClass.getSimpleName}")
+      }
+    }
+
   }
 }

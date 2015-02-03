@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: Hector Castro
+  description: An Ansible role for installing Java bindings to the Geospatial Data Abstraction Library (GDAL).
+  company: Azavea Inc.
+  license: Apache
+  min_ansible_version: 1.2
+  platforms:
+  - name: Ubuntu
+    versions:
+    - trusty
+    - precise
+  categories:
+  - development
+dependencies: []

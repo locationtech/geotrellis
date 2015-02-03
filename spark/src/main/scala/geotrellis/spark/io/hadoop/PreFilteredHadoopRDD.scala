@@ -28,15 +28,15 @@ class NewHadoopPartition(rddId: Int, val index: Int, @transient rawSplit: InputS
  * @param valueClass Class of the value associated with the inputFormatClass.
  * @param conf The Hadoop configuration.
  */
-abstract class PreFilteredHadoopRDD[K, V](
-    sc : SparkContext,
-    inputFormatClass: Class[_ <: InputFormat[K, V]],
-    keyClass: Class[K],
-    valueClass: Class[V],
-    @transient conf: Configuration)
-  extends RDD[(K, V)](sc, Nil)
-  with SparkHadoopMapReduceUtil
-  with Logging {
+class PreFilteredHadoopRDD[K, V](
+  sc : SparkContext,
+  inputFormatClass: Class[_ <: InputFormat[K, V]],
+  keyClass: Class[K],
+  valueClass: Class[V],
+  @transient conf: Configuration)(includePartition: Partition => Boolean)(includeKey: K => Boolean)
+    extends RDD[(K, V)](sc, Nil)
+    with SparkHadoopMapReduceUtil
+    with Logging {
 
   // A Hadoop Configuration can be about 10 KB, which is pretty big, so broadcast it
   private val confBroadcast = sc.broadcast(new SerializableWritable(conf))
@@ -48,16 +48,6 @@ abstract class PreFilteredHadoopRDD[K, V](
   }
 
   @transient private val jobId = new JobID(jobtrackerId, id)
-
-  /**
-   * returns true if specific partition has relevant keys
-   */
-  def includePartition(p: Partition): Boolean
-
-  /**
-   * returns true if the specific key in the partition passes the filter
-   */
-  def includeKey(key: K): Boolean
 
   override def getPartitions: Array[Partition] = {
     val inputFormat = inputFormatClass.newInstance
@@ -89,7 +79,7 @@ abstract class PreFilteredHadoopRDD[K, V](
       reader.initialize(split.serializableHadoopSplit.value, hadoopAttemptContext)
 
       // Register an on-task-completion callback to close the input stream.
-      context.addOnCompleteCallback(() => close())
+      context.addTaskCompletionListener(cxt => close())
       var havePair = false
       var finished = false
 

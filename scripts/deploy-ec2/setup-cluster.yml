@@ -1,17 +1,5 @@
 ---
-- include: setup-master.yml
-- include: setup-workers.yml
 
-- name: Master Accumulo
-  hosts: master
-  roles: 
-    - accumulo
-
-  gather_facts: False
-
-- name: Workers Accumulo
-  hosts: workers
-  roles: 
-    - accumulo
-
-  gather_facts: False
+- include: "setup-hdfs.yml"
+- include: "setup-spark.yml"
+- include: "setup-accumulo.yml"

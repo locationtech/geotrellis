@@ -23,7 +23,7 @@
 
   <property>
     <name>instance.zookeeper.host</name>
-    <value>{{spark_master}}:2181</value>
+    <value>{{zookeeper_host}}:2181</value>
     <description>comma separated list of zookeeper servers</description>
   </property>
 
@@ -38,7 +38,7 @@
 
   <property>
     <name>instance.secret</name>
-    <value>cf886eb962b5e12de38f23efa9c1087e</value>
+    <value>{{accumulo.secret}}</value>
     <description>A secret unique to a given instance that all servers must know in order to communicate with one another.
       Change it before initialization. To
       change it later use ./bin/accumulo org.apache.accumulo.server.util.ChangeSecret --old [oldpasswd] --new [newpasswd],

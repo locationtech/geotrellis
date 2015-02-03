@@ -1,12 +1,30 @@
 package geotrellis.raster
 
+import geotrellis.raster.stats.{FastMapHistogram, MapHistogram, Histogram}
 import geotrellis.vector.Extent
 import geotrellis.vector.json._
 
 import spray.json._
 
 package object json {
-  implicit object CelTypeFormat extends RootJsonFormat[CellType] {
+  implicit object HistogramFormat extends RootJsonFormat[Histogram] {
+    def write(h: Histogram): JsValue = {
+      var pairs: List[JsArray] = Nil
+      h.foreach{ (value, count) => pairs = JsArray(JsNumber(value), JsNumber(count)) :: pairs }
+      JsArray(pairs)
+    }
+
+    def read(json: JsValue): FastMapHistogram = json match {
+      case JsArray(pairs) =>
+        val hist = FastMapHistogram()
+        pairs.foreach { case JsArray(JsNumber(item) :: JsNumber(count) :: Nil) =>  hist.countItem(item.toInt, count.toInt)}
+        hist
+      case _ =>
+        throw new DeserializationException("Array of [value, count] pairs expected")
+    }
+  }
+
+  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
     def write(cellType: CellType) = 
       JsString(cellType.toString)
 
@@ -41,16 +59,16 @@ package object json {
   implicit object TileLayoutFormat extends RootJsonFormat[TileLayout] {
     def write(tileLayout: TileLayout) =
       JsObject(
-        "tileCols" -> JsNumber(tileLayout.tileCols), 
-        "tileRows" -> JsNumber(tileLayout.tileRows), 
-        "pixelCols" -> JsNumber(tileLayout.pixelCols), 
-        "pixelRows" -> JsNumber(tileLayout.pixelRows)
+        "layoutCols" -> JsNumber(tileLayout.layoutCols),
+        "layoutRows" -> JsNumber(tileLayout.layoutRows),
+        "tileCols" -> JsNumber(tileLayout.tileCols),
+        "tileRows" -> JsNumber(tileLayout.tileRows)
       )
 
     def read(value: JsValue): TileLayout =
-      value.asJsObject.getFields("tileCols", "tileRows", "pixelCols", "pixelRows") match {
-        case Seq(JsNumber(tileCols), JsNumber(tileRows), JsNumber(pixelCols), JsNumber(pixelRows)) =>
-          TileLayout(tileCols.toInt, tileRows.toInt, pixelCols.toInt, pixelRows.toInt)
+      value.asJsObject.getFields("layoutCols", "layoutRows", "tileCols", "tileRows") match {
+        case Seq(JsNumber(layoutCols), JsNumber(layoutRows), JsNumber(tileCols), JsNumber(tileRows)) =>
+          TileLayout(layoutCols.toInt, layoutRows.toInt, tileCols.toInt, tileRows.toInt)
         case _ =>
           throw new DeserializationException("TileLayout expected.")
       }

@@ -16,17 +16,13 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import monocle.syntax._
-import monocle.Macro._
-
-import java.util.BitSet
-import java.nio.ByteBuffer
-
-import geotrellis._
 import geotrellis.raster._
 
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
+import monocle.syntax._
+
+import java.util.BitSet
+
+import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
 
@@ -40,22 +36,16 @@ object ImageConverter {
 class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
   def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
+    val bitsPerPixel = directory.bitsPerPixel
+
     val stripedImage =
       if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
-      else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
+      else if (bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
       else uncompressedImage.flatten
 
-    if (directory.cellType == TypeFloat && !isBigEndian)
-      flipToFloat(stripedImage)
-    else if (directory.cellType == TypeDouble && !isBigEndian)
-      flipToDouble(stripedImage)
-    else
-      stripedImage
+    if (!isBigEndian && bitsPerPixel > 8) flip(stripedImage, bitsPerPixel / 8)
+    else stripedImage
   }
-
-  private def flipToFloat(image: Array[Byte]): Array[Byte] = flip(image, 4)
-
-  private def flipToDouble(image: Array[Byte]): Array[Byte] = flip(image, 8)
 
   private def flip(image: Array[Byte], flipSize: Int): Array[Byte] = {
     val size = image.size
@@ -63,16 +53,20 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
     var i = 0
     while (i < size) {
-      arr(i) = image(i + flipSize - 1)
-      arr(i + 1) = image(i + flipSize - 2)
-      arr(i + 2) = image(i + flipSize - 3)
-      arr(i + 3) = image(i + flipSize - 4)
+      var j = 0
+      while (j < flipSize) {
+        arr(i + j) = image(i + flipSize - 1 - j)
+        j += 1
+      }
 
       i += flipSize
     }
 
     arr
   }
+
+  private def setCorrectOrientation(image: Array[Byte]) =
+    OrientationConverter(directory).setCorrectOrientation(image)
 
   private def tiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
     if (directory.bitsPerPixel == 1) bitTiledImageToRowImage(tiledImage)
@@ -86,8 +80,8 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
     val tileWidth = directory.rowSize
     val tileLength = directory.rowsInSegment(0)
 
-    val imageWidth = (directory |-> imageWidthLens get).toInt
-    val imageLength = (directory |-> imageLengthLens get).toInt
+    val imageWidth = directory.cols
+    val imageLength = directory.rows
 
     val widthRes = imageWidth % tileWidth
 
@@ -136,8 +130,8 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
     val tileWidth = directory.rowSize
     val tileLength = directory.rowsInSegment(0)
 
-    val imageWidth = (directory |-> imageWidthLens get).toInt
-    val imageLength = (directory |-> imageLengthLens get).toInt
+    val imageWidth = directory.cols
+    val imageLength = directory.rows
 
     val widthRes = imageWidth % tileWidth
 
@@ -173,9 +167,8 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
   }
 
   private def stripBitImageOverflow(image: Array[Array[Byte]]) = {
-
-    val imageWidth = (directory |-> imageWidthLens get).toInt
-    val imageLength = (directory |-> imageLengthLens get).toInt
+    val imageWidth = directory.cols
+    val imageLength = directory.rows
 
     val rowBitSetsArray = Array.ofDim[BitSet](imageLength)
     var rowBitSetsIndex = 0

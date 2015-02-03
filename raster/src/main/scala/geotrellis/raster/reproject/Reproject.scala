@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.proj4._
+import geotrellis.raster.interpolation._
 
 import spire.syntax.cfor._
 
@@ -13,7 +14,7 @@ object ReprojectOptions {
 }
 
 object Reproject {
-  def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): (Tile, Extent) =
+  def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): Raster(Tile, Extent) =
     if(src == dest) {
       (tile.toArrayTile.copy, extent)
     } else {
@@ -30,7 +31,7 @@ object Reproject {
       val inverseTransform = Transform(dest, src)
 
       val rowTransform: RowTransform =
-        if(options.errorThreshold != 0.0)
+        if (options.errorThreshold != 0.0)
           RowTransform.approximate(inverseTransform, options.errorThreshold)
         else
           RowTransform.exact(inverseTransform)
@@ -85,7 +86,6 @@ object Reproject {
         }
       }
 
-      (newTile, newExtent)
+      Raster(newTile, newExtent)
     }
-
 }

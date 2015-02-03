@@ -4,9 +4,6 @@
 - apt: name=hadoop-hdfs state=present
   sudo: yes
 
-- include_vars: group_vars/cluster.yml
-  when: '"development" not in group_names'
-
 - name: Upload Hadoop config
   template: src=conf/{{ item }} dest=/etc/hadoop/conf
   with_items:

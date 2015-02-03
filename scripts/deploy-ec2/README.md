@@ -9,6 +9,24 @@ This directory contains a set of Ansible scripts that will deploy a Spark/Hadoop
 
 To set up a spark\HDFS cluster, follow these steps:
 
+## Development Enviroment
+### Setup polipo proxy
+Each vagrant image is going to need to install JVM and lot of similar packages. Having this proxy greatily speeds up this process.
+
+### Install Vagrant hostmanager plugin
+https://github.com/smdahlen/vagrant-hostmanager 
+
+`$ vagrant plugin install vagrant-hostmanager`
+
+This plugin will place all the hosts in the Vagrant file in /etc/hosts on each of the VMs
+
+Hadoop requires that it's hosts has an forward lookup in order to bind the network interfaces, even if hosts are configured as IPs. It seems to perform ip -> host -> ip lookup in order to arrive at the interface it will bind to.
+
+### Vagrant up
+`vagrant up`
+
+If the provision phase of vagrant up is interupted it can be restated with `vagrant provision` without re-allocating the hosts.
+
 ## Settings
 
   - Copy `group_vars/all.yml.template` to `group_vars/all.yml` and edit with your cluster settings.

@@ -10,8 +10,8 @@ trait FocalOperation extends RasterSourceMethods {
     (rasterSource.tiles, rasterSource.rasterDefinition).map { (seq, rd) =>
       val tileLayout = rd.tileLayout
 
-      val colMax = tileLayout.tileCols - 1
-      val rowMax = tileLayout.tileRows - 1
+      val colMax = tileLayout.layoutCols - 1
+      val rowMax = tileLayout.layoutRows - 1
 
       def getTile(tileCol: Int, tileRow: Int): Option[Op[Tile]] =
         if(0 <= tileCol && tileCol <= colMax &&

@@ -1,6 +1,11 @@
 ---
 
-#Tasks for common role
+#This is needed for Dev, Production should use nightly build AMIs
+- name: Update APT cache
+  apt: update_cache=yes
+  when: '"development" in group_names'
+  sudo: yes
+  
 - name: Install OpenJDK 7 JDK
   apt: pkg=openjdk-7-jdk state=present install_recommends=yes
   sudo: yes
@@ -39,4 +44,24 @@
   apt_repository:
     repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh {{cdh.repo}} contrib"
     state: present
+  sudo: yes
+
+- name: Remove 127.0.1.1 from /etc/hosts
+  lineinfile:
+    dest="/etc/hosts"
+    regexp="^127.0.1.1"
+    line=""
+  sudo: yes
+  when: '"development" in group_names'
+
+- lineinfile:
+    dest="/etc/security/limits.conf"
+    regexp="soft nofile"
+    line="* soft nofile 65536"
+  sudo: yes
+
+- lineinfile:
+    dest="/etc/security/limits.conf"
+    regexp="hard nofile"
+    line="* hard nofile 65536"
   sudo: yes

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,8 +28,8 @@ import org.scalatest._
 
 import spire.syntax.cfor._
 
-class HillshadeSpec extends FunSuite 
-                       with TestEngine 
+class HillshadeSpec extends FunSuite
+                       with TestEngine
                        with TileBuilders {
   def grayscale(n: Int) = {
     val ns = (1 to 128).toArray
@@ -88,11 +88,11 @@ class HillshadeSpec extends FunSuite
     val expected = source.hillshade.get
     rs.hillshade.run match {
       case Complete(value, hist) =>
-        // Dont check last col or last row. 
+        // Dont check last col or last row.
         // Reason is, because the offsetting of the tiles, the tiled version
         // pulls in NoData's where the non tiled just has the edge value,
         // so the calculations produce different results. Which makes sense.
-        // So if your going for accuracy don't tile something that create NoData 
+        // So if your going for accuracy don't tile something that create NoData
         // borders.
         cfor(0)(_ < expected.cols - 1, _ + 1) { col =>
           cfor(0)(_ < expected.rows - 1, _ + 1) { row =>

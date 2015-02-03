@@ -37,23 +37,6 @@ object ArgReader {
   /** Reads an arg from the json metadata file. */
   private final def read(path: String, targetRasterExtent: Option[RasterExtent]): Raster = {
     val json = ConfigFactory.parseString(Filesystem.readText(path))
-    val layerType = json.getString("type").toLowerCase
-    if(layerType != "arg") { sys.error(s"Cannot read raster layer type $layerType, must be arg") }
-
-    val argPath =
-      (if(json.hasPath("path")) {
-        val f = new File(json.getString("path"))
-        if(f.isAbsolute) {
-          f
-        } else {
-          new File(new File(path).getParent, f.getPath)
-        }
-      } else {
-        val layerName = json.getString("layer")
-        // Default to a .arg file with the same name as the layer name.
-        new File(new File(path).getParent, layerName + ".arg")
-      }).getAbsolutePath
-
 
     val cellType =
       json.getString("datatype") match {
@@ -66,20 +49,61 @@ object ArgReader {
         case s => sys.error("unsupported datatype '%s'" format s)
       }
 
-    val cols = json.getInt("cols")
-    val rows = json.getInt("rows")
-
     val xmin = json.getDouble("xmin")
     val ymin = json.getDouble("ymin")
     val xmax = json.getDouble("xmax")
     val ymax = json.getDouble("ymax")
     val extent = Extent(xmin, ymin, xmax, ymax)
 
+    val cols = json.getInt("cols")
+    val rows = json.getInt("rows")
+
+    val layerType = json.getString("type").toLowerCase
+    if(layerType == "constant") {
+      val v = json.getDouble("constant")
+      cellType match {
+        case TypeBit => BitConstantTile(d2i(v), cols, rows)
+        case TypeByte => ByteConstantTile(d2b(v), cols, rows)
+        case TypeShort => ShortConstantTile(d2s(v), cols, rows)
+        case TypeInt => IntConstantTile(d2i(v), cols, rows)
+        case TypeFloat => FloatConstantTile(d2f(v), cols, rows)
+        case TypeDouble => DoubleConstantTile(v, cols, rows)
+      }
+    } else {
+
+      if(layerType != "arg") { sys.error(s"Cannot read raster layer type $layerType, must be arg") }
+
+      val argPath =
+        (if(json.hasPath("path")) {
+          val f = new File(json.getString("path"))
+          if(f.isAbsolute) {
+            f
+          } else {
+            new File(new File(path).getParent, f.getPath)
+          }
+        } else {
+          val layerName = json.getString("layer")
+          // Default to a .arg file with the same name as the layer name.
+          new File(new File(path).getParent, layerName + ".arg")
+        }).getAbsolutePath
+
+
+      val cellType =
+        json.getString("datatype") match {
+          case "bool" => TypeBit
+          case "int8" => TypeByte
+          case "int16" => TypeShort
+          case "int32" => TypeInt
+          case "float32" => TypeFloat
+          case "float64" => TypeDouble
+          case s => sys.error("unsupported datatype '%s'" format s)
+        }
+
     targetRasterExtent match {
       case Some(te) =>
-        (read(argPath, cellType, RasterExtent(extent, cols, rows), te), te.extent)
+        Raster(read(argPath, cellType, RasterExtent(extent, cols, rows), te), te.extent)
       case None =>
-        (read(argPath, cellType, cols, rows), extent)
+        Raster(read(argPath, cellType, cols, rows), extent)
     }
   }
 

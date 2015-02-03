@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,34 +19,7 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 import scala.math.{min, max, round, ceil, floor}
 
-import spire.syntax.cfor._
-
 case class GeoAttrsError(msg: String) extends Exception(msg)
-
-/**
- * Represents grid coordinates of a subsection of a RasterExtent.
- * These coordinates are inclusive.
- */
-case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
-  val width = colMax - colMin + 1
-  val height = rowMax - rowMin + 1
-
-  def coords: Array[(Int, Int)] = {
-    val arr = Array.ofDim[(Int, Int)](width*height)
-    cfor(0)(_ < height, _ + 1) { row =>
-      cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) = 
-          (col + colMin, row + rowMin)
-      }
-    }
-    arr
-  }
-}
-
-object GridBounds {
-  def apply(r: Tile): GridBounds = 
-    GridBounds(0, 0, r.cols-1, r.rows-1)
-}
 
 case class CellSize(width: Double, height: Double) {
   lazy val resolution: Double = math.sqrt(width*height)
@@ -55,6 +28,11 @@ case class CellSize(width: Double, height: Double) {
 object CellSize {
   def apply(extent: Extent, cols: Int, rows: Int): CellSize =
     CellSize(extent.width / cols, extent.height / rows)
+
+  def apply(extent: Extent, dims: (Int, Int)): CellSize = {
+    val (cols, rows) = dims
+    apply(extent, cols, rows)
+  }
 }
 
 /**
@@ -99,7 +77,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   def size = cols * rows
 
   lazy val cellSize = CellSize(cellwidth, cellheight)
-  
+
   /**
    * Convert map coordinates (x, y) to grid coordinates (col, row).
    */
@@ -114,24 +92,24 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
    */
   final def mapXToGrid(x: Double) = mapXToGridDouble(x).toInt
   final def mapXToGridDouble(x: Double) = (x - extent.xmin) / cellwidth
-    
+
   /**
    * Convert map coordinate y to grid coordinate row.
    */
   final def mapYToGrid(y: Double) = mapYToGridDouble(y).toInt
   final def mapYToGridDouble(y: Double) = (extent.ymax - y ) / cellheight
-  
+
   /**
    * Convert map coordinate tuple (x, y) to grid coordinates (col, row).
    */
   final def mapToGrid(mapCoord: (Double, Double)): (Int, Int) = {
-    val (x, y) = mapCoord;
+    val (x, y) = mapCoord
     mapToGrid(x, y)
   }
 
   /**
     * The map coordinate of a grid cell is the center point.
-    */  
+    */
   final def gridToMap(col: Int, row: Int) = {
     val x = max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
     val y = min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
@@ -147,8 +125,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-   * Gets the GridBounds for this RasterExtent that is the smallest subgrid
-   * containing all points within the extent. The extent is considered inclusive
+   * Gets the tile GridBounds for this RasterExtent that is the smallest subgrid
+   * of tiles containing all points within the extent. The extent is considered inclusive
    * on it's north and west borders, exclusive on it's east and south borders.
    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
@@ -168,7 +146,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
                math.min(colMax, cols - 1),
                math.min(rowMax, cols - 1))
   }
-  
+
   /**
    * Combine two different RasterExtents (which must have the same cellsizes).
    * The result is a new extent at the same resolution.
@@ -208,7 +186,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
    * Returns a RasterExtent that lines up with this RasterExtent's resolution,
    * and grid layout.
    * i.e., the resulting RasterExtent will not have the given extent,
-   * but will have the smallest extent such that the whole of 
+   * but will have the smallest extent such that the whole of
    * the given extent is covered, that lines up with the grid.
    */
   def createAligned(targetExtent: Extent): RasterExtent = {
@@ -235,8 +213,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * west borders
     */
   def adjustTo(tileLayout: TileLayout) = {
-    val totalCols = tileLayout.pixelCols * tileLayout.tileCols
-    val totalRows = tileLayout.pixelRows * tileLayout.tileRows
+    val totalCols = tileLayout.tileCols * tileLayout.layoutCols
+    val totalRows = tileLayout.tileRows * tileLayout.layoutRows
 
     val resampledExtent = Extent(extent.xmin, extent.ymax - (cellheight*totalRows),
                         extent.xmin + (cellwidth*totalCols), extent.ymax)

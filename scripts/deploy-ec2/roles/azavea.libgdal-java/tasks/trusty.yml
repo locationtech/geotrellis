@@ -1,0 +1,3 @@
+---
+- name: Install libgdal-java
+  apt: pkg=libgdal-java={{ libgdal_java_version }} state=present

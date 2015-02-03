@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io
+package geotrellis.geotools
 
 import geotrellis.engine._
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffWriter
 import geotrellis.vector.Extent
 import geotrellis.raster.stats.FastMapHistogram
+import geotrellis.proj4._
 
 import geotrellis.testkit._
 
@@ -30,8 +32,6 @@ import org.geotools.gce.geotiff.GeoTiffFormat
 import org.geotools.factory.Hints
 import org.geotools.referencing.CRS
 import org.geotools.coverage.grid.GridCoordinates2D
-
-
 
 import java.io.{File,FileWriter}
 import javax.imageio.ImageIO
@@ -49,12 +49,13 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
   describe("A GeoTiffReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      an [Exception] should be thrownBy { GeoTiff.readRaster(path) }
+      an [Exception] should be thrownBy { GeoTiffReader.read(path) }
     }
 
     it ("should load correct extent & gridToMap should work") {
       val path = "raster-test/data/econic.tif"
-      val (_, rasterExtent) = GeoTiff.readRaster(path)
+      val (tile, extent) = GeoTiffReader.read(path)
+      val rasterExtent = RasterExtent(extent, tile.cols, tile.rows)
       val (xmap, ymap) = rasterExtent.gridToMap(0,0)
       xmap should be (-15381.615 +- 0.001)
       ymap should be (15418.729 +- 0.001)
@@ -62,11 +63,11 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
 
     it("should correctly translate NODATA values for an int raster which has no NODATA value associated") {
       val path = "geotools/data/cea.tif"
-      val (raster, rasterExtent) = GeoTiff.readRaster(path)
+      val (raster, rasterExtent) = GeoTiffReader.read(path)
       val (cols, rows) = (raster.cols, raster.rows)
 
       // Find NODATA value
-      val reader = GeoTiff.getReader(path)
+      val reader = GeoTiffReader.getReader(path)
 
       val nodata = reader.getMetadata().getNoData()
       val geoRaster = reader.read(null).getRenderedImage.getData
@@ -82,7 +83,7 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
             if(isNoData(nodata))
               isNoData(v) should be (true)
             else
-             v should be (nodata)
+              v should be (nodata)
           }
         }
       }
@@ -100,10 +101,10 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
     }
 
     it ("should write and read back in the same") {
-      val (r, re) = GeoTiff.readRaster("raster-test/data/econic.tif")
-      GeoTiffWriter.write("/tmp/written.tif", r, re.extent, "foo")
-      val (r2, re2) = GeoTiff.readRaster("/tmp/written.tif")
-      re should be (re2)
+      val (r, extent) = GeoTiffReader.read("raster-test/data/econic.tif")
+      GeoTiffWriter.write("/tmp/written.tif", r, extent, LatLng)
+      val (r2, extent2) = GeoTiffReader.read("/tmp/written.tif")
+      extent should be (extent)
       assertEqual(r, r2)
     }
 
@@ -113,7 +114,7 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
       // If the NoData values are translated correctly, then all NoData values from the read in GTiff
       // should correspond to NoData values of the directly read arg.
       val originalArg = RasterSource.fromPath("raster-test/data/data/slope.arg").get
-      val (translatedTif, _) = GeoTiff.readRaster("raster-test/data/slope.tif")
+      val (translatedTif, _) = GeoTiffReader.read("raster-test/data/slope.tif")
 
       translatedTif.rows should be (originalArg.rows)
       translatedTif.cols should be (originalArg.cols)

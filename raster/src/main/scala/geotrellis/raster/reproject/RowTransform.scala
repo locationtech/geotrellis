@@ -35,8 +35,8 @@ object RowTransform {
     }
 
   private def computeApprox(
-    transform: Transform, errorThreshold: Double, 
-    srcX: Array[Double], srcY: Array[Double], destX: Array[Double], destY: Array[Double], 
+    transform: Transform, errorThreshold: Double,
+    srcX: Array[Double], srcY: Array[Double], destX: Array[Double], destY: Array[Double],
     startIndex: Int, length: Int): Unit = {
 
     if(length == 2) return
@@ -65,15 +65,15 @@ object RowTransform {
 
       if(error > errorThreshold) {
         // Compute against the two halves of the row
-        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY, 
+        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY,
           startIndex, midPoint - startIndex + 1)
-        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY, 
+        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY,
           midPoint, startIndex + length - midPoint)
       } else {
         // Fill out the values based on the linear interpolation
         cfor(startIndex + 1)(_ < startIndex + length - 1, _ + 1) { i =>
-          if(startIndex + i != midPoint) {
-            var dxi = srcX(i + startIndex) - srcXMin
+          if(i != midPoint) {
+            val dxi = srcX(i) - srcXMin
             destX(i) = xmin + (deltaX * dxi)
             destY(i) = ymin + (deltaY * dxi)
           }

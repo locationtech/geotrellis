@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark
-import geotrellis.spark.utils.HdfsUtils
+import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
 
 import org.apache.hadoop.fs.FileSystem
@@ -42,7 +42,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
 
   // e.g., root directory on local file system for source data (e.g., tiffs)
   // localFS.getWorkingDirectory is for e.g., /home/jdoe/git/geotrellis
-  val inputHome = new Path(localFS.getWorkingDirectory, "src/test/resources")
+  val inputHome = new Path(localFS.getWorkingDirectory, "src/test/resources/")
 
   // test directory paths on local and hdfs 
   // outputHomeLocal - root directory of all tests on the local file system (e.g., file:///tmp/testFiles)

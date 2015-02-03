@@ -16,20 +16,18 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
+import geotrellis.raster.io.geotiff.reader._
+
 import monocle.syntax._
-import monocle.Macro._
 
 import scala.collection.immutable.HashMap
-
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils
-import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 
 import java.util.BitSet
 
 import spire.syntax.cfor._
 
-object LZWDecompression {
+trait LZWDecompression {
+
   implicit class LZW(matrix: Array[Array[Byte]]) {
     val tableLimit = 4096
 
@@ -38,6 +36,7 @@ object LZWDecompression {
       cfor(0)(_ < 256, _ + 1) { i =>
         arr(i) = Array(i.toByte)
       }
+
       arr
     }
 
@@ -52,15 +51,23 @@ object LZWDecompression {
     val EoICode = 257
 
     def uncompressLZW(directory: ImageDirectory): Array[Array[Byte]] = {
-      val horizontalPredictor = directory |-> predictorLens get match {
+      val horizontalPredictor = (directory &|->
+        ImageDirectory._nonBasicTags ^|->
+        NonBasicTags._predictor get) match {
         case Some(2) => true
         case None | Some(1) => false
-        case Some(i) => 
-          throw new MalformedGeoTiffException(s"predictor tag $i is not valud (require 1 or 2)")
+        case Some(i) =>
+          throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1 or 2)")
       }
 
+      val samplesPerPixel = (directory &|->
+        ImageDirectory._basicTags ^|->
+        BasicTags._samplesPerPixel get)
+
       if (horizontalPredictor) {
-        val v = directory |-> bitsPerSampleLens get match {
+        val v = (directory &|->
+          ImageDirectory._basicTags ^|->
+          BasicTags._bitsPerSample get) match {
           case Some(vector) => vector
           case None => throw new MalformedGeoTiffException("no bits per sample tag!")
         }
@@ -71,6 +78,7 @@ object LZWDecompression {
           )
         }
       }
+
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
 
@@ -150,8 +158,6 @@ object LZWDecompression {
           val width = directory.rowSize
           val height = directory.rowsInSegment(i)
 
-          val samplesPerPixel = directory |-> samplesPerPixelLens get
-
           cfor(0)(_ < height, _ + 1) { j =>
             var count = samplesPerPixel * (j * width + 1)
             cfor(samplesPerPixel)(_ < width * samplesPerPixel, _ + 1) { k =>
@@ -170,40 +176,29 @@ object LZWDecompression {
 
   /** This class modifies the array passed in */
   private class LZWBitInputStream(arr: Array[Byte]) {
+
     val len = arr.length
-    cfor(0)(_ < len, _ + 1) { i =>
-      arr(i) = ByteInverterUtils.invertByte(arr(i))
-    }
-
-    private val bitSet = BitSet.valueOf(arr)
-
-    val size = arr.size * 8
 
     private var index = 0
 
     def get(next: Int): Int = {
-      if (next + index > size) {
-        val lastBits = new String((for (i <- index until size) yield (if (bitSet.get(i)) '1' else '0')).toArray)
-
+      if (next + index > len * 8)
         throw new IndexOutOfBoundsException(
-          s"Index out of bounds for BitInputStream: ${this.toString}. Index was: $index and bitSet size is: $size, last bits are: $lastBits, next is: $next so next + index - size = ${next + index - size}"
+          s"Index out of bounds for BitInputStream for LZW decompression."
         )
-      }
 
-      var r0 = 0
-      var r1 = 0
+      val start = index / 8
+      val end = (index + next - 1) / 8
+      val ebi = (index + next - 1) % 8
 
-      cfor(0)(_ < 8, _ + 1) { i =>
-        if (bitSet.get(i + index))
-          r0 |= (1 << (16 - i - 1))
-      }
-
-      cfor(0)(_ < 8, _ + 1) { i =>
-        if (bitSet.get(i + 8 + index))
-          r1 |= (1 << (8 - i - 1))
-      }
-
-      val res = (r0 | r1) >> (16 - next)
+      val res =
+        if (end - start == 2) {
+          val c = ((arr(start) & 0xff) << 16) | ((arr(end - 1) & 0xff) << 8) | (arr(end) & 0xff)
+          (c >> (7 - ebi)) & (0xffffff >> (24 - next))
+        } else {
+          val c = ((arr(start) & 0xff) << 8) | (arr(end) & 0xff)
+          (c >> (7 - ebi)) & (0xffff >> (16 - next))
+        }
 
       index += next
 
@@ -214,7 +209,7 @@ object LZWDecompression {
 
     def reset = index = 0
 
-    def getIndex(): Int = index
+    def getIndex: Int = index
 
   }
 

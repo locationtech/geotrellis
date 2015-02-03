@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,9 @@ package geotrellis.vector
 
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
+import geotrellis.vector._
+
+import spire.syntax.cfor._
 
 object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
@@ -34,7 +37,7 @@ object Polygon {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
 
-    if(exterior.points.length < 4) {
+    if(exterior.vertices.length < 4) {
       sys.error(s"Cannot create a polygon with exterior with less that 4 points: $exterior")
     }
 
@@ -45,7 +48,7 @@ object Polygon {
         if (!hole.isClosed) {
           sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
         } else {
-          if (hole.points.length < 4)
+          if (hole.vertices.length < 4)
             sys.error(s"Cannot create a polygon with a hole with less that 4 points: $hole")
           else
             factory.createLinearRing(hole.jtsGeom.getCoordinates)
@@ -104,8 +107,18 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Polygon's vertices. */
-  lazy val vertices: Array[Point] =
-    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
+    }
+    arr
+  }
+
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns the minimum extent that contains this Polygon.
@@ -206,10 +219,15 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
-   * this Polygon and g.
+   * this Polygon and g. Uses cascaded polygon union if g is a (multi)polygon
+   * else falls back to default jts union method.
    */
-  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult =
-    jtsGeom.union(g.jtsGeom)
+  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
+    case p:Polygon => Seq(this, p).unioned
+    case mp:MultiPolygon => Seq(MultiPolygon(this), mp).unioned
+    case _ => jtsGeom.union(g.jtsGeom)
+  }
+
 
 
   // -- Difference

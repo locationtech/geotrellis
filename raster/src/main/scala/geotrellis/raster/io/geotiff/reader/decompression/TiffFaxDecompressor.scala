@@ -16,8 +16,7 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
-import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
+import geotrellis.raster.io.geotiff.reader._
 
 object TiffFaxDecompressor {
 

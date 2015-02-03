@@ -20,6 +20,10 @@ import GeomFactory._
 
 import com.vividsolutions.jts.{geom=>jts}
 
+import scala.collection.JavaConversions._
+
+import spire.syntax.cfor._
+
 object MultiLine {
   lazy val EMPTY = MultiLine(Seq[Line]())
 
@@ -61,15 +65,18 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
     jtsGeom.getBoundary
 
   /** Returns this MulitLine's vertices. */
-  lazy val vertices: Array[Point] =
-    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
+    }
+    arr
+  }
 
-  /**
-   * Returns the minimum extent that contains all the lines in
-   * this MultiLine.
-   */
-  lazy val envelope: Extent =
-    jtsGeom.getEnvelopeInternal
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
 // -- Intersection
 
@@ -118,6 +125,12 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   // -- Union
 
+  /**
+    * Computes the union of contained lines.
+    * Useful for merging overlapping line segments.
+    */
+  def union(): MultiLineMultiLineUnionResult =
+    jtsGeom.union
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
