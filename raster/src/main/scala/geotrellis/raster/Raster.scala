@@ -1,6 +1,7 @@
 package geotrellis.raster
 
 import geotrellis.raster.reproject._
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
@@ -35,4 +36,11 @@ case class Raster(tile: Tile, extent: Extent) {
 
   def reproject(src: CRS, dest: CRS): Raster =
     tile.reproject(extent, src, dest)
+
+  def reproject(method: InterpolationMethod, src: CRS, dest: CRS): Raster =
+    tile.reproject(extent, src, dest, ReprojectOptions(method = method))
+
+  def reproject(src: CRS, dest: CRS, options: ReprojectOptions): Raster =
+    tile.reproject(extent, src, dest, options)
+
 }
