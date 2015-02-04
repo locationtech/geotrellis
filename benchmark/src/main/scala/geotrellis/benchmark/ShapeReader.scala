@@ -57,7 +57,7 @@ trait ShapeFileBenchmark extends SimpleBenchmark {
 
   @inline
   final def readNative(path: String) =
-    geotrellis.raster.io.shape.reader.ShapeFileReader(path).read
+    geotrellis.vector.io.shape.reader.ShapeFileReader(path).read
 
   @inline
   final def readGeoTools(path: String) =

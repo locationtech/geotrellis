@@ -2,7 +2,7 @@ package geotrellis.vector.io.shape.reader
 
 import geotrellis.vector._
 
-trait ShapePointRecord
+abstract sealed class ShapePointRecord
 
 case class PointPointRecord(point: Point) extends ShapePointRecord
 

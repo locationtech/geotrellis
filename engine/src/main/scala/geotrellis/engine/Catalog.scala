@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.engine._
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io._
 
 import com.typesafe.config.Config
 
@@ -134,7 +134,7 @@ object Catalog {
    * Build a Catalog instance given a path to a JSON file.
    */
   def fromPath(path:String): Catalog =
-    fromJSON(Filesystem.readText(path), path)
+    fromJSON(FileSystem.readText(path), path)
 
   def fromJSON(data:String):Catalog = fromJSON(data,"")
 

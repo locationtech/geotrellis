@@ -2,7 +2,7 @@ package geotrellis.vector.io.shape.reader
 
 import java.util.Date
 
-trait ShapeDBaseRecord
+abstract sealed class ShapeDBaseRecord
 
 case class LogicalDBaseRecord(value: Boolean) extends ShapeDBaseRecord
 

@@ -2,6 +2,44 @@ package geotrellis.vector.io.shape.reader
 
 import spire.syntax.cfor._
 
+object Timer {
+  private def log(msg: String) = println(s"[TIMER] $msg")
+  def timed(startMsg:String,endMsg:String)(f: => Unit):Unit = {
+    log(startMsg)
+    val s = System.currentTimeMillis
+    f
+    val e = System.currentTimeMillis
+    val t = "%,d".format(e-s)
+    log(s"$endMsg (took $t ms)")
+  }
+
+  def timed(startMsg:String)(f: => Unit):Unit =
+    timed(startMsg,"Finished.")(f)
+
+  def timedCreate[T](startMsg:String,endMsg:String)(f: => T):T = {
+    log(startMsg)
+    val s = System.currentTimeMillis
+    val result = f
+    val e = System.currentTimeMillis
+    val t = "%,d".format(e-s)
+    log(s"\t$endMsg (in $t ms)")
+    result
+  }
+
+  def timedCreateTime[T](startMsg:String,endMsg:String)(f: => T): (T, Long) = {
+    log(startMsg)
+    val s = System.currentTimeMillis
+    val result = f
+    val e = System.currentTimeMillis
+    val t = "%,d".format(e-s)
+    log(s"\t$endMsg (in $t ms)")
+    (result, e-s)
+  }
+
+  def timedCreate[T](startMsg:String)(f: => T):T = 
+    timedCreate(startMsg,"Finished.")(f)
+}
+
 object ShapeFileReader {
 
   /**
@@ -36,9 +74,13 @@ class ShapeFileReader(path: String) {
 
     val (spf, sdf) = {
       val shapePointFile =
-        ShapePointFileReader(p + ShapePointFileReader.FileExtension).read
+        Timer.timedCreate("Shape Point File", "Finished Shape Point File") {
+          ShapePointFileReader(p + ShapePointFileReader.FileExtension).read
+        }
       val shapeDBaseFile =
-        ShapeDBaseFileReader(p + ShapeDBaseFileReader.FileExtension).read
+        Timer.timedCreate("Shape DBase File", "Finished DBase File") {
+          ShapeDBaseFileReader(p + ShapeDBaseFileReader.FileExtension).read
+        }
 
       val (s1, s2) = (shapePointFile.size, shapeDBaseFile.size)
       if (s1 != s2)

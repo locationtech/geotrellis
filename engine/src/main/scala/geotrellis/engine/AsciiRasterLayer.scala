@@ -21,6 +21,7 @@ import geotrellis.raster.io._
 import geotrellis.raster.io.ascii._
 import geotrellis.engine._
 import geotrellis.vector.Extent
+import geotrellis.vector.io._
 
 import java.io.{File, BufferedReader}
 import com.typesafe.config.Config
@@ -35,11 +36,11 @@ extends RasterLayerBuilder {
       if(json.hasPath("path")) {
         json.getString("path")
       } else {
-        val ascPath = Filesystem.basename(jsonPath) + ".asc"
+        val ascPath = FileSystem.basename(jsonPath) + ".asc"
         if(!new java.io.File(ascPath).exists) {
           ascPath
         } else {
-          Filesystem.basename(jsonPath) + ".grd"
+          FileSystem.basename(jsonPath) + ".grd"
         }
       }
 
@@ -81,7 +82,7 @@ extends RasterLayerBuilder {
     }
     val (rasterExtent, noDataValue) = loadMetaData(path)
 
-    val name = Filesystem.basename(f.getName)
+    val name = FileSystem.basename(f.getName)
 
     val info = 
       RasterLayerInfo(
@@ -168,7 +169,7 @@ extends UntiledRasterLayer(info) {
     }
 
   def cache(c: Cache[String]) = 
-    c.insert(info.id.toString, Filesystem.slurp(rasterPath))
+    c.insert(info.id.toString, FileSystem.slurp(rasterPath))
 
   private def getReader = new AsciiReader(rasterPath, noDataValue)
 }

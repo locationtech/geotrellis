@@ -16,10 +16,15 @@ object ShapePointFileReader {
   val FileExtension = ".shp"
 
   def apply(path: String): ShapePointFileReader =
-    if (path.endsWith(FileExtension)) apply(FileSystem.slurp(path))
-    else throw new MalformedShapePointFileException(
-      s"Bad file ending (must be $FileExtension)."
-    )
+    if (path.endsWith(FileExtension)) {
+      val bytes = 
+        Timer.timedCreate("Slurping Bytes", "Done Slurping Bytes") {
+          FileSystem.slurp(path)
+        }
+      apply(bytes)
+    } else {
+      throw new MalformedShapePointFileException(s"Bad file ending (must be $FileExtension).")
+    }
 
   def apply(bytes: Array[Byte]): ShapePointFileReader =
     new ShapePointFileReader(ByteBuffer.wrap(bytes, 0, bytes.size))
@@ -57,18 +62,37 @@ object MultiPolygonPartType {
 
 }
 
-class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
+/** ShapePointFileReader is used to read the actual geometries form the shapefile.
+  * It reads points out of sections of the byte buffer based on what type of geometry is being read.
+  * 
+  * @param      byteBuffer           ByteBuffer containing the data to read.
+  * @param      threeDimensional     Flag to indicate that these points have 3 components, (x, y, z). False by default (just x and y points).           
+  */
+class ShapePointFileReader(byteBuffer: ByteBuffer, threeDimensionsal: Boolean = false) extends ShapeHeaderReader {
 
   import ShapeType._
 
   private val boundingBox = Array.ofDim[Double](8)
 
+  var lineTime = 0L
+
   lazy val read: ShapePointFile = {
-    val boundingBox = readHeader(byteBuffer)
+    val boundingBox = 
+      Timer.timedCreate("Reading Bounding Box.", "Done reading Bounding Box") {
+        readHeader(byteBuffer)
+      }
 
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
     val recordBuffer = ArrayBuffer[ShapePointRecord]()
-    while (byteBuffer.remaining > 0) recordBuffer += readPointRecord
+    Timer.timed("Reading point records in loop.", "Done reading point records in loop.") { 
+      while (byteBuffer.remaining > 0) {
+        val record = 
+            readPointRecord
+        recordBuffer += record
+      }
+
+      println(s"TOTAL LINE TIME: $lineTime")
+    }
     ShapePointFile(recordBuffer.toArray, boundingBox)
   }
 
@@ -101,10 +125,13 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
   }
 
   @inline
-  private final def readPoint = Point(byteBuffer.getDouble, byteBuffer.getDouble)
+  private final def readPoint = 
+    Point(byteBuffer.getDouble, byteBuffer.getDouble)
 
   @inline
-  private final def readPoints(): Array[Point] = readPoints(byteBuffer.getInt)
+  private final def readPoints(): Array[Point] = {
+    readPoints(byteBuffer.getInt)
+  }
 
   @inline
   private final def readPoints(numPoints: Int): Array[Point] = {
@@ -116,6 +143,22 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
 
     points
   }
+
+  // @inline
+  // private final def readPoints(): Array[Point] = {
+  //   readPointArrays(byteBuffer.getInt)
+  // }
+
+  // @inline
+  // private final def readPointArrays(numPoints: Int): (Array[Double], Array[Double]) = {
+  //   val points = Array.ofDim[Point](numPoints)
+
+  //   cfor(0)(_ < numPoints, _ + 1) { i =>
+  //     points(i) = readPoint
+  //   }
+
+  //   points
+  // }
 
   @inline
   private final def readMultiPoint = MultiPoint(readPoints)
@@ -159,9 +202,137 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
     s > 0
   }
 
+/*
+    public Object read(ByteBuffer buffer, ShapeType type, boolean flatFeature) {
+        if (type == ShapeType.NULL) {
+            return createNull();
+        }
+        // bounds
+        buffer.position(buffer.position() + 4 * 8);
+
+        int[] partOffsets;
+
+        int numParts = buffer.getInt();
+        int numPoints = buffer.getInt();
+        int dimensions = (shapeType == ShapeType.POLYGONZ) && !flatFeature ? 3 : 2;
+
+        partOffsets = new int[numParts];
+
+        for (int i = 0; i < numParts; i++) {
+            partOffsets[i] = buffer.getInt();
+        }
+
+        ArrayList shells = new ArrayList();
+        ArrayList holes = new ArrayList();
+        CoordinateSequence coords = readCoordinates(buffer, numPoints, dimensions);
+
+        int offset = 0;
+        int start;
+        int finish;
+        int length;
+
+        for (int part = 0; part < numParts; part++) {
+            start = partOffsets[part];
+
+            if (part == (numParts - 1)) {
+                finish = numPoints;
+            } else {
+                finish = partOffsets[part + 1];
+            }
+
+            length = finish - start;
+            int close = 0; // '1' if the ring must be closed, '0' otherwise
+            if ((coords.getOrdinate(start, 0) != coords.getOrdinate(finish - 1, 0)) 
+                    || (coords.getOrdinate(start, 1) != coords.getOrdinate(finish - 1, 1))
+            ) {
+                close=1;
+            }
+            if (dimensions == 3) {
+                if(coords.getOrdinate(start, 2) != coords.getOrdinate(finish - 1, 2)) {
+                    close = 1;
+                }
+            }
+
+            CoordinateSequence csRing = geometryFactory.getCoordinateSequenceFactory().create(length + close, dimensions);
+            // double area = 0;
+            // int sx = offset;
+            for (int i = 0; i < length; i++) {
+                csRing.setOrdinate(i, 0, coords.getOrdinate(offset, 0));
+                csRing.setOrdinate(i, 1, coords.getOrdinate(offset, 1));
+                if(dimensions == 3) {
+                    csRing.setOrdinate(i, 2, coords.getOrdinate(offset, 2));
+                }
+                offset++;
+            }
+            if (close == 1) {
+                csRing.setOrdinate(length, 0, coords.getOrdinate(start, 0));
+                csRing.setOrdinate(length, 1, coords.getOrdinate(start, 1));
+                if(dimensions == 3) {
+                    csRing.setOrdinate(length, 2, coords.getOrdinate(start, 2));
+                }
+            }
+            // REVISIT: polygons with only 1 or 2 points are not polygons -
+            // geometryFactory will bomb so we skip if we find one.
+            if (csRing.size() == 0 || csRing.size() > 3) {
+                LinearRing ring = geometryFactory.createLinearRing(csRing);
+
+                if (CoordinateSequences.isCCW(csRing)) {
+                    // counter-clockwise
+                    holes.add(ring);
+                } else {
+                    // clockwise
+                    shells.add(ring);
+                }
+            }
+        }
+
+        // quick optimization: if there's only one shell no need to check
+        // for holes inclusion
+        if (shells.size() == 1) {
+            return createMulti((LinearRing) shells.get(0), holes);
+        }
+        // if for some reason, there is only one hole, we just reverse it and
+        // carry on.
+        else if (holes.size() == 1 && shells.size() == 0) {
+            return createMulti((LinearRing) holes.get(0));
+        } else {
+
+            // build an association between shells and holes
+            final ArrayList holesForShells = assignHolesToShells(shells, holes);
+
+            Geometry g = buildGeometries(shells, holes, holesForShells);
+
+            return g;
+        }
+    }
+ */
   @inline
   private final def readPolygon = {
-    val lines = readLines
+    val (lines, t) = 
+      Timer.timedCreateTime("        READING LINES", "        DONE READING LINES") {
+        val numParts = byteBuffer.getInt
+        val numPoints = byteBuffer.getInt
+
+        // TODO: Determine dimensions
+
+        val lines = Array.ofDim[Line](numParts)
+        val offsets = Array.ofDim[Int](numParts)
+
+        cfor(0)(_ < numParts, _ + 1) { i =>
+          offsets(i) = byteBuffer.getInt
+        }
+
+        cfor(0)(_ < numParts, _ + 1) { i =>
+          val start = offsets(i)
+          val end = if (i == numParts - 1) numPoints else offsets(i + 1)
+          lines(i) = Line(readPoints(end - start))
+        }
+
+        lines
+      }
+
+    lineTime += t
+
     val used = Array.ofDim[Boolean](lines.size)
     val outersBuffer = ArrayBuffer[Polygon]()
     val innersBuffer = ArrayBuffer[Line]()
@@ -277,9 +448,13 @@ class ShapePointFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
   private final def readPolygonPointRecord(forwardStepsMult: Int): MultiPolygonPointRecord = {
     moveByteBufferForward(32)
 
-    val multiPolygon = readPolygon
+    val multiPolygon = Timer.timedCreate("      POLYGON", " DONE POLYGON") { 
+//      readPolygon
+      MultiPolygonReader.read(byteBuffer)
+    }
 
     moveByteBufferForward((16 + 8 * multiPolygon.vertexCount) * forwardStepsMult)
+
 
     MultiPolygonPointRecord(multiPolygon)
   }

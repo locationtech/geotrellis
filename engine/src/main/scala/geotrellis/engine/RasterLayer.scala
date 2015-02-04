@@ -19,7 +19,7 @@ package geotrellis.engine
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io._
 
 import scala.concurrent._
 import scala.concurrent.Future
@@ -106,8 +106,8 @@ object RasterLayer {
    */
   def fromPath(path: String): Try[RasterLayer] =
     try {
-      val base = Filesystem.basename(path) + ".json"
-      fromJSON(Filesystem.readText(path), base)
+      val base = FileSystem.basename(path) + ".json"
+      fromJSON(FileSystem.readText(path), base)
     } catch {
       case e: Exception => Failure(e)
     }

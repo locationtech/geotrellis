@@ -17,8 +17,8 @@
 package geotrellis.engine
 
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.arg.ArgReader
+import geotrellis.vector.io.FileSystem
 
 import com.typesafe.config.Config
 
@@ -92,5 +92,5 @@ extends UntiledRasterLayer(info) {
   }
 
   def cache(c: Cache[String]) = 
-    c.insert(info.id.toString, Filesystem.slurp(rasterPath))
+    c.insert(info.id.toString, FileSystem.slurp(rasterPath))
 }

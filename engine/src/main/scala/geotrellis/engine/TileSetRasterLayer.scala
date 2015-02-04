@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io.FileSystem
 import geotrellis.raster.io.arg.ArgReader
 
 import com.typesafe.config.Config
@@ -82,7 +82,7 @@ object TileSetRasterLayer {
     s"${id}_${col}_${row}"
 
   def tilePath(path: String, id: LayerId, col: Int, row: Int) =
-    Filesystem.join(path, s"${id.name}_${col}_${row}.arg")
+    FileSystem.join(path, s"${id.name}_${col}_${row}.arg")
 }
 
 class TileSetRasterLayer(info: RasterLayerInfo,
@@ -164,7 +164,7 @@ extends RasterLayer(info) {
     for(col <- 0 until tileLayout.layoutCols) {
       for(row <- 0 until tileLayout.layoutRows) {
         val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, col, row)
-        c.insert(TileSetRasterLayer.tileName(info.id, col, row), Filesystem.slurp(path))
+        c.insert(TileSetRasterLayer.tileName(info.id, col, row), FileSystem.slurp(path))
       }
     }
   }
