@@ -18,9 +18,7 @@ object ShapePointFileReader {
   def apply(path: String): ShapePointFileReader =
     if (path.endsWith(FileExtension)) {
       val bytes = 
-        Timer.timedCreate("Slurping Bytes", "Done Slurping Bytes") {
-          FileSystem.slurp(path)
-        }
+        FileSystem.slurp(path)
       apply(bytes)
     } else {
       throw new MalformedShapePointFileException(s"Bad file ending (must be $FileExtension).")
@@ -74,25 +72,18 @@ class ShapePointFileReader(byteBuffer: ByteBuffer, threeDimensionsal: Boolean = 
 
   private val boundingBox = Array.ofDim[Double](8)
 
-  var lineTime = 0L
-
   lazy val read: ShapePointFile = {
     val boundingBox = 
-      Timer.timedCreate("Reading Bounding Box.", "Done reading Bounding Box") {
-        readHeader(byteBuffer)
-      }
+      readHeader(byteBuffer)
 
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
     val recordBuffer = ArrayBuffer[ShapePointRecord]()
-    Timer.timed("Reading point records in loop.", "Done reading point records in loop.") { 
-      while (byteBuffer.remaining > 0) {
-        val record = 
-            readPointRecord
-        recordBuffer += record
-      }
-
-      println(s"TOTAL LINE TIME: $lineTime")
+    while (byteBuffer.remaining > 0) {
+      val record =
+        readPointRecord
+      recordBuffer += record
     }
+
     ShapePointFile(recordBuffer.toArray, boundingBox)
   }
 
@@ -308,30 +299,27 @@ class ShapePointFileReader(byteBuffer: ByteBuffer, threeDimensionsal: Boolean = 
  */
   @inline
   private final def readPolygon = {
-    val (lines, t) = 
-      Timer.timedCreateTime("        READING LINES", "        DONE READING LINES") {
-        val numParts = byteBuffer.getInt
-        val numPoints = byteBuffer.getInt
+    val lines = {
+      val numParts = byteBuffer.getInt
+      val numPoints = byteBuffer.getInt
 
-        // TODO: Determine dimensions
+      // TODO: Determine dimensions
 
-        val lines = Array.ofDim[Line](numParts)
-        val offsets = Array.ofDim[Int](numParts)
+      val lines = Array.ofDim[Line](numParts)
+      val offsets = Array.ofDim[Int](numParts)
 
-        cfor(0)(_ < numParts, _ + 1) { i =>
-          offsets(i) = byteBuffer.getInt
-        }
-
-        cfor(0)(_ < numParts, _ + 1) { i =>
-          val start = offsets(i)
-          val end = if (i == numParts - 1) numPoints else offsets(i + 1)
-          lines(i) = Line(readPoints(end - start))
-        }
-
-        lines
+      cfor(0)(_ < numParts, _ + 1) { i =>
+        offsets(i) = byteBuffer.getInt
       }
 
-    lineTime += t
+      cfor(0)(_ < numParts, _ + 1) { i =>
+        val start = offsets(i)
+        val end = if (i == numParts - 1) numPoints else offsets(i + 1)
+        lines(i) = Line(readPoints(end - start))
+      }
+
+      lines
+    }
 
     val used = Array.ofDim[Boolean](lines.size)
     val outersBuffer = ArrayBuffer[Polygon]()
@@ -448,10 +436,9 @@ class ShapePointFileReader(byteBuffer: ByteBuffer, threeDimensionsal: Boolean = 
   private final def readPolygonPointRecord(forwardStepsMult: Int): MultiPolygonPointRecord = {
     moveByteBufferForward(32)
 
-    val multiPolygon = Timer.timedCreate("      POLYGON", " DONE POLYGON") { 
+    val multiPolygon = 
 //      readPolygon
       MultiPolygonReader.read(byteBuffer)
-    }
 
     moveByteBufferForward((16 + 8 * multiPolygon.vertexCount) * forwardStepsMult)
 

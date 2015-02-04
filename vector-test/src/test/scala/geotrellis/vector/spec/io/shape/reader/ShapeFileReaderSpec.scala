@@ -11,7 +11,7 @@ class ShapeFileReaderSpec extends FunSpec with Matchers {
 
     def read(path: String) = ShapeFileReader(path).read
 
-    ignore("should read the demographics shape file correctly") {
+    it("should read the demographics shape file correctly") {
       val shapeFile = read("raster-test/data/shapefiles/demographics/demographics")
 
       shapeFile.size should be(160)

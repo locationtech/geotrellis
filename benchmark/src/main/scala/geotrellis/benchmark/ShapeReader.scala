@@ -69,8 +69,12 @@ object CountriesShapeFileBenchmark
     extends BenchmarkRunner(classOf[CountriesShapeFileBenchmark])
 
 class CountriesShapeFileBenchmark extends ShapeFileBenchmark {
-
   val path = "../raster-test/data/shapefiles/countries/countries.shp"
+
+  val native = readNative(path)
+  val geotools = readGeoTools(path)
+
+  assert(native.size == geotools.size)
 
   def timeNativeReadCountriesShapeFile(reps: Int) =
     run(reps)(nativeReadCountriesShapeFile)
