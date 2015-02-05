@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io
+package geotrellis.vector.io
 
 import org.scalatest._
 
-class FilesystemSpec extends FunSpec 
+class FileSystemSpec extends FunSpec 
                         with Matchers {
-  describe("Filesystem") {
+  describe("FileSystem") {
     it("should give the same array for slurp and mapToByteArray for whole array") {
       val path = "raster-test/data/fake.img32.json"
-      val bytes1 = Filesystem.slurp(path)
+      val bytes1 = FileSystem.slurp(path)
       val bytes2 = Array.ofDim[Byte](bytes1.size)
-      Filesystem.mapToByteArray(path,bytes2,0,bytes2.size)
+      FileSystem.mapToByteArray(path,bytes2,0,bytes2.size)
       bytes1 should be (bytes2)
     }
   }
