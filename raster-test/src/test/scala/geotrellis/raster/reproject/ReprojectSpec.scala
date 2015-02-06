@@ -1,6 +1,7 @@
 package geotrellis.raster.reproject
 
 import geotrellis.raster._
+import geotrellis.raster.interpolation._
 import geotrellis.engine._
 import geotrellis.testkit._
 import geotrellis.proj4._
@@ -24,7 +25,7 @@ class ReprojectSpec extends FunSpec
         .read("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif")
         .firstBand
 
-      val (actual, actualExtent) =
+      val Raster(actual, actualExtent) =
         source.reproject(extent, crs, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 
       actual.rows should be (expected.rows)
@@ -53,7 +54,7 @@ class ReprojectSpec extends FunSpec
         .read("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif")
         .firstBand
 
-      val (actual, actualExtent) =
+      val Raster(actual, actualExtent) =
         source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.0))
 
       actual.rows should be (expected.rows)
@@ -82,7 +83,7 @@ class ReprojectSpec extends FunSpec
         .read("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif")
         .firstBand
 
-      val (actual, actualExtent) =
+      val Raster(actual, actualExtent) =
         source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.125))
 
       actual.rows should be (expected.rows)

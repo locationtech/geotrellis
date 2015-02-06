@@ -17,6 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.raster._
+import geotrellis.vector.Extent
 import geotrellis.engine._
 import geotrellis.testkit._
 
@@ -107,7 +108,7 @@ class CompositeTileSpec extends FunSpec
       tiled.tiles.map( t => t.asInstanceOf[ArrayTile])
     }
 
-    it("should wrap raster, and converge to same result warped to the tile layout") {
+    it("should wrap raster, and converge to same result resampleed to the tile layout") {
       val name = "SBN_inc_percap"
 
       val rasterExtent = RasterSource(name).rasterExtent.get
@@ -136,6 +137,42 @@ class CompositeTileSpec extends FunSpec
           }
         }
       }
+    }
+
+    it("should wrap and combine to the same raster") {
+      val totalCols = 1000
+      val totalRows = 1500
+      val tileCols = 2
+      val tileRows = 1
+      val pixelCols = totalCols / tileCols
+      val pixelRows = totalRows / tileRows
+
+      if( (pixelCols*tileCols, pixelRows*tileRows) != (totalCols, totalRows) )
+        sys.error("This test requirest that the total col\rows be divisible by the tile col\rows")
+
+      val (tile, extent) = {
+        val rs = RasterSource("SBN_inc_percap")
+        val (t, e) = (rs.get, rs.rasterExtent.get.extent)
+        (t.resample(e, totalCols, totalRows), e)
+      }
+
+      val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
+
+      val rasters: Seq[(Extent, Tile)] = {
+        val tileExtents = TileExtents(extent, tileLayout)
+        val tiles = CompositeTile.wrap(tile, tileLayout).tiles
+        tiles.zipWithIndex.map { case (tile, i) => (tileExtents(i), tile) }
+      }
+
+      val actualExtent = rasters.map(_._1).reduce(_.combine(_))
+
+      val actualTile = 
+        CompositeTile(rasters.map(_._2), tileLayout)
+
+
+      actualExtent should be (extent)
+      assertEqual(actualTile, tile)
+
     }
   }
 }

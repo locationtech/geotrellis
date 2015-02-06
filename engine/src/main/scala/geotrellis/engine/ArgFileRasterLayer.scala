@@ -74,7 +74,7 @@ extends UntiledRasterLayer(info) {
         case Some(bytes) =>
           targetExtent match {
             case Some(re) =>
-              ArgReader.warpBytes(bytes, info.cellType, info.rasterExtent, re)
+              ArgReader.resampleBytes(bytes, info.cellType, info.rasterExtent, re)
             case None =>
               ArrayTile.fromBytes(bytes, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
           }

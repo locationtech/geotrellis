@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -40,11 +40,17 @@ final case class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
     pixels
   }
 
-  def warp(current: Extent, target: RasterExtent): ArrayTile = {
-    val warped = Array.ofDim[Float](target.cols * target.rows).fill(Float.NaN)
-    Warp[Float](RasterExtent(current, cols, rows), target, array, warped)
-    FloatArrayTile(warped, target.cols, target.rows)
-  }
+  def copy = ArrayTile(array.clone, cols, rows)
+
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
+    method match {
+      case NearestNeighbor =>
+        val resampled = Array.ofDim[Float](target.cols * target.rows).fill(Float.NaN)
+        Resample[Float](RasterExtent(current, cols, rows), target, array, resampled)
+        FloatArrayTile(resampled, target.cols, target.rows)
+      case _ =>
+        Resample(this, current, target, method)
+    }
 }
 
 object FloatArrayTile {

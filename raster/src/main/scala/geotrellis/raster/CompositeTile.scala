@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -38,6 +39,45 @@ object CompositeTile {
   /** Converts a raster into a CompositeTile with the given tileLayout.
     * 
     * @param        r              Tile to wrap.
+    * @param        tileCols       Number of tile columns of the resulting 
+    *                              CompositeTile.
+    * @param        tileRows       Number of tile columns of the resulting 
+    *                              CompositeTile.
+    */ 
+  def wrap(r: Tile, tileCols: Int, tileRows: Int): CompositeTile = {
+    val tileLayout = TileLayout(tileCols, tileRows, ((r.cols - 1) / tileCols) + 1, ((r.rows - 1) / tileRows) + 1)
+    wrap(r, tileLayout, true)
+  }
+
+  /** Converts a raster into a CompositeTile with the given tileLayout.
+    * 
+    * @param        r              Tile to wrap.
+    * @param        tileCols       Number of tile columns of the resulting 
+    *                              CompositeTile.
+    * @param        tileRows       Number of tile columns of the resulting 
+    *                              CompositeTile.
+    * @param        cropped        Set this flag to false if you
+    *                              want the tiles to be ArrayTiles,
+    *                              otherwise they will be CroppedTiles
+    *                              with the raster 'r' as the backing raster.
+    */ 
+  def wrap(r: Tile, tileCols: Int, tileRows: Int, cropped: Boolean): CompositeTile = {
+    val tileLayout = TileLayout(tileCols, tileRows, ((r.cols - 1) / tileCols) + 1, ((r.rows - 1) / tileRows) + 1)
+    wrap(r, tileLayout, cropped)
+  }
+
+  /** Converts a raster into a CompositeTile with the given tileLayout.
+    * 
+    * @param        r              Tile to wrap.
+    * @param        tileLayout     TileLayout of the resulting 
+    *                              CompositeTile.
+    */ 
+  def wrap(r: Tile, tileLayout: TileLayout): CompositeTile =
+    CompositeTile(split(r, tileLayout, true), tileLayout)
+
+  /** Converts a raster into a CompositeTile with the given tileLayout.
+    * 
+    * @param        r              Tile to wrap.
     * @param        tileLayout     TileLayout of the resulting 
     *                              CompositeTile.
     * @param        cropped        Set this flag to false if you
@@ -45,9 +85,8 @@ object CompositeTile {
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
     */ 
-  def wrap(r: Tile, tileLayout: TileLayout, cropped: Boolean = true): CompositeTile = {
+  def wrap(r: Tile, tileLayout: TileLayout, cropped: Boolean): CompositeTile =
     CompositeTile(split(r, tileLayout, cropped), tileLayout)
-  }
 
   /** Splits a raster into a CompositeTile into tiles.
     * 
@@ -94,8 +133,8 @@ case class CompositeTile(tiles: Seq[Tile],
 
   val cellType: CellType = tiles(0).cellType
 
-  def warp(source: Extent, target: RasterExtent) = 
-    toArrayTile.warp(source, target)
+  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod) = 
+    toArrayTile.resample(source, target, method)
 
   def toArrayTile(): ArrayTile = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {

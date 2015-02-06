@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.interpolation.InterpolationMethod
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -184,6 +185,8 @@ trait ArrayTile extends Tile with Serializable {
   def get(col: Int, row: Int) = apply(row * cols + col)
   def getDouble(col: Int, row: Int) = applyDouble(row * cols + col)
 
+  def copy: ArrayTile
+
   def toList = toArray.toList
   def toListDouble = toArrayDouble.toList
 
@@ -211,5 +214,5 @@ trait ArrayTile extends Tile with Serializable {
 
   def toBytes: Array[Byte]
 
-  def warp(current: Extent, target: RasterExtent): ArrayTile
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile 
 }

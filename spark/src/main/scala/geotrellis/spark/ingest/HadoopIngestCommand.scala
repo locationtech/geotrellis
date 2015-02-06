@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
+import geotrellis.vector._
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import com.quantifind.sumac.ArgMain
