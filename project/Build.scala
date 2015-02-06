@@ -576,7 +576,7 @@ object GeotrellisBuild extends Build {
   lazy val benchmark: Project =
     Project("benchmark", file("benchmark"))
       .settings(benchmarkSettings: _*)
-      .dependsOn(raster,engine,geotools,jetty)
+      .dependsOn(raster, engine, geotools, jetty)
 
   def benchmarkSettings =
     Seq(
