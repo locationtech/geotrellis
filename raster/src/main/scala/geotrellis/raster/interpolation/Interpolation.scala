@@ -13,6 +13,10 @@ case object Lanczos extends InterpolationMethod
 case object Average extends InterpolationMethod
 case object Mode extends InterpolationMethod
 
+object InterpolationMethod {
+  val DEFAULT = NearestNeighbor
+}
+
 
 abstract class Interpolation(tile: Tile, extent: Extent) {
   protected val re = RasterExtent(tile, extent)

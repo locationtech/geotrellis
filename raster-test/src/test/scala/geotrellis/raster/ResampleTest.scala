@@ -23,8 +23,8 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class WarpTest extends FunSuite with TestEngine
-                                with TileBuilders {
+class ResampleTest extends FunSuite with TestEngine
+                                    with TileBuilders {
   val (cols, rows) = (5, 5)
   val (cw, ch) = (20.0, 20.0)
   val (xmin, ymin) = (0.0, 0.0)
@@ -40,7 +40,7 @@ class WarpTest extends FunSuite with TestEngine
   }
 
   def resample(tile: Tile, srcExtent: Extent, dst: RasterExtent) =
-    tile.warp(srcExtent, dst)
+    tile.resample(srcExtent, dst)
 
   test("noop resample") {
     val dst = src
@@ -95,9 +95,9 @@ class WarpTest extends FunSuite with TestEngine
     val re = RasterExtent(Extent(-9.5, 3.8, 150.5, 163.8), 4.0, 4.0, 40, 40)
     val src = RasterSource.fromPath("raster-test/data/quad8.arg").rasterExtent.get.extent
     val r = RasterSource.fromPath("raster-test/data/quad8.arg").get
-    val resize1 = r.warp(src, re)
+    val resize1 = r.resample(src, re)
     
-    val resize2 = r.warp(src, re.withDimensions(40, 40))
+    val resize2 = r.resample(src, re.withDimensions(40, 40))
     
     List(resize1, resize2).foreach { r =>
       r.cols should be (40)
@@ -112,7 +112,7 @@ class WarpTest extends FunSuite with TestEngine
 
   test("resize quad8 to 4x4") {
     val re = RasterSource.fromPath("raster-test/data/quad8.arg").rasterExtent.get
-    val raster = RasterSource.fromPath("raster-test/data/quad8.arg").get.warp(re.extent, re.withDimensions(4, 4))
+    val raster = RasterSource.fromPath("raster-test/data/quad8.arg").get.resample(re.extent, re.withDimensions(4, 4))
 
     raster.cols should be (4)
     raster.rows should be (4)
@@ -135,7 +135,7 @@ class WarpTest extends FunSuite with TestEngine
         1, 1, 1, 1, 1))
 
     val innerExtent = Extent(1, 1, 4, 4)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent),
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent),
       Array[Int](
         2, 2, 2,
         2, 2, 2,
@@ -152,14 +152,14 @@ class WarpTest extends FunSuite with TestEngine
         1, 1, 1, 1, 1))
 
     val innerExtent = Extent(0, 1, 5, 5)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent), 
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent), 
       Array[Int](
         1, 1, 1, 1, 1,
         1, 2, 2, 2, 1,
         1, 2, 2, 2, 1,
         1, 2, 2, 2, 1))
     val innerExtent2 = Extent(0, 0, 5, 4)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent2), 
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent2), 
       Array[Int](
         1, 2, 2, 2, 1,
         1, 2, 2, 2, 1,
@@ -177,7 +177,7 @@ class WarpTest extends FunSuite with TestEngine
         1, 1, 1, 1, 1))
 
     val innerExtent = Extent(1, 0, 5, 5)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent), 
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent), 
       Array[Int](
         1, 1, 1, 1,
         2, 2, 2, 1,
@@ -186,7 +186,7 @@ class WarpTest extends FunSuite with TestEngine
         1, 1, 1, 1))
 
     val innerExtent2 = Extent(0, 0, 4, 5)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent2), 
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent2), 
       Array[Int](
         1, 1, 1, 1,
         1, 2, 2, 2,
@@ -206,7 +206,7 @@ class WarpTest extends FunSuite with TestEngine
         1, 1, 1, 1, 1))
 
     val innerExtent = Extent(1, 0, 6, 5)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent), 
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent), 
       Array[Int](
         1, 1, 1, 1, NODATA,
         2, 2, 2, 1, NODATA,
@@ -215,7 +215,7 @@ class WarpTest extends FunSuite with TestEngine
         1, 1, 1, 1, NODATA))
 
     val innerExtent2 = Extent(0, 1, 5, 6)
-    assertEqual(r.warp(Extent(0, 0, 5, 5), innerExtent2), 
+    assertEqual(r.resample(Extent(0, 0, 5, 5), innerExtent2), 
       Array[Int](
         NODATA, NODATA, NODATA, NODATA, NODATA,
         1, 1, 1, 1, 1,

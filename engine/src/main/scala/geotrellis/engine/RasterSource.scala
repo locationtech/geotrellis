@@ -36,11 +36,11 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   val rasterDefinition = rasterDef
 
   def tiles = elements
-  def tilesWithExtents: Op[Seq[Op[(Tile, Extent)]]] =
+  def rasters: Op[Seq[Op[Raster]]] =
     (rasterDefinition, tiles).map { (rd, seq) =>
       val tileExtents = rd.tileExtents
       seq.zipWithIndex.map { case (tileOp, tileIndex) =>
-        tileOp map { tile => (tile, tileExtents(tileIndex)) }
+        tileOp map { tile => Raster(tile, tileExtents(tileIndex)) }
       }
     }
 
@@ -103,30 +103,30 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapTileWithExtent(f: (Tile, Extent) => Tile): RasterSource = 
-    mapTileWithExtentOp { op => op.map { case (tile, extent) => f(tile, extent) } }
+  def mapRaster(f: Raster => Tile): RasterSource = 
+    mapRasterOp { op => op.map(f(_)) }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapTileWithExtent(f: (Tile, Extent) => Tile, name: String): RasterSource =
-    mapTileWithExtentOp({ op => op.map { case (tile, extent) => f(tile, extent) } }, name)
+  def mapRaster(f: Raster => Tile, name: String): RasterSource =
+    mapRasterOp({ op => op.map(f(_)) }, name)
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapTileWithExtentOp(f: Op[(Tile, Extent)] => Op[Tile]): RasterSource = 
-    mapTileWithExtentOp(f, s"${getClass.getSimpleName} map")
+  def mapRasterOp(f: Op[Raster] => Op[Tile]): RasterSource = 
+    mapRasterOp(f, s"${getClass.getSimpleName} map")
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapTileWithExtentOp(f: Op[(Tile, Extent)] => Op[Tile], name: String): RasterSource = {
-    val newOp = tilesWithExtents.map(_.map(f)).withName(name)
+  def mapRasterOp(f: Op[Raster] => Op[Tile], name: String): RasterSource = {
+    val newOp = rasters.map(_.map(f)).withName(name)
     RasterSource(rasterDefinition, newOp)
   }
 
   /** apply a function to elements, and return the appropriate datasource **/
   def mapWithExtent[T](f: (Tile, Extent) => T)(implicit d: DummyImplicit): SeqSource[T] = 
-    mapWithExtentOp { op => op.map { case (tile, extent) => f(tile, extent) } }
+    mapWithExtentOp { op => op.map { case (t, e) => f(t, e) } }
 
   /** apply a function to elements, and return the appropriate datasource **/
   def mapWithExtent[T](f: (Tile, Extent) => T, name: String)(implicit d: DummyImplicit): SeqSource[T] =
-    mapWithExtentOp({ op => op.map { case (tile, extent) => f(tile, extent) } }, name)
+    mapWithExtentOp({ op => op.map { case (t, e) => f(t, e) } }, name)
 
   /** apply a function to element operations, and return the appropriate datasource **/
   def mapWithExtentOp[T](f: Op[(Tile, Extent)] => Op[T])(implicit d: DummyImplicit): SeqSource[T] = 
@@ -134,7 +134,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
 
   /** apply a function to element operations, and return the appropriate datasource **/
   def mapWithExtentOp[T](f: Op[(Tile, Extent)] => Op[T], name: String)(implicit d: DummyImplicit): SeqSource[T] = {
-    val newOp = tilesWithExtents.map(_.map(f)).withName(name)
+    val newOp = rasters.map(_.map { r => r.flatMap { case Raster(t, e) => f(t, e) } }).withName(name)
     SeqSource(newOp)
   }
 
@@ -227,7 +227,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   def rasterExtent: ValueSource[RasterExtent] =
     ValueSource(rasterDefinition.map(_.rasterExtent))
 
-  private def warp(targetOp: Op[RasterExtent]): RasterSource = {
+  private def resample(targetOp: Op[RasterExtent]): RasterSource = {
 
     val newDef: Op[RasterDefinition] =
       (rasterDefinition, targetOp).map { (rd, target) =>
@@ -248,7 +248,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
           val targetExtent = target.extent
           val tileExtents = TileExtents(re.extent, tileLayout)
 
-          val warped = mutable.ListBuffer[Op[(Tile, Extent)]]()
+          val resampled = mutable.ListBuffer[Op[Raster]]()
           val tCols = tileLayout.layoutCols
           val tRows = tileLayout.layoutRows
           cfor(0)(_ < tCols, _ + 1) { tCol =>
@@ -261,23 +261,23 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
                   val tileRe = RasterExtent(ext, re.cellwidth, re.cellheight, cols, rows)
 
                   // Read section of the tile
-                  warped += seq(tCols * tRow + tCol).map { r => (r.warp(sourceExtent, tileRe), ext) }
+                  resampled += seq(tCols * tRow + tCol).map { r => (r.resample(sourceExtent, tileRe), ext) }
                 case None => // pass
               }
             }
           }
 
-          if (warped.size == 0) {
+          if (resampled.size == 0) {
             Seq(Literal(ArrayTile.empty(rd.cellType, target.cols, target.rows)))
-          } else if (warped.size == 1) {
-            Seq(warped.head.map(_._1))
+          } else if (resampled.size == 1) {
+            Seq(resampled.head.map(_.tile))
           } else {
 
             // Create destination raster data
-            logic.Collect(warped) map { warped =>
+            logic.Collect(resampled) map { resampled =>
               val tile = ArrayTile.empty(rd.cellType, target.cols, target.rows)
 
-              for((rasterPart, extent) <- warped) {
+              for(Raster(rasterPart, extent) <- resampled) {
                 // Copy over the values to the correct place in the raster data
                 val cols = rasterPart.cols
                 val rows = rasterPart.rows
@@ -317,21 +317,21 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
             }
           }
         } else {
-          Seq(seq(0).map(_.warp(rd.rasterExtent.extent, target)))
+          Seq(seq(0).map(_.resample(rd.rasterExtent.extent, target)))
         }
       }
 
     RasterSource(newDef, newOp)
   }
 
-  def warp(target: RasterExtent): RasterSource =
-    warp(Literal(target))
+  def resample(target: RasterExtent): RasterSource =
+    resample(Literal(target))
 
-  def warp(target: Extent): RasterSource =
-    warp(rasterDefinition.map(_.rasterExtent.createAligned(target)))
+  def resample(target: Extent): RasterSource =
+    resample(rasterDefinition.map(_.rasterExtent.createAligned(target)))
 
-  def warp(targetCols: Int, targetRows: Int): RasterSource =
-    warp(rasterDefinition.map(_.rasterExtent.withDimensions(targetCols, targetRows)))
+  def resample(targetCols: Int, targetRows: Int): RasterSource =
+    resample(rasterDefinition.map(_.rasterExtent.withDimensions(targetCols, targetRows)))
 
   def distribute(cluster: Option[ActorRef]) = RasterSource(rasterDefinition, distributeOps(cluster))
   def cached(implicit engine: Engine) = RasterSource(rasterDefinition, cachedOps(engine))

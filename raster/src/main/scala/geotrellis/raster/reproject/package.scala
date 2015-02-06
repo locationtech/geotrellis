@@ -1,5 +1,6 @@
 package geotrellis.raster
 
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 import geotrellis.proj4._
@@ -13,13 +14,13 @@ package object reproject {
   type RowTransform = (Array[Double], Array[Double], Array[Double], Array[Double]) => Unit
 
   implicit class ReprojectExtentsion(val tile: Tile) {
-    def reproject(extent: Extent, src: CRS, dest: CRS): (Tile, Extent) =
+    def reproject(extent: Extent, src: CRS, dest: CRS): Raster =
       reproject(extent, src, dest, ReprojectOptions.DEFAULT)
 
-    def reproject(method: InterpolationMethod, extent: Extent, src: CRS, dest: CRS): (Tile, Extent) =
+    def reproject(method: InterpolationMethod, extent: Extent, src: CRS, dest: CRS): Raster =
       reproject(extent, src, dest, ReprojectOptions(method = method))
 
-    def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): (Tile, Extent) =
+    def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): Raster =
       Reproject(tile, extent, src, dest, options)
   }
 }

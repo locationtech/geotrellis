@@ -20,7 +20,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.proj4._
 
 import org.apache.hadoop.fs.Path

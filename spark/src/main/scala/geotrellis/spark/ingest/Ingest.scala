@@ -16,6 +16,13 @@
 
 package geotrellis.spark.ingest
 
+import geotrellis.raster._
+
+import geotrellis.raster.reproject._
+import geotrellis.vector._
+import geotrellis.vector.reproject._
+import geotrellis.proj4._
+
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.raster._

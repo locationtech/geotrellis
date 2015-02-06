@@ -1,10 +1,16 @@
 package geotrellis.spark.ingest
 
+import geotrellis.raster._
+import geotrellis.raster.reproject._
+import geotrellis.raster.mosaic._
+import geotrellis.raster.io.arg.ArgReader
+import geotrellis.vector._
+import geotrellis.proj4._
+
 import geotrellis.spark._
-import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.formats.NetCdfBand
 import geotrellis.spark.tiling._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.hadoop.formats._
 import geotrellis.proj4.LatLng
 import geotrellis.spark.utils.SparkUtils
 
@@ -22,8 +28,6 @@ class IngestSpec extends FunSpec
 
   describe("Ingest") {
     ifCanRunSpark { 
-
-
       it("should ingest GeoTiff"){
         val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
         val (level, rdd) = Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(512))

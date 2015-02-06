@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -142,17 +143,33 @@ trait Tile {
     normalize(min, max, newMin, newMax)
   }
 
-  def warp(source: Extent, target: RasterExtent): Tile
+  def resample(source: Extent, target: RasterExtent): Tile =
+    resample(source, target, InterpolationMethod.DEFAULT)
 
-  def warp(source: Extent, target: Extent): Tile =
-    warp(source, RasterExtent(source, cols, rows).createAligned(target))
+  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile
 
-  def warp(source: Extent, targetCols: Int, targetRows: Int): Tile =
-    warp(source, RasterExtent(source, targetCols, targetRows))
+  def resample(source: Extent, target: Extent): Tile =
+    resample(source, target, InterpolationMethod.DEFAULT)
+
+  def resample(source: Extent, target: Extent, method: InterpolationMethod): Tile =
+    resample(source, RasterExtent(source, cols, rows).createAligned(target), method)
+
+  def resample(source: Extent, targetCols: Int, targetRows: Int): Tile =
+    resample(source, targetCols, targetRows, InterpolationMethod.DEFAULT)
+
+  def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): Tile =
+    resample(source, RasterExtent(source, targetCols, targetRows), method)
 
   /** Only changes the resolution */
-  def warp(targetCols: Int, targetRows: Int): Tile =
-    warp(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
+  def resample(targetCols: Int, targetRows: Int): Tile =
+    resample(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
+
+
+  def crop(cols: Int, rows: Int): Tile = 
+    CroppedTile(this, GridBounds(0, 0, cols - 1, rows - 1))
+
+  def crop(gb: GridBounds): Tile = 
+    CroppedTile(this, gb)
 
   def crop(srcExtent: Extent, extent: Extent): Tile =
     CroppedTile(this, RasterExtent(srcExtent, cols, rows).gridBoundsFor(extent))

@@ -6,7 +6,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.proj4._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 

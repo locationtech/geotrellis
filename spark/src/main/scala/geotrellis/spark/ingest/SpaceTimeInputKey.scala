@@ -3,7 +3,7 @@ package geotrellis.spark.ingest
 import com.github.nscala_time.time.Imports._
 import geotrellis.proj4._
 import geotrellis.spark._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 
 /** A key for a Tile with temporal as well as spatial dimension */
 case class SpaceTimeInputKey(extent: Extent, crs: CRS, time: DateTime)

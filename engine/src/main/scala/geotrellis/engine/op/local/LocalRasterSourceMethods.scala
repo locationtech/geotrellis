@@ -204,7 +204,7 @@ trait LocalRasterSourceMethods
 
   /** Masks this raster by the given Geometry. */
   def mask(geoms: Iterable[Geometry]): RasterSource = {
-    rasterSource.mapTileWithExtent { (tile, extent) =>
+    rasterSource.mapRaster { case Raster(tile, extent) =>
       val (cols, rows) = tile.dimensions
       val re = RasterExtent(extent, cols, rows)
       val result = ArrayTile.empty(tile.cellType, cols, rows)

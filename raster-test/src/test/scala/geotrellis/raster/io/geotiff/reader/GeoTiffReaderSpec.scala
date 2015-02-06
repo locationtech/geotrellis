@@ -93,7 +93,8 @@ class GeoTiffReaderSpec extends FunSpec
         .read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif")
         .firstBand.tile
 
-      val expectedTile = ArgReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.json")
+      val expectedTile =
+        ArgReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.json").tile
 
       assertEqual(tile, expectedTile)
     }
@@ -108,7 +109,8 @@ class GeoTiffReaderSpec extends FunSpec
 
       val tile = GeoTiffReader.read(s"$filePath/$path").firstBand.tile
 
-      val expectedTile = ArgReader.read(argPath)
+      val expectedTile =
+        ArgReader.read(argPath).tile
 
       assertEqual(tile, expectedTile)
     }
