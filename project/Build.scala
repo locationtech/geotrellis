@@ -223,6 +223,15 @@ object GeotrellisBuild extends Build {
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       parallelExecution := false,
       fork in test := false,
+      //fork := true,
+      // If wanted, we can connect to the Java Mission Control to find Hot Methods.
+      // If wanted, un-comment this:
+      /*javaOptions ++= Seq(
+        "-XX:+UnlockCommercialFeatures",
+        "-XX:+FlightRecorder",
+        "-XX:FlightRecorderOptions=dumponexit=true,defaultrecording=true,dumponexitpath=/Users/johanstenberg/Documents/programmering/geotrellis/geotrellis/shape-file-bench.jfr",
+        "-XX:StartFlightRecording=duration=60s"
+      ),*/
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++=
         Seq("-optimize"),

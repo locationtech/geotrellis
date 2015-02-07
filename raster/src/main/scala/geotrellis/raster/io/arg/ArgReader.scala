@@ -17,7 +17,7 @@
 package geotrellis.raster.io.arg
 
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
+import geotrellis.vector.io.FileSystem
 import geotrellis.vector.Extent
 
 import com.typesafe.config.ConfigFactory
@@ -36,7 +36,7 @@ object ArgReader {
 
   /** Reads an arg from the json metadata file. */
   private final def read(path: String, targetRasterExtent: Option[RasterExtent]): Raster = {
-    val json = ConfigFactory.parseString(Filesystem.readText(path))
+    val json = ConfigFactory.parseString(FileSystem.readText(path))
 
     val cellType =
       json.getString("datatype") match {
@@ -109,7 +109,7 @@ object ArgReader {
   }
 
   final def read(path: String, typ: CellType, cols: Int, rows: Int): Tile = {
-    ArrayTile.fromBytes(Filesystem.slurp(path), typ, cols, rows)
+    ArrayTile.fromBytes(FileSystem.slurp(path), typ, cols, rows)
   }
 
   final def read(path: String, typ: CellType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
@@ -125,7 +125,7 @@ object ArgReader {
 
     if(length > 0) {
       val bytes = Array.ofDim[Byte](size)
-      Filesystem.mapToByteArray(path, bytes, startIndex, length)
+      FileSystem.mapToByteArray(path, bytes, startIndex, length)
 
       resampleBytes(bytes, typ, rasterExtent, targetExtent)
     } else {
