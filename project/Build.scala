@@ -33,6 +33,7 @@ object GeotrellisBuild extends Build {
 
   val vectorBenchmarkKey = AttributeKey[Boolean]("vectorJavaOptionsPatched")
   val benchmarkKey = AttributeKey[Boolean]("javaOptionsPatched")
+  lazy val Serial = config("serial") extend(Test)
 
   // Default settings
   override lazy val settings =
@@ -191,7 +192,7 @@ object GeotrellisBuild extends Build {
   lazy val rasterSettings =
     Seq(
       name := "geotrellis-raster",
-      parallelExecution := false,
+      parallelExecution in Serial := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++= Seq("-optimize"),
@@ -217,11 +218,12 @@ object GeotrellisBuild extends Build {
       .dependsOn(raster, testkit)
       .settings(rasterTestSettings: _*)
 
+
   lazy val rasterTestSettings =
     Seq(
       name := "geotrellis-raster-test",
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-      parallelExecution := false,
+      parallelExecution in Serial := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++=
@@ -273,7 +275,7 @@ object GeotrellisBuild extends Build {
   lazy val engineTestSettings =
     Seq(
       name := "geotrellis-engine-test",
-      parallelExecution := false,
+      parallelExecution in Serial := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++=
