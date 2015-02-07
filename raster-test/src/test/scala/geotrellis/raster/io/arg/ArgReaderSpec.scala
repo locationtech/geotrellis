@@ -27,9 +27,11 @@ class ArgReaderSpec extends FunSpec
                        with TestEngine 
                        with Matchers {
   describe("ArgReader") {
+    TestEngine.init
+
     it("should read from metadata and match a RasterSource") {
       val fromRasterSource = RasterSource("SBN_inc_percap").get
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json")
+      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json").tile
 
       assertEqual(fromArgReader, fromRasterSource)
     }
@@ -42,13 +44,13 @@ class ArgReaderSpec extends FunSpec
       val target = RasterExtent(Extent(xmin + qw, ymin + qh, xmax - qw, ymax - qh), cols / 3, rows / 3)
 
       val fromRasterSource = RasterSource("SBN_inc_percap", target).get
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json", target)
+      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json", target).tile
 
       assertEqual(fromArgReader, fromRasterSource)
     }
 
     it("should read a constant tile") {
-      val tile = ArgReader.read("raster-test/data/data/constant.json")
+      val tile = ArgReader.read("raster-test/data/data/constant.json").tile
       tile match {
         case ct: ConstantTile => 
           tile.cellType should be (TypeInt)
@@ -58,7 +60,7 @@ class ArgReaderSpec extends FunSpec
     }
 
     it("should read a constant tile with a NaN value") {
-      val tile = ArgReader.read("raster-test/data/data/constant-nan.json")
+      val tile = ArgReader.read("raster-test/data/data/constant-nan.json").tile
       tile match {
         case ct: ConstantTile => 
           tile.cellType should be (TypeDouble)

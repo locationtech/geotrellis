@@ -17,7 +17,7 @@ object Reproject {
     rdd.map  {  { tup =>
       val (key, tile) = tup
       val ProjectedExtent(extent, crs) = key.projectedExtent
-      val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
+      val Raster(newTile, newExtent) = tile.reproject(extent, crs, destCRS)
       val newKey = key.updateProjectedExtent(ProjectedExtent(newExtent, destCRS))
       (newKey, newTile)
     } }
@@ -33,7 +33,7 @@ object Reproject {
         val mapTransform = metaData.mapTransform
 
         val extent = mapTransform(key)
-        val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
+        val Raster(newTile, newExtent) = tile.reproject(extent, crs, destCRS)
         ((key, newExtent), newTile)
       }
 

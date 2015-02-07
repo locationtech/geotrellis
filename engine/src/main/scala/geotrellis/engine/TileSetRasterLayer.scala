@@ -220,7 +220,7 @@ extends TileLoader(info, tileLayout) {
       case Some(bytes) =>
         targetExtent match {
           case Some(tre) => 
-            ArgReader.warpBytes(bytes, info.cellType, re, tre)
+            ArgReader.resampleBytes(bytes, info.cellType, re, tre)
           case None => 
             ArrayTile.fromBytes(bytes, info.cellType, re.cols, re.rows)
         }

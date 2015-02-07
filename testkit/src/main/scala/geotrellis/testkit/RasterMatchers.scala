@@ -36,13 +36,15 @@ trait RasterMatchers extends Matchers {
 
     (cols, rows) should be((tb.cols, tb.rows))
 
-    cfor(0)(_ < cols, _ + 1) { i =>
-      cfor(0)(_ < rows, _ + 1) { j =>
-        val v1 = ta.getDouble(i, j)
-        val v2 = tb.getDouble(i, j)
-        if (v1.isNaN) v2.isNaN should be (true)
-        else if (v2.isNaN) v1.isNaN should be (true)
-        else v1 should be (v2 +- eps)
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        withClue(s"Wasn't equal on col: $col, row: $row") {
+          val v1 = ta.getDouble(col, row)
+          val v2 = tb.getDouble(col, row)
+          if (v1.isNaN) v2.isNaN should be (true)
+          else if (v2.isNaN) v1.isNaN should be (true)
+          else v1 should be (v2 +- eps)
+        }
       }
     }
   }

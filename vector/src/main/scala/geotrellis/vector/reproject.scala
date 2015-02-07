@@ -1,7 +1,6 @@
 package geotrellis.vector
 
 import geotrellis.proj4._
-//import geotrellis.proj4.CRS
 
 package object reproject {
   object Reproject {
@@ -185,7 +184,7 @@ package object reproject {
 
   implicit class ReprojectExtent(e: Extent) { 
     def reproject(src: CRS, dest: CRS): Extent = Reproject(e, src, dest) 
-    def reproject(transform: Transform): Extent = Reproject(e, transform) 
+    def reproject(transform: Transform): Extent = Reproject(e, transform).envelope
   }
 
   implicit class ReprojectPolygonFeature[D](pf: PolygonFeature[D]) { 

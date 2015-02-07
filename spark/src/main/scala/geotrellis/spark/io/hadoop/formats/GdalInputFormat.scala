@@ -17,12 +17,11 @@
 package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.spark.KeyComponent
-import geotrellis.spark.ingest.{IngestKey, ProjectedExtent}
+import geotrellis.spark.ingest.IngestKey
 import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.vector.Extent
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.gdal.{RasterBand, RasterDataSet, Gdal}
 

@@ -2,6 +2,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.raster._
+import geotrellis.raster.mosaic._
 import geotrellis.vector._
 import org.apache.spark.rdd._
 import scala.reflect.ClassTag

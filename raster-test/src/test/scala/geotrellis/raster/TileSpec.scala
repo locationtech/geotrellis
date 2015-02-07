@@ -134,7 +134,7 @@ class TileSpec extends FunSpec
     }
   }
 
-  describe("warp") {
+  describe("resample") {
 
     val ext = Extent(0.0, 0.0, 3.0, 3.0)
     val re = RasterExtent(ext, 1.0, 1.0, 3, 3)
@@ -143,15 +143,15 @@ class TileSpec extends FunSpec
                      7, 8, 9)
     val tile = ArrayTile(data, 3, 3)
 
-    it("should warp to target dimensions") {
+    it("should resample to target dimensions") {
       val targetCols = 5
       val targetRows = 5
-      val result = tile.warp(ext, targetCols, targetRows)
+      val result = tile.resample(ext, targetCols, targetRows)
       result.cols should be (5)
       result.rows should be (5)
     }
 
-    it("should warp with crop only") {
+    it("should resample with crop only") {
       val rd = ArrayTile(
         Array( 1, 10, 100, 1000, 2, 2, 2, 2, 2,
                2, 20, 200, 2000, 2, 2, 2, 2, 2,
@@ -160,12 +160,12 @@ class TileSpec extends FunSpec
         9, 4)
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(0.0, 1.0, 4.0, 4.0), 4, 3)
-      rd.warp(ext, nre).toArray should be (Array(1, 10, 100, 1000,
+      rd.resample(ext, nre).toArray should be (Array(1, 10, 100, 1000,
                                                 2, 20, 200, 2000,
                                                 3, 30, 300, 3000))
     }
 
-    it("should give NODATA for warp with crop outside of bounds") {
+    it("should give NODATA for resample with crop outside of bounds") {
       val rd = ArrayTile(
         Array( 1, 10, 100, 1000, 2, 2, 2, 2, 2,
                2, 20, 200, 2000, 2, 2, 2, 2, 2,
@@ -175,12 +175,12 @@ class TileSpec extends FunSpec
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(-1.0, 2.0, 3.0, 5.0), 1.0, 1.0, 4, 3)
       val nd = NODATA
-      rd.warp(ext, nre).toArray should be (Array(nd, nd, nd, nd,
+      rd.resample(ext, nre).toArray should be (Array(nd, nd, nd, nd,
                                                 nd, 1, 10, 100,
                                                 nd, 2, 20, 200))
     }
 
-    it("should warp with resolution decrease in X and crop in Y") {
+    it("should resample with resolution decrease in X and crop in Y") {
       val rd = ArrayTile(
         Array( 1, 10, 100, 1000, -2, 2, 2, 2, 2,
                2, 20, 200, 2000, -2, 2, 2, 2, 2,
@@ -189,7 +189,7 @@ class TileSpec extends FunSpec
         9, 4)
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(0.0, 1.0, 9.0, 4.0), 3, 3)
-      rd.warp(ext, nre).toArray should be (Array(10, -2, 2,
+      rd.resample(ext, nre).toArray should be (Array(10, -2, 2,
                                                 20, -2, 2,
                                                 30, -2, 2))
     }

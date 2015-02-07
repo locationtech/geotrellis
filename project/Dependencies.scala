@@ -67,10 +67,11 @@ object Dependencies {
   val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
-
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-   from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
+    from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
   val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
+
+  // val xz            = "org.tukaani"            %   "xz"         % "1.5"
   val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.16"
 }

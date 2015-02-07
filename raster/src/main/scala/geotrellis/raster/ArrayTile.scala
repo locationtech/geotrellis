@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,13 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.interpolation.InterpolationMethod
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
 object ArrayTile {
-  def alloc(t: CellType, cols: Int, rows: Int): MutableArrayTile = 
+  def alloc(t: CellType, cols: Int, rows: Int): MutableArrayTile =
     t match {
       case TypeBit    => BitArrayTile.ofDim(cols, rows)
       case TypeByte   => ByteArrayTile.ofDim(cols, rows)
@@ -31,7 +32,7 @@ object ArrayTile {
       case TypeDouble => DoubleArrayTile.ofDim(cols, rows)
     }
 
-  def empty(t: CellType, cols: Int, rows: Int): MutableArrayTile = 
+  def empty(t: CellType, cols: Int, rows: Int): MutableArrayTile =
     t match {
       case TypeBit    => BitArrayTile.empty(cols, rows)
       case TypeByte   => ByteArrayTile.empty(cols, rows)
@@ -41,7 +42,7 @@ object ArrayTile {
       case TypeDouble => DoubleArrayTile.empty(cols, rows)
     }
 
-  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile = 
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile =
     t match {
       case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows)
       case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows)
@@ -51,7 +52,7 @@ object ArrayTile {
       case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows)
     }
 
-  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile = 
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile =
     t match {
       case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
       case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
@@ -110,9 +111,9 @@ trait ArrayTile extends Tile with Serializable {
 
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     other match {
-      case ar: ArrayTile => 
+      case ar: ArrayTile =>
         combine(ar)(f)
-      case ct: ConstantTile => 
+      case ct: ConstantTile =>
         ct.combine(this)(f)
       case ct: CompositeTile =>
         ct.combine(this)((z1, z2)=>f(z2, z1))
@@ -154,9 +155,9 @@ trait ArrayTile extends Tile with Serializable {
 
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
     other match {
-      case ar: ArrayTile => 
+      case ar: ArrayTile =>
         combineDouble(ar)(f)
-      case ct: ConstantTile => 
+      case ct: ConstantTile =>
         ct.combineDouble(this)(f)
       case ct: CompositeTile =>
         ct.combineDouble(this)((z1, z2) => f(z2, z1))
@@ -182,9 +183,9 @@ trait ArrayTile extends Tile with Serializable {
   def applyDouble(i: Int): Double
 
   def get(col: Int, row: Int) = apply(row * cols + col)
-  def getDouble(col: Int, row: Int) = {
-//    println(s"$row * $cols + $col") ; 
-    applyDouble(row * cols + col) }
+  def getDouble(col: Int, row: Int) = applyDouble(row * cols + col)
+
+  def copy: ArrayTile
 
   def toList = toArray.toList
   def toListDouble = toArrayDouble.toList
@@ -213,5 +214,5 @@ trait ArrayTile extends Tile with Serializable {
 
   def toBytes: Array[Byte]
 
-  def warp(current: Extent, target: RasterExtent): ArrayTile 
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile 
 }

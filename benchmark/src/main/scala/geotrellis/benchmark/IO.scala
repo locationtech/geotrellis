@@ -85,8 +85,8 @@ class IOBenchmark extends OperationBenchmark {
   }
 }
 
-object ReadAndWarpBenchmark extends BenchmarkRunner(classOf[ReadAndWarpBenchmark])
-class ReadAndWarpBenchmark extends OperationBenchmark {
+object ReadAndResampleBenchmark extends BenchmarkRunner(classOf[ReadAndResampleBenchmark])
+class ReadAndResampleBenchmark extends OperationBenchmark {
   @Param(Array("bit", "byte", "short", "int", "float", "double"))
   var cellType = ""
 
@@ -123,15 +123,15 @@ class ReadAndWarpBenchmark extends OperationBenchmark {
     val r = arg.ArgReader.read(path, typ, extent, targetExtent) 
   }
 
-  def timeNewReaderWithWarp(reps: Int) = run(reps)(newReaderWithWarp)
-  def newReaderWithWarp = { 
+  def timeNewReaderWithResample(reps: Int) = run(reps)(newReaderWithResample)
+  def newReaderWithResample = { 
     val r = arg.ArgReader.read(path, typ, extent, extent) 
-    r.warp(extent.extent, targetExtent)
+    r.resample(extent.extent, targetExtent)
   }
 }
 
-object SmallTileReadAndWarpBenchmark extends BenchmarkRunner(classOf[SmallTileReadAndWarpBenchmark])
-class SmallTileReadAndWarpBenchmark extends OperationBenchmark {
+object SmallTileReadAndResampleBenchmark extends BenchmarkRunner(classOf[SmallTileReadAndResampleBenchmark])
+class SmallTileReadAndResampleBenchmark extends OperationBenchmark {
   @Param(Array("bit", "byte", "short", "int", "float", "double"))
   var cellType = ""
 
@@ -173,10 +173,10 @@ class SmallTileReadAndWarpBenchmark extends OperationBenchmark {
     val r = arg.ArgReader.read(path, typ, rasterExtent, targetExtent) 
   }
 
-  def timeNewReaderWithWarp(reps: Int) = run(reps)(newReaderWithWarp)
-  def newReaderWithWarp = { 
+  def timeNewReaderWithResample(reps: Int) = run(reps)(newReaderWithResample)
+  def newReaderWithResample = { 
     val r = arg.ArgReader.read(path, typ, rasterExtent.cols, rasterExtent.rows) 
-    r.warp(rasterExtent.extent, targetExtent)
+    r.resample(rasterExtent.extent, targetExtent)
   }
 }
 
@@ -215,6 +215,6 @@ class TileIOBenchmark extends OperationBenchmark {
   def timeRasterSourceWithExtent(reps: Int) = run(reps)(rasterSourceWithExtent)
   def rasterSourceWithExtent = { RasterSource("mtsthelens_tiled", targetExtent).get }
 
-  def timeRasterSourceAndThenWarp(reps: Int) = run(reps)(rasterSourceAndThenWarp)
-  def rasterSourceAndThenWarp = { RasterSource("mtsthelens_tiled").warp(targetExtent).get }
+  def timeRasterSourceAndThenResample(reps: Int) = run(reps)(rasterSourceAndThenResample)
+  def rasterSourceAndThenResample = { RasterSource("mtsthelens_tiled").resample(targetExtent).get }
 }

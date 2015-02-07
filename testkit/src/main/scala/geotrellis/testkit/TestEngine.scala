@@ -24,18 +24,24 @@ import geotrellis.engine.io._
 import org.scalatest._
 
 object TestEngine {
-  lazy val init = {
-    GeoTrellis.init(GeoTrellisConfig("raster-test/data/catalog.json"), "test-server")
-  }
+  private var _init = false
+  private var _catalogPath = "raster-test/data/catalog.json"
+
+  def setCatalogPath(path: String) =
+    _catalogPath = path
+
+  lazy val init =
+    if(!_init) {
+      GeoTrellis.init(GeoTrellisConfig(_catalogPath), "test-server")
+      _init = true
+    }
 }
 
 trait TestEngine extends Suite with BeforeAndAfter with Matchers {
-  TestEngine.init
-
-  def run[T](op: Op[T]): OperationResult[T] = GeoTrellis.run(op)
-  def run[T](src: OpSource[T]): OperationResult[T] = GeoTrellis.run(src)
-  def get[T](op: Op[T]): T = GeoTrellis.get(op)
-  def get[T](src: OpSource[T]): T = GeoTrellis.get(src)
+  def run[T](op: Op[T]): OperationResult[T] = { TestEngine.init ; GeoTrellis.run(op) }
+  def run[T](src: OpSource[T]): OperationResult[T] = { TestEngine.init ; GeoTrellis.run(src) }
+  def get[T](op: Op[T]): T = { TestEngine.init ; GeoTrellis.get(op) }
+  def get[T](src: OpSource[T]): T = {  TestEngine.init ; GeoTrellis.get(src) }
 
   def getRaster(name: String): Op[Tile] = getRaster("test:fs", name)
   def getRaster(ds: String, name: String): Op[Tile] = LoadRaster(ds, name)

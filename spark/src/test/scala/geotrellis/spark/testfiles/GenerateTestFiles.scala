@@ -82,7 +82,7 @@ object GenerateTestFiles {
               rows = tileLayout.tileRows
             )
 
-          val subTile: Tile = tile.warp(rasterExtent.extent, targetRasterExtent)
+          val subTile: Tile = tile.resample(rasterExtent.extent, targetRasterExtent)
           (SpatialKey(col, row), subTile)
         }
 

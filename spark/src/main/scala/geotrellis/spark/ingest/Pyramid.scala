@@ -3,6 +3,7 @@ package geotrellis.spark.ingest
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
+import geotrellis.raster.mosaic._
 
 import org.apache.spark.Logging
 import org.apache.spark.rdd._

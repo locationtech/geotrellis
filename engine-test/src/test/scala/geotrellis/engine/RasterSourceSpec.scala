@@ -75,20 +75,20 @@ class RasterSourceSpec extends FunSpec
       }
     }
 
-    it("should mapWithExtent to a sequence of ints") {
+    it("should mapRaster to a sequence of ints") {
       val RasterExtent(expectedExtent, _, _,_,_) =
         RasterSource("mtsthelens_tiled")
           .rasterExtent
           .get
 
       val combinedExtent = 
-      RasterSource("mtsthelens_tiled")
-        .mapWithExtent { (tile, extent) =>
-          extent
-         }
-        .converge
-        .get
-        .reduce(_.combine(_))
+        RasterSource("mtsthelens_tiled")
+          .mapWithExtent { (tile, extent) =>
+            extent
+           }
+          .converge
+          .get
+          .reduce(_.combine(_))
 
       combinedExtent should be (expectedExtent)
     }
@@ -190,8 +190,8 @@ class RasterSourceSpec extends FunSpec
     }
   }
 
-  describe("warp") {
-    it("should warp with crop only on single tile") {
+  describe("resample") {
+    it("should resample with crop only on single tile") {
       // val rs = createRasterSource(
       //   Array( 1,10,100,1000,2,2,2,2,2,
       //          2,20,200,2000,2,2,2,2,2,
@@ -209,7 +209,7 @@ class RasterSourceSpec extends FunSpec
 
       val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,cols,rows) = rs.rasterExtent.get
       val newRe = RasterExtent(Extent(xmin,ymax - (ch*3),xmin + (cw*4), ymax),4,3)
-      rs.warp(newRe).run match {
+      rs.resample(newRe).run match {
         case Complete(r,_) =>
           assertEqual(r,Array(1,10,100,1000,
                               2,20,200,2000,
@@ -221,7 +221,7 @@ class RasterSourceSpec extends FunSpec
       }
     }
 
-    it("should warp with crop only with tiles") {
+    it("should resample with crop only with tiles") {
       val rs = createRasterSource(
         Array( 1,10,100, 1000,2,2, 2,2,2,
                2,20,200, 2000,2,2, 2,2,2,
@@ -232,7 +232,7 @@ class RasterSourceSpec extends FunSpec
 
       val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,cols,rows) = rs.rasterExtent.get
       val newRe = RasterExtent(Extent(xmin,ymax - (ch*3),xmin + (cw*4), ymax),4,3)
-      rs.warp(newRe).run match {
+      rs.resample(newRe).run match {
         case Complete(r,_) =>
           assertEqual(r,Array(1,10,100,1000,
                               2,20,200,2000,
@@ -254,7 +254,7 @@ class RasterSourceSpec extends FunSpec
 
       val RasterExtent(Extent(xmin, ymin, _, _), cw, ch, _, _) = rs.rasterExtent.get
       val newExt = Extent(xmin, ymin, xmin + (cw * 4), ymin + (ch * 2))
-      rs.warp(newExt).run match {
+      rs.resample(newExt).run match {
         case Complete(r,_) =>
           assertEqual(r, Array(3, 30, 300, 3000,
                                4, 40, 400, 4000))
@@ -276,7 +276,7 @@ class RasterSourceSpec extends FunSpec
       val RasterExtent(Extent(_, _, _, _), _, _, cols, rows) = rs.rasterExtent.get
       val newCols = cols - 4
       val newRows = rows - 2
-      rs.warp(newCols, newRows).run match {
+      rs.resample(newCols, newRows).run match {
         case Complete(r,_) =>
           assertEqual(r, Array(10, 100, 1000, 10000,
                                30, 300, 3000, 30000))
