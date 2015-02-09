@@ -1,16 +1,16 @@
 package geotrellis.vector.io.shape.reader
 
+import geotrellis.vector._
+
 import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 
 case class MalformedShapeFileHeaderException(msg: String) extends RuntimeException(msg)
 
-trait ShapeHeaderReader {
+object ShapeHeaderReader {
 
-  import ShapeType._
-
-  protected def readHeader(byteBuffer: ByteBuffer): Array[Double] = {
+  def apply(byteBuffer: ByteBuffer): Extent = {
     val boundingBox = Array.ofDim[Double](8)
     val oldBBOrder = byteBuffer.order
 
@@ -36,17 +36,15 @@ trait ShapeHeaderReader {
     if (version != 1000)
       throw new MalformedShapeFileHeaderException(s"Wrong version, $fileCode != 1000.")
 
-    val shapeType = byteBuffer.getInt
-    if (!ValidValues.contains(shapeType))
-      throw new MalformedShapeFileHeaderException(s"Malformed shape type $shapeType.")
+    // Skip the Shape code. Not sure why there is one at the head of the file, each entry has one.
+    byteBuffer.getInt
 
     cfor(0)(_ < boundingBox.size, _ + 1) { i =>
       boundingBox(i) = byteBuffer.getDouble
     }
 
     byteBuffer.order(oldBBOrder)
-
-    boundingBox
+    Extent(boundingBox(0), boundingBox(1), boundingBox(2), boundingBox(3))
   }
 
 }

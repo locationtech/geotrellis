@@ -42,7 +42,7 @@ class ShapeFileReader(path: String) {
 
       val shapePointFileFuture = 
         Future {
-          ShapePointFileReader(p + ShapePointFileReader.FileExtension).read
+          ShapePointFileReader(p + ShapePointFileReader.FileExtension)
         }
 
       val shapeDBaseFileFuture = 

@@ -57,9 +57,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
     arr
   }
 
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
-
   // -- Intersection
 
   /**

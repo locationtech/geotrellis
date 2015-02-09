@@ -17,6 +17,7 @@
 package geotrellis.vector
 
 import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.algorithm.CGAlgorithms
 import GeomFactory._
 
 import spire.syntax.cfor._
@@ -71,6 +72,11 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   lazy val isSimple: Boolean =
     jtsGeom.isSimple
 
+  /** Determines whether or not a closed line is counter clockwise */
+  def isCCW: Boolean =
+    if(!isClosed) false
+    else CGAlgorithms.isCCW(jtsGeom.getCoordinates)
+
   /**
    * Returns the boundary of this Line.
    * The boundary of a non-closed Line consists of its two end points. The
@@ -91,9 +97,6 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     }
     arr
   }
-
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns the minimum extent that contains this Line.

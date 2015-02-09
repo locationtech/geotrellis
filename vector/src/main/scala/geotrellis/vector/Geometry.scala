@@ -23,7 +23,9 @@ trait Geometry {
 
   val jtsGeom: jts.Geometry
 
-//  assert(jtsGeom.isValid, s"Geometry is invalid: $this")
+  /** The number of vertices in this geometry. */
+  def vertexCount: Int =
+    jtsGeom.getNumPoints
 
   def distance(other: Geometry): Double =
     jtsGeom.distance(other.jtsGeom)

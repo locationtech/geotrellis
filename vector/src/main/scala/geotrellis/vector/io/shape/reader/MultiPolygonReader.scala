@@ -10,14 +10,12 @@ import java.nio.ByteBuffer
 
 import GeomFactory._
 
-object MultiPolygonReader {
-  def read(byteBuffer: ByteBuffer): MultiPolygon = {
+class MultiPolygonReader(val dimensions: Int) extends GeometryReader(dimensions) {
+  def readGeometry(byteBuffer: ByteBuffer): Geometry = {
     val lineCount = byteBuffer.getInt
     val pointCount = byteBuffer.getInt
 
     val lines = Array.ofDim[Line](lineCount)
-    val offsets = Array.ofDim[Int](lineCount)
-
     val lineLengths = Array.ofDim[Int](lineCount)
 
     var startPoint = byteBuffer.getInt // First offset
@@ -63,11 +61,13 @@ object MultiPolygonReader {
     val holeArray = holes.toArray
 
     if(shells.size == 1) {
-      factory.createMultiPolygon(
-        Array(
-          factory.createPolygon(
-            shellArray(0),
-            holeArray
+      MultiPolygon(
+        factory.createMultiPolygon(
+          Array(
+            factory.createPolygon(
+              shellArray(0),
+              holeArray
+            )
           )
         )
       )
@@ -77,7 +77,7 @@ object MultiPolygonReader {
       cfor(0)(_ < len, _ + 1) { i =>
         polyArray(i) = factory.createPolygon(shellArray(i), null)
       }
-      factory.createMultiPolygon(polyArray)
+      MultiPolygon(factory.createMultiPolygon(polyArray))
     } else {
       // Determine what holes go to what shells
       val holesLen = holeArray.size
@@ -155,7 +155,7 @@ object MultiPolygonReader {
           )
       }
               
-      factory.createMultiPolygon(polygons)
+      MultiPolygon(factory.createMultiPolygon(polygons))
     }
   }
 }

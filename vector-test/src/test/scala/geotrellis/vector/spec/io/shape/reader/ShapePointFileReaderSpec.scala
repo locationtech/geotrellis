@@ -1,5 +1,7 @@
 package geotrellis.vector.io.shape.reader
 
+import geotrellis.vector._
+
 import org.scalatest._
 
 /**
@@ -7,7 +9,7 @@ import org.scalatest._
   */
 class ShapePointFileReaderSpec extends FunSpec with Matchers {
 
-  def read(path: String) = ShapePointFileReader(path).read
+  def read(path: String) = ShapePointFileReader(path)
 
   describe("should read shape point files correctly") {
 
@@ -63,12 +65,12 @@ class ShapePointFileReaderSpec extends FunSpec with Matchers {
 
 
       val path = "raster-test/data/shapefiles/demographics/demographics.shp"
-      val shapePointFile = ShapePointFileReader(path).read
+      val shapePointFile = ShapePointFileReader(path)
 
       shapePointFile.size should be (160)
       for (i <- 0 until shapePointFile.size)
         shapePointFile(i) match {
-          case MultiPolygonPointRecord(mp) =>
+          case mp: MultiPolygon =>
             withClue(s"failed on index: $i with multipolygon $mp: ") {
               val lines = mp.polygons.map(p => p.holes :+ p.exterior).flatten
               lines.map(_.hashCode).toSet should be (correctLineSets(i))
@@ -133,7 +135,7 @@ class ShapePointFileReaderSpec extends FunSpec with Matchers {
       shapePointFile.size should be (255)
       for (i <- 0 until shapePointFile.size)
         shapePointFile(i) match {
-          case MultiPolygonPointRecord(mp) =>
+          case mp: MultiPolygon =>
             withClue(s"failed on index: $i with multipolygon $mp: ") {
               val hashCode = mp.polygons.map(p => p.holes :+ p.exterior)
                 .flatten.map(_.hashCode).toSet.hashCode

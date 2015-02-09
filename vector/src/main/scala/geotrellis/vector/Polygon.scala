@@ -117,9 +117,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     arr
   }
 
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
-
   /**
    * Returns the minimum extent that contains this Polygon.
    */

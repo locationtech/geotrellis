@@ -75,10 +75,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
     arr
   }
 
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
-
-// -- Intersection
+  // -- Intersection
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared

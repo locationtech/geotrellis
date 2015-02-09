@@ -66,9 +66,6 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     arr
   }
 
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
-
   // -- Intersection
 
   def &(p: Point): PointGeometryIntersectionResult =

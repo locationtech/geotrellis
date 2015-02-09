@@ -15,21 +15,17 @@ object ShapeIndexFileReader {
 
   val FileExtension = ".shx"
 
-  def apply(path: String): ShapeIndexFileReader =
+  def apply(path: String): ShapeIndexFile =
     if (path.endsWith(FileExtension)) apply(FileSystem.slurp(path))
     else throw new MalformedShapeIndexFileException(
       s"Bad file ending (must be .$FileExtension)."
     )
 
-  def apply(bytes: Array[Byte]): ShapeIndexFileReader =
-    new ShapeIndexFileReader(ByteBuffer.wrap(bytes, 0, bytes.size))
+  def apply(bytes: Array[Byte]): ShapeIndexFile =
+    apply(ByteBuffer.wrap(bytes, 0, bytes.size))
 
-}
-
-class ShapeIndexFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
-
-  lazy val read: ShapeIndexFile = {
-    val boundingBox = readHeader(byteBuffer)
+  def apply(byteBuffer: ByteBuffer): ShapeIndexFile = {
+    val extent = ShapeHeaderReader(byteBuffer)
 
     byteBuffer.order(ByteOrder.BIG_ENDIAN)
 
