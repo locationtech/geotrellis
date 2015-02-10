@@ -1,6 +1,6 @@
 package geotrellis.raster
 
-import geotrellis.raster.stats.{FastMapHistogram, MapHistogram, Histogram}
+import geotrellis.raster.histogram.{FastMapHistogram, MapHistogram, Histogram}
 import geotrellis.vector.Extent
 import geotrellis.vector.json._
 
@@ -30,13 +30,13 @@ package object json {
   }
 
   implicit object CellTypeFormat extends RootJsonFormat[CellType] {
-    def write(cellType: CellType) = 
+    def write(cellType: CellType) =
       JsString(cellType.toString)
 
     def read(value: JsValue): CellType =
       value match {
         case JsString(name) => CellType.fromString(name)
-        case _ => 
+        case _ =>
           throw new DeserializationException("CellType must be a string")
       }
   }

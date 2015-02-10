@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ import geotrellis.engine.render._
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.raster.op.local._
-import geotrellis.raster.stats._
+import geotrellis.raster.op.stats._
 import geotrellis.raster.render._
 
 import com.google.caliper.Param
@@ -47,13 +47,13 @@ class WeightedOverlay extends OperationBenchmark {
     val re = getRasterExtent(names(0), size, size)
     val total = weights.sum
 
-    source = 
+    source =
       (0 until n).map(i => RasterSource(names(i),re) * weights(i))
                  .reduce(_+_)
                  .localDivide(total)
                  .renderPng(colors)
 
-    sourceSeq = 
+    sourceSeq =
       (0 until n).map(i => RasterSource(names(i),re) * weights(i))
                  .localAdd
                  .localDivide(total)
@@ -75,13 +75,13 @@ class WeightedOverlayOverTypes extends OperationBenchmark {
   @Param(Array("bit","byte","short","int","float","double"))
   var cellType = ""
 
-  val layers = 
+  val layers =
     Map(
       ("bit","wm_DevelopedLand"),
       ("byte", "SBN_car_share"),
       ("short","travelshed-int16"),
       ("int","travelshed-int32"),
-      ("float","aspect"), 
+      ("float","aspect"),
       ("double","aspect-double")
     )
 
@@ -98,13 +98,13 @@ class WeightedOverlayOverTypes extends OperationBenchmark {
     val re = getRasterExtent(layers(cellType), size, size)
     val total = weights.sum
 
-    source = 
+    source =
       (0 until layerCount).map(i => RasterSource(layers(cellType),re) * weights(i))
                           .reduce(_+_)
                           .localDivide(total)
                           .renderPng(colors)
 
-    sourceSeq = 
+    sourceSeq =
       (0 until layerCount).map(i => RasterSource(layers(cellType),re) * weights(i))
                           .localAdd
                           .localDivide(total)

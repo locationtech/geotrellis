@@ -1,7 +1,7 @@
 package geotrellis.spark.op.zonal.summary
 
 import geotrellis.raster.op.zonal.summary._
-import geotrellis.raster.stats._
+import geotrellis.raster.histogram._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.vector._

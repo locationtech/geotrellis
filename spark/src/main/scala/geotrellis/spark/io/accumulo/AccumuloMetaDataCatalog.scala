@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.stats.Histogram
+import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.json._
 import geotrellis.spark._
 import geotrellis.spark.json._

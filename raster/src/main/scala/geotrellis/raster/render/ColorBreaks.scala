@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster.stats.Histogram
+import geotrellis.raster.histogram.Histogram
 import java.util.Locale
 
 /**
@@ -59,13 +59,13 @@ case class ColorBreaks(limits: Array[Int], colors: Array[Int]) {
 object ColorBreaks {
   /**
     * This method is used for cases in which we are provided with a different
-    * number of colors than we have value ranges.  This method will return a 
+    * number of colors than we have value ranges.  This method will return a
     * return a ClassBreak object where the provided colors are spaced out amongst
     * the ranges that exist.
     *
     * For example, if we are provided a list of 9 colors on a red
-    * to green gradient, but only have three maximum values for 3 value ranges, 
-    * we expect to get back a ColorBreaks object with three ranges and three colors, 
+    * to green gradient, but only have three maximum values for 3 value ranges,
+    * we expect to get back a ColorBreaks object with three ranges and three colors,
     * with the first being red, the second color being the 5th
     * color (between red and green), and the last being green.
     *
@@ -76,7 +76,7 @@ object ColorBreaks {
     if (limits.length != colors.length) {
       val used = new Array[Int](limits.length)
       used(0) = colors(0)
-      
+
       val b = limits.length - 1
       val c = colors.length - 1
       var i = 1
@@ -84,7 +84,7 @@ object ColorBreaks {
         used(i) = colors(math.round(i.toDouble * c / b).toInt)
         i += 1
       }
-      
+
       new ColorBreaks(limits, used)
     } else {
       new ColorBreaks(limits, colors)

@@ -2,7 +2,8 @@ package geotrellis.raster.render
 
 import geotrellis.raster._
 import geotrellis.raster.render.png._
-import geotrellis.raster.stats._
+import geotrellis.raster.histogram.Histogram
+import geotrellis.raster.op.stats._
 
 trait RenderMethods extends TileMethods {
   def color(breaksToColors: Map[Int, Int]): Tile =
@@ -30,7 +31,7 @@ trait RenderMethods extends TileMethods {
   def renderPng(): Png =
     new Encoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
 
-  def renderPng(colorRamp: ColorRamp): Png = 
+  def renderPng(colorRamp: ColorRamp): Png =
     renderPng(colorRamp.toArray)
 
   def renderPng(colorBreaks: ColorBreaks): Png =
@@ -47,9 +48,9 @@ trait RenderMethods extends TileMethods {
     * generate a ColorBreaks object which represents the value ranges and the
     * assigned color.  One way to create these color breaks is to use the
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks. 
+    * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): Png = 
+  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): Png =
     renderPng(colorBreaks, noDataColor, None)
 
   /**
@@ -63,12 +64,12 @@ trait RenderMethods extends TileMethods {
     * generate a ColorBreaks object which represents the value ranges and the
     * assigned color.  One way to create these color breaks is to use the
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks. 
+    * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Png = 
+  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Png =
     renderPng(colorBreaks, noDataColor, Some(histogram))
 
-  private 
+  private
   def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Png = {
     val breaks = colorBreaks.limits
     val colors = colorBreaks.colors

@@ -4,7 +4,7 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.json._
 import geotrellis.spark.json._
-import geotrellis.raster.stats.Histogram
+import geotrellis.raster.histogram.Histogram
 import geotrellis.spark.RasterMetaData
 import geotrellis.vector.Extent
 import geotrellis.vector.json._

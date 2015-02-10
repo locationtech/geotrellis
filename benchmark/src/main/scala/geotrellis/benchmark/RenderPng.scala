@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ import geotrellis.engine.io._
 import geotrellis.raster._
 import geotrellis.raster.op.global._
 import geotrellis.raster.op.local._
-import geotrellis.raster.stats._
+import geotrellis.raster.op.stats._
 import geotrellis.raster.render._
 import geotrellis.raster.render.png._
 
@@ -50,7 +50,7 @@ class RenderPngBenchmark extends OperationBenchmark {
         raster.renderPng(breaksOp, 0, h)
       }
 
-    source = 
+    source =
       RasterSource(name, re)
         .cached
         .renderPng(colors)
@@ -91,7 +91,7 @@ class RenderPngWeightedOverlayBenchmark extends OperationBenchmark {
         raster.renderPng(breaksOp, 0)
       }
 
-    source = 
+    source =
       (0 until n).map(i => RasterSource(names(i), re) * weights(i))
                  .reduce(_ + _)
                  .localDivide(total)
@@ -100,7 +100,7 @@ class RenderPngWeightedOverlayBenchmark extends OperationBenchmark {
 
 
 
-    sourceSeq = 
+    sourceSeq =
       (0 until n).map(i => RasterSource(names(i), re) * weights(i))
                  .localAdd
                  .localDivide(total)

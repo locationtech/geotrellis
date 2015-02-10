@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
-import geotrellis.raster.stats.Histogram
+import geotrellis.raster.histogram.Histogram
 
 import scala.collection.mutable
 
@@ -30,9 +30,9 @@ case object Exact extends ColorMapType
 case class ColorMapOptions(
   colorMapType: ColorMapType,
   /** Rgba value for NODATA */
-  noDataColor: Int = 0x00000000, 
+  noDataColor: Int = 0x00000000,
   /** Rgba value for data that doesn't fit the map */
-  noMapColor: Int = 0x00000000,  
+  noMapColor: Int = 0x00000000,
   /** Set to true to throw exception on unmappable variables */
   strict: Boolean = false
 )
@@ -45,17 +45,17 @@ object ColorMapOptions {
 }
 
 object ColorMap {
-  def apply(breaksToColors: Map[Int, Int]): IntColorMap = 
+  def apply(breaksToColors: Map[Int, Int]): IntColorMap =
     IntColorMap(breaksToColors)
 
   def apply(breaksToColors: Map[Int, Int],
-            options: ColorMapOptions): IntColorMap = 
+            options: ColorMapOptions): IntColorMap =
     IntColorMap(breaksToColors, options)
 
   def apply(breaksToColors: Map[Double, Int]): DoubleColorMap =
     DoubleColorMap(breaksToColors)
 
-  def apply(breaksToColors: Map[Double, Int], options: ColorMapOptions): DoubleColorMap = 
+  def apply(breaksToColors: Map[Double, Int], options: ColorMapOptions): DoubleColorMap =
     DoubleColorMap(breaksToColors, options)
 
   def apply(breaks: Array[Int], color: Array[Int]): IntColorMap =
@@ -91,14 +91,14 @@ trait ColorMap {
     _colorsChecked = true
   }
 
-  def opaque = 
+  def opaque =
     if(_colorsChecked) { _opaque }
     else {
       checkColors()
       _opaque
     }
 
-  def grey = 
+  def grey =
     if(_colorsChecked) { _grey }
     else {
       checkColors()
@@ -164,7 +164,7 @@ case class IntColorMap(breaksToColors: Map[Int, Int],
   }
 }
 
-case class CachedColorMap(colors: Array[Int], options: ColorMapOptions, h: Histogram) 
+case class CachedColorMap(colors: Array[Int], options: ColorMapOptions, h: Histogram)
   extends ColorMap with Function1[Int, Int] {
   final val noDataColor = options.noDataColor
   def render(r: Tile) =
@@ -229,7 +229,7 @@ case class DoubleColorMap(breaksToColors: Map[Double, Int],
     new ColorMap {
       lazy val colors = cs
       val options = opts
-      def render(r: Tile) = 
+      def render(r: Tile) =
         r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
       def cache(h: Histogram) = this
     }

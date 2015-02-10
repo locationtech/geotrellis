@@ -5,7 +5,7 @@ import geotrellis.vector._
 
 trait ZonalSummaryMethods extends TileMethods {
   def zonalSummary[T, U](
-    extent: Extent, 
+    extent: Extent,
     polygon: Polygon,
     handleFullTile: FullTileIntersection => T,
     handlePartialTile: PartialTileIntersection => T,
@@ -32,7 +32,7 @@ trait ZonalSummaryMethods extends TileMethods {
   def zonalSummary[T, U](extent: Extent, polygon: Polygon, handler: TileIntersectionHandler[T, U]): U =
     zonalSummary(extent, polygon, handler.handleFullTile, handler.handlePartialTile, handler.combineResults)
 
-  def zonalHistogram(extent: Extent, polygon: Polygon): stats.Histogram =
+  def zonalHistogram(extent: Extent, polygon: Polygon): histogram.Histogram =
     zonalSummary(extent, polygon, Histogram)
 
   def zonalMax(extent: Extent, polygon: Polygon): Int =

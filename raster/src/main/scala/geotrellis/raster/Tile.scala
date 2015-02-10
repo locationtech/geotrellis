@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
+import geotrellis.raster.op.stats._
 
 import spire.syntax.cfor._
 
@@ -165,10 +166,10 @@ trait Tile {
     resample(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
 
 
-  def crop(cols: Int, rows: Int): Tile = 
+  def crop(cols: Int, rows: Int): Tile =
     CroppedTile(this, GridBounds(0, 0, cols - 1, rows - 1))
 
-  def crop(gb: GridBounds): Tile = 
+  def crop(gb: GridBounds): Tile =
     CroppedTile(this, gb)
 
   def crop(srcExtent: Extent, extent: Extent): Tile =

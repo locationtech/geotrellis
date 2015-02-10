@@ -5,7 +5,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 
 import geotrellis.raster._
-import geotrellis.raster.stats._
+import geotrellis.raster.histogram.Histogram
 
 import geotrellis.vector._
 
