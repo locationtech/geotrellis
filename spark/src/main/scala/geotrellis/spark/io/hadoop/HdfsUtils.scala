@@ -71,6 +71,9 @@ object HdfsUtils extends Logging {
    */ 
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
+    if (!fs.exists(path))
+      throw new IOException(s"Invalid path: $path")
+
     val files = new ListBuffer[Path]
 
     def addFiles(fileStatuses: Array[FileStatus]): Unit = {
