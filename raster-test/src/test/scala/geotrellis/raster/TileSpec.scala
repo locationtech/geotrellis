@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,10 @@ import geotrellis.raster.op.local._
 import org.scalatest._
 import scala.collection.mutable
 
-class TileSpec extends FunSpec 
-                  with Matchers 
+import spire.syntax.cfor._
+
+class TileSpec extends FunSpec
+                  with Matchers
                   with TestEngine
                   with TileBuilders {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
@@ -79,9 +81,9 @@ class TileSpec extends FunSpec
   }
 
   describe("convert") {
-    it("should convert a byte raster to an int raster") { 
+    it("should convert a byte raster to an int raster") {
       val r = byteRaster
-      var result = 
+      var result =
         r.convert(TypeShort)
          .localAdd(100)
 
@@ -98,8 +100,8 @@ class TileSpec extends FunSpec
     def check(r: Tile) = {
       val r2 = r.mapIfSet(z => 1)
       val (cols, rows) = (r.cols, r.rows)
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           val v = r.get(col, row)
           val v2 = r2.get(col, row)
           if(isNoData(v)) {
@@ -109,8 +111,8 @@ class TileSpec extends FunSpec
       }
 
       val r3 = r.mapIfSetDouble(z => 1.0)
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           val v = r.getDouble(col, row)
           val v3 = r3.getDouble(col, row)
           if(isNoData(v)) {
@@ -122,12 +124,12 @@ class TileSpec extends FunSpec
 
     it("should respect NoData values") {
       withClue("ByteArrayTile") { check(byteNoDataRaster) }
-      withClue("ShortArrayTile") { 
+      withClue("ShortArrayTile") {
         val n = shortNODATA
         check(createTile(Array[Short](1, 2, 3, n, n, n, 3, 4, 5)))
       }
       withClue("IntArrayTile") { check(positiveIntegerNoDataRaster) }
-      withClue("FloatArrayTile") { 
+      withClue("FloatArrayTile") {
         val n = Float.NaN
         check(createTile(Array[Float](1.0f, 2.0f, 3.0f, n, n, n, 3.0f, 4.0f, 5.0f)))
       }
@@ -274,10 +276,10 @@ class TileSpec extends FunSpec
       val result = r.downsample(4, 3)({
         cellSet =>
           var maxValue = 0
-          cellSet.foreach({ 
-            (col, row) => 
+          cellSet.foreach({
+            (col, row) =>
               if(col < r.cols && row < r.rows) {
-                if(r.get(col, row) > maxValue) maxValue = r.get(col, row) 
+                if(r.get(col, row) > maxValue) maxValue = r.get(col, row)
               }
           })
           maxValue
@@ -287,7 +289,7 @@ class TileSpec extends FunSpec
       result.rows should be (3)
 
       assertEqual(result, Array( 2, 3, 4, 5,
-                                 4, 3, 2, 6, 
+                                 4, 3, 2, 6,
                                  3, 4, 4, 8))
     }
 
@@ -306,10 +308,10 @@ class TileSpec extends FunSpec
       val result = r.downsample(4, 3)({
         cellSet =>
           var maxValue = 0
-          cellSet.foreach({ 
-            (col, row) => 
+          cellSet.foreach({
+            (col, row) =>
               if(col < r.cols && row < r.rows) {
-                if(r.get(col, row) > maxValue) maxValue = r.get(col, row) 
+                if(r.get(col, row) > maxValue) maxValue = r.get(col, row)
               }
           })
           maxValue

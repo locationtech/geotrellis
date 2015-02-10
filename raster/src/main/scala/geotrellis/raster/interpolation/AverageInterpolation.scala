@@ -27,9 +27,9 @@ class AverageInterpolation(tile: Tile, extent: Extent)
     var avg = 0.0
     var t = 1
 
-    cfor(0)(_ < cols, _ + 1) { i =>
-      cfor(0)(_ < rows, _ + 1) { j =>
-        val c = f(i, j)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val c = f(col, row)
         if (nodata != c && !c.isNaN) {
           avg += (c - avg) / t
           t += 1

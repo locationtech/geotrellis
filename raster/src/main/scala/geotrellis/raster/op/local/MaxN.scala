@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@
 package geotrellis.raster.op.local
 
 import geotrellis.raster._
+
+import spire.syntax.cfor._
 
 /**
  * Implementation to find the Nth maximum element of a set of rasters for each cell.
@@ -68,7 +70,7 @@ object MaxN extends Serializable {
   def findNthDoubleInPlace(arr: ArrayView[Double], n: Int): Double = {
     if(n >= arr.size) {
       Double.NaN
-    }else {
+    } else {
       val pivot = arr(scala.util.Random.nextInt(arr.size))
       val (left, right) = arr partitionInPlace (_ > pivot)
       if (left.size == n) pivot
@@ -95,8 +97,8 @@ object MaxN extends Serializable {
       val (cols, rows) = rs(0).dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           if(newCellType.isFloatingPoint) {
             val maxN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col, row)).filter(num => !isNoData(num)).toArray), n)
             tile.setDouble(col, row, maxN)

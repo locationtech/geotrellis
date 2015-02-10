@@ -24,6 +24,8 @@ import geotrellis.testkit._
 
 import scala.collection.mutable
 
+import spire.syntax.cfor._
+
 class ZonalPercentageSpec extends FunSpec
                              with Matchers
                              with TestEngine
@@ -104,8 +106,8 @@ class ZonalPercentageSpec extends FunSpec
       val result = r.zonalPercentage(zones)
 
       val (cols,rows) = (result.cols, result.rows)
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < r.rows, _ + 1) { row =>
+        cfor(0)(_ < r.cols, _ + 1) { col =>
           val zone = zones.get(col,row)
           val value = r.get(col,row)
           val percentage = result.get(col,row)

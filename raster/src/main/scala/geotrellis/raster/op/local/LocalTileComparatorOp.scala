@@ -17,14 +17,14 @@ trait LocalTileComparatorOp extends Serializable {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
     if (r.cellType.isFloatingPoint) {
       val cons = c.toDouble
-      cfor(0)(_ < r.cols, _ + 1) { col =>
-        cfor(0)(_ < r.rows, _ + 1) { row =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
+        cfor(0)(_ < r.cols, _ + 1) { col =>
           tile.set(col, row, if (compare(r.getDouble(col, row), cons)) 1 else 0)
         }
       }
     } else {
-      cfor(0)(_ < r.cols, _ + 1) { col =>
-        cfor(0)(_ < r.rows, _ + 1) { row =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
+        cfor(0)(_ < r.cols, _ + 1) { col =>
           tile.set(col, row, if (compare(r.get(col, row), c)) 1 else 0)
         }
       }
@@ -36,8 +36,8 @@ trait LocalTileComparatorOp extends Serializable {
   def apply(r: Tile, c: Double): Tile = {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
-    cfor(0)(_ < r.cols, _ + 1) { col =>
-      cfor(0)(_ < r.rows, _ + 1) { row =>
+    cfor(0)(_ < r.rows, _ + 1) { row =>
+      cfor(0)(_ < r.cols, _ + 1) { col =>
         tile.set(col, row, if (compare(r.getDouble(col, row), c)) 1 else 0)
       }
     }
@@ -50,14 +50,14 @@ trait LocalTileComparatorOp extends Serializable {
 
     if (r.cellType.isFloatingPoint) {
       val cons = c.toDouble
-      cfor(0)(_ < r.cols, _ + 1) { col =>
-        cfor(0)(_ < r.rows, _ + 1) { row =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
+        cfor(0)(_ < r.cols, _ + 1) { col =>
           tile.set(col, row, if (compare(cons, r.getDouble(col, row))) 1 else 0)
         }
       }
     } else {
-      cfor(0)(_ < r.cols, _ + 1) { col =>
-        cfor(0)(_ < r.rows, _ + 1) { row =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
+        cfor(0)(_ < r.cols, _ + 1) { col =>
           tile.set(col, row, if (compare(c, r.get(col, row))) 1 else 0)
         }
       }
@@ -69,8 +69,8 @@ trait LocalTileComparatorOp extends Serializable {
   def apply(c: Double, r: Tile): Tile = {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
-    cfor(0)(_ < r.cols, _ + 1) { col =>
-      cfor(0)(_ < r.rows, _ + 1) { row =>
+    cfor(0)(_ < r.rows, _ + 1) { row =>
+      cfor(0)(_ < r.cols, _ + 1) { col =>
         tile.set(col, row, if (compare(c, r.getDouble(col, row))) 1 else 0)
       }
     }
@@ -85,8 +85,8 @@ trait LocalTileComparatorOp extends Serializable {
     val (cols, rows) = r1.dimensions
     val tile = BitArrayTile.ofDim(cols, rows)
 
-    cfor(0)(_ < r1.cols, _ + 1) { col =>
-      cfor(0)(_ < r1.rows, _ + 1) { row =>
+    cfor(0)(_ < r1.rows, _ + 1) { row =>
+      cfor(0)(_ < r1.cols, _ + 1) { col =>
         if (r1.cellType.isFloatingPoint || r2.cellType.isFloatingPoint) {
           tile.set(col, row, if (compare(r1.getDouble(col, row), r2.getDouble(col, row))) 1 else 0)
         } else {

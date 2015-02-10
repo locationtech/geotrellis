@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,18 +32,18 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
     _mapIntersecting(p, None)(handleTileIntersection)
 
   def mapIntersecting[B, That](p: Polygon, fullTileResults: DataSource[B, _])
-                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] = 
+                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] =
     _mapIntersecting(p, Some(fullTileResults))(handleTileIntersection)
 
   def mapIntersecting[B, That](p: Polygon, fullTileResults: Option[DataSource[B, _]])
-                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] = 
+                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] =
     _mapIntersecting(p, fullTileResults)(handleTileIntersection)
 
 
-  private 
+  private
   def _mapIntersecting[B, That](p: Polygon, fullTileResults: Option[DataSource[B, _]])
                                 (handleTileIntersection: TileIntersection=>B): DataSource[B, _] = {
-    val newOp = 
+    val newOp =
       (rasterSource.rasterDefinition, rasterSource.tiles).map { (rd, tiles) =>
         val tileExtents = TileExtents(rd.rasterExtent.extent, rd.tileLayout)
         val tileCols = rd.tileLayout.layoutCols
@@ -55,15 +55,15 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
             case Some(cached) =>
               { (i: Int) => cached.elements.flatMap(_(i)) }
             case None =>
-              { (i: Int) => 
+              { (i: Int) =>
                 tiles(i).map { t =>
                   handleTileIntersection(FullTileIntersection(t))
                 }
               }
           }
 
-        cfor(0)(_ < tileCols, _ + 1) { col =>
-          cfor(0)(_ < tileRows, _ + 1) { row =>
+        cfor(0)(_ < tileRows, _ + 1) { row =>
+          cfor(0)(_ < tileCols, _ + 1) { col =>
             val extent = tileExtents(col, row)
 
             if(p.contains(extent)) {
@@ -74,7 +74,7 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
                   filtered += tiles(row * tileCols + col).map { t =>
                     handleTileIntersection(
                       PartialTileIntersection(
-                        t, 
+                        t,
                         extent,
                         intersectionPoly
                       )
@@ -104,8 +104,8 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
   }
 
   def zonalSummary[T, U](
-    handler: TileIntersectionHandler[T, U], 
-    p: Polygon, 
+    handler: TileIntersectionHandler[T, U],
+    p: Polygon,
     cachedResult: Option[DataSource[T, _]]
   ): ValueSource[U] =
     mapIntersecting(p, cachedResult)(handler)

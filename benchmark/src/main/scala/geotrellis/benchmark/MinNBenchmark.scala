@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@ import geotrellis.raster._
 import geotrellis.raster.op.local._
 
 import com.google.caliper.Param
+
+import spire.syntax.cfor._
 
 object MinNImplementation extends BenchmarkRunner(classOf[MinNImplementation])
 class MinNImplementation extends OperationBenchmark {
@@ -113,8 +115,8 @@ object ImmutableMinN extends Serializable {
       val (cols, rows) = rs.head.dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           if(newCellType.isFloatingPoint) {
             val minN = quickSelectDouble(rs.map(r => r.getDouble(col, row)).filter(num => !isNoData(num)), n)
             tile.setDouble(col, row, minN)
@@ -145,8 +147,8 @@ object ArrayMinN extends Serializable {
       val (cols, rows) = rs.head.dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           if(newCellType.isFloatingPoint) {
             val sorted = rs.map(r => r.getDouble(col, row)).filter(num => !isNoData(num)).toArray.sorted
             val minN = {

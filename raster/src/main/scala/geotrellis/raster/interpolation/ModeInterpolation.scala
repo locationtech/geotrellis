@@ -21,9 +21,9 @@ class ModeInterpolation(tile: Tile, extent: Extent)
     var max = Double.NaN
     var maxAccum = 0
 
-    cfor(0)(_ < cols, _ + 1) { i =>
-      cfor(0)(_ < rows, _ + 1) { j =>
-        val c = tile.getDouble(i, j)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val c = tile.getDouble(col, row)
         if (!c.isNaN) {
           var accum = 1
           if (!map.containsKey(c)) {

@@ -55,8 +55,8 @@ trait RasterMatchers extends Matchers {
    * b. if number of tiles == count
    */
   def rasterShouldBe(tile: Tile, value: Int): Unit = {
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
         withClue(s"(col=$col, row=$row)") { tile.get(col, row) should be(value) }
       }
     }
@@ -66,8 +66,8 @@ trait RasterMatchers extends Matchers {
     rasterShouldBeAbout(tile, f, 1e-100)
 
   def rasterShouldBeAbout(tile: Tile, f: (Tile, Int, Int) => Double, epsilon: Double): Unit = {
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
         val exp = f(tile, col, row)
         val v = tile.getDouble(col, row)
         if (!exp.isNaN || !v.isNaN) {
@@ -81,8 +81,8 @@ trait RasterMatchers extends Matchers {
     rasterShouldBeAbout(tile, f, 1e-100)
 
   def rasterShouldBeAbout(tile: Tile, f: (Int, Int) => Double, epsilon: Double): Unit = {
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
         val exp = f(col, row)
         val v = tile.getDouble(col, row)
         if (!exp.isNaN || !v.isNaN) {
