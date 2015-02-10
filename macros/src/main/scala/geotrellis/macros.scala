@@ -16,7 +16,7 @@
 
 package geotrellis
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 object Macros {
   def isNoDataByte_impl(ct:Context)(b:ct.Expr[Byte]):ct.Expr[Boolean] = {
