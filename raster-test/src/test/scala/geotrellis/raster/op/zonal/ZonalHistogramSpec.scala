@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,12 +24,14 @@ import geotrellis.testkit._
 
 import scala.collection.mutable
 
-class ZonalHistogramSpec extends FunSpec 
-                            with Matchers 
-                            with TestEngine 
+import spire.syntax.cfor._
+
+class ZonalHistogramSpec extends FunSpec
+                            with Matchers
+                            with TestEngine
                             with TileBuilders {
   describe("ZonalHistogram") {
-    it("gives correct histogram map for example raster") { 
+    it("gives correct histogram map for example raster") {
       val r = createTile(
         Array(1, 2, 2, 2, 3, 1, 6, 5, 1,
               1, 2, 2, 2, 3, 6, 6, 5, 5,
@@ -64,15 +66,15 @@ class ZonalHistogramSpec extends FunSpec
 
       val zoneValues = mutable.Map[Int,mutable.ListBuffer[Int]]()
 
-      for(row <- 0 until rows) {
-        for(col <- 0 until cols) {
+      cfor(0)(_ < r.rows, _ + 1) { row =>
+        cfor(0)(_ < r.cols, _ + 1) { col =>
           val z = zones.get(col,row)
           if(!zoneValues.contains(z)) { zoneValues(z) = mutable.ListBuffer[Int]() }
           zoneValues(z) += r.get(col,row)
         }
       }
 
-      val expected = 
+      val expected =
         zoneValues.toMap.mapValues { list =>
           list.distinct
               .map { v => (v, list.filter(_ == v).length) }

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,8 @@ import geotrellis.raster.op._
 import geotrellis.engine._
 import geotrellis.engine.io._
 import org.scalatest._
+
+import spire.syntax.cfor._
 
 object TestEngine {
   private var _init = false
@@ -62,15 +64,15 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     }
   }
 
-  def assertEqual(r: Op[Tile], arr: Array[Double]): Unit = 
+  def assertEqual(r: Op[Tile], arr: Array[Double]): Unit =
     assertEqual(r, arr, 0.0000000001)
 
   def assertEqual(r: Op[Tile], arr: Array[Double], threshold: Double): Unit = {
     val raster = get(r)
     val cols = raster.cols
     val rows = raster.rows
-    for(row <- 0 until rows) {
-      for(col <- 0 until cols) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val v1 = raster.getDouble(col, row)
         val v2 = arr(row * cols + col)
         if(isNoData(v1)) {
@@ -103,8 +105,8 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     withClue("cellTypes are not equal") { r1.cellType should be (r2.cellType) }
 
     val isFloatingPoint = r1.cellType.isFloatingPoint
-    for(col <- 0 until r1.cols) {
-      for(row <- 0 until r1.rows) {
+    cfor(0)(_ < r1.rows, _ + 1) { row =>
+      cfor(0)(_ < r1.cols, _ + 1) { col =>
         if(isFloatingPoint) {
           val v1 = r1.getDouble(col, row)
           val v2 = r2.getDouble(col, row)

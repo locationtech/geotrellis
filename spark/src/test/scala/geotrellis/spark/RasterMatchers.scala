@@ -35,13 +35,13 @@ trait RasterMatchers extends Matchers {
 
     (cols, rows) should be((tb.cols, tb.rows))
 
-    cfor(0)(_ < cols, _ + 1) { i =>
-      cfor(0)(_ < rows, _ + 1) { j =>
-        val v1 = ta.getDouble(i, j)
-        val v2 = tb.getDouble(i, j)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val v1 = ta.getDouble(col, row)
+        val v2 = tb.getDouble(col, row)
         if (v1.isNaN) v2.isNaN should be (true)
         else if (v2.isNaN) v1.isNaN should be (true)
-        else withClue(s"Failed at col: $i and row: $j") {
+        else withClue(s"Failed at col: $col and row: $row") {
           v1 should be (v2 +- eps)
         }
       }
@@ -54,8 +54,8 @@ trait RasterMatchers extends Matchers {
    * b. if number of tiles == count
    */
   def rasterShouldBe(tile: Tile, value: Int): Unit = {
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
         withClue(s"(col=$col, row=$row)") { tile.get(col, row) should be(value) }
       }
     }
@@ -65,8 +65,8 @@ trait RasterMatchers extends Matchers {
     rasterShouldBeAbout(tile, f, 1e-100)
 
   def rasterShouldBeAbout(tile: Tile, f: (Tile, Int, Int) => Double, epsilon: Double): Unit = {
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
         val exp = f(tile, col, row)
         val v = tile.getDouble(col, row)
         if (!exp.isNaN || !v.isNaN) {
@@ -80,8 +80,8 @@ trait RasterMatchers extends Matchers {
     rasterShouldBeAbout(tile, f, 1e-100)
 
   def rasterShouldBeAbout(tile: Tile, f: (Int, Int) => Double, epsilon: Double): Unit = {
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
         val exp = f(col, row)
         val v = tile.getDouble(col, row)
         if (!exp.isNaN || !v.isNaN) {
