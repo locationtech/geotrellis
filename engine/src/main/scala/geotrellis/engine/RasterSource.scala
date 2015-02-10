@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,7 @@ import akka.actor.ActorRef
 import spire.syntax.cfor._
 import scala.collection.mutable
 
-class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Tile]]]) 
+class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Tile]]])
     extends DataSource[Tile, Tile] {
   type Self = RasterSource
 
@@ -50,7 +50,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   def convergeOp(): Op[Tile] =
     tiles.flatMap { ts =>
       if(ts.size == 1) { ts(0) }
-      else { 
+      else {
         (rasterDefinition, logic.Collect(ts)).map { (rd, tileSeq) =>
           CompositeTile(tileSeq, rd.tileLayout).toArrayTile
         }
@@ -85,15 +85,15 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapTile(f: Tile => Tile): RasterSource = 
+  def mapTile(f: Tile => Tile): RasterSource =
     mapTileOp(Op(f(_)))
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapTile(f: Tile => Tile, name: String): RasterSource = 
+  def mapTile(f: Tile => Tile, name: String): RasterSource =
     mapTileOp(Op(f(_)), name)
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapTileOp(f: Op[Tile] => Op[Tile]): RasterSource = 
+  def mapTileOp(f: Op[Tile] => Op[Tile]): RasterSource =
     mapTileOp(f, s"${getClass.getSimpleName} map")
 
   /** apply a function to element operations, and return the appropriate datasource **/
@@ -103,7 +103,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapRaster(f: Raster => Tile): RasterSource = 
+  def mapRaster(f: Raster => Tile): RasterSource =
     mapRasterOp { op => op.map(f(_)) }
 
   /** apply a function to elements, and return the appropriate datasource **/
@@ -111,7 +111,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     mapRasterOp({ op => op.map(f(_)) }, name)
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapRasterOp(f: Op[Raster] => Op[Tile]): RasterSource = 
+  def mapRasterOp(f: Op[Raster] => Op[Tile]): RasterSource =
     mapRasterOp(f, s"${getClass.getSimpleName} map")
 
   /** apply a function to element operations, and return the appropriate datasource **/
@@ -121,7 +121,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapWithExtent[T](f: (Tile, Extent) => T)(implicit d: DummyImplicit): SeqSource[T] = 
+  def mapWithExtent[T](f: (Tile, Extent) => T)(implicit d: DummyImplicit): SeqSource[T] =
     mapWithExtentOp { op => op.map { case (t, e) => f(t, e) } }
 
   /** apply a function to elements, and return the appropriate datasource **/
@@ -129,7 +129,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     mapWithExtentOp({ op => op.map { case (t, e) => f(t, e) } }, name)
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapWithExtentOp[T](f: Op[(Tile, Extent)] => Op[T])(implicit d: DummyImplicit): SeqSource[T] = 
+  def mapWithExtentOp[T](f: Op[(Tile, Extent)] => Op[T])(implicit d: DummyImplicit): SeqSource[T] =
     mapWithExtentOp(f, s"${getClass.getSimpleName} map")
 
   /** apply a function to element operations, and return the appropriate datasource **/
@@ -150,20 +150,20 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   def combineTile(rss: Seq[RasterSource], name: String)(f: Seq[Tile] => Tile): RasterSource =
      combineTileOp(rss, name)(_.mapOps(f(_)))
 
-  def combineTileOp(rs: RasterSource)(f: (Op[Tile], Op[Tile])=>Op[Tile]): RasterSource = 
+  def combineTileOp(rs: RasterSource)(f: (Op[Tile], Op[Tile])=>Op[Tile]): RasterSource =
     combineTileOp(rs, s"${getClass.getSimpleName} combine")(f)
 
   def combineTileOp(rs: RasterSource, name: String)(f: (Op[Tile], Op[Tile])=>Op[Tile]): RasterSource = {
     val newElements: Op[Seq[Op[Tile]]] =
       ((elements, rs.elements).map { (e1, e2) =>
-        e1.zip(e2).map { case (a, b) => 
-          f(a, b) 
+        e1.zip(e2).map { case (a, b) =>
+          f(a, b)
         }
       }).withName(name)
     RasterSource(rasterDefinition, newElements)
   }
 
-  def combineTileOp(rss: Seq[RasterSource])(f: Seq[Op[Tile]]=>Op[Tile]): RasterSource = 
+  def combineTileOp(rss: Seq[RasterSource])(f: Seq[Op[Tile]]=>Op[Tile]): RasterSource =
     combineTileOp(rss, s"${getClass.getSimpleName} combine")(f)
 
   def combineTileOp(rss: Seq[RasterSource], name: String)(f: Seq[Op[Tile]]=>Op[Tile]): RasterSource = {
@@ -182,7 +182,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     RasterSource(newDef, ops)
   }
 
-  def min(): ValueSource[Int] = 
+  def min(): ValueSource[Int] =
     map(_.findMinMax._1)
       .reduce { (m1, m2) =>
         if(isNoData(m1)) m2
@@ -190,7 +190,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
         else math.min(m1, m2)
        }
 
-  def max(): ValueSource[Int] = 
+  def max(): ValueSource[Int] =
     map(_.findMinMax._2)
       .reduce { (m1, m2) =>
         if(isNoData(m1)) m2
@@ -198,24 +198,24 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
         else math.max(m1, m2)
        }
 
-  def minMax(): ValueSource[(Int, Int)] = 
+  def minMax(): ValueSource[(Int, Int)] =
     map(_.findMinMax)
       .reduce { (mm1, mm2) =>
         val (min1, max1) = mm1
         val (min2, max2) = mm2
         (if(isNoData(min1)) min2
          else if(isNoData(min2)) min1
-         else math.min(min1, min2), 
+         else math.min(min1, min2),
          if(isNoData(max1)) max2
          else if(isNoData(max2)) max1
          else math.max(max1, max2)
         )
        }
 
-  def info: ValueSource[RasterLayerInfo] = 
+  def info: ValueSource[RasterLayerInfo] =
     ValueSource(
       rasterDefinition
-        .flatMap { rd => 
+        .flatMap { rd =>
           if(rd.catalogued) {
             LoadRasterLayerInfo(rd.layerId)
           } else {
@@ -251,8 +251,8 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
           val resampled = mutable.ListBuffer[Op[Raster]]()
           val tCols = tileLayout.layoutCols
           val tRows = tileLayout.layoutRows
-          cfor(0)(_ < tCols, _ + 1) { tCol =>
-            cfor(0)(_ < tRows, _ + 1) { tRow =>
+          cfor(0)(_ < tRows, _ + 1) { tRow =>
+            cfor(0)(_ < tCols, _ + 1) { tCol =>
               val sourceExtent = tileExtents(tCol, tRow)
               sourceExtent.intersection(targetExtent) match {
                 case Some(ext) =>
@@ -339,7 +339,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
 }
 
 object RasterSource {
-  def fromPath(path: String): RasterSource = 
+  def fromPath(path: String): RasterSource =
     fromPath(path, None)
 
   def fromPath(path: String, rasterExtent: RasterExtent): RasterSource =
@@ -359,7 +359,7 @@ object RasterSource {
 
   def apply(rasterLayer: Op[RasterLayer], targetExtent: Option[RasterExtent])
            (implicit d: DI): RasterSource = {
-    val rasterDef = 
+    val rasterDef =
       rasterLayer map { layer =>
         RasterDefinition(layer.info.id,
                          layer.info.rasterExtent,
@@ -367,7 +367,7 @@ object RasterSource {
                          layer.info.cellType)
       }
 
-    val tileOps = 
+    val tileOps =
       targetExtent match {
         case re @ Some(_) =>
           rasterLayer.map { layer =>
@@ -403,14 +403,14 @@ object RasterSource {
   def apply(layerId: LayerId, rasterExtent: RasterExtent): RasterSource =
     RasterSource(LoadRasterDefinition(layerId), Some(rasterExtent))
 
-  def apply(rasterDef: Op[RasterDefinition]): RasterSource = 
+  def apply(rasterDef: Op[RasterDefinition]): RasterSource =
     apply(rasterDef, None)
 
-  def apply(rasterDef: Op[RasterDefinition], targetExtent: RasterExtent): RasterSource = 
+  def apply(rasterDef: Op[RasterDefinition], targetExtent: RasterExtent): RasterSource =
     apply(rasterDef, Some(targetExtent))
 
   def apply(rasterDef: Op[RasterDefinition], targetExtent: Option[RasterExtent]): RasterSource = {
-    val (rd, tileOps) = 
+    val (rd, tileOps) =
       targetExtent match {
         case reOp @ Some(re) =>
           ( rasterDef.map(_.withRasterExtent(re)),
@@ -437,14 +437,14 @@ object RasterSource {
 
   /** Create a RasterSource who's tile ops are the tiles of a CompositeTile. */
   def apply(compositeTile: CompositeTile, extent: Extent): RasterSource = {
-    val rasterDef = 
+    val rasterDef =
       RasterDefinition(
         LayerId("LiteralCompositeTile"),
         RasterExtent(extent, compositeTile.cols, compositeTile.rows),
         compositeTile.tileLayout,
         compositeTile.cellType
       )
-    
+
     val tileOps = compositeTile.tiles.map(Literal(_))
 
     new RasterSource(rasterDef, tileOps)
@@ -464,7 +464,7 @@ object RasterSource {
   }
 
   def apply(raster: Op[Tile], extent: Op[Extent])(implicit d: DI, d2: DI): RasterSource = {
-    val rasterDef = 
+    val rasterDef =
       (raster, extent).map { (r, ext) =>
         RasterDefinition(LayerId("LiteralRaster"),
           RasterExtent(ext, r.cols, r.rows),
@@ -478,7 +478,7 @@ object RasterSource {
   }
 
   def apply(r: Tile, extent: Extent): RasterSource = {
-    val rasterDef = 
+    val rasterDef =
       Literal {
         RasterDefinition(LayerId("LiteralRaster"),
           RasterExtent(extent, r.cols, r.rows),

@@ -40,8 +40,8 @@ class HillshadeSpec extends FunSpec with TestEnvironment
           val cols = math.min(ta.cols, tb.cols)
           val rows = math.min(ta.rows, tb.rows)
 
-          cfor(1)(_ < cols - 1, _ + 1) { col =>
-            cfor(1)(_ < rows - 1, _ + 1) { row =>
+          cfor(1)(_ < rows - 1, _ + 1) { row =>
+            cfor(1)(_ < cols - 1, _ + 1) { col =>
               withClue (s"different at $col, $row: ") {
                 val v1 = tb.getDouble(col, row)
                 val v2 = ta.getDouble(col, row)

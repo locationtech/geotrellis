@@ -42,8 +42,8 @@ object Majority extends Serializable {
       if(newCellType.isFloatingPoint) {
         val counts = mutable.Map[Double, Int]()
 
-        for(col <- 0 until cols) {
-          for(row <- 0 until rows) {
+        cfor(0)(_ < rows, _ + 1) { row =>
+          cfor(0)(_ < cols, _ + 1) { col =>
             counts.clear
             for(r <- rs) {
               val v = r.getDouble(col, row)
@@ -71,8 +71,8 @@ object Majority extends Serializable {
       } else {
         val counts = mutable.Map[Int, Int]()
 
-        for(col <- 0 until cols) {
-          for(row <- 0 until rows) {
+        cfor(0)(_ < rows, _ + 1) { row =>
+          cfor(0)(_ < cols, _ + 1) { col =>
             counts.clear
             for(r <- rs) {
               val v = r.get(col, row)
