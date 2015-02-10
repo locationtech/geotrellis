@@ -57,33 +57,27 @@ trait TileBuilders {
 
   def createTile(arr: Array[Int]) = {
     val d = scala.math.sqrt(arr.length).toInt
-    if(d > scala.math.round(d)) { sys.error("Array must be square") }
     ArrayTile(arr, d, d)
   }
 
   def createTile(arr: Array[Float]) = {
     val d = scala.math.sqrt(arr.length).toInt
-    if(d > scala.math.round(d)) { sys.error("Array must be square") }
     FloatArrayTile(arr, d, d)
   }
 
   def createTile(arr: Array[Byte]) = {
     val d = scala.math.sqrt(arr.length).toInt
-    if(d > scala.math.round(d)) { sys.error("Array must be square") }
     ByteArrayTile(arr, d, d)
   }
 
   def createTile(arr: Array[Short]) = {
-    val d = scala.math.sqrt(arr.length).toInt
-    if(d > scala.math.round(d)) { sys.error("Array must be square") }
+    val d = scala.math.sqrt(arr.length).toInt    
     ShortArrayTile(arr, d, d)
   }
 
 
   def createTile(arr: Array[Double]) = {
     val d = scala.math.sqrt(arr.length).toInt
-    if(d > scala.math.round(d)) { sys.error("Array must be square") }
-
     ArrayTile(arr, d, d)
   }
 
