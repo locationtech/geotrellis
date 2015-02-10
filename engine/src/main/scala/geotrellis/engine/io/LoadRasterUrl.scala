@@ -28,7 +28,7 @@ object LoadRasterUrl {
  */
 case class LoadRasterUrl(url: Op[String], re: Op[Option[RasterExtent]]) extends Operation[Tile] {
   def _run() = runAsync(List(url, re))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[Tile] = {
     case (url: String) :: (re: Option[_]) :: Nil =>
       LayerResult { layerLoader =>
         layerLoader

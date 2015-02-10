@@ -26,7 +26,7 @@ import geotrellis.engine._
  */
 case class WithResult[A, Z](a:Op[A])(call:A => Op[Z]) extends Op[Z] {
   def _run() = runAsync(a.flatMap(call) :: Nil)
-  val nextSteps:Steps = {
+  val nextSteps:Steps[Z] = {
     case a :: Nil => Result(a.asInstanceOf[Z])
   }
 }

@@ -143,10 +143,8 @@ object Op {
  * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.
  */
-abstract class Operation[+T] extends Product with Serializable {
-  type Steps = PartialFunction[Any, StepOutput[T]]
-  type Args = List[Any]
-  val nextSteps: PartialFunction[Any, StepOutput[T]]
+abstract class Operation[+T] extends Product with Serializable {    
+  val nextSteps: Steps[T]
 
   val debug = false
   private def log(msg: String) = if(debug) println(msg)
@@ -252,7 +250,7 @@ abstract class Operation[+T] extends Product with Serializable {
 case class CompositeOperation[+T, U](gOp: Op[U], f: (U) => Op[T]) extends Operation[T] {
   def _run() = runAsync('firstOp :: gOp :: Nil)
 
-  val nextSteps: Steps = {
+  val nextSteps: Steps[T] = {
     case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
     case 'result :: t :: Nil => Result(t.asInstanceOf[T])
   } 
@@ -260,7 +258,7 @@ case class CompositeOperation[+T, U](gOp: Op[U], f: (U) => Op[T]) extends Operat
 
 abstract class OperationWrapper[+T](op: Op[T]) extends Operation[T] {
   def _run() = op._run()
-  val nextSteps: Steps = op.nextSteps
+  val nextSteps: Steps[T] = op.nextSteps
 }
 
 case class RemoteOperation[+T](val op: Op[T], cluster: Option[ActorRef])
@@ -274,7 +272,7 @@ object Operation {
 /** Operation that simply fails with the given message */
 case class FailOp[T](msg: String) extends Operation[T] {
   def _run() = StepError(msg, "")
-  val nextSteps: Steps = { case _ => StepError(msg, "") }
+  val nextSteps: Steps[T] = { case _ => StepError(msg, "") }
 }
 
 /**
@@ -294,7 +292,7 @@ class Op0[T](f: ()=>StepOutput[T]) extends Operation[T] {
   def productElement(n: Int) = throw new IndexOutOfBoundsException()
 
   def _run() = f()
-  val nextSteps: Steps = {
+  val nextSteps: Steps[T] = {
     case _ => sys.error("should not be called")
   }
 }
@@ -320,7 +318,7 @@ class Op2[A, B, T](a: Op[A], b: Op[B]) (f: (A, B)=>StepOutput[T]) extends Operat
     case _ => throw new IndexOutOfBoundsException()
   }
   def _run() = runAsync(List(a, b))
-  val nextSteps: Steps = { 
+  val nextSteps: Steps[T] = { 
     case a :: b :: Nil => f(a.asInstanceOf[A], b.asInstanceOf[B])
   }
 }
@@ -336,7 +334,7 @@ class Op3[A, B, C, T](a: Op[A], b: Op[B], c: Op[C])
     case _ => throw new IndexOutOfBoundsException()
   }
   def _run() = runAsync(List(a, b, c))
-  val nextSteps: Steps = { 
+  val nextSteps: Steps[T] = { 
     case a :: b :: c :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C])
     }
@@ -355,7 +353,7 @@ class Op4[A, B, C, D, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D])
     case _ => throw new IndexOutOfBoundsException()
   }
   def _run() = runAsync(List(a, b, c, d))
-  val nextSteps: Steps = { 
+  val nextSteps: Steps[T] = { 
     case a :: b :: c :: d :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C], d.asInstanceOf[D])
     }
@@ -366,7 +364,7 @@ class Op4[A, B, C, D, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D])
 abstract class Op5[A, B, C, D, E, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D], e: Op[E])
 (f: (A, B, C, D, E)=>StepOutput[T]) extends Operation[T] {
   def _run() = runAsync(List(a, b, c, d, e))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[T] = {
     case a :: b :: c :: d :: e :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C],
         d.asInstanceOf[D], e.asInstanceOf[E])
@@ -379,7 +377,7 @@ abstract class Op6[A, B, C, D, E, F, T]
 (a: Op[A], b: Op[B], c: Op[C], d: Op[D], e: Op[E], f: Op[F])
 (ff: (A, B, C, D, E, F)=>StepOutput[T]) extends Operation[T] {
   def _run() = runAsync(List(a, b, c, d, e, f))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[T] = {
     case a :: b :: c :: d :: e :: f :: Nil => {
       ff(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C],
          d.asInstanceOf[D], e.asInstanceOf[E], f.asInstanceOf[F])

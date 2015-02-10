@@ -41,7 +41,7 @@ case class LoadTile(layerId: Op[LayerId],
                     row: Op[Int],
                     targetExtent: Op[Option[RasterExtent]]) extends Op[Tile] {
   def _run() = runAsync(List(layerId, col, row, targetExtent))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[Tile] = {
     case (layerId: LayerId) :: 
          (col: Int) :: 
          (row: Int) :: 

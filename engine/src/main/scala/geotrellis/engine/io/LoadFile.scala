@@ -24,7 +24,7 @@ import geotrellis.engine._
  */
 case class LoadFile(p: Op[String]) extends Operation[Tile] {
   def _run() = runAsync(List(p))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[Tile] = {
     case (path: String) :: Nil =>
       LayerResult { layerLoader =>
         layerLoader.getRasterLayerFromPath(path).getRaster
@@ -37,7 +37,7 @@ case class LoadFile(p: Op[String]) extends Operation[Tile] {
  */
 case class LoadFileWithRasterExtent(p: Op[String], e: Op[RasterExtent]) extends Operation[Tile] {
   def _run() = runAsync(List(p, e))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[Tile] = {
     case (path: String) :: (re: RasterExtent) :: Nil => 
       LayerResult { layerLoader =>
         layerLoader.getRasterLayerFromPath(path).getRaster(Some(re))
