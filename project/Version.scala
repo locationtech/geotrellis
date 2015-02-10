@@ -21,12 +21,12 @@ object Version {
     Properties.envOrElse(environmentVariable, default)
 
   val geotrellis  = "0.10.0-SNAPSHOT"
-  val scala       = "2.10.4"
+  val scala       = "2.11.5"
   val geotools    = "11.0"
-  val akka        = "2.2.4"
+  val akka        = "2.3.9"
   val spray       = "1.2.1"
   val jackson     = "1.6.1"
   val monocle     = "1.0.1"
-  lazy val hadoop      = either("SPARK_HADOOP_VERSION", "2.4.1")
-  lazy val spark       = either("SPARK_VERSION", "1.1.0")
+  lazy val hadoop      = either("SPARK_HADOOP_VERSION", "2.5.0")
+  lazy val spark       = either("SPARK_VERSION", "1.2.0")
 }

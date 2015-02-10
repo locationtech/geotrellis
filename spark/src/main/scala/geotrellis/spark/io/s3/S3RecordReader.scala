@@ -2,13 +2,13 @@ package geotrellis.spark.io.s3
 
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging._
 import java.io.{InputStream, ByteArrayOutputStream}
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 
 /** This reader will fetch bytes of each key one at a time using [AmazonS3Client.getObject].
   * Subclass must extend [read] method to map from S3 object bytes to (K,V) */
-abstract class S3RecordReader[K, V] extends RecordReader[K, V] with Logging {
+abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging {
   var bucket: String = _
   var s3client: AmazonS3Client = _
   var keys: Iterator[String] = null
