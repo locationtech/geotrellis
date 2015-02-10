@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,12 +25,14 @@ import geotrellis.testkit._
 
 import scala.collection.mutable
 
-class ZonalPercentageSpec extends FunSpec 
-                             with Matchers 
-                             with TestEngine 
+import spire.syntax.cfor._
+
+class ZonalPercentageSpec extends FunSpec
+                             with Matchers
+                             with TestEngine
                              with TileBuilders {
   describe("ZonalPercentage") {
-    it("gives correct percentage for example raster sources") { 
+    it("gives correct percentage for example raster sources") {
       val rs = createRasterSource(
         Array(1, 2, 2,   2, 3, 1,   6, 5, 1,
               1, 2, 2,   2, 3, 6,   6, 5, 5,
@@ -112,8 +114,8 @@ class ZonalPercentageSpec extends FunSpec
       val r = get(rs)
       val zones = get(zonesSource)
       val (cols,rows) = (r.cols, r.rows)
-      for(col <- 0 until cols) {
-        for(row <- 0 until rows) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           val zone = zones.get(col,row)
           val value = r.get(col,row)
           val percentage = result.get(col,row)

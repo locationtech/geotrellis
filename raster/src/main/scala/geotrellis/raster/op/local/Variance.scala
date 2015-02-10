@@ -28,8 +28,8 @@ object Variance extends Serializable {
       val (cols, rows) = rs(0).dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
-      cfor(0)(_ < cols, _ + 1) { row =>
-        cfor(0)(_ < rows, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           var count = 0
           var mean = 0.0
           var m2 = 0.0

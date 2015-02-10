@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -81,8 +81,8 @@ class MedianSpec extends FunSpec with TestEngine
 
       rs.focalMedian(Square(3)).run match {
         case Complete(value,hist) =>
-          cfor(0)(_ < expected.cols, _ + 1) { col =>
-            cfor(0)(_ < expected.rows, _ + 1) { row =>
+          cfor(0)(_ < expected.rows, _ + 1) { row =>
+            cfor(0)(_ < expected.cols, _ + 1) { col =>
               withClue (s"Value different at $col,$row: ") {
                 val v1 = expected.getDouble(col,row)
                 val v2 = value.getDouble(col,row)

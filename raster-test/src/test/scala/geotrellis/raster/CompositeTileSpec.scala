@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,16 +25,16 @@ import org.scalatest._
 
 import spire.syntax.cfor._
 
-class CompositeTileSpec extends FunSpec 
+class CompositeTileSpec extends FunSpec
                            with TileBuilders
                            with TestEngine {
   describe("wrap") {
     it("wraps a literal raster") {
-      val r = 
+      val r =
         createTile(
           Array( 1,1,1, 2,2,2, 3,3,3,
                  1,1,1, 2,2,2, 3,3,3,
-               
+
                  4,4,4, 5,5,5, 6,6,6,
                  4,4,4, 5,5,5, 6,6,6 ),
           9, 4)
@@ -44,7 +44,7 @@ class CompositeTileSpec extends FunSpec
       val tiles = tiled.tiles
 
       tiles.length should be (6)
-      
+
       val values = collection.mutable.Set[Int]()
       for(tile <- tiles) {
         tile.cols should be (3)
@@ -54,13 +54,13 @@ class CompositeTileSpec extends FunSpec
         values += arr(0)
       }
       values.toSeq.sorted.toSeq should be (Seq(1, 2, 3, 4, 5, 6))
-      
+
       assertEqual(r, tiled)
     }
 
     it("splits up a loaded raster") {
       val rOp = getRaster("elevation")
-      val tOp = 
+      val tOp =
         rOp.map { r =>
           val (tcols, trows) = (11, 20)
           val pcols = r.cols / tcols
@@ -80,7 +80,7 @@ class CompositeTileSpec extends FunSpec
       val rasterExtent = RasterSource(name).rasterExtent.get
       val r = RasterSource(name).get
 
-      val tileLayout = 
+      val tileLayout =
         TileLayout(
           rasterExtent.cols / 256,
           rasterExtent.rows / 256,
@@ -97,7 +97,7 @@ class CompositeTileSpec extends FunSpec
       val rasterExtent = RasterSource(name).rasterExtent.get
       val r = RasterSource(name).get
 
-      val tileLayout = 
+      val tileLayout =
         TileLayout(
           rasterExtent.cols / 256,
           rasterExtent.rows / 256,
@@ -114,7 +114,7 @@ class CompositeTileSpec extends FunSpec
       val rasterExtent = RasterSource(name).rasterExtent.get
       val r = RasterSource(name).get
 
-      val tileLayout = 
+      val tileLayout =
         TileLayout(
           rasterExtent.cols / 256,
           rasterExtent.rows / 256,
@@ -124,8 +124,8 @@ class CompositeTileSpec extends FunSpec
       val tiled = CompositeTile.wrap(r, tileLayout, cropped = false)
       val backToArray = tiled.toArrayTile
 
-      cfor(0)(_ < backToArray.cols, _ + 1) { col =>
-        cfor(0)(_ < backToArray.rows, _ + 1) { row =>
+      cfor(0)(_ < backToArray.rows, _ + 1) { row =>
+        cfor(0)(_ < backToArray.cols, _ + 1) { col =>
           if(col >= r.cols || row >= r.rows) {
             withClue (s"Tile grid coord $col, $row is out of raste bounds, so it should be NoData") {
               isNoData(backToArray.get(col, row)) should be (true)
@@ -166,7 +166,7 @@ class CompositeTileSpec extends FunSpec
 
       val actualExtent = rasters.map(_._1).reduce(_.combine(_))
 
-      val actualTile = 
+      val actualTile =
         CompositeTile(rasters.map(_._2), tileLayout)
 
 

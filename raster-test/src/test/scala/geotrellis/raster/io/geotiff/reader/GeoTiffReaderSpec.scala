@@ -554,9 +554,9 @@ class GeoTiffReaderSpec extends FunSpec
       val geoTiff = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/nex-pr-tile.tif")
 
       val tile = geoTiff.firstBand.tile
-      cfor(0)(_ < tile.cols, _ + 1) { i =>
-        cfor(0)(_ < tile.rows, _ + 1) { j =>
-          isNoData(tile.get(i, j)) should be (true)
+      cfor(0)(_ < tile.rows, _ + 1) { row =>
+        cfor(0)(_ < tile.cols, _ + 1) { col =>
+          isNoData(tile.get(col, row)) should be (true)
         }
       }
     }

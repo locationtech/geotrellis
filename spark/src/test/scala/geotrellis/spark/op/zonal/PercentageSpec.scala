@@ -13,6 +13,8 @@ import org.scalatest.FunSpec
 
 import collection.immutable.HashMap
 
+import spire.syntax.cfor._
+
 class PercentageSpec extends FunSpec
     with TestEnvironment
     with TestFiles
@@ -66,8 +68,8 @@ class PercentageSpec extends FunSpec
 
         val (cols, rows) = (actual.cols, actual.rows)
 
-        for(col <- 0 until cols) {
-          for(row <- 0 until rows) {
+        cfor(0)(_ < rows, _ + 1) { row =>
+          cfor(0)(_ < cols, _ + 1) { col =>
             val actualValue = actual.getDouble(col, row)
             val expectedValue = expected.getDouble(col, row)
             actualValue should be (expectedValue)

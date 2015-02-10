@@ -36,8 +36,8 @@ class ReprojectSpec extends FunSpec
       actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
       actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
 
-      cfor(0)(_ < actual.rows-1, _ + 1) { row =>
-        cfor(0)(_ < actual.cols-1, _ + 1) { col =>
+      cfor(0)(_ < actual.rows - 1, _ + 1) { row =>
+        cfor(0)(_ < actual.cols - 1, _ + 1) { col =>
           withClue(s"Failed on ($col, $row): ") {
             actual.getDouble(col, row) should be (expected.getDouble(col, row))
           }
@@ -65,8 +65,8 @@ class ReprojectSpec extends FunSpec
       actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
       actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
 
-      cfor(0)(_ < actual.rows-1, _ + 1) { row =>
-        cfor(0)(_ < actual.cols-1, _ + 1) { col =>
+      cfor(0)(_ < actual.rows - 1, _ + 1) { row =>
+        cfor(0)(_ < actual.cols - 1, _ + 1) { col =>
           withClue(s"Failed on ($col, $row): ") {
             actual.getDouble(col, row) should be (expected.getDouble(col, row))
           }
@@ -94,8 +94,8 @@ class ReprojectSpec extends FunSpec
       actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
       actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
 
-      cfor(0)(_ < actual.rows-1, _ + 1) { row =>
-        cfor(0)(_ < actual.cols-1, _ + 1) { col =>
+      cfor(0)(_ < actual.rows - 1, _ + 1) { row =>
+        cfor(0)(_ < actual.cols - 1, _ + 1) { col =>
           withClue(s"Failed on ($col, $row): ") {
             actual.getDouble(col, row) should be (expected.getDouble(col, row))
           }

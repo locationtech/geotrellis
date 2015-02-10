@@ -94,8 +94,8 @@ class HillshadeSpec extends FunSuite
         // so the calculations produce different results. Which makes sense.
         // So if your going for accuracy don't tile something that create NoData
         // borders.
-        cfor(0)(_ < expected.cols - 1, _ + 1) { col =>
-          cfor(0)(_ < expected.rows - 1, _ + 1) { row =>
+        cfor(0)(_ < expected.rows - 1, _ + 1) { row =>
+          cfor(0)(_ < expected.cols - 1, _ + 1) { col =>
             withClue (s"Value different at $col, $row: ") {
               val v1 = value.getDouble(col, row)
               val v2 = expected.getDouble(col, row)
