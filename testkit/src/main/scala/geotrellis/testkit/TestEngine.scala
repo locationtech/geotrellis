@@ -17,31 +17,42 @@
 package geotrellis.testkit
 
 import geotrellis.raster._
-import geotrellis.raster.io._
-import geotrellis.raster.op._
 import geotrellis.engine._
 import geotrellis.engine.io._
 import org.scalatest._
 
 object TestEngine {
   private var _init = false
-  private var _catalogPath = "raster-test/data/catalog.json"
-
-  def setCatalogPath(path: String) =
-    _catalogPath = path
 
   lazy val init =
     if(!_init) {
-      GeoTrellis.init(GeoTrellisConfig(_catalogPath), "test-server")
+      GeoTrellis.init(GeoTrellisConfig(), "test-server")
       _init = true
     }
 }
 
 trait TestEngine extends Suite with BeforeAndAfter with Matchers {
-  def run[T](op: Op[T]): OperationResult[T] = { TestEngine.init ; GeoTrellis.run(op) }
-  def run[T](src: OpSource[T]): OperationResult[T] = { TestEngine.init ; GeoTrellis.run(src) }
-  def get[T](op: Op[T]): T = { TestEngine.init ; GeoTrellis.get(op) }
-  def get[T](src: OpSource[T]): T = {  TestEngine.init ; GeoTrellis.get(src) }
+  implicit lazy val engine: geotrellis.engine.Engine = {
+    val config = GeoTrellisConfig()
+    val name = s"engine-${getClass.getName}"
+
+    val catalog = config.catalogPath match {
+      case Some(path) =>
+        val file = new java.io.File(path)
+        if(!file.exists()) {
+          sys.error(s"Catalog path ${file.getAbsolutePath} does not exist. Please modify your settings.")
+        }
+        Catalog.fromPath(file.getAbsolutePath)
+      case None => Catalog.empty(s"${name}-catalog")
+    }
+
+    Engine(name, catalog)
+  }
+
+  def run[T](op: Op[T]): OperationResult[T] = { engine.run(op) }
+  def run[T](src: OpSource[T]): OperationResult[T] = { engine.run(src) }
+  def get[T](op: Op[T]): T = { engine.get(op) }
+  def get[T](src: OpSource[T]): T = { engine.get(src) }
 
   def getRaster(name: String): Op[Tile] = getRaster("test:fs", name)
   def getRaster(ds: String, name: String): Op[Tile] = LoadRaster(ds, name)
