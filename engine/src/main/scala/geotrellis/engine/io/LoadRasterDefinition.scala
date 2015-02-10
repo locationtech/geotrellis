@@ -32,7 +32,7 @@ object LoadRasterDefinition {
   */
 case class LoadRasterDefinition(layerId: Op[LayerId]) extends Op[RasterDefinition] {
   def _run() = runAsync(List(layerId))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[RasterDefinition] = {
     case (layerId: LayerId) :: Nil => 
       LayerResult { layerLoader =>
         val info = layerLoader.getRasterLayer(layerId).info

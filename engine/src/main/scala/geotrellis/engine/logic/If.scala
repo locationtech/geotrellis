@@ -25,7 +25,7 @@ import geotrellis.engine._
 case class If[A <: C,B <: C,C:Manifest](bOp: Op[Boolean], trueOp: Op[A], falseOp: Op[B])extends Op[C] {
   def _run() = runAsync('init :: bOp :: Nil)
 
-  val nextSteps: Steps = {
+  val nextSteps: Steps[C] = {
     case 'init :: (b: Boolean) :: Nil => runAsync(
       List('result, 
            if (b) trueOp else falseOp))

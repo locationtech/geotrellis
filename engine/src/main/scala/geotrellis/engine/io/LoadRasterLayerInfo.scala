@@ -31,7 +31,7 @@ object LoadRasterLayerInfo {
   */
 case class LoadRasterLayerInfo(layerId: Op[LayerId]) extends Op[RasterLayerInfo] {
   def _run() = runAsync(List(layerId))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[RasterLayerInfo] = {
     case (layerId: LayerId) :: Nil =>
       LayerResult { layerLoader =>
         layerLoader.getRasterLayer(layerId).info
@@ -44,7 +44,7 @@ case class LoadRasterLayerInfo(layerId: Op[LayerId]) extends Op[RasterLayerInfo]
   */
 case class LoadRasterLayerInfoFromPath(path: Op[String]) extends Op[RasterLayerInfo] {
   def _run() = runAsync(List(path))
-  val nextSteps: Steps = {
+  val nextSteps: Steps[RasterLayerInfo] = {
     case (path: String) :: Nil =>
       LayerResult { layerLoader =>
         layerLoader.getRasterLayerFromPath(path).info
