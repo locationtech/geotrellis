@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
 import org.apache.hadoop.mapreduce.Job
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging._
 
 import scala.util.matching.Regex
 
@@ -17,7 +17,7 @@ import scala.util.matching.Regex
   *   - ProfileCredentialsProvider
   *   - InstanceProfileCredentialsProvider
   */
-abstract class S3InputFormat[K, V] extends InputFormat[K,V] with Logging {
+abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
   import S3InputFormat._
 
   override def getSplits(context: JobContext) = {
