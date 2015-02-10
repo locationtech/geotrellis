@@ -23,7 +23,7 @@ trait GDALNoDataParser {
   val gdalNoDataInfinity = List("inf", "1.#INF")
 
   def parseGDALNoDataString(input: String): Option[Double] = {
-    val noDataString = input.replace(',', '.').filter(_ != ' ').filter(_ != \u0000)
+    val noDataString = input.replace(',', '.').filter(_ != ' ').filter(_ != '\u0000')
 
     if (gdalNoDataNaNs.contains(noDataString)) Some(Double.NaN)
     else if (gdalNoDataNegInfinity.contains(noDataString)) Some(Double.MinValue)
