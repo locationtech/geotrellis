@@ -18,6 +18,8 @@ package geotrellis.vector.benchmark
 
 import geotrellis.vector.check.jts.Generators
 
+import geotrellis.vector.MultiLine
+
 import org.scalacheck.{Prop,Test,Gen,Arbitrary}
 
 import com.vividsolutions.jts.geom._
@@ -158,6 +160,45 @@ object GeneratorBenchmarks {
     println(s"Average for line string Seq point intersection: ${times/duration.toDouble}")
   }
 
+  def do3() = {
+    val results =
+      benchmarkArb((ml:MultiLineString,p:Point) => countMulti(ml))({ (ml: MultiLineString,p:Point) =>
+        MultiLine(ml).intersection()
+      })
+
+    val (times,duration) =
+      results
+        .map { case (count,times,duration) => (count*times,duration) }
+        .reduce { (t1,t2) => (t1._1+t2._1,t1._2+t2._2) }
+    println(s"Average for MultiLine intersection: ${times/duration.toDouble}")
+  }
+
+  def do4() = {
+    val results =
+      benchmarkArb((ml:MultiLineString,p:Point) => countMulti(ml))({ (ml: MultiLineString,p:Point) =>
+        MultiLine(ml).difference()
+      })
+
+    val (times,duration) =
+      results
+        .map { case (count,times,duration) => (count*times,duration) }
+        .reduce { (t1,t2) => (t1._1+t2._1,t1._2+t2._2) }
+    println(s"Average for MultiLine difference: ${times/duration.toDouble}")
+  }
+
+  def do5() = {
+    val results =
+      benchmarkArb((ml:MultiLineString,p:Point) => countMulti(ml))({ (ml: MultiLineString,p:Point) =>
+        MultiLine(ml).symDifference()
+      })
+
+    val (times,duration) =
+      results
+        .map { case (count,times,duration) => (count*times,duration) }
+        .reduce { (t1,t2) => (t1._1+t2._1,t1._2+t2._2) }
+    println(s"Average for MultiLine symDifference: ${times/duration.toDouble}")
+  }
+
   lazy val genListLineString:Gen[List[LineString]] = 
     Gen.choose(1,20).flatMap(Gen.containerOfN[List,LineString](_,genLineString))
   lazy val arbListLineString:Arbitrary[List[LineString]] = 
@@ -165,6 +206,9 @@ object GeneratorBenchmarks {
 
   def main(args:Array[String]):Unit = {
     do1()
-//    do2()
+    do2()
+    do3()
+    do4()
+    do5()
   }
 }
