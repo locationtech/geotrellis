@@ -25,10 +25,10 @@ object Dependencies {
     "spray repo"              at "http://repo.spray.io/",
     "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
   )
-  val logging       = "com.typesafe"        %% "scalalogging-slf4j" % "1.1.0"
-  val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.2.0"
+  val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
+  val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
+  val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
-  val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
@@ -41,9 +41,6 @@ object Dependencies {
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
   val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % Version.akka
   val akkaCluster   = "com.typesafe.akka" %% "akka-cluster" % Version.akka
-
-  val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % Version.jackson
-  val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % Version.jackson
 
   val spire         = "org.spire-math" %% "spire" % "0.7.5"
 
@@ -60,10 +57,7 @@ object Dependencies {
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
   val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.6.0"
   val asm           = "asm"               % "asm"       % "3.3.1"
-
-  val jcommander    = "com.beust"       % "jcommander"    % "1.23"
-  val reflections   = "org.reflections" % "reflections"  % "0.9.5"
-
+  
   val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
@@ -72,6 +66,5 @@ object Dependencies {
 
   val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 
-  // val xz            = "org.tukaani"            %   "xz"         % "1.5"
   val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.16"
 }

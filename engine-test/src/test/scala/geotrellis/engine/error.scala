@@ -27,14 +27,14 @@ case class Defenestrator(msg:String) extends Operation[Unit] {
     Result(Unit)
   }
 
-  val nextSteps:Steps = { case _ => Result(Unit)}
+  val nextSteps:Steps[Unit] = { case _ => Result(Unit)}
 }
 
 case class Window(msg:String) extends Op[Unit] {
   def _run() = {
     runAsync(List(Defenestrator(msg)))
   }
-  val nextSteps:Steps = {
+  val nextSteps:Steps[Unit] = {
     case _ => {
       throw new Exception("we should never arrive here")
       Result(Unit)

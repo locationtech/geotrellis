@@ -20,7 +20,7 @@ import geotrellis.engine._
 
 case class CollectMap[K, V](map: Op[Map[K, Op[V]]]) extends Op[Map[K, V]] {
   def _run() = runAsync(List('init, map)) 
-  val nextSteps: Steps = {
+  val nextSteps: Steps[Map[K, V]] = {
     case 'init :: (m: Map[_, _]) :: Nil => 
       val opMap = m.asInstanceOf[Map[K, Op[V]]]
       val l: List[Op[(K, V)]] = opMap.map { case (k, v) => v.map((k, _)) }.toList
@@ -40,7 +40,7 @@ object Collect {
  */
 case class Collect[A](ops: Op[Seq[Op[A]]]) extends Op[Seq[A]] {
   def _run() = runAsync(List('init, ops)) 
-  val nextSteps: Steps = {
+  val nextSteps: Steps[Seq[A]] = {
     case 'init :: (opSeq: Seq[_]) :: Nil => runAsync('eval :: opSeq.toList)
     case 'eval :: (as: List[_]) => Result(as.asInstanceOf[List[A]].toSeq) 
     case _ => throw new Exception("unexpected stepresult")

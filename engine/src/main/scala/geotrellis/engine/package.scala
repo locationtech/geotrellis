@@ -25,9 +25,9 @@ package object engine {
   implicit lazy val engine = GeoTrellis.engine
 
   type Args = List[Any]
-
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
+  type Steps[T] = PartialFunction[Any, StepOutput[T]]
 
   /**
    * Syntax for converting tuples of operations
