@@ -43,9 +43,6 @@ object Dependencies {
   val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % Version.akka
   val akkaCluster   = "com.typesafe.akka" %% "akka-cluster" % Version.akka
 
-  val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % Version.jackson
-  val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % Version.jackson
-
   val spire         = "org.spire-math" %% "spire" % "0.7.5"
 
   val sprayClient   = "io.spray"        % "spray-client"  % Version.spray
