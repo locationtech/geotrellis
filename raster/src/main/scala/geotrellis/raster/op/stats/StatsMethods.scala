@@ -1,33 +1,34 @@
-package geotrellis.raster.stats
+package geotrellis.raster.op.stats
 
 import geotrellis.raster._
+import geotrellis.raster.histogram._
 
-trait StatsMethods extends TileMethods { 
+trait StatsMethods extends TileMethods {
   /**
     * Contains several different operations for building a histograms of a raster.
     *
     * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
     *           rounded to integers when making the Histogram.
     */
-  def histogram: Histogram = 
+  def histogram: Histogram =
     FastMapHistogram.fromTile(tile)
 
   /**
     * Implements a histogram in terms of an array of the given size.
-    * The size provided must be less than or equal to the number of distinct 
+    * The size provided must be less than or equal to the number of distinct
     * values in the Tile.
     *
     * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
     *           rounded to integers when making the Histogram.
     */
-  def arrayHistogram(size: Int): ArrayHistogram = 
+  def arrayHistogram(size: Int): ArrayHistogram =
     ArrayHistogram.fromTile(tile, size)
 
   /**
     * Create a histogram from double values in a raster.
     *
     * FastMapHistogram only works with integer values, which is great for performance
-    * but means that, in order to use FastMapHistogram with double values, each value 
+    * but means that, in order to use FastMapHistogram with double values, each value
     * must be multiplied by a power of ten to preserve significant fractional digits.
     *
     * For example, if you want to save one significant digit (2.1 from 2.123), set
@@ -35,12 +36,12 @@ trait StatsMethods extends TileMethods {
     * each value by 10.  The multiplier is 10 raised to the power of significant digits
     * (e.g. 1 digit: 10, 2 digits: 100, and so on).
     *
-    * Important: Be sure that the maximum value in the rater multiplied by 
-    *            10 ^ significantDigits does not overflow Int.MaxValue (2, 147, 483, 647). 
+    * Important: Be sure that the maximum value in the rater multiplied by
+    *            10 ^ significantDigits does not overflow Int.MaxValue (2, 147, 483, 647).
     *
-    * @param significantDigits   Number of significant digits to preserve by multiplying 
-    */ 
-  def doubleHistogram(significantDigits: Int): Histogram = 
+    * @param significantDigits   Number of significant digits to preserve by multiplying
+    */
+  def doubleHistogram(significantDigits: Int): Histogram =
     FastMapHistogram.fromTileDouble(tile, significantDigits)
 
   /**
@@ -54,10 +55,10 @@ trait StatsMethods extends TileMethods {
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Statistics = 
+  def statistics: Statistics =
     histogram.generateStatistics
 
-  /*
+  /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.
    *
    * @return        Tile of TypeInt data
@@ -79,7 +80,7 @@ trait StatsMethods extends TileMethods {
       result(i) = (delta * factor / stddev).toInt
       i += 1
     }
-    
+
     ArrayTile(result, tile.cols, tile.rows)
   }
 }

@@ -19,7 +19,7 @@ package geotrellis.engine
 import geotrellis.engine.op._
 import geotrellis.engine.io._
 import geotrellis.raster._
-import geotrellis.raster.stats._
+import geotrellis.raster.op.stats._
 
 import geotrellis.vector.Extent
 

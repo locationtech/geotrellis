@@ -1,4 +1,4 @@
-package geotrellis.raster.stats
+package geotrellis.raster.op.stats
 
 import geotrellis.raster._
 import geotrellis.engine._
@@ -6,7 +6,7 @@ import geotrellis.engine._
 import geotrellis.testkit._
 import org.scalatest._
 
-class StatsMethodsSpec extends FunSpec 
+class StatsMethodsSpec extends FunSpec
                           with TestEngine
                           with Matchers {
   describe("StatsMethods") {
@@ -28,7 +28,7 @@ class StatsMethodsSpec extends FunSpec
       val std = r.standardDeviations(1000)
 
       val d = std.toArray
-  
+
       d(0) should be (-1341)
       d(10) should be (-447)
       d(200) should be (447)
@@ -47,7 +47,7 @@ class StatsMethodsSpec extends FunSpec
     it("should get correct histogram values from test raster.") {
       val testRaster = {
         val nd = NODATA
-        val data1 = 
+        val data1 =
           Array(
             12, 12, 13, 14, 15,
             44, 91, nd, 11, 95,

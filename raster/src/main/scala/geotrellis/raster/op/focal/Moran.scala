@@ -1,7 +1,8 @@
 package geotrellis.raster.op.focal
 
 import geotrellis.raster._
-import geotrellis.raster.stats.{Statistics, FastMapHistogram}
+import geotrellis.raster.op.stats.Statistics
+import geotrellis.raster.histogram.FastMapHistogram
 
 /**
  * Calculates spatial autocorrelation of cells based on the similarity to

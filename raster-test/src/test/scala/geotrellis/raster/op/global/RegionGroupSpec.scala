@@ -18,7 +18,7 @@ package geotrellis.raster.op.global
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.stats._
+import geotrellis.raster.op.stats._
 import geotrellis.testkit._
 
 import scala.collection.mutable

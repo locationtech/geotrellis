@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,12 +18,12 @@ package geotrellis.raster.render.png
 
 import geotrellis.raster._
 import geotrellis.raster.render._
-import geotrellis.raster.stats._
+import geotrellis.raster.op.stats._
 import geotrellis.testkit._
 
 import org.scalatest._
 
-class RendererSpec extends FunSpec with Matchers 
+class RendererSpec extends FunSpec with Matchers
                                    with TileBuilders {
   describe("PNG Renderer") {
     it("should work with ArrayHistogram") {
@@ -37,7 +37,7 @@ class RendererSpec extends FunSpec with Matchers
       val renderer = Renderer(limits,colors,nodata)
       val colorMap = renderer.colorMap.asInstanceOf[IntColorMap]
 
-      val color:Indexed = 
+      val color:Indexed =
         renderer.colorType match {
           case i @ Indexed(_,_) => i
           case _ =>
@@ -62,7 +62,7 @@ class RendererSpec extends FunSpec with Matchers
       val nodata = 0
       val renderer = Renderer(limits,colors,nodata)
       val colorMap = renderer.colorMap.asInstanceOf[IntColorMap]
-      val color:Indexed = 
+      val color:Indexed =
         renderer.colorType match {
           case i @ Indexed(_,_) => i
           case _ =>

@@ -1,7 +1,8 @@
 package geotrellis.raster.interpolation
 
 import geotrellis.raster._
-import geotrellis.raster.stats._
+import geotrellis.raster.op.stats._
+import geotrellis.raster.histogram._
 import geotrellis.vector.Extent
 
 import collection._
