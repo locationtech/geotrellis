@@ -81,9 +81,9 @@ object GeotrellisBuild extends Build {
         </scm>
         <developers>
         <developer>
-        <id>joshmarcus</id>
-        <name>Josh Marcus</name>
-        <url>http://github.com/joshmarcus/</url>
+        <id>echeipesh</id>
+        <name>Eugene Cheipesh</name>
+        <url>http://github.com/echeipesh/</url>
           </developer>
         <developer>
         <id>lossyrob</id>
