@@ -41,6 +41,7 @@ object GeotrellisBuild extends Build {
     shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
     version := Version.geotrellis,
     scalaVersion := Version.scala,
+    crossScalaVersions := Seq("2.11.5", "2.10.4"),
     organization := "com.azavea.geotrellis",
 
     // disable annoying warnings about 2.10.x
@@ -130,9 +131,13 @@ object GeotrellisBuild extends Build {
   lazy val macrosSettings = Seq(
     name := "geotrellis-macros",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-    libraryDependencies ++= Seq(
-      scalaReflect      
-    ),
+    libraryDependencies <++= scalaVersion { 
+      case "2.10.4" => Seq(
+        "org.scala-lang" %  "scala-reflect" % "2.10.4",
+        "org.scalamacros" %% "quasiquotes" % "2.0.1")
+      case "2.11.5" => Seq(
+        "org.scala-lang" %  "scala-reflect" % "2.11.5")
+    },
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
 
@@ -197,7 +202,6 @@ object GeotrellisBuild extends Build {
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
         "com.typesafe" % "config" % "1.2.1",
-        scalaReflect,
         jts,
         jacksonCore,
         jacksonMapper,
@@ -247,8 +251,7 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        scalatest % "test",
-        scalaReflect,
+        scalatest % "test",        
         akkaKernel,
         akkaRemote,
         akkaActor,
@@ -489,11 +492,7 @@ object GeotrellisBuild extends Build {
 
   lazy val devSettings =
     Seq(
-      libraryDependencies ++=
-        Seq(
-          scalaReflect,
-          sigar
-        ),
+      libraryDependencies += sigar,
       Keys.fork in run := true,
       fork := true,
       javaOptions in run ++=

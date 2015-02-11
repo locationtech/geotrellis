@@ -25,7 +25,7 @@ object Dependencies {
     "spray repo"              at "http://repo.spray.io/",
     "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
   )
-  val logging       = "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
+  val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
   val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.11.5"
