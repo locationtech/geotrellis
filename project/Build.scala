@@ -201,13 +201,10 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++= Seq("-optimize"),
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
-        "com.typesafe" % "config" % "1.2.1",
+        typesafeConfig,
         jts,
-        jacksonCore,
-        jacksonMapper,
         spire,
-        monocleCore,
-        monocleMacro,
+        monocleCore, monocleMacro,
         sprayClient, // for reading args from URLs,
         openCSV
       )
@@ -251,16 +248,9 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        scalatest % "test",        
-        akkaKernel,
-        akkaRemote,
-        akkaActor,
-        akkaCluster,
-        jacksonCore,
-        jacksonMapper,
+        akkaKernel, akkaRemote, akkaActor, akkaCluster,
         spire,
-        monocleCore,
-        monocleMacro,
+        monocleCore, monocleMacro,
         sprayClient // for reading args from URLs,
       )
     ) ++
@@ -280,11 +270,10 @@ object GeotrellisBuild extends Build {
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++=
         Seq("-optimize"),
-      libraryDependencies ++= Seq(
-        scalatest % "test",
-        spire % "test",
+      libraryDependencies ++= Seq(        
         sprayClient % "test",
-        sprayRouting % "test"
+        sprayRouting % "test",
+        scalatest % "test"
       )
     ) ++
   defaultAssemblySettings
@@ -384,10 +373,7 @@ object GeotrellisBuild extends Build {
         Seq(
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
-          "org.apache.spark" %% "spark-graphx" % Version.spark
-            excludeAll (
-              ExclusionRule(organization = "org.apache.hadoop"),
-              ExclusionRule(organization = "com.google.code.findbugs")),
+          "org.apache.spark" %% "spark-graphx" % Version.spark % "provided",
           "com.quantifind" %% "sumac" % "0.3.0",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           "de.javakaffee" % "kryo-serializers" % "0.27",
@@ -442,7 +428,7 @@ object GeotrellisBuild extends Build {
       javaOptions += "-Djava.library.path=/usr/local/lib",
       libraryDependencies ++=
         Seq(
-          "org.gdal" % "gdal" % "1.10.1",
+          "org.gdal"         % "gdal"       % "1.10.1",
           "com.github.scopt" % "scopt_2.10" % "3.2.0",
           scalatest % "test"
         ),
