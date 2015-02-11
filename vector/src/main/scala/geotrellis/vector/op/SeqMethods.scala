@@ -5,26 +5,62 @@ import geotrellis.vector._
 package object op {
 
   implicit class SeqLineExtensions(val lines: Traversable[Line]) {
-    def unionGeometries() = MultiLine(lines).union
+
+    val ml: MultiLine = MultiLine(lines)
+
+    def unionGeometries() = ml.union
+    def intersectionGeometries() = ml.intersection
+    def differenceGeometries() = ml.difference
+    def symDifferenceGeometries() = ml.symDifference
   }
 
   implicit class SeqPointExtensions(val points: Traversable[Point]) {
-    def unionGeometries() = MultiPoint(points).union
+
+    val mp: MultiPoint = MultiPoint(points)
+
+    def unionGeometries() = mp.union
+    def intersectionGeometries() = mp.intersection
+    def differenceGeometries() = mp.difference
+    def symDifferenceGeometries() = mp.symDifference
   }
 
   implicit class SeqPolygonExtensions(val polygons: Traversable[Polygon]) {
-    def unionGeometries() = MultiPolygon(polygons).union
+
+    val mp: MultiPolygon = MultiPolygon(polygons)
+
+    def unionGeometries() = mp.union
+    def intersectionGeometries() = mp.intersection
+    def differenceGeometries() = mp.difference
+    def symDifferenceGeometries() = mp.symDifference
   }
 
   implicit class SeqMultiLineExtensions(val multilines: Traversable[MultiLine]) {
-    def unionGeometries() = MultiLine(multilines.map(_.lines).flatten).union
+
+    val ml: MultiLine = MultiLine(multilines.map(_.lines).flatten)
+
+    def unionGeometries() = ml.union
+    def intersectionGeometries() = ml.intersection
+    def differenceGeometries() = ml.difference
+    def symDifferenceGeometries() = ml.symDifference
   }
 
   implicit class SeqMultiPointExtensions(val multipoints: Traversable[MultiPoint]) {
-    def unionGeometries() = MultiPoint(multipoints.map(_.points).flatten).union
+
+    val mp: MultiPoint = MultiPoint(multipoints.map(_.points).flatten)
+
+    def unionGeometries() = mp.union
+    def intersectionGeometries() = mp.intersection
+    def differenceGeometries() = mp.difference
+    def symDifferenceGeometries() = mp.symDifference
   }
 
   implicit class SeqMultiPolygonExtensions(val multipolygons: Traversable[MultiPolygon]) {
-    def unionGeometries() = MultiPolygon(multipolygons.map(_.polygons).flatten).union
+
+    val mp: MultiPolygon = MultiPolygon(multipolygons.map(_.polygons).flatten)
+
+    def unionGeometries() = mp.union
+    def intersectionGeometries() = mp.intersection
+    def differenceGeometries() = mp.difference
+    def symDifferenceGeometries() = mp.symDifference
   }
 }

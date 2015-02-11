@@ -71,6 +71,11 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   // -- Intersection
 
+  def intersection(): MultiPolygonMultiPolygonIntersectionResult =
+    polygons.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.intersection(_)
+    }
+
   def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
   def intersection(p: Point): PointGeometryIntersectionResult =
@@ -129,6 +134,11 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   // -- Difference
 
+  def difference(): MultiPolygonMultiPolygonDifferenceResult =
+    polygons.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.difference(_)
+    }
+
   def -(p: Point): MultiPolygonXDifferenceResult =
     difference(p)
   def difference(p: Point): MultiPolygonXDifferenceResult =
@@ -160,6 +170,11 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     jtsGeom.difference(ps.jtsGeom)
 
   // -- SymDifference
+
+  def symDifference(): MultiPolygonMultiPolygonSymDifferenceResult =
+    polygons.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.symDifference(_)
+    }
 
   def symDifference(g: ZeroDimensions): PointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)

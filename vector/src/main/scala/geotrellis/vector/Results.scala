@@ -81,6 +81,36 @@ object TwoDimensionsTwoDimensionsIntersectionResult {
     }
 }
 
+abstract sealed trait MultiLineMultiLineIntersectionResult
+object MultiLineMultiLineIntersectionResult {
+  implicit def jtsToResult(geom: jts.Geometry): MultiLineMultiLineIntersectionResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
+      case p: jts.Point => PointResult(p)
+      case l: jts.LineString => LineResult(l)
+      case mp: jts.MultiPoint => MultiPointResult(mp)
+      case ml: jts.MultiLineString => MultiLineResult(ml)
+      case _ =>
+        sys.error(s"Unexpected result for MultiLine-MultiLine intersection: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait MultiPolygonMultiPolygonIntersectionResult
+object MultiPolygonMultiPolygonIntersectionResult {
+  implicit def jtsToResult(geom: jts.Geometry): MultiPolygonMultiPolygonIntersectionResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
+      case p: jts.Point => PointResult(p)
+      case l: jts.LineString => LineResult(l)
+      case p: jts.Polygon => PolygonResult(p)
+      case mp: jts.MultiPoint => MultiPointResult(mp)
+      case ml: jts.MultiLineString => MultiLineResult(ml)
+      case mp: jts.MultiPolygon => MultiPolygonResult(mp)
+      case _ =>
+        sys.error(s"Unexpected result for MultiPolygon-MultiPolygon intersection: ${geom.getGeometryType}")
+    }
+}
+
 abstract sealed trait MultiPointMultiPointIntersectionResult
 object MultiPointMultiPointIntersectionResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiPointIntersectionResult =
@@ -562,6 +592,8 @@ case object NoResult extends GeometryResult
     with MultiLineMultiPolygonUnionResult
     with MultiLineGeometryDifferenceResult
     with MultiLineMultiPolygonSymDifferenceResult
+    with MultiLineMultiLineIntersectionResult
+    with MultiPolygonMultiPolygonIntersectionResult
 
 case class PointResult(geom: Point) extends GeometryResult
     with PointGeometryIntersectionResult
@@ -579,6 +611,8 @@ case class PointResult(geom: Point) extends GeometryResult
     with PointMultiLineSymDifferenceResult
     with PointMultiPolygonSymDifferenceResult
     with MultiPointMultiPointUnionResult
+    with MultiLineMultiLineIntersectionResult
+    with MultiPolygonMultiPolygonIntersectionResult
     with PointOrNoResult
 
 case class LineResult(geom: Line) extends GeometryResult
@@ -598,6 +632,8 @@ case class LineResult(geom: Line) extends GeometryResult
     with MultiPointMultiLineSymDifferenceResult
     with MultiLineMultiLineUnionResult
     with MultiLineGeometryDifferenceResult
+    with MultiLineMultiLineIntersectionResult
+    with MultiPolygonMultiPolygonIntersectionResult
 
 object LineResult {
   implicit def jtsToResult(geom: jts.Geometry): LineResult =
@@ -624,6 +660,7 @@ case class PolygonResult(geom: Polygon) extends GeometryResult
     with MultiPointMultiPolygonSymDifferenceResult
     with MultiLineMultiPolygonUnionResult
     with MultiLineMultiPolygonSymDifferenceResult
+    with MultiPolygonMultiPolygonIntersectionResult
 
 case class MultiPointResult(geom: MultiPoint) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
@@ -640,6 +677,8 @@ case class MultiPointResult(geom: MultiPoint) extends GeometryResult
     with MultiPointMultiPolygonUnionResult
     with MultiPointMultiLineSymDifferenceResult
     with MultiPointMultiPolygonSymDifferenceResult
+    with MultiLineMultiLineIntersectionResult
+    with MultiPolygonMultiPolygonIntersectionResult
 
 case class MultiLineResult(geom: MultiLine) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
@@ -656,6 +695,8 @@ case class MultiLineResult(geom: MultiLine) extends GeometryResult
     with MultiLineMultiLineUnionResult
     with MultiLineMultiPolygonUnionResult
     with MultiLineMultiPolygonSymDifferenceResult
+    with MultiLineMultiLineIntersectionResult
+    with MultiPolygonMultiPolygonIntersectionResult
 
 object MultiLineResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiLineResult =
@@ -680,6 +721,7 @@ case class MultiPolygonResult(geom: MultiPolygon) extends GeometryResult
     with MultiPointMultiPolygonSymDifferenceResult
     with MultiLineMultiPolygonUnionResult
     with MultiLineMultiPolygonSymDifferenceResult
+    with MultiPolygonMultiPolygonIntersectionResult
 
 case class GeometryCollectionResult(geom: GeometryCollection) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
