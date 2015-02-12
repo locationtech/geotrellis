@@ -3,7 +3,24 @@ package geotrellis.raster.op.local
 import geotrellis.raster._
 
 trait LocalSeqMethods extends TileSeqMethods {
-  def localAdd(): Tile = Add(tiles)
+  def localAdd(): Tile =
+    Add(tiles)
+  def +(): Tile = localAdd()
+
+  def localSubtract(): Tile =
+    Subtract(tiles)
+  def -(): Tile = localSubtract()
+
+  def localMultiply(): Tile =
+    Multiply(tiles)
+  def *(): Tile = localMultiply()
+
+  def localDivide(): Tile =
+    Divide(tiles)
+
+  def localPow(): Tile =
+    Pow(tiles.toSeq)
+  def **(): Tile = localPow()
 
  /** Gives the count of unique values at each location in a set of Tiles.*/
   def localVariety(): Tile =
@@ -37,5 +54,17 @@ trait LocalSeqMethods extends TileSeqMethods {
   def localMajority(level: Int): Tile =
     Majority(level, tiles.toSeq)
 
-  def localVariance(): Tile = Variance(tiles)
+  def localVariance(): Tile =
+    Variance(tiles)
+
+  def localAnd(): Tile =
+    And(tiles)
+
+  def localOr(): Tile =
+    Or(tiles.toSeq)
+  def |(): Tile = localOr()
+
+  def localXor(): Tile =
+    Xor(tiles.toSeq)
+  def ^(): Tile = localXor()
 }
