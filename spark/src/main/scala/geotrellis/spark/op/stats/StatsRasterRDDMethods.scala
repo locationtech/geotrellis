@@ -33,4 +33,7 @@ trait StatsRasterRDDMethods[K] extends RasterRDDMethods[K] {
       .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1,h2)) }
   }
 
+  def classBreaks(numBreaks: Int): Array[Int] =
+    histogram.getQuantileBreaks(numBreaks)
+
 }
