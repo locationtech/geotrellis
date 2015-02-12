@@ -31,17 +31,46 @@ object GeoTiffReader {
 
   def read(path: String): GeoTiff = read(Filesystem.slurp(path))
 
-  def read(bytes: Array[Byte]): GeoTiff =
-    GeoTiffReader(ByteBuffer.wrap(bytes, 0, bytes.size)).read
-}
+  def read(bytes: Array[Byte]): GeoTiff = {
+    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
 
-case class GeoTiffReader(byteBuffer: ByteBuffer) {
+    def setByteBufferPosition = byteBuffer.position(0)
 
-  val tagReader = TagReader(byteBuffer)
+    def setByteOrder = (byteBuffer.get.toChar,
+      byteBuffer.get.toChar) match {
+      case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+      case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
+      case _ => throw new MalformedGeoTiffException("incorrect byte order")
+    }
 
-  val imageReader = ImageReader(byteBuffer)
+    def validateTiffVersion = if (byteBuffer.getChar != 42)
+      throw new MalformedGeoTiffException("bad identification number (not 42)")
 
-  def read: GeoTiff = {
+    def readImageDirectory: ImageDirectory = {
+      val entries = byteBuffer.getShort
+      val directory = ImageDirectory(count = entries)
+      recurReadImageDirectory(directory, 0)
+    }
+
+    def recurReadImageDirectory(directory: ImageDirectory, index: Int,
+      geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory = {
+      if (index == directory.count) {
+        val newDirectory = geoKeysMetadata match {
+          case Some(tagMetadata) => TagReader.read(byteBuffer, directory, geoKeysMetadata.get)
+          case None => directory
+        }
+        ImageReader.read(byteBuffer, newDirectory)
+      } else {
+        val metadata = TagMetadata(byteBuffer.getUnsignedShort, byteBuffer.getUnsignedShort,
+          byteBuffer.getInt, byteBuffer.getInt)
+        if (metadata.tag == GeoKeyDirectoryTag)
+          recurReadImageDirectory(directory, index + 1, Some(metadata))
+        else
+          recurReadImageDirectory(TagReader.read(byteBuffer, directory, metadata),
+            index + 1, geoKeysMetadata)
+      }
+    }
+
     setByteBufferPosition
     setByteOrder
     validateTiffVersion
@@ -58,41 +87,4 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
 
     GeoTiff(metaData, geoTiffBands, tags, imageDirectory)
   }
-
-  private def setByteBufferPosition = byteBuffer.position(0)
-
-  private def setByteOrder = (byteBuffer.get.toChar,
-    byteBuffer.get.toChar) match {
-    case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-    case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
-    case _ => throw new MalformedGeoTiffException("incorrect byte order")
-  }
-
-  private def validateTiffVersion = if (byteBuffer.getChar != 42)
-    throw new MalformedGeoTiffException("bad identification number (not 42)")
-
-  private def readImageDirectory: ImageDirectory = {
-    val entries = byteBuffer.getShort
-    readImageDirectory(ImageDirectory(count = entries), 0)
-  }
-
-  private def readImageDirectory(directory: ImageDirectory, index: Int,
-    geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
-    if (index == directory.count) {
-      val newDirectory = geoKeysMetadata match {
-        case Some(tagMetadata) => tagReader.read(directory, geoKeysMetadata.get)
-        case None => directory
-      }
-
-      imageReader.read(newDirectory)
-    } else {
-      val metadata = TagMetadata(byteBuffer.getUnsignedShort,
-        byteBuffer.getUnsignedShort, byteBuffer.getInt, byteBuffer.getInt)
-
-      if (metadata.tag == GeoKeyDirectoryTag)
-        readImageDirectory(directory, index + 1, Some(metadata))
-      else readImageDirectory(tagReader.read(directory, metadata), index + 1,
-        geoKeysMetadata)
-    }
-
 }

@@ -62,7 +62,7 @@ class GeoTiffReaderSpec extends FunSpec
   }
 
   private def readAndSave(fileName: String) {
-    val geoTiff = GeoTiffReader.read(s"$filePath/$fileName")
+    val geoTiff = GeoTiff(s"$filePath/$fileName")
 
     val ifd = geoTiff.imageDirectory
 
@@ -89,8 +89,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
 
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val tile = GeoTiffReader
-        .read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif")
+      val tile = GeoTiff(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif")
         .firstBand.tile
 
       val expectedTile =
@@ -107,7 +106,7 @@ class GeoTiffReaderSpec extends FunSpec
       val path = "slope.tif"
       val argPath = s"$filePath/data/slope.json"
 
-      val tile = GeoTiffReader.read(s"$filePath/$path").firstBand.tile
+      val tile = GeoTiff(s"$filePath/$path").firstBand.tile
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -126,50 +125,50 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must read econic_lzw.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/econic_lzw.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/econic.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/econic_lzw.tif")
+      val uncomp = GeoTiff(s"$filePath/econic.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
 
     it("must read econic_packbits.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/econic_packbits.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/econic.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/econic_packbits.tif")
+      val uncomp = GeoTiff(s"$filePath/econic.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
 
     it("must read econic_zlib.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/econic_zlib.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/econic.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/econic_zlib.tif")
+      val uncomp = GeoTiff(s"$filePath/econic.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
 
     it("must read bilevel_CCITTRLE.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTRLE.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTRLE.tif")
+      val uncomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
 
     it(s"$filePath/must GeoTiffReader.read bilevel_CCITTFAX3.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTFAX3.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTFAX3.tif")
+      val uncomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
 
     it(s"$filePath/must GeoTiffReader.read bilevel_CCITTFAX4.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
+      val uncomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
 
     it("must read all-ones.tif and match uncompressed file") {
-      val decomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/all-ones.tif")
-      val uncomp = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/all-ones-no-comp.tif")
+      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/all-ones.tif")
+      val uncomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/all-ones-no-comp.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
     }
@@ -178,15 +177,15 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reading tiled file must yield same image as strip files") {
 
     it("must read bilevel_tiled.tif and match strip file") {
-      val tiled = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel_tiled.tif")
-      val striped = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
+      val tiled = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel_tiled.tif")
+      val striped = GeoTiff(s"$filePath/geotiff-reader-tiffs/bilevel.tif")
 
       tiled.firstBand.tile should equal(striped.firstBand.tile)
     }
 
     it("must read us_ext_clip_esri.tif and match strip file") {
-      val tiled = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif")
-      val striped = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri_stripes.tif")
+      val tiled = GeoTiff(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri.tif")
+      val striped = GeoTiff(s"$filePath/geotiff-reader-tiffs/us_ext_clip_esri_stripes.tif")
 
       tiled.firstBand.tile should equal(striped.firstBand.tile)
     }
@@ -196,7 +195,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("match tiff tags and geokeys correctly") {
 
     it("must match aspect.tif tiff tags") {
-      val ifd = GeoTiffReader.read(s"$filePath/aspect.tif").imageDirectory
+      val ifd = GeoTiff(s"$filePath/aspect.tif").imageDirectory
 
       ifd.cols should equal (1500L)
 
@@ -274,7 +273,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must match aspect.tif geokeys") {
-      val ifd = GeoTiffReader.read(s"$filePath/aspect.tif").imageDirectory
+      val ifd = GeoTiff(s"$filePath/aspect.tif").imageDirectory
 
       ifd.hasPixelArea should be (true)
 
@@ -370,7 +369,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reads GeoTiff CS correctly") {
 
     it("should read slope.tif CS correctly") {
-      val crs = GeoTiffReader.read(s"$filePath/slope.tif").firstBand.crs
+      val crs = GeoTiff(s"$filePath/slope.tif").firstBand.crs
 
       val correctCRS = CRS.fromString("+proj=utm +zone=10 +datum=NAD27 +units=m +no_defs")
 
@@ -378,7 +377,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read aspect.tif CS correctly") {
-      val crs = GeoTiffReader.read(s"$filePath/aspect.tif").firstBand.crs
+      val crs = GeoTiff(s"$filePath/aspect.tif").firstBand.crs
 
       val correctProj4String = "+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs"
 
@@ -388,7 +387,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read econic.tif CS correctly") {
-      val crs = GeoTiffReader.read(s"$filePath/econic.tif").firstBand.crs
+      val crs = GeoTiff(s"$filePath/econic.tif").firstBand.crs
 
       val correctProj4String = "+proj=eqdc +lat_0=33.76446202777777 +lon_0=-117.4745428888889 +lat_1=33.90363402777778 +lat_2=33.62529002777778 +x_0=0 +y_0=0 +datum=NAD27 +units=m +no_defs"
 
@@ -551,7 +550,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with ZLIB compression and needs exact segment sizes") {
-      val geoTiff = GeoTiffReader.read(s"$filePath/geotiff-reader-tiffs/nex-pr-tile.tif")
+      val geoTiff = GeoTiff(s"$filePath/geotiff-reader-tiffs/nex-pr-tile.tif")
 
       val tile = geoTiff.firstBand.tile
       cfor(0)(_ < tile.rows, _ + 1) { row =>

@@ -26,10 +26,56 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 
-case class ImageReader(byteBuffer: ByteBuffer) {
+object ImageReader {
 
-  def read(directory: ImageDirectory): ImageDirectory = {
+  def read(byteBuffer: ByteBuffer, directory: ImageDirectory): ImageDirectory = {
+
+    // TODO: NEEDS HEAVY OPTIMIZATION
+    def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
+      val oldOffset = byteBuffer.position
+
+      val result = Array.ofDim[Array[Byte]](offsets.size)
+
+      cfor(0)(_ < offsets.size, _ + 1) { i =>
+        byteBuffer.position(offsets(i))
+        result(i) = byteBuffer.getSignedByteArray(byteCounts(i))
+      }
+
+      byteBuffer.position(oldOffset)
+
+      result
+    }
+
+    def readMatrix(directory: ImageDirectory): Array[Array[Byte]] =
+      if (directory.hasStripStorage) readStrips(directory)
+      else readTiles(directory)
+
+    def readStrips(directory: ImageDirectory): Array[Array[Byte]] = {
+      val stripOffsets = (directory &|->
+        ImageDirectory._basicTags ^|->
+        BasicTags._stripOffsets get)
+
+      val stripByteCounts = (directory &|->
+        ImageDirectory._basicTags ^|->
+        BasicTags._stripByteCounts get)
+
+      readSections(stripOffsets.get, stripByteCounts.get)
+    }
+
+    def readTiles(directory: ImageDirectory) = {
+      val tileOffsets = (directory &|->
+        ImageDirectory._tileTags ^|->
+        TileTags._tileOffsets get)
+
+      val tileByteCounts = (directory &|->
+        ImageDirectory._tileTags ^|->
+        TileTags._tileByteCounts get)
+
+      readSections(tileOffsets.get, tileByteCounts.get)
+    }
+
     val matrix = readMatrix(directory)
+
 
     val uncompressedImage: Array[Array[Byte]] =
       directory.compression match {
@@ -49,53 +95,12 @@ case class ImageReader(byteBuffer: ByteBuffer) {
           throw new GeoTiffReaderLimitationException(msg)
       }
 
+
     val imageBytes = ImageConverter(directory,
       byteBuffer.order == ByteOrder.BIG_ENDIAN).convert(uncompressedImage)
 
     (directory &|-> ImageDirectory._imageBytes set(imageBytes))
   }
 
-  def readMatrix(directory: ImageDirectory): Array[Array[Byte]] =
-    if (directory.hasStripStorage) readStrips(directory)
-    else readTiles(directory)
 
-  def readStrips(directory: ImageDirectory): Array[Array[Byte]] = {
-    val stripOffsets = (directory &|->
-      ImageDirectory._basicTags ^|->
-      BasicTags._stripOffsets get)
-
-    val stripByteCounts = (directory &|->
-      ImageDirectory._basicTags ^|->
-      BasicTags._stripByteCounts get)
-
-    readSections(stripOffsets.get, stripByteCounts.get)
-  }
-
-  private def readTiles(directory: ImageDirectory) = {
-    val tileOffsets = (directory &|->
-      ImageDirectory._tileTags ^|->
-      TileTags._tileOffsets get)
-
-    val tileByteCounts = (directory &|->
-      ImageDirectory._tileTags ^|->
-      TileTags._tileByteCounts get)
-
-    readSections(tileOffsets.get, tileByteCounts.get)
-  }
-
-  // TODO: NEEDS HEAVY OPTIMIZATION
-  private def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
-    val oldOffset = byteBuffer.position
-
-    val result = Array.ofDim[Array[Byte]](offsets.size)
-
-    cfor(0)(_ < offsets.size, _ + 1) { i =>
-      byteBuffer.position(offsets(i))
-      result(i) = byteBuffer.getSignedByteArray(byteCounts(i))
-    }
-
-    byteBuffer.position(oldOffset)
-
-    result
-  }
 }
