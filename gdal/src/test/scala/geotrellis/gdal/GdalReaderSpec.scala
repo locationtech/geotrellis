@@ -10,7 +10,7 @@ class GdalReaderSpec extends FunSpec with Matchers {
   val path = "raster-test/data/slope.tif"
 
   describe("reading a GeoTiff") {
-    ignore("should match one read with GeoTools") {
+    it("should match one read with GeoTools") {
       println("Reading with GDAL...")
       val (gdRaster, RasterExtent(gdExt,_, _, _, _)) = GdalReader.read(path)
       println("Reading with GeoTools....")
