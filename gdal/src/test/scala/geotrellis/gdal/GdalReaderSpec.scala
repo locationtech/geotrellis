@@ -2,6 +2,7 @@ package geotrellis.gdal
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.proj4._
 
 import org.scalatest._
 
@@ -38,6 +39,11 @@ class GdalReaderSpec extends FunSpec with Matchers {
           }
         }
       }
+    }
+
+    it("should read CRS from file") {
+      val rasterDataSet = Gdal.open("raster-test/data/geotiff-reader-tiffs/all-ones.tif")      
+      rasterDataSet.crs should equal (Some(LatLng))
     }
   }
 }
