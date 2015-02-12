@@ -2,6 +2,7 @@ package geotrellis.gdal
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+import geotrellis.proj4.CRS
 
 import org.gdal.gdal.Dataset
 import org.gdal.gdal.Band
@@ -55,6 +56,12 @@ class RasterDataSet(val ds: Dataset) {
     if(proj == null || proj.isEmpty) None
     else Some(proj)
   }
+
+  lazy val crs: Option[CRS] = 
+    projection map { projection => 
+      val srs = new SpatialReference(projection)    
+      CRS.fromString(srs.ExportToProj4())
+    }
 
   lazy val geoTransform: Array[Double] =
     ds.GetGeoTransform

@@ -80,13 +80,6 @@ object GdalInputFormat {
       .map(_.split("="))
       .map(l => l(0) -> l(1))
       .toMap
-
-  def parseCRS(projection: Option[String]): CRS =
-    projection match {
-      case None => LatLng //This seems to be default for NetCDF
-      case Some(s) => sys.error(s"Don't know how to handle GDAL projection: $s")
-    }
-
 }
 
 class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
@@ -112,8 +105,8 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
     fileInfo =
       GdalFileInfo(
         rasterExtent = rasterDataSet.rasterExtent,
-        crs = parseCRS(rasterDataSet.projection),
-        meta = parseMeta(rasterDataSet.metadata)
+        crs          = rasterDataSet.crs.getOrElse(LatLng),
+        meta         = parseMeta(rasterDataSet.metadata)
       )
   }
 
