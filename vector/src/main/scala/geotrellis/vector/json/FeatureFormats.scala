@@ -120,7 +120,7 @@ trait FeatureFormats {
   }
 
   implicit object featureCollectionMapFormat extends RootJsonFormat[JsonFeatureCollectionMap] {
-    override def read(json: JsValue): JsonFeatureCollectionMap = json.asJsObject.getFields("type", "features", "id") match {
+    override def read(json: JsValue): JsonFeatureCollectionMap = json.asJsObject.getFields("type", "features") match {
       case Seq(JsString("FeatureCollection"), JsArray(features)) => new JsonFeatureCollectionMap(features)
       case _ => throw new DeserializationException("FeatureCollection expected")
     }
