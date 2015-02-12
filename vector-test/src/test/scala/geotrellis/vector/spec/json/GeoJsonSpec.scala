@@ -113,5 +113,19 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
     jsonFeature.parseGeoJson[PointFeature[SomeData]] should equal (expected)
   }
+
+  it should "convert from Extent to geojson on demand" in {
+    val extent = Extent(1.0, 2.0, 3.0, 4.0)
+    val extentGeoJson = extent.toGeoJson
+    val expected = """{"type":"FeatureCollection","features":[{"type":"Polygon","coordinates":[[[1.0,2.0],[1.0,4.0],[3.0,4.0],[3.0,2.0],[1.0,2.0]]]}]}"""
+    val featureCollection = extentGeoJson.parseGeoJson[JsonFeatureCollection]
+
+    extentGeoJson should be (expected)
+    featureCollection.getAllPolygons() match {
+      case Vector(shape) => shape shouldBe a [Polygon]
+      case shape => shape shouldBe a [Polygon]
+    }
+  }
+
 }
 
