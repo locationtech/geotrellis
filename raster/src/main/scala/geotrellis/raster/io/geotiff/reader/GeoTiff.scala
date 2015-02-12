@@ -21,8 +21,11 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import geotrellis.proj4.CRS
+import geotrellis.raster.io.geotiff.reader._
 
 import monocle.syntax._
+
+import java.nio.{ByteBuffer, ByteOrder}
 
 case class GeoTiffMetaData(rasterExtent:RasterExtent, crs: CRS, cellType: CellType) {
   def extent: Extent = rasterExtent.extent
@@ -44,6 +47,14 @@ case class GeoTiff(
   lazy val colorMap: Seq[(Short, Short, Short)] = (imageDirectory &|->
     ImageDirectory._basicTags ^|->
     BasicTags._colorMap get)
+
+}
+
+object GeoTiff {
+
+  def apply(path: String): GeoTiff = GeoTiffReader.read(path)
+
+  def apply(bytes: Array[Byte]): GeoTiff = GeoTiffReader.read(bytes)
 
 }
 
