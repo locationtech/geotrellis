@@ -165,6 +165,6 @@ object GeneratorBenchmarks {
 
   def main(args:Array[String]):Unit = {
     do1()
-//    do2()
+    do2()
   }
 }

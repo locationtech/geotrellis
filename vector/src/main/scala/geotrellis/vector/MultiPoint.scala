@@ -64,6 +64,18 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
+   * by the contained lines.
+   */
+  def &(): MultiPointMultiPointIntersectionResult =
+    intersection()
+
+  def intersection(): MultiPointMultiPointIntersectionResult =
+    points.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.intersection(_)
+    }
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
    * by this MultiPoint and p.
    */
   def &(p: Point): PointGeometryIntersectionResult =
@@ -201,6 +213,14 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
   // -- Difference
 
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * the first line not in the other contained lines.
+   */
+  def difference(): MultiPointMultiPointDifferenceResult =
+    points.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.difference(_)
+    }
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
@@ -218,6 +238,15 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
 
   // -- SymDifference
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the unique
+   * points in this MultiPoint.
+   */
+  def symDifference(): MultiPointMultiPointSymDifferenceResult =
+    points.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.symDifference(_)
+    }
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in

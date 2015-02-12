@@ -82,6 +82,15 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
+   * by the contained lines.
+   */
+  def intersection(): MultiLineMultiLineIntersectionResult =
+    lines.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.intersection(_)
+    }
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
    * by this MultiLine and p.
    */
   def &(p: Point): PointGeometryIntersectionResult =
@@ -221,6 +230,15 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
+   * the first line that are not in the other contained lines.
+   */
+  def difference(): MultiLineMultiLineDifferenceResult =
+    lines.map(_.jtsGeom).reduce[jts.Geometry] { 
+      _.difference(_)
+    }
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
    * this MultiLine that are not in g.
    */
   def -(g: Geometry): MultiLineGeometryDifferenceResult =
@@ -236,6 +254,15 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   // -- SymDifference
 
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * the contained lines that are unique to one line.
+   */
+  def symDifference(): MultiLineMultiLineSymDifferenceResult =
+    lines.map(_.jtsGeom).reduce[jts.Geometry] {
+      _.symDifference(_)
+    }
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
