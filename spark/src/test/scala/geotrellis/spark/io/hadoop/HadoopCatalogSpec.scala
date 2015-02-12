@@ -15,6 +15,7 @@ import org.apache.hadoop.fs.Path
 
 class HadoopCatalogSpec extends FunSpec
 with Matchers
+with RasterRDDMatchers
 with TestEnvironment
 with OnlyIfCanRunSpark
 {
@@ -80,6 +81,24 @@ with OnlyIfCanRunSpark
 
         val tile = out.first.tile
         tile.get(497,511) should be (2)
+      }
+
+      it("should be able to combine pairs via Traversable"){
+        val tileBounds = GridBounds(915,611,917,616)
+        val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val rdd3 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+
+        val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
+          pairs.toSeq.reverse.head
+        }
+
+        val actual = Seq(rdd1, rdd2, rdd3).combinePairs { pairs: Traversable[(SpatialKey, Tile)] =>
+          pairs.toSeq.reverse.head
+        }
+
+        rastersEqual(expected, actual)
       }
 
       it("should find default params based on key") {
