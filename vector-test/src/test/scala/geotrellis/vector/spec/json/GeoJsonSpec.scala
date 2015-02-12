@@ -68,6 +68,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
     val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{"data":291}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties":{"data":1273}}]}"""
 
+    println(json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox])
     val points = json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq
 
     points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq should be (points)
@@ -124,6 +125,29 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     featureCollection.getAllPolygons() match {
       case Vector(shape) => shape shouldBe a [Polygon]
       case shape => shape shouldBe a [Polygon]
+    }
+  }
+
+  it should "parse geojson with IDs on custom data" in {
+    case class DataBox(data: Int)
+    implicit val boxFormat = jsonFormat1(DataBox)
+
+    val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 },"id":"jackson5"},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 },"id":"volcano"}]}"""
+
+    val points = json.parseGeoJson[JsonFeatureCollectionMap].getAllPointFeatures[DataBox]
+
+    points.keys should be (Set("jackson5", "volcano"))
+    points.size should be (2)
+  }
+
+  it should "throw an exception in case we expect features with IDs and recieve features without IDs" in {
+    case class DataBox(data: Int)
+    implicit val boxFormat = jsonFormat1(DataBox)
+    val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 }},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 }}]}"""
+
+
+    intercept[DeserializationException] {
+      json.parseGeoJson[JsonFeatureCollectionMap].getAllPointFeatures[DataBox]
     }
   }
 
