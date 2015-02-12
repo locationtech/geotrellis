@@ -62,10 +62,10 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
       }
     }
 
-  def combinePairs(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
-    def create(t: (K, Tile)) = Seq(t)
-    def mergeValue(ts: Seq[(K, Tile)], t: (K, Tile)) = ts :+ t
-    def mergeContainers(ts1: Seq[(K, Tile)], ts2: Seq[(K, Tile)]) = ts1 ++ ts2
+  def combinePairs(others: Traversable[RasterRDD[K]])(f: (Traversable[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
+    def create(t: (K, Tile)) = List(t)
+    def mergeValue(ts: List[(K, Tile)], t: (K, Tile)) = ts :+ t
+    def mergeContainers(ts1: List[(K, Tile)], ts2: Traversable[(K, Tile)]) = ts1 ++ ts2
 
     asRasterRDD(metaData) {
       (this :: others.toList)

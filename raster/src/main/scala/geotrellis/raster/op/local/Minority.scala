@@ -25,13 +25,13 @@ object Minority extends Serializable {
   def apply(r: Tile*): Tile =
     apply(0, r)
 
-  def apply(rs: Seq[Tile])(implicit d: DI): Tile =
+  def apply(rs: Traversable[Tile])(implicit d: DI): Tile =
     apply(0, rs)
 
   def apply(level: Int, rs: Tile*): Tile =
     apply(level, rs)
 
-  def apply(level: Int, rs: Seq[Tile])(implicit d: DI): Tile = {
+  def apply(level: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
     // TODO: Replace all of these with rs.assertEqualDimensions
     if(Set(rs.map(_.dimensions)).size != 1) {
       val dimensions = rs.map(_.dimensions).toSeq
@@ -39,12 +39,12 @@ object Minority extends Serializable {
         s"$dimensions are not all equal")
     }
 
-    val layerCount = rs.length
+    val layerCount = rs.toSeq.length
     if(layerCount == 0) {
       sys.error(s"Can't compute minority of empty sequence")
     } else {
       val newCellType = rs.map(_.cellType).reduce(_.union(_))
-      val (cols, rows) = rs(0).dimensions
+      val (cols, rows) = rs.head.dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
       if(newCellType.isFloatingPoint) {
@@ -113,16 +113,16 @@ object Minority extends Serializable {
 
 trait MinorityMethods extends TileMethods {
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rs: Seq[Tile]): Tile =
-    Minority(tile +: rs)
+  def localMinority(rs: Traversable[Tile]): Tile =
+    Minority(tile +: rs.toSeq)
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rs: Tile*)(implicit d: DI): Tile =
     localMinority(rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n: Int, rs: Seq[Tile]): Tile =
-    Minority(n, tile +: rs)
+  def localMinority(n: Int, rs: Traversable[Tile]): Tile =
+    Minority(n, tile +: rs.toSeq)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n: Int, rs: Tile*)(implicit d: DI): Tile =

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@ import geotrellis.raster._
 
 /**
  * Subtracts values.
- * 
+ *
  * @note        NoData values will cause the results of this operation
  *              to be NODATA or Double.NaN.
  */
@@ -56,7 +56,7 @@ trait SubtractMethods extends TileMethods {
   /** Subtract the values of each cell in each raster. */
   def -(r: Tile): Tile = localSubtract(r)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs: Seq[Tile]): Tile = Subtract(tile +: rs)
+  def localSubtract(rs: Traversable[Tile]): Tile = Subtract(tile +: rs.toSeq)
   /** Subtract the values of each cell in each raster. */
-  def -(rs: Seq[Tile]): Tile = localSubtract(rs)
+  def -(rs: Traversable[Tile]): Tile = localSubtract(rs)
 }
