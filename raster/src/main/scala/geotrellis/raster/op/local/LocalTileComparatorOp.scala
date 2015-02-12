@@ -81,7 +81,7 @@ trait LocalTileComparatorOp extends Serializable {
 
   /** Apply this operation to the values of each cell in each raster.  */
   def apply(r1: Tile, r2: Tile): Tile = {
-    Seq(r1, r2).assertEqualDimensions
+    Traversable(r1, r2).assertEqualDimensions
     val (cols, rows) = r1.dimensions
     val tile = BitArrayTile.ofDim(cols, rows)
 

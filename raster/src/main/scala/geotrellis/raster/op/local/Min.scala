@@ -42,5 +42,5 @@ trait MinMethods extends TileMethods {
   /** Min the values of each cell in each raster.  */
   def localMin(r:Tile): Tile = Min(tile, r)
   /** Min the values of each cell in each raster.  */
-  def localMin(rs:Seq[Tile]): Tile = Min(tile +: rs)
+  def localMin(rs:Traversable[Tile]): Tile = Min(tile +: rs.toSeq)
 }

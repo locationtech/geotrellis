@@ -87,15 +87,15 @@ object MinN extends Serializable {
   def apply(n: Int, rs: Tile*): Tile =
     apply(n, rs)
 
-  def apply(n: Int, rs: Seq[Tile])(implicit d: DI): Tile = {
+  def apply(n: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
     rs.assertEqualDimensions
 
-    val layerCount = rs.length
+    val layerCount = rs.toSeq.length
     if(layerCount < n) {
       sys.error(s"Not enough values to compute Nth")
     } else {
       val newCellType = rs.map(_.cellType).reduce(_.union(_))
-      val (cols, rows) = rs(0).dimensions
+      val (cols, rows) = rs.head.dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
       cfor(0)(_ < rows, _ + 1) { row =>

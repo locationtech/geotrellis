@@ -87,4 +87,9 @@ package object spark {
     def toRasterRDD(metaData: RasterMetaData) =
       new RasterRDD[K](rdd, metaData)
   }
+
+  implicit class RDDTraversableExtentsion[K: ClassTag](rs: Traversable[RasterRDD[K]]) {
+    def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RasterRDD[K] =
+      rs.head.combinePairs(rs.tail)(f)
+  }
 }

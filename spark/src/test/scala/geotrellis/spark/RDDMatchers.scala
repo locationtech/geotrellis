@@ -57,4 +57,10 @@ trait RasterRDDMatchers extends RasterMatchers {
     first.count should be(second.count)
   }
 
+  def rastersEqual(
+    first: RasterRDD[SpatialKey],
+    second: RasterRDD[SpatialKey]): Unit = {
+
+    tilesEqual(first, second)
+  }
 }
