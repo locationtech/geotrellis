@@ -50,8 +50,9 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
 
   // This helper function is called below to grab the ID field for Map keys
   private def getFeatureID(js: JsValue): String = {
-    Try(js.asJsObject.getFields("id").head.convertTo[String]) match {
-      case Success(id) => id
+    js.asJsObject.getFields("id") match {
+      case JsString(id) :: Nil => id
+      case JsNumber(id) :: Nil => id.toString
       case _ => throw new DeserializationException("Feature expected to have \"ID\" field")
     }
   }

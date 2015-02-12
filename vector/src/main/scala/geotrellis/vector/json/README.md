@@ -10,13 +10,13 @@ val x: String = “””{
                   |  “features”: [
                   |    {
                   |      “type”: “feature",
-                  |      “geometry”: { “type”: “point”, "coordinates”: [1.0, 2.0] },
-                  |      “properties”: { “someProp": 14 }
+                  |      “geometry”: { “type”: “Point”, "coordinates”: [1.0, 2.0] },
+                  |      “properties”: { “SomeProp": 14 }
                   |      “id”: “target_12a53e"
                   |    }, {
                   |      “type”: “feature",
-                  |      “geometry”: { “type”: “point”, "coordinates”: [2.0, 7.0] },
-                  |      “properties”: { “someProp": 5 }
+                  |      “geometry”: { “type”: “Point”, "coordinates”: [2.0, 7.0] },
+                  |      “properties”: { “SomeProp": 5 }
                   |      “id”: “target_32a63e"
                   |    }
                   |  ]
@@ -35,4 +35,8 @@ Map(
 val jsonFeatureMapping = jsonString.parseGeoJson[geotrellis.vector.json.JsonFeatureCollectionMap]
 ```
 
-2. Next,
+2. Once we've parsed our string (which must be valid geojson!), it is time to query our JsonFeatureCollection for its points:
+```Scala
+jsonFeatureMapping.getAllFeatures[PointFeature[SomeProp]]
+```
+Note that we had to use a feature type parameter and a type parameter on the PointFeature. This is necessary so that the properties on our feature can be properly encoded as Scala objects. See geotrellis.vector.json.FeatureFormats for the implicits which use said type parameterization.
