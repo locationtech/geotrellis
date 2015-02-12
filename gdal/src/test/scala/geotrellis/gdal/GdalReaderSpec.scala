@@ -44,7 +44,8 @@ class GdalReaderSpec extends FunSpec with Matchers {
     it("should read CRS from file") {
       val rasterDataSet = Gdal.open(path)
       val crs =  rasterDataSet.crs      
-      crs should not be (None)
+      val expected = CRS.fromName("EPSG:4269") // inspect from file via gdalinfo
+      crs should not equal (expected)
     }
   }
 }
