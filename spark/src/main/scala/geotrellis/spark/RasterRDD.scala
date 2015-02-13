@@ -55,6 +55,13 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
       tileRdd map { row => f(row) }
     }
 
+  def combineTiles(other: RasterRDD[K])(f: (Tile, Tile) => Tile): RasterRDD[K] =
+    asRasterRDD(metaData) {
+      zipPartitions(other, true) { (partition1, partition2) =>
+        partition1.zip(partition2) map { case ((k1, t1), (k2, t2)) => (k1, f(t1, t2)) }
+      }
+    }
+
   def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
       zipPartitions(other, true) { (partition1, partition2) =>
