@@ -112,8 +112,9 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def |(p: Polygon): TwoDimensionsTwoDimensionsUnionResult =
     union(p)
 
-  def union(p: Polygon): TwoDimensionsTwoDimensionsUnionResult =
-    Seq(this, MultiPolygon(p)).unioned
+  def union(p: Polygon): TwoDimensionsTwoDimensionsUnionResult = {
+    (this.polygons :+ p).toSeq.unionGeometries
+  }
 
   def |(ps: MultiPoint): LineMultiPolygonUnionResult =
     union(ps)
@@ -127,10 +128,10 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def |(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
     union(ps)
   def union(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
-    Seq(this, ps).unioned
+    (this.polygons ++ ps.polygons).toSeq.unionGeometries
 
   def union: TwoDimensionsTwoDimensionsUnionResult =
-    polygons.toSeq.unioned
+    polygons.toSeq.unionGeometries
 
   // -- Difference
 

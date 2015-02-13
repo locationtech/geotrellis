@@ -245,7 +245,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
       val p2 = Polygon(l2)
       val geomList = List(p1, p2)
-      geomList.unioned should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4),
+      geomList.unionGeometries should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4),
         Point(0,5), Point(0,7), Point(5,7), Point(5,5), Point(5,4), Point(5,0),
         Point(0,0)))))
     }
@@ -256,7 +256,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val l2 = Line(Point(0,6), Point(0,7), Point(5,7), Point(5,6), Point(0,6))
       val p2 = Polygon(l2)
       val geomList = List(p1, p2)
-      geomList.unioned should be (MultiPolygonResult(Seq(p1, p2)))
+      geomList.unionGeometries should be (MultiPolygonResult(Seq(p1, p2)))
     }
 
     it ("should cascade union with a MultiPolygon and return a PolygonResult") {
@@ -266,7 +266,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val l3 = Line(Point(0,3), Point(3,3), Point(2,3), Point(2,0), Point(0,3))
       val mp = MultiPolygon(Polygon(l2), Polygon(l3))
       val geomList = List(MultiPolygon(p1), mp)
-      geomList.unioned should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4),
+      geomList.unionGeometries should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4),
         Point(0,5), Point(0,7), Point(5,7), Point(5,5), Point(5,4), Point(5,0),
         Point(0,0)))))
     }
