@@ -23,7 +23,10 @@ trait Geometry {
 
   val jtsGeom: jts.Geometry
 
-//  assert(jtsGeom.isValid, s"Geometry is invalid: $this")
+// This assertion is commented out because it too easily throws exceptions
+// assert(jtsGeom.isValid, s"Geometry is invalid: $this")
+  def isValid: Boolean =
+    jtsGeom.isValid
 
   def distance(other: Geometry): Double =
     jtsGeom.distance(other.jtsGeom)
