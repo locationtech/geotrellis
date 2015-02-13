@@ -1,8 +1,13 @@
 package geotrellis.vector
 
+import scala.collection.JavaConversions._
+
+import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion
+
 import geotrellis.vector._
 
-package object op {
+trait SeqMethods {
 
   implicit class SeqLineExtensions(val lines: Traversable[Line]) {
 
@@ -28,7 +33,11 @@ package object op {
 
     val mp: MultiPolygon = MultiPolygon(polygons)
 
-    def unionGeometries() = mp.union
+    def unionGeometries(): TwoDimensionsTwoDimensionsUnionResult = {
+      val cascadedPolygonUnion =
+        new CascadedPolygonUnion(polygons.map(geom => geom.jtsGeom).toSeq)
+      cascadedPolygonUnion.union()
+    }
     def intersectionGeometries() = mp.intersection
     def differenceGeometries() = mp.difference
     def symDifferenceGeometries() = mp.symDifference
@@ -58,7 +67,11 @@ package object op {
 
     val mp: MultiPolygon = MultiPolygon(multipolygons.map(_.polygons).flatten)
 
-    def unionGeometries() = mp.union
+    def unionGeometries(): TwoDimensionsTwoDimensionsUnionResult = {
+      val cascadedPolygonUnion =
+        new CascadedPolygonUnion(mp.polygons.map(geom => geom.jtsGeom).toSeq)
+      cascadedPolygonUnion.union()
+    }
     def intersectionGeometries() = mp.intersection
     def differenceGeometries() = mp.difference
     def symDifferenceGeometries() = mp.symDifference

@@ -227,8 +227,8 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * else falls back to default jts union method.
    */
   def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
-    case p:Polygon => Seq(this, p).unioned
-    case mp:MultiPolygon => Seq(MultiPolygon(this), mp).unioned
+    case p:Polygon => Seq(this, p).unionGeometries
+    case mp:MultiPolygon => (this +: mp.polygons).toSeq.unionGeometries
     case _ => jtsGeom.union(g.jtsGeom)
   }
 

@@ -29,7 +29,7 @@ class LineDissolveSpec extends FunSpec
 
     it("should handle two line segments not overlapping") {
       val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
-      new LineDissolveWrapper(s).dissolve.sortBy(_.hashCode) should be(List(
+      s.dissolve.sortBy(_.hashCode) should be(List(
         Line(Point(0, 0), Point(1, 1)),
         Line(Point(2, 2), Point(3, 3))
       ).sortBy(_.hashCode))
