@@ -5,11 +5,27 @@ import spray.json._
 import GeometryFormats._
 
 trait FeatureFormats {
+
+  /** Serializes a geojson feature object
+    *
+    * @param A Feature object
+    * @tparam The type (which must have an implicit method to resolve the transformation from json)
+    * @return The GeoJson compliant spray.JsValue
+    */
   def writeFeatureJson[D: JsonWriter](obj: Feature[D]): JsValue = {
     JsObject(
       "type" -> JsString("Feature"),
       "geometry" -> GeometryFormat.write(obj.geom),
       "properties" -> obj.data.toJson
+    )
+  }
+
+  def writeFeatureJsonWithID[D: JsonWriter](idFeature: (String, Feature[D])): JsValue = {
+    JsObject(
+      "type" -> JsString("Feature"),
+      "geometry" -> GeometryFormat.write(idFeature._2.geom),
+      "properties" -> idFeature._2.data.toJson,
+      "id" -> JsString(idFeature._1)
     )
   }
 
@@ -23,17 +39,31 @@ trait FeatureFormats {
     }
   }
 
+  def readFeatureJsonWithID[D: JsonReader, G <: Geometry: JsonReader, F <: Feature[D]](value: JsValue)(create : (G, D, String) => (String, F)): (String, F) = {
+    value.asJsObject.getFields("type", "geometry", "properties", "id") match {
+      case Seq(JsString("Feature"), geom, data, id) =>
+        val g = geom.convertTo[G]
+        val d = data.convertTo[D]
+        val i = id.toString
+        create(g, d, i)
+      case _ => throw new DeserializationException("Feature expected")
+    }
+  }
+
+
   implicit def featureFormat[D: JsonFormat] = new RootJsonFormat[Feature[D]] {
     override def read(json: JsValue): Feature[D] =
-      readFeatureJson[D, Geometry, Feature[D]](json){ case (geom, d) => geom match {
-        case g: Point => PointFeature(g, d)
-        case g: Line => LineFeature(g, d)
-        case g: Polygon => PolygonFeature(g, d)
-        case g: MultiPoint => MultiPointFeature(g, d)
-        case g: MultiLine => MultiLineFeature(g, d)
-        case g: MultiPolygon => MultiPolygonFeature(g, d)
-        case g: GeometryCollection => GeometryCollectionFeature(g, d)
-      }}
+      readFeatureJson[D, Geometry, Feature[D]](json) {
+        case (geom, d) => geom match {
+          case g: Point => PointFeature(g, d)
+          case g: Line => LineFeature(g, d)
+          case g: Polygon => PolygonFeature(g, d)
+          case g: MultiPoint => MultiPointFeature(g, d)
+          case g: MultiLine => MultiLineFeature(g, d)
+          case g: MultiPolygon => MultiPolygonFeature(g, d)
+          case g: GeometryCollection => GeometryCollectionFeature(g, d)
+        }
+      }
 
     override def write(obj: Feature[D]): JsValue =
       writeFeatureJson(obj)
@@ -87,6 +117,14 @@ trait FeatureFormats {
       case _ => throw new DeserializationException("FeatureCollection expected")
     }
     override def write(obj: JsonFeatureCollection): JsValue = obj.toJson
+  }
+
+  implicit object featureCollectionMapFormat extends RootJsonFormat[JsonFeatureCollectionMap] {
+    override def read(json: JsValue): JsonFeatureCollectionMap = json.asJsObject.getFields("type", "features") match {
+      case Seq(JsString("FeatureCollection"), JsArray(features)) => new JsonFeatureCollectionMap(features)
+      case _ => throw new DeserializationException("FeatureCollection expected")
+    }
+    override def write(obj: JsonFeatureCollectionMap): JsValue = obj.toJson
   }
 }
 

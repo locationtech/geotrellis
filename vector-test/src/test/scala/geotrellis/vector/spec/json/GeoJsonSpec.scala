@@ -63,9 +63,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
   it should "parse string to point features and back again" in {
     case class DataBox(data: Int)
-
     implicit val boxFormat = jsonFormat1(DataBox)
-
     val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{"data":291}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties":{"data":1273}}]}"""
 
     val points = json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq
@@ -124,6 +122,33 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     featureCollection.getAllPolygons() match {
       case Vector(shape) => shape shouldBe a [Polygon]
       case shape => shape shouldBe a [Polygon]
+    }
+  }
+
+  it should "parse geojson with IDs on custom data" in {
+    case class DataBox(data: Int)
+    implicit val boxFormat = jsonFormat1(DataBox)
+    val json = """{
+                 |  "type":"FeatureCollection",
+                 |  "features":[
+                 |    {"type":"Feature","geometry":{"type":"Point","coordinates":[10.34,22.75]},"properties":{"data" : 291},"id":"jackson5"},
+                 |    {"type":"Feature","geometry":{"type":"Point","coordinates":[18.69,23.862]},"properties":{"data": 1273},"id":"volcano"},
+                 |    {"type":"Feature","geometry":{"type":"Point","coordinates":[14.13,11.21]},"properties":{"data": 142},"id":"zorp"}
+                 |  ]
+                 |}""".stripMargin
+    val points: Map[String, PointFeature[DataBox]] = json.parseGeoJson[JsonFeatureCollectionMap].getAllPointFeatures[DataBox]
+
+    points.keys should be (Set("jackson5", "volcano", "zorp"))
+    points.size should be (3)
+  }
+
+  it should "throw an exception in case we expect features with IDs and recieve features without IDs" in {
+    case class DataBox(data: Int)
+    implicit val boxFormat = jsonFormat1(DataBox)
+    val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 }},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 }}]}"""
+
+    intercept[DeserializationException] {
+      json.parseGeoJson[JsonFeatureCollectionMap].getAllPointFeatures[DataBox]
     }
   }
 
