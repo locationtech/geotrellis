@@ -22,6 +22,15 @@ class RasterRDDSpec extends FunSpec
         max should be (1)
       }
 
+      it ("should union two RasterRDD") {
+        val ones: RasterRDD[SpatialKey] = AllOnesTestFile
+        val twos: RasterRDD[SpatialKey] = AllTwosTestFile
+
+        val rdd: RasterRDD[SpatialKey] = ones union twos
+
+        rdd.count should equal (ones.count + twos.count)
+      }
+
       it ("should find integer min/max of example") {
         val arr: Array[Int] = 
           Array(1, 1, 2, 2, 
