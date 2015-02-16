@@ -42,7 +42,7 @@ object LineDissolve {
 
     cfor(0)(_ < lineArray.size, _ + 1) { i =>
       val line = lineArray(i)
-      val points = line.jtsGeom.getCoordinates
+      val points = line.jtsGeom.clone.asInstanceOf[jts.Geometry].getCoordinates
 
       cfor(0)(_ < points.size - 1, _ + 1) { j =>
         val p1 = points(j)
