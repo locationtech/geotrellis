@@ -48,7 +48,7 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
   def toJson: JsValue =
     JsObject(
       "type" -> JsString("FeatureCollection"),
-      "features" -> JsArray(buffer)
+      "features" -> JsArray(buffer.toVector)
     )
 
   //-- Used for Deserialization
@@ -104,4 +104,7 @@ object JsonFeatureCollection{
     fc ++= geometries.toList
     fc
   }
+
+  def apply(features: Traversable[JsValue])(implicit d: DummyImplicit): JsonFeatureCollection =
+    new JsonFeatureCollection(features.toList)
 }

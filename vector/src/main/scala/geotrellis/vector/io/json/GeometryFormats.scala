@@ -14,11 +14,11 @@ trait GeometryFormats {
 
   /** JsArray of [x, y] arrays */
   private def writeLineCoords(line: Line): JsArray =
-    JsArray(line.points.map(writePointCoords).toList)
+    JsArray(line.points.map(writePointCoords).toVector)
 
   /** JsArray of Lines for the polygin, first line is exterior, rest are holes*/
   private def writePolygonCoords(polygon: Polygon): JsArray =
-    JsArray(writeLineCoords(polygon.exterior) :: polygon.holes.map(writeLineCoords).toList)
+    JsArray(writeLineCoords(polygon.exterior) +: polygon.holes.map(writeLineCoords).toVector)
 
 
   /** Reads Point from JsArray of [x, y] */
@@ -42,7 +42,7 @@ trait GeometryFormats {
   /** Reads Polygon from JsArray containg Lines for polygon */
   private def readPolygonCoords(value: JsValue): Polygon = value match {
     case arr: JsArray =>
-      val lines: List[Line] = 
+      val lines: Vector[Line] = 
         arr.elements
            .map(readLineCoords)
            .map(_.closed)
@@ -125,7 +125,7 @@ trait GeometryFormats {
 
     override def write(obj: MultiPoint): JsValue = JsObject(
       "type" -> JsString("MultiPoint"),
-      "coordinates" -> JsArray(obj.points.map(writePointCoords).toList)
+      "coordinates" -> JsArray(obj.points.map(writePointCoords).toVector)
     )
   }
 
@@ -140,7 +140,7 @@ trait GeometryFormats {
 
     override def write(obj: MultiLine): JsValue = JsObject(
       "type" -> JsString("MultiLineString"),
-      "coordinates" -> JsArray(obj.lines.map(writeLineCoords).toList)
+      "coordinates" -> JsArray(obj.lines.map(writeLineCoords).toVector)
     )
   }
 
@@ -155,7 +155,7 @@ trait GeometryFormats {
 
     override def write(obj: MultiPolygon): JsValue =  JsObject(
       "type" -> JsString("MultiPolygon"),
-      "coordinates" -> JsArray(obj.polygons.map(writePolygonCoords).toList)
+      "coordinates" -> JsArray(obj.polygons.map(writePolygonCoords).toVector)
     )
   }
 
@@ -163,14 +163,14 @@ trait GeometryFormats {
     def write(gc: GeometryCollection) = JsObject(
       "type" -> JsString("GeometryCollection"),
       "geometries" -> JsArray(
-        List(
-          gc.points.map(_.toJson).toList,
-          gc.lines.map(_.toJson).toList,
-          gc.polygons.map(_.toJson).toList,
-          gc.multiPoints.map(_.toJson).toList,
-          gc.multiLines.map(_.toJson).toList,
-          gc.multiPolygons.map(_.toJson).toList,
-          gc.geometryCollections.map(_.toJson).toList
+        Vector(
+          gc.points.map(_.toJson),
+          gc.lines.map(_.toJson),
+          gc.polygons.map(_.toJson),
+          gc.multiPoints.map(_.toJson),
+          gc.multiLines.map(_.toJson),
+          gc.multiPolygons.map(_.toJson),
+          gc.geometryCollections.map(_.toJson)
         ).flatten
       )
     )
