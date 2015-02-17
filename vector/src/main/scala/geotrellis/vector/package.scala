@@ -17,12 +17,11 @@
 package geotrellis
 
 import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.operation.union.{CascadedPolygonUnion => jtsCascadedPolygonUnion}
 
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 
-package object vector extends op.LineDissolve.Implicits {
+package object vector extends SeqMethods {
 
   implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
     Point(t._1,t._2)
@@ -121,18 +120,5 @@ package object vector extends op.LineDissolve.Implicits {
   }
 
   implicit def featureToGeometry(f: Feature[_]): Geometry = f.geom
-
-  trait PolygonUnion {
-    val geoms:Seq[Geometry]
-
-    def unioned: TwoDimensionsTwoDimensionsUnionResult = {
-      val cascadedPolygonUnion = new jtsCascadedPolygonUnion(geoms.map(geom => geom.jtsGeom))
-      cascadedPolygonUnion.union()
-    }
-  }
-
-  implicit class CascadedPolygonUnion(val geoms: Seq[Polygon]) extends PolygonUnion
-
-  implicit class CascadedMultiPolygonUnion(val geoms: Seq[MultiPolygon]) extends PolygonUnion
 
 }
