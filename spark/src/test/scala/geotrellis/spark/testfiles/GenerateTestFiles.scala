@@ -32,7 +32,7 @@ import org.apache.spark._
 object GenerateTestFiles {
   def generate(catalog: HadoopCatalog, sc: SparkContext) {
     val cellType = TypeFloat
-    val layoutLevel = ZoomedLayoutScheme().levelFor(10)
+    val layoutLevel = ZoomedLayoutScheme(3).levelFor(TestFiles.ZOOM_LEVEL)
     val tileLayout = layoutLevel.tileLayout
     /** HACK: each "cell" in RasterExtent is actually a tile from tileLayout
       * now I can use this to snap any Extent to my worldtile grid

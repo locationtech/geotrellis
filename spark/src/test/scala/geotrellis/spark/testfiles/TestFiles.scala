@@ -8,6 +8,8 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 
 object TestFiles extends Logging {
+  val ZOOM_LEVEL = 5
+
   def catalog(implicit sc: SparkContext): HadoopCatalog = {
 
     val conf = sc.hadoopConfiguration
