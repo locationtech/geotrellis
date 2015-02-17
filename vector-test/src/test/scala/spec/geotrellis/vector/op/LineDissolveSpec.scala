@@ -1,7 +1,7 @@
 package geotrellis.vector.op
 
 import geotrellis.vector._
-import geotrellis.vector.json._
+import geotrellis.vector.io.json._
 
 import org.scalatest._
 

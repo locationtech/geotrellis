@@ -30,6 +30,7 @@ class CatalogSpec extends FunSpec
                      with TestEngine {
 
   val absoluteDatapath = new File("raster-test/data/data").getAbsolutePath
+  println(absoluteDatapath)
   val datapath = "raster-test/data/data"
   val datapath2 = "raster-test/data/data2"
 

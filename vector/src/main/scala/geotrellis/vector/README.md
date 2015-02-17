@@ -66,11 +66,11 @@ myML.unionGeometries
 ```
 
 The following packages extend `Geometry` capabilities:
-[geotrellis.vector.op](op/)
-[geotrellis.vector.io.WKB](io/WKB/)
-[geotrellis.vector.io.WKT](io/WKT/)
-[geotrellis.vector.io.json](io/json/)
-[geotrellis.vector.reproject](reproject/)
+- [geotrellis.vector.op](op/)
+- [geotrellis.vector.io.WKB](io/WKB/)
+- [geotrellis.vector.io.WKT](io/WKT/)
+- [geotrellis.vector.io.json](io/json/)
+- [geotrellis.vector.reproject](reproject/)
 
 ##Features
 

@@ -69,7 +69,7 @@ class ArgUrlRasterLayerSpec extends FunSpec
     try {
       super.beforeAll()
     } finally {
-      system = ActorSystem("test-url-fetch")
+      system = ActorSystem("testurlfetch")
       implicit val s = system
       implicit val timeout = Timeout(5 seconds)
 

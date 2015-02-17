@@ -86,7 +86,7 @@ extends UntiledRasterLayer(info) {
         (GeoTrellis.engine.system, { () => })
       else {
         // otherwise, create a temporary one
-        val s = ActorSystem(s"system-request-$rasterUrl")
+        val s = ActorSystem(s"arg_url_request_${java.util.UUID.randomUUID}")
         (s, () => s.shutdown)
       }
 

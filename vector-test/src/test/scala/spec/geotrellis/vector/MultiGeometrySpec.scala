@@ -1,6 +1,4 @@
-package geotrellis.vector.spec
-
-import geotrellis.vector._
+package geotrellis.vector
 
 import com.vividsolutions.jts.{geom=>jts}
 

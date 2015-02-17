@@ -1,4 +1,4 @@
-#Parsing geojson in geotrellis.vector.json
+#Parsing geojson in geotrellis.vector.io.json
 
 
 Say we’re looking to go from a string to a feature collection object as represented within the geotrellis library. The task involves a number of steps and requires keeping track of a number of implicit values.

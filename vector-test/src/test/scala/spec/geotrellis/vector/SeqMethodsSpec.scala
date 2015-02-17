@@ -1,6 +1,4 @@
-package geotrellis.vector.op
-
-import geotrellis.vector._
+package geotrellis.vector
 
 import org.scalatest._
 

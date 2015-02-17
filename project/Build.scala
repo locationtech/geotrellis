@@ -267,7 +267,7 @@ object GeotrellisBuild extends Build {
       name := "geotrellis-engine-test",
       parallelExecution := true,
       fork in test := true,
-      javaOptions in run += "-Xmx2G",
+      javaOptions in run += "-Xmx4G",
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(        

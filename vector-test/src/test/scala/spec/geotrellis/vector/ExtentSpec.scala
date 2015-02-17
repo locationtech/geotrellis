@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vector.spec
-
-import geotrellis.vector._
+package geotrellis.vector
 
 import org.scalatest.FunSpec
 import org.scalatest.Matchers

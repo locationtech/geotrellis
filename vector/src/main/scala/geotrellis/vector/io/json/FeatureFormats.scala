@@ -1,4 +1,4 @@
-package geotrellis.vector.json
+package geotrellis.vector.io.json
 
 import geotrellis.vector._
 import spray.json._

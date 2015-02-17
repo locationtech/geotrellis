@@ -1,10 +1,10 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.json._
+import geotrellis.raster.io.json._
 import geotrellis.spark._
-import geotrellis.spark.json._
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
 
 import org.apache.accumulo.core.client.Connector
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
