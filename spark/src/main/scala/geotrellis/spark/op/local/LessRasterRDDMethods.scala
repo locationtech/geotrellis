@@ -75,8 +75,8 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def localLess(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combinePairs(other) {
-    case ((t1, r1), (t2, r2)) => (t1, Less(r1, r2))
+  def localLess(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case (t1, t2) => Less(t1, t2)
   }
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if

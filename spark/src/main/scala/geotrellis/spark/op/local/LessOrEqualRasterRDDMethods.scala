@@ -61,8 +61,8 @@ trait LessOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than or equal to the
     * next raster, else 0.
     */
-  def localLessOrEqual(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combinePairs(other) {
-    case ((t1, r1), (t2, r2)) => (t1, LessOrEqual(r1, r2))
+  def localLessOrEqual(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case (t1, t2) => LessOrEqual(t1, t2)
   }
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if
