@@ -1,4 +1,4 @@
-package geotrellis.vector.json
+package geotrellis.vector.io.json
 
 import geotrellis.vector._
 import spray.json._
@@ -113,7 +113,7 @@ trait FeatureFormats {
 
   implicit object featureCollectionFormat extends RootJsonFormat[JsonFeatureCollection] {
     override def read(json: JsValue): JsonFeatureCollection = json.asJsObject.getFields("type", "features") match {
-      case Seq(JsString("FeatureCollection"), JsArray(features)) => new JsonFeatureCollection(features)
+      case Seq(JsString("FeatureCollection"), JsArray(features)) => JsonFeatureCollection(features)
       case _ => throw new DeserializationException("FeatureCollection expected")
     }
     override def write(obj: JsonFeatureCollection): JsValue = obj.toJson
@@ -121,7 +121,7 @@ trait FeatureFormats {
 
   implicit object featureCollectionMapFormat extends RootJsonFormat[JsonFeatureCollectionMap] {
     override def read(json: JsValue): JsonFeatureCollectionMap = json.asJsObject.getFields("type", "features") match {
-      case Seq(JsString("FeatureCollection"), JsArray(features)) => new JsonFeatureCollectionMap(features)
+      case Seq(JsString("FeatureCollection"), JsArray(features)) => JsonFeatureCollectionMap(features)
       case _ => throw new DeserializationException("FeatureCollection expected")
     }
     override def write(obj: JsonFeatureCollectionMap): JsValue = obj.toJson

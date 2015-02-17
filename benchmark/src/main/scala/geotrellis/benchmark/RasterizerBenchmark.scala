@@ -21,7 +21,7 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.vector._
-import geotrellis.vector.json._
+import geotrellis.vector.io.json._
 import geotrellis.raster.rasterize.polygon._
 
 import com.google.caliper.Benchmark

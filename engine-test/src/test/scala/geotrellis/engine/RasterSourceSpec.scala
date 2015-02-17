@@ -23,8 +23,9 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.testkit._
 
-import geotrellis.raster.stats._
 import geotrellis.raster.op._
+import geotrellis.raster.op.stats._
+import geotrellis.raster.histogram._
 
 import org.scalatest._
 

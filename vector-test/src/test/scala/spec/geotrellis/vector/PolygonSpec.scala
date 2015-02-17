@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package geotrellis.vector.spec
+package geotrellis.vector
 
-import geotrellis.vector._
 import geotrellis.testkit.vector._
 
 import com.vividsolutions.jts.{geom=>jts}

@@ -41,7 +41,8 @@ class RoundSpec extends FunSpec
             result.get(col,row) should be (NODATA)
           }
           else {
-            result.get(col,row) should be (math.round(r.get(col,row)).toInt)
+            // Rounding on an Int is a no-op
+            result.get(col,row) should be (r.get(col,row))
           }
         }
       }

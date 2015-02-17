@@ -131,8 +131,12 @@ class CatalogSpec extends FunSpec
     val layers = store.getLayers
 
     it("should create IntConstant arg") {
-      val result = get(io.LoadRaster("constant"))
-      result.asInstanceOf[IntConstantTile]
+      store.getRasterLayer("constant") match {
+        case Some(layer) => 
+          layer.getRaster.asInstanceOf[IntConstantTile]
+        case None =>
+          assert(false, "Layer not found in data store")
+      }
     }
 
     it("should correctly recognize to cache all") {

@@ -17,7 +17,7 @@
 package geotrellis.engine.op.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.stats._
+import geotrellis.raster.histogram._
 import geotrellis.raster.op.zonal._
 
 import org.scalatest._

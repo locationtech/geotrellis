@@ -1,4 +1,4 @@
-package geotrellis.vector.json
+package geotrellis.vector.io.json
 
 import spray.json._
 
@@ -45,7 +45,7 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
   def toJson: JsValue =
     JsObject(
       "type" -> JsString("FeatureCollection"),
-      "features" -> JsArray(buffer)
+      "features" -> JsArray(buffer.toVector)
     )
 
   // This helper function is called below to grab the ID field for Map keys
@@ -111,4 +111,7 @@ object JsonFeatureCollectionMap {
     fc ++= geometries.toList
     fc
   }
+
+  def apply(features: Traversable[JsValue])(implicit d: DummyImplicit): JsonFeatureCollectionMap =
+    new JsonFeatureCollectionMap(features.toList)
 }
