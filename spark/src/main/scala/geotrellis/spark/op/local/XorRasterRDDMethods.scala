@@ -13,8 +13,8 @@ trait XorRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Xor a constant Int value to each cell. */
   def ^:(i: Int): RasterRDD[K] = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combinePairs(other) {
-    case ((t1, r1), (t2, r2)) => (t1, Xor(r1, r2))
+  def localXor(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case (t1, t2) => Xor(t1, t2)
   }
   /** Xor the values of each cell in each raster. */
   def ^(r: RasterRDD[K]): RasterRDD[K] = localXor(r)

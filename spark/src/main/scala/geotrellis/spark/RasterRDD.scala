@@ -17,8 +17,6 @@
 package geotrellis.spark
 
 import geotrellis.raster._
-import geotrellis.spark.ingest._
-import geotrellis.vector.Extent
 import org.apache.spark.SparkContext._
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -54,6 +52,9 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
     asRasterRDD(metaData) {
       tileRdd map { row => f(row) }
     }
+
+  def combineTiles(other: RasterRDD[K])(f: (Tile, Tile) => Tile): RasterRDD[K] =
+    combinePairs(other) { case ((k1, t1), (k2, t2)) => (k1, f(t1, t2)) }
 
   def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
