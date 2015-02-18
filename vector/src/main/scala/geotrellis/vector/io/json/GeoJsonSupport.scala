@@ -1,4 +1,4 @@
-package geotrellis.vector.json
+package geotrellis.vector.io.json
 
 import spray.httpx.SprayJsonSupport
 import spray.json._

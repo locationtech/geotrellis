@@ -17,7 +17,6 @@
 package geotrellis.spark.op.local
 
 import geotrellis.spark._
-import geotrellis.raster._
 import geotrellis.raster.op.local.Multiply
 
 trait MultiplyRasterRDDMethods[K] extends RasterRDDMethods[K] {
@@ -37,9 +36,7 @@ trait MultiplyRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def *:(d: Double): RasterRDD[K] = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
   def localMultiply(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combinePairs(other) {
-      case ((t1, r1), (t2, r2)) => (t1, Multiply(r1, r2))
-    }
+    rasterRDD.combineTiles(other) { case (t1, t2) => Multiply(t1, t2) }
   /** Multiply the values of each cell in each raster. */
   def *(other: RasterRDD[K]): RasterRDD[K] = localMultiply(other)
   /** Multiply the values of each cell in each raster. */

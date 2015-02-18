@@ -24,7 +24,7 @@ object Version {
   val scala       = "2.11.5"
   val geotools    = "11.0"
   val akka        = "2.3.9"
-  val spray       = "1.2.1"
+  val spray       = "1.3.2"
   val jackson     = "1.6.1"
   val monocle     = "1.0.1"
   lazy val hadoop      = either("SPARK_HADOOP_VERSION", "2.5.0")

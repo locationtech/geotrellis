@@ -1,4 +1,4 @@
-package geotrellis.vector.json
+package geotrellis.vector.io.json
 
 import org.scalatest._
 import geotrellis.vector._

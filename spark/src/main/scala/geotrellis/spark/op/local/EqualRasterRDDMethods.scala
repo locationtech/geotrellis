@@ -31,9 +31,6 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell value of the input raster is equal to the provided
     * raster, else 0.
     */
-  def localEqual(other: RasterRDD[K]): RasterRDD[K] = 
-    rasterRDD
-      .combinePairs(other) { case ((t1, r1), (t2, r2)) =>
-        (t1, Equal(r1, r2))
-      }
+  def localEqual(other: RasterRDD[K]): RasterRDD[K] =
+    rasterRDD.combineTiles(other) { case (t1, t2) => Equal(t1, t2) }
 }

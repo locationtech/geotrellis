@@ -3,7 +3,7 @@ package geotrellis.spark.io.accumulo
 import java.io.IOException
 
 import geotrellis.raster._
-import geotrellis.raster.json._
+import geotrellis.raster.io.json._
 import geotrellis.raster.histogram._
 
 import geotrellis.spark._

@@ -1,11 +1,15 @@
-package geotrellis.spark
+package geotrellis.spark.io
 
+import geotrellis.spark._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
-import geotrellis.raster.json._
-import geotrellis.vector.Extent
-import geotrellis.vector.json._
+import geotrellis.raster.io.json._
+import geotrellis.vector._
+import geotrellis.vector.io.json._
+import geotrellis.raster.histogram.Histogram
+
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 package object json {
   implicit object CRSFormat extends RootJsonFormat[CRS] {
@@ -56,6 +60,35 @@ package object json {
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
+      }
+  }
+
+  implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
+    def write(obj: LayerMetaData): JsObject =
+      JsObject(
+        "keyClass" -> JsString(obj.keyClass),
+        "rasterMetaData" -> obj.rasterMetaData.toJson,
+        "histogram" -> obj.histogram.toJson
+      )
+
+    def read(json: JsValue): LayerMetaData =
+      json.asJsObject.getFields("keyClass", "rasterMetaData", "histogram") match {
+        case Seq(JsString(keyClass), md: JsObject, hist: JsArray) =>
+          LayerMetaData(
+            keyClass = keyClass,
+            rasterMetaData = md.convertTo[RasterMetaData],
+            histogram = Some(hist.convertTo[Histogram])
+          )
+
+        case Seq(JsString(keyClass), md: JsObject) =>
+          LayerMetaData(
+            keyClass = keyClass,
+            rasterMetaData = md.convertTo[RasterMetaData],
+            histogram = None
+          )
+
+        case _ =>
+          throw new DeserializationException(s"LayerMetaData expected")
       }
   }
 }

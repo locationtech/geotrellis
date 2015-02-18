@@ -82,10 +82,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * to the next raster, else 0.
     */
   def localGreaterOrEqual(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD
-      .combinePairs(other) { case ((t1, r1), (t2, r2)) =>
-        (t1, GreaterOrEqual(r1, r2))
-      }
+    rasterRDD.combineTiles(other) { case (t1, t2) => GreaterOrEqual(t1, t2) }
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
     * the corresponding cell valued of the rasters are greater than or equal

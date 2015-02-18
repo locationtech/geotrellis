@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.vector.spec
+package geotrellis.vector
 
-import geotrellis.vector._
 import geotrellis.vector.reproject._
-import geotrellis.vector.json._
+import geotrellis.vector.io.json._
 import geotrellis.proj4._
 import geotrellis.testkit.vector._
 
