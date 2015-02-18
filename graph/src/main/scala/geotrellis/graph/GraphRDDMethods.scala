@@ -1,7 +1,7 @@
-package geotrellis.spark.graph
+package geotrellis.graph
 
 import geotrellis.spark._
-import geotrellis.spark.graph.op._
+import geotrellis.graph.op._
 
 import geotrellis.raster._
 
@@ -25,7 +25,7 @@ trait GraphRDDMethods[K] {
 
   val graphRDD: GraphRDD[K]
 
-  val _sc: SpatialComponent[K]
+  implicit val _sc: SpatialComponent[K]
 
   private lazy val getVertexIdByColAndRow: (Long, Long) => VertexId = {
     val metaData = graphRDD.metaData
@@ -116,5 +116,21 @@ trait GraphRDDMethods[K] {
 
         Line(doubleCoordinates)
       })
+
+  def costDistance(points: Seq[(Int, Int)])(implicit dummy: DI): RasterRDD[K] =
+    costDistance(points.map { case(c, r) => (c.toLong, r.toLong) })
+
+  def costDistance(points: Seq[(Long, Long)]): RasterRDD[K] =
+    CostDistance(graphRDD, points)
+
+  def costDistanceWithPath(start: (Int, Int), dest: (Int, Int))
+    (implicit dummy: DI): Seq[Line] =
+    costDistanceWithPath(
+      (start._1.toLong, start._2.toLong),
+      (dest._1.toLong, dest._2.toLong)
+    )
+
+  def costDistanceWithPath(start: (Long, Long), dest: (Long, Long)): Seq[Line] =
+    CostDistance(graphRDD, start, dest)
 
 }
