@@ -8,7 +8,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 
 object TestFiles extends Logging {
-  val ZOOM_LEVEL = 5
+  val ZOOM_LEVEL = 8
 
   def catalog(implicit sc: SparkContext): HadoopCatalog = {
 
@@ -31,7 +31,7 @@ trait TestFiles { self: OnlyIfCanRunSpark =>
   lazy val testCatalog = TestFiles.catalog
 
   def testFile(layerName: String): RasterRDD[SpatialKey] = {
-    testCatalog.load[SpatialKey](LayerId(layerName, 10)).cache
+    testCatalog.load[SpatialKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
   }
 
   def AllOnesTestFile =

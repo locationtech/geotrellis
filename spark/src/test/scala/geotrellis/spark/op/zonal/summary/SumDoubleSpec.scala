@@ -3,6 +3,7 @@ package geotrellis.spark.op.zonal.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector._
 
@@ -39,7 +40,10 @@ class SumDoubleSpec extends FunSpec
           totalExtent.ymin + yd / 2
         )
 
-        ones.zonalSumDouble(quarterExtent.toPolygon) should be(count / 4.0)
+        val result = ones.zonalSumDouble(quarterExtent.toPolygon)
+        val expected = ones.stitch.zonalSumDouble(totalExtent, quarterExtent.toPolygon)
+
+        result should be (expected)
       }
 
       it("should get correct double sum over half of the extent in diamond shape") {
@@ -54,13 +58,17 @@ class SumDoubleSpec extends FunSpec
 
         val poly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
 
-        ones.zonalSumDouble(poly) should be(count / 2.0)
+        val result = ones.zonalSumDouble(poly)
+        val expected = ones.stitch.zonalSumDouble(totalExtent, poly)
+
+        result should be (expected)
       }
 
       it("should get correct double sum over polygon with hole") {
-        val xd = totalExtent.xmax - totalExtent.xmin
-        val yd = totalExtent.ymax - totalExtent.ymin
+        val delta = 0.0001 // A bit of a delta to avoid floating point errors.
 
+        val xd = totalExtent.width + delta
+        val yd = totalExtent.height + delta
 
         val pe1 = Point(totalExtent.xmin + xd / 2, totalExtent.ymax)
         val pe2 = Point(totalExtent.xmax, totalExtent.ymin + yd / 2)
@@ -77,11 +85,11 @@ class SumDoubleSpec extends FunSpec
         val interior = Line(Array(pi1, pi2, pi3, pi4, pi1))
 
         val poly = Polygon(exterior, interior)
-        val withoutHoleArea = Polygon(exterior).area
-        val area = poly.area
-        val res = ((count / 2) * (area / withoutHoleArea))
+        val result = ones.zonalSumDouble(poly)
+        val expected = ones.stitch.zonalSumDouble(totalExtent, poly)
 
-        ones.zonalSumDouble(poly) should be(res +- 1e-8)
+        result should be (expected)
+
       }
     }
   }

@@ -56,7 +56,7 @@ class MeanSpec extends FunSpec with TestEnvironment
             4.5,  4.0, 3.111,    2.5, 2.125,   3.0,    3.111, 3.555, 3.166,
             4.25, 4.166, 4.0,    3.0,   2.2,   3.2,    3.166, 3.333,  2.75
           ), 9, 4),
-          TileLayout(3, 2, 3, 2), TypeDouble
+          TileLayout(3, 2, 3, 2)
         )
 
         val res = rasterRDD.focalMean(Circle(1)).stitch.toArrayDouble

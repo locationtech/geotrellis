@@ -3,6 +3,7 @@ package geotrellis.spark.op.zonal.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector._
 
@@ -39,8 +40,10 @@ class MaxSpec extends FunSpec
           totalExtent.ymin + yd / 2
         )
 
-        val res = count - tileLayout.tileCols * 1.5 - 1
-        inc.zonalMax(quarterExtent.toPolygon) should be(res)
+        val result = inc.zonalMax(quarterExtent.toPolygon)
+        val expected = inc.stitch.zonalMax(totalExtent, quarterExtent.toPolygon)
+
+        result should be (expected)
       }
     }
   }

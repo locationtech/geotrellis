@@ -16,14 +16,13 @@ trait RasterRDDBuilders {
 
   def createRasterRDD(
     sc: SparkContext,
-    raster: Tile,
-    tileLayout: TileLayout,
-    cellType: CellType = TypeInt): RasterRDD[SpatialKey] = {
+    tile: Tile,
+    tileLayout: TileLayout): RasterRDD[SpatialKey] = {
 
     val extent = defaultCRS.worldExtent
 
     val metaData = RasterMetaData(
-      cellType,
+      tile.cellType,
       extent,
       defaultCRS,
       tileLayout
@@ -37,10 +36,10 @@ trait RasterRDDBuilders {
 
     val tileBounds = re.gridBoundsFor(extent)
 
-    val adjustedRaster =
-      if (raster.cols == tileLayout.totalCols.toInt &&
-        raster.rows == tileLayout.totalRows.toInt) raster
-      else CompositeTile.wrap(raster, tileLayout, cropped = false)
+    val adjustedTile =
+      if (tile.cols == tileLayout.totalCols.toInt &&
+        tile.rows == tileLayout.totalRows.toInt) tile
+      else CompositeTile.wrap(tile, tileLayout, cropped = false)
 
     val tmsTiles =
       tileBounds.coords.map { case (col, row) =>
@@ -52,7 +51,7 @@ trait RasterRDDBuilders {
             rows = tileLayout.tileRows
           )
 
-        val subTile: Tile = adjustedRaster.resample(extent, targetRasterExtent)
+        val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
 
         (SpatialKey(col, row), subTile)
       }
@@ -65,7 +64,7 @@ trait RasterRDDBuilders {
 
   def createSpaceTimeRasterRDD(
     sc: SparkContext,
-    rasters: Traversable[(Tile, DateTime)],
+    tiles: Traversable[(Tile, DateTime)],
     tileLayout: TileLayout,
     cellType: CellType = TypeInt): RasterRDD[SpaceTimeKey] = {
 
@@ -88,11 +87,11 @@ trait RasterRDDBuilders {
 
     val tmsTiles = mutable.ListBuffer[(SpaceTimeKey, Tile)]()
 
-    for( (raster, time) <- rasters) {
-      val adjustedRaster =
-        if (raster.cols == tileLayout.totalCols.toInt &&
-          raster.rows == tileLayout.totalRows.toInt) raster
-        else CompositeTile.wrap(raster, tileLayout, cropped = false)
+    for( (tile, time) <- tiles) {
+      val adjustedTile =
+        if (tile.cols == tileLayout.totalCols.toInt &&
+          tile.rows == tileLayout.totalRows.toInt) tile
+        else CompositeTile.wrap(tile, tileLayout, cropped = false)
 
       tmsTiles ++=
         tileBounds.coords.map { case (col, row) =>
@@ -104,7 +103,7 @@ trait RasterRDDBuilders {
               rows = tileLayout.tileRows
             )
 
-          val subTile: Tile = adjustedRaster.resample(extent, targetRasterExtent)
+          val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
 
           (SpaceTimeKey(col, row, time), subTile)
         }

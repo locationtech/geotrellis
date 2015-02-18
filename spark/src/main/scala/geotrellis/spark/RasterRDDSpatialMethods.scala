@@ -11,12 +11,14 @@ trait RasterRDDSpatialMethods {
    */
   def stitch: CompositeTile = {
     val tileMap = rdd.collect.toMap
+
     val rmd = rdd.metaData
     val tileCols = rmd.tileLayout.tileCols
     val tileRows = rmd.tileLayout.tileRows
 
     // discover what I have here, in reality RasterMetaData should reflect this already
     val te = GridBounds.envelope(tileMap.keys)
+
     val tiles = te.coords map { case (col, row) =>
       tileMap.getOrElse(col -> row, EmptyTile(rmd.cellType, tileCols, tileRows))
     }

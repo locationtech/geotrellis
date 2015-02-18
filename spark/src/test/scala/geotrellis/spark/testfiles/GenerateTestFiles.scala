@@ -41,6 +41,8 @@ object GenerateTestFiles {
     val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
     val tileBounds = re.gridBoundsFor(extent)
 
+    println(s"Tile Bounds: $tileBounds")
+
     /**
      * What I need now is a RasterExtent for the tile that will cover all the tiles in 'extent'
      * - tileBounds to find out how many tiles I have to cover
@@ -91,7 +93,7 @@ object GenerateTestFiles {
           sc.parallelize(tmsTiles)
         }
 
-      catalog.save(LayerId(name, 10), rdd, clobber = true)
+      catalog.save(LayerId(name, TestFiles.ZOOM_LEVEL), rdd, clobber = true)
     }
 
   }

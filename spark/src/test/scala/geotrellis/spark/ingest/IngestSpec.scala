@@ -33,7 +33,7 @@ class IngestSpec extends FunSpec
         val (level, rdd) = Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(512))
 
         level.zoom should be (10)
-        rdd.count should be (18)
+        rdd.count should be (8)
       }
 
       it("should ingest time-band NetCDF") {

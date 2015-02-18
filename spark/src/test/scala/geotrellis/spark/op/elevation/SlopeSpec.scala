@@ -21,9 +21,9 @@ class SlopeSpec extends FunSpec with TestEnvironment
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize)
         val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.slope()
 
-        val path = "elevation.json"
+        val path = "aspect.tif"
 
-        testArg(sc, path)(rasterOp, sparkOp)
+        testGeoTiff(sc, path)(rasterOp, sparkOp)
       }
 
     }
