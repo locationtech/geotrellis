@@ -42,11 +42,9 @@ trait ZonalRasterRDDMethods[K] extends RasterRDDMethods[K] {
     val bcZoneHistogramMap = sc.broadcast(zoneHistogramMap)
     val bcZoneSumMap = sc.broadcast(zoneSumMap)
 
-    rasterRDD.combinePairs(zonesRasterRDD) { case (t, z) =>
+    rasterRDD.combineTiles(zonesRasterRDD) { case (tile, zone) =>
       val zhm = bcZoneHistogramMap.value
       val zsm = bcZoneSumMap.value
-
-      val (tile, zone) = (t.tile, z.tile)
 
       val (cols, rows) = (tile.cols, tile.rows)
 
@@ -62,19 +60,8 @@ trait ZonalRasterRDDMethods[K] extends RasterRDDMethods[K] {
         }
       }
 
-      (t.id, res)
+      res
     }
   }
-
-  /*def zonalHistogram(zoneRasterRDD: RasterRDD[K]) =
-   rasterRDD.combineTiles(zoneRasterRDD)((t: (K, Tile), zone: (K, Tile)) => {
-   (t.id, ZonalHistogram(t.tile, zone.tile))
-   })*/
-
-  /*def zonalPercentage(zonesRasterRDD: RasterRDD[K]): RDD[Tile] =
-   rasterRDD.join(zonesRasterRDD).map(_)
-   rasterRDD.combineTiles(zoneRasterRDD)((t: (K, Tile), zone: (K, Tile)) => {
-   (t.id, ZonalPercentage(t.tile, zone.tile))
-   }).map(_.tile)*/
 
 }

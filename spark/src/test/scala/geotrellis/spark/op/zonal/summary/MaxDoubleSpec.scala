@@ -3,6 +3,7 @@ package geotrellis.spark.op.zonal.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector._
 
@@ -39,9 +40,10 @@ class MaxDoubleSpec extends FunSpec
           totalExtent.ymin + yd / 2
         )
 
-        val res = count - tileLayout.tileCols * 1.5 - 1
-        // TODO: How to get number of tmsTiles in width / height?
-        inc.zonalMaxDouble(quarterExtent.toPolygon) should be(res)
+        val result = inc.zonalMaxDouble(quarterExtent.toPolygon)
+        val expected = inc.stitch.zonalMaxDouble(totalExtent, quarterExtent.toPolygon)
+
+        result should be (expected)
       }
     }
   }

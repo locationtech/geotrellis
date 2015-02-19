@@ -1,5 +1,6 @@
-package geotrellis.spark.op.global
+package geotrellis.graph.op
 
+import geotrellis.graph._
 import geotrellis.spark._
 
 import geotrellis.raster.op.global.{CostDistance => SingleCD}
@@ -39,7 +40,7 @@ class CostDistanceSpec extends FunSpec with TestEnvironment
 
         val rasterOp = (tile: Tile, re: RasterExtent) => SingleCD(tile, points)
 
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.costDistance(points)
+        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.toGraph.costDistance(points)
 
         testTile(sc, tile, 3, 3)(rasterOp, sparkOp)
       }

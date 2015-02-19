@@ -21,9 +21,9 @@ class AspectSpec extends FunSpec with TestEnvironment
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.aspect(re.cellSize)
         val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.aspect()
 
-        val path = "elevation.json"
+        val path = "aspect.tif"
 
-        testArg(sc, path)(rasterOp, sparkOp)
+        testGeoTiff(sc, path)(rasterOp, sparkOp)
       }
 
     }

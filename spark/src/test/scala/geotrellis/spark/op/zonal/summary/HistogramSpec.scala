@@ -3,6 +3,8 @@ package geotrellis.spark.op.zonal.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.raster._
+import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector._
 
@@ -53,9 +55,10 @@ class HistogramSpec extends FunSpec
         )
 
         val histogram = ones.zonalHistogram(quarterExtent.toPolygon)
+        val expected = ones.stitch.zonalHistogram(totalExtent, quarterExtent.toPolygon)
 
-        histogram.getMinMaxValues should be (1, 1)
-        histogram.getItemCount(1) should be (count / 4)
+        histogram.getMinMaxValues should be (expected.getMinMaxValues)
+        histogram.getItemCount(1) should be (expected.getItemCount(1))
       }
 
       it("should get correct histogram over half of the extent in diamond shape") {
@@ -71,14 +74,17 @@ class HistogramSpec extends FunSpec
         val poly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
 
         val histogram = ones.zonalHistogram(poly)
+        val expected = ones.stitch.zonalHistogram(totalExtent, poly)
 
-        histogram.getMinMaxValues should be (1, 1)
-        histogram.getItemCount(1) should be (count / 2)
+        histogram.getMinMaxValues should be (expected.getMinMaxValues)
+        histogram.getItemCount(1) should be (expected.getItemCount(1))
       }
 
       it("should get correct histogram over polygon with hole") {
-        val xd = totalExtent.xmax - totalExtent.xmin
-        val yd = totalExtent.ymax - totalExtent.ymin
+        val delta = 0.0001 // A bit of a delta to avoid floating point errors.
+
+        val xd = totalExtent.width + delta
+        val yd = totalExtent.height + delta
 
 
         val pe1 = Point(totalExtent.xmin + xd / 2, totalExtent.ymax)
@@ -94,16 +100,13 @@ class HistogramSpec extends FunSpec
         val pi4 = Point(totalExtent.xmin + xd / 4, totalExtent.ymin + yd / 2)
 
         val interior = Line(Array(pi1, pi2, pi3, pi4, pi1))
-
         val poly = Polygon(exterior, interior)
-        val withoutHoleArea = Polygon(exterior).area
-        val area = poly.area
-        val res = ((count / 2) * (area / withoutHoleArea)).round.toInt
 
         val histogram = ones.zonalHistogram(poly)
+        val expected = ones.stitch.zonalHistogram(totalExtent, poly)
 
-        histogram.getMinMaxValues should be (1, 1)
-        histogram.getItemCount(1) should be (res)
+        histogram.getMinMaxValues should be (expected.getMinMaxValues)
+        histogram.getItemCount(1) should be (expected.getItemCount(1))
       }
     }
   }

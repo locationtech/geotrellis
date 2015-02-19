@@ -1,7 +1,7 @@
-package geotrellis.spark.graph.op
+package geotrellis.graph.op
 
+import geotrellis.graph._
 import geotrellis.spark._
-import geotrellis.spark.graph._
 import geotrellis.spark.op.global._
 
 import geotrellis.vector.Line
@@ -43,8 +43,7 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
 
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.costDistance(points)
 
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) =>
-        rdd.costDistance(points)
+        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.toGraph.costDistance(points)
 
         testTile(sc, tile, 3, 3)(rasterOp, sparkOp)
       }
@@ -67,7 +66,7 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
 
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.costDistance(points)
 
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.costDistance(points)
+        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.toGraph.costDistance(points)
 
         testTile(sc, tile, 3, 2)(rasterOp, sparkOp)
       }
@@ -85,9 +84,9 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
 
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.costDistance(points)
 
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.costDistance(points)
+        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.toGraph.costDistance(points)
 
-        testTile(sc, tile, 7, 6)(rasterOp, sparkOp)
+        testTile(sc, tile, 2, 3)(rasterOp, sparkOp)
       }
 
     }
@@ -120,7 +119,7 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
           (6.0, 6.0), (7.0, 7.0), (8.0, 8.0)
         ))
 
-        val paths = rasterRDD.costDistanceWithPath(start, end)
+        val paths = rasterRDD.toGraph.costDistanceWithPath(start, end)
         paths.size should be (1)
         paths.head should be (cheapestPath)
       }
@@ -164,7 +163,7 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
           ))
         )
 
-        val paths = rasterRDD.costDistanceWithPath(start, end)
+        val paths = rasterRDD.toGraph.costDistanceWithPath(start, end)
         paths.size should be (2)
         paths.toSet should be (cheapestPaths)
       }
@@ -206,7 +205,7 @@ class ShortestPathSpec extends FunSpec with TestEnvironment
           ))
         )
 
-        val paths = rasterRDD.costDistanceWithPath(start, end)
+        val paths = rasterRDD.toGraph.costDistanceWithPath(start, end)
         paths.size should be (2)
         paths.toSet should be (cheapestPaths)
       }

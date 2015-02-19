@@ -55,7 +55,7 @@ class MinSpec extends FunSpec with TestEnvironment
             3.4, 8.2, 1.9,   3.8, 3.1, 3.0,   1.3, 2.1, 2.5,
             2.5, 4.9, 7.1,   1.4, NaN, 1.1,   8.0, 4.8, 3.0
           ), 9, 4),
-          TileLayout(3, 2, 3, 2), TypeDouble
+          TileLayout(3, 2, 3, 2)
         )
 
         val res = rasterRDD.focalMin(Square(1)).stitch.toArrayDouble
