@@ -37,26 +37,32 @@ trait PackBitsDecompression {
 
         var j = 0
         var total = 0
+        val len = segment.length
         while (total != size) {
-          if (j >= segment.length)
+
+          if (len <= j)
             throw new MalformedGeoTiffException("bad packbits decompression")
-
-          val n = segment(j)
+          val headerByte = segment(j)
           j += 1
-          if (n >= 0 && n <= 127) {
-            cfor(0)(_ <= n, _ + 1) { k =>
-              rowArray(total + k) = segment(j + k)
-            }
-            j += n + 1
-            total += n + 1
-          } else if (n > -128 && n < 0) {
-            val b = segment(i)
-            j += 1
-            cfor(0)(_ >= -n, _ - 1) { k =>
-              rowArray(total + k) = b
-            }
 
-            total += -n + 1
+          if (0 <= headerByte) {
+            // next (headerByte + 1) values in segment are literal values
+            val limit = total + headerByte + 1
+            while(total < limit) {
+              rowArray(total) = segment(j)
+              total += 1
+              j += 1
+            }
+          } else if (-128 < headerByte && headerByte < 0) {
+            // The next byte of data repeated (1 - headerByte) times
+            val b = segment(j)
+            j += 1
+
+            val limit = total + (1 - headerByte)
+            while(total < limit) {
+              rowArray(total) = b
+              total += 1
+            }
           }
         }
 
