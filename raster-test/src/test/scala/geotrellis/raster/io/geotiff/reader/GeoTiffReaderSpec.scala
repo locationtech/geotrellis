@@ -116,8 +116,6 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  // Apparently GDAL supports a ton of different compressions.
-  // In the coming days we will work to add support for as many as possible.
   describe("reading compressed file must yield same image array as uncompressed file") {
 
     ignore ("must read aspect_jpeg.tif and match uncompressed file") {
@@ -126,13 +124,6 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("must read econic_lzw.tif and match uncompressed file") {
       val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/econic_lzw.tif")
-      val uncomp = GeoTiff(s"$filePath/econic.tif")
-
-      decomp.firstBand.tile should equal(uncomp.firstBand.tile)
-    }
-
-    it("must read econic_packbits.tif and match uncompressed file") {
-      val decomp = GeoTiff(s"$filePath/geotiff-reader-tiffs/econic_packbits.tif")
       val uncomp = GeoTiff(s"$filePath/econic.tif")
 
       decomp.firstBand.tile should equal(uncomp.firstBand.tile)
@@ -561,3 +552,26 @@ class GeoTiffReaderSpec extends FunSpec
     }
   }
 }
+
+class PackBitsGeoTiffReaderSpec extends FunSpec
+    with TestEngine
+    with Matchers {
+  val filePath = "raster-test/data"
+
+  describe("Reading geotiffs with PACKBITS compression") {
+    it("must read econic_packbits.tif and match uncompressed file") {
+      val actual = GeoTiff(s"$filePath/geotiff-reader-tiffs/econic_packbits.tif").firstBand.tile
+      val expected = GeoTiff(s"$filePath/econic.tif").firstBand.tile
+
+      assertEqual(actual, expected)
+    }
+
+    it("must read previously erroring packbits compression .tif and match uncompressed file") {
+      val expected = GeoTiff(s"$filePath/geotiff-reader-tiffs/packbits-error-uncompressed.tif").firstBand.tile
+      val actual = GeoTiff(s"$filePath/geotiff-reader-tiffs/packbits-error.tif").firstBand.tile
+
+      assertEqual(actual, expected)
+    }
+  }
+}
+
