@@ -3,6 +3,8 @@ package geotrellis.vector.op
 import geotrellis.vector._
 import geotrellis.vector.json._
 
+import spire.syntax.cfor._
+
 import org.scalatest._
 
 class LineDissolveSpec extends FunSpec
@@ -83,6 +85,17 @@ class LineDissolveSpec extends FunSpec
       MultiLine(testCase.dissolve)
     }
 
+    it("should maintain immutability over dissolve") {
+      val s, expected = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
+      val d = s.dissolve
+      val js = s.map(_.jtsGeom)
+      val jd = d.map(_.jtsGeom)
+
+      cfor(0)(_ < js.length, _ + 1) { i =>
+        js(i).eq(jd(i)) should be (false)
+      }
+
+    }
   }
 
   describe("should read larger files and benchmark faster than MultiLine.union") {

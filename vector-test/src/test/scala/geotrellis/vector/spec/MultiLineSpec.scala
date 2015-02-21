@@ -23,6 +23,31 @@ import com.vividsolutions.jts.{geom=>jts}
 import org.scalatest._
 
 class MultiLineSpec extends FunSpec with Matchers {
+  describe("MultiLine") {
+    it ("should maintain immutability over normalization") {
+      val ml = 
+        MultiLine(
+          Line( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
+          Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
+        )
+
+      val norm = ml.normalized
+      ml.jtsGeom.eq(norm.jtsGeom) should be (false)
+    }
+
+    it ("should maintain immutability over lines") {
+      val ml, expected = 
+        MultiLine(
+          Line( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
+          Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
+        )
+
+      val coords = ml.lines(0).jtsGeom.getCoordinates()
+      coords(0).setCoordinate(coords(1))
+      ml should be (expected)
+    }
+  }
+
   describe("MultiLine.union") {
     it("should merge a multi line string that has overlapping segments") {
       val ml =

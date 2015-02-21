@@ -520,6 +520,18 @@ class LineSpec extends FunSpec with Matchers {
       l.within(p) should be (true)
     }
 
-  }
+    it ("should maintain immutability over normalization") {
+      val l = Line(Point(1,1), Point(3,1))
+      val norm = l.normalized
+      l.jtsGeom.eq(norm.jtsGeom) should be (false)
+    }
 
+    it ("should maintain immutability over vertices") {
+      val l, expected = Line(Point(1,1), Point(3,1))
+      val coord = l.vertices(0).jtsGeom.getCoordinate()
+      val newCoord = Point(5,5).jtsGeom.getCoordinate()
+      coord.setCoordinate(newCoord)
+      l should be (expected)
+    }
+  }
 }

@@ -433,6 +433,20 @@ class MultiPointSpec extends FunSpec with Matchers {
       mp.within(p) should be (true)
     }
 
+    it ("should maintain immutability over normalization") {
+      val mp = MultiPoint(Point(1,1), Point(2,2))
+      val norm = mp.normalized
+      mp.jtsGeom.eq(norm.jtsGeom) should be (false)
+    }
+
+    it ("should maintain immutability over points") {
+      val mp, expected = MultiPoint(Point(1,1), Point(2,2))
+      val coord = mp.points(0).jtsGeom.getCoordinate()
+      val newCoord = Point(5,5).jtsGeom.getCoordinate()
+      coord.setCoordinate(newCoord)
+      mp should be (expected)
+    }
+
   }
 
 }
