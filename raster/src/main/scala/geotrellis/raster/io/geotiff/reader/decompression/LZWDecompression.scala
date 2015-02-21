@@ -111,8 +111,6 @@ trait LZWDecompression {
 
         def isInTable(code: Int) = code < stringTableIndex
 
-        var printed = 0
-
         def writeString(string: Array[Byte]) = {
           System.arraycopy(
             string,
@@ -129,7 +127,7 @@ trait LZWDecompression {
         var oldCode = 0
 
         var break = false
-        while (!break && { code = bis.get(threshold); code != EoICode } ) {
+        while (!break && { code = bis.get(threshold); code != EoICode } && outputArrayIndex < size) {
           if (code == ClearCode) {
             initializeStringTable
             code = bis.get(threshold)
