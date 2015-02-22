@@ -48,32 +48,36 @@ class AccumuloCatalogSpec extends FunSpec
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
 
-      it("should succeed writing to a table"){
-        catalog.save(LayerId("ones", level.zoom), "tiles", onesRdd)
+      val layerId = LayerId("ones", level.zoom)
+
+      it("should succeed writing to a table") {
+        catalog.save(layerId, "tiles", onesRdd)
       }
 
-      it("should load out saved tiles"){
-        catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
+      it("should load out saved tiles") {
+        val rdd = catalog.load[SpatialKey](layerId)
+        rdd.count should be > 0l
       }
 
-      it("should load out a single tile"){
-        val tile = catalog.loadTile(LayerId("ones", 10), SpatialKey(917, 616))
+      it("should load out a single tile") {
+        val key = catalog.load[SpatialKey](layerId).map(_._1).collect.head
+        val tile = catalog.loadTile(layerId, key)
         (tile.cols, tile.rows) should be ((512, 512))
       }
 
-      it("should load out saved tiles, but only for the right zoom"){
+      it("should load out saved tiles, but only for the right zoom") {
         intercept[LayerNotFoundError] {
-          catalog.load[SpatialKey](LayerId("ones", 9)).count()
+          catalog.load[SpatialKey](LayerId("ones", level.zoom + 1)).count()
         }
       }
 
-      it("fetch a TileExtent from catalog"){
+      it("fetch a TileExtent from catalog") {
         val tileBounds = GridBounds(915,305,916,306)
         val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val rdd1 = catalog.load[SpatialKey](LayerId("ones", level.zoom), filters)
         val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
 
-        val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
+        val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
           require(tms1.id == tms2.id)
           val res = tms1.tile.localAdd(tms2.tile)
           (tms1.id, res)

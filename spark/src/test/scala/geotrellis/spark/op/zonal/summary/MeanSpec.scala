@@ -3,6 +3,7 @@ package geotrellis.spark.op.zonal.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector._
 
@@ -29,8 +30,8 @@ class MeanSpec extends FunSpec
       }
 
       it("should get correct mean over a quarter of the extent") {
-        val xd = totalExtent.xmax - totalExtent.xmin
-        val yd = totalExtent.ymax - totalExtent.ymin
+        val xd = totalExtent.width
+        val yd = totalExtent.height
 
         val quarterExtent = Extent(
           totalExtent.xmin,
@@ -38,19 +39,10 @@ class MeanSpec extends FunSpec
           totalExtent.xmin + xd / 2,
           totalExtent.ymin + yd / 2
         )
+        val result = inc.zonalMean(quarterExtent.toPolygon)
+        val expected = inc.stitch.zonalMean(totalExtent, quarterExtent.toPolygon)
 
-        val min = count / 2
-
-        var sum = 0L
-        for (i <- 0 until tileLayout.tileRows * 3) {
-          for (j <- 0 until (tileLayout.tileCols * 1.5).toInt) {
-            sum += min + i * tileLayout.tileCols * 3 + j
-          }
-        }
-
-        val res = sum / (count / 4.0)
-
-        inc.zonalMean(quarterExtent.toPolygon) should be(res)
+        result should be (expected)
       }
     }
   }

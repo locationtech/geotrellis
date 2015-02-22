@@ -21,9 +21,9 @@ class VerticalFlipSpec extends FunSpec with TestEnvironment
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.verticalFlip
         val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.verticalFlip
 
-        val path = "elevation.json"
+        val path = "aspect.tif"
 
-        testArg(sc, path)(rasterOp, sparkOp)
+        testGeoTiff(sc, path)(rasterOp, sparkOp)
       }
 
     }

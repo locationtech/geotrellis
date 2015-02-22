@@ -1,4 +1,4 @@
-package geotrellis.spark
+package geotrellis
 
 import geotrellis.spark._
 

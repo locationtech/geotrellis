@@ -373,7 +373,6 @@ object GeotrellisBuild extends Build {
         Seq(
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
-          "org.apache.spark" %% "spark-graphx" % Version.spark % "provided",
           "com.quantifind" %% "sumac" % "0.3.0",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           "de.javakaffee" % "kryo-serializers" % "0.27",
@@ -399,6 +398,34 @@ object GeotrellisBuild extends Build {
     ) ++
   defaultAssemblySettings ++
   net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+  lazy val graph: Project =
+    Project("graph", file("graph"))
+      .settings(graphSettings: _*)
+      .dependsOn(spark % "test->test;compile->compile")
+
+  lazy val graphSettings =
+    Seq(
+      name := "geotrellis-graph",
+      fork := true,
+      parallelExecution in Test := false,
+      javaOptions ++= List(
+        "-Xmx8G",
+        "-Djava.library.path=/usr/local/lib",
+        "-Dsun.io.serialization.extendedDebugInfo=true"
+      ),
+      libraryDependencies ++=
+        Seq(
+          "org.apache.spark" %% "spark-graphx" % Version.spark % "provided",
+          scalatest % "test"
+        ),
+      resolvers ++= Seq(
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+      )
+    ) ++
+  defaultAssemblySettings ++
+  net.virtualvoid.sbt.graph.Plugin.graphSettings
+
 
   // Project: index
   lazy val index: Project =

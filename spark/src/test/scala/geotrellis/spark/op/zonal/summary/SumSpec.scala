@@ -3,6 +3,7 @@ package geotrellis.spark.op.zonal.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector._
 
@@ -32,14 +33,17 @@ class SumSpec extends FunSpec
         val xd = totalExtent.xmax - totalExtent.xmin
         val yd = totalExtent.ymax - totalExtent.ymin
 
-        val quarterExtent = Extent(
+        val poly = Extent(
           totalExtent.xmin,
           totalExtent.ymin,
           totalExtent.xmin + xd / 2,
           totalExtent.ymin + yd / 2
-        )
+        ).toPolygon
 
-        ones.zonalSum(quarterExtent.toPolygon) should be(count / 4)
+        val result = ones.zonalSum(poly)
+        val expected = ones.stitch.zonalSum(totalExtent, poly)
+
+        result should be (expected)
       }
 
       it("should get correct sum over half of the extent in diamond shape") {
@@ -54,13 +58,17 @@ class SumSpec extends FunSpec
 
         val poly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
 
-        ones.zonalSum(poly) should be(count / 2)
+        val result = ones.zonalSum(poly)
+        val expected = ones.stitch.zonalSum(totalExtent, poly)
+
+        result should be (expected)
       }
 
       it("should get correct sum over polygon with hole") {
-        val xd = totalExtent.xmax - totalExtent.xmin
-        val yd = totalExtent.ymax - totalExtent.ymin
+        val delta = 0.0001 // A bit of a delta to avoid floating point errors.
 
+        val xd = totalExtent.width + delta
+        val yd = totalExtent.height + delta
 
         val pe1 = Point(totalExtent.xmin + xd / 2, totalExtent.ymax)
         val pe2 = Point(totalExtent.xmax, totalExtent.ymin + yd / 2)
@@ -77,11 +85,11 @@ class SumSpec extends FunSpec
         val interior = Line(Array(pi1, pi2, pi3, pi4, pi1))
 
         val poly = Polygon(exterior, interior)
-        val withoutHoleArea = Polygon(exterior).area
-        val area = poly.area
-        val res = ((count / 2) * (area / withoutHoleArea)).round.toInt
 
-        ones.zonalSum(poly) should be(res)
+        val result = ones.zonalSum(poly)
+        val expected = ones.stitch.zonalSum(totalExtent, poly)
+
+        result should be (expected)
       }
     }
   }

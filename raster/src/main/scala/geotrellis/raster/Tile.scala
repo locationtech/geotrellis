@@ -169,6 +169,9 @@ trait Tile {
   def crop(cols: Int, rows: Int): Tile =
     CroppedTile(this, GridBounds(0, 0, cols - 1, rows - 1))
 
+  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): Tile =
+    CroppedTile(this, GridBounds(colMin, rowMin, colMax, rowMax))
+
   def crop(gb: GridBounds): Tile =
     CroppedTile(this, gb)
 

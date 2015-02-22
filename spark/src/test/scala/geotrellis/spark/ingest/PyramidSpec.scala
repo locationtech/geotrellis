@@ -71,9 +71,6 @@ class PyramidSpec extends FunSpec
 
         val layoutScheme = ZoomedLayoutScheme(2)
         val level = layoutScheme.levelFor(2)
-        println(level)
-
-
 
         val (levelOneRDD, levelOne) = Pyramid.up(rdd, level, layoutScheme)
 
