@@ -27,24 +27,26 @@ class MultiLineSpec extends FunSpec with Matchers {
     it ("should maintain immutability over normalization") {
       val ml = 
         MultiLine(
-          Line( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
+          Line( (2.0, 3.0), (1.0, 1.0), (2.0, 2.0), (1.0, 1.0) ),
           Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
-      val norm = ml.normalized
-      ml.jtsGeom.eq(norm.jtsGeom) should be (false)
+      val expected = ml.jtsGeom.clone
+      ml.normalized
+      ml.jtsGeom.equals(expected) should be (true)
     }
 
     it ("should maintain immutability over lines") {
-      val ml, expected = 
+      val ml = 
         MultiLine(
           Line( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
           Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
+      val expected = ml.jtsGeom.clone
       val coords = ml.lines(0).jtsGeom.getCoordinates()
       coords(0).setCoordinate(coords(1))
-      ml should be (expected)
+      ml.jtsGeom.equals(expected) should be (true)
     }
   }
 

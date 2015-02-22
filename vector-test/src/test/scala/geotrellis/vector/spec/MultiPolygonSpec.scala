@@ -28,19 +28,21 @@ class MultiPolygonSpec extends FunSpec with Matchers {
       val p1 = Polygon(Line(Point(0,0), Point(0,10), Point(-10,10), Point(-10,0), Point(0,0)))
       val p2 = Polygon(Line(Point(11,17), Point(11,18), Point(14,17), Point(11,17)))
       val mp = MultiPolygon(p1, p2)
-      val norm = mp.normalized
 
-      mp.jtsGeom.eq(norm.jtsGeom) should be (false)
+      val expected = mp.jtsGeom.clone
+      mp.normalized
+      mp.jtsGeom.equals(expected) should be (true)
     }
 
     it ("should maintain immutability over polygons") {
       val p1 = Polygon(Line(Point(0,0), Point(0,10), Point(-10,10), Point(-10,0), Point(0,0)))
       val p2 = Polygon(Line(Point(11,17), Point(11,18), Point(14,17), Point(11,17)))
-      val mp, expected = MultiPolygon(p1, p2)
+      val mp = MultiPolygon(p1, p2)
       
+      val expected = mp.jtsGeom.clone
       val coords = mp.polygons(0).jtsGeom.getCoordinates()
       coords(0).setCoordinate(coords(1))
-      mp should be (expected)
+      mp.jtsGeom.equals(expected) should be (true)
     }
   }
 }
