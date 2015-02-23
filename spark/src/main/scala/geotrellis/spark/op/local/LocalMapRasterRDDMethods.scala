@@ -1,4 +1,10 @@
-trait LocalMapRasterRDDMethods extends RasterRDDMethods {
+package geotrellis.spark.op.local
+
+import geotrellis.spark._
+import geotrellis.raster._
+import geotrellis.raster.op.local._
+
+trait LocalMapRasterRDDMethods[K] extends RasterRDDMethods[K] {
     /** Map the integer values of a each cell to a new integer value. */
   def localMap(f:Int=>Int) = 
     rasterRDD.mapTiles { tile =>
