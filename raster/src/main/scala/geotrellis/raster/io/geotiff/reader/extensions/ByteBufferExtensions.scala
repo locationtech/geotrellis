@@ -239,7 +239,7 @@ trait ByteBufferExtensions {
     final def getFloatArray(length: Int, valueOffset: Int): Array[Float] = {
       val arr = Array.ofDim[Float](length)
 
-      if (length <= 2) {
+      if (length <= 1) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.getFloat
