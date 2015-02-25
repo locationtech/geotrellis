@@ -48,7 +48,7 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
       tileRdd map { case (key, tile) => key -> f(tile) }
     }
 
-  def mapPairs(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
+  def mapPairs[R: ClassTag](f: ((K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
       tileRdd map { row => f(row) }
     }
