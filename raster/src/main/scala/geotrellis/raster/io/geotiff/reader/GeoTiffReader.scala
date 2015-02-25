@@ -52,24 +52,32 @@ object GeoTiffReader {
       recurReadImageDirectory(directory, 0)
     }
 
-    def recurReadImageDirectory(directory: ImageDirectory, index: Int,
-      geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory = {
+    def recurReadImageDirectory(directory: ImageDirectory, index: Int, geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
       if (index == directory.count) {
-        val newDirectory = geoKeysMetadata match {
-          case Some(tagMetadata) => TagReader.read(byteBuffer, directory, geoKeysMetadata.get)
-          case None => directory
-        }
+        val newDirectory = 
+          geoKeysMetadata match {
+            case Some(tagMetadata) => TagReader.read(byteBuffer, directory, geoKeysMetadata.get)
+            case None => directory
+          }
         ImageReader.read(byteBuffer, newDirectory)
       } else {
-        val metadata = TagMetadata(byteBuffer.getUnsignedShort, byteBuffer.getUnsignedShort,
-          byteBuffer.getInt, byteBuffer.getInt)
+        val metadata = 
+          TagMetadata(
+            byteBuffer.getUnsignedShort, 
+            byteBuffer.getUnsignedShort,
+            byteBuffer.getInt, 
+            byteBuffer.getInt
+          )
+
         if (metadata.tag == GeoKeyDirectoryTag)
           recurReadImageDirectory(directory, index + 1, Some(metadata))
         else
-          recurReadImageDirectory(TagReader.read(byteBuffer, directory, metadata),
-            index + 1, geoKeysMetadata)
+          recurReadImageDirectory(
+            TagReader.read(byteBuffer, directory, metadata),
+            index + 1,
+            geoKeysMetadata
+          )
       }
-    }
 
     setByteBufferPosition
     setByteOrder

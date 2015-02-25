@@ -115,15 +115,22 @@ trait ByteBufferExtensions {
     }
 
     final def getString(length: Int, offset: Int): String = {
-      val oldPos = byteBuffer.position
-      byteBuffer.position(offset)
-
       val sb = new StringBuilder
-      cfor(0)(_ < length, _ + 1) { i =>
-        sb.append(byteBuffer.get.toChar)
-      }
+      if (length <= 4) {
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, offset)
+        cfor(0)( _ < length, _ + 1) { i =>
+          sb.append(byteBuffer.get.toChar)
+        }
+      } else {
+        val oldPos = byteBuffer.position
+        byteBuffer.position(offset)
 
-      byteBuffer.position(oldPos)
+        cfor(0)(_ < length, _ + 1) { i =>
+          sb.append(byteBuffer.get.toChar)
+        }
+
+        byteBuffer.position(oldPos)
+      }
 
       sb.toString
     }
@@ -232,7 +239,7 @@ trait ByteBufferExtensions {
     final def getFloatArray(length: Int, valueOffset: Int): Array[Float] = {
       val arr = Array.ofDim[Float](length)
 
-      if (length <= 2) {
+      if (length <= 1) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.getFloat

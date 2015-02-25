@@ -550,6 +550,13 @@ class GeoTiffReaderSpec extends FunSpec
         }
       }
     }
+
+    it("should read clipped GeoTiff with byte NODATA value") {
+      val geoTiff = GeoTiff(s"$filePath/geotiff-reader-tiffs/nodata-tag-byte.tif").firstBand.tile.convert(TypeFloat)
+      val geoTiff2 = GeoTiff(s"$filePath/geotiff-reader-tiffs/nodata-tag-float.tif").firstBand.tile
+      assertEqual(geoTiff, geoTiff2)
+    }
+
   }
 }
 
