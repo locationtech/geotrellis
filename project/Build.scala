@@ -376,6 +376,7 @@ object GeotrellisBuild extends Build {
           "com.quantifind" %% "sumac" % "0.3.0",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           "de.javakaffee" % "kryo-serializers" % "0.27",
+          "com.datastax.spark" % "spark-cassandra-connector_2.10" % Version.cassandra_connector,
           logging, awsSdkS3,
           spire,
           monocleCore, monocleMacro,
@@ -384,7 +385,7 @@ object GeotrellisBuild extends Build {
           scalatest % "test"
         ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"        
       ),
       initialCommands in console :=
         """
