@@ -27,8 +27,8 @@ object Version {
   val spray       = "1.3.2"
   val jackson     = "1.6.1"
   val monocle     = "1.0.1"
-  lazy val hadoop              = either("SPARK_HADOOP_VERSION", "2.5.0")
-  lazy val spark               = either("SPARK_VERSION", "1.2.0")
-  lazy val cassandra_connector = "1.2.0-alpha2"
-
+  lazy val hadoop          = either("SPARK_HADOOP_VERSION", "2.5.0")
+  lazy val spark           = either("SPARK_VERSION", "1.2.0")
+  lazy val cassandra_connector       = "2.1.4"
+  lazy val spark_cassandra_connector = "1.2.0-alpha2"
 }
