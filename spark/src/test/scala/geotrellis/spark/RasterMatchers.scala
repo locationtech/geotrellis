@@ -61,6 +61,38 @@ trait RasterMatchers extends Matchers {
     }
   }
 
+  /*
+   * Takes a function and checks if each f(x, y) == tile.get(x, y)
+   *  - Specialized for int so the function can check if an
+   *    (x, y) pair are NODATA. Prior to this, the tile's value
+   *    would be converted to a double, and NODATA would become NaN
+   */
+  def rasterShouldBeInt(tile: Tile, f: (Tile, Int, Int) => Int): Unit = {
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val exp = f(tile, col, row)
+        val v = tile.get(col, row)
+        withClue(s"(col=$col, row=$row)") { v should be(exp) }
+      }
+    }
+  }
+
+  /*
+   * Takes a function and checks if each f(x, y) == tile.get(x, y)
+   *  - Specialized for int so the function can check if an
+   *    (x, y) pair are NODATA. Prior to this, the tile's value
+   *    would be converted to a double, and NODATA would become NaN.
+   */
+  def rasterShouldBeInt(tile: Tile, f: (Int, Int) => Int): Unit = {
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val exp = f(col, row)
+        val v = tile.get(col, row)
+        withClue(s"(col=$col, row=$row)") { v should be(exp) }
+      }
+    }
+  }
+
   def rasterShouldBe(tile: Tile, f: (Tile, Int, Int) => Double): Unit =
     rasterShouldBeAbout(tile, f, 1e-100)
 

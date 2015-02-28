@@ -39,7 +39,7 @@ trait LocalMapRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   /** For each cell whose value is not a NoData, if the type of the raster is a double type, 
       map using the double function, otherwise map using the integer function. */
-  def localMapIfSetDouble(fInt:Int=>Int)(fDouble:Double=>Double) = 
+  def localDualMapDouble(fInt:Int=>Int)(fDouble:Double=>Double) = 
     rasterRDD.mapTiles { tile =>
       tile.dualMapIfSet(fInt)(fDouble)
     }
