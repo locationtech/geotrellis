@@ -41,12 +41,16 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
                                                       with OneDimension {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): MultiLine = { jtsGeom.normalize ; MultiLine(jtsGeom) }
+  def normalized(): MultiLine = { 
+    val geom = jtsGeom.clone.asInstanceOf[jts.MultiLineString]
+    geom.normalize
+    MultiLine(geom)
+  }
 
   /** Returns the Lines contained in this MultiLine. */
   lazy val lines: Array[Line] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
-      Line(jtsGeom.getGeometryN(i).asInstanceOf[jts.LineString])
+      Line(jtsGeom.getGeometryN(i).clone.asInstanceOf[jts.LineString])
     }
   }.toArray
 
