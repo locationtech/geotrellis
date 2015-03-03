@@ -25,8 +25,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
   // Create the catalog table if it doesn't exist
   {
     val schema = SchemaBuilder.createTable(keyspace, catalogTable).ifNotExists()
-      .addPartitionKey("name", text)
-      .addClusteringColumn("mdtable", text)
+      .addPartitionKey("id", text)
       .addClusteringColumn("zoom", cint)
       .addColumn("keyClass", text)
       .addColumn("metadata", text)
@@ -76,9 +75,8 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       .`with`(set("metadata", metaData.rasterMetaData.toJson.compactPrint))
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
-      .where (eq("name", layerId.name))
+      .where (eq("id", s"${table.toString}__${layerId.name}"))
       .and   (eq("zoom", layerId.zoom))
-      .and   (eq("mdtable", table.toString))
 
     connector.withSessionDo(_.execute(update))
   }
@@ -93,8 +91,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
 
     while (iter.hasNext) {
       val row = iter.next
-      val name       = row.getString("name")
-      val table      = row.getString("mdtable")
+      val Array(table, name) = row.getString("id").split("__")
       val zoom: Int  = row.getInt("zoom")
       val keyClass   = row.getString("keyClass")
       val rasterData = row.getString("metadata")
