@@ -20,24 +20,24 @@ import org.apache.spark.Logging
 
 import DefaultJsonProtocol._
 
-class CassandraMetaDataCatalog(connector: CassandraConnector, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
+class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: String, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
 
   var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
   val eq = QueryBuilder.eq _
 
   // Create the catalog table if it doesn't exist
   {
-    val schema = SchemaBuilder.createTable(catalogTable).ifNotExists()
+    val schema = SchemaBuilder.createTable(keyspace, catalogTable).ifNotExists()
       .addPartitionKey("name", text)
       .addClusteringColumn("table", text)
       .addClusteringColumn("zoom", cint)
-      .addStaticColumn("keyClass", text)
-      .addStaticColumn("metadata", text)
-      .addStaticColumn("histogram", text)
+      .addColumn("keyClass", text)
+      .addColumn("metadata", text)
+      .addColumn("histogram", text)
     
     connector.withSessionDo(_.execute(schema))
   }
-  
+
   type TableName = String
 
   def load(layerId: LayerId): (LayerMetaData, TableName) = {
@@ -72,7 +72,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val catalogTable: 
 
     catalog = catalog updated ((layerId -> table), metaData)
 
-    val update = QueryBuilder.update(catalogTable)
+    val update = QueryBuilder.update(keyspace, catalogTable)
       .`with`(set("metadata", metaData.rasterMetaData.toJson.compactPrint))
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
@@ -86,17 +86,17 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val catalogTable: 
     var data: Map[(LayerId, TableName), Map[String, String]] =
       Map.empty.withDefaultValue(Map.empty)
 
-    val queryAll = QueryBuilder.select.all.from(catalogTable)
+    val queryAll = QueryBuilder.select.all.from(keyspace, catalogTable)
     val results = connector.withSessionDo(_.execute(queryAll))
     val iter = results.iterator
 
     while (iter.hasNext) {
       val row = iter.next
-      val name = row.getString("name")
-      val table = row.getString("table")
+      val name      = row.getString("name")
+      val table     = row.getString("table")
       val zoom: Int = row.getInt("zoom")
-      val keyClass = row.getString("keyClass")
-      val metaData = row.getString("metadata")
+      val keyClass  = row.getString("keyClass")
+      val metaData  = row.getString("metadata")
       val histogram = row.getString("histogram")
 
       val layerId = LayerId(name, zoom)      

@@ -14,28 +14,28 @@ import com.datastax.spark.connector.cql.CassandraConnector
 
 import org.apache.spark.Logging
 
-class CassandraAttributeCatalog(connector: CassandraConnector, val attributeTable: String) extends AttributeCatalog with Logging {
+class CassandraAttributeCatalog(connector: CassandraConnector, val keyspace: String, val attributeTable: String) extends AttributeCatalog with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
 
   val eq = QueryBuilder.eq _
 
   // Create the attribute table if it doesn't exist
   {
-    val schema = SchemaBuilder.createTable(attributeTable).ifNotExists()
+    val schema = SchemaBuilder.createTable(keyspace, attributeTable).ifNotExists()
       .addPartitionKey("layerId", text)
       .addClusteringColumn("name", text)
-      .addStaticColumn("value", text)
-    
+      .addColumn("value", text)
+
     connector.withSessionDo(_.execute(schema))
   }
-  
+
   def load[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
-    val query = QueryBuilder.select.column("value").from(attributeTable)
+    val query = QueryBuilder.select.column("value").from(keyspace, attributeTable)
       .where (eq("layerId", layerId.toString))
       .and   (eq("name", attributeName))
-    
+
     val results = connector.withSessionDo(_.execute(query))
-    
+
     val size = results.getAvailableWithoutFetching
     if(size == 0) {
       sys.error(s"Attribute $attributeName not found for layer $layerId")
@@ -45,13 +45,13 @@ class CassandraAttributeCatalog(connector: CassandraConnector, val attributeTabl
       results.one.getString("value").parseJson.convertTo[T]
     }
   }
-  
+
   def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    val update = QueryBuilder.update(attributeTable)
+    val update = QueryBuilder.update(keyspace, attributeTable)
       .`with`(set("value", value.toJson.compactPrint))
       .where (eq("layerId", layerId.toString))
       .and   (eq("name", attributeName))
 
-    connector.withSessionDo(_.execute(update))
+    val results = connector.withSessionDo(_.execute(update))
   }
 }
