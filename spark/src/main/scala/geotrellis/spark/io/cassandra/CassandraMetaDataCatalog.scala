@@ -84,8 +84,8 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
   }
 
   def fetchAll: Map[(LayerId, TableName), LayerMetaData] = {
-    var data: Map[(LayerId, TableName), Map[String, String]] =
-      Map.empty.withDefaultValue(Map.empty)
+    var data: Map[(LayerId, TableName), LayerMetaData] =
+      Map.empty
 
     val queryAll = QueryBuilder.select.all.from(keyspace, catalogTable)
     val results = connector.withSessionDo(_.execute(queryAll))
@@ -93,28 +93,24 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
 
     while (iter.hasNext) {
       val row = iter.next
-      val name      = row.getString("name")
-      val table     = row.getString("mdtable")
-      val zoom: Int = row.getInt("zoom")
-      val keyClass  = row.getString("keyClass")
-      val metaData  = row.getString("metadata")
-      val histogram = row.getString("histogram")
+      val name       = row.getString("name")
+      val table      = row.getString("mdtable")
+      val zoom: Int  = row.getInt("zoom")
+      val keyClass   = row.getString("keyClass")
+      val rasterData = row.getString("metadata")
+      val histogram  = Option(row.getString("histogram")) 
 
-      val layerId = LayerId(name, zoom)      
-
-      val k = layerId -> table
-      data = data updated (k, data(k) updated ("keyClass", keyClass))
-      data = data updated (k, data(k) updated ("metadata", metaData))
-      data = data updated (k, data(k) updated ("histogram", histogram))
-    }
-
-    def readLayerMetaData(map: Map[String, String]): LayerMetaData =
-      LayerMetaData(
-        keyClass =  map("keyClass"),
-        rasterMetaData = map("metadata").parseJson.convertTo[RasterMetaData],
-        histogram = map.get("histogram").map(_.parseJson.convertTo[Histogram])
+      val layerId = LayerId(name, zoom)
+      val metaData = LayerMetaData(
+        keyClass = keyClass,
+        rasterMetaData = rasterData.parseJson.convertTo[RasterMetaData],
+        histogram = histogram.map(_.parseJson.convertTo[Histogram])
       )
 
-    data map { case (key, fieldMap) => key -> readLayerMetaData(fieldMap)}
+      val key = layerId -> table
+      data = data updated (key, metaData)
+    }
+
+    return data
   }
 }

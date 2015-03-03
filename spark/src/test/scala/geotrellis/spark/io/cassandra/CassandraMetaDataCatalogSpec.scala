@@ -50,7 +50,23 @@ class CassandraMetaDataCatalogSpec extends FunSpec
         loaded.keyClass should be (metaData.keyClass)
         loaded.rasterMetaData should be (metaData.rasterMetaData)
         loaded.histogram should be (metaData.histogram)
+      }
+
+      it("should save and pull out a catalog with no histogram") {
+        val rdd = DecreasingTestFile
+        val metaData = LayerMetaData(
+          keyClass = "testClass",
+          rasterMetaData = rdd.metaData,
+          histogram = None
+        )
+        metaDataCatalog.save(layerId, "tabletest", metaData, true)
+
+        val loaded = metaDataCatalog.load(layerId, "tabletest")
+        loaded.keyClass should be (metaData.keyClass)
+        loaded.rasterMetaData should be (metaData.rasterMetaData)
+        loaded.histogram should be (None)
       }     
+
     }
   }
 }
