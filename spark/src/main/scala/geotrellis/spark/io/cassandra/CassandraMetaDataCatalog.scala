@@ -22,14 +22,11 @@ import DefaultJsonProtocol._
 
 class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: String, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
 
-  var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
-  val eq = QueryBuilder.eq _
-
   // Create the catalog table if it doesn't exist
   {
     val schema = SchemaBuilder.createTable(keyspace, catalogTable).ifNotExists()
       .addPartitionKey("name", text)
-      .addClusteringColumn("table", text)
+      .addClusteringColumn("mdtable", text)
       .addClusteringColumn("zoom", cint)
       .addColumn("keyClass", text)
       .addColumn("metadata", text)
@@ -37,6 +34,9 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
     
     connector.withSessionDo(_.execute(schema))
   }
+
+  var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
+  val eq = QueryBuilder.eq _
 
   type TableName = String
 
@@ -77,7 +77,8 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
       .where (eq("name", layerId.name))
-      .and   (eq("table", table.toString))
+      .and   (eq("zoom", layerId.zoom))
+      .and   (eq("mdtable", table.toString))
 
     connector.withSessionDo(_.execute(update))
   }
@@ -93,7 +94,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
     while (iter.hasNext) {
       val row = iter.next
       val name      = row.getString("name")
-      val table     = row.getString("table")
+      val table     = row.getString("mdtable")
       val zoom: Int = row.getInt("zoom")
       val keyClass  = row.getString("keyClass")
       val metaData  = row.getString("metadata")
