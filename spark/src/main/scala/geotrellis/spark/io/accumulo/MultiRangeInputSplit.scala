@@ -6,8 +6,9 @@ import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.lib.util.{InputConfigurator => IC}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
+import org.apache.accumulo.core.client.security.tokens.AuthenticationToken.AuthenticationTokenSerializer
 import org.apache.accumulo.core.data.{Range => ARange}
-import org.apache.accumulo.core.security.{CredentialHelper, Authorizations}
+import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.util.{Pair => APair}
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.io.{Writable, Text}
@@ -72,18 +73,14 @@ class MultiRangeInputSplit extends InputSplit with Writable {
     if (null != principal) {
       out.writeUTF(principal)
     }
+    
     out.writeBoolean(null != token)
     if (null != token) {
+      out.writeUTF(token.getClass().getCanonicalName())
+      out.writeUTF(Base64.encodeBase64String(AuthenticationTokenSerializer.serialize(token)))  
       out.writeUTF(token.getClass.getCanonicalName)
-      try {
-        out.writeUTF(CredentialHelper.tokenAsBase64(token))
-      }
-      catch {
-        case e: AccumuloSecurityException => {
-          throw new IOException(e)
-        }
-      }
     }
+
     out.writeBoolean(null != instanceName)
     if (null != instanceName) {
       out.writeUTF(instanceName)
@@ -135,12 +132,12 @@ class MultiRangeInputSplit extends InputSplit with Writable {
     if (in.readBoolean()) {
       principal = in.readUTF();
     }
-
+          
     if (in.readBoolean()) {
       val tokenClass = in.readUTF();
       val base64TokenBytes = in.readUTF().getBytes(Charset.forName("UTF-8"));
       val tokenBytes = Base64.decodeBase64(base64TokenBytes);
-      token = CredentialHelper.extractToken(tokenClass, tokenBytes);
+      token = AuthenticationTokenSerializer.deserialize(tokenClass, tokenBytes);
     }
 
     if (in.readBoolean()) {

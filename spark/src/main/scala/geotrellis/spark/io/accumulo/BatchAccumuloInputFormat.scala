@@ -3,15 +3,14 @@ package geotrellis.spark.io.accumulo
 import java.nio.ByteBuffer
 
 import org.apache.accumulo.core.client.impl.Tables
-import org.apache.accumulo.core.client.mapreduce.lib.util.{InputConfigurator => IC, ConfiguratorBase => CB}
+import org.apache.accumulo.core.client.mapreduce.lib.impl.{ConfiguratorBase => CB, InputConfigurator => IC}
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.ZooKeeperInstance
 import org.apache.accumulo.core.client.{TableOfflineException, TableDeletedException}
 import org.apache.accumulo.core.data.{Range => ARange, Value, Key, KeyExtent}
 import org.apache.accumulo.core.master.state.tables.TableState
-import org.apache.accumulo.core.security.thrift.TCredentials
-import org.apache.accumulo.core.security.CredentialHelper
+import org.apache.accumulo.core.security.Credentials
 import org.apache.accumulo.core.util.UtilWaitThread
 import org.apache.hadoop.mapreduce.{RecordReader, TaskAttemptContext, InputSplit, JobContext}
 import scala.collection.JavaConverters._
@@ -41,18 +40,17 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] {
     val ranges  = IC.getRanges(CLASS, conf)
     val tableName = IC.getInputTableName(CLASS, conf)
     val instance = CB.getInstance(CLASS, conf)
-    val tabletLocator = IC.getTabletLocator(CLASS, conf)
-    val tokenClass = CB.getTokenClass(CLASS, conf)
+    val tabletLocator = IC.getTabletLocator(CLASS, conf, tableName)
     val principal = CB.getPrincipal(CLASS, conf)
-    val tokenBytes = CB.getToken(CLASS, conf)
-    val token = CredentialHelper.extractToken(tokenClass, tokenBytes)
-    val credentials = new TCredentials(principal, tokenClass, ByteBuffer.wrap(tokenBytes), instance.getInstanceID)
+    val token = CB.getAuthenticationToken(CLASS, conf)
+    
+    val credentials = new Credentials(principal, token);
 
     /** Ranges binned by tablets */
     val binnedRanges = new java.util.HashMap[String, java.util.Map[KeyExtent, java.util.List[ARange]]]()
 
     // loop until list of tablet lookup failures is empty
-    while (! tabletLocator.binRanges(ranges, binnedRanges, credentials).isEmpty) {
+    while (! tabletLocator.binRanges(credentials, ranges, binnedRanges).isEmpty) {
       var tableId: String = null
       if (! instance.isInstanceOf[MockInstance]) {
         if (tableId == null)
