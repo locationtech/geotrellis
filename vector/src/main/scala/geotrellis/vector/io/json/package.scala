@@ -6,15 +6,15 @@ import spray.json.JsonFormat
 import spray.httpx.SprayJsonSupport
 
 package object json extends GeoJsonSupport with SprayJsonSupport {
-  implicit class GeometriesToGeoJson(geoms: Traversable[Geometry]) {
+  implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) extends AnyVal {
     def toGeoJson: String = {
       JsonFeatureCollection(geoms).toJson.compactPrint
     }
   }
 
-  implicit class ExtentsToGeoJson(extent: Extent) {
+  implicit class ExtentsToGeoJson(val extent: Extent) extends AnyVal {
     def toGeoJson: String = {
-      JsonFeatureCollection(Seq(extent.toPolygon)).toJson.compactPrint
+      extent.toPolygon.toGeoJson
     }
   }
 
@@ -24,7 +24,7 @@ package object json extends GeoJsonSupport with SprayJsonSupport {
     }
   }
 
-  implicit class RichGeometry(geom: Geometry){
+  implicit class RichGeometry(val geom: Geometry) extends AnyVal {
     def toGeoJson: String = geom.toJson.compactPrint
 
     def withCrs(crs: CRS) = WithCrs(geom, crs)
@@ -36,7 +36,7 @@ package object json extends GeoJsonSupport with SprayJsonSupport {
     def withCrs(crs: CRS) = WithCrs(feature, crs)
   }
 
-  implicit class RichString(s: String){
+  implicit class RichString(val s: String) extends AnyVal {
     def parseGeoJson[T: JsonFormat] = s.parseJson.convertTo[T]
   }
 }
