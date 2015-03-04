@@ -34,39 +34,56 @@ class CassandraMetaDataCatalogSpec extends FunSpec
 
       val connector = CassandraConnector(conf)
 
-      val metaDataCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
-      val layerId = LayerId("test", 3)
-
-      it("should save and pull out a catalog") {
-        val rdd = DecreasingTestFile
-        val metaData = LayerMetaData(
-          keyClass = "testClass",
-          rasterMetaData = rdd.metaData,
-          histogram = Some(rdd.histogram)
-        )
-        metaDataCatalog.save(layerId, "tabletest", metaData, true)
-
-        val loaded = metaDataCatalog.load(layerId, "tabletest")
-        loaded.keyClass should be (metaData.keyClass)
-        loaded.rasterMetaData should be (metaData.rasterMetaData)
-        loaded.histogram should be (metaData.histogram)
+      val catalog: Option[CassandraMetaDataCatalog] = try {
+        Some(new CassandraMetaDataCatalog(connector, "test", "catalogs"))
+      } catch {
+        case _: IOException => None
       }
 
-      it("should save and pull out a catalog with no histogram") {
-        val rdd = DecreasingTestFile
-        val metaData = LayerMetaData(
-          keyClass = "testClass",
-          rasterMetaData = rdd.metaData,
-          histogram = None
-        )
-        metaDataCatalog.save(layerId, "tabletest", metaData, true)
+      if (catalog.isEmpty) {
+        info("No Cassandra db at 127.0.0.1; skipping tests.")
+      } else {
+        val metaDataCatalog = catalog.get
+        val layerId = LayerId("test", 3)
+        
+        it("should save and pull out a catalog") {
+          val rdd = DecreasingTestFile
+          val metaData = LayerMetaData(
+            keyClass = "testClass",
+            rasterMetaData = rdd.metaData,
+            histogram = Some(rdd.histogram)
+          )
+          metaDataCatalog.save(layerId, "tabletest", metaData, true)
+          
+          val loaded = metaDataCatalog.load(layerId, "tabletest")
+          loaded.keyClass should be (metaData.keyClass)
+          loaded.rasterMetaData should be (metaData.rasterMetaData)
+          loaded.histogram should be (metaData.histogram)
+        }
+        
+        it("should save and pull out a catalog with no histogram from cache and db") {
+          val rdd = DecreasingTestFile
+          val metaData = LayerMetaData(
+            keyClass = "testClass",
+            rasterMetaData = rdd.metaData,
+            histogram = None
+          )
 
-        val loaded = metaDataCatalog.load(layerId, "tabletest")
-        loaded.keyClass should be (metaData.keyClass)
-        loaded.rasterMetaData should be (metaData.rasterMetaData)
-        loaded.histogram should be (None)
-      }     
+          metaDataCatalog.save(layerId, "tabletest", metaData, true)
+          
+          val loaded = metaDataCatalog.load(layerId, "tabletest")
+          val newCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
+          val fetched = newCatalog.load(layerId, "tabletest")
 
+          loaded.keyClass should be (metaData.keyClass)
+          loaded.rasterMetaData should be (metaData.rasterMetaData)
+          loaded.histogram should be (None)
+
+          fetched.keyClass should be (metaData.keyClass)
+          fetched.rasterMetaData should be (metaData.rasterMetaData)
+          fetched.histogram should be (None)
+        }
+      }
     }
-  }
+  } 
 }

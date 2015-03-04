@@ -95,7 +95,10 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       val zoom: Int  = row.getInt("zoom")
       val keyClass   = row.getString("keyClass")
       val rasterData = row.getString("metadata")
-      val histogram  = Option(row.getString("histogram")) 
+      val histogram  = row.getString("histogram") match {
+        case "null" => None
+        case hist: String => Some(hist)
+      }
 
       val layerId = LayerId(name, zoom)
       val metaData = LayerMetaData(
