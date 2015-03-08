@@ -378,6 +378,7 @@ object GeotrellisBuild extends Build {
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           "de.javakaffee" % "kryo-serializers" % "0.27",
           "com.datastax.spark" % "spark-cassandra-connector_2.10" % Version.spark_cassandra_connector,
+          "com.datastax.spark"  % "spark-cassandra-connector-embedded_2.10" % Version.spark_cassandra_connector,
           "com.datastax.cassandra" % "cassandra-driver-core" % Version.cassandra_connector,
           logging, awsSdkS3,
           spire,

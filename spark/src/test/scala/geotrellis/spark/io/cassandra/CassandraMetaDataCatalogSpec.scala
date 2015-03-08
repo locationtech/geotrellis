@@ -19,71 +19,61 @@ import org.scalatest._
 
 import org.apache.spark.SparkConf
 import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.spark.connector.embedded._
 
 class CassandraMetaDataCatalogSpec extends FunSpec
-                                   with Matchers
-                                   with TestFiles
-                                   with TestEnvironment
-                                   with OnlyIfCanRunSpark {
+    with Matchers
+    with TestFiles
+    with TestEnvironment
+    with OnlyIfCanRunSpark
+    with SharedEmbeddedCassandra {
 
   describe("Cassandra MetaData Catalog") {
     ifCanRunSpark {
 
-      val conf = new SparkConf(true)
-        .set("spark.cassandra.connection.host", "127.0.0.1")
+      useCassandraConfig("cassandra-default.yaml.template")
+      val connector = EmbeddedCassandraConnector(Set(cassandraHost))
 
-      val connector = CassandraConnector(conf)
+      val metaDataCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
+      val layerId = LayerId("test", 3)
 
-      val catalog: Option[CassandraMetaDataCatalog] = try {
-        Some(new CassandraMetaDataCatalog(connector, "test", "catalogs"))
-      } catch {
-        case _: IOException => None
+      it("should save and pull out a catalog") {
+        val rdd = DecreasingTestFile
+        val metaData = LayerMetaData(
+          keyClass = "testClass",
+          rasterMetaData = rdd.metaData,
+          histogram = Some(rdd.histogram)
+        )
+        metaDataCatalog.save(layerId, "tabletest", metaData, true)
+
+        val loaded = metaDataCatalog.load(layerId, "tabletest")
+        loaded.keyClass should be (metaData.keyClass)
+        loaded.rasterMetaData should be (metaData.rasterMetaData)
+        loaded.histogram should be (metaData.histogram)
       }
 
-      if (catalog.isEmpty) {
-        info("No Cassandra db at 127.0.0.1; skipping tests.")
-      } else {
-        val metaDataCatalog = catalog.get
-        val layerId = LayerId("test", 3)
-        
-        it("should save and pull out a catalog") {
-          val rdd = DecreasingTestFile
-          val metaData = LayerMetaData(
-            keyClass = "testClass",
-            rasterMetaData = rdd.metaData,
-            histogram = Some(rdd.histogram)
-          )
-          metaDataCatalog.save(layerId, "tabletest", metaData, true)
-          
-          val loaded = metaDataCatalog.load(layerId, "tabletest")
-          loaded.keyClass should be (metaData.keyClass)
-          loaded.rasterMetaData should be (metaData.rasterMetaData)
-          loaded.histogram should be (metaData.histogram)
-        }
-        
-        it("should save and pull out a catalog with no histogram from cache and db") {
-          val rdd = DecreasingTestFile
-          val metaData = LayerMetaData(
-            keyClass = "testClass",
-            rasterMetaData = rdd.metaData,
-            histogram = None
-          )
+      it("should save and pull out a catalog with no histogram from cache and db") {
+        val rdd = DecreasingTestFile
+        val metaData = LayerMetaData(
+          keyClass = "testClass",
+          rasterMetaData = rdd.metaData,
+          histogram = None
+        )
 
-          metaDataCatalog.save(layerId, "tabletest", metaData, true)
-          
-          val loaded = metaDataCatalog.load(layerId, "tabletest")
-          val newCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
-          val fetched = newCatalog.load(layerId, "tabletest")
+        metaDataCatalog.save(layerId, "tabletest", metaData, true)
 
-          loaded.keyClass should be (metaData.keyClass)
-          loaded.rasterMetaData should be (metaData.rasterMetaData)
-          loaded.histogram should be (None)
+        val loaded = metaDataCatalog.load(layerId, "tabletest")
+        val newCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
+        val fetched = newCatalog.load(layerId, "tabletest")
 
-          fetched.keyClass should be (metaData.keyClass)
-          fetched.rasterMetaData should be (metaData.rasterMetaData)
-          fetched.histogram should be (None)
-        }
+        loaded.keyClass should be (metaData.keyClass)
+        loaded.rasterMetaData should be (metaData.rasterMetaData)
+        loaded.histogram should be (None)
+
+        fetched.keyClass should be (metaData.keyClass)
+        fetched.rasterMetaData should be (metaData.rasterMetaData)
+        fetched.histogram should be (None)
       }
     }
-  } 
+  }
 }
