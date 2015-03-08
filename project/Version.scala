@@ -30,5 +30,5 @@ object Version {
   lazy val hadoop          = either("SPARK_HADOOP_VERSION", "2.5.0")
   lazy val spark           = either("SPARK_VERSION", "1.2.0")
   lazy val cassandra_connector       = "2.1.4"
-  lazy val spark_cassandra_connector = "1.2.0-alpha2"
+  lazy val spark_cassandra_connector = "1.2.0-alpha3"
 }
