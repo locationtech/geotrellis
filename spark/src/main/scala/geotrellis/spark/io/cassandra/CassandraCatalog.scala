@@ -62,9 +62,10 @@ object CassandraCatalog {
 
   def apply(
     sc: SparkContext,
+    connector: CassandraConnector,
     keyspace: String,
     metaDataCatalog: CassandraMetaDataCatalog,
     paramsConfig: DefaultParams[String] = BaseParamsConfig): CassandraCatalog =
 
-    new CassandraCatalog(sc, CassandraConnector(sc.getConf), keyspace, metaDataCatalog, paramsConfig)
+    new CassandraCatalog(sc, connector, keyspace, metaDataCatalog, paramsConfig)
 }
