@@ -43,7 +43,7 @@ class CassandraCatalog(sc: SparkContext,
   def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {
     val driver = implicitly[CassandraDriver[K]]
     rdd.persist()
-    driver.save(sc, keyspace)(id, rdd, table, clobber)
+    driver.save(connector, keyspace)(id, rdd, table, clobber)
 
     val metaData = LayerMetaData(
       rasterMetaData = rdd.metaData,

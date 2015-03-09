@@ -8,14 +8,14 @@ import org.apache.spark.SparkConf
 
 class EmbeddedCassandraConnector(conf: CassandraConnectorConf) extends CassandraConnector(conf) {
 
+  val deleteKeyspaceCql = "DROP KEYSPACE IF EXISTS test"
   val createKeyspaceCql = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = { 'class': 'SimpleStrategy', 'replication_factor': 1 }"
 
-  /* Create test keyspace before interacting with each session */
-  override def withSessionDo[T](code: Session => T): T = {
-    closeResourceAfterUse(openSession()) { session =>
-      val proxy: Session = SessionProxy.wrap(session)
-      proxy.execute(createKeyspaceCql)
-      code(proxy)
+  // Recreate keyspace on creation to start with clean state
+  {
+    withSessionDo { session =>
+      session.execute(deleteKeyspaceCql)
+      session.execute(createKeyspaceCql)
     }
   }
 }

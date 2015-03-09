@@ -34,7 +34,6 @@ class CassandraCatalogSpec extends FunSpec
 
   describe("Cassandra Catalog") {
     ifCanRunSpark {
-
       useCassandraConfig("cassandra-default.yaml.template")
       val connector = EmbeddedCassandraConnector(Set(cassandraHost))
 
@@ -43,9 +42,7 @@ class CassandraCatalogSpec extends FunSpec
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
-      //val tableOps = accumulo.connector.tableOperations()
       val layoutScheme = ZoomedLayoutScheme(512)
-      //tableOps.create("tiles")
 
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
 

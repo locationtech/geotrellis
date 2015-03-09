@@ -14,7 +14,6 @@ import org.apache.spark.SparkContext
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector.cql.CassandraConnector
 
-//import org.locationtech.curve.zcurve.Z2
 import geotrellis.index.zcurve._
 
 object RasterCassandraDriver extends CassandraDriver[SpatialKey] {
@@ -50,7 +49,7 @@ object RasterCassandraDriver extends CassandraDriver[SpatialKey] {
     new RasterRDD(tileRDD, rasterMetaData)
   }
 
-  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpatialKey]): CassandraRDD[(String, ByteBuffer)] = {
+  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpatialKey]): RDD[(String, ByteBuffer)] = {
     var tileBoundSet = false
     var rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
 
@@ -73,6 +72,6 @@ object RasterCassandraDriver extends CassandraDriver[SpatialKey] {
       rdds += rdd.where("id >= ? AND id < ?", zmin, zmax)
     }
     
-    rdd.context.union(rdds.toSeq).asInstanceOf[CassandraRDD[(String, ByteBuffer)]] // Coalesce afterwards?
+    rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
   }
 }

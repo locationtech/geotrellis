@@ -12,12 +12,13 @@ import com.datastax.spark.connector.cql.CassandraConnector
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector._
 
-import com.datastax.driver.core.DataType.blob
+import com.datastax.driver.core.DataType.{text, blob}
+import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 class TableNotFoundError(table: String) extends Exception(s"Target Cassandra table '$table' does not exist.")
 
 trait CassandraDriver[K] extends Serializable {
-  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[K]): CassandraRDD[(String, ByteBuffer)]
+  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[K]): RDD[(String, ByteBuffer)]
   def decode(rdd: RDD[(String, ByteBuffer)], metaData: RasterMetaData): RasterRDD[K]
   def rowId(id: LayerId, key: K): String
 
@@ -33,10 +34,15 @@ trait CassandraDriver[K] extends Serializable {
 
   def loadTile(connector: CassandraConnector)(id: LayerId, metaData: RasterMetaData, table: String, key: K): Tile
 
-  def save(sc: SparkContext, keyspace: String)(
+  def save(connector: CassandraConnector, keyspace: String)(
     id: LayerId, raster: RasterRDD[K], table: String, clobber: Boolean): Unit = {
    
     // If not exists create table
+    val schema = SchemaBuilder.createTable(keyspace, table).ifNotExists()
+      .addPartitionKey("id", text)
+      .addColumn("tile", blob)
+
+    connector.withSessionDo(_.execute(schema))
 
     raster
       .sortBy { case (key, _) => rowId(id, key) }
