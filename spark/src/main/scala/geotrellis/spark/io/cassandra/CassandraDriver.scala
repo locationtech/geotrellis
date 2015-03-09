@@ -32,7 +32,7 @@ trait CassandraDriver[K] extends Serializable {
     decode(rdd, metaData)
   }
 
-  def loadTile(connector: CassandraConnector)(id: LayerId, metaData: RasterMetaData, table: String, key: K): Tile
+  def loadTile(connector: CassandraConnector, keyspace: String)(id: LayerId, metaData: RasterMetaData, table: String, key: K): Tile
 
   def save(connector: CassandraConnector, keyspace: String)(
     id: LayerId, raster: RasterRDD[K], table: String, clobber: Boolean): Unit = {
@@ -40,14 +40,15 @@ trait CassandraDriver[K] extends Serializable {
     // If not exists create table
     val schema = SchemaBuilder.createTable(keyspace, table).ifNotExists()
       .addPartitionKey("id", text)
+      .addClusteringColumn("name", text)
       .addColumn("tile", blob)
 
     connector.withSessionDo(_.execute(schema))
 
     raster
       .sortBy { case (key, _) => rowId(id, key) }
-      .map { case (key, tile) => (rowId(id, key), ByteBuffer.wrap(tile.toBytes)) }
-      .saveToCassandra(keyspace, table, SomeColumns("id", "tile"))
+      .map { case (key, tile) => (rowId(id, key), id.name, ByteBuffer.wrap(tile.toBytes)) }
+      .saveToCassandra(keyspace, table, SomeColumns("id", "name", "tile"))
   }
 
 }

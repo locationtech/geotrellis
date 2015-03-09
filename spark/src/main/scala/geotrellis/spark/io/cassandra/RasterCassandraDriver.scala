@@ -13,6 +13,8 @@ import org.apache.spark.SparkContext
 
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
 import geotrellis.index.zcurve._
 
@@ -26,7 +28,33 @@ object RasterCassandraDriver extends CassandraDriver[SpatialKey] {
     f"${id.zoom}%02d_${zindex.z}%019d"
   }
 
-  def loadTile(connector: CassandraConnector)(id: LayerId, metaData: RasterMetaData, table: String, key: SpatialKey): Tile = ???
+  def loadTile(connector: CassandraConnector, keyspace: String)(id: LayerId, metaData: RasterMetaData, table: String, key: SpatialKey): Tile = {
+    val query = QueryBuilder.select.column("tile").from(keyspace, table)
+      .where (eqs("id", rowId(id, key)))
+      .and   (eqs("name", id.name))
+
+    val results = connector.withSessionDo(_.execute(query))
+
+    val size = results.getAvailableWithoutFetching    
+    val value = 
+      if (size == 0) {
+        sys.error(s"Tile with key $key not found for layer $id")
+      } else if (size > 1) {
+        sys.error(s"Multiple tiles found for $key for layer $id")
+      } else {
+        results.one.getBytes("tile")
+      }
+
+    val byteArray = new Array[Byte](value.remaining)
+    value.get(byteArray, 0, byteArray.length)
+
+    ArrayTile.fromBytes(
+      byteArray,
+      metaData.cellType,
+      metaData.tileLayout.tileCols,
+      metaData.tileLayout.tileRows
+    )
+  }
 
   def decode(rdd: RDD[(String, ByteBuffer)], rasterMetaData: RasterMetaData): RasterRDD[SpatialKey] = {
     val tileRDD =

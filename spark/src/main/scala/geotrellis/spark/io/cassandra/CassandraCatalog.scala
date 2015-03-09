@@ -37,7 +37,7 @@ class CassandraCatalog(sc: SparkContext,
 
   def loadTile[K: CassandraDriver: ClassTag](id: LayerId, metaData: LayerMetaData, table: String, key: K): Tile = {
     val driver = implicitly[CassandraDriver[K]]
-    driver.loadTile(connector)(id, metaData.rasterMetaData, table, key)
+    driver.loadTile(connector, keyspace)(id, metaData.rasterMetaData, table, key)
   }
 
   def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {
