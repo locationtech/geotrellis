@@ -11,7 +11,7 @@ import spray.json._
 import com.datastax.driver.core.DataType.text
 import com.datastax.driver.core.DataType.cint
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.set
+import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 import com.datastax.spark.connector.cql.CassandraConnector
@@ -35,7 +35,6 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
   }
 
   var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
-  val eq = QueryBuilder.eq _
 
   type TableName = String
 
@@ -75,8 +74,8 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       .`with`(set("metadata", metaData.rasterMetaData.toJson.compactPrint))
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
-      .where (eq("id", s"${table.toString}__${layerId.name}"))
-      .and   (eq("zoom", layerId.zoom))
+      .where (eqs("id", s"${table.toString}__${layerId.name}"))
+      .and   (eqs("zoom", layerId.zoom))
 
     connector.withSessionDo(_.execute(update))
   }

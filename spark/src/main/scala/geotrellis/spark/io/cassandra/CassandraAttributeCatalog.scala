@@ -7,7 +7,7 @@ import spray.json._
 
 import com.datastax.driver.core.DataType.text
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.set
+import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 import com.datastax.spark.connector.cql.CassandraConnector
@@ -16,8 +16,6 @@ import org.apache.spark.Logging
 
 class CassandraAttributeCatalog(connector: CassandraConnector, val keyspace: String, val attributeTable: String) extends AttributeCatalog with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
-
-  val eq = QueryBuilder.eq _
 
   // Create the attribute table if it doesn't exist
   {
@@ -31,8 +29,8 @@ class CassandraAttributeCatalog(connector: CassandraConnector, val keyspace: Str
 
   def load[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
     val query = QueryBuilder.select.column("value").from(keyspace, attributeTable)
-      .where (eq("layerId", layerId.toString))
-      .and   (eq("name", attributeName))
+      .where (eqs("layerId", layerId.toString))
+      .and   (eqs("name", attributeName))
 
     val results = connector.withSessionDo(_.execute(query))
 
@@ -49,8 +47,8 @@ class CassandraAttributeCatalog(connector: CassandraConnector, val keyspace: Str
   def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val update = QueryBuilder.update(keyspace, attributeTable)
       .`with`(set("value", value.toJson.compactPrint))
-      .where (eq("layerId", layerId.toString))
-      .and   (eq("name", attributeName))
+      .where (eqs("layerId", layerId.toString))
+      .and   (eqs("name", attributeName))
 
     val results = connector.withSessionDo(_.execute(update))
   }
