@@ -51,12 +51,16 @@ class MultiRangeInputSplit extends InputSplit with Writable {
   override def write(out: DataOutput): Unit = {
     out.writeInt(ranges.length)
     ranges foreach { range => range .write(out) }
+    
     out.writeBoolean(null != table)
     if (null != table) {
       out.writeUTF(table)
     }
+    
     out.writeUTF(location)
+    
     out.writeBoolean(mockInstance)
+    
     out.writeBoolean(null != fetchedColumns)
     if (null != fetchedColumns) {
       val cols: Array[String] = IC.serializeColumns(fetchedColumns.asJava)
@@ -77,8 +81,7 @@ class MultiRangeInputSplit extends InputSplit with Writable {
     out.writeBoolean(null != token)
     if (null != token) {
       out.writeUTF(token.getClass().getCanonicalName())
-      out.writeUTF(Base64.encodeBase64String(AuthenticationTokenSerializer.serialize(token)))  
-      out.writeUTF(token.getClass.getCanonicalName)
+      out.writeUTF(Base64.encodeBase64String(AuthenticationTokenSerializer.serialize(token)))        
     }
 
     out.writeBoolean(null != instanceName)
@@ -109,10 +112,13 @@ class MultiRangeInputSplit extends InputSplit with Writable {
       range.readFields(in)
       range
     }
+
     if (in.readBoolean()) {
       table = in.readUTF()
     }    
+    
     location = in.readUTF()
+    
     mockInstance = in.readBoolean()
     
     if (in.readBoolean()) {
@@ -134,7 +140,7 @@ class MultiRangeInputSplit extends InputSplit with Writable {
     }
           
     if (in.readBoolean()) {
-      val tokenClass = in.readUTF();
+      val tokenClass = in.readUTF();      
       val base64TokenBytes = in.readUTF().getBytes(Charset.forName("UTF-8"));
       val tokenBytes = Base64.decodeBase64(base64TokenBytes);
       token = AuthenticationTokenSerializer.deserialize(tokenClass, tokenBytes);
