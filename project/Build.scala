@@ -149,7 +149,7 @@ object GeotrellisBuild extends Build {
         Seq(
           jts,
           sprayJson,
-          sprayHttpx,
+//          sprayHttpx,
           apacheMath,
           spire
         )

@@ -8,6 +8,7 @@ import spray.json._
 
 import spray.httpx.unmarshalling._
 import spray.httpx.marshalling._
+import spray.httpx.SprayJsonSupport._
 import spray.http._
 import HttpCharsets._
 import MediaTypes._
