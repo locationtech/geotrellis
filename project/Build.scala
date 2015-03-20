@@ -204,8 +204,8 @@ object GeotrellisBuild extends Build {
         typesafeConfig,
         jts,
         spire,
-        monocleCore, monocleMacro,
-        sprayClient, // for reading args from URLs,
+        monocleCore, 
+        monocleMacro,
         openCSV
       )
     ) ++
