@@ -37,8 +37,9 @@ class CassandraCatalogSpec extends FunSpec
       useCassandraConfig("cassandra-default.yaml.template")
       val connector = EmbeddedCassandraConnector(Set(cassandraHost))
 
-      val metaDataCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
-      val catalog = CassandraCatalog(sc, connector, "test", metaDataCatalog)
+      val instance = new CassandraInstance(connector, "test", "catalogs")
+      val metaDataCatalog = instance.metaDataCatalog
+      val catalog = instance.catalog(sc)
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)

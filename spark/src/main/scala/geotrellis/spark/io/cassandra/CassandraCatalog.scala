@@ -8,10 +8,10 @@ import scala.reflect._
 import scala.util.{Failure, Success, Try}
 import geotrellis.spark.op.stats._
 
-import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.driver.core.Session
 
 class CassandraCatalog(sc: SparkContext,
-  val connector: CassandraConnector,
+  val session: Session,                       
   val keyspace: String,
   val metaDataCatalog: CassandraMetaDataCatalog, 
   val paramsConfig: DefaultParams[String]
@@ -37,13 +37,13 @@ class CassandraCatalog(sc: SparkContext,
 
   def loadTile[K: CassandraDriver: ClassTag](id: LayerId, metaData: LayerMetaData, table: String, key: K): Tile = {
     val driver = implicitly[CassandraDriver[K]]
-    driver.loadTile(connector, keyspace)(id, metaData.rasterMetaData, table, key)
+    driver.loadTile(session, keyspace)(id, metaData.rasterMetaData, table, key)
   }
 
   def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {
     val driver = implicitly[CassandraDriver[K]]
     rdd.persist()
-    driver.save(connector, keyspace)(id, rdd, table, clobber)
+    driver.save(session, keyspace)(id, rdd, table, clobber)
 
     val metaData = LayerMetaData(
       rasterMetaData = rdd.metaData,
@@ -62,10 +62,10 @@ object CassandraCatalog {
 
   def apply(
     sc: SparkContext,
-    connector: CassandraConnector,
+    session: Session,
     keyspace: String,
     metaDataCatalog: CassandraMetaDataCatalog,
     paramsConfig: DefaultParams[String] = BaseParamsConfig): CassandraCatalog =
 
-    new CassandraCatalog(sc, connector, keyspace, metaDataCatalog, paramsConfig)
+    new CassandraCatalog(sc, session, keyspace, metaDataCatalog, paramsConfig)
 }

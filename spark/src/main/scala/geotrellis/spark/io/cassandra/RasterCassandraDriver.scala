@@ -12,9 +12,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 
 import com.datastax.spark.connector.rdd.CassandraRDD
-import com.datastax.spark.connector.cql.CassandraConnector
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import com.datastax.driver.core.Session
 
 import geotrellis.index.zcurve._
 
@@ -28,12 +28,12 @@ object RasterCassandraDriver extends CassandraDriver[SpatialKey] {
     f"${id.zoom}%02d_${zindex.z}%019d"
   }
 
-  def loadTile(connector: CassandraConnector, keyspace: String)(id: LayerId, metaData: RasterMetaData, table: String, key: SpatialKey): Tile = {
+  def loadTile(session: Session, keyspace: String)(id: LayerId, metaData: RasterMetaData, table: String, key: SpatialKey): Tile = {
     val query = QueryBuilder.select.column("tile").from(keyspace, table)
       .where (eqs("id", rowId(id, key)))
       .and   (eqs("name", id.name))
 
-    val results = connector.withSessionDo(_.execute(query))
+    val results = session.execute(query)
 
     val size = results.getAvailableWithoutFetching    
     val value = 

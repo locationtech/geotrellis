@@ -13,14 +13,13 @@ import com.datastax.driver.core.DataType.cint
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
-
-import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.driver.core.Session
 
 import org.apache.spark.Logging
 
 import DefaultJsonProtocol._
 
-class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: String, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
+class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
 
   // Create the catalog table if it doesn't exist
   {
@@ -31,7 +30,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       .addColumn("metadata", text)
       .addColumn("histogram", text)
     
-    connector.withSessionDo(_.execute(schema))
+    session.execute(schema)
   }
 
   var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
@@ -77,7 +76,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       .where (eqs("id", s"${table.toString}__${layerId.name}"))
       .and   (eqs("zoom", layerId.zoom))
 
-    connector.withSessionDo(_.execute(update))
+    session.execute(update)
   }
 
   def fetchAll: Map[(LayerId, TableName), LayerMetaData] = {
@@ -85,7 +84,7 @@ class CassandraMetaDataCatalog(connector: CassandraConnector, val keyspace: Stri
       Map.empty
 
     val queryAll = QueryBuilder.select.all.from(keyspace, catalogTable)
-    val results = connector.withSessionDo(_.execute(queryAll))
+    val results = session.execute(queryAll)
     val iter = results.iterator
 
     while (iter.hasNext) {
