@@ -371,7 +371,7 @@ object GeotrellisBuild extends Build {
       ),
       libraryDependencies ++=
         Seq(
-          "org.apache.accumulo" % "accumulo-core" % "1.6.2" exclude("org.jboss.netty", "netty"),
+          "org.apache.accumulo" % "accumulo-core" % Version.accumulo exclude("org.jboss.netty", "netty"),
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
           "com.quantifind" %% "sumac" % "0.3.0",
