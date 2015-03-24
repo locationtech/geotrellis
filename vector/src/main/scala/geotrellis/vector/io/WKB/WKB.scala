@@ -29,12 +29,12 @@ object WKB {
 
   def read[G <: Geometry](value: Array[Byte]): G = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
-    Geometry.fromJts[G](readerBox.get.read(value))
+    Geometry[G](readerBox.get.read(value))
   }
 
   def read[G <: Geometry](hex: String): G = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
-    Geometry.fromJts[G](readerBox.get.read(WKBReader.hexToBytes(hex)))
+    Geometry[G](readerBox.get.read(WKBReader.hexToBytes(hex)))
   }
 
   def write(geom: Geometry, srid: Int = 0): Array[Byte] = {
