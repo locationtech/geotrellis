@@ -3,9 +3,8 @@ package geotrellis.vector.io
 import geotrellis.vector._
 import spray.json._
 import spray.json.JsonFormat
-import spray.httpx.SprayJsonSupport
 
-package object json extends GeoJsonSupport with SprayJsonSupport {
+package object json extends GeoJsonSupport {
   implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) extends AnyVal {
     def toGeoJson: String = {
       JsonFeatureCollection(geoms).toJson.compactPrint

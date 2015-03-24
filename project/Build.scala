@@ -149,7 +149,7 @@ object GeotrellisBuild extends Build {
         Seq(
           jts,
           sprayJson,
-          sprayHttpx,
+//          sprayHttpx,
           apacheMath,
           spire
         )
@@ -204,8 +204,8 @@ object GeotrellisBuild extends Build {
         typesafeConfig,
         jts,
         spire,
-        monocleCore, monocleMacro,
-        sprayClient, // for reading args from URLs,
+        monocleCore, 
+        monocleMacro,
         openCSV
       )
     ) ++
@@ -380,7 +380,6 @@ object GeotrellisBuild extends Build {
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
-          sprayRouting, sprayCan,
           scalatest % "test"
         ),
       resolvers ++= Seq(
