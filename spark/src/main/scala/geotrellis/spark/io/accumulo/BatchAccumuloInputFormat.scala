@@ -2,6 +2,8 @@ package geotrellis.spark.io.accumulo
 
 import java.nio.ByteBuffer
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import java.net.InetAddress
 import org.apache.accumulo.core.client.impl.Tables
 import org.apache.accumulo.core.client.mapreduce.lib.impl.{ConfiguratorBase => CB, InputConfigurator => IC}
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
@@ -26,8 +28,12 @@ import scala.collection.JavaConverters._
  *
  * We borrow some Accumulo machinery to set and read configurations so classOf AccumuloInputFormat should be used 
  * for mudifiying Congiruation, as if AccumuloInputFormat will be used.
+ *
+ * This classes uses internal Accumulo API can will likely not work across versions.
+ *
+ * WARNING: The locality of the splits rely on reverse resolution of tserver IPs matching those of spark workers.
  */
-class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] {
+class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogging {
   /** We're going to lie about our class so we can re-use Accumulo InputConfigurator to pull our Job settings */
   private val CLASS: Class[_] = classOf[AccumuloInputFormat]
 
@@ -61,14 +67,15 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] {
           throw new TableOfflineException(instance, tableId)
       }
       binnedRanges.clear()
-      //logger.warn("Unable to locate bins for specified ranges. Retrying.")
+      logger.warn("Unable to locate bins for specified ranges. Retrying.")
       UtilWaitThread.sleep(100 + (Math.random * 100).toInt)
       tabletLocator.invalidateCache()
     }
-    // location: String = server:ip for the tablet server
-    // list: Map[KeyExtent, List[ARange]]
-    binnedRanges.asScala map { case (location, list) =>
-      list.asScala.map { case (keyExtent, extentRanges) =>        
+    // tserver: String = server:ip for the tablet server
+    // tserverBin: Map[KeyExtent, List[ARange]]
+    binnedRanges.asScala map { case (tserver, tserverBin) =>
+      tserverBin.asScala.map { case (keyExtent, extentRanges) =>        
+        val ip = tserver.split(":").head
         val tabletRange = keyExtent.toDataRange        
         val split = new MultiRangeInputSplit()
         val exr = extentRanges.asScala
@@ -78,7 +85,7 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] {
           else 
             exr map { tabletRange.clip }
         split.iterators = IC.getIterators(CLASS, conf).asScala.toList
-        split.location = location
+        split.location = InetAddress.getByName(ip).getCanonicalHostName()
         split.table = tableName
         split.instanceName = instance.getInstanceName
         split.zooKeepers = instance.getZooKeepers
