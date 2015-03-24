@@ -3,7 +3,7 @@ package geotrellis.spark.io.accumulo
 import java.io.{IOException, DataOutput, DataInput}
 import java.nio.charset.Charset
 import org.apache.accumulo.core.client._
-import org.apache.accumulo.core.client.mapreduce.lib.util.{InputConfigurator => IC}
+import org.apache.accumulo.core.client.mapreduce.lib.impl.{InputConfigurator => IC}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken.AuthenticationTokenSerializer
