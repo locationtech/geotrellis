@@ -21,7 +21,7 @@ object Version {
     Properties.envOrElse(environmentVariable, default)
 
   val geotrellis  = "0.10.0-SNAPSHOT"
-  val scala       = "2.11.5"
+  val scala       = "2.10.4"
   val geotools    = "11.0"
   val akka        = "2.3.9"
   val spray       = "1.3.2"
