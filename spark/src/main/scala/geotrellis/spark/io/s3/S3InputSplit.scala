@@ -11,14 +11,13 @@ import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, AnonymousAWSCred
  */
 class S3InputSplit extends InputSplit with Writable 
 {
-  var haveAuth = false
-  var accessKeyId: String = _
-  var secretKey: String = _
+  var accessKeyId: String = null
+  var secretKey: String = null
   var bucket: String = _
   var keys: Seq[String] = Seq.empty
 
   def credentials: AWSCredentials =
-    if (haveAuth)
+    if (accessKeyId != null && secretKey != null)
       new BasicAWSCredentials(accessKeyId, secretKey)    
     else
       new AnonymousAWSCredentials()
@@ -27,7 +26,8 @@ class S3InputSplit extends InputSplit with Writable
 
   override def getLocations: Array[String] = Array.empty
 
-  override def write(out: DataOutput): Unit = {
+  override def write(out: DataOutput): Unit = {    
+    val haveAuth = accessKeyId != null && secretKey != null
     out.writeBoolean(haveAuth)
     if (haveAuth){
       out.writeUTF(accessKeyId)
@@ -38,9 +38,8 @@ class S3InputSplit extends InputSplit with Writable
     keys.foreach(out.writeUTF)
   }
   
-  override def readFields(in: DataInput): Unit = {
-    haveAuth = in.readBoolean
-    if (accessKeyId != null && secretKey != null){
+  override def readFields(in: DataInput): Unit = {    
+    if (in.readBoolean){
       accessKeyId = in.readUTF
       secretKey = in.readUTF
     }
