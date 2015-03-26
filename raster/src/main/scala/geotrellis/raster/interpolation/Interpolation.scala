@@ -31,8 +31,9 @@ abstract class Interpolation(tile: Tile, extent: Extent) {
   protected val cellwidth = re.cellwidth
   protected val cellheight = re.cellheight
 
+  /** Inclusive on the west and north border, exclusive on the south and east border. */
   private def isValid(x: Double, y: Double) =
-    x >= westBound && x <= eastBound && y >= southBound && y <= northBound
+    x >= westBound && x < eastBound && y > southBound && y <= northBound
 
   final def interpolate(x: Double, y: Double): Int =
     if (!isValid(x, y)) NODATA
