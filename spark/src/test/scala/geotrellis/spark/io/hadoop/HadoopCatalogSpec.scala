@@ -3,6 +3,7 @@ package geotrellis.spark.io.hadoop
 import java.io.IOException
 
 import geotrellis.raster._
+import geotrellis.vector._ 
 
 import geotrellis.spark._
 import geotrellis.spark.ingest._
@@ -31,108 +32,108 @@ with OnlyIfCanRunSpark
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val layoutScheme = ZoomedLayoutScheme(512)
 
-      val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) => 
 
-
-      it("should succeed saving with default Props"){
-        catalog.save(LayerId("ones", level.zoom), onesRdd)
-        assert(fs.exists(new Path(catalogPath, "ones")))
-      }
-
-      it("should succeed saving with single path Props"){
-        catalog.save(LayerId("ones", level.zoom), "sub1", onesRdd)
-        assert(fs.exists(new Path(catalogPath, "sub1/ones")))
-      }
-
-      it("should succeed saving with double path Props"){
-        catalog.save(LayerId("ones", level.zoom), "sub1/sub2", onesRdd)
-        assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
-      }
-
-      it("should load out saved tiles"){
-        catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
-      }
-
-      it("should succeed loading with single path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
-      }
-
-      it("should succeed loading with double path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
-      }
-
-
-      it("should load out saved tiles, but only for the right zoom"){
-        intercept[LayerNotFoundError] {
-          catalog.load[SpatialKey](LayerId("ones", 9)).count()
-        }
-      }
-
-      it("fetch a TileExtent from catalog"){
-        val tileBounds = GridBounds(915,611,917,616)
-        val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-        val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
-          require(tms1.id == tms2.id)
-          val res = tms1.tile.localAdd(tms2.tile)
-          (tms1.id, res)
+        it("should succeed saving with default Props"){
+          catalog.save(LayerId("ones", level.zoom), onesRdd)
+          assert(fs.exists(new Path(catalogPath, "ones")))
         }
 
-        val tile = out.first.tile
-        tile.get(497,511) should be (2)
-      }
-
-      it("should be able to combine pairs via Traversable"){
-        val tileBounds = GridBounds(915,611,917,616)
-        val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-        val rdd3 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-
-        val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
-          pairs.toSeq.reverse.head
+        it("should succeed saving with single path Props"){
+          catalog.save(LayerId("ones", level.zoom), "sub1", onesRdd)
+          assert(fs.exists(new Path(catalogPath, "sub1/ones")))
         }
 
-        val actual = Seq(rdd1, rdd2, rdd3).combinePairs { pairs: Traversable[(SpatialKey, Tile)] =>
-          pairs.toSeq.reverse.head
+        it("should succeed saving with double path Props"){
+          catalog.save(LayerId("ones", level.zoom), "sub1/sub2", onesRdd)
+          assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
         }
 
-        rastersEqual(expected, actual)
-      }
+        it("should load out saved tiles"){
+          catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
+        }
 
-      it("should find default params based on key") {
-        val defaultParams = HadoopCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
-        val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
-        cat.save(LayerId("spatial-ones", level.zoom), onesRdd)
-        assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
-      }
+        it("should succeed loading with single path Props"){
+          catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
+        }
 
-      it("should find default params based on LayerId") {
-        val defaultParams = HadoopCatalog.BaseParams
-          .withKeyParams[SpatialKey]("spatial-layers")
-          .withLayerParams[SpatialKey]{ case LayerId(name, zoom) if name.startsWith("ones") =>  "special" }
+        it("should succeed loading with double path Props"){
+          catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
+        }
 
-        //LayerParams should take priority
-        val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
-        cat.save(LayerId("onesSpecial", level.zoom), onesRdd)
-        assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
-      }
 
-      it("should allow filtering files in hadoopGeoTiffRDD") {
-        val tilesDir = new Path(localFS.getWorkingDirectory, "../raster-test/data/one-month-tiles/")
-        val source = sc.hadoopGeoTiffRDD(tilesDir)
+        it("should load out saved tiles, but only for the right zoom"){
+          intercept[LayerNotFoundError] {
+            catalog.load[SpatialKey](LayerId("ones", 9)).count()
+          }
+        }
 
-        // Raises exception if the bogus file isn't properly filtered out
-        Ingest(source, LatLng, layoutScheme)
-      }
+        it("fetch a TileExtent from catalog"){
+          val tileBounds = GridBounds(915,611,917,616)
+          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+          val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+          val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+          val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
+            require(tms1.id == tms2.id)
+            val res = tms1.tile.localAdd(tms2.tile)
+            (tms1.id, res)
+          }
 
-      it("should allow overriding tiff file extensions in hadoopGeoTiffRDD") {
-        val tilesDir = new Path(localFS.getWorkingDirectory, "../raster-test/data/one-month-tiles-tiff/")
-        val source = sc.hadoopGeoTiffRDD(tilesDir, ".tiff")
+          val tile = out.first.tile
+          tile.get(497,511) should be (2)
+        }
 
-        // Raises exception if the ".tiff" extension override isn't provided
-        Ingest(source, LatLng, layoutScheme)
+        it("should be able to combine pairs via Traversable"){
+          val tileBounds = GridBounds(915,611,917,616)
+          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+          val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+          val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+          val rdd3 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+
+          val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
+            pairs.toSeq.reverse.head
+          }
+
+          val actual = Seq(rdd1, rdd2, rdd3).combinePairs { pairs: Traversable[(SpatialKey, Tile)] =>
+            pairs.toSeq.reverse.head
+          }
+
+          rastersEqual(expected, actual)
+        }
+
+        it("should find default params based on key") {
+          val defaultParams = HadoopCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
+          val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
+          cat.save(LayerId("spatial-ones", level.zoom), onesRdd)
+          assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
+        }
+
+        it("should find default params based on LayerId") {
+          val defaultParams = HadoopCatalog.BaseParams
+            .withKeyParams[SpatialKey]("spatial-layers")
+            .withLayerParams[SpatialKey]{ case LayerId(name, zoom) if name.startsWith("ones") =>  "special" }
+
+          //LayerParams should take priority
+          val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
+          cat.save(LayerId("onesSpecial", level.zoom), onesRdd)
+          assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
+        }
+
+        it("should allow filtering files in hadoopGeoTiffRDD") {
+          val tilesDir = new Path(localFS.getWorkingDirectory, "../raster-test/data/one-month-tiles/")
+          val source = sc.hadoopGeoTiffRDD(tilesDir)
+
+          // Raises exception if the bogus file isn't properly filtered out
+          Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (rdd, level) => {} }
+        }
+
+        it("should allow overriding tiff file extensions in hadoopGeoTiffRDD") {
+          val tilesDir = new Path(localFS.getWorkingDirectory, "../raster-test/data/one-month-tiles-tiff/")
+          val source = sc.hadoopGeoTiffRDD(tilesDir, ".tiff")
+
+          // Raises exception if the ".tiff" extension override isn't provided
+          Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (rdd, level) => {} }
+        }
       }
     }
   }

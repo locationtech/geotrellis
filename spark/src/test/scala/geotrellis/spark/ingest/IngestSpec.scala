@@ -30,10 +30,10 @@ class IngestSpec extends FunSpec
     ifCanRunSpark { 
       it("should ingest GeoTiff"){
         val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
-        val (level, rdd) = Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(512))
-
-        level.zoom should be (10)
-        rdd.count should be (8)
+        Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(512)){ (rdd, level) =>
+          level.zoom should be (10)
+          rdd.count should be (8)
+        }
       }
 
       it("should ingest time-band NetCDF") {
@@ -44,9 +44,6 @@ class IngestSpec extends FunSpec
 
           Tiler(getExtent, createKey)
         }
-
-        val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
-        val (md, rdd) = Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, ZoomedLayoutScheme(512))
 
         val expectedKeys = List(
           SpaceTimeKey(SpatialKey(1,1),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
@@ -69,8 +66,11 @@ class IngestSpec extends FunSpec
           SpaceTimeKey(SpatialKey(0,0),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z")))
         )
 
-        val ingestKeys = rdd.map(_._1).collect
-        ingestKeys should contain only (expectedKeys: _*)
+        val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
+        Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, ZoomedLayoutScheme(512)){ (rdd, level) => 
+          val ingestKeys = rdd.map(_._1).collect
+          ingestKeys should contain only (expectedKeys: _*)
+        }
       }
     }
   }
