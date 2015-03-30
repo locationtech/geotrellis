@@ -101,3 +101,10 @@ def readFeatureJson[D: JsonReader, G <: Geometry: JsonReader, F <: Feature[D]](v
 ```
 Right away, `D`'s purpose is clear: any `D` which comes with the tools necessary for json serialization and deserialization will suffice. In effect, `data` corresponds to the "properties" member of the geojson spec's Feature object.
 If you can provide the serialization tools (almost certainly implicit conversions between some case class and [spray json](https://github.com/spray/spray-json)), the `Feature` object in `geotrellis.vector` does the heavy lifting of embedding your (thus serializable) data into the larger structure which includes a geometry. There's even support for geojson IDs: the "ID" member of a geojson Feature is represented by the keys of a `Map` from `String` to `Feature[D]`. Data in both the ID and non-ID variants of geojson Feature formats is easily transformed.
+
+###Submodules
+These submodules define useful methods for dealing with the denizens of `geotrellis.vector`:
+`geotrellis.vector.io` defines input/output (serialization) of geometries
+`geotrellis.vector.op` defines common operations on geometries
+`geotrellis.vector.reproject` defines methods for translating between projections
+`geotrellis.vector.affine` defines transformations which preserve collinearity
