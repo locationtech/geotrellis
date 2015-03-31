@@ -32,8 +32,9 @@ class CassandraAttributeCatalogSpec extends FunSpec
 
       useCassandraConfig("cassandra-default.yaml.template")
       val connector = EmbeddedCassandraConnector(Set(cassandraHost))
+      val session = connector.openSession()
 
-      val attribCatalog = new CassandraAttributeCatalog(connector, "test", "attributes")
+      val attribCatalog = new CassandraAttributeCatalog(session, "test", "attributes")
       val layerId = LayerId("test", 3)
 
       it("should save and pull out a histogram") {

@@ -33,8 +33,9 @@ class CassandraMetaDataCatalogSpec extends FunSpec
 
       useCassandraConfig("cassandra-default.yaml.template")
       val connector = EmbeddedCassandraConnector(Set(cassandraHost))
+      val session = connector.openSession()
 
-      val metaDataCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
+      val metaDataCatalog = new CassandraMetaDataCatalog(session, "test", "catalogs")
       val layerId = LayerId("test", 3)
 
       it("should save and pull out a catalog") {
@@ -63,7 +64,7 @@ class CassandraMetaDataCatalogSpec extends FunSpec
         metaDataCatalog.save(layerId, "tabletest", metaData, true)
 
         val loaded = metaDataCatalog.load(layerId, "tabletest")
-        val newCatalog = new CassandraMetaDataCatalog(connector, "test", "catalogs")
+        val newCatalog = new CassandraMetaDataCatalog(session, "test", "catalogs")
         val fetched = newCatalog.load(layerId, "tabletest")
 
         loaded.keyClass should be (metaData.keyClass)
