@@ -356,7 +356,7 @@ class ReprojectSpec extends FunSpec
         .firstBand
 
       val Raster(actual, actualExtent) =
-        source.reproject(extent, crs, LatLng, ReprojectOptions(Average, 0.0))
+        source.reproject(extent, crs, LatLng, ReprojectOptions(Lanczos, 0.0))
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -566,7 +566,7 @@ class ReprojectSpec extends FunSpec
         .firstBand
 
       val Raster(actual, actualExtent) =
-        source.reproject(extent, crs, CRS.fromName("EPSG:32614"), ReprojectOptions(Average, 0.0))
+        source.reproject(extent, crs, CRS.fromName("EPSG:32614"), ReprojectOptions(Lanczos, 0.0))
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
