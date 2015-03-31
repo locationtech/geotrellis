@@ -7,11 +7,11 @@ import org.apache.spark.SparkContext
 
 case class CassandraInstance(
   connector: CassandraConnector, 
-  keyspace: String, 
-  catalogTable: String
+  keyspace: String
 ) {
   
   val session = connector.openSession()
+  val catalogTable = "metadata"  // TODO: Move into config file
   val metaDataCatalog = new CassandraMetaDataCatalog(session, keyspace, catalogTable)
   
   def catalog(config: DefaultParams[String] = CassandraCatalog.BaseParamsConfig)(implicit sc: SparkContext) =
