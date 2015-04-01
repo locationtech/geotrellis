@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 object SpatialIndex {
   def apply(points: Iterable[(Double, Double)])
            (implicit di: DummyImplicit): SpatialIndex[(Double, Double)] = {
-    val si = new SpatialIndex[(Double, Double)](Measure.Dumb)
+    val si = new SpatialIndex[(Double, Double)](Measure.Euclid)
     for(point <- points) {
       si.insert(point, point._1, point._2)
     }
@@ -35,7 +35,7 @@ object SpatialIndex {
   }
 
   def apply[T](points: Iterable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
-    val si = new SpatialIndex[T](Measure.Dumb)
+    val si = new SpatialIndex[T](Measure.Euclid)
     for(point <- points) {
       val (x, y) = f(point)
       si.insert(point, x, y)
@@ -73,7 +73,7 @@ class SpatialIndex[T](val measure: Measure) extends Serializable {
 }
 
 object Measure {
-  def Dumb = new DumbMeasure
+  def Euclid = new EuclideanMeasure
 }
 
 trait Measure extends ItemDistance with Serializable {
@@ -86,7 +86,7 @@ trait Measure extends ItemDistance with Serializable {
   }
 }
 
-class DumbMeasure() extends Measure {
+class EuclideanMeasure() extends Measure {
   def distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = {
     val x = x2 - x1
     val y = y2 - y1

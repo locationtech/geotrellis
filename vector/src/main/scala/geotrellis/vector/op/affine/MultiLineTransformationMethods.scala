@@ -1,4 +1,4 @@
-package geotrellis.vector.affine
+package geotrellis.vector.op.affine
 
 import geotrellis.vector.MultiLine
 
@@ -6,7 +6,7 @@ import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.util.AffineTransformation._
 
 
-trait MultiLineTransformationMethods extends Any {
+trait MultiLineTransformationMethods {
   val geom: MultiLine
 
   def transform(trans: AffineTransformation) = trans.transform(geom)
