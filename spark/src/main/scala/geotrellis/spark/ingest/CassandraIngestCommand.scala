@@ -25,7 +25,7 @@ class CassandraIngestArgs extends IngestArgs with CassandraArgs {
   @Required var table: String = _
 }
 
-object CassandraIngestCommmand extends ArgMain[CassandraIngestArgs] with Logging {
+object CassandraIngestCommand extends ArgMain[CassandraIngestArgs] with Logging {
   def main(args: CassandraIngestArgs): Unit = {
     System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
