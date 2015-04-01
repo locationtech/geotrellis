@@ -34,7 +34,6 @@ object CassandraIngestCommand extends ArgMain[CassandraIngestArgs] with Logging 
     val sparkConf = sparkContext.getConf
     val hadoopConf = sparkContext.hadoopConfiguration
     sparkConf.set("spark.cassandra.connection.host", args.host)
-    hadoopConf.set("io.map.index.interval", "1")
 
     val connector = CassandraConnector(sparkConf)
     val cassandra = CassandraInstance(connector, args.keyspace)
