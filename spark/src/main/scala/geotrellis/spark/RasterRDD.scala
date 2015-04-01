@@ -78,6 +78,18 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
     }
   }
 
+  def union(other: RasterRDD[K]): RasterRDD[K] = {    
+    require(metaData.cellType == other.metaData.cellType, 
+      s"CellTypes of unioned rasters match: ${metaData.cellType} != ${other.metaData.cellType}")
+    require(metaData.crs == other.metaData.crs, 
+      s"CRS of unioned rasters match: ${metaData.crs} != ${other.metaData.crs}")
+    require(metaData.tileLayout == other.metaData.tileLayout, 
+      s"TileLayout of unioned rasters match: ${metaData.tileLayout} != ${other.metaData.tileLayout}")
+    
+    new RasterRDD(tileRdd union other.tileRdd, 
+      metaData.copy(extent = metaData.extent combine other.metaData.extent))
+  }
+
   def minMax: (Int, Int) =
     map(_.tile.findMinMax)
       .reduce { (t1, t2) =>
