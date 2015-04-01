@@ -1,4 +1,8 @@
 #geotrellis.vector
+
+>"Raster is faster but vector is correcter."
+— Somebody
+
 ##Features and Geometries
 
 In addition to working with raster data, Geotrellis provides a number of facilities for the creation, representation, and modification of vector data. The data types central to this functionality (`geotrellis.vector.Feature` and `geotrellis.vector.Geometry`) correspond - and not by accident - to certain objects found in [the GeoJson spec](http://geojson.org/geojson-spec.html).
