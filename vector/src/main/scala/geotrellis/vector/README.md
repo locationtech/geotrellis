@@ -110,10 +110,24 @@ If you can provide the serialization tools (almost certainly implicit conversion
 ##GeoTrellis Extents
 
 There's one more piece to the `geotrellis.vector` puzzle: `Extent`. a `geotrellis.vector.Extent` is nothing more than a rectangular polygon which is projected (look [here](../../../../../proj4/src/main/scalageotrellis/proj4) for more on projection). This is useful mainly as a tool for defining the extent covered by a tile - the two jointly yield a raster (for more on rasters, go [here](../../../../../raster/src/main/scalageotrellis/raster)).
+Constructing these bad boys is pretty easy. Since they're rectangles, we only need to provide four unique points. Take a look at this source:
+From Extent.scala:
+```scala
+case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double)
+```
+Not too shabby. But remember that the real sweet spot for these is their built in support for handling projections (seriously: go look at the link from above regarding projection if this is fuzzy).
+From Extent.scala:
+```scala
+case class ProjectedExtent(extent: Extent, crs: CRS) {
+  def reproject(dest: CRS): Extent = 
+    extent.reproject(crs, dest)
+}
+```
+Really, that's about all you need to know to get started with extents. They're a powerful tool for a tightly defined task.
 
 ##Submodules
 
 These submodules define useful methods for dealing with the entities that call `geotrellis.vector` home:
-`geotrellis.vector.io` defines input/output (serialization) of geometries
-`geotrellis.vector.op` defines common operations on geometries
-`geotrellis.vector.reproject` defines methods for translating between projections
+- `geotrellis.vector.io` defines input/output (serialization) of geometries
+- `geotrellis.vector.op` defines common operations on geometries
+- `geotrellis.vector.reproject` defines methods for translating between projections
