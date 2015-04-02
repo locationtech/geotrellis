@@ -37,7 +37,7 @@ class CassandraCatalogSpec extends FunSpec
       useCassandraConfig("cassandra-default.yaml.template")
       val connector = EmbeddedCassandraConnector(Set(cassandraHost))
 
-      val instance = new CassandraInstance(connector, "test", "catalogs")
+      val instance = new CassandraInstance(connector, "test")
       val metaDataCatalog = instance.metaDataCatalog
       val catalog = instance.catalog(sc)
 

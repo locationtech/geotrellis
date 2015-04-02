@@ -35,6 +35,10 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
 
   var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
 
+  def zoomLevelsFor(layerName: String): Seq[Int] = {
+    catalog.keys.filter(_._1.name == layerName).map(_._1.zoom).toSeq
+  }
+
   type TableName = String
 
   def load(layerId: LayerId): (LayerMetaData, TableName) = {
