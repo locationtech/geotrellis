@@ -85,6 +85,8 @@ class CassandraCatalogSpec extends FunSpec
         val tile = out.first.tile
         tile.get(497,511) should be (2)
       }
+      
+      instance.close
     }
   }
 }

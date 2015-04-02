@@ -51,5 +51,7 @@ object CassandraIngestCommand extends ArgMain[CassandraIngestArgs] with Logging 
     } else{
       save(rdd, level)
     }
+    
+    cassandra.close
   }
 }

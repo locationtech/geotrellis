@@ -24,4 +24,6 @@ case class CassandraInstance(
 
   def catalog(implicit sc: SparkContext) =
     CassandraCatalog(sc, session, keyspace, metaDataCatalog, CassandraCatalog.BaseParamsConfig)
+
+  def close() = session.close
 }
