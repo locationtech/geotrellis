@@ -43,6 +43,9 @@ Within the floating point types, we have:
 In general, you'll want to choose the smallest representation which is fully capable of representing your domain so that your rasters require as little storage and memory as possible. If even one in one million cells requires Double precision floating point representation, every cell in the entire tile must be of type `Double`.
 
 There's one final type a cell which I've failed to mention: `NODATA`. `NODATA` is provided to represent the difference between, for example, some location's thermostat reading at 0 degrees and said location's thermostat being broken such that no data is available. Conceptually, there's no reason that this arrangement wouldn't work for `TypeBit`. In practice, however, bits just aren't expressive enough. `0` and `1` exhaust `TypeBit`'s possible values.
+>Macros in `geotrellis.raster`: You may have noticed that 'package.scala' makes a number of calls to `macro`. These calls tell the compiler to insert the appropriate macros during the compilation of the file they're in. Macros in GeoTrellis serve a twofold purpose:
+>1. To simplify development and usage of GeoTrellis by obviating the need to call the correct type of operation to check for `NODATA` cell types.
+>2. To improve performance by having the compiler sort out what is and isn't `NODATA` so that our code at runtime can avoid costly (from shear amount) calls to, e.g., Int.minValue.
 
 ##Bringing it together
 
