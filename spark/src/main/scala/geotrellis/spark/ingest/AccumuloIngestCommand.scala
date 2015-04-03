@@ -33,18 +33,12 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
-
     val layoutScheme = ZoomedLayoutScheme(256)
-    val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme)
+
     val writer = accumulo.rasterCatalog.writer[SpatialKey](args.table)
 
-    val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
+    Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
       writer.write(LayerId(args.layerName, level.zoom), rdd)
-    }
-    if (args.pyramid) {
-      Pyramid.saveLevels(rdd, level, layoutScheme)(save)
-    } else{
-      save(rdd, level)
     }
   }
 }

@@ -131,7 +131,7 @@ object GeotrellisBuild extends Build {
   lazy val macrosSettings = Seq(
     name := "geotrellis-macros",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-    libraryDependencies <++= scalaVersion { 
+    libraryDependencies <++= scalaVersion {
       case "2.10.4" => Seq(
         "org.scala-lang" %  "scala-reflect" % "2.10.4",
         "org.scalamacros" %% "quasiquotes" % "2.0.1")
@@ -204,7 +204,7 @@ object GeotrellisBuild extends Build {
         typesafeConfig,
         jts,
         spire,
-        monocleCore, 
+        monocleCore,
         monocleMacro,
         openCSV
       )
@@ -270,7 +270,7 @@ object GeotrellisBuild extends Build {
       javaOptions in run += "-Xmx4G",
       scalacOptions in compile ++=
         Seq("-optimize"),
-      libraryDependencies ++= Seq(        
+      libraryDependencies ++= Seq(
         sprayClient % "test",
         sprayRouting % "test",
         scalatest % "test"
@@ -366,7 +366,7 @@ object GeotrellisBuild extends Build {
       parallelExecution in Test := false,
       javaOptions ++= List(
         "-Xmx8G",
-        "-Djava.library.path=/usr/local/lib",
+        s"-Djava.library.path=${Environment.javaGdalDir}",
         "-Dsun.io.serialization.extendedDebugInfo=true"
       ),
       libraryDependencies ++=
@@ -410,7 +410,7 @@ object GeotrellisBuild extends Build {
       parallelExecution in Test := false,
       javaOptions ++= List(
         "-Xmx8G",
-        "-Djava.library.path=/usr/local/lib",
+        s"-Djava.library.path=${Environment.javaGdalDir}",
         "-Dsun.io.serialization.extendedDebugInfo=true"
       ),
       libraryDependencies ++=
@@ -451,7 +451,7 @@ object GeotrellisBuild extends Build {
   lazy val gdalSettings =
     Seq(
       name := "geotrellis-gdal",
-      javaOptions += "-Djava.library.path=/usr/local/lib",
+      javaOptions += s"-Djava.library.path=${Environment.javaGdalDir}",
       libraryDependencies ++=
         Seq(
           "org.gdal"         % "gdal"       % "1.10.1",

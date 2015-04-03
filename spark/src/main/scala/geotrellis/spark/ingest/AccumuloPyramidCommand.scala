@@ -35,7 +35,5 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
     val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
       writer.write(LayerId(args.layerName, level.zoom), rdd)
     }
-
-    Pyramid.saveLevels(rdd, level, layoutScheme)(save)
   }
 }

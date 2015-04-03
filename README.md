@@ -1,5 +1,7 @@
 # GeoTrellis
 
+[![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 *GeoTrellis* is a Scala library and framework for creating processes to work with raster data.
 
 #### IO:

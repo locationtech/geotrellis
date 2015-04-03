@@ -28,12 +28,11 @@ class GeoTiffS3InputFormatSpec extends FunSpec with OnlyIfCanRunSpark with Match
         sourceCount should not be (0)
         info(s"Source RDD count: ${sourceCount}")
         
-        val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme())
-        val rddCount = rdd.count
-        rddCount should not be (0)
-        info(s"Tiled RDD count: ${rddCount}")
-        
-        source.unpersist()
+        Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme()){ (rdd, level) => 
+          val rddCount = rdd.count
+          rddCount should not be (0)
+          info(s"Tiled RDD count: ${rddCount}")        
+        }        
       }
     }
   }

@@ -29,6 +29,7 @@ class RasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, 
 
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
+        rdd.persist()
         val layerMetaData = LayerMetaData(
           rasterMetaData = rdd.metaData,
           keyClass = classTag[K].toString,
@@ -39,6 +40,7 @@ class RasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, 
 
         metaDataCatalog.write(layerId, md)
         rddWriter.write(layerId, rdd)
+        rdd.unpersist(blocking = false)
       }
     }
   }
