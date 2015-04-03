@@ -36,9 +36,10 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
     val layoutScheme = ZoomedLayoutScheme(256)
     val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme)
+    val writer = accumulo.rasterCatalog.writer[SpatialKey](args.table)
 
     val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
-      accumulo.catalog.save(LayerId(args.layerName, level.zoom), args.table, rdd, args.clobber)
+      writer.write(LayerId(args.layerName, level.zoom), rdd)
     }
     if (args.pyramid) {
       Pyramid.saveLevels(rdd, level, layoutScheme)(save)

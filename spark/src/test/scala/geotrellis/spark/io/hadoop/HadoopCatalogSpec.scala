@@ -53,13 +53,13 @@ with OnlyIfCanRunSpark
         catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
       }
 
-      it("should succeed loading with single path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
-      }
+      // it("should succeed loading with single path Props"){
+      //   catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
+      // }
 
-      it("should succeed loading with double path Props"){
-        catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
-      }
+      // it("should succeed loading with double path Props"){
+      //   catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
+      // }
 
 
       it("should load out saved tiles, but only for the right zoom"){

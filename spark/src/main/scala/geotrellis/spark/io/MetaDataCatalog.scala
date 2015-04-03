@@ -13,8 +13,8 @@ trait MetaDataCatalog[Params] {
   /** Return [[geotrellis.spark.RasterMetaData]] and matching Params if unique match is found based on [[LayerId]] */
   def load(layerId: LayerId): (LayerMetaData, Params)
 
-  /** Return [[geotrellis.spark.RasterMetaData]] matching both LayerId and params. */
-  def load(layerId: LayerId, params: Params): LayerMetaData
+  // /** Return [[geotrellis.spark.RasterMetaData]] matching both LayerId and params. */
+  // def load(layerId: LayerId, params: Params): LayerMetaData
 
   /** Save [[geotrellis.spark.RasterMetaData]] such that it can be found by the load functions */
   def save(layerId: LayerId, params: Params,  metaData: LayerMetaData, clobber: Boolean): Unit

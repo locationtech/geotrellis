@@ -15,16 +15,8 @@ trait Catalog {
   def load[K: SupportedKey: ClassTag](id: LayerId): RasterRDD[K] =
     load(id, new FilterSet[K])
 
-  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params): RasterRDD[K] =
-    load(id, params, new FilterSet[K])
-
   def load[K: SupportedKey: ClassTag](id: LayerId, filters: FilterSet[K]): RasterRDD[K] = {
     val (metaData, params) = metaDataCatalog.load(id)
-    load(id, metaData.rasterMetaData, params, filters)
-  }
-
-  def load[K: SupportedKey: ClassTag](id: LayerId, params: Params, filters: FilterSet[K]): RasterRDD[K] = {
-    val metaData = metaDataCatalog.load(id, params)
     load(id, metaData.rasterMetaData, params, filters)
   }
 

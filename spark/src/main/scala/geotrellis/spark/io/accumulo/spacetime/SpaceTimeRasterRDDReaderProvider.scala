@@ -1,22 +1,27 @@
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.io.accumulo.spacetime
 
-import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
-import org.apache.accumulo.core.client.IteratorSetting
-import org.apache.accumulo.core.client.mapreduce.InputFormatBase
-import org.apache.accumulo.core.data.{Range => ARange, Key, Value, Mutation}
-import org.apache.accumulo.core.util.{Pair => APair}
-import org.apache.accumulo.core.security.Authorizations
+import geotrellis.spark.io._
+import geotrellis.spark.io.accumulo._
+import geotrellis.raster._
+
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
+
+import org.apache.accumulo.core.client.IteratorSetting
+import org.apache.accumulo.core.client.mapreduce.{ AccumuloInputFormat, InputFormatBase }
+import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
+import org.apache.accumulo.core.util.{Pair => APair}
+
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 import org.joda.time.{DateTimeZone, DateTime}
+
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
-import scala.reflect._
 
-object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
+object SpaceTimeRasterRDDIndex {
   val rowIdRx = new Regex("""(\d+)_(\d+)_(\d+)_(\d+)""", "zoom", "col", "row", "year")
 
   def timeChunk(time: DateTime): String =
@@ -29,51 +34,10 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
 
   def timeText(key: SpaceTimeKey): Text = 
     new Text(key.temporalKey.time.withZone(DateTimeZone.UTC).toString)
+}
 
-  /** Map rdd of indexed tiles to tuples of (table name, row mutation) */
-  def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey]): RDD[(Text, Mutation)] =
-    raster.map {
-      case (key, tile) =>    
-        val mutation = new Mutation(rowId(layerId, key))
-        mutation.put(new Text(layerId.name), timeText(key),
-          System.currentTimeMillis(), new Value(tile.toBytes()))
-        (null, mutation)
-    }
-
-  /** Maps RDD of Accumulo specific Key, Value pairs to a tuple of (K, Tile) and wraps it in RasterRDD */
-  def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[SpaceTimeKey] = {
-    val tileRdd = rdd.map {
-      case (key, value) =>
-        val rowIdRx(zoom, col, row, _) = key.getRow.toString
-        val spatialKey = SpatialKey(col.toInt, row.toInt)
-        val time = DateTime.parse(key.getColumnQualifier.toString)
-        val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
-        SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
-    }
-    new RasterRDD(tileRdd, metaData)
-  }
-
-  def loadTile(accumulo: AccumuloInstance)(layerId: LayerId, metaData: RasterMetaData, table: String, key: SpaceTimeKey): Tile = {
-    val scanner  = accumulo.connector.createScanner(table, new Authorizations())
-    scanner.setRange(new ARange(rowId(layerId, key)))
-    scanner.fetchColumn(new Text(layerId.name), timeText(key))
-    val values = scanner.iterator.toList.map(_.getValue)
-    val value = 
-      if(values.size == 0) {
-        sys.error(s"Tile with key $key not found for layer $layerId")
-      } else if(values.size > 1) {
-        sys.error(s"Multiple tiles found for $key for layer $layerId")
-      } else {
-        values.head
-      }
-
-    ArrayTile.fromBytes(
-      value.get,
-      metaData.cellType,
-      metaData.tileLayout.tileCols,
-      metaData.tileLayout.tileRows
-    )
-  }
+object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
+  import SpaceTimeRasterRDDIndex._
 
   def tileSlugs(filters: List[GridBounds]): List[(String, String)] = filters match {
     case Nil =>
@@ -130,4 +94,27 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
 
     InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
   }
+
+  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData)(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
+    new FilterableRasterRDDReader[SpaceTimeKey] {
+      def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
+        val AccumuloLayerMetaData(layerMetaData, tileTable) = metaData
+        val rasterMetaData = layerMetaData.rasterMetaData
+        val job = Job.getInstance(sc.hadoopConfiguration)
+        instance.setAccumuloConfig(job)
+        InputFormatBase.setInputTableName(job, tileTable)
+        setFilters(job, layerId, filters)
+        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
+        val tileRdd = rdd.map {
+          case (key, value) =>
+            val rowIdRx(zoom, col, row, _) = key.getRow.toString
+            val spatialKey = SpatialKey(col.toInt, row.toInt)
+            val time = DateTime.parse(key.getColumnQualifier.toString)
+            val tile = ArrayTile.fromBytes(value.get, rasterMetaData.cellType, rasterMetaData.tileLayout.tileCols, rasterMetaData.tileLayout.tileRows)
+            SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
+        }
+
+        new RasterRDD(tileRdd, rasterMetaData)
+      }
+    }
 }

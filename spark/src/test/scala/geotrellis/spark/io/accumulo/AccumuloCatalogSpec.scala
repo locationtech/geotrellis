@@ -38,7 +38,6 @@ class AccumuloCatalogSpec extends FunSpec
         user = "root",
         token = new PasswordToken("")
       )
-      val catalog = accumulo.catalog
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
@@ -46,36 +45,45 @@ class AccumuloCatalogSpec extends FunSpec
       val layoutScheme = ZoomedLayoutScheme(512)
       tableOps.create("tiles")
 
+      val mdCatalog = 
+        new AccumuloLayerMetaDataCatalog(
+          accumulo.connector,
+          "metadata"
+        )
+
+      val catalog = 
+        RasterCatalog(accumulo, "metadata")
+
       val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
 
       val layerId = LayerId("ones", level.zoom)
 
       it("should succeed writing to a table") {
-        catalog.save(layerId, "tiles", onesRdd)
+        catalog.writer[SpatialKey]("tiles").write(layerId, onesRdd)
       }
 
       it("should load out saved tiles") {
-        val rdd = catalog.load[SpatialKey](layerId)
+        val rdd = catalog.reader[SpatialKey].read(layerId)
         rdd.count should be > 0l
       }
 
       it("should load out a single tile") {
-        val key = catalog.load[SpatialKey](layerId).map(_._1).collect.head
-        val tile = catalog.loadTile(layerId, key)
+        val key = catalog.reader[SpatialKey].read(layerId).map(_._1).collect.head
+        val tile = catalog.tileReader[SpatialKey](layerId).read(key)
         (tile.cols, tile.rows) should be ((512, 512))
       }
 
       it("should load out saved tiles, but only for the right zoom") {
         intercept[LayerNotFoundError] {
-          catalog.load[SpatialKey](LayerId("ones", level.zoom + 1)).count()
+          catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
         }
       }
 
       it("fetch a TileExtent from catalog") {
         val tileBounds = GridBounds(915,305,916,306)
         val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-        val rdd1 = catalog.load[SpatialKey](LayerId("ones", level.zoom), filters)
-        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+        val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", level.zoom), filters)
+        val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
 
         val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
           require(tms1.id == tms2.id)
