@@ -62,33 +62,4 @@ package object json {
           throw new DeserializationException("RasterMetaData expected")
       }
   }
-
-  implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
-    def write(obj: LayerMetaData): JsObject =
-      JsObject(
-        "keyClass" -> JsString(obj.keyClass),
-        "rasterMetaData" -> obj.rasterMetaData.toJson,
-        "histogram" -> obj.histogram.toJson
-      )
-
-    def read(json: JsValue): LayerMetaData =
-      json.asJsObject.getFields("keyClass", "rasterMetaData", "histogram") match {
-        case Seq(JsString(keyClass), md: JsObject, hist: JsArray) =>
-          LayerMetaData(
-            keyClass = keyClass,
-            rasterMetaData = md.convertTo[RasterMetaData],
-            histogram = Some(hist.convertTo[Histogram])
-          )
-
-        case Seq(JsString(keyClass), md: JsObject) =>
-          LayerMetaData(
-            keyClass = keyClass,
-            rasterMetaData = md.convertTo[RasterMetaData],
-            histogram = None
-          )
-
-        case _ =>
-          throw new DeserializationException(s"LayerMetaData expected")
-      }
-  }
 }

@@ -13,7 +13,14 @@ import org.apache.spark.Logging
 import spray.json._
 import DefaultJsonProtocol._
 
-case class AccumuloLayerMetaData(layerMetaData: LayerMetaData, tileTable: String)
+import scala.collection.mutable
+
+case class AccumuloLayerMetaData(
+  rasterMetaData: RasterMetaData,
+  histogram: Option[Histogram],
+  keyClass: String,
+  tileTable: String
+)
 
 class AccumuloLayerMetaDataCatalog(connector: Connector, val catalogTable: String) extends Store[LayerId, AccumuloLayerMetaData] with Logging {
   //create the metadata table if it does not exist
@@ -23,27 +30,27 @@ class AccumuloLayerMetaDataCatalog(connector: Connector, val catalogTable: Strin
       ops.create(catalogTable)
   }
 
-  var catalog: Map[LayerId, AccumuloLayerMetaData] = fetchAll
+  private val catalog: mutable.Map[LayerId, AccumuloLayerMetaData] = fetchAll
 
   def zoomLevelsFor(layerName: String): Seq[Int] = {
     catalog.keys.filter(_.name == layerName).map(_.zoom).toSeq
   }
 
   def write(id: LayerId, metaData: AccumuloLayerMetaData): Unit = {
-    catalog = catalog updated (id, metaData)
+    catalog(id) = metaData
 
     val mutation = new Mutation(s"${metaData.tileTable}__${id.name}")
     mutation.put( //RasterMetaData
       id.zoom.toString, "metadata", System.currentTimeMillis(),
-      new Value(metaData.layerMetaData.rasterMetaData.toJson.compactPrint.getBytes)
+      new Value(metaData.rasterMetaData.toJson.compactPrint.getBytes)
     )
     mutation.put( //Histogram
       id.zoom.toString, "histogram", System.currentTimeMillis(),
-      new Value(metaData.layerMetaData.histogram.toJson.compactPrint.getBytes)
+      new Value(metaData.histogram.toJson.compactPrint.getBytes)
     )
     mutation.put( //Key ClassTag
       id.zoom.toString, "keyClass", System.currentTimeMillis(),
-      new Value(metaData.layerMetaData.keyClass.getBytes)
+      new Value(metaData.keyClass.getBytes)
     )
 
     connector.write(catalogTable, mutation)
@@ -65,7 +72,7 @@ class AccumuloLayerMetaDataCatalog(connector: Connector, val catalogTable: Strin
     }
   }
 
-  def fetchAll: Map[LayerId, AccumuloLayerMetaData] = {
+  def fetchAll: mutable.Map[LayerId, AccumuloLayerMetaData] = {
     var data: Map[LayerId, Map[String, Value]] =
       Map.empty.withDefaultValue(Map.empty)
 
@@ -83,17 +90,15 @@ class AccumuloLayerMetaDataCatalog(connector: Connector, val catalogTable: Strin
       tables = tables updated (k, table)
     }
 
-    def readLayerMetaData(map: Map[String, Value], table: String): AccumuloLayerMetaData =
+    def readLayerMetaData(map: Map[String, Value], tileTable: String): AccumuloLayerMetaData =
       AccumuloLayerMetaData(
-        LayerMetaData(
-          keyClass =  map("keyClass").toString,
-          rasterMetaData = map("metadata").toString.parseJson.convertTo[RasterMetaData],
-          histogram = map.get("histogram").map(_.toString.parseJson.convertTo[Histogram])
-        ),
-        table
+        rasterMetaData = map("metadata").toString.parseJson.convertTo[RasterMetaData],
+        histogram = map.get("histogram").map(_.toString.parseJson.convertTo[Histogram]),
+        keyClass =  map("keyClass").toString,
+        tileTable = tileTable
       )
 
-    data map { case (key, fieldMap) => key -> readLayerMetaData(fieldMap, tables(key))}
+    mutable.Map(data.toSeq map { case (key, fieldMap) => key -> readLayerMetaData(fieldMap, tables(key))}:_*)
   }
 }
 

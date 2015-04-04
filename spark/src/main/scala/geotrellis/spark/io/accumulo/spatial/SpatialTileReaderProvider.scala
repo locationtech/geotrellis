@@ -15,8 +15,7 @@ object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
   import SpatialRasterRDDIndex._
 
   def reader(instance: AccumuloInstance, layerId: LayerId, accumuloLayerMetaData: AccumuloLayerMetaData): Reader[SpatialKey, Tile] = {
-    val AccumuloLayerMetaData(layerMetaData, tileTable) = accumuloLayerMetaData
-    val metaData = layerMetaData.rasterMetaData
+    val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = accumuloLayerMetaData
     new Reader[SpatialKey, Tile] {
       def read(key: SpatialKey): Tile = {
         val scanner  = instance.connector.createScanner(tileTable, new Authorizations())
@@ -34,9 +33,9 @@ object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
 
         ArrayTile.fromBytes(
           value.get,
-          metaData.cellType,
-          metaData.tileLayout.tileCols,
-          metaData.tileLayout.tileRows
+          rasterMetaData.cellType,
+          rasterMetaData.tileLayout.tileCols,
+          rasterMetaData.tileLayout.tileRows
         )
       }
     }

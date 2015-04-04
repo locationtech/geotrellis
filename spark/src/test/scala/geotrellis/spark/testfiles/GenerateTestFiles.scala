@@ -30,7 +30,7 @@ import org.apache.spark._
 
 /** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
 object GenerateTestFiles {
-  def generate(catalog: HadoopCatalog, sc: SparkContext) {
+  def generate(catalog: RasterCatalog, sc: SparkContext) {
     val cellType = TypeFloat
     val layoutLevel = ZoomedLayoutScheme(3).levelFor(TestFiles.ZOOM_LEVEL)
     val tileLayout = layoutLevel.tileLayout
@@ -93,7 +93,7 @@ object GenerateTestFiles {
           sc.parallelize(tmsTiles)
         }
 
-      catalog.save(LayerId(name, TestFiles.ZOOM_LEVEL), rdd, clobber = true)
+      catalog.writer[SpatialKey](clobber = true).write(LayerId(name, TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }

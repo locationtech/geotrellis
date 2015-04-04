@@ -10,13 +10,13 @@ import geotrellis.spark.io.hadoop._
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
 
-  def catalog(implicit sc: SparkContext): HadoopCatalog = {
+  def catalog(implicit sc: SparkContext): RasterCatalog = {
 
     val conf = sc.hadoopConfiguration
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
     val needGenerate = !localFS.exists(catalogPath)
-    val catalog = HadoopCatalog(sc, catalogPath)
+    val catalog = RasterCatalog(catalogPath)
 
     if (needGenerate) {
       logInfo(s"test-catalog empty, generating at $catalogPath")
@@ -28,10 +28,10 @@ object TestFiles extends Logging {
 }
 
 trait TestFiles { self: OnlyIfCanRunSpark =>
-  lazy val testCatalog = TestFiles.catalog
+  lazy val reader = TestFiles.catalog.reader[SpatialKey]
 
   def testFile(layerName: String): RasterRDD[SpatialKey] = {
-    testCatalog.load[SpatialKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
+    reader.read(LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
   }
 
   def AllOnesTestFile =

@@ -25,18 +25,20 @@ class RasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, 
   
 
   def writer[K: RasterRDDWriterProvider: ClassTag](tileTable: String): Writer[LayerId, RasterRDD[K]] = {
-    val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(instance, metaDataCatalog, tileTable)
+    val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(instance, tileTable)
 
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
+        // Persist since we are both calculating a histogram and saving tiles.
         rdd.persist()
-        val layerMetaData = LayerMetaData(
-          rasterMetaData = rdd.metaData,
-          keyClass = classTag[K].toString,
-          histogram = Some(rdd.histogram)
-        )
 
-        val md = AccumuloLayerMetaData(layerMetaData, tileTable)
+        val md = 
+          AccumuloLayerMetaData(
+            rasterMetaData = rdd.metaData,
+            histogram = Some(rdd.histogram),
+            keyClass = classTag[K].toString,
+            tileTable = tileTable
+          )
 
         metaDataCatalog.write(layerId, md)
         rddWriter.write(layerId, rdd)

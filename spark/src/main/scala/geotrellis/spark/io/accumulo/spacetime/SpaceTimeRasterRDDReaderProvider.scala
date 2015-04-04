@@ -98,8 +98,7 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
   def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData)(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
     new FilterableRasterRDDReader[SpaceTimeKey] {
       def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
-        val AccumuloLayerMetaData(layerMetaData, tileTable) = metaData
-        val rasterMetaData = layerMetaData.rasterMetaData
+        val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
         val job = Job.getInstance(sc.hadoopConfiguration)
         instance.setAccumuloConfig(job)
         InputFormatBase.setInputTableName(job, tileTable)

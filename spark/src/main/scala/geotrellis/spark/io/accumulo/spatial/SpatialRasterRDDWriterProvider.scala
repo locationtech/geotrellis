@@ -43,7 +43,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
       (null, mutation)
     }
 
-  def writer(instance: AccumuloInstance, metaDataCatalog: Writer[LayerId, AccumuloLayerMetaData], tileTable: String)(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
+  def writer(instance: AccumuloInstance, tileTable: String)(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, raster: RasterRDD[SpatialKey]): Unit = {
         // Create table if it doesn't exist.

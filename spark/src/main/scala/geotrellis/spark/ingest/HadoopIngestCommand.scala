@@ -24,12 +24,14 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val conf = sparkContext.hadoopConfiguration
     conf.set("io.map.index.interval", "1")
 
-    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, args.catalogPath)
+    val catalog = RasterCatalog(args.catalogPath)
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
 
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
-      catalog.save(LayerId(args.layerName, level.zoom), rdd, args.clobber)
+      catalog
+        .writer[SpatialKey](args.clobber)
+        .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }
 }

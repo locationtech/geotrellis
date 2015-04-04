@@ -15,8 +15,7 @@ object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
   import SpaceTimeRasterRDDIndex._
 
   def reader(instance: AccumuloInstance, layerId: LayerId, accumuloLayerMetaData: AccumuloLayerMetaData): Reader[SpaceTimeKey, Tile] = {
-    val AccumuloLayerMetaData(layerMetaData, tileTable) = accumuloLayerMetaData
-    val metaData = layerMetaData.rasterMetaData
+    val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = accumuloLayerMetaData
     new Reader[SpaceTimeKey, Tile] {
       def read(key: SpaceTimeKey): Tile = {
         val scanner  = instance.connector.createScanner(tileTable, new Authorizations())
@@ -34,9 +33,9 @@ object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
 
         ArrayTile.fromBytes(
           value.get,
-          metaData.cellType,
-          metaData.tileLayout.tileCols,
-          metaData.tileLayout.tileRows
+          rasterMetaData.cellType,
+          rasterMetaData.tileLayout.tileCols,
+          rasterMetaData.tileLayout.tileRows
         )
       }
     }
