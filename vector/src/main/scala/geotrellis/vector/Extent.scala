@@ -27,7 +27,7 @@ object Extent {
 }
 
 case class ProjectedExtent(extent: Extent, crs: CRS) {
-  def reproject(dest: CRS): Extent = 
+  def reproject(dest: CRS): Polygon = 
     extent.reproject(crs, dest)
 }
 
