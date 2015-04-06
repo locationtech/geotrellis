@@ -8,7 +8,7 @@ import geotrellis.raster._
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
-import org.apache.accumulo.core.client.mapreduce.{ AccumuloInputFormat, InputFormatBase }
+import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
 import org.apache.accumulo.core.util.{Pair => APair}
 
@@ -61,7 +61,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
     InputFormatBase.setRanges(job, range)
   }
 
-  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData)(implicit sc: SparkContext): FilterableRasterRDDReader[SpatialKey] =
+  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpatialKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpatialKey] =
     new FilterableRasterRDDReader[SpatialKey] {
       def read(layerId: LayerId, filters: FilterSet[SpatialKey]): RasterRDD[SpatialKey] = {
         val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
@@ -70,7 +70,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
         instance.setAccumuloConfig(job)
         InputFormatBase.setInputTableName(job, tileTable)
         setFilters(job, layerId, filters)
-        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
+        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[BatchAccumuloInputFormat], classOf[Key], classOf[Value])
         val tileRdd =
           rdd.map { case (key, value) =>
             val rowIdRx(_, col, row) = key.getRow.toString

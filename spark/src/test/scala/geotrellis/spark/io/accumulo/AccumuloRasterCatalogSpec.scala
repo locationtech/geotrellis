@@ -22,8 +22,9 @@ import org.joda.time.DateTime
 import org.scalatest._
 import org.scalatest.Matchers._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
-
 import org.apache.hadoop.fs.Path
+
+import com.github.nscala_time.time.Imports._
 
 class AccumuloRasterCatalogSpec extends FunSpec
     with RasterRDDMatchers
@@ -128,21 +129,51 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
       }
 
-    //   it("fetch a TileExtent from catalog") {
-    //     val tileBounds = GridBounds(915,305,916,306)
-    //     val filters = new FilterSet[SpaceTimeKey] withFilter SpaceFilter(tileBounds)
-    //     val rdd1 = catalog.reader[SpaceTimeKey].read(LayerId("ones", zoom), filters)
-    //     val rdd2 = catalog.reader[SpaceTimeKey].read(LayerId("ones", 10), filters)
+      it("should load a layer with filters on space only") {
+        val keys = CoordinateSpaceTime.map(_._1).collect
 
-    //     val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
-    //       require(tms1.id == tms2.id)
-    //       val res = tms1.tile.localAdd(tms2.tile)
-    //       (tms1.id, res)
-    //     }
+        val cols = keys.map(_.spatialKey.col)
+        val (minCol, maxCol) = (cols.min, cols.max)
+        val rows = keys.map(_.spatialKey.row)
+        val (minRow, maxRow) = (rows.min, rows.max)
 
-    //     val tile = out.first.tile
-    //     tile.get(497,511) should be (2)
-    //   }
+        val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
+
+        val filters = 
+          new FilterSet[SpaceTimeKey] 
+            .withFilter(SpaceFilter(tileBounds))
+
+        val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
+
+        rdd.map(_._1).collect.foreach { case SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) =>
+          tileBounds.contains(col, row) should be (true)
+        }
+      }
+
+      it("should load a layer with filters on space and time") {
+        val keys = CoordinateSpaceTime.map(_._1).collect
+
+        val cols = keys.map(_.spatialKey.col)
+        val (minCol, maxCol) = (cols.min, cols.max)
+        val rows = keys.map(_.spatialKey.row)
+        val (minRow, maxRow) = (rows.min, rows.max)
+        val times = keys.map(_.temporalComponent.time)
+        val maxTime = times.max
+
+        val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
+
+        val filters = 
+          new FilterSet[SpaceTimeKey] 
+            .withFilter(SpaceFilter(tileBounds))
+            .withFilter(TimeFilter(maxTime))
+
+        val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
+
+        rdd.map(_._1).collect.foreach { case SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) =>
+          tileBounds.contains(col, row) should be (true)
+          time should be (maxTime)
+        }
+      }
     }
   }
 }

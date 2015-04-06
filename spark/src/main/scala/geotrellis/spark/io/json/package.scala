@@ -7,6 +7,7 @@ import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import geotrellis.raster.histogram.Histogram
+import com.github.nscala_time.time.Imports._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -60,6 +61,18 @@ package object json {
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
+      }
+  }
+
+  implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
+    def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
+
+    def read(value: JsValue) =
+      value match {
+        case JsString(dateStr) =>
+          DateTime.parse(dateStr)
+        case _ =>
+          throw new DeserializationException("DateTime expected")
       }
   }
 }

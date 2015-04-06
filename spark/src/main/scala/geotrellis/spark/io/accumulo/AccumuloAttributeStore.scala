@@ -13,6 +13,11 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
 
+object AccumuloAttributeStore { 
+  def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =
+    new AccumuloAttributeStore(connector, attributeTable)
+}
+
 class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
 

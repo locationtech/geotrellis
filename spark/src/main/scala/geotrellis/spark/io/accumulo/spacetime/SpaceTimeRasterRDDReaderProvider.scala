@@ -10,7 +10,7 @@ import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
 import org.apache.accumulo.core.client.IteratorSetting
-import org.apache.accumulo.core.client.mapreduce.{ AccumuloInputFormat, InputFormatBase }
+import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
 import org.apache.accumulo.core.util.{Pair => APair}
 
@@ -51,14 +51,14 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
       } yield f"${bounds.colMin}%06d_${row}%06d" -> f"${bounds.colMax}%06d_${row}%06d"      
   }
   
-  def timeSlugs(filters: List[(DateTime, DateTime)]): List[(Int, Int)] = filters match {
+  def timeSlugs(filters: List[(DateTime, DateTime)], minTime: DateTime, maxTime: DateTime): List[(Int, Int)] = filters match {
     case Nil =>
-      List(2000 -> 2100)
+      List(timeChunk(minTime).toInt -> timeChunk(maxTime).toInt)
     case List((start, end)) =>                 
       List(timeChunk(start).toInt -> timeChunk(end).toInt)
   }
 
-  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpaceTimeKey]): Unit = {
+  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey]): Unit = {
     var spaceFilters: List[GridBounds] = Nil
     var timeFilters: List[(DateTime, DateTime)] = Nil
 
@@ -76,7 +76,7 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
     val ranges: Seq[ARange] = (
       for {
         bounds <- spaceFilters
-        (timeStart, timeEnd) <- timeSlugs(timeFilters)
+        (timeStart, timeEnd) <- timeSlugs(timeFilters, keyBounds.minKey.temporalKey.time, keyBounds.maxKey.temporalKey.time)
       } yield {
         val p1 = Z3(bounds.colMin, bounds.rowMin, timeStart)
         val p2 = Z3(bounds.colMax, bounds.rowMax, timeEnd)
@@ -119,15 +119,15 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
     InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
   }
 
-  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData)(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
+  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
     new FilterableRasterRDDReader[SpaceTimeKey] {
       def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
         val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
         val job = Job.getInstance(sc.hadoopConfiguration)
         instance.setAccumuloConfig(job)
         InputFormatBase.setInputTableName(job, tileTable)
-        setFilters(job, layerId, filters)
-        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
+        setFilters(job, layerId, filters, keyBounds)
+        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[BatchAccumuloInputFormat], classOf[Key], classOf[Value])
         val tileRdd = 
           rdd.map { case (key, value) =>
             val rowIdRx(zoom, zindex) = key.getRow.toString

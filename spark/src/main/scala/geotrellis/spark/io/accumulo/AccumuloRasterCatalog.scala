@@ -10,6 +10,7 @@ import org.apache.spark.SparkContext
 import com.typesafe.config.{ConfigFactory,Config}
 
 import scala.reflect._
+import spray.json._
 
 object AccumuloRasterCatalog {
   def apply()(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog = {
@@ -19,23 +20,31 @@ object AccumuloRasterCatalog {
   }
 
   def apply(metaDataTable: String)(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog =
-    apply(new AccumuloLayerMetaDataCatalog(instance.connector, metaDataTable))
+    apply(metaDataTable, metaDataTable)
 
-  def apply(metaDataCatalog: Store[LayerId, AccumuloLayerMetaData])(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog =
-    new AccumuloRasterCatalog(instance, metaDataCatalog)
+  def apply(metaDataTable: String, attributesTable: String)(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog =
+    apply(new AccumuloLayerMetaDataCatalog(instance.connector, metaDataTable), AccumuloAttributeStore(instance.connector, attributesTable))
+
+  def apply(metaDataCatalog: Store[LayerId, AccumuloLayerMetaData], attributeStore: AccumuloAttributeStore)(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog =
+    new AccumuloRasterCatalog(instance, metaDataCatalog, attributeStore)
 }
 
-class AccumuloRasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, AccumuloLayerMetaData])(implicit sc: SparkContext) {
-  def reader[K: RasterRDDReaderProvider](): FilterableRasterRDDReader[K] = 
+class AccumuloRasterCatalog(
+  instance: AccumuloInstance, 
+  metaDataCatalog: Store[LayerId, AccumuloLayerMetaData],
+  attributeStore: AccumuloAttributeStore
+)(implicit sc: SparkContext) {
+  def reader[K: RasterRDDReaderProvider: JsonFormat](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = metaDataCatalog.read(layerId)
-        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData).read(layerId, filterSet)
+        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData, keyBounds).read(layerId, filterSet)
       }
     }
   
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](tileTable: String): Writer[LayerId, RasterRDD[K]] = {
+  def writer[K: RasterRDDWriterProvider: JsonFormat: Ordering: ClassTag](tileTable: String): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
@@ -49,7 +58,11 @@ class AccumuloRasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[L
             tileTable = tileTable
           )
 
+        val minKey = rdd.map(_._1).min
+        val maxKey = rdd.map(_._1).max
+
         metaDataCatalog.write(layerId, md)
+        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", KeyBounds(minKey, maxKey))
         implicitly[RasterRDDWriterProvider[K]].writer(instance, md).write(layerId, rdd)
         rdd.unpersist(blocking = false)
       }
