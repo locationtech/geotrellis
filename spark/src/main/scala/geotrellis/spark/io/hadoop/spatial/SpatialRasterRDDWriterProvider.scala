@@ -17,7 +17,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
   implicit def toWritable(key: SpatialKey) = SpatialKeyWritable(key)
   def newWritable = new SpatialKeyWritable
 
-  def writer(catalogConfig: RasterCatalogConfig, layerPath: Path, clobber: Boolean = true)(implicit sc: SparkContext) =
+  def writer(catalogConfig: HadoopRasterCatalogConfig, layerPath: Path, clobber: Boolean = true)(implicit sc: SparkContext) =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, rdd: RasterRDD[SpatialKey]): Unit = {
         val conf = sc.hadoopConfiguration

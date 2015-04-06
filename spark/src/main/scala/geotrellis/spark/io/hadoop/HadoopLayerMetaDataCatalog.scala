@@ -87,6 +87,7 @@ class HadoopLayerMetaDataCatalog(hadoopConfig: Configuration, rootPath: Path, me
     val out = new PrintWriter(fdos)
     try {
       out.println(metaData.toJson)
+      catalog(id) = metaData
     } finally {
       out.close()
       fdos.close()

@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 
 // TODO: Refactor the writer and reader logic to abstract over the key type.
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] with Logging {
-  def reader(catalogConfig: RasterCatalogConfig, layerMetaData: HadoopLayerMetaData)(implicit sc: SparkContext): RasterRDDReader[SpaceTimeKey] =
+  def reader(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData)(implicit sc: SparkContext): RasterRDDReader[SpaceTimeKey] =
     new RasterRDDReader[SpaceTimeKey] {
       def read(layerId: LayerId): RasterRDD[SpaceTimeKey] = {
         val path = layerMetaData.path

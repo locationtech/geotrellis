@@ -43,10 +43,11 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
       (null, mutation)
     }
 
-  def writer(instance: AccumuloInstance, tileTable: String)(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
+  def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData)(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, raster: RasterRDD[SpatialKey]): Unit = {
         // Create table if it doesn't exist.
+        val tileTable = layerMetaData.tileTable
         if (!instance.connector.tableOperations().exists(tileTable))
           instance.connector.tableOperations().create(tileTable)
 
@@ -54,7 +55,6 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         val groups = ops.getLocalityGroups(tileTable)
         val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
         ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
-        
 
         val splits = getSplits(layerId, raster)
         instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))

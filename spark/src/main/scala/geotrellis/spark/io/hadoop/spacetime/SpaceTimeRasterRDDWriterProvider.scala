@@ -17,7 +17,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
   implicit def toWritable(key: SpaceTimeKey) = SpaceTimeKeyWritable(key)
   def newWritable = new SpaceTimeKeyWritable
 
-  def writer(catalogConfig: RasterCatalogConfig, layerPath: Path, clobber: Boolean = true)(implicit sc: SparkContext) =
+  def writer(catalogConfig: HadoopRasterCatalogConfig, layerPath: Path, clobber: Boolean = true)(implicit sc: SparkContext) =
     new RasterRDDWriter[SpaceTimeKey] {
       def write(layerId: LayerId, rdd: RasterRDD[SpaceTimeKey]): Unit = {
         val conf = sc.hadoopConfiguration
@@ -74,7 +74,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
         sortedWritable
           .saveAsNewAPIHadoopFile(
           layerPath.toUri.toString,
-            classOf[SpaceTimeKey],
+            classOf[SpaceTimeKeyWritable],
             classOf[TileWritable],
             classOf[MapFileOutputFormat],
             job.getConfiguration

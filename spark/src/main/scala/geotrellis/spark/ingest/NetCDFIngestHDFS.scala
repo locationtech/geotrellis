@@ -30,7 +30,7 @@ object NetCDFIngestHDFSCommand extends ArgMain[HadoopIngestArgs] with Logging {
       Tiler(getExtent, createKey)
     }
 
-    val catalog = RasterCatalog(args.catalogPath)
+    val catalog = HadoopRasterCatalog(args.catalogPath)
     val source = sparkContext.netCdfRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
 

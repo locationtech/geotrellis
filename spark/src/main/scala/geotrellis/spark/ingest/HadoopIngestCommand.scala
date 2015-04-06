@@ -24,7 +24,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val conf = sparkContext.hadoopConfiguration
     conf.set("io.map.index.interval", "1")
 
-    val catalog = RasterCatalog(args.catalogPath)
+    val catalog = HadoopRasterCatalog(args.catalogPath)
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
 

@@ -13,6 +13,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.raster.op.local._
 import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.testfiles._
 import geotrellis.proj4.LatLng
 
 import org.apache.spark._
@@ -24,43 +25,34 @@ import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 import org.apache.hadoop.fs.Path
 
-class AccumuloCatalogSpec extends FunSpec
-  with Matchers
-  with TestEnvironment
-  with OnlyIfCanRunSpark
+class AccumuloRasterCatalogSpec extends FunSpec
+    with RasterRDDMatchers
+    with TestFiles
+    with TestEnvironment
+    with OnlyIfCanRunSpark
 {
 
-  describe("Accumulo Catalog") {
+  describe("Accumulo Raster Catalog with Spatial Rasters") {
     ifCanRunSpark { 
 
-      val accumulo = new AccumuloInstance(
-        instanceName = "fake",
-        zookeeper = "localhost",
-        user = "root",
-        token = new PasswordToken("")
-      )
+      implicit val accumulo = MockAccumuloInstance()
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
       val layoutScheme = ZoomedLayoutScheme(512)
-      tableOps.create("tiles")
-
-      val mdCatalog = 
-        new AccumuloLayerMetaDataCatalog(
-          accumulo.connector,
-          "metadata"
-        )
+      val tableName = "tiles"
+      if (!tableOps.exists(tableName))
+        tableOps.create(tableName)
 
       val catalog = 
-        RasterCatalog(accumulo, "metadata")
+        AccumuloRasterCatalog("metadata")
 
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, level) => 
         val layerId = LayerId("ones", level.zoom)
 
-
         it("should succeed writing to a table") {
-          catalog.writer[SpatialKey]("tiles").write(layerId, onesRdd)
+          catalog.writer[SpatialKey](tableName).write(layerId, onesRdd)
         }
 
         it("should load out saved tiles") {
@@ -79,20 +71,6 @@ class AccumuloCatalogSpec extends FunSpec
             catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
           }
         }
-
-        it("fetch a TileExtent from catalog") {
-          val tileBounds = GridBounds(915,305,916,306)
-          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-          val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", level.zoom), filters)
-          val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
-        }
-
-        it("should load out saved tiles, but only for the right zoom") {
-          intercept[LayerNotFoundError] {
-            catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
-          }
-        }
-
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,305,916,306)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
@@ -109,6 +87,62 @@ class AccumuloCatalogSpec extends FunSpec
           tile.get(497,511) should be (2)
         }      
       }
+    }
+  }
+
+  describe("Accumulo Raster Catalog with SpaceTime Rasters") {
+    ifCanRunSpark { 
+
+      implicit val accumulo = MockAccumuloInstance()
+
+      val tableOps = accumulo.connector.tableOperations()
+      val tableName = "spacetime_tiles"
+      tableOps.create(tableName)
+
+      val catalog = 
+        AccumuloRasterCatalog("metadata")
+
+      val zoom = 10
+      val layerId = LayerId("coordinates", zoom)
+
+
+      it("should succeed writing to a table") {
+        catalog.writer[SpaceTimeKey](tableName).write(layerId, CoordinateSpaceTime)
+      }
+
+      it("should load out saved tiles") {
+        val rdd = catalog.reader[SpaceTimeKey].read(layerId)
+        rdd.count should be > 0l
+      }
+
+      it("should load out a single tile") {
+        val key = catalog.reader[SpaceTimeKey].read(layerId).map(_._1).collect.head
+        val tile = catalog.tileReader[SpaceTimeKey](layerId).read(key)
+        val actual = CoordinateSpaceTime.collect.toMap.apply(key)
+        tilesEqual(tile, actual)
+      }
+
+      it("should load out saved tiles, but only for the right zoom") {
+        intercept[LayerNotFoundError] {
+          catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom + 1)).count()
+        }
+      }
+
+    //   it("fetch a TileExtent from catalog") {
+    //     val tileBounds = GridBounds(915,305,916,306)
+    //     val filters = new FilterSet[SpaceTimeKey] withFilter SpaceFilter(tileBounds)
+    //     val rdd1 = catalog.reader[SpaceTimeKey].read(LayerId("ones", zoom), filters)
+    //     val rdd2 = catalog.reader[SpaceTimeKey].read(LayerId("ones", 10), filters)
+
+    //     val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
+    //       require(tms1.id == tms2.id)
+    //       val res = tms1.tile.localAdd(tms2.tile)
+    //       (tms1.id, res)
+    //     }
+
+    //     val tile = out.first.tile
+    //     tile.get(497,511) should be (2)
+    //   }
     }
   }
 }

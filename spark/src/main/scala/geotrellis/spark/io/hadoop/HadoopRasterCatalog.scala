@@ -16,7 +16,7 @@ import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 import scala.reflect._
 
-case class RasterCatalogConfig(
+case class HadoopRasterCatalogConfig(
   /** Compression factor for determining how many tiles can fit into
     * one block on a Hadoop-readable file system. */
   compressionFactor: Double,
@@ -36,9 +36,9 @@ case class RasterCatalogConfig(
   final val SEQFILE_GLOB = "/*[0-9]*/data"
 }
 
-object RasterCatalogConfig {
+object HadoopRasterCatalogConfig {
   val DEFAULT =
-    RasterCatalogConfig(
+    HadoopRasterCatalogConfig(
       compressionFactor = 1.3, // Assume tiles can be compressed 30% (so, compressionFactor - 1)
       splitsFile = "splits",
       metaDataFileName = "metadata.json",
@@ -47,31 +47,34 @@ object RasterCatalogConfig {
 }
 
 
-object RasterCatalog {
+object HadoopRasterCatalog {
   def apply(rootPath: Path,
             paramsConfig: DefaultParams[String] = BaseParams,
-            catalogConfig: RasterCatalogConfig = RasterCatalogConfig.DEFAULT)(implicit sc: SparkContext): RasterCatalog = {
+            catalogConfig: HadoopRasterCatalogConfig = HadoopRasterCatalogConfig.DEFAULT)(implicit sc: SparkContext): HadoopRasterCatalog = {
     HdfsUtils.ensurePathExists(rootPath, sc.hadoopConfiguration)
     val metaDataCatalog = new HadoopLayerMetaDataCatalog(sc.hadoopConfiguration, rootPath, catalogConfig.metaDataFileName)
-    new RasterCatalog(metaDataCatalog, rootPath, paramsConfig, catalogConfig)
+    new HadoopRasterCatalog(metaDataCatalog, rootPath, paramsConfig, catalogConfig)
   }
 
   lazy val BaseParams = new DefaultParams[String](Map.empty.withDefaultValue(""), Map.empty)
 }
 
-class RasterCatalog(
+class HadoopRasterCatalog(
     val metaDataCatalog: Store[LayerId, HadoopLayerMetaData],
     rootPath: Path,
     paramsConfig: DefaultParams[String],
-    catalogConfig: RasterCatalogConfig)(implicit sc: SparkContext) {
-  def defaultPath[K: ClassTag](id: LayerId) = {
-    val subDir = paramsConfig.paramsFor[K](id).getOrElse("")
-    if (subDir == "")
-      new Path(rootPath, catalogConfig.layerDataDir(id))
+    catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext) {
+
+  def defaultPath[K: ClassTag](layerId: LayerId): Path = {
+    val subDir = paramsConfig.paramsFor[K](layerId).getOrElse("")
+    if(subDir != "")
+      defaultPath(layerId, new Path(subDir))
     else
-      new Path(new Path(rootPath, subDir), catalogConfig.layerDataDir(id))
+      new Path(rootPath, catalogConfig.layerDataDir(layerId))
   }
 
+  def defaultPath[K: ClassTag](layerId: LayerId, subDir: Path): Path =
+    new Path(new Path(rootPath, subDir), catalogConfig.layerDataDir(layerId))
 
   def reader[K: RasterRDDReaderProvider](): RasterRDDReader[K] = 
     new RasterRDDReader[K] {
@@ -80,7 +83,7 @@ class RasterCatalog(
         implicitly[RasterRDDReaderProvider[K]].reader(catalogConfig, metaData).read(layerId)
       }
     }
-  
+
   def writer[K: RasterRDDWriterProvider: ClassTag](): Writer[LayerId, RasterRDD[K]] =
     writer[K](clobber = true)
 
@@ -98,20 +101,20 @@ class RasterCatalog(
       }
     }
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](layerPath: String): Writer[LayerId, RasterRDD[K]] =
-    writer[K](layerPath, clobber = true)
+  def writer[K: RasterRDDWriterProvider: ClassTag](subDir: String): Writer[LayerId, RasterRDD[K]] =
+    writer[K](subDir, clobber = true)
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](layerPath: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    writer[K](new Path(layerPath), clobber)
+  def writer[K: RasterRDDWriterProvider: ClassTag](subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+    writer[K](new Path(subDir), clobber)
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](layerPath: Path): Writer[LayerId, RasterRDD[K]] =
-    writer[K](layerPath, clobber = true)
+  def writer[K: RasterRDDWriterProvider: ClassTag](subDir: Path): Writer[LayerId, RasterRDD[K]] =
+    writer[K](subDir, clobber = true)
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](layerPath: Path, clobber: Boolean): Writer[LayerId, RasterRDD[K]] = {
-    val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(catalogConfig, layerPath, clobber)
-
+  def writer[K: RasterRDDWriterProvider: ClassTag](subDir: Path, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
+        val layerPath = defaultPath[K](layerId, subDir)
+        val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(catalogConfig, layerPath, clobber)
         val md = HadoopLayerMetaData(layerId, rdd.metaData, layerPath)
 
         rddWriter.write(layerId, rdd)
@@ -120,7 +123,6 @@ class RasterCatalog(
         metaDataCatalog.write(layerId, md)
       }
     }
-  }
 
   def tileReader[K: TileReaderProvider](layerId: LayerId): Reader[K, Tile] = {
     val layerMetaData = metaDataCatalog.read(layerId)

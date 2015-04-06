@@ -31,11 +31,12 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val conf = sparkContext.hadoopConfiguration
     conf.set("io.map.index.interval", "1")
 
-    val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+    implicit val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
     val layoutScheme = ZoomedLayoutScheme(256)
 
-    val writer = accumulo.rasterCatalog.writer[SpatialKey](args.table)
+    val writer = AccumuloRasterCatalog().writer[SpatialKey](args.table)
 
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
       writer.write(LayerId(args.layerName, level.zoom), rdd)

@@ -41,6 +41,13 @@ class AddSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(ones, twos)
       }
 
+      it("should add a constant to a spacetime raster") {
+        val twos = AllOnesSpaceTime + 1
+
+        rasterShouldBe(AllTwosSpaceTime, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(AllOnesSpaceTime, twos)
+      }
+
       it("should add a raster to a constant") {
         val twos = 1 +: ones
 

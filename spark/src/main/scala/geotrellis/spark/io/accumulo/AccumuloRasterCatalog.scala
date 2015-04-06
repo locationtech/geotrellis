@@ -7,14 +7,25 @@ import geotrellis.raster._
 
 import org.apache.spark.SparkContext
 
+import com.typesafe.config.{ConfigFactory,Config}
+
 import scala.reflect._
 
-object RasterCatalog {
-  def apply(instance: AccumuloInstance, metaDataTable: String)(implicit sc: SparkContext): RasterCatalog =
-    new RasterCatalog(instance, new AccumuloLayerMetaDataCatalog(instance.connector, metaDataTable))
+object AccumuloRasterCatalog {
+  def apply()(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog = {
+    /** The value is specified in reference.conf, applications can overwrite it in their application.conf */
+    val metaDataTable = ConfigFactory.load().getString("geotrellis.accumulo.catalog")
+    apply(metaDataTable)
+  }
+
+  def apply(metaDataTable: String)(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog =
+    apply(new AccumuloLayerMetaDataCatalog(instance.connector, metaDataTable))
+
+  def apply(metaDataCatalog: Store[LayerId, AccumuloLayerMetaData])(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog =
+    new AccumuloRasterCatalog(instance, metaDataCatalog)
 }
 
-class RasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, AccumuloLayerMetaData])(implicit sc: SparkContext) {
+class AccumuloRasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, AccumuloLayerMetaData])(implicit sc: SparkContext) {
   def reader[K: RasterRDDReaderProvider](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
@@ -25,8 +36,6 @@ class RasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, 
   
 
   def writer[K: RasterRDDWriterProvider: ClassTag](tileTable: String): Writer[LayerId, RasterRDD[K]] = {
-    val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(instance, tileTable)
-
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
@@ -41,7 +50,7 @@ class RasterCatalog(instance: AccumuloInstance, metaDataCatalog: Store[LayerId, 
           )
 
         metaDataCatalog.write(layerId, md)
-        rddWriter.write(layerId, rdd)
+        implicitly[RasterRDDWriterProvider[K]].writer(instance, md).write(layerId, rdd)
         rdd.unpersist(blocking = false)
       }
     }
