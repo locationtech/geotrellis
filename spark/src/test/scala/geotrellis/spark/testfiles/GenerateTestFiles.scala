@@ -28,11 +28,9 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 
-import com.github.nscala_time.time.Imports._
-
 /** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
 object GenerateTestFiles {
-  def generate(catalog: HadoopRasterCatalog, sc: SparkContext): Unit = {
+  def generate(catalog: HadoopCatalog, sc: SparkContext) {
     val cellType = TypeFloat
     val layoutLevel = ZoomedLayoutScheme(3).levelFor(TestFiles.ZOOM_LEVEL)
     val tileLayout = layoutLevel.tileLayout
@@ -60,21 +58,19 @@ object GenerateTestFiles {
 
     val (tileCols, tileRows) =  (rasterExtent.cols, rasterExtent.rows)
 
-    // Generate Spatial Layers
-
-    val spatialTestFiles = List(
-      new ConstantSpatialTestFileValues(1) -> "all-ones",
-      new ConstantSpatialTestFileValues(2) -> "all-twos",
-      new ConstantSpatialTestFileValues(100) -> "all-hundreds",
-      new IncreasingSpatialTestFileValues(tileCols, tileRows) -> "increasing",
-      new DecreasingSpatialTestFileValues(tileCols, tileRows) -> "decreasing",
+    val testFiles = List(
+      new ConstantTestFileValues(1) -> "all-ones",
+      new ConstantTestFileValues(2) -> "all-twos",
+      new ConstantTestFileValues(100) -> "all-hundreds",
+      new IncreasingTestFileValues(tileCols, tileRows) -> "increasing",
+      new DecreasingTestFileValues(tileCols, tileRows) -> "decreasing",
       new EveryOtherUndefined(tileCols) -> "every-other-undefined",
       new EveryOther0Point99Else1Point01(tileCols) -> "every-other-0.99-else-1.01",
       new EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1",
       new Mod(tileCols, tileRows, 10000) -> "mod-10000"
     )
 
-    for((tfv, name) <- spatialTestFiles) {
+    for((tfv, name) <- testFiles) {
       val cols = rasterExtent.cols
       val rows = rasterExtent.rows
       val tile = ArrayTile(tfv(cols, rows), cols, rows)
@@ -97,51 +93,7 @@ object GenerateTestFiles {
           sc.parallelize(tmsTiles)
         }
 
-      catalog.writer[SpatialKey](clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
-    }
-
-    // Generate SpaceTime layers
-
-    // Yearly from 2010 - 2014
-    val times = 
-      (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
-
-    val spaceTimeTestFiles = List(
-      new ConstantSpaceTimeTestFileValues(1) -> "spacetime-all-ones",
-      new ConstantSpaceTimeTestFileValues(2) -> "spacetime-all-twos",
-      new ConstantSpaceTimeTestFileValues(100) -> "spacetime-all-hundreds",
-      new CoordinateSpaceTimeTestFileValues -> "spacetime-coordinates"
-    )
-
-    println(tileBounds)
-
-    for((tfv, name) <- spaceTimeTestFiles) {
-      val cols = rasterExtent.cols
-      val rows = rasterExtent.rows
-
-      val tmsTiles =
-        times.zipWithIndex.flatMap { case (time, i) =>
-          val tile = ArrayTile(tfv(cols, rows, i), cols, rows)
-
-          tileBounds.coords.map { case (col, row) =>
-            val targetRasterExtent =
-              RasterExtent(
-                extent = re.extentFor(GridBounds(col, row, col, row)),
-                cols = tileLayout.tileCols,
-                rows = tileLayout.tileRows
-              )
-
-            val subTile: Tile = tile.resample(rasterExtent.extent, targetRasterExtent)
-            (SpaceTimeKey(col, row, time), subTile)
-          }
-        }
-
-      val rdd =
-        asRasterRDD(RasterMetaData(cellType, rasterExtent.extent, LatLng, tileLayout)) {
-          sc.parallelize(tmsTiles)
-        }
-
-      catalog.writer[SpaceTimeKey](clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.save(LayerId(name, TestFiles.ZOOM_LEVEL), rdd, clobber = true)
     }
 
   }
@@ -149,7 +101,7 @@ object GenerateTestFiles {
   def main(args: Array[String]): Unit = {
     val sc = new SparkContext("local", "create-test-files")
     val catalog = TestFiles.catalog(sc)
-
+    // creation of catalog will trigger generation if files aren't there
     generate(catalog, sc)
   }
 }

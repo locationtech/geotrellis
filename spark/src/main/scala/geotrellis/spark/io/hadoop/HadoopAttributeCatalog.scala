@@ -8,7 +8,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import java.io.PrintWriter
 
-class HadoopAttributeStore(sc: SparkContext, catalogRoot: Path, layerDataDir: LayerId => String, metaDataFileName: String) extends AttributeStore {
+class HadoopAttributeCatalog(sc: SparkContext, catalogRoot: Path, layerDataDir: LayerId => String, metaDataFileName: String) extends AttributeCatalog {
   type ReadableWritable[T] = RootJsonFormat[T]
 
   val fs = catalogRoot.getFileSystem(sc.hadoopConfiguration)
@@ -16,7 +16,7 @@ class HadoopAttributeStore(sc: SparkContext, catalogRoot: Path, layerDataDir: La
   def attributePath(layerId: LayerId, attributeName: String): Path = 
     new Path(new Path(catalogRoot, layerDataDir(layerId)), s"${attributeName}.json")
 
-  def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
+  def load[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
     val path = attributePath(layerId, attributeName)
 
     val txt = HdfsUtils.getLineScanner(path, sc.hadoopConfiguration) match {
@@ -35,7 +35,7 @@ class HadoopAttributeStore(sc: SparkContext, catalogRoot: Path, layerDataDir: La
 
   }
 
-  def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {

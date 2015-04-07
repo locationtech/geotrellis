@@ -7,7 +7,6 @@ import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import geotrellis.raster.histogram.Histogram
-import com.github.nscala_time.time.Imports._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -64,15 +63,32 @@ package object json {
       }
   }
 
-  implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
-    def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
+  implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
+    def write(obj: LayerMetaData): JsObject =
+      JsObject(
+        "keyClass" -> JsString(obj.keyClass),
+        "rasterMetaData" -> obj.rasterMetaData.toJson,
+        "histogram" -> obj.histogram.toJson
+      )
 
-    def read(value: JsValue) =
-      value match {
-        case JsString(dateStr) =>
-          DateTime.parse(dateStr)
+    def read(json: JsValue): LayerMetaData =
+      json.asJsObject.getFields("keyClass", "rasterMetaData", "histogram") match {
+        case Seq(JsString(keyClass), md: JsObject, hist: JsArray) =>
+          LayerMetaData(
+            keyClass = keyClass,
+            rasterMetaData = md.convertTo[RasterMetaData],
+            histogram = Some(hist.convertTo[Histogram])
+          )
+
+        case Seq(JsString(keyClass), md: JsObject) =>
+          LayerMetaData(
+            keyClass = keyClass,
+            rasterMetaData = md.convertTo[RasterMetaData],
+            histogram = None
+          )
+
         case _ =>
-          throw new DeserializationException("DateTime expected")
+          throw new DeserializationException(s"LayerMetaData expected")
       }
   }
 }

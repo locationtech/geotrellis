@@ -22,19 +22,16 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
 
     implicit val sparkContext = SparkUtils.createSparkContext("Ingest")
 
-    implicit val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val catalog = AccumuloRasterCatalog()
+    val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+    val catalog = accumulo.catalog
 
-    val reader = catalog.reader[SpatialKey]
-    val writer = catalog.writer[SpatialKey](args.table)
-
-    val rdd = reader.read(LayerId(args.layerName, args.startLevel))
+    val rdd = catalog.load[SpatialKey](LayerId(args.layerName, args.startLevel))
 
     val layoutScheme = ZoomedLayoutScheme(256)
     val level = layoutScheme.levelFor(args.startLevel)
 
     val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
-      writer.write(LayerId(args.layerName, level.zoom), rdd)
+      accumulo.catalog.save(LayerId(args.layerName, level.zoom), args.table, rdd, true)
     }
   }
 }

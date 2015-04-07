@@ -37,7 +37,7 @@ object FilterSet {
   implicit def filtersToFilterSet[K](filters: Seq[KeyFilter[K]]): FilterSet[K] =
     apply(filters)
 
-  def empty[K] = new FilterSet[K]
+  def EMPTY[K] = new FilterSet[K]
 
   def apply[K](): FilterSet[K] = new FilterSet[K]
 

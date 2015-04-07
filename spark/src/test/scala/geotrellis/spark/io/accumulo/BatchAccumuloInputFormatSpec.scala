@@ -58,14 +58,17 @@ class BatchAccumuloInputFormatSpec extends FunSpec
   describe("BatchAccumuloInputFormat") {
     ifCanRunSpark {
       val table = "data"
-      implicit val accumulo = MockAccumuloInstance()
-
+      val accumulo = new AccumuloInstance(
+        instanceName = "fake",
+        zookeeper = "localhost",
+        user = "root",
+        token = new PasswordToken("")
+      )
       val job = sc.newJob
       val jconf = job.getConfiguration
       CB.setMockInstance(classOf[AccumuloInputFormat], jconf, "fake")
       CB.setConnectorInfo(classOf[AccumuloInputFormat], jconf, "root", new PasswordToken(""))
       InputFormatBase.setInputTableName(job, table)
-
       accumulo.connector.tableOperations().create(table)
       val writer = accumulo.connector.createBatchWriter(table, new BatchWriterConfig())
       data map { _.mutation } foreach { writer.addMutation }

@@ -13,12 +13,7 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
 
-object AccumuloAttributeStore { 
-  def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =
-    new AccumuloAttributeStore(connector, attributeTable)
-}
-
-class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore with Logging {
+class AccumuloAttributeCatalog(connector: Connector, val attributeTable: String) extends AttributeCatalog with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
 
   //create the attribute table if it does not exist
@@ -35,7 +30,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     scanner.iterator.toList.map(_.getValue)
   }
 
-  def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
+  def load[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
     val values = fetch(layerId, attributeName)
 
     if(values.size == 0) {
@@ -47,7 +42,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     }
   }
 
-  def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def save[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation(layerId.toString)
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),

@@ -357,7 +357,7 @@ object GeotrellisBuild extends Build {
   lazy val spark: Project =
     Project("spark", file("spark"))
       .settings(sparkSettings: _*)
-      .dependsOn(raster, gdal, index)
+      .dependsOn(raster, gdal)
 
   lazy val sparkSettings =
     Seq(
