@@ -76,7 +76,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
           layerPath.toUri.toString,
             classOf[SpaceTimeKeyWritable],
             classOf[TileWritable],
-            classOf[MapFileOutputFormat],
+            classOf[SplitsMapFileOutputFormat[SpaceTimeKeyWritable]],
             job.getConfiguration
         )
 

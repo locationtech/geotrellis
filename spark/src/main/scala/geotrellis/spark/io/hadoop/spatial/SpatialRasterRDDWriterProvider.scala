@@ -76,7 +76,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
           layerPath.toUri.toString,
             classOf[SpatialKeyWritable],
             classOf[TileWritable],
-            classOf[MapFileOutputFormat],
+            classOf[SplitsMapFileOutputFormat[SpatialKeyWritable]],
             job.getConfiguration
         )
 

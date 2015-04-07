@@ -26,9 +26,9 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
         val writableRdd: RDD[(SpaceTimeKeyWritable, TileWritable)] =
 // TODO: Do we support filtering in HDFS?
 //          if(filters.isEmpty) {
-            sc.newAPIHadoopRDD[SpaceTimeKeyWritable, TileWritable, SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]](
+            sc.newAPIHadoopRDD(
               inputConf,
-              classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]],
+              classOf[SplitsSequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]],
               classOf[SpaceTimeKeyWritable],
               classOf[TileWritable]
             )
