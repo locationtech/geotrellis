@@ -17,31 +17,31 @@ import org.joda.time.DateTime
 import org.scalatest._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
-class AccumuloAttributeCatalogSpec extends FunSpec
+class AccumuloAttributeStoreSpec extends FunSpec
   with Matchers
   with TestFiles
   with TestEnvironment
   with OnlyIfCanRunSpark {
 
-  describe("Accumulo Attribute Catalog") {
+  describe("Accumulo Attribute Store") {
     ifCanRunSpark {
 
-      val accumulo = new AccumuloInstance(
+      val accumulo = AccumuloInstance(
         instanceName = "fake",
         zookeeper = "localhost",
         user = "root",
         token = new PasswordToken("")
       )
 
-      val attribCatalog = new AccumuloAttributeCatalog(accumulo.connector, "attributes")
+      val attribStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
       val layerId = LayerId("test", 3)
 
       it("should save and pull out a histogram") {
         val histo = DecreasingTestFile.histogram
 
-        attribCatalog.save(layerId, "histogram", histo)
+        attribStore.write(layerId, "histogram", histo)
 
-        val loaded = attribCatalog.load[Histogram](layerId, "histogram")
+        val loaded = attribStore.read[Histogram](layerId, "histogram")
         loaded.getMean should be (histo.getMean)
       }
 
@@ -66,8 +66,8 @@ class AccumuloAttributeCatalogSpec extends FunSpec
 
         val foo = Foo(1, "thing")
 
-        attribCatalog.save(layerId, "foo", foo)
-        attribCatalog.load[Foo](layerId, "foo") should be (foo)
+        attribStore.write(layerId, "foo", foo)
+        attribStore.read[Foo](layerId, "foo") should be (foo)
       }
     }
   }

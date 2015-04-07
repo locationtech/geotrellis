@@ -14,65 +14,68 @@ import geotrellis.proj4.LatLng
 import org.scalatest._
 import org.apache.hadoop.fs.Path
 
-class HadoopCatalogSpec extends FunSpec
-with Matchers
-with RasterRDDMatchers
-with TestEnvironment
-with OnlyIfCanRunSpark
+class HadoopRasterCatalogSpec extends FunSpec
+    with Matchers
+    with RasterRDDMatchers
+    with TestEnvironment
+    with OnlyIfCanRunSpark
 {
 
-  describe("Hadoop Catalog") {
+  describe("HadoopRasterCatalog with SpatialKey Rasters") {
     ifCanRunSpark {
       val catalogPath = new Path(inputHome, ("catalog-spec"))
       val fs = catalogPath.getFileSystem(sc.hadoopConfiguration)
       HdfsUtils.deletePath(catalogPath, sc.hadoopConfiguration)
-      val catalog: HadoopCatalog = HadoopCatalog(sc, catalogPath)
+      val catalog = HadoopRasterCatalog(catalogPath)
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val layoutScheme = ZoomedLayoutScheme(512)
 
+      var ran = false 
+
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) => 
+        ran = true
 
         it("should succeed saving with default Props"){
-          catalog.save(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey].write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "ones")))
         }
 
         it("should succeed saving with single path Props"){
-          catalog.save(LayerId("ones", level.zoom), "sub1", onesRdd)
+          catalog.writer[SpatialKey]("sub1").write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/ones")))
         }
 
         it("should succeed saving with double path Props"){
-          catalog.save(LayerId("ones", level.zoom), "sub1/sub2", onesRdd)
+          catalog.writer[SpatialKey]("sub1/sub2").write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
         }
 
         it("should load out saved tiles"){
-          catalog.load[SpatialKey](LayerId("ones", 10)).count should be > 0l
+          catalog.reader[SpatialKey].read(LayerId("ones", 10)).count should be > 0l
         }
 
         it("should succeed loading with single path Props"){
-          catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1").count should be > 0l
+          catalog.reader[SpatialKey].read(LayerId("ones", level.zoom)).count should be > 0l
         }
 
         it("should succeed loading with double path Props"){
-          catalog.load[SpatialKey](LayerId("ones", level.zoom), "sub1/sub2").count should be > 0l
+          catalog.reader[SpatialKey].read(LayerId("ones", level.zoom)).count should be > 0l
         }
-
 
         it("should load out saved tiles, but only for the right zoom"){
           intercept[LayerNotFoundError] {
-            catalog.load[SpatialKey](LayerId("ones", 9)).count()
+            catalog.reader[SpatialKey].read(LayerId("ones", 9)).count()
           }
         }
 
+        /* TODO: Support filters in Hadoop? 
         it("fetch a TileExtent from catalog"){
           val tileBounds = GridBounds(915,611,917,616)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-          val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-          val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+          val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+          val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
           val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
             require(tms1.id == tms2.id)
             val res = tms1.tile.localAdd(tms2.tile)
@@ -86,9 +89,9 @@ with OnlyIfCanRunSpark
         it("should be able to combine pairs via Traversable"){
           val tileBounds = GridBounds(915,611,917,616)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-          val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-          val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
-          val rdd3 = catalog.load[SpatialKey](LayerId("ones", 10), filters)
+          val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+          val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+          val rdd3 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
 
           val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
             pairs.toSeq.reverse.head
@@ -100,22 +103,23 @@ with OnlyIfCanRunSpark
 
           rastersEqual(expected, actual)
         }
+         */
 
         it("should find default params based on key") {
-          val defaultParams = HadoopCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
-          val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
-          cat.save(LayerId("spatial-ones", level.zoom), onesRdd)
+          val defaultParams = HadoopRasterCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
+          val cat = HadoopRasterCatalog(catalogPath, defaultParams)
+          cat.writer[SpatialKey].write(LayerId("spatial-ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
         }
 
         it("should find default params based on LayerId") {
-          val defaultParams = HadoopCatalog.BaseParams
+          val defaultParams = HadoopRasterCatalog.BaseParams
             .withKeyParams[SpatialKey]("spatial-layers")
             .withLayerParams[SpatialKey]{ case LayerId(name, zoom) if name.startsWith("ones") =>  "special" }
 
           //LayerParams should take priority
-          val cat: HadoopCatalog = HadoopCatalog(sc, catalogPath, defaultParams)
-          cat.save(LayerId("onesSpecial", level.zoom), onesRdd)
+          val cat = HadoopRasterCatalog(catalogPath, defaultParams)
+          cat.writer[SpatialKey].write(LayerId("onesSpecial", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
         }
 
@@ -134,6 +138,10 @@ with OnlyIfCanRunSpark
           // Raises exception if the ".tiff" extension override isn't provided
           Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (rdd, level) => {} }
         }
+      }
+
+      it("should have ran") {
+        ran should be (true)
       }
     }
   }

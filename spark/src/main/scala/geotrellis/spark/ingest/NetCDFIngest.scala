@@ -35,12 +35,15 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
       Tiler(getExtent, createKey)
     }
 
-    val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+    implicit val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+
     val source = sparkContext.netCdfRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
+
+    val writer = AccumuloRasterCatalog().writer[SpaceTimeKey](args.table)
         
     Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme, args.pyramid) { (rdd, level) =>  
-      accumulo.catalog.save(LayerId(args.layerName, level.zoom), args.table, rdd, args.clobber)
+      writer.write(LayerId(args.layerName, level.zoom), rdd)
     }
   }
 }

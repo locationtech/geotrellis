@@ -71,7 +71,9 @@ object Ingest {
         var (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)   
         // we must do it now so we can unerspist the source before recurse        
         sinkLevels(nextRdd, nextLevel){ rdd.unpersist(blocking = false) }
-      }     
+      } else {
+        sink(rdd, level)
+      }
     }
 
     val reprojectedTiles = sourceTiles.reproject(destCRS).cache()
@@ -80,7 +82,7 @@ object Ingest {
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme, isUniform) { key: T =>
         key.projectedExtent.extent
       }
-    
+
     val rasterRdd = tiler(reprojectedTiles, rasterMetaData).cache()        
     sinkLevels(rasterRdd, layoutLevel){ reprojectedTiles.unpersist(blocking = false) }      
   }
