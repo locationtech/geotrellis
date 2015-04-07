@@ -44,12 +44,8 @@ package object reproject {
       )
     }
 
-    def apply(extent: Extent, src: CRS, dest: CRS): Polygon = {
-      val f = Transform(src, dest)
-      val sw = f(extent.xmin, extent.ymin)
-      val ne = f(extent.xmax, extent.ymax)
-      Extent(sw._1,sw._2,ne._1,ne._2).toPolygon
-    }
+    def apply(extent: Extent, src: CRS, dest: CRS): Polygon =
+      apply(extent.toPolygon, src, dest)
 
     def apply[D](pf: PolygonFeature[D], src: CRS, dest: CRS): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, src, dest), pf.data)
