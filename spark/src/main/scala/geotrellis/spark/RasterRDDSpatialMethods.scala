@@ -2,7 +2,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 
-trait SpatialRasterRDDMethods {
+trait RasterRDDSpatialMethods {
   val rdd: RasterRDD[SpatialKey]
 
   /**

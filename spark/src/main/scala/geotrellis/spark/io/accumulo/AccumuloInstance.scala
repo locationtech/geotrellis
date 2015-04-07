@@ -15,29 +15,28 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import com.typesafe.config.{ConfigFactory,Config}
 
-trait AccumuloInstance {
-  def connector: Connector
-  def instanceName: String
-
-  def setAccumuloConfig(job: Job): Unit = setAccumuloConfig(job.getConfiguration)
-  def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
-  def setAccumuloConfig(conf: Configuration): Unit
-}
-
-object AccumuloInstance {
-  def apply(instanceName: String, zookeeper: String, user: String, token: AuthenticationToken): AccumuloInstance =
-    BaseAccumuloInstance(instanceName, zookeeper, user, token)
-}
-
-case class BaseAccumuloInstance(
+case class AccumuloInstance(
   instanceName: String, zookeeper: String,
-  user: String, token: AuthenticationToken) extends AccumuloInstance
+  user: String, token: AuthenticationToken)
 {
   val instance: Instance = instanceName match {
     case "fake" => new MockInstance("fake") //in-memory only
     case _      => new ZooKeeperInstance(instanceName, zookeeper)
   }
-  val connector: Connector = instance.getConnector(user, token)
+  val connector = instance.getConnector(user, token)
+
+  /** The value is specified in reference.conf, applications can overwrite it in their application.conf */
+  val catalogTable: String = {
+    ConfigFactory.load().getString("geotrellis.accumulo.catalog")
+  }
+
+  val metaDataCatalog = new AccumuloMetaDataCatalog(connector, catalogTable)
+
+  def catalog(config: DefaultParams[String])(implicit sc: SparkContext) =
+    AccumuloCatalog(sc, this, metaDataCatalog, config)
+
+  def catalog(implicit sc: SparkContext) =
+    AccumuloCatalog(sc, this, metaDataCatalog, AccumuloCatalog.BaseParamsConfig)
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {
@@ -52,4 +51,8 @@ case class BaseAccumuloInstance(
     CB.setConnectorInfo(classOf[AccumuloInputFormat], conf, user, token)
     CB.setConnectorInfo(classOf[AccumuloOutputFormat], conf, user, token)
   }
+
+  def setAccumuloConfig(job: Job): Unit = setAccumuloConfig(job.getConfiguration)
+
+  def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
 }

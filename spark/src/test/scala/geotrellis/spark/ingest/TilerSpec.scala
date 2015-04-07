@@ -54,7 +54,7 @@ class TilerSpec extends FunSpec
           Array( 
             1, 1, 2, 2,
             1, 1, 2, 2,
-            1, 1, 2, 2,
+            n, n, 2, 2,
             n, n, 2, 2,
             n, n, 2, 2)
         )
