@@ -42,7 +42,11 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
                                                   with ZeroDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): MultiPoint = { jtsGeom.normalize ; MultiPoint(jtsGeom) }
+  def normalized(): MultiPoint = { 
+    val geom = jtsGeom.clone.asInstanceOf[jts.MultiPoint]
+    geom.normalize
+    MultiPoint(geom)
+  }
 
   /** Returns the Points contained in MultiPoint. */
   lazy val points: Array[Point] = vertices

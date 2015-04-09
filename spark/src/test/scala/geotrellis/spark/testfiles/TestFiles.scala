@@ -10,13 +10,19 @@ import geotrellis.spark.io.hadoop._
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
 
-  def catalog(implicit sc: SparkContext): HadoopCatalog = {
+  def catalog(implicit sc: SparkContext): HadoopRasterCatalog = {
 
     val conf = sc.hadoopConfiguration
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
     val needGenerate = !localFS.exists(catalogPath)
-    val catalog = HadoopCatalog(sc, catalogPath)
+
+    val defaultParams = 
+      HadoopRasterCatalog.BaseParams
+        .withKeyParams[SpaceTimeKey]("spacetime")
+        .withKeyParams[SpatialKey]("spatial")
+
+    val catalog = HadoopRasterCatalog(catalogPath, defaultParams)
 
     if (needGenerate) {
       logInfo(s"test-catalog empty, generating at $catalogPath")
@@ -28,36 +34,57 @@ object TestFiles extends Logging {
 }
 
 trait TestFiles { self: OnlyIfCanRunSpark =>
-  lazy val testCatalog = TestFiles.catalog
+  lazy val spatialReader = TestFiles.catalog.reader[SpatialKey]
+  lazy val spaceTimeReader = TestFiles.catalog.reader[SpaceTimeKey]
 
-  def testFile(layerName: String): RasterRDD[SpatialKey] = {
-    testCatalog.load[SpatialKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
+  def spatialTestFile(layerName: String): RasterRDD[SpatialKey] = {
+    spatialReader.read(LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
+  }
+
+  def spaceTimeTestFile(layerName: String): RasterRDD[SpaceTimeKey] = {
+    spaceTimeReader.read(LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
   }
 
   def AllOnesTestFile =
-    testFile("all-ones")
+    spatialTestFile("all-ones")
 
   def AllTwosTestFile =
-    testFile("all-twos")
+    spatialTestFile("all-twos")
 
   def AllHundredsTestFile =
-    testFile("all-hundreds")
+    spatialTestFile("all-hundreds")
 
   def IncreasingTestFile =
-    testFile("increasing")
+    spatialTestFile("increasing")
 
   def DecreasingTestFile =
-    testFile("decreasing")
+    spatialTestFile("decreasing")
 
   def EveryOtherUndefinedTestFile =
-    testFile("every-other-undefined")
+    spatialTestFile("every-other-undefined")
 
   def EveryOther0Point99Else1Point01TestFile =
-    testFile("every-other-0.99-else-1.01")
+    spatialTestFile("every-other-0.99-else-1.01")
 
   def EveryOther1ElseMinus1TestFile =
-    testFile("every-other-1-else-1")
+    spatialTestFile("every-other-1-else-1")
 
   def Mod10000TestFile =
-    testFile("mod-10000")
+    spatialTestFile("mod-10000")
+
+  def AllOnesSpaceTime =
+    spaceTimeTestFile("spacetime-all-ones")
+
+  def AllTwosSpaceTime =
+    spaceTimeTestFile("spacetime-all-twos")
+
+  def AllHundredsSpaceTime =
+    spaceTimeTestFile("spacetime-all-hundreds")
+
+  /** This test raster id's each tile value as COL ROW TIME, by the
+    * equation COL * 100 + ROW * 10 + TIME * 1. So col 3, row 5, time 2 would
+    * be value 352
+    */
+  def CoordinateSpaceTime =
+    spaceTimeTestFile("spacetime-coordinates")
 }

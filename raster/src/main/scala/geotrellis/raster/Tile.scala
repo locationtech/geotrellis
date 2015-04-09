@@ -64,6 +64,9 @@ trait Tile {
   lazy val dimensions: (Int, Int) = (cols, rows)
   lazy val size = cols * rows
 
+  /** Create a mutable copy of this tile */
+  def mutable: MutableArrayTile 
+
   val cellType: CellType
 
   def convert(cellType: CellType): Tile =

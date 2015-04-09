@@ -3,7 +3,6 @@ package geotrellis.spark.ingest
 import geotrellis.spark._
 import geotrellis.spark.ingest.NetCDFIngestCommand._
 import geotrellis.spark.tiling._
-import geotrellis.spark.io.accumulo._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats.NetCdfBand
@@ -31,19 +30,14 @@ object NetCDFIngestHDFSCommand extends ArgMain[HadoopIngestArgs] with Logging {
       Tiler(getExtent, createKey)
     }
 
-    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, args.catalogPath)
+    val catalog = HadoopRasterCatalog(args.catalogPath)
     val source = sparkContext.netCdfRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
-    val (level, rdd) =  Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme, true)
 
-    val save = { (rdd: RasterRDD[SpaceTimeKey], level: LayoutLevel) =>
-      catalog.save(LayerId(args.layerName, level.zoom), rdd, true)
-    }
-
-    if (args.pyramid) {
-      Pyramid.saveLevels(rdd, level, layoutScheme)(save)
-    } else{
-      save(rdd, level)
+    Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme, args.pyramid, true) { (rdd, level) => 
+      catalog
+        .writer[SpaceTimeKey](args.clobber)
+        .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }
 }
