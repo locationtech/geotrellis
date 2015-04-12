@@ -19,7 +19,14 @@ import org.apache.spark.Logging
 
 import DefaultJsonProtocol._
 
-class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
+case class CassandraLayerMetaData(
+  rasterMetaData: RasterMetaData,
+  histogram: Option[Histogram],
+  keyClass: String,
+  tileTable: String
+)
+
+class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val catalogTable: String) extends Store[LayerId, CassandraLayerMetaData] with Logging {
 
   // Create the catalog table if it doesn't exist
   {
@@ -33,7 +40,7 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
     session.execute(schema)
   }
 
-  var catalog: Map[(LayerId, TableName), LayerMetaData] = fetchAll
+  var catalog: Map[(LayerId, TableName), CassandraLayerMetaData] = fetchAll
 
   def zoomLevelsFor(layerName: String): Seq[Int] = {
     catalog.keys.filter(_._1.name == layerName).map(_._1.zoom).toSeq
@@ -41,7 +48,7 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
 
   type TableName = String
 
-  def load(layerId: LayerId): (LayerMetaData, TableName) = {
+  def read(layerId: LayerId): CassandraLayerMetaData = {
     val candidates = catalog
       .filterKeys( key => key._1 == layerId)
 
@@ -50,13 +57,13 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
         throw new LayerNotFoundError(layerId)
       case 1 =>
         val (key, value) = candidates.toList.head
-        (value, key._2)
+        value
       case _ =>
         throw new MultipleMatchError(layerId)
     }
   }
 
-  def load(layerId: LayerId, table: TableName): LayerMetaData = {
+  def read(layerId: LayerId, table: TableName): CassandraLayerMetaData = {
     catalog.get(layerId -> table) match {
       case Some(md) => md
       case None =>
@@ -64,27 +71,22 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
     }
   }
 
-  def save(layerId: LayerId, table: TableName,  metaData: LayerMetaData, clobber: Boolean): Unit = {
-    if (catalog.contains(layerId -> table)) {
-      if (!clobber) {
-        throw new LayerExistsError(layerId)
-      }
-    }
-
-    catalog = catalog updated ((layerId -> table), metaData)
+  def write(layerId: LayerId, metaData: CassandraLayerMetaData): Unit = {
+    val tileTable = metaData.tileTable
+    catalog = catalog updated ((layerId -> tileTable), metaData)
 
     val update = QueryBuilder.update(keyspace, catalogTable)
       .`with`(set("metadata", metaData.rasterMetaData.toJson.compactPrint))
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
-      .where (eqs("id", s"${table.toString}__${layerId.name}"))
+      .where (eqs("id", s"${tileTable.toString}__${layerId.name}"))
       .and   (eqs("zoom", layerId.zoom))
 
     session.execute(update)
   }
 
-  def fetchAll: Map[(LayerId, TableName), LayerMetaData] = {
-    var data: Map[(LayerId, TableName), LayerMetaData] =
+  def fetchAll: Map[(LayerId, TableName), CassandraLayerMetaData] = {
+    var data: Map[(LayerId, TableName), CassandraLayerMetaData] =
       Map.empty
 
     val queryAll = QueryBuilder.select.all.from(keyspace, catalogTable)
@@ -93,7 +95,7 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
 
     while (iter.hasNext) {
       val row = iter.next
-      val Array(table, name) = row.getString("id").split("__")
+      val Array(tileTable, name) = row.getString("id").split("__")
       val zoom: Int  = row.getInt("zoom")
       val keyClass   = row.getString("keyClass")
       val rasterData = row.getString("metadata")
@@ -103,13 +105,14 @@ class CassandraMetaDataCatalog(session: Session, val keyspace: String, val catal
       }
 
       val layerId = LayerId(name, zoom)
-      val metaData = LayerMetaData(
+      val metaData = CassandraLayerMetaData(
         keyClass = keyClass,
         rasterMetaData = rasterData.parseJson.convertTo[RasterMetaData],
-        histogram = histogram.map(_.parseJson.convertTo[Histogram])
+        histogram = histogram.map(_.parseJson.convertTo[Histogram]),
+        tileTable = tileTable
       )
 
-      val key = layerId -> table
+      val key = layerId -> tileTable
       data = data updated (key, metaData)
     }
 
