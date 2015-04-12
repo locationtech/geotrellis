@@ -5,19 +5,32 @@ import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
-class SplitsSequenceFileInputFormat[K >: Null <: WritableComparable[K], V >: Null]() extends FileInputFormat[K, V] {
+object FilterMapFileInputFormat {
+  // Define some key names for Hadoop configuration
+  val SPLITS_FILE_PATH = "splits_file_path"
+}
+
+abstract class FilterMapFileInputFormat[K >: Null <: WritableComparable[K], V >: Null <: Writable]() extends FileInputFormat[K, V] {
+  def createKey(): K
+  def createValue(): V
 
   override 
   def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[K, V] = {
-    new SplitsSequenceFileRecordReader[K,V]()
+    new SplitsSequenceFileRecordReader()
   }
 
   override
   protected def getFormatMinSplitSize(): Long =
     return SequenceFile.SYNC_INTERVAL
 
-  class SplitsSequenceFileRecordReader[K >: Null <: WritableComparable[K], V >: Null]() extends RecordReader[K, V] {
-    private var in: SequenceFile.Reader = null
+  /** The map files are not meant to be split. Raster sequence files
+    * are written such that data files should only be one block large */
+  override
+  def isSplitable(context: JobContext, filename: Path): Boolean =
+    false
+
+  class SplitsSequenceFileRecordReader() extends RecordReader[K, V] {
+    private var mapFile: MapFile.Reader = null
     private var start: Long = 0L
     private var end: Long = 0L
     private var more: Boolean = true
@@ -33,34 +46,26 @@ class SplitsSequenceFileInputFormat[K >: Null <: WritableComparable[K], V >: Nul
 
       val fileSplit = split.asInstanceOf[FileSplit]
       val dataPath = fileSplit.getPath
-      val keyBoundsPath = new Path(dataPath.getParent, SplitsMapFileOutputFormat.SPLITS_FILE)
+      val mapFilePath = dataPath.getParent
 
       val fs = dataPath.getFileSystem(conf)
 
-      val sequenceFile = SequenceFile.Reader.file(dataPath.makeQualified(fs.getUri, fs.getWorkingDirectory))
-      this.in = new SequenceFile.Reader(conf, sequenceFile)
+      this.mapFile = new MapFile.Reader(mapFilePath, conf)
       this.end = fileSplit.getStart + fileSplit.getLength
-
-      if (fileSplit.getStart > in.getPosition) {
-        in.sync(fileSplit.getStart)                  // sync to start
-      }
-
-      this.start = in.getPosition
-      more = start < end
     }
 
     override
     def nextKeyValue(): Boolean = {
       if (more) {
-        val pos = in.getPosition
-        key = in.next(key.asInstanceOf[Object]).asInstanceOf[K]
-        
-        if (key == null || (pos >= end && in.syncSeen)) {
+        val nextKey = createKey()
+        val nextValue = createValue()
+        if(!mapFile.next(nextKey, nextValue)) {
           more = false
           key = null
           value = null
         } else {
-          value = in.getCurrentValue(value).asInstanceOf[V]
+          key = nextKey
+          value = nextValue
         }
       }
 
@@ -79,14 +84,15 @@ class SplitsSequenceFileInputFormat[K >: Null <: WritableComparable[K], V >: Nul
       */
     override
     def getProgress(): Float = {
-      if (end == start) {
-        return 0.0f
-      } else {
-        return math.min(1.0f, (in.getPosition() - start) / (end - start).toFloat)
-      }
+      // if (end == start) {
+      //   return 0.0f
+      // } else {
+//        return math.min(1.0f, (mapFile.getPosition() - start) / (end - start).toFloat)
+        0.0f
+//      }
     }
 
     override
-    def close() { if(in != null) { in.close() } }
+    def close() { if(mapFile != null) { mapFile.close() } }
   }
 }

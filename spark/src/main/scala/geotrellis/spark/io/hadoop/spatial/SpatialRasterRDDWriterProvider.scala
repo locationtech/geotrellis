@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}
 import org.apache.spark.SparkContext._
@@ -14,10 +15,14 @@ import org.apache.hadoop.mapreduce.Job
 
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] with Logging {
-  implicit def toWritable(key: SpatialKey) = SpatialKeyWritable(key)
-  def newWritable = new SpatialKeyWritable
 
-  def writer(catalogConfig: HadoopRasterCatalogConfig, layerPath: Path, clobber: Boolean = true)(implicit sc: SparkContext) =
+  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
+    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
+
+
+  def writer(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData, keyIndex: KeyIndex[SpatialKey], clobber: Boolean = true)(implicit sc: SparkContext) = {
+    val layerPath = layerMetaData.path
+
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, rdd: RasterRDD[SpatialKey]): Unit = {
         val conf = sc.hadoopConfiguration
@@ -55,9 +60,10 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         }
 
         // Sort the writables, and cache as we'll be computing this RDD twice.
+        val closureKeyIndex = keyIndex
         val sortedWritable =
           rdd
-            .map { case (key, tile) => (SpatialKeyWritable(key), TileWritable(tile)) }
+            .map { case (key, tile) => (SpatialKeyWritable(closureKeyIndex.toIndex(key), key), TileWritable(tile)) }
             .sortByKey(numPartitions = partitions)
             .cache
 
@@ -76,7 +82,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
           layerPath.toUri.toString,
             classOf[SpatialKeyWritable],
             classOf[TileWritable],
-            classOf[SplitsMapFileOutputFormat[SpatialKeyWritable]],
+            classOf[MapFileOutputFormat],
             job.getConfiguration
         )
 
@@ -85,4 +91,5 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
       }
 
     }
+  }
 }

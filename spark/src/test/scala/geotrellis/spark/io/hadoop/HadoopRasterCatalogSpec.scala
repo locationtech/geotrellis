@@ -11,6 +11,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.raster.op.local._
 import geotrellis.proj4.LatLng
+import geotrellis.spark.testfiles._
 import org.scalatest._
 import org.apache.hadoop.fs.Path
 
@@ -18,6 +19,7 @@ class HadoopRasterCatalogSpec extends FunSpec
     with Matchers
     with RasterRDDMatchers
     with TestEnvironment
+    with TestFiles
     with OnlyIfCanRunSpark
 {
 
@@ -137,6 +139,20 @@ class HadoopRasterCatalogSpec extends FunSpec
 
           // Raises exception if the ".tiff" extension override isn't provided
           Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (rdd, level) => {} }
+        }
+      }
+
+      it("should have written and read coordinate space time tiles") {
+        CoordinateSpaceTime.collect.map { case (key, tile) =>
+          val value = {
+            val c = key.spatialKey.col * 1000.0
+            val r = key.spatialKey.row
+            val t = (key.temporalKey.time.getYear - 2010) / 1000.0
+
+            c + r + t
+          }
+
+          tile.foreachDouble { z => z should be (value.toDouble +- 0.0009999999999) }
         }
       }
 

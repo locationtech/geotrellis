@@ -96,6 +96,5 @@ class MaxSpec extends FunSpec with TestEnvironment
       }
 
     }
-
   }
 }

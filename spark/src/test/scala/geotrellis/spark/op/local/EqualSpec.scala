@@ -34,7 +34,6 @@ class EqualSpec extends FunSpec
 
       it("should check equal between an integer and a raster") {
         val res = inc.localEqual(1)
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0

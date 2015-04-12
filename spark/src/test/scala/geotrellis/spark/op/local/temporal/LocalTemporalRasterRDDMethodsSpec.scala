@@ -51,7 +51,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
         val metaData = rasterRDD.metaData
         val gridBounds = metaData.mapTransform(metaData.extent)
         val tileLayout = 
-          TileLayout(gridBounds.width - 1, gridBounds.height - 1, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
+          TileLayout(gridBounds.width, gridBounds.height, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
         rasterRDD
           .groupBy { case (key, tile) =>
