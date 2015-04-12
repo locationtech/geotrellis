@@ -72,8 +72,9 @@ class AccumuloRasterCatalogSpec extends FunSpec
             catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
           }
         }
+
         it("fetch a TileExtent from catalog") {
-          val tileBounds = GridBounds(915,305,916,306)
+          val tileBounds = GridBounds(915,612,916,612)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
           val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", level.zoom), filters)
           val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
@@ -110,7 +111,6 @@ class AccumuloRasterCatalogSpec extends FunSpec
       it("should succeed writing to a table") {
         catalog.writer[SpaceTimeKey](tableName).write(layerId, CoordinateSpaceTime)
       }
-
       it("should load out saved tiles") {
         val rdd = catalog.reader[SpaceTimeKey].read(layerId)
         rdd.count should be > 0l

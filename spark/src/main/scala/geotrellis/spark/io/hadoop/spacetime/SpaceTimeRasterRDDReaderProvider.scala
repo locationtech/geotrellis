@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
 import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}
@@ -18,7 +19,7 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
     def log2(x: Double): Double = scala.math.log(x) / lnOf2
     val spatialResolution = log2(tileLayout.layoutCols).toInt
 
-    new SpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
+    new HilbertSpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
   }
 
   class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKeyWritable, TileWritable] {

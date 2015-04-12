@@ -3,6 +3,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
 import geotrellis.spark.op.stats._
 import geotrellis.raster._
 import org.apache.hadoop.conf.Configuration

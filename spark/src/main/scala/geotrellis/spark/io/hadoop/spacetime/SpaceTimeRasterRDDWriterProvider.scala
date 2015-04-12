@@ -5,6 +5,7 @@ import geotrellis.spark.utils._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
 import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}
@@ -19,7 +20,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
     val lnOf2 = scala.math.log(2) // natural log of 2
     def log2(x: Double): Double = scala.math.log(x) / lnOf2
     val spatialResolution = log2(tileLayout.layoutCols).toInt
-    new SpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
+    new HilbertSpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
   }
 
   def writer(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData, keyIndex: KeyIndex[SpaceTimeKey], clobber: Boolean = true)(implicit sc: SparkContext) = {

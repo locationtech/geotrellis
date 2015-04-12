@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
 import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}

@@ -39,7 +39,10 @@ class AccumuloRasterCatalog(
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = metaDataCatalog.read(layerId)
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData, keyBounds).read(layerId, filterSet)
+
+        val provider = implicitly[RasterRDDReaderProvider[K]]
+        val index = provider.index(metaData.rasterMetaData.tileLayout, keyBounds)
+        provider.reader(instance, metaData, keyBounds, index).read(layerId, filterSet)
       }
     }
   
@@ -62,15 +65,24 @@ class AccumuloRasterCatalog(
         val maxKey = rdd.map(_._1).max
 
         metaDataCatalog.write(layerId, md)
-        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", KeyBounds(minKey, maxKey))
-        implicitly[RasterRDDWriterProvider[K]].writer(instance, md).write(layerId, rdd)
+        val keyBounds = KeyBounds(minKey, maxKey)
+        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
+
+        val provider = implicitly[RasterRDDWriterProvider[K]]
+        val index = provider.index(md.rasterMetaData.tileLayout, keyBounds)
+        val rddWriter = provider.writer(instance, md, keyBounds, index)
+
+        rddWriter.write(layerId, rdd)
         rdd.unpersist(blocking = false)
       }
     }
   }
 
-  def tileReader[K: TileReaderProvider](layerId: LayerId): Reader[K, Tile] = {
+  def tileReader[K: TileReaderProvider: JsonFormat](layerId: LayerId): Reader[K, Tile] = {
     val accumuloLayerMetaData = metaDataCatalog.read(layerId)
-    implicitly[TileReaderProvider[K]].reader(instance, layerId, accumuloLayerMetaData)
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+    val provider = implicitly[TileReaderProvider[K]]
+    val index = provider.index(accumuloLayerMetaData.rasterMetaData.tileLayout, keyBounds)
+    provider.reader(instance, layerId, accumuloLayerMetaData, index)
   }
 }
