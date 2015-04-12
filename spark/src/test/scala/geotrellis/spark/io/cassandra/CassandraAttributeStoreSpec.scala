@@ -20,7 +20,7 @@ import org.apache.spark.SparkConf
 import com.datastax.spark.connector.cql.CassandraConnector
 import com.datastax.spark.connector.embedded._
 
-class CassandraAttributeCatalogSpec extends FunSpec
+class CassandraAttributeStoreSpec extends FunSpec
     with Matchers
     with TestFiles
     with TestEnvironment
@@ -32,17 +32,17 @@ class CassandraAttributeCatalogSpec extends FunSpec
 
       useCassandraConfig("cassandra-default.yaml.template")
       val connector = EmbeddedCassandraConnector(Set(cassandraHost))
-      val session = connector.openSession()
+      val cassandra = CassandraInstance(connector, "test")
 
-      val attribCatalog = new CassandraAttributeCatalog(session, "test", "attributes")
+      val attribStore = new CassandraAttributeStore(cassandra.session, cassandra.keyspace, "attributes")
       val layerId = LayerId("test", 3)
 
       it("should save and pull out a histogram") {
         val histo = DecreasingTestFile.histogram
 
-        attribCatalog.save(layerId, "histogram", histo)
+        attribStore.write(layerId, "histogram", histo)
 
-        val loaded = attribCatalog.load[Histogram](layerId, "histogram")
+        val loaded = attribStore.read[Histogram](layerId, "histogram")
         loaded.getMean should be (histo.getMean)
       }
 
@@ -67,10 +67,9 @@ class CassandraAttributeCatalogSpec extends FunSpec
 
         val foo = Foo(1, "thing")
 
-        attribCatalog.save(layerId, "foo", foo)
-        attribCatalog.load[Foo](layerId, "foo") should be (foo)
+        attribStore.write(layerId, "foo", foo)
+        attribStore.read[Foo](layerId, "foo") should be (foo)
       }
     }
-
   }
 }

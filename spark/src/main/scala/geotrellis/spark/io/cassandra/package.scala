@@ -5,8 +5,7 @@ package object cassandra {
   implicit lazy val cassandraSpatialTileReaderProvider = spatial.SpatialTileReaderProvider
   implicit lazy val cassandraSpatialRasterRDDWriterProvider = spatial.SpatialRasterRDDWriterProvider
 
-/*
   implicit lazy val cassandraSpaceTimeRasterRDDReaderProvider = spacetime.SpaceTimeRasterRDDReaderProvider
   implicit lazy val cassandraSpaceTimeTileReaderProvider = spacetime.SpaceTimeTileReaderProvider
-  implicit lazy val cassandraSpaceTimeRasterRDDWriterProvider = spacetime.SpaceTimeRasterRDDWriterProvider*/
+  implicit lazy val cassandraSpaceTimeRasterRDDWriterProvider = spacetime.SpaceTimeRasterRDDWriterProvider
 }
