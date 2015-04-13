@@ -5,12 +5,16 @@ import geotrellis.spark._
 import spire.syntax.cfor._
 
 /** Represents a row major ordering for SpatialKey */
-class RowMajorSpatialKeyIndex(layoutCols: Int) extends KeyIndex[SpatialKey] {
+class RowMajorSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
+  val minCol = keyBounds.minKey.col
+  val minRow = keyBounds.minKey.row
+  val layoutCols = keyBounds.maxKey.col - keyBounds.minKey.col + 1
+  println(layoutCols)
   def toIndex(key: SpatialKey): Long = 
     toIndex(key.col, key.row)
 
   def toIndex(col: Int, row: Int): Long =
-    (layoutCols * row + col).toLong
+    (layoutCols * (row - minRow) + (col - minCol)).toLong
 
   def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
     val SpatialKey(colMin, rowMin) = keyRange._1

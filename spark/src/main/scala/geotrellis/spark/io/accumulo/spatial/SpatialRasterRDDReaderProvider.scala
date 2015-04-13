@@ -19,16 +19,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConversions._
 
-object SpatialRasterRDDIndex {
-  def rowId(id: LayerId, index: Long): String =
-    f"${id.zoom}%02d_${index}%06d"
-}
-
 object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] {
-  import SpatialRasterRDDIndex._
-
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
 
   def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpatialKey], index: KeyIndex[SpatialKey]): Unit = {
     var tileBoundSet = false

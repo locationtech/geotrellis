@@ -14,10 +14,8 @@ import org.apache.accumulo.core.data.{Range => ARange}
 import scala.collection.JavaConversions._
 
 object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
-  import SpaceTimeRasterRDDIndex._
-
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
-    new YearZSpaceTimeKeyIndex
+    ZSpaceTimeKeyIndex.byYear
 
   def reader(instance: AccumuloInstance, layerId: LayerId, accumuloLayerMetaData: AccumuloLayerMetaData, index: KeyIndex[SpaceTimeKey]): Reader[SpaceTimeKey, Tile] = {
     val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = accumuloLayerMetaData

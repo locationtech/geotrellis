@@ -11,14 +11,6 @@ import org.apache.spark.SparkContext
 
 object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
 
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] = {
-    val lnOf2 = scala.math.log(2) // natural log of 2
-    def log2(x: Double): Double = scala.math.log(x) / lnOf2
-    val spatialResolution = log2(tileLayout.layoutCols).toInt
-
-    new HilbertSpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
-  }
-
   def reader(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,

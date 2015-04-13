@@ -16,12 +16,6 @@ import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFile
 import org.apache.hadoop.mapreduce.Job
 
 object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTimeKey] with Logging {
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] = {
-    val lnOf2 = scala.math.log(2) // natural log of 2
-    def log2(x: Double): Double = scala.math.log(x) / lnOf2
-    val spatialResolution = log2(tileLayout.layoutCols).toInt
-    new HilbertSpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
-  }
 
   def writer(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData, keyIndex: KeyIndex[SpaceTimeKey], clobber: Boolean = true)(implicit sc: SparkContext) = {
     val layerPath = layerMetaData.path

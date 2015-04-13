@@ -18,6 +18,7 @@ package geotrellis.spark.testfiles
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
 import geotrellis.raster._
@@ -81,7 +82,7 @@ object GenerateTestFiles {
 
 //      println(rdd.stitch.asciiDraw)
 
-      catalog.writer[SpatialKey](clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.writer[SpatialKey](RowMajorKeyIndexMethod, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }
@@ -120,7 +121,7 @@ object GenerateTestFiles {
 
 //      println(rdd.stitch.asciiDraw)
 
-      catalog.writer[SpaceTimeKey](clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }

@@ -17,10 +17,6 @@ import org.apache.hadoop.mapreduce.Job
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] with Logging {
 
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
-
-
   def writer(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData, keyIndex: KeyIndex[SpatialKey], clobber: Boolean = true)(implicit sc: SparkContext) = {
     val layerPath = layerMetaData.path
 

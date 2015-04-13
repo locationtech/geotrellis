@@ -14,10 +14,6 @@ import org.apache.accumulo.core.data.{Range => ARange}
 import scala.collection.JavaConversions._
 
 object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
-  import SpatialRasterRDDIndex._
-
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
 
   def reader(instance: AccumuloInstance, layerId: LayerId, accumuloLayerMetaData: AccumuloLayerMetaData, index: KeyIndex[SpatialKey]): Reader[SpatialKey, Tile] = {
     val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = accumuloLayerMetaData

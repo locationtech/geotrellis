@@ -2,8 +2,10 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
 import geotrellis.spark.op.stats._
 import geotrellis.raster._
 import org.apache.hadoop.conf.Configuration
@@ -91,34 +93,34 @@ class HadoopRasterCatalog(
     new Path(firstPart, catalogConfig.layerDataDir(layerId))
   }
 
-  def reader[K: RasterRDDReaderProvider: JsonFormat](): FilterableRasterRDDReader[K] =
+  def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val metaData = metaDataCatalog.read(layerId)
+        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
         val provider = implicitly[RasterRDDReaderProvider[K]]
-        val index = provider.index(metaData.rasterMetaData.tileLayout, keyBounds)
         val rddReader = provider.reader(catalogConfig, metaData, index, keyBounds)
         rddReader.read(layerId, filterSet)
       }
     }
 
-  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: ClassTag](): Writer[LayerId, RasterRDD[K]] =
-    writer[K]("")
+  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
+    writer[K](keyIndexMethod, "")
 
-  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: ClassTag](clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    writer("", clobber)
+  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+    writer(keyIndexMethod, "", clobber)
 
-  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: ClassTag](subDir: Path): Writer[LayerId, RasterRDD[K]] =
-    writer[K](subDir.toString)
+  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: Path): Writer[LayerId, RasterRDD[K]] =
+    writer[K](keyIndexMethod, subDir.toString)
 
-  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: ClassTag](subDir: Path, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    writer[K](subDir.toString, clobber)
+  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: Path, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+    writer[K](keyIndexMethod, subDir.toString, clobber)
 
-  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: ClassTag](subDir: String): Writer[LayerId, RasterRDD[K]] =
-    writer[K](subDir, clobber = true)
+  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
+    writer[K](keyIndexMethod, subDir, clobber = true)
 
-  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: ClassTag](subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: RasterRDDWriterProvider: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         rdd.persist()
@@ -129,13 +131,22 @@ class HadoopRasterCatalog(
         val maxKey = rdd.map(_._1).max
         val keyBounds = KeyBounds(minKey, maxKey)
 
+        val index = {
+          val indexKeyBounds = {
+            val imin = minKey.updateSpatialComponent(SpatialKey(0, 0))
+            val imax = maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
+            KeyBounds(imin, imax)
+          }
+          keyIndexMethod.createIndex(indexKeyBounds)
+        }
+
         val provider = implicitly[RasterRDDWriterProvider[K]]
-        val index = provider.index(md.rasterMetaData.tileLayout, keyBounds)
         val rddWriter = provider.writer(catalogConfig, md, index, clobber)
 
         rddWriter.write(layerId, rdd)
 
-        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
+        attributeStore.write(layerId, "keyIndex", index)
+        attributeStore.write(layerId, "keyBounds", keyBounds)
 
         // Write metadata afer raster, since writing the raster could clobber the directory
         metaDataCatalog.write(layerId, md)
@@ -144,11 +155,10 @@ class HadoopRasterCatalog(
       }
     }
 
-  def tileReader[K: JsonFormat: TileReaderProvider](layerId: LayerId): Reader[K, Tile] = {
+  def tileReader[K: JsonFormat: TileReaderProvider: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     val layerMetaData = metaDataCatalog.read(layerId)
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-    val provider = implicitly[TileReaderProvider[K]]
-    val index = provider.index(layerMetaData.rasterMetaData.tileLayout, keyBounds)
-    provider.reader(catalogConfig, layerMetaData, index)
+    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    implicitly[TileReaderProvider[K]].reader(catalogConfig, layerMetaData, index)
   }
 }

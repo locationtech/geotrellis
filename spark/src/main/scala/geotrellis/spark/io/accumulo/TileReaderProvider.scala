@@ -8,6 +8,5 @@ import geotrellis.raster._
 import org.apache.spark.SparkContext
 
 trait TileReaderProvider[K] {
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[K]): KeyIndex[K]
   def reader(instance: AccumuloInstance, layerId: LayerId, accumuloLayerMetaData: AccumuloLayerMetaData, keyIndex: KeyIndex[K]): Reader[K, Tile]
 }

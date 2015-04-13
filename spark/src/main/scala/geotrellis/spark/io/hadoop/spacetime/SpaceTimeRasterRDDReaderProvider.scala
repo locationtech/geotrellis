@@ -18,20 +18,6 @@ import org.joda.time.{DateTimeZone, DateTime}
 // TODO: Refactor the writer and reader logic to abstract over the key type.
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] with Logging {
 
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] = {
-    val lnOf2 = scala.math.log(2) // natural log of 2
-    def log2(x: Double): Double = scala.math.log(x) / lnOf2
-    val spatialResolution = log2(tileLayout.layoutCols).toInt
-
-    new HilbertSpaceTimeKeyIndex(keyBounds.minKey, keyBounds.maxKey, spatialResolution, 8)
-  }
-
-  class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable] {
-    def createKey() = new SpaceTimeKeyWritable
-    def createKey(index: Long) = SpaceTimeKeyWritable(index, SpaceTimeKey(0, 0, new DateTime(0,0,0)))
-    def createValue() = new TileWritable
-  }
-
   def reader(
     catalogConfig: HadoopRasterCatalogConfig, 
     layerMetaData: HadoopLayerMetaData, 

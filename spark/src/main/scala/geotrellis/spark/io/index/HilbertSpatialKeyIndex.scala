@@ -21,13 +21,24 @@ import com.google.common.collect.ImmutableList
 import scala.collection.JavaConversions._
 import spire.syntax.cfor._
 
-class HilbertSpatialKeyIndex(minKey: SpatialKey, maxKey: SpatialKey, spatialResolution: Int) extends KeyIndex[SpatialKey] {
+object HilbertSpatialKeyIndex {
+  def apply(minKey: SpatialKey, maxKey: SpatialKey, spatialResolution: Int): HilbertSpatialKeyIndex =
+    apply(new KeyBounds(minKey, maxKey), spatialResolution)
+
+  def apply(keyBounds: KeyBounds[SpatialKey], spatialResolution: Int): HilbertSpatialKeyIndex =
+    apply(keyBounds, spatialResolution, spatialResolution)
+
+  def apply(keyBounds: KeyBounds[SpatialKey], xResolution: Int, yResolution: Int): HilbertSpatialKeyIndex =
+    new HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
+}
+
+class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int, yResolution: Int) extends KeyIndex[SpatialKey] {
   val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
         List(
-          math.pow(2, spatialResolution).toInt,
-          math.pow(2, spatialResolution).toInt
+          math.pow(2, xResolution).toInt,
+          math.pow(2, yResolution).toInt
         ).map(new java.lang.Integer(_)) 
       )
 
@@ -37,8 +48,8 @@ class HilbertSpatialKeyIndex(minKey: SpatialKey, maxKey: SpatialKey, spatialReso
   def toIndex(key: SpatialKey): Long = {
     val bitVectors = 
       Array(
-        BitVectorFactories.OPTIMAL.apply(spatialResolution),
-        BitVectorFactories.OPTIMAL.apply(spatialResolution)
+        BitVectorFactories.OPTIMAL.apply(xResolution),
+        BitVectorFactories.OPTIMAL.apply(yResolution)
       )
 
     bitVectors(0).copyFrom(key.col.toLong)

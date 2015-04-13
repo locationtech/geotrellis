@@ -2,16 +2,19 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.utils._
 
 import spray.json._
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import java.io.PrintWriter
+import scala.reflect.ClassTag
 
 import org.apache.hadoop.conf.Configuration
 
 class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore {
   type ReadableWritable[T] = RootJsonFormat[T]
+//  type ReadableWritable[T] = ClassTag[T]
 
   val fs = attributeDir.getFileSystem(hadoopConfiguration)
 
@@ -25,7 +28,7 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
     new Path(attributeDir, fname)
   }
 
-  def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
+  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T = {
     val path = attributePath(layerId, attributeName)
 
     val txt = HdfsUtils.getLineScanner(path, hadoopConfiguration) match {
@@ -41,10 +44,11 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
     }
 
     txt.parseJson.convertTo[T]
+//    KryoSerializer.deserialize(txt.toCharArray.map(_.toByte))
 
   }
 
-  def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {
@@ -54,7 +58,9 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
     val fdos = fs.create(path)
     val out = new PrintWriter(fdos)
     try {
-      out.println(value.toJson)
+      val s = value.toJson.toString
+//      val s = new String(KryoSerializer.serialize(value).map(_.toChar))
+      out.println(s)
     } finally {
       out.close()
       fdos.close()

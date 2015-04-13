@@ -17,9 +17,6 @@ import scala.collection.mutable
 // TODO: Refactor the writer and reader logic to abstract over the key type.
 object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] with Logging {
 
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
-
   def reader(
     catalogConfig: HadoopRasterCatalogConfig, 
     layerMetaData: HadoopLayerMetaData, 
@@ -68,24 +65,23 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
         val inputConf = conf.withInputPath(dataPath)
 
         val writableRdd: RDD[(SpatialKeyWritable, TileWritable)] =
+          if(filterSet.isEmpty) {
+            sc.newAPIHadoopRDD(
+              inputConf,
+              classOf[SequenceFileInputFormat[SpatialKeyWritable, TileWritable]],
+              classOf[SpatialKeyWritable],
+              classOf[TileWritable]
+            )
+          } else {
+            inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, filterDefinition(filterSet))
 
-        if(filterSet.isEmpty) {
-          sc.newAPIHadoopRDD(
-            inputConf,
-            classOf[SequenceFileInputFormat[SpatialKeyWritable, TileWritable]],
-            classOf[SpatialKeyWritable],
-            classOf[TileWritable]
-          )
-        } else {
-          inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, filterDefinition(filterSet))
-
-          sc.newAPIHadoopRDD(
-            inputConf,
-            classOf[SpatialFilterMapFileInputFormat],
-            classOf[SpatialKeyWritable],
-            classOf[TileWritable]
-          )
-        }
+            sc.newAPIHadoopRDD(
+              inputConf,
+              classOf[SpatialFilterMapFileInputFormat],
+              classOf[SpatialKeyWritable],
+              classOf[TileWritable]
+            )
+          }
 
         val rasterMetaData = layerMetaData.rasterMetaData
 

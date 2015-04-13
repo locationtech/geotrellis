@@ -11,10 +11,6 @@ import org.apache.spark.SparkContext
 
 object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
 
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
-
-
   def reader(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,

@@ -8,6 +8,7 @@ import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.raster.op.local._
 import geotrellis.proj4.LatLng
@@ -40,17 +41,17 @@ class HadoopRasterCatalogSpec extends FunSpec
         ran = true
 
         it("should succeed saving with default Props"){
-          catalog.writer[SpatialKey].write(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod).write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "ones")))
         }
 
         it("should succeed saving with single path Props"){
-          catalog.writer[SpatialKey]("sub1").write(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, "sub1").write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/ones")))
         }
 
         it("should succeed saving with double path Props"){
-          catalog.writer[SpatialKey]("sub1/sub2").write(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, "sub1/sub2").write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
         }
 
@@ -157,7 +158,7 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("should find default params based on key") {
           val defaultParams = HadoopRasterCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
           val cat = HadoopRasterCatalog(catalogPath, defaultParams)
-          cat.writer[SpatialKey].write(LayerId("spatial-ones", level.zoom), onesRdd)
+          cat.writer[SpatialKey](RowMajorKeyIndexMethod).write(LayerId("spatial-ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
         }
 
@@ -168,7 +169,7 @@ class HadoopRasterCatalogSpec extends FunSpec
 
           //LayerParams should take priority
           val cat = HadoopRasterCatalog(catalogPath, defaultParams)
-          cat.writer[SpatialKey].write(LayerId("onesSpecial", level.zoom), onesRdd)
+          cat.writer[SpatialKey](RowMajorKeyIndexMethod).write(LayerId("onesSpecial", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
         }
 

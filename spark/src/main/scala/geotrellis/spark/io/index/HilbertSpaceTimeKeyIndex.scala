@@ -23,16 +23,32 @@ import spire.syntax.cfor._
 
 import com.github.nscala_time.time.Imports._
 
-class HilbertSpaceTimeKeyIndex(minKey: SpaceTimeKey, maxKey: SpaceTimeKey, spatialResolution: Int, temporalResolution: Int) extends KeyIndex[SpaceTimeKey] {
-  val startMillis = minKey.temporalKey.time.getMillis
-  val timeWidth = maxKey.temporalKey.time.getMillis - startMillis
+object HilbertSpaceTimeKeyIndex {
+  def apply(minKey: SpaceTimeKey, maxKey: SpaceTimeKey, spatialResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =
+    apply(KeyBounds(minKey, maxKey), spatialResolution, temporalResolution)
+
+  def apply(keyBounds: KeyBounds[SpaceTimeKey], spatialResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =
+    apply(keyBounds, spatialResolution, spatialResolution, temporalResolution)
+
+  def apply(keyBounds: KeyBounds[SpaceTimeKey], xResolution: Int, yResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =
+    new HilbertSpaceTimeKeyIndex(keyBounds, xResolution, yResolution, temporalResolution)
+}
+
+class HilbertSpaceTimeKeyIndex(
+  keyBounds: KeyBounds[SpaceTimeKey],
+  xResolution: Int,
+  yResolution: Int,
+  temporalResolution: Int
+) extends KeyIndex[SpaceTimeKey] {
+  val startMillis = keyBounds.minKey.temporalKey.time.getMillis
+  val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
 
   val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
         List(
-          math.pow(2, spatialResolution).toInt,
-          math.pow(2, spatialResolution).toInt,
+          math.pow(2, xResolution).toInt,
+          math.pow(2, yResolution).toInt,
           math.pow(2, temporalResolution).toInt
         ).map(new java.lang.Integer(_)) 
       )
@@ -46,8 +62,8 @@ class HilbertSpaceTimeKeyIndex(minKey: SpaceTimeKey, maxKey: SpaceTimeKey, spati
   def toIndex(key: SpaceTimeKey): Long = {
     val bitVectors = 
       Array(
-        BitVectorFactories.OPTIMAL.apply(spatialResolution),
-        BitVectorFactories.OPTIMAL.apply(spatialResolution),
+        BitVectorFactories.OPTIMAL.apply(xResolution),
+        BitVectorFactories.OPTIMAL.apply(yResolution),
         BitVectorFactories.OPTIMAL.apply(temporalResolution)
       )
 

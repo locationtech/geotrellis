@@ -21,10 +21,6 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
-  import SpatialRasterRDDIndex._
-
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-    new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
 
   def getSplits(id: LayerId, rdd: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey], num: Int = 24): Seq[String] = {
     import org.apache.spark.SparkContext._

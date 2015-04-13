@@ -25,23 +25,9 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
 
-object SpaceTimeRasterRDDIndex {
-  def timeChunk(time: DateTime): String =
-    time.getYear.toString
-
-  def timeText(key: SpaceTimeKey): Text =
-    new Text(key.temporalKey.time.withZone(DateTimeZone.UTC).toString)
-
-  def rowId(id: LayerId, index: Long): String =
-    f"${id.zoom}%02d_${index}%019d"
-
-}
-
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
-  import SpaceTimeRasterRDDIndex._
-
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
-    new YearZSpaceTimeKeyIndex
+    ZSpaceTimeKeyIndex.byYear
 
   def tileSlugs(filters: List[GridBounds]): List[(String, String)] = filters match {
     case Nil =>

@@ -31,7 +31,7 @@ class ConstantSpaceTimeTestTiles(tileLayout: TileLayout, v: Double) extends Test
   */
 class CoordinateSpaceTimeTestTiles(tileLayout: TileLayout) extends TestFileSpaceTimeTiles(tileLayout) {
   def value(key: SpaceTimeKey, timeIndex: Int, col: Int, row: Int): Double= {
-    val SpaceTimeKey(SpatialKey(layoutCol, layoutRow), _) = key
+    val SpaceTimeKey(layoutCol, layoutRow, _) = key
     (layoutCol * 1000.0) + layoutRow + (timeIndex / 1000.0)
   }
 }

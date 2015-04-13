@@ -27,10 +27,8 @@ import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 
 object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTimeKey] {
-  import SpaceTimeRasterRDDIndex._
-
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
-    new YearZSpaceTimeKeyIndex
+    ZSpaceTimeKeyIndex.byYear
 
   /** TODO: What is the rules about the "num" parameter? */
   def getSplits(layerId: LayerId, metaData: RasterMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey], num: Int = 48): List[String] = {
