@@ -7,14 +7,15 @@ import spire.syntax.cfor._
 
 package object mosaic {
   /** Tile methods used by the mosaicing function to merge tiles. */
-  implicit class TileMerger(val tile: MutableArrayTile) {
-    def merge(other: Tile): MutableArrayTile = {
+  implicit class TileMerger(val tile: Tile) {
+    def merge(other: Tile): Tile = {
+      val mutableTile = tile.mutable
       Seq(tile, other).assertEqualDimensions
       if(tile.cellType.isFloatingPoint) {
         cfor(0)(_ < tile.rows, _ + 1) { row =>
           cfor(0)(_ < tile.cols, _ + 1) { col =>
             if(isNoData(tile.getDouble(col, row))) {
-              tile.setDouble(col, row, other.getDouble(col, row))
+              mutableTile.setDouble(col, row, other.getDouble(col, row))
             }
           }
         }
@@ -22,21 +23,22 @@ package object mosaic {
         cfor(0)(_ < tile.rows, _ + 1) { row =>
           cfor(0)(_ < tile.cols, _ + 1) { col =>
             if(isNoData(tile.get(col, row))) {
-              tile.setDouble(col, row, other.get(col, row))
+              mutableTile.setDouble(col, row, other.get(col, row))
             }
           }
         }
       }
 
-      tile
+      mutableTile
     }
 
-    def merge(extent: Extent, otherExtent: Extent, other: Tile): MutableArrayTile =
+    def merge(extent: Extent, otherExtent: Extent, other: Tile): Tile =
       merge(extent, otherExtent, other, NearestNeighbor)
 
-    def merge(extent: Extent, otherExtent: Extent, other: Tile, method: InterpolationMethod): MutableArrayTile =
+    def merge(extent: Extent, otherExtent: Extent, other: Tile, method: InterpolationMethod): Tile =
       otherExtent & extent match {
         case Some(sharedExtent) =>
+          val mutableTile = tile.mutable
           val re = RasterExtent(extent, tile.cols, tile.rows)
           val gb @ GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
           val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
@@ -47,7 +49,7 @@ package object mosaic {
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if(isNoData(tile.getDouble(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
-                  tile.setDouble(col, row, interpolate(x, y))
+                  mutableTile.setDouble(col, row, interpolate(x, y))
                 }
               }
             }
@@ -57,14 +59,14 @@ package object mosaic {
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if(isNoData(tile.get(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
-                  tile.set(col, row, interpolate(x, y))
+                  mutableTile.set(col, row, interpolate(x, y))
                 }
               }
             }
 
           }
 
-          tile
+          mutableTile
         case _ =>
           tile
       }

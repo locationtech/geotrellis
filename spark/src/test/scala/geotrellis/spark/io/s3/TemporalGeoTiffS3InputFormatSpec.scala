@@ -29,10 +29,11 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with OnlyIf
         sourceCount should not be (0)
         info(s"Source RDD count: ${sourceCount}")
 
-        val (level, rdd) =  Ingest[SpaceTimeInputKey, SpaceTimeKey](source, LatLng, layoutScheme)
-        val rddCount = rdd.count
-        rddCount should not be (0)
-        info(s"Tiled RDD count: ${rddCount}")
+        Ingest[SpaceTimeInputKey, SpaceTimeKey](source, LatLng, layoutScheme){ (rdd, level) => 
+          val rddCount = rdd.count
+          rddCount should not be (0)
+          info(s"Tiled RDD count: ${rddCount}")
+        }
       }
     }
   }

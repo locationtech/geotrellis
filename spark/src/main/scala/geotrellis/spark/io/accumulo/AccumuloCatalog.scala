@@ -38,6 +38,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance,
 
   def save[K: SupportedKey : ClassTag](id: LayerId, table: String, rdd: RasterRDD[K], clobber: Boolean): Unit = {
     val driver = implicitly[AccumuloDriver[K]]
+    rdd.persist()
     driver.save(sc, instance)(id, rdd, table, clobber)
 
     val metaData = LayerMetaData(
@@ -46,6 +47,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance,
       histogram = Some(rdd.histogram)
     )
     metaDataCatalog.save(id, table: Params, metaData, clobber)
+    rdd.unpersist(blocking = false)
   }
 }
 

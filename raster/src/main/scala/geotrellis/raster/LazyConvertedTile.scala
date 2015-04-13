@@ -45,7 +45,9 @@ final case class LazyConvertedTile(inner: Tile, cellType: CellType)
   def getDouble(col: Int, row: Int): Double =
     inner.getDouble(col, row)
 
-  def toArrayTile: ArrayTile = {
+  def toArrayTile: ArrayTile = mutable
+
+  def mutable: MutableArrayTile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {

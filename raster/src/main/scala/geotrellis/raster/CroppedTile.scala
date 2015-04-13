@@ -70,7 +70,9 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
-  def toArrayTile: ArrayTile = {
+  def toArrayTile: ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {
