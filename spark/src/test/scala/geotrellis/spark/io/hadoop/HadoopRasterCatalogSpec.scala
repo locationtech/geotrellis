@@ -142,6 +142,18 @@ class HadoopRasterCatalogSpec extends FunSpec
           rastersEqual(expected, actual)
         }
 
+        it("should load one tile") {
+          val key = SpatialKey(915,612)
+
+          val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          val (_, expected) = unfiltered.collect.filter { case (k, _) => k == key }.head
+
+
+          val actual = catalog.tileReader[SpatialKey](LayerId("ones", 10)).read(key)
+
+          tilesEqual(actual, expected)
+        }
+
         it("should find default params based on key") {
           val defaultParams = HadoopRasterCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
           val cat = HadoopRasterCatalog(catalogPath, defaultParams)

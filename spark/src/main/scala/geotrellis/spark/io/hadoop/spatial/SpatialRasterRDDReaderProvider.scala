@@ -20,12 +20,6 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
     new RowMajorSpatialKeyIndex(tileLayout.layoutCols)
 
-  class SpatialFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, TileWritable] {
-    def createKey() = new SpatialKeyWritable
-    def createKey(index: Long) = SpatialKeyWritable(index, SpatialKey(0, 0))
-    def createValue() = new TileWritable
-  }
-
   def reader(
     catalogConfig: HadoopRasterCatalogConfig, 
     layerMetaData: HadoopLayerMetaData, 

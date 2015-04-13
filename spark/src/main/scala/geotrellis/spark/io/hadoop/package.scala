@@ -34,9 +34,11 @@ package object hadoop {
 
   implicit lazy val hadoopSpatialRasterRDDReaderProvider = spatial.SpatialRasterRDDReaderProvider
   implicit lazy val hadoopSpatialRasterRDDWriterProvider = spatial.SpatialRasterRDDWriterProvider
+  implicit lazy val hadoopSpatialTileReaderProvider = spatial.SpatialTileReaderProvider
 
   implicit lazy val hadoopSpaceTimeRasterRDDReaderProvider = spacetime.SpaceTimeRasterRDDReaderProvider
   implicit lazy val hadoopSpaceTimeRasterRDDWriterProvider = spacetime.SpaceTimeRasterRDDWriterProvider
+  implicit lazy val hadoopSpaceTimeTileReaderProvider = spacetime.SpaceTimeTileReaderProvider
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 
