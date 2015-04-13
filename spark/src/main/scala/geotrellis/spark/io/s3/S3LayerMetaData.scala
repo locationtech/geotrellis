@@ -26,7 +26,7 @@ object S3LayerMetaData {
       )
 
     def read(value: JsValue): S3LayerMetaData =
-      value.asJsObject.getFields("layerId", "rasterMetaData", "bucket", "key") match {
+      value.asJsObject.getFields("layerId", "keyClass", "rasterMetaData", "bucket", "key") match {
         case Seq(layerId, JsString(keyClass), rasterMetaData, JsString(bucket), JsString(key)) =>
           S3LayerMetaData(
             layerId.convertTo[LayerId], 
