@@ -19,7 +19,7 @@ import com.quantifind.sumac.validation.Required
 
 import scala.reflect.ClassTag
 
-class S3IngestCommand extends IngestArgs with AccumuloArgs {
+class S3IngestCommand extends IngestArgs {
   @Required var bucket: String = _  
   @Required var key: String = _  
 }
