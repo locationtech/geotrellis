@@ -84,8 +84,6 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
 
     }
 
-    def timeIndex(dt: DateTime) = timeChunk(dt).toInt
-
     InputFormatBase.setLogLevel(job, org.apache.log4j.Level.DEBUG)
     
     val ranges: Seq[ARange] = (

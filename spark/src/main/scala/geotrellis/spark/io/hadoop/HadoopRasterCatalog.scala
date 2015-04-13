@@ -91,15 +91,15 @@ class HadoopRasterCatalog(
     new Path(firstPart, catalogConfig.layerDataDir(layerId))
   }
 
-  def reader[K: RasterRDDReaderProvider: JsonFormat](): RasterRDDReader[K] =
-    new RasterRDDReader[K] {
-      def read(layerId: LayerId): RasterRDD[K] = {
+  def reader[K: RasterRDDReaderProvider: JsonFormat](): FilterableRasterRDDReader[K] =
+    new FilterableRasterRDDReader[K] {
+      def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val metaData = metaDataCatalog.read(layerId)
         val provider = implicitly[RasterRDDReaderProvider[K]]
         val index = provider.index(metaData.rasterMetaData.tileLayout, keyBounds)
-        val rddReader = provider.reader(catalogConfig, metaData, index)
-        rddReader.read(layerId)
+        val rddReader = provider.reader(catalogConfig, metaData, index, keyBounds)
+        rddReader.read(layerId, filterSet)
       }
     }
 

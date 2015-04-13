@@ -24,14 +24,18 @@ import org.joda.time.{DateTime, DateTimeZone}
 import java.io._
 
 class SpaceTimeKeyWritable() extends Writable
-                              with WritableComparable[SpaceTimeKeyWritable] 
-                              with Serializable {
+    with IndexedKeyWritable[SpaceTimeKey]
+    with WritableComparable[SpaceTimeKeyWritable]
+    with Serializable {
   private var _index: Long = 0L
   private var _value: SpaceTimeKey = null
 
-  def set(index: Long, key: SpaceTimeKey): Unit = {
-    _index = index
-    _value = key
+  def index = _index
+  def key = _value
+
+  def set(i: Long, k: SpaceTimeKey): Unit = {
+    _index = i
+    _value = k
   }
 
   def get(): (Long, SpaceTimeKey) = (_index, _value)

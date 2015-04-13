@@ -55,7 +55,8 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles"){
-          catalog.reader[SpatialKey].read(LayerId("ones", 10)).count should be > 0l
+          val rdd = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          rdd.count should be > 0l
         }
 
         it("should succeed loading with single path Props"){
@@ -72,20 +73,55 @@ class HadoopRasterCatalogSpec extends FunSpec
           }
         }
 
-        /* TODO: Support filters in Hadoop? 
-        it("fetch a TileExtent from catalog"){
-          val tileBounds = GridBounds(915,611,917,616)
+        it("should filter out all but 4 tiles") {
+          val tileBounds = GridBounds(915,612,917,613)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-          val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
-          val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
-          val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
-            require(tms1.id == tms2.id)
-            val res = tms1.tile.localAdd(tms2.tile)
-            (tms1.id, res)
-          }
 
-          val tile = out.first.tile
-          tile.get(497,511) should be (2)
+          val expected = catalog.reader[SpatialKey].read(LayerId("ones", 10)).collect.filter { case (key, _) => filters.includeKey(key) }
+          val filteredRdd = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          filteredRdd.count should be (expected.size)
+        }
+
+
+        it("should filter out the correct keys") {
+          val tileBounds = GridBounds(915,611,915,613)
+          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+
+          val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          val filtered = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          val expected = unfiltered.collect.filter { case (key, value) => 
+            filters.includeKey(key)
+          }.toMap
+
+          val actual = filtered.collect.toMap
+
+          actual.keys should be (expected.keys)
+
+          for(key <- actual.keys) {
+            tilesEqual(actual(key), expected(key))
+          }
+        }
+
+        it("should filter out the correct keys with different grid bounds") {
+          val tileBounds = GridBounds(915,612,917,613)
+          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+
+          val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          val filtered = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          val expected = unfiltered.collect.filter { case (key, value) => 
+            filters.includeKey(key)
+          }.toMap
+
+          val actual = filtered.collect.toMap
+
+          actual.keys should be (expected.keys)
+
+          for(key <- actual.keys) {
+            tilesEqual(actual(key), expected(key))
+          }
         }
 
         it("should be able to combine pairs via Traversable"){
@@ -105,7 +141,6 @@ class HadoopRasterCatalogSpec extends FunSpec
 
           rastersEqual(expected, actual)
         }
-         */
 
         it("should find default params based on key") {
           val defaultParams = HadoopRasterCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")

@@ -1,4 +1,4 @@
-package geotrellis.spark.io
+package geotrellis.spark
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._

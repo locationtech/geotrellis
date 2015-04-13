@@ -23,14 +23,18 @@ import org.apache.hadoop.io._
 import java.io._
 
 class SpatialKeyWritable() extends Writable
-                              with WritableComparable[SpatialKeyWritable] 
-                              with Serializable {
+    with IndexedKeyWritable[SpatialKey]
+    with WritableComparable[SpatialKeyWritable]
+    with Serializable {
   private var _index: Long = 0L
   private var _value: SpatialKey = null
 
-  def set(index: Long, spatialKey: SpatialKey): Unit = {
-    _index = index
-    _value = spatialKey
+  def index = _index
+  def key = _value
+
+  def set(i: Long, k: SpatialKey): Unit = {
+    _index = i
+    _value = k
   }
 
   def get(): (Long, SpatialKey) = (_index, _value)

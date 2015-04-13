@@ -52,5 +52,15 @@ package object hadoop {
       val allFiles = HdfsUtils.listFiles(path, config)
       HdfsUtils.putFilesInConf(allFiles.mkString(","), config)
     }
+
+    def setSerialized[T: ClassTag](key: String, value: T): Unit = {
+      val ser = KryoSerializer.serialize(value)
+      config.set(key, new String(ser.map(_.toChar)))
+    }
+
+    def getSerialized[T: ClassTag](key: String): T = {
+      val s = config.get(key)
+      KryoSerializer.deserialize(s.toCharArray.map(_.toByte))
+    }
   }
 }
