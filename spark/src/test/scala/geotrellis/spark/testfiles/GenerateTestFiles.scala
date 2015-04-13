@@ -18,6 +18,7 @@ package geotrellis.spark.testfiles
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
 import geotrellis.raster._
@@ -32,124 +33,107 @@ import com.github.nscala_time.time.Imports._
 
 /** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
 object GenerateTestFiles {
-  def generate(catalog: HadoopRasterCatalog, sc: SparkContext): Unit = {
+  def generate(catalog: HadoopRasterCatalog)(implicit sc: SparkContext): Unit = {
     val cellType = TypeFloat
-    val layoutLevel = ZoomedLayoutScheme(3).levelFor(TestFiles.ZOOM_LEVEL)
-    val tileLayout = layoutLevel.tileLayout
-    /** HACK: each "cell" in RasterExtent is actually a tile from tileLayout
-      * now I can use this to snap any Extent to my worldtile grid
-      */
-    val re = RasterExtent(LatLng.worldExtent, tileLayout.layoutCols, tileLayout.layoutRows)
-    val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
-    val tileBounds = re.gridBoundsFor(extent)
+    val crs = LatLng
+    val tileLayout = TileLayout(8, 8, 3, 4)
+    val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
+    val gridBounds = GridBounds(1, 1, 6, 7)
+    val extent = mapTransform(gridBounds)
 
-    println(s"Tile Bounds: $tileBounds")
+    val md = RasterMetaData(cellType, extent, crs, tileLayout)
 
-    /**
-     * What I need now is a RasterExtent for the tile that will cover all the tiles in 'extent'
-     * - tileBounds to find out how many tiles I have to cover
-     * - tileLayout will tell me how many pixels each tile has
-     * - re and tileBounds will tell me what extent for my overall tile is
-     */
-    val rasterExtent =
-      RasterExtent(
-        extent = re.extentFor(tileBounds),
-        cols = tileBounds.width * tileLayout.tileCols,
-        rows = tileBounds.height * tileLayout.tileRows
-      )
+    generateSpatial(catalog, md)
+    generateSpaceTime(catalog, md)
+  }
 
-    val (tileCols, tileRows) =  (rasterExtent.cols, rasterExtent.rows)
-
-    // Generate Spatial Layers
-
+  def generateSpatial(catalog: HadoopRasterCatalog, md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+    val gridBounds = md.gridBounds
+    val tileLayout = md.tileLayout
+    // Spatial Tiles
     val spatialTestFiles = List(
-      new ConstantSpatialTestFileValues(1) -> "all-ones",
-      new ConstantSpatialTestFileValues(2) -> "all-twos",
-      new ConstantSpatialTestFileValues(100) -> "all-hundreds",
-      new IncreasingSpatialTestFileValues(tileCols, tileRows) -> "increasing",
-      new DecreasingSpatialTestFileValues(tileCols, tileRows) -> "decreasing",
-      new EveryOtherUndefined(tileCols) -> "every-other-undefined",
-      new EveryOther0Point99Else1Point01(tileCols) -> "every-other-0.99-else-1.01",
-      new EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1",
-      new Mod(tileCols, tileRows, 10000) -> "mod-10000"
+      new ConstantSpatialTiles(tileLayout, 1) -> "all-ones",
+      new ConstantSpatialTiles(tileLayout, 2) -> "all-twos",
+      new ConstantSpatialTiles(tileLayout, 100) -> "all-hundreds",
+      new IncreasingSpatialTiles(tileLayout, gridBounds) -> "increasing",
+      new DecreasingSpatialTiles(tileLayout, gridBounds) -> "decreasing",
+      new EveryOtherSpatialTiles(tileLayout, gridBounds, Double.NaN, 0.0) -> "every-other-undefined",
+      new EveryOtherSpatialTiles(tileLayout, gridBounds, 0.99, 1.01) -> "every-other-0.99-else-1.01",
+      new EveryOtherSpatialTiles(tileLayout, gridBounds, -1, 1) -> "every-other-1-else-1",
+      new ModSpatialTiles(tileLayout, gridBounds, 10000) -> "mod-10000"
     )
 
     for((tfv, name) <- spatialTestFiles) {
-      val cols = rasterExtent.cols
-      val rows = rasterExtent.rows
-      val tile = ArrayTile(tfv(cols, rows), cols, rows)
-
-      val tmsTiles =
-        tileBounds.coords.map { case (col, row) =>
-          val targetRasterExtent =
-            RasterExtent(
-              extent = re.extentFor(GridBounds(col, row, col, row)),
-              cols = tileLayout.tileCols,
-              rows = tileLayout.tileRows
-            )
-
-          val subTile: Tile = tile.resample(rasterExtent.extent, targetRasterExtent)
-          (SpatialKey(col, row), subTile)
+      val tiles =
+        for(
+          row <- gridBounds.rowMin to gridBounds.rowMax;
+          col <- gridBounds.colMin to gridBounds.colMax
+        ) yield {
+          val key = SpatialKey(col, row)
+          val tile = tfv(key)
+          (key, tile)
         }
+
 
       val rdd =
-        asRasterRDD(RasterMetaData(cellType, rasterExtent.extent, LatLng, tileLayout)) {
-          sc.parallelize(tmsTiles)
+        asRasterRDD(md) {
+          sc.parallelize(tiles)
         }
 
-      catalog.writer[SpatialKey](clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
-    }
+//      println(rdd.stitch.asciiDraw)
 
-    // Generate SpaceTime layers
-
-    // Yearly from 2010 - 2014
-    val times = 
-      (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
-
-    val spaceTimeTestFiles = List(
-      new ConstantSpaceTimeTestFileValues(1) -> "spacetime-all-ones",
-      new ConstantSpaceTimeTestFileValues(2) -> "spacetime-all-twos",
-      new ConstantSpaceTimeTestFileValues(100) -> "spacetime-all-hundreds",
-      new CoordinateSpaceTimeTestFileValues -> "spacetime-coordinates"
-    )
-
-    println(tileBounds)
-
-    for((tfv, name) <- spaceTimeTestFiles) {
-      val cols = rasterExtent.cols
-      val rows = rasterExtent.rows
-
-      val tmsTiles =
-        times.zipWithIndex.flatMap { case (time, i) =>
-          val tile = ArrayTile(tfv(cols, rows, i), cols, rows)
-
-          tileBounds.coords.map { case (col, row) =>
-            val targetRasterExtent =
-              RasterExtent(
-                extent = re.extentFor(GridBounds(col, row, col, row)),
-                cols = tileLayout.tileCols,
-                rows = tileLayout.tileRows
-              )
-
-            val subTile: Tile = tile.resample(rasterExtent.extent, targetRasterExtent)
-            (SpaceTimeKey(col, row, time), subTile)
-          }
-        }
-
-      val rdd =
-        asRasterRDD(RasterMetaData(cellType, rasterExtent.extent, LatLng, tileLayout)) {
-          sc.parallelize(tmsTiles)
-        }
-
-      catalog.writer[SpaceTimeKey](clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.writer[SpatialKey](RowMajorKeyIndexMethod, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }
 
-  def main(args: Array[String]): Unit = {
-    val sc = new SparkContext("local", "create-test-files")
-    val catalog = TestFiles.catalog(sc)
+  def generateSpaceTime(catalog: HadoopRasterCatalog, md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+    val gridBounds = md.gridBounds
+    val tileLayout = md.tileLayout
 
-    generate(catalog, sc)
+    val times = 
+      (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
+
+    val spaceTimeTestFiles = List(
+      new ConstantSpaceTimeTestTiles(tileLayout, 1) -> "spacetime-all-ones",
+      new ConstantSpaceTimeTestTiles(tileLayout, 2) -> "spacetime-all-twos",
+      new ConstantSpaceTimeTestTiles(tileLayout, 100) -> "spacetime-all-hundreds",
+      new CoordinateSpaceTimeTestTiles(tileLayout) -> "spacetime-coordinates"
+    )
+
+    for((tfv, name) <- spaceTimeTestFiles) {
+      val tiles =
+        for(
+          row <- gridBounds.rowMin to gridBounds.rowMax;
+          col <- gridBounds.colMin to gridBounds.colMax;
+          (time, timeIndex) <- times.zipWithIndex
+        ) yield {
+          val key = SpaceTimeKey(col, row, time)
+          val tile = tfv(key, timeIndex)
+          (key, tile)
+
+        }
+
+      val rdd =
+        asRasterRDD(md) {
+          sc.parallelize(tiles)
+        }
+
+//      println(rdd.stitch.asciiDraw)
+
+      catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+    }
+
+  }
+  def main(args: Array[String]): Unit = {
+    implicit val sc = SparkUtils.createLocalSparkContext("local", "create-test-files")
+    val localFS = TestFiles.catalogPath.getFileSystem(sc.hadoopConfiguration)
+    if(localFS.exists(TestFiles.catalogPath)) {
+      println("Deleting old catalog")
+      localFS.delete(TestFiles.catalogPath, true)
+    }
+
+    // This will cause the catalog to be generated.
+    val catalog = TestFiles.catalog(sc)
   }
 }

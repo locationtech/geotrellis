@@ -10,11 +10,14 @@ import geotrellis.spark.io.hadoop._
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
 
-  def catalog(implicit sc: SparkContext): HadoopRasterCatalog = {
+  def catalogPath(implicit sc: SparkContext): Path = {
+    val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(sc.hadoopConfiguration)
+    new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
+  }
 
+  def catalog(implicit sc: SparkContext): HadoopRasterCatalog = {
     val conf = sc.hadoopConfiguration
-    val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
-    val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
+    val localFS = catalogPath.getFileSystem(sc.hadoopConfiguration)
     val needGenerate = !localFS.exists(catalogPath)
 
     val defaultParams = 
@@ -26,7 +29,7 @@ object TestFiles extends Logging {
 
     if (needGenerate) {
       logInfo(s"test-catalog empty, generating at $catalogPath")
-      GenerateTestFiles.generate(catalog, sc)
+      GenerateTestFiles.generate(catalog)
     }
 
     catalog
@@ -81,9 +84,8 @@ trait TestFiles { self: OnlyIfCanRunSpark =>
   def AllHundredsSpaceTime =
     spaceTimeTestFile("spacetime-all-hundreds")
 
-  /** This test raster id's each tile value as COL ROW TIME, by the
-    * equation COL * 100 + ROW * 10 + TIME * 1. So col 3, row 5, time 2 would
-    * be value 352
+  /** Coordinates are CCC,RRR.TTT where C = column, R = row, T = time (year in 2010 + T).
+    * So 34,025.004 would represent col 34, row 25, year 2014
     */
   def CoordinateSpaceTime =
     spaceTimeTestFile("spacetime-coordinates")

@@ -3,6 +3,8 @@ package geotrellis.spark.io.accumulo.spacetime
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
+import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
 import geotrellis.raster._
 import geotrellis.index.zcurve._
 
@@ -19,27 +21,13 @@ import org.apache.spark.rdd.RDD
 
 import org.joda.time.{DateTimeZone, DateTime}
 
+import scala.collection.mutable
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
 
-object SpaceTimeRasterRDDIndex {
-  val rowIdRx = new Regex("""(\d+)_(\d+)""", "zoom", "zindex")
-
-  def timeChunk(time: DateTime): String =
-    time.getYear.toString
-
-  def rowId(id: LayerId, zindex: Z3): String =
-    f"${id.zoom}%02d_${zindex.z}%019d"
-
-  def rowId(id: LayerId, key: SpaceTimeKey): String = {
-    val SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) = key
-    val t = timeChunk(time).toInt
-    rowId(id, Z3(col, row, t))
-  }
-}
-
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
-  import SpaceTimeRasterRDDIndex._
+  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
+    ZSpaceTimeKeyIndex.byYear
 
   def tileSlugs(filters: List[GridBounds]): List[(String, String)] = filters match {
     case Nil =>
@@ -48,7 +36,7 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
       for{
         bounds <- filters
         row <- bounds.rowMin to bounds.rowMax 
-      } yield f"${bounds.colMin}%06d_${row}%06d" -> f"${bounds.colMax}%06d_${row}%06d"      
+      } yield f"${bounds.colMin}%06d_${row}%06d" -> f"${bounds.colMax}%06d_${row}%06d"
   }
   
   def timeSlugs(filters: List[(DateTime, DateTime)], minTime: DateTime, maxTime: DateTime): List[(Int, Int)] = filters match {
@@ -58,35 +46,41 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
       List(timeChunk(start).toInt -> timeChunk(end).toInt)
   }
 
-  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey]): Unit = {
-    var spaceFilters: List[GridBounds] = Nil
-    var timeFilters: List[(DateTime, DateTime)] = Nil
+  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey]): Unit = {
+    val spaceFilters = mutable.ListBuffer[GridBounds]()
+    val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
 
     filterSet.filters.foreach {
       case SpaceFilter(bounds) => 
-        spaceFilters = bounds :: spaceFilters
+        spaceFilters += bounds
       case TimeFilter(start, end) =>
-        timeFilters = (start, end) :: timeFilters
+        timeFilters += ( (start, end) )
     }
 
-    def timeIndex(dt: DateTime) = timeChunk(dt).toInt
+    if(spaceFilters.isEmpty) {
+      val minKey = keyBounds.minKey.spatialKey
+      val maxKey = keyBounds.maxKey.spatialKey
+      spaceFilters += GridBounds(minKey.col, minKey.row, maxKey.col, maxKey.row)
+    }
+
+    if(timeFilters.isEmpty) {
+      val minKey = keyBounds.minKey.temporalKey
+      val maxKey = keyBounds.maxKey.temporalKey
+      timeFilters += ( (minKey.time, maxKey.time) )
+
+    }
 
     InputFormatBase.setLogLevel(job, org.apache.log4j.Level.DEBUG)
     
     val ranges: Seq[ARange] = (
       for {
         bounds <- spaceFilters
-        (timeStart, timeEnd) <- timeSlugs(timeFilters, keyBounds.minKey.temporalKey.time, keyBounds.maxKey.temporalKey.time)
+        (timeStart, timeEnd) <- timeFilters
       } yield {
-        val p1 = Z3(bounds.colMin, bounds.rowMin, timeStart)
-        val p2 = Z3(bounds.colMax, bounds.rowMax, timeEnd)
+        val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
+        val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
         
-        val rangeProps = Map(
-          "min" -> p1.z.toString,
-          "max" -> p2.z.toString)
-        
-
-        val ranges = Z3.zranges(p1, p2)
+        val ranges = index.indexRanges(p1, p2)
 
         ranges
           .map { case (min: Long, max: Long) =>
@@ -119,23 +113,26 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
     InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
   }
 
-  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
+  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
     new FilterableRasterRDDReader[SpaceTimeKey] {
       def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
         val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
         val job = Job.getInstance(sc.hadoopConfiguration)
         instance.setAccumuloConfig(job)
         InputFormatBase.setInputTableName(job, tileTable)
-        setFilters(job, layerId, filters, keyBounds)
+        setFilters(job, layerId, filters, keyBounds, index)
         val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[BatchAccumuloInputFormat], classOf[Key], classOf[Value])
         val tileRdd = 
-          rdd.map { case (key, value) =>
-            val rowIdRx(zoom, zindex) = key.getRow.toString
-            val Z3(col, row, year) = new Z3(zindex.toLong)
-            val spatialKey = SpatialKey(col, row)
-            val time = DateTime.parse(key.getColumnQualifier.toString)
-            val tile = ArrayTile.fromBytes(value.get, rasterMetaData.cellType, rasterMetaData.tileLayout.tileCols, rasterMetaData.tileLayout.tileRows)
-            SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
+          rdd.map { case (_, value) =>
+            val (key, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](value.get)
+            val tile =
+              ArrayTile.fromBytes(
+                tileBytes,
+                rasterMetaData.cellType,
+                rasterMetaData.tileLayout.tileCols,
+                rasterMetaData.tileLayout.tileRows
+              )
+            (key, tile: Tile)
           }
 
         new RasterRDD(tileRdd, rasterMetaData)

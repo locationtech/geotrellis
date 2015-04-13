@@ -33,8 +33,8 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   val height = rowMax - rowMin + 1
 
   def contains(col: Int, row: Int): Boolean =
-    (colMin <= col || col <= colMax) &&
-    (rowMin <= row || row <= rowMax)
+    (colMin <= col && col <= colMax) &&
+    (rowMin <= row && row <= rowMax)
 
   def intersects(other: GridBounds): Boolean =
     !(colMax < other.colMin || other.colMax < colMin) &&

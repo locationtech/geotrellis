@@ -23,19 +23,30 @@ import org.apache.hadoop.io._
 import java.io._
 
 class SpatialKeyWritable() extends Writable
-                              with WritableComparable[SpatialKeyWritable] 
-                              with Serializable {
+    with IndexedKeyWritable[SpatialKey]
+    with WritableComparable[SpatialKeyWritable]
+    with Serializable {
+  private var _index: Long = 0L
   private var _value: SpatialKey = null
 
-  def set(spatialKey: SpatialKey): Unit = _value = spatialKey
-  def get(): SpatialKey = _value
+  def index = _index
+  def key = _value
+
+  def set(i: Long, k: SpatialKey): Unit = {
+    _index = i
+    _value = k
+  }
+
+  def get(): (Long, SpatialKey) = (_index, _value)
 
   def write(out: DataOutput): Unit = {
+    out.writeLong(_index)
     out.writeInt(_value.col)
     out.writeInt(_value.row)
   }
 
   def readFields(in: DataInput): Unit = {
+    _index = in.readLong
     val col = in.readInt
     val row = in.readInt
     _value = SpatialKey(col, row)
@@ -50,21 +61,22 @@ class SpatialKeyWritable() extends Writable
   override def hashCode = get.hashCode
 
   def compareTo(other: SpatialKeyWritable): Int =
-    if(SpatialKey.ordering.lt(this._value, other._value)) -1
-    else if(this._value == other._value) 0 
-    else 1
+    if(this._index < other._index) -1
+    else if (this._index > other._index) 1
+    else {
+      if(SpatialKey.ordering.lt(this._value, other._value)) -1
+      else if(this._value == other._value) 0
+      else 1
+    }
 }
 
 object SpatialKeyWritable {
   implicit def ordering[A <: SpatialKeyWritable]: Ordering[A] =
     Ordering.by(w => w.get)
 
-  implicit def spatialKeytoWritable(spatialKey: SpatialKey): SpatialKeyWritable = 
-    apply(spatialKey)
-
-  def apply(spatialKey: SpatialKey): SpatialKeyWritable = {
+  def apply(index: Long, spatialKey: SpatialKey): SpatialKeyWritable = {
     val w = new SpatialKeyWritable
-    w.set(spatialKey)
+    w.set(index, spatialKey)
     w
   }
 }

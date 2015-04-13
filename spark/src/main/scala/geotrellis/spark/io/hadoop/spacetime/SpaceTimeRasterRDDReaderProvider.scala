@@ -4,16 +4,68 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
+import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 
+import scala.collection.mutable
+import org.joda.time.{DateTimeZone, DateTime}
+
 // TODO: Refactor the writer and reader logic to abstract over the key type.
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] with Logging {
-  def reader(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData)(implicit sc: SparkContext): RasterRDDReader[SpaceTimeKey] =
-    new RasterRDDReader[SpaceTimeKey] {
-      def read(layerId: LayerId): RasterRDD[SpaceTimeKey] = {
+
+  def reader(
+    catalogConfig: HadoopRasterCatalogConfig, 
+    layerMetaData: HadoopLayerMetaData, 
+    keyIndex: KeyIndex[SpaceTimeKey], 
+    keyBounds: KeyBounds[SpaceTimeKey]
+  )(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
+    new FilterableRasterRDDReader[SpaceTimeKey] {
+      def filterDefinition(filterSet: FilterSet[SpaceTimeKey]): FilterMapFileInputFormat.FilterDefinition[SpaceTimeKey] = {
+        val spaceFilters = mutable.ListBuffer[GridBounds]()
+        val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
+
+        filterSet.filters.foreach {
+          case SpaceFilter(bounds) =>
+            spaceFilters += bounds
+          case TimeFilter(start, end) =>
+            timeFilters += ( (start, end) )
+        }
+
+        if(spaceFilters.isEmpty) {
+          val minKey = keyBounds.minKey.spatialKey
+          val maxKey = keyBounds.maxKey.spatialKey
+          spaceFilters += GridBounds(minKey.col, minKey.row, maxKey.col, maxKey.row)
+        }
+
+        if(timeFilters.isEmpty) {
+          val minKey = keyBounds.minKey.temporalKey
+          val maxKey = keyBounds.maxKey.temporalKey
+          timeFilters += ( (minKey.time, maxKey.time) )
+        }
+
+        val indexRanges = 
+          (for {
+            bounds <- spaceFilters
+            (timeStart, timeEnd) <- timeFilters
+          } yield {
+            val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
+            val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
+
+            val i1 = keyIndex.toIndex(p1)
+            val i2 = keyIndex.toIndex(p2)
+            
+            keyIndex.indexRanges((p1, p2))
+          }).flatten.toArray
+
+        (filterSet, indexRanges)
+      }
+
+      def read(layerId: LayerId, filterSet: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
         val path = layerMetaData.path
 
         val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
@@ -24,46 +76,30 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
         val inputConf = conf.withInputPath(dataPath)
 
         val writableRdd: RDD[(SpaceTimeKeyWritable, TileWritable)] =
-// TODO: Do we support filtering in HDFS?
-//          if(filters.isEmpty) {
-            sc.newAPIHadoopRDD[SpaceTimeKeyWritable, TileWritable, SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]](
+          if(filterSet.isEmpty) {
+            sc.newAPIHadoopRDD(
               inputConf,
               classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]],
               classOf[SpaceTimeKeyWritable],
               classOf[TileWritable]
             )
-          // } else {
-          //   val partitioner = KeyPartitioner[K](readSplits(path, conf))
+          } else {
+            inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, filterDefinition(filterSet))
 
-          //   val _filters = sc.broadcast(filters)
-          //   val includeKey: keyWritable.Writable => Boolean =
-          //   { writable =>
-          //     _filters.value.includeKey(keyWritable.toValue(writable))
-          //   }
-
-          //   val includePartition: Partition => Boolean =
-          //   { partition =>
-          //     val minKey = partitioner.minKey(partition.index)
-          //     val maxKey = partitioner.maxKey(partition.index)
-
-          //     _filters.value.includePartition(minKey, maxKey)
-          //   }
-
-          //   new PreFilteredHadoopRDD[keyWritable.Writable, TileWritable](
-          //     sc,
-          //     classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
-          //     classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]],
-          //     classOf[TileWritable],
-          //     inputConf
-          //   )(includePartition)(includeKey)
-          // }
+            sc.newAPIHadoopRDD(
+              inputConf,
+              classOf[SpaceTimeFilterMapFileInputFormat],
+              classOf[SpaceTimeKeyWritable],
+              classOf[TileWritable]
+            )
+          }
 
         val rasterMetaData = layerMetaData.rasterMetaData
 
         asRasterRDD(rasterMetaData) {
           writableRdd
             .map  { case (keyWritable, tileWritable) =>
-              (keyWritable.get, tileWritable.toTile(rasterMetaData))
+              (keyWritable.get._2, tileWritable.toTile(rasterMetaData))
           }
         }
 

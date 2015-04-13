@@ -1,9 +1,12 @@
 package geotrellis.spark.io.hadoop.spacetime
 
 import geotrellis.spark._
+import geotrellis.spark.utils._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
+import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}
 import org.apache.spark.SparkContext._
@@ -12,12 +15,11 @@ import org.apache.hadoop.io.SequenceFile
 import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFileOutputFormat}
 import org.apache.hadoop.mapreduce.Job
 
-
 object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTimeKey] with Logging {
-  implicit def toWritable(key: SpaceTimeKey) = SpaceTimeKeyWritable(key)
-  def newWritable = new SpaceTimeKeyWritable
 
-  def writer(catalogConfig: HadoopRasterCatalogConfig, layerPath: Path, clobber: Boolean = true)(implicit sc: SparkContext) =
+  def writer(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData, keyIndex: KeyIndex[SpaceTimeKey], clobber: Boolean = true)(implicit sc: SparkContext) = {
+    val layerPath = layerMetaData.path
+
     new RasterRDDWriter[SpaceTimeKey] {
       def write(layerId: LayerId, rdd: RasterRDD[SpaceTimeKey]): Unit = {
         val conf = sc.hadoopConfiguration
@@ -55,9 +57,10 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
         }
 
         // Sort the writables, and cache as we'll be computing this RDD twice.
+        val closureKeyIndex = keyIndex
         val sortedWritable =
           rdd
-            .map { case (key, tile) => (SpaceTimeKeyWritable(key), TileWritable(tile)) }
+            .map(KryoClosure { case (key, tile) => (SpaceTimeKeyWritable(closureKeyIndex.toIndex(key), key), TileWritable(tile)) })
             .sortByKey(numPartitions = partitions)
             .cache
 
@@ -83,6 +86,6 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
 //        writeSplits(splits, layerPath, conf)
         logInfo(s"Finished saving tiles to ${layerPath}")
       }
-
     }
+  }
 }
