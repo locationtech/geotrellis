@@ -20,15 +20,13 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         // TODO: Check if I am clobbering things        
         logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
 
-        val credentials = credentialsProvider.getCredentials
-        val key = credentials.getAWSAccessKeyId
-        val secret = credentials.getAWSSecretKey
+        val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
         val catalogBucket = bucket
         val path = layerPath
         
         rdd
           .foreachPartition { iter =>
-            val s3Client = new AmazonS3Client(new BasicAWSCredentials(key, secret))          
+            val s3Client = new AmazonS3Client(bcCredentials.value)
             
             iter.foreach { case (key: SpatialKey, tile: Tile) =>
               val geohash = Z2(key.col, key.row).z
