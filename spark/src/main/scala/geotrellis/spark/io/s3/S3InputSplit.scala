@@ -4,23 +4,26 @@ import java.io.{DataOutput, DataInput}
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
 import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, AnonymousAWSCredentials}
+import com.typesafe.scalalogging.slf4j._
 
 /**
  * Represents are batch of keys to be read from an S3 bucket.
  * AWS credentials have already been discovered and provided by the S3InputFormat.
  */
-class S3InputSplit extends InputSplit with Writable 
+class S3InputSplit extends InputSplit with Writable with LazyLogging
 {
   var accessKeyId: String = null
   var secretKey: String = null
   var bucket: String = _
   var keys: Seq[String] = Seq.empty
 
-  def credentials: AWSCredentials =
+  def credentials: AWSCredentials = {
+    logger.debug("Credentials: KEY=$accessKeyId")
     if (accessKeyId != null && secretKey != null)
       new BasicAWSCredentials(accessKeyId, secretKey)    
     else
       new AnonymousAWSCredentials()
+  }
 
   override def getLength: Long = keys.length
 
