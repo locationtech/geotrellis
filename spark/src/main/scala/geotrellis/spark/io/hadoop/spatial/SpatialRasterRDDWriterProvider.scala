@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
 import geotrellis.raster._
 
 import org.apache.spark.{SparkContext, Logging}
@@ -60,18 +61,11 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         val closureKeyIndex = keyIndex
         val sortedWritable =
           rdd
-            .map { case (key, tile) => (SpatialKeyWritable(closureKeyIndex.toIndex(key), key), TileWritable(tile)) }
+            .map( KryoClosure { case (key, tile) =>
+              (SpatialKeyWritable(closureKeyIndex.toIndex(key), key), TileWritable(tile))
+            })
             .sortByKey(numPartitions = partitions)
             .cache
-
-        // Run over the partitions and collect the first values, as they will be named the split values.
-        // TODO: WRITE SPLITS
-        // val splits: Array[K] =
-        //   sortedWritable
-        //     .mapPartitions { iter =>
-        //     if(iter.hasNext) Seq(iter.next._1.toValue).iterator else sys.error(s"Empty partition.")
-        //   }
-        //     .collect
 
         // Write the RDD.
         sortedWritable
@@ -83,7 +77,6 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
             job.getConfiguration
         )
 
-//        writeSplits(splits, layerPath, conf)
         logInfo(s"Finished saving tiles to ${layerPath}")
       }
 
