@@ -9,6 +9,7 @@ import geotrellis.spark
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.raster.op.local._
@@ -37,11 +38,7 @@ class CassandraRasterCatalogSpec extends FunSpec
     ifCanRunSpark { 
 
       useCassandraConfig("cassandra-default.yaml.template")
-      val conf = new SparkConf(true)
-        .set("spark.cassandra.connection.host", "127.0.0.1")
-      val sc = new SparkContext("spark://kyeh-yoga:7077", "test", conf)
-
-      val connector = CassandraConnector(Set(cassandraHost))
+      val connector = EmbeddedCassandraConnector(Set(cassandraHost))
       implicit val cassandra = CassandraInstance(connector, "test")
 
       val allOnes = new Path(inputHome, "all-ones.tif")
@@ -57,7 +54,7 @@ class CassandraRasterCatalogSpec extends FunSpec
         val layerId = LayerId("ones", level.zoom)
 
         it("should succeed writing to a table") {
-          catalog.writer[SpatialKey](tableName).write(layerId, onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName).write(layerId, onesRdd)
         }
 
         it("should load out saved tiles") {
@@ -105,13 +102,13 @@ class CassandraRasterCatalogSpec extends FunSpec
       val tableName = "spacetime_tiles"
 
       val catalog = 
-        CassandraRasterCatalog("metadata")
+        CassandraRasterCatalog("metadata", "attributes")
 
       val zoom = 10
       val layerId = LayerId("coordinates", zoom)
 
       it("should succeed writing to a table") {
-        catalog.writer[SpaceTimeKey](tableName).write(layerId, CoordinateSpaceTime)
+        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName).write(layerId, CoordinateSpaceTime)
       }
 
       it("should load out saved tiles") {
@@ -148,7 +145,7 @@ class CassandraRasterCatalogSpec extends FunSpec
 
         val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
 
-        rdd.map(_._1).collect.foreach { case SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) =>
+        rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
         }
       }
@@ -172,7 +169,7 @@ class CassandraRasterCatalogSpec extends FunSpec
 
         val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
 
-        rdd.map(_._1).collect.foreach { case SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) =>
+        rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
           time should be (maxTime)
         }
