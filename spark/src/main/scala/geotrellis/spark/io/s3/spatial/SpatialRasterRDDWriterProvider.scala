@@ -27,20 +27,22 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         val path = layerPath
         
         rdd
-          .foreachPartition { iter =>            
+          .foreachPartition { partition =>
             val tx = new TransferManager(bcCredentials.value);
-            var uploads = ArrayBuffer.empty[Upload]
 
-            iter.foreach { case (key: SpatialKey, tile: Tile) =>
-              val index = Z2(key.col, key.row).z
-              val bytes = tile.toBytes
-              val metadata = new ObjectMetadata()
-              metadata.setContentLength(bytes.length);              
-              val is = new ByteArrayInputStream(bytes)
-              tx.upload(catalogBucket, f"$path/${index}%019d", is, metadata)              
+            partition.sliding(128,128).foreach{ iter =>
+              var uploads = ArrayBuffer.empty[Upload]
+            
+              iter.foreach { case (key: SpatialKey, tile: Tile) =>
+                val index = Z2(key.col, key.row).z
+                val bytes = tile.toBytes
+                val metadata = new ObjectMetadata()
+                metadata.setContentLength(bytes.length);              
+                val is = new ByteArrayInputStream(bytes)
+                uploads += tx.upload(catalogBucket, f"$path/${index}%019d", is, metadata)              
+              }
+              uploads.foreach(_.waitForUploadResult) // block
             }
-
-            uploads.foreach(_.waitForUploadResult) // block
           }
 
         logger.info(s"Finished saving tiles to ${layerPath}")
