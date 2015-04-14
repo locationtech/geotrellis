@@ -31,10 +31,12 @@ object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
     
     val job = sc.newJob("geotiff-ingest")        
     S3InputFormat.setUrl(job, args.input)
-    val source = sc.newAPIHadoopRDD(job.getConfiguration,
-      classOf[GeoTiffS3InputFormat],
-      classOf[ProjectedExtent],
-      classOf[Tile])
+    val source = 
+      sc.newAPIHadoopRDD(job.getConfiguration,
+        classOf[GeoTiffS3InputFormat],
+        classOf[ProjectedExtent],
+        classOf[Tile])
+      .repartition(args.partitions)
     
     val layoutScheme = ZoomedLayoutScheme(256)
 
