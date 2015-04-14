@@ -18,7 +18,7 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   var keys: Seq[String] = Seq.empty
 
   def credentials: AWSCredentials = {
-    logger.debug(s"Credentials: KEY=$accessKeyId")
+    logger.debug(s"AWS Credentials: $accessKeyId:$secretKey")
     if (accessKeyId != null && secretKey != null)
       new BasicAWSCredentials(accessKeyId, secretKey)    
     else
