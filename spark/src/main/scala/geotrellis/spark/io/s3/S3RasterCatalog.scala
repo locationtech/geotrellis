@@ -68,7 +68,7 @@ class S3RasterCatalog(
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         val layerPath = 
-          if (subDir == "")
+          if (subDir != "")
             s"${rootPath}/${subDir}/${catalogConfig.layerDataDir(layerId)}"
           else
             s"${rootPath}/${catalogConfig.layerDataDir(layerId)}"
