@@ -36,11 +36,11 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
     case c: BasicAWSCredentials =>
       accessKeyId = c.getAWSAccessKeyId
       secretKey = c.getAWSSecretKey
-      secretKey = null
+      sessionToken = null
     case c: BasicSessionCredentials =>
       accessKeyId = c.getAWSAccessKeyId
       secretKey = c.getAWSSecretKey
-      secretKey = c.getSessionToken
+      sessionToken = c.getSessionToken
     case _ =>
       throw new IllegalArgumentException("Can not handle $c")
   }
