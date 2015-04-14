@@ -19,6 +19,8 @@ import org.apache.spark.Logging
 
 import DefaultJsonProtocol._
 
+import scala.collection.mutable
+
 case class CassandraLayerMetaData(
   rasterMetaData: RasterMetaData,
   histogram: Option[Histogram],
@@ -40,17 +42,17 @@ class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val 
     session.execute(schema)
   }
 
-  var catalog: Map[(LayerId, TableName), CassandraLayerMetaData] = fetchAll
+  var catalog: mutable.Map[LayerId, CassandraLayerMetaData] = fetchAll
 
   def zoomLevelsFor(layerName: String): Seq[Int] = {
-    catalog.keys.filter(_._1.name == layerName).map(_._1.zoom).toSeq
+    catalog.keys.filter(_.name == layerName).map(_.zoom).toSeq
   }
 
   type TableName = String
 
   def read(layerId: LayerId): CassandraLayerMetaData = {
     val candidates = catalog
-      .filterKeys( key => key._1 == layerId)
+      .filterKeys(_ == layerId)
 
     candidates.size match {
       case 0 =>
@@ -63,31 +65,23 @@ class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val 
     }
   }
 
-  def read(layerId: LayerId, table: TableName): CassandraLayerMetaData = {
-    catalog.get(layerId -> table) match {
-      case Some(md) => md
-      case None =>
-        throw new LayerNotFoundError(layerId)
-    }
-  }
-
   def write(layerId: LayerId, metaData: CassandraLayerMetaData): Unit = {
     val tileTable = metaData.tileTable
-    catalog = catalog updated ((layerId -> tileTable), metaData)
+    catalog(layerId) = metaData
 
     val update = QueryBuilder.update(keyspace, catalogTable)
       .`with`(set("metadata", metaData.rasterMetaData.toJson.compactPrint))
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
-      .where (eqs("id", s"${tileTable.toString}__${layerId.name}"))
+      .where (eqs("id", s"${tileTable}__${layerId.name}"))
       .and   (eqs("zoom", layerId.zoom))
 
     session.execute(update)
   }
 
-  def fetchAll: Map[(LayerId, TableName), CassandraLayerMetaData] = {
-    var data: Map[(LayerId, TableName), CassandraLayerMetaData] =
-      Map.empty
+  def fetchAll: mutable.Map[LayerId, CassandraLayerMetaData] = {
+    var data: mutable.Map[LayerId, CassandraLayerMetaData] =
+      mutable.Map.empty
 
     val queryAll = QueryBuilder.select.all.from(keyspace, catalogTable)
     val results = session.execute(queryAll)
@@ -112,8 +106,7 @@ class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val 
         tileTable = tileTable
       )
 
-      val key = layerId -> tileTable
-      data = data updated (key, metaData)
+      data = data updated (layerId, metaData)
     }
 
     return data

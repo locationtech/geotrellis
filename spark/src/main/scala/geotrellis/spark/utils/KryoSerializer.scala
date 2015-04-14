@@ -50,4 +50,8 @@ object KryoSerializer {
   def deserialize[T: ClassTag](bytes: Array[Byte]): T  = {
     ser.newInstance().deserialize[T](ByteBuffer.wrap(bytes))
   }
+  
+  def deserialize[T: ClassTag](bytes: ByteBuffer): T = {
+    ser.newInstance().deserialize[T](bytes)
+  }
 }

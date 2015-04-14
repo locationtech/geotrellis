@@ -5,6 +5,8 @@ import java.nio.ByteBuffer
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra._
+import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -20,9 +22,8 @@ import com.datastax.driver.core.DataType.{text, blob}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
-  import SpatialRasterRDDIndex._
 
-  def writer(instance: CassandraInstance, layerMetaData: CassandraLayerMetaData)(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
+  def writer(instance: CassandraInstance, layerMetaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, raster: RasterRDD[SpatialKey]): Unit = {
 
@@ -32,14 +33,17 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         val schema = SchemaBuilder.createTable(instance.keyspace, tileTable).ifNotExists()
           .addPartitionKey("id", text)
           .addClusteringColumn("name", text)
-          .addColumn("tile", blob)
+          .addColumn("value", blob)
         
         instance.session.execute(schema)
         
         raster
-          .sortBy { case (key, _) => rowId(layerId, key) }
-          .map { case (key, tile) => (rowId(layerId, key), layerId.name, ByteBuffer.wrap(tile.toBytes)) }
-          .saveToCassandra(instance.keyspace, tileTable, SomeColumns("id", "name", "tile"))
+          .map { case (key, tile) => 
+            val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
+
+            (rowId(layerId, index.toIndex(key)), layerId.name, value) 
+          }
+          .saveToCassandra(instance.keyspace, tileTable, SomeColumns("id", "name", "value"))
       }
     }
 }

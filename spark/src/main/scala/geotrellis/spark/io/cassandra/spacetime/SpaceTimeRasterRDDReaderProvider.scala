@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import org.joda.time.DateTime
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
 import scala.util.matching.Regex
 
 import geotrellis.index.zcurve._
@@ -12,6 +12,9 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -22,103 +25,103 @@ import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector._
 
-object SpaceTimeRasterRDDIndex {
-
-  val rowIdRx = new Regex("""(\d+)_(\d+)""", "zoom", "zindex")
-
-  def timeChunk(time: DateTime): String =
-    time.getYear.toString
-
-  def rowId(id: LayerId, zindex: Z3): String =
-    f"${id.zoom}%02d_${zindex.z}%019d"
-
-  def rowId(id: LayerId, key: SpaceTimeKey): String = {
-    val SpaceTimeKey(SpatialKey(col, row), TemporalKey(time)) = key
-    val t = timeChunk(time).toInt
-    rowId(id, Z3(col, row, t))
-  }
-}
-
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
-  import SpaceTimeRasterRDDIndex._
+  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
+    ZSpaceTimeKeyIndex.byYear
 
-  def tileKeys(filters: List[GridBounds]): List[(SpatialKey, SpatialKey)] =
-    filters match {
-      case Nil =>
-        List(SpatialKey(0,0) -> SpatialKey(Int.MaxValue - 1, Int.MaxValue - 1))
-      case _ =>
-        for {
-          bounds <- filters
-          row <- bounds.rowMin to bounds.rowMax
-        } yield SpatialKey(bounds.colMin, row) -> SpatialKey(bounds.colMax, row)
-    }
+  def tileSlugs(filters: List[GridBounds]): List[(String, String)] = filters match {
+    case Nil =>
+      List(("0"*6 + "_" + "0"*6) -> ("9"*6 + "_" + "9"*6))
+    case _ => 
+      for{
+        bounds <- filters
+        row <- bounds.rowMin to bounds.rowMax 
+      } yield f"${bounds.colMin}%06d_${row}%06d" -> f"${bounds.colMax}%06d_${row}%06d"
+  }
   
-  def timeKeys(filters: List[(DateTime, DateTime)]): List[(TemporalKey, TemporalKey)] =
-    filters match {
-      case Nil =>
-        List(TemporalKey(new DateTime(0)) -> TemporalKey(new DateTime().withYear(292278993)))
-      case List((start, end)) =>
-        List(TemporalKey(start) -> TemporalKey(end))
-    }
+  def timeSlugs(filters: List[(DateTime, DateTime)], minTime: DateTime, maxTime: DateTime): List[(Int, Int)] = filters match {
+    case Nil =>
+      List(timeChunk(minTime).toInt -> timeChunk(maxTime).toInt)
+    case List((start, end)) =>                 
+      List(timeChunk(start).toInt -> timeChunk(end).toInt)
+  }
 
-  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpaceTimeKey]): RDD[(String, ByteBuffer)] = {
-
-    var tileBoundSet = filterSet.isEmpty
-    var spaceFilters: List[GridBounds] = Nil
-    var timeFilters: List[(DateTime, DateTime)] = Nil
-    var rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
+  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey]): RDD[(String, ByteBuffer)] = {
+    val spaceFilters = mutable.ListBuffer[GridBounds]()
+    val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
 
     filterSet.filters.foreach {
-      case SpaceFilter(bounds) =>
-        spaceFilters = bounds :: spaceFilters
+      case SpaceFilter(bounds) => 
+        spaceFilters += bounds
       case TimeFilter(start, end) =>
-        timeFilters = (start, end) :: timeFilters
+        timeFilters += ( (start, end) )
     }
 
-    for {
-      (tileFrom, tileTo) <- tileKeys(spaceFilters)
-      (timeFrom, timeTo) <- timeKeys(timeFilters)
-    } yield {
-      val min = rowId(layerId, SpaceTimeKey(tileFrom, timeFrom))
-      val max = rowId(layerId, SpaceTimeKey(tileTo, timeTo))
-      rdds += rdd.where("id >= ? AND id <= ?", min, max)
+    if(spaceFilters.isEmpty) {
+      val minKey = keyBounds.minKey.spatialKey
+      val maxKey = keyBounds.maxKey.spatialKey
+      spaceFilters += GridBounds(minKey.col, minKey.row, maxKey.col, maxKey.row)
     }
-    
-    if (!tileBoundSet) {
-      val zmin = f"${layerId.zoom}%02d"
-      val zmax = f"${layerId.zoom+1}%02d"
-      rdds += rdd.where("id >= ? AND id < ?", zmin, zmax)
+
+    if(timeFilters.isEmpty) {
+      val minKey = keyBounds.minKey.temporalKey
+      val maxKey = keyBounds.maxKey.temporalKey
+      timeFilters += ( (minKey.time, maxKey.time) )
+
     }
+
+    var rdds = mutable.ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
     
+    val ranges: Seq[CassandraRDD[(String, ByteBuffer)]] = (
+      for {
+        bounds <- spaceFilters
+        (timeStart, timeEnd) <- timeFilters
+      } yield {
+        val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
+        val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
+        
+        val ranges = index.indexRanges(p1, p2)
+
+        ranges
+          .map { case (min: Long, max: Long) =>
+
+            val start = f"${layerId.zoom}%02d_${min}%019d"
+            val end   = f"${layerId.zoom}%02d_${max}%019d"
+            rdds += rdd.where("id >= ? AND id <= ?", start, end)
+            if (min == max)
+              rdd.where("id = ?", start)
+            else
+              rdd.where("id >= ? AND id <= ?", start, end)
+          }        
+      }).flatten
+
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
   }
 
-  def reader(instance: CassandraInstance, metaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
+  def reader(instance: CassandraInstance, metaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
     new FilterableRasterRDDReader[SpaceTimeKey] {
       def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
         val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
 
         val rdd: CassandraRDD[(String, ByteBuffer)] = 
-          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("id", "tile")
+          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("id", "value")
 
-        val filteredRDD = applyFilter(rdd, layerId, filters)
+        val filteredRDD = applyFilter(rdd, layerId, filters, keyBounds, index)
 
         val tileRDD =
-          filteredRDD.map { case (id, tilebytes) =>
-                    val rowIdRx(zoom, zindex) = id
-                    val Z3(col, row, time) = new Z3(zindex.toLong)
-                    val bytes = new Array[Byte](tilebytes.capacity)
-                    tilebytes.get(bytes, 0, bytes.length)
-                    val tile = 
+          filteredRDD.map { case (_, value) =>
+                    val bytes = new Array[Byte](value.capacity)
+                    value.get(bytes, 0, bytes.length)
+                    val (key, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](bytes)
+                    val tile =
                       ArrayTile.fromBytes(
-                        bytes,
-                        rasterMetaData.cellType, 
+                        tileBytes,
+                        rasterMetaData.cellType,
                         rasterMetaData.tileLayout.tileCols,
                         rasterMetaData.tileLayout.tileRows
                       )
-
-                    SpaceTimeKey(col.toInt, row.toInt, new DateTime(time)) -> tile.asInstanceOf[Tile]
-                  }
+                    (key, tile: Tile)
+          }
     
         new RasterRDD(tileRDD, rasterMetaData)
       }
