@@ -380,6 +380,7 @@ object GeotrellisBuild extends Build {
           "com.datastax.spark" %% "spark-cassandra-connector" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
           "com.datastax.spark"  %% "spark-cassandra-connector-embedded" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
           "com.datastax.cassandra" % "cassandra-driver-core" % Version.cassandra_connector,
+          "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
           logging, awsSdkS3,
           spire,
           monocleCore, monocleMacro,

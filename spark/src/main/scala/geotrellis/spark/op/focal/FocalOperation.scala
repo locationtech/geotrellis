@@ -23,7 +23,7 @@ object FocalOperation {
       val (r, c) = (row + dy, col + dx)
 
       neighborCoordinates(i) =
-        if (c >= gridBounds.width - 1 || r >= gridBounds.height - 1 || c < 0 || r < 0) None
+        if (c >= gridBounds.width || r >= gridBounds.height || c < 0 || r < 0) None
         else Some((r, c))
     }
 
@@ -61,7 +61,6 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val metadata = bcMetadata.value
       val gridBounds = metadata.gridBounds
       val SpatialKey(col, row) = key
-
       (key, tile, FocalOperation.getNeighborCoordinates(gridBounds, col, row))
     }
 
@@ -87,35 +86,35 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
       val sc = rdd.sparkContext
       val bcMetadata = sc.broadcast(rasterRDD.metaData)
 
-      val part = rdd.groupBy { case(key, tile, seq) => seq(idx) }
-        .filter { case(k, it) => !k.isEmpty }
-        .map { case(k, it) => (k.get, it) }
-        .map { case((row, col), seq) =>
-          val gridBounds = bcMetadata.value.gridBounds
+      val part = 
+        rdd
+          .groupBy { case(key, tile, seq) => seq(idx) }
+          .filter { case(k, it) => !k.isEmpty }
+          .map { case(k, it) => (k.get, it) }
+          .map { case((row, col), seq) =>
+            val neighborMap: Map[(Int, Int), (K, Tile)] =
+              seq.map { case(k, t, _) =>
+                val SpatialKey(col, row) = k
+                (k, t, (row, col))
+              }.groupBy(_._3).map(t => {
+                val k = t._1
+                val v = t._2.head
+                (k, (v._1, v._2))
+              })
 
-          val neighborMap: Map[(Int, Int), (K, Tile)] =
-            seq.map { case(k, t, _) =>
-              val SpatialKey(col, row) = k
-              (k, t, (row, col))
-            }.groupBy(_._3).map(t => {
-              val k = t._1
-              val v = t._2.head
-              (k, (v._1, v._2))
-            })
+            val (key, tile) = neighborMap((row, col))
 
-          val (key, tile) = neighborMap((row, col))
+            val tileNeighborsSeq = Seq(
+              (-1, 0), (-1, 1), (0, 1), (1, 1),
+              (1, 0), (1, -1), (0, -1), (-1, -1)
+            ).map { case(dy, dx) =>
+                neighborMap.get((row + dy, col + dx)).map(_._2)
+            }
 
-          val tileNeighborsSeq = Seq(
-            (-1, 0), (-1, 1), (0, 1), (1, 1),
-            (1, 0), (1, -1), (0, -1), (-1, -1)
-          ).map { case(dy, dx) =>
-              neighborMap.get((row + dy, col + dx)).map(_._2)
-          }
+            val tileNeighbors: TileNeighbors = SeqTileNeighbors(tileNeighborsSeq)
 
-          val tileNeighbors: TileNeighbors = SeqTileNeighbors(tileNeighborsSeq)
-
-          (key, tile, tileNeighbors)
-      }
+            (key, tile, tileNeighbors)
+        }
 
       getNeighbors(rdd, res ++ part, idx + 1)
     }
@@ -126,14 +125,17 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
     val bcCalc = sc.broadcast(calc)
     val bcNeighborhood = sc.broadcast(n)
 
-    val rdd = zipWithNeighbors.map { case (key, center, neighbors) =>
-      val calc = bcCalc.value
-      val neighborhood = bcNeighborhood.value
+    val rdd = 
+      zipWithNeighbors
+        .map { case (key, center, neighbors) =>
+          val calc = bcCalc.value
+          val neighborhood = bcNeighborhood.value
 
-      val (neighborhoodTile, analysisArea) =
-        TileWithNeighbors(center, neighbors.getNeighbors)
-      (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
-    }
+          val (neighborhoodTile, analysisArea) =
+            TileWithNeighbors(center, neighbors.getNeighbors)
+          //      println(key)
+          (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
+        }
 
     new RasterRDD(rdd, rasterRDD.metaData)
   }

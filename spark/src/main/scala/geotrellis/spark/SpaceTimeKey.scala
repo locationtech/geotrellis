@@ -9,22 +9,25 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 // TODO: Change this to be col, row, time, and have the compenent keys derived.
-case class SpaceTimeKey(spatialKey: SpatialKey, temporalKey: TemporalKey)
+case class SpaceTimeKey(col: Int, row: Int, time: DateTime) {
+  def spatialKey: SpatialKey = SpatialKey(col, row)
+  def temporalKey: TemporalKey = TemporalKey(time)
+}
 
 object SpaceTimeKey {
   implicit object SpatialComponent extends SpatialComponent[SpaceTimeKey] {
-    def lens =  createLens(k => k.spatialKey, sk => k => SpaceTimeKey(sk, k.temporalKey))
+    def lens =  createLens(k => k.spatialKey, sk => k => SpaceTimeKey(sk.col, sk.row, k.time))
   }
 
   implicit object TemporalComponent extends TemporalComponent[SpaceTimeKey] {
-    def lens = createLens(k => k.temporalKey, tk => k => SpaceTimeKey(k.spatialKey, tk))
+    def lens = createLens(k => k.temporalKey, tk => k => SpaceTimeKey(k.col, k.row, tk.time))
   }
 
   implicit def ordering: Ordering[SpaceTimeKey] =
     Ordering.by(stk => (stk.spatialKey, stk.temporalKey))
 
-  def apply(col: Int, row: Int, time: DateTime): SpaceTimeKey =
-    SpaceTimeKey(SpatialKey(col, row), TemporalKey(time))
+  def apply(spatialKey: SpatialKey, temporalKey: TemporalKey): SpaceTimeKey =
+    SpaceTimeKey(spatialKey.col, spatialKey.row, temporalKey.time)
 
   implicit object SpaceTimeKeyFormat extends RootJsonFormat[SpaceTimeKey] {
     def write(key: SpaceTimeKey) =

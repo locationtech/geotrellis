@@ -8,9 +8,11 @@ import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.raster.op.local._
 import geotrellis.proj4.LatLng
+import geotrellis.spark.testfiles._
 import org.scalatest._
 import org.apache.hadoop.fs.Path
 
@@ -18,6 +20,7 @@ class HadoopRasterCatalogSpec extends FunSpec
     with Matchers
     with RasterRDDMatchers
     with TestEnvironment
+    with TestFiles
     with OnlyIfCanRunSpark
 {
 
@@ -38,22 +41,23 @@ class HadoopRasterCatalogSpec extends FunSpec
         ran = true
 
         it("should succeed saving with default Props"){
-          catalog.writer[SpatialKey].write(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod).write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "ones")))
         }
 
         it("should succeed saving with single path Props"){
-          catalog.writer[SpatialKey]("sub1").write(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, "sub1").write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/ones")))
         }
 
         it("should succeed saving with double path Props"){
-          catalog.writer[SpatialKey]("sub1/sub2").write(LayerId("ones", level.zoom), onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, "sub1/sub2").write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
         }
 
         it("should load out saved tiles"){
-          catalog.reader[SpatialKey].read(LayerId("ones", 10)).count should be > 0l
+          val rdd = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          rdd.count should be > 0l
         }
 
         it("should succeed loading with single path Props"){
@@ -70,20 +74,55 @@ class HadoopRasterCatalogSpec extends FunSpec
           }
         }
 
-        /* TODO: Support filters in Hadoop? 
-        it("fetch a TileExtent from catalog"){
-          val tileBounds = GridBounds(915,611,917,616)
+        it("should filter out all but 4 tiles") {
+          val tileBounds = GridBounds(915,612,917,613)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-          val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
-          val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
-          val out = rdd1.combinePairs(rdd2){case (tms1, tms2) =>
-            require(tms1.id == tms2.id)
-            val res = tms1.tile.localAdd(tms2.tile)
-            (tms1.id, res)
-          }
 
-          val tile = out.first.tile
-          tile.get(497,511) should be (2)
+          val expected = catalog.reader[SpatialKey].read(LayerId("ones", 10)).collect.filter { case (key, _) => filters.includeKey(key) }
+          val filteredRdd = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          filteredRdd.count should be (expected.size)
+        }
+
+
+        it("should filter out the correct keys") {
+          val tileBounds = GridBounds(915,611,915,613)
+          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+
+          val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          val filtered = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          val expected = unfiltered.collect.filter { case (key, value) => 
+            filters.includeKey(key)
+          }.toMap
+
+          val actual = filtered.collect.toMap
+
+          actual.keys should be (expected.keys)
+
+          for(key <- actual.keys) {
+            tilesEqual(actual(key), expected(key))
+          }
+        }
+
+        it("should filter out the correct keys with different grid bounds") {
+          val tileBounds = GridBounds(915,612,917,613)
+          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+
+          val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          val filtered = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          val expected = unfiltered.collect.filter { case (key, value) => 
+            filters.includeKey(key)
+          }.toMap
+
+          val actual = filtered.collect.toMap
+
+          actual.keys should be (expected.keys)
+
+          for(key <- actual.keys) {
+            tilesEqual(actual(key), expected(key))
+          }
         }
 
         it("should be able to combine pairs via Traversable"){
@@ -103,12 +142,23 @@ class HadoopRasterCatalogSpec extends FunSpec
 
           rastersEqual(expected, actual)
         }
-         */
+
+        it("should load one tile") {
+          val key = SpatialKey(915,612)
+
+          val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
+          val (_, expected) = unfiltered.collect.filter { case (k, _) => k == key }.head
+
+
+          val actual = catalog.tileReader[SpatialKey](LayerId("ones", 10)).read(key)
+
+          tilesEqual(actual, expected)
+        }
 
         it("should find default params based on key") {
           val defaultParams = HadoopRasterCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
           val cat = HadoopRasterCatalog(catalogPath, defaultParams)
-          cat.writer[SpatialKey].write(LayerId("spatial-ones", level.zoom), onesRdd)
+          cat.writer[SpatialKey](RowMajorKeyIndexMethod).write(LayerId("spatial-ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
         }
 
@@ -119,7 +169,7 @@ class HadoopRasterCatalogSpec extends FunSpec
 
           //LayerParams should take priority
           val cat = HadoopRasterCatalog(catalogPath, defaultParams)
-          cat.writer[SpatialKey].write(LayerId("onesSpecial", level.zoom), onesRdd)
+          cat.writer[SpatialKey](RowMajorKeyIndexMethod).write(LayerId("onesSpecial", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
         }
 
@@ -137,6 +187,20 @@ class HadoopRasterCatalogSpec extends FunSpec
 
           // Raises exception if the ".tiff" extension override isn't provided
           Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (rdd, level) => {} }
+        }
+      }
+
+      it("should have written and read coordinate space time tiles") {
+        CoordinateSpaceTime.collect.map { case (key, tile) =>
+          val value = {
+            val c = key.spatialKey.col * 1000.0
+            val r = key.spatialKey.row
+            val t = (key.temporalKey.time.getYear - 2010) / 1000.0
+
+            c + r + t
+          }
+
+          tile.foreachDouble { z => z should be (value.toDouble +- 0.0009999999999) }
         }
       }
 

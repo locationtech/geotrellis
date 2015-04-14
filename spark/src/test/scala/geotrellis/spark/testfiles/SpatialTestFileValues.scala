@@ -1,55 +1,67 @@
 package geotrellis.spark.testfiles
 
+import geotrellis.spark._
+import geotrellis.raster._
+
 import spire.syntax.cfor._
 
-trait SpatialTestFileValues {
-  final def apply(cols: Int, rows: Int): Array[Float] = {
-    val arr = Array.ofDim[Float](cols * rows)
+abstract class TestFileSpatialTiles(tileLayout: TileLayout) {
+  final def apply(key: SpatialKey): Tile = {
+    val tile = FloatArrayTile.empty(tileLayout.tileCols, tileLayout.tileRows)
 
-    cfor(0)(_ < rows, _ + 1) { i =>
-      cfor(0)(_ < cols, _ + 1) { j =>
-        arr(i * cols + j) = value(i, j)
+    cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+      cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
+        tile.setDouble(col, row, value(key, col, row))
       }
     }
 
-    arr
+    tile
   }
 
-  def value(y: Int, x: Int): Float
+  def value(key: SpatialKey, col: Int, row: Int): Double
 }
 
 
-class ConstantSpatialTestFileValues(f: Float) extends SpatialTestFileValues {
-  override def value(y: Int, x: Int): Float = f
+class ConstantSpatialTiles(tileLayout: TileLayout, f: Double) extends TestFileSpatialTiles(tileLayout) {
+  def value(key: SpatialKey, col: Int, row: Int): Double = f
 }
 
-class IncreasingSpatialTestFileValues(cols: Int, rows: Int) extends SpatialTestFileValues {
-  override def value(y: Int, x: Int): Float = y * cols + x
+class IncreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) extends TestFileSpatialTiles(tileLayout) {
+  def value(key: SpatialKey, col: Int, row: Int): Double = {
+    val SpatialKey(tileCol, tileRow) = key
+
+    val tc = tileCol - gridBounds.colMin
+    val tr = tileRow - gridBounds.rowMin
+
+    val r = (tr * tileLayout.tileRows + row) * (tileLayout.tileCols * gridBounds.width) 
+    val c = (tc * tileLayout.tileCols) + col
+
+    r + c
+  }
 }
 
+class DecreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) extends TestFileSpatialTiles(tileLayout) {
+  def value(key: SpatialKey, col: Int, row: Int): Double = {
+    val SpatialKey(tileCol, tileRow) = key
 
-class DecreasingSpatialTestFileValues(cols: Int, rows: Int) extends SpatialTestFileValues {
-  override def value(y: Int, x: Int): Float = cols * rows - (y * cols + x) - 1
+    val tc = tileCol - gridBounds.colMin
+    val tr = tileRow - gridBounds.rowMin
+
+    val r = ((gridBounds.height * tileLayout.tileRows) - (tr * tileLayout.tileRows + row) - 1) * (tileLayout.tileCols * gridBounds.width)
+    val c = (tileLayout.tileCols * gridBounds.width - 1) - ((tc * tileLayout.tileCols) + col)
+
+    r + c
+  }
 }
 
-
-class EveryOtherUndefined(cols: Int) extends SpatialTestFileValues {
-  override def value(y: Int, x: Int): Float =
-    if ((y * cols + x)  % 2 == 0) Int.MinValue else 0
+class EveryOtherSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds, firstValue: Double, secondValue: Double) extends IncreasingSpatialTiles(tileLayout, gridBounds) {
+  override
+  def value(key: SpatialKey, col: Int, row: Int): Double =
+    if(super.value(key, col, row) % 2 == 0) { firstValue } else { secondValue }
 }
 
-class EveryOther0Point99Else1Point01(cols: Int) extends SpatialTestFileValues {
-  override def value(y: Int, x: Int): Float =
-    if ((y * cols + x)  % 2 == 0) 0.99f else 1.01f
-}
-
-
-class EveryOther1ElseMinus1(cols: Int) extends SpatialTestFileValues {
-  override def value(y: Int, x: Int): Float =
-    if ((y * cols + x)  % 2 == 0) -1 else 1
-}
-
-class Mod(cols: Int, rows: Int, mod: Int) extends IncreasingSpatialTestFileValues(cols, rows) {
-  override def value(y: Int, x: Int) = super.value(y, x) % mod
+class ModSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds, mod: Int) extends IncreasingSpatialTiles(tileLayout, gridBounds) {
+  override
+  def value(key: SpatialKey, col: Int, row: Int) = super.value(key, col, row) % mod
 
 }

@@ -6,6 +6,7 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats.NetCdfBand
+import geotrellis.spark.io.index._
 import geotrellis.spark.utils.SparkUtils
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.spark._
@@ -36,7 +37,7 @@ object NetCDFIngestHDFSCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
     Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme, args.pyramid, true) { (rdd, level) => 
       catalog
-        .writer[SpaceTimeKey](args.clobber)
+        .writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, args.clobber)
         .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }
