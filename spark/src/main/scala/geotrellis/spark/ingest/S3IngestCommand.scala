@@ -9,6 +9,7 @@ import geotrellis.spark.utils.SparkUtils
 import geotrellis.vector._
 import geotrellis.proj4._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import geotrellis.raster.Tile
 
 import org.apache.hadoop.fs._
 
@@ -26,9 +27,15 @@ class S3IngestCommand extends IngestArgs {
 
 object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
   def main(args: S3IngestCommand): Unit = {
-    implicit val sparkContext = SparkUtils.createSparkContext("S3 Ingest")
-    val conf = sparkContext.hadoopConfiguration
-    val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
+    implicit val sc = SparkUtils.createSparkContext("S3 Ingest")
+    
+    val job = sc.newJob("geotiff-ingest")        
+    S3InputFormat.setUrl(job, args.input)
+    val source = sc.newAPIHadoopRDD(job.getConfiguration,
+      classOf[GeoTiffS3InputFormat],
+      classOf[ProjectedExtent],
+      classOf[Tile])
+    
     val layoutScheme = ZoomedLayoutScheme(256)
 
     implicit val wProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDWriterProvider
