@@ -14,6 +14,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import geotrellis.index.zcurve.Z2
 import com.typesafe.scalalogging.slf4j._
 import scala.collection.mutable.ArrayBuffer
+import com.amazonaws.services.s3.model.AmazonS3Exception
+
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] with LazyLogging {
   def writer(credentialsProvider: AWSCredentialsProvider, bucket: String, layerPath: String, clobber: Boolean = true)(implicit sc: SparkContext) =
@@ -39,7 +41,20 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
               new PutObjectRequest(catalogBucket, f"$path/${index}%019d", is, metadata)
             }
 
-            requests.foreach(s3client.putObject)
+            requests.foreach{ r =>
+              var backoff = 0;
+
+              do {
+                try {
+                  if (backoff > 0) Thread.sleep(backoff)
+                  s3client.putObject(r)
+                  backoff = 0
+                } catch {
+                  case e: AmazonS3Exception =>
+                    backoff = math.max(5, backoff*2)
+                }
+              } while (backoff > 0)
+            }
           }
 
         logger.info(s"Finished saving tiles to ${layerPath}")
