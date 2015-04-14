@@ -12,6 +12,8 @@ import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ObjectMetadata
 import geotrellis.index.zcurve.Z2
 import com.typesafe.scalalogging.slf4j._
+import scala.collection.mutable.ArrayBuffer
+import com.amazonaws.services.s3.transfer.{Upload, TransferManager}
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] with LazyLogging {
   def writer(credentialsProvider: AWSCredentialsProvider, bucket: String, layerPath: String, clobber: Boolean = true)(implicit sc: SparkContext) =
@@ -25,17 +27,20 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         val path = layerPath
         
         rdd
-          .foreachPartition { iter =>
-            val s3Client = new AmazonS3Client(bcCredentials.value)
-            
+          .foreachPartition { iter =>            
+            val tx = new TransferManager(bcCredentials.value);
+            var uploads = ArrayBuffer.empty[Upload]
+
             iter.foreach { case (key: SpatialKey, tile: Tile) =>
-              val geohash = Z2(key.col, key.row).z
+              val index = Z2(key.col, key.row).z
               val bytes = tile.toBytes
               val metadata = new ObjectMetadata()
-              metadata.setContentLength(bytes.length);
+              metadata.setContentLength(bytes.length);              
               val is = new ByteArrayInputStream(bytes)
-              s3Client.putObject(catalogBucket, s"$path/$geohash", is, metadata)
+              tx.upload(catalogBucket, f"$path/${index}%019d", is, metadata)              
             }
+
+            uploads.foreach(_.waitForUploadResult) // block
           }
 
         logger.info(s"Finished saving tiles to ${layerPath}")

@@ -85,7 +85,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
       .withPrefix(key + "/")
       .withDelimiter(delim)
       .withMaxKeys(math.min((maxKey - minKey).toInt+1, 1024))
-      .withMarker(key + "/" + (minKey - 1))
+      .withMarker(key + "/" + f"${minKey - 1}%019d")
     
     val tileIdRx = """.+\/(\d+)""".r
     def readKeys(keys: Seq[String]): (Seq[(SpatialKey, String)], Boolean) = {
