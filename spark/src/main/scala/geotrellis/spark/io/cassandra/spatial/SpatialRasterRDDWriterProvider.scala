@@ -37,12 +37,13 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         
         instance.session.execute(schema)
         
+        val closureKeyIndex = index
         raster
-          .map { case (key, tile) => 
+          .map (KryoClosure { case (key, tile) => 
             val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
 
-            (rowId(layerId, index.toIndex(key)), layerId.name, value) 
-          }
+            (rowId(layerId, closureKeyIndex.toIndex(key)), layerId.name, value) 
+          })
           .saveToCassandra(instance.keyspace, tileTable, SomeColumns("id", "name", "value"))
       }
     }
