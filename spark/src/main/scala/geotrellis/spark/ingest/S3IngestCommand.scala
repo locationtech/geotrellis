@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 class S3IngestCommand extends IngestArgs {
   @Required var bucket: String = _  
   @Required var key: String = _ 
-  @Required var splitSize: Integer = 256
+  var splitSize: Integer = 256
 }
 
 object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
