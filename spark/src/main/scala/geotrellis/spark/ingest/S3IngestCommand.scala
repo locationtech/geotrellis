@@ -22,7 +22,8 @@ import scala.reflect.ClassTag
 
 class S3IngestCommand extends IngestArgs {
   @Required var bucket: String = _  
-  @Required var key: String = _  
+  @Required var key: String = _ 
+  @Required var splitSize: Integer = 256
 }
 
 object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
@@ -31,12 +32,13 @@ object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
     
     val job = sc.newJob("geotiff-ingest")        
     S3InputFormat.setUrl(job, args.input)
+    S3InputFormat.setMaxKeys(job, args.splitSize)
+
     val source = 
       sc.newAPIHadoopRDD(job.getConfiguration,
         classOf[GeoTiffS3InputFormat],
         classOf[ProjectedExtent],
-        classOf[Tile])
-      .repartition(args.partitions)
+        classOf[Tile])    
     
     val layoutScheme = ZoomedLayoutScheme(256)
 
