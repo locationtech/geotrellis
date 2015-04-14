@@ -56,7 +56,7 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
       out.writeUTF(accessKeyId)
       out.writeUTF(secretKey)
     }
-    out.writeBoolean(null == sessionToken)
+    out.writeBoolean(null != sessionToken)
     if (null != sessionToken)
       out.writeUTF(sessionToken)
     out.writeUTF(bucket)
