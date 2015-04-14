@@ -56,8 +56,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     do {
       listing = s3client.listObjects(request)     
       val split = new S3InputSplit()
-      split.accessKeyId = credentials.getAWSAccessKeyId
-      split.secretKey = credentials.getAWSSecretKey
+      split.setCredentials(credentials)
       split.bucket = bucket
       // avoid including "directories" in the input split, can cause 403 errors on GET
       split.keys = listing.getObjectSummaries.map(_.getKey).filterNot(_ endsWith "/")
