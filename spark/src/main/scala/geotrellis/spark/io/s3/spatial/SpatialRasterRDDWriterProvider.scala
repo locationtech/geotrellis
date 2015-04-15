@@ -7,7 +7,7 @@ import geotrellis.spark.io.s3._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import java.io.ByteArrayInputStream
-import com.amazonaws.services.s3.model.PutObjectRequest
+import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult}
 import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ObjectMetadata
@@ -17,7 +17,28 @@ import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
 
 
+object AmazonS3ClientBackoff {
+  implicit class ClientWithBackoff(client: AmazonS3Client)  {
+    def putObjectWithBackoff(request: PutObjectRequest): PutObjectResult = {
+      var ret: PutObjectResult = null
+      var backoff = 0
+      do {
+        try {
+          if (backoff > 0) Thread.sleep(backoff)
+          ret = client.putObject(request)
+        } catch {
+          case e: AmazonS3Exception =>
+            backoff = math.max(8, backoff*2)
+        }
+      } while (ret == null)
+      ret
+    }
+  }
+}
+
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] with LazyLogging {
+  import AmazonS3ClientBackoff._
+
   def writer(credentialsProvider: AWSCredentialsProvider, bucket: String, layerPath: String, clobber: Boolean = true)(implicit sc: SparkContext) =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, rdd: RasterRDD[SpatialKey]): Unit = {
@@ -42,18 +63,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
             }
 
             requests.foreach{ r =>
-              var backoff = 0;
-
-              do {
-                try {
-                  if (backoff > 0) Thread.sleep(backoff)
-                  s3client.putObject(r)
-                  backoff = 0
-                } catch {
-                  case e: AmazonS3Exception =>
-                    backoff = math.max(5, backoff*2)
-                }
-              } while (backoff > 0)
+              s3client.putObjectWithBackoff(r)
             }
           }
 
