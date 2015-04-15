@@ -37,7 +37,7 @@ object S3RasterCatalog {
 class S3RasterCatalog(
     bucket: String,
     rootPath: String,
-    attributeStore: S3AttributeStore,    
+    val attributeStore: S3AttributeStore,    
     paramsConfig: DefaultParams[String],
     catalogConfig: S3RasterCatalogConfig)
   (implicit sc: SparkContext) {

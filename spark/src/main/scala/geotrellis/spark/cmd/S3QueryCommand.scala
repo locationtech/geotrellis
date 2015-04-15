@@ -8,6 +8,7 @@ import geotrellis.spark.utils.SparkUtils
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.raster.{Tile, GridBounds}
+import geotrellis.spark.io.json._
 import org.apache.spark._
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
@@ -38,8 +39,11 @@ object S3QueryCommand extends ArgMain[S3QueryArgs] with Logging {
     implicit val wProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDWriterProvider
     implicit val rProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDReaderProvider
     val catalog = S3RasterCatalog(args.bucket, args.key)
-    val reader = catalog.reader[SpatialKey]()
-    
+    val attrib = catalog.attributeStore
+    val reader = catalog.reader[SpatialKey]()    
+    val md = attrib.read[RasterMetaData](args.layerId, "metaData")
+    val bounds = md.gridBounds
+    println("Catalog bounds: $bounds")    
     val rdd = reader.read(args.layerId, FilterSet(SpaceFilter(args.bounds)))
     println(s"Expected Count: ${args.bounds.coords.length}")
     println(s"Record Count: ${rdd.count}")
