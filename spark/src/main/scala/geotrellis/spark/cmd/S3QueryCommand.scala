@@ -23,7 +23,7 @@ class S3QueryArgs extends FieldArgs {
 
   def layerId: LayerId = {
     val c = layer.split(":")
-    LayerId(c(0), c(0).toInt)
+    LayerId(c(0), c(1).toInt)
   }
 
   def bounds: GridBounds = {
