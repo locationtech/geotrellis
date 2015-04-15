@@ -21,6 +21,7 @@ import java.io.File
 import org.scalatest._
 
 trait GeoTiffTestUtils extends Matchers {
+  val filePath = "raster-test/data"
 
   val Epsilon = 1e-9
 

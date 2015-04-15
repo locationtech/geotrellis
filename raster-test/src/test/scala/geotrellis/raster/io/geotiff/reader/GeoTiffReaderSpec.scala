@@ -16,31 +16,24 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff.reader._
-
 import geotrellis.raster._
 import geotrellis.raster.io.arg._
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector.Extent
-
 import geotrellis.testkit._
-
 import geotrellis.proj4.{CRS, LatLng}
 
 import monocle.syntax._
 
 import scala.io.{Source, Codec}
-
 import scala.collection.immutable.HashMap
 
 import java.util.BitSet
-
 import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
-
 import org.scalatest._
 
 class GeoTiffReaderSpec extends FunSpec
@@ -49,42 +42,7 @@ class GeoTiffReaderSpec extends FunSpec
     with TestEngine
     with GeoTiffTestUtils {
 
-  val argPath = "/tmp/"
-  val filePath = "raster-test/data"
-
   override def afterAll = purge
-
-  def writeRasterToArg(imgDir: ImageDirectory, path: String, imageName: String): Unit = {
-    val tile = imgDir.bands.head.tile
-    val extent = imgDir.metaData.extent
-    val cellType = imgDir.metaData.cellType
-    new ArgWriter(cellType).write(path, tile, extent, imageName)
-  }
-
-  private def readAndSave(fileName: String) {
-    val geoTiff = GeoTiff(s"$filePath/$fileName")
-
-    val ifd = geoTiff.imageDirectory
-
-    val currentFileName = math.abs(ifd.hashCode) + "-" + fileName.substring(0,
-      fileName.length - 4)
-
-    val corePath = argPath + currentFileName
-    val pathArg = corePath + ".arg"
-    val pathJson = corePath + ".json"
-    writeRasterToArg(ifd, corePath, currentFileName)
-
-    addToPurge(pathArg)
-    addToPurge(pathJson)
-  }
-
-  describe("reading file and saving output") {
-
-    it("must read aspect.tif and save") {
-      readAndSave("aspect.tif")
-    }
-
-  }
 
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
 
@@ -357,7 +315,7 @@ class GeoTiffReaderSpec extends FunSpec
    The listgeo command sometimes drops precision compared to our generator,
    therefore we sometimes increase the epsilon double comparison value.
    */
-  describe("reads GeoTiff CS correctly") {
+  describe("reads GeoTiff CRS correctly") {
 
     it("should read slope.tif CS correctly") {
       val crs = GeoTiff(s"$filePath/slope.tif").firstBand.crs
@@ -562,8 +520,7 @@ class GeoTiffReaderSpec extends FunSpec
 
 class PackBitsGeoTiffReaderSpec extends FunSpec
     with TestEngine
-    with Matchers {
-  val filePath = "raster-test/data"
+    with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {
     it("must read econic_packbits.tif and match uncompressed file") {

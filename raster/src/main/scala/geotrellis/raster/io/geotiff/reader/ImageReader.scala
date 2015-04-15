@@ -30,7 +30,6 @@ object ImageReader {
 
   def read(byteBuffer: ByteBuffer, directory: ImageDirectory): ImageDirectory = {
 
-    // TODO: NEEDS HEAVY OPTIMIZATION
     def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
       val oldOffset = byteBuffer.position
 
@@ -76,7 +75,6 @@ object ImageReader {
 
     val matrix = readMatrix(directory)
 
-
     val uncompressedImage: Array[Array[Byte]] =
       directory.compression match {
         case Uncompressed => matrix
@@ -101,6 +99,5 @@ object ImageReader {
 
     (directory &|-> ImageDirectory._imageBytes set(imageBytes))
   }
-
 
 }

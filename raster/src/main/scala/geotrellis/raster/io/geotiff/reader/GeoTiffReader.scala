@@ -34,56 +34,60 @@ object GeoTiffReader {
   def read(bytes: Array[Byte]): GeoTiff = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
 
-    def setByteBufferPosition = byteBuffer.position(0)
+    def validateTiffVersion = 
 
-    def setByteOrder = (byteBuffer.get.toChar,
-      byteBuffer.get.toChar) match {
+    // Set byteBuffer position
+    byteBuffer.position(0)
+
+    // set byte ordering
+    (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
       case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
       case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
       case _ => throw new MalformedGeoTiffException("incorrect byte order")
     }
 
-    def validateTiffVersion = if (byteBuffer.getChar != 42)
-      throw new MalformedGeoTiffException("bad identification number (not 42)")
+    // Validate GeoTiff identification number
+    val geoTiffIdNumber = byteBuffer.getChar
+    if ( geoTiffIdNumber != 42)
+      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
 
-    def readImageDirectory: ImageDirectory = {
-      val entries = byteBuffer.getShort
-      val directory = ImageDirectory(count = entries)
+    byteBuffer.position(byteBuffer.getInt)
+
+    val entryCount = byteBuffer.getShort
+
+    val imageDirectory = {
+
+      def recurReadImageDirectory(directory: ImageDirectory, index: Int, geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
+
+        if (index == entryCount) {
+          val newDirectory =
+            geoKeysMetadata match {
+              case Some(tagMetadata) => TagReader.read(byteBuffer, directory, geoKeysMetadata.get)
+              case None => directory
+            }
+          ImageReader.read(byteBuffer, newDirectory)
+        } else {
+          val metadata =
+            TagMetadata(
+              byteBuffer.getUnsignedShort,
+              byteBuffer.getUnsignedShort,
+              byteBuffer.getInt,
+              byteBuffer.getInt
+            )
+
+          if (metadata.tag == GeoKeyDirectoryTag)
+            recurReadImageDirectory(directory, index + 1, Some(metadata))
+          else
+            recurReadImageDirectory(
+              TagReader.read(byteBuffer, directory, metadata),
+              index + 1,
+              geoKeysMetadata
+            )
+        }
+
+      val directory = ImageDirectory()
       recurReadImageDirectory(directory, 0)
     }
-
-    def recurReadImageDirectory(directory: ImageDirectory, index: Int, geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
-      if (index == directory.count) {
-        val newDirectory = 
-          geoKeysMetadata match {
-            case Some(tagMetadata) => TagReader.read(byteBuffer, directory, geoKeysMetadata.get)
-            case None => directory
-          }
-        ImageReader.read(byteBuffer, newDirectory)
-      } else {
-        val metadata = 
-          TagMetadata(
-            byteBuffer.getUnsignedShort, 
-            byteBuffer.getUnsignedShort,
-            byteBuffer.getInt, 
-            byteBuffer.getInt
-          )
-
-        if (metadata.tag == GeoKeyDirectoryTag)
-          recurReadImageDirectory(directory, index + 1, Some(metadata))
-        else
-          recurReadImageDirectory(
-            TagReader.read(byteBuffer, directory, metadata),
-            index + 1,
-            geoKeysMetadata
-          )
-      }
-
-    setByteBufferPosition
-    setByteOrder
-    validateTiffVersion
-    byteBuffer.position(byteBuffer.getInt)
-    val imageDirectory = readImageDirectory
 
     val metaData = imageDirectory.metaData
     val bands = imageDirectory.bands

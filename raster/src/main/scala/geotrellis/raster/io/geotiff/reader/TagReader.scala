@@ -29,40 +29,6 @@ import scala.collection._
 
 object TagReader {
 
-  def read(byteBuffer: ByteBuffer, directory: ImageDirectory, tagMetadata: TagMetadata): ImageDirectory =
-    (tagMetadata.tag, tagMetadata.fieldType) match {
-      case (ModelPixelScaleTag, _) =>
-        byteBuffer.readModelPixelScaleTag(directory, tagMetadata)
-      case (ModelTiePointsTag, _) =>
-        byteBuffer.readModelTiePointsTag(directory, tagMetadata)
-      case (GeoKeyDirectoryTag, _) =>
-        byteBuffer.readGeoKeyDirectoryTag(directory, tagMetadata)
-      case (_, BytesFieldType) =>
-        byteBuffer.readBytesTag(directory, tagMetadata)
-      case (_, AsciisFieldType) =>
-        byteBuffer.readAsciisTag(directory, tagMetadata)
-      case (_, ShortsFieldType) =>
-        byteBuffer.readShortsTag(directory, tagMetadata)
-      case (_, IntsFieldType) =>
-        byteBuffer.readIntsTag(directory, tagMetadata)
-      case (_, FractionalsFieldType) =>
-        byteBuffer.readFractionalsTag(directory, tagMetadata)
-      case (_, SignedBytesFieldType) =>
-        byteBuffer.readSignedBytesTag(directory, tagMetadata)
-      case (_, UndefinedFieldType) =>
-        byteBuffer.readUndefinedTag(directory, tagMetadata)
-      case (_, SignedShortsFieldType) =>
-        byteBuffer.readSignedShortsTag(directory, tagMetadata)
-      case (_, SignedIntsFieldType) =>
-        byteBuffer.readSignedIntsTag(directory, tagMetadata)
-      case (_, SignedFractionalsFieldType) =>
-        byteBuffer.readSignedFractionalsTag(directory, tagMetadata)
-      case (_, FloatsFieldType) =>
-        byteBuffer.readFloatsTag(directory, tagMetadata)
-      case (_, DoublesFieldType) =>
-        byteBuffer.readDoublesTag(directory, tagMetadata)
-    }
-
   implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteBuffer) extends AnyVal {
     def readModelPixelScaleTag(directory: ImageDirectory,
       tagMetadata: TagMetadata) = {
@@ -554,4 +520,39 @@ object TagReader {
       }
     }
   }
+
+
+  def read(byteBuffer: ByteBuffer, directory: ImageDirectory, tagMetadata: TagMetadata): ImageDirectory =
+    (tagMetadata.tag, tagMetadata.fieldType) match {
+      case (ModelPixelScaleTag, _) =>
+        byteBuffer.readModelPixelScaleTag(directory, tagMetadata)
+      case (ModelTiePointsTag, _) =>
+        byteBuffer.readModelTiePointsTag(directory, tagMetadata)
+      case (GeoKeyDirectoryTag, _) =>
+        byteBuffer.readGeoKeyDirectoryTag(directory, tagMetadata)
+      case (_, BytesFieldType) =>
+        byteBuffer.readBytesTag(directory, tagMetadata)
+      case (_, AsciisFieldType) =>
+        byteBuffer.readAsciisTag(directory, tagMetadata)
+      case (_, ShortsFieldType) =>
+        byteBuffer.readShortsTag(directory, tagMetadata)
+      case (_, IntsFieldType) =>
+        byteBuffer.readIntsTag(directory, tagMetadata)
+      case (_, FractionalsFieldType) =>
+        byteBuffer.readFractionalsTag(directory, tagMetadata)
+      case (_, SignedBytesFieldType) =>
+        byteBuffer.readSignedBytesTag(directory, tagMetadata)
+      case (_, UndefinedFieldType) =>
+        byteBuffer.readUndefinedTag(directory, tagMetadata)
+      case (_, SignedShortsFieldType) =>
+        byteBuffer.readSignedShortsTag(directory, tagMetadata)
+      case (_, SignedIntsFieldType) =>
+        byteBuffer.readSignedIntsTag(directory, tagMetadata)
+      case (_, SignedFractionalsFieldType) =>
+        byteBuffer.readSignedFractionalsTag(directory, tagMetadata)
+      case (_, FloatsFieldType) =>
+        byteBuffer.readFloatsTag(directory, tagMetadata)
+      case (_, DoublesFieldType) =>
+        byteBuffer.readDoublesTag(directory, tagMetadata)
+    }
 }
