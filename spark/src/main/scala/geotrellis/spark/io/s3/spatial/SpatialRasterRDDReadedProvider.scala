@@ -45,10 +45,13 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
           ranges = Z2.zranges(Z2(b.colMin, b.rowMin), Z2(b.colMax, b.rowMax))
         }
 
+        val bins = ballancedBin(ranges, sc.defaultParallelism)
+
         val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
 
         val rdd: RDD[(SpatialKey, Tile)] = sc
-          .parallelize(ranges)
+          .parallelize(bins)
+          .flatMap(ranges => ranges)
           .mapPartitions{ iter =>
             val s3Client = new AmazonS3Client(bcCredentials.value)
             iter
@@ -73,7 +76,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
     }
 
   /* This needs to happen, in space-time case we will not be able to enumarate the keys */
-  def listKeys(s3client: AmazonS3Client, bucket: String, key: String, range: (Long, Long)): Vector[(SpatialKey, String)] = {
+  private def listKeys(s3client: AmazonS3Client, bucket: String, key: String, range: (Long, Long)): Vector[(SpatialKey, String)] = {
     logger.debug(s"Listing: $key, $range")
     
     val (minKey, maxKey) = range
@@ -114,5 +117,28 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
     } while (listing.isTruncated && !stop)
 
     foundKeys
+  }
+
+
+  /**
+   * Will attemp to bin ranges into buckets, each containing at least the average number of elements.
+   * Trailing bins may be empty if the count is too high for number of ranges.
+   */
+  private def ballancedBin(ranges: Seq[(Long, Long)], count: Int ): Seq[Seq[(Long, Long)]] = {
+    val total = ranges.foldLeft(0l){ (s,r) => s + r._2 - r._1 + 1l }
+    val step = total / count
+
+    val arr = Array.fill(count)(Nil: List[(Long, Long)])
+    var sum = 0l
+    var i = 0
+    for (r <- ranges) {
+      arr(i) = r :: arr(i)
+      sum += r._2 - r._1  + 1
+      if (sum > step) {
+        sum = 0l
+        i += 1
+      }
+    }
+    arr
   }
 }
