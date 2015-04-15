@@ -46,6 +46,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
         }
 
         val bins = ballancedBin(ranges, sc.defaultParallelism)
+        logger.info(s"Created ${ranges.count} ranges, binned into ${bins.length} bins")
 
         val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
 
