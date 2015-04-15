@@ -45,14 +45,12 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
           ranges = Z2.zranges(Z2(b.colMin, b.rowMin), Z2(b.colMax, b.rowMax))
         }
 
-        val credentials = credentialsProvider.getCredentials
-        val key = credentials.getAWSAccessKeyId
-        val secret = credentials.getAWSSecretKey
+        val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
 
         val rdd: RDD[(SpatialKey, Tile)] = sc
           .parallelize(ranges)
           .mapPartitions{ iter =>
-            val s3Client = new AmazonS3Client(new BasicAWSCredentials(key, secret))          
+            val s3Client = new AmazonS3Client(bcCredentials.value)
             iter
               .flatMap{ range => 
                 listKeys(s3Client, bucket, dir, range) 
