@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.reader.decompression
 
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags._
 
 import monocle.syntax._
 
@@ -50,9 +51,9 @@ trait LZWDecompression {
     val ClearCode = 256
     val EoICode = 257
 
-    def uncompressLZW(directory: ImageDirectory): Array[Array[Byte]] = {
+    def uncompressLZW(directory: Tags): Array[Array[Byte]] = {
       val horizontalPredictor = (directory &|->
-        ImageDirectory._nonBasicTags ^|->
+        Tags._nonBasicTags ^|->
         NonBasicTags._predictor get) match {
         case Some(2) => true
         case None | Some(1) => false
@@ -61,12 +62,12 @@ trait LZWDecompression {
       }
 
       val samplesPerPixel = (directory &|->
-        ImageDirectory._basicTags ^|->
+        Tags._basicTags ^|->
         BasicTags._samplesPerPixel get)
 
       if (horizontalPredictor) {
         val v = (directory &|->
-          ImageDirectory._basicTags ^|->
+          Tags._basicTags ^|->
           BasicTags._bitsPerSample get) match {
           case Some(vector) => vector
           case None => throw new MalformedGeoTiffException("no bits per sample tag!")

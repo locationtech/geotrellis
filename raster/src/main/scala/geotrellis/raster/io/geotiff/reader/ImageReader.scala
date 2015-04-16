@@ -17,7 +17,9 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.CompressionType._
+import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 import geotrellis.raster.io.geotiff.reader.decompression._
 
 import monocle.syntax._
@@ -28,7 +30,7 @@ import spire.syntax.cfor._
 
 object ImageReader {
 
-  def read(byteBuffer: ByteBuffer, directory: ImageDirectory): ImageDirectory = {
+  def read(byteBuffer: ByteBuffer, tags: Tags): Array[Byte] = {
 
     def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
       val oldOffset = byteBuffer.position
@@ -45,46 +47,56 @@ object ImageReader {
       result
     }
 
-    def readMatrix(directory: ImageDirectory): Array[Array[Byte]] =
-      if (directory.hasStripStorage) readStrips(directory)
-      else readTiles(directory)
+    def readMatrix(tags: Tags): Array[Array[Byte]] =
+      if (tags.hasStripStorage) readStrips(tags)
+      else readTiles(tags)
 
-    def readStrips(directory: ImageDirectory): Array[Array[Byte]] = {
-      val stripOffsets = (directory &|->
-        ImageDirectory._basicTags ^|->
+    def readStrips(tags: Tags): Array[Array[Byte]] = {
+      val stripOffsets = (tags &|->
+        Tags._basicTags ^|->
         BasicTags._stripOffsets get)
 
-      val stripByteCounts = (directory &|->
-        ImageDirectory._basicTags ^|->
+      val stripByteCounts = (tags &|->
+        Tags._basicTags ^|->
         BasicTags._stripByteCounts get)
 
       readSections(stripOffsets.get, stripByteCounts.get)
     }
 
-    def readTiles(directory: ImageDirectory) = {
-      val tileOffsets = (directory &|->
-        ImageDirectory._tileTags ^|->
+    def readTiles(tags: Tags) = {
+      val tileOffsets = (tags &|->
+        Tags._tileTags ^|->
         TileTags._tileOffsets get)
 
-      val tileByteCounts = (directory &|->
-        ImageDirectory._tileTags ^|->
+      val tileByteCounts = (tags &|->
+        Tags._tileTags ^|->
         TileTags._tileByteCounts get)
 
       readSections(tileOffsets.get, tileByteCounts.get)
     }
 
-    val matrix = readMatrix(directory)
+    val matrix = readMatrix(tags)
 
     val uncompressedImage: Array[Array[Byte]] =
-      directory.compression match {
+      tags.compression match {
         case Uncompressed => matrix
-        case HuffmanCoded => matrix.uncompressHuffman(directory)
-        case GroupThreeCoded => matrix.uncompressGroupThree(directory)
-        case GroupFourCoded => matrix.uncompressGroupFour(directory)
-        case LZWCoded => matrix.uncompressLZW(directory)
-        case JpegCoded => matrix.uncompressJpeg(directory)
-        case ZLibCoded | PkZipCoded => matrix.uncompressZLib(directory)
-        case PackBitsCoded => matrix.uncompressPackBits(directory)
+        case LZWCoded => matrix.uncompressLZW(tags)
+        case ZLibCoded | PkZipCoded => matrix.uncompressZLib(tags)
+        case PackBitsCoded => matrix.uncompressPackBits(tags)
+
+        // Unsupported compression types
+        case JpegCoded => 
+          val msg = "compression type JPEG is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case HuffmanCoded => 
+          val msg = "compression type CCITTRLE is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case GroupThreeCoded => 
+          val msg = s"compression type CCITTFAX3 is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case GroupFourCoded => 
+          val msg = s"compression type CCITTFAX4 is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
         case JpegOldCoded =>
           val msg = "old jpeg (compression = 6) is deprecated."
           throw new MalformedGeoTiffException(msg)
@@ -94,10 +106,10 @@ object ImageReader {
       }
 
 
-    val imageBytes = ImageConverter(directory,
+    val imageBytes = ImageConverter(tags,
       byteBuffer.order == ByteOrder.BIG_ENDIAN).convert(uncompressedImage)
 
-    (directory &|-> ImageDirectory._imageBytes set(imageBytes))
+    imageBytes
   }
 
 }

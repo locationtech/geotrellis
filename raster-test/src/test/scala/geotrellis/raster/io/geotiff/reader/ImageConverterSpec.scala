@@ -18,6 +18,8 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.reader.utils._
+import geotrellis.raster.io.geotiff.reader.tags._
 
 import geotrellis.testkit._
 
@@ -29,14 +31,25 @@ import org.scalatest._
 
 class ImageConverterSpec extends FunSpec with Matchers {
 
-  private def createTiledDirectory(width: Int, length: Int,
-    bitsPerPixel: Int, tWidth: Int, tLength: Int) = ImageDirectory(
-    count = 0,
-      basicTags = BasicTags(bitsPerSample = Some(Array(bitsPerPixel)),
-        imageLength = length, imageWidth = width
-      ),
-      tileTags = TileTags(tileWidth = Some(tWidth), tileLength = Some(tLength))
-  )
+  private def createTiledTags(
+    width: Int, 
+    length: Int,
+    bitsPerPixel: Int, 
+    tWidth: Int, 
+    tHeight: Int
+  ) =
+    Tags(
+      basicTags = 
+        BasicTags(
+          bitsPerSample = Some(Array(bitsPerPixel)),
+          imageLength = length, imageWidth = width
+        ),
+      tileTags = 
+        TileTags(
+          tileWidth = Some(tWidth), 
+          tileHeight = Some(tHeight)
+        )
+    )
 
   describe ("byte tiled image to byte row image conversion") {
 
@@ -50,10 +63,10 @@ class ImageConverterSpec extends FunSpec with Matchers {
 
       val bitsPerPixel = 8
 
-      val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
+      val tags = createTiledTags(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory, false)
+      val imageConverter = ImageConverter(tags, false)
 
       val tiled: Array[Array[Byte]] = Array(
         Array[Byte](
@@ -112,10 +125,10 @@ class ImageConverterSpec extends FunSpec with Matchers {
 
       val bitsPerPixel = 8
 
-      val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
+      val tags = createTiledTags(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory, false)
+      val imageConverter = ImageConverter(tags, false)
 
       val tiled: Array[Array[Byte]] = Array(
         Array[Byte](
@@ -195,10 +208,10 @@ class ImageConverterSpec extends FunSpec with Matchers {
 
       val bitsPerPixel = 1
 
-      val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
+      val tags = createTiledTags(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory, false)
+      val imageConverter = ImageConverter(tags, false)
 
       val firstTileBitSet = new BitSet(4)
       val secondTileBitSet = new BitSet(4)
@@ -256,10 +269,10 @@ class ImageConverterSpec extends FunSpec with Matchers {
 
       val bitsPerPixel = 1
 
-      val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
+      val tags = createTiledTags(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory, false)
+      val imageConverter = ImageConverter(tags, false)
 
       val firstTileBitSet = new BitSet(3)
       val secondTileBitSet = new BitSet(3)

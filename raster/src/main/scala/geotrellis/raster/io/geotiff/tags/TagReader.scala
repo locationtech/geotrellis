@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader
+package geotrellis.raster.io.geotiff.tags
 
-import geotrellis.raster.io.geotiff.reader.Tags._
-import geotrellis.raster.io.geotiff.reader.TiffFieldType._
+import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
+import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.tags.codes._
+import TagCodes._
+import TiffFieldType._
 
 import java.nio.ByteBuffer
 
@@ -27,10 +30,17 @@ import spire.syntax.cfor._
 
 import scala.collection._
 
+case class TagMetadata(
+  tag: Int,
+  fieldType: Int,
+  length: Int,
+  offset: Int
+)
+
 object TagReader {
 
   implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteBuffer) extends AnyVal {
-    def readModelPixelScaleTag(directory: ImageDirectory,
+    def readModelPixelScaleTag(tags: Tags,
       tagMetadata: TagMetadata) = {
 
       val oldPos = byteBuffer.position
@@ -43,12 +53,12 @@ object TagReader {
 
       byteBuffer.position(oldPos)
 
-      (directory &|->
-        ImageDirectory._geoTiffTags ^|->
+      (tags &|->
+        Tags._geoTiffTags ^|->
         GeoTiffTags._modelPixelScale set(Some(scaleX, scaleY, scaleZ)))
     }
 
-    def readModelTiePointsTag(directory: ImageDirectory,
+    def readModelTiePointsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
 
       val oldPos = byteBuffer.position
@@ -76,12 +86,12 @@ object TagReader {
 
       byteBuffer.position(oldPos)
 
-      (directory &|->
-        ImageDirectory._geoTiffTags ^|->
+      (tags &|->
+        Tags._geoTiffTags ^|->
         GeoTiffTags._modelTiePoints set(Some(points)))
     }
 
-    def readGeoKeyDirectoryTag(directory: ImageDirectory,
+    def readGeoKeyDirectoryTag(tags: Tags,
       tagMetadata: TagMetadata) = {
 
       val oldPos = byteBuffer.position
@@ -97,209 +107,209 @@ object TagReader {
         minorRevision, numberOfKeys)
 
       val geoKeyDirectory = GeoKeyReader.read(byteBuffer,
-        directory, GeoKeyDirectory(count = numberOfKeys))
+        tags, GeoKeyDirectory(count = numberOfKeys))
 
       byteBuffer.position(oldPos)
 
-      (directory &|->
-        ImageDirectory._geoTiffTags ^|->
+      (tags &|->
+        Tags._geoTiffTags ^|->
         GeoTiffTags._geoKeyDirectory set(Some(geoKeyDirectory)))
     }
 
-    def readBytesTag(directory: ImageDirectory,
+    def readBytesTag(tags: Tags,
       tagMetadata: TagMetadata) = {
 
       val bytes = byteBuffer.getByteArray(tagMetadata.length, tagMetadata.offset)
 
       tagMetadata.tag match {
-        case DotRangeTag => directory &|->
-          ImageDirectory._cmykTags ^|->
+        case DotRangeTag => tags &|->
+          Tags._cmykTags ^|->
           CmykTags._dotRange set(Some(bytes.map(_.toInt)))
-        case ExtraSamplesTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case ExtraSamplesTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._extraSamples set(Some(bytes.map(_.toInt)))
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._longsMap modify(_ + (tag -> bytes.map(_.toLong)))
       }
     }
 
-    def readAsciisTag(directory: ImageDirectory,
-      tagMetadata: TagMetadata): ImageDirectory = {
+    def readAsciisTag(tags: Tags,
+      tagMetadata: TagMetadata): Tags = {
 
       val string = byteBuffer.getString(tagMetadata.length, tagMetadata.offset)
       tagMetadata.tag match {
-        case ImageDescTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case ImageDescTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._imageDesc set(Some(string))
-        case MakerTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case MakerTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._maker set(Some(string))
-        case ModelTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case ModelTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._model set(Some(string))
-        case SoftwareTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case SoftwareTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._software set(Some(string))
-        case ArtistTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case ArtistTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._artist set(Some(string))
-        case HostComputerTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case HostComputerTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._hostComputer set(Some(string))
-        case CopyrightTag => directory &|->
-          ImageDirectory._metadataTags ^|->
+        case CopyrightTag => tags &|->
+          Tags._metadataTags ^|->
           MetadataTags._copyright set(Some(string))
-        case AsciisTag => directory &|->
-          ImageDirectory._geoTiffTags ^|->
+        case AsciisTag => tags &|->
+          Tags._geoTiffTags ^|->
           GeoTiffTags._asciis set(Some(string))
-        case MetadataTag => directory &|->
-          ImageDirectory._geoTiffTags ^|->
+        case MetadataTag => tags &|->
+          Tags._geoTiffTags ^|->
           GeoTiffTags._metadata set(Some(string))
         case GDALInternalNoDataTag =>
-          directory.setGDALNoData(string)
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+          tags.setGDALNoData(string)
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._asciisMap modify(_ + (tag -> string))
       }
     }
 
-    def readShortsTag(directory: ImageDirectory,
+    def readShortsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val shorts = byteBuffer.getShortArray(tagMetadata.length,
         tagMetadata.offset)
 
       tagMetadata.tag match {
-        case SubfileTypeTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case SubfileTypeTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._subfileType set(Some(shorts(0)))
-        case ImageWidthTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case ImageWidthTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._imageWidth set(shorts(0))
-        case ImageLengthTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case ImageLengthTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._imageLength set(shorts(0))
-        case CompressionTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case CompressionTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._compression set(shorts(0))
-        case PhotometricInterpTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case PhotometricInterpTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._photometricInterp set(shorts(0))
-        case ThresholdingTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case ThresholdingTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._thresholding set(shorts(0))
-        case CellWidthTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case CellWidthTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._cellWidth set(Some(shorts(0)))
-        case CellLengthTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case CellLengthTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._cellLength set(Some(shorts(0)))
-        case FillOrderTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case FillOrderTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._fillOrder set((shorts(0)))
-        case OrientationTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case OrientationTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._orientation set(shorts(0))
-        case SamplesPerPixelTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case SamplesPerPixelTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._samplesPerPixel set(shorts(0))
-        case RowsPerStripTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case RowsPerStripTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._rowsPerStrip set(shorts(0))
-        case PlanarConfigurationTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case PlanarConfigurationTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._planarConfiguration set(Some(shorts(0)))
-        case GrayResponseUnitTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case GrayResponseUnitTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._grayResponseUnit set(Some(shorts(0)))
-        case ResolutionUnitTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case ResolutionUnitTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._resolutionUnit set(Some(shorts(0)))
-        case PredictorTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case PredictorTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._predictor set(Some(shorts(0)))
-        case TileWidthTag => directory &|->
-          ImageDirectory._tileTags ^|->
+        case TileWidthTag => tags &|->
+          Tags._tileTags ^|->
           TileTags._tileWidth set(Some(shorts(0)))
-        case TileLengthTag => directory &|->
-          ImageDirectory._tileTags ^|->
-          TileTags._tileLength set(Some(shorts(0)))
-        case InkSetTag => directory &|->
-          ImageDirectory._cmykTags ^|->
+        case TileLengthTag => tags &|->
+          Tags._tileTags ^|->
+          TileTags._tileHeight set(Some(shorts(0)))
+        case InkSetTag => tags &|->
+          Tags._cmykTags ^|->
           CmykTags._inkSet set(Some(shorts(0)))
-        case NumberOfInksTag => directory &|->
-          ImageDirectory._cmykTags ^|->
+        case NumberOfInksTag => tags &|->
+          Tags._cmykTags ^|->
           CmykTags._numberOfInks set(Some(shorts(0)))
-        case JpegProcTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegProcTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegProc set(Some(shorts(0)))
-        case JpegInterchangeFormatTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegInterchangeFormatTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegInterchangeFormat set(Some(shorts(0)))
-        case JpegInterchangeFormatLengthTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegInterchangeFormatLengthTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegInterchangeFormatLength set(Some(shorts(0)))
-        case JpegRestartIntervalTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegRestartIntervalTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegRestartInterval set(Some(shorts(0)))
-        case YCbCrPositioningTag => directory &|->
-          ImageDirectory._yCbCrTags ^|->
+        case YCbCrPositioningTag => tags &|->
+          Tags._yCbCrTags ^|->
           YCbCrTags._yCbCrPositioning set(Some(shorts(0)))
-        case BitsPerSampleTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case BitsPerSampleTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._bitsPerSample set(Some(shorts))
-        case StripOffsetsTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case StripOffsetsTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._stripOffsets set(Some(shorts))
-        case StripByteCountsTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case StripByteCountsTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._stripByteCounts set(Some(shorts))
-        case MinSampleValueTag => directory &|->
-          ImageDirectory._dataSampleFormatTags ^|->
+        case MinSampleValueTag => tags &|->
+          Tags._dataSampleFormatTags ^|->
           DataSampleFormatTags._minSampleValue set(Some(shorts.map(_.toLong)))
-        case MaxSampleValueTag => directory &|->
-          ImageDirectory._dataSampleFormatTags ^|->
+        case MaxSampleValueTag => tags &|->
+          Tags._dataSampleFormatTags ^|->
           DataSampleFormatTags._maxSampleValue set(Some(shorts.map(_.toLong)))
-        case GrayResponseCurveTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case GrayResponseCurveTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._grayResponseCurve set(Some(shorts))
-        case PageNumberTag => directory &|->
-          ImageDirectory._documentationTags ^|->
+        case PageNumberTag => tags &|->
+          Tags._documentationTags ^|->
           DocumentationTags._pageNumber set(Some(shorts))
-        case TransferFunctionTag => directory &|->
-          ImageDirectory._colimetryTags ^|->
+        case TransferFunctionTag => tags &|->
+          Tags._colimetryTags ^|->
           ColimetryTags._transferFunction set(Some(shorts))
-        case ColorMapTag => setColorMap(directory, shorts)
-        case HalftoneHintsTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case ColorMapTag => setColorMap(tags, shorts)
+        case HalftoneHintsTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._halftoneHints set(Some(shorts))
-        case TileByteCountsTag => directory &|->
-          ImageDirectory._tileTags ^|->
+        case TileByteCountsTag => tags &|->
+          Tags._tileTags ^|->
           TileTags._tileByteCounts set(Some(shorts))
-        case DotRangeTag => directory &|->
-          ImageDirectory._cmykTags ^|->
+        case DotRangeTag => tags &|->
+          Tags._cmykTags ^|->
           CmykTags._dotRange set(Some(shorts))
-        case SampleFormatTag => directory &|->
-          ImageDirectory._dataSampleFormatTags ^|->
+        case SampleFormatTag => tags &|->
+          Tags._dataSampleFormatTags ^|->
           DataSampleFormatTags._sampleFormat set(shorts)
-        case TransferRangeTag => directory &|->
-          ImageDirectory._colimetryTags ^|->
+        case TransferRangeTag => tags &|->
+          Tags._colimetryTags ^|->
           ColimetryTags._transferRange set(Some(shorts))
-        case JpegLosslessPredictorsTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegLosslessPredictorsTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegLosslessPredictors set(Some(shorts))
-        case JpegPointTransformsTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegPointTransformsTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegPointTransforms set(Some(shorts))
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._longsMap modify(_ + (tag -> shorts.map(_.toLong)))
       }
     }
 
-    def setColorMap(directory: ImageDirectory, shorts: Array[Int]): ImageDirectory =
-      if ((directory &|->
-        ImageDirectory._basicTags ^|->
+    def setColorMap(tags: Tags, shorts: Array[Int]): Tags =
+      if ((tags &|->
+        Tags._basicTags ^|->
         BasicTags._photometricInterp get) == 3) {
         val divider = shorts.size / 3
 
@@ -312,186 +322,186 @@ object TagReader {
           )
         }
 
-        (directory &|->
-          ImageDirectory._basicTags ^|->
+        (tags &|->
+          Tags._basicTags ^|->
           BasicTags._colorMap set arr.toSeq)
       } else throw new MalformedGeoTiffException(
         "Colormap without Photometric Interpetation = 3."
       )
 
-    def readIntsTag(directory: ImageDirectory,
+    def readIntsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val ints = byteBuffer.getIntArray(tagMetadata.length, tagMetadata.offset)
 
       tagMetadata.tag match {
-        case NewSubfileTypeTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case NewSubfileTypeTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._newSubfileType set(Some(ints(0)))
-        case ImageWidthTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case ImageWidthTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._imageWidth set(ints(0).toInt)
-        case ImageLengthTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case ImageLengthTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._imageLength set(ints(0).toInt)
-        case T4OptionsTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case T4OptionsTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._t4Options set(ints(0).toInt)
-        case T6OptionsTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case T6OptionsTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._t6Options set(Some(ints(0).toInt))
-        case TileWidthTag => directory &|->
-          ImageDirectory._tileTags ^|->
+        case TileWidthTag => tags &|->
+          Tags._tileTags ^|->
           TileTags._tileWidth set(Some(ints(0)))
-        case TileLengthTag => directory &|->
-          ImageDirectory._tileTags ^|->
-          TileTags._tileLength set(Some(ints(0)))
-        case JpegInterchangeFormatTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case TileLengthTag => tags &|->
+          Tags._tileTags ^|->
+          TileTags._tileHeight set(Some(ints(0)))
+        case JpegInterchangeFormatTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegInterchangeFormat set(Some(ints(0)))
-        case JpegInterchangeFormatLengthTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegInterchangeFormatLengthTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegInterchangeFormatLength set(Some(ints(0)))
-        case StripOffsetsTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case StripOffsetsTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._stripOffsets set(Some(ints.map(_.toInt)))
-        case StripByteCountsTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case StripByteCountsTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._stripByteCounts set(Some(ints.map(_.toInt)))
-        case FreeOffsetsTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case FreeOffsetsTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._freeOffsets set(Some(ints))
-        case FreeByteCountsTag => directory &|->
-          ImageDirectory._nonBasicTags ^|->
+        case FreeByteCountsTag => tags &|->
+          Tags._nonBasicTags ^|->
           NonBasicTags._freeByteCounts set(Some(ints))
-        case TileOffsetsTag => directory &|->
-          ImageDirectory._tileTags ^|->
+        case TileOffsetsTag => tags &|->
+          Tags._tileTags ^|->
           TileTags._tileOffsets set(Some(ints.map(_.toInt)))
-        case TileByteCountsTag => directory &|->
-          ImageDirectory._tileTags ^|->
+        case TileByteCountsTag => tags &|->
+          Tags._tileTags ^|->
           TileTags._tileByteCounts set(Some(ints.map(_.toInt)))
-        case JpegQTablesTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegQTablesTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegQTables set(Some(ints))
-        case JpegDCTablesTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegDCTablesTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegDCTables set(Some(ints))
-        case JpegACTablesTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegACTablesTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegACTables set(Some(ints))
-        case ReferenceBlackWhiteTag => directory &|->
-          ImageDirectory._colimetryTags ^|->
+        case ReferenceBlackWhiteTag => tags &|->
+          Tags._colimetryTags ^|->
           ColimetryTags._referenceBlackWhite set(Some(ints))
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._longsMap modify(_ + (tag -> ints.map(_.toLong)))
       }
     }
 
-    def readFractionalsTag(directory: ImageDirectory,
+    def readFractionalsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val fractionals = byteBuffer.getFractionalArray(tagMetadata.length,
         tagMetadata.offset)
 
       tagMetadata.tag match {
-        case XResolutionTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case XResolutionTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._xResolution set(Some(fractionals(0)))
-        case YResolutionTag => directory &|->
-          ImageDirectory._basicTags ^|->
+        case YResolutionTag => tags &|->
+          Tags._basicTags ^|->
           BasicTags._yResolution set(Some(fractionals(0)))
-        case XPositionTag => directory &|->
-          ImageDirectory._documentationTags ^|->
+        case XPositionTag => tags &|->
+          Tags._documentationTags ^|->
           DocumentationTags._xPositions set(Some(fractionals))
-        case YPositionTag => directory &|->
-          ImageDirectory._documentationTags ^|->
+        case YPositionTag => tags &|->
+          Tags._documentationTags ^|->
           DocumentationTags._yPositions set(Some(fractionals))
-        case WhitePointTag => directory &|->
-          ImageDirectory._colimetryTags ^|->
+        case WhitePointTag => tags &|->
+          Tags._colimetryTags ^|->
           ColimetryTags._whitePoints set(Some(fractionals))
-        case PrimaryChromaticitiesTag => directory &|->
-          ImageDirectory._colimetryTags ^|->
+        case PrimaryChromaticitiesTag => tags &|->
+          Tags._colimetryTags ^|->
           ColimetryTags._primaryChromaticities set(Some(fractionals))
-        case YCbCrCoefficientsTag => directory &|->
-          ImageDirectory._yCbCrTags ^|->
+        case YCbCrCoefficientsTag => tags &|->
+          Tags._yCbCrTags ^|->
           YCbCrTags._yCbCrCoefficients set(Some(fractionals))
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._fractionalsMap modify(
             _ + (tag -> fractionals)
           )
       }
     }
 
-    def readSignedBytesTag(directory: ImageDirectory,
+    def readSignedBytesTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val bytes = byteBuffer.getSignedByteArray(tagMetadata.length,
         tagMetadata.offset)
 
-      (directory &|->
-        ImageDirectory._nonStandardizedTags ^|->
+      (tags &|->
+        Tags._nonStandardizedTags ^|->
         NonStandardizedTags._longsMap modify(_ + (tagMetadata.tag -> bytes.map(_.toLong))))
     }
 
-    def readUndefinedTag(directory: ImageDirectory,
+    def readUndefinedTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val bytes = byteBuffer.getSignedByteArray(tagMetadata.length, tagMetadata.offset)
 
       tagMetadata.tag match {
-        case JpegTablesTag => directory &|->
-          ImageDirectory._jpegTags ^|->
+        case JpegTablesTag => tags &|->
+          Tags._jpegTags ^|->
           JpegTags._jpegTables set(Some(bytes))
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._undefinedMap modify(_ + (tag -> bytes))
       }
 
     }
 
-    def readSignedShortsTag(directory: ImageDirectory,
+    def readSignedShortsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val shorts = byteBuffer.getSignedShortArray(tagMetadata.length,
         tagMetadata.offset)
 
-      (directory &|->
-        ImageDirectory._nonStandardizedTags ^|->
+      (tags &|->
+        Tags._nonStandardizedTags ^|->
         NonStandardizedTags._longsMap modify(_ + (tagMetadata.tag -> shorts.map(_.toLong))))
     }
 
-    def readSignedIntsTag(directory: ImageDirectory,
+    def readSignedIntsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val ints = byteBuffer.getSignedIntArray(tagMetadata.length,
         tagMetadata.offset)
 
-      (directory &|->
-        ImageDirectory._nonStandardizedTags ^|->
+      (tags &|->
+        Tags._nonStandardizedTags ^|->
         NonStandardizedTags._longsMap modify(_ + (tagMetadata.tag -> ints.map(_.toLong))))
     }
 
-    def readSignedFractionalsTag(directory: ImageDirectory,
+    def readSignedFractionalsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val fractionals = byteBuffer.getSignedFractionalArray(tagMetadata.length,
         tagMetadata.offset)
 
-      (directory &|->
-        ImageDirectory._nonStandardizedTags ^|->
+      (tags &|->
+        Tags._nonStandardizedTags ^|->
         NonStandardizedTags._fractionalsMap modify(
           _ + (tagMetadata.tag -> fractionals.map(x => (x._1.toLong, x._2.toLong)))
         ))
     }
 
-    def readFloatsTag(directory: ImageDirectory,
+    def readFloatsTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val floats = byteBuffer.getFloatArray(tagMetadata.length,
         tagMetadata.offset)
 
-      (directory &|->
-        ImageDirectory._nonStandardizedTags ^|->
+      (tags &|->
+        Tags._nonStandardizedTags ^|->
         NonStandardizedTags._doublesMap modify(
           _ + (tagMetadata.tag -> floats.map(_.toDouble))
         ))
     }
 
-    def readDoublesTag(directory: ImageDirectory,
+    def readDoublesTag(tags: Tags,
       tagMetadata: TagMetadata) = {
       val doubles = byteBuffer.getDoubleArray(tagMetadata.length, tagMetadata.offset)
 
@@ -507,52 +517,52 @@ object TagReader {
               Array(doubles(12), doubles(13), doubles(14), doubles(15))
             )
 
-            (directory &|->
-              ImageDirectory._geoTiffTags ^|->
+            (tags &|->
+              Tags._geoTiffTags ^|->
               GeoTiffTags._modelTransformation set(Some(matrix)))
           }
-        case DoublesTag => directory &|->
-          ImageDirectory._geoTiffTags ^|->
+        case DoublesTag => tags &|->
+          Tags._geoTiffTags ^|->
           GeoTiffTags._doubles set(Some(doubles))
-        case tag => directory &|->
-          ImageDirectory._nonStandardizedTags ^|->
+        case tag => tags &|->
+          Tags._nonStandardizedTags ^|->
           NonStandardizedTags._doublesMap modify(_ + (tag -> doubles))
       }
     }
   }
 
 
-  def read(byteBuffer: ByteBuffer, directory: ImageDirectory, tagMetadata: TagMetadata): ImageDirectory =
+  def read(byteBuffer: ByteBuffer, tags: Tags, tagMetadata: TagMetadata): Tags =
     (tagMetadata.tag, tagMetadata.fieldType) match {
       case (ModelPixelScaleTag, _) =>
-        byteBuffer.readModelPixelScaleTag(directory, tagMetadata)
+        byteBuffer.readModelPixelScaleTag(tags, tagMetadata)
       case (ModelTiePointsTag, _) =>
-        byteBuffer.readModelTiePointsTag(directory, tagMetadata)
+        byteBuffer.readModelTiePointsTag(tags, tagMetadata)
       case (GeoKeyDirectoryTag, _) =>
-        byteBuffer.readGeoKeyDirectoryTag(directory, tagMetadata)
+        byteBuffer.readGeoKeyDirectoryTag(tags, tagMetadata)
       case (_, BytesFieldType) =>
-        byteBuffer.readBytesTag(directory, tagMetadata)
+        byteBuffer.readBytesTag(tags, tagMetadata)
       case (_, AsciisFieldType) =>
-        byteBuffer.readAsciisTag(directory, tagMetadata)
+        byteBuffer.readAsciisTag(tags, tagMetadata)
       case (_, ShortsFieldType) =>
-        byteBuffer.readShortsTag(directory, tagMetadata)
+        byteBuffer.readShortsTag(tags, tagMetadata)
       case (_, IntsFieldType) =>
-        byteBuffer.readIntsTag(directory, tagMetadata)
+        byteBuffer.readIntsTag(tags, tagMetadata)
       case (_, FractionalsFieldType) =>
-        byteBuffer.readFractionalsTag(directory, tagMetadata)
+        byteBuffer.readFractionalsTag(tags, tagMetadata)
       case (_, SignedBytesFieldType) =>
-        byteBuffer.readSignedBytesTag(directory, tagMetadata)
+        byteBuffer.readSignedBytesTag(tags, tagMetadata)
       case (_, UndefinedFieldType) =>
-        byteBuffer.readUndefinedTag(directory, tagMetadata)
+        byteBuffer.readUndefinedTag(tags, tagMetadata)
       case (_, SignedShortsFieldType) =>
-        byteBuffer.readSignedShortsTag(directory, tagMetadata)
+        byteBuffer.readSignedShortsTag(tags, tagMetadata)
       case (_, SignedIntsFieldType) =>
-        byteBuffer.readSignedIntsTag(directory, tagMetadata)
+        byteBuffer.readSignedIntsTag(tags, tagMetadata)
       case (_, SignedFractionalsFieldType) =>
-        byteBuffer.readSignedFractionalsTag(directory, tagMetadata)
+        byteBuffer.readSignedFractionalsTag(tags, tagMetadata)
       case (_, FloatsFieldType) =>
-        byteBuffer.readFloatsTag(directory, tagMetadata)
+        byteBuffer.readFloatsTag(tags, tagMetadata)
       case (_, DoublesFieldType) =>
-        byteBuffer.readDoublesTag(directory, tagMetadata)
+        byteBuffer.readDoublesTag(tags, tagMetadata)
     }
 }

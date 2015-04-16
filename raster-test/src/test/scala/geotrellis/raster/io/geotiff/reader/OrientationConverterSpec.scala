@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.Orientations._
+import geotrellis.raster.io.geotiff.reader.tags.codes.Orientations._
 
 import geotrellis.testkit._
 

@@ -340,7 +340,7 @@ class Encoder(
 
   private def writeGeoKeyDirectory(crs: CRS) {
     val proj4String = crs.toProj4String
-    val parser = Proj4StringParser(proj4String)
+    val parser = reader.Proj4StringParser(proj4String)
     val (gkis, ds) = parser.parse
 
     writeTag(0x87af, Const.uint16, gkis.size * 4 + 4, dataOffset)

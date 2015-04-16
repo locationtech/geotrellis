@@ -1,8 +1,6 @@
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster.io.geotiff.reader.extensions._
-
-package object reader extends ArrayExtensions
+package object utils extends ArrayExtensions
   with ByteBufferExtensions
   with ByteInverter
   with MatrixExtensions

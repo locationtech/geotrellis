@@ -16,11 +16,17 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import geotrellis.raster._
 import geotrellis.raster.io.Filesystem
-import geotrellis.raster.io.geotiff.reader.Tags._
+import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.tags._
+
+import monocle.syntax._
 
 import scala.io._
+import scala.collection.mutable
 import java.nio.{ByteBuffer, ByteOrder}
+import spire.syntax.cfor._
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
@@ -33,8 +39,6 @@ object GeoTiffReader {
 
   def read(bytes: Array[Byte]): GeoTiff = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-
-    def validateTiffVersion = 
 
     // Set byteBuffer position
     byteBuffer.position(0)
@@ -51,52 +55,194 @@ object GeoTiffReader {
     if ( geoTiffIdNumber != 42)
       throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
 
-    byteBuffer.position(byteBuffer.getInt)
+    val tagsStartPosition = byteBuffer.getInt
 
-    val entryCount = byteBuffer.getShort
+    val tiffTags = TagsReader.read(byteBuffer, tagsStartPosition)
 
-    val imageDirectory = {
+    val compressedSections: Array[Array[Byte]] = {
+      def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
+        val oldOffset = byteBuffer.position
 
-      def recurReadImageDirectory(directory: ImageDirectory, index: Int, geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
+        val result = Array.ofDim[Array[Byte]](offsets.size)
 
-        if (index == entryCount) {
-          val newDirectory =
-            geoKeysMetadata match {
-              case Some(tagMetadata) => TagReader.read(byteBuffer, directory, geoKeysMetadata.get)
-              case None => directory
-            }
-          ImageReader.read(byteBuffer, newDirectory)
-        } else {
-          val metadata =
-            TagMetadata(
-              byteBuffer.getUnsignedShort,
-              byteBuffer.getUnsignedShort,
-              byteBuffer.getInt,
-              byteBuffer.getInt
-            )
-
-          if (metadata.tag == GeoKeyDirectoryTag)
-            recurReadImageDirectory(directory, index + 1, Some(metadata))
-          else
-            recurReadImageDirectory(
-              TagReader.read(byteBuffer, directory, metadata),
-              index + 1,
-              geoKeysMetadata
-            )
+        cfor(0)(_ < offsets.size, _ + 1) { i =>
+          byteBuffer.position(offsets(i))
+          result(i) = byteBuffer.getSignedByteArray(byteCounts(i))
         }
 
-      val directory = ImageDirectory()
-      recurReadImageDirectory(directory, 0)
+        byteBuffer.position(oldOffset)
+
+        result
+      }
+
+      def readStrips(tags: Tags): Array[Array[Byte]] = {
+        val stripOffsets = (tags &|->
+          Tags._basicTags ^|->
+          BasicTags._stripOffsets get)
+
+        val stripByteCounts = (tags &|->
+          Tags._basicTags ^|->
+          BasicTags._stripByteCounts get)
+
+        readSections(stripOffsets.get, stripByteCounts.get)
+      }
+
+      def readTiles(tags: Tags) = {
+        val tileOffsets = (tags &|->
+          Tags._tileTags ^|->
+          TileTags._tileOffsets get)
+
+        val tileByteCounts = (tags &|->
+          Tags._tileTags ^|->
+          TileTags._tileByteCounts get)
+
+        readSections(tileOffsets.get, tileByteCounts.get)
+      }
+
+
+      if (tiffTags.hasStripStorage) readStrips(tiffTags)
+      else readTiles(tiffTags)
     }
 
-    val metaData = imageDirectory.metaData
-    val bands = imageDirectory.bands
-    val tags = imageDirectory.tags
-    val bandTags = imageDirectory.bandTags
+    import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
+    import geotrellis.raster.io.geotiff.reader.decompression._
+    val uncompressedSections: Array[Array[Byte]] =
+      tiffTags.compression match {
+        case Uncompressed => compressedSections
+        case LZWCoded => compressedSections.uncompressLZW(tiffTags)
+        case ZLibCoded | PkZipCoded => compressedSections.uncompressZLib(tiffTags)
+        case PackBitsCoded => compressedSections.uncompressPackBits(tiffTags)
+
+        // Unsupported compression types
+        case JpegCoded => 
+          val msg = "compression type JPEG is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case HuffmanCoded => 
+          val msg = "compression type CCITTRLE is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case GroupThreeCoded => 
+          val msg = s"compression type CCITTFAX3 is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case GroupFourCoded => 
+          val msg = s"compression type CCITTFAX4 is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+        case JpegOldCoded =>
+          val msg = "old jpeg (compression = 6) is deprecated."
+          throw new MalformedGeoTiffException(msg)
+        case compression =>
+          val msg = s"compression type $compression is not supported by this reader."
+          throw new GeoTiffReaderLimitationException(msg)
+      }
+
+    def doAThing() = {
+      println(s"AHH ${uncompressedSections.size}")
+      val bytesPerPixel = (tiffTags.bitsPerPixel + 7) / 8
+
+      val tileCols = tiffTags.rowSize
+      val tileRows =
+        (tiffTags &|->
+          Tags._tileTags ^|->
+          TileTags._tileHeight get).get.toInt
+
+      val totalCols = tiffTags.cols
+      val totalRows = tiffTags.rows
+
+      val widthOverflow = totalCols % tileCols
+
+      val layoutCols = totalCols / tileCols + (if (widthOverflow > 0) 1 else 0)
+      val layoutRows = math.ceil(totalRows / tileRows.toDouble).toInt
+
+      val resArray = Array.ofDim[Byte](totalCols * totalRows * bytesPerPixel)
+      var resArrayIndex = 0
+
+      val metaData = tiffTags.metaData
+      val gdalNoData = 
+        (tiffTags &|-> Tags._geoTiffTags
+          ^|-> GeoTiffTags._gdalInternalNoData get)
+
+      println(s"$layoutRows x $layoutCols")
+      def flip(image: Array[Byte], flipSize: Int): Array[Byte] = {
+        println("FLIPPPPPPPPPP")
+        val size = image.size
+        val arr = Array.ofDim[Byte](size)
+
+        var i = 0
+        while (i < size) {
+          var j = 0
+          while (j < flipSize) {
+            arr(i + j) = image(i + flipSize - 1 - j)
+            j += 1
+          }
+
+          i += flipSize
+        }
+
+        arr
+      }
+
+      val bitsPerPixel = tiffTags.bitsPerPixel
+
+      cfor(0)(_ < layoutRows, _ + 1) { layoutRow =>
+        cfor(0)(_ < layoutCols, _ + 1) { layoutCol =>
+          val tileBytes = uncompressedSections( (layoutRow * layoutCols) + layoutCol)
+          val tb = 
+            if (byteBuffer.order != ByteOrder.BIG_ENDIAN && bitsPerPixel > 8) flip(tileBytes, bitsPerPixel / 8)
+            else tileBytes
+          println(s"TILE SIZE ${tileBytes.size}")
+          val tile = 
+            gdalNoData match {
+              case Some(nd) =>
+                ArrayTile.fromBytes(tb, metaData.cellType, tileCols*3, tileRows*3, nd).crop(totalCols, totalRows)
+              case None =>
+                ArrayTile.fromBytes(tb, metaData.cellType, tileCols*3, tileRows*3).crop(totalCols, totalRows)
+            }
+          println(tile.asciiDraw)
+        }
+      }
+
+      resArray
+    }
+    doAThing()
+
+
+
+    val imageBytes = ImageConverter(tiffTags,
+      byteBuffer.order == ByteOrder.BIG_ENDIAN).convert(uncompressedSections)
+
+
+    val metaData = tiffTags.metaData
+    val tags = tiffTags.tags
+    val bandTags = tiffTags.bandTags
+
+    val bands: Seq[Tile] = {
+      val cols = tiffTags.cols
+      val rows = tiffTags.rows
+      val bandCount = tiffTags.bandCount
+
+      val tileBuffer = mutable.ListBuffer[Tile]()
+      val tileSize = metaData.cellType.numBytes(cols * rows)
+
+      cfor(0)(_ < bandCount, _ + 1) { i =>
+        val arr = Array.ofDim[Byte](tileSize)
+        System.arraycopy(imageBytes, i * tileSize, arr, 0, tileSize)
+
+        tileBuffer += {
+          (tiffTags &|-> Tags._geoTiffTags
+            ^|-> GeoTiffTags._gdalInternalNoData get) match {
+            case Some(gdalNoData) =>
+              ArrayTile.fromBytes(arr, metaData.cellType, cols, rows, gdalNoData)
+            case None =>
+              ArrayTile.fromBytes(arr, metaData.cellType, cols, rows)
+          }
+        }
+      }
+
+      tileBuffer.toList
+    }
 
     val geoTiffBands =
       for ((band, tags) <- bands.zip(bandTags)) yield GeoTiffBand(band, metaData.rasterExtent.extent, metaData.crs, tags)
 
-    GeoTiff(metaData, geoTiffBands, tags, imageDirectory)
+    GeoTiff(metaData, geoTiffBands, tags, tiffTags)
   }
 }

@@ -22,6 +22,7 @@ import geotrellis.vector.Extent
 
 import geotrellis.proj4.CRS
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags._
 
 import monocle.syntax._
 
@@ -40,12 +41,12 @@ case class GeoTiff(
   metaData: GeoTiffMetaData,
   bands: Seq[GeoTiffBand],
   tags: Map[String, String],
-  imageDirectory: ImageDirectory) {
+  imageDirectory: Tags) {
 
   lazy val firstBand: GeoTiffBand = bands.head
 
   lazy val colorMap: Seq[(Short, Short, Short)] = (imageDirectory &|->
-    ImageDirectory._basicTags ^|->
+    Tags._basicTags ^|->
     BasicTags._colorMap get)
 
 }

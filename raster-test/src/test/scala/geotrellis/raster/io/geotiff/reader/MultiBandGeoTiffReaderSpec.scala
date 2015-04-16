@@ -11,7 +11,7 @@ class MultiBandGeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with INTERLEAVE=PIXEL") {
-    it("Uncompressed, Stripped") {
+    ignore("Uncompressed, Stripped") {
       val tiles =
         GeoTiff(s"$filePath/geotiff-reader-tiffs/3bands/3bands.tif").bands.map(_.tile).toArray
 
@@ -25,7 +25,7 @@ class MultiBandGeoTiffReaderSpec extends FunSpec
       // tiles(2).foreach { z => z should be (3) }
     }
 
-    ignore("Uncompressed, Tiled") {
+    it("Uncompressed, Tiled") {
       val tiles =
         GeoTiff(s"$filePath/geotiff-reader-tiffs/3bands/3bands-tiled.tif").bands.map(_.tile).toArray
 
@@ -53,7 +53,7 @@ class MultiBandGeoTiffReaderSpec extends FunSpec
       // tiles(2).foreach { z => z should be (3) }
     }
 
-    ignore("COMPRESSION=DEFLATE, Tiled") {
+    it("COMPRESSION=DEFLATE, Tiled") {
       val tiles =
         GeoTiff(s"$filePath/geotiff-reader-tiffs/3bands/3bands-tiled-deflate.tif").bands.map(_.tile).toArray
 

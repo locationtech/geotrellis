@@ -19,13 +19,14 @@ package geotrellis.raster.io.geotiff.reader.decompression
 import java.util.zip.Inflater
 
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags.Tags
 
 import spire.syntax.cfor._
 
 trait ZLibDecompression {
 
   implicit class ZLib(matrix: Array[Array[Byte]]) {
-    def uncompressZLib(directory: ImageDirectory): Array[Array[Byte]] = {
+    def uncompressZLib(directory: Tags): Array[Array[Byte]] = {
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
 
@@ -37,6 +38,7 @@ trait ZLibDecompression {
 
           decompressor.setInput(segment, 0, segment.length)
 
+          println(directory.imageSegmentByteSize(Some(i)))
           val resultSize = directory.imageSegmentByteSize(Some(i))
           val result = new Array[Byte](resultSize.toInt)
           decompressor.inflate(result)
@@ -49,11 +51,6 @@ trait ZLibDecompression {
 
       arr
     }
-
-    private def uncompressZLibSegment(segment: Vector[Byte], index: Int)
-      (implicit directory: ImageDirectory) = {
-    }
-
   }
 
 }

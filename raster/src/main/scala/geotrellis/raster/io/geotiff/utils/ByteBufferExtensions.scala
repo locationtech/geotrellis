@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader.extensions
+package geotrellis.raster.io.geotiff.utils
 
 import java.nio.ByteBuffer
 

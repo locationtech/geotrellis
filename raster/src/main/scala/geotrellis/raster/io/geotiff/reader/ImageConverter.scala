@@ -17,6 +17,8 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.utils._
 
 import monocle.syntax._
 
@@ -28,18 +30,18 @@ import spire.syntax.cfor._
 
 object ImageConverter {
 
-  def apply(directory: ImageDirectory, isBigEndian: Boolean) =
-    new ImageConverter(directory, isBigEndian)
+  def apply(tags: Tags, isBigEndian: Boolean) =
+    new ImageConverter(tags, isBigEndian)
 
 }
 
-class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
+class ImageConverter(tags: Tags, isBigEndian: Boolean) {
 
   def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
-    val bitsPerPixel = directory.bitsPerPixel
+    val bitsPerPixel = tags.bitsPerPixel
 
     val stripedImage =
-      if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
+      if (!tags.hasStripStorage) tiledImageToRowImage(uncompressedImage)
       else if (bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
       else uncompressedImage.flatten
 
@@ -65,11 +67,12 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
     arr
   }
 
+  // TODO: Why isn't this used?
   private def setCorrectOrientation(image: Array[Byte]) =
-    OrientationConverter(directory).setCorrectOrientation(image)
+    OrientationConverter(tags).setCorrectOrientation(image)
 
   private def tiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
-    if (directory.bitsPerPixel == 1) bitTiledImageToRowImage(tiledImage)
+    if (tags.bitsPerPixel == 1) bitTiledImageToRowImage(tiledImage)
     else byteTiledImageToRowImage(tiledImage)
   }
 
@@ -77,11 +80,11 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
     val tiledImageBitSets = tiledImage.map(x => BitSet.valueOf(x.map(invertByte(_))))
 
-    val tileWidth = directory.rowSize
-    val tileLength = directory.rowsInSegment(0)
+    val tileWidth = tags.rowSize
+    val tileLength = tags.rowsInSegment(0)
 
-    val imageWidth = directory.cols
-    val imageLength = directory.rows
+    val imageWidth = tags.cols
+    val imageLength = tags.rows
 
     val widthRes = imageWidth % tileWidth
 
@@ -124,32 +127,33 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
   }
 
   private def byteTiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
+    val bytesPerPixel = (tags.bitsPerPixel + 7) / 8
 
-    val bytesPerPixel = (directory.bitsPerPixel + 7) / 8
+    val tileCols = tags.rowSize
+    val tileRows = 
+      (tags &|->
+        Tags._tileTags ^|->
+        TileTags._tileHeight get).get.toInt
 
-    val tileWidth = directory.rowSize
-    val tileLength = directory.rowsInSegment(0)
+    val totalCols = tags.cols
+    val totalRows = tags.rows
 
-    val imageWidth = directory.cols
-    val imageLength = directory.rows
+    val widthOverflow = totalCols % tileCols
 
-    val widthRes = imageWidth % tileWidth
+    val layoutCols = totalCols / tileCols + (if (widthOverflow > 0) 1 else 0)
+    val tilesHieght = math.ceil(totalRows / tileRows).toInt
 
-    val tilesWidth = imageWidth / tileWidth + (if (widthRes > 0) 1 else 0)
-
-    val lengthRes = imageLength % tileLength
-
-    val tilesLength = imageLength / tileLength + (if (lengthRes > 0) 1 else 0)
-
-    val resArray = Array.ofDim[Byte](imageWidth * imageLength * bytesPerPixel)
+    val resArray = Array.ofDim[Byte](totalCols * totalRows * bytesPerPixel)
     var resArrayIndex = 0
 
-    cfor(0)(_ < imageLength, _ + 1) { i =>
-      cfor(0)(_ < tilesWidth, _ + 1) { j =>
-        val tile = tiledImage(j + (i / tileLength) * tilesWidth)
-        val start = (i % tileLength) * tileWidth * bytesPerPixel
-        val length = bytesPerPixel * (if (j == tilesWidth - 1 && widthRes != 0)
-          widthRes else tileWidth)
+    cfor(0)(_ < totalRows, _ + 1) { row =>
+      cfor(0)(_ < layoutCols, _ + 1) { layoutCol =>
+        val layoutRow = row / tileRows
+        val tile = tiledImage( (layoutRow * layoutCols) + layoutCol)
+
+        val start = (row % tileRows) * tileCols * bytesPerPixel
+        val length = 
+          bytesPerPixel * (if (layoutCol == layoutCols - 1 && widthOverflow != 0) widthOverflow else tileCols)
 
         System.arraycopy(
           tile,
@@ -167,17 +171,17 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
   }
 
   private def stripBitImageOverflow(image: Array[Array[Byte]]) = {
-    val imageWidth = directory.cols
-    val imageLength = directory.rows
+    val imageWidth = tags.cols
+    val imageHeight = tags.rows
 
-    val rowBitSetsArray = Array.ofDim[BitSet](imageLength)
+    val rowBitSetsArray = Array.ofDim[BitSet](imageHeight)
     var rowBitSetsIndex = 0
 
     val rowByteSize = (imageWidth + 7) / 8
     val tempBitSetArray = Array.ofDim[Byte](rowByteSize)
 
     cfor(0)(_ < image.size, _ + 1) { i =>
-      val rowsInSegment = directory.rowsInSegment(i)
+      val rowsInSegment = tags.rowsInSegment(i)
       val current = image(i).toArray
 
       cfor(0)(_ < current.size, _ + 1) { j =>
@@ -198,10 +202,10 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
       }
     }
 
-    val resSize = imageWidth * imageLength
+    val resSize = imageWidth * imageHeight
     val resBitSet = new BitSet(resSize)
 
-    cfor(0)(_ < imageLength, _ + 1) { i =>
+    cfor(0)(_ < imageHeight, _ + 1) { i =>
       val bs = rowBitSetsArray(i)
 
       bitSetCopy(

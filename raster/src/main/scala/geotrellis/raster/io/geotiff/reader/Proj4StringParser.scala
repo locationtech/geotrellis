@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff
+package geotrellis.raster.io.geotiff.reader
 
 import collection.immutable.Map
 
 import collection.mutable.ListBuffer
 
-import geotrellis.raster.io.geotiff.reader.EllipsoidTypes._
-import geotrellis.raster.io.geotiff.reader.DatumTypes._
-import geotrellis.raster.io.geotiff.reader.GeographicCSTypes._
-import geotrellis.raster.io.geotiff.reader.EllipsoidTypes._
-import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
-import geotrellis.raster.io.geotiff.reader.GeoKeys._
-import geotrellis.raster.io.geotiff.reader.ModelTypes._
-import geotrellis.raster.io.geotiff.reader.CoordinateTransformTypes._
-import geotrellis.raster.io.geotiff.reader.ProjectedLinearUnits._
+import geotrellis.raster.io.geotiff.tags._
+import EllipsoidTypes._
+import DatumTypes._
+import GeographicCSTypes._
+import EllipsoidTypes._
+import CommonPublicValues._
+import GeoKeys._
+import ModelTypes._
+import CoordinateTransformTypes._
+import ProjectedLinearUnits._
 
 object Proj4StringParser {
 

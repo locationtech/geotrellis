@@ -17,16 +17,16 @@
 package geotrellis.raster.io.geotiff.reader.decompression
 
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags.Tags
 
 import monocle.syntax._
-
 import spire.syntax.cfor._
 
 trait PackBitsDecompression {
 
   implicit class PackBits(matrix: Array[Array[Byte]]) {
 
-    def uncompressPackBits(implicit directory: ImageDirectory): Array[Array[Byte]] = {
+    def uncompressPackBits(implicit directory: Tags): Array[Array[Byte]] = {
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
       cfor(0)(_ < len, _ + 1) { i =>

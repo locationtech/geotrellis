@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader
+package geotrellis.raster.io.geotiff.tags
 
-import geotrellis.raster.io.geotiff.reader.Tags._
-import geotrellis.raster.io.geotiff.reader.GeoKeys._
+import geotrellis.raster.io.geotiff.utils._
+import codes.TagCodes._
+
+import GeoKeys._
 
 import java.nio.ByteBuffer
 
@@ -26,7 +28,7 @@ import monocle.macros.Lenses
 
 object GeoKeyReader {
 
-  def read(byteBuffer: ByteBuffer, imageDirectory: ImageDirectory,
+  def read(byteBuffer: ByteBuffer, imageDirectory: Tags,
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 
@@ -248,6 +250,5 @@ object GeoKeyReader {
       }
     }
   }
-
 
 }
