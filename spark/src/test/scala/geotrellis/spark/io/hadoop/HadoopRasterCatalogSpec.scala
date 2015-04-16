@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop
 import java.io.IOException
 
 import geotrellis.raster._
-import geotrellis.vector._ 
+import geotrellis.vector._
 
 import geotrellis.spark._
 import geotrellis.spark.ingest._
@@ -35,9 +35,9 @@ class HadoopRasterCatalogSpec extends FunSpec
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val layoutScheme = ZoomedLayoutScheme(512)
 
-      var ran = false 
+      var ran = false
 
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) => 
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) =>
         ran = true
 
         it("should succeed saving with default Props"){
