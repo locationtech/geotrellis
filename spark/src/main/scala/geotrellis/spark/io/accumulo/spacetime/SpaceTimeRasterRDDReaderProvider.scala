@@ -87,8 +87,6 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
 
             val start = f"${layerId.zoom}%02d_${min}%019d"
             val end   = f"${layerId.zoom}%02d_${max}%019d"
-            val zmin = new Z3(min)
-            val zmax = new Z3(max)      
             if (min == max)
               ARange.exact(start)
             else

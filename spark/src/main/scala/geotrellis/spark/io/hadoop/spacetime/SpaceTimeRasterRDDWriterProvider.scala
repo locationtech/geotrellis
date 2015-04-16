@@ -64,15 +64,6 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
             .sortByKey(numPartitions = partitions)
             .cache
 
-        // Run over the partitions and collect the first values, as they will be named the split values.
-        // TODO: WRITE SPLITS
-        // val splits: Array[K] =
-        //   sortedWritable
-        //     .mapPartitions { iter =>
-        //     if(iter.hasNext) Seq(iter.next._1.toValue).iterator else sys.error(s"Empty partition.")
-        //   }
-        //     .collect
-
         // Write the RDD.
         sortedWritable
           .saveAsNewAPIHadoopFile(
@@ -83,7 +74,6 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
             job.getConfiguration
         )
 
-//        writeSplits(splits, layerPath, conf)
         logInfo(s"Finished saving tiles to ${layerPath}")
       }
     }

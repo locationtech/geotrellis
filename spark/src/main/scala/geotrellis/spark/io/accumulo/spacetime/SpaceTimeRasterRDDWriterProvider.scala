@@ -47,7 +47,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
 
   def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey], index: KeyIndex[SpaceTimeKey]): RDD[(Text, Mutation)] =
     raster
-      .map { case (key, tile) =>
+      .map( KryoClosure { case (key, tile) =>
         val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])]( (key, tile.toBytes) )
         val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
         mutation.put(
@@ -57,7 +57,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
           new Value(value)
         )
         (null, mutation)
-      }
+      })
 
   def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit sc: SparkContext): RasterRDDWriter[SpaceTimeKey] =
     new RasterRDDWriter[SpaceTimeKey] {
