@@ -133,6 +133,9 @@ case class CompositeTile(tiles: Seq[Tile],
 
   val cellType: CellType = tiles(0).cellType
 
+  def convert(cellType: CellType): Tile =
+    LazyConvertedArrayTile(this, cellType)
+
   def resample(source: Extent, target: RasterExtent, method: InterpolationMethod) = 
     toArrayTile.resample(source, target, method)
 
@@ -254,11 +257,73 @@ case class CompositeTile(tiles: Seq[Tile],
     getTile(tcol, trow).getDouble(pcol, prow)
   }
 
+  def foreach(f: Int => Unit): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        f(get(col, row))
+      }
+    }
+  }
+
+  def foreachDouble(f: Double => Unit): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        f(getDouble(col, row))
+      }
+    }
+  }
+
+  def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        visitor(col, row, get(col, row))
+      }
+    }
+  }
+
+  def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        visitor(col, row, getDouble(col, row))
+      }
+    }
+  }
+
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row)))
+      }
+    }
+    tile
+  }
+
+  def mapDouble(f: Double =>Double): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.setDouble(col, row, f(getDouble(col, row)))
+      }
+    }
+    tile
+  }
+
+  def mapIntMapper(mapper: IntTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.set(col, row, mapper(col, row, get(col, row)))
+      }
+    }
+    tile
+  }
+
+  def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.setDouble(col, row, mapper(col, row, getDouble(col, row)))
       }
     }
     tile
@@ -271,16 +336,6 @@ case class CompositeTile(tiles: Seq[Tile],
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row), other.get(col, row)))
-      }
-    }
-    tile
-  }
-
-  def mapDouble(f: Double =>Double): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, f(getDouble(col, row)))
       }
     }
     tile

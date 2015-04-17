@@ -16,28 +16,33 @@
 
 package geotrellis
 
-import language.experimental.macros
+import geotrellis.macros.NoDataMacros
 
 package object raster {
   type DI = DummyImplicit
+
+  type IntTileMapper = macros.IntTileMapper
+  type DoubleTileMapper = macros.DoubleTileMapper
+  type IntTileVisitor = macros.IntTileVisitor
+  type DoubleTileVisitor = macros.DoubleTileVisitor
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
   @inline final val shortNODATA = Short.MinValue
   @inline final val NODATA = Int.MinValue
 
-  import geotrellis.Macros._
-  def isNoData(b: Byte): Boolean = macro isNoDataByte_impl
-  def isNoData(s: Short): Boolean = macro isNoDataShort_impl
-  def isNoData(i: Int): Boolean = macro isNoDataInt_impl
-  def isNoData(f: Float): Boolean = macro isNoDataFloat_impl
-  def isNoData(d: Double): Boolean = macro isNoDataDouble_impl
 
-  def isData(b: Byte): Boolean = macro isDataByte_impl
-  def isData(s: Short): Boolean = macro isDataShort_impl
-  def isData(i: Int): Boolean = macro isDataInt_impl
-  def isData(f: Float): Boolean = macro isDataFloat_impl
-  def isData(d: Double): Boolean = macro isDataDouble_impl
+  def isNoData(b: Byte): Boolean = macro NoDataMacros.isNoDataByte_impl
+  def isNoData(s: Short): Boolean = macro NoDataMacros.isNoDataShort_impl
+  def isNoData(i: Int): Boolean = macro NoDataMacros.isNoDataInt_impl
+  def isNoData(f: Float): Boolean = macro NoDataMacros.isNoDataFloat_impl
+  def isNoData(d: Double): Boolean = macro NoDataMacros.isNoDataDouble_impl
+
+  def isData(b: Byte): Boolean = macro NoDataMacros.isDataByte_impl
+  def isData(s: Short): Boolean = macro NoDataMacros.isDataShort_impl
+  def isData(i: Int): Boolean = macro NoDataMacros.isDataInt_impl
+  def isData(f: Float): Boolean = macro NoDataMacros.isDataFloat_impl
+  def isData(d: Double): Boolean = macro NoDataMacros.isDataDouble_impl
 
   @inline final def b2i(n: Byte): Int = if (isNoData(n)) NODATA else n.toInt
   @inline final def i2b(n: Int): Byte = if (isNoData(n)) byteNODATA else n.toByte

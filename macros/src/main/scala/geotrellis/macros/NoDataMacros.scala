@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.macros
 
 import scala.reflect.macros.Context
 
-object Macros {
+object NoDataMacros {
   def isNoDataByte_impl(ct:Context)(b:ct.Expr[Byte]):ct.Expr[Boolean] = {
     import ct.universe._
     ct.Expr(q"""$b == Byte.MinValue""")

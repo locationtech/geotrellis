@@ -30,11 +30,14 @@ import spire.syntax.cfor._
  *           therefore converting from a TypeInt to TypeByte could still
  *           return values greater than 127 from apply().
  */
-final case class LazyConvertedTile(inner: Tile, cellType: CellType)
+final case class LazyConvertedArrayTile(inner: Tile, cellType: CellType)
   extends Tile {
 
   val cols = inner.cols
   val rows = inner.rows
+
+  def convert(cellType: CellType): Tile =
+    LazyConvertedArrayTile(this, cellType)
 
   override def toArray = inner.toArray
   override def toArrayDouble = inner.toArrayDouble
@@ -69,6 +72,12 @@ final case class LazyConvertedTile(inner: Tile, cellType: CellType)
 
   def toBytes(): Array[Byte] = toArrayTile.toBytes
 
+  def foreach(f: Int => Unit): Unit = inner.foreach(f)
+  def foreachDouble(f: Double => Unit): Unit = inner.foreachDouble(f)
+
+  def foreachIntVisitor(visitor: IntTileVisitor): Unit = inner.foreachIntVisitor(visitor)
+  def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = inner.foreachDoubleVisitor(visitor)
+
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
@@ -81,6 +90,43 @@ final case class LazyConvertedTile(inner: Tile, cellType: CellType)
     tile
   }
 
+  def mapDouble(f: Double =>Double): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.setDouble(col, row, f(getDouble(col, row)))
+      }
+    }
+
+    tile
+  }
+
+  def mapIntMapper(mapper: IntTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.set(col, row, mapper(col, row, get(col, row)))
+      }
+    }
+
+    tile
+  }
+
+  def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.setDouble(col, row, mapper(col, row, getDouble(col, row)))
+      }
+    }
+
+    tile
+  }
+
+
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
@@ -88,18 +134,6 @@ final case class LazyConvertedTile(inner: Tile, cellType: CellType)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row), other.get(col, row)))
-      }
-    }
-
-    tile
-  }
-
-  def mapDouble(f: Double =>Double): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, f(getDouble(col, row)))
       }
     }
 
@@ -120,5 +154,5 @@ final case class LazyConvertedTile(inner: Tile, cellType: CellType)
   }
 
   def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile = 
-    LazyConvertedTile(inner.resample(source, target, method), cellType)
+    LazyConvertedArrayTile(inner.resample(source, target, method), cellType)
 }

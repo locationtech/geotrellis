@@ -31,7 +31,7 @@ import collection.mutable.ArrayBuffer
 /**
   * Base trait for a Tile.
   */
-trait Tile {
+trait Tile extends IterableTile with MappableTile[Tile] {
 
   val gridBounds = GridBounds(0, 0, cols - 1, rows - 1)
 
@@ -69,8 +69,7 @@ trait Tile {
 
   val cellType: CellType
 
-  def convert(cellType: CellType): Tile =
-    LazyConvertedTile(this, cellType)
+  def convert(cellType: CellType): Tile
 
   /**
     * Get value at given coordinates.
@@ -87,19 +86,9 @@ trait Tile {
   def toArrayDouble(): Array[Double]
   def toBytes(): Array[Byte]
 
-  def foreach(f: Int=>Unit): Unit =
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        f(get(col, row))
-      }
-    }
+  def foreach(f: Int=>Unit): Unit
 
-  def foreachDouble(f: Double=>Unit): Unit =
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        f(getDouble(col, row))
-      }
-    }
+  def foreachDouble(f: Double=>Unit): Unit 
 
   def map(f: Int => Int): Tile
   def combine(r2: Tile)(f: (Int, Int) => Int): Tile
