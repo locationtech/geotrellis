@@ -1,4 +1,4 @@
-package geotrellis.spark.io.accumulo
+package geotrellis.spark
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -9,6 +9,8 @@ case class KeyBounds[K](
 )
 
 object KeyBounds {
+  implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
+
   implicit def keyBoundsFormat[K: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
     new RootJsonFormat[KeyBounds[K]] {
 

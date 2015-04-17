@@ -3,6 +3,7 @@ package geotrellis.spark.ingest
 import geotrellis.spark._
 import geotrellis.spark.cmd.args._
 import geotrellis.spark.io.accumulo._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
@@ -26,7 +27,7 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
     val catalog = AccumuloRasterCatalog()
 
     val reader = catalog.reader[SpatialKey]
-    val writer = catalog.writer[SpatialKey](args.table)
+    val writer = catalog.writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
 
     val rdd = reader.read(LayerId(args.layerName, args.startLevel))
 

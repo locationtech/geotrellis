@@ -2,6 +2,8 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index._
 import geotrellis.spark.op.stats._
 import geotrellis.raster._
 
@@ -34,17 +36,17 @@ class AccumuloRasterCatalog(
   metaDataCatalog: Store[LayerId, AccumuloLayerMetaData],
   attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
-  def reader[K: RasterRDDReaderProvider: JsonFormat](): FilterableRasterRDDReader[K] = 
+  def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = metaDataCatalog.read(layerId)
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData, keyBounds).read(layerId, filterSet)
+        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData, keyBounds, index).read(layerId, filterSet)
       }
     }
   
-
-  def writer[K: RasterRDDWriterProvider: JsonFormat: Ordering: ClassTag](tileTable: String): Writer[LayerId, RasterRDD[K]] = {
+  def writer[K: SpatialComponent: RasterRDDWriterProvider: JsonFormat: Ordering: ClassTag](keyIndexMethod: KeyIndexMethod[K], tileTable: String): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
@@ -62,15 +64,31 @@ class AccumuloRasterCatalog(
         val maxKey = rdd.map(_._1).max
 
         metaDataCatalog.write(layerId, md)
-        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", KeyBounds(minKey, maxKey))
-        implicitly[RasterRDDWriterProvider[K]].writer(instance, md).write(layerId, rdd)
+        val keyBounds = KeyBounds(minKey, maxKey)
+        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
+
+        val index = {
+          val indexKeyBounds = {
+            val imin = minKey.updateSpatialComponent(SpatialKey(0, 0))
+            val imax = maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
+            KeyBounds(imin, imax)
+          }
+          keyIndexMethod.createIndex(indexKeyBounds)
+        }
+        attributeStore.write(layerId, "keyIndex", index)
+
+        val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(instance, md, keyBounds, index)
+
+        rddWriter.write(layerId, rdd)
         rdd.unpersist(blocking = false)
       }
     }
   }
 
-  def tileReader[K: TileReaderProvider](layerId: LayerId): Reader[K, Tile] = {
+  def tileReader[K: TileReaderProvider: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     val accumuloLayerMetaData = metaDataCatalog.read(layerId)
-    implicitly[TileReaderProvider[K]].reader(instance, layerId, accumuloLayerMetaData)
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    implicitly[TileReaderProvider[K]].reader(instance, layerId, accumuloLayerMetaData, index)
   }
 }

@@ -2,6 +2,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
 import geotrellis.vector._
@@ -30,7 +31,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
       catalog
-        .writer[SpatialKey](args.clobber)
+        .writer[SpatialKey](RowMajorKeyIndexMethod, args.clobber)
         .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }

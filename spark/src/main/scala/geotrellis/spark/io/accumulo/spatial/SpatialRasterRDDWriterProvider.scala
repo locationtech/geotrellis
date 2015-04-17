@@ -3,6 +3,9 @@ package geotrellis.spark.io.accumulo.spatial
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
+import geotrellis.spark.io.index._
+import geotrellis.spark.utils._
+import geotrellis.raster._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -18,32 +21,32 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
-  import SpatialRasterRDDIndex._
 
-  def getSplits(id: LayerId, rdd: RasterRDD[SpatialKey], num: Int = 24): Seq[String] = {
+  def getSplits(id: LayerId, rdd: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey], num: Int = 24): Seq[String] = {
     import org.apache.spark.SparkContext._
 
     rdd
-      .map { case (key, _) => rowId(id, key) -> null }
+      .map(KryoClosure { case (key, _) => rowId(id, index.toIndex(key)) -> null })
       .sortByKey(ascending = true, numPartitions = num)
       .map(_._1)
       .mapPartitions{ iter => iter.take(1) }
       .collect
   }
 
-  def encode(layerId: LayerId, raster: RasterRDD[SpatialKey]): RDD[(Text, Mutation)] =
+  def encode(layerId: LayerId, raster: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(Text, Mutation)] =
     raster.map { case (key, tile) =>
-      val mutation = new Mutation(rowId(layerId, key))
+      val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
+      val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
       mutation.put(
         new Text(layerId.name), new Text(),
         System.currentTimeMillis(),
-        new Value(tile.toBytes())
+        new Value(value)
       )
       
       (null, mutation)
     }
 
-  def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData)(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
+  def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, raster: RasterRDD[SpatialKey]): Unit = {
         // Create table if it doesn't exist.
@@ -56,14 +59,14 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
         ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
 
-        val splits = getSplits(layerId, raster)
+        val splits = getSplits(layerId, raster, index)
         instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
 
         val job = Job.getInstance(sc.hadoopConfiguration)
         instance.setAccumuloConfig(job)
         AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
         AccumuloOutputFormat.setDefaultTableName(job, tileTable)
-        encode(layerId, raster)
+        encode(layerId, raster, index)
           .saveAsNewAPIHadoopFile(instance.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
       }
     }

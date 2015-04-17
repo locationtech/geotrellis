@@ -12,7 +12,7 @@ case class TimeFilter[K: TemporalComponent](startTime: DateTime, endTime: DateTi
     val minTime = 
       minKey match {
         case _: MinKeyBound[K] => new DateTime(Long.MinValue/10, DateTimeZone.UTC) // a very low year
-        case _: MaxKeyBound[K] => new DateTime(Long.MaxValue/10, DateTimeZone.UTC) // a vary high year
+        case _: MaxKeyBound[K] => new DateTime(Long.MaxValue/10, DateTimeZone.UTC) // a very high year
         case ValueKeyBound(value) =>
           value.temporalComponent.time
       }

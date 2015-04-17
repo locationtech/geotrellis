@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.utils._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.json._
@@ -12,7 +13,12 @@ import com.github.nscala_time.time.Imports._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+import scala.reflect.ClassTag
+
 package object json {
+  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
+    new KryoJsonFormat[index.KeyIndex[K]]
+
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
       JsString(crs.toProj4String)
