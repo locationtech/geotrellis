@@ -30,21 +30,6 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
     ZSpaceTimeKeyIndex.byYear
 
-  /** TODO: What is the rules about the "num" parameter? */
-  def getSplits(layerId: LayerId, metaData: RasterMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey], num: Int = 48): List[String] = {
-    val minIndex = index.toIndex(keyBounds.minKey)
-    val maxIndex = index.toIndex(keyBounds.maxKey)
-    val splitSize = (maxIndex - minIndex) / num
-
-    val splits = mutable.ListBuffer[String]()
-
-    cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
-      splits += rowId(layerId, i + 1)
-    }
-
-    splits.toList
-  }
-
   def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey], index: KeyIndex[SpaceTimeKey]): RDD[(Text, Mutation)] =
     raster
       .map { case (key, tile) =>
@@ -59,29 +44,5 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
         (null, mutation)
       }
 
-  def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit sc: SparkContext): RasterRDDWriter[SpaceTimeKey] =
-    new RasterRDDWriter[SpaceTimeKey] {
-      def write(layerId: LayerId, raster: RasterRDD[SpaceTimeKey]): Unit = {
-        // Create table if it doesn't exist.
-        val tileTable = layerMetaData.tileTable
-        if (!instance.connector.tableOperations().exists(tileTable))
-          instance.connector.tableOperations().create(tileTable)
-
-        val ops = instance.connector.tableOperations()
-        val groups = ops.getLocalityGroups(tileTable)
-        val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
-        ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
-        
-
-        val splits = getSplits(layerId, layerMetaData.rasterMetaData, keyBounds, index)
-        instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
-
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
-        AccumuloOutputFormat.setDefaultTableName(job, tileTable)
-        encode(layerId, raster, index)
-          .saveAsNewAPIHadoopFile(instance.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
-      }
-    }
+  def rowId(id: LayerId, index: Long): String = rowId(id, index)
 }

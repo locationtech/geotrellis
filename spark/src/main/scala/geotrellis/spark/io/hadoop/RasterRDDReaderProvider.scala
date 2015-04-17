@@ -9,8 +9,8 @@ import org.apache.spark.SparkContext
 
 trait RasterRDDReaderProvider[K] {
   def reader(
-    catalogConfig: HadoopRasterCatalogConfig, 
-    metaData: HadoopLayerMetaData, 
+    catalogConfig: HadoopRasterCatalogConfig,
+    metaData: HadoopLayerMetaData,
     index: KeyIndex[K],
     keyBounds: KeyBounds[K]
   )(implicit sc: SparkContext): FilterableRasterRDDReader[K]

@@ -21,7 +21,7 @@ import scala.collection.JavaConversions._
 
 object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] {
 
-  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpatialKey], index: KeyIndex[SpatialKey]): Unit = {
+  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey]): Unit = {
     var tileBoundSet = false
 
     for(filter <- filterSet.filters) {
@@ -47,39 +47,11 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
   }
 
   def setZoomBounds(job: Job, layerId: LayerId): Unit = {
-    val range = new ARange(
+    val ranges = new ARange(
       new Text(f"${layerId.zoom}%02d"),
       new Text(f"${layerId.zoom+1}%02d")
     ) :: Nil
 
-    InputFormatBase.setRanges(job, range)
+    InputFormatBase.setRanges(job, ranges)
   }
-
-  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpatialKey] =
-    new FilterableRasterRDDReader[SpatialKey] {
-      def read(layerId: LayerId, filters: FilterSet[SpatialKey]): RasterRDD[SpatialKey] = {
-        val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
-
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        InputFormatBase.setInputTableName(job, tileTable)
-        setFilters(job, layerId, filters, index)
-        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[BatchAccumuloInputFormat], classOf[Key], classOf[Value])
-        val tileRdd =
-          rdd.map { case (_, value) =>
-            val (key, tileBytes) = KryoSerializer.deserialize[(SpatialKey, Array[Byte])](value.get)
-            val tile =
-              ArrayTile.fromBytes(
-                tileBytes,
-                rasterMetaData.cellType,
-                rasterMetaData.tileLayout.tileCols,
-                rasterMetaData.tileLayout.tileRows
-              )
-
-            (key, tile: Tile)
-          }
-
-        new RasterRDD(tileRdd, rasterMetaData)
-      }
-    }
 }

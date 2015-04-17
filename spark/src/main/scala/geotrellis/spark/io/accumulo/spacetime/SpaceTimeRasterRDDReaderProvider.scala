@@ -50,11 +50,11 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
     val spaceFilters = mutable.ListBuffer[GridBounds]()
     val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
 
-    filterSet.filters.foreach {
-      case SpaceFilter(bounds) => 
-        spaceFilters += bounds
-      case TimeFilter(start, end) =>
-        timeFilters += ( (start, end) )
+    for(filter <- filterSet.filters) {
+      filter match {
+        case SpaceFilter(bounds) => spaceFilters += bounds
+        case TimeFilter(start, end) => timeFilters += ( (start, end) )
+      }
     }
 
     if(spaceFilters.isEmpty) {
@@ -67,11 +67,10 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
       val minKey = keyBounds.minKey.temporalKey
       val maxKey = keyBounds.maxKey.temporalKey
       timeFilters += ( (minKey.time, maxKey.time) )
-
     }
 
     InputFormatBase.setLogLevel(job, org.apache.log4j.Level.DEBUG)
-    
+
     val ranges: Seq[ARange] = (
       for {
         bounds <- spaceFilters
@@ -79,7 +78,7 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
       } yield {
         val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
         val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
-        
+
         val ranges = index.indexRanges(p1, p2)
 
         ranges
@@ -87,13 +86,11 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
 
             val start = f"${layerId.zoom}%02d_${min}%019d"
             val end   = f"${layerId.zoom}%02d_${max}%019d"
-            val zmin = new Z3(min)
-            val zmax = new Z3(max)      
             if (min == max)
               ARange.exact(start)
             else
               new ARange(start, true, end, true)
-          }        
+          }
       }).flatten
 
     InputFormatBase.setRanges(job, ranges)
@@ -112,30 +109,4 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
 
     InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
   }
-
-  def reader(instance: AccumuloInstance, metaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
-    new FilterableRasterRDDReader[SpaceTimeKey] {
-      def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
-        val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        InputFormatBase.setInputTableName(job, tileTable)
-        setFilters(job, layerId, filters, keyBounds, index)
-        val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[BatchAccumuloInputFormat], classOf[Key], classOf[Value])
-        val tileRdd = 
-          rdd.map { case (_, value) =>
-            val (key, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](value.get)
-            val tile =
-              ArrayTile.fromBytes(
-                tileBytes,
-                rasterMetaData.cellType,
-                rasterMetaData.tileLayout.tileCols,
-                rasterMetaData.tileLayout.tileRows
-              )
-            (key, tile: Tile)
-          }
-
-        new RasterRDD(tileRdd, rasterMetaData)
-      }
-    }
 }

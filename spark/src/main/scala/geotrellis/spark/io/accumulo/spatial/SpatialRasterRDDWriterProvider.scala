@@ -22,19 +22,8 @@ import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
 
-  def getSplits(id: LayerId, rdd: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey], num: Int = 24): Seq[String] = {
-    import org.apache.spark.SparkContext._
-
-    rdd
-      .map(KryoClosure { case (key, _) => rowId(id, index.toIndex(key)) -> null })
-      .sortByKey(ascending = true, numPartitions = num)
-      .map(_._1)
-      .mapPartitions{ iter => iter.take(1) }
-      .collect
-  }
-
   def encode(layerId: LayerId, raster: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(Text, Mutation)] =
-    raster.map { case (key, tile) =>
+    raster.map( KryoClosure { case (key, tile) =>
       val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
       val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
       mutation.put(
@@ -42,32 +31,9 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
         System.currentTimeMillis(),
         new Value(value)
       )
-      
+
       (null, mutation)
-    }
+    })
 
-  def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
-    new RasterRDDWriter[SpatialKey] {
-      def write(layerId: LayerId, raster: RasterRDD[SpatialKey]): Unit = {
-        // Create table if it doesn't exist.
-        val tileTable = layerMetaData.tileTable
-        if (!instance.connector.tableOperations().exists(tileTable))
-          instance.connector.tableOperations().create(tileTable)
-
-        val ops = instance.connector.tableOperations()
-        val groups = ops.getLocalityGroups(tileTable)
-        val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
-        ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
-
-        val splits = getSplits(layerId, raster, index)
-        instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
-
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
-        AccumuloOutputFormat.setDefaultTableName(job, tileTable)
-        encode(layerId, raster, index)
-          .saveAsNewAPIHadoopFile(instance.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
-      }
-    }
+  def rowId(id: LayerId, index: Long): String = rowId(id, index)
 }
