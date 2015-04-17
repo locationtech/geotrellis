@@ -6,7 +6,7 @@ import com.github.nscala_time.time.Imports._
 
 private[index] trait ZCurveKeyIndexMethod
 
-object ZCurveKeyIndexMethod {
+object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
   implicit def spatialKeyIndexMethod(m: ZCurveKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
       def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] = 

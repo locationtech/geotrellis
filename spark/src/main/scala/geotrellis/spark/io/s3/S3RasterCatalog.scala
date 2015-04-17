@@ -2,7 +2,10 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index._
 import org.apache.spark._
+import spray.json.JsonFormat
 import scala.reflect._
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
 
@@ -50,32 +53,31 @@ class S3RasterCatalog(
       }      
     }
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](): Writer[LayerId, RasterRDD[K]] =
-    writer[K](clobber = true)
+  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
+    writer[K](keyIndexMethod, clobber = true)
 
-  def writer[K: RasterRDDWriterProvider: ClassTag](subDir: String): Writer[LayerId, RasterRDD[K]] =
-    writer[K](subDir, clobber = true)
+  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
+    writer[K](keyIndexMethod, subDir, clobber = true)
 
   // TODO: there has to be better than this
-  def writer[K: RasterRDDWriterProvider: ClassTag](clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
-        writer[K](paramsConfig.paramsFor[K](layerId).getOrElse(""), true).write(layerId, rdd)
+        writer[K](keyIndexMethod, paramsConfig.paramsFor[K](layerId).getOrElse(""), true).write(layerId, rdd)
       }
     }
   
-  def writer[K: RasterRDDWriterProvider: ClassTag](subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
+        rdd.persist()
+
         val layerPath = 
           if (subDir != "")
             s"${rootPath}/${subDir}/${catalogConfig.layerDataDir(layerId)}"
           else
             s"${rootPath}/${catalogConfig.layerDataDir(layerId)}"
 
-        val rddWriter = implicitly[RasterRDDWriterProvider[K]]
-          .writer(catalogConfig.credentialsProvider, bucket, layerPath, clobber)
-        
         val md = S3LayerMetaData(
             layerId = layerId,
             keyClass = classTag[K].toString,
@@ -83,9 +85,31 @@ class S3RasterCatalog(
             bucket = bucket,
             key = layerPath)
 
-        rddWriter.write(layerId, rdd)
+        // Note: this is a waste to do for spatial raster, we can derive them easily from RasterMetaData
+        val boundable = implicitly[Boundable[K]]
+        val keyBounds = rdd
+          .map{ case (k, tile) => KeyBounds(k, k) }
+          .reduce { boundable.combine }
+
+        val index = {
+          // Expanding spatial bounds? To allow multi-stage save?
+          val indexKeyBounds = {
+            val imin = keyBounds.minKey.updateSpatialComponent(SpatialKey(0, 0))
+            val imax = keyBounds.maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
+            KeyBounds(imin, imax)
+          }
+          keyIndexMethod.createIndex(indexKeyBounds)
+        }
+
+        attributeStore.write(layerId, "keyIndex", index)
+        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
-        return;
+
+        val rddWriter = implicitly[RasterRDDWriterProvider[K]]
+          .writer(catalogConfig.credentialsProvider, bucket, layerPath, clobber)        
+        
+        rddWriter.write(layerId, rdd)
+        rdd.unpersist(blocking = false)
       }
     }
 

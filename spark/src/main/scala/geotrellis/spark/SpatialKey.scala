@@ -31,6 +31,14 @@ object SpatialKey {
       }
   }
 
+  implicit object SpatialKeyBoundable extends Boundable[SpatialKey] {
+    def minBound(a: SpatialKey, b: SpatialKey) = {
+      SpatialKey(math.min(a.col, b.col), math.min(a.row, b.row))
+    }    
+    def maxBound(a: SpatialKey, b: SpatialKey) = {
+      SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
+    }
+  }
 }
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
