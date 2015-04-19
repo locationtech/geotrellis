@@ -25,7 +25,7 @@ import spire.syntax.cfor._
 
 trait RasterRDDWriterProvider[K] {
 
-  def rowId(id: LayerId, index: Long): String
+  def rowIdCall(id: LayerId, index: Long): String
 
   /** TODO: What is the rules about the "num" parameter? */
   def getSplits(layerId: LayerId, metaData: RasterMetaData, keyBounds: KeyBounds[K], kIndex: KeyIndex[K], num: Int = 48): List[String] = {
@@ -36,7 +36,7 @@ trait RasterRDDWriterProvider[K] {
     val splits = mutable.ListBuffer[String]()
 
     cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
-      splits += rowId(layerId, i + 1)
+      splits += rowIdCall(layerId, i + 1)
     }
 
     splits.toList

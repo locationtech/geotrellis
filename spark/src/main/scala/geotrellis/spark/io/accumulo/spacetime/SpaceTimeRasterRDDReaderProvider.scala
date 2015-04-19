@@ -32,17 +32,17 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
   def tileSlugs(filters: List[GridBounds]): List[(String, String)] = filters match {
     case Nil =>
       List(("0"*6 + "_" + "0"*6) -> ("9"*6 + "_" + "9"*6))
-    case _ => 
+    case _ =>
       for{
         bounds <- filters
-        row <- bounds.rowMin to bounds.rowMax 
+        row <- bounds.rowMin to bounds.rowMax
       } yield f"${bounds.colMin}%06d_${row}%06d" -> f"${bounds.colMax}%06d_${row}%06d"
   }
-  
+
   def timeSlugs(filters: List[(DateTime, DateTime)], minTime: DateTime, maxTime: DateTime): List[(Int, Int)] = filters match {
     case Nil =>
       List(timeChunk(minTime).toInt -> timeChunk(maxTime).toInt)
-    case List((start, end)) =>                 
+    case List((start, end)) =>
       List(timeChunk(start).toInt -> timeChunk(end).toInt)
   }
 

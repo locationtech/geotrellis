@@ -21,11 +21,12 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
+  def rowIdCall(id: LayerId, index: Long): String = rowId(id, index)
 
   def encode(layerId: LayerId, raster: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(Text, Mutation)] =
     raster.map( KryoClosure { case (key, tile) =>
       val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
-      val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
+      val mutation = new Mutation(rowIdCall(layerId, index.toIndex(key)))
       mutation.put(
         new Text(layerId.name), new Text(),
         System.currentTimeMillis(),
@@ -35,5 +36,4 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
       (null, mutation)
     })
 
-  def rowId(id: LayerId, index: Long): String = rowId(id, index)
 }

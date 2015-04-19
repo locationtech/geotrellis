@@ -27,6 +27,8 @@ import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 
 object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTimeKey] {
+  def rowIdCall(id: LayerId, index: Long): String = rowId(id, index)
+
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
     ZSpaceTimeKeyIndex.byYear
 
@@ -34,7 +36,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
     raster
       .map { case (key, tile) =>
         val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])]( (key, tile.toBytes) )
-        val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
+        val mutation = new Mutation(rowIdCall(layerId, index.toIndex(key)))
         mutation.put(
           new Text(layerId.name),
           timeText(key),
@@ -44,5 +46,4 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
         (null, mutation)
       }
 
-  def rowId(id: LayerId, index: Long): String = rowId(id, index)
 }
