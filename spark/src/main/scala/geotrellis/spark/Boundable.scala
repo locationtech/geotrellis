@@ -7,7 +7,7 @@ package geotrellis.spark
  * The bounds must be calculated by taking min/max of each component dimension of K.
  * Consequently the result may be neither a nor b, but a new value.
  */
-trait Boundable[K]{
+trait Boundable[K] extends Serializable {
   def minBound(p1: K, p2: K): K
   
   def maxBound(p1: K, p2: K): K
