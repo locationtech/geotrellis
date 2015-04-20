@@ -7,10 +7,9 @@ import spray.json._
 import org.apache.spark._
 import java.io.PrintWriter
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ObjectMetadata
 import scala.io.Source
-import java.io.StringBufferInputStream
+import java.io.ByteArrayInputStream
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
@@ -36,7 +35,7 @@ class S3AttributeStore(credentialsProvider: AWSCredentialsProvider, bucket: Stri
   def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
     val key = attributePath(layerId, attributeName)
 
-    val is = s3Client.getObject(bucket, key).getObjectContent();
+    val is = s3Client.getObject(bucket, key).getObjectContent()
     val json = Source.fromInputStream(is).mkString;
     is.close();
     json.parseJson.convertTo[T]
@@ -44,7 +43,8 @@ class S3AttributeStore(credentialsProvider: AWSCredentialsProvider, bucket: Stri
 
   def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
-    val is = new StringBufferInputStream(value.toJson.compactPrint)
+    val s = value.toJson.compactPrint
+    val is = new ByteArrayInputStream(value.toJson.compactPrint.getBytes("UTF-8"))
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
   }
