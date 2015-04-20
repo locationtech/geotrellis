@@ -45,11 +45,13 @@ class S3RasterCatalog(
     catalogConfig: S3RasterCatalogConfig)
   (implicit sc: SparkContext) {
 
-  def reader[K: RasterRDDReaderProvider](): FilterableRasterRDDReader[K] = 
+  def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = attributeStore.read[S3LayerMetaData](layerId, "metaData")
-        implicitly[RasterRDDReaderProvider[K]].reader(catalogConfig.credentialsProvider, metaData).read(layerId, filterSet)
+        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+        implicitly[RasterRDDReaderProvider[K]].reader(catalogConfig.credentialsProvider, metaData, keyBounds, index).read(layerId, filterSet)
       }      
     }
 
@@ -106,7 +108,7 @@ class S3RasterCatalog(
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
 
         val rddWriter = implicitly[RasterRDDWriterProvider[K]]
-          .writer(catalogConfig.credentialsProvider, bucket, layerPath, clobber)        
+          .writer(catalogConfig.credentialsProvider, bucket, layerPath, index, clobber)        
         
         rddWriter.write(layerId, rdd)
         rdd.unpersist(blocking = false)

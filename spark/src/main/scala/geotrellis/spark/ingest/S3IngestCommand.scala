@@ -43,7 +43,6 @@ object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
     
     val layoutScheme = ZoomedLayoutScheme(256)
 
-    implicit val wProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDWriterProvider
     val catalog = S3RasterCatalog(args.bucket, args.key)      
     val writer = catalog.writer[SpatialKey](ZCurveKeyIndexMethod)
     

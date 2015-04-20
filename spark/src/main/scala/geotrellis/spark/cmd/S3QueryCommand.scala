@@ -35,9 +35,7 @@ class S3QueryArgs extends FieldArgs {
 object S3QueryCommand extends ArgMain[S3QueryArgs] with Logging {
   def main(args: S3QueryArgs): Unit = {
     implicit val sc = SparkUtils.createSparkContext("S3 Query")
-    
-    implicit val wProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDWriterProvider
-    implicit val rProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDReaderProvider
+
     val catalog = S3RasterCatalog(args.bucket, args.key)
     val attrib = catalog.attributeStore
     val reader = catalog.reader[SpatialKey]()    
