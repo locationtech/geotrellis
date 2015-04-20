@@ -10,9 +10,7 @@ import geotrellis.proj4._
 import monocle.syntax._
 
 case class GeoTiff(tags: Tags, data: Array[Array[Byte]]) {
-  def band(i: Int): Tile = {
-//    if(
-  }
+  def band(i: Int): Tile = ???
 
   def cols = (tags &|-> Tags._basicTags ^|-> BasicTags._imageWidth get)
   def rows = (tags &|-> Tags._basicTags ^|-> BasicTags._imageLength get)

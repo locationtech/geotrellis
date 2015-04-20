@@ -27,9 +27,51 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-trait LZWDecompression {
+object LZWDecompressor {
+  def apply(tags: Tags): LZWDecompressor = {
+    val segmentSize: (Int => Int) = { i => tags.imageSegmentByteSize(i).toInt }
+    val rowsInSegment: (Int => Int) = { i => tags.rowsInSegment(i) }
 
-  implicit class LZW(matrix: Array[Array[Byte]]) {
+    val horizontalPredictor = 
+      (tags 
+        &|-> Tags._nonBasicTags 
+        ^|-> NonBasicTags._predictor get
+      ) match {
+        case Some(2) => true
+        case None | Some(1) => false
+        case Some(i) =>
+          throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1 or 2)")
+      }
+
+    val rowSize = tags.rowSize
+
+    val samplesPerPixel = 
+      (tags 
+        &|-> Tags._basicTags 
+        ^|-> BasicTags._samplesPerPixel get
+      )
+
+    if (horizontalPredictor) {
+      val v = 
+        (tags 
+          &|-> Tags._basicTags 
+          ^|-> BasicTags._bitsPerSample get
+        ) match {
+          case Some(vector) => vector
+          case None => throw new MalformedGeoTiffException("no bits per sample tag!")
+        }
+
+      v foreach { e =>
+        if (e != 8) 
+          throw new MalformedGeoTiffException( "bad bits per sample for horizontal prediction in LZW")
+      }
+    }
+
+    new LZWDecompressor(segmentSize, rowsInSegment, rowSize, samplesPerPixel, horizontalPredictor)
+  }
+}
+
+class LZWDecompressor(segmentSize: Int => Int, rowsInSegment: Int => Int, rowSize: Int, samplesPerPixel: Int, horizontalPredictor: Boolean) extends Decompressor {
     val tableLimit = 4096
 
     final val initialStringTable = {
@@ -51,126 +93,89 @@ trait LZWDecompression {
     val ClearCode = 256
     val EoICode = 257
 
-    def uncompressLZW(directory: Tags): Array[Array[Byte]] = {
-      val horizontalPredictor = (directory &|->
-        Tags._nonBasicTags ^|->
-        NonBasicTags._predictor get) match {
-        case Some(2) => true
-        case None | Some(1) => false
-        case Some(i) =>
-          throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1 or 2)")
-      }
+  def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    val bis = new LZWBitInputStream(segment)
+    var stringTable = Array.ofDim[Array[Byte]](tableLimit)
+    var stringTableIndex = 258
 
-      val samplesPerPixel = (directory &|->
-        Tags._basicTags ^|->
-        BasicTags._samplesPerPixel get)
+    var outputArrayIndex = 0
+    val size = segmentSize(segmentIndex)
+    val outputArray = Array.ofDim[Byte](size)
 
-      if (horizontalPredictor) {
-        val v = (directory &|->
-          Tags._basicTags ^|->
-          BasicTags._bitsPerSample get) match {
-          case Some(vector) => vector
-          case None => throw new MalformedGeoTiffException("no bits per sample tag!")
-        }
+    var threshold = 9
 
-        v foreach {
-          e => if (e != 8) throw new MalformedGeoTiffException(
-            "bad bits per sample for horizontal prediction in LZW"
-          )
-        }
-      }
-
-      val len = matrix.length
-      val arr = Array.ofDim[Array[Byte]](len)
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        val segment = matrix(i)
-        val bis = new LZWBitInputStream(segment)
-        var stringTable = Array.ofDim[Array[Byte]](tableLimit)
-        var stringTableIndex = 258
-
-        var outputArrayIndex = 0
-        val size = directory.imageSegmentByteSize(Some(i)).toInt
-        val outputArray = Array.ofDim[Byte](size)
-
-        var threshold = 9
-
-        def initializeStringTable = {
-          stringTable = initialStringTable.clone
-          stringTableIndex = 258
-          threshold = 9
-        }
-
-        def addString(string: Array[Byte]) = {
-          stringTable(stringTableIndex) = string
-          stringTableIndex += 1
-
-          if (stringTableIndex == 511) threshold = 10
-          if (stringTableIndex == 1023) threshold = 11
-          if (stringTableIndex == 2047) threshold = 12
-        }
-
-        def isInTable(code: Int) = code < stringTableIndex
-
-        def writeString(string: Array[Byte]) = {
-          System.arraycopy(
-            string,
-            0,
-            outputArray,
-            outputArrayIndex,
-            string.length
-          )
-
-          outputArrayIndex += string.length
-        }
-
-        var code = 0
-        var oldCode = 0
-
-        var break = false
-        while (!break && { code = bis.get(threshold); code != EoICode } && outputArrayIndex < size) {
-          if (code == ClearCode) {
-            initializeStringTable
-            code = bis.get(threshold)
-
-            if (code == EoICode) {
-              break = true
-            } else {
-              writeString(stringTable(code))
-            }
-          } else if (isInTable(code)) {
-            val string = stringTable(code)
-            writeString(string)
-
-            addString(stringTable(oldCode) :+ string(0))
-          } else {
-            val string = stringTable(oldCode) :+ stringTable(oldCode)(0)
-            writeString(string)
-            addString(string)
-          }
-
-          oldCode = code
-        }
-
-        if (horizontalPredictor) {
-          // Convert to horizontal predictor
-          val width = directory.rowSize
-          val height = directory.rowsInSegment(i)
-
-          cfor(0)(_ < height, _ + 1) { j =>
-            var count = samplesPerPixel * (j * width + 1)
-            cfor(samplesPerPixel)(_ < width * samplesPerPixel, _ + 1) { k =>
-              outputArray(count) = (outputArray(count) + outputArray(count - samplesPerPixel)).toByte
-              count += 1
-            }
-          }
-        }
-
-        arr(i) = outputArray
-      }
-
-      arr
+    def initializeStringTable = {
+      stringTable = initialStringTable.clone
+      stringTableIndex = 258
+      threshold = 9
     }
+
+    def addString(string: Array[Byte]) = {
+      stringTable(stringTableIndex) = string
+      stringTableIndex += 1
+
+      if (stringTableIndex == 511) threshold = 10
+      if (stringTableIndex == 1023) threshold = 11
+      if (stringTableIndex == 2047) threshold = 12
+    }
+
+    def isInTable(code: Int) = code < stringTableIndex
+
+    def writeString(string: Array[Byte]) = {
+      System.arraycopy(
+        string,
+        0,
+        outputArray,
+        outputArrayIndex,
+        string.length
+      )
+
+      outputArrayIndex += string.length
+    }
+
+    var code = 0
+    var oldCode = 0
+
+    var break = false
+    while (!break && { code = bis.get(threshold); code != EoICode } && outputArrayIndex < size) {
+      if (code == ClearCode) {
+        initializeStringTable
+        code = bis.get(threshold)
+
+        if (code == EoICode) {
+          break = true
+        } else {
+          writeString(stringTable(code))
+        }
+      } else if (isInTable(code)) {
+        val string = stringTable(code)
+        writeString(string)
+
+        addString(stringTable(oldCode) :+ string(0))
+      } else {
+        val string = stringTable(oldCode) :+ stringTable(oldCode)(0)
+        writeString(string)
+        addString(string)
+      }
+
+      oldCode = code
+    }
+
+    if (horizontalPredictor) {
+      // Convert to horizontal predictor
+      val width = rowSize
+      val height = rowsInSegment(segmentIndex)
+
+      cfor(0)(_ < height, _ + 1) { j =>
+        var count = samplesPerPixel * (j * width + 1)
+        cfor(samplesPerPixel)(_ < width * samplesPerPixel, _ + 1) { k =>
+          outputArray(count) = (outputArray(count) + outputArray(count - samplesPerPixel)).toByte
+          count += 1
+        }
+      }
+    }
+
+    outputArray
   }
 
   /** This class modifies the array passed in */
@@ -211,5 +216,21 @@ trait LZWDecompression {
     def getIndex: Int = index
 
   }
+}
 
+trait LZWDecompression {
+
+  implicit class LZW(matrix: Array[Array[Byte]]) {
+    def uncompressLZW(tags: Tags): Array[Array[Byte]] = {
+      val len = matrix.length
+      val arr = Array.ofDim[Array[Byte]](len)
+
+      val compression = LZWDecompressor(tags)
+
+      cfor(0)(_ < len, _ + 1) { i =>
+        arr(i) = compression.decompress(matrix(i), i)
+      }
+      arr
+    }
+  }
 }

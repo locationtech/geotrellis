@@ -1,6 +1,7 @@
 package geotrellis.raster.io.geotiff.tags
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.utils._
 import CommonPublicValues._
@@ -52,7 +53,7 @@ case class Tags(
         TileTags._tileWidth get),
       (this &|->
         Tags._tileTags ^|->
-        TileTags._tileHeight get)
+        TileTags._tileLength get)
     ) match {
       case (Some(tileWidth), Some(tileHeight)) =>
         Some(bitsPerPixel * tileWidth * tileHeight)
@@ -93,7 +94,7 @@ case class Tags(
     else
       (this &|->
         Tags._tileTags ^|->
-        TileTags._tileHeight get).get.toInt
+        TileTags._tileLength get).get.toInt
 
   def bitsPerPixel(): Int = (this &|->
     Tags._basicTags ^|->
@@ -104,12 +105,15 @@ case class Tags(
         BasicTags._samplesPerPixel get)
   }
 
-  def imageSegmentByteSize(index: Option[Int] = None): Long =
-    {(imageSegmentBitsSize(index) + 7) / 8 ; 786432L }
+  def bytesPerPixel: Int =
+    (this.bitsPerPixel + 7) / 8
 
-  def imageSegmentBitsSize(index: Option[Int] = None): Long =
-    if (hasStripStorage && !index.isEmpty)
-      rowsInStrip(index.get).get * cols * bitsPerPixel
+  def imageSegmentByteSize(index: Int): Long =
+    {(imageSegmentBitsSize(index) + 7) / 8 }
+
+  def imageSegmentBitsSize(index: Int): Long =
+    if (hasStripStorage)
+      rowsInStrip(index).get * cols * bitsPerPixel
     else { (tileBitsSize.get * bitsPerPixel) / bandCount }
 
   def rowSize: Int =
@@ -146,13 +150,13 @@ case class Tags(
       }
     }
 
-    lazy val crs: CRS = proj4String match {
+    val crs: CRS = proj4String match {
       case Some(s) => CRS.fromString(s)
       case None => LatLng
     }
 
 
-    lazy val cellType: CellType =
+    val bandType: BandType =
       ((this &|-> Tags._basicTags
         ^|-> BasicTags._bitsPerSample get),
         (this &|-> Tags._dataSampleFormatTags
@@ -160,31 +164,26 @@ case class Tags(
         case (Some(bitsPerSampleArray), sampleFormatArray)
             if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
               val bitsPerSample = bitsPerSampleArray(0)
-
               val sampleFormat = sampleFormatArray(0)
 
-              import codes.SampleFormat._
-
-              if (bitsPerSample == 1) TypeBit
-              else if (bitsPerSample <= 8) TypeByte
-              else if (bitsPerSample <= 16) TypeShort
-              else if (bitsPerSample == 32 && sampleFormat == UnsignedInt
-                || sampleFormat == SignedInt) TypeInt
-              else if (bitsPerSample == 32 && sampleFormat == FloatingPoint) TypeFloat
-              else if (bitsPerSample == 64 && sampleFormat == FloatingPoint) TypeDouble
-              else throw new MalformedGeoTiffException(
-                s"bad/unsupported bitspersample or sampleformat: $bitsPerSample or $sampleFormat"
-              )
+              BandType(bitsPerSample, sampleFormat)
             }
 
         case _ =>
           throw new MalformedGeoTiffException("no bitsPerSample values!")
       }
 
+    val gdalNoData = 
+      (this
+        &|-> Tags._geoTiffTags
+        ^|-> GeoTiffTags._gdalInternalNoData get)
+
     GeoTiffMetaData(
       RasterExtent(extent, cols, rows),
+      bandCount,
       crs,
-      cellType
+      bandType,
+      gdalNoData
     )
   }
 
@@ -329,4 +328,25 @@ case class Tags(
     this &|->
       Tags._basicTags ^|->
       BasicTags._samplesPerPixel get
+
+  lazy val segmentCount: Int =
+    if (hasStripStorage) {
+      (this 
+        &|-> Tags._basicTags 
+        ^|-> BasicTags._stripByteCounts get) match {
+        case Some(stripByteCounts) =>
+          stripByteCounts.size
+        case None => 
+          throw new MalformedGeoTiffException("No StripByteCount information.")
+      }
+    } else {
+      (this 
+        &|-> Tags._tileTags 
+        ^|-> TileTags._tileOffsets get) match {
+        case Some(tileOffsets) =>
+          tileOffsets.size
+        case None =>
+          throw new MalformedGeoTiffException("No TileOffsets information.")
+      }
+    }
 }

@@ -233,7 +233,7 @@ object TagReader {
           TileTags._tileWidth set(Some(shorts(0)))
         case TileLengthTag => tags &|->
           Tags._tileTags ^|->
-          TileTags._tileHeight set(Some(shorts(0)))
+          TileTags._tileLength set(Some(shorts(0)))
         case InkSetTag => tags &|->
           Tags._cmykTags ^|->
           CmykTags._inkSet set(Some(shorts(0)))
@@ -354,7 +354,7 @@ object TagReader {
           TileTags._tileWidth set(Some(ints(0)))
         case TileLengthTag => tags &|->
           Tags._tileTags ^|->
-          TileTags._tileHeight set(Some(ints(0)))
+          TileTags._tileLength set(Some(ints(0)))
         case JpegInterchangeFormatTag => tags &|->
           Tags._jpegTags ^|->
           JpegTags._jpegInterchangeFormat set(Some(ints(0)))

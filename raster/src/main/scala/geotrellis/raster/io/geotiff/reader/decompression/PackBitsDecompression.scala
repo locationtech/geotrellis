@@ -22,51 +22,66 @@ import geotrellis.raster.io.geotiff.tags.Tags
 import monocle.syntax._
 import spire.syntax.cfor._
 
+object PackBitsDecompressor {
+  def apply(tags: Tags): PackBitsDecompressor = {
+    val segmentSize: (Int => Int) = { i => tags.imageSegmentByteSize(i).toInt }
+
+    new PackBitsDecompressor(segmentSize)
+  }
+}
+
+class PackBitsDecompressor(segmentSize: Int => Int) extends Decompressor {
+  def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    val size = segmentSize(segmentIndex)
+
+    val rowArray = new Array[Byte](size)
+
+    var j = 0
+    var total = 0
+    val len = segment.length
+    while (total != size) {
+
+      if (len <= j)
+        throw new MalformedGeoTiffException("bad packbits decompression")
+      val headerByte = segment(j)
+      j += 1
+
+      if (0 <= headerByte) {
+        // next (headerByte + 1) values in segment are literal values
+        val limit = total + headerByte + 1
+        while(total < limit) {
+          rowArray(total) = segment(j)
+          total += 1
+          j += 1
+        }
+      } else if (-128 < headerByte && headerByte < 0) {
+        // The next byte of data repeated (1 - headerByte) times
+        val b = segment(j)
+        j += 1
+
+        val limit = total + (1 - headerByte)
+        while(total < limit) {
+          rowArray(total) = b
+          total += 1
+        }
+      }
+    }
+
+    rowArray
+  }
+}
+
 trait PackBitsDecompression {
 
   implicit class PackBits(matrix: Array[Array[Byte]]) {
 
-    def uncompressPackBits(implicit directory: Tags): Array[Array[Byte]] = {
+    def uncompressPackBits(implicit tags: Tags): Array[Array[Byte]] = {
+      val decompressor = PackBitsDecompressor(tags)
+
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
       cfor(0)(_ < len, _ + 1) { i =>
-        val segment = matrix(i)
-        val size = directory.imageSegmentByteSize(Some(i)).toInt
-
-        val rowArray = new Array[Byte](size)
-
-        var j = 0
-        var total = 0
-        val len = segment.length
-        while (total != size) {
-
-          if (len <= j)
-            throw new MalformedGeoTiffException("bad packbits decompression")
-          val headerByte = segment(j)
-          j += 1
-
-          if (0 <= headerByte) {
-            // next (headerByte + 1) values in segment are literal values
-            val limit = total + headerByte + 1
-            while(total < limit) {
-              rowArray(total) = segment(j)
-              total += 1
-              j += 1
-            }
-          } else if (-128 < headerByte && headerByte < 0) {
-            // The next byte of data repeated (1 - headerByte) times
-            val b = segment(j)
-            j += 1
-
-            val limit = total + (1 - headerByte)
-            while(total < limit) {
-              rowArray(total) = b
-              total += 1
-            }
-          }
-        }
-
-        arr(i) = rowArray
+        arr(i) = decompressor.decompress(matrix(i), i)
       }
       arr
     }

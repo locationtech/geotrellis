@@ -33,23 +33,7 @@ object ImageConverter {
   def apply(tags: Tags, isBigEndian: Boolean) =
     new ImageConverter(tags, isBigEndian)
 
-}
-
-class ImageConverter(tags: Tags, isBigEndian: Boolean) {
-
-  def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
-    val bitsPerPixel = tags.bitsPerPixel
-
-    val stripedImage =
-      if (!tags.hasStripStorage) tiledImageToRowImage(uncompressedImage)
-      else if (bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
-      else uncompressedImage.flatten
-
-    if (!isBigEndian && bitsPerPixel > 8) flip(stripedImage, bitsPerPixel / 8)
-    else stripedImage
-  }
-
-  private def flip(image: Array[Byte], flipSize: Int): Array[Byte] = {
+  def flip(image: Array[Byte], flipSize: Int): Array[Byte] = {
     val size = image.size
     val arr = Array.ofDim[Byte](size)
 
@@ -66,6 +50,23 @@ class ImageConverter(tags: Tags, isBigEndian: Boolean) {
 
     arr
   }
+}
+
+class ImageConverter(tags: Tags, isBigEndian: Boolean) {
+
+  def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
+    val bitsPerPixel = tags.bitsPerPixel
+
+    val stripedImage =
+      if (!tags.hasStripStorage) tiledImageToRowImage(uncompressedImage)
+      else if (bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
+      else uncompressedImage.flatten
+
+    if (!isBigEndian && bitsPerPixel > 8) ImageConverter.flip(stripedImage, bitsPerPixel / 8)
+    else stripedImage
+  }
+
+  
 
   // TODO: Why isn't this used?
   private def setCorrectOrientation(image: Array[Byte]) =
@@ -133,7 +134,7 @@ class ImageConverter(tags: Tags, isBigEndian: Boolean) {
     val tileRows = 
       (tags &|->
         Tags._tileTags ^|->
-        TileTags._tileHeight get).get.toInt
+        TileTags._tileLength get).get.toInt
 
     val totalCols = tags.cols
     val totalRows = tags.rows

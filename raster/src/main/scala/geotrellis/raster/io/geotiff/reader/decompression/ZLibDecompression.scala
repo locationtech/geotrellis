@@ -16,37 +16,80 @@
 
 package geotrellis.raster.io.geotiff.reader.decompression
 
-import java.util.zip.Inflater
+import java.util.zip.{ Inflater, Deflater }
 
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags.Tags
 
+import scala.collection.mutable
+
 import spire.syntax.cfor._
+
+object ZLibCompression extends Compression {
+  def createCompressor(segmentCount: Int): Compressor = 
+    new Compressor {
+      private val segmentSizes = Array.ofDim[Int](segmentCount)
+      def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
+        segmentSizes(segmentIndex) = segment.size
+
+        val deflater = new Deflater()
+        val tmp = segment.clone
+        deflater.setInput(segment, 0, segment.length)
+        deflater.finish()
+        val compressedSize = deflater.deflate(tmp)
+        val result = Array.ofDim[Byte](compressedSize)
+        System.arraycopy(tmp, 0, result, 0, compressedSize)
+        result
+      }
+
+      def createDecompressor(): Decompressor =
+        new ZLibDecompressor(segmentSizes)
+    }
+
+  def createDecompressor(tags: Tags): ZLibDecompressor = {
+    val segmentCount = tags.segmentCount
+    val segmentSizes = Array.ofDim[Int](segmentCount)
+    cfor(0)(_ < segmentCount, _ + 1) { i =>
+      segmentSizes(i) = tags.imageSegmentByteSize(i).toInt
+    }
+
+    new ZLibDecompressor(segmentSizes)
+  }
+}
+
+class ZLibDecompressor(segmentSizes: Array[Int]) extends Decompressor {
+  def compress(segment: Array[Byte]): Array[Byte] = {
+    val deflater = new Deflater()
+    val tmp = segment.clone
+    deflater.setInput(segment, 0, segment.length)
+    val compressedDataLength = deflater.deflate(tmp)
+    java.util.Arrays.copyOf(tmp, compressedDataLength)
+  }
+
+  def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    val inflater = new Inflater()
+    inflater.setInput(segment, 0, segment.length)
+
+    val resultSize = segmentSizes(segmentIndex)
+    val result = new Array[Byte](resultSize)
+    inflater.inflate(result)
+    inflater.reset()
+    result
+  }
+}
 
 trait ZLibDecompression {
 
   implicit class ZLib(matrix: Array[Array[Byte]]) {
-    def uncompressZLib(directory: Tags): Array[Array[Byte]] = {
+    def uncompressZLib(tags: Tags): Array[Array[Byte]] = {
+      val decompressor = ZLibCompression.createDecompressor(tags)
       val len = matrix.length
       val arr = Array.ofDim[Array[Byte]](len)
 
-      try {
-        cfor(0)(_ < len, _ + 1) { i =>
-          val segment = matrix(i)
+      cfor(0)(_ < len, _ + 1) { i =>
+        val segment = matrix(i)
 
-          val decompressor = new Inflater()
-
-          decompressor.setInput(segment, 0, segment.length)
-
-          println(directory.imageSegmentByteSize(Some(i)))
-          val resultSize = directory.imageSegmentByteSize(Some(i))
-          val result = new Array[Byte](resultSize.toInt)
-          decompressor.inflate(result)
-          arr(i) = result
-        }
-      } catch {
-        case e: Exception =>
-          throw new MalformedGeoTiffException("bad zlib compression")
+        arr(i) = decompressor.decompress(segment, i)
       }
 
       arr

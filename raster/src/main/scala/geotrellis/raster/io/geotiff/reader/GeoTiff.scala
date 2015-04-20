@@ -21,6 +21,7 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import geotrellis.proj4.CRS
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags._
 
@@ -28,10 +29,11 @@ import monocle.syntax._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-case class GeoTiffMetaData(rasterExtent:RasterExtent, crs: CRS, cellType: CellType) {
+case class GeoTiffMetaData(rasterExtent: RasterExtent, bandCount: Int, crs: CRS, bandType: BandType, gdalNoData: Option[Double]) {
   def extent: Extent = rasterExtent.extent
   def cols: Int = rasterExtent.cols
   def rows: Int = rasterExtent.rows
+  def cellType: CellType = bandType.cellType
 }
 
 /**
