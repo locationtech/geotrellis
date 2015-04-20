@@ -14,46 +14,45 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-abstract class RasterRDDReaderProvider[K: ClassTag] extends LazyLogging {
+abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
   def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
-  def reader(
+  def read(
     credentialsProvider: AWSCredentialsProvider,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K])
-  (implicit sc: SparkContext): FilterableRasterRDDReader[K] = 
-    new FilterableRasterRDDReader[K] {
-      def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {        
-        val bucket = layerMetaData.bucket
-        val dir = layerMetaData.key
-        val rasterMetaData = layerMetaData.rasterMetaData
-        logger.debug(s"Loading $layerId from $dir")
+  (layerId: LayerId, filterSet: FilterSet[K])
+  (implicit sc: SparkContext): RasterRDD[K] = {
+    val bucket = layerMetaData.bucket
+    val dir = layerMetaData.key
+    val rasterMetaData = layerMetaData.rasterMetaData
+    logger.debug(s"Loading $layerId from $dir")
 
-        var ranges = setFilters(filterSet, keyBounds, keyIndex)
-        val bins = ballancedBin(ranges, sc.defaultParallelism)
-        logger.info(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
+    val ranges = setFilters(filterSet, keyBounds, keyIndex)
+    val bins = ballancedBin(ranges, sc.defaultParallelism)
+    logger.info(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
-        val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
+    val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
 
-        val rdd = 
-          sc.parallelize(bins)
-          .mapPartitions{ rangeList =>
-            val s3Client = new AmazonS3Client(bcCredentials.value)
-            
-            rangeList
-              .flatMap( ranges => ranges)            
-              .flatMap{ range => 
-                listKeys(s3Client, bucket, dir, range) 
-              }
-              .map{ path =>
-                val is = s3Client.getObject(bucket, path).getObjectContent
-                KryoSerializer.deserializeStream[(K, Tile)](is)
-              }
+    val rdd =
+      sc.parallelize(bins)
+      .mapPartitions{ rangeList =>
+        val s3Client = new AmazonS3Client(bcCredentials.value)
+
+        rangeList
+          .flatMap( ranges => ranges)
+          .flatMap{ range =>
+            listKeys(s3Client, bucket, dir, range)
           }
-        new RasterRDD(rdd, rasterMetaData)
+          .map{ path =>
+            val is = s3Client.getObject(bucket, path).getObjectContent
+            KryoSerializer.deserializeStream[(K, Tile)](is)
+          }
       }
-    }
+    new RasterRDD(rdd, rasterMetaData)
+  }
+
 
   /**
    * Returns a list of keys for given SFC range. Will skip foroward to first possible key

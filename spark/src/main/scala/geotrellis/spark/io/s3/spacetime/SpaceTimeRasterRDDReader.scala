@@ -2,7 +2,6 @@ package geotrellis.spark.io.s3.spacetime
 
 import geotrellis.spark._
 import geotrellis.raster._
-import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3._
 
@@ -12,7 +11,7 @@ import com.github.nscala_time.time.Imports._
 
 import scala.collection.mutable
 
-object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] with LazyLogging {
+object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with LazyLogging {
   def setFilters(filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey], keyIndex: KeyIndex[SpaceTimeKey]): Seq[(Long, Long)] = {
     val spaceFilters = mutable.ListBuffer[GridBounds]()
     val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()

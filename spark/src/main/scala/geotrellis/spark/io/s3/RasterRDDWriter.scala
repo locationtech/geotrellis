@@ -19,46 +19,44 @@ import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
 
-class RasterRDDWriterProvider[K: ClassTag] extends LazyLogging {
+class RasterRDDWriter[K: ClassTag] extends LazyLogging {
   import AmazonS3ClientBackoff._
 
-  def writer(
+  def write(
     credentialsProvider: AWSCredentialsProvider, 
     bucket: String, 
     layerPath: String,
     keyIndex: KeyIndex[K],
-    clobber: Boolean = true)
-  (implicit sc: SparkContext) =
-    new RasterRDDWriter[K] {
-      def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
-        // TODO: Check if I am clobbering things        
-        logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
+    clobber: Boolean)
+  (layerId: LayerId, rdd: RasterRDD[K])
+  (implicit sc: SparkContext): Unit = {
+    // TODO: Check if I am clobbering things        
+    logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
 
-        val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
-        val catalogBucket = bucket
-        val path = layerPath
-        
-        rdd
-          .foreachPartition { partition =>
-            val s3client = new AmazonS3Client(bcCredentials.value);
+    val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
+    val catalogBucket = bucket
+    val path = layerPath
+    
+    rdd
+      .foreachPartition { partition =>
+        val s3client = new AmazonS3Client(bcCredentials.value);
 
-            val requests = partition.map{ row =>
-              val index = keyIndex.toIndex(row._1) 
-              val bytes = KryoSerializer.serialize[(K, Tile)](row)
-              val metadata = new ObjectMetadata()
-              metadata.setContentLength(bytes.length);              
-              val is = new ByteArrayInputStream(bytes)
-              new PutObjectRequest(catalogBucket, f"$path/${index}%019d", is, metadata)
-            }
+        val requests = partition.map{ row =>
+          val index = keyIndex.toIndex(row._1) 
+          val bytes = KryoSerializer.serialize[(K, Tile)](row)
+          val metadata = new ObjectMetadata()
+          metadata.setContentLength(bytes.length);              
+          val is = new ByteArrayInputStream(bytes)
+          new PutObjectRequest(catalogBucket, f"$path/${index}%019d", is, metadata)
+        }
 
-            requests.foreach{ r =>
-              s3client.putObjectWithBackoff(r)
-            }
-          }
-
-        logger.info(s"Finished saving tiles to ${layerPath}")
+        requests.foreach{ r =>
+          s3client.putObjectWithBackoff(r)
+        }
       }
-    }
+
+    logger.info(s"Finished saving tiles to ${layerPath}")
+  }   
 }
 
 object AmazonS3ClientBackoff {

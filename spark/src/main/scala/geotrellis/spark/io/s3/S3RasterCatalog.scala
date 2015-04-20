@@ -45,31 +45,30 @@ class S3RasterCatalog(
     catalogConfig: S3RasterCatalogConfig)
   (implicit sc: SparkContext) {
 
-  def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
+  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = attributeStore.read[S3LayerMetaData](layerId, "metaData")
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReaderProvider[K]].reader(catalogConfig.credentialsProvider, metaData, keyBounds, index).read(layerId, filterSet)
+        implicitly[RasterRDDReader[K]].read(catalogConfig.credentialsProvider, metaData, keyBounds, index)(layerId, filterSet)
       }      
     }
 
-  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
     writer[K](keyIndexMethod, clobber = true)
 
-  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
     writer[K](keyIndexMethod, subDir, clobber = true)
 
-  // TODO: there has to be better than this
-  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         writer[K](keyIndexMethod, paramsConfig.paramsFor[K](layerId).getOrElse(""), true).write(layerId, rdd)
       }
     }
   
-  def writer[K: SpatialComponent: RasterRDDWriterProvider: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         rdd.persist()
@@ -107,10 +106,9 @@ class S3RasterCatalog(
         attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
 
-        val rddWriter = implicitly[RasterRDDWriterProvider[K]]
-          .writer(catalogConfig.credentialsProvider, bucket, layerPath, index, clobber)        
-        
-        rddWriter.write(layerId, rdd)
+        val rddWriter = implicitly[RasterRDDWriter[K]]
+          .write(catalogConfig.credentialsProvider, bucket, layerPath, index, clobber)(layerId, rdd)
+
         rdd.unpersist(blocking = false)
       }
     }

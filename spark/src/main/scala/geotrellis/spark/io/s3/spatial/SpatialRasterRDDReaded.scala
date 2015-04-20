@@ -2,14 +2,13 @@ package geotrellis.spark.io.s3.spatial
 
 import geotrellis.spark._
 import geotrellis.raster._
-import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 
 import geotrellis.spark.io.s3._
 import org.apache.spark.SparkContext
 import com.typesafe.scalalogging.slf4j._
 
-object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] with LazyLogging {
+object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] with LazyLogging {
   def setFilters(filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], keyIndex: KeyIndex[SpatialKey]): Seq[(Long, Long)] = {    
     val ranges = 
       (for (filter <- filterSet.filters) yield {

@@ -14,9 +14,7 @@ class S3RasterCatalogSpec extends FunSpec
     ifCanRunSpark {
       val rdd = AllOnesTestFile
       val id = LayerId("ones", 2)
-      implicit val wProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDWriterProvider
-      implicit val rProv = geotrellis.spark.io.s3.spatial.SpatialRasterRDDReaderProvider
-      
+
       it("should save to s3"){
         val catalog = S3RasterCatalog("climate-catalog", "catalog")  
         catalog.writer[SpatialKey]("subdir").write(id, AllOnesTestFile)
