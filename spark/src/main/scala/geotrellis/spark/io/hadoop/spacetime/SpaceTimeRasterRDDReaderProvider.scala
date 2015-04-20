@@ -20,54 +20,50 @@ import scala.reflect._
 // TODO: Refactor the writer and reader logic to abstract over the key type.
 object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
 
-  type KeyWritable = SpaceTimeKeyWritable
-  val kwClass = classOf[KeyWritable]
-  type FMFInputFormat = SpaceTimeFilterMapFileInputFormat
-  val fmfClass = classOf[FMFInputFormat]
-  val keyCTaggable = implicitly[ClassTag[SpaceTimeKey]]
+  def reader(
+    catalogConfig: HadoopRasterCatalogConfig,
+    layerMetaData: HadoopLayerMetaData,
+    keyIndex: KeyIndex[SpaceTimeKey],
+    keyBounds: KeyBounds[SpaceTimeKey]
+  )(implicit sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
+    new FilterableRasterRDDReader[SpaceTimeKey] {
+      def read(layerId: LayerId, filterSet: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
+        val path = layerMetaData.path
 
-  def filterDefinition(
-    filterSet: FilterSet[SpaceTimeKey],
-    keyBounds: KeyBounds[SpaceTimeKey],
-    keyIndex: KeyIndex[SpaceTimeKey]
-  ): FilterMapFileInputFormat.FilterDefinition[SpaceTimeKey] = {
+        val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
-    val spaceFilters = mutable.ListBuffer[GridBounds]()
-    val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
+        logDebug(s"Loading $layerId from $dataPath")
 
-    filterSet.filters.foreach {
-      case SpaceFilter(bounds) =>
-        spaceFilters += bounds
-      case TimeFilter(start, end) =>
-        timeFilters += ( (start, end) )
-    }
+        val conf = sc.hadoopConfiguration
+        val inputConf = conf.withInputPath(dataPath)
 
-    if(spaceFilters.isEmpty) {
-      val minKey = keyBounds.minKey.spatialKey
-      val maxKey = keyBounds.maxKey.spatialKey
-      spaceFilters += GridBounds(minKey.col, minKey.row, maxKey.col, maxKey.row)
-    }
+        val writableRdd: RDD[(SpaceTimeKeyWritable, TileWritable)] =
+          if(filterSet.isEmpty) {
+            sc.newAPIHadoopRDD(
+              inputConf,
+              classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]],
+              classOf[SpaceTimeKeyWritable],
+              classOf[TileWritable]
+            )
+          } else {
+            inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY,
+              (filterSet, FilterRanges.spatiotemporal(filterSet, keyBounds, keyIndex).toArray))
 
-    if(timeFilters.isEmpty) {
-      val minKey = keyBounds.minKey.temporalKey
-      val maxKey = keyBounds.maxKey.temporalKey
-      timeFilters += ( (minKey.time, maxKey.time) )
-    }
+            sc.newAPIHadoopRDD(
+              inputConf,
+              classOf[SpaceTimeFilterMapFileInputFormat],
+              classOf[SpaceTimeKeyWritable],
+              classOf[TileWritable]
+            )
+          }
 
-    val indexRanges =
-      (for {
-        bounds <- spaceFilters
-        (timeStart, timeEnd) <- timeFilters
-      } yield {
-        val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
-        val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
+          val rasterMetaData = layerMetaData.rasterMetaData
 
-        val i1 = keyIndex.toIndex(p1)
-        val i2 = keyIndex.toIndex(p2)
-
-        keyIndex.indexRanges((p1, p2))
-      }).flatten.toArray
-
-    (filterSet, indexRanges)
+          asRasterRDD(rasterMetaData) {
+            writableRdd.map  { case (keyWritable, tileWritable) =>
+              (keyWritable.get._2, tileWritable.toTile(rasterMetaData))
+            }
+          }
+      }
   }
 }

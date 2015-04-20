@@ -21,37 +21,17 @@ import scala.collection.JavaConversions._
 
 object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] {
 
-  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey]): Unit = {
+  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], keyIndex: KeyIndex[SpatialKey]): Unit = {
     var tileBoundSet = false
 
-    for(filter <- filterSet.filters) {
-      filter match {
-        case SpaceFilter(bounds) =>
-          tileBoundSet = true
-
-          val ranges =
-            for(row <- bounds.rowMin to bounds.rowMax) yield {
-              val min =  rowId(layerId, index.toIndex(SpatialKey(bounds.colMin, row)))
-              val max = rowId(layerId, index.toIndex(SpatialKey(bounds.colMax, row)))
-              new ARange(min, max)
-            }
-
-          InputFormatBase.setRanges(job, ranges)
+    val ranges =
+      FilterRanges.spatial(filterSet, keyBounds, keyIndex).map {
+        case (min, max) =>
+          new ARange(rowId(layerId, min), rowId(layerId, max))
       }
-    }
-
-    if (!tileBoundSet) setZoomBounds(job, layerId)
+    InputFormatBase.setRanges(job, ranges)
 
     //Set the filter for layer we need
     InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
-  }
-
-  def setZoomBounds(job: Job, layerId: LayerId): Unit = {
-    val ranges = new ARange(
-      new Text(f"${layerId.zoom}%02d"),
-      new Text(f"${layerId.zoom+1}%02d")
-    ) :: Nil
-
-    InputFormatBase.setRanges(job, ranges)
   }
 }

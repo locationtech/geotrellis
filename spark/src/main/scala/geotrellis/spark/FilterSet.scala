@@ -2,6 +2,8 @@ package geotrellis.spark
 
 import scala.collection.mutable
 
+import scala.reflect._
+
 class FilterSet[K] extends KeyFilter[K] {
   private var _filters = mutable.ArrayBuffer[KeyFilter[K]]()
 
@@ -21,6 +23,9 @@ class FilterSet[K] extends KeyFilter[K] {
   def includePartition(minKey: KeyBound[K], maxKey: KeyBound[K]): Boolean = {
     _filters.map(_.includePartition(minKey, maxKey)).foldLeft(true)(_ && _)
   }
+
+  def filtersWithKey[T: ClassTag]: Seq[KeyFilter[K]] =
+    _filters.collect { case x: KeyFilter[T] => x }.toSeq
 }
 
 object FilterSet {
