@@ -7,7 +7,6 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.utils.KryoSerializer
 import org.apache.spark.SparkContext
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.typesafe.scalalogging.slf4j._
 import scala.collection.JavaConverters._
@@ -15,10 +14,12 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
+  import RasterRDDReader._
+
   def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
   def read(
-    credentialsProvider: AWSCredentialsProvider,
+    s3client: () => S3Client,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K])
@@ -31,35 +32,35 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
 
     val ranges = setFilters(filterSet, keyBounds, keyIndex)
     val bins = ballancedBin(ranges, sc.defaultParallelism)
-    logger.info(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
+    logger.debug(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
-    val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
+    val bcClient = sc.broadcast(s3client)
 
     val rdd =
       sc.parallelize(bins)
       .mapPartitions{ rangeList =>
-        val s3Client = new AmazonS3Client(bcCredentials.value)
+        val s3client: S3Client = bcClient.value.apply();
 
         rangeList
           .flatMap( ranges => ranges)
           .flatMap{ range =>
-            listKeys(s3Client, bucket, dir, range)
+            listKeys(s3client, bucket, dir, range)
           }
           .map{ path =>
-            val is = s3Client.getObject(bucket, path).getObjectContent
+            val is = s3client.getObject(bucket, path).getObjectContent
             KryoSerializer.deserializeStream[(K, Tile)](is)
           }
       }
     new RasterRDD(rdd, rasterMetaData)
   }
+}
 
-
+object RasterRDDReader {
   /**
    * Returns a list of keys for given SFC range. Will skip foroward to first possible key
    * and keep paging until reaching the last key is seen.
    */
-  def listKeys(s3client: AmazonS3Client, bucket: String, key: String, range: (Long, Long)): Vector[String] = {
-    logger.debug(s"Listing: $key, $range")
+  def listKeys(s3client: S3Client, bucket: String, key: String, range: (Long, Long)): Vector[String] = {
     val tileIdRx = """.+\/(\d+)""".r    
     
     def indexToPath(i: Long): String = 
@@ -147,5 +148,4 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     }
     arr
   }
-  
 }

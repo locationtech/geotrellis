@@ -2,6 +2,7 @@ package geotrellis.spark.io.s3
 
 import org.scalatest._
 import geotrellis.spark._
+import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
 import geotrellis.raster.GridBounds
 
@@ -17,7 +18,7 @@ class S3RasterCatalogSpec extends FunSpec
 
       it("should save to s3"){
         val catalog = S3RasterCatalog("climate-catalog", "catalog")  
-        catalog.writer[SpatialKey]("subdir").write(id, AllOnesTestFile)
+        catalog.writer[SpatialKey](ZCurveKeyIndexMethod, "subdir").write(id, AllOnesTestFile)
       }
 
       it("should load from s3"){

@@ -12,6 +12,7 @@ import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsPro
 case class S3RasterCatalogConfig(  
   /** Creates a subdirectory path based on a layer id. */
   layerDataDir: LayerId => String,
+  s3client: () => S3Client,
   credentialsProvider: AWSCredentialsProvider
 ) 
 
@@ -19,6 +20,7 @@ object S3RasterCatalogConfig {
   val DEFAULT =
     S3RasterCatalogConfig(
       layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" },
+      s3client = () => new AmazonS3Client(new DefaultAWSCredentialsProviderChain()),
       credentialsProvider = new DefaultAWSCredentialsProviderChain()
     )
 }
@@ -51,7 +53,7 @@ class S3RasterCatalog(
         val metaData = attributeStore.read[S3LayerMetaData](layerId, "metaData")
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]].read(catalogConfig.credentialsProvider, metaData, keyBounds, index)(layerId, filterSet)
+        implicitly[RasterRDDReader[K]].read(catalogConfig.s3client, metaData, keyBounds, index)(layerId, filterSet)
       }      
     }
 
@@ -107,7 +109,7 @@ class S3RasterCatalog(
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
-          .write(catalogConfig.credentialsProvider, bucket, layerPath, index, clobber)(layerId, rdd)
+          .write(catalogConfig.s3client, bucket, layerPath, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
       }

@@ -11,7 +11,6 @@ import org.apache.spark.SparkContext._
 import java.io.ByteArrayInputStream
 import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult}
 import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ObjectMetadata
 import geotrellis.index.zcurve.Z2
 import com.typesafe.scalalogging.slf4j._
@@ -23,7 +22,7 @@ class RasterRDDWriter[K: ClassTag] extends LazyLogging {
   import AmazonS3ClientBackoff._
 
   def write(
-    credentialsProvider: AWSCredentialsProvider, 
+    s3client: () => S3Client, 
     bucket: String, 
     layerPath: String,
     keyIndex: KeyIndex[K],
@@ -33,13 +32,14 @@ class RasterRDDWriter[K: ClassTag] extends LazyLogging {
     // TODO: Check if I am clobbering things        
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
 
-    val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
+    //val bcCredentials = sc.broadcast(credentialsProvider.getCredentials)
+    val bcClient = sc.broadcast(s3client)
     val catalogBucket = bucket
     val path = layerPath
     
     rdd
       .foreachPartition { partition =>
-        val s3client = new AmazonS3Client(bcCredentials.value);
+        val s3client: S3Client = bcClient.value.apply();
 
         val requests = partition.map{ row =>
           val index = keyIndex.toIndex(row._1) 
