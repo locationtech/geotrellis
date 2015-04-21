@@ -21,7 +21,13 @@ import scala.collection.JavaConversions._
 
 object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] {
 
-  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], keyIndex: KeyIndex[SpatialKey]): Unit = {
+  def setFilters(
+    job: Job,
+    layerId: LayerId,
+    filterSet: FilterSet[SpatialKey],
+    keyBounds: KeyBounds[SpatialKey],
+    keyIndex: KeyIndex[SpatialKey]
+  ): Unit = {
     var tileBoundSet = false
 
     val ranges =
