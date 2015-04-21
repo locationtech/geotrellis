@@ -19,8 +19,6 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
 
 class RasterRDDWriter[K: ClassTag] extends LazyLogging {
-  import AmazonS3ClientBackoff._
-
   def write(
     s3client: () => S3Client, 
     bucket: String, 
