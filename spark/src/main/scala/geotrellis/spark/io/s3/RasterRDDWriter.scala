@@ -58,22 +58,3 @@ class RasterRDDWriter[K: ClassTag] extends LazyLogging {
     logger.info(s"Finished saving tiles to ${layerPath}")
   }   
 }
-
-object AmazonS3ClientBackoff {
-  implicit class ClientWithBackoff(client: AmazonS3Client)  {
-    def putObjectWithBackoff(request: PutObjectRequest): PutObjectResult = {
-      var ret: PutObjectResult = null
-      var backoff = 0
-      do {
-        try {
-          if (backoff > 0) Thread.sleep(backoff)
-          ret = client.putObject(request)
-        } catch {
-          case e: AmazonS3Exception =>
-            backoff = math.max(8, backoff*2)
-        }
-      } while (ret == null)
-      ret
-    }
-  }
-}
