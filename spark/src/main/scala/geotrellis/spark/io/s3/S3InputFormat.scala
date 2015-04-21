@@ -1,7 +1,6 @@
 package geotrellis.spark.io.s3
 
 import org.apache.hadoop.mapreduce.{InputFormat, JobContext}
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
 import org.apache.hadoop.mapreduce.Job
@@ -42,7 +41,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       else      
         new DefaultAWSCredentialsProviderChain().getCredentials
     
-    val s3client = new AmazonS3Client(credentials)
+    val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
     
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
     logger.debug(s"Authenticationg with ID=${credentials.getAWSAccessKeyId}")

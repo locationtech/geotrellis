@@ -1,6 +1,5 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
 import com.typesafe.scalalogging.slf4j._
 import java.io.{InputStream, ByteArrayOutputStream}
@@ -10,7 +9,7 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader
   * Subclass must extend [read] method to map from S3 object bytes to (K,V) */
 abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging {
   var bucket: String = _
-  var s3client: AmazonS3Client = _
+  var s3client: com.amazonaws.services.s3.AmazonS3Client = _
   var keys: Iterator[String] = null
   var curKey: K = _
   var curValue: V = _
@@ -19,7 +18,7 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
 
   def initialize(split: InputSplit, context: TaskAttemptContext): Unit = {
     val sp = split.asInstanceOf[S3InputSplit]
-    s3client = new AmazonS3Client(sp.credentials)
+    s3client = new com.amazonaws.services.s3.AmazonS3Client(sp.credentials)
     keys = sp.keys.iterator
     keyCount =  sp.keys.length
     bucket = sp.bucket
