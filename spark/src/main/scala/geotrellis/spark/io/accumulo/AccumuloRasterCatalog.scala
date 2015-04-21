@@ -36,6 +36,9 @@ class AccumuloRasterCatalog(
   metaDataCatalog: Store[LayerId, AccumuloLayerMetaData],
   attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
+
+  def layerMetaDataCatalog = metaDataCatalog.asInstanceOf[AccumuloLayerMetaDataCatalog]
+  
   def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {

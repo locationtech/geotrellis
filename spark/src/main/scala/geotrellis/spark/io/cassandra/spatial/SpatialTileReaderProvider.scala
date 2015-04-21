@@ -12,6 +12,8 @@ import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
 import scala.collection.JavaConversions._
 
+import java.nio.ByteBuffer
+
 object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
 
   def reader(instance: CassandraInstance, layerId: LayerId, cassandraLayerMetaData: CassandraLayerMetaData, index: KeyIndex[SpatialKey]): Reader[SpatialKey, Tile] = {
@@ -38,7 +40,11 @@ object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
             results.one.getBytes("value")
           }
         
-        val (_, tileBytes) = KryoSerializer.deserialize[(SpatialKey, Array[Byte])](value)
+        // TODO: Figure out deserialization error that forces unwrapping and rewrapping the ByteBuffer
+        val byteArray = new Array[Byte](value.remaining)
+        value.get(byteArray, 0, byteArray.length)
+
+        val (_, tileBytes) = KryoSerializer.deserialize[(SpatialKey, Array[Byte])](ByteBuffer.wrap(byteArray))
 
         ArrayTile.fromBytes(
           tileBytes,

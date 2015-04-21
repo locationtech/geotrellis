@@ -17,11 +17,9 @@ import spray.json._
 object CassandraRasterCatalog {
   def apply()(implicit instance: CassandraInstance, sc: SparkContext): CassandraRasterCatalog = {
     val metaDataTable = ConfigFactory.load().getString("geotrellis.cassandra.catalog")
-    apply(metaDataTable)
+    val attributesTable = ConfigFactory.load().getString("geotrellis.cassandra.attributesCatalog")
+    apply(metaDataTable, attributesTable)
   }
-
-  def apply(metaDataTable: String)(implicit instance: CassandraInstance, sc: SparkContext): CassandraRasterCatalog =
-    apply(metaDataTable, metaDataTable)
 
   def apply(metaDataTable: String, attributesTable: String)(implicit instance: CassandraInstance, sc: SparkContext): CassandraRasterCatalog =
     apply(new CassandraLayerMetaDataCatalog(instance.session, instance.keyspace, metaDataTable), CassandraAttributeStore(instance.session, instance.keyspace, attributesTable))
@@ -35,6 +33,9 @@ class CassandraRasterCatalog(
   metaDataCatalog: Store[LayerId, CassandraLayerMetaData],
   attributeStore: CassandraAttributeStore
 )(implicit sc: SparkContext) {
+  
+  def layerMetaDataCatalog = metaDataCatalog.asInstanceOf[CassandraLayerMetaDataCatalog]
+
   def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
