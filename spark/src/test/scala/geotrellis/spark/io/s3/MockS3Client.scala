@@ -83,7 +83,7 @@ class MockS3Client(credentialsProvider: AWSCredentialsProvider) extends S3Client
   }
 
   def putObject(r: PutObjectRequest): PutObjectResult = {    
-    logger.info(s"PUT ${r.getKey}")
+    logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
     bucket.put(r.getKey, streamToBytes(r.getInputStream))
     new PutObjectResult()
