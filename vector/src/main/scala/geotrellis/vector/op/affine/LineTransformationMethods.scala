@@ -1,18 +1,18 @@
-package geotrellis.vector.affine
+package geotrellis.vector.op.affine
 
 import geotrellis.vector.Line
 
-trait LineTransformationMethods extends Any {
+trait LineTransformationMethods {
   val geom: Line
 
   def transform(trans: AffineTransformation) = trans.transform(geom)
 
-  def reflect(x: Double, y: Double): Line = 
+  def reflect(x: Double, y: Double): Line =
     Reflection(x, y).transform(geom)
 
   def reflect(x0: Double, y0: Double, x1: Double, y1: Double): Line = 
     Reflection(x0, y0, x1, y1).transform(geom)
-  
+
   def rotate(theta: Double): Line = 
     Rotation(theta).transform(geom)
 

@@ -1,8 +1,9 @@
-package geotrellis.vector
+package geotrellis.vector.op
+
+import geotrellis.vector._
 
 
 package object affine {
-
   implicit class PointTransformations(val geom: Point) extends PointTransformationMethods
   implicit class LineTransformations(val geom: Line) extends LineTransformationMethods
   implicit class PolygonTransformations(val geom: Polygon) extends PolygonTransformationMethods
