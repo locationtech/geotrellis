@@ -34,8 +34,8 @@ object S3RasterCatalog {
             catalogConfig: S3RasterCatalogConfig = S3RasterCatalogConfig.DEFAULT)
           (implicit sc: SparkContext): S3RasterCatalog = {    
     
-    val attributeStore = new S3AttributeStore(catalogConfig.credentialsProvider, bucket, catalogConfig.layerDataDir)    
-    new S3RasterCatalog(bucket, rootPath, attributeStore, BaseParams, S3RasterCatalogConfig.DEFAULT)
+    val attributeStore = new S3AttributeStore(catalogConfig.s3client, bucket, catalogConfig.layerDataDir)    
+    new S3RasterCatalog(bucket, rootPath, attributeStore, BaseParams, catalogConfig)
   }
 }
 
