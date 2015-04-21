@@ -86,7 +86,7 @@ class CassandraRasterCatalog(
 
   def tileReader[K: TileReaderProvider: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     val cassandraLayerMetaData = metaDataCatalog.read(layerId)
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
     val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
     implicitly[TileReaderProvider[K]].reader(instance, layerId, cassandraLayerMetaData, index)
   }

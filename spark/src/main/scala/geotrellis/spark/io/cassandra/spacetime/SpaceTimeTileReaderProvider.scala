@@ -21,11 +21,13 @@ object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
     new Reader[SpaceTimeKey, Tile] {
       def read(key: SpaceTimeKey): Tile = {
 
-        val i: Long = index.toIndex(key)
+        val i = index.toIndex(key).toString
         val query = QueryBuilder.select.column("value").from(instance.keyspace, tileTable)
-          .where (eqs("id", rowId(layerId, i)))
+          .where (eqs("reverse_index", i.reverse))
+          .and   (eqs("zoom", layerId.zoom))
+          .and   (eqs("indexer", i))
+          .and   (eqs("date", timeText(key)))
           .and   (eqs("name", layerId.name))
-          .and   (eqs("time", timeText(key)))
 
         val results = instance.session.execute(query)
 

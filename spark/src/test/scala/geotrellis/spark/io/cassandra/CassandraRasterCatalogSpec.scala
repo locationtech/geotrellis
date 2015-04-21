@@ -32,7 +32,8 @@ class CassandraRasterCatalogSpec extends FunSpec
     with TestFiles
     with TestEnvironment
     with OnlyIfCanRunSpark
-    with SharedEmbeddedCassandra {
+    with SharedEmbeddedCassandra
+    with Logging {
 
   describe("Cassandra Raster Catalog with Spatial Rasters") {
     ifCanRunSpark { 
@@ -74,10 +75,15 @@ class CassandraRasterCatalogSpec extends FunSpec
           }
         }
         it("fetch a TileExtent from catalog") {
-          val tileBounds = GridBounds(915,305,916,306)
+          val tileBounds = GridBounds(915,612,916,612)
           val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
           val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", level.zoom), filters)
           val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+
+          val f = rdd1.first.tile
+          val f2 = rdd2.first.tile
+          logError(f.toString)
+          logError(f2.toString)
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
@@ -92,7 +98,7 @@ class CassandraRasterCatalogSpec extends FunSpec
     }
   }
 
-  describe("Accumulo Raster Catalog with SpaceTime Rasters") {
+  describe("Cassandra Raster Catalog with SpaceTime Rasters") {
     ifCanRunSpark { 
 
       useCassandraConfig("cassandra-default.yaml.template")

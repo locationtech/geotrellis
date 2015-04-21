@@ -26,7 +26,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
 
   def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(String, ByteBuffer)] = {
     var tileBoundSet = false
-    var rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
+    val rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
 
     for (filter <- filterSet.filters) {
       filter match {
@@ -34,17 +34,15 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
           tileBoundSet = true
 
           for(row <- bounds.rowMin to bounds.rowMax) {
-            val min = rowId(layerId, index.toIndex(SpatialKey(bounds.colMin, row)))
-            val max = rowId(layerId, index.toIndex(SpatialKey(bounds.colMax, row)))
-            rdds += rdd.where("id >= ? AND id <= ?", min, max)
+            val min = index.toIndex(SpatialKey(bounds.colMin, row))
+            val max = index.toIndex(SpatialKey(bounds.colMax, row))
+            rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min, max)
           }
       }
     }
     
     if (!tileBoundSet) {
-      val zmin = f"${layerId.zoom}%02d"
-      val zmax = f"${layerId.zoom+1}%02d"
-      rdds += rdd.where("id >= ? AND id < ?", zmin, zmax)
+      rdds += rdd.where("zoom = ?", layerId.zoom)
     }
     
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
@@ -56,7 +54,7 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
         val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
 
         val rdd: CassandraRDD[(String, ByteBuffer)] = 
-          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("id", "value")
+          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("reverse_index", "value")
 
         val filteredRDD = applyFilter(rdd, layerId, filters, index)
 

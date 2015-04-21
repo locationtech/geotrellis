@@ -19,8 +19,11 @@ object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
     new Reader[SpatialKey, Tile] {
       def read(key: SpatialKey): Tile = {
 
-        val query = QueryBuilder.select.column("value").from(instance.keyspace, tileTable)
-          .where (eqs("id", rowId(layerId, index.toIndex(key))))
+        val indexer = index.toIndex(key).toString
+        val query = QueryBuilder.select("value").from(instance.keyspace, tileTable)
+          .where (eqs("reverse_index", indexer.reverse))
+          .and   (eqs("zoom", layerId.zoom))
+          .and   (eqs("indexer", indexer))
           .and   (eqs("name", layerId.name))
 
         val results = instance.session.execute(query)
@@ -32,10 +35,10 @@ object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
           } else if (size > 1) {
             sys.error(s"Multiple tiles found for $key for layer $layerId")
           } else {
-            results.one.getBytes("tile")
+            results.one.getBytes("value")
           }
         
-        val (_, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](value)
+        val (_, tileBytes) = KryoSerializer.deserialize[(SpatialKey, Array[Byte])](value)
 
         ArrayTile.fromBytes(
           tileBytes,

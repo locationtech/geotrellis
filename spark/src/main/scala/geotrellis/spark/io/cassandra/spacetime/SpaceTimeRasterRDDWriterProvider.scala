@@ -19,7 +19,7 @@ import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector._
 
-import com.datastax.driver.core.DataType.{text, blob}
+import com.datastax.driver.core.DataType.{text, cint, blob}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTimeKey] {
@@ -33,20 +33,24 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
 
         // If not exists create table
         val schema = SchemaBuilder.createTable(instance.keyspace, tileTable).ifNotExists()
-          .addPartitionKey("id", text)
+          .addPartitionKey("reverse_index", text)
+          .addClusteringColumn("zoom", cint)
+          .addClusteringColumn("indexer", text)
+          .addClusteringColumn("date", text)
           .addClusteringColumn("name", text)
-          .addColumn("time", text)
           .addColumn("value", blob)
         
         instance.session.execute(schema)
         
+        val closureKeyIndex = index
         raster
-          .map { case (key, tile) =>
+          .map(KryoClosure { case (key, tile) =>
              val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])]( (key, tile.toBytes) )
  
-             (rowId(layerId, index.toIndex(key)), layerId.name, timeText(key), value) 
-          }
-          .saveToCassandra(instance.keyspace, tileTable, SomeColumns("id", "name", "text", "value"))
+             val indexer = closureKeyIndex.toIndex(key).toString
+             (indexer.reverse, layerId.zoom, indexer, timeText(key), layerId.name, value) 
+          })
+          .saveToCassandra(instance.keyspace, tileTable, SomeColumns("reverse_index", "zoom", "indexer", "date", "name", "value"))
       }
     }
 }

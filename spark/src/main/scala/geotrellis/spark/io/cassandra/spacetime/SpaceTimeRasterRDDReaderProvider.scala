@@ -70,30 +70,25 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
 
     }
 
-    var rdds = mutable.ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
+    val rdds = mutable.ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
     
-    val ranges: Seq[CassandraRDD[(String, ByteBuffer)]] = (
-      for {
-        bounds <- spaceFilters
-        (timeStart, timeEnd) <- timeFilters
-      } yield {
-        val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
-        val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
-        
-        val ranges = index.indexRanges(p1, p2)
-
-        ranges
-          .map { case (min: Long, max: Long) =>
-
-            val start = f"${layerId.zoom}%02d_${min}%019d"
-            val end   = f"${layerId.zoom}%02d_${max}%019d"
-            rdds += rdd.where("id >= ? AND id <= ?", start, end)
-            if (min == max)
-              rdd.where("id = ?", start)
-            else
-              rdd.where("id >= ? AND id <= ?", start, end)
-          }        
-      }).flatten
+    for {
+      bounds <- spaceFilters
+      (timeStart, timeEnd) <- timeFilters
+    } yield {
+      val p1 = SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart)
+      val p2 = SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd)
+      
+      val ranges = index.indexRanges(p1, p2)
+      
+      ranges
+        .foreach { case (min: Long, max: Long) =>
+          if (min == max)
+            rdds += rdd.where("zoom = ? AND indexer = ?", layerId.zoom, min)
+          else
+            rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min.toString, max.toString)              
+        }       
+    }
 
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
   }
@@ -104,15 +99,13 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
         val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
 
         val rdd: CassandraRDD[(String, ByteBuffer)] = 
-          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("id", "value")
+          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("reverse_index", "value")
 
         val filteredRDD = applyFilter(rdd, layerId, filters, keyBounds, index)
 
         val tileRDD =
           filteredRDD.map { case (_, value) =>
-                    val bytes = new Array[Byte](value.capacity)
-                    value.get(bytes, 0, bytes.length)
-                    val (key, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](bytes)
+                    val (key, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](value)
                     val tile =
                       ArrayTile.fromBytes(
                         tileBytes,
