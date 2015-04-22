@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo.spatial
 
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
@@ -18,15 +17,36 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable
+
+import spire.syntax.cfor._
+
 import scala.collection.JavaConversions._
 
-object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
-  def rowIdCall(id: LayerId, index: Long): String = rowId(id, index)
+object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
+
+  def getSplits(
+    layerId: LayerId,
+    metaData: RasterMetaData,
+    keyBounds: KeyBounds[SpatialKey],
+    kIndex: KeyIndex[SpatialKey],
+    num: Int = 48
+  ): List[String] = {
+    val minIndex = kIndex.toIndex(keyBounds.minKey)
+    val maxIndex = kIndex.toIndex(keyBounds.maxKey)
+    val splitSize = (maxIndex - minIndex) / num
+
+    val splits = mutable.ListBuffer[String]()
+    cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
+      splits += rowId(layerId, i + 1)
+    }
+    splits.toList
+  }
 
   def encode(layerId: LayerId, raster: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(Text, Mutation)] =
     raster.map( KryoClosure { case (key, tile) =>
       val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
-      val mutation = new Mutation(rowIdCall(layerId, index.toIndex(key)))
+      val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
       mutation.put(
         new Text(layerId.name), new Text(),
         System.currentTimeMillis(),
@@ -35,5 +55,4 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
 
       (null, mutation)
     })
-
 }

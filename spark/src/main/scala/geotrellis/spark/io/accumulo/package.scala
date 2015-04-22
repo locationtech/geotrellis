@@ -14,13 +14,13 @@ import scala.collection.JavaConversions._
 package object accumulo {
   implicit def stringToText(s: String) = new Text(s)
 
-  implicit lazy val accumuloSpatialRasterRDDReaderProvider = spatial.SpatialRasterRDDReaderProvider
-  implicit lazy val accumuloSpatialTileReaderProvider = spatial.SpatialTileReaderProvider
-  implicit lazy val accumuloSpatialRasterRDDWriterProvider = spatial.SpatialRasterRDDWriterProvider
+  implicit lazy val accumuloSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
+  implicit lazy val accumuloSpatialTileReader= spatial.SpatialTileReader
+  implicit lazy val accumuloSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
 
-  implicit lazy val accumuloSpaceTimeRasterRDDReaderProvider = spacetime.SpaceTimeRasterRDDReaderProvider
-  implicit lazy val accumuloSpaceTimeTileReaderProvider = spacetime.SpaceTimeTileReaderProvider
-  implicit lazy val accumuloSpaceTimeRasterRDDWriterProvider = spacetime.SpaceTimeRasterRDDWriterProvider
+  implicit lazy val accumuloSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
+  implicit lazy val accumuloSpaceTimeTileReader = spacetime.SpaceTimeTileReader
+  implicit lazy val accumuloSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
 
   implicit class scannerIterator(scan: Scanner) extends Iterator[(Key, Value)] {
     val iter = scan.iterator

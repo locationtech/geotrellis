@@ -1,7 +1,7 @@
 package geotrellis.spark.io.accumulo.spatial
 
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.io.FilterRanges
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
@@ -19,7 +19,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConversions._
 
-object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey] {
+object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
 
   def setFilters(
     job: Job,

@@ -1,7 +1,7 @@
 package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.io.FilterRanges
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
@@ -25,7 +25,7 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
 
-object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
+object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
 
   def setFilters(
     job: Job,
@@ -50,10 +50,10 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
     )
     InputFormatBase.setRanges(job, ranges)
 
-    var timeFilters = filterSet.filtersWithKey[SpaceTimeKey].map {
+    var timeFilters = filterSet.filtersWithKey[SpaceTimeKey].flatMap {
       case TimeFilter(start, end) => Some((start, end))
       case _ => None
-    }.flatten
+    }
     if (timeFilters.isEmpty) {
       val minKey = keyBounds.minKey.temporalKey
       val maxKey = keyBounds.maxKey.temporalKey

@@ -2,7 +2,6 @@ package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark._
 import geotrellis.spark.utils._
-import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
@@ -14,7 +13,7 @@ import org.apache.accumulo.core.data.{Range => ARange, Key => AccumuloKey, Value
 
 import scala.collection.JavaConversions._
 
-object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
+object SpaceTimeTileReader extends TileReader[SpaceTimeKey] {
   def collectTile(
     instance: AccumuloInstance,
     layerId: LayerId,

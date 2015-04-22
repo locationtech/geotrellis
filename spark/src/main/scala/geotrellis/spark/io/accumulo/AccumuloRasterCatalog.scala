@@ -36,17 +36,17 @@ class AccumuloRasterCatalog(
   metaDataCatalog: Store[LayerId, AccumuloLayerMetaData],
   attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
-  def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
+  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = metaDataCatalog.read(layerId)
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData, keyBounds, index).read(layerId, filterSet)
+        implicitly[RasterRDDReader[K]].read(instance, metaData, keyBounds, index)(layerId, filterSet)
       }
     }
   
-  def writer[K: SpatialComponent: RasterRDDWriterProvider: JsonFormat: Ordering: ClassTag](keyIndexMethod: KeyIndexMethod[K], tileTable: String): Writer[LayerId, RasterRDD[K]] = {
+  def writer[K: SpatialComponent: RasterRDDWriter: JsonFormat: Ordering: ClassTag](keyIndexMethod: KeyIndexMethod[K], tileTable: String): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
@@ -77,18 +77,17 @@ class AccumuloRasterCatalog(
         }
         attributeStore.write(layerId, "keyIndex", index)
 
-        val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(instance, md, keyBounds, index)
-
-        rddWriter.write(layerId, rdd)
+        val rddWriter = implicitly[RasterRDDWriter[K]]
+          .write(instance, md, keyBounds, index)(layerId, rdd)
         rdd.unpersist(blocking = false)
       }
     }
   }
 
-  def tileReader[K: TileReaderProvider: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] = {
+  def readTile[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
     val accumuloLayerMetaData = metaDataCatalog.read(layerId)
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
     val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-    implicitly[TileReaderProvider[K]].reader(instance, layerId, accumuloLayerMetaData, index)
+    implicitly[TileReader[K]].read(instance, layerId, accumuloLayerMetaData, index)(_)
   }
 }

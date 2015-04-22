@@ -93,14 +93,15 @@ class HadoopRasterCatalog(
     new Path(firstPart, catalogConfig.layerDataDir(layerId))
   }
 
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
+  def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val metaData = metaDataCatalog.read(layerId)
         val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]]
-          .read(catalogConfig, metaData, index, keyBounds)(layerId, filterSet)
+        val provider = implicitly[RasterRDDReaderProvider[K]]
+        val rddReader = provider.reader(catalogConfig, metaData, index, keyBounds)
+        rddReader.read(layerId, filterSet)
       }
     }
 
@@ -130,7 +131,7 @@ class HadoopRasterCatalog(
         val maxKey = rdd.map(_._1).max
         val keyBounds = KeyBounds(minKey, maxKey)
 
-        val keyIndex = {
+        val kIndex = {
           val indexKeyBounds = {
             val imin = minKey.updateSpatialComponent(SpatialKey(0, 0))
             val imax = maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
@@ -140,9 +141,9 @@ class HadoopRasterCatalog(
         }
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
-          .write(catalogConfig, md, keyIndex, clobber)(layerId, rdd)
+          .write(catalogConfig, md, kIndex, clobber)(layerId, rdd)
 
-        attributeStore.write(layerId, "keyIndex", keyIndex)
+        attributeStore.write(layerId, "keyIndex", index)
         attributeStore.write(layerId, "keyBounds", keyBounds)
 
         // Write metadata afer raster, since writing the raster could clobber the directory
@@ -152,10 +153,10 @@ class HadoopRasterCatalog(
       }
     }
 
-  def readTile[K: JsonFormat: TileReader: ClassTag](layerId: LayerId): K => Tile = {
+  def tileReader[K: JsonFormat: TileReaderProvider: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     val layerMetaData = metaDataCatalog.read(layerId)
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
     val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-    implicitly[TileReader[K]].read(catalogConfig, layerMetaData, index)(_)
+    implicitly[TileReaderProvider[K]].reader(catalogConfig, layerMetaData, index)
   }
 }

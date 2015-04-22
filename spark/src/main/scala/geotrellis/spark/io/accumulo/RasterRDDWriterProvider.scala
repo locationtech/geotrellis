@@ -23,50 +23,46 @@ import scala.collection.mutable
 import spire.syntax.cfor._
 
 
-trait RasterRDDWriterProvider[K] {
+trait RasterRDDWriter[K] {
 
-  def rowIdCall(id: LayerId, index: Long): String
+  def getSplits(
+    layerId: LayerId,
+    metaData: RasterMetaData,
+    keyBounds: KeyBounds[K],
+    kIndex: KeyIndex[K],
+    num: Int = 48
+  ): List[String]
 
-  /** TODO: What is the rules about the "num" parameter? */
-  def getSplits(layerId: LayerId, metaData: RasterMetaData, keyBounds: KeyBounds[K], kIndex: KeyIndex[K], num: Int = 48): List[String] = {
-    val minIndex = kIndex.toIndex(keyBounds.minKey)
-    val maxIndex = kIndex.toIndex(keyBounds.maxKey)
-    val splitSize = (maxIndex - minIndex) / num
+  def encode(
+    layerId: LayerId,
+    raster: RasterRDD[K],
+    kIndex: KeyIndex[K]
+  ): RDD[(Text, Mutation)]
 
-    val splits = mutable.ListBuffer[String]()
+  def write(
+    instance: AccumuloInstance,
+    layerMetaData: AccumuloLayerMetaData,
+    keyBounds: KeyBounds[K],
+    kIndex: KeyIndex[K]
+  )(layerId: LayerId, raster: RasterRDD[K])(implicit sc: SparkContext): Unit = {
+    // Create table if it doesn't exist.
+    val tileTable = layerMetaData.tileTable
+    if (!instance.connector.tableOperations().exists(tileTable))
+      instance.connector.tableOperations().create(tileTable)
 
-    cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
-      splits += rowIdCall(layerId, i + 1)
-    }
+    val ops = instance.connector.tableOperations()
+    val groups = ops.getLocalityGroups(tileTable)
+    val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
+    ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
 
-    splits.toList
-  }
+    val splits = getSplits(layerId, layerMetaData.rasterMetaData, keyBounds, kIndex)
+    instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
 
-  def encode(layerId: LayerId, raster: RasterRDD[K], kIndex: KeyIndex[K]): RDD[(Text, Mutation)]
-
-  def writer(instance: AccumuloInstance, layerMetaData: AccumuloLayerMetaData, keyBounds: KeyBounds[K], kIndex: KeyIndex[K])(implicit sc: SparkContext): RasterRDDWriter[K] = {
-    new RasterRDDWriter[K] {
-      def write(layerId: LayerId, raster: RasterRDD[K]): Unit = {
-        // Create table if it doesn't exist.
-        val tileTable = layerMetaData.tileTable
-        if (!instance.connector.tableOperations().exists(tileTable))
-          instance.connector.tableOperations().create(tileTable)
-
-        val ops = instance.connector.tableOperations()
-        val groups = ops.getLocalityGroups(tileTable)
-        val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
-        ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
-
-        val splits = getSplits(layerId, layerMetaData.rasterMetaData, keyBounds, kIndex)
-        instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
-
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
-        AccumuloOutputFormat.setDefaultTableName(job, tileTable)
-        encode(layerId, raster, kIndex)
-          .saveAsNewAPIHadoopFile(instance.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
-      }
-    }
+    val job = Job.getInstance(sc.hadoopConfiguration)
+    instance.setAccumuloConfig(job)
+    AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
+    AccumuloOutputFormat.setDefaultTableName(job, tileTable)
+    encode(layerId, raster, kIndex)
+      .saveAsNewAPIHadoopFile(instance.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
   }
 }

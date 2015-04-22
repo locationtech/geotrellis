@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo.spatial
 
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
@@ -13,7 +12,7 @@ import org.apache.accumulo.core.data.{Range => ARange, Key => AccumuloKey, Value
 
 import scala.collection.JavaConversions._
 
-object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
+object SpatialTileReader extends TileReader[SpatialKey] {
   def collectTile(
     instance: AccumuloInstance,
     layerId: LayerId,

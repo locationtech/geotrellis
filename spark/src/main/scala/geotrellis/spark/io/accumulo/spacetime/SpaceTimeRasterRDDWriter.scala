@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
@@ -26,17 +25,36 @@ import spire.syntax.cfor._
 import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 
-object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTimeKey] {
-  def rowIdCall(id: LayerId, index: Long): String = rowId(id, index)
+object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
 
-  def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
-    ZSpaceTimeKeyIndex.byYear
+  /** TODO: What is the rules about the "num" parameter? */
+  def getSplits(
+    layerId: LayerId,
+    metaData: RasterMetaData,
+    keyBounds: KeyBounds[SpaceTimeKey],
+    kIndex: KeyIndex[SpaceTimeKey],
+    num: Int = 48
+  ): List[String] = {
+    val minIndex = kIndex.toIndex(keyBounds.minKey)
+    val maxIndex = kIndex.toIndex(keyBounds.maxKey)
+    val splitSize = (maxIndex - minIndex) / num
 
-  def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey], index: KeyIndex[SpaceTimeKey]): RDD[(Text, Mutation)] =
+    val splits = mutable.ListBuffer[String]()
+    cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
+      splits += rowId(layerId, i + 1)
+    }
+    splits.toList
+  }
+
+  def encode(
+    layerId: LayerId,
+    raster: RasterRDD[SpaceTimeKey],
+    index: KeyIndex[SpaceTimeKey]
+  ): RDD[(Text, Mutation)] =
     raster
       .map { case (key, tile) =>
         val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])]( (key, tile.toBytes) )
-        val mutation = new Mutation(rowIdCall(layerId, index.toIndex(key)))
+        val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
         mutation.put(
           new Text(layerId.name),
           timeText(key),
@@ -45,5 +63,4 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
         )
         (null, mutation)
       }
-
 }
