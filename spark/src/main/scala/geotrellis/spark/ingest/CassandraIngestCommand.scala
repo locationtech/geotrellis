@@ -3,6 +3,7 @@ package geotrellis.spark.ingest
 import geotrellis.spark._
 import geotrellis.spark.cmd.args.CassandraArgs
 import geotrellis.spark.io.cassandra._
+import geotrellis.spark.io.index._
 
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
@@ -36,20 +37,16 @@ object CassandraIngestCommand extends ArgMain[CassandraIngestArgs] with Logging 
     sparkConf.set("spark.cassandra.connection.host", args.host)
 
     val connector = CassandraConnector(sparkConf)
-    val cassandra = CassandraInstance(connector, args.keyspace)
+    implicit val cassandra = CassandraInstance(connector, args.keyspace)
 
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
 
     val layoutScheme = ZoomedLayoutScheme(256)
-    val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme)
+    val writer = CassandraRasterCatalog().writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
 
-    val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
-      cassandra.catalog.save(LayerId(args.layerName, level.zoom), args.table, rdd, args.clobber)
+    Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) =>
+      writer.write(LayerId(args.layerName, level.zoom), rdd)
     }
-    if (args.pyramid) {
-      Pyramid.saveLevels(rdd, level, layoutScheme)(save)
-    } else{
-      save(rdd, level)
-    }
+    cassandra.close
   }
 }

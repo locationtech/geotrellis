@@ -136,7 +136,9 @@ case class CompositeTile(tiles: Seq[Tile],
   def resample(source: Extent, target: RasterExtent, method: InterpolationMethod) = 
     toArrayTile.resample(source, target, method)
 
-  def toArrayTile(): ArrayTile = {
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.") 
     } else {

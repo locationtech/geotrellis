@@ -70,7 +70,9 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
 
   val cellType = TypeBit
 
-  def toArrayTile(): ArrayTile = BitArrayTile.fill(v, cols, rows)
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = BitArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = Array(iVal.toByte)
 
@@ -84,7 +86,9 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile 
 
   val cellType = TypeByte
 
-  def toArrayTile(): ArrayTile = ByteArrayTile.fill(v, cols, rows)
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = Array(v)
 
@@ -98,7 +102,9 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTil
 
   val cellType = TypeShort
 
-  def toArrayTile(): ArrayTile = ShortArrayTile.fill(v, cols, rows)
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = ShortArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
@@ -116,7 +122,9 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
 
   val cellType = TypeInt
 
-  def toArrayTile(): ArrayTile = IntArrayTile.fill(v, cols, rows)
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = IntArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
@@ -134,7 +142,9 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTil
 
   val cellType = TypeFloat
 
-  def toArrayTile(): ArrayTile = FloatArrayTile.fill(v, cols, rows)
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = FloatArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
@@ -152,7 +162,9 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
 
   val cellType = TypeDouble
 
-  def toArrayTile(): ArrayTile = DoubleArrayTile.fill(v, cols, rows)
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = DoubleArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)

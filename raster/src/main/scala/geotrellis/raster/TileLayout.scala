@@ -46,7 +46,7 @@ case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows:
    */
   def totalRows: Long = layoutRows.toLong * tileRows
 
-  def tileDimensions: (Int, Int) = (layoutCols, layoutRows)
+  def layoutDimensions: (Int, Int) = (layoutCols, layoutRows)
 
   def tileSize: Int = tileCols * tileRows
     

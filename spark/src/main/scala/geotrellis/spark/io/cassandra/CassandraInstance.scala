@@ -13,15 +13,5 @@ case class CassandraInstance(
 ) {
   
   val session = connector.openSession()
-
-  val catalogTable =
-    ConfigFactory.load().getString("geotrellis.cassandra.catalog")
-
-  val metaDataCatalog = new CassandraMetaDataCatalog(session, keyspace, catalogTable)
-  
-  def catalog(config: DefaultParams[String] = CassandraCatalog.BaseParamsConfig)(implicit sc: SparkContext) =
-    CassandraCatalog(sc, session, keyspace, metaDataCatalog, config)
-
-  def catalog(implicit sc: SparkContext) =
-    CassandraCatalog(sc, session, keyspace, metaDataCatalog, CassandraCatalog.BaseParamsConfig)
+  def close() = session.close
 }

@@ -72,8 +72,15 @@ class GeometryCollection(
     val jtsGeom: jts.GeometryCollection
   ) extends Geometry {
 
+  def geometries: Seq[Geometry] =
+    points ++ lines ++ polygons ++ multiPoints ++ multiLines ++ multiPolygons ++ geometryCollections 
+
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): GeometryCollection = { jtsGeom.normalize ; GeometryCollection(jtsGeom) }
+  def normalized(): GeometryCollection = { 
+    val geom = jtsGeom.clone.asInstanceOf[jts.GeometryCollection]
+    geom.normalize
+    GeometryCollection(geom)
+  }
 
   lazy val area: Double =
     jtsGeom.getArea

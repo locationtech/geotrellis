@@ -20,7 +20,6 @@ import geotrellis.spark._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
@@ -39,6 +38,13 @@ class AddSpec extends FunSpec
 
         rasterShouldBe(twos, (2, 2))
         rastersShouldHaveSameIdsAndTileCount(ones, twos)
+      }
+
+      it("should add a constant to a spacetime raster") {
+        val twos = AllOnesSpaceTime + 1
+
+        rasterShouldBe(twos, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(AllOnesSpaceTime, twos)
       }
 
       it("should add a raster to a constant") {

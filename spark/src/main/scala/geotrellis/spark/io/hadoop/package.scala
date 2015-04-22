@@ -31,21 +31,14 @@ import geotrellis.spark.tiling._
 import scala.reflect._
 
 package object hadoop {
-  implicit object SpatialKeyHadoopWritable extends HadoopWritable[SpatialKey] {
-    type Writable = SpatialKeyWritable
-    val writableClassTag = classTag[SpatialKeyWritable]
-    def toWritable(key: SpatialKey) = SpatialKeyWritable(key)
-    def toValue(writable: SpatialKeyWritable) = writable.get
-    def newWritable = new SpatialKeyWritable
-  }
 
-implicit object SpaceTimeKeyHadoopWritable extends HadoopWritable[SpaceTimeKey] {
-    type Writable = SpaceTimeKeyWritable
-    val writableClassTag = classTag[SpaceTimeKeyWritable]
-    def toWritable(key: SpaceTimeKey) = SpaceTimeKeyWritable(key)
-    def toValue(writable: SpaceTimeKeyWritable) = writable.get
-    def newWritable = new SpaceTimeKeyWritable
-  }
+  implicit lazy val hadoopSpatialRasterRDDReaderProvider = spatial.SpatialRasterRDDReaderProvider
+  implicit lazy val hadoopSpatialRasterRDDWriterProvider = spatial.SpatialRasterRDDWriterProvider
+  implicit lazy val hadoopSpatialTileReaderProvider = spatial.SpatialTileReaderProvider
+
+  implicit lazy val hadoopSpaceTimeRasterRDDReaderProvider = spacetime.SpaceTimeRasterRDDReaderProvider
+  implicit lazy val hadoopSpaceTimeRasterRDDWriterProvider = spacetime.SpaceTimeRasterRDDWriterProvider
+  implicit lazy val hadoopSpaceTimeTileReaderProvider = spacetime.SpaceTimeTileReaderProvider
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 
@@ -60,6 +53,16 @@ implicit object SpaceTimeKeyHadoopWritable extends HadoopWritable[SpaceTimeKey] 
     def withInputDirectory(path: Path): Configuration = {
       val allFiles = HdfsUtils.listFiles(path, config)
       HdfsUtils.putFilesInConf(allFiles.mkString(","), config)
+    }
+
+    def setSerialized[T: ClassTag](key: String, value: T): Unit = {
+      val ser = KryoSerializer.serialize(value)
+      config.set(key, new String(ser.map(_.toChar)))
+    }
+
+    def getSerialized[T: ClassTag](key: String): T = {
+      val s = config.get(key)
+      KryoSerializer.deserialize(s.toCharArray.map(_.toByte))
     }
   }
 }

@@ -57,7 +57,11 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): Line = { jtsGeom.normalize ; Line(jtsGeom) }
+  def normalized(): Line = { 
+    val geom = jtsGeom.clone.asInstanceOf[jts.LineString]
+    geom.normalize
+    Line(geom)
+  }
 
   /** Tests if the initial vertex equals the final vertex. */
   lazy val isClosed: Boolean =
@@ -86,7 +90,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     val size = jtsGeom.getNumPoints
     val arr = Array.ofDim[Point](size)
     cfor(0)(_ < arr.size, _ + 1) { i =>
-      val p = jtsGeom.getPointN(i)
+      val p = jtsGeom.getPointN(i).clone.asInstanceOf[jts.Point]
       arr(i) = Point(p)
     }
     arr

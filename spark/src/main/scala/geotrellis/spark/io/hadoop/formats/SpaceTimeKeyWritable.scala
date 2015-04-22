@@ -24,20 +24,31 @@ import org.joda.time.{DateTime, DateTimeZone}
 import java.io._
 
 class SpaceTimeKeyWritable() extends Writable
-                              with WritableComparable[SpaceTimeKeyWritable] 
-                              with Serializable {
+    with IndexedKeyWritable[SpaceTimeKey]
+    with WritableComparable[SpaceTimeKeyWritable]
+    with Serializable {
+  private var _index: Long = 0L
   private var _value: SpaceTimeKey = null
 
-  def set(key: SpaceTimeKey): Unit = _value = key
-  def get(): SpaceTimeKey = _value
+  def index = _index
+  def key = _value
+
+  def set(i: Long, k: SpaceTimeKey): Unit = {
+    _index = i
+    _value = k
+  }
+
+  def get(): (Long, SpaceTimeKey) = (_index, _value)
 
   def write(out: DataOutput): Unit = {
+    out.writeLong(_index)
     out.writeLong(_value.temporalKey.time.toInstant.getMillis)
     out.writeInt(_value.spatialKey.col)
     out.writeInt(_value.spatialKey.row)
   }
 
   def readFields(in: DataInput): Unit = {
+    _index = in.readLong
     val millis = in.readLong
     val col = in.readInt
     val row = in.readInt
@@ -53,21 +64,22 @@ class SpaceTimeKeyWritable() extends Writable
   override def hashCode = get.hashCode
 
   def compareTo(other: SpaceTimeKeyWritable): Int =
-    if(SpaceTimeKey.ordering.lt(this._value, other._value)) -1
-    else if(this._value == other._value) 0 
-    else 1
+    if(this._index < other._index) -1
+    else if (this._index > other._index) 1
+    else {
+      if(SpaceTimeKey.ordering.lt(this._value, other._value)) -1
+      else if(this._value == other._value) 0
+      else 1
+    }
 }
 
 object SpaceTimeKeyWritable {
   implicit def ordering[A <: SpaceTimeKeyWritable]: Ordering[A] =
     Ordering.by(w => w.get)
 
-  implicit def SpaceTimeKeytoWritable(SpaceTimeKey: SpaceTimeKey): SpaceTimeKeyWritable = 
-    apply(SpaceTimeKey)
-
-  def apply(spaceTimeKey: SpaceTimeKey): SpaceTimeKeyWritable = {
+  def apply(index: Long, spaceTimeKey: SpaceTimeKey): SpaceTimeKeyWritable = {
     val w = new SpaceTimeKeyWritable
-    w.set(spaceTimeKey)
+    w.set(index, spaceTimeKey)
     w
   }
 }

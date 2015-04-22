@@ -11,7 +11,7 @@ object VerticalFlip {
   def apply[K](rasterRDD: RasterRDD[K])
     (implicit keyClassTag: ClassTag[K]): RasterRDD[K] = {
     val gridBounds = rasterRDD.metaData.gridBounds
-    val rowMax = gridBounds.height - 1
+    val rowHeight = gridBounds.height
 
     asRasterRDD(rasterRDD.metaData) {
       rasterRDD
@@ -20,7 +20,7 @@ object VerticalFlip {
       }
         .groupBy { case (key, tile) =>
           val SpatialKey(col, row) = key
-          val flippedRow = rowMax - row - 1
+          val flippedRow = rowHeight - row - 1
           if (row > flippedRow) (col, flippedRow)
           else (col, row)
       }

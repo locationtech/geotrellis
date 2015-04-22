@@ -17,18 +17,20 @@
 import scala.util.Properties
 
 object Version {
-  def either(environmentVariable: String, default: String): String =
-    Properties.envOrElse(environmentVariable, default)
-
   val geotrellis  = "0.10.0-SNAPSHOT"
-  val scala       = "2.11.5"
+  /* Even though we support cross-build to 2.11 the default target is scala 2.10 primarily because Cloudera
+   * (and likely others) spark distributions target 2.10 in their default spark-assembly.jar.
+   * One can envoke the cross-build to 2.11 by prefixing command with '+' (ex: + assembly)
+   * Until the deployment of spark on 2.11 is fully addressed we are going to target 2.10 to minimize confusion.
+   */
+  val scala       = "2.10.4"
   val geotools    = "11.0"
   val akka        = "2.3.9"
   val spray       = "1.3.2"
   val jackson     = "1.6.1"
   val monocle     = "1.0.1"
-  lazy val hadoop          = either("SPARK_HADOOP_VERSION", "2.5.0")
-  lazy val spark           = either("SPARK_VERSION", "1.2.0")
+  lazy val hadoop      = Environment.hadoopVersion
+  lazy val spark       = Environment.sparkVersion
   lazy val cassandra_connector       = "2.1.4"
   lazy val spark_cassandra_connector = "1.2.0-alpha3"
 }

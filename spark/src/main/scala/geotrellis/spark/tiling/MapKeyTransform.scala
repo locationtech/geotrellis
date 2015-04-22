@@ -7,17 +7,17 @@ import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 object MapKeyTransform {
-  def apply(crs: CRS, tileDimensions: (Int, Int)): MapKeyTransform =
-    apply(crs.worldExtent, tileDimensions)
+  def apply(crs: CRS, layoutDimensions: (Int, Int)): MapKeyTransform =
+    apply(crs.worldExtent, layoutDimensions)
 
-  def apply(crs: CRS, tileCols: Int, tileRows: Int): MapKeyTransform =
-    apply(crs.worldExtent, tileCols, tileRows)
+  def apply(crs: CRS, layoutCols: Int, layoutRows: Int): MapKeyTransform =
+    apply(crs.worldExtent, layoutCols, layoutRows)
 
-  def apply(extent: Extent, tileDimensions: (Int, Int)): MapKeyTransform =
-    apply(extent, tileDimensions._1, tileDimensions._2)
+  def apply(extent: Extent, layoutDimensions: (Int, Int)): MapKeyTransform =
+    apply(extent, layoutDimensions._1, layoutDimensions._2)
 
-  def apply(extent: Extent, tileCols: Int, tileRows: Int): MapKeyTransform =
-    new MapKeyTransform(extent, tileCols, tileRows)
+  def apply(extent: Extent, layoutCols: Int, layoutRows: Int): MapKeyTransform =
+    new MapKeyTransform(extent, layoutCols, layoutRows)
 }
 
 /**
@@ -26,15 +26,35 @@ object MapKeyTransform {
   * transformation from [[Extent]] to [[GridBounds]] to [[Extent]] will likely not
   * produce the original geographic extent, but a larger one.
   */
-class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Serializable {
-  lazy val tileWidth: Double = extent.width / tileCols
-  lazy val tileHeight: Double = extent.height / tileRows
+class MapKeyTransform(extent: Extent, layoutCols: Int, layoutRows: Int) extends Serializable {
+  lazy val tileWidth: Double = extent.width / layoutCols
+  lazy val tileHeight: Double = extent.height / layoutRows
 
-  def apply(extent: Extent): GridBounds = {
-    val SpatialKey(colMin, rowMin) = apply(extent.xmin, extent.ymax)
-    val SpatialKey(colMax, rowMax) = apply(extent.xmax, extent.ymin)
+  def apply(otherExtent: Extent): GridBounds = {
+    val SpatialKey(colMin, rowMin) = apply(otherExtent.xmin, otherExtent.ymax)
+
+    // Pay attention to the exclusitivity of the east and south extent border.
+    val colMax = {
+      val d = (otherExtent.xmax - extent.xmin) / extent.width
+
+      if(d == math.floor(d)) { (d * layoutCols).toInt - 1 }
+      else { (d * layoutCols).toInt }
+    }
+
+    val rowMax = {
+      val d = (extent.ymax - otherExtent.ymin) / extent.height
+
+      if(d == math.floor(d)) { (d * layoutRows).toInt - 1 }
+      else { (d * layoutRows).toInt } 
+    }
 
     GridBounds(colMin, rowMin, colMax, rowMax)
+  }
+
+  def apply(gridBounds: GridBounds): Extent = {
+    val e1 = apply(gridBounds.colMin, gridBounds.rowMin)
+    val e2 = apply(gridBounds.colMax, gridBounds.rowMax)
+    e1.expandToInclude(e2)
   }
 
   def apply(p: Point): SpatialKey =
@@ -42,10 +62,10 @@ class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Seri
 
   def apply(x: Double, y: Double): SpatialKey = {
     val tcol =
-      ((x - extent.xmin) / extent.width) * tileCols
+      ((x - extent.xmin) / extent.width) * layoutCols
 
     val trow =
-      ((extent.ymax - y) / extent.height) * tileRows
+      ((extent.ymax - y) / extent.height) * layoutRows
 
     (tcol.toInt, trow.toInt)
   }

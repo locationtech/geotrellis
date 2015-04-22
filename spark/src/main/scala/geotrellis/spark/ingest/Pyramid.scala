@@ -16,22 +16,6 @@ import scala.reflect.ClassTag
 
 object Pyramid extends Logging {
   /**
-   * Save layers up, until level 1 is reached
-   * @param rdd           RDD containing original level to be pyramided
-   * @param layoutScheme  LayoutScheme used to create the RDD
-   * @param save          Function(rdd, layoutLevel) that will be called for zoom each level, including original
-   */
-  def saveLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme)
-                                               (save: (RasterRDD[K], LayoutLevel) => Unit): Unit = {
-    logInfo(s"Saving raster at $level")
-    save(rdd, level)
-    if (level.zoom > 1) {
-      val (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)
-      saveLevels(nextRdd, nextLevel, layoutScheme)(save)
-    }
-  }
-
-  /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
   def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): (RasterRDD[K], LayoutLevel) = {

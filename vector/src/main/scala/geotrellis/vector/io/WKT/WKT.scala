@@ -29,7 +29,7 @@ object WKT {
 
   def read[G <: Geometry](value: String): G = {
     if (readerBox.get == null) readerBox.set(new WKTReader(GeomFactory.factory))
-    Geometry.fromJts[G](readerBox.get.read(value))
+    Geometry[G](readerBox.get.read(value))
   }
 
   def write(geom: Geometry): String = {

@@ -32,7 +32,14 @@ import scala.reflect.ClassTag
 object KryoSerializer {
 
   @transient lazy val ser: SparkKryoSerializer = {
-    val sparkConf = Option(SparkEnv.get).map(_.conf).getOrElse(new SparkConf())
+    val sparkConf = 
+      Option(SparkEnv.get)
+        .map(_.conf)
+        .getOrElse(
+          new SparkConf()
+            .set("spark.kryo.registrator", classOf[geotrellis.spark.io.hadoop.KryoRegistrator].getName)
+         )
+
     new SparkKryoSerializer(sparkConf)
   }
 
@@ -42,5 +49,9 @@ object KryoSerializer {
 
   def deserialize[T: ClassTag](bytes: Array[Byte]): T  = {
     ser.newInstance().deserialize[T](ByteBuffer.wrap(bytes))
+  }
+  
+  def deserialize[T: ClassTag](bytes: ByteBuffer): T = {
+    ser.newInstance().deserialize[T](bytes)
   }
 }

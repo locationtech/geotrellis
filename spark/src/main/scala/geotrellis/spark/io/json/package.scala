@@ -1,17 +1,24 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.utils._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import geotrellis.raster.histogram.Histogram
+import com.github.nscala_time.time.Imports._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+import scala.reflect.ClassTag
+
 package object json {
+  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
+    new KryoJsonFormat[index.KeyIndex[K]]
+
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
       JsString(crs.toProj4String)
@@ -63,32 +70,15 @@ package object json {
       }
   }
 
-  implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
-    def write(obj: LayerMetaData): JsObject =
-      JsObject(
-        "keyClass" -> JsString(obj.keyClass),
-        "rasterMetaData" -> obj.rasterMetaData.toJson,
-        "histogram" -> obj.histogram.toJson
-      )
+  implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
+    def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
 
-    def read(json: JsValue): LayerMetaData =
-      json.asJsObject.getFields("keyClass", "rasterMetaData", "histogram") match {
-        case Seq(JsString(keyClass), md: JsObject, hist: JsArray) =>
-          LayerMetaData(
-            keyClass = keyClass,
-            rasterMetaData = md.convertTo[RasterMetaData],
-            histogram = Some(hist.convertTo[Histogram])
-          )
-
-        case Seq(JsString(keyClass), md: JsObject) =>
-          LayerMetaData(
-            keyClass = keyClass,
-            rasterMetaData = md.convertTo[RasterMetaData],
-            histogram = None
-          )
-
+    def read(value: JsValue) =
+      value match {
+        case JsString(dateStr) =>
+          DateTime.parse(dateStr)
         case _ =>
-          throw new DeserializationException(s"LayerMetaData expected")
+          throw new DeserializationException("DateTime expected")
       }
   }
 }

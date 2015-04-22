@@ -40,12 +40,16 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
                                                    with TwoDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): MultiPolygon = { jtsGeom.normalize ; MultiPolygon(jtsGeom) }
+  def normalized(): MultiPolygon = { 
+    val geom = jtsGeom.clone.asInstanceOf[jts.MultiPolygon]
+    geom.normalize
+    MultiPolygon(geom)
+  }
 
   /** Returns the Polygons contained in MultiPolygon. */
   lazy val polygons: Array[Polygon] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
-      Polygon(jtsGeom.getGeometryN(i).asInstanceOf[jts.Polygon])
+      Polygon(jtsGeom.getGeometryN(i).clone.asInstanceOf[jts.Polygon])
     }
   }.toArray
 

@@ -580,5 +580,23 @@ class PolygonSpec extends FunSpec with Matchers {
       p2.within(p1) should be (true)
     }
 
+    it ("should maintain immutability over normalization") {
+      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
+      val expected = p.jtsGeom.clone
+      p.normalized
+      p.jtsGeom.equals(expected) should be (true)
+    }
+
+    it ("should maintain immutability over exterior") {
+      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)),
+                      Line(Point(11,17), Point(11,18), Point(14,17), Point(11,17)))
+
+      val expected = p.jtsGeom.clone
+      val coord = p.exterior.points(0).jtsGeom.getCoordinate()
+      val newCoord = Point(5,5).jtsGeom.getCoordinate()
+      coord.setCoordinate(newCoord)
+
+      p.jtsGeom.equals(expected) should be (true)
+    }
   }
 }

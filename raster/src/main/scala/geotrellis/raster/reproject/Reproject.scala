@@ -4,7 +4,6 @@ import geotrellis.raster._
 import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.proj4._
-import geotrellis.raster.interpolation._
 
 import spire.syntax.cfor._
 
