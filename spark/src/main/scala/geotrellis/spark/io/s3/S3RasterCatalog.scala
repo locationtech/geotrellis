@@ -9,31 +9,18 @@ import spray.json.JsonFormat
 import scala.reflect._
 import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
 
-case class S3RasterCatalogConfig(  
-  s3client: AWSCredentials => S3Client,
-  credentialsProvider: AWSCredentialsProvider  
-) {
-  def getS3Client: S3Client = s3client(credentialsProvider.getCredentials)
-}
-
-object S3RasterCatalogConfig {
-  val DEFAULT =
-    S3RasterCatalogConfig(      
-      credentials => new AmazonS3Client(credentials),
-      credentialsProvider = new DefaultAWSCredentialsProviderChain()
-    )
-}
-
 object S3RasterCatalog {  
-  private def layerPath(layerId: LayerId) = s"${layerId.name}/${layerId.zoom}"
+  def defaultS3Client = 
+    () => new AmazonS3Client(new DefaultAWSCredentialsProviderChain) 
+  
+  private def layerPath(layerId: LayerId) = 
+    s"${layerId.name}/${layerId.zoom}"  
 
-  def apply(bucket: String, 
-            rootPath: String,
-            config: S3RasterCatalogConfig = S3RasterCatalogConfig.DEFAULT)
-          (implicit sc: SparkContext): S3RasterCatalog = {
+  def apply(bucket: String, rootPath: String, s3client: ()=>S3Client = defaultS3Client)
+    (implicit sc: SparkContext): S3RasterCatalog = {
     
-    val attributeStore = new S3AttributeStore(config.getS3Client, bucket, rootPath, layerPath)
-    new S3RasterCatalog(bucket, rootPath, attributeStore, config)
+    val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath, layerPath)
+    new S3RasterCatalog(bucket, rootPath, attributeStore, s3client)
   }
 }
 
@@ -41,7 +28,7 @@ class S3RasterCatalog(
   bucket: String,
   rootPath: String,
   val attributeStore: S3AttributeStore,    
-  config: S3RasterCatalogConfig)
+  s3client: ()=>S3Client)
 (implicit sc: SparkContext) {
   import S3RasterCatalog._
 
@@ -51,7 +38,7 @@ class S3RasterCatalog(
         val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metaData")
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]].read(config, metaData, keyBounds, index)(layerId, filterSet)
+        implicitly[RasterRDDReader[K]].read(s3client, metaData, keyBounds, index)(layerId, filterSet)
       }      
     }
 
@@ -103,7 +90,7 @@ class S3RasterCatalog(
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
-          .write(config, bucket, path, index, clobber)(layerId, rdd)
+          .write(s3client, bucket, path, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
       }

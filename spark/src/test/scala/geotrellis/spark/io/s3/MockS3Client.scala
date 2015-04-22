@@ -8,7 +8,7 @@ import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import scala.collection.immutable.TreeMap
 import com.typesafe.scalalogging.slf4j._
 
-class MockS3Client(credentialsProvider: AWSCredentialsProvider) extends S3Client with LazyLogging {
+class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
 
   def listObjects(r: ListObjectsRequest): ObjectListing = {

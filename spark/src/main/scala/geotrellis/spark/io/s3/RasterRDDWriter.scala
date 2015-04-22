@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
 
 class RasterRDDWriter[K: ClassTag] extends LazyLogging {
   def write(
-    config: S3RasterCatalogConfig, 
+    s3client: ()=>S3Client, 
     bucket: String, 
     layerPath: String,
     keyIndex: KeyIndex[K],
@@ -30,13 +30,13 @@ class RasterRDDWriter[K: ClassTag] extends LazyLogging {
     // TODO: Check if I am clobbering things        
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
     
-    val bcConfig = sc.broadcast(config)
+    val bcClient = sc.broadcast(s3client)
     val catalogBucket = bucket
     val path = layerPath
     
     rdd
       .foreachPartition { partition =>
-        val s3client: S3Client = bcConfig.value.getS3Client
+        val s3client: S3Client = bcClient.value.apply
 
         val requests = partition.map{ row =>
           val index = keyIndex.toIndex(row._1) 

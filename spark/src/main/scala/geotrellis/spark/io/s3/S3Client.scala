@@ -66,6 +66,9 @@ object S3Client {
 }
 
 class AmazonS3Client(credentials: AWSCredentials) extends S3Client {
+  def this(provider: AWSCredentialsProvider) =
+    this(provider.getCredentials)
+
   val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
@@ -79,9 +82,4 @@ class AmazonS3Client(credentials: AWSCredentials) extends S3Client {
   def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
     s3client.putObject(putObjectRequest)
   }
-}
-
-object AmazonS3Client {
-  def apply(provider: AWSCredentialsProvider)
-    = new AmazonS3Client(provider.getCredentials)
 }

@@ -11,7 +11,7 @@ class MockS3ClientSpec extends FunSpec
   describe("MockS3Clinet") {
     import S3Client._
 
-    val client = new MockS3Client(new DefaultAWSCredentialsProviderChain())
+    val client = new MockS3Client
     it("should write a key") {
       client.putObject("bucket", "firstKey", "data".getBytes("UTF-8"))
     }

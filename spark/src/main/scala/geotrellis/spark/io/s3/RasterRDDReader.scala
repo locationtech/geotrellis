@@ -20,7 +20,7 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
   def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
   def read(
-    config: S3RasterCatalogConfig,
+    s3client: ()=>S3Client,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K])
@@ -35,12 +35,12 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     val bins = ballancedBin(ranges, sc.defaultParallelism)
     logger.debug(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
-    val bcConfig = sc.broadcast(config)
+    val bcClient = sc.broadcast(s3client)
 
     val rdd =
       sc.parallelize(bins)
       .mapPartitions{ rangeList =>
-        val s3client: S3Client = bcConfig.value.getS3Client
+        val s3client: S3Client = bcClient.value.apply
 
         rangeList
           .flatMap( ranges => ranges)
