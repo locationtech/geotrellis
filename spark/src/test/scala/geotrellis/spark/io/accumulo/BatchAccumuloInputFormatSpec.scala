@@ -21,7 +21,7 @@ import org.scalatest._
 import org.scalatest.Matchers._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
-import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
+import org.apache.accumulo.core.client.mapreduce.lib.impl.{ConfiguratorBase => CB}
 import org.apache.accumulo.core.client.mapreduce.{AccumuloInputFormat, InputFormatBase }
 import org.apache.accumulo.core.client.{BatchWriterConfig, IteratorSetting}
 import org.apache.hadoop.fs.Path
