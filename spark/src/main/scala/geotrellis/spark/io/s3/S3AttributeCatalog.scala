@@ -17,7 +17,7 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param layerKey  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(s3Client: S3Client, bucket: String, layerKey: LayerId => String)
+class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String, layerKey: LayerId => String)
                       (implicit sc: SparkContext) extends AttributeStore {
   type ReadableWritable[T] = RootJsonFormat[T]
 
@@ -28,7 +28,7 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, layerKey: LayerId => 
    */
 
   def attributePath(id: LayerId, attributeName: String): String =
-    s"${layerKey(id)}/${attributeName}.json"
+    s"$rootPath/_attributes/${layerKey(id)}/${attributeName}.json"
   
   def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
     val key = attributePath(layerId, attributeName)
