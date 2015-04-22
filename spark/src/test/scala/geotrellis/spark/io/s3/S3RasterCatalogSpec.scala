@@ -16,13 +16,12 @@ class S3RasterCatalogSpec extends FunSpec
     ifCanRunSpark {      
       val rdd = AllOnesTestFile
       val id = LayerId("ones", 2)
-      val config =  S3RasterCatalogConfig(
-        layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" },
-        s3client = () => new MockS3Client(new DefaultAWSCredentialsProviderChain()),
+      val config =  S3RasterCatalogConfig(        
+        s3client = cred => new AmazonS3Client(cred),
         credentialsProvider = new DefaultAWSCredentialsProviderChain()
       )
 
-      val catalog = S3RasterCatalog("climate-catalog", "catalog", S3RasterCatalog.BaseParams, config) 
+      val catalog = S3RasterCatalog("climate-catalog", "catalog", config) 
 
       it("should save to s3"){
         catalog.writer[SpatialKey](ZCurveKeyIndexMethod, "subdir").write(id, AllOnesTestFile)

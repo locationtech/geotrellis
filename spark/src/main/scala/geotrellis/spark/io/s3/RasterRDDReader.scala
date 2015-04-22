@@ -12,6 +12,7 @@ import com.typesafe.scalalogging.slf4j._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
 
 abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
   import RasterRDDReader._
@@ -19,7 +20,7 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
   def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
   def read(
-    s3client: () => S3Client,
+    config: S3RasterCatalogConfig,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K])
@@ -34,12 +35,12 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     val bins = ballancedBin(ranges, sc.defaultParallelism)
     logger.debug(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
-    val bcClient = sc.broadcast(s3client)
+    val bcConfig = sc.broadcast(config)
 
     val rdd =
       sc.parallelize(bins)
       .mapPartitions{ rangeList =>
-        val s3client: S3Client = bcClient.value.apply();
+        val s3client: S3Client = bcConfig.value.getS3Client
 
         rangeList
           .flatMap( ranges => ranges)

@@ -17,7 +17,7 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param layerKey  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(s3clientProvider: () => S3Client, bucket: String, layerKey: LayerId => String)
+class S3AttributeStore(s3Client: S3Client, bucket: String, layerKey: LayerId => String)
                       (implicit sc: SparkContext) extends AttributeStore {
   type ReadableWritable[T] = RootJsonFormat[T]
 
@@ -26,8 +26,6 @@ class S3AttributeStore(s3clientProvider: () => S3Client, bucket: String, layerKe
    * immediatly afterwards. It is not clear if this is a practical concern.
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
-
-  val s3Client = s3clientProvider()
 
   def attributePath(id: LayerId, attributeName: String): String =
     s"${layerKey(id)}/${attributeName}.json"

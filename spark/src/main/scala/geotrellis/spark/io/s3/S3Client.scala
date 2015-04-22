@@ -1,6 +1,6 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
@@ -65,8 +65,8 @@ object S3Client {
   }
 }
 
-class AmazonS3Client(credentialsProvider: AWSCredentialsProvider) extends S3Client {
-  val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentialsProvider)
+class AmazonS3Client(credentials: AWSCredentials) extends S3Client {
+  val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
     s3client.listObjects(listObjectsRequest)
@@ -79,4 +79,9 @@ class AmazonS3Client(credentialsProvider: AWSCredentialsProvider) extends S3Clie
   def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
     s3client.putObject(putObjectRequest)
   }
+}
+
+object AmazonS3Client {
+  def apply(provider: AWSCredentialsProvider)
+    = new AmazonS3Client(provider.getCredentials)
 }
