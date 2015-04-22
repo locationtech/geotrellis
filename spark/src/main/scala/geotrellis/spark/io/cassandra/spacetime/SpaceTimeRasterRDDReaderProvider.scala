@@ -67,7 +67,6 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
       val minKey = keyBounds.minKey.temporalKey
       val maxKey = keyBounds.maxKey.temporalKey
       timeFilters += ( (minKey.time, maxKey.time) )
-
     }
 
     val rdds = mutable.ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
@@ -86,7 +85,7 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
           if (min == max)
             rdds += rdd.where("zoom = ? AND indexer = ?", layerId.zoom, min)
           else
-            rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min.toString, max.toString)              
+            rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min.toString, max.toString)
         }       
     }
 
@@ -101,7 +100,14 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
         val rdd: CassandraRDD[(String, ByteBuffer)] = 
           sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("reverse_index", "value")
 
-        val filteredRDD = applyFilter(rdd, layerId, filters, keyBounds, index)
+        
+        val filteredRDD = {
+          if (filters.isEmpty) {
+            rdd.where("zoom = ?", layerId.zoom)
+          } else {
+            applyFilter(rdd, layerId, filters, keyBounds, index)
+          }
+        }
 
         val tileRDD =
           filteredRDD.map { case (_, value) =>

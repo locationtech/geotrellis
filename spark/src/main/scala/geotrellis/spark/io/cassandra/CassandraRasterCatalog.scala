@@ -60,6 +60,7 @@ class CassandraRasterCatalog(
             tileTable = tileTable
           )
 
+        // TODO: Will be replaced with a better method for generating keybounds.
         val minKey = rdd.map(_._1).min
         val maxKey = rdd.map(_._1).max
 

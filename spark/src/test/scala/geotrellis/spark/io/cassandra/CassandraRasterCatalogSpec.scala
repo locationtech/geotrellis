@@ -49,7 +49,7 @@ class CassandraRasterCatalogSpec extends FunSpec
       val tableName = "tiles"
 
       val catalog = 
-        CassandraRasterCatalog("metadata", "attributes")
+        CassandraRasterCatalog()
 
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, level) => 
         val layerId = LayerId("ones", level.zoom)
@@ -80,11 +80,6 @@ class CassandraRasterCatalogSpec extends FunSpec
           val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", level.zoom), filters)
           val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
 
-          val f = rdd1.first.tile
-          val f2 = rdd2.first.tile
-          logError(f.toString)
-          logError(f2.toString)
-
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
             val res = tms1.tile.localAdd(tms2.tile)
@@ -92,7 +87,7 @@ class CassandraRasterCatalogSpec extends FunSpec
           }
 
           val tile = out.first.tile
-          tile.get(497,511) should be (2)
+          tile.get(115, 511) should be (2)
         }      
       }
     }
