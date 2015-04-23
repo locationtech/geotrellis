@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster._
 import geotrellis.raster.io._
+import geotrellis.raster.io.geotiff._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 

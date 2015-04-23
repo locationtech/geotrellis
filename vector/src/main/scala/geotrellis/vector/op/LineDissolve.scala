@@ -5,30 +5,26 @@ import geotrellis.vector._
 import spire.syntax.cfor._
 
 import scala.collection._
-import java.lang.{ Double => JDouble }
 
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
+/** This object merely holds its method `dissolve` in a closure alongside its helper `order` */
 object LineDissolve {
 
+  /** A private helper function for ensuring that the ordering of segments is preserved. */
   private def order(p1: jts.Coordinate, p2: jts.Coordinate): (Double, Double, Double, Double) = {
-    var x1 = 0.0
-    var y1 = 0.0
-    var x2 = 0.0
-    var y2 = 0.0
-
-    if(p1.x < p2.x) { x1 = p1.x ; y1 = p1.y ; x2 = p2.x ; y2 = p2.y }
-    else if(p1.x > p2.x) { x1 = p2.x ; y1 = p2.y ; x2 = p1.x ; y2 = p1.y }
-    else {
-      if(p1.y < p2.y) { x1 = p1.x ; y1 = p1.y ; x2 = p2.x ; y2 = p2.y }
-      else { x1 = p2.x ; y1 = p2.y ; x2 = p1.x ; y2 = p1.y }
-    }
-
-    (x1, y1, x2, y2)
+    if (p1.x < p2.x)      { (p1.x, p1.y, p2.x, p2.y) }
+    else if (p1.x > p2.x) { (p2.x, p2.y, p1.x, p1.y) }
+    else if (p1.y < p2.y) { (p1.x, p1.y, p2.x, p2.y) }
+    else                  { (p2.x, p2.y, p1.x, p1.y) }
   }
 
-
+  /** Dissolve a complex of line segments into constituent, unique line segments
+    *
+    * @param lines the lines to dissolve
+    * @return all unique, constituent line segments
+    */
   def dissolve(lines: Traversable[Line]): Seq[Line] = {
     val segments = mutable.ListBuffer[Line]()
 
