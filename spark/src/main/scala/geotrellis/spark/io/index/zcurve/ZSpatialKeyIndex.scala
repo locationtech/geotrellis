@@ -1,4 +1,4 @@
-package geotrellis.spark.io.index
+package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
 import geotrellis.index.zcurve._

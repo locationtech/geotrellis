@@ -1,4 +1,4 @@
-package geotrellis.spark.io.index
+package geotrellis.spark.io.index.rowmajor
 
 import geotrellis.spark._
 

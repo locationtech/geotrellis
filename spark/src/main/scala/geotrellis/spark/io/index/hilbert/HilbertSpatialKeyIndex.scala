@@ -1,4 +1,4 @@
-package geotrellis.spark.io.index
+package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
 

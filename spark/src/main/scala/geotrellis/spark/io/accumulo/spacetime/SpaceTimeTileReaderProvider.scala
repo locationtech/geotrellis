@@ -4,7 +4,8 @@ import geotrellis.spark._
 import geotrellis.spark.utils._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.index._
+import geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.raster._
 
 import org.apache.hadoop.io.Text

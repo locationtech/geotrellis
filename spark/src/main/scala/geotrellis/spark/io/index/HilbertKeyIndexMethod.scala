@@ -1,6 +1,7 @@
 package geotrellis.spark.io.index
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.hilbert._
 
 private[index] trait HilbertKeyIndexMethod
 
