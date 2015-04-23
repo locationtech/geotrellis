@@ -27,12 +27,12 @@ abstract class RasterRDDReader[K: ClassTag] {
     metaData: AccumuloLayerMetaData,
     keyBounds: KeyBounds[K],
     index: KeyIndex[K]
-  )(layerId: LayerId, filters: FilterSet[K])(implicit sc: SparkContext): RasterRDD[K] = {
+  )(layerId: LayerId, filterSet: FilterSet[K])(implicit sc: SparkContext): RasterRDD[K] = {
     val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, tileTable)
-    setFilters(job, layerId, filters, keyBounds, index)
+    if (!filterSet.isEmpty) setFilters(job, layerId, filterSet, keyBounds, index)
     val rdd = sc.newAPIHadoopRDD(
       job.getConfiguration,
       classOf[BatchAccumuloInputFormat],
