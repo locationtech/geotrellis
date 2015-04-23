@@ -34,7 +34,6 @@ object SpatialKey {
 }
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
-//this order is confusing...
 case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
   def _1 = col
   def _2 = row
