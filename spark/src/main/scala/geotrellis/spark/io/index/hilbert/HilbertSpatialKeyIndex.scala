@@ -87,7 +87,7 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
       BacktrackingQueryBuilder.create(
         regionInspector,
         combiner,
-        0,
+        Int.MaxValue, //the maxFilteredIndexRanges should be positive, not 0
         true,
         LongRangeHome.INSTANCE,
         new LongContent(0L)

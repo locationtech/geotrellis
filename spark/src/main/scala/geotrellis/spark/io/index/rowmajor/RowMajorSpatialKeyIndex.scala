@@ -15,9 +15,9 @@ class RowMajorSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey]) extends KeyIndex
   println(layoutCols)
 
   def toIndex(key: SpatialKey): Long = 
-    toIndex(key.row, key.col)
+    toIndex(key.col, key.row)
 
-  def toIndex(row: Int, col: Int): Long =
+  def toIndex(col: Int, row: Int): Long =
     (layoutCols * (row - minRow) + (col - minCol)).toLong
 
   def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
