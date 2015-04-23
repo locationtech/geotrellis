@@ -18,7 +18,9 @@ import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
 
-class RasterRDDWriter[K: ClassTag] extends LazyLogging {
+abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
+  val encodeKey: (K, KeyIndex[K]) => String
+
   def write(
     s3client: ()=>S3Client, 
     bucket: String, 
@@ -33,7 +35,7 @@ class RasterRDDWriter[K: ClassTag] extends LazyLogging {
     val bcClient = sc.broadcast(s3client)
     val catalogBucket = bucket
     val path = layerPath
-    
+    val ek = encodeKey
     rdd
       .foreachPartition { partition =>
         val s3client: S3Client = bcClient.value.apply
@@ -44,7 +46,7 @@ class RasterRDDWriter[K: ClassTag] extends LazyLogging {
           val metadata = new ObjectMetadata()
           metadata.setContentLength(bytes.length);              
           val is = new ByteArrayInputStream(bytes)
-          new PutObjectRequest(catalogBucket, f"$path/${index}%019d", is, metadata)
+          new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex)}", is, metadata)
         }
 
         requests.foreach{ r =>

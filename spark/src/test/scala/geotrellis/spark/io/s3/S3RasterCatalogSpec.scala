@@ -38,6 +38,17 @@ class S3RasterCatalogSpec extends FunSpec
           info(key.toString)
         }
       }
+
+      val spaceId = LayerId("oneSpace", 2)
+      it("should save a spacetime layer"){
+        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, "subdir", true).write(spaceId, AllOnesSpaceTime)        
+      }
+
+      it("should load a spacetime layer"){
+        val rdd = catalog.reader[SpaceTimeKey].read(spaceId)
+        info(s"RDD count: ${rdd.count}")
+        info(rdd.metaData.gridBounds.toString)
+      }
     }
   }
 }

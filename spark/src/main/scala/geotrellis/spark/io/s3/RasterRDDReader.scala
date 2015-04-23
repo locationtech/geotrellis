@@ -19,6 +19,12 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
 
   def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
+  /** Converting lower bound of Range to first Key for Marker */
+  val indexToPath: Long => String
+
+  /* Convert key to index to know if we have rached the range end */
+  val pathToIndex: String => Long 
+  
   def read(
     s3client: ()=>S3Client,
     layerMetaData: S3LayerMetaData,
@@ -36,20 +42,25 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     logger.debug(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
     val bcClient = sc.broadcast(s3client)
+    val bcFilterSet = sc.broadcast(filterSet)
+    val itp = indexToPath
+    val pti = pathToIndex
 
     val rdd =
       sc.parallelize(bins)
       .mapPartitions{ rangeList =>
         val s3client: S3Client = bcClient.value.apply
+        val filterSet: FilterSet[K] = bcFilterSet.value
 
         rangeList
           .flatMap( ranges => ranges)
           .flatMap{ range =>
-            listKeys(s3client, bucket, dir, range)
-          }
-          .map{ path =>
-            val is = s3client.getObject(bucket, path).getObjectContent
-            KryoSerializer.deserializeStream[(K, Tile)](is)
+            listKeys(s3client, bucket, dir, range, itp, pti)            
+              .map{ path => 
+                val is = s3client.getObject(bucket, path).getObjectContent
+                KryoSerializer.deserializeStream[(K, Tile)](is)
+              }
+              .filter{ row => filterSet.includeKey(row._1) }
           }
       }
     new RasterRDD(rdd, rasterMetaData)
@@ -60,20 +71,16 @@ object RasterRDDReader {
   /**
    * Returns a list of keys for given SFC range. Will skip foroward to first possible key
    * and keep paging until reaching the last key is seen.
-   */
-  def listKeys(s3client: S3Client, bucket: String, key: String, range: (Long, Long)): Vector[String] = {
-    val tileIdRx = """.+\/(\d+)""".r    
-    
-    def indexToPath(i: Long): String = 
-      f"${i}%019d"
-        
-    def pathToIndex(s: String): Long = {
-      val tileIdRx(tileId) = s
-      tileId.toLong
-    }
-
+   */  
+  def listKeys(
+    s3client: S3Client, 
+    bucket: String, key: String, 
+    range: (Long, Long), 
+    indexToPath: Long => String, 
+    pathToIndex: String => Long 
+  ): Vector[String] = {
     val (minKey, maxKey) = range
-    val delim = "/"        
+    val delim = "/"
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
       .withPrefix(key + "/")
@@ -86,8 +93,9 @@ object RasterRDDReader {
       var endSeen = false
       keys.foreach{ key => 
         val index = pathToIndex(key)
+
         if (index >= minKey && index <= maxKey)           
-          ret += key        
+          ret += key                
         if (index >= maxKey)
           endSeen = true        
       }
