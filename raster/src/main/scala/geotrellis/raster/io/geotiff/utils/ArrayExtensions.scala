@@ -21,7 +21,6 @@ import java.nio.{ByteBuffer, ByteOrder}
 import spire.syntax.cfor._
 
 trait ArrayExtensions {
-
   implicit class ArrayUtilities(arr: Array[Byte]) {
 
     def readIntNumber(byteSize: Int, index: Int): Int = {

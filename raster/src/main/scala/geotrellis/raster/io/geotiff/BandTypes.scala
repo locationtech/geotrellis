@@ -28,6 +28,16 @@ object BandType {
         throw new UnsupportedOperationException(s"Unsupported band type ($bitsPerSample, $sampleFormat)")
 
     }
+
+  def forCellType(cellType: CellType): BandType = 
+    cellType match {
+      case TypeBit => BitBandType
+      case TypeByte => ByteBandType
+      case TypeShort => Int16BandType
+      case TypeInt => Int32BandType
+      case TypeFloat => Float32BandType
+      case TypeDouble => Float64BandType
+    }
 }
 
 object BitBandType extends BandType {

@@ -18,8 +18,8 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.reader.utils._
-import geotrellis.raster.io.geotiff.reader.tags._
+import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.tags._
 
 import geotrellis.testkit._
 
@@ -47,7 +47,7 @@ class ImageConverterSpec extends FunSpec with Matchers {
       tileTags = 
         TileTags(
           tileWidth = Some(tWidth), 
-          tileHeight = Some(tHeight)
+          tileLength = Some(tHeight)
         )
     )
 

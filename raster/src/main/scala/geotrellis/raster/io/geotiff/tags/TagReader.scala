@@ -22,7 +22,7 @@ import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
 
-import java.nio.ByteBuffer
+import java.nio.{ ByteBuffer, ByteOrder }
 
 import monocle.syntax._
 
@@ -38,6 +38,40 @@ case class TagMetadata(
 )
 
 object TagReader {
+
+  def read(byteBuffer: ByteBuffer, tags: Tags, tagMetadata: TagMetadata): Tags =
+    (tagMetadata.tag, tagMetadata.fieldType) match {
+      case (ModelPixelScaleTag, _) =>
+        byteBuffer.readModelPixelScaleTag(tags, tagMetadata)
+      case (ModelTiePointsTag, _) =>
+        byteBuffer.readModelTiePointsTag(tags, tagMetadata)
+      case (GeoKeyDirectoryTag, _) =>
+        byteBuffer.readGeoKeyDirectoryTag(tags, tagMetadata)
+      case (_, BytesFieldType) =>
+        byteBuffer.readBytesTag(tags, tagMetadata)
+      case (_, AsciisFieldType) =>
+        byteBuffer.readAsciisTag(tags, tagMetadata)
+      case (_, ShortsFieldType) =>
+        byteBuffer.readShortsTag(tags, tagMetadata)
+      case (_, IntsFieldType) =>
+        byteBuffer.readIntsTag(tags, tagMetadata)
+      case (_, FractionalsFieldType) =>
+        byteBuffer.readFractionalsTag(tags, tagMetadata)
+      case (_, SignedBytesFieldType) =>
+        byteBuffer.readSignedBytesTag(tags, tagMetadata)
+      case (_, UndefinedFieldType) =>
+        byteBuffer.readUndefinedTag(tags, tagMetadata)
+      case (_, SignedShortsFieldType) =>
+        byteBuffer.readSignedShortsTag(tags, tagMetadata)
+      case (_, SignedIntsFieldType) =>
+        byteBuffer.readSignedIntsTag(tags, tagMetadata)
+      case (_, SignedFractionalsFieldType) =>
+        byteBuffer.readSignedFractionalsTag(tags, tagMetadata)
+      case (_, FloatsFieldType) =>
+        byteBuffer.readFloatsTag(tags, tagMetadata)
+      case (_, DoublesFieldType) =>
+        byteBuffer.readDoublesTag(tags, tagMetadata)
+    }
 
   implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteBuffer) extends AnyVal {
     def readModelPixelScaleTag(tags: Tags,
@@ -530,39 +564,4 @@ object TagReader {
       }
     }
   }
-
-
-  def read(byteBuffer: ByteBuffer, tags: Tags, tagMetadata: TagMetadata): Tags =
-    (tagMetadata.tag, tagMetadata.fieldType) match {
-      case (ModelPixelScaleTag, _) =>
-        byteBuffer.readModelPixelScaleTag(tags, tagMetadata)
-      case (ModelTiePointsTag, _) =>
-        byteBuffer.readModelTiePointsTag(tags, tagMetadata)
-      case (GeoKeyDirectoryTag, _) =>
-        byteBuffer.readGeoKeyDirectoryTag(tags, tagMetadata)
-      case (_, BytesFieldType) =>
-        byteBuffer.readBytesTag(tags, tagMetadata)
-      case (_, AsciisFieldType) =>
-        byteBuffer.readAsciisTag(tags, tagMetadata)
-      case (_, ShortsFieldType) =>
-        byteBuffer.readShortsTag(tags, tagMetadata)
-      case (_, IntsFieldType) =>
-        byteBuffer.readIntsTag(tags, tagMetadata)
-      case (_, FractionalsFieldType) =>
-        byteBuffer.readFractionalsTag(tags, tagMetadata)
-      case (_, SignedBytesFieldType) =>
-        byteBuffer.readSignedBytesTag(tags, tagMetadata)
-      case (_, UndefinedFieldType) =>
-        byteBuffer.readUndefinedTag(tags, tagMetadata)
-      case (_, SignedShortsFieldType) =>
-        byteBuffer.readSignedShortsTag(tags, tagMetadata)
-      case (_, SignedIntsFieldType) =>
-        byteBuffer.readSignedIntsTag(tags, tagMetadata)
-      case (_, SignedFractionalsFieldType) =>
-        byteBuffer.readSignedFractionalsTag(tags, tagMetadata)
-      case (_, FloatsFieldType) =>
-        byteBuffer.readFloatsTag(tags, tagMetadata)
-      case (_, DoublesFieldType) =>
-        byteBuffer.readDoublesTag(tags, tagMetadata)
-    }
 }

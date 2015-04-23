@@ -38,27 +38,13 @@ case class Tags(
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
 ) {
 
-  val compression = (this &|->
+  def compression = (this &|->
     Tags._basicTags ^|->
     BasicTags._compression get)
 
   def hasStripStorage(): Boolean = (this &|->
     Tags._tileTags ^|->
     TileTags._tileWidth get).isEmpty
-
-  def tileBitsSize(): Option[Long] =
-    (
-      (this &|->
-        Tags._tileTags ^|->
-        TileTags._tileWidth get),
-      (this &|->
-        Tags._tileTags ^|->
-        TileTags._tileLength get)
-    ) match {
-      case (Some(tileWidth), Some(tileHeight)) =>
-        Some(bitsPerPixel * tileWidth * tileHeight)
-      case _ => None
-    }
 
   def rowsInStrip(index: Int): Option[Long] = 
     if (hasStripStorage) {
@@ -112,26 +98,70 @@ case class Tags(
     {(imageSegmentBitsSize(index) + 7) / 8 }
 
   def imageSegmentBitsSize(index: Int): Long =
-    if (hasStripStorage)
-      rowsInStrip(index).get * cols * bitsPerPixel
-    else { (tileBitsSize.get * bitsPerPixel) / bandCount }
+    if (hasStripStorage) {
+      val c = {
+        // For 1 bit rasters, take into account
+        // that the rows are padded with extra bits to make
+        // up the last byte.
+        if(bitsPerPixel == 1) {
+          val m = (cols + 7) / 8
+          8 * m
+        } else {
+          cols
+        }
+      }
+
+      (rowsInStrip(index).get * c * bitsPerPixel) / bandCount
+    }
+    else {
+      // We don't need the same check for 1 bit rasters as above,
+      // because according the the TIFF 6.0 Spec, "TileWidth must be a multiple of 16".
+      (
+        (this &|->
+          Tags._tileTags ^|->
+          TileTags._tileWidth get),
+        (this &|->
+          Tags._tileTags ^|->
+          TileTags._tileLength get)
+      ) match {
+        case (Some(tileWidth), Some(tileHeight)) =>
+          (bitsPerPixel * tileWidth * tileHeight) / bandCount
+        case _ =>
+          throw new MalformedGeoTiffException("Cannot find TileWidth and TileLength tags for tiled GeoTiff.")
+      }
+    }
 
   def rowSize: Int =
     if (hasStripStorage) cols
     else (this &|-> Tags._tileTags ^|-> TileTags._tileWidth get).get.toInt
 
-  lazy val getRasterBoundaries: Array[Pixel3D] = {
-    val imageWidth = cols
-    val imageLength = rows
+  def cols = (this &|-> Tags._basicTags ^|-> BasicTags._imageWidth get)
+  def rows = (this &|-> Tags._basicTags ^|-> BasicTags._imageLength get)
 
-    Array(
-      Pixel3D(0, imageLength, 0),
-      Pixel3D(imageWidth, 0, 0)
-    )
-  }
-
-  lazy val cols = (this &|-> Tags._basicTags ^|-> BasicTags._imageWidth get)
-  lazy val rows = (this &|-> Tags._basicTags ^|-> BasicTags._imageLength get)
+  def extent: Extent = 
+    (this 
+      &|-> Tags._geoTiffTags
+      ^|-> GeoTiffTags._modelTransformation get
+    ) match {
+      case Some(trans) if (trans.validateAsMatrix && trans.size == 4 && trans(0).size == 4) => 
+        transformationModelSpace(trans)
+      case _ => 
+        (this 
+          &|-> Tags._geoTiffTags
+          ^|-> GeoTiffTags._modelTiePoints get
+        ) match {
+          case Some(tiePoints) if (!tiePoints.isEmpty) =>
+            tiePointsModelSpace(
+              tiePoints,
+              (this 
+                &|-> Tags._geoTiffTags
+                ^|-> GeoTiffTags._modelPixelScale get
+              )
+            )
+          case _ =>
+            Extent(0, 0, cols, rows)
+        }
+    }
 
   lazy val metaData: GeoTiffMetaData = {
     val extent: Extent = (this &|-> Tags._geoTiffTags
@@ -187,8 +217,40 @@ case class Tags(
     )
   }
 
-  lazy val geoKeyDirectory = geoTiffTags.geoKeyDirectory.getOrElse {
+  def bandType: BandType =
+    ((this &|-> Tags._basicTags
+      ^|-> BasicTags._bitsPerSample get),
+      (this &|-> Tags._dataSampleFormatTags
+        ^|-> DataSampleFormatTags._sampleFormat get)) match {
+      case (Some(bitsPerSampleArray), sampleFormatArray)
+          if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
+            val bitsPerSample = bitsPerSampleArray(0)
+            val sampleFormat = sampleFormatArray(0)
+
+            BandType(bitsPerSample, sampleFormat)
+          }
+
+      case _ =>
+        throw new MalformedGeoTiffException("no bitsPerSample values!")
+    }
+
+  def crs: CRS = proj4String match {
+    case Some(s) => CRS.fromString(s)
+    case None => LatLng
+  }
+
+  def geoKeyDirectory = geoTiffTags.geoKeyDirectory.getOrElse {
     throw new IllegalAccessException("no geo key directory present")
+  }
+
+  private def getRasterBoundaries: Array[Pixel3D] = {
+    val imageWidth = cols
+    val imageLength = rows
+
+    Array(
+      Pixel3D(0, imageLength, 0),
+      Pixel3D(imageWidth, 0, 0)
+    )
   }
 
   private def transformationModelSpace(modelTransformation: Array[Array[Double]]) = {
@@ -272,7 +334,7 @@ case class Tags(
   def setGDALNoData(input: String) = (this &|-> Tags._geoTiffTags
     ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
 
-  lazy val proj4String: Option[String] = try {
+  def proj4String: Option[String] = try {
     GeoTiffCSParser(this).getProj4String
   } catch {
     case e: Exception => None
@@ -324,12 +386,12 @@ case class Tags(
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
     ns.map(s => ((s \ "@name").text -> s.text)).toMap
 
-  lazy val bandCount: Int =
+  def bandCount: Int =
     this &|->
       Tags._basicTags ^|->
       BasicTags._samplesPerPixel get
 
-  lazy val segmentCount: Int =
+  def segmentCount: Int =
     if (hasStripStorage) {
       (this 
         &|-> Tags._basicTags 

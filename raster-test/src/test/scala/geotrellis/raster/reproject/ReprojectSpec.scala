@@ -6,6 +6,7 @@ import geotrellis.engine._
 import geotrellis.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.interpolation._
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 
 import org.scalatest._
@@ -17,14 +18,10 @@ class ReprojectSpec extends FunSpec
   describe("reprojects in approximation to GDAL") {
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val GeoTiffBand(source, extent, crs, _) = GeoTiffReader
-        .read("raster-test/data/reproject/nlcd_tile_wsg84.tif")
-        .firstBand
+      val SingleBandGeoTiff(source, extent, crs, _) = GeoTiffReader.readSingleBand("raster-test/data/reproject/nlcd_tile_wsg84.tif")
 
-      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif")
-        .firstBand
-
+      val SingleBandGeoTiff(expected, expectedExtent, _, _) = GeoTiffReader.readSingleBand("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif")
+ 
       val Raster(actual, actualExtent) =
         source.reproject(extent, crs, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 

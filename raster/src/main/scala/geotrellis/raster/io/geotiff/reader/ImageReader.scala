@@ -16,11 +16,12 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
-import geotrellis.raster.io.geotiff.reader.decompression._
+import geotrellis.raster.io.geotiff.compression._
 
 import monocle.syntax._
 

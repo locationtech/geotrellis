@@ -16,7 +16,7 @@
 
 package geotrellis
 
-import geotrellis.macros.NoDataMacros
+import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 
 package object raster {
   type DI = DummyImplicit
@@ -30,6 +30,8 @@ package object raster {
   @inline final val byteNODATA = Byte.MinValue
   @inline final val shortNODATA = Short.MinValue
   @inline final val NODATA = Int.MinValue
+  @inline final val floatNODATA = Float.NaN
+  @inline final val doubleNODATA = Double.NaN
 
 
   def isNoData(b: Byte): Boolean = macro NoDataMacros.isNoDataByte_impl
@@ -44,24 +46,30 @@ package object raster {
   def isData(f: Float): Boolean = macro NoDataMacros.isDataFloat_impl
   def isData(d: Double): Boolean = macro NoDataMacros.isDataDouble_impl
 
-  @inline final def b2i(n: Byte): Int = if (isNoData(n)) NODATA else n.toInt
-  @inline final def i2b(n: Int): Byte = if (isNoData(n)) byteNODATA else n.toByte
-  @inline final def b2d(n: Byte): Double = if (isNoData(n)) Double.NaN else n.toDouble
-  @inline final def d2b(n: Double): Byte = if (isNoData(n)) byteNODATA else n.toByte
+  def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl
+  def b2s(n: Byte): Short = macro TypeConversionMacros.b2s_impl
+  def b2f(n: Byte): Float = macro TypeConversionMacros.b2f_impl
+  def b2d(n: Byte): Double = macro TypeConversionMacros.b2d_impl
 
+  def s2b(n: Short): Byte = macro TypeConversionMacros.s2b_impl
+  def s2i(n: Short): Int = macro TypeConversionMacros.s2i_impl
+  def s2f(n: Short): Float = macro TypeConversionMacros.s2f_impl
+  def s2d(n: Short): Double = macro TypeConversionMacros.s2d_impl
 
-  @inline final def s2i(n: Short): Int = if (isNoData(n)) NODATA else n.toInt
-  @inline final def i2s(n: Int): Short = if (isNoData(n)) shortNODATA else n.toShort
-  @inline final def s2d(n: Short): Double = if (isNoData(n)) Double.NaN else n.toDouble
-  @inline final def d2s(n: Double): Short = if (isNoData(n)) shortNODATA else n.toShort
+  def i2b(n: Int): Byte = macro TypeConversionMacros.i2b_impl
+  def i2s(n: Int): Short = macro TypeConversionMacros.i2s_impl
+  def i2f(n: Int): Float = macro TypeConversionMacros.i2f_impl
+  def i2d(n: Int): Double = macro TypeConversionMacros.i2d_impl
 
-  @inline final def i2f(n: Int): Float = if (isNoData(n)) Float.NaN else n.toFloat
-  @inline final def f2i(n: Float): Int = if (isNoData(n)) NODATA else n.toInt
-  @inline final def d2f(n: Double): Float = if (isNoData(n)) Float.NaN else n.toFloat
-  @inline final def f2d(n: Float): Double = if (isNoData(n)) Double.NaN else n.toDouble
+  def f2b(n: Float): Byte = macro TypeConversionMacros.f2b_impl
+  def f2s(n: Float): Short = macro TypeConversionMacros.f2s_impl
+  def f2i(n: Float): Int = macro TypeConversionMacros.f2i_impl
+  def f2d(n: Float): Double = macro TypeConversionMacros.f2d_impl
 
-  @inline final def i2d(n: Int): Double = if (isNoData(n)) Double.NaN else n.toDouble
-  @inline final def d2i(n: Double): Int = if (isNoData(n)) NODATA else n.toInt
+  def d2b(n: Double): Byte = macro TypeConversionMacros.d2b_impl
+  def d2s(n: Double): Short = macro TypeConversionMacros.d2s_impl
+  def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl
+  def d2f(n: Double): Float = macro TypeConversionMacros.d2f_impl
 
   // Use this implicit class to fill arrays ... much faster than Array.fill[Int](dim)(val), etc.
   implicit class ByteArrayFiller(val arr: Array[Byte]) extends AnyVal {

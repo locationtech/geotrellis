@@ -121,12 +121,6 @@ class ImageConverter(tags: Tags, isBigEndian: Boolean) {
     resBitSet.toByteArray()
   }
 
-  private def bitSetCopy(src: BitSet, srcPos: Int, dest: BitSet, destPos: Int, length: Int): Unit = {
-    cfor(0)(_ < length, _ + 1) { i =>
-      if (src.get(srcPos + i)) dest.set(destPos + i)
-    }
-  }
-
   private def byteTiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
     val bytesPerPixel = (tags.bitsPerPixel + 7) / 8
 
@@ -169,6 +163,12 @@ class ImageConverter(tags: Tags, isBigEndian: Boolean) {
     }
 
     resArray
+  }
+
+  private def bitSetCopy(src: BitSet, srcPos: Int, dest: BitSet, destPos: Int, length: Int): Unit = {
+    cfor(0)(_ < length, _ + 1) { i =>
+      if (src.get(srcPos + i)) dest.set(destPos + i)
+    }
   }
 
   private def stripBitImageOverflow(image: Array[Array[Byte]]) = {

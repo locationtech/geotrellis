@@ -18,6 +18,8 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.Filesystem
+import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
 
@@ -32,28 +34,6 @@ class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
 class GeoTiffReaderLimitationException(msg: String)
     extends RuntimeException(msg)
-
-// To implement for tile
-//
-//    val cellType: geotrellis.raster.CellType = ???
-//    val rows: Int = ???
-//    val cols: Int = ???
-//
-//    def get(col: Int,row: Int): Int = ???
-//    def getDouble(col: Int,row: Int): Double = ???
-
-//    def combine(r2: geotrellis.raster.Tile)(f: (Int, Int) => Int): geotrellis.raster.Tile = ???
-//    def combineDouble(r2: geotrellis.raster.Tile)(f: (Double, Double) => Double): geotrellis.raster.Tile = ???
-//    def map(f: Int => Int): geotrellis.raster.Tile = ???
-//    def mapDouble(f: Double => Double): geotrellis.raster.Tile = ???
-//    def resample(source: geotrellis.vector.Extent,target: geotrellis.raster.RasterExtent,method: geotrellis.raster.interpolation.InterpolationMethod): geotrellis.raster.Tile = ???
-//
-//    def mutable: geotrellis.raster.MutableArrayTile = ???
-//    def toArray(): Array[Int] = ???
-//    def toArrayDouble(): Array[Double] = ???
-//    def toArrayTile(): geotrellis.raster.ArrayTile = ???
-//    def toBytes(): Array[Byte] = ???
-
 
 object GeoTiffReader {
 
@@ -128,7 +108,7 @@ object GeoTiffReader {
 
 
     import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
-    import geotrellis.raster.io.geotiff.reader.decompression._
+    import geotrellis.raster.io.geotiff.compression._
 
     val uncompressedSections: Array[Array[Byte]] =
       tiffTags.compression match {
@@ -199,9 +179,10 @@ object GeoTiffReader {
   }
 
   /////////////////////////////////////////////////////////
-  def readNew(path: String): GeoTiffTile = readNew(Filesystem.slurp(path))
 
-  def readNew(bytes: Array[Byte]): GeoTiffTile = {
+  def readSingleBand(path: String): SingleBandGeoTiff = readSingleBand(Filesystem.slurp(path))
+
+  def readSingleBand(bytes: Array[Byte]): SingleBandGeoTiff = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
 
     // Set byteBuffer position
@@ -223,45 +204,7 @@ object GeoTiffReader {
 
     val tiffTags = TagsReader.read(byteBuffer, tagsStartPosition)
 
-    import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
-    import geotrellis.raster.io.geotiff.reader.decompression._
-
-    val decompressor: Decompressor = {
-      val d = 
-        tiffTags.compression match {
-          case Uncompressed => NoCompression
-          case LZWCoded => LZWDecompressor(tiffTags)
-          case ZLibCoded | PkZipCoded => ZLibCompression.createDecompressor(tiffTags)
-          case PackBitsCoded => PackBitsDecompressor(tiffTags)
-
-          // Unsupported compression types
-          case JpegCoded =>
-            val msg = "compression type JPEG is not supported by this reader."
-            throw new GeoTiffReaderLimitationException(msg)
-          case HuffmanCoded =>
-            val msg = "compression type CCITTRLE is not supported by this reader."
-            throw new GeoTiffReaderLimitationException(msg)
-          case GroupThreeCoded =>
-            val msg = s"compression type CCITTFAX3 is not supported by this reader."
-            throw new GeoTiffReaderLimitationException(msg)
-          case GroupFourCoded =>
-            val msg = s"compression type CCITTFAX4 is not supported by this reader."
-            throw new GeoTiffReaderLimitationException(msg)
-          case JpegOldCoded =>
-            val msg = "old jpeg (compression = 6) is deprecated."
-            throw new MalformedGeoTiffException(msg)
-          case compression =>
-            val msg = s"compression type $compression is not supported by this reader."
-            throw new GeoTiffReaderLimitationException(msg)
-        }
-
-      // If we need to flip the byte order, do at decompression time.
-      if(byteBuffer.order != ByteOrder.BIG_ENDIAN && tiffTags.bitsPerPixel > 8) {
-        d.flipEndian(tiffTags.bytesPerPixel)
-      } else {
-        d
-      }
-    }
+    val decompressor = Decompressor(tiffTags, byteBuffer.order)
 
     val compressedBytes: Array[Array[Byte]] = {
       def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
@@ -324,6 +267,11 @@ object GeoTiffReader {
         case _ => ZLibCompression
       }
 
-    GeoTiffTile(tiffTags.metaData.bandType, compressedBytes, decompressor, layout, compression, noDataValue)
+    val extent = tiffTags.extent
+    val bandType = tiffTags.bandType
+    val crs = tiffTags.crs
+    val tags = tiffTags.tags
+
+    SingleBandGeoTiff(GeoTiffTile(bandType, compressedBytes, decompressor, layout, compression, noDataValue), extent, crs, tags)
   }
 }

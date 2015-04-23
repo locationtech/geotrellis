@@ -21,11 +21,23 @@ import java.io.File
 import org.scalatest._
 
 trait GeoTiffTestUtils extends Matchers {
-  val filePath = "raster-test/data"
+  def geoTiffPath(name: String): String = {
+    initializeTestFiles
+    s"raster-test/data/geotiff-test-files/$name"
+  }
+
+  def baseDataPath = "raster-test/data"
 
   val Epsilon = 1e-9
 
   var writtenFiles = Vector[String]()
+
+  def initializeTestFiles(): Unit = {
+    if(!new File("raster-test/data/geotiff-test-files").exists) {
+      println("UNCOMPRESSING TEST FILES")
+      ZipArchive.unZip("raster-test/data/geotiff-test-files.zip", "raster-test/data")
+    }
+  }  
 
   protected def addToPurge(path: String) = synchronized {
     writtenFiles = writtenFiles :+ path
