@@ -15,7 +15,7 @@ package object accumulo {
   implicit def stringToText(s: String) = new Text(s)
 
   implicit lazy val accumuloSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val accumuloSpatialTileReader= spatial.SpatialTileReader
+  implicit lazy val accumuloSpatialTileReader = spatial.SpatialTileReader
   implicit lazy val accumuloSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
 
   implicit lazy val accumuloSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
