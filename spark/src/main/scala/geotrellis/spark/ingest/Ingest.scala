@@ -30,8 +30,9 @@ import geotrellis.proj4._
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
-object Ingest {
+object Ingest extends LazyLogging {
   /**
    * Represents the ingest process.
    * An ingest process produces a layer from a set of input rasters.
@@ -63,25 +64,33 @@ object Ingest {
     (sink: (RasterRDD[K], LayoutLevel) => Unit)
     (implicit tiler: Tiler[T, K]): Unit =
   {
-    def sinkLevels(rdd: RasterRDD[K], level: LayoutLevel)(free: => Unit): Unit = {    
+    def sinkLevels(rdd: RasterRDD[K], level: LayoutLevel)(free: => Unit): Unit = {
       if (pyramid && level.zoom >= 1) {
-        rdd.cache()      
-        sink(rdd, level)           
+        rdd.cache()
+        logger.debug(s"Calling sink with zoom level with pyramiding ${level.zoom}")
+        sink(rdd, level)
         free
-        var (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)   
-        // we must do it now so we can unerspist the source before recurse        
+        var (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)
+        // we must do it now so we can unerspist the source before recurse
         sinkLevels(nextRdd, nextLevel){ rdd.unpersist(blocking = false) }
-      }     
+      } else {
+        logger.debug(s"Calling sink with zoom level with out pyramiding ${level.zoom}")
+        sink(rdd, level)
+      }
     }
 
+    logger.debug("Reprojecting tiles")
     val reprojectedTiles = sourceTiles.reproject(destCRS).cache()
     // execution is going to fork here to collect the RasterMetaData
+
+    logger.debug("Gathering MetaData")
     var (layoutLevel, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme, isUniform) { key: T =>
         key.projectedExtent.extent
       }
-    
-    val rasterRdd = tiler(reprojectedTiles, rasterMetaData).cache()        
-    sinkLevels(rasterRdd, layoutLevel){ reprojectedTiles.unpersist(blocking = false) }      
+
+    logger.debug("Constructing Raster RDD from tiler")
+    val rasterRdd = tiler(reprojectedTiles, rasterMetaData).cache()
+    sinkLevels(rasterRdd, layoutLevel){ reprojectedTiles.unpersist(blocking = false) }
   }
 }
