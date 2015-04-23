@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.tags
+package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
+import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._

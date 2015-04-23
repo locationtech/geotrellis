@@ -2,8 +2,8 @@ package geotrellis.spark.io.s3
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.proj4._
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.Tile
+import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.vector.Extent
@@ -16,13 +16,13 @@ class TemporalGeoTiffS3InputFormat extends S3InputFormat[SpaceTimeInputKey,Tile]
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) = 
     new S3RecordReader[SpaceTimeInputKey,Tile] {
       def read(bytes: Array[Byte]) = {        
-        val geoTiff = GeoTiffReader.read(bytes)
-        val meta = geoTiff.metaData
+        val geoTiff = SingleBandGeoTiff.decompressed(bytes)
+
         val isoString = geoTiff.tags("ISO_TIME")
         val dateTime = DateTime.parse(isoString)
 
         //WARNING: Assuming this is a single band GeoTiff
-        val GeoTiffBand(tile, extent, crs, _) = geoTiff.bands.head
+        val ProjectedRaster(tile, extent, crs) = geoTiff.projectedRaster
         (SpaceTimeInputKey(extent, crs, dateTime), tile)        
       }
     }     

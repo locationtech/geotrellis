@@ -19,7 +19,7 @@ package geotrellis.spark.io.hadoop.formats
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
 import geotrellis.proj4._
 
@@ -53,7 +53,7 @@ class GeotiffRecordReader extends RecordReader[ProjectedExtent, Tile] {
     val conf = context.getConfiguration()
     val bytes = HdfsUtils.readBytes(path, conf)
 
-    val GeoTiffBand(tile, extent, crs, _) = GeoTiffReader.read(bytes).firstBand
+    val ProjectedRaster(tile, extent, crs) = SingleBandGeoTiff.decompressed(bytes).projectedRaster
 
     tup = (ProjectedExtent(extent, crs), tile)
   }

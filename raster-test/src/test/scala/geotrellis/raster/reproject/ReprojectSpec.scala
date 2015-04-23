@@ -18,9 +18,10 @@ class ReprojectSpec extends FunSpec
   describe("reprojects in approximation to GDAL") {
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val SingleBandGeoTiff(source, extent, crs, _) = GeoTiffReader.readSingleBand("raster-test/data/reproject/nlcd_tile_wsg84.tif")
+      val ProjectedRaster(source, extent, crs) = SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
 
-      val SingleBandGeoTiff(expected, expectedExtent, _, _) = GeoTiffReader.readSingleBand("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif")
+      val Raster(expected, expectedExtent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
  
       val Raster(actual, actualExtent) =
         source.reproject(extent, crs, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
@@ -43,13 +44,11 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {
-      val GeoTiffBand(source, extent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/slope_webmercator.tif")
-        .firstBand
+      val Raster(source, extent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
-      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif")
-        .firstBand
+      val Raster(expected, expectedExtent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val Raster(actual, actualExtent) =
         source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.0))
@@ -72,13 +71,11 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif and an error threshold of 0.125") {
-      val GeoTiffBand(source, extent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/slope_webmercator.tif")
-        .firstBand
+      val Raster(source, extent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
-      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif")
-        .firstBand
+      val Raster(expected, expectedExtent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
 
       val Raster(actual, actualExtent) =
         source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.125))

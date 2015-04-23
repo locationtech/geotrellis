@@ -1,7 +1,7 @@
-package geotrellis.raster.io.geotiff.tags
+package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster.io.Filesystem
-import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
+import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.utils._
 import spire.syntax.cfor._
 

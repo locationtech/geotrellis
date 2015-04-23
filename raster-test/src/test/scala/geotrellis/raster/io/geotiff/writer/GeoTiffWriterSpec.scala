@@ -54,7 +54,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val SingleBandGeoTiff(tile, extent, crs, _) = SingleBandGeoTiff(path)
+      val SingleBandGeoTiff(tile, extent, crs, _, _) = SingleBandGeoTiff(path)
 
       extent should equal (e)
       crs should equal (testCRS)
@@ -71,7 +71,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val SingleBandGeoTiff(tile, extent, crs, _) = SingleBandGeoTiff(path)
+      val SingleBandGeoTiff(tile, extent, crs, _, _) = SingleBandGeoTiff(path)
 
       extent should equal (e)
       crs should equal (LatLng)

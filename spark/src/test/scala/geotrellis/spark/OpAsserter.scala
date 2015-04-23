@@ -2,7 +2,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff._
 
 import java.io.File
 
@@ -47,7 +47,7 @@ trait OpAsserter extends FunSpec
       sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
-    val tile = GeoTiffReader.read(basePath + path).firstBand.tile
+    val tile = SingleBandGeoTiff.decompressed(basePath + path).tile
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 

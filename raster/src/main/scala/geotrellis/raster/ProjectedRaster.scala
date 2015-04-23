@@ -34,9 +34,14 @@ object ProjectedRaster {
 
   implicit def projectedToTile(p: ProjectedRaster): Tile =
     p.raster.tile
+
+  def apply(raster: Raster, crs: CRS): ProjectedRaster =
+    ProjectedRaster(raster.tile, raster.extent, crs)
 }
 
-case class ProjectedRaster(raster: Raster, crs: CRS) {
+case class ProjectedRaster(tile: Tile, extent: Extent, crs: CRS) {
+  def raster = Raster(tile, extent)
+
   def reproject(dest: CRS): Raster = 
     raster.reproject(crs, dest)
 }

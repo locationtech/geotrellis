@@ -21,6 +21,7 @@ import monocle.syntax._
 import monocle.macros.Lenses
 
 import spire.syntax.cfor._
+import scala.collection.mutable
 
 @Lenses("_")
 case class Tags(
@@ -163,60 +164,6 @@ case class Tags(
         }
     }
 
-  lazy val metaData: GeoTiffMetaData = {
-    val extent: Extent = (this &|-> Tags._geoTiffTags
-      ^|-> GeoTiffTags._modelTransformation get) match {
-      case Some(trans) if (trans.validateAsMatrix && trans.size == 4
-          && trans(0).size == 4) => transformationModelSpace(trans)
-      case _ => (this &|-> Tags._geoTiffTags
-          ^|-> GeoTiffTags._modelTiePoints get) match {
-        case Some(tiePoints) if (!tiePoints.isEmpty) =>
-          tiePointsModelSpace(
-            tiePoints,
-            (this &|-> Tags._geoTiffTags
-              ^|-> GeoTiffTags._modelPixelScale get)
-          )
-        case _ => Extent(0, 0, cols, rows)
-      }
-    }
-
-    val crs: CRS = proj4String match {
-      case Some(s) => CRS.fromString(s)
-      case None => LatLng
-    }
-
-
-    val bandType: BandType =
-      ((this &|-> Tags._basicTags
-        ^|-> BasicTags._bitsPerSample get),
-        (this &|-> Tags._dataSampleFormatTags
-          ^|-> DataSampleFormatTags._sampleFormat get)) match {
-        case (Some(bitsPerSampleArray), sampleFormatArray)
-            if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
-              val bitsPerSample = bitsPerSampleArray(0)
-              val sampleFormat = sampleFormatArray(0)
-
-              BandType(bitsPerSample, sampleFormat)
-            }
-
-        case _ =>
-          throw new MalformedGeoTiffException("no bitsPerSample values!")
-      }
-
-    val gdalNoData = 
-      (this
-        &|-> Tags._geoTiffTags
-        ^|-> GeoTiffTags._gdalInternalNoData get)
-
-    GeoTiffMetaData(
-      RasterExtent(extent, cols, rows),
-      bandCount,
-      crs,
-      bandType,
-      gdalNoData
-    )
-  }
-
   def bandType: BandType =
     ((this &|-> Tags._basicTags
       ^|-> BasicTags._bitsPerSample get),
@@ -340,7 +287,7 @@ case class Tags(
     case e: Exception => None
   }
 
-  lazy val (tags, bandTags): (Map[String, String], Seq[Map[String, String]]) =
+  lazy val (tags, bandTags): (Map[String, String], Map[Int, Map[String, String]]) =
     (
       (this &|->
         Tags._basicTags ^|->
@@ -351,9 +298,10 @@ case class Tags(
     ) match {
       case (numberOfBands, Some(str)) => {
         val xml = XML.loadString(str.trim)
-        val (metadataXML, bandsMetadataXML) = (xml \ "Item")
-          .groupBy(_ \ "@sample")
-          .partition(_._1.isEmpty)
+        val (metadataXML, bandsMetadataXML) = 
+          (xml \ "Item")
+            .groupBy(_ \ "@sample")
+            .partition(_._1.isEmpty)
 
         val metadata = metadataXML
           .map(_._2)
@@ -366,20 +314,20 @@ case class Tags(
           (key.toString.toInt, metadataNodeSeqToMap(ns))
         }
 
-        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](numberOfBands)
+        val bandsMetadataBuffer = mutable.Map[Int, Map[String, String]]()
 
-        cfor(0)(_ < numberOfBands, _ + 1) { i =>
-          bandsMetadataMap.get(i) match {
+        cfor(1)(_ <= numberOfBands, _ + 1) { i =>
+          bandsMetadataMap.get(i - 1) match {
             case Some(map) => bandsMetadataBuffer(i) = map
             case None => bandsMetadataBuffer(i) = Map()
           }
         }
 
-        (metadata, bandsMetadataBuffer)
+        (metadata, bandsMetadataBuffer.toMap)
       }
       case (numberOfBands, None) => (
         Map(),
-        Array.ofDim[Map[String, String]](numberOfBands)
+        (1 to numberOfBands).map((_, Map[String, String]())).toMap
       )
     }
 
