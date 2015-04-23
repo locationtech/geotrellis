@@ -21,7 +21,6 @@ import monocle.syntax._
 import monocle.macros.Lenses
 
 import spire.syntax.cfor._
-import scala.collection.mutable
 
 @Lenses("_")
 case class Tags(
@@ -287,7 +286,7 @@ case class Tags(
     case e: Exception => None
   }
 
-  lazy val (tags, bandTags): (Map[String, String], Map[Int, Map[String, String]]) =
+  lazy val (tags, bandTags): (Map[String, String], Array[Map[String, String]]) =
     (
       (this &|->
         Tags._basicTags ^|->
@@ -314,20 +313,20 @@ case class Tags(
           (key.toString.toInt, metadataNodeSeqToMap(ns))
         }
 
-        val bandsMetadataBuffer = mutable.Map[Int, Map[String, String]]()
+        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](numberOfBands)
 
-        cfor(1)(_ <= numberOfBands, _ + 1) { i =>
-          bandsMetadataMap.get(i - 1) match {
+        cfor(0)(_ < numberOfBands, _ + 1) { i =>
+          bandsMetadataMap.get(i) match {
             case Some(map) => bandsMetadataBuffer(i) = map
             case None => bandsMetadataBuffer(i) = Map()
           }
         }
 
-        (metadata, bandsMetadataBuffer.toMap)
+        (metadata, bandsMetadataBuffer)
       }
       case (numberOfBands, None) => (
         Map(),
-        (1 to numberOfBands).map((_, Map[String, String]())).toMap
+        Array.ofDim[Map[String, String]](numberOfBands)
       )
     }
 

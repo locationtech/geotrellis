@@ -1,7 +1,7 @@
 package geotrellis.gdal
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff._
 import geotrellis.proj4._
 
 import org.scalatest._
@@ -14,7 +14,7 @@ class GdalReaderSpec extends FunSpec with Matchers {
       println("Reading with GDAL...")
       val (gdRaster, RasterExtent(gdExt,_, _, _, _)) = GdalReader.read(path)
       println("Reading with GeoTools....")
-      val GeoTiffBand(gtRaster, gtExt, _, _) = GeoTiffReader.read(path).firstBand
+      val Raster(gtRaster, gtExt) = SingleBandGeoTiff.decompressed(path).raster
       println("Done.")
 
       gdExt.xmin should be (gtExt.xmin +- 0.00001)

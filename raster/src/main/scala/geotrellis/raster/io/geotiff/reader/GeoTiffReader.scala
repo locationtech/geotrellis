@@ -278,7 +278,7 @@ object GeoTiffReader {
     val bandType = tiffTags.bandType
     val crs = tiffTags.crs
     val tags = tiffTags.tags
-    val bandTags = tiffTags.bandTags(1)
+    val bandTags = tiffTags.bandTags(0)
 
     val geoTiffTile =
       GeoTiffTile(bandType, compressedBytes, decompressor, layout, compression, noDataValue)
