@@ -18,6 +18,8 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
 
 object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] with LazyLogging {
-  val encodeKey = (key: SpatialKey, ki: KeyIndex[SpatialKey]) =>
-    f"${ki.toIndex(key)}%019d"
+  val encodeKey = (key: SpatialKey, ki: KeyIndex[SpatialKey], max: Int) =>
+    ki.toIndex(key).toString.reverse.padTo(max, '0').reverse
+
+
 }

@@ -17,21 +17,30 @@ import com.typesafe.scalalogging.slf4j._
 import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
+import scala.concurrent._
+import java.util.concurrent.Executors
+import scala.concurrent.duration._
 
 abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
-  val encodeKey: (K, KeyIndex[K]) => String
+  val encodeKey: (K, KeyIndex[K], Int) => String
 
   def write(
     s3client: ()=>S3Client, 
     bucket: String, 
     layerPath: String,
+    keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K],
     clobber: Boolean)
   (layerId: LayerId, rdd: RasterRDD[K])
   (implicit sc: SparkContext): Unit = {
     // TODO: Check if I am clobbering things        
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
-    
+        
+    val maxLen = { // lets find out the widest key we can possibly have
+      def digits(x: Long): Int = if (x < 10) 1 else 1 + digits(x/10)
+      digits(keyIndex.toIndex(keyBounds.maxKey))
+    }
+
     val bcClient = sc.broadcast(s3client)
     val catalogBucket = bucket
     val path = layerPath
@@ -46,12 +55,19 @@ abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
           val metadata = new ObjectMetadata()
           metadata.setContentLength(bytes.length);              
           val is = new ByteArrayInputStream(bytes)
-          new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex)}", is, metadata)
+          new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)
         }
-
-        requests.foreach{ r =>
-          s3client.putObjectWithBackoff(r)
-        }
+        
+        implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
+        val requestsPerThread = 100
+        
+        Await.ready(Future.sequence(
+          requests
+          .sliding(requestsPerThread, requestsPerThread)        
+          .map{ subList => 
+            future { subList.foreach { r => s3client.putObjectWithBackoff(r) } }
+          }
+        ), 10 minutes)
       }
 
     logger.info(s"Finished saving tiles to ${layerPath}")

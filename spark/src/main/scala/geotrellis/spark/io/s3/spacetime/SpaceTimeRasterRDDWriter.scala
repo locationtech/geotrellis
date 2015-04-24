@@ -21,9 +21,9 @@ import org.joda.time.format.ISODateTimeFormat
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with LazyLogging {
   private val fmt = ISODateTimeFormat.dateTime()
 
-  val encodeKey = (key: SpaceTimeKey, ki: KeyIndex[SpaceTimeKey]) => {
-    val index: Long = ki.toIndex(key)    
+  val encodeKey = (key: SpaceTimeKey, ki: KeyIndex[SpaceTimeKey], max: Int) => {
+    val index: String = ki.toIndex(key).toString.reverse.padTo(max, '0').reverse
     val isoTime: String = fmt.print(key.time)
-    f"${index}%019d-${isoTime}"
+    f"${index}-${isoTime}"
   }
 }

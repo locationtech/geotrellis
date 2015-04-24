@@ -90,7 +90,7 @@ class S3RasterCatalog(
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
-          .write(s3client, bucket, path, index, clobber)(layerId, rdd)
+          .write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
       }
