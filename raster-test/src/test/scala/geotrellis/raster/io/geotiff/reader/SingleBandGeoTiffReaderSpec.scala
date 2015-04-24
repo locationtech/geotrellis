@@ -84,6 +84,18 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       }
       println(points.size)
     }
+
+    it("should find min and max of a large sparse raster, lzw compressed") {
+      val n = "wm_depth.tif"
+      val path = geoTiffPath(s"$n")
+      val tile = GeoTiffReader.readSingleBand(path).tile
+
+      val (min, max) = tile.findMinMaxDouble
+
+      // Expected values from gdalinfo -stats
+      min should be (-0.014291191473603 +- 0.000000000000001)
+      max should be (4.4320001602173 +- 0.0000000000001)
+    }
   }
 
   describe("Reading NBITS=1 GeoTiffs") {
