@@ -14,10 +14,8 @@ class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   val size: Int = bytes.size / 8
 
-  def get(i: Int): Double = {
-    if(i >= size) { println("AHAHAHAHAH") }
+  def get(i: Int): Double =
     byteBuffer.getDouble(i * 8)
-  }
 
   def getInt(i: Int): Int = d2i(get(i))
   def getDouble(i: Int): Double = get(i)
