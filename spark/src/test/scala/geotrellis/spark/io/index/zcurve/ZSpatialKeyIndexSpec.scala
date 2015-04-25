@@ -88,7 +88,6 @@ class ZSpatialKeyIndexSpec extends FunSpec with Matchers {
 
      idx = zsk.indexRanges( (SpatialKey(2,0), SpatialKey(3,1) ) )
      idx.length should be( 1 )
-     println(idx)
      idx(0)._1 should be( 4 )
      idx(0)._2 should be( 7 )
 

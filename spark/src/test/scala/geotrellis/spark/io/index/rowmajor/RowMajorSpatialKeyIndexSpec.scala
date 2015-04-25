@@ -8,7 +8,7 @@ import geotrellis.spark.SpatialKey
 
 class RowMajorSpatialKeyIndexSpec extends FunSpec with Matchers{
 
-  val UpperBound: Int = 128
+  val UpperBound: Int = 64
 
   describe("RowMajorSpatialKeyIndex tests") {
 
