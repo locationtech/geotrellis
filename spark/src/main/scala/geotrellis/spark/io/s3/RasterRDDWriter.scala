@@ -58,8 +58,9 @@ abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
           new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)
         }
         
-        implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
-        val requestsPerThread = 100
+        val executors = Executors.newFixedThreadPool(64)
+        implicit val ec = ExecutionContext.fromExecutor(executors)
+        val requestsPerThread = (requests.length / 64) + 1
         
         Await.ready(Future.sequence(
           requests
@@ -68,6 +69,8 @@ abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
             future { subList.foreach { r => s3client.putObjectWithBackoff(r) } }
           }
         ), 10 minutes)
+
+        executors.shutdown
       }
 
     logger.info(s"Finished saving tiles to ${layerPath}")
