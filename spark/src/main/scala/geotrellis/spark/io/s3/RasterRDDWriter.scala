@@ -52,16 +52,22 @@ abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
 
         val executors = Executors.newFixedThreadPool(64)
         implicit val ec = ExecutionContext.fromExecutor(executors)
+        val batchSize = 256
 
-        val futures = partition.map{ row =>
-          val index = keyIndex.toIndex(row._1) 
-          val bytes = KryoSerializer.serialize[(K, Tile)](row)
-          val metadata = new ObjectMetadata()
-          metadata.setContentLength(bytes.length);              
-          val is = new ByteArrayInputStream(bytes)
-          val req = new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)
-          future { blocking { s3client.putObjectWithBackoff(req) } }
-        }.toArray
+        val futures = 
+          partition.map{ row =>
+            val index = keyIndex.toIndex(row._1) 
+            val bytes = KryoSerializer.serialize[(K, Tile)](row)
+            val metadata = new ObjectMetadata()
+            metadata.setContentLength(bytes.length);
+            val is = new ByteArrayInputStream(bytes)
+            new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)            
+          }
+          .sliding(batchSize,batchSize)
+          .map { requests =>
+            future { blocking { requests.foreach { r => s3client.putObjectWithBackoff(r) } } }
+          }
+          .toArray
 
         for (f <- futures){
           f.onFailure{ case e => throw e }
