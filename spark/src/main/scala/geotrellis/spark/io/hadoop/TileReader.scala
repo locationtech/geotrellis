@@ -7,10 +7,10 @@ import geotrellis.raster._
 
 import org.apache.spark.SparkContext
 
-trait TileReaderProvider[K] {
-  def reader(
+trait TileReader[K] {
+  def read(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     index: KeyIndex[K]
-  )(implicit sc: SparkContext): Reader[K, Tile]
+  )(key: K)(implicit sc: SparkContext): Tile
 }

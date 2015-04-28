@@ -3,6 +3,12 @@ package geotrellis.spark
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+/** A SpatialKey designates the spatial positioning of a layer's tile. */
+case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
+  def _1 = col
+  def _2 = row
+}
+
 object SpatialKey {
   implicit object SpatialComponent extends IdentityComponent[SpatialKey]
 
@@ -31,10 +37,12 @@ object SpatialKey {
       }
   }
 
-}
-
-/** A SpatialKey designates the spatial positioning of a layer's tile. */
-case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
-  def _1 = col
-  def _2 = row
+  implicit object SpatialKeyBoundable extends Boundable[SpatialKey] {
+    def minBound(a: SpatialKey, b: SpatialKey) = {
+      SpatialKey(math.min(a.col, b.col), math.min(a.row, b.row))
+    }    
+    def maxBound(a: SpatialKey, b: SpatialKey) = {
+      SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
+    }
+  }
 }
