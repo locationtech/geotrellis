@@ -57,7 +57,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
         implicit val ec = ExecutionContext.fromExecutor(executors)
         val batchSize = 256
 
-        val futures = 
+        val futures: Seq[Future[Unit]] = 
           partition.map{ row =>
             val index = keyIndex.toIndex(row._1) 
             val bytes = KryoSerializer.serialize[(K, Tile)](row)
@@ -70,12 +70,11 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
           .map { requests =>
             future { blocking { requests.foreach { r => s3client.putObjectWithBackoff(r) } } }
           }
-          .toArray
+          .toSeq
 
-        for (f <- futures){
-          f.onFailure{ case e => throw e }
-          Await.ready(f, 10 minutes)
-        }
+        val all = Future.sequence(futures)        
+        all.onFailure{ case e => throw e }
+        Await.result(all, 10 minutes)
 
         executors.shutdown
       }
