@@ -26,13 +26,13 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
     ZSpaceTimeKeyIndex.byYear
 
-  def writer(instance: CassandraInstance, layerMetaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit sc: SparkContext): RasterRDDWriter[SpaceTimeKey] =
+  def writer(layerMetaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit session: CassandraSession, sc: SparkContext): RasterRDDWriter[SpaceTimeKey] =
     new RasterRDDWriter[SpaceTimeKey] {
       def write(layerId: LayerId, raster: RasterRDD[SpaceTimeKey]): Unit = {
         val tileTable = layerMetaData.tileTable
 
         // If not exists create table
-        val schema = SchemaBuilder.createTable(instance.keyspace, tileTable).ifNotExists()
+        val schema = SchemaBuilder.createTable(session.keySpace, tileTable).ifNotExists()
           .addPartitionKey("reverse_index", text)
           .addClusteringColumn("zoom", cint)
           .addClusteringColumn("indexer", text)
@@ -40,7 +40,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
           .addClusteringColumn("name", text)
           .addColumn("value", blob)
         
-        instance.session.execute(schema)
+        session.execute(schema)
         
         val closureKeyIndex = index
         raster
@@ -50,7 +50,7 @@ object SpaceTimeRasterRDDWriterProvider extends RasterRDDWriterProvider[SpaceTim
              val indexer = closureKeyIndex.toIndex(key).toString
              (indexer.reverse, layerId.zoom, indexer, timeText(key), layerId.name, value) 
           })
-          .saveToCassandra(instance.keyspace, tileTable, SomeColumns("reverse_index", "zoom", "indexer", "date", "name", "value"))
+          .saveToCassandra(session.keySpace, tileTable, SomeColumns("reverse_index", "zoom", "indexer", "date", "name", "value"))
       }
     }
 }
