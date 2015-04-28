@@ -38,7 +38,7 @@ trait S3Client extends LazyLogging {
     do {
       try {
         if (backoff > 0)
-          Thread.sleep(base * Random.nextInt(backoff + 1))
+          Thread.sleep(base * Random.nextInt(math.pow(2,backoff))) // .extInt is [), implying -1
         ret = putObject(putObjectRequest)
       } catch {
         case e: AmazonS3Exception =>
