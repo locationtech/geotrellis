@@ -4,6 +4,7 @@ import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
+import scala.collection.JavaConverters._
 import scala.util.Random
 
 trait S3Client extends LazyLogging {
@@ -31,23 +32,44 @@ trait S3Client extends LazyLogging {
   def putObject(bucketName: String, key: String, bytes: Array[Byte]): PutObjectResult =
     putObject(bucketName, key, bytes, new ObjectMetadata())
 
+
+  def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
+    new Iterator[S3ObjectSummary] {      
+      var listing = listObjects(request)
+      var iter = listing.getObjectSummaries.asScala.iterator
+
+      def getNextPage: Boolean =  {
+        val nextRequest = request.withMarker(listing.getNextMarker)
+        listing = listObjects(nextRequest)
+        listing.getObjectSummaries.asScala.iterator        
+        iter.hasNext
+      }
+
+      def hasNext: Boolean = {
+        iter.hasNext || getNextPage
+      }      
+
+      def next: S3ObjectSummary = iter.next
+    }          
+      
+
   def putObjectWithBackoff(putObjectRequest: PutObjectRequest): PutObjectResult = {
     var ret: PutObjectResult = null
     val base = 53
     var backoff = 0
     do {
-      try {
         if (backoff > 0){
           val pause = base * Random.nextInt(math.pow(2,backoff).toInt) // .extInt is [), implying -1
-          logger.debug("Backing off for $pause ms")
+        logger.info("Backing off for $pause ms")
           Thread.sleep(pause) 
         }
+
+      try {
         ret = putObject(putObjectRequest)
       } catch {
         case e: AmazonS3Exception =>
-          if (e.getErrorCode == 503 && e.getErrorType == "SlowDown") {
-            backoff = math.max(8, backoff*2)
-            logger.info(s"Got $e, Backing off for $backoff ms")
+          if (e.getErrorCode == 503) {
+            backoff = +1
           }else{
             throw e
           }
