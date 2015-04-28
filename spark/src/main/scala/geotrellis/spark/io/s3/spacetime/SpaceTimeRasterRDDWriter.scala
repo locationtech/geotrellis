@@ -26,4 +26,12 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with LazyL
     val isoTime: String = fmt.print(key.time)
     f"${index}-${isoTime}"
   }
+
+  def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {
+    val boundable = implicitly[Boundable[SpaceTimeKey]]
+    rdd
+      .map{ case (k, tile) => KeyBounds(k, k) }
+      .reduce { boundable.combine }
+  }
+
 }

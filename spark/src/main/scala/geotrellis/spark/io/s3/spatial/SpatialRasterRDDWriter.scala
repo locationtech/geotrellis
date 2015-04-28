@@ -21,5 +21,11 @@ object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] with LazyLoggi
   val encodeKey = (key: SpatialKey, ki: KeyIndex[SpatialKey], max: Int) =>
     ki.toIndex(key).toString.reverse.padTo(max, '0').reverse
 
-
+  def getKeyBounds(rdd: RasterRDD[SpatialKey]): KeyBounds[SpatialKey] = {
+    val md = rdd.metaData
+    val gb = md.gridBounds
+    KeyBounds(
+      SpatialKey(gb.colMin, gb.rowMin),
+      SpatialKey(gb.colMax, gb.rowMax))
+  }
 }

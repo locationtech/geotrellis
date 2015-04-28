@@ -69,12 +69,9 @@ class S3RasterCatalog(
             bucket = bucket,
             key = path)
 
-        // Note: this is a waste to do for spatial raster, we can derive them easily from RasterMetaData
-        val boundable = implicitly[Boundable[K]]
-        val keyBounds = rdd
-          .map{ case (k, tile) => KeyBounds(k, k) }
-          .reduce { boundable.combine }
+        val rddWriter = implicitly[RasterRDDWriter[K]]
 
+        val keyBounds = rddWriter.getKeyBounds(rdd)
         val index = {
           // Expanding spatial bounds? To allow multi-stage save?
           val indexKeyBounds = {
@@ -89,8 +86,7 @@ class S3RasterCatalog(
         attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
         attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
 
-        val rddWriter = implicitly[RasterRDDWriter[K]]
-          .write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
+        rddWriter.write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
       }
