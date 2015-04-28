@@ -28,8 +28,6 @@ object CassandraSession {
     session.session
 }
 
-
-
 class CassandraSession(
   connector: CassandraConnector, 
   val keySpace: String

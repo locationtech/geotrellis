@@ -1,11 +1,11 @@
 package geotrellis.spark.io
 
 package object cassandra {
-  implicit lazy val cassandraSpatialRasterRDDReaderProvider = spatial.SpatialRasterRDDReaderProvider
-  implicit lazy val cassandraSpatialTileReaderProvider = spatial.SpatialTileReaderProvider
-  implicit lazy val cassandraSpatialRasterRDDWriterProvider = spatial.SpatialRasterRDDWriterProvider
+  implicit lazy val cassandraSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
+  implicit lazy val cassandraSpatialTileReader = spatial.SpatialTileReader
+  implicit lazy val cassandraSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
 
-  implicit lazy val cassandraSpaceTimeRasterRDDReaderProvider = spacetime.SpaceTimeRasterRDDReaderProvider
-  implicit lazy val cassandraSpaceTimeTileReaderProvider = spacetime.SpaceTimeTileReaderProvider
-  implicit lazy val cassandraSpaceTimeRasterRDDWriterProvider = spacetime.SpaceTimeRasterRDDWriterProvider
+  implicit lazy val cassandraSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
+  implicit lazy val cassandraSpaceTimeTileReader = spacetime.SpaceTimeTileReader
+  implicit lazy val cassandraSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
 }

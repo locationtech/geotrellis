@@ -10,14 +10,10 @@ import scala.util.matching.Regex
 import geotrellis.index.zcurve._
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
-
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.Job
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -25,7 +21,7 @@ import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector._
 
-object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTimeKey] {
+object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
     ZSpaceTimeKeyIndex.byYear
 
@@ -91,38 +87,4 @@ object SpaceTimeRasterRDDReaderProvider extends RasterRDDReaderProvider[SpaceTim
 
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
   }
-
-  def reader(metaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey])(implicit session: CassandraSession, sc: SparkContext): FilterableRasterRDDReader[SpaceTimeKey] =
-    new FilterableRasterRDDReader[SpaceTimeKey] {
-      def read(layerId: LayerId, filters: FilterSet[SpaceTimeKey]): RasterRDD[SpaceTimeKey] = {
-        val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
-
-        val rdd: CassandraRDD[(String, ByteBuffer)] = 
-          sc.cassandraTable[(String, ByteBuffer)](session.keySpace, tileTable).select("reverse_index", "value")
-
-        
-        val filteredRDD = {
-          if (filters.isEmpty) {
-            rdd.where("zoom = ?", layerId.zoom)
-          } else {
-            applyFilter(rdd, layerId, filters, keyBounds, index)
-          }
-        }
-
-        val tileRDD =
-          filteredRDD.map { case (_, value) =>
-                    val (key, tileBytes) = KryoSerializer.deserialize[(SpaceTimeKey, Array[Byte])](value)
-                    val tile =
-                      ArrayTile.fromBytes(
-                        tileBytes,
-                        rasterMetaData.cellType,
-                        rasterMetaData.tileLayout.tileCols,
-                        rasterMetaData.tileLayout.tileRows
-                      )
-                    (key, tile: Tile)
-          }
-    
-        new RasterRDD(tileRDD, rasterMetaData)
-      }
-    }
 }
