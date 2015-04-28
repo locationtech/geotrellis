@@ -28,11 +28,11 @@ case class CassandraLayerMetaData(
   tileTable: String
 )
 
-class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val catalogTable: String) extends Store[LayerId, CassandraLayerMetaData] with Logging {
+class CassandraLayerMetaDataCatalog(val catalogTable: String)(implicit session: CassandraSession) extends Store[LayerId, CassandraLayerMetaData] with Logging {
 
   // Create the catalog table if it doesn't exist
   {
-    val schema = SchemaBuilder.createTable(keyspace, catalogTable).ifNotExists()
+    val schema = SchemaBuilder.createTable(session.keySpace, catalogTable).ifNotExists()
       .addPartitionKey("id", text)
       .addClusteringColumn("zoom", cint)
       .addColumn("keyClass", text)
@@ -69,7 +69,7 @@ class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val 
     val tileTable = metaData.tileTable
     catalog(layerId) = metaData
 
-    val update = QueryBuilder.update(keyspace, catalogTable)
+    val update = QueryBuilder.update(session.keySpace, catalogTable)
       .`with`(set("metadata", metaData.rasterMetaData.toJson.compactPrint))
       .and   (set("histogram", metaData.histogram.toJson.compactPrint))
       .and   (set("keyClass", metaData.keyClass))
@@ -83,7 +83,7 @@ class CassandraLayerMetaDataCatalog(session: Session, val keyspace: String, val 
     var data: mutable.Map[LayerId, CassandraLayerMetaData] =
       mutable.Map.empty
 
-    val queryAll = QueryBuilder.select.all.from(keyspace, catalogTable)
+    val queryAll = QueryBuilder.select.all.from(session.keySpace, catalogTable)
     val results = session.execute(queryAll)
     val iter = results.iterator
 

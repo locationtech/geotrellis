@@ -16,19 +16,19 @@ import java.nio.ByteBuffer
 
 object SpatialTileReaderProvider extends TileReaderProvider[SpatialKey] {
 
-  def reader(instance: CassandraInstance, layerId: LayerId, cassandraLayerMetaData: CassandraLayerMetaData, index: KeyIndex[SpatialKey]): Reader[SpatialKey, Tile] = {
+  def reader(layerId: LayerId, cassandraLayerMetaData: CassandraLayerMetaData, index: KeyIndex[SpatialKey])(implicit session: CassandraSession): Reader[SpatialKey, Tile] = {
     val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = cassandraLayerMetaData
     new Reader[SpatialKey, Tile] {
       def read(key: SpatialKey): Tile = {
 
         val indexer = index.toIndex(key).toString
-        val query = QueryBuilder.select("value").from(instance.keyspace, tileTable)
+        val query = QueryBuilder.select("value").from(session.keySpace, tileTable)
           .where (eqs("reverse_index", indexer.reverse))
           .and   (eqs("zoom", layerId.zoom))
           .and   (eqs("indexer", indexer))
           .and   (eqs("name", layerId.name))
 
-        val results = instance.session.execute(query)
+        val results = session.execute(query)
 
         val size = results.getAvailableWithoutFetching
         val value = 

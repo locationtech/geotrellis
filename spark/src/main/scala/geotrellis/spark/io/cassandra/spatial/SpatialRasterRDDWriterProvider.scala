@@ -23,14 +23,14 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey] {
 
-  def writer(instance: CassandraInstance, layerMetaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit sc: SparkContext): RasterRDDWriter[SpatialKey] =
+  def writer(layerMetaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit session: CassandraSession, sc: SparkContext): RasterRDDWriter[SpatialKey] =
     new RasterRDDWriter[SpatialKey] {
       def write(layerId: LayerId, raster: RasterRDD[SpatialKey]): Unit = {
 
         val tileTable = layerMetaData.tileTable
 
         // If not exists create table
-        val schema = SchemaBuilder.createTable(instance.keyspace, tileTable).ifNotExists()
+        val schema = SchemaBuilder.createTable(session.keySpace, tileTable).ifNotExists()
           .addPartitionKey("reverse_index", text)
           .addClusteringColumn("zoom", cint)
           .addClusteringColumn("indexer", text)
@@ -41,7 +41,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
           // column: value
           // for spacetime: another clustering for date (for uniqueness)
         
-        instance.session.execute(schema)
+        session.execute(schema)
         
         val closureKeyIndex = index
         raster
@@ -51,7 +51,7 @@ object SpatialRasterRDDWriterProvider extends RasterRDDWriterProvider[SpatialKey
             val indexer = closureKeyIndex.toIndex(key).toString
             (indexer.reverse, layerId.zoom, indexer, layerId.name, value)
           })
-          .saveToCassandra(instance.keyspace, tileTable, SomeColumns("reverse_index", "zoom", "indexer", "name", "value"))
+          .saveToCassandra(session.keySpace, tileTable, SomeColumns("reverse_index", "zoom", "indexer", "name", "value"))
       }
     }
 }

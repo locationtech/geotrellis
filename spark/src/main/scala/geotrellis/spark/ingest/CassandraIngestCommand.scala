@@ -36,17 +36,16 @@ object CassandraIngestCommand extends ArgMain[CassandraIngestArgs] with Logging 
     val hadoopConf = sparkContext.hadoopConfiguration
     sparkConf.set("spark.cassandra.connection.host", args.host)
 
-    val connector = CassandraConnector(sparkConf)
-    implicit val cassandra = CassandraInstance(connector, args.keyspace)
 
-    val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
+    Cassandra.withSession(args.host, args.keyspace) { implicit session =>
+      val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
 
-    val layoutScheme = ZoomedLayoutScheme(256)
-    val writer = CassandraRasterCatalog().writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
+      val layoutScheme = ZoomedLayoutScheme(256)
+      val writer = CassandraRasterCatalog().writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
 
-    Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) =>
-      writer.write(LayerId(args.layerName, level.zoom), rdd)
+      Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) =>
+        writer.write(LayerId(args.layerName, level.zoom), rdd)
+      }
     }
-    cassandra.close
   }
 }

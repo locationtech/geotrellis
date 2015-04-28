@@ -15,34 +15,31 @@ import scala.reflect._
 import spray.json._
 
 object CassandraRasterCatalog {
-  def apply()(implicit instance: CassandraInstance, sc: SparkContext): CassandraRasterCatalog = {
+  def apply()(implicit session: CassandraSession, sc: SparkContext): CassandraRasterCatalog = {
     val metaDataTable = ConfigFactory.load().getString("geotrellis.cassandra.catalog")
     val attributesTable = ConfigFactory.load().getString("geotrellis.cassandra.attributesCatalog")
     apply(metaDataTable, attributesTable)
   }
 
-  def apply(metaDataTable: String, attributesTable: String)(implicit instance: CassandraInstance, sc: SparkContext): CassandraRasterCatalog =
-    apply(new CassandraLayerMetaDataCatalog(instance.session, instance.keyspace, metaDataTable), CassandraAttributeStore(instance.session, instance.keyspace, attributesTable))
+  def apply(metaDataTable: String, attributesTable: String)(implicit session: CassandraSession, sc: SparkContext): CassandraRasterCatalog =
+    apply(new CassandraLayerMetaDataCatalog(metaDataTable), CassandraAttributeStore(attributesTable))
 
-  def apply(metaDataCatalog: Store[LayerId, CassandraLayerMetaData], attributeStore: CassandraAttributeStore)(implicit instance: CassandraInstance, sc: SparkContext): CassandraRasterCatalog =
-    new CassandraRasterCatalog(instance, metaDataCatalog, attributeStore)
+  def apply(metaDataCatalog: Store[LayerId, CassandraLayerMetaData], attributeStore: CassandraAttributeStore)(implicit session: CassandraSession, sc: SparkContext): CassandraRasterCatalog =
+    new CassandraRasterCatalog(metaDataCatalog, attributeStore)
 }
 
 class CassandraRasterCatalog(
-  instance: CassandraInstance,
   metaDataCatalog: Store[LayerId, CassandraLayerMetaData],
   attributeStore: CassandraAttributeStore
-)(implicit sc: SparkContext) {
+)(implicit session: CassandraSession, sc: SparkContext) {
   
-  def layerMetaDataCatalog = metaDataCatalog.asInstanceOf[CassandraLayerMetaDataCatalog]
-
   def reader[K: RasterRDDReaderProvider: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = metaDataCatalog.read(layerId)
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReaderProvider[K]].reader(instance, metaData, keyBounds, index).read(layerId, filterSet)
+        implicitly[RasterRDDReaderProvider[K]].reader(metaData, keyBounds, index).read(layerId, filterSet)
       }
     }
 
@@ -78,7 +75,7 @@ class CassandraRasterCatalog(
         }
         attributeStore.write(layerId, "keyIndex", index)
 
-        val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(instance, md, keyBounds, index)
+        val rddWriter = implicitly[RasterRDDWriterProvider[K]].writer(md, keyBounds, index)
           
         rddWriter.write(layerId, rdd)
         rdd.unpersist(blocking = false)
@@ -90,6 +87,6 @@ class CassandraRasterCatalog(
     val cassandraLayerMetaData = metaDataCatalog.read(layerId)
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
     val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-    implicitly[TileReaderProvider[K]].reader(instance, layerId, cassandraLayerMetaData, index)
+    implicitly[TileReaderProvider[K]].reader(layerId, cassandraLayerMetaData, index)
   }
 }

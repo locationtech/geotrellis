@@ -14,16 +14,16 @@ import com.datastax.driver.core.{ResultSet, Session}
 import org.apache.spark.Logging
 
 object CassandraAttributeStore {
-  def apply(session: Session, keyspace: String, attributeTable: String): CassandraAttributeStore =
-    new CassandraAttributeStore(session, keyspace, attributeTable)
+  def apply(attributeTable: String)(implicit session: CassandraSession): CassandraAttributeStore =
+    new CassandraAttributeStore(attributeTable)
 }
 
-class CassandraAttributeStore(session: Session, val keyspace: String, val attributeTable: String) extends AttributeStore with Logging {
+class CassandraAttributeStore(val attributeTable: String)(implicit session: CassandraSession) extends AttributeStore with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
 
   // Create the attribute table if it doesn't exist
   {
-    val schema = SchemaBuilder.createTable(keyspace, attributeTable).ifNotExists()
+    val schema = SchemaBuilder.createTable(session.keySpace, attributeTable).ifNotExists()
       .addPartitionKey("layerId", text)
       .addClusteringColumn("name", text)
       .addColumn("value", text)
@@ -33,7 +33,7 @@ class CassandraAttributeStore(session: Session, val keyspace: String, val attrib
 
   private def fetch(layerId: LayerId, attributeName: String): ResultSet = {
     val query = QueryBuilder.select.column("value")
-      .from(keyspace, attributeTable)
+      .from(session.keySpace, attributeTable)
       .where (eqs("layerId", layerId.toString))
       .and   (eqs("name", attributeName))
 
@@ -54,7 +54,7 @@ class CassandraAttributeStore(session: Session, val keyspace: String, val attrib
   }
 
   def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    val update = QueryBuilder.update(keyspace, attributeTable)
+    val update = QueryBuilder.update(session.keySpace, attributeTable)
       .`with`(set("value", value.toJson.compactPrint))
       .where (eqs("layerId", layerId.toString))
       .and   (eqs("name", attributeName))

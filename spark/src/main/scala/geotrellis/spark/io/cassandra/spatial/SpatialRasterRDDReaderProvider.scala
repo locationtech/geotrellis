@@ -48,13 +48,13 @@ object SpatialRasterRDDReaderProvider extends RasterRDDReaderProvider[SpatialKey
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
   }
 
-  def reader(instance: CassandraInstance, metaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit sc: SparkContext): FilterableRasterRDDReader[SpatialKey] =
+  def reader(metaData: CassandraLayerMetaData, keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey])(implicit session: CassandraSession, sc: SparkContext): FilterableRasterRDDReader[SpatialKey] =
     new FilterableRasterRDDReader[SpatialKey] {
       def read(layerId: LayerId, filters: FilterSet[SpatialKey]): RasterRDD[SpatialKey] = {
         val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
 
         val rdd: CassandraRDD[(String, ByteBuffer)] = 
-          sc.cassandraTable[(String, ByteBuffer)](instance.keyspace, tileTable).select("reverse_index", "value")
+          sc.cassandraTable[(String, ByteBuffer)](session.keySpace, tileTable).select("reverse_index", "value")
 
         val filteredRDD = applyFilter(rdd, layerId, filters, index)
 

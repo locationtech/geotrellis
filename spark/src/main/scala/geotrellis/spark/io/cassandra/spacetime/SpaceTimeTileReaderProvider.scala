@@ -18,20 +18,20 @@ object SpaceTimeTileReaderProvider extends TileReaderProvider[SpaceTimeKey] {
   def index(tileLayout: TileLayout, keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] =
     ZSpaceTimeKeyIndex.byYear
 
-  def reader(instance: CassandraInstance, layerId: LayerId, cassandraLayerMetaData: CassandraLayerMetaData, index: KeyIndex[SpaceTimeKey]): Reader[SpaceTimeKey, Tile] = {
+  def reader(layerId: LayerId, cassandraLayerMetaData: CassandraLayerMetaData, index: KeyIndex[SpaceTimeKey])(implicit session: CassandraSession): Reader[SpaceTimeKey, Tile] = {
     val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = cassandraLayerMetaData
     new Reader[SpaceTimeKey, Tile] {
       def read(key: SpaceTimeKey): Tile = {
 
         val i = index.toIndex(key).toString
-        val query = QueryBuilder.select.column("value").from(instance.keyspace, tileTable)
+        val query = QueryBuilder.select.column("value").from(session.keySpace, tileTable)
           .where (eqs("reverse_index", i.reverse))
           .and   (eqs("zoom", layerId.zoom))
           .and   (eqs("indexer", i))
           .and   (eqs("date", timeText(key)))
           .and   (eqs("name", layerId.name))
 
-        val results = instance.session.execute(query)
+        val results = session.execute(query)
 
         val size = results.getAvailableWithoutFetching
         val value = 
