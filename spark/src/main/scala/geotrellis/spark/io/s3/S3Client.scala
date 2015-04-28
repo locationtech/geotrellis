@@ -4,6 +4,7 @@ import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
+import scala.util.Random
 
 trait S3Client extends LazyLogging {
 
@@ -32,10 +33,12 @@ trait S3Client extends LazyLogging {
 
   def putObjectWithBackoff(putObjectRequest: PutObjectRequest): PutObjectResult = {
     var ret: PutObjectResult = null
+    val base = 53
     var backoff = 0
     do {
       try {
-        if (backoff > 0) Thread.sleep(backoff)
+        if (backoff > 0)
+          Thread.sleep(base * Random.nextInt(backoff + 1))
         ret = putObject(putObjectRequest)
       } catch {
         case e: AmazonS3Exception =>
