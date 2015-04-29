@@ -5,12 +5,12 @@ import geotrellis.raster.io.geotiff.reader.{GeoTiffReaderLimitationException, Ma
 import java.nio.ByteOrder
 
 trait Decompressor extends Serializable {
-  def decompress(bytes: Array[Byte], sectionIndex: Int): Array[Byte]
+  def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 
   def flipEndian(bytesPerFlip: Int): Decompressor = 
     new Decompressor {
-      def decompress(bytes: Array[Byte], sectionIndex: Int) =
-        flip(Decompressor.this.decompress(bytes, sectionIndex))
+      def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+        flip(Decompressor.this.decompress(bytes, segmentIndex))
 
       def flip(bytes: Array[Byte]): Array[Byte] = {
         val arr = bytes.clone
@@ -30,45 +30,61 @@ trait Decompressor extends Serializable {
         arr
       }
     }
+
+  def withPredictor(predictor: Predictor): Decompressor =
+    new Decompressor {
+      def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+        predictor(Decompressor.this.decompress(bytes, segmentIndex), segmentIndex)
+    }
 }
 
 object Decompressor {
   def apply(tags: Tags, byteOrder: ByteOrder): Decompressor = {
     import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-    val d =
-      tags.compression match {
-        case Uncompressed => NoCompression
-        case LZWCoded => LZWDecompressor(tags)
-        case ZLibCoded | PkZipCoded => ZLibCompression.createDecompressor(tags)
-        case PackBitsCoded => PackBitsDecompressor(tags)
+    def checkEndian(d: Decompressor): Decompressor =
+      if(byteOrder != ByteOrder.BIG_ENDIAN && tags.bitsPerPixel > 8)
+        d.flipEndian(tags.bytesPerPixel)
+      else
+        d
 
-        // Unsupported compression types
-        case JpegCoded =>
-          val msg = "compression type JPEG is not supported by this reader."
-          throw new GeoTiffReaderLimitationException(msg)
-        case HuffmanCoded =>
-          val msg = "compression type CCITTRLE is not supported by this reader."
-          throw new GeoTiffReaderLimitationException(msg)
-        case GroupThreeCoded =>
-          val msg = s"compression type CCITTFAX3 is not supported by this reader."
-          throw new GeoTiffReaderLimitationException(msg)
-        case GroupFourCoded =>
-          val msg = s"compression type CCITTFAX4 is not supported by this reader."
-          throw new GeoTiffReaderLimitationException(msg)
-        case JpegOldCoded =>
-          val msg = "old jpeg (compression = 6) is deprecated."
-          throw new MalformedGeoTiffException(msg)
-        case compression =>
-          val msg = s"compression type $compression is not supported by this reader."
-          throw new GeoTiffReaderLimitationException(msg)
-      }
+    def checkPredictor(d: Decompressor): Decompressor = {
+      val predictor = Predictor(tags)
+      if(predictor.checkEndian)
+        checkEndian(d).withPredictor(predictor)
+      else
+        d.withPredictor(predictor)
+    }
 
-    // If we need to flip the byte order, do at decompression time.
-    if(byteOrder != ByteOrder.BIG_ENDIAN && tags.bitsPerPixel > 8) {
-      d.flipEndian(tags.bytesPerPixel)
-    } else {
-      d
+    tags.compression match {
+      case Uncompressed => 
+        checkEndian(NoCompression)
+      case LZWCoded => 
+        checkPredictor(LZWDecompressor(tags))
+      case ZLibCoded | PkZipCoded => 
+        checkPredictor(ZLibCompression.createDecompressor(tags))
+      case PackBitsCoded => 
+        checkEndian(PackBitsDecompressor(tags))
+
+      // Unsupported compression types
+      case JpegCoded =>
+        val msg = "compression type JPEG is not supported by this reader."
+        throw new GeoTiffReaderLimitationException(msg)
+      case HuffmanCoded =>
+        val msg = "compression type CCITTRLE is not supported by this reader."
+        throw new GeoTiffReaderLimitationException(msg)
+      case GroupThreeCoded =>
+        val msg = s"compression type CCITTFAX3 is not supported by this reader."
+        throw new GeoTiffReaderLimitationException(msg)
+      case GroupFourCoded =>
+        val msg = s"compression type CCITTFAX4 is not supported by this reader."
+        throw new GeoTiffReaderLimitationException(msg)
+      case JpegOldCoded =>
+        val msg = "old jpeg (compression = 6) is deprecated."
+        throw new MalformedGeoTiffException(msg)
+      case compression =>
+        val msg = s"compression type $compression is not supported by this reader."
+        throw new GeoTiffReaderLimitationException(msg)
     }
   }
 }

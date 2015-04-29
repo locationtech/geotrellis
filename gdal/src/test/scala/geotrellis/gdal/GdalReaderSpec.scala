@@ -14,7 +14,7 @@ class GdalReaderSpec extends FunSpec with Matchers {
       println("Reading with GDAL...")
       val (gdRaster, RasterExtent(gdExt,_, _, _, _)) = GdalReader.read(path)
       println("Reading with GeoTools....")
-      val Raster(gtRaster, gtExt) = SingleBandGeoTiff.decompressed(path).raster
+      val Raster(gtRaster, gtExt) = SingleBandGeoTiff(path).raster
       println("Done.")
 
       gdExt.xmin should be (gtExt.xmin +- 0.00001)

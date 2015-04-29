@@ -77,23 +77,3 @@ class ZLibDecompressor(segmentSizes: Array[Int]) extends Decompressor {
     result
   }
 }
-
-trait ZLibDecompression {
-
-  implicit class ZLib(matrix: Array[Array[Byte]]) {
-    def uncompressZLib(tags: Tags): Array[Array[Byte]] = {
-      val decompressor = ZLibCompression.createDecompressor(tags)
-      val len = matrix.length
-      val arr = Array.ofDim[Array[Byte]](len)
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        val segment = matrix(i)
-
-        arr(i) = decompressor.decompress(segment, i)
-      }
-
-      arr
-    }
-  }
-
-}

@@ -50,7 +50,7 @@ class RLECompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress aspect.tif with RLE correctly") {
-      val tile = SingleBandGeoTiff.decompressed("raster-test/data/aspect.tif").tile
+      val tile = SingleBandGeoTiff("raster-test/data/aspect.tif").tile
 
       val compressedTile = tile.compress(RLE)
 
@@ -62,7 +62,7 @@ class RLECompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress slope.tif with RLE correctly") {
-      val tile = SingleBandGeoTiff.decompressed("raster-test/data/slope.tif").tile
+      val tile = SingleBandGeoTiff("raster-test/data/slope.tif").tile
 
       val compressedTile = tile.compress(RLE)
 

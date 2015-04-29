@@ -30,73 +30,50 @@ import spire.syntax.cfor._
 object LZWDecompressor {
   def apply(tags: Tags): LZWDecompressor = {
     val segmentSize: (Int => Int) = { i => tags.imageSegmentByteSize(i).toInt }
-    val rowsInSegment: (Int => Int) = { i => tags.rowsInSegment(i) }
 
-    val horizontalPredictor = 
-      (tags 
-        &|-> Tags._nonBasicTags 
-        ^|-> NonBasicTags._predictor get
-      ) match {
-        case Some(2) => true
-        case None | Some(1) => false
-        case Some(i) =>
-          throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1 or 2)")
-      }
-
-    val rowSize = tags.rowSize
-
-    val samplesPerPixel = 
-      (tags 
-        &|-> Tags._basicTags 
-        ^|-> BasicTags._samplesPerPixel get
-      )
-
-    if (horizontalPredictor) {
-      val v = 
-        (tags 
-          &|-> Tags._basicTags 
-          ^|-> BasicTags._bitsPerSample get
-        ) match {
-          case Some(vector) => vector
-          case None => throw new MalformedGeoTiffException("no bits per sample tag!")
-        }
-
-      v foreach { e =>
-        if (e != 8) 
-          throw new MalformedGeoTiffException( "bad bits per sample for horizontal prediction in LZW")
-      }
-    }
-
-    new LZWDecompressor(segmentSize, rowsInSegment, rowSize, samplesPerPixel, horizontalPredictor)
+    new LZWDecompressor(segmentSize)
   }
 }
 
-class LZWDecompressor(segmentSize: Int => Int, rowsInSegment: Int => Int, rowSize: Int, samplesPerPixel: Int, horizontalPredictor: Boolean) extends Decompressor {
-    val tableLimit = 4096
+class TokenTableEntry(val firstByte: Byte, val thisByte: Byte, val length: Int, val prev: TokenTableEntry = null) {
+  def concat(nextByte: Byte): TokenTableEntry =
+    new TokenTableEntry(firstByte, nextByte, length + 1, this)
+}
 
-    final val initialStringTable = {
-      val arr = Array.ofDim[Array[Byte]](tableLimit)
-      cfor(0)(_ < 256, _ + 1) { i =>
-        arr(i) = Array(i.toByte)
-      }
+object TokenTable {
+  val tableLimit = 4096
 
-      arr
+  def initial(): Array[TokenTableEntry]= {
+    val arr = Array.ofDim[TokenTableEntry](tableLimit)
+    cfor(0)(_ < 256, _ + 1) { i =>
+      arr(i) = new TokenTableEntry(i.toByte, i.toByte, 1)
     }
 
-    val limitMap = HashMap[Int, Int](
-      9 -> 510,
-      10 -> 1022,
-      11 -> 2046,
-      12 -> 4094
-    )
+    arr
+  }
 
-    val ClearCode = 256
-    val EoICode = 257
+  def writeToOutput(entry: TokenTableEntry, outputArray: Array[Byte], outputArrayIndex: Int): Int = {
+    var curr = entry
+    while(curr != null) {
+      outputArray(outputArrayIndex + curr.length - 1) = curr.thisByte
+      curr = curr.prev
+    }
+    entry.length + outputArrayIndex
+  }
+}
+
+
+class LZWDecompressor(segmentSize: Int => Int) extends Decompressor {
+  val tableLimit = 4096
+
+  val ClearCode = 256
+  val EoICode = 257
 
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
     val bis = new LZWBitInputStream(segment)
-    var stringTable = Array.ofDim[Array[Byte]](tableLimit)
-    var stringTableIndex = 258
+
+    var tokenTable = TokenTable.initial
+    var tokenTableIndex = 258
 
     var outputArrayIndex = 0
     val size = segmentSize(segmentIndex)
@@ -104,33 +81,19 @@ class LZWDecompressor(segmentSize: Int => Int, rowsInSegment: Int => Int, rowSiz
 
     var threshold = 9
 
-    def initializeStringTable = {
-      stringTable = initialStringTable.clone
-      stringTableIndex = 258
+    def initializeTokenTable = {
+      tokenTable = TokenTable.initial
+      tokenTableIndex = 258
       threshold = 9
     }
 
-    def addString(string: Array[Byte]) = {
-      stringTable(stringTableIndex) = string
-      stringTableIndex += 1
+    def addEntry(entry: TokenTableEntry): Unit = {
+      tokenTable(tokenTableIndex) = entry
+      tokenTableIndex += 1
 
-      if (stringTableIndex == 511) threshold = 10
-      if (stringTableIndex == 1023) threshold = 11
-      if (stringTableIndex == 2047) threshold = 12
-    }
-
-    def isInTable(code: Int) = code < stringTableIndex
-
-    def writeString(string: Array[Byte]) = {
-      System.arraycopy(
-        string,
-        0,
-        outputArray,
-        outputArrayIndex,
-        string.length
-      )
-
-      outputArrayIndex += string.length
+      if (tokenTableIndex == 511) threshold = 10
+      if (tokenTableIndex == 1023) threshold = 11
+      if (tokenTableIndex == 2047) threshold = 12
     }
 
     var code = 0
@@ -139,46 +102,40 @@ class LZWDecompressor(segmentSize: Int => Int, rowsInSegment: Int => Int, rowSiz
     var break = false
     while (!break && { code = bis.get(threshold); code != EoICode } && outputArrayIndex < size) {
       if (code == ClearCode) {
-        initializeStringTable
+        initializeTokenTable
         code = bis.get(threshold)
 
         if (code == EoICode) {
           break = true
         } else {
-          writeString(stringTable(code))
+          outputArrayIndex = 
+            TokenTable.writeToOutput(tokenTable(code), outputArray, outputArrayIndex)
         }
-      } else if (isInTable(code)) {
-        val string = stringTable(code)
-        writeString(string)
+      } else if (code < tokenTableIndex) {
+        // if the code is in the table
+        val entry = tokenTable(code)
+        outputArrayIndex =
+          TokenTable.writeToOutput(entry, outputArray, outputArrayIndex)
 
-        addString(stringTable(oldCode) :+ string(0))
+        val oldEntry = tokenTable(oldCode)
+        addEntry(oldEntry.concat(entry.firstByte))
+
       } else {
-        val string = stringTable(oldCode) :+ stringTable(oldCode)(0)
-        writeString(string)
-        addString(string)
+        val oldEntry = tokenTable(oldCode)
+        val newEntry = oldEntry.concat(oldEntry.firstByte)
+        outputArrayIndex =
+          TokenTable.writeToOutput(newEntry, outputArray, outputArrayIndex)
+
+        addEntry(newEntry)
+
       }
 
       oldCode = code
     }
 
-    if (horizontalPredictor) {
-      // Convert to horizontal predictor
-      val width = rowSize
-      val height = rowsInSegment(segmentIndex)
-
-      cfor(0)(_ < height, _ + 1) { j =>
-        var count = samplesPerPixel * (j * width + 1)
-        cfor(samplesPerPixel)(_ < width * samplesPerPixel, _ + 1) { k =>
-          outputArray(count) = (outputArray(count) + outputArray(count - samplesPerPixel)).toByte
-          count += 1
-        }
-      }
-    }
-
     outputArray
   }
 
-  /** This class modifies the array passed in */
   private class LZWBitInputStream(arr: Array[Byte]) {
 
     val len = arr.length
@@ -187,50 +144,26 @@ class LZWDecompressor(segmentSize: Int => Int, rowsInSegment: Int => Int, rowSiz
 
     def get(next: Int): Int = {
       if (next + index > len * 8)
-        throw new IndexOutOfBoundsException(
-          s"Index out of bounds for BitInputStream for LZW decompression."
-        )
+        EoICode
+      else {
 
-      val start = index / 8
-      val end = (index + next - 1) / 8
-      val ebi = (index + next - 1) % 8
+        val start = index / 8
+        val end = (index + next - 1) / 8
+        val ebi = (index + next - 1) % 8
 
-      val res =
-        if (end - start == 2) {
-          val c = ((arr(start) & 0xff) << 16) | ((arr(end - 1) & 0xff) << 8) | (arr(end) & 0xff)
-          (c >> (7 - ebi)) & (0xffffff >> (24 - next))
-        } else {
-          val c = ((arr(start) & 0xff) << 8) | (arr(end) & 0xff)
-          (c >> (7 - ebi)) & (0xffff >> (16 - next))
-        }
+        val res =
+          if (end - start == 2) {
+            val c = ((arr(start) & 0xff) << 16) | ((arr(end - 1) & 0xff) << 8) | (arr(end) & 0xff)
+            (c >> (7 - ebi)) & (0xffffff >> (24 - next))
+          } else {
+            val c = ((arr(start) & 0xff) << 8) | (arr(end) & 0xff)
+            (c >> (7 - ebi)) & (0xffff >> (16 - next))
+          }
 
-      index += next
+        index += next
 
-      res
-    }
-
-    def addToIndex(add: Int) = index += add
-
-    def reset = index = 0
-
-    def getIndex: Int = index
-
-  }
-}
-
-trait LZWDecompression {
-
-  implicit class LZW(matrix: Array[Array[Byte]]) {
-    def uncompressLZW(tags: Tags): Array[Array[Byte]] = {
-      val len = matrix.length
-      val arr = Array.ofDim[Array[Byte]](len)
-
-      val compression = LZWDecompressor(tags)
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        arr(i) = compression.decompress(matrix(i), i)
+        res
       }
-      arr
     }
   }
 }

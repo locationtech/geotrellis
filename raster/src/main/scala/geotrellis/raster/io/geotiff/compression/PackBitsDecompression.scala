@@ -68,20 +68,3 @@ class PackBitsDecompressor(segmentSize: Int => Int) extends Decompressor {
     rowArray
   }
 }
-
-trait PackBitsDecompression {
-
-  implicit class PackBits(matrix: Array[Array[Byte]]) {
-
-    def uncompressPackBits(implicit tags: Tags): Array[Array[Byte]] = {
-      val decompressor = PackBitsDecompressor(tags)
-
-      val len = matrix.length
-      val arr = Array.ofDim[Array[Byte]](len)
-      cfor(0)(_ < len, _ + 1) { i =>
-        arr(i) = decompressor.decompress(matrix(i), i)
-      }
-      arr
-    }
-  }
-}

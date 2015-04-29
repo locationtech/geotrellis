@@ -53,7 +53,7 @@ object ByteBandType extends BandType {
 }
 
 object UInt16BandType extends BandType {
-  val bitsPerSample = 32
+  val bitsPerSample = 16
   val unsigned = true
   def cellType = TypeInt // Because unsigned, need to move up width
 }

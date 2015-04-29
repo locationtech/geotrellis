@@ -4,7 +4,7 @@ import monocle.macros.Lenses
 
 @Lenses("_")
 case class BasicTags(
-  bitsPerSample: Option[Array[Int]] = None,
+  bitsPerSample: Int = 1, // This is written as an array per sample, but libtiff only takes one value, and so do we.
   colorMap: Seq[(Short, Short, Short)] = Seq(),
   imageLength: Int = 0,
   imageWidth: Int = 0,

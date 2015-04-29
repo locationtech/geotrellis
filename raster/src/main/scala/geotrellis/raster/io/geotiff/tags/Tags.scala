@@ -82,17 +82,16 @@ case class Tags(
         Tags._tileTags ^|->
         TileTags._tileLength get).get.toInt
 
-  def bitsPerPixel(): Int = (this &|->
-    Tags._basicTags ^|->
-    BasicTags._bitsPerSample get) match {
-    case Some(v) => v.sum
-    case None => (this &|->
-        Tags._basicTags ^|->
-        BasicTags._samplesPerPixel get)
-  }
+  def bitsPerPixel(): Int = 
+    bitsPerSample * bandCount
 
   def bytesPerPixel: Int =
     (this.bitsPerPixel + 7) / 8
+
+  def bitsPerSample: Int =
+    (this
+      &|-> Tags._basicTags 
+      ^|-> BasicTags._bitsPerSample get)
 
   def imageSegmentByteSize(index: Int): Long =
     {(imageSegmentBitsSize(index) + 7) / 8 }
@@ -163,22 +162,14 @@ case class Tags(
         }
     }
 
-  def bandType: BandType =
-    ((this &|-> Tags._basicTags
-      ^|-> BasicTags._bitsPerSample get),
-      (this &|-> Tags._dataSampleFormatTags
-        ^|-> DataSampleFormatTags._sampleFormat get)) match {
-      case (Some(bitsPerSampleArray), sampleFormatArray)
-          if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
-            val bitsPerSample = bitsPerSampleArray(0)
-            val sampleFormat = sampleFormatArray(0)
+  def bandType: BandType = {
+    val sampleFormat =
+      (this 
+        &|-> Tags._dataSampleFormatTags
+        ^|-> DataSampleFormatTags._sampleFormat get)
 
-            BandType(bitsPerSample, sampleFormat)
-          }
-
-      case _ =>
-        throw new MalformedGeoTiffException("no bitsPerSample values!")
-    }
+    BandType(bitsPerSample, sampleFormat)
+  }
 
   def crs: CRS = proj4String match {
     case Some(s) => CRS.fromString(s)

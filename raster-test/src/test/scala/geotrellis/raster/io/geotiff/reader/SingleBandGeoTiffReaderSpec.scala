@@ -12,10 +12,10 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   def geoTiff(storage: String, cellType: String): SingleBandGeoTiff =
-    SingleBandGeoTiff(geoTiffPath(s"uncompressed/$storage/${cellType}.tif"))
+    SingleBandGeoTiff.compressed(geoTiffPath(s"uncompressed/$storage/${cellType}.tif"))
 
   def geoTiff(compression: String, storage: String, cellType: String): SingleBandGeoTiff =
-    SingleBandGeoTiff(geoTiffPath(s"$compression/$storage/${cellType}.tif"))
+    SingleBandGeoTiff.compressed(geoTiffPath(s"$compression/$storage/${cellType}.tif"))
 
   def expectedTile(t: CellType, f: (Int, Int) => Double): Tile = {
     val cols = 500
@@ -47,9 +47,9 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
 
   describe("Reading a single band geotiff") {
     it("must read Striped Bit aspect and match tiled byte converted to bitfile") {
-      val actual = SingleBandGeoTiff(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile
+      val actual = SingleBandGeoTiff.compressed(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile
       val expected =
-        SingleBandGeoTiff(geoTiffPath("1band/aspect_byte_uncompressed_tiled.tif"))
+        SingleBandGeoTiff.compressed(geoTiffPath("1band/aspect_byte_uncompressed_tiled.tif"))
           .tile
           .toArrayTile
           .map { b => if(b == 0) 0 else 1 }
@@ -72,7 +72,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
 
       val n = "large-sparse-compressed.tif"
       val path = geoTiffPath(s"$n")
-      val raster = GeoTiffReader.readSingleBand(path).raster
+      val raster = SingleBandGeoTiff.compressed(path).raster
 
       val points = mutable.ListBuffer[Point]()
       val re = raster.rasterExtent
@@ -82,13 +82,12 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
           points += PointFeature[Int](Point(x, y), year)
         }
       }
-      println(points.size)
     }
 
     it("should find min and max of a large sparse raster, lzw compressed") {
       val n = "wm_depth.tif"
       val path = geoTiffPath(s"$n")
-      val tile = GeoTiffReader.readSingleBand(path).tile
+      val tile = SingleBandGeoTiff.compressed(path).tile
 
       val (min, max) = tile.findMinMaxDouble
 
@@ -116,7 +115,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -142,7 +141,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -168,7 +167,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
          println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -194,7 +193,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -220,7 +219,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -246,7 +245,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -272,7 +271,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }
@@ -298,7 +297,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SingleBandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SingleBandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
 
           assertEqual(tile, expected)
         }

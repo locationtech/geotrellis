@@ -23,11 +23,14 @@ object SingleBandGeoTiff {
   def apply(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = 
     GeoTiffReader.readSingleBand(bytes, decompress)
 
-  def decompressed(path: String): SingleBandGeoTiff =
-    GeoTiffReader.readSingleBand(path, true)
+  def compressed(path: String): SingleBandGeoTiff =
+    GeoTiffReader.readSingleBand(path, false)
 
-  def decompressed(bytes: Array[Byte]): SingleBandGeoTiff =
-    GeoTiffReader.readSingleBand(bytes, true)
+  def compressed(bytes: Array[Byte]): SingleBandGeoTiff =
+    GeoTiffReader.readSingleBand(bytes, false)
+
+  implicit def singleBandGeoTiffToTile(sbg: SingleBandGeoTiff): Tile =
+    sbg.tile
 
   implicit def singleBandGeoTiffToRaster(sbg: SingleBandGeoTiff): Raster =
     sbg.raster

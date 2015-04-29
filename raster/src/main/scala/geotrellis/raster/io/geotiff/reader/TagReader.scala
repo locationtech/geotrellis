@@ -291,7 +291,7 @@ object TagReader {
           YCbCrTags._yCbCrPositioning set(Some(shorts(0)))
         case BitsPerSampleTag => tags &|->
           Tags._basicTags ^|->
-          BasicTags._bitsPerSample set(Some(shorts))
+          BasicTags._bitsPerSample set(shorts(0))
         case StripOffsetsTag => tags &|->
           Tags._basicTags ^|->
           BasicTags._stripOffsets set(Some(shorts))
@@ -325,7 +325,7 @@ object TagReader {
           CmykTags._dotRange set(Some(shorts))
         case SampleFormatTag => tags &|->
           Tags._dataSampleFormatTags ^|->
-          DataSampleFormatTags._sampleFormat set(shorts)
+          DataSampleFormatTags._sampleFormat set(shorts(0))
         case TransferRangeTag => tags &|->
           Tags._colimetryTags ^|->
           ColimetryTags._transferRange set(Some(shorts))

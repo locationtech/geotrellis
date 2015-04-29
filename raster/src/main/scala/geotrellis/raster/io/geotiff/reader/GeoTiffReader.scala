@@ -38,13 +38,13 @@ class GeoTiffReaderLimitationException(msg: String)
 object GeoTiffReader {
 
   def readSingleBand(path: String): SingleBandGeoTiff =
-    readSingleBand(path, false)
+    readSingleBand(path, true)
 
   def readSingleBand(path: String, decompress: Boolean): SingleBandGeoTiff = 
     readSingleBand(Filesystem.slurp(path), decompress)
 
   def readSingleBand(bytes: Array[Byte]): SingleBandGeoTiff =
-    readSingleBand(bytes, false)
+    readSingleBand(bytes, true)
 
   def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
