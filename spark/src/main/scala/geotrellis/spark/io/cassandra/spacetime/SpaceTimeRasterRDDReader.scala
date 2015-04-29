@@ -85,6 +85,6 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
         }       
     }
 
-    rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
+    rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]]
   }
 }

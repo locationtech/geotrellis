@@ -40,7 +40,6 @@ trait TileReader[Key] {
         results.one.getBytes("value")
       }
     
-    // TODO: Figure out deserialization error that forces unwrapping and rewrapping the ByteBuffer
     val byteArray = new Array[Byte](value.remaining)
     value.get(byteArray, 0, byteArray.length)
     

@@ -41,6 +41,6 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
       rdds += rdd.where("zoom = ?", layerId.zoom)
     }
     
-    rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]] // Coalesce afterwards?
+    rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]]
   }
 }
