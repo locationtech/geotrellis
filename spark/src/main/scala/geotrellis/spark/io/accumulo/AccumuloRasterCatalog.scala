@@ -14,6 +14,8 @@ import com.typesafe.config.{ConfigFactory,Config}
 import scala.reflect._
 import spray.json._
 
+import scala.math.Ordering.Implicits._
+
 object AccumuloRasterCatalog {
   def apply()(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog = {
     /** The value is specified in reference.conf, applications can overwrite it in their application.conf */
@@ -45,8 +47,24 @@ class AccumuloRasterCatalog(
         implicitly[RasterRDDReader[K]].read(instance, metaData, keyBounds, index)(layerId, filterSet)
       }
     }
-  
   def writer[K: SpatialComponent: RasterRDDWriter: JsonFormat: Ordering: ClassTag](keyIndexMethod: KeyIndexMethod[K], tileTable: String): Writer[LayerId, RasterRDD[K]] = {
+
+    def keyMinMax(rdd: RasterRDD[K]): (K, K) = {
+        val initialKey: K = rdd.map(_._1).first
+        val aggregateInit = (initialKey, initialKey)
+        def merger(t: (K, K), v: K): (K, K) = {
+          if (t._1 > v) (v, t._2)
+          else if (t._2 < v) (t._1, v)
+          else t
+        }
+
+        def combiner(t1: (K, K), t2: (K, K)): (K, K) = {
+          (t1._1 min t2._1, t1._2 max t2._2)
+        }
+
+        rdd.map(_._1).aggregate(aggregateInit)(merger, combiner)
+    }
+
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
@@ -60,8 +78,7 @@ class AccumuloRasterCatalog(
             tileTable = tileTable
           )
 
-        val minKey = rdd.map(_._1).min
-        val maxKey = rdd.map(_._1).max
+        val (minKey, maxKey) = keyMinMax(rdd)
 
         metaDataCatalog.write(layerId, md)
         val keyBounds = KeyBounds(minKey, maxKey)
