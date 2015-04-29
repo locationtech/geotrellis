@@ -15,6 +15,7 @@ import geotrellis.proj4.LatLng
 import geotrellis.spark.testfiles._
 import org.scalatest._
 import org.apache.hadoop.fs.Path
+import com.github.nscala_time.time.Imports._
 
 class HadoopRasterCatalogSpec extends FunSpec
     with Matchers
