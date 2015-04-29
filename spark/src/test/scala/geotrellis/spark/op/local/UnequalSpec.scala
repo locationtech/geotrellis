@@ -22,7 +22,7 @@ import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class UnEqualSpec extends FunSpec
+class UnequalSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
@@ -31,6 +31,9 @@ class UnEqualSpec extends FunSpec
     ifCanRunSpark {
       val inc = IncreasingTestFile
       val ones = AllOnesTestFile
+
+      val onesST = AllOnesSpaceTime
+      val twosST = AllTwosSpaceTime
 
       it("should check unEqual between an integer and a raster") {
         val res = inc !== 1
@@ -41,6 +44,26 @@ class UnEqualSpec extends FunSpec
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
+      it("should check unEqual between an integer and a spacetime raster") {
+        val res1 = onesST !== 1
+
+        rasterShouldBe(
+          res1,
+          0,
+          210
+        )
+
+        val res2 = twosST !== 1
+        rasterShouldBe(
+          res2,
+          1,
+          210
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(onesST, res1)
+        rastersShouldHaveSameIdsAndTileCount(onesST, res2)
       }
 
       it("should check unEqual between a double and a raster") {
@@ -54,6 +77,26 @@ class UnEqualSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
+      it("should check unEqual between an double and a spacetime raster") {
+        val res1 = onesST !== 1.0
+
+        rasterShouldBe(
+          res1,
+          0,
+          210
+        )
+
+        val res2 = twosST !== 1
+        rasterShouldBe(
+          res2,
+          1,
+          210
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(onesST, res1)
+        rastersShouldHaveSameIdsAndTileCount(onesST, res2)
+      }
+
       it("should check unEqual between a raster and an integer") {
         val res = 1 !==: inc
 
@@ -63,6 +106,26 @@ class UnEqualSpec extends FunSpec
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
+      it("should check unEqual between an spacetime raster and an integer") {
+        val res1 = 1 !==: onesST
+
+        rasterShouldBe(
+          res1,
+          0,
+          210
+        )
+
+        val res2 = twosST !== 1
+        rasterShouldBe(
+          res2,
+          1,
+          210
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(onesST, res1)
+        rastersShouldHaveSameIdsAndTileCount(onesST, res2)
       }
 
       it("should check unEqual between a raster and a double") {
@@ -76,6 +139,26 @@ class UnEqualSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
+      it("should check unEqual between a spacetime raster and a double") {
+        val res1 = 1.0 !==: onesST
+
+        rasterShouldBe(
+          res1,
+          0,
+          210
+        )
+
+        val res2 = twosST !== 1
+        rasterShouldBe(
+          res2,
+          1,
+          210
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(onesST, res1)
+        rastersShouldHaveSameIdsAndTileCount(onesST, res2)
+      }
+
       it("should check unEqual between two rasters") {
         val res = inc !== ones
 
@@ -85,6 +168,26 @@ class UnEqualSpec extends FunSpec
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
+      it("should check unEqual between two spacetime rasters") {
+        val res1 = onesST !== onesST
+
+        rasterShouldBe(
+          res1,
+          0,
+          210
+        )
+
+        val res2 = onesST !== twosST
+        rasterShouldBe(
+          res2,
+          1,
+          210
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(onesST, res1)
+        rastersShouldHaveSameIdsAndTileCount(onesST, res2)
       }
     }
   }
