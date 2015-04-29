@@ -2,6 +2,7 @@ package geotrellis.spark.io.accumulo.spatial
 
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
+import geotrellis.spark.io.accumulo.utils._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
 import geotrellis.raster._
@@ -23,7 +24,10 @@ import spire.syntax.cfor._
 
 import scala.collection.JavaConversions._
 
+
 object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
+
+  val kMinMax = AccumuloUtils.keyMinMax[SpatialKey](_)
 
   def getSplits(
     layerId: LayerId,
