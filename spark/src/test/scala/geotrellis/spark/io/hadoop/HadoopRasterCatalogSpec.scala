@@ -149,8 +149,8 @@ class HadoopRasterCatalogSpec extends FunSpec
           val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
           val (_, expected) = unfiltered.collect.filter { case (k, _) => k == key }.head
 
-
-          val actual = catalog.tileReader[SpatialKey](LayerId("ones", 10)).read(key)
+          val getTile = catalog.readTile[SpatialKey](LayerId("ones", 10))
+          val actual = getTile(key)
 
           tilesEqual(actual, expected)
         }

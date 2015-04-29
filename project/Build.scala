@@ -388,7 +388,7 @@ object GeotrellisBuild extends Build {
           scalatest % "test"
         ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"        
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       ),
       initialCommands in console :=
         """
