@@ -70,6 +70,28 @@ object GeoTiffReader {
 
     val decompressor = Decompressor(tiffTags, byteBuffer.order)
 
+    val layout: StorageMethod = 
+      if(tiffTags.hasStripStorage) {
+        val rowsPerStrip: Int =
+          (tiffTags
+            &|-> Tags._basicTags
+            ^|-> BasicTags._rowsPerStrip get).toInt
+
+        Striped(rowsPerStrip)
+      } else {
+        val blockCols =
+          (tiffTags
+            &|-> Tags._tileTags
+            ^|-> TileTags._tileWidth get).get.toInt
+
+        val blockRows =
+          (tiffTags
+            &|-> Tags._tileTags
+            ^|-> TileTags._tileLength get).get.toInt
+
+        Tiled(blockCols, blockRows)
+      }
+
     val compressedBytes: Array[Array[Byte]] = {
       def readSections(offsets: Array[Int], byteCounts: Array[Int]): Array[Array[Byte]] = {
         val oldOffset = byteBuffer.position
@@ -86,38 +108,37 @@ object GeoTiffReader {
         result
       }
 
-      def readStrips(tags: Tags): Array[Array[Byte]] = {
-        val stripOffsets = (tags &|->
-          Tags._basicTags ^|->
-          BasicTags._stripOffsets get)
+      layout match {
+        case _: Tiled =>
 
-        val stripByteCounts = (tags &|->
-          Tags._basicTags ^|->
-          BasicTags._stripByteCounts get)
+          val stripOffsets = (tiffTags &|->
+            Tags._basicTags ^|->
+            BasicTags._stripOffsets get)
 
-        readSections(stripOffsets.get, stripByteCounts.get)
+          val stripByteCounts = (tiffTags &|->
+            Tags._basicTags ^|->
+            BasicTags._stripByteCounts get)
+
+          readSections(stripOffsets.get, stripByteCounts.get)
+
+        case _: Striped =>
+          val tileOffsets = (tiffTags &|->
+            Tags._tileTags ^|->
+            TileTags._tileOffsets get)
+
+          val tileByteCounts = (tiffTags &|->
+            Tags._tileTags ^|->
+            TileTags._tileByteCounts get)
+
+          readSections(tileOffsets.get, tileByteCounts.get)
       }
-
-      def readTiles(tags: Tags) = {
-        val tileOffsets = (tags &|->
-          Tags._tileTags ^|->
-          TileTags._tileOffsets get)
-
-        val tileByteCounts = (tags &|->
-          Tags._tileTags ^|->
-          TileTags._tileByteCounts get)
-
-        readSections(tileOffsets.get, tileByteCounts.get)
-      }
-
-      if (tiffTags.hasStripStorage) 
-        readStrips(tiffTags)
-      else 
-        readTiles(tiffTags)
-
     }
+
+    val cols = tiffTags.cols
+    val rows = tiffTags.rows
+    val bandType = tiffTags.bandType
     
-    val layout = GeoTiffSegmentLayout(tiffTags)
+    val segmentLayout = GeoTiffSegmentLayout(cols, rows, layout, bandType)
     val noDataValue = 
       (tiffTags
         &|-> Tags._geoTiffTags
@@ -132,14 +153,13 @@ object GeoTiffReader {
       }
 
     val extent = tiffTags.extent
-    val bandType = tiffTags.bandType
     val crs = tiffTags.crs
     val tags = tiffTags.tags
     val bandTags = tiffTags.bandTags(0)
 
     val geoTiffTile =
-      GeoTiffTile(bandType, compressedBytes, decompressor, layout, compression, noDataValue)
+      GeoTiffTile(bandType, compressedBytes, decompressor, segmentLayout, compression, noDataValue)
 
-    SingleBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, extent, crs, tags, bandTags)
+    SingleBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, extent, crs, tags, bandTags, geoTiffTile.geoTiffOptions)
   }
 }

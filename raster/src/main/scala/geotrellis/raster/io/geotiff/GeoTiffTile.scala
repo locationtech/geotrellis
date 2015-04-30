@@ -45,14 +45,14 @@ object GeoTiffTile {
   def apply(tile: Tile, options: GeoTiffOptions): GeoTiffTile = {
     val bandType = BandType.forCellType(tile.cellType)
 
-    val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.layout, bandType)
+    val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, bandType)
 
     val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
     val compressor = options.compression.createCompressor(segmentCount)
 
     val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
     val segmentTiles = 
-      options.layout match {
+      options.storageMethod match {
         case _: Tiled => CompositeTile.split(tile, segmentLayout.tileLayout)
         case _: Striped => CompositeTile.split(tile, segmentLayout.tileLayout, extend = false)
       }
@@ -74,6 +74,11 @@ abstract class GeoTiffTile(
 ) extends Tile {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
+
+  def storageMethod: StorageMethod = 
+    segmentLayout.storageMethod
+  def geoTiffOptions: GeoTiffOptions =
+    GeoTiffOptions(storageMethod, compression)
 
   def convert(newCellType: CellType): Tile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)

@@ -17,7 +17,7 @@ package object geotiff {
     def toGeoTiffTile(compression: Compression): GeoTiffTile =
       GeoTiffTile(tile, GeoTiffOptions(compression))
 
-    def toGeoTiffTile(layout: GeoTiffLayout): GeoTiffTile =
+    def toGeoTiffTile(layout: StorageMethod): GeoTiffTile =
       GeoTiffTile(tile, GeoTiffOptions(layout))
   }
 }

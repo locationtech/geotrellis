@@ -3,16 +3,16 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster.io.geotiff.compression._
 
 case class GeoTiffOptions(
-  layout: GeoTiffLayout = GeoTiffOptions.DEFAULT.layout,
+  storageMethod: StorageMethod = GeoTiffOptions.DEFAULT.storageMethod,
   compression: Compression = GeoTiffOptions.DEFAULT.compression
 )
 
 object GeoTiffOptions {
   val DEFAULT = GeoTiffOptions(Striped, NoCompression)
 
-  def apply(layout: GeoTiffLayout): GeoTiffOptions =
-    GeoTiffOptions(layout, DEFAULT.compression)
+  def apply(storageMethod: StorageMethod): GeoTiffOptions =
+    GeoTiffOptions(storageMethod, DEFAULT.compression)
 
   def apply(compression: Compression): GeoTiffOptions =
-    GeoTiffOptions(DEFAULT.layout, compression)
+    GeoTiffOptions(DEFAULT.storageMethod, compression)
 }

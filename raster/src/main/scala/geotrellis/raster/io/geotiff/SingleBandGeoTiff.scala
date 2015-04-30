@@ -5,12 +5,35 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-case class SingleBandGeoTiff(tile: Tile, extent: Extent, crs: CRS, tags: Map[String, String], bandTags: Map[String, String]) {
+class SingleBandGeoTiff(
+  val tile: Tile, 
+  val extent: Extent, 
+  val crs: CRS, 
+  val tags: Map[String, String], 
+  val bandTags: Map[String, String], 
+  options: GeoTiffOptions
+) extends GeoTiff {
   def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
   def raster: Raster = Raster(tile, extent)
+
+  def geoTiffTile =
+    tile match {
+      case gtt: GeoTiffTile => gtt
+      case _ => tile.toGeoTiffTile(options)
+    }
 }
 
 object SingleBandGeoTiff {
+
+  def apply(
+    tile: Tile,
+    extent: Extent,
+    crs: CRS,
+    tags: Map[String, String],
+    bandTags: Map[String, String],
+    options: GeoTiffOptions
+  ): SingleBandGeoTiff =
+    new SingleBandGeoTiff(tile, extent, crs, tags, bandTags, options)
   
   /** Read a single-band GeoTIFF file from the file at the given path.
     * The GeoTIFF will be fully uncompressed and held in memory.

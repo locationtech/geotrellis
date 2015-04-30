@@ -1,9 +1,6 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.TileLayout
-import geotrellis.raster.io.geotiff.tags._
-
-import monocle.syntax._
 
 trait GridIndexTransform {
   def segmentCols: Int
@@ -23,6 +20,12 @@ trait GridIndexTransform {
 }
 
 case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: TileLayout, isTiled: Boolean) {
+  def storageMethod: StorageMethod =
+    if(isStriped) 
+      Striped(tileLayout.tileRows)
+    else
+      Tiled(tileLayout.tileCols, tileLayout.tileRows)
+
   def isStriped: Boolean = tileLayout.layoutCols == 1
 
   def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
@@ -106,40 +109,8 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
 }
 
 object GeoTiffSegmentLayout {
-  def apply(tags: Tags): GeoTiffSegmentLayout = {
-    val totalCols = tags.cols
-    val totalRows = tags.rows
-
-    val tileLayout =
-      // If tileWidth tag is present, we have a tiled geotiff.
-      (tags
-        &|-> Tags._tileTags
-        ^|-> TileTags._tileWidth get) match {
-        case Some(tileWidth) =>
-          val tileHeight =
-            (tags
-              &|-> Tags._tileTags
-              ^|-> TileTags._tileLength get).get
-          TileLayout(
-            math.ceil(totalCols.toDouble / tileWidth).toInt, 
-            math.ceil(totalRows.toDouble / tileHeight).toInt, 
-            tileWidth.toInt, 
-            tileHeight.toInt)
-        case None =>
-          // Striped GeoTiff
-          val rowsPerStrip: Int =
-            (tags
-              &|-> Tags._basicTags
-              ^|-> BasicTags._rowsPerStrip get).toInt
-
-          val layoutRows = math.ceil(totalRows.toDouble / rowsPerStrip).toInt
-          TileLayout(1, layoutRows, totalCols, rowsPerStrip)
-      }
-    new GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, !tags.hasStripStorage)
-  }
-
-  def apply(totalCols: Int, totalRows: Int, layout: GeoTiffLayout, bandType: BandType): GeoTiffSegmentLayout = {
-    layout match {
+  def apply(totalCols: Int, totalRows: Int, storageMethod: StorageMethod, bandType: BandType): GeoTiffSegmentLayout = {
+    storageMethod match {
       case Tiled(blockCols, blockRows) =>
         val layoutCols = math.ceil(totalCols.toDouble / blockCols).toInt
         val layoutRows = math.ceil(totalRows.toDouble / blockRows).toInt

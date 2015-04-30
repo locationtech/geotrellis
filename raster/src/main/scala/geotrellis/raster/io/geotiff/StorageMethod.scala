@@ -2,18 +2,18 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 
-abstract sealed class GeoTiffLayout
+abstract sealed class StorageMethod
 
-case class Tiled(blockCols: Int = 256, blockRows: Int = 256) extends GeoTiffLayout
+case class Tiled(blockCols: Int = 256, blockRows: Int = 256) extends StorageMethod
 
 // Trait used only for implicit conversion of object
-private[geotiff] trait TiledGeoTiffLayout
+private[geotiff] trait TiledStorageMethod
 
-object Tiled extends TiledGeoTiffLayout {
-  implicit def objectToLayout(t: TiledGeoTiffLayout): Tiled = Tiled()
+object Tiled extends TiledStorageMethod {
+  implicit def objectToStorageMethod(t: TiledStorageMethod): Tiled = Tiled()
 }
 
-class Striped(rowsPerStrip: Option[Int]) extends GeoTiffLayout {
+class Striped(rowsPerStrip: Option[Int]) extends StorageMethod {
   def rowsPerStrip(rows: Int, bandType: BandType): Int =
     rowsPerStrip match {
       case Some(ris) => ris
@@ -27,11 +27,11 @@ class Striped(rowsPerStrip: Option[Int]) extends GeoTiffLayout {
 }
 
 // Trait used only for implicit conversion of object
-private[geotiff] trait StripedGeoTiffLayout
+private[geotiff] trait StripedStorageMethod
 
-object Striped extends StripedGeoTiffLayout {
+object Striped extends StripedStorageMethod {
   def apply(rowsPerStrip: Int): Striped = new Striped(Some(rowsPerStrip))
   def apply(): Striped = new Striped(None)
 
-  implicit def objectToLayout(s: StripedGeoTiffLayout): Striped = Striped()
+  implicit def objectToStorageMethod(s: StripedStorageMethod): Striped = Striped()
 }
