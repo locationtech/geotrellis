@@ -25,7 +25,7 @@ import scala.collection.mutable
 
 import spire.syntax.cfor._
 
-object ZLibCompression extends Compression {
+object DeflateCompression extends Compression {
   def createCompressor(segmentCount: Int): Compressor = 
     new Compressor {
       private val segmentSizes = Array.ofDim[Int](segmentCount)
@@ -43,21 +43,21 @@ object ZLibCompression extends Compression {
       }
 
       def createDecompressor(): Decompressor =
-        new ZLibDecompressor(segmentSizes)
+        new DeflateDecompressor(segmentSizes)
     }
 
-  def createDecompressor(tags: Tags): ZLibDecompressor = {
+  def createDecompressor(tags: Tags): DeflateDecompressor = {
     val segmentCount = tags.segmentCount
     val segmentSizes = Array.ofDim[Int](segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { i =>
       segmentSizes(i) = tags.imageSegmentByteSize(i).toInt
     }
 
-    new ZLibDecompressor(segmentSizes)
+    new DeflateDecompressor(segmentSizes)
   }
 }
 
-class ZLibDecompressor(segmentSizes: Array[Int]) extends Decompressor {
+class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def compress(segment: Array[Byte]): Array[Byte] = {
     val deflater = new Deflater()
     val tmp = segment.clone

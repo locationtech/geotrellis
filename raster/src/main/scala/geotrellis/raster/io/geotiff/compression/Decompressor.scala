@@ -62,7 +62,7 @@ object Decompressor {
       case LZWCoded => 
         checkPredictor(LZWDecompressor(tags))
       case ZLibCoded | PkZipCoded => 
-        checkPredictor(ZLibCompression.createDecompressor(tags))
+        checkPredictor(DeflateCompression.createDecompressor(tags))
       case PackBitsCoded => 
         checkEndian(PackBitsDecompressor(tags))
 

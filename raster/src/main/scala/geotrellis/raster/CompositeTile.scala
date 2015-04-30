@@ -23,35 +23,35 @@ import spire.syntax.cfor._
 import scala.collection.mutable
 
 object CompositeTile {
-  def apply(r: Tile, tileLayout: TileLayout): CompositeTile =
-    r match {
-      case tr: CompositeTile =>
-        if(tileLayout != tr.tileLayout) {
-          throw new GeoAttrsError("This raster is a tile raster with a different layout than" +
+  def apply(tile: Tile, tileLayout: TileLayout): CompositeTile =
+    tile match {
+      case ct: CompositeTile =>
+        if(tileLayout != ct.tileLayout) {
+          throw new GeoAttrsError("This tile is a composite tile with a different layout than" +
                                   " the argument tile layout." +  
-                                 s" $tileLayout does not match ${tr.tileLayout}")
+                                 s" $tileLayout does not match ${ct.tileLayout}")
         }
-        tr
+        ct
       case _ =>
-        wrap(r, tileLayout)
+        wrap(tile, tileLayout)
     }
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
     * 
-    * @param        r              Tile to wrap.
+    * @param        tile              Tile to wrap.
     * @param        tileCols       Number of tile columns of the resulting 
     *                              CompositeTile.
     * @param        tileRows       Number of tile columns of the resulting 
     *                              CompositeTile.
     */ 
-  def wrap(r: Tile, tileCols: Int, tileRows: Int): CompositeTile = {
-    val tileLayout = TileLayout(tileCols, tileRows, ((r.cols - 1) / tileCols) + 1, ((r.rows - 1) / tileRows) + 1)
-    wrap(r, tileLayout, true)
+  def wrap(tile: Tile, tileCols: Int, tileRows: Int): CompositeTile = {
+    val tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)
+    wrap(tile, tileLayout, true)
   }
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
     * 
-    * @param        r              Tile to wrap.
+    * @param        tile           Tile to wrap.
     * @param        tileCols       Number of tile columns of the resulting 
     *                              CompositeTile.
     * @param        tileRows       Number of tile columns of the resulting 
@@ -61,23 +61,23 @@ object CompositeTile {
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
     */ 
-  def wrap(r: Tile, tileCols: Int, tileRows: Int, cropped: Boolean): CompositeTile = {
-    val tileLayout = TileLayout(tileCols, tileRows, ((r.cols - 1) / tileCols) + 1, ((r.rows - 1) / tileRows) + 1)
-    wrap(r, tileLayout, cropped)
+  def wrap(tile: Tile, tileCols: Int, tileRows: Int, cropped: Boolean): CompositeTile = {
+    val tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)
+    wrap(tile, tileLayout, cropped)
   }
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
     * 
-    * @param        r              Tile to wrap.
+    * @param        tile           Tile to wrap.
     * @param        tileLayout     TileLayout of the resulting 
     *                              CompositeTile.
     */ 
-  def wrap(r: Tile, tileLayout: TileLayout): CompositeTile =
-    CompositeTile(split(r, tileLayout, true), tileLayout)
+  def wrap(tile: Tile, tileLayout: TileLayout): CompositeTile =
+    CompositeTile(split(tile, tileLayout, true), tileLayout)
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
     * 
-    * @param        r              Tile to wrap.
+    * @param        tile           Tile to wrap.
     * @param        tileLayout     TileLayout of the resulting 
     *                              CompositeTile.
     * @param        cropped        Set this flag to false if you
@@ -85,35 +85,51 @@ object CompositeTile {
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
     */ 
-  def wrap(r: Tile, tileLayout: TileLayout, cropped: Boolean): CompositeTile =
-    CompositeTile(split(r, tileLayout, cropped), tileLayout)
+  def wrap(tile: Tile, tileLayout: TileLayout, cropped: Boolean): CompositeTile =
+    CompositeTile(split(tile, tileLayout, cropped), tileLayout)
 
   /** Splits a raster into a CompositeTile into tiles.
     * 
-    * @param        r              Tile to split.
+    * @param        tile           Tile to split.
+    * 
     * @param        tileLayout     TileLayout defining the tiles to be 
     *                              generated.
+    * 
     * @param        cropped        Set this flag to false if you
     *                              want the tiles to be ArrayTiles,
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
+    * 
+    * @param        extend         Set this flag to false if you do not want the
+    *                              resulting tiles to extend past the input Tile's
+    *                              cols and rows based on the input tileLayout. For
+    *                              instance, if the tile layout has tileRows = 50,
+    *                              the input raster has rows = 90, and extend is false,
+    *                              the tiles of the last row will have rows = 40 instead of rows = 50.
     */ 
-  def split(r: Tile, tileLayout: TileLayout, cropped: Boolean = true): Seq[Tile] = {
-    val pCols = tileLayout.tileCols
-    val pRows = tileLayout.tileRows
+  def split(tile: Tile, tileLayout: TileLayout, cropped: Boolean = true, extend: Boolean = true): Array[Tile] = {
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
 
-    val tiles = mutable.ListBuffer[Tile]()
-    cfor(0)(_ < tileLayout.layoutRows, _ + 1) { trow =>
-      cfor(0)(_ < tileLayout.layoutCols, _ + 1) { tcol =>
-        val firstCol = tcol * pCols
-        val lastCol = firstCol + pCols - 1
-        val firstRow = trow * pRows
-        val lastRow = firstRow + pRows - 1
-        val gb = GridBounds(firstCol, firstRow, lastCol, lastRow)
-        tiles += {
-          if(cropped) CroppedTile(r, gb)
-          else CroppedTile(r, gb).toArrayTile
+    val tiles = Array.ofDim[Tile](tileLayout.layoutCols * tileLayout.layoutRows)
+    cfor(0)(_ < tileLayout.layoutRows, _ + 1) { layoutRow =>
+      cfor(0)(_ < tileLayout.layoutCols, _ + 1) { layoutCol =>
+        val firstCol = layoutCol * tileCols
+        val lastCol = {
+          val x = firstCol + tileCols - 1
+          if(!extend && x > tile.cols - 1) tile.cols - 1
+          else x
         }
+        val firstRow = layoutRow * tileRows
+        val lastRow = {
+          val x = firstRow + tileRows - 1
+          if(!extend && x > tile.rows - 1) tile.rows - 1
+          else x
+        }
+        val gb = GridBounds(firstCol, firstRow, lastCol, lastRow)
+        tiles(layoutRow * tileLayout.layoutCols + layoutCol) =
+          if(cropped) CroppedTile(tile, gb)
+          else CroppedTile(tile, gb).toArrayTile
       }
     }
     return tiles

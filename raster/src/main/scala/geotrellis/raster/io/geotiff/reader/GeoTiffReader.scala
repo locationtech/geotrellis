@@ -128,7 +128,7 @@ object GeoTiffReader {
     val compression =
       decompressor match {
         case NoCompression => NoCompression
-        case _ => ZLibCompression
+        case _ => DeflateCompression
       }
 
     val extent = tiffTags.extent

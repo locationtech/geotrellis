@@ -9,11 +9,16 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-// Left to implement for Tile:
-//   convert?
-//    def resample(source: geotrellis.vector.Extent,target: geotrellis.raster.RasterExtent,method: geotrellis.raster.interpolation.InterpolationMethod): geotrellis.raster.Tile = ???
-
 object GeoTiffTile {
+  def apply(
+    bandType: BandType,
+    compressedBytes: Array[Array[Byte]],
+    decompressor: Decompressor,
+    segmentLayout: GeoTiffSegmentLayout,
+    compression: Compression
+  ): GeoTiffTile =
+    apply(bandType, compressedBytes, decompressor, segmentLayout, compression, None)
+
   def apply(
     bandType: BandType,
     compressedBytes: Array[Array[Byte]],
@@ -32,6 +37,33 @@ object GeoTiffTile {
       case Float32BandType => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case Float64BandType => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     }
+
+  /** Convert a tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. */
+  def apply(tile: Tile): GeoTiffTile =
+    apply(tile, GeoTiffOptions.DEFAULT)
+
+  def apply(tile: Tile, options: GeoTiffOptions): GeoTiffTile = {
+    val bandType = BandType.forCellType(tile.cellType)
+
+    val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.layout, bandType)
+
+    val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
+    val compressor = options.compression.createCompressor(segmentCount)
+
+    val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
+    val segmentTiles = 
+      options.layout match {
+        case _: Tiled => CompositeTile.split(tile, segmentLayout.tileLayout)
+        case _: Striped => CompositeTile.split(tile, segmentLayout.tileLayout, extend = false)
+      }
+
+    cfor(0)(_ < segmentCount, _ + 1) { i =>
+      val bytes = segmentTiles(i).toBytes
+      compressedBytes(i) = compressor.compress(bytes, i)
+    }
+
+    apply(bandType, compressedBytes, compressor.createDecompressor, segmentLayout, options.compression)
+  }
 }
 
 abstract class GeoTiffTile(
@@ -297,4 +329,3 @@ abstract class GeoTiffTile(
   def toBytes(): Array[Byte] =
     toArrayTile.toBytes
 }
-

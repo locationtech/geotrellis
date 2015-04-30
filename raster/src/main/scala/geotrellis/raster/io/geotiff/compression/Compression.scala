@@ -10,4 +10,3 @@ object NoCompression extends Compression with Compressor with Decompressor {
   def compress(bytes: Array[Byte], sectionIndex: Int): Array[Byte] = { bytes }
   def decompress(bytes: Array[Byte], sectionIndex: Int): Array[Byte] = { bytes }
 }
-

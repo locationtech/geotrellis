@@ -132,8 +132,24 @@ object GeoTiffSegmentLayout {
               &|-> Tags._basicTags
               ^|-> BasicTags._rowsPerStrip get).toInt
 
-          TileLayout(1, math.ceil(totalRows.toDouble / rowsPerStrip).toInt, totalCols, rowsPerStrip)
+          val layoutRows = math.ceil(totalRows.toDouble / rowsPerStrip).toInt
+          TileLayout(1, layoutRows, totalCols, rowsPerStrip)
       }
     new GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, !tags.hasStripStorage)
+  }
+
+  def apply(totalCols: Int, totalRows: Int, layout: GeoTiffLayout, bandType: BandType): GeoTiffSegmentLayout = {
+    layout match {
+      case Tiled(blockCols, blockRows) =>
+        val layoutCols = math.ceil(totalCols.toDouble / blockCols).toInt
+        val layoutRows = math.ceil(totalRows.toDouble / blockRows).toInt
+        val tileLayout = TileLayout(layoutCols, layoutRows, blockCols, blockRows)
+        GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, false)
+      case s: Striped =>
+        val rowsPerStrip = s.rowsPerStrip(totalRows, bandType)
+        val layoutRows = math.ceil(totalRows.toDouble / rowsPerStrip).toInt
+        val tileLayout = TileLayout(1, layoutRows, totalCols, rowsPerStrip)
+        GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, true)
+    }
   }
 }

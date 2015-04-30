@@ -3,7 +3,7 @@ package geotrellis.raster.io.geotiff.compression
 import org.scalatest._
 
 class CompressionSpec extends FunSpec with Matchers {
-  describe("ZLibCompression") {
+  describe("DeflateCompression") {
     it("should decompress and compress to the same things") {
       val segment = """
 the human machine only moves when the tide of every one of us pushes to the outside
@@ -19,7 +19,7 @@ it goes.
 whole lives change
 only the moment remains here
 """.getBytes("UTF-8")
-      val compressor = ZLibCompression.createCompressor(1)
+      val compressor = DeflateCompression.createCompressor(1)
       val compressed = compressor.compress(segment, 0)
       val decompressor = compressor.createDecompressor()
       val decompressed = decompressor.decompress(compressed, 0)
