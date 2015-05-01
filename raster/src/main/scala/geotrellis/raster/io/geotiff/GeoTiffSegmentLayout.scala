@@ -115,12 +115,12 @@ object GeoTiffSegmentLayout {
         val layoutCols = math.ceil(totalCols.toDouble / blockCols).toInt
         val layoutRows = math.ceil(totalRows.toDouble / blockRows).toInt
         val tileLayout = TileLayout(layoutCols, layoutRows, blockCols, blockRows)
-        GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, false)
+        GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, true)
       case s: Striped =>
         val rowsPerStrip = s.rowsPerStrip(totalRows, bandType)
         val layoutRows = math.ceil(totalRows.toDouble / rowsPerStrip).toInt
         val tileLayout = TileLayout(1, layoutRows, totalCols, rowsPerStrip)
-        GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, true)
+        GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, false)
     }
   }
 }

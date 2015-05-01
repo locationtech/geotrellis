@@ -28,11 +28,8 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 object LZWDecompressor {
-  def apply(tags: Tags): LZWDecompressor = {
-    val segmentSize: (Int => Int) = { i => tags.imageSegmentByteSize(i).toInt }
-
-    new LZWDecompressor(segmentSize)
-  }
+  def apply(segmentSizes: Array[Int]): LZWDecompressor =
+    new LZWDecompressor(segmentSizes)
 }
 
 class TokenTableEntry(val firstByte: Byte, val thisByte: Byte, val length: Int, val prev: TokenTableEntry = null) {
@@ -63,7 +60,7 @@ object TokenTable {
 }
 
 
-class LZWDecompressor(segmentSize: Int => Int) extends Decompressor {
+class LZWDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   val tableLimit = 4096
 
   val ClearCode = 256
@@ -76,7 +73,7 @@ class LZWDecompressor(segmentSize: Int => Int) extends Decompressor {
     var tokenTableIndex = 258
 
     var outputArrayIndex = 0
-    val size = segmentSize(segmentIndex)
+    val size = segmentSizes(segmentIndex)
     val outputArray = Array.ofDim[Byte](size)
 
     var threshold = 9

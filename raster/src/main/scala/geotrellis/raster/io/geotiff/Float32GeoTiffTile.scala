@@ -10,6 +10,8 @@ class Float32GeoTiffTile(compressedBytes: Array[Array[Byte]],
   compression: Compression,
   noDataValue: Option[Double]
 ) extends GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression) {
+  val bandType = Float32BandType
+
   // Cached last segment
   private var _lastSegment: Float32GeoTiffSegment = null
   private var _lastSegmentIndex: Int = -1

@@ -6,17 +6,17 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
 class SingleBandGeoTiff(
-  val tile: Tile, 
-  val extent: Extent, 
-  val crs: CRS, 
-  val tags: Map[String, String], 
-  val bandTags: Map[String, String], 
+  val tile: Tile,
+  val extent: Extent,
+  val crs: CRS,
+  val tags: Map[String, String],
+  val bandTags: Map[String, String],
   options: GeoTiffOptions
 ) extends GeoTiff {
   def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
   def raster: Raster = Raster(tile, extent)
 
-  def geoTiffTile =
+  def writable =
     tile match {
       case gtt: GeoTiffTile => gtt
       case _ => tile.toGeoTiffTile(options)
@@ -24,6 +24,9 @@ class SingleBandGeoTiff(
 }
 
 object SingleBandGeoTiff {
+
+  def unapply(sbg: SingleBandGeoTiff): Option[(Tile, Extent, CRS, Map[String, String], Map[String, String])] =
+    Some((sbg.tile, sbg.extent, sbg.crs, sbg.tags, sbg.bandTags))
 
   def apply(
     tile: Tile,

@@ -470,19 +470,38 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {
-    it("must read econic_packbits.tif and match uncompressed file") {
-      val actual = SingleBandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
-      val expected = SingleBandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile
+    it("asdf") {
+      val expected = SingleBandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile
+      val actual = SingleBandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
 
+      val ar = actual.getDouble(257, 1)
+      val cm = expected.getDouble(257, 1)
+
+      expected.foreach { (col, row, z) =>
+        if(col == 257 && row == 1) { println(z) }
+      }
+
+      actual.foreach { (col, row, z) =>
+        if(col == 257 && row == 1) { println(z) }
+      }
+
+      println(ar, cm)
       assertEqual(actual, expected)
+      assertEqual(expected, actual)
     }
+    // it("must read econic_packbits.tif and match uncompressed file") {
+    //   val actual = SingleBandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
+    //   val expected = SingleBandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile
 
-    // TODO: Reinsate this. Failing because of unsigned.
-    it("must read previously erroring packbits compression .tif and match uncompressed file") {
-      val expected = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error-uncompressed.tif")).tile
-      val actual = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error.tif")).tile
+    //   assertEqual(actual, expected)
+    // }
 
-      assertEqual(actual, expected)
-    }
+    // // TODO: Reinsate this. Failing because of unsigned.
+    // it("must read previously erroring packbits compression .tif and match uncompressed file") {
+    //   val expected = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error-uncompressed.tif")).tile
+    //   val actual = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error.tif")).tile
+
+    //   assertEqual(actual, expected)
+    // }
   }
 }

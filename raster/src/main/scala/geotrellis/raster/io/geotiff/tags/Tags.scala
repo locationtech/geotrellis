@@ -38,13 +38,29 @@ case class Tags(
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
 ) {
 
-  def compression = (this &|->
-    Tags._basicTags ^|->
-    BasicTags._compression get)
+  def compression = 
+    (this 
+      &|-> Tags._basicTags 
+      ^|-> BasicTags._compression get)
 
-  def hasStripStorage(): Boolean = (this &|->
-    Tags._tileTags ^|->
-    TileTags._tileWidth get).isEmpty
+  def hasStripStorage(): Boolean = 
+    (this 
+      &|-> Tags._tileTags
+      ^|-> TileTags._tileWidth get).isEmpty
+
+  def hasPixelInterleave(): Boolean =
+    (this
+      &|-> Tags._nonBasicTags
+      ^|-> NonBasicTags._planarConfiguration get) match {
+      case Some(i) if i == 2 =>
+        false
+      case Some(i) if i == 1 =>
+        true
+      case None =>
+        true
+      case Some(i) =>
+          throw new MalformedGeoTiffException(s"Bad PlanarConfiguration tag: $i")
+    }
 
   def rowsInStrip(index: Int): Option[Long] = 
     if (hasStripStorage) {

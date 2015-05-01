@@ -10,6 +10,8 @@ class UInt16GeoTiffTile(compressedBytes: Array[Array[Byte]],
   compression: Compression,
   noDataValue: Option[Double]
 ) extends GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression) {
+  val bandType = UInt16BandType
+
   // Cached last segment
   private var _lastSegment: UInt16GeoTiffSegment = null
   private var _lastSegmentIndex: Int = -1

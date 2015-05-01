@@ -22,6 +22,8 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
+import geotrellis.vector.Extent
+import geotrellis.proj4.CRS
 
 import monocle.syntax._
 
@@ -37,16 +39,105 @@ class GeoTiffReaderLimitationException(msg: String)
 
 object GeoTiffReader {
 
+  /* Read a single band GeoTIFF file.
+   * If there is more than one band in the GeoTiff, read the first band only.
+   */
   def readSingleBand(path: String): SingleBandGeoTiff =
     readSingleBand(path, true)
 
+  /* Read a single band GeoTIFF file.
+   * If there is more than one band in the GeoTiff, read the first band only.
+   */
   def readSingleBand(path: String, decompress: Boolean): SingleBandGeoTiff = 
     readSingleBand(Filesystem.slurp(path), decompress)
 
+  /* Read a single band GeoTIFF file.
+   * If there is more than one band in the GeoTiff, read the first band only.
+   */
   def readSingleBand(bytes: Array[Byte]): SingleBandGeoTiff =
     readSingleBand(bytes, true)
 
+  /* Read a single band GeoTIFF file.
+   * If there is more than one band in the GeoTiff, read the first band only.
+   */
   def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
+    val info = readGeoTiffInfo(bytes, decompress)
+
+    val geoTiffTile =
+      if(info.bandCount == 1) {
+        GeoTiffTile(
+          info.bandType,
+          info.compressedBytes,
+          info.decompressor,
+          info.segmentLayout,
+          info.compression,
+          info.noDataValue
+        )
+      } else {
+        MultiBandGeoTiffTile(
+          info.bandType,
+          info.compressedBytes,
+          info.decompressor,
+          info.segmentLayout,
+          info.compression,
+          info.bandCount,
+          info.hasPixelInterleave,
+          info.noDataValue
+        ).band(0)
+      }
+
+    SingleBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.bandTags, info.options)
+  }
+
+  /* Read a multi band GeoTIFF file.
+   */
+  def readMultiBand(path: String): MultiBandGeoTiff =
+    readMultiBand(path, true)
+
+  /* Read a multi band GeoTIFF file.
+   */
+  def readMultiBand(path: String, decompress: Boolean): MultiBandGeoTiff = 
+    readMultiBand(Filesystem.slurp(path), decompress)
+
+  /* Read a multi band GeoTIFF file.
+   */
+  def readMultiBand(bytes: Array[Byte]): MultiBandGeoTiff =
+    readMultiBand(bytes, true)
+
+  def readMultiBand(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff = {
+    val info = readGeoTiffInfo(bytes, decompress)
+    val tile =
+      MultiBandGeoTiffTile(
+        info.bandType,
+        info.compressedBytes,
+        info.decompressor,
+        info.segmentLayout,
+        info.compression,
+        info.bandCount,
+        info.hasPixelInterleave,
+        info.noDataValue
+      )
+
+    new MultiBandGeoTiff(tile, info.extent, info.crs, info.tags, info.bandTags, info.options)
+  }
+
+  case class GeoTiffInfo(
+    extent: Extent,
+    crs: CRS,
+    tags: Map[String, String],
+    bandTags: Map[String, String],
+    options: GeoTiffOptions,
+    bandType: BandType,
+    compressedBytes: Array[Array[Byte]],
+    decompressor: Decompressor,
+    segmentLayout: GeoTiffSegmentLayout,
+    compression: Compression,
+    bandCount: Int,
+    hasPixelInterleave: Boolean,
+    noDataValue: Option[Double]
+  )
+
+  private def readGeoTiffInfo(bytes: Array[Byte], decompress: Boolean): GeoTiffInfo = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
 
     // Set byteBuffer position
@@ -68,9 +159,11 @@ object GeoTiffReader {
 
     val tiffTags = TagsReader.read(byteBuffer, tagsStartPosition)
 
+    val hasPixelInterleave = tiffTags.hasPixelInterleave
+
     val decompressor = Decompressor(tiffTags, byteBuffer.order)
 
-    val layout: StorageMethod = 
+    val storageMethod: StorageMethod =
       if(tiffTags.hasStripStorage) {
         val rowsPerStrip: Int =
           (tiffTags
@@ -108,8 +201,8 @@ object GeoTiffReader {
         result
       }
 
-      layout match {
-        case _: Tiled =>
+      storageMethod match {
+        case _: Striped =>
 
           val stripOffsets = (tiffTags &|->
             Tags._basicTags ^|->
@@ -121,7 +214,7 @@ object GeoTiffReader {
 
           readSections(stripOffsets.get, stripByteCounts.get)
 
-        case _: Striped =>
+        case _: Tiled =>
           val tileOffsets = (tiffTags &|->
             Tags._tileTags ^|->
             TileTags._tileOffsets get)
@@ -137,8 +230,9 @@ object GeoTiffReader {
     val cols = tiffTags.cols
     val rows = tiffTags.rows
     val bandType = tiffTags.bandType
+    val bandCount = tiffTags.bandCount
     
-    val segmentLayout = GeoTiffSegmentLayout(cols, rows, layout, bandType)
+    val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, bandType)
     val noDataValue = 
       (tiffTags
         &|-> Tags._geoTiffTags
@@ -152,14 +246,20 @@ object GeoTiffReader {
         case _ => DeflateCompression
       }
 
-    val extent = tiffTags.extent
-    val crs = tiffTags.crs
-    val tags = tiffTags.tags
-    val bandTags = tiffTags.bandTags(0)
-
-    val geoTiffTile =
-      GeoTiffTile(bandType, compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-
-    SingleBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, extent, crs, tags, bandTags, geoTiffTile.geoTiffOptions)
+    GeoTiffInfo(
+      tiffTags.extent,
+      tiffTags.crs,
+      tiffTags.tags,
+      tiffTags.bandTags(0),
+      GeoTiffOptions(storageMethod, compression),
+      bandType,
+      compressedBytes,
+      decompressor,
+      segmentLayout,
+      compression,
+      bandCount,
+      hasPixelInterleave,
+      noDataValue
+    )
   }
 }

@@ -46,15 +46,8 @@ object DeflateCompression extends Compression {
         new DeflateDecompressor(segmentSizes)
     }
 
-  def createDecompressor(tags: Tags): DeflateDecompressor = {
-    val segmentCount = tags.segmentCount
-    val segmentSizes = Array.ofDim[Int](segmentCount)
-    cfor(0)(_ < segmentCount, _ + 1) { i =>
-      segmentSizes(i) = tags.imageSegmentByteSize(i).toInt
-    }
-
+  def createDecompressor(segmentSizes: Array[Int]): DeflateDecompressor =
     new DeflateDecompressor(segmentSizes)
-  }
 }
 
 class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {

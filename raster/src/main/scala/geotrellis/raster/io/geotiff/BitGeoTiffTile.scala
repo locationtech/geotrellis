@@ -4,11 +4,14 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
-class BitGeoTiffTile(compressedBytes: Array[Array[Byte]],
+class BitGeoTiffTile(
+  compressedBytes: Array[Array[Byte]],
   decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression
 ) extends GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression) {
+  val bandType = BitBandType
+
   // Cached last segment
   private var _lastSegment: BitGeoTiffSegment = null
   private var _lastSegmentIndex: Int = -1

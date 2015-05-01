@@ -23,16 +23,13 @@ import monocle.syntax._
 import spire.syntax.cfor._
 
 object PackBitsDecompressor {
-  def apply(tags: Tags): PackBitsDecompressor = {
-    val segmentSize: (Int => Int) = { i => tags.imageSegmentByteSize(i).toInt }
-
-    new PackBitsDecompressor(segmentSize)
-  }
+  def apply(segmentSizes: Array[Int]): PackBitsDecompressor =
+    new PackBitsDecompressor(segmentSizes)
 }
 
-class PackBitsDecompressor(segmentSize: Int => Int) extends Decompressor {
+class PackBitsDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
-    val size = segmentSize(segmentIndex)
+    val size = segmentSizes(segmentIndex)
 
     val rowArray = new Array[Byte](size)
 

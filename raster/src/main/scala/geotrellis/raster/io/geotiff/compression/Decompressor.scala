@@ -3,6 +3,7 @@ package geotrellis.raster.io.geotiff.compression
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.reader.{GeoTiffReaderLimitationException, MalformedGeoTiffException}
 import java.nio.ByteOrder
+import spire.syntax.cfor._
 
 trait Decompressor extends Serializable {
   def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
@@ -43,10 +44,11 @@ object Decompressor {
     import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
     def checkEndian(d: Decompressor): Decompressor =
-      if(byteOrder != ByteOrder.BIG_ENDIAN && tags.bitsPerPixel > 8)
-        d.flipEndian(tags.bytesPerPixel)
-      else
+      if(byteOrder != ByteOrder.BIG_ENDIAN && tags.bitsPerPixel > 8) {
+        d.flipEndian(tags.bytesPerPixel / tags.bandCount)
+      } else {
         d
+      }
 
     def checkPredictor(d: Decompressor): Decompressor = {
       val predictor = Predictor(tags)
@@ -56,15 +58,28 @@ object Decompressor {
         d.withPredictor(predictor)
     }
 
+    val segmentCount = tags.segmentCount
+    val segmentSizes = Array.ofDim[Int](segmentCount)
+    val bandCount = tags.bandCount
+    if(!tags.hasPixelInterleave || bandCount == 1) {
+      cfor(0)(_ < segmentCount, _ + 1) { i =>
+        segmentSizes(i) = tags.imageSegmentByteSize(i).toInt
+      }
+    } else {
+      cfor(0)(_ < segmentCount, _ + 1) { i =>
+        segmentSizes(i) = tags.imageSegmentByteSize(i).toInt * tags.bandCount
+      }
+    }
+
     tags.compression match {
       case Uncompressed => 
         checkEndian(NoCompression)
       case LZWCoded => 
-        checkPredictor(LZWDecompressor(tags))
+        checkPredictor(LZWDecompressor(segmentSizes))
       case ZLibCoded | PkZipCoded => 
-        checkPredictor(DeflateCompression.createDecompressor(tags))
+        checkPredictor(DeflateCompression.createDecompressor(segmentSizes))
       case PackBitsCoded => 
-        checkEndian(PackBitsDecompressor(tags))
+        checkEndian(PackBitsDecompressor(segmentSizes))
 
       // Unsupported compression types
       case JpegCoded =>

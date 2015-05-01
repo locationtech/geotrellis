@@ -67,18 +67,15 @@ object GeoTiffTile {
 }
 
 abstract class GeoTiffTile(
-  compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
+  val compressedBytes: Array[Array[Byte]],
+  val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
   compression: Compression // Compression to use moving forward
-) extends Tile {
+) extends Tile with GeoTiffWritableTile {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 
-  def storageMethod: StorageMethod = 
-    segmentLayout.storageMethod
-  def geoTiffOptions: GeoTiffOptions =
-    GeoTiffOptions(storageMethod, compression)
+  private val isTiled = segmentLayout.isTiled
 
   def convert(newCellType: CellType): Tile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
@@ -109,12 +106,14 @@ abstract class GeoTiffTile(
   def get(col: Int, row: Int): Int = {
     val segmentIndex = segmentLayout.getSegmentIndex(col, row)
     val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
+
     getSegment(segmentIndex).getInt(i)
   }
 
   def getDouble(col: Int, row: Int): Double = {
     val segmentIndex = segmentLayout.getSegmentIndex(col, row)
     val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
+
     getSegment(segmentIndex).getDouble(i)
   }
 
@@ -122,8 +121,21 @@ abstract class GeoTiffTile(
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
       val segmentSize = segment.size
-      cfor(0)(_ < segmentSize, _ + 1) { i =>
-        f(segment.getInt(i))
+
+      if(isTiled) {
+        // Need to check for bounds
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+        cfor(0)(_ < segmentSize, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if(col < cols && row < rows) {
+            f(segment.getInt(i))
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentSize, _ + 1) { i =>
+          f(segment.getInt(i))
+        }
       }
     }
   }
@@ -132,8 +144,21 @@ abstract class GeoTiffTile(
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
       val segmentSize = segment.size
-      cfor(0)(_ < segmentSize, _ + 1) { i =>
-        f(segment.getDouble(i))
+
+      if(isTiled) {
+        // Need to check for bounds
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+        cfor(0)(_ < segmentSize, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if(col < cols && row < rows) {
+            f(segment.getDouble(i))
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentSize, _ + 1) { i =>
+          f(segment.getDouble(i))
+        }
       }
     }
   }
@@ -316,7 +341,6 @@ abstract class GeoTiffTile(
           f(z, other.get(col, row))
         }
     }
-
 
   def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     Resample(this, source, target, method)
