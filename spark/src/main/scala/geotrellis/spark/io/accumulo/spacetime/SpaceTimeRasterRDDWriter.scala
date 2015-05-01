@@ -26,6 +26,7 @@ import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
+  import geotrellis.spark.io.accumulo.stringToText
 
   def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {
     val boundable = implicitly[Boundable[SpaceTimeKey]]
@@ -34,7 +35,7 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
       .reduce { boundable.combine }
   }
 
-  /** TODO: What is the rules about the "num" parameter? */
+  /** TODO: What are the rules about the "num" parameter? */
   def getSplits(
     layerId: LayerId,
     metaData: RasterMetaData,
@@ -57,17 +58,12 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
     layerId: LayerId,
     raster: RasterRDD[SpaceTimeKey],
     index: KeyIndex[SpaceTimeKey]
-  ): RDD[(Text, Mutation)] =
+  ): RDD[(Key, Value)] = {
+    def getKey(id: LayerId, key: SpaceTimeKey): Key =
+      new Key(rowId(id, index.toIndex(key)), id.name, timeText(key))
+
     raster
-      .map { case (key, tile) =>
-        val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])]( (key, tile.toBytes) )
-        val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
-        mutation.put(
-          new Text(layerId.name),
-          timeText(key),
-          System.currentTimeMillis(),
-          new Value(value)
-        )
-        (null, mutation)
-      }
+      .sortBy{ case (key, _) => getKey(layerId, key) }
+      .map { case (key, tile) => getKey(layerId, key) -> new Value(tile.toBytes) }
+  }
 }
