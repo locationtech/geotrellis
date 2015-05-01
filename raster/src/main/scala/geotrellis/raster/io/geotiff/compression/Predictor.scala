@@ -9,9 +9,9 @@ object Predictor {
   val PREDICTOR_HORIZONTAL = 2
   val PREDICTOR_FLOATINGPOINT = 3
 
-  def apply(tags: Tags): Predictor = {
-    (tags
-      &|-> Tags._nonBasicTags
+  def apply(tiffTags: TiffTags): Predictor = {
+    (tiffTags
+      &|-> TiffTags._nonBasicTags
       ^|-> NonBasicTags._predictor get
     ) match {
       case None | Some(PREDICTOR_NONE) => 
@@ -20,9 +20,9 @@ object Predictor {
           def apply(bytes: Array[Byte], segmentIndex: Int) = bytes 
         }
       case Some(PREDICTOR_HORIZONTAL) =>
-        HorizontalPredictor(tags)
+        HorizontalPredictor(tiffTags)
       case Some(PREDICTOR_FLOATINGPOINT) =>
-        FloatingPointPredictor(tags)
+        FloatingPointPredictor(tiffTags)
       case Some(i) =>
         throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1, 2 or 3)")
     }

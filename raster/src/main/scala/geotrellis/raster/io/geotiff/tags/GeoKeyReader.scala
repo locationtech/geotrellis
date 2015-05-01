@@ -28,7 +28,7 @@ import monocle.macros.Lenses
 
 object GeoKeyReader {
 
-  def read(byteBuffer: ByteBuffer, imageDirectory: Tags,
+  def read(byteBuffer: ByteBuffer, imageDirectory: TiffTags,
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 

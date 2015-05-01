@@ -63,14 +63,14 @@ case class GeoTiffGDALParameters(
 
 object GeoTiffCSParser {
 
-  def apply(directory: Tags) = new GeoTiffCSParser(directory)
+  def apply(directory: TiffTags) = new GeoTiffCSParser(directory)
 
 }
 
 /**
   * This class is indirectly ported from the GDAL github repository.
   */
-class GeoTiffCSParser(directory: Tags) {
+class GeoTiffCSParser(directory: TiffTags) {
 
   private val geoKeyDirectory = directory.geoKeyDirectory
 

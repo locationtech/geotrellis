@@ -7,13 +7,13 @@ import spire.syntax.cfor._
 
 /** See TIFF Technical Note 3 */
 object FloatingPointPredictor {
-  def apply(tags: Tags): FloatingPointPredictor = {
-    val colsPerRow = tags.rowSize
-    val rowsInSegment: (Int => Int) = { i => tags.rowsInSegment(i) }
+  def apply(tiffTags: TiffTags): FloatingPointPredictor = {
+    val colsPerRow = tiffTags.rowSize
+    val rowsInSegment: (Int => Int) = { i => tiffTags.rowsInSegment(i) }
 
-    val bandType = tags.bandType
+    val bandType = tiffTags.bandType
 
-    new FloatingPointPredictor(colsPerRow, rowsInSegment, bandType, tags.bandCount)
+    new FloatingPointPredictor(colsPerRow, rowsInSegment, bandType, tiffTags.bandCount)
   }
 }
 

@@ -10,8 +10,7 @@ class MultiBandGeoTiff(
   val tile: MultiBandTile,
   val extent: Extent,
   val crs: CRS,
-  val tags: Map[String, String],
-  val bandTags: Map[String, String],
+  val tags: Tags,
   options: GeoTiffOptions
 ) extends GeoTiff {
   def writable =

@@ -9,8 +9,7 @@ class SingleBandGeoTiff(
   val tile: Tile,
   val extent: Extent,
   val crs: CRS,
-  val tags: Map[String, String],
-  val bandTags: Map[String, String],
+  val tags: Tags,
   options: GeoTiffOptions
 ) extends GeoTiff {
   def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
@@ -25,18 +24,17 @@ class SingleBandGeoTiff(
 
 object SingleBandGeoTiff {
 
-  def unapply(sbg: SingleBandGeoTiff): Option[(Tile, Extent, CRS, Map[String, String], Map[String, String])] =
-    Some((sbg.tile, sbg.extent, sbg.crs, sbg.tags, sbg.bandTags))
+  def unapply(sbg: SingleBandGeoTiff): Option[(Tile, Extent, CRS, Tags)] =
+    Some((sbg.tile, sbg.extent, sbg.crs, sbg.tags))
 
   def apply(
     tile: Tile,
     extent: Extent,
     crs: CRS,
-    tags: Map[String, String],
-    bandTags: Map[String, String],
+    tags: Tags,
     options: GeoTiffOptions
   ): SingleBandGeoTiff =
-    new SingleBandGeoTiff(tile, extent, crs, tags, bandTags, options)
+    new SingleBandGeoTiff(tile, extent, crs, tags, options)
   
   /** Read a single-band GeoTIFF file from the file at the given path.
     * The GeoTIFF will be fully uncompressed and held in memory.

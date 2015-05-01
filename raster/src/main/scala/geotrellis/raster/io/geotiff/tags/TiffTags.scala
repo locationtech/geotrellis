@@ -23,7 +23,7 @@ import monocle.macros.Lenses
 import spire.syntax.cfor._
 
 @Lenses("_")
-case class Tags(
+case class TiffTags(
   metadataTags: MetadataTags = MetadataTags(),
   basicTags: BasicTags = BasicTags(),
   nonBasicTags: NonBasicTags = NonBasicTags(),
@@ -40,17 +40,17 @@ case class Tags(
 
   def compression = 
     (this 
-      &|-> Tags._basicTags 
+      &|-> TiffTags._basicTags 
       ^|-> BasicTags._compression get)
 
   def hasStripStorage(): Boolean = 
     (this 
-      &|-> Tags._tileTags
+      &|-> TiffTags._tileTags
       ^|-> TileTags._tileWidth get).isEmpty
 
   def hasPixelInterleave(): Boolean =
     (this
-      &|-> Tags._nonBasicTags
+      &|-> TiffTags._nonBasicTags
       ^|-> NonBasicTags._planarConfiguration get) match {
       case Some(i) if i == 2 =>
         false
@@ -65,11 +65,11 @@ case class Tags(
   def rowsInStrip(index: Int): Option[Long] = 
     if (hasStripStorage) {
       (this &|->
-        Tags._basicTags ^|->
+        TiffTags._basicTags ^|->
         BasicTags._stripByteCounts get) match {
         case Some(stripByteCounts) => {
           val rowsPerStrip = (this &|->
-            Tags._basicTags ^|->
+            TiffTags._basicTags ^|->
             BasicTags._rowsPerStrip get)
           val imageLength = rows
           val numberOfStrips = stripByteCounts.size
@@ -95,7 +95,7 @@ case class Tags(
       rowsInStrip(index).get.toInt
     else
       (this &|->
-        Tags._tileTags ^|->
+        TiffTags._tileTags ^|->
         TileTags._tileLength get).get.toInt
 
   def bitsPerPixel(): Int = 
@@ -106,7 +106,7 @@ case class Tags(
 
   def bitsPerSample: Int =
     (this
-      &|-> Tags._basicTags 
+      &|-> TiffTags._basicTags 
       ^|-> BasicTags._bitsPerSample get)
 
   def imageSegmentByteSize(index: Int): Long =
@@ -133,10 +133,10 @@ case class Tags(
       // because according the the TIFF 6.0 Spec, "TileWidth must be a multiple of 16".
       (
         (this &|->
-          Tags._tileTags ^|->
+          TiffTags._tileTags ^|->
           TileTags._tileWidth get),
         (this &|->
-          Tags._tileTags ^|->
+          TiffTags._tileTags ^|->
           TileTags._tileLength get)
       ) match {
         case (Some(tileWidth), Some(tileHeight)) =>
@@ -148,28 +148,28 @@ case class Tags(
 
   def rowSize: Int =
     if (hasStripStorage) cols
-    else (this &|-> Tags._tileTags ^|-> TileTags._tileWidth get).get.toInt
+    else (this &|-> TiffTags._tileTags ^|-> TileTags._tileWidth get).get.toInt
 
-  def cols = (this &|-> Tags._basicTags ^|-> BasicTags._imageWidth get)
-  def rows = (this &|-> Tags._basicTags ^|-> BasicTags._imageLength get)
+  def cols = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageWidth get)
+  def rows = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageLength get)
 
   def extent: Extent = 
     (this 
-      &|-> Tags._geoTiffTags
+      &|-> TiffTags._geoTiffTags
       ^|-> GeoTiffTags._modelTransformation get
     ) match {
       case Some(trans) if (trans.validateAsMatrix && trans.size == 4 && trans(0).size == 4) => 
         transformationModelSpace(trans)
       case _ => 
         (this 
-          &|-> Tags._geoTiffTags
+          &|-> TiffTags._geoTiffTags
           ^|-> GeoTiffTags._modelTiePoints get
         ) match {
           case Some(tiePoints) if (!tiePoints.isEmpty) =>
             tiePointsModelSpace(
               tiePoints,
               (this 
-                &|-> Tags._geoTiffTags
+                &|-> TiffTags._geoTiffTags
                 ^|-> GeoTiffTags._modelPixelScale get
               )
             )
@@ -181,7 +181,7 @@ case class Tags(
   def bandType: BandType = {
     val sampleFormat =
       (this 
-        &|-> Tags._dataSampleFormatTags
+        &|-> TiffTags._dataSampleFormatTags
         ^|-> DataSampleFormatTags._sampleFormat get)
 
     BandType(bitsPerSample, sampleFormat)
@@ -284,7 +284,7 @@ case class Tags(
       case None => true
     }
 
-  def setGDALNoData(input: String) = (this &|-> Tags._geoTiffTags
+  def setGDALNoData(input: String) = (this &|-> TiffTags._geoTiffTags
     ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
 
   def proj4String: Option[String] = try {
@@ -293,13 +293,13 @@ case class Tags(
     case e: Exception => None
   }
 
-  lazy val (tags, bandTags): (Map[String, String], Array[Map[String, String]]) =
+  def tags: Tags =
     (
       (this &|->
-        Tags._basicTags ^|->
+        TiffTags._basicTags ^|->
         BasicTags._samplesPerPixel get),
       (this &|->
-        Tags._geoTiffTags ^|->
+        TiffTags._geoTiffTags ^|->
         GeoTiffTags._metadata get)
     ) match {
       case (numberOfBands, Some(str)) => {
@@ -329,12 +329,10 @@ case class Tags(
           }
         }
 
-        (metadata, bandsMetadataBuffer)
+        Tags(metadata, bandsMetadataBuffer)
       }
-      case (numberOfBands, None) => (
-        Map(),
-        Array.ofDim[Map[String, String]](numberOfBands)
-      )
+      case (numberOfBands, None) => 
+        Tags(Map[String, String](), Array.ofDim[Map[String, String]](numberOfBands))
     }
 
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
@@ -342,13 +340,13 @@ case class Tags(
 
   def bandCount: Int =
     this &|->
-      Tags._basicTags ^|->
+      TiffTags._basicTags ^|->
       BasicTags._samplesPerPixel get
 
   def segmentCount: Int =
     if (hasStripStorage) {
       (this 
-        &|-> Tags._basicTags 
+        &|-> TiffTags._basicTags 
         ^|-> BasicTags._stripByteCounts get) match {
         case Some(stripByteCounts) =>
           stripByteCounts.size
@@ -357,7 +355,7 @@ case class Tags(
       }
     } else {
       (this 
-        &|-> Tags._tileTags 
+        &|-> TiffTags._tileTags 
         ^|-> TileTags._tileOffsets get) match {
         case Some(tileOffsets) =>
           tileOffsets.size

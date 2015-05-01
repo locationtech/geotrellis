@@ -134,50 +134,50 @@ class GeoTiffReaderSpec extends FunSpec
   describe("match tiff tags and geokeys correctly") {
 
     it("must match aspect.tif tiff tags") {
-      val tags = TagsReader.read(s"$baseDataPath/aspect.tif")
+      val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
 
-      tags.cols should equal (1500L)
+      tiffTags.cols should equal (1500L)
 
-      tags.rows should equal (1350L)
+      tiffTags.rows should equal (1350L)
 
-      tags.bitsPerSample should be (32)
+      tiffTags.bitsPerSample should be (32)
 
-      tags.compression should equal (1)
+      tiffTags.compression should equal (1)
 
-      (tags &|-> Tags._basicTags ^|->
+      (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._photometricInterp get) should equal (1)
 
-      (tags &|-> Tags._basicTags ^|->
+      (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._stripOffsets get) match {
         case Some(stripOffsets) => stripOffsets.size should equal (1350)
         case None => fail
       }
 
-      (tags &|-> Tags._basicTags ^|->
+      (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._samplesPerPixel get) should equal (1)
 
-      (tags &|-> Tags._basicTags ^|->
+      (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._rowsPerStrip get) should equal (1L)
 
-      (tags &|-> Tags._basicTags ^|->
+      (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._stripByteCounts get) match {
         case Some(stripByteCounts) => stripByteCounts.size should equal (1350)
         case None => fail
       }
 
-      (tags &|-> Tags._nonBasicTags ^|->
+      (tiffTags &|-> TiffTags._nonBasicTags ^|->
         NonBasicTags._planarConfiguration get) match {
         case Some(planarConfiguration) => planarConfiguration should equal (1)
         case None => fail
       }
 
       val sampleFormat = 
-        (tags 
-          &|-> Tags._dataSampleFormatTags
+        (tiffTags 
+          &|-> TiffTags._dataSampleFormatTags
           ^|-> DataSampleFormatTags._sampleFormat get)
       sampleFormat should be (3)
 
-      (tags &|-> Tags._geoTiffTags
+      (tiffTags &|-> TiffTags._geoTiffTags
         ^|-> GeoTiffTags._modelPixelScale get) match {
         case Some(modelPixelScales) => {
           modelPixelScales._1 should equal (10.0)
@@ -187,7 +187,7 @@ class GeoTiffReaderSpec extends FunSpec
         case None => fail
       }
 
-      (tags &|-> Tags._geoTiffTags
+      (tiffTags &|-> TiffTags._geoTiffTags
         ^|-> GeoTiffTags._modelTiePoints get) match {
         case Some(modelTiePoints) if (modelTiePoints.size == 1) => {
           val (p1, p2) = modelTiePoints(0)
@@ -201,7 +201,7 @@ class GeoTiffReaderSpec extends FunSpec
         case None => fail
       }
 
-      (tags &|-> Tags._geoTiffTags
+      (tiffTags &|-> TiffTags._geoTiffTags
         ^|-> GeoTiffTags._gdalInternalNoData get) match {
         case Some(gdalInternalNoData) => gdalInternalNoData should equal (-9999.0)
         case None => fail
@@ -209,18 +209,18 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must match aspect.tif geokeys") {
-      val tags = TagsReader.read(s"$baseDataPath/aspect.tif")
+      val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
 
-      tags.hasPixelArea should be (true)
+      tiffTags.hasPixelArea should be (true)
 
-      val extent = tags.extent
+      val extent = tiffTags.extent
 
       val minX = extent.xmin should equal (630000.0)
       val minY = extent.ymin should equal (215000.0)
       val maxX = extent.xmax should equal (645000.0)
       val maxY = extent.ymax should equal (228500.0)
 
-      tags.bandType.cellType should equal (TypeFloat)
+      tiffTags.bandType.cellType should equal (TypeFloat)
     }
 
     // TODO: Deal with color maps.
@@ -355,7 +355,7 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SingleBandGeoTiff(tile, extent, _, _, _) = SingleBandGeoTiff.compressed(s"$baseDataPath/$file")
+      val SingleBandGeoTiff(tile, extent, _, _) = SingleBandGeoTiff.compressed(s"$baseDataPath/$file")
 
       tile.zonalMax(extent, extent.toPolygon) should be (max)
       tile.zonalMin(extent, extent.toPolygon) should be (min)
@@ -381,7 +381,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val SingleBandGeoTiff(tile, extent, crs, _, _) = SingleBandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
+      val SingleBandGeoTiff(tile, extent, crs, _) = SingleBandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
 
       crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))
@@ -394,13 +394,13 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with tags") {
-      val metadata = SingleBandGeoTiff.compressed(geoTiffPath("tags.tif")).tags
+      val tags = SingleBandGeoTiff.compressed(geoTiffPath("tags.tif")).tags
 
-      metadata("TILE_COL") should be ("6")
-      metadata("units") should be ("kg m-2 s-1")
-      metadata("lon#axis") should be ("X")
-      metadata("_FillValue") should be ("1e+20")
-      metadata("NC_GLOBAL#driving_model_ensemble_member") should be("r1i1p1")
+      tags("TILE_COL") should be ("6")
+      tags("units") should be ("kg m-2 s-1")
+      tags("lon#axis") should be ("X")
+      tags("_FillValue") should be ("1e+20")
+      tags("NC_GLOBAL#driving_model_ensemble_member") should be("r1i1p1")
     }
 
     it("should read GeoTiff with no extent data correctly") {

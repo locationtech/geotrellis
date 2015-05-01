@@ -9,13 +9,13 @@ import java.nio.ByteBuffer
 import spire.syntax.cfor._
 
 object HorizontalPredictor {
-  def apply(tags: Tags): Predictor = {
-    val colsPerRow = tags.rowSize
-    val rowsInSegment: (Int => Int) = { i => tags.rowsInSegment(i) }
+  def apply(tiffTags: TiffTags): Predictor = {
+    val colsPerRow = tiffTags.rowSize
+    val rowsInSegment: (Int => Int) = { i => tiffTags.rowsInSegment(i) }
 
-    val bandType = tags.bandType
+    val bandType = tiffTags.bandType
 
-    new HorizontalPredictor(colsPerRow, rowsInSegment, tags.bandCount)
+    new HorizontalPredictor(colsPerRow, rowsInSegment, tiffTags.bandCount)
       .forBandType(bandType)
   }
 }

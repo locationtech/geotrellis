@@ -40,38 +40,38 @@ trait Decompressor extends Serializable {
 }
 
 object Decompressor {
-  def apply(tags: Tags, byteOrder: ByteOrder): Decompressor = {
+  def apply(tiffTags: TiffTags, byteOrder: ByteOrder): Decompressor = {
     import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
     def checkEndian(d: Decompressor): Decompressor =
-      if(byteOrder != ByteOrder.BIG_ENDIAN && tags.bitsPerPixel > 8) {
-        d.flipEndian(tags.bytesPerPixel / tags.bandCount)
+      if(byteOrder != ByteOrder.BIG_ENDIAN && tiffTags.bitsPerPixel > 8) {
+        d.flipEndian(tiffTags.bytesPerPixel / tiffTags.bandCount)
       } else {
         d
       }
 
     def checkPredictor(d: Decompressor): Decompressor = {
-      val predictor = Predictor(tags)
+      val predictor = Predictor(tiffTags)
       if(predictor.checkEndian)
         checkEndian(d).withPredictor(predictor)
       else
         d.withPredictor(predictor)
     }
 
-    val segmentCount = tags.segmentCount
+    val segmentCount = tiffTags.segmentCount
     val segmentSizes = Array.ofDim[Int](segmentCount)
-    val bandCount = tags.bandCount
-    if(!tags.hasPixelInterleave || bandCount == 1) {
+    val bandCount = tiffTags.bandCount
+    if(!tiffTags.hasPixelInterleave || bandCount == 1) {
       cfor(0)(_ < segmentCount, _ + 1) { i =>
-        segmentSizes(i) = tags.imageSegmentByteSize(i).toInt
+        segmentSizes(i) = tiffTags.imageSegmentByteSize(i).toInt
       }
     } else {
       cfor(0)(_ < segmentCount, _ + 1) { i =>
-        segmentSizes(i) = tags.imageSegmentByteSize(i).toInt * tags.bandCount
+        segmentSizes(i) = tiffTags.imageSegmentByteSize(i).toInt * tiffTags.bandCount
       }
     }
 
-    tags.compression match {
+    tiffTags.compression match {
       case Uncompressed => 
         checkEndian(NoCompression)
       case LZWCoded => 

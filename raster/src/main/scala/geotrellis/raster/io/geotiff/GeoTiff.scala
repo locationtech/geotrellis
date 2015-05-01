@@ -9,6 +9,5 @@ trait GeoTiff {
   def writable: GeoTiffWritableTile
   def extent: Extent
   def crs: CRS
-  def tags: Map[String, String]
-  def bandTags: Map[String, String]
+  def tags: Tags
 }

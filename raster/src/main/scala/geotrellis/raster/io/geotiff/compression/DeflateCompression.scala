@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.compression
 import java.util.zip.{ Inflater, Deflater }
 
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.tags.Tags
+import geotrellis.raster.io.geotiff.tags.TiffTags
 
 import scala.collection.mutable
 
