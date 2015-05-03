@@ -1,4 +1,4 @@
-package geotrellis.index.zcurve
+package geotrellis.spark.io.index.zcurve
 
 /**
  * Represents a cube in defined by min and max as two opposing points
