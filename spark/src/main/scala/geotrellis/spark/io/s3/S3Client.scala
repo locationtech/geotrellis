@@ -53,35 +53,7 @@ trait S3Client extends LazyLogging {
       }      
 
       def next: S3ObjectSummary = iter.next
-    }          
-      
-
-  def putObjectWithBackoff(putObjectRequest: PutObjectRequest): PutObjectResult = {
-    var ret: PutObjectResult = null
-    val base = 53
-    var backoff = 0
-    do {
-      if (backoff > 0){
-        val pause = base * Random.nextInt(math.pow(2,backoff).toInt) // .extInt is [), implying -1
-        logger.info("Backing off for $pause ms")
-        Thread.sleep(pause) 
-      }
-
-      try {
-        ret = putObject(putObjectRequest)
-      } catch {
-        case e: AmazonS3Exception =>
-          if (e.getStatusCode == 503) {
-            backoff = +1
-          }else if (e.getStatusCode == 400) {
-            backoff = 0 // socket timeout, just retry
-          }else{
-            throw e
-          }
-      }
-    } while (ret == null)
-    ret
-  }
+    }                
 }
 
 object S3Client {
