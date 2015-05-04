@@ -20,6 +20,12 @@ import scala.reflect.ClassTag
 import scala.concurrent._
 import java.util.concurrent.Executors
 import scala.concurrent.duration._
+import scalaz.stream.async._
+import scalaz.stream._
+import scalaz.concurrent.Strategy
+import scalaz.concurrent.Task
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
   val encodeKey: (K, KeyIndex[K], Int) => String
@@ -48,35 +54,35 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
     val catalogBucket = bucket
     val path = layerPath
     val ek = encodeKey
+
     rdd
       .foreachPartition { partition =>
-
         val s3client: S3Client = bcClient.value.apply
 
-        val executors = Executors.newFixedThreadPool(64)
-        implicit val ec = ExecutionContext.fromExecutor(executors)
-        val batchSize = 256
-
-        val futures: Seq[Future[Unit]] = 
-          partition.map{ row =>
-            val index = keyIndex.toIndex(row._1) 
-            val bytes = KryoSerializer.serialize[(K, Tile)](row)
-            val metadata = new ObjectMetadata()
-            metadata.setContentLength(bytes.length);
-            val is = new ByteArrayInputStream(bytes)
-            new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)            
+        val requests: Process[Task, PutObjectRequest] = 
+          Process.unfold(partition){ iter => 
+            if (iter.hasNext) {
+              val row = iter.next
+              val index = keyIndex.toIndex(row._1) 
+              val bytes = KryoSerializer.serialize[(K, Tile)](row)
+              val metadata = new ObjectMetadata()
+              metadata.setContentLength(bytes.length)
+              val is = new ByteArrayInputStream(bytes)
+              val request = new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)                        
+              Some(request, iter)
+            } else  {
+              None
+            }
           }
-          .sliding(batchSize,batchSize)
-          .map { requests =>
-            future { blocking { requests.foreach { r => s3client.putObjectWithBackoff(r) } } }
-          }
-          .toSeq
+        
+        val pool = Executors.newFixedThreadPool(35)
+        val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
+          Process eval Task { s3client.putObjectWithBackoff(request) }(pool)
+        }    
+    
+        val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { requests map (write) } 
 
-        val all = Future.sequence(futures)        
-        all.onFailure{ case e => throw e }
-        Await.result(all, 10 minutes)
-
-        executors.shutdown
+        results.run.run
       }
 
     logger.info(s"Finished saving tiles to ${layerPath}")
