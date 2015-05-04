@@ -9,5 +9,8 @@ import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path
 
 trait RasterRDDWriterProvider[K] {
-  def writer(catalogConfig: HadoopRasterCatalogConfig, layerMetaData: HadoopLayerMetaData, index: KeyIndex[K], clobber: Boolean = true)(implicit sc: SparkContext): RasterRDDWriter[K]
+  def writer(catalogConfig: HadoopRasterCatalogConfig,
+    layerMetaData: HadoopLayerMetaData,
+    index: KeyIndex[K],
+    clobber: Boolean = true)(implicit sc: SparkContext): RasterRDDWriter[K]
 }

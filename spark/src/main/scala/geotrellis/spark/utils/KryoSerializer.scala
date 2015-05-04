@@ -21,7 +21,7 @@ import java.nio.ByteBuffer
 
 import org.apache.spark.{SparkConf, SparkEnv}
 import org.apache.spark.serializer.{KryoSerializer => SparkKryoSerializer}
-
+import java.io.InputStream
 import scala.reflect.ClassTag
 
 /**
@@ -49,5 +49,9 @@ object KryoSerializer {
 
   def deserialize[T: ClassTag](bytes: Array[Byte]): T  = {
     ser.newInstance().deserialize[T](ByteBuffer.wrap(bytes))
+  }
+
+  def deserializeStream[T: ClassTag](is: InputStream): T = {
+    ser.newInstance().deserializeStream(is).readObject[T]
   }
 }
