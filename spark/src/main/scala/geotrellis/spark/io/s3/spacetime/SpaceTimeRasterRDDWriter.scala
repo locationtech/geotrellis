@@ -19,13 +19,7 @@ import scala.reflect.ClassTag
 import org.joda.time.format.ISODateTimeFormat
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with LazyLogging {
-  private val fmt = ISODateTimeFormat.dateTime()
-
-  val encodeKey = (key: SpaceTimeKey, ki: KeyIndex[SpaceTimeKey], max: Int) => {
-    val index: String = ki.toIndex(key).toString.reverse.padTo(max, '0').reverse
-    val isoTime: String = fmt.print(key.time)
-    f"${index}-${isoTime}"
-  }
+  val encodeKey = spacetime.encodeKey
 
   def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {
     val boundable = implicitly[Boundable[SpaceTimeKey]]
