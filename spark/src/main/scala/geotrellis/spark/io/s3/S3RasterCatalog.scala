@@ -1,5 +1,6 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -92,8 +93,10 @@ class S3RasterCatalog(
       }
     }
 
-  // def tileReader[K: TileReaderProvider](layerId: LayerId): Reader[K, Tile] = {
-  //   val layerMetaData = metaDataCatalog.read(layerId)
-  //   implicitly[TileReaderProvider[K]].reader(layerMetaData)
-  // }
+  def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
+    val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metaData")
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+    val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    implicitly[TileReader[K]].read(s3client(), layerId, metaData, index, keyBounds)(_)    
+  }
 }

@@ -40,6 +40,21 @@ class S3RasterCatalogSpec extends FunSpec
         }
       }
 
+      it("should read a spatial tile"){
+        val reader = catalog.tileReader[SpatialKey](id)
+
+        val tile = reader(SpatialKey(2,2))
+        tile.foreach { x=> x should be (1) }
+      }
+
+      it("should error on getting a tile that is not there"){
+        val reader = catalog.tileReader[SpatialKey](id)
+
+        intercept[RuntimeException]{
+          val tile = reader(SpatialKey(200,200))
+        }        
+      }
+
       val spaceId = LayerId("oneSpace", 2)
       it("should save a spacetime layer"){
         catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, true).write(spaceId, AllOnesSpaceTime)        
@@ -51,6 +66,7 @@ class S3RasterCatalogSpec extends FunSpec
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
       }
+
     }
   }
 }
