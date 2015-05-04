@@ -75,7 +75,7 @@ package object raster {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
   }
 
-  implicit class TraversableTileExtentsion(rs: Traversable[Tile]) {
+  implicit class TraversableTileExtensions(rs: Traversable[Tile]) {
     def assertEqualDimensions(): Unit =
       if(Set(rs.map(_.dimensions)).size != 1) {
         val dimensions = rs.map(_.dimensions).toSeq

@@ -30,7 +30,7 @@ trait TileReader[Key] {
     accumuloLayerMetaData: AccumuloLayerMetaData,
     index: KeyIndex[Key]
   )(key: Key): Tile = {
-    val AccumuloLayerMetaData(rasterMetaData, _, _, tileTable) = accumuloLayerMetaData
+    val AccumuloLayerMetaData(_, _, rasterMetaData, tileTable) = accumuloLayerMetaData
     val values = collectTile(instance, layerId, index, tileTable, key)
     val value =
       if(values.size == 0) {
