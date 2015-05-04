@@ -57,6 +57,8 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
 
     rdd
       .foreachPartition { partition =>
+        import geotrellis.spark.utils.TaskUtils._
+
         val s3client: S3Client = bcClient.value.apply
 
         val requests: Process[Task, PutObjectRequest] = 
@@ -75,12 +77,16 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
             }
           }
         
-        val pool = Executors.newFixedThreadPool(35)
         val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
-          Process eval Task { s3client.putObjectWithBackoff(request) }(pool)
-        }    
+          Process eval Task { 
+            s3client.putObject(request) 
+          }.retryEBO { 
+            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case _ => false
+          }
+        }   
     
-        val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { requests map (write) } 
+        val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 8) { requests map (write) }
 
         results.run.run
       }
