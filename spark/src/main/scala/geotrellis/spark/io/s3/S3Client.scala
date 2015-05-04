@@ -33,6 +33,9 @@ trait S3Client extends LazyLogging {
     putObject(bucketName, key, bytes, new ObjectMetadata())
 
 
+  def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =          
+      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys));
+
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
     new Iterator[S3ObjectSummary] {      
       var listing = listObjects(request)
@@ -58,18 +61,20 @@ trait S3Client extends LazyLogging {
     val base = 53
     var backoff = 0
     do {
-        if (backoff > 0){
-          val pause = base * Random.nextInt(math.pow(2,backoff).toInt) // .extInt is [), implying -1
+      if (backoff > 0){
+        val pause = base * Random.nextInt(math.pow(2,backoff).toInt) // .extInt is [), implying -1
         logger.info("Backing off for $pause ms")
-          Thread.sleep(pause) 
-        }
+        Thread.sleep(pause) 
+      }
 
       try {
         ret = putObject(putObjectRequest)
       } catch {
         case e: AmazonS3Exception =>
-          if (e.getErrorCode == 503) {
+          if (e.getStatusCode == 503) {
             backoff = +1
+          }else if (e.getStatusCode == 400) {
+            backoff = 0 // socket timeout, just retry
           }else{
             throw e
           }
