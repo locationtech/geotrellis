@@ -62,6 +62,9 @@ object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
 
     raster
       .sortBy{ case (key, _) => getKey(layerId, key) }
-      .map { case (key, tile) => getKey(layerId, key) -> new Value(tile.toBytes) }
+      .map { case (key, tile) => {
+        val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
+        getKey(layerId, key) -> new Value(value)
+      }}
   }
 }

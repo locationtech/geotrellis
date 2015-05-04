@@ -42,7 +42,7 @@ class AccumuloRasterCatalog(
   def writer[K: SpatialComponent: RasterRDDWriter: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
     tileTable: String,
-    strategy: AccumuloWriteStrategy
+    strategy: AccumuloWriteStrategy = HdfsWriteStrategy
   ): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {

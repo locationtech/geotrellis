@@ -16,7 +16,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
-import org.apache.accumulo.core.client.mapreduce.AccumuloOutputFormat
+import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, AccumuloFileOutputFormat}
 import org.apache.accumulo.core.client.BatchWriterConfig
 import org.apache.accumulo.core.conf.{AccumuloConfiguration, Property}
 
@@ -78,7 +78,7 @@ trait RasterRDDWriter[K] {
       case HdfsWriteStrategy => {
         def accumuloIngestDir: Path = {
           val accumuloConf =
-            AccumuloConfiguration.getTableConfiguration(instance.connector, tileTable)
+            AccumuloConfiguration.getSiteConfiguration // deprecated
           new Path(accumuloConf.get(Property.INSTANCE_DFS_DIR), "ingest")
         }
         val conf = job.getConfiguration
@@ -93,7 +93,7 @@ trait RasterRDDWriter[K] {
               outPath.toString,
               classOf[Key],
               classOf[Value],
-              classOf[AccumuloOutputFormat],
+              classOf[AccumuloFileOutputFormat],
               job.getConfiguration)
 
           ops.importDirectory(tileTable, outPath.toString, failuresPath.toString, true)
@@ -101,7 +101,7 @@ trait RasterRDDWriter[K] {
       }
       case SocketWriteStrategy => {
         def kvToMutation(kvRDD: RDD[(Key, Value)]): RDD[(Text, Mutation)] =
-          kvRDD.map( KryoClosure { case (key, value) =>
+          kvRDD.map { case (key, value) =>
               val mutation = new Mutation(key.getRow)
               mutation.put(
                 layerId.name,
@@ -109,7 +109,7 @@ trait RasterRDDWriter[K] {
                 System.currentTimeMillis(),
                 value)
               (null, mutation)
-            })
+            }
 
         AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
         AccumuloOutputFormat.setDefaultTableName(job, tileTable)
