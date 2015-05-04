@@ -70,7 +70,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles, but only for the right zoom") {
-          intercept[LayerNotFoundError] {
+          intercept[RuntimeException] {
             catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
           }
         }
@@ -127,7 +127,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
       }
 
       it("should load out saved tiles, but only for the right zoom") {
-        intercept[LayerNotFoundError] {
+        intercept[RuntimeException] {
           catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom + 1)).count()
         }
       }
