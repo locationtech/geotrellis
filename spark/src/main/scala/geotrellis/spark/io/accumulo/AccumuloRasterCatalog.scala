@@ -14,6 +14,8 @@ import com.typesafe.config.{ConfigFactory,Config}
 import scala.reflect._
 import spray.json._
 
+import scala.math.Ordering.Implicits._
+
 object AccumuloRasterCatalog {
   def apply()(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog = {
     /** The value is specified in reference.conf, applications can overwrite it in their application.conf */
@@ -45,8 +47,8 @@ class AccumuloRasterCatalog(
         implicitly[RasterRDDReader[K]].read(instance, metaData, keyBounds, index)(layerId, filterSet)
       }
     }
-  
   def writer[K: SpatialComponent: RasterRDDWriter: JsonFormat: Ordering: ClassTag](keyIndexMethod: KeyIndexMethod[K], tileTable: String): Writer[LayerId, RasterRDD[K]] = {
+
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
@@ -60,24 +62,23 @@ class AccumuloRasterCatalog(
             tileTable = tileTable
           )
 
-        val minKey = rdd.map(_._1).min
-        val maxKey = rdd.map(_._1).max
+        val rddWriter = implicitly[RasterRDDWriter[K]]
 
         metaDataCatalog.write(layerId, md)
-        val keyBounds = KeyBounds(minKey, maxKey)
+        val keyBounds = KeyBounds.from(rdd)
         attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
 
         val index = {
           val indexKeyBounds = {
-            val imin = minKey.updateSpatialComponent(SpatialKey(0, 0))
-            val imax = maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
+            val imin = keyBounds.minKey.updateSpatialComponent(SpatialKey(0, 0))
+            val imax = keyBounds.maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
             KeyBounds(imin, imax)
           }
           keyIndexMethod.createIndex(indexKeyBounds)
         }
         attributeStore.write(layerId, "keyIndex", index)
 
-        val rddWriter = implicitly[RasterRDDWriter[K]]
+        rddWriter
           .write(instance, md, keyBounds, index)(layerId, rdd)
         rdd.unpersist(blocking = false)
       }

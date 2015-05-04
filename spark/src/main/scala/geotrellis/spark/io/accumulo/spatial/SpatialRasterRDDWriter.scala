@@ -18,10 +18,9 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
+import scala.collection.JavaConversions._
 
 import spire.syntax.cfor._
-
-import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
 
