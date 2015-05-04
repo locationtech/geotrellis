@@ -2,7 +2,6 @@ package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.accumulo.utils._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
 import geotrellis.index.zcurve._
@@ -20,16 +19,12 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
-
-import spire.syntax.cfor._
-
-import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 
+import spire.syntax.cfor._
+import org.joda.time.{DateTimeZone, DateTime}
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
-
-  val kMinMax = AccumuloUtils.keyMinMax[SpaceTimeKey](_)
 
   /** TODO: What is the rules about the "num" parameter? */
   def getSplits(

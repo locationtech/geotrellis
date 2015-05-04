@@ -19,16 +19,11 @@ import org.apache.accumulo.core.client.BatchWriterConfig
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.math.Ordering.Implicits._
-import scala.reflect._
 
 import spire.syntax.cfor._
 
 
 trait RasterRDDWriter[K] {
-
-  // A function which will return min/max (here to allow this query in a single traversal)
-  val kMinMax: RasterRDD[K] => (K, K)
 
   def getSplits(
     layerId: LayerId,
