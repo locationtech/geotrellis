@@ -89,6 +89,11 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
           val tile = out.first.tile
           tile.get(497,511) should be (2)
+        }
+
+        it("can retreive all the metadata"){
+          val mds = catalog.attributeStore.readAll[AccumuloLayerMetaData]("metadata")
+          mds.foreach(println)
         }      
       }
     }

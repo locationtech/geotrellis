@@ -28,15 +28,17 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
       ops.create(attributeTable)
   }
 
-  private def fetch(layerId: LayerId, attributeName: String): List[Value] = {
+  private def fetch(layerId: Option[LayerId], attributeName: String): Vector[Value] = {
     val scanner  = connector.createScanner(attributeTable, new Authorizations())
-    scanner.setRange(new Range(new Text(layerId.toString)))
+    layerId.map { id => 
+      scanner.setRange(new Range(new Text(id.toString)))
+    }    
     scanner.fetchColumnFamily(new Text(attributeName))
-    scanner.iterator.toList.map(_.getValue)
+    scanner.iterator.toVector.map(_.getValue)
   }
 
   def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
-    val values = fetch(layerId, attributeName)
+    val values = fetch(Some(layerId), attributeName)
 
     if(values.size == 0) {
       sys.error(s"Attribute $attributeName not found for layer $layerId")
@@ -45,6 +47,10 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     } else {
       values.head.toString.parseJson.convertTo[T]
     }
+  }
+
+  def readAll[T: RootJsonFormat](attributeName: String): Seq[T] = {
+    fetch(None, attributeName).map(_.toString.parseJson.convertTo[T])
   }
 
   def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
@@ -56,4 +62,5 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
 
     connector.write(attributeTable, mutation)
   }
+
 }

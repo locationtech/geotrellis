@@ -27,7 +27,7 @@ object AccumuloRasterCatalog {
 
 class AccumuloRasterCatalog(
   instance: AccumuloInstance, 
-  attributeStore: AccumuloAttributeStore
+  val attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
   def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
     new FilterableRasterRDDReader[K] {
