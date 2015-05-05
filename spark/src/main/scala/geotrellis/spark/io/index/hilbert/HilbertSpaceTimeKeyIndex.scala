@@ -1,6 +1,7 @@
-package geotrellis.spark.io.index
+package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.KeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
@@ -56,8 +57,9 @@ class HilbertSpaceTimeKeyIndex(
     new CompactHilbertCurve(dimensionSpec)
   }
 
-  def binTime(key: SpaceTimeKey): Long =
+  def binTime(key: SpaceTimeKey): Long = {
     ((key.temporalKey.time.getMillis - startMillis) * temporalResolution) / timeWidth
+  }
 
   def toIndex(key: SpaceTimeKey): Long = {
     val bitVectors = 
@@ -103,7 +105,7 @@ class HilbertSpaceTimeKeyIndex(
       BacktrackingQueryBuilder.create(
         regionInspector,
         combiner,
-        0,
+        Int.MaxValue,
         true,
         LongRangeHome.INSTANCE,
         new LongContent(0L)
