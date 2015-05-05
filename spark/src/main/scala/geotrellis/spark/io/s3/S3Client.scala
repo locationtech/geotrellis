@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
 import scala.collection.JavaConverters._
 import scala.util.Random
+import com.amazonaws.ClientConfiguration
 
 trait S3Client extends LazyLogging {
 
@@ -70,9 +71,12 @@ object S3Client {
   }
 }
 
-class AmazonS3Client(credentials: AWSCredentials) extends S3Client {
+class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) extends S3Client {
   def this(provider: AWSCredentialsProvider) =
-    this(provider.getCredentials)
+    this(provider.getCredentials, new ClientConfiguration())
+
+  def this(provider: AWSCredentialsProvider, config: ClientConfiguration) =
+    this(provider.getCredentials, config)
 
   val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
 

@@ -9,10 +9,20 @@ import org.apache.spark._
 import spray.json.JsonFormat
 import scala.reflect._
 import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
+import com.amazonaws.retry.PredefinedRetryPolicies
 
 object S3RasterCatalog {  
   def defaultS3Client = 
-    () => new AmazonS3Client(new DefaultAWSCredentialsProviderChain) 
+    () => {
+      val provider = new DefaultAWSCredentialsProviderChain()
+      val config = new com.amazonaws.ClientConfiguration
+      config.setMaxConnections(128)
+      config.setMaxErrorRetry(16)
+      config.setConnectionTimeout(1000000)
+      config.setSocketTimeout(1000000)
+      config.setRetryPolicy(PredefinedRetryPolicies.getDefaultRetryPolicyWithCustomMaxRetries(32))  
+      new AmazonS3Client(provider, config)
+    }
   
   private def layerPath(layerId: LayerId) = 
     s"${layerId.name}/${layerId.zoom}"  
