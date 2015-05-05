@@ -93,7 +93,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("can retreive all the metadata"){
           val mds = catalog.attributeStore.readAll[AccumuloLayerMetaData]("metadata")
-          mds.foreach(println)
+          info(mds(layerId).toString)
         }      
       }
     }

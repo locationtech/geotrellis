@@ -47,7 +47,6 @@ class AccumuloRasterCatalog(
                 
         val md = 
           AccumuloLayerMetaData(
-            layerId = layerId,
             rasterMetaData = rdd.metaData,            
             keyClass = classTag[K].toString,
             tileTable = tileTable

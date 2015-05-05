@@ -2,8 +2,10 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
 
 import spray.json._
+import DefaultJsonProtocol._
 
 import scala.collection.JavaConversions._
 
@@ -45,19 +47,21 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     } else if(values.size > 1) {
       sys.error(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
-      values.head.toString.parseJson.convertTo[T]
+      values.head.toString.parseJson.convertTo[(LayerId, T)]._2
     }
   }
 
-  def readAll[T: RootJsonFormat](attributeName: String): Seq[T] = {
-    fetch(None, attributeName).map(_.toString.parseJson.convertTo[T])
+  def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId,T] = {
+    fetch(None, attributeName)
+      .map{ _.toString.parseJson.convertTo[(LayerId, T)] }
+      .toMap
   }
 
   def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation(layerId.toString)
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),
-      new Value(value.toJson.compactPrint.getBytes)
+      new Value((layerId, value).toJson.compactPrint.getBytes)
     )
 
     connector.write(attributeTable, mutation)
