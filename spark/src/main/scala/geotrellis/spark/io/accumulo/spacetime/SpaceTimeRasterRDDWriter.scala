@@ -27,6 +27,13 @@ import scala.collection.JavaConversions._
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
 
+  def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {
+    val boundable = implicitly[Boundable[SpaceTimeKey]]
+    rdd
+      .map{ case (k, tile) => KeyBounds(k, k) }
+      .reduce { boundable.combine }
+  }
+
   /** TODO: What is the rules about the "num" parameter? */
   def getSplits(
     layerId: LayerId,

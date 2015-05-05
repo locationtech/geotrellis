@@ -231,13 +231,6 @@ class HadoopRasterCatalogSpec extends FunSpec
       it("should have ran") {
         ran should be (true)
       }
-    }
-
-    ifCanRunSpark {
-      val catalogPath = new Path(inputHome, ("st-catalog-spec"))
-      val fs = catalogPath.getFileSystem(sc.hadoopConfiguration)
-      HdfsUtils.deletePath(catalogPath, sc.hadoopConfiguration)
-      val catalog = HadoopRasterCatalog(catalogPath)
 
       it("ZCurveKeyIndexMethod.byYear") {
         val coordST = CoordinateSpaceTime

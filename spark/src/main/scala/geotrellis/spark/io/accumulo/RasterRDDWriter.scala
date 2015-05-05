@@ -24,6 +24,9 @@ import spire.syntax.cfor._
 
 
 trait RasterRDDWriter[K] {
+  
+  /** Getting KeyBounds most efficiently requires concrete knowladge of K */
+  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
 
   def getSplits(
     layerId: LayerId,
