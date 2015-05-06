@@ -59,15 +59,15 @@ trait Tile extends IterableTile with MappableTile[Tile] {
   def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
     if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
-  val cols: Int
-  val rows: Int
+  def cols: Int
+  def rows: Int
   lazy val dimensions: (Int, Int) = (cols, rows)
   lazy val size = cols * rows
 
   /** Create a mutable copy of this tile */
   def mutable: MutableArrayTile 
 
-  val cellType: CellType
+  def cellType: CellType
 
   def convert(cellType: CellType): Tile
 

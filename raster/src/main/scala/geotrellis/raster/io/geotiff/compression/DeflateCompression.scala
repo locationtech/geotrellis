@@ -20,6 +20,7 @@ import java.util.zip.{ Inflater, Deflater }
 
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
 import scala.collection.mutable
 
@@ -51,6 +52,8 @@ object DeflateCompression extends Compression {
 }
 
 class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
+  def code = ZLibCoded
+
   def compress(segment: Array[Byte]): Array[Byte] = {
     val deflater = new Deflater()
     val tmp = segment.clone

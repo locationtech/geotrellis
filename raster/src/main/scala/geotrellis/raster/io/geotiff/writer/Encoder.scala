@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff.writer
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.Proj4StringParser
 import geotrellis.proj4.CRS
 
 import java.io.ByteArrayOutputStream
@@ -234,7 +233,9 @@ class Encoder(
     * important not to call this more than once.
     */
   def write() {
-    // 0x0000: first 4 bytes of signature
+    // First 4 bytes of signature: 'M', 'M', 0, 42.
+    // This represents that the file is in Big Endian, and provides the
+    // TIFF header code.
     writeInt(0x4d4d002a)
 
     // render image (does not write output)
@@ -320,7 +321,7 @@ class Encoder(
     todoDouble(0.0)    // i
     todoDouble(0.0)    // j
     todoDouble(0.0)    // k = 0.0
-      todoDouble(e.xmin) // x
+    todoDouble(e.xmin) // x
     todoDouble(e.ymax) // y
     todoDouble(0.0)    // z = 0.0
 
@@ -339,7 +340,7 @@ class Encoder(
     dos.flush()
   }
 
-  private def writeGeoKeyDirectory(crs: CRS) {
+  private def writeGeoKeyDirectory(crs: CRS): Unit = {
     val proj4String = crs.toProj4String
     val parser = Proj4StringParser(proj4String)
     val (gkis, ds) = parser.parse

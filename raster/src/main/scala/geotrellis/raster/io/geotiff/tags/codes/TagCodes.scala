@@ -79,6 +79,8 @@ object TagCodes {
   val ModelTiePointsTag = 33922
   val ModelTransformationTag = 34264
   val GeoKeyDirectoryTag = 34735
+  val GeoDoubleParamsTag = 34736
+  val GeoAsciiParamsTag = 34737
   val DoublesTag = 34736
   val AsciisTag = 34737
   val MetadataTag = 42112

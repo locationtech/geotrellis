@@ -2,6 +2,7 @@ package geotrellis.raster.io.geotiff.tags
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.utils._
 import CommonPublicValues._
@@ -52,10 +53,10 @@ case class TiffTags(
     (this
       &|-> TiffTags._nonBasicTags
       ^|-> NonBasicTags._planarConfiguration get) match {
-      case Some(i) if i == 2 =>
-        false
-      case Some(i) if i == 1 =>
+      case Some(PlanarConfigurations.PixelInterleave) =>
         true
+      case Some(PlanarConfigurations.BandInterleave) =>
+        false
       case None =>
         true
       case Some(i) =>

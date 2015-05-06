@@ -6,7 +6,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
 trait GeoTiff {
-  def writable: GeoTiffWritableTile
+  def imageData: GeoTiffImageData
   def extent: Extent
   def crs: CRS
   def tags: Tags

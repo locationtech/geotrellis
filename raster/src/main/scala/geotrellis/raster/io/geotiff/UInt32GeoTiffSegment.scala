@@ -18,22 +18,12 @@ class NoDataUInt32GeoTiffSegment(bytes: Array[Byte], noDataValue: Float) extends
 }
 
 class UInt32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
-  private val buffer = Array.ofDim[Byte](8)
-  buffer(0) = 0.toByte
-  buffer(1) = 0.toByte
-  buffer(2) = 0.toByte
-  buffer(3) = 0.toByte
+  protected val buffer = ByteBuffer.wrap(bytes).asIntBuffer
 
   val size: Int = bytes.size / 4
 
-  def get(i: Int): Float = {
-    val bi = i * 4
-    buffer(4) = bytes(bi)
-    buffer(5) = bytes(bi + 1)
-    buffer(6) = bytes(bi + 2)
-    buffer(7) = bytes(bi + 3)
-    ByteBuffer.wrap(buffer, 0, 8).getLong.toFloat
-  }
+  def get(i: Int): Float = 
+    (buffer.get(i) & 0xFFFFFFFFL).toFloat
 
   def getInt(i: Int): Int = f2i(get(i))
   def getDouble(i: Int): Double = f2d(get(i))

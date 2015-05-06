@@ -6,10 +6,17 @@ import java.nio.ByteOrder
 import spire.syntax.cfor._
 
 trait Decompressor extends Serializable {
+  def code: Int
+
   def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 
+  /** Internally, we use the ByteBuffer's default byte ordering (BigEndian).
+    * If the decompressed bytes are LittleEndian, flip 'em.
+    */
   def flipEndian(bytesPerFlip: Int): Decompressor = 
     new Decompressor {
+      def code = Decompressor.this.code
+
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         flip(Decompressor.this.decompress(bytes, segmentIndex))
 
@@ -34,6 +41,8 @@ trait Decompressor extends Serializable {
 
   def withPredictor(predictor: Predictor): Decompressor =
     new Decompressor {
+      def code = Decompressor.this.code
+
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         predictor(Decompressor.this.decompress(bytes, segmentIndex), segmentIndex)
     }

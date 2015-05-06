@@ -81,7 +81,7 @@ class MultiBandGeoTiffTile(
   val bandCount: Int,
   hasPixelInterleave: Boolean,
   noDataValue: Option[Double]
-) extends MultiBandTile with GeoTiffWritableTile {
+) extends MultiBandTile with GeoTiffImageData {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 
@@ -121,6 +121,7 @@ class MultiBandGeoTiffTile(
 
       var j = 0
       cfor(bandIndex)(_ < size, _ + bandCount) { i =>
+        println(s"$j (${compressedBandBytes.length}) =  $i (${compressedBytes.length})")
         compressedBandBytes(j) = compressedBytes(i).clone
         j += 1
       }

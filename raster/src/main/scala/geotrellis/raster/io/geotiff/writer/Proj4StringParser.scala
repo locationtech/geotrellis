@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.reader
+package geotrellis.raster.io.geotiff.writer
 
 import collection.immutable.Map
 

@@ -71,7 +71,9 @@ abstract class GeoTiffTile(
   val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
   compression: Compression // Compression to use moving forward
-) extends Tile with GeoTiffWritableTile {
+) extends Tile with GeoTiffImageData {
+  val bandCount = 1
+
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 

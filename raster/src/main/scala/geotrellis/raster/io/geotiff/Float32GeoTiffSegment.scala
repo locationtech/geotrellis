@@ -19,11 +19,11 @@ class NoDataFloat32GeoTiffSegment(bytes: Array[Byte], noDataValue: Float) extend
 }
 
 class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
-  protected val byteBuffer = ByteBuffer.wrap(bytes)
+  protected val buffer = ByteBuffer.wrap(bytes).asFloatBuffer
 
   val size: Int = bytes.size / 4
 
-  def get(i: Int): Float = byteBuffer.getFloat(i * 4)
+  def get(i: Int): Float = buffer.get(i)
 
   def getInt(i: Int): Int = f2i(get(i))
   def getDouble(i: Int): Double = f2d(get(i))

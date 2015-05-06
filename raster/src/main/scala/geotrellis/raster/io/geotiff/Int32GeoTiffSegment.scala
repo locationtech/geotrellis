@@ -19,11 +19,11 @@ class NoDataInt32GeoTiffSegment(bytes: Array[Byte], noDataValue: Int) extends In
 }
 
 class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
-  protected val byteBuffer = ByteBuffer.wrap(bytes)
+  protected val buffer = ByteBuffer.wrap(bytes).asIntBuffer
 
   val size: Int = bytes.size / 4
 
-  def get(i: Int): Int = byteBuffer.getInt(i * 4)
+  def get(i: Int): Int = buffer.get(i)
 
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))

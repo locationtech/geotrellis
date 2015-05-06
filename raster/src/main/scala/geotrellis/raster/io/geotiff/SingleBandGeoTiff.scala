@@ -15,7 +15,7 @@ class SingleBandGeoTiff(
   def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
   def raster: Raster = Raster(tile, extent)
 
-  def writable =
+  def imageData: GeoTiffImageData =
     tile match {
       case gtt: GeoTiffTile => gtt
       case _ => tile.toGeoTiffTile(options)

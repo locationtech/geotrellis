@@ -52,10 +52,10 @@ object TiffTagsReader {
     cfor(0)(_ < tagCount, _ + 1) { i =>
       val tagMetaData =
         TiffTagMetaData(
-          byteBuffer.getUnsignedShort,
-          byteBuffer.getUnsignedShort,
-          byteBuffer.getInt,
-          byteBuffer.getInt
+          byteBuffer.getUnsignedShort, // Tag
+          byteBuffer.getUnsignedShort, // Type
+          byteBuffer.getInt,           // Count
+          byteBuffer.getInt            // Offset
         )
 
       if (tagMetaData.tag == codes.TagCodes.GeoKeyDirectoryTag)

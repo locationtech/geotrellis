@@ -10,12 +10,12 @@ import spire.syntax.cfor._
 import java.util.BitSet
 
 class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
-  protected val byteBuffer = ByteBuffer.wrap(bytes)
+  protected val buffer = ByteBuffer.wrap(bytes).asDoubleBuffer
 
   val size: Int = bytes.size / 8
 
   def get(i: Int): Double =
-    byteBuffer.getDouble(i * 8)
+    buffer.get(i)
 
   def getInt(i: Int): Int = d2i(get(i))
   def getDouble(i: Int): Double = get(i)

@@ -26,18 +26,19 @@ trait ByteBufferExtensions {
 
     @inline
     final private def ub2s(byte: Byte): Short =
-      (byte.toInt + (if (byte < 0) 255 else 0)).toShort
+      (byte & 0xFF).toShort
 
     @inline
     final private def us2i(short: Short): Int =
-      short.toInt + (if (short < 0) 65536 else 0)
+      short & 0xFFFF
 
     @inline
     final private def ui2l(int: Int): Long =
-      int.toLong + (if (int < 0) 4294967296L else 0L)
+      int & 0XFFFFFFFFL
 
     @inline
-    final def getUnsignedShort: Int = byteBuffer.getChar.toInt
+    final def getUnsignedShort: Int = 
+      byteBuffer.getChar.toInt
 
     final def getByteArray(length: Int): Array[Short] = {
       val arr = Array.ofDim[Short](length)

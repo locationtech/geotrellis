@@ -131,7 +131,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
     val expected = expectedTile(TypeByte, testTiffByteValue _)
     val t = "byte"
 
-//    writeExpectedTile(expected, t)
+    // writeExpectedTile(expected, t)
 
     it("should read each varition of compression and striped/tiled") {
       println(s"Testing $t:")

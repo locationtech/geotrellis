@@ -13,14 +13,29 @@ class MultiBandGeoTiff(
   val tags: Tags,
   options: GeoTiffOptions
 ) extends GeoTiff {
-  def writable =
+  def imageData: GeoTiffImageData =
     tile match {
       case gtt: MultiBandGeoTiffTile => gtt
       case _ => ??? ///tile.toGeoTiffTile(options)
     }
 }
 
-// object MultiBandBandGeoTiff {
+object MultiBandGeoTiff {
+  def apply(path: String): MultiBandGeoTiff =
+    GeoTiffReader.readMultiBand(path)
+
+  /* Read a multi band GeoTIFF file.
+   */
+  def apply(path: String, decompress: Boolean): MultiBandGeoTiff = 
+    GeoTiffReader.readMultiBand(path, decompress)
+
+  /* Read a multi band GeoTIFF file.
+   */
+  def apply(bytes: Array[Byte]): MultiBandGeoTiff =
+    GeoTiffReader.readMultiBand(bytes)
+
+  def apply(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff =
+    GeoTiffReader.readMultiBand(bytes, decompress)
 
 //   def unapply(mbg: MultiBandGeoTiff): Option[(Tile, Extent, CRS, Map[String, String], Map[String, String])] =
 //     Some((mbg.tile, mbg.extent, mbg.crs, mbg.tags, mbg.bandTags))
@@ -71,12 +86,12 @@ class MultiBandGeoTiff(
 //   def compressed(bytes: Array[Byte]): SingleBandGeoTiff =
 //     GeoTiffReader.readSingleBand(bytes, false)
 
-//   implicit def singleBandGeoTiffToTile(mbg: SingleBandGeoTiff): Tile =
-//     mbg.tile
+  implicit def multiBandGeoTiffToTile(mbg: MultiBandGeoTiff): MultiBandTile =
+    mbg.tile
 
 //   implicit def singleBandGeoTiffToRaster(mbg: SingleBandGeoTiff): Raster =
 //     mbg.raster
 
 //   implicit def singleBandGeoTiffToProjectedRaster(mbg: SingleBandGeoTiff): ProjectedRaster =
 //     mbg.projectedRaster
-// }
+}

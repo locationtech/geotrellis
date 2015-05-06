@@ -37,6 +37,8 @@ class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 class GeoTiffReaderLimitationException(msg: String)
     extends RuntimeException(msg)
 
+// TODO: Streaming read (e.g. so that we can read GeoTiffs that cannot fit into memory. Perhaps support BigTIFF?)
+
 object GeoTiffReader {
 
   /* Read a single band GeoTIFF file.
@@ -149,10 +151,10 @@ object GeoTiffReader {
       case _ => throw new MalformedGeoTiffException("incorrect byte order")
     }
 
-    // Validate GeoTiff identification number
-    val geoTiffIdNumber = byteBuffer.getChar
-    if ( geoTiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
+    // Validate Tiff identification number
+    val tiffIdNumber = byteBuffer.getChar
+    if (tiffIdNumber != 42)
+      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $tiffIdNumber)")
 
     val tagsStartPosition = byteBuffer.getInt
 

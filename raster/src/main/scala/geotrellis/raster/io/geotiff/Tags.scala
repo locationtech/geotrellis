@@ -1,6 +1,8 @@
 package geotrellis.raster.io.geotiff
 
 object Tags {
+  def empty: Tags = Tags(Map(), Array())
+
   def apply(headTags: Map[String, String], bandTags: Array[Map[String, String]]) = 
     new Tags(headTags, bandTags)
 
