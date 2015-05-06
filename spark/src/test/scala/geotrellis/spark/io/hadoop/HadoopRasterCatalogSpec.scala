@@ -170,31 +170,6 @@ class HadoopRasterCatalogSpec extends FunSpec
           tilesEqual(actual, expected)
         }
 
-        it("should find default params based on key") {
-          val defaultParams =
-            HadoopRasterCatalog.BaseParams.withKeyParams[SpatialKey]("spatial-layers")
-          val cat = HadoopRasterCatalog(catalogPath, defaultParams)
-          cat
-            .writer[SpatialKey](RowMajorKeyIndexMethod)
-            .write(LayerId("spatial-ones", level.zoom), onesRdd)
-          assert(fs.exists(new Path(catalogPath, "spatial-layers/spatial-ones")))
-        }
-
-        it("should find default params based on LayerId") {
-          val defaultParams = HadoopRasterCatalog.BaseParams
-            .withKeyParams[SpatialKey]("spatial-layers")
-            .withLayerParams[SpatialKey]{ case LayerId(name, zoom) if name.startsWith("ones") =>
-              "special"
-            }
-
-          //LayerParams should take priority
-          val cat = HadoopRasterCatalog(catalogPath, defaultParams)
-          cat
-            .writer[SpatialKey](RowMajorKeyIndexMethod)
-            .write(LayerId("onesSpecial", level.zoom), onesRdd)
-          assert(fs.exists(new Path(catalogPath, "special/onesSpecial")))
-        }
-
         it("should allow filtering files in hadoopGeoTiffRDD") {
           val tilesDir = new Path(localFS.getWorkingDirectory,
                                   "../raster-test/data/one-month-tiles/")
