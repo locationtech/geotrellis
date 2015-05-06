@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.slf4j._
 class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
 
-  def listObjects(r: ListObjectsRequest): ObjectListing = {
+  def listObjects(r: ListObjectsRequest): ObjectListing = this.synchronized {
     if (null == r.getMaxKeys)
       r.setMaxKeys(64)
     val bucket = getBucket(r.getBucketName)
@@ -60,7 +60,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     ol
   }
 
-  def getObject(r: GetObjectRequest): S3Object = {
+  def getObject(r: GetObjectRequest): S3Object =  this.synchronized {
     val bucket = getBucket(r.getBucketName)
     val key = r.getKey
     if (bucket.contains(key)){
@@ -82,7 +82,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
 
-  def putObject(r: PutObjectRequest): PutObjectResult = {    
+  def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {    
     logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
     bucket.put(r.getKey, streamToBytes(r.getInputStream))

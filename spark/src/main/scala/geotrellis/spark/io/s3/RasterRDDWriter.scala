@@ -16,41 +16,82 @@ import com.typesafe.scalalogging.slf4j._
 import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
+import scala.concurrent._
+import java.util.concurrent.Executors
+import scala.concurrent.duration._
+import scalaz.stream.async._
+import scalaz.stream._
+import scalaz.concurrent.Strategy
+import scalaz.concurrent.Task
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
-abstract class RasterRDDWriter[K: ClassTag] extends LazyLogging {
-  val encodeKey: (K, KeyIndex[K]) => String
+abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
+  val encodeKey: (K, KeyIndex[K], Int) => String
+
+  /** Getting KeyBounds most efficiently requires concrete knowladge of K */
+  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
 
   def write(
     s3client: ()=>S3Client, 
     bucket: String, 
     layerPath: String,
+    keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K],
     clobber: Boolean)
   (layerId: LayerId, rdd: RasterRDD[K])
   (implicit sc: SparkContext): Unit = {
     // TODO: Check if I am clobbering things        
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
-    
+        
+    val maxLen = { // lets find out the widest key we can possibly have
+      def digits(x: Long): Int = if (x < 10) 1 else 1 + digits(x/10)
+      digits(keyIndex.toIndex(keyBounds.maxKey))
+    }
+
     val bcClient = sc.broadcast(s3client)
     val catalogBucket = bucket
     val path = layerPath
     val ek = encodeKey
+
     rdd
       .foreachPartition { partition =>
+        import geotrellis.spark.utils.TaskUtils._
+
         val s3client: S3Client = bcClient.value.apply
 
-        val requests = partition.map{ row =>
-          val index = keyIndex.toIndex(row._1) 
-          val bytes = KryoSerializer.serialize[(K, Tile)](row)
-          val metadata = new ObjectMetadata()
-          metadata.setContentLength(bytes.length);              
-          val is = new ByteArrayInputStream(bytes)
-          new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex)}", is, metadata)
-        }
+        val requests: Process[Task, PutObjectRequest] = 
+          Process.unfold(partition){ iter => 
+            if (iter.hasNext) {
+              val row = iter.next
+              val index = keyIndex.toIndex(row._1) 
+              val bytes = KryoSerializer.serialize[(K, Tile)](row)
+              val metadata = new ObjectMetadata()
+              metadata.setContentLength(bytes.length)
+              val is = new ByteArrayInputStream(bytes)
+              val request = new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)                        
+              Some(request, iter)
+            } else  {
+              None
+            }
+          }
+        
+        val pool = Executors.newFixedThreadPool(32)
 
-        requests.foreach{ r =>
-          s3client.putObjectWithBackoff(r)
-        }
+        val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
+          Process eval Task { 
+            request.getInputStream.reset // reset in case of retransmission to avoid 400 error
+            s3client.putObject(request) 
+          }(pool).retryEBO { 
+            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case _ => false
+          }
+        }   
+    
+        val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 8) { requests map (write) }
+
+        results.run.run
+        pool.shutdown
       }
 
     logger.info(s"Finished saving tiles to ${layerPath}")
