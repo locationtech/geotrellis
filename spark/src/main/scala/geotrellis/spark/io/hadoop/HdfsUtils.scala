@@ -137,6 +137,15 @@ object HdfsUtils extends Logging {
 
   def createRandomString(size: Int): String = Random.alphanumeric.take(size).mkString
 
+  def tmpPath(base: Path, prefix: String, conf: Configuration) = {
+    val fs = base.getFileSystem(conf)
+    var path: Path = null
+    do {
+      path = new Path(base, s"$prefix-${createRandomString(10)}")
+    } while ( fs.exists(path) )
+    path
+  }
+
   def getLineScanner(path: String, conf: Configuration): Option[LineScanner] =
     getLineScanner(new Path(path), conf)
 

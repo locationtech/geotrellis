@@ -24,7 +24,16 @@ import spire.syntax.cfor._
 import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
+  import geotrellis.spark.io.accumulo.stringToText
 
+  def getKeyBounds(rdd: RasterRDD[SpatialKey]): KeyBounds[SpatialKey] = {
+    val md = rdd.metaData
+    val gb = md.gridBounds
+    KeyBounds(
+      SpatialKey(gb.colMin, gb.rowMin),
+      SpatialKey(gb.colMax, gb.rowMax))
+  }
+    
   def getSplits(
     layerId: LayerId,
     metaData: RasterMetaData,
@@ -43,16 +52,19 @@ object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
     splits.toList
   }
 
-  def encode(layerId: LayerId, raster: RasterRDD[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(Text, Mutation)] =
-    raster.map( KryoClosure { case (key, tile) =>
-      val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
-      val mutation = new Mutation(rowId(layerId, index.toIndex(key)))
-      mutation.put(
-        new Text(layerId.name), new Text(),
-        System.currentTimeMillis(),
-        new Value(value)
-      )
+  def encode(
+    layerId: LayerId,
+    raster: RasterRDD[SpatialKey],
+    index: KeyIndex[SpatialKey]
+  ): RDD[(Key, Value)] = {
+    def getKey(id: LayerId, key: SpatialKey): Key =
+      new Key(rowId(id, index.toIndex(key)), id.name)
 
-      (null, mutation)
-    })
+    raster
+      .sortBy{ case (key, _) => getKey(layerId, key) }
+      .map { case (key, tile) => {
+        val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
+        getKey(layerId, key) -> new Value(value)
+      }}
+  }
 }

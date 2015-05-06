@@ -4,6 +4,9 @@ import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
+import scala.collection.JavaConverters._
+import scala.util.Random
+import com.amazonaws.ClientConfiguration
 
 trait S3Client extends LazyLogging {
 
@@ -30,25 +33,28 @@ trait S3Client extends LazyLogging {
   def putObject(bucketName: String, key: String, bytes: Array[Byte]): PutObjectResult =
     putObject(bucketName, key, bytes, new ObjectMetadata())
 
-  def putObjectWithBackoff(putObjectRequest: PutObjectRequest): PutObjectResult = {
-    var ret: PutObjectResult = null
-    var backoff = 0
-    do {
-      try {
-        if (backoff > 0) Thread.sleep(backoff)
-        ret = putObject(putObjectRequest)
-      } catch {
-        case e: AmazonS3Exception =>
-          if (e.getErrorCode == 503 && e.getErrorType == "SlowDown") {
-            backoff = math.max(8, backoff*2)
-            logger.info(s"Got $e, Backing off for $backoff ms")
-          }else{
-            throw e
-          }
+
+  def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =          
+      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys));
+
+  def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
+    new Iterator[S3ObjectSummary] {      
+      var listing = listObjects(request)
+      var iter = listing.getObjectSummaries.asScala.iterator
+
+      def getNextPage: Boolean =  {
+        val nextRequest = request.withMarker(listing.getNextMarker)
+        listing = listObjects(nextRequest)
+        listing.getObjectSummaries.asScala.iterator        
+        iter.hasNext
       }
-    } while (ret == null)
-    ret
-  }
+
+      def hasNext: Boolean = {
+        iter.hasNext || getNextPage
+      }      
+
+      def next: S3ObjectSummary = iter.next
+    }                
 }
 
 object S3Client {
@@ -65,9 +71,12 @@ object S3Client {
   }
 }
 
-class AmazonS3Client(credentials: AWSCredentials) extends S3Client {
+class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) extends S3Client {
   def this(provider: AWSCredentialsProvider) =
-    this(provider.getCredentials)
+    this(provider.getCredentials, new ClientConfiguration())
+
+  def this(provider: AWSCredentialsProvider, config: ClientConfiguration) =
+    this(provider.getCredentials, config)
 
   val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
 
