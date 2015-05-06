@@ -26,10 +26,12 @@ object AccumuloRasterCatalog {
 }
 
 class AccumuloRasterCatalog(
-  instance: AccumuloInstance, 
+  instance: AccumuloInstance,
   attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
+  val accumuloInstance = instance
+  val accumuloAttributeStore = attributeStore
+  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
@@ -38,23 +40,27 @@ class AccumuloRasterCatalog(
         implicitly[RasterRDDReader[K]].read(instance, metaData, keyBounds, index)(layerId, filterSet)
       }
     }
-  
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](keyIndexMethod: KeyIndexMethod[K], tileTable: String): Writer[LayerId, RasterRDD[K]] = {
+
+  def writer[K: SpatialComponent: RasterRDDWriter: JsonFormat: Ordering: ClassTag](
+    keyIndexMethod: KeyIndexMethod[K],
+    tileTable: String,
+    strategy: AccumuloWriteStrategy = HdfsWriteStrategy
+  ): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         // Persist since we are both calculating a histogram and saving tiles.
         rdd.persist()
-                
-        val md = 
+
+        val md =
           AccumuloLayerMetaData(
             layerId = layerId,
-            rasterMetaData = rdd.metaData,            
+            rasterMetaData = rdd.metaData,
             keyClass = classTag[K].toString,
             tileTable = tileTable
           )
 
-        val rddWriter = implicitly[RasterRDDWriter[K]]        
-        
+        val rddWriter = implicitly[RasterRDDWriter[K]]
+
         val keyBounds = rddWriter.getKeyBounds(rdd)
         val index = {
           val indexKeyBounds = {
@@ -65,12 +71,11 @@ class AccumuloRasterCatalog(
           keyIndexMethod.createIndex(indexKeyBounds)
         }
 
-        attributeStore.write(layerId, "metadata", md)      
+        attributeStore.write(layerId, "metadata", md)
         attributeStore.write(layerId, "keyBounds", keyBounds)
         attributeStore.write(layerId, "keyIndex", index)
 
-        
-        rddWriter.write(instance, md, keyBounds, index)(layerId, rdd)
+        rddWriter.write(instance, md, keyBounds, index)(layerId, rdd, strategy)
         rdd.unpersist(blocking = false)
       }
     }
