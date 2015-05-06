@@ -30,7 +30,7 @@ object S3RasterCatalog {
   def apply(bucket: String, rootPath: String, s3client: ()=>S3Client = defaultS3Client)
     (implicit sc: SparkContext): S3RasterCatalog = {
     
-    val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath, layerPath)
+    val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath)
     new S3RasterCatalog(bucket, rootPath, attributeStore, s3client)
   }
 }
@@ -46,7 +46,7 @@ class S3RasterCatalog(
   def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
-        val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metaData")
+        val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
         implicitly[RasterRDDReader[K]].read(s3client, metaData, keyBounds, index)(layerId, filterSet)
@@ -80,9 +80,7 @@ class S3RasterCatalog(
             bucket = bucket,
             key = path)
 
-        val rddWriter = implicitly[RasterRDDWriter[K]]
-
-        val keyBounds = rddWriter.getKeyBounds(rdd)
+        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
         val index = {
           // Expanding spatial bounds? To allow multi-stage save?
           val indexKeyBounds = {
@@ -94,9 +92,10 @@ class S3RasterCatalog(
         }
 
         attributeStore.write(layerId, "keyIndex", index)
-        attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
-        attributeStore.write[S3LayerMetaData](layerId, "metaData", md)
+        attributeStore.write(layerId, "keyBounds", keyBounds)
+        attributeStore.write(layerId, "metadata", md)
 
+        val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
@@ -104,7 +103,7 @@ class S3RasterCatalog(
     }
 
   def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
-    val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metaData")
+    val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
     val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
     implicitly[TileReader[K]].read(s3client(), layerId, metaData, index, keyBounds)(_)    

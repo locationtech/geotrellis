@@ -37,12 +37,20 @@ object SpatialKey {
       }
   }
 
-  implicit object SpatialKeyBoundable extends Boundable[SpatialKey] {
+  implicit object Boundable extends Boundable[SpatialKey] {
     def minBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.min(a.col, b.col), math.min(a.row, b.row))
     }    
     def maxBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
+    }
+
+    def getKeyBounds(rdd: RasterRDD[SpatialKey]): KeyBounds[SpatialKey] = {
+      val md = rdd.metaData
+      val gb = md.gridBounds
+      KeyBounds(
+        SpatialKey(gb.colMin, gb.rowMin),
+        SpatialKey(gb.colMax, gb.rowMax))    
     }
   }
 }

@@ -10,27 +10,27 @@ import geotrellis.spark.io.accumulo._
 import org.apache.spark.SparkContext
 import org.apache.hadoop.io.Text
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.accumulo.core.data.{Range => ARange, Key => AccumuloKey, Value => AccumuloValue}
+import org.apache.accumulo.core.data.{Range => ARange, Value}
 
 import scala.collection.JavaConversions._
 
 
-trait TileReader[Key] {
+trait TileReader[K] {
   def collectTile(
     instance: AccumuloInstance,
     layerId: LayerId,
-    kIndex: KeyIndex[Key],
+    kIndex: KeyIndex[K],
     tileTable: String,
-    key: Key
-  ): List[AccumuloValue]
+    key: K
+  ): List[Value]
 
   def read(
     instance: AccumuloInstance,
     layerId: LayerId,
     accumuloLayerMetaData: AccumuloLayerMetaData,
-    index: KeyIndex[Key]
-  )(key: Key): Tile = {
-    val AccumuloLayerMetaData(_, _, rasterMetaData, tileTable) = accumuloLayerMetaData
+    index: KeyIndex[K]
+  )(key: K): Tile = {
+    val AccumuloLayerMetaData(_, rasterMetaData, tileTable) = accumuloLayerMetaData
     val values = collectTile(instance, layerId, index, tileTable, key)
     val value =
       if(values.size == 0) {
@@ -41,7 +41,7 @@ trait TileReader[Key] {
         values.head
       }
 
-    val (_, tileBytes) = KryoSerializer.deserialize[(Key, Array[Byte])](value.get)
+    val (_, tileBytes) = KryoSerializer.deserialize[(K, Array[Byte])](value.get)
 
     ArrayTile.fromBytes(
       tileBytes,

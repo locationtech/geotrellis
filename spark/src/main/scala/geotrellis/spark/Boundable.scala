@@ -23,4 +23,6 @@ trait Boundable[K] extends Serializable {
       minBound(b1.minKey, b2.minKey),
       maxBound(b1.maxKey, b2.maxKey))
   }
+
+  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
 }
