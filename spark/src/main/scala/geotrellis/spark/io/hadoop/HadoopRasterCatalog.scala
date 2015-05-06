@@ -138,10 +138,15 @@ class HadoopRasterCatalog(
       }
     }
 
-  def readTile[K: JsonFormat: TileReader: ClassTag](layerId: LayerId): K => Tile = {
-    val layerMetaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-    implicitly[TileReader[K]].read(catalogConfig, layerMetaData, index)(_)
-  }
+  def readTile[K: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = 
+    new Reader[K, Tile] {
+      val readTile = {
+        val layerMetaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
+        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+        implicitly[TileReader[K]].read(catalogConfig, layerMetaData, index)(_)
+      }
+
+      def read(key: K) = readTile(key)
+    }
 }

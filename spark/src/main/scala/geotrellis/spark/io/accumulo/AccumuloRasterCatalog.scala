@@ -75,10 +75,15 @@ class AccumuloRasterCatalog(
     }
   }
 
-  def readTile[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
-    val accumuloLayerMetaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-    implicitly[TileReader[K]].read(instance, layerId, accumuloLayerMetaData, index)(_)
-  }
+  def readTile[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
+    new Reader[K, Tile] {
+      val readTile = {
+        val accumuloLayerMetaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
+        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+        implicitly[TileReader[K]].read(instance, layerId, accumuloLayerMetaData, index)(_)        
+      }
+
+      def read(key: K) = readTile(key)
+    }  
 }
