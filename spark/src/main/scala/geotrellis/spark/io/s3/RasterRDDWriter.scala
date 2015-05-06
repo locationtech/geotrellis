@@ -30,9 +30,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
   val encodeKey: (K, KeyIndex[K], Int) => String
 
-  /** Getting KeyBounds most efficiently requires concrete knowladge of K */
-  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
-
   def write(
     s3client: ()=>S3Client, 
     bucket: String, 

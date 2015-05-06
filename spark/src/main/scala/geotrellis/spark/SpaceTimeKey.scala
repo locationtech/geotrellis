@@ -47,12 +47,19 @@ object SpaceTimeKey {
       }
   }
 
-  implicit object SpatialKeyBoundable extends Boundable[SpaceTimeKey] {
+  implicit object Boundable extends Boundable[SpaceTimeKey] {
     def minBound(a: SpaceTimeKey, b: SpaceTimeKey) = {
       SpaceTimeKey(math.min(a.col, b.col), math.min(a.row, b.row), if (a.time < b.time) a.time else b.time )
-    }    
+    }
+
     def maxBound(a: SpaceTimeKey, b: SpaceTimeKey) = {
       SpaceTimeKey(math.max(a.col, b.col), math.max(a.row, b.row), if (a.time > b.time) a.time else b.time )
+    }
+
+    def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {      
+      rdd
+        .map{ case (k, tile) => KeyBounds(k, k) }
+        .reduce { combine }
     }
   }
 }

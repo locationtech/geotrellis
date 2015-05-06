@@ -80,9 +80,7 @@ class S3RasterCatalog(
             bucket = bucket,
             key = path)
 
-        val rddWriter = implicitly[RasterRDDWriter[K]]
-
-        val keyBounds = rddWriter.getKeyBounds(rdd)
+        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
         val index = {
           // Expanding spatial bounds? To allow multi-stage save?
           val indexKeyBounds = {
@@ -97,6 +95,7 @@ class S3RasterCatalog(
         attributeStore.write(layerId, "keyBounds", keyBounds)
         attributeStore.write(layerId, "metadata", md)
 
+        val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)

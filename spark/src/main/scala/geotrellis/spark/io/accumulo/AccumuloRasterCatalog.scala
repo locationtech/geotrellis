@@ -41,7 +41,7 @@ class AccumuloRasterCatalog(
       }
     }
 
-  def writer[K: SpatialComponent: RasterRDDWriter: JsonFormat: Ordering: ClassTag](
+  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
     tileTable: String,
     strategy: AccumuloWriteStrategy = HdfsWriteStrategy
@@ -58,9 +58,7 @@ class AccumuloRasterCatalog(
             tileTable = tileTable
           )
 
-        val rddWriter = implicitly[RasterRDDWriter[K]]
-
-        val keyBounds = rddWriter.getKeyBounds(rdd)
+        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
         val index = {
           val indexKeyBounds = {
             val imin = keyBounds.minKey.updateSpatialComponent(SpatialKey(0, 0))
@@ -74,6 +72,7 @@ class AccumuloRasterCatalog(
         attributeStore.write(layerId, "keyBounds", keyBounds)
         attributeStore.write(layerId, "keyIndex", index)
 
+        val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(instance, md, keyBounds, index)(layerId, rdd, strategy)
         rdd.unpersist(blocking = false)
       }

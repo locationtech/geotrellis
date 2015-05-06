@@ -20,12 +20,4 @@ import org.joda.time.format.ISODateTimeFormat
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with LazyLogging {
   val encodeKey = spacetime.encodeKey
-
-  def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {
-    val boundable = implicitly[Boundable[SpaceTimeKey]]
-    rdd
-      .map{ case (k, tile) => KeyBounds(k, k) }
-      .reduce { boundable.combine }
-  }
-
 }
