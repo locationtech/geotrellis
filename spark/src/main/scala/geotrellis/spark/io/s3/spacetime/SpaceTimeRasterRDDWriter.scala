@@ -11,7 +11,7 @@ import java.io.ByteArrayInputStream
 import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult}
 import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.services.s3.model.ObjectMetadata
-import geotrellis.index.zcurve.Z2
+import geotrellis.spark.io.index.zcurve.Z2
 import com.typesafe.scalalogging.slf4j._
 import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
@@ -27,5 +27,4 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with LazyL
       .map{ case (k, tile) => KeyBounds(k, k) }
       .reduce { boundable.combine }
   }
-
 }

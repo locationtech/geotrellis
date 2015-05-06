@@ -1,4 +1,4 @@
-package geotrellis.index.zcurve
+package geotrellis.spark.io.index.zcurve
 
 class Z3(val z: Long) extends AnyVal {
   import Z3._
@@ -45,7 +45,7 @@ object Z3 {
 
   def apply(zvalue: Long) = new Z3(zvalue)
 
-  /** insert 00 between every bit in value. Only first 21 bits can be considred. */
+  /** insert 00 between every bit in value. Only first 21 bits can be considered. */
   def split(value: Long): Long = {
     var x = value & MAX_MASK;
     x = (x | x << 32) & 0x1f00000000ffffL

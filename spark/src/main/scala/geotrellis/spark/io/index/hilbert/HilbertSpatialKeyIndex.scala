@@ -1,6 +1,7 @@
-package geotrellis.spark.io.index
+package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.KeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
@@ -86,7 +87,7 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
       BacktrackingQueryBuilder.create(
         regionInspector,
         combiner,
-        0,
+        Int.MaxValue, //the maxFilteredIndexRanges should be positive, not 0
         true,
         LongRangeHome.INSTANCE,
         new LongContent(0L)
