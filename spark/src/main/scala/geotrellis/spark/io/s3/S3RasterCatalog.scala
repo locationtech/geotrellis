@@ -19,7 +19,7 @@ object S3RasterCatalog {
   def apply(bucket: String, rootPath: String, s3client: ()=>S3Client = defaultS3Client)
     (implicit sc: SparkContext): S3RasterCatalog = {
     
-    val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath, layerPath)
+    val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath)
     new S3RasterCatalog(bucket, rootPath, attributeStore, s3client)
   }
 }

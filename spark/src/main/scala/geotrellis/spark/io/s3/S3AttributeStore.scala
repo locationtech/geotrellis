@@ -2,8 +2,11 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
 
 import spray.json._
+import DefaultJsonProtocol._
+
 import org.apache.spark._
 import java.io.PrintWriter
 import com.amazonaws.auth.AWSCredentialsProvider
@@ -17,7 +20,7 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param layerKey  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String, layerKey: LayerId => String)
+class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
                       (implicit sc: SparkContext) extends AttributeStore {
   type ReadableWritable[T] = RootJsonFormat[T]
 
@@ -28,7 +31,7 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String, lay
    */
 
   def attributePath(id: LayerId, attributeName: String): String =
-    s"$rootPath/_attributes/${layerKey(id)}/${attributeName}.json"
+    s"$rootPath/_attributes/${attributeName}__${id.name}__{id.zoom}.json"
   
   def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
     val key = attributePath(layerId, attributeName)
@@ -36,12 +39,16 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String, lay
     val is = s3Client.getObject(bucket, key).getObjectContent()
     val json = Source.fromInputStream(is).mkString;
     is.close();
-    json.parseJson.convertTo[T]
+    json.parseJson.convertTo[(LayerId, T)]._2
+  }
+
+  def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId, T] = {    
+    ??? // this will be implemented later using spiffy new S3Client functions
   }
 
   def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
-    val s = value.toJson.compactPrint
+    val s = (layerId, value).toJson.compactPrint
     val is = new ByteArrayInputStream(value.toJson.compactPrint.getBytes("UTF-8"))
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
