@@ -67,6 +67,10 @@ class S3RasterCatalogSpec extends FunSpec
         info(rdd.metaData.gridBounds.toString)
       }
 
+      it("should list all metadata") {
+        val list = catalog.attributeStore.readAll[S3LayerMetaData]("metadata")
+        list.foreach(s => info(s.toString))
+      }
     }
   }
 }

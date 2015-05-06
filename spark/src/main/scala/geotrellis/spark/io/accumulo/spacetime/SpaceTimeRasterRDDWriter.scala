@@ -28,13 +28,6 @@ import scala.collection.JavaConversions._
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
   import geotrellis.spark.io.accumulo.stringToText
 
-  def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {
-    val boundable = implicitly[Boundable[SpaceTimeKey]]
-    rdd
-      .map{ case (k, tile) => KeyBounds(k, k) }
-      .reduce { boundable.combine }
-  }
-
   /** TODO: What are the rules about the "num" parameter? */
   def getSplits(
     layerId: LayerId,

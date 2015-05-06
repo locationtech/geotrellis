@@ -25,14 +25,6 @@ import scala.collection.JavaConversions._
 
 object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
   import geotrellis.spark.io.accumulo.stringToText
-
-  def getKeyBounds(rdd: RasterRDD[SpatialKey]): KeyBounds[SpatialKey] = {
-    val md = rdd.metaData
-    val gb = md.gridBounds
-    KeyBounds(
-      SpatialKey(gb.colMin, gb.rowMin),
-      SpatialKey(gb.colMax, gb.rowMax))
-  }
     
   def getSplits(
     layerId: LayerId,

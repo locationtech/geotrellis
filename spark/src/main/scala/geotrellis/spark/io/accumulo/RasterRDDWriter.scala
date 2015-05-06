@@ -29,11 +29,7 @@ sealed trait AccumuloWriteStrategy
 case object HdfsWriteStrategy extends AccumuloWriteStrategy
 case object SocketWriteStrategy extends AccumuloWriteStrategy
 
-trait RasterRDDWriter[K] {
-  
-  /** Getting KeyBounds most efficiently requires concrete knowladge of K */
-  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
-
+trait RasterRDDWriter[K] {  
   def getSplits(
     layerId: LayerId,
     metaData: RasterMetaData,
