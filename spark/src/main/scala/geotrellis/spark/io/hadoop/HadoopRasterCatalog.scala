@@ -58,40 +58,21 @@ object HadoopRasterCatalogConfig {
 object HadoopRasterCatalog {
   def apply(
     rootPath: Path,
-    paramsConfig: DefaultParams[String] = BaseParams,
     catalogConfig: HadoopRasterCatalogConfig = HadoopRasterCatalogConfig.DEFAULT)(implicit sc: SparkContext
   ): HadoopRasterCatalog = {
     HdfsUtils.ensurePathExists(rootPath, sc.hadoopConfiguration)
     val metaDataCatalog = new HadoopLayerMetaDataCatalog(sc.hadoopConfiguration, rootPath, catalogConfig.metaDataFileName)
     val attributeStore = new HadoopAttributeStore(sc.hadoopConfiguration, new Path(rootPath, catalogConfig.attributeDir))
-    new HadoopRasterCatalog(rootPath, metaDataCatalog, attributeStore, paramsConfig, catalogConfig)
+    new HadoopRasterCatalog(rootPath, metaDataCatalog, attributeStore, catalogConfig)
   }
-
-  lazy val BaseParams = new DefaultParams[String](Map.empty.withDefaultValue(""), Map.empty)
 }
 
 class HadoopRasterCatalog(
   rootPath: Path,
   val metaDataCatalog: Store[LayerId, HadoopLayerMetaData],
   attributeStore: HadoopAttributeStore,
-  paramsConfig: DefaultParams[String],
   catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
 ) {
-
-  def defaultPath[K: ClassTag](layerId: LayerId, subDir: String): Path = {
-    val firstPart =
-      if(subDir == "") {
-        paramsConfig.paramsFor[K](layerId) match {
-          case Some(configSubDir) if configSubDir != "" =>
-            new Path(rootPath, configSubDir)
-          case _ => rootPath
-        }
-      } else { 
-        new Path(rootPath, subDir)
-      }
-
-    new Path(firstPart, catalogConfig.layerDataDir(layerId))
-  }
 
   def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
@@ -124,7 +105,12 @@ class HadoopRasterCatalog(
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         rdd.persist()
 
-        val layerPath = defaultPath[K](layerId, subDir)
+        val layerPath = 
+          if (subDir == "")
+            new Path(rootPath, catalogConfig.layerDataDir(layerId))
+          else
+            new Path(new Path(rootPath, subDir), catalogConfig.layerDataDir(layerId))
+      
         val md = HadoopLayerMetaData(layerId, rdd.metaData, layerPath)
         val minKey = rdd.map(_._1).min
         val maxKey = rdd.map(_._1).max
