@@ -108,8 +108,8 @@ class HadoopRasterCatalog(
             new Path(rootPath, catalogConfig.layerDataDir(layerId))
           else
             new Path(new Path(rootPath, subDir), catalogConfig.layerDataDir(layerId))
-              val md = HadoopLayerMetaData(
         
+        val md = HadoopLayerMetaData(        
           keyClass = classTag[K].toString, 
           rasterMetaData = rdd.metaData, 
           path = layerPath)

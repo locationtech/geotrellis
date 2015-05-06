@@ -27,7 +27,7 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
     val catalog = AccumuloRasterCatalog()
 
     val reader = catalog.reader[SpatialKey]
-    val writer = catalog.writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
+    val writer = catalog.writer[SpatialKey](RowMajorKeyIndexMethod, args.table, HdfsWriteStrategy)
 
     val rdd = reader.read(LayerId(args.layerName, args.startLevel))
 

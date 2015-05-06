@@ -14,7 +14,7 @@ case class AccumuloLayerMetaData(
 )
 
 object AccumuloLayerMetaData {
-    implicit object AccumuloLayerMetaDataFormat extends RootJsonFormat[AccumuloLayerMetaData] {
+  implicit object AccumuloLayerMetaDataFormat extends RootJsonFormat[AccumuloLayerMetaData] {
     def write(md: AccumuloLayerMetaData) =
       JsObject(
         "keyClass" -> JsString(md.keyClass),

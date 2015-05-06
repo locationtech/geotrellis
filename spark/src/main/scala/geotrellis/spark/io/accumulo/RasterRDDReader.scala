@@ -32,7 +32,8 @@ abstract class RasterRDDReader[K: ClassTag] {
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, tileTable)
-    if (!filterSet.isEmpty) setFilters(job, layerId, filterSet, keyBounds, index)
+
+    setFilters(job, layerId, filterSet, keyBounds, index)
     val rdd = sc.newAPIHadoopRDD(
       job.getConfiguration,
       classOf[BatchAccumuloInputFormat],
