@@ -10,7 +10,7 @@ import geotrellis.spark.io.accumulo._
 import org.apache.spark.SparkContext
 import org.apache.hadoop.io.Text
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.accumulo.core.data.{Range => ARange}
+import org.apache.accumulo.core.data.{Range => ARange, Value}
 
 import scala.collection.JavaConversions._
 
