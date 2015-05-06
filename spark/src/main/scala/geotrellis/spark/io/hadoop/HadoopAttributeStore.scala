@@ -48,13 +48,11 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
       }
   }
 
-  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T = {
-    val path = attributePath(layerId, attributeName)
-    readFile[T](path) match {
+  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T =
+    readFile[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
       case None => throw new LayerNotFoundError(layerId)
     }
-  }
 
   def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId,T] = {
     HdfsUtils
