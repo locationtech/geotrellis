@@ -31,25 +31,40 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
    */
 
   def attributePath(id: LayerId, attributeName: String): String =
-    s"$rootPath/_attributes/${attributeName}__${id.name}__{id.zoom}.json"
-  
-  def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
-    val key = attributePath(layerId, attributeName)
+    s"$rootPath/_attributes/${attributeName}__${id.name}__${id.zoom}.json"
 
+  def attributePrefix(attributeName: String): String =
+    s"$rootPath/_attributes/${attributeName}__"
+
+  private def readKey[T: ReadableWritable](key: String): Option[(LayerId, T)] = {
     val is = s3Client.getObject(bucket, key).getObjectContent()
-    val json = Source.fromInputStream(is).mkString;
-    is.close();
-    json.parseJson.convertTo[(LayerId, T)]._2
+    val json = Source.fromInputStream(is).mkString
+    is.close()
+    Some(json.parseJson.convertTo[(LayerId, T)])
+    // TODO: Make this crash to find out when None should be returned
   }
+  
+  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T =
+    readKey[T](attributePath(layerId, attributeName)) match {
+      case Some((id, value)) => value
+      case None => throw new LayerNotFoundError(layerId)
+    }
 
-  def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId, T] = {    
-    ??? // this will be implemented later using spiffy new S3Client functions
-  }
+  def readAll[T: ReadableWritable](attributeName: String): Map[LayerId, T] =    
+    s3Client
+      .listObjectsIterator(bucket, attributePrefix(attributeName))
+      .map{ os =>       
+        readKey[T](os.getKey) match {
+          case Some(tup) => tup
+          case None => sys.error(s"Unable to read '$attributeName' attribute from ${os.getKey}")
+        }
+      }
+      .toMap
 
-  def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
-    val s = (layerId, value).toJson.compactPrint
-    val is = new ByteArrayInputStream(value.toJson.compactPrint.getBytes("UTF-8"))
+    val str = (layerId, value).toJson.compactPrint
+    val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
   }
