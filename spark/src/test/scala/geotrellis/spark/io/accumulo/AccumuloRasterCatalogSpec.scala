@@ -35,7 +35,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 {
 
   describe("Accumulo Raster Catalog with Spatial Rasters") {
-    ifCanRunSpark { 
+    ifCanRunSpark {
 
       implicit val accumulo = MockAccumuloInstance()
 
@@ -47,14 +47,14 @@ class AccumuloRasterCatalogSpec extends FunSpec
       if (!tableOps.exists(tableName))
         tableOps.create(tableName)
 
-      val catalog = 
+      val catalog =
         AccumuloRasterCatalog("metadata")
 
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, level) => 
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, level) =>
         val layerId = LayerId("ones", level.zoom)
 
         it("should succeed writing to a table") {
-          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName).write(layerId, onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName, SocketWriteStrategy).write(layerId, onesRdd)
         }
 
         it("should load out saved tiles") {
@@ -89,13 +89,18 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
           val tile = out.first.tile
           tile.get(497,511) should be (2)
+        }
+
+        it("can retreive all the metadata"){
+          val mds = catalog.attributeStore.readAll[AccumuloLayerMetaData]("metadata")
+          info(mds(layerId).toString)
         }      
       }
     }
   }
 
   describe("Accumulo Raster Catalog with SpaceTime Rasters") {
-    ifCanRunSpark { 
+    ifCanRunSpark {
 
       implicit val accumulo = MockAccumuloInstance()
 
@@ -103,7 +108,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val tableName = "spacetime_tiles"
       tableOps.create(tableName)
 
-      val catalog = 
+      val catalog =
         AccumuloRasterCatalog("metadata")
 
       val zoom = 10
@@ -111,7 +116,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
 
       it("should succeed writing to a table") {
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName).write(layerId, CoordinateSpaceTime)
+        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy).write(layerId, CoordinateSpaceTime)
       }
       it("should load out saved tiles") {
         val rdd = catalog.reader[SpaceTimeKey].read(layerId)
@@ -142,8 +147,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
 
-        val filters = 
-          new FilterSet[SpaceTimeKey] 
+        val filters =
+          new FilterSet[SpaceTimeKey]
             .withFilter(SpaceFilter(tileBounds))
 
         val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
@@ -165,8 +170,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
 
-        val filters = 
-          new FilterSet[SpaceTimeKey] 
+        val filters =
+          new FilterSet[SpaceTimeKey]
             .withFilter(SpaceFilter(tileBounds))
             .withFilter(TimeFilter(maxTime))
 

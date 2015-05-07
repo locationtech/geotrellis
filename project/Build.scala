@@ -383,6 +383,7 @@ object GeotrellisBuild extends Build {
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
+          scalazStream,
           scalatest % "test"
         ),
       resolvers ++= Seq(

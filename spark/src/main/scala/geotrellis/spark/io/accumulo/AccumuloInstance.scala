@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
-import geotrellis.spark.io.DefaultParams
 import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}

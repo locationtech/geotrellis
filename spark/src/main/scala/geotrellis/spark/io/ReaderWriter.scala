@@ -7,12 +7,14 @@ import scala.reflect.ClassTag
 
 import org.apache.spark.rdd._
 
-trait Reader[K, V] {
+trait Reader[K, V] extends Function1[K,V]{
   def read(key: K): V
+  def apply(key: K): V = read(key)
 }
 
-trait Writer[K, V] {
+trait Writer[K, V] extends Function2[K,V,Unit] {
   def write(key: K, value: V): Unit
+  def apply(key: K, value: V): Unit = write(key, value)
 }
 
 trait TileReader[K] extends Reader[K, geotrellis.raster.Tile]
