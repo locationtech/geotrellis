@@ -27,8 +27,9 @@ object Version {
   val geotools    = "11.0"
   val akka        = "2.3.9"
   val spray       = "1.3.2"
-  val jackson     = "1.6.1"
+  val jackson     = "1.6.1"  
   val monocle     = "1.0.1"
+  val accumulo    = "1.6.2"
   lazy val hadoop      = Environment.hadoopVersion
   lazy val spark       = Environment.sparkVersion
 }

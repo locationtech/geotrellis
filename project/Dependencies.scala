@@ -18,7 +18,7 @@ import sbt._
 
 object Dependencies {
   val resolutionRepos = Seq(
-    "Local Maven Repository"  at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+    Resolver.mavenLocal,
     "NL4J Repository"         at "http://nativelibs4java.sourceforge.net/maven/",
     "maven2 dev repository"   at "http://download.java.net/maven/2",
     "Typesafe Repo"           at "http://repo.typesafe.com/typesafe/releases/",
