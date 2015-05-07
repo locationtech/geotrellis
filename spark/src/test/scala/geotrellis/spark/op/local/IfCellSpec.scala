@@ -43,7 +43,7 @@ class IfCellSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else y * cols + x
+          (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else y * cols + x 
         )
 
         rastersShouldHaveSameIdsAndTileCount(res, inc)

@@ -20,7 +20,6 @@ import geotrellis.spark._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
@@ -34,11 +33,20 @@ class AddSpec extends FunSpec
     ifCanRunSpark {
       val ones = AllOnesTestFile
 
+      val onesST = AllOnesSpaceTime
+
       it("should add a constant to a raster") {
         val twos = ones + 1
 
         rasterShouldBe(twos, (2, 2))
         rastersShouldHaveSameIdsAndTileCount(ones, twos)
+      }
+
+      it("should add a constant to a spacetime raster") {
+        val twos = onesST + 1
+
+        rasterShouldBe(twos, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(onesST, twos)
       }
 
       it("should add a raster to a constant") {
@@ -48,6 +56,13 @@ class AddSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(ones, twos)
       }
 
+      it("should add a spacetime raster to a constant") {
+        val twos = 1 +: onesST
+
+        rasterShouldBe(twos, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(onesST, twos)
+      }
+
       it("should add multiple rasters") {
         val threes = ones + ones + ones
 
@@ -55,11 +70,25 @@ class AddSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(ones, threes)
       }
 
+      it("should add multiple spacetime rasters") {
+        val twos = onesST + onesST
+
+        rasterShouldBe(twos, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(onesST, twos)
+      }
+
       it("should add multiple rasters as a seq") {
         val threes = ones + Array(ones, ones)
 
         rasterShouldBe(threes, (3, 3))
         rastersShouldHaveSameIdsAndTileCount(ones, threes)
+      }
+
+      it("should add multiple spacetime rasters as a seq") {
+        val twos = onesST + Array(onesST)
+
+        rasterShouldBe(twos, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(onesST, twos)
       }
     }
   }

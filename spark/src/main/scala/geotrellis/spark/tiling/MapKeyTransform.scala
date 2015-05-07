@@ -30,11 +30,31 @@ class MapKeyTransform(extent: Extent, layoutCols: Int, layoutRows: Int) extends 
   lazy val tileWidth: Double = extent.width / layoutCols
   lazy val tileHeight: Double = extent.height / layoutRows
 
-  def apply(extent: Extent): GridBounds = {
-    val SpatialKey(colMin, rowMin) = apply(extent.xmin, extent.ymax)
-    val SpatialKey(colMax, rowMax) = apply(extent.xmax, extent.ymin)
+  def apply(otherExtent: Extent): GridBounds = {
+    val SpatialKey(colMin, rowMin) = apply(otherExtent.xmin, otherExtent.ymax)
+
+    // Pay attention to the exclusitivity of the east and south extent border.
+    val colMax = {
+      val d = (otherExtent.xmax - extent.xmin) / extent.width
+
+      if(d == math.floor(d)) { (d * layoutCols).toInt - 1 }
+      else { (d * layoutCols).toInt }
+    }
+
+    val rowMax = {
+      val d = (extent.ymax - otherExtent.ymin) / extent.height
+
+      if(d == math.floor(d)) { (d * layoutRows).toInt - 1 }
+      else { (d * layoutRows).toInt } 
+    }
 
     GridBounds(colMin, rowMin, colMax, rowMax)
+  }
+
+  def apply(gridBounds: GridBounds): Extent = {
+    val e1 = apply(gridBounds.colMin, gridBounds.rowMin)
+    val e2 = apply(gridBounds.colMax, gridBounds.rowMax)
+    e1.expandToInclude(e2)
   }
 
   def apply(p: Point): SpatialKey =

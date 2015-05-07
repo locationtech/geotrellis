@@ -104,4 +104,3 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] {
     reader
   }
 }
-

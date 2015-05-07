@@ -2,6 +2,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
 import geotrellis.vector._
@@ -24,12 +25,14 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val conf = sparkContext.hadoopConfiguration
     conf.set("io.map.index.interval", "1")
 
-    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, args.catalogPath)
+    val catalog = HadoopRasterCatalog(args.catalogPath)
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
 
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
-      catalog.save(LayerId(args.layerName, level.zoom), rdd, args.clobber)
+      catalog
+        .writer[SpatialKey](RowMajorKeyIndexMethod, args.clobber)
+        .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }
 }

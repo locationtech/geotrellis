@@ -14,8 +14,9 @@ import geotrellis.proj4._
  *  a "Grid Space" which is a special case of a tiling scheme with the origin
  *  defined as upper left and (x, y) coordinate representing (col, row), Java array order.
  *
- *  @see [[geotrellis.spark.tiling.MapKeyTransform]]
- *  @see [[geotrellis.spark.tiling.TileKeyTransform]]
+ *  @see [[geotrellis.spark.tiling.MapGridTransform]]
+ *  @see [[geotrellis.spark.tiling.TileGridTransform]]
+ *  @see [[geotrellis.spark.tiling.SpatialKeyGridTransform]]
  */
 package object tiling {
   /**
@@ -29,7 +30,7 @@ package object tiling {
    */
   type GridCoord = (Int, Int)
   /**
-   * Geographic Map Coordinate, upper left is the origin
+   * Geographic Map Coordinate, uses left is the origin
    */
   type MapCoord = (Double, Double)
 

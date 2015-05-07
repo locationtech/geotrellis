@@ -357,7 +357,7 @@ object GeotrellisBuild extends Build {
   lazy val spark: Project =
     Project("spark", file("spark"))
       .settings(sparkSettings: _*)
-      .dependsOn(raster, gdal)
+      .dependsOn(raster, gdal, index)
 
   lazy val sparkSettings =
     Seq(
@@ -376,10 +376,12 @@ object GeotrellisBuild extends Build {
           "com.quantifind" %% "sumac" % "0.3.0",
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           "de.javakaffee" % "kryo-serializers" % "0.27",
+          "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
           logging, awsSdkS3,
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
+          scalazStream,
           scalatest % "test"
         ),
       resolvers ++= Seq(
