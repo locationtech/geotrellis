@@ -31,8 +31,9 @@ trait RasterRDDMatchers extends RasterMatchers {
    */
   def rasterShouldBe[K](rdd: RasterRDD[K], minMax: (Int, Int)): Unit = {
     val res = rdd.map(_.tile.findMinMax).collect
-    val (min, max) = minMax
-    res.count(_ == (min, max)) should be(res.length)
+    withClue(s"Actual MinMax: ${res.toSeq}; expecting: ${minMax}") {
+      res.count(_ == minMax) should be(res.length)
+    }
   }
 
   def rastersShouldHaveSameIdsAndTileCount[K: Ordering: ClassTag](

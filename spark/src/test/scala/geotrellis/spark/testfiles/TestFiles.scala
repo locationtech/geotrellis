@@ -20,12 +20,7 @@ object TestFiles extends Logging {
     val localFS = catalogPath.getFileSystem(sc.hadoopConfiguration)
     val needGenerate = !localFS.exists(catalogPath)
 
-    val defaultParams = 
-      HadoopRasterCatalog.BaseParams
-        .withKeyParams[SpaceTimeKey]("spacetime")
-        .withKeyParams[SpatialKey]("spatial")
-
-    val catalog = HadoopRasterCatalog(catalogPath, defaultParams)
+    val catalog = HadoopRasterCatalog(catalogPath)
 
     if (needGenerate) {
       logInfo(s"test-catalog empty, generating at $catalogPath")

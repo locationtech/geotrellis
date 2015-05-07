@@ -378,14 +378,15 @@ object GeotrellisBuild extends Build {
           "org.apache.accumulo" % "accumulo-core" % "1.5.2",
           "de.javakaffee" % "kryo-serializers" % "0.27",
           "com.datastax.spark" %% "spark-cassandra-connector" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
-          "com.datastax.spark"  %% "spark-cassandra-connector-embedded" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
           "com.datastax.cassandra" % "cassandra-driver-core" % Version.cassandra_connector,
           "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
           logging, awsSdkS3,
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
-          scalatest % "test"
+          scalazStream,
+          scalatest % "test",
+          "com.datastax.spark"  %% "spark-cassandra-connector-embedded" % Version.spark_cassandra_connector % "test" exclude("org.slf4j", "slf4j-api")
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"

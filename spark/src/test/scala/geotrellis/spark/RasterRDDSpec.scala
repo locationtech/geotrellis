@@ -23,10 +23,10 @@ class RasterRDDSpec extends FunSpec
       }
 
       it ("should find integer min/max of example") {
-        val arr: Array[Int] = 
-          Array(1, 1, 2, 2, 
-                3, 3, 4, 4, 
-                
+        val arr: Array[Int] =
+          Array(1, 1, 2, 2,
+                3, 3, 4, 4,
+
                 -1, -1, -2, -2,
                 -3, -3, -4, -4)
 
@@ -42,10 +42,10 @@ class RasterRDDSpec extends FunSpec
       }
 
       it ("should find double min/max of example") {
-        val arr: Array[Double] = 
-          Array(1, 1, 2, 2, 
-                3, 3, 4.1, 4.1, 
-                
+        val arr: Array[Double] =
+          Array(1, 1, 2, 2,
+                3, 3, 4.1, 4.1,
+
                 -1, -1, -2, -2,
                 -3, -3, -4.1, -4.1)
 

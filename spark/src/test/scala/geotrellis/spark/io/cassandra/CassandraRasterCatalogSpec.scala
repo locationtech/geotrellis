@@ -101,7 +101,7 @@ class CassandraRasterCatalogSpec extends FunSpec
         val tableName = "spacetime_tiles"
         
         val catalog = 
-          CassandraRasterCatalog("metadata", "attributes")
+          CassandraRasterCatalog("attributes")
         
         val zoom = 10
         val layerId = LayerId("coordinates", zoom)

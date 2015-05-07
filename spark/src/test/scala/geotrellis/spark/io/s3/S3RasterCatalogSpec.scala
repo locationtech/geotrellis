@@ -17,14 +17,15 @@ class S3RasterCatalogSpec extends FunSpec
       val rdd = AllOnesTestFile
       val id = LayerId("ones", 2)
 
-      val catalog = S3RasterCatalog("climate-catalog", "catalog", () => new MockS3Client )
+      val catalog = S3RasterCatalog("climate-catalog", "catalog3", () => new MockS3Client )
 
       it("should save to s3"){
-        catalog.writer[SpatialKey](ZCurveKeyIndexMethod, "subdir").write(id, AllOnesTestFile)
+        catalog.writer[SpatialKey](ZCurveKeyIndexMethod).write(id, AllOnesTestFile)
       }
 
       it("should load from s3"){
         val rdd = catalog.reader[SpatialKey].read(id)
+        rdd.count should equal (42)
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
       }
@@ -39,15 +40,36 @@ class S3RasterCatalogSpec extends FunSpec
         }
       }
 
+      it("should read a spatial tile"){
+        val reader = catalog.tileReader[SpatialKey](id)
+
+        val tile = reader(SpatialKey(2,2))
+        tile.foreach { x=> x should be (1) }
+      }
+
+      it("should error on getting a tile that is not there"){
+        val reader = catalog.tileReader[SpatialKey](id)
+
+        intercept[RuntimeException]{
+          val tile = reader(SpatialKey(200,200))
+        }        
+      }
+
       val spaceId = LayerId("oneSpace", 2)
       it("should save a spacetime layer"){
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, "subdir", true).write(spaceId, AllOnesSpaceTime)        
+        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, true).write(spaceId, AllOnesSpaceTime)        
       }
 
       it("should load a spacetime layer"){
         val rdd = catalog.reader[SpaceTimeKey].read(spaceId)
+        rdd.count should equal (210)
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
+      }
+
+      it("should list all metadata") {
+        val list = catalog.attributeStore.readAll[S3LayerMetaData]("metadata")
+        list.foreach(s => info(s.toString))
       }
     }
   }

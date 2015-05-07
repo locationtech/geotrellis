@@ -30,7 +30,7 @@ abstract class RasterRDDReader[K: ClassTag] {
     keyBounds: KeyBounds[K], 
     index: KeyIndex[K]
   )(layerId: LayerId, filters: FilterSet[K])(implicit session: CassandraSession, sc: SparkContext): RasterRDD[K] = {
-    val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = metaData
+    val CassandraLayerMetaData(_, rasterMetaData, tileTable) = metaData
     
     val rdd: CassandraRDD[(String, ByteBuffer)] = 
       sc.cassandraTable[(String, ByteBuffer)](session.keySpace, tileTable).select("reverse_index", "value")

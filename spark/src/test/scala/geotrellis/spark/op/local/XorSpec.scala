@@ -34,11 +34,22 @@ class XorSpec extends FunSpec
       val twos = AllTwosTestFile
       val hundreds = AllHundredsTestFile
 
+      val onesST = AllOnesSpaceTime
+      val twosST = AllTwosSpaceTime
+      val hundredsST = AllHundredsSpaceTime
+
       it("should xor a raster with a constant") {
         val res = ones ^ 1
 
         rasterShouldBe(res, (0, 0))
         rastersShouldHaveSameIdsAndTileCount(ones, res)
+      }
+
+      it("should xor a spacetime raster with a constant") {
+        val res = onesST ^ 1
+
+        rasterShouldBe(res, (0, 0))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
       }
 
       it("should xor a constant with a raster") {
@@ -48,6 +59,13 @@ class XorSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
+      it("should xor a constant with a spacetime raster") {
+        val res = 2 ^: onesST
+
+        rasterShouldBe(res, (3, 3))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
+      }
+
       it("should xor three different rasters") {
         val res = ones ^ twos ^ hundreds
 
@@ -55,11 +73,25 @@ class XorSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
+      it("should xor three different spacetime rasters") {
+        val res = onesST ^ twosST ^ hundredsST
+
+        rasterShouldBe(res, (103, 103))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
+      }
+
       it("should xor three different rasters as a seq") {
         val res = ones ^ Seq(twos, hundreds)
 
         rasterShouldBe(res, (103, 103))
         rastersShouldHaveSameIdsAndTileCount(ones, res)
+      }
+
+      it("should xor three different spacetime rasters as a seq") {
+        val res = onesST ^ Seq(twosST, hundredsST)
+
+        rasterShouldBe(res, (103, 103))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
       }
     }
   }

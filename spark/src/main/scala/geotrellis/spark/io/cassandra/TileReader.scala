@@ -27,7 +27,7 @@ trait TileReader[Key] {
     index: KeyIndex[Key]
   )(key: Key)(implicit session: CassandraSession): Tile = {
 
-    val CassandraLayerMetaData(rasterMetaData, _, _, tileTable) = cassandraLayerMetaData
+    val CassandraLayerMetaData(_, rasterMetaData, tileTable) = cassandraLayerMetaData
     val results = collectTile(layerId, index, tileTable, key)
 
     val size = results.getAvailableWithoutFetching

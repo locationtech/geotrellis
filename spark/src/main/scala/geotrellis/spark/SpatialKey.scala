@@ -37,7 +37,7 @@ object SpatialKey {
       }
   }
 
-  implicit object SpatialKeyBoundable extends Boundable[SpatialKey] {
+  implicit object Boundable extends Boundable[SpatialKey] {
     def minBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.min(a.col, b.col), math.min(a.row, b.row))
     }    
