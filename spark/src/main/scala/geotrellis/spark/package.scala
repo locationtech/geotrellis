@@ -56,6 +56,11 @@ package object spark {
       key &|-> _temporalComponent.lens set(temporalKey)
   }
 
+  implicit class BoundableRasterRDDMethods[K: ClassTag](rdd: RasterRDD[K])(implicit boundable: Boundable[K]) {
+    def keyBounds(): KeyBounds[K] =
+      Boundable.getKeyBounds(rdd)
+  }
+
   type TileBounds = GridBounds
 
   implicit class toPipe[A](x : A) {
