@@ -4,6 +4,8 @@ import geotrellis.spark._
 import geotrellis.spark.cmd.args.AccumuloArgs
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
+import geotrellis.spark.io.accumulo._
+import geotrellis.spark.io.index._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
@@ -21,9 +23,10 @@ import com.quantifind.sumac.validation.Required
 
 import scala.reflect.ClassTag
 
-class S3IngestCommand extends IngestArgs {
+class S3IngestCommand extends IngestArgs with AccumuloArgs {
   @Required var bucket: String = _  
   @Required var key: String = _ 
+  @Required var table: String = _  
   var splitSize: Integer = 256
 }
 
@@ -42,10 +45,10 @@ object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
         classOf[Tile])    
     
     val layoutScheme = ZoomedLayoutScheme(256)
-
-    val catalog = S3RasterCatalog(args.bucket, args.key)      
-    val writer = catalog.writer[SpatialKey](ZCurveKeyIndexMethod)
     
+    implicit val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+    val writer = AccumuloRasterCatalog().writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
+
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
       writer.write(LayerId(args.layerName, level.zoom), rdd)
     }
