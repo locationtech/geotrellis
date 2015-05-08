@@ -1,4 +1,4 @@
-package geotrellis.index.zcurve
+package geotrellis.spark.io.index.zcurve
 
 class Z3(val z: Long) extends AnyVal {
   import Z3._
