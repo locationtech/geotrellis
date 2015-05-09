@@ -6,13 +6,13 @@ import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
 import geotrellis.raster._
-import geotrellis.index.zcurve._
+import geotrellis.spark.io.index.zcurve._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
 import org.apache.accumulo.core.client.IteratorSetting
-import org.apache.accumulo.core.client.mapreduce.InputFormatBase
+import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
 import org.apache.accumulo.core.util.{Pair => APair}
 
@@ -34,7 +34,7 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
     keyBounds: KeyBounds[SpaceTimeKey],
     keyIndex: KeyIndex[SpaceTimeKey]
   ): Unit = {
-    InputFormatBase.setLogLevel(job, org.apache.log4j.Level.DEBUG)
+    AbstractInputFormat.setLogLevel(job, org.apache.log4j.Level.DEBUG)
 
     val ranges: Seq[ARange] = (
       FilterRanges.spatiotemporal(filterSet, keyBounds, keyIndex)

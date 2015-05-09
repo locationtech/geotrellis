@@ -41,7 +41,7 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val source = sparkContext.netCdfRDD(args.inPath)
     val layoutScheme = ZoomedLayoutScheme()
 
-    val writer = AccumuloRasterCatalog().writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, args.table, HdfsWriteStrategy)
+    val writer = AccumuloRasterCatalog().writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, args.table)
 
     Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme, args.pyramid) { (rdd, level) =>
       writer.write(LayerId(args.layerName, level.zoom), rdd)

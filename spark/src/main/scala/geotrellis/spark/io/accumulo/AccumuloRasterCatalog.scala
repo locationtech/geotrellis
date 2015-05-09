@@ -6,6 +6,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.op.stats._
 import geotrellis.raster._
+import org.apache.hadoop.fs.Path
 
 import org.apache.spark.SparkContext
 
@@ -44,7 +45,7 @@ class AccumuloRasterCatalog(
   def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
     tileTable: String,
-    strategy: AccumuloWriteStrategy = HdfsWriteStrategy
+    strategy: AccumuloWriteStrategy = HdfsWriteStrategy(new Path("/geotrellis-ingest"))
   ): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {

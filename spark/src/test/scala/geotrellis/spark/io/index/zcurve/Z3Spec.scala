@@ -1,4 +1,4 @@
-package geotrellis.index.zcurve
+package geotrellis.spark.io.index.zcurve
 
 import org.scalatest._
 

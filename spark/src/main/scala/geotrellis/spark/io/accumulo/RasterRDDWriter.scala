@@ -26,7 +26,7 @@ import scala.collection.mutable
 import spire.syntax.cfor._
 
 sealed trait AccumuloWriteStrategy
-case object HdfsWriteStrategy extends AccumuloWriteStrategy
+case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy
 case object SocketWriteStrategy extends AccumuloWriteStrategy
 
 trait RasterRDDWriter[K] {  
@@ -71,14 +71,9 @@ trait RasterRDDWriter[K] {
 
     val kvPairs = encode(layerId, raster, kIndex)
     strategy match {
-      case HdfsWriteStrategy => {
-        def accumuloIngestDir: Path = {
-          val accumuloConf =
-            AccumuloConfiguration.getSiteConfiguration // deprecated
-          new Path(accumuloConf.get(Property.INSTANCE_DFS_DIR), "ingest")
-        }
+      case HdfsWriteStrategy(ingestPath) => {
         val conf = job.getConfiguration
-        val outPath = HdfsUtils.tmpPath(accumuloIngestDir, s"${layerId.name}-${layerId.zoom}", conf)
+        val outPath = HdfsUtils.tmpPath(ingestPath, s"${layerId.name}-${layerId.zoom}", conf)
         val failuresPath = outPath.suffix("-failures")
 
         try {
