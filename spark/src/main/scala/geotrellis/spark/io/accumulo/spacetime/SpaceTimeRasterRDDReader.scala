@@ -6,7 +6,7 @@ import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
 import geotrellis.raster._
-import geotrellis.index.zcurve._
+import geotrellis.spark.io.index.zcurve._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
