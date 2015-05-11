@@ -27,26 +27,9 @@ import scala.collection.JavaConversions._
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
   import geotrellis.spark.io.accumulo.stringToText
-
-  /** TODO: What are the rules about the "num" parameter? */
-  def getSplits(
-    layerId: LayerId,
-    metaData: RasterMetaData,
-    keyBounds: KeyBounds[SpaceTimeKey],
-    kIndex: KeyIndex[SpaceTimeKey],
-    num: Int = 48
-  ): List[String] = {
-    val minIndex = kIndex.toIndex(keyBounds.minKey)
-    val maxIndex = kIndex.toIndex(keyBounds.maxKey)
-    val splitSize = (maxIndex - minIndex) / num
-
-    val splits = mutable.ListBuffer[String]()
-    cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
-      splits += rowId(layerId, i + 1)
-    }
-    splits.toList
-  }
-
+  
+  def rowId(id: LayerId, index: Long): String  = spacetime.rowId (id, index)
+  
   def encode(
     layerId: LayerId,
     raster: RasterRDD[SpaceTimeKey],

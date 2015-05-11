@@ -23,21 +23,21 @@ import org.apache.accumulo.core.conf.{AccumuloConfiguration, Property}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
+import scalaz.concurrent.Strategy
+import scalaz.concurrent.Task
+import scala.concurrent._
+import scalaz.stream.async._
+import scalaz.stream._
+
 import spire.syntax.cfor._
 
 sealed trait AccumuloWriteStrategy
 case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy
 case object SocketWriteStrategy extends AccumuloWriteStrategy
 
-trait RasterRDDWriter[K] {  
-  def getSplits(
-    layerId: LayerId,
-    metaData: RasterMetaData,
-    keyBounds: KeyBounds[K],
-    kIndex: KeyIndex[K],
-    num: Int = 48
-  ): List[String]
-
+trait RasterRDDWriter[K] {
+  def rowId(id: LayerId, index: Long): String  
+  
   def encode(
     layerId: LayerId,
     raster: RasterRDD[K],
@@ -55,16 +55,14 @@ trait RasterRDDWriter[K] {
   )(implicit sc: SparkContext): Unit = {
     // Create table if it doesn't exist.
     val tileTable = layerMetaData.tileTable
-    if (!instance.connector.tableOperations().exists(tileTable))
-      instance.connector.tableOperations().create(tileTable)
 
     val ops = instance.connector.tableOperations()
+    if (! ops.exists(tileTable)) 
+      ops.create(tileTable)
+
     val groups = ops.getLocalityGroups(tileTable)
     val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
     ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
-
-    val splits = getSplits(layerId, layerMetaData.rasterMetaData, keyBounds, kIndex)
-    instance.connector.tableOperations().addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)
@@ -78,8 +76,9 @@ trait RasterRDDWriter[K] {
 
         try {
           HdfsUtils.ensurePathExists(failuresPath, conf)
-
+          // TODO: Can I get away with sorting ONLY the partition
           kvPairs
+            .sortBy{ case (key, _) => key.getRow.toString }
             .saveAsNewAPIHadoopFile(
               outPath.toString,
               classOf[Key],
@@ -90,28 +89,75 @@ trait RasterRDDWriter[K] {
           ops.importDirectory(tileTable, outPath.toString, failuresPath.toString, true)
         }
       }
-      case SocketWriteStrategy => {
-        def kvToMutation(kvRDD: RDD[(Key, Value)]): RDD[(Text, Mutation)] =
-          kvRDD.map { case (key, value) =>
-              val mutation = new Mutation(key.getRow)
-              mutation.put(
-                layerId.name,
-                key.getColumnQualifier,
-                System.currentTimeMillis(),
-                value)
-              (null, mutation)
+
+      case SocketWriteStrategy => {      
+        // splits are required for efficient BatchWriter ingest
+        val splits = getSplits(layerId, keyBounds, kIndex, 4)
+        ops.addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
+
+        val bcCon = sc.broadcast(instance.connector)
+        kvPairs.foreachPartition { partition =>
+          val writer = bcCon.value.createBatchWriter(tileTable, new BatchWriterConfig().setMaxMemory(32*1024*1024).setMaxWriteThreads(24))
+
+          val mutations: Process[Task, Mutation] = 
+            Process.unfold(partition){ iter => 
+              if (iter.hasNext) {
+                val (key, value) = iter.next
+                val mutation = new Mutation(key.getRow)
+                mutation.put(layerId.name, key.getColumnQualifier, System.currentTimeMillis(), value)
+                Some(mutation, iter)
+              } else  {
+                None
+              }
             }
 
-        AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
-        AccumuloOutputFormat.setDefaultTableName(job, tileTable)
-        kvToMutation(kvPairs)
-          .saveAsNewAPIHadoopFile(
-            instance.instanceName,
-            classOf[Text],
-            classOf[Mutation],
-            classOf[AccumuloOutputFormat],
-            job.getConfiguration)
+          val write: Mutation => Process[Task, Unit] = { mutation =>
+            Process eval Task { 
+              writer.addMutation(mutation)
+            }
+          }   
+          
+          val results = nondeterminism.njoin(maxOpen = 24, maxQueued = 8) { mutations map (write) }
+          results.run.run
+        }
       }
     }
+  }
+
+  def getSplits(id: LayerId, kb: KeyBounds[K], ki: KeyIndex[K], count: Int): Seq[String] = {  
+    var stack = ki.indexRanges(kb).toList
+    def len(r: (Long, Long)) = r._2 - r._1 + 1l
+    val total = stack.foldLeft(0l){ (s,r) => s + len(r) }
+    val binWidth = total / count
+    
+    def splitRange(range: (Long, Long), take: Long): ((Long, Long), (Long, Long)) = {
+      assert(len(range) > take)
+      assert(take > 0)
+      (range._1, range._1 + take - 1) -> (range._1 + take, range._2)
+    }
+
+    val arr = Array.fill[String](count - 1)(null)
+    var sum = 0l
+    var i = 0
+
+    while (i < count - 1) {
+      val nextStep = sum + len(stack.head)
+      if (nextStep < binWidth){      
+        sum += len(stack.head)
+        stack = stack.tail
+      } else if (nextStep == binWidth) {
+        arr(i) = rowId(id, stack.head._2)
+        stack = stack.tail
+        i += 1
+        sum = 0l
+      } else {
+        val (take, left) = splitRange(stack.head, binWidth - sum)
+        stack = left :: stack.tail
+        arr(i) = rowId(id, take._2)
+        i += 1
+        sum = 0l
+      }
+    }
+    arr
   }
 }
