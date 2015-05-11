@@ -43,7 +43,6 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
     require(IC.isIsolated(CLASS,conf) == false, "Isolated scans not supported")
     require(IC.usesLocalIterators(CLASS,conf) == false, "Local iterators not supported")
 
-
     val splits = new java.util.LinkedList[InputSplit]()
     val tableConfigs = IC.getInputTableConfigs(CLASS, conf)
 
@@ -74,7 +73,7 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
 
       /** Ranges binned by tablets */
       val binnedRanges = new java.util.HashMap[String, java.util.Map[KeyExtent, java.util.List[ARange]]]()
-      val tabletLocator = IC.getTabletLocator(CLASS, conf, tableName)
+      val tabletLocator = IC.getTabletLocator(CLASS, conf, tableId)
       tabletLocator.invalidateCache
 
       // loop until list of tablet lookup failures is empty
