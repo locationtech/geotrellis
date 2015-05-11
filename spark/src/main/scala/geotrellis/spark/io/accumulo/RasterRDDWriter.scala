@@ -92,12 +92,13 @@ trait RasterRDDWriter[K] {
 
       case SocketWriteStrategy => {      
         // splits are required for efficient BatchWriter ingest
-        val splits = getSplits(layerId, keyBounds, kIndex, 4)
+        val tserverCount = instance.connector.instanceOperations.getTabletServers.size
+        val splits = getSplits(layerId, keyBounds, kIndex, tserverCount)
         ops.addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
 
         val bcCon = sc.broadcast(instance.connector)
         kvPairs.foreachPartition { partition =>
-          val writer = bcCon.value.createBatchWriter(tileTable, new BatchWriterConfig().setMaxMemory(32*1024*1024).setMaxWriteThreads(24))
+          val writer = bcCon.value.createBatchWriter(tileTable, new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(24))
 
           val mutations: Process[Task, Mutation] = 
             Process.unfold(partition){ iter => 
