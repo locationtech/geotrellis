@@ -43,65 +43,87 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
     require(IC.isIsolated(CLASS,conf) == false, "Isolated scans not supported")
     require(IC.usesLocalIterators(CLASS,conf) == false, "Local iterators not supported")
 
-    val ranges  = IC.getRanges(CLASS, conf)
-    val tableName = IC.getInputTableName(CLASS, conf)
-    val instance = CB.getInstance(CLASS, conf)
-    val tabletLocator = IC.getTabletLocator(CLASS, conf, tableName)
-    val principal = CB.getPrincipal(CLASS, conf)
-    val token = CB.getAuthenticationToken(CLASS, conf)
-    
-    val credentials = new Credentials(principal, token);
 
-    /** Ranges binned by tablets */
-    val binnedRanges = new java.util.HashMap[String, java.util.Map[KeyExtent, java.util.List[ARange]]]()
+    val splits = new java.util.LinkedList[InputSplit]()
+    val tableConfigs = IC.getInputTableConfigs(CLASS, conf)
 
-    // loop until list of tablet lookup failures is empty
-    while (! tabletLocator.binRanges(credentials, ranges, binnedRanges).isEmpty) {
-      var tableId: String = null
-      if (! instance.isInstanceOf[MockInstance]) {
-        if (tableId == null)
-          tableId = Tables.getTableId(instance, tableName)
-        if (! Tables.exists(instance, tableId))
-          throw new TableDeletedException(tableId)
-        if (Tables.getTableState(instance, tableId) eq TableState.OFFLINE)
-          throw new TableOfflineException(instance, tableId)
+    for ( tableConfigEntry <- tableConfigs.entrySet.asScala){
+      val tableName = tableConfigEntry.getKey
+      val tableConfig = tableConfigEntry.getValue
+      val instance = CB.getInstance(CLASS, conf)
+      var mockInstance: Boolean = false
+      var tableId: String = ""
+
+      if (instance.isInstanceOf[MockInstance]) {
+        tableId = ""
+        mockInstance = true
+      } else {
+        tableId = Tables.getTableId(instance, tableName)
+        mockInstance = false
       }
-      binnedRanges.clear()
-      logger.warn("Unable to locate bins for specified ranges. Retrying.")
-      UtilWaitThread.sleep(100 + (Math.random * 100).toInt)
-      tabletLocator.invalidateCache()
-    }
-    // tserver: String = server:ip for the tablet server
-    // tserverBin: Map[KeyExtent, List[ARange]]
-    binnedRanges.asScala map { case (tserver, tserverBin) =>
-      tserverBin.asScala.map { case (keyExtent, extentRanges) =>        
-        val ip = tserver.split(":").head
-        val tabletRange = keyExtent.toDataRange        
-        val split = new MultiRangeInputSplit()
-        val exr = extentRanges.asScala
-        split.ranges = 
-          if (exr.isEmpty)
-            List(new ARange())
-          else 
-            exr map { tabletRange.clip }
-        split.iterators = IC.getIterators(CLASS, conf).asScala.toList
-        split.location = InetAddress.getByName(ip).getCanonicalHostName()
-        split.table = tableName
-        split.instanceName = instance.getInstanceName
-        split.zooKeepers = instance.getZooKeepers
-        split.principal = principal
-        split.token = token
-        split.fetchedColumns = IC.getFetchedColumns(CLASS, conf).asScala
-        instance match {
-          case _: MockInstance      => split.mockInstance = true
-          case _: ZooKeeperInstance => split.mockInstance = false
-          case _ => sys.error("Unknown instance type")
+
+      val auths = IC.getScanAuthorizations(CLASS, conf)
+      val principal = CB.getPrincipal(CLASS, conf)
+      val token = CB.getAuthenticationToken(CLASS, conf)
+      val credentials = new Credentials(principal, token);
+      var ranges = ARange.mergeOverlapping(tableConfig.getRanges())
+      if (ranges.isEmpty()) {
+        ranges = new java.util.ArrayList[ARange](1)
+        ranges.add(new ARange())
+      }
+
+      /** Ranges binned by tablets */
+      val binnedRanges = new java.util.HashMap[String, java.util.Map[KeyExtent, java.util.List[ARange]]]()
+      val tabletLocator = IC.getTabletLocator(CLASS, conf, tableName)
+      tabletLocator.invalidateCache
+
+      // loop until list of tablet lookup failures is empty
+      while (! tabletLocator.binRanges(credentials, ranges, binnedRanges).isEmpty ) {
+        if (!(instance.isInstanceOf[MockInstance])) {
+          if (!Tables.exists(instance, tableId))
+            throw new TableDeletedException(tableId)
+          if (Tables.getTableState(instance, tableId) == TableState.OFFLINE)
+            throw new TableOfflineException(instance, tableId)
         }
+        binnedRanges.clear()
+        logger.warn("Unable to locate bins for specified ranges. Retrying.")
+        Thread.sleep(100 + scala.util.Random.nextInt(100)); // sleep randomly between 100 and 200 ms
+        tabletLocator.invalidateCache()
+      }
 
-        split: InputSplit
+      // tserver: String = server:ip for the tablet server
+      // tserverBin: Map[KeyExtent, List[ARange]]
+      binnedRanges.asScala map { case (tserver, tserverBin) =>
+        tserverBin.asScala.map { case (keyExtent, extentRanges) =>        
+          val ip = tserver.split(":").head
+          val tabletRange = keyExtent.toDataRange        
+          val split = new MultiRangeInputSplit()
+          val exr = extentRanges.asScala
+          split.ranges = 
+            if (exr.isEmpty)
+              List(new ARange())
+            else 
+              exr map { tabletRange.clip }
+          split.iterators = IC.getIterators(CLASS, conf).asScala.toList
+          split.location = InetAddress.getByName(ip).getCanonicalHostName()
+          split.table = tableName
+          split.instanceName = instance.getInstanceName
+          split.zooKeepers = instance.getZooKeepers
+          split.principal = principal
+          split.token = token
+          split.fetchedColumns = IC.getFetchedColumns(CLASS, conf).asScala
+          instance match {
+            case _: MockInstance      => split.mockInstance = true
+            case _: ZooKeeperInstance => split.mockInstance = false
+            case _ => sys.error("Unknown instance type")
+          }
+
+          splits.add(split)
+        }
       }
     }
-  }.flatten.toList.asJava
+    splits
+  }
 
   override def createRecordReader(inputSplit: InputSplit, taskAttemptContext: TaskAttemptContext): RecordReader[Key, Value] = {
     val reader = new MultiRangeRecordReader()
