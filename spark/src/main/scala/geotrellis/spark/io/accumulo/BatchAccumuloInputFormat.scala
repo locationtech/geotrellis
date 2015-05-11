@@ -27,15 +27,16 @@ import scala.collection.JavaConverters._
  * These modes are backed by specalized scanners that only support scanning through a single range.
  *
  * We borrow some Accumulo machinery to set and read configurations so classOf AccumuloInputFormat should be used 
- * for mudifiying Congiruation, as if AccumuloInputFormat will be used.
+ * for modifying Configuration, as if AccumuloInputFormat will be used.
  *
- * This classes uses internal Accumulo API can will likely not work across versions.
+ * This class uses the internal Accumulo API and will likely not work across versions.
  *
  * WARNING: The locality of the splits rely on reverse resolution of tserver IPs matching those of spark workers.
  */
 class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogging {
   /** We're going to lie about our class so we can re-use Accumulo InputConfigurator to pull our Job settings */
-  private val CLASS: Class[_] = classOf[AccumuloInputFormat]
+  private val CLASS: Class[AccumuloInputFormat] =
+    classOf[AccumuloInputFormat].asInstanceOf[Class[AccumuloInputFormat]]
 
   override def getSplits(context: JobContext): java.util.List[InputSplit] = {
     val conf = context.getConfiguration
