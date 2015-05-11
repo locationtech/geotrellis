@@ -1,6 +1,7 @@
 package geotrellis.spark.io.index
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.rowmajor._
 
 import com.github.nscala_time.time.Imports._
 

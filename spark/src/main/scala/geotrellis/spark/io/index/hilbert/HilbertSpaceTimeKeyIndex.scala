@@ -1,6 +1,7 @@
-package geotrellis.spark.io.index
+package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.KeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
@@ -21,39 +22,55 @@ import com.google.common.collect.ImmutableList
 import scala.collection.JavaConversions._
 import spire.syntax.cfor._
 
-object HilbertSpatialKeyIndex {
-  def apply(minKey: SpatialKey, maxKey: SpatialKey, spatialResolution: Int): HilbertSpatialKeyIndex =
-    apply(new KeyBounds(minKey, maxKey), spatialResolution)
+import com.github.nscala_time.time.Imports._
 
-  def apply(keyBounds: KeyBounds[SpatialKey], spatialResolution: Int): HilbertSpatialKeyIndex =
-    apply(keyBounds, spatialResolution, spatialResolution)
+object HilbertSpaceTimeKeyIndex {
+  def apply(minKey: SpaceTimeKey, maxKey: SpaceTimeKey, spatialResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =
+    apply(KeyBounds(minKey, maxKey), spatialResolution, temporalResolution)
 
-  def apply(keyBounds: KeyBounds[SpatialKey], xResolution: Int, yResolution: Int): HilbertSpatialKeyIndex =
-    new HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
+  def apply(keyBounds: KeyBounds[SpaceTimeKey], spatialResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =
+    apply(keyBounds, spatialResolution, spatialResolution, temporalResolution)
+
+  def apply(keyBounds: KeyBounds[SpaceTimeKey], xResolution: Int, yResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =
+    new HilbertSpaceTimeKeyIndex(keyBounds, xResolution, yResolution, temporalResolution)
 }
 
-class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int, yResolution: Int) extends KeyIndex[SpatialKey] {
+class HilbertSpaceTimeKeyIndex(
+  keyBounds: KeyBounds[SpaceTimeKey],
+  xResolution: Int,
+  yResolution: Int,
+  temporalResolution: Int
+) extends KeyIndex[SpaceTimeKey] {
+  val startMillis = keyBounds.minKey.temporalKey.time.getMillis
+  val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
+
   val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
         List(
           math.pow(2, xResolution).toInt,
-          math.pow(2, yResolution).toInt
+          math.pow(2, yResolution).toInt,
+          math.pow(2, temporalResolution).toInt
         ).map(new java.lang.Integer(_)) 
       )
 
     new CompactHilbertCurve(dimensionSpec)
   }
 
-  def toIndex(key: SpatialKey): Long = {
+  def binTime(key: SpaceTimeKey): Long =
+    ((key.temporalKey.time.getMillis - startMillis) * temporalResolution) / timeWidth
+
+  def toIndex(key: SpaceTimeKey): Long = {
     val bitVectors = 
       Array(
         BitVectorFactories.OPTIMAL.apply(xResolution),
-        BitVectorFactories.OPTIMAL.apply(yResolution)
+        BitVectorFactories.OPTIMAL.apply(yResolution),
+        BitVectorFactories.OPTIMAL.apply(temporalResolution)
       )
 
-    bitVectors(0).copyFrom(key.col.toLong)
-    bitVectors(1).copyFrom(key.row.toLong)
+    bitVectors(0).copyFrom(key.spatialKey.col.toLong)
+    bitVectors(1).copyFrom(key.spatialKey.row.toLong)
+    bitVectors(2).copyFrom(binTime(key))
 
     val hilbertBitVector = BitVectorFactories.OPTIMAL.apply(chc.getSpec.sumBitsPerDimension)
 
@@ -62,12 +79,13 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
     hilbertBitVector.toExactLong
   }
 
-  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
+  def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] = {
 
     val ranges: java.util.List[LongRange] = 
       List(
-        LongRange.of(keyRange._1.col, keyRange._2.col),
-        LongRange.of(keyRange._1.row, keyRange._2.row)
+        LongRange.of(keyRange._1.spatialKey.col, keyRange._2.spatialKey.col),
+        LongRange.of(keyRange._1.spatialKey.row, keyRange._2.spatialKey.row),
+        LongRange.of(binTime(keyRange._1), binTime(keyRange._2))
       )
 
     val  regionInspector: RegionInspector[LongRange, LongContent] = 
@@ -86,7 +104,7 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
       BacktrackingQueryBuilder.create(
         regionInspector,
         combiner,
-        0,
+        Int.MaxValue,
         true,
         LongRangeHome.INSTANCE,
         new LongContent(0L)
