@@ -39,7 +39,6 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
       new Key(rowId(id, index.toIndex(key)), id.name, timeText(key))
 
     raster
-      .sortBy{ case (key, _) => getKey(layerId, key) }
       .map { case (key, tile) => {
         val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])](key, tile.toBytes)
         getKey(layerId, key) -> new Value(value)
