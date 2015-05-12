@@ -23,7 +23,8 @@ object Dependencies {
     "maven2 dev repository"   at "http://download.java.net/maven/2",
     "Typesafe Repo"           at "http://repo.typesafe.com/typesafe/releases/",
     "spray repo"              at "http://repo.spray.io/",
-    "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
+    "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots",
+    "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases"
   )
   val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
@@ -66,5 +67,7 @@ object Dependencies {
 
   val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 
-  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.16"
+  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.33"
+
+  val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.7a"
 }

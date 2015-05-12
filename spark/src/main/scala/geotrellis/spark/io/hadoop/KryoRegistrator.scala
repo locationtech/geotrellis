@@ -31,5 +31,19 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
     kryo.register(classOf[org.joda.time.DateTime], new de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer)
     kryo.register(classOf[org.joda.time.Interval], new de.javakaffee.kryoserializers.jodatime.JodaIntervalSerializer)
+
+    // de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer.registerSerializers(kryo)
+    import java.util._
+    import de.javakaffee.kryoserializers._
+
+    kryo.register( Arrays.asList( "" ).getClass, new ArraysAsListSerializer )
+    kryo.register( Collections.EMPTY_LIST.getClass, new CollectionsEmptyListSerializer() )
+    kryo.register( Collections.EMPTY_MAP.getClass(), new CollectionsEmptyMapSerializer() )
+    kryo.register( Collections.EMPTY_SET.getClass(), new CollectionsEmptySetSerializer() )
+    kryo.register( Collections.singletonList( "" ).getClass(), new CollectionsSingletonListSerializer )
+    kryo.register( Collections.singleton( "" ).getClass(), new CollectionsSingletonSetSerializer )
+    kryo.register( Collections.singletonMap( "", "" ).getClass(), new CollectionsSingletonMapSerializer )
+    UnmodifiableCollectionsSerializer.registerSerializers( kryo )
+    SynchronizedCollectionsSerializer.registerSerializers( kryo )
   }
 }

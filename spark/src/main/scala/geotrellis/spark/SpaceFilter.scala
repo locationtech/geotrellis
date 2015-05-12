@@ -31,6 +31,11 @@ case class SpaceFilter[K: SpatialComponent](bounds: GridBounds) extends KeyFilte
 }
 
 object SpaceFilter {
+  def apply[K: SpatialComponent](key: K): SpaceFilter[K] = {
+    val SpatialKey(col, row) = key.spatialComponent
+    SpaceFilter[K](GridBounds(col, row, col, row))
+  }
+
   def apply[K: SpatialComponent](col: Int, row: Int): SpaceFilter[K] =
     SpaceFilter[K](GridBounds(col, row, col, row))
 }

@@ -34,11 +34,22 @@ class AndSpec extends FunSpec
       val twos = AllTwosTestFile
       val hundreds = AllHundredsTestFile
 
+      val onesST = AllOnesSpaceTime
+      val twosST = AllTwosSpaceTime
+      val hundredsST = AllHundredsSpaceTime
+
       it("should and a raster with a constant") {
         val res = ones & 1
 
         rasterShouldBe(res, (1, 1))
         rastersShouldHaveSameIdsAndTileCount(ones, res)
+      }
+
+      it("should and a spacetime raster with a constant") {
+        val res = onesST & 1
+
+        rasterShouldBe(res, (1, 1))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
       }
 
       it("should and a constant with a raster") {
@@ -55,11 +66,25 @@ class AndSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
+      it("should and a constant with a spacetime raster") {
+        val res = 1 &: onesST
+
+        rasterShouldBe(res, (1, 1))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
+      }
+
       it("should and three different rasters as a seq") {
         val res = ones & Seq(twos, hundreds)
 
         rasterShouldBe(res, (0, 0))
         rastersShouldHaveSameIdsAndTileCount(ones, res)
+      }
+
+      it("should and three different spacetime rasters as a seq") {
+        val res = onesST & Seq(twosST, hundredsST)
+
+        rasterShouldBe(res, (0, 0))
+        rastersShouldHaveSameIdsAndTileCount(onesST, res)
       }
     }
   }
