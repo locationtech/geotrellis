@@ -11,3 +11,8 @@ trait GeoTiff {
   def crs: CRS
   def tags: Tags
 }
+
+object GeoTiff {
+  def apply(tile: Tile, extent: Extent, crs: CRS): SingleBandGeoTiff =
+    SingleBandGeoTiff(tile, extent, crs)
+}

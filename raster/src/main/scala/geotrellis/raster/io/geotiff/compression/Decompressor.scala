@@ -8,6 +8,8 @@ import spire.syntax.cfor._
 trait Decompressor extends Serializable {
   def code: Int
 
+  def byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
+
   def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 
   /** Internally, we use the ByteBuffer's default byte ordering (BigEndian).
@@ -16,6 +18,9 @@ trait Decompressor extends Serializable {
   def flipEndian(bytesPerFlip: Int): Decompressor = 
     new Decompressor {
       def code = Decompressor.this.code
+
+      override
+      def byteOrder = ByteOrder.LITTLE_ENDIAN // Since we have to flip, image data is in Little Endian
 
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         flip(Decompressor.this.decompress(bytes, segmentIndex))

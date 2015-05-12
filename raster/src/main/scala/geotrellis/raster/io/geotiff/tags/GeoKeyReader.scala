@@ -204,6 +204,7 @@ object GeoKeyReader {
 
     def readAsciis(metadata: GeoKeyMetadata,
       geoKeyDirectory: GeoKeyDirectory) = {
+
       val strings = imageDirectory
         .geoTiffTags
         .asciis

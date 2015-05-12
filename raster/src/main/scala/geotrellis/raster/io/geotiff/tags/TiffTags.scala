@@ -295,15 +295,11 @@ case class TiffTags(
   }
 
   def tags: Tags =
-    (
-      (this &|->
-        TiffTags._basicTags ^|->
-        BasicTags._samplesPerPixel get),
-      (this &|->
-        TiffTags._geoTiffTags ^|->
-        GeoTiffTags._metadata get)
+    (this &|->
+      TiffTags._geoTiffTags ^|->
+      GeoTiffTags._metadata get
     ) match {
-      case (numberOfBands, Some(str)) => {
+      case Some(str) => {
         val xml = XML.loadString(str.trim)
         val (metadataXML, bandsMetadataXML) = 
           (xml \ "Item")
@@ -321,9 +317,9 @@ case class TiffTags(
           (key.toString.toInt, metadataNodeSeqToMap(ns))
         }
 
-        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](numberOfBands)
+        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](bandCount)
 
-        cfor(0)(_ < numberOfBands, _ + 1) { i =>
+        cfor(0)(_ < bandCount, _ + 1) { i =>
           bandsMetadataMap.get(i) match {
             case Some(map) => bandsMetadataBuffer(i) = map
             case None => bandsMetadataBuffer(i) = Map()
@@ -332,8 +328,8 @@ case class TiffTags(
 
         Tags(metadata, bandsMetadataBuffer)
       }
-      case (numberOfBands, None) => 
-        Tags(Map[String, String](), Array.ofDim[Map[String, String]](numberOfBands))
+      case None =>
+        Tags(Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toArray)
     }
 
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =

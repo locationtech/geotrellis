@@ -22,14 +22,18 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
+import geotrellis.raster.io.geotiff.tags.codes._
+import scala.collection.mutable
+
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.ByteOrder
 
 import spire.syntax.cfor._
 
-object GeoTiffWriter2 {
+object GeoTiffWriter {
   def write(geoTiff: GeoTiff, path: String): Unit = {
     val fos = new FileOutputStream(new File(path))
     try {
@@ -45,11 +49,13 @@ object GeoTiffWriter2 {
   }
 }
 
-import geotrellis.raster.io.geotiff.tags.codes._
-import scala.collection.mutable
-
-
 class GeoTiffWriter(geoTiff: GeoTiff, dos: DataOutputStream) {
+  implicit val toBytes: ToBytes =
+    if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN)
+      BigEndianToBytes
+    else
+      LittleEndianToBytes
+
   val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
   val segments = geoTiff.imageData.compressedBytes
   val segmentCount = segments.size
@@ -80,18 +86,28 @@ class GeoTiffWriter(geoTiff: GeoTiff, dos: DataOutputStream) {
   var index: Int = 0
   def writeByte(value: Byte) { dos.writeByte(value); index += 1 }
   def writeBytes(value: Array[Byte]) { dos.write(value, 0, value.length); index += value.length }
-  def writeShort(value: Int) { dos.writeShort(value); index += 2 }
-  def writeInt(value: Int) { dos.writeInt(value); index += 4 }
-  def writeLong(value: Long) { dos.writeLong(value); index += 8 }
-  def writeFloat(value: Float) { dos.writeFloat(value); index += 4 }
-  def writeDouble(value: Double) { dos.writeDouble(value); index += 8 }
+
+  def writeShort(value: Int) { writeBytes(toBytes(value.toShort)) }
+  def writeInt(value: Int) { writeBytes(toBytes(value)) }
+  def writeLong(value: Long) { writeBytes(toBytes(value)) }
+  def writeFloat(value: Float) { writeBytes(toBytes(value)) }
+  def writeDouble(value: Double) { writeBytes(toBytes(value)) }
 
   def write(): Unit = {
 
-    // First 4 bytes of signature: 'M', 'M', 0, 42.
-    // This represents that the file is in Big Endian, and provides the
+    // Write the header that determines the endian
+    if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
+      val m = 'M'.toByte
+      writeByte(m)
+      writeByte(m)
+    } else {
+      val i = 'I'.toByte
+      writeByte(i)
+      writeByte(i)
+    }
+
     // TIFF header code.
-    writeInt(0x4d4d002a)
+    writeShort(42.toShort)
 
     // Write tag start offset (immediately after this 4 byte integer)
     writeInt(index + 4)
@@ -152,7 +168,7 @@ class GeoTiffWriter(geoTiff: GeoTiff, dos: DataOutputStream) {
     // Write 0 integer to indicate the end of the last IFD.
     writeInt(0)
 
-    assert(index == tagDataStartOffset)
+    assert(index == tagDataStartOffset, s"Writer error: index at $index, should be $tagDataStartOffset")
     assert(tagDataOffset == tagDataStartOffset + tagDataByteCount)
 
     // write tag data
@@ -165,44 +181,9 @@ class GeoTiffWriter(geoTiff: GeoTiff, dos: DataOutputStream) {
 
     // Write the image data.
     cfor(0)(_ < segmentCount, _ + 1) { i =>
-      println(segments(i).toSeq)
       writeBytes(segments(i))
     }
 
     dos.flush()
-  }
-}
-
-object GeoTiffWriter {
-
-  val cellType = "geotiff"
-  val dataType = ""
-
-  def write(path: String, tile: Tile, extent: Extent, crs: CRS) {
-    Encoder.writePath(
-      path,
-      tile,
-      RasterExtent(extent, tile.cols, tile.rows),
-      crs,
-      settings(tile.cellType)
-    )
-  }
-
-  def write(path: String, tile: Tile, extent: Extent, crs: CRS, nodata: Double) {
-    Encoder.writePath(
-      path,
-      tile,
-      RasterExtent(extent, tile.cols, tile.rows),
-      crs,
-      settings(tile.cellType).setNodata(nodata)
-    )
-  }
-
-  private def settings(cellType: CellType) = cellType match {
-    case TypeBit | TypeByte => Settings.int8
-    case TypeShort => Settings.int16
-    case TypeInt => Settings.int32
-    case TypeFloat => Settings.float32
-    case TypeDouble => Settings.float64
   }
 }

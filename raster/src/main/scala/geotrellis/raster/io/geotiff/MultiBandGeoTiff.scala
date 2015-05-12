@@ -5,7 +5,6 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-// TODO: Fix tags.
 class MultiBandGeoTiff(
   val tile: MultiBandTile,
   val extent: Extent,
@@ -15,8 +14,8 @@ class MultiBandGeoTiff(
 ) extends GeoTiff {
   def imageData: GeoTiffImageData =
     tile match {
-      case gtt: MultiBandGeoTiffTile => gtt
-      case _ => ??? ///tile.toGeoTiffTile(options)
+      case gtt: GeoTiffMultiBandTile => gtt
+      case _ => ??? ///tile.toGeoTiffTile(options) TODO: Implement this
     }
 }
 

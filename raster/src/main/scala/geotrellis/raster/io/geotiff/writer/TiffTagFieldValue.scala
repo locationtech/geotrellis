@@ -7,6 +7,7 @@ import geotrellis.raster.io.geotiff.tags.codes.TagCodes._
 import geotrellis.raster.io.geotiff.tags.codes.TiffFieldType._
 import geotrellis.vector.Extent
 
+import java.nio.ByteOrder
 import scala.collection.mutable
 import spire.syntax.cfor._
 
@@ -31,52 +32,11 @@ case class TiffTagFieldValue(
 }
 
 object TiffTagFieldValue {
-  def apply(tag: Int, fieldType: Int, length: Int, value: Int): TiffTagFieldValue = 
+  def apply(tag: Int, fieldType: Int, length: Int, value: Int)(implicit toBytes: ToBytes): TiffTagFieldValue = 
     fieldType match {
       case ShortsFieldType => TiffTagFieldValue(tag, fieldType, length, toBytes(value.toShort))
       case IntsFieldType => TiffTagFieldValue(tag, fieldType, length, toBytes(value))
     }
-
-  def toBytes(i: Int): Array[Byte] = Array((i >>> 24).toByte, (i >>> 16).toByte, (i >>> 8).toByte, i.toByte)
-  def toBytes(i: Short): Array[Byte] = Array((i >>> 8).toByte, i.toByte)
-  def toBytes(i: Long): Array[Byte] =
-    Array( 
-      (i >>> 56).toByte,
-      (i >>> 48).toByte,
-      (i >>> 40).toByte,
-      (i >>> 32).toByte,
-      (i >>> 24).toByte, 
-      (i >>> 16).toByte, 
-      (i >>> 8).toByte, 
-      i.toByte
-    )
-
-  def toBytes(f: Float): Array[Byte] = toBytes(java.lang.Float.floatToIntBits(f))
-  def toBytes(d: Double): Array[Byte] = toBytes(java.lang.Double.doubleToLongBits(d))
-
-  def toBytes(s: String): Array[Byte] = s.getBytes :+ 0x00.toByte
-
-  def toBytes(arr: Array[Int]): Array[Byte] = {
-    val result = Array.ofDim[Byte](arr.length * 4)
-    var resultIndex = 0
-    cfor(0)(_ < arr.length, _ + 1) { i =>
-      val bytes = toBytes(arr(i))
-      System.arraycopy(bytes, 0, result, resultIndex, bytes.length)
-      resultIndex += bytes.length
-    }
-    result
-  }
-
-  def toBytes(arr: Array[Double]): Array[Byte] = {
-    val result = Array.ofDim[Byte](arr.length * 8)
-    var resultIndex = 0
-    cfor(0)(_ < arr.length, _ + 1) { i =>
-      val bytes = toBytes(arr(i))
-      System.arraycopy(bytes, 0, result, resultIndex, bytes.length)
-      resultIndex += bytes.length
-    }
-    result
-  }
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
@@ -88,6 +48,12 @@ object TiffTagFieldValue {
     }
 
   def collect(geoTiff: GeoTiff): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
+    implicit val toBytes: ToBytes =
+      if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN)
+        BigEndianToBytes
+      else
+        LittleEndianToBytes
+
     val imageData = geoTiff.imageData
     val extent = geoTiff.extent
 
@@ -113,17 +79,36 @@ object TiffTagFieldValue {
 
     fieldValues += TiffTagFieldValue(ModelTiePointsTag, DoublesFieldType, 6, toBytes(Array(0.0, 0.0, 0.0, extent.xmin, extent.ymax, 0.0)))
 
-    // GeoKeyDirectory
+    // GeoKeyDirectory: Tags that describe the CRS
 
-    // GeoDirectory shorts       TagCodes.GeoKeyDirectoryTag, TiffFieldType.ShortsFieldType, NumberOfKeys * 4 + 4, GeoKeyShorts _
-        // GeoKeyShorts - (Short Short Short Short)
-        //   first entry: (1, 1, 0, NumberOfKeys)
-        //       entry 1: (s, s, s, s) first entry
-        //       entry K: (s, s, s, s) entry NumberOfKeys
+    val GeoDirectoryTags(shortGeoKeys, doubleGeoKeys) = Proj4StringParser.parse(geoTiff.crs.toProj4String)
 
-    // GeoKeyDirectory Doubles   TagCodes.GeoDoubleParamsTag, TiffFieldType.DoublesFieldType, N = Number of double values, GeoKeyDoubles _
-    // GeoKeyDirectory ASCII     TagCodes.GeoAsciiParamsTag, TiffFieldType.AsciisFieldType, N = Number of Characters (pipe sparated |), GeoKeyAsciis _
+    // Write the short values of the GeoKeyDirectory
+    val shortValues = Array.ofDim[Short]( (shortGeoKeys.length + 1) * 4)
+    shortValues(0) = 1
+    shortValues(1) = 1
+    shortValues(2) = 0
+    shortValues(3) = shortGeoKeys.length.toShort
+    cfor(0)(_ < shortGeoKeys.length, _ + 1) { i =>
+      val start = (i + 1) * 4
+      shortValues(start) = shortGeoKeys(i)._1.toShort
+      shortValues(start + 1) = shortGeoKeys(i)._2.toShort
+      shortValues(start + 2) = shortGeoKeys(i)._3.toShort
+      shortValues(start + 3) = shortGeoKeys(i)._4.toShort
+    }
 
+    fieldValues += TiffTagFieldValue(GeoKeyDirectoryTag, ShortsFieldType, shortValues.length, toBytes(shortValues))
+    fieldValues += TiffTagFieldValue(GeoDoubleParamsTag, DoublesFieldType, doubleGeoKeys.length, toBytes(doubleGeoKeys))
+
+    // Not written (what goes here?):
+    //GeoKeyDirectory ASCII     TagCodes.GeoAsciiParamsTag, TiffFieldType.AsciisFieldType, N = Number of Characters (pipe sparated |), GeoKeyAsciis _
+
+    // GDAL MetaData
+    val metaData = toBytes(new scala.xml.PrettyPrinter(80, 2).format(geoTiff.tags.toXml))
+    fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metaData.length, metaData)
+
+    // Tags that are different if it is striped or tiled storage, and a function
+    // that sets up a tag to point to the offsets of the image data.
 
     val segmentByteCounts = imageData.compressedBytes.map { _.length }.toArray
     val offsetsFieldValueBuilder: Array[Int] => TiffTagFieldValue =

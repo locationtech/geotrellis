@@ -16,6 +16,40 @@ object Tags {
   * See the "Metadata" section here: http://www.gdal.org/gdal_datamodel.html
   */
 class Tags(headTags: Map[String, String], bandTags: Array[Map[String, String]]) {
+  def bandCount = bandTags.size
   def apply(): Map[String, String] = headTags
   def apply(i: Int): Map[String, String] = bandTags(i)
+
+  override
+  def equals(o: Any): Boolean =
+    o match {
+      case other: Tags =>
+        bandCount == other.bandCount &&
+        (0 until bandCount).foldLeft(true) { case (acc, i) => acc & (apply(i) == other(i)) } &&
+        apply().equals(other())
+      case _ => false
+    }
+
+  override
+  def hashCode =
+    (headTags, bandTags).hashCode
+
+  def toXml(): scala.xml.Elem = {
+    val headTagsXml =
+      headTags.toSeq.map { case (key, value) =>
+        <Item name={key}>{value}</Item>
+      }
+
+    val bandTagsXml: Seq[scala.xml.Elem] =
+      bandTags.zipWithIndex.flatMap { case (map, i) =>
+        map.toSeq.map { case (key, value) =>
+          <Item name={key} sample={i.toString}>{value}</Item>
+        }
+      }
+
+    <GDALMetadata>
+      {headTagsXml}
+      {bandTagsXml}
+    </GDALMetadata>
+  }
 }

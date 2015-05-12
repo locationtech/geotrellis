@@ -9,7 +9,7 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-object MultiBandGeoTiffTile {
+object GeoTiffMultiBandTile {
   def apply(
     bandType: BandType,
     compressedBytes: Array[Array[Byte]],
@@ -30,15 +30,15 @@ object MultiBandGeoTiffTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
-  ): MultiBandGeoTiffTile =
-    new MultiBandGeoTiffTile(bandType, compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+  ): GeoTiffMultiBandTile =
+    new GeoTiffMultiBandTile(bandType, compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
     // bandType match {
     //   // case BitBandType     => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
     //   // case ByteBandType    => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     //   // case UInt16BandType  => new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     //   // case Int16BandType   => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     //   // case UInt32BandType  => new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   case Int32BandType   => new Int32MultiBandGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
+    //   case Int32BandType   => new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     //   // case Float32BandType => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     //   // case Float64BandType => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     //   case _ => ???
@@ -72,7 +72,7 @@ object MultiBandGeoTiffTile {
   // }
 }
 
-class MultiBandGeoTiffTile(
+class GeoTiffMultiBandTile(
   val bandType: BandType,
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,

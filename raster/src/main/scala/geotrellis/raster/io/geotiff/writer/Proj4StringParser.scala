@@ -31,12 +31,19 @@ import ModelTypes._
 import CoordinateTransformTypes._
 import ProjectedLinearUnits._
 
+case class GeoDirectoryTags(shortTags: Array[(Int, Int, Int, Int)], doubles: Array[Double])
+
 object Proj4StringParser {
 
   val GeoTiffDoubleTag = 0x87b0
 
   def apply(proj4String: String): Proj4StringParser =
     new Proj4StringParser(proj4String)
+
+  def parse(proj4String: String): GeoDirectoryTags = {
+    val (s, d) = apply(proj4String).parse
+    GeoDirectoryTags(s, d)
+  }
 
 }
 
@@ -84,7 +91,7 @@ class Proj4StringParser(val proj4String: String) {
 
   // This method returns a tuple of the short geokeys and the double geokeys
   // to be written, sorted.
-  lazy val parse: (List[(Int, Int, Int, Int)], List[Double]) = {
+  lazy val parse: (Array[(Int, Int, Int, Int)], Array[Double]) = {
     val geoKeysIntBuffer = ListBuffer[(Int, Int)]()
     val doublesBuffer = ListBuffer[(Int, Double)]()
 
@@ -113,17 +120,19 @@ class Proj4StringParser(val proj4String: String) {
       doubles.zipWithIndex.map(x => (x._1._1, GeoTiffDoubleTag, 1, x._2))).sortBy(_._1)
 
 
-    (geoKeys, doubles.map(_._2))
+    (geoKeys.toArray, doubles.map(_._2).toArray)
   }
 
-  //TODO: Fix more of these.
+  //TODO: There are more projections that need to be added.
+  // GDAL parses off of WKT, and there are many missing from the proj4 parser
+  // that this code is taken from. We need to be able to write out more projections.
   private lazy val projProps = proj4Map.get("proj") match {
     case Some("tmerc") => tmercProps
     case Some("utm") => utmProps
     case Some("lcc") => lccProps
     case Some("longlat") | Some("latlong") => longLatProps
     case Some(p) => throw new GeoTiffWriterLimitationException(
-      s"This GeoTiff writer does either not support the projection $p or it is malformed."
+      s"This GeoTiff writer does not currently support the projection $proj4String. Please reproject before writing to GeoTIFF."
     )
     case None => throw new MalformedProj4Exception(
       "No +proj flag specified."
@@ -242,6 +251,7 @@ class Proj4StringParser(val proj4String: String) {
 
     (geoKeysInt, doubles)
   }
+
 
   private def getString(key: String, defV: String) =
     proj4Map.getOrElse(key, defV)

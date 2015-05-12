@@ -42,6 +42,6 @@ object ProjectedRaster {
 case class ProjectedRaster(tile: Tile, extent: Extent, crs: CRS) {
   def raster = Raster(tile, extent)
 
-  def reproject(dest: CRS): Raster = 
-    raster.reproject(crs, dest)
+  def reproject(dest: CRS): ProjectedRaster = 
+    ProjectedRaster(raster.reproject(crs, dest), dest)
 }

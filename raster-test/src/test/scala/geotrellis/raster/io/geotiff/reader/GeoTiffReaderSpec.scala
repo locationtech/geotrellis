@@ -409,41 +409,40 @@ class GeoTiffReaderSpec extends FunSpec
       extent should be (Extent(0, 0, tile.cols, tile.rows))
     }
 
-    // TODO: Fix multi band reader.
-    // it("should read GeoTiff with multiple bands correctly") {
-    //   val bands = SingleBandGeoTiff(geoTiffPath("multi-tag.tif")).bands
+    it("should read GeoTiff with multiple bands correctly") {
+      val mbTile  = MultiBandGeoTiff(geoTiffPath("multi-tag.tif")).tile
 
-    //   bands.size should be (4)
+      mbTile.bandCount should be (4)
 
-    //   cfor(0)(_ < 4, _ + 1) { i =>
-    //     val band = bands(i)
-    //     band.tile.cellType should be (TypeByte)
-    //     band.tile.dimensions should be ((500, 500))
-    //   }
-    // }
+      cfor(0)(_ < 4, _ + 1) { i =>
+        val tile = mbTile.band(i)
+        tile.cellType should be (TypeByte)
+        tile.dimensions should be ((500, 500))
+      }
+    }
 
-    // it("should read GeoTiff with bands metadata correctly") {
-    //   val geoTiff = SingleBandGeoTiff(geoTiffPath("multi-tag.tif"))
+    it("should read GeoTiff with bands metadata correctly") {
+      val geoTiff = MultiBandGeoTiff(geoTiffPath("multi-tag.tif"))
 
-    //   val tags = geoTiff.tags
+      val tags = geoTiff.tags
 
-    //   tags("HEADTAG") should be ("1")
-    //   tags("TAG_TYPE") should be ("HEAD")
-    //   tags.size should be (2)
+      tags("HEADTAG") should be ("1")
+      tags("TAG_TYPE") should be ("HEAD")
+      tags.size should be (2)
 
-    //   val bands = geoTiff.bands
+      val bandCount = geoTiff.tile.bandCount
 
-    //   bands.size should be (4)
+      bandCount should be (4)
 
-    //   cfor(0)(_ < 4, _ + 1) { i =>
-    //     val correctMetadata = Map(
-    //       "BANDTAG" -> (i + 1).toString,
-    //       "TAG_TYPE" -> s"BAND${i + 1}"
-    //     )
+      cfor(0)(_ < 4, _ + 1) { i =>
+        val correctMetadata = Map(
+          "BANDTAG" -> (i + 1).toString,
+          "TAG_TYPE" -> s"BAND${i + 1}"
+        )
 
-    //     bands(i).tags should be (correctMetadata)
-    //   }
-    // }
+        tags(i) should be (correctMetadata)
+      }
+    }
 
     it("should read GeoTiff with ZLIB compression and needs exact segment sizes") {
       val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("nex-pr-tile.tif"))

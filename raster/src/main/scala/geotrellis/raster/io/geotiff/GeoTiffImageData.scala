@@ -1,7 +1,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.compression.Decompressor
+import geotrellis.raster.io.geotiff.compression._
 
 trait GeoTiffImageData {
   def cols: Int

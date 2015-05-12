@@ -76,7 +76,7 @@ object GeoTiffReader {
           info.noDataValue
         )
       } else {
-        MultiBandGeoTiffTile(
+        GeoTiffMultiBandTile(
           info.bandType,
           info.compressedBytes,
           info.decompressor,
@@ -109,7 +109,7 @@ object GeoTiffReader {
   def readMultiBand(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
     val tile =
-      MultiBandGeoTiffTile(
+      GeoTiffMultiBandTile(
         info.bandType,
         info.compressedBytes,
         info.decompressor,

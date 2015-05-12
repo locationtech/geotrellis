@@ -35,10 +35,12 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
 
   def writeExpectedTile(t: Tile, n: String): Unit = 
     geotrellis.raster.io.geotiff.writer.GeoTiffWriter.write(
-      geoTiffPath(s"$n.tif"), 
-      t,
-      geotrellis.vector.Extent(0.0, -10.0, 50.0, -4.0), 
-      geotrellis.proj4.LatLng
+      GeoTiff(
+        t,
+        geotrellis.vector.Extent(0.0, -10.0, 50.0, -4.0),
+        geotrellis.proj4.LatLng
+      ),
+      geoTiffPath(s"$n.tif")
     )
 
   val compression = List("uncompressed", "lzw", "deflate", "packbits")
