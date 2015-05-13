@@ -12,7 +12,7 @@ import scala.util.matching.Regex
 object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] with LazyLogging {
   val tileIdRx: Regex = """.+\/(\d+)""".r
 
-  val indexToPath = (i: Long) => f"${i}%019d"
+  val indexToPath = encodeIndex
       
   val pathToIndex = (s: String) => {
     val tileIdRx(tileId) = s

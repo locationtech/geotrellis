@@ -18,16 +18,16 @@ object S3RasterCatalog {
       val config = new com.amazonaws.ClientConfiguration
       config.setMaxConnections(128)
       config.setMaxErrorRetry(16)
-      config.setConnectionTimeout(1000000)
-      config.setSocketTimeout(1000000)
-      config.setRetryPolicy(PredefinedRetryPolicies.getDefaultRetryPolicyWithCustomMaxRetries(32))  
+      config.setConnectionTimeout(100000)
+      config.setSocketTimeout(100000)
+      config.setRetryPolicy(PredefinedRetryPolicies.getDefaultRetryPolicyWithCustomMaxRetries(32))
       new AmazonS3Client(provider, config)
     }
   
   private def layerPath(layerId: LayerId) = 
     s"${layerId.name}/${layerId.zoom}"  
 
-  def apply(bucket: String, rootPath: String, s3client: ()=>S3Client = defaultS3Client)
+  def apply(bucket: String, rootPath: String, s3client: () => S3Client = defaultS3Client)
     (implicit sc: SparkContext): S3RasterCatalog = {
     
     val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath)
@@ -44,12 +44,15 @@ class S3RasterCatalog(
   import S3RasterCatalog._
 
   def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
+    reader(sc.defaultParallelism)
+
+  def reader[K: RasterRDDReader: JsonFormat: ClassTag](numPartitions: Int): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
         val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
         val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]].read(s3client, metaData, keyBounds, index)(layerId, filterSet)
+        implicitly[RasterRDDReader[K]].read(s3client, metaData, keyBounds, index, numPartitions)(layerId, filterSet)
       }      
     }
 
