@@ -17,10 +17,10 @@ import com.typesafe.config.{ConfigFactory,Config}
 object MockAccumuloInstance { def apply(): MockAccumuloInstance = new MockAccumuloInstance }
 
 class MockAccumuloInstance() extends AccumuloInstance {
-  val instance: Instance = new MockInstance("fake")
+  def instance: Instance = new MockInstance("fake")
   val user = "root"
   val token = new PasswordToken("")
-  val connector = instance.getConnector(user, token)
+  def connector = instance.getConnector(user, token)
   val instanceName = "fake"
 
   def setAccumuloConfig(job: Job): Unit = {
