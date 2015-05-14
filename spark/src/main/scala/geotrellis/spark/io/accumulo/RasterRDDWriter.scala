@@ -31,10 +31,39 @@ import scalaz.stream._
 import spire.syntax.cfor._
 
 sealed trait AccumuloWriteStrategy 
+
+/**
+ * This strategy will perfom Accumulo bulk ingest. Bulk ingest requires that sorted records be written to the 
+ * filesystem, preferbly HDFS, before Accumulo is able to ingest them. After the ingest is finished
+ * the nodes will likely go through a period of high load as they perform major compactions.
+ *
+ * Note: Giving relative URLs will cause HDFS to use the `fs.defaultFS` property in `core-site.xml`. 
+ * If not specified this will default to local ('file:/') system, this is undesriable.
+ *
+ * @param ingestPath Path where spark will write RDD records for ingest
+ */
 case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy
+
+/**
+ * This strategy will create one BatchWriter per partition and attempt to stream the records to the target tablets.
+ * In order to gain some parallism this strategy will create a number of splits in the target table equal to the number
+ * of tservers in the cluster. This is suitable for smaller ingests, or where HdfsWriteStrategy is otherwise not possible.
+ * 
+ * There is a problem in Accumulo 1.6 (fixed in 1.7) where the split creation does not wait for the resulting
+ * empty tablets to distribute through the cluster before returning. This will create a warm-up period where the
+ * pressure the ingest writers on that node will delay tablet re-balancing.
+ *
+ * The speed of the ingest can be improved by setting `tserver.wal.sync.method=hflush` in accumulo shell.
+ * Note: this introduces higher chance of data loss due to sudden node failure.
+ *
+ * BatchWriter is notified of the tablet migrations and will follow them around the cluster.
+ *
+ * @param config Configuration for the BatchWriters
+ */
 case class SocketWriteStrategy(
   config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32) 
 ) extends AccumuloWriteStrategy
+
 
 trait RasterRDDWriter[K] {
   def rowId(id: LayerId, index: Long): String  
