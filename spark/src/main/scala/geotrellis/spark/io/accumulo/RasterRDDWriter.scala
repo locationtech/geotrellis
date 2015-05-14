@@ -103,18 +103,25 @@ trait RasterRDDWriter[K] {
         val outPath = HdfsUtils.tmpPath(ingestPath, s"${layerId.name}-${layerId.zoom}", conf)
         val failuresPath = outPath.suffix("-failures")
 
-        try {
-          HdfsUtils.ensurePathExists(failuresPath, conf)
-          kvPairs
-            .sortBy{ case (key, _) => key }
-            .saveAsNewAPIHadoopFile(
-              outPath.toString,
-              classOf[Key],
-              classOf[Value],
-              classOf[AccumuloFileOutputFormat],
-              conf)
+        HdfsUtils.ensurePathExists(failuresPath, conf)
+        kvPairs
+          .sortBy{ case (key, _) => key }
+          .saveAsNewAPIHadoopFile(
+            outPath.toString,
+            classOf[Key],
+            classOf[Value],
+            classOf[AccumuloFileOutputFormat],
+            conf)
 
-          ops.importDirectory(tileTable, outPath.toString, failuresPath.toString, true)
+        ops.importDirectory(tileTable, outPath.toString, failuresPath.toString, true)          
+
+        // cleanup ingest directories on success
+        val fs = ingestPath.getFileSystem(conf)
+        if( fs.exists(new Path(outPath, "_SUCCESS")) ) {
+          fs.delete(outPath, true)
+          fs.delete(failuresPath, true)
+        } else {
+          sys.error(s"Accumulo bulk ingest for $layerId failed at $ingestPath")
         }
       }
 
