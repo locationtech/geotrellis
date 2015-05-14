@@ -103,6 +103,7 @@ trait RasterRDDWriter[K] {
 
         val bcCon = sc.broadcast(instance.connector)
         kvPairs.foreachPartition { partition =>
+          // Increasing thread count per writer with cluster size benefits ingest performance, as per benchmarks.
           // The overall thread count should not increase proprotinal to number of nodes at risk of congestion
           // I don't know that this is the optimal relation, but it curves the right way
           val threads = math.log(x)*20
