@@ -46,8 +46,8 @@ object S3IngestCommand extends ArgMain[S3IngestCommand] with Logging {
     
     val layoutScheme = ZoomedLayoutScheme(256)
     
-    implicit val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val writer = AccumuloRasterCatalog().writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
+    val catalog = S3RasterCatalog(args.bucket, args.key)      
+    val writer = catalog.writer[SpatialKey](ZCurveKeyIndexMethod)
 
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
       writer.write(LayerId(args.layerName, level.zoom), rdd)
