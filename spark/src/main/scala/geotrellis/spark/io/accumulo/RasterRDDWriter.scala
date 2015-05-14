@@ -28,7 +28,6 @@ import scalaz.concurrent.Task
 import scala.concurrent._
 import scalaz.stream.async._
 import scalaz.stream._
-
 import spire.syntax.cfor._
 
 sealed trait AccumuloWriteStrategy
@@ -95,10 +94,20 @@ trait RasterRDDWriter[K] {
         val tserverCount = instance.connector.instanceOperations.getTabletServers.size
         val splits = getSplits(layerId, keyBounds, kIndex, tserverCount)
         ops.addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
+        
+        // Give the accumulo balancer a chance to spread out the newly created empty tablets.
+        // If this fails to happen the pressure from ingest is going to keep them clustered on one tsever,
+        // causing performance problems until they eventually spread out.
+        // note: This issue is fixed in accumulo 1.7
+        Thread.sleep(1000)
 
         val bcCon = sc.broadcast(instance.connector)
         kvPairs.foreachPartition { partition =>
-          val writer = bcCon.value.createBatchWriter(tileTable, new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(24))
+          // The overall thread count should not increase proprotinal to number of nodes at risk of congestion
+          // I don't know that this is the optimal relation, but it curves the right way
+          val threads = math.log(x)*20
+          val bwConfig = new BatchWriterConfig().setMaxMemory(256*1024*1024).setMaxWriteThreads(threads)
+          val writer = bcCon.value.createBatchWriter(tileTable, bwConfig)
 
           val mutations: Process[Task, Mutation] = 
             Process.unfold(partition){ iter => 
@@ -112,14 +121,13 @@ trait RasterRDDWriter[K] {
               }
             }
 
-          val write: Mutation => Process[Task, Unit] = { mutation =>
-            Process eval Task { 
-              writer.addMutation(mutation)
-            }
+          val write = (mutation: Mutation) => Task {
+            writer.addMutation(mutation)
           }   
-          
-          val results = nondeterminism.njoin(maxOpen = 24, maxQueued = 8) { mutations map (write) }
-          results.run.run
+          val writeChannel = channel.lift(write)
+          val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
+          merge.mergeN(32)(writes).run.run          
+          writer.close
         }
       }
     }
