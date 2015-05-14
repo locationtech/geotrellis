@@ -106,7 +106,7 @@ trait RasterRDDWriter[K] {
         try {
           HdfsUtils.ensurePathExists(failuresPath, conf)
           kvPairs
-            .sortBy{ case (key, _) => key.getRow.toString }
+            .sortBy{ case (key, _) => key }
             .saveAsNewAPIHadoopFile(
               outPath.toString,
               classOf[Key],
