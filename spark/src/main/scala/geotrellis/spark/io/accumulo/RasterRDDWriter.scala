@@ -30,9 +30,11 @@ import scalaz.stream.async._
 import scalaz.stream._
 import spire.syntax.cfor._
 
-sealed trait AccumuloWriteStrategy
+sealed trait AccumuloWriteStrategy 
 case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy
-case object SocketWriteStrategy extends AccumuloWriteStrategy
+case class SocketWriteStrategy(
+  config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32) 
+) extends AccumuloWriteStrategy
 
 trait RasterRDDWriter[K] {
   def rowId(id: LayerId, index: Long): String  
@@ -63,19 +65,17 @@ trait RasterRDDWriter[K] {
     val newGroup: java.util.Set[Text] = Set(new Text(layerId.name))
     ops.setLocalityGroups(tileTable, groups.updated(tileTable, newGroup))
 
-    val job = Job.getInstance(sc.hadoopConfiguration)
-    instance.setAccumuloConfig(job)
-
     val kvPairs = encode(layerId, raster, kIndex)
     strategy match {
       case HdfsWriteStrategy(ingestPath) => {
+        val job = Job.getInstance(sc.hadoopConfiguration)
+        instance.setAccumuloConfig(job)
         val conf = job.getConfiguration
         val outPath = HdfsUtils.tmpPath(ingestPath, s"${layerId.name}-${layerId.zoom}", conf)
         val failuresPath = outPath.suffix("-failures")
 
         try {
           HdfsUtils.ensurePathExists(failuresPath, conf)
-          // TODO: Can I get away with sorting ONLY the partition
           kvPairs
             .sortBy{ case (key, _) => key.getRow.toString }
             .saveAsNewAPIHadoopFile(
@@ -83,32 +83,26 @@ trait RasterRDDWriter[K] {
               classOf[Key],
               classOf[Value],
               classOf[AccumuloFileOutputFormat],
-              job.getConfiguration)
+              conf)
 
           ops.importDirectory(tileTable, outPath.toString, failuresPath.toString, true)
         }
       }
 
-      case SocketWriteStrategy => {      
+      case SocketWriteStrategy(config: BatchWriterConfig) => {      
         // splits are required for efficient BatchWriter ingest
-        val tserverCount = instance.connector.instanceOperations.getTabletServers.size
-        val splits = getSplits(layerId, keyBounds, kIndex, tserverCount)
-        ops.addSplits(tileTable, new java.util.TreeSet(splits.map(new Text(_))))
-        
-        // Give the accumulo balancer a chance to spread out the newly created empty tablets.
-        // If this fails to happen the pressure from ingest is going to keep them clustered on one tsever,
-        // causing performance problems until they eventually spread out.
-        // note: This issue is fixed in accumulo 1.7
-        Thread.sleep(1000)
+        val connector = instance.connector
+        val tserverCount = math.max(connector.instanceOperations.getTabletServers.size, 1)
+        val splitIndicies = getSplits(keyBounds, kIndex, tserverCount)
+        ops.addSplits(
+          tileTable, 
+          new java.util.TreeSet(splitIndicies.map{ s => new Text(rowId(layerId, s)) })        
+        )
 
-        val bcCon = sc.broadcast(instance.connector)
+        val bcVals = sc.broadcast((instance, config))
         kvPairs.foreachPartition { partition =>
-          // Increasing thread count per writer with cluster size benefits ingest performance, as per benchmarks.
-          // The overall thread count should not increase proprotinal to number of nodes at risk of congestion
-          // I don't know that this is the optimal relation, but it curves the right way
-          val threads = math.log(x)*20
-          val bwConfig = new BatchWriterConfig().setMaxMemory(256*1024*1024).setMaxWriteThreads(threads)
-          val writer = bcCon.value.createBatchWriter(tileTable, bwConfig)
+          val (instance, config) = bcVals.value          
+          val writer = instance.connector.createBatchWriter(tileTable, config)
 
           val mutations: Process[Task, Mutation] = 
             Process.unfold(partition){ iter => 
@@ -122,19 +116,23 @@ trait RasterRDDWriter[K] {
               }
             }
 
-          val write = (mutation: Mutation) => Task {
-            writer.addMutation(mutation)
+          val writeChannel = channel.lift { 
+            (mutation: Mutation) => Task { writer.addMutation(mutation) }
           }   
-          val writeChannel = channel.lift(write)
+          
           val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-          merge.mergeN(32)(writes).run.run          
+          nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes).run.run
           writer.close
         }
       }
     }
   }
 
-  def getSplits(id: LayerId, kb: KeyBounds[K], ki: KeyIndex[K], count: Int): Seq[String] = {  
+  /**
+   * Mapping KeyBounds of Extent to SFC ranges will often result in a set of non-contigrious ranges.
+   * The indices exluded by these ranges should not be included in split calcluation as they will never be seen.
+   */
+  def getSplits(kb: KeyBounds[K], ki: KeyIndex[K], count: Int): Seq[Long] = {  
     var stack = ki.indexRanges(kb).toList
     def len(r: (Long, Long)) = r._2 - r._1 + 1l
     val total = stack.foldLeft(0l){ (s,r) => s + len(r) }
@@ -146,7 +144,7 @@ trait RasterRDDWriter[K] {
       (range._1, range._1 + take - 1) -> (range._1 + take, range._2)
     }
 
-    val arr = Array.fill[String](count - 1)(null)
+    val arr = Array.fill[Long](count - 1)(0)
     var sum = 0l
     var i = 0
 
@@ -156,14 +154,14 @@ trait RasterRDDWriter[K] {
         sum += len(stack.head)
         stack = stack.tail
       } else if (nextStep == binWidth) {
-        arr(i) = rowId(id, stack.head._2)
+        arr(i) = stack.head._2
         stack = stack.tail
         i += 1
         sum = 0l
       } else {
         val (take, left) = splitRange(stack.head, binWidth - sum)
         stack = left :: stack.tail
-        arr(i) = rowId(id, take._2)
+        arr(i) = take._2
         i += 1
         sum = 0l
       }
