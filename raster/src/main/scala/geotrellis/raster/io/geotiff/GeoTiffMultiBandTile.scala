@@ -165,6 +165,23 @@ class GeoTiffMultiBandTile(
       GeoTiffTile(bandType, compressedBandBytes, decompressor, segmentLayout, compression)
     }
   }
+
+ def combine(b0: Int,b1: Int)(f: (Int, Int) => Int): Tile = ???
+ def combine(f: Array[Int] => Int): Tile = ???
+ def combineDouble(b0: Int,b1: Int)(f: (Double, Double) => Double): Tile = ???
+ def combineDouble(f: Array[Double] => Double): Tile = ???
+  def combineDoubleTileCombiner(combiner: geotrellis.macros.DoubleTileCombiner3): geotrellis.raster.Tile = ???
+  def combineDoubleTileCombiner(combiner: geotrellis.macros.DoubleTileCombiner4): geotrellis.raster.Tile = ???
+  def combineIntTileCombiner(combiner: geotrellis.macros.IntTileCombiner3): geotrellis.raster.Tile = ???
+  def combineIntTileCombiner(combiner: geotrellis.macros.IntTileCombiner4): geotrellis.raster.Tile = ???
+ def foreach(b0: Int)(f: Int => Unit): Unit = ???
+ def foreach(f: (Int, Int) => Unit): Unit = ???
+ def foreachDouble(b0: Int)(f: Double => Unit): Unit = ???
+ def foreachDouble(f: (Int, Double) => Unit): Unit = ???
+ def map(b0: Int)(f: Int => Int): geotrellis.raster.MultiBandTile = ???
+ def map(f: (Int, Int) => Int): geotrellis.raster.MultiBandTile = ???
+ def mapDouble(b0: Int)(f: Double => Double): geotrellis.raster.MultiBandTile = ???
+ def mapDouble(f: (Int, Double) => Double): geotrellis.raster.MultiBandTile = ???
 }
 
 //abstract class GeoTiffTile(
