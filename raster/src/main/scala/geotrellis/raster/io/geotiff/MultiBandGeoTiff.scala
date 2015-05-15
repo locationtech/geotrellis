@@ -36,18 +36,32 @@ object MultiBandGeoTiff {
   def apply(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(bytes, decompress)
 
-//   def unapply(mbg: MultiBandGeoTiff): Option[(Tile, Extent, CRS, Map[String, String], Map[String, String])] =
-//     Some((mbg.tile, mbg.extent, mbg.crs, mbg.tags, mbg.bandTags))
+  def apply(
+    tile: MultiBandTile,
+    extent: Extent,
+    crs: CRS
+  ): MultiBandGeoTiff =
+    apply(tile, extent, crs, Tags.empty)
 
-//   def apply(
-//     tile: Tile,
-//     extent: Extent,
-//     crs: CRS,
-//     tags: Map[String, String],
-//     bandTags: Map[String, String],
-//     options: GeoTiffOptions
-//   ): SingleBandGeoTiff =
-//     new SingleBandGeoTiff(tile, extent, crs, tags, bandTags, options)
+  def apply(
+    tile: MultiBandTile,
+    extent: Extent,
+    crs: CRS,
+    tags: Tags
+  ): MultiBandGeoTiff =
+    apply(tile, extent, crs, tags, GeoTiffOptions.DEFAULT)
+
+  def apply(
+    tile: MultiBandTile,
+    extent: Extent,
+    crs: CRS,
+    tags: Tags,
+    options: GeoTiffOptions
+  ): MultiBandGeoTiff =
+    new MultiBandGeoTiff(tile, extent, crs, tags, options)
+
+  def unapply(mbg: MultiBandGeoTiff): Option[(MultiBandTile, Extent, CRS, Tags)] =
+    Some((mbg.tile, mbg.extent, mbg.crs, mbg.tags))
   
 //   /** Read a single-band GeoTIFF file from the file at the given path.
 //     * The GeoTIFF will be fully uncompressed and held in memory.

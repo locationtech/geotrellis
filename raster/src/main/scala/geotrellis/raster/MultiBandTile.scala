@@ -11,11 +11,13 @@ import java.util.Locale
 import math.BigDecimal
 
 trait MultiBandTile {
-  val bandCount: Int
-  val cols: Int
-  val rows: Int
-  lazy val dimensions: (Int, Int) = (cols, rows)
-  lazy val size = cols * rows
+  def bandCount: Int
+  def cellType: CellType
+  def cols: Int
+  def rows: Int
+
+  def dimensions: (Int, Int) = (cols, rows)
+  def size = cols * rows
 
   def band(bandIndex: Int): Tile
 
@@ -102,4 +104,24 @@ trait MultiBandTile {
   //   */
   // def combineDouble(b0: Int, b1: Int, b2: Int, b3: Int)(f: (Double, Double, Double, Double) => Double)
 
+  // def resample(source: Extent, target: RasterExtent): MultiBandTile =
+  //   resample(source, target, InterpolationMethod.DEFAULT)
+
+  // def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): MultiBandTile
+
+  // def resample(source: Extent, target: Extent): MultiBandTile =
+  //   resample(source, target, InterpolationMethod.DEFAULT)
+
+  // def resample(source: Extent, target: Extent, method: InterpolationMethod): MultiBandTile =
+  //   resample(source, RasterExtent(source, cols, rows).createAligned(target), method)
+
+  // def resample(source: Extent, targetCols: Int, targetRows: Int): MultiBandTile =
+  //   resample(source, targetCols, targetRows, InterpolationMethod.DEFAULT)
+
+  // def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): MultiBandTile =
+  //   resample(source, RasterExtent(source, targetCols, targetRows), method)
+
+  // /** Only changes the resolution */
+  // def resample(targetCols: Int, targetRows: Int): MultiBandTile =
+  //   resample(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
 }

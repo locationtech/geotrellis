@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff
+package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 
 import geotrellis.vector.Extent

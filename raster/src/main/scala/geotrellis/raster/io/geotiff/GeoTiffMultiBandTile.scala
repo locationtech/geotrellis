@@ -18,7 +18,7 @@ object GeoTiffMultiBandTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     compression: Compression
-  ): MultiBandTile =
+  ): GeoTiffMultiBandTile =
     apply(bandType, compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, None)
 
   def apply(
@@ -44,32 +44,67 @@ object GeoTiffMultiBandTile {
     //   case _ => ???
     // }
 
-  // /** Convert a tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. */
-  // def apply(tile: Tile): GeoTiffTile =
-  //   apply(tile, GeoTiffOptions.DEFAULT)
+  // /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
+  def apply(tile: MultiBandTile): GeoTiffMultiBandTile =
+    apply(tile, GeoTiffOptions.DEFAULT)
 
-  // def apply(tile: Tile, options: GeoTiffOptions): GeoTiffTile = {
-  //   val bandType = BandType.forCellType(tile.cellType)
+  def apply(tile: MultiBandTile, options: GeoTiffOptions): GeoTiffMultiBandTile = {
+    val bandType = BandType.forCellType(tile.cellType)
+    val bandCount = tile.bandCount
 
-  //   val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, bandType)
+    val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, bandType)
 
-  //   val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
-  //   val compressor = options.compression.createCompressor(segmentCount)
+    val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
+    val compressor = options.compression.createCompressor(segmentCount)
 
-  //   val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
-  //   val segmentTiles = 
-  //     options.storageMethod match {
-  //       case _: Tiled => CompositeTile.split(tile, segmentLayout.tileLayout)
-  //       case _: Striped => CompositeTile.split(tile, segmentLayout.tileLayout, extend = false)
-  //     }
+    val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
 
-  //   cfor(0)(_ < segmentCount, _ + 1) { i =>
-  //     val bytes = segmentTiles(i).toBytes
-  //     compressedBytes(i) = compressor.compress(bytes, i)
-  //   }
+    val segmentTiles = Array.ofDim[Array[Tile]](segmentCount)
+    cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
+      val bandTiles =
+        options.storageMethod match {
+          case _: Tiled => CompositeTile.split(tile.band(bandIndex), segmentLayout.tileLayout)
+          case _: Striped => CompositeTile.split(tile.band(bandIndex), segmentLayout.tileLayout, extend = false)
+        }
 
-  //   apply(bandType, compressedBytes, compressor.createDecompressor, segmentLayout, options.compression)
-  // }
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val bandTile = bandTiles(segmentIndex)
+        if(bandIndex == 0) { segmentTiles(segmentIndex) = Array.ofDim[Tile](bandCount) }
+        segmentTiles(segmentIndex)(bandIndex) = bandTile
+      }
+    }
+
+    val byteCount = tile.cellType.bytes
+
+    cfor(0)(_ < segmentCount, _ + 1) { i =>
+      val tiles = segmentTiles(i)
+      val cols = tiles(0).cols
+      val rows = tiles(0).rows
+      var segmentByteCount = 0
+      val segmentBytes = Array.ofDim[Byte](cols * rows * bandCount * byteCount)
+
+      val tileBytes = Array.ofDim[Array[Byte]](bandCount)
+      cfor(0)(_ < bandCount, _ + 1) { b =>
+        tileBytes(b) = tiles(b).toBytes
+      }
+
+      var segmentIndex = 0
+      cfor(0)(_ < cols * rows, _ + 1) { cellIndex =>
+        cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
+          cfor(0)(_ < byteCount, _ + 1) { b =>
+            val bytes = tileBytes(bandIndex)
+            segmentBytes(segmentIndex) = bytes(cellIndex * byteCount + b)
+            segmentIndex += 1
+          }
+        }
+      }
+
+      compressedBytes(i) = compressor.compress(segmentBytes, i)
+    }
+
+    apply(bandType, compressedBytes, compressor.createDecompressor, segmentLayout, bandCount, true, options.compression)
+  }
+
 }
 
 class GeoTiffMultiBandTile(
@@ -84,6 +119,8 @@ class GeoTiffMultiBandTile(
 ) extends MultiBandTile with GeoTiffImageData {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
+
+  def cellType: CellType = bandType.cellType
 
   def getDecompressedBytes(i: Int): Array[Byte] =
     decompressor.decompress(compressedBytes(i), i)
@@ -121,7 +158,6 @@ class GeoTiffMultiBandTile(
 
       var j = 0
       cfor(bandIndex)(_ < size, _ + bandCount) { i =>
-        println(s"$j (${compressedBandBytes.length}) =  $i (${compressedBytes.length})")
         compressedBandBytes(j) = compressedBytes(i).clone
         j += 1
       }

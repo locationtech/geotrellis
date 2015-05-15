@@ -10,7 +10,15 @@ import java.util.Locale
 
 import math.BigDecimal
 
-class ArrayMultiBandTile(bands: Array[ArrayTile]) {
+object ArrayMultiBandTile {
+  def apply(bands: Tile*): ArrayMultiBandTile =
+    apply(bands.toArray)
+
+  def apply(bands: Array[Tile]): ArrayMultiBandTile =
+    new ArrayMultiBandTile(bands)
+}
+
+class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
   val bandCount = bands.size
 
   assert(bandCount > 0, "Band count must be greater than 0")
@@ -26,9 +34,6 @@ class ArrayMultiBandTile(bands: Array[ArrayTile]) {
     assert(bands(i).cols == cols, s"Band $i cols does not match, ${bands(i).cols} != $cols")
     assert(bands(i).rows == rows, s"Band $i rows does not match, ${bands(i).rows} != $rows")
   }
-
-  lazy val dimensions: (Int, Int) = (cols, rows)
-  lazy val size = cols * rows
 
   def band(bandIndex: Int): Tile = {
     if(bandIndex >= bandCount) { throw new IllegalArgumentException(s"Band $bandIndex does not exist") }
