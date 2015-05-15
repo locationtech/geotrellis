@@ -15,8 +15,7 @@ import scala.collection.mutable
 object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with LazyLogging {
   val tileIdRx: Regex = """.+\/(\d+)-\d{4}.+$""".r    
 
-  val indexToPath = (i: Long) => 
-    f"${i}%019d" // This does not generate time, but it's good enough to place an S3 Marker
+  val indexToPath = encodeIndex
       
   val pathToIndex = (s: String) => {
     val tileIdRx(tileId) = s

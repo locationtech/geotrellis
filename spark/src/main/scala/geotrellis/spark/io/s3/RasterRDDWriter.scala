@@ -42,10 +42,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
     // TODO: Check if I am clobbering things        
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
         
-    val maxLen = { // lets find out the widest key we can possibly have
-      def digits(x: Long): Int = if (x < 10) 1 else 1 + digits(x/10)
-      digits(keyIndex.toIndex(keyBounds.maxKey))
-    }
+    val maxLen = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
 
     val bcClient = sc.broadcast(s3client)
     val catalogBucket = bucket
@@ -59,7 +56,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
         val s3client: S3Client = bcClient.value.apply
 
         val requests: Process[Task, PutObjectRequest] = 
-          Process.unfold(partition){ iter => 
+          Process.unfold(partition){ iter =>
             if (iter.hasNext) {
               val row = iter.next
               val index = keyIndex.toIndex(row._1) 
@@ -67,7 +64,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
               val metadata = new ObjectMetadata()
               metadata.setContentLength(bytes.length)
               val is = new ByteArrayInputStream(bytes)
-              val request = new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)                        
+              val request = new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)
               Some(request, iter)
             } else  {
               None
@@ -80,7 +77,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
           Process eval Task { 
             request.getInputStream.reset // reset in case of retransmission to avoid 400 error
             s3client.putObject(request) 
-          }(pool).retryEBO { 
+          }(pool).retryEBO {
             case e: AmazonS3Exception if e.getStatusCode == 503 => true
             case _ => false
           }
