@@ -54,7 +54,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val layerId = LayerId("ones", level.zoom)
 
         it("should succeed writing to a table") {
-          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName, SocketWriteStrategy).write(layerId, onesRdd)
+          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName, SocketWriteStrategy()).write(layerId, onesRdd)
         }
 
         it("should load out saved tiles") {
@@ -116,7 +116,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
 
       it("should succeed writing to a table") {
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy).write(layerId, CoordinateSpaceTime)
+        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy()).write(layerId, CoordinateSpaceTime)
       }
       it("should load out saved tiles") {
         val rdd = catalog.reader[SpaceTimeKey].read(layerId)
