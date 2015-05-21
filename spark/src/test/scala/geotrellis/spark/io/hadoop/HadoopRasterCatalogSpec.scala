@@ -91,41 +91,49 @@ class HadoopRasterCatalogSpec extends FunSpec
           }
         }
 
-        // it("should filter out all but 4 tiles") {
-        //   val tileBounds = GridBounds(915,612,917,613)
+        it("should filter out all but 4 tiles") {
+          val layerId = LayerId("ones", 10)
+          val tileBounds = GridBounds(915,612,917,613)
 
-        //   val expected = catalog
-        //     .reader[SpatialKey]
-        //     .read(LayerId("ones", 10))
-        //     .collect.filter { case (key, _) =>
-        //       filters.includeKey(key)
-        //     }
-        //   val filteredRdd = catalog
-        //     .reader[SpatialKey]
-        //     .filter(tileBounds)
-        //     .read(LayerId("ones", 10))
+          val query = new RasterQuery[SpatialKey].filter(tileBounds)
+          val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
-        //   filteredRdd.count should be (expected.size)
-        // }
+          val expected = catalog
+            .query[SpatialKey](layerId)
+            .toRDD
+            .collect.filter { case (key, _) =>
+              queryKeyBounds.includeKey(key)
+            }
+          val filteredRdd = catalog
+            .query[SpatialKey](LayerId("ones", 10))
+            .filter(tileBounds)
+            .toRDD
+
+          filteredRdd.count should be (expected.size)
+        }
 
 
-        // it("should filter out the correct keys") {
-        //   val tileBounds = GridBounds(915,611,915,613)
-        //   val unfiltered = catalog.reader[SpatialKey].read(LayerId("ones", 10))
-        //   val filtered = catalog.reader[SpatialKey].fliter(tileBounds).read(LayerId("ones", 10))
+        it("should filter out the correct keys") {
+          val layerId = LayerId("ones", 10)
+          val tileBounds = GridBounds(915,611,915,613)        
+          val unfiltered = catalog.query[SpatialKey](layerId).toRDD
+          val filtered = catalog.query[SpatialKey](layerId).filter(tileBounds).toRDD
 
-        //   val expected = unfiltered.collect.filter { case (key, value) => 
-        //     filters.includeKey(key)
-        //   }.toMap
+          val query = new RasterQuery[SpatialKey].filter(tileBounds)
+          val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
-        //   val actual = filtered.collect.toMap
+          val expected = unfiltered.collect.filter { case (key, value) => 
+            queryKeyBounds.includeKey(key)
+          }.toMap
 
-        //   actual.keys should be (expected.keys)
+          val actual = filtered.collect.toMap
 
-        //   for(key <- actual.keys) {
-        //     tilesEqual(actual(key), expected(key))
-        //   }
-        // }
+          actual.keys should be (expected.keys)
+
+          for(key <- actual.keys) {
+            tilesEqual(actual(key), expected(key))
+          }
+        }
 
         it("should filter out the correct keys with different grid bounds") {
           val layerId = LayerId("ones", 10)
