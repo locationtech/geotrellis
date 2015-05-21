@@ -18,19 +18,4 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] with LazyLoggi
     val tileIdRx(tileId) = s
     tileId.toLong
   }
-
-  def setFilters(filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], keyIndex: KeyIndex[SpatialKey]): Seq[(Long, Long)] = {    
-    val ranges = 
-      (for (filter <- filterSet.filters) yield {
-        filter match {
-          case SpaceFilter(b) =>
-            keyIndex.indexRanges(SpatialKey(b.colMin, b.rowMin) -> SpatialKey(b.colMax, b.rowMax))
-        }
-      }).flatten
-
-    if (ranges.isEmpty) // if we have no filter, expand to KeyBounds
-      keyIndex.indexRanges(keyBounds)
-    else
-      ranges
-  }
 }

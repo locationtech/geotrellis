@@ -17,11 +17,33 @@ trait Boundable[K] extends Serializable {
       minBound(bounds.minKey, p),
       maxBound(bounds.maxKey, p))
   }
-  
+
+  def includes(p: K, bounds: KeyBounds[K]): Boolean = {
+    bounds == KeyBounds(
+      minBound(bounds.minKey, p),
+      maxBound(bounds.maxKey, p))
+  }
+
   def combine(b1: KeyBounds[K], b2: KeyBounds[K]): KeyBounds[K] = {
     KeyBounds(
       minBound(b1.minKey, b2.minKey),
       maxBound(b1.maxKey, b2.maxKey))
+  }
+
+  def intersect(b1: KeyBounds[K], b2: KeyBounds[K]): Option[KeyBounds[K]] = {
+    val kb = KeyBounds(
+      maxBound(b1.minKey, b2.minKey),
+      minBound(b1.maxKey, b2.maxKey))
+
+    // Intersection may not exist
+    if (minBound(kb.minKey, kb.maxKey) == kb.minKey)
+      Some(kb)
+    else
+      None
+  }
+
+  def intersects(b1: KeyBounds[K], b2: KeyBounds[K]): Boolean = {
+    intersect(b1,b2).isDefined
   }
 
   def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]

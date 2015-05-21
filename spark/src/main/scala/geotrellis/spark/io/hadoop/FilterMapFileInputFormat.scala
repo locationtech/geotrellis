@@ -17,10 +17,10 @@ object FilterMapFileInputFormat {
   val SPLITS_FILE_PATH = "splits_file_path"
   val FILTER_INFO_KEY = "geotrellis.spark.io.hadoop.filterinfo"
 
-  type FilterDefinition[K] = (FilterSet[K], Array[(Long, Long)])
+  type FilterDefinition[K] = (Seq[KeyBounds[K]], Array[(Long, Long)])
 }
 
-abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] with IndexedKeyWritable[K], V >: Null <: Writable]() extends FileInputFormat[KW, V] {
+abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComparable[KW] with IndexedKeyWritable[K], V >: Null <: Writable]() extends FileInputFormat[KW, V] {
   var _filterDefinition: Option[FilterMapFileInputFormat.FilterDefinition[K]] = None
 
   def createKey(): KW

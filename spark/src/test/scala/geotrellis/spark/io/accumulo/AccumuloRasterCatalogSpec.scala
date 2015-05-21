@@ -58,12 +58,12 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles") {
-          val rdd = catalog.reader[SpatialKey].read(layerId)
+          val rdd = catalog.query[SpatialKey](layerId).toRDD
           rdd.count should be > 0l
         }
 
         it("should load out a single tile") {
-          val key = catalog.reader[SpatialKey].read(layerId).map(_._1).collect.head
+          val key = catalog.query[SpatialKey](layerId).toRDD.map(_._1).collect.head
           val getTile = catalog.readTile[SpatialKey](layerId)
           val tile = getTile(key)
           (tile.cols, tile.rows) should be ((512, 512))
@@ -71,15 +71,14 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("should load out saved tiles, but only for the right zoom") {
           intercept[RuntimeException] {
-            catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
+            catalog.query[SpatialKey](LayerId("ones", level.zoom + 1)).toRDD.count()
           }
         }
 
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,612,916,612)
-          val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
-          val rdd1 = catalog.reader[SpatialKey].read(LayerId("ones", level.zoom), filters)
-          val rdd2 = catalog.reader[SpatialKey].read(LayerId("ones", 10), filters)
+          val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).filter(tileBounds).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).filter(tileBounds).toRDD
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
@@ -119,12 +118,12 @@ class AccumuloRasterCatalogSpec extends FunSpec
         catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy).write(layerId, CoordinateSpaceTime)
       }
       it("should load out saved tiles") {
-        val rdd = catalog.reader[SpaceTimeKey].read(layerId)
+        val rdd = catalog.query[SpaceTimeKey](layerId).toRDD
         rdd.count should be > 0l
       }
 
       it("should load out a single tile") {
-        val key = catalog.reader[SpaceTimeKey].read(layerId).map(_._1).collect.head
+        val key = catalog.query[SpaceTimeKey](layerId).toRDD.map(_._1).collect.head
         val getTile = catalog.readTile[SpaceTimeKey](layerId)
         val tile = getTile(key)
         val actual = CoordinateSpaceTime.collect.toMap.apply(key)
@@ -133,7 +132,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
       it("should load out saved tiles, but only for the right zoom") {
         intercept[RuntimeException] {
-          catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom + 1)).count()
+          catalog.query[SpaceTimeKey](LayerId("coordinates", zoom + 1)).toRDD.count()
         }
       }
 
@@ -146,12 +145,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val (minRow, maxRow) = (rows.min, rows.max)
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
-
-        val filters =
-          new FilterSet[SpaceTimeKey]
-            .withFilter(SpaceFilter(tileBounds))
-
-        val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
+        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).filter(tileBounds).toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
@@ -170,12 +164,11 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
 
-        val filters =
-          new FilterSet[SpaceTimeKey]
-            .withFilter(SpaceFilter(tileBounds))
-            .withFilter(TimeFilter(maxTime))
-
-        val rdd = catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom), filters)
+        val rdd = catalog
+          .query[SpaceTimeKey](LayerId("coordinates", zoom))
+          .filter(tileBounds)
+          .filter(maxTime -> maxTime)
+          .toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)

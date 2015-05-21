@@ -72,16 +72,18 @@ class HadoopRasterCatalog(
   catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
 ) {
 
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
-    new FilterableRasterRDDReader[K] {
-      def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
-        val metaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")                
-        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]]
-          .read(catalogConfig, metaData, index, keyBounds)(layerId, filterSet)
-      }
-    }
+  def query[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterQuery[K]): RasterRDD[K] = {
+    val metadata = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")                
+    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+
+    implicitly[RasterRDDReader[K]]
+      .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
+  }
+
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterQuery[K] =
+    new BoundRasterQuery[K](new RasterQuery[K], query(layerId, _))
+
 
   def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
     writer[K](keyIndexMethod, "")
@@ -136,15 +138,25 @@ class HadoopRasterCatalog(
       }
     }
 
-  def readTile[K: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = 
-    new Reader[K, Tile] {
-      val readTile = {
-        val layerMetaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[TileReader[K]].read(catalogConfig, layerMetaData, index)(_)
+  def readTile[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
+    // TODO: There should be a way to do this with a Reader, not touching any InputFormats
+    val layerMetaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    val boundable = implicitly[Boundable[K]]
+    
+    val readTile = (key: K) => {
+      val tileKeyBounds = KeyBounds(key, key)
+      boundable.intersect(tileKeyBounds, keyBounds) match {
+        case Some(kb) =>
+          implicitly[TileReader[K]].read(catalogConfig, layerMetaData, index, kb)
+        case None => 
+          sys.error(s"Tile for $key is outside of layer bounds: $keyBounds")
       }
-
+    }
+    
+    new Reader[K, Tile] {
       def read(key: K) = readTile(key)
     }
+  }
 }

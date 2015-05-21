@@ -43,18 +43,22 @@ class S3RasterCatalog(
 (implicit sc: SparkContext) {
   import S3RasterCatalog._
 
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
-    reader(sc.defaultParallelism)
+  def query[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterQuery[K], numPartitions: Int): RasterRDD[K] = {
+    val metadata  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
+    val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
 
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](numPartitions: Int): FilterableRasterRDDReader[K] =
-    new FilterableRasterRDDReader[K] {
-      def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
-        val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]].read(s3client, metaData, keyBounds, index, numPartitions)(layerId, filterSet)
-      }      
-    }
+    val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
+    implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
+  }
+
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterQuery[K] ={
+    new BoundRasterQuery[K](new RasterQuery[K], query(layerId, _, sc.defaultParallelism))
+  }
+
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int): BoundRasterQuery[K] = {
+    new BoundRasterQuery[K](new RasterQuery[K], query(layerId, _, numPartitions))
+  }
 
   def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
     writer[K](keyIndexMethod, clobber = true)

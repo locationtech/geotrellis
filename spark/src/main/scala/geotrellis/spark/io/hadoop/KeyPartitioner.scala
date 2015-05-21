@@ -53,17 +53,6 @@ class KeyPartitioner[K: Ordering](splits: Array[K]) extends Partitioner {
   def contains(partition: Int, key: K): Boolean =
     getPartition(key) == partition
 
-  def minKey(partition: Int): KeyBound[K] =
-    if(partition == 0) MinKeyBound[K]()
-    else ValueKeyBound(splits(partition))
-
-  def maxKey(partition: Int): KeyBound[K] =
-    if(partition == numPartitions - 1) MaxKeyBound[K]
-    else ValueKeyBound(splits(partition))
-
-  def intersects(partition: Int, minKey: K, maxKey: K) =
-    getPartition(minKey) <= partition || partition <= getPartition(maxKey)
-
   override def hashCode: Int = splits.hashCode
   override def toString = {
     val s = if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString

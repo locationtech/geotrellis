@@ -19,15 +19,20 @@ trait Writer[K, V] extends Function2[K,V,Unit] {
 
 trait TileReader[K] extends Reader[K, geotrellis.raster.Tile]
 
-trait FilterableRDDReader[L, K, V, R <: RDD[(K, V)]] extends Reader[L, R] {
-  def read(rddKey: L): R = read(rddKey, FilterSet.empty[K])
-
-  def read(rddKey: L, filters: FilterSet[K]): R
+trait FilterableRDDReader[L, K, V, R <: RDD[(K, V)]] extends Reader[L, R] { 
+  type Filter[K,T]
+  def read(rddKey: L): R
+  def filter[T](paramsList: T*)(implicit filter: Filter[K, T]): FilterableRDDReader[L, K, V, R]
 }
 
 trait RasterRDDReader[K] extends Reader[LayerId, RasterRDD[K]]
 
-trait FilterableRasterRDDReader[K] extends FilterableRDDReader[LayerId, K, Tile, RasterRDD[K]]
+trait FilterableRasterRDDReader[K] extends FilterableRDDReader[LayerId, K, Tile, RasterRDD[K]] {
+  type Filter[K, T] = RasterFilter[K, T]
+
+  def filter[T](paramsList: T*)(implicit rasterFilter: RasterFilter[K, T]): FilterableRasterRDDReader[K]    
+}
+
 
 trait RasterRDDWriter[K] extends Writer[LayerId, RasterRDD[K]]
 

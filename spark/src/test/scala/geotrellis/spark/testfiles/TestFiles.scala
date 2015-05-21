@@ -32,15 +32,12 @@ object TestFiles extends Logging {
 }
 
 trait TestFiles { self: OnlyIfCanRunSpark =>
-  lazy val spatialReader = TestFiles.catalog.reader[SpatialKey]
-  lazy val spaceTimeReader = TestFiles.catalog.reader[SpaceTimeKey]
-
   def spatialTestFile(layerName: String): RasterRDD[SpatialKey] = {
-    spatialReader.read(LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
+    TestFiles.catalog.query[SpatialKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }
 
   def spaceTimeTestFile(layerName: String): RasterRDD[SpaceTimeKey] = {
-    spaceTimeReader.read(LayerId(layerName, TestFiles.ZOOM_LEVEL)).cache
+    TestFiles.catalog.query[SpaceTimeKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }
 
   def AllOnesTestFile =
