@@ -30,7 +30,7 @@ class HadoopRasterCatalogSpec extends FunSpec
 
   describe("HadoopRasterCatalog with SpatialKey Rasters") {
     // helper to verify filtering is working correctly
-    def resolveQuery[K: JsonFormat: ClassTag](catalog: HadoopRasterCatalog, layerId: LayerId, query: RasterQuery[K]) = 
+    def resolveQuery[K: JsonFormat: ClassTag](catalog: HadoopRasterCatalog, layerId: LayerId, query: RasterRDDQuery[K]) =
       query(
         catalog.attributeStore.read[HadoopLayerMetaData](layerId, "metadata").rasterMetaData,
         catalog.attributeStore.read[KeyBounds[K]](layerId, "keyBounds"))
@@ -95,7 +95,7 @@ class HadoopRasterCatalogSpec extends FunSpec
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
 
-          val query = new RasterQuery[SpatialKey].filter(tileBounds)
+          val query = new RasterRDDQuery[SpatialKey].filter(tileBounds)
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = catalog
@@ -119,7 +119,7 @@ class HadoopRasterCatalogSpec extends FunSpec
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
           val filtered = catalog.query[SpatialKey](layerId).filter(tileBounds).toRDD
 
-          val query = new RasterQuery[SpatialKey].filter(tileBounds)
+          val query = new RasterRDDQuery[SpatialKey].filter(tileBounds)
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = unfiltered.collect.filter { case (key, value) => 
@@ -138,7 +138,7 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("should filter out the correct keys with different grid bounds") {
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
-          val query = new RasterQuery[SpatialKey].filter(tileBounds)
+          val query = new RasterRDDQuery[SpatialKey].filter(tileBounds)
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
           val filtered = catalog.query[SpatialKey](layerId, query)
 

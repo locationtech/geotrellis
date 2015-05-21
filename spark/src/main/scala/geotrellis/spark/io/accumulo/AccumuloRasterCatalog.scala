@@ -31,7 +31,7 @@ class AccumuloRasterCatalog(
   val attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
 
-  def query[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterQuery[K]): RasterRDD[K] = {
+  def query[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
     val metadata = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")                
     val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
@@ -40,8 +40,8 @@ class AccumuloRasterCatalog(
       .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))    
   }
 
-  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterQuery[K] =
-    new BoundRasterQuery[K](new RasterQuery[K], query(layerId, _))
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
+    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], query(layerId, _))
 
   def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
