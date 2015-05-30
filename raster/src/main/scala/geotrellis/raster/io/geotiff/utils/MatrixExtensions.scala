@@ -24,10 +24,10 @@ trait MatrixExtensions {
 
     def validateAsMatrix =
       if (matrix.size != 0) {
-        var size = matrix(0)
+        var size = matrix(0).size
         var i = 1
         while (i < matrix.size)
-          if (matrix(i) != size)
+          if (matrix(i).size != size)
             throw new IllegalArgumentException("malformed matrix")
           else i += 1
 

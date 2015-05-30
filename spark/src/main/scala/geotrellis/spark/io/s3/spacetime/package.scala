@@ -9,8 +9,13 @@ package object spacetime {
 
   private[spacetime]
   val encodeKey = (key: SpaceTimeKey, ki: KeyIndex[SpaceTimeKey], max: Int) => {
-    val index: String = ki.toIndex(key).toString.reverse.padTo(max, '0').reverse
+    val index = encodeIndex(ki.toIndex(key), max)
     val isoTime: String = fmt.print(key.time)
     f"${index}-${isoTime}"
+  }
+
+  private[spacetime]
+  val encodeIndex = (index: Long, max: Int) => {
+    index.toString.reverse.padTo(max, '0').reverse
   }
 }

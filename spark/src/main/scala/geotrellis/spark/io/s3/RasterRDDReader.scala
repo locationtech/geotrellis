@@ -20,7 +20,7 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
   def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
   /** Converting lower bound of Range to first Key for Marker */
-  val indexToPath: Long => String
+  val indexToPath: (Long, Int) => String
 
   /* Convert key to index to know if we have rached the range end */
   val pathToIndex: String => Long 
@@ -29,7 +29,9 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     s3client: ()=>S3Client,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
-    keyIndex: KeyIndex[K])
+    keyIndex: KeyIndex[K],
+    numPartitions: Int
+  )
   (layerId: LayerId, filterSet: FilterSet[K])
   (implicit sc: SparkContext): RasterRDD[K] = {
     val bucket = layerMetaData.bucket
@@ -38,36 +40,41 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     logger.debug(s"Loading $layerId from $dir")
 
     val ranges = setFilters(filterSet, keyBounds, keyIndex)
-    val bins = ballancedBin(ranges, sc.defaultParallelism)
-    logger.debug(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
+    val bins = balancedBin(ranges, numPartitions)
+    logger.info(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
     val bcClient = sc.broadcast(s3client)
     val bcFilterSet = sc.broadcast(filterSet)
-    val itp = indexToPath
-    val pti = pathToIndex
+    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+
+    // Broadcast the functions that translate from a path to an index and back
+    val bcFuncs = sc.broadcast((pathToIndex, { (index: Long) => indexToPath(index, maxWidth) }))
 
     val rdd =
-      sc.parallelize(bins)
-      .mapPartitions{ rangeList =>
-        val s3client: S3Client = bcClient.value.apply
-        val filterSet: FilterSet[K] = bcFilterSet.value
+      sc
+        .parallelize(bins, bins.size)
+        .mapPartitions { rangeList =>
+          val s3client: S3Client = bcClient.value.apply
+          val filterSet: FilterSet[K] = bcFilterSet.value
+          val (toIndex, toPath) = bcFuncs.value
 
-        rangeList
-          .flatMap( ranges => ranges)
-          .flatMap{ range =>
-            listKeys(s3client, bucket, dir, range, itp, pti)            
-              .map{ path => 
-                val is = s3client.getObject(bucket, path).getObjectContent
-                KryoSerializer.deserializeStream[(K, Tile)](is)
-              }
-              .filter{ row => filterSet.includeKey(row._1) }
-          }
-      }
+          rangeList
+            .flatMap(ranges => ranges)
+            .flatMap { range =>
+              listKeys(s3client, bucket, dir, range, toPath, toIndex)
+                .map { path =>
+                  val is = s3client.getObject(bucket, path).getObjectContent
+                  KryoSerializer.deserializeStream[(K, Tile)](is)
+                 }
+                .filter{ row => filterSet.includeKey(row._1) }
+            }
+        }
+
     new RasterRDD(rdd, rasterMetaData)
   }
 }
 
-object RasterRDDReader {
+object RasterRDDReader extends LazyLogging {
   /**
    * Returns a list of keys for given SFC range. Will skip foroward to first possible key
    * and keep paging until reaching the last key is seen.
@@ -77,36 +84,36 @@ object RasterRDDReader {
     bucket: String, key: String, 
     range: (Long, Long), 
     indexToPath: Long => String, 
-    pathToIndex: String => Long 
+    pathToIndex: String => Long
   ): Vector[String] = {
-    val (minKey, maxKey) = range
+    val (minIndex, maxIndex) = range
     val delim = "/"
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
       .withPrefix(key + "/")
       .withDelimiter(delim)
-      .withMaxKeys(math.min((maxKey - minKey).toInt+1, 1024))
-      .withMarker(key + "/" + indexToPath(minKey - 1))
-    
+      .withMaxKeys(math.min((maxIndex - minIndex).toInt + 1, 1024))
+      .withMarker(key + "/" + indexToPath(minIndex - 1))
+
     def readKeys(keys: Seq[String]): (Seq[String], Boolean) = {
       val ret = ArrayBuffer.empty[String]   
       var endSeen = false
       keys.foreach{ key => 
         val index = pathToIndex(key)
 
-        if (index >= minKey && index <= maxKey)           
-          ret += key                
-        if (index >= maxKey)
-          endSeen = true        
+        if (index >= minIndex && index <= maxIndex)
+          ret += key
+        if (index > maxIndex)
+          endSeen = true
       }
-      ret -> endSeen
+      (ret, endSeen)
     }
 
     var listing: ObjectListing = null
     var foundKeys = Vector.empty[String]
     var stop = false
     do {
-      listing = s3client.listObjects(request)     
+      listing = s3client.listObjects(request)
       // the keys could be either incomplete or include extra information, but in order.
       // need to decides if I ask for more or truncate the result      
       val (pairs, endSeen) = readKeys(listing.getObjectSummaries.asScala.map(_.getKey))
@@ -119,10 +126,10 @@ object RasterRDDReader {
   }
 
   /**
-   * Will attemp to bin ranges into buckets, each containing at least the average number of elements.
+   * Will attempt to bin ranges into buckets, each containing at least the average number of elements.
    * Trailing bins may be empty if the count is too high for number of ranges.
    */
-  protected def ballancedBin(ranges: Seq[(Long, Long)], count: Int ): Seq[Seq[(Long, Long)]] = {
+  protected def balancedBin(ranges: Seq[(Long, Long)], count: Int ): Seq[Seq[(Long, Long)]] = {
     var stack = ranges.toList
 
     def len(r: (Long, Long)) = r._2 - r._1 + 1l
@@ -137,8 +144,8 @@ object RasterRDDReader {
     val arr = Array.fill(count)(Nil: List[(Long, Long)])
     var sum = 0l
     var i = 0
-    while (! stack.isEmpty) {      
-      if (len(stack.head)+sum <= binWidth){
+    while (! stack.isEmpty) {
+      if (len(stack.head) + sum <= binWidth){
         val take = stack.head
         arr(i) = take :: arr(i) 
         sum += len(take)
