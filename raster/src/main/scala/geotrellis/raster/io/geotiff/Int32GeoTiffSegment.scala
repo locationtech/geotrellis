@@ -28,8 +28,8 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))
 
-  def convert(cellType: CellType): Array[Byte] =
-    cellType match {
+  def convert(newCellType: CellType): Array[Byte] =
+    newCellType match {
       case TypeBit =>
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }

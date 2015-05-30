@@ -67,8 +67,6 @@ object GeoTiffTile {
 }
 
 abstract class GeoTiffTile(
-  val compressedBytes: Array[Array[Byte]],
-  val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
   compression: Compression // Compression to use moving forward
 ) extends Tile with GeoTiffImageData {
@@ -84,7 +82,7 @@ abstract class GeoTiffTile(
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
-      val newBytes = segment.convert(cellType)
+      val newBytes = segment.convert(newCellType)
       arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
     }
 
@@ -99,9 +97,6 @@ abstract class GeoTiffTile(
   }
 
   val segmentCount = compressedBytes.size
-
-  def getDecompressedBytes(i: Int): Array[Byte] =
-    decompressor.decompress(compressedBytes(i), i)
 
   def getSegment(i: Int): GeoTiffSegment
 

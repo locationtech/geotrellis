@@ -7,6 +7,8 @@ trait GeoTiffSegment {
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
+  def bytes: Array[Byte]
+
   def convert(cellType: CellType): Array[Byte]
 
   def map(f: Int => Int): Array[Byte]

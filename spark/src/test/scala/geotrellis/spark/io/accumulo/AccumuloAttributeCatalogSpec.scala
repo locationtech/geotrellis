@@ -69,6 +69,15 @@ class AccumuloAttributeStoreSpec extends FunSpec
         attribStore.write(layerId, "foo", foo)
         attribStore.read[Foo](layerId, "foo") should be (foo)
       }
+
+      it("should save and load a KeyIndexMethod with an anonymous function") {
+        val index = ZCurveKeyIndexMethod.by { dt => s"${dt.getYear}${dt.getDayOfYear}".toInt }
+
+        attribStore.write(layerId, "keyIndex", index)
+        val actual = attribStore.read[KeyIndexMethod[SpaceTimeKey]](layerId, "keyIndex")
+        val key = SpaceTimeKey(200, 400, new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC))
+        actual.toIndex(key) should be (index.toIndex(key))
+      }
     }
   }
 }

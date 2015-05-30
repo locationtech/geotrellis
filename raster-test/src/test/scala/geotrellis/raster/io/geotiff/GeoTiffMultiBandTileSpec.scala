@@ -21,7 +21,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
 
   override def afterAll = purge
 
-  describe ("GeoTiffMultiBandTile") {
+  describe ("GeoTiffMultiBandTile creation") {
 
     it("should create GeoTiffMultiBandTile from ArrayMultiBandTile") {
       val original = 
@@ -109,4 +109,226 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       assertEqual(actual.band(2), band3)
     }
   }
+
+  describe("GeoTiffMultiBandTile map") {
+
+    it("should map a single band, striped, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands.tif")).tile.map(1)(_ + 3)
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (5) }
+      tile.band(2).foreach { z => z should be (3) }
+    }
+
+    it("should map a single band, tiled, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled.tif")).tile.map(1)(_ + 3)
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (5) }
+      tile.band(2).foreach { z => z should be (3) }
+    }
+
+    it("should map a single band, striped, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-interleave-bands.tif")).tile.map(1)(_ + 3)
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (5) }
+      tile.band(2).foreach { z => z should be (3) }
+    }
+
+    it("should map a single band, tiled, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled-interleave-bands.tif")).tile.map(1)(_ + 3)
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (5) }
+      tile.band(2).foreach { z => z should be (3) }
+    }
+
+    it("should map over all bands, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands.tif")).tile.map { (b, z) => b * 10 + z }
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (12) }
+      tile.band(2).foreach { z => z should be (23) }
+    }
+
+    it("should map over all bands, tiled") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled.tif")).tile.map { (b, z) => ((b+1) * 10) + z }
+
+      tile.band(0).foreach { z => z should be (11) }
+      tile.band(1).foreach { z => z should be (22) }
+      tile.band(2).foreach { z => z should be (33) }
+    }
+
+    it("should mapDouble a single band, striped, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands.tif")).tile.convert(TypeDouble).mapDouble(1)(_ + 3.3)
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (5) }
+      tile.band(2).foreach { z => z should be (3) }
+    }
+
+    it("should mapDouble a single band, tiled, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled-interleave-bands.tif")).tile.convert(TypeDouble).mapDouble(1)(_ + 3.3)
+
+      tile.band(0).foreach { z => z should be (1) }
+      tile.band(1).foreach { z => z should be (5) }
+      tile.band(2).foreach { z => z should be (3) }
+    }
+
+  }
+
+  describe("GeoTiffMultiBandTile foreach") {
+
+    it("should foreach a single band, striped, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      var count = 0
+      tile.foreach(1) { z => 
+        z should be (2)
+        count += 1
+      }
+      count should be (cellCount)
+    }
+
+    it("should foreach a single band, tiled, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      var count = 0
+      tile.foreach(1) { z => 
+        z should be (2)
+        count += 1
+      }
+      count should be (cellCount)
+    }
+
+    it("should foreach a single band, striped, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-interleave-bands.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      var count = 0
+      tile.foreach(1) { z => 
+        z should be (2)
+        count += 1
+      }
+      count should be (cellCount)
+    }
+
+    it("should foreach a single band, tiled, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled-interleave-bands.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      var count = 0
+      tile.foreach(1) { z => 
+        z should be (2)
+        count += 1
+      }
+      count should be (cellCount)
+    }
+
+    it("should foreachDouble all bands, striped, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      val counts = Array.ofDim[Int](3)
+      tile.foreachDouble { (b, z) => 
+        z should be (b + 1.0)
+        counts(b) += 1
+      }
+
+      counts(0)  should be (cellCount)
+      counts(1)  should be (cellCount)
+      counts(2)  should be (cellCount)
+    }
+
+    it("should foreachDouble all bands, tiled, pixel interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      val counts = Array.ofDim[Int](3)
+      tile.foreachDouble { (b, z) => 
+        z should be (b + 1.0)
+        counts(b) += 1
+      }
+
+      counts(0)  should be (cellCount)
+      counts(1)  should be (cellCount)
+      counts(2)  should be (cellCount)
+    }
+
+    it("should foreachDouble all bands, striped, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-interleave-bands.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      val counts = Array.ofDim[Int](3)
+      tile.foreachDouble { (b, z) => 
+        z should be (b + 1.0)
+        counts(b) += 1
+      }
+
+      counts(0)  should be (cellCount)
+      counts(1)  should be (cellCount)
+      counts(2)  should be (cellCount)
+    }
+
+    it("should foreachDouble all bands, tiled, band interleave") {
+
+      val tile =
+        MultiBandGeoTiff(geoTiffPath("3bands/3bands-tiled-interleave-bands.tif")).tile
+
+      val cellCount = tile.band(1).toArray.size
+
+      val counts = Array.ofDim[Int](3)
+      tile.foreachDouble { (b, z) => 
+        z should be (b + 1.0)
+        counts(b) += 1
+      }
+
+      counts(0)  should be (cellCount)
+      counts(1)  should be (cellCount)
+      counts(2)  should be (cellCount)
+    }
+
+
+  }
+
 }

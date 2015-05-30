@@ -36,6 +36,15 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     bands(bandIndex)
   }
 
+  def convert(newCellType: CellType): MultiBandTile = {
+    val newBands = Array.ofDim[Tile](bandCount)
+    cfor(0)(_ < bandCount, _ + 1) { i =>
+      newBands(i) = band(i).convert(newCellType)
+    }
+
+    ArrayMultiBandTile(newBands)
+  }
+
   /** Map each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */

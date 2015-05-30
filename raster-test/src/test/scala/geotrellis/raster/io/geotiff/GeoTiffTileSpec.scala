@@ -67,4 +67,24 @@ class GeoTiffTileSpec extends FunSpec
       assertEqual(actual, expected)
     }
   }
+
+  describe("GeoTiffTile") {
+    it("should convert from TypeInt to TypeDouble") {
+      val arrInt = 
+        Array(1, 2, 1, 1, 2,
+              1, 2, 2, 1, 2,
+              1, 1, 2, 1, 2)
+
+      val arrDouble =
+        arrInt.map(_.toDouble)
+
+      val t = createTile(arrInt, 5, 3)
+
+      val actual = t.toGeoTiffTile().convert(TypeDouble)
+      val expected = createTile(arrDouble, 5, 3)
+
+      assertEqual(actual, expected)
+    }
+
+  }
 }

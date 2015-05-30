@@ -2,6 +2,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.TileLayout
 
+/** Specifically for single band segments. If dealing with multiband segments, you must do the math */
 trait GridIndexTransform {
   def segmentCols: Int
   def segmentRows: Int
@@ -21,12 +22,12 @@ trait GridIndexTransform {
 
 case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: TileLayout, isTiled: Boolean) {
   def storageMethod: StorageMethod =
-    if(isStriped) 
-      Striped(tileLayout.tileRows)
-    else
+    if(isTiled)
       Tiled(tileLayout.tileCols, tileLayout.tileRows)
+    else
+      Striped(tileLayout.tileRows)
 
-  def isStriped: Boolean = tileLayout.layoutCols == 1
+  def isStriped: Boolean = !isTiled
 
   def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
     val layoutCol = segmentIndex % tileLayout.layoutCols

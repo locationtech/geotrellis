@@ -4,42 +4,18 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
-class UInt16GeoTiffTile(compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
+class UInt16GeoTiffTile(
+  val compressedBytes: Array[Array[Byte]],
+  val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  noDataValue: Option[Double]
-) extends GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression) {
-  val bandType = UInt16BandType
-
-  // Cached last segment
-  private var _lastSegment: UInt16GeoTiffSegment = null
-  private var _lastSegmentIndex: Int = -1
-
-  private val createSegment: Int => UInt16GeoTiffSegment = 
-    noDataValue match {
-      case Some(nd) if isData(nd) && Int.MinValue.toDouble <= nd && nd <= Int.MaxValue.toDouble =>
-        { i: Int => new NoDataUInt16GeoTiffSegment(getDecompressedBytes(i), nd.toInt) }
-      case _ =>
-        { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) }
-    }
-
-  val cellType = TypeInt
-
-  def getSegment(i: Int): GeoTiffSegment = {
-    if(i != _lastSegmentIndex) {
-      _lastSegment = createSegment(i)
-      _lastSegmentIndex = i 
-    }
-    _lastSegment
-  }
-
+  val noDataValue: Option[Double]
+) extends GeoTiffTile(segmentLayout, compression) with UInt16GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Int](cols * rows)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = 
-        if(segmentIndex == _lastSegmentIndex) _lastSegment
-        else createSegment(segmentIndex)
+        getSegment(segmentIndex)
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       cfor(0)(_ < segment.size, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
@@ -52,3 +28,28 @@ class UInt16GeoTiffTile(compressedBytes: Array[Array[Byte]],
     IntArrayTile(arr, cols, rows)
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -22,6 +22,8 @@ trait MultiBandTile extends MacroCombinableMultiBandTile[Tile] {
 
   def band(bandIndex: Int): Tile
 
+  def convert(newCellType: CellType): MultiBandTile
+
   /** Map each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */

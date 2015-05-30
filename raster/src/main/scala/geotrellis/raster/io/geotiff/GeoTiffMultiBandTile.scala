@@ -30,21 +30,35 @@ object GeoTiffMultiBandTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
-  ): GeoTiffMultiBandTile =
-    new GeoTiffMultiBandTile(bandType, compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-    // bandType match {
-    //   // case BitBandType     => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-    //   // case ByteBandType    => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   // case UInt16BandType  => new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   // case Int16BandType   => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   // case UInt32BandType  => new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   case Int32BandType   => new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   // case Float32BandType => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   // case Float64BandType => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-    //   case _ => ???
-    // }
+  ): GeoTiffMultiBandTile =    
+    bandType match {
+      case BitBandType     => 
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with BitGeoTiffSegmentCollection
+      case ByteBandType    => 
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with ByteGeoTiffSegmentCollection
+      case UInt16BandType  => 
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with UInt16GeoTiffSegmentCollection
+      case Int16BandType   =>
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with Int16GeoTiffSegmentCollection
+      case UInt32BandType  =>
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with UInt32GeoTiffSegmentCollection
+      case Int32BandType   =>
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with Int32GeoTiffSegmentCollection
+      case Float32BandType =>
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with Float32GeoTiffSegmentCollection
+      case Float64BandType =>
+        new GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+            with Float64GeoTiffSegmentCollection
+    }
 
-  // /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
+  /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
   def apply(tile: MultiBandTile): GeoTiffMultiBandTile =
     apply(tile, GeoTiffOptions.DEFAULT)
 
@@ -80,7 +94,6 @@ object GeoTiffMultiBandTile {
       val tiles = segmentTiles(i)
       val cols = tiles(0).cols
       val rows = tiles(0).rows
-      var segmentByteCount = 0
       val segmentBytes = Array.ofDim[Byte](cols * rows * bandCount * byteCount)
 
       val tileBytes = Array.ofDim[Array[Byte]](bandCount)
@@ -107,24 +120,22 @@ object GeoTiffMultiBandTile {
 
 }
 
-class GeoTiffMultiBandTile(
-  val bandType: BandType,
+abstract class GeoTiffMultiBandTile(
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
   val compression: Compression,
   val bandCount: Int,
   hasPixelInterleave: Boolean,
-  noDataValue: Option[Double]
+  val noDataValue: Option[Double]
 ) extends MultiBandTile with GeoTiffImageData {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 
-  def cellType: CellType = bandType.cellType
+  def getSegment(i: Int): GeoTiffSegment
 
-  def getDecompressedBytes(i: Int): Array[Byte] =
-    decompressor.decompress(compressedBytes(i), i)
-
+  val segmentCount = compressedBytes.size
+  private val isTiled = segmentLayout.isTiled
 
   def band(bandIndex: Int): GeoTiffTile = {
     if(bandIndex >= bandCount) { throw new IllegalArgumentException(s"Band $bandIndex does not exist") }
@@ -136,7 +147,7 @@ class GeoTiffMultiBandTile(
       val bytesPerCell = bytesPerSample * bandCount
 
       cfor(0)(_ < size, _ + 1) { segmentIndex =>
-        val segment = getDecompressedBytes(segmentIndex)
+        val segment = getSegment(segmentIndex).bytes
         val segmentSize = segment.size
         val bandSegmentSize = segmentSize / bandCount
         val bandSegment = Array.ofDim[Byte](bandSegmentSize)
@@ -166,293 +177,398 @@ class GeoTiffMultiBandTile(
     }
   }
 
- def combine(b0: Int,b1: Int)(f: (Int, Int) => Int): Tile = ???
- def combine(f: Array[Int] => Int): Tile = ???
- def combineDouble(b0: Int,b1: Int)(f: (Double, Double) => Double): Tile = ???
- def combineDouble(f: Array[Double] => Double): Tile = ???
+  def convert(newCellType: CellType): MultiBandTile = {
+    val arr = Array.ofDim[Array[Byte]](segmentCount)
+    val compressor = compression.createCompressor(segmentCount)
+    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+      val segment = getSegment(segmentIndex)
+      val newBytes = segment.convert(newCellType)
+      arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+    }
+
+    GeoTiffMultiBandTile(
+      BandType.forCellType(newCellType),
+      arr,
+      compressor.createDecompressor(),
+      segmentLayout,
+      compression,
+      bandCount,
+      hasPixelInterleave,
+      None
+    )
+  }
+
+
+  def map(b0: Int)(f: Int => Int): MultiBandTile = {
+    val compressor = compression.createCompressor(segmentCount)
+    val arr = Array.ofDim[Array[Byte]](segmentCount)
+    if(hasPixelInterleave) {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        val newBytes = segment.mapWithIndex { (i, z) =>
+          if(i % bandCount == b0)
+            f(z)
+          else
+            z
+        }
+
+        arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+      }
+    } else {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        if(segmentIndex % bandCount == b0) {
+          val newBytes = segment.map(f)
+          arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+        } else {
+          arr(segmentIndex) = compressor.compress(segment.bytes, segmentIndex)
+        }
+      }
+    }
+
+    GeoTiffMultiBandTile(
+      BandType.forCellType(cellType),
+      arr,
+      compressor.createDecompressor(),
+      segmentLayout,
+      compression,
+      bandCount,
+      hasPixelInterleave,
+      None
+    )
+  }
+
+  def map(f: (Int, Int) => Int): MultiBandTile = {
+    val compressor = compression.createCompressor(segmentCount)
+    val arr = Array.ofDim[Array[Byte]](segmentCount)
+    if(hasPixelInterleave) {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        val newBytes = segment.mapWithIndex { (i, z) =>
+          f(i % bandCount, z)
+        }
+
+        arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+      }
+    } else {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val bandIndex = segmentIndex % bandCount
+        val segment = getSegment(segmentIndex)
+        val newBytes = segment.map { z => f(bandIndex, z) }
+
+        arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+      }
+    }
+
+    GeoTiffMultiBandTile(
+      BandType.forCellType(cellType),
+      arr,
+      compressor.createDecompressor(),
+      segmentLayout,
+      compression,
+      bandCount,
+      hasPixelInterleave,
+      None
+    )
+  }
+
+  def mapDouble(b0: Int)(f: Double => Double): MultiBandTile = {
+    val compressor = compression.createCompressor(segmentCount)
+    val arr = Array.ofDim[Array[Byte]](segmentCount)
+    if(hasPixelInterleave) {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        val newBytes = segment.mapDoubleWithIndex { (i, z) =>
+          if(i % bandCount == b0)
+            f(z)
+          else
+            z
+        }
+
+        arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+      }
+    } else {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        if(segmentIndex % bandCount == b0) {
+          val newBytes = segment.mapDouble(f)
+          arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+        } else {
+          arr(segmentIndex) = compressor.compress(segment.bytes, segmentIndex)
+        }
+      }
+    }
+
+    GeoTiffMultiBandTile(
+      BandType.forCellType(cellType),
+      arr,
+      compressor.createDecompressor(),
+      segmentLayout,
+      compression,
+      bandCount,
+      hasPixelInterleave,
+      None
+    )
+  }
+
+  def mapDouble(f: (Int, Double) => Double): MultiBandTile = {
+    val compressor = compression.createCompressor(segmentCount)
+    val arr = Array.ofDim[Array[Byte]](segmentCount)
+    if(hasPixelInterleave) {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        val newBytes = segment.mapDoubleWithIndex { (i, z) =>
+          f(i % bandCount, z)
+        }
+
+        arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+      }
+    } else {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val bandIndex = segmentIndex % bandCount
+        val segment = getSegment(segmentIndex)
+        val newBytes = segment.mapDouble { z => f(bandIndex, z) }
+
+        arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
+      }
+    }
+
+    GeoTiffMultiBandTile(
+      BandType.forCellType(cellType),
+      arr,
+      compressor.createDecompressor(),
+      segmentLayout,
+      compression,
+      bandCount,
+      hasPixelInterleave,
+      None
+    )
+  }
+
+  def foreach(b0: Int)(f: Int => Unit): Unit = {
+    if(hasPixelInterleave) {
+      if(isTiled) {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            if(i % bandCount == b0) {
+              val col = segmentTransform.indexToCol(i / bandCount)
+              val row = segmentTransform.indexToRow(i / bandCount)
+              if(col < cols && row < rows) {
+                f(segment.getInt(i))
+              }
+            }
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            if(i % bandCount == b0) {
+              f(segment.getInt(i))
+            }
+          }
+        }
+      }
+    } else {
+      if(isTiled) {
+        cfor(b0)(_ < segmentCount, _ + bandCount) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex / bandCount)
+
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            val col = segmentTransform.indexToCol(i)
+            val row = segmentTransform.indexToRow(i)
+            if(col < cols && row < rows) {
+              f(segment.getInt(i))
+            }
+          }
+        }
+      } else {
+        cfor(b0)(_ < segmentCount, _ + bandCount) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            f(segment.getInt(i))
+          }
+        }
+      }
+    }
+  }
+
+  def foreach(f: (Int, Int) => Unit): Unit = {
+    if(hasPixelInterleave) {
+      if(isTiled) {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            val col = segmentTransform.indexToCol(i / bandCount)
+            val row = segmentTransform.indexToRow(i / bandCount)
+            if(col < cols && row < rows) {
+              f(i % bandCount, segment.getInt(i))
+            }
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            f(i % bandCount, segment.getInt(i))
+          }
+        }
+      }
+    } else {
+      if(isTiled) {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex / bandCount)
+          val bandIndex = segmentIndex % bandCount
+
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            val col = segmentTransform.indexToCol(i)
+            val row = segmentTransform.indexToRow(i)
+            if(col < cols && row < rows) {
+              f(bandIndex, segment.getInt(i))
+            }
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val bandIndex = segmentIndex % bandCount
+
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            f(bandIndex, segment.getInt(i))
+          }
+        }
+      }
+    }
+  }
+
+  def foreachDouble(b0: Int)(f: Double => Unit): Unit = {
+    if(hasPixelInterleave) {
+      if(isTiled) {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            if(i % bandCount == b0) {
+              val col = segmentTransform.indexToCol(i / bandCount)
+              val row = segmentTransform.indexToRow(i / bandCount)
+              if(col < cols && row < rows) {
+                f(segment.getDouble(i))
+              }
+            }
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            if(i % bandCount == b0) {
+              f(segment.getDouble(i))
+            }
+          }
+        }
+      }
+    } else {
+      if(isTiled) {
+        cfor(b0)(_ < segmentCount, _ + bandCount) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex / bandCount)
+
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            val col = segmentTransform.indexToCol(i)
+            val row = segmentTransform.indexToRow(i)
+            if(col < cols && row < rows) {
+              f(segment.getDouble(i))
+            }
+          }
+        }
+      } else {
+        cfor(b0)(_ < segmentCount, _ + bandCount) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            f(segment.getDouble(i))
+          }
+        }
+      }
+    }
+  }
+
+  def foreachDouble(f: (Int, Double) => Unit): Unit = {
+    if(hasPixelInterleave) {
+      if(isTiled) {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            val col = segmentTransform.indexToCol(i / bandCount)
+            val row = segmentTransform.indexToRow(i / bandCount)
+            if(col < cols && row < rows) {
+              f(i % bandCount, segment.getDouble(i))
+            }
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            f(i % bandCount, segment.getDouble(i))
+          }
+        }
+      }
+    } else {
+      if(isTiled) {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex / bandCount)
+          val bandIndex = segmentIndex % bandCount
+
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            val col = segmentTransform.indexToCol(i)
+            val row = segmentTransform.indexToRow(i)
+            if(col < cols && row < rows) {
+              f(bandIndex, segment.getDouble(i))
+            }
+          }
+        }
+      } else {
+        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+          val segment = getSegment(segmentIndex)
+          val segmentSize = segment.size
+          val bandIndex = segmentIndex % bandCount
+
+          cfor(0)(_ < segmentSize, _ + 1) { i =>
+            f(bandIndex, segment.getDouble(i))
+          }
+        }
+      }
+    }
+  }
+
+  def combine(b0: Int,b1: Int)(f: (Int, Int) => Int): Tile = ???
+  def combine(f: Array[Int] => Int): Tile = ???
+  def combineDouble(b0: Int,b1: Int)(f: (Double, Double) => Double): Tile = ???
+  def combineDouble(f: Array[Double] => Double): Tile = ???
   def combineDoubleTileCombiner(combiner: geotrellis.macros.DoubleTileCombiner3): geotrellis.raster.Tile = ???
   def combineDoubleTileCombiner(combiner: geotrellis.macros.DoubleTileCombiner4): geotrellis.raster.Tile = ???
   def combineIntTileCombiner(combiner: geotrellis.macros.IntTileCombiner3): geotrellis.raster.Tile = ???
   def combineIntTileCombiner(combiner: geotrellis.macros.IntTileCombiner4): geotrellis.raster.Tile = ???
- def foreach(b0: Int)(f: Int => Unit): Unit = ???
- def foreach(f: (Int, Int) => Unit): Unit = ???
- def foreachDouble(b0: Int)(f: Double => Unit): Unit = ???
- def foreachDouble(f: (Int, Double) => Unit): Unit = ???
- def map(b0: Int)(f: Int => Int): geotrellis.raster.MultiBandTile = ???
- def map(f: (Int, Int) => Int): geotrellis.raster.MultiBandTile = ???
- def mapDouble(b0: Int)(f: Double => Double): geotrellis.raster.MultiBandTile = ???
- def mapDouble(f: (Int, Double) => Double): geotrellis.raster.MultiBandTile = ???
 }
-
-//abstract class GeoTiffTile(
-// class GeoTiffTile(
-//   compressedBytes: Array[Array[Byte]],
-//   decompressor: Decompressor,
-//   val segmentLayout: GeoTiffSegmentLayout,
-//   compression: Compression // Compression to use moving forward
-// ) extends Tile {
-//   val cols: Int = segmentLayout.totalCols
-//   val rows: Int = segmentLayout.totalRows
-
-//   def storageMethod: StorageMethod = 
-//     segmentLayout.storageMethod
-//   def geoTiffOptions: GeoTiffOptions =
-//     GeoTiffOptions(storageMethod, compression)
-
-//   // def band(i: Int): GeoTiffTile = 
-//   //   if(has
-
-//   // def convert(newCellType: CellType): Tile = {
-//   //   val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //   val compressor = compression.createCompressor(segmentCount)
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val newBytes = segment.convert(cellType)
-//   //     arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //   }
-
-//   //   GeoTiffTile(
-//   //     BandType.forCellType(newCellType),
-//   //     arr,
-//   //     compressor.createDecompressor(),
-//   //     segmentLayout,
-//   //     compression,
-//   //     None
-//   //   )
-//   // }
-
-//   // val segmentCount = compressedBytes.size
-
-//   // def getDecompressedBytes(i: Int): Array[Byte] =
-//   //   decompressor.decompress(compressedBytes(i), i)
-
-//   // def getSegment(i: Int): GeoTiffSegment
-
-//   // def get(col: Int, row: Int): Int = {
-//   //   val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-//   //   val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
-//   //   getSegment(segmentIndex).getInt(i)
-//   // }
-
-//   // def getDouble(col: Int, row: Int): Double = {
-//   //   val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-//   //   val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
-//   //   getSegment(segmentIndex).getDouble(i)
-//   // }
-
-//   // def foreach(f: Int => Unit): Unit = {
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val segmentSize = segment.size
-//   //     cfor(0)(_ < segmentSize, _ + 1) { i =>
-//   //       f(segment.getInt(i))
-//   //     }
-//   //   }
-//   // }
-
-//   // def foreachDouble(f: Double => Unit): Unit = {
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val segmentSize = segment.size
-//   //     cfor(0)(_ < segmentSize, _ + 1) { i =>
-//   //       f(segment.getDouble(i))
-//   //     }
-//   //   }
-//   // }
-
-//   // def map(f: Int => Int): GeoTiffTile = {
-//   //   val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //   val compressor = compression.createCompressor(segmentCount)
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val newBytes = segment.map(f)
-//   //     arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //   }
-
-//   //   GeoTiffTile(
-//   //     BandType.forCellType(cellType),
-//   //     arr,
-//   //     compressor.createDecompressor(),
-//   //     segmentLayout,
-//   //     compression,
-//   //     None
-//   //   )
-//   // }
-
-//   // def mapDouble(f: Double => Double): GeoTiffTile = {
-//   //   val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //   val compressor = compression.createCompressor(segmentCount)
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val newBytes = segment.mapDouble(f)
-//   //     arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //   }
-
-//   //   GeoTiffTile(
-//   //     BandType.forCellType(cellType),
-//   //     arr,
-//   //     compressor.createDecompressor(),
-//   //     segmentLayout,
-//   //     compression,
-//   //     None
-//   //   )
-//   // }
-
-//   // def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val segmentSize = segment.size
-//   //     val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-//   //     cfor(0)(_ < segmentSize, _ + 1) { i =>
-//   //       val col = segmentTransform.indexToCol(i)
-//   //       val row = segmentTransform.indexToRow(i)
-//   //       if(col < cols && row < rows) {
-//   //         visitor(col, row, segment.getInt(i))
-//   //       }
-//   //     }
-//   //   }
-//   // }
-
-//   // def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val segmentSize = segment.size
-//   //     val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-//   //     cfor(0)(_ < segmentSize, _ + 1) { i =>
-//   //       val col = segmentTransform.indexToCol(i)
-//   //       val row = segmentTransform.indexToRow(i)
-//   //       if(col < cols && row < rows) {
-//   //         visitor(col, row, segment.getDouble(i))
-//   //       }
-//   //     }
-//   //   }
-//   // }
-   
-//   // def mapIntMapper(mapper: IntTileMapper): Tile = {
-//   //   val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //   val compressor = compression.createCompressor(segmentCount)
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-//   //     val newBytes = segment.mapWithIndex { (i, z) =>
-//   //       val col = segmentTransform.indexToCol(i)
-//   //       val row = segmentTransform.indexToRow(i)
-//   //       if(col < cols && row < rows) {
-//   //         mapper(col, row, z)
-//   //       } else { 0 }
-
-//   //     }
-//   //     arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //   }
-
-//   //   GeoTiffTile(
-//   //     BandType.forCellType(cellType),
-//   //     arr,
-//   //     compressor.createDecompressor(),
-//   //     segmentLayout,
-//   //     compression,
-//   //     None
-//   //   )
-//   // }
-
-//   // def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
-//   //   val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //   val compressor = compression.createCompressor(segmentCount)
-//   //   cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //     val segment = getSegment(segmentIndex)
-//   //     val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-//   //     val newBytes = segment.mapDoubleWithIndex { (i, z) =>
-//   //       val col = segmentTransform.indexToCol(i)
-//   //       val row = segmentTransform.indexToRow(i)
-//   //       if(col < cols && row < rows) {
-//   //         mapper(col, row, z)
-//   //       } else { 0.0 }
-//   //     }
-//   //     arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //   }
-
-//   //   GeoTiffTile(
-//   //     BandType.forCellType(cellType),
-//   //     arr,
-//   //     compressor.createDecompressor(),
-//   //     segmentLayout,
-//   //     compression,
-//   //     None
-//   //   )
-//   // }
-
-//   // def combine(other: Tile)(f: (Int, Int) => Int): Tile =
-//   //   other match {
-//   //     case otherGeoTiff: GeoTiffTile if segmentLayout.tileLayout == otherGeoTiff.segmentLayout.tileLayout =>
-//   //       // GeoTiffs with the same segment sizes, can map over segments.
-//   //       val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //       val compressor = compression.createCompressor(segmentCount)
-//   //       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //         val segment = getSegment(segmentIndex)
-//   //         val otherSegment = otherGeoTiff.getSegment(segmentIndex)
-//   //         val newBytes = segment.mapWithIndex { (i, z) =>
-//   //           f(z, otherSegment.getInt(i))
-//   //         }
-//   //         arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //       }
-
-//   //       GeoTiffTile(
-//   //         BandType.forCellType(cellType.union(other.cellType)),
-//   //         arr,
-//   //         compressor.createDecompressor(),
-//   //         segmentLayout,
-//   //         compression,
-//   //         None
-//   //       )
-//   //     case _ =>
-//   //       this.map { (col, row, z) =>
-//   //         f(z, other.get(col, row))
-//   //       }
-//   //   }
-
-//   // def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = 
-//   //   other match {
-//   //     case otherGeoTiff: GeoTiffTile if segmentLayout.tileLayout == otherGeoTiff.segmentLayout.tileLayout =>
-//   //       // GeoTiffs with the same segment sizes, can map over segments.
-//   //       val arr = Array.ofDim[Array[Byte]](segmentCount)
-//   //       val compressor = compression.createCompressor(segmentCount)
-//   //       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-//   //         val segment = getSegment(segmentIndex)
-//   //         val otherSegment = otherGeoTiff.getSegment(segmentIndex)
-//   //         val newBytes = segment.mapDoubleWithIndex { (i, z) =>
-//   //           f(z, otherSegment.getDouble(i))
-//   //         }
-//   //         arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-//   //       }
-
-//   //       GeoTiffTile(
-//   //         BandType.forCellType(cellType),
-//   //         arr,
-//   //         compressor.createDecompressor(),
-//   //         segmentLayout,
-//   //         compression,
-//   //         None
-//   //       )
-//   //     case _ =>
-//   //       this.mapDouble { (col, row, z) =>
-//   //         f(z, other.get(col, row))
-//   //       }
-//   //   }
-
-
-//   // def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-//   //   Resample(this, source, target, method)
-
-//   // def toArray(): Array[Int] = 
-//   //   toArrayTile.toArray
-
-//   // def toArrayDouble(): Array[Double] =
-//   //   toArrayTile.toArrayDouble
-
-//   // def toArrayTile(): ArrayTile = mutable
-
-//   // def mutable: MutableArrayTile
-
-//   // def toBytes(): Array[Byte] =
-//   //   toArrayTile.toBytes
-//     }
