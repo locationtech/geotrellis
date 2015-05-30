@@ -12,6 +12,13 @@ case object CubicSpline extends InterpolationMethod
 case object Lanczos extends InterpolationMethod
 case object Average extends InterpolationMethod
 case object Mode extends InterpolationMethod
+/*
+case object Kriging extends InterpolationMethod
+case object KrigingSimple extends InterpolationMethod
+case object KrigingOrdinary extends InterpolationMethod
+case object KrigingUniversal extends InterpolationMethod
+case object KrigingGeo extends InterpolationMethod
+*/
 
 object InterpolationMethod {
   val DEFAULT = NearestNeighbor
@@ -58,5 +65,19 @@ object Interpolation {
       case Lanczos => new LanczosInterpolation(tile, extent)
       case Average => new AverageInterpolation(tile, extent)
       case Mode => new ModeInterpolation(tile, extent)
+      /*
+       * Ideally, the Kriging module will comprise the options of the varied types of its interpolations.
+       * So, only a single object will be there at the end, which will invoke the corresponding functions
+       *
+       * The functions parameters also have to be changed after restructuring the location of reprojection
+       * code out from the Interpolation.scala
+       */
+      /*
+      case Kriging => new KrigingInterpolation(tile, extent)
+      case KrigingSimple => new KrigingSimpleInterpolation(tile, extent)
+      case KrigingOrdinary => new KrigingOrdinaryInterpolation(tile, extent)
+      case KrigingUniversal => new KrigingUniversalInterpolation(tile, extent)
+      case KrigingGeo => new KrigingGeoInterpolation(tile, extent)
+      */
     }
 }
