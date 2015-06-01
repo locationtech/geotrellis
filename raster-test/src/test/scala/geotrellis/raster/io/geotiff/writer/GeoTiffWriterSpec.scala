@@ -101,7 +101,7 @@ class GeoTiffWriterSpec extends FunSpec
     it ("should read write multibandraster correctly") {
       val geoTiff = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
 
-      val path = "/Users/rob/tmp/geotiff-writer.tif"
+      val path = "/tmp/geotiff-writer.tif"
 
       GeoTiffWriter.write(geoTiff, path)
 
@@ -130,7 +130,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       val geoTiff = MultiBandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
 
-      val path = "/Users/rob/tmp/geotiff-writer.tif"
+      val path = "/tmp/geotiff-writer.tif"
 
       GeoTiffWriter.write(geoTiff, path)
 
