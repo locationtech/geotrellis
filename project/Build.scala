@@ -151,6 +151,7 @@ object GeotrellisBuild extends Build {
           sprayJson,
 //          sprayHttpx,
           apacheMath,
+          scalaBreeze,
           spire
         )
     )
@@ -164,7 +165,8 @@ object GeotrellisBuild extends Build {
       .settings(name := "geotrellis-vector-test")
       .settings(libraryDependencies ++= Seq(
         scalatest   % "test",
-        scalacheck  % "test"
+        scalacheck  % "test",
+        scalaBreeze % "test"
       )
     )
 
@@ -206,7 +208,8 @@ object GeotrellisBuild extends Build {
         spire,
         monocleCore,
         monocleMacro,
-        openCSV
+        openCSV,
+        scalaBreeze
       )
     ) ++
   defaultAssemblySettings
@@ -231,7 +234,8 @@ object GeotrellisBuild extends Build {
         scalacheck  % "test",
         spire % "test",
         sprayClient % "test",
-        sprayRouting % "test"
+        sprayRouting % "test",
+        scalaBreeze % "test"
       )
     ) ++
   defaultAssemblySettings

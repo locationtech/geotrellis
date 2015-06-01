@@ -35,8 +35,8 @@ class KrigingInterpolationSpec extends FunSpec
   val radius = Some(6)
   val lag = 2
   val chunkSize = 100
-  val pointPredict = Point(100,200)
-  val krigingObject = new KrigingInterpolation(KrigingSimple, points, re, radius, chunkSize, lag, Linear) {}
+  val pointPredict = Point(1,1)
+  val krigingObject = new KrigingSimpleInterpolation(KrigingSimple, points, re, radius, chunkSize, lag, Linear) {}
 
   def checkType(obj: Any) = obj match{
     case n: Tile => true
