@@ -12,6 +12,11 @@ object ZSpaceTimeKeyIndex {
 
   def byYear(): ZSpaceTimeKeyIndex = 
     new ZSpaceTimeKeyIndex({ dt => dt.getYear })
+
+  def byPattern(pattern: String): ZSpaceTimeKeyIndex =
+    new ZSpaceTimeKeyIndex({ dt =>
+      DateTimeFormat.forPattern(pattern).print(dt).toInt
+    })
 }
 
 class ZSpaceTimeKeyIndex(timeToGrid: DateTime => Int) extends KeyIndex[SpaceTimeKey] {

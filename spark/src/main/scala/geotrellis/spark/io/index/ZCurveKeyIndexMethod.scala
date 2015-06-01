@@ -16,9 +16,15 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
 
   def byYear = 
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byYear
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byYear()
     }
 
+  def byPattern(pattern: String) =
+    new KeyIndexMethod[SpaceTimeKey] {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)
+    }
+
+  /** Note: the function timeToGrid have to be in a project scope. */
   def by(timeToGrid: DateTime => Int) = 
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex(timeToGrid)
