@@ -8,6 +8,7 @@ import scala.collection.immutable.TreeSet
 class ZSpaceTimeKeySpec extends FunSpec with Matchers{
   val y2k = new DateTime(2000, 1, 1, 0, 0)
   val upperBound = 8
+  val ymPattern = "YM"
 
   describe("ZSpaceTimeKey test"){
 
@@ -28,7 +29,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
 
     it("generates indexes you can check by hand 2x2x2"){
      val zst = ZSpaceTimeKeyIndex({dt => dt.getMillis.toInt})
-     var idx = List[SpaceTimeKey](
+     val idx = List[SpaceTimeKey](
                                   SpaceTimeKey(0,0, y2k),
                                   SpaceTimeKey(1,0, y2k),
                                   SpaceTimeKey(0,1, y2k),
@@ -90,6 +91,21 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k)))
       idx.length should be (1)
       (idx(0)._2 - idx(0)._1) should be (3) 
+    }
+
+    it("generates indexes by string pattern") {
+      val zst = ZSpaceTimeKeyIndex.byPattern(ymPattern)
+
+      val keys =
+        for(col <- 0 until upperBound;
+            row <- 0 until upperBound;
+            t <- 0 until upperBound) yield {
+          zst.toIndex(SpaceTimeKey(row,col,y2k.plusMonths(t)))
+        }
+
+        keys.distinct.size should be (upperBound * upperBound * upperBound)
+        keys.min should be (zst.toIndex(SpaceTimeKey(0,0,y2k)))
+        keys.max should be (zst.toIndex(SpaceTimeKey(upperBound-1, upperBound-1, y2k.plusMonths(upperBound-1))))
     }
   }
 }
