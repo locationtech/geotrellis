@@ -8,7 +8,6 @@ import scala.collection.immutable.TreeSet
 class ZSpaceTimeKeySpec extends FunSpec with Matchers{
   val y2k = new DateTime(2000, 1, 1, 0, 0)
   val upperBound = 8
-  val ymPattern = "YM"
 
   describe("ZSpaceTimeKey test"){
 
@@ -94,7 +93,8 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
     }
 
     it("generates indexes by string pattern") {
-      val zst = ZSpaceTimeKeyIndex.byPattern(ymPattern)
+      val pattern = "YM" //by months
+      val zst = ZSpaceTimeKeyIndex.byPattern(pattern)
 
       val keys =
         for(col <- 0 until upperBound;
