@@ -10,11 +10,21 @@ trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
 
   val segmentLayout: GeoTiffSegmentLayout
 
+  val bandCount: Int
+  val hasPixelInterleave: Boolean
+
   val createSegment: Int => BitGeoTiffSegment = { i =>
     val (segmentCols, segmentRows) = segmentLayout.getSegmentDimensions(i)
-    val size = segmentCols * segmentRows
-    val width = if(segmentLayout.isStriped) { segmentCols } else { segmentLayout.tileLayout.tileCols }
-    new BitGeoTiffSegment(getDecompressedBytes(i), size, width)
+    // val size = segmentCols * segmentRows
+    val cols = {
+      val c = segmentLayout.tileLayout.tileCols
+      if(hasPixelInterleave) c * bandCount
+      else c
+    }
+
+    val rows = if(segmentLayout.isStriped) { segmentRows } else { segmentLayout.tileLayout.tileRows }
+
+    new BitGeoTiffSegment(getDecompressedBytes(i), cols, rows)
   }
 
 }

@@ -5,21 +5,27 @@ import geotrellis.raster.io.geotiff.utils._
 
 import spire.syntax.cfor._
 
-class BitGeoTiffSegment(val bytes: Array[Byte], val size: Int, width: Int) extends GeoTiffSegment {
+class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends GeoTiffSegment {
+  val size = cols * rows
+
   private val paddedCols = {
-    val bytesWidth = (width + 7) / 8
+    val bytesWidth = (cols + 7) / 8
     bytesWidth * 8
   }
 
   def getInt(i: Int): Int = b2i(get(i))
   def getDouble(i: Int): Double = b2d(get(i))
 
+  /** Creates a corrected index into the byte array that accounts for byte padding on rows */
+  private def index(i: Int): Int = {
+    val col = (i % cols)
+    val row = (i / cols)
+
+    (row * paddedCols) + col
+  }
+
   def get(i: Int): Byte = {
-    val col = (i % width)
-    val row = (i / width)
-
-    val i2 = (row * paddedCols) + col
-
+    val i2 = index(i)
     ((invertByte(bytes(i2 >> 3)) >> (i2 & 7)) & 1).asInstanceOf[Byte]
   }
 
@@ -48,17 +54,6 @@ class BitGeoTiffSegment(val bytes: Array[Byte], val size: Int, width: Int) exten
         arr.toArrayByte()
     }
 
-  private def update(arr: Array[Byte], i: Int, z: Int): Unit = {
-    val div = i >> 3
-    if ((z & 1) == 0) {
-      // unset the nth bit
-      arr(div) = (arr(div) & ~(1 << (i & 7))).toByte
-    } else {
-      // set the nth bit
-      arr(div) = (arr(div) | (1 << (i & 7))).toByte
-    }
-  }
-
   def map(f: Int => Int): Array[Byte] = {
     val arr = bytes.clone
     val f0 = f(0) & 1
@@ -68,7 +63,7 @@ class BitGeoTiffSegment(val bytes: Array[Byte], val size: Int, width: Int) exten
       cfor(0)(_ < size, _ + 1) { i => arr(i) = 0.toByte }
     } else if (f0 == 1 && f1 == 1) {
       cfor(0)(_ < size, _ + 1) { i => arr(i) = -1.toByte }
-    } else if (f0 != 0 || f1 == 1) {
+    } else if (f0 != 0 || f1 != 1) {
       // inverse (complement) of what we have now
       var i = 0
       val len = arr.size
@@ -82,21 +77,45 @@ class BitGeoTiffSegment(val bytes: Array[Byte], val size: Int, width: Int) exten
   def mapDouble(f: Double => Double): Array[Byte] = 
     map(z => d2i(f(i2d(z))))
 
+  def byteToBinaryString(b: Byte) = {
+    val binaryStringBuilder = new StringBuilder()
+    for(i <- 0 until 8) {
+      binaryStringBuilder.append(if( ((0x80 >>> i) & b) == 0) '0' else '1')
+    }
+    binaryStringBuilder.toString
+  }
+
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
     val arr = bytes.clone
 
-    cfor(0)(_ < size, _ + 1) { i =>
-      update(arr, i, f(i, getInt(i)))
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val i = row * cols + col
+        BitArrayTile.update(arr, index(i), f(i, getInt(i)))
+      }
     }
+
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      arr(i) = invertByte(arr(i))
+    }
+
     arr
   }
 
   def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
     val arr = bytes.clone
 
-    cfor(0)(_ < size, _ + 1) { i =>
-      update(arr, i, d2i(f(i, getDouble(i))))
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val i = row * cols + col
+        BitArrayTile.updateDouble(arr, index(i), f(i, getDouble(i)))
+      }
     }
+
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      arr(i) = invertByte(arr(i))
+    }
+
     arr
   }
 }

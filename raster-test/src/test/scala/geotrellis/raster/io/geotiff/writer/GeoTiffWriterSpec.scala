@@ -33,6 +33,7 @@ class GeoTiffWriterSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with TestEngine
+    with TileBuilders
     with GeoTiffTestUtils {
 
   override def afterAll = purge
@@ -98,7 +99,7 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it ("should read write multibandraster correctly") {
-      val geoTiff = MultiBandGeoTiff(geoTiffPath("3bands/3bands.tif"))
+      val geoTiff = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
 
       val path = "/Users/rob/tmp/geotiff-writer.tif"
 
@@ -114,6 +115,35 @@ class GeoTiffWriterSpec extends FunSpec
       for(i <- 0 until gt.tile.bandCount) {
         val actualBand = gt.band(i)
         val expectedBand = geoTiff.band(i)
+
+        assertEqual(actualBand, expectedBand)
+      }
+    }
+
+    it ("should write hand made multiband and read back correctly") {
+      val tile =
+        ArrayMultiBandTile(
+          positiveIntegerRaster,
+          positiveIntegerRaster.map(_ * 100),
+          positiveIntegerRaster.map(_ * 10000)
+        )
+
+      val geoTiff = MultiBandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
+
+      val path = "/Users/rob/tmp/geotiff-writer.tif"
+
+      GeoTiffWriter.write(geoTiff, path)
+
+      addToPurge(path)
+
+      val gt = MultiBandGeoTiff(path)
+      
+      gt.extent should equal (geoTiff.extent)
+      gt.crs should equal (geoTiff.crs)
+      gt.tile.bandCount should equal (tile.bandCount)
+      for(i <- 0 until gt.tile.bandCount) {
+        val actualBand = gt.band(i)
+        val expectedBand = tile.band(i)
 
         assertEqual(actualBand, expectedBand)
       }

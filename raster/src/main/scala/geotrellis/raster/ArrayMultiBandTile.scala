@@ -138,7 +138,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         cfor(0)(_ < bandCount, _ + 1) { b =>
-          arr(b) = band(b).get(row, col)
+          arr(b) = band(b).get(col, row)
         }
         result.set(col, row, f(arr))
       }
@@ -204,7 +204,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         cfor(0)(_ < bandCount, _ + 1) { b =>
-          arr(b) = band(b).getDouble(row, col)
+          arr(b) = band(b).getDouble(col, row)
         }
         result.setDouble(col, row, f(arr))
       }

@@ -10,6 +10,8 @@ class BitGeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression
 ) extends GeoTiffTile(segmentLayout, compression) with BitGeoTiffSegmentCollection {
+  // We need multiband information because BitGeoTiffSegments are unique
+  val hasPixelInterleave = false
 
   // TODO: Optimize this.
   def mutable: MutableArrayTile = {

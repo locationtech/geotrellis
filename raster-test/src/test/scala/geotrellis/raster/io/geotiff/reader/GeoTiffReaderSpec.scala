@@ -115,6 +115,24 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("reading tiled file must yield same image as strip files") {
 
+    it("must read us_ext_clip_esri.tif and match strip file") {
+      val tiled = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif"))
+      val striped = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri_stripes.tif"))
+
+      assertEqual(tiled.tile, striped.tile)
+    }
+
+  }
+
+  describe("reading bit rasters") {
+    it("should match bit tile the ArrayTile pulled out of the resulting GeoTiffTile") {
+      val expected = SingleBandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile
+      val actual = SingleBandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
+
+      assertEqual(actual, expected)
+      assertEqual(expected, actual)
+    }
+
     it("must read bilevel_tiled.tif and match strip file") {
       val tiled = SingleBandGeoTiff.compressed(geoTiffPath("bilevel_tiled.tif"))
       val striped = SingleBandGeoTiff.compressed(geoTiffPath("bilevel.tif"))
@@ -122,12 +140,13 @@ class GeoTiffReaderSpec extends FunSpec
       assertEqual(tiled.tile, striped.tile)
     }
 
-    it("must read us_ext_clip_esri.tif and match strip file") {
-      val tiled = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif"))
-      val striped = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri_stripes.tif"))
+    it("should match bit and byte-converted rasters") {
+      val actual = SingleBandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
+      val expected = SingleBandGeoTiff(geoTiffPath("bilevel.tif")).tile.convert(TypeBit)
 
-      assertEqual(tiled.tile, striped.tile)
+      assertEqual(actual, expected)
     }
+
 
   }
 
@@ -222,60 +241,6 @@ class GeoTiffReaderSpec extends FunSpec
 
       tiffTags.bandType.cellType should equal (TypeFloat)
     }
-
-    // TODO: Deal with color maps.
-  //   it("must match colormap.tif colormap") {
-  //     val tags = GeoTiffReader
-  //       .read(geoTiffPath("colormap.tif")
-  //       .imageDirectory
-
-  //     val colorMap = (tags &|->
-  //       Tags._basicTags ^|->
-  //       BasicTags._colorMap get)
-
-  //     val nonCommonsMap = collection.immutable.HashMap[Int, (Byte, Byte, Byte)](
-  //       1 -> (0.toByte, 249.toByte, 0.toByte),
-  //       11 -> (71.toByte, 107.toByte, 160.toByte),
-  //       12 -> (209.toByte, 221.toByte, 249.toByte),
-  //       21 -> (221.toByte, 201.toByte, 201.toByte),
-  //       22 -> (216.toByte, 147.toByte, 130.toByte),
-  //       23 -> (237.toByte, 0.toByte, 0.toByte),
-  //       24 -> (170.toByte, 0.toByte, 0.toByte),
-  //       31 -> (178.toByte, 173.toByte, 163.toByte),
-  //       32 -> (249.toByte, 249.toByte, 249.toByte),
-  //       41 -> (104.toByte, 170.toByte, 99.toByte),
-  //       42 -> (28.toByte, 99.toByte, 48.toByte),
-  //       43 -> (181.toByte, 201.toByte, 142.toByte),
-  //       51 -> (165.toByte, 140.toByte, 48.toByte),
-  //       52 -> (204.toByte, 186.toByte, 124.toByte),
-  //       71 -> (226.toByte, 226.toByte, 193.toByte),
-  //       72 -> (201.toByte, 201.toByte, 119.toByte),
-  //       73 -> (153.toByte, 193.toByte, 71.toByte),
-  //       74 -> (119.toByte, 173.toByte, 147.toByte),
-  //       81 -> (219.toByte, 216.toByte, 60.toByte),
-  //       82 -> (170.toByte, 112.toByte, 40.toByte),
-  //       90 -> (186.toByte, 216.toByte, 234.toByte),
-  //       91 -> (181.toByte, 211.toByte, 229.toByte),
-  //       92 -> (181.toByte, 211.toByte, 229.toByte),
-  //       93 -> (181.toByte, 211.toByte, 229.toByte),
-  //       94 -> (181.toByte, 211.toByte, 229.toByte),
-  //       95 -> (112.toByte, 163.toByte, 186.toByte)
-  //     )
-
-  //     val commonValue: (Short, Short, Short) = (0, 0, 0)
-
-  //     colorMap.size should equal (256)
-
-  //     val dv = 255.0
-
-  //     def convert(short: Short): Byte = math.floor(short / dv).toByte
-
-  //     for (i <- 0 until colorMap.size) {
-  //       val (v1, v2, v3) = colorMap(i)
-  //       val c = (convert(v1), convert(v2), convert(v3))
-  //       c should equal (nonCommonsMap.getOrElse(i, commonValue))
-  //     }
-  //   }
 
   }
 
@@ -469,38 +434,18 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {
-    it("asdf") {
-      val expected = SingleBandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile
-      val actual = SingleBandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
+    it("must read econic_packbits.tif and match uncompressed file") {
+      val actual = SingleBandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
+      val expected = SingleBandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile
 
-      val ar = actual.getDouble(257, 1)
-      val cm = expected.getDouble(257, 1)
-
-      expected.foreach { (col, row, z) =>
-        if(col == 257 && row == 1) { println(z) }
-      }
-
-      actual.foreach { (col, row, z) =>
-        if(col == 257 && row == 1) { println(z) }
-      }
-
-      println(ar, cm)
       assertEqual(actual, expected)
-      assertEqual(expected, actual)
     }
-    // it("must read econic_packbits.tif and match uncompressed file") {
-    //   val actual = SingleBandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
-    //   val expected = SingleBandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile
 
-    //   assertEqual(actual, expected)
-    // }
+    it("must read previously erroring packbits compression .tif and match uncompressed file") {
+      val expected = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error-uncompressed.tif")).tile
+      val actual = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error.tif")).tile
 
-    // // TODO: Reinsate this. Failing because of unsigned.
-    // it("must read previously erroring packbits compression .tif and match uncompressed file") {
-    //   val expected = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error-uncompressed.tif")).tile
-    //   val actual = SingleBandGeoTiff.compressed(geoTiffPath("packbits-error.tif")).tile
-
-    //   assertEqual(actual, expected)
-    // }
+      assertEqual(actual, expected)
+    }
   }
 }

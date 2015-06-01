@@ -19,16 +19,3 @@ trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
         { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) }
     }
 }
-
-
-class ByteGeoTiffMultiBandTile(
-  val compressedBytes: Array[Array[Byte]],
-  val decompressor: Decompressor,
-  val segmentLayout: GeoTiffSegmentLayout,
-  val compression: Compression,
-  val bandCount: Int,
-  hasPixelInterleave: Boolean,
-  val noDataValue: Option[Double]
-) extends ByteGeoTiffSegmentCollection {
-
-}

@@ -100,8 +100,8 @@ trait ConstantTile extends Tile {
 
 object BitConstantTile { def apply(i: Int, cols: Int, rows: Int): BitConstantTile = BitConstantTile(if(i == 0) false else true, cols, rows) }
 case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = if(v) 1 else NODATA
-  protected val dVal = if(v) 1.0 else Double.NaN
+  protected val iVal = if(v) 1 else 0
+  protected val dVal = if(v) 1.0 else 0.0
 
   val cellType = TypeBit
 

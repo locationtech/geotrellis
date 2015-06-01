@@ -57,12 +57,13 @@ object Decompressor {
   def apply(tiffTags: TiffTags, byteOrder: ByteOrder): Decompressor = {
     import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-    def checkEndian(d: Decompressor): Decompressor =
+    def checkEndian(d: Decompressor): Decompressor = {
       if(byteOrder != ByteOrder.BIG_ENDIAN && tiffTags.bitsPerPixel > 8) {
         d.flipEndian(tiffTags.bytesPerPixel / tiffTags.bandCount)
       } else {
         d
       }
+    }
 
     def checkPredictor(d: Decompressor): Decompressor = {
       val predictor = Predictor(tiffTags)
