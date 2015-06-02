@@ -44,12 +44,8 @@ package object reproject {
       )
     }
 
-    def apply(extent: Extent, src: CRS, dest: CRS): Extent = {
-      val f = Transform(src, dest)
-      val sw = f(extent.xmin, extent.ymin)
-      val ne = f(extent.xmax, extent.ymax)
-      Extent(sw._1,sw._2,ne._1,ne._2)
-    }
+    def apply(extent: Extent, src: CRS, dest: CRS): Polygon =
+      apply(extent.toPolygon, src, dest)
 
     def apply[D](pf: PolygonFeature[D], src: CRS, dest: CRS): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, src, dest), pf.data)
@@ -183,8 +179,8 @@ package object reproject {
   }
 
   implicit class ReprojectExtent(e: Extent) { 
-    def reproject(src: CRS, dest: CRS): Extent = Reproject(e, src, dest) 
-    def reproject(transform: Transform): Extent = Reproject(e, transform).envelope
+    def reproject(src: CRS, dest: CRS): Polygon = Reproject(e, src, dest) 
+    def reproject(transform: Transform): Polygon = Reproject(e, transform).envelope
   }
 
   implicit class ReprojectPolygonFeature[D](pf: PolygonFeature[D]) { 
