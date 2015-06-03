@@ -16,12 +16,21 @@ trait RasterRDDFilter[K, F, T] {
 
   import RasterRDDFilter._
   /** Applies all the filters contained in the expression tree to input KeyBounds.
-    * Resulting list may be equal to or less than the number of [[Value]]s in ast.*/
-  def apply(metadata: RasterMetaData, kb: KeyBounds[K], ast: Expression[_, T]): List[KeyBounds[K]] = {
-    ast match {
-      case Value(x) => apply(metadata, kb, x).toList
-      case Or(v1, v2) => apply(metadata, kb, v1) ++ apply(metadata,kb, v2)
+    * Resulting list may be equal to or less than the number of [[Value]]s in ast. */
+  def apply(metadata: RasterMetaData, kb: KeyBounds[K], ast: Expression[_, T])(implicit boundable: Boundable[K]): List[KeyBounds[K]] = {
+    def flatten(metadata: RasterMetaData, kb: KeyBounds[K], ast: Expression[_, T]): List[KeyBounds[K]] =
+      ast match {
+        case Value(x) => apply(metadata, kb, x).toList
+        case Or(v1, v2) => flatten(metadata, kb, v1) ++ flatten(metadata,kb, v2)
+      }
+
+    val keyBounds = flatten(metadata, kb, ast)
+    keyBounds.combinations(2).foreach { case Seq(a, b) =>
+      if (boundable.intersects(a, b))
+        sys.error(s"Query expression produced intersecting bounds, only non-intersecting regions are supported. ($a, $b)")
     }
+
+    keyBounds
   }
 }
 

@@ -77,15 +77,14 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,612,916,612)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).filter(tileBounds).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).filter(tileBounds).toRDD
+          val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
             val res = tms1.tile.localAdd(tms2.tile)
             (tms1.id, res)
           }
-
           val tile = out.first.tile
           tile.get(497,511) should be (2)
         }
@@ -93,7 +92,14 @@ class AccumuloRasterCatalogSpec extends FunSpec
         it("can retreive all the metadata"){
           val mds = catalog.attributeStore.readAll[AccumuloLayerMetaData]("metadata")
           info(mds(layerId).toString)
-        }      
+        }
+
+        RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
+          it(test.name){
+            val rdd = catalog.read[SpatialKey](test.layerId, test.query)
+            rdd.map(_._1).collect should contain theSameElementsAs test.expected
+          }
+        }
       }
     }
   }
@@ -110,7 +116,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val catalog =
         AccumuloRasterCatalog("metadata")
 
-      val zoom = 10
+      val zoom = 8
       val layerId = LayerId("coordinates", zoom)
 
 
@@ -145,7 +151,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val (minRow, maxRow) = (rows.min, rows.max)
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
-        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).filter(tileBounds).toRDD
+        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).where(Intersects(tileBounds)).toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
@@ -166,13 +172,20 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         val rdd = catalog
           .query[SpaceTimeKey](LayerId("coordinates", zoom))
-          .filter(tileBounds)
-          .filter(maxTime -> maxTime)
+          .where(Intersects(tileBounds))
+          .where(Between(maxTime,maxTime))
           .toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
           time should be (maxTime)
+        }
+      }
+
+      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
+        it(test.name){
+          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
       }
     }

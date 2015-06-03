@@ -43,7 +43,7 @@ class S3RasterCatalog(
 (implicit sc: SparkContext) {
   import S3RasterCatalog._
 
-  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int): RasterRDD[K] = {
+  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
     val metadata  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
     val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")

@@ -15,7 +15,7 @@ class S3RasterCatalogSpec extends FunSpec
   describe("S3 Raster Catalog") {
     ifCanRunSpark {      
       val rdd = AllOnesTestFile
-      val id = LayerId("ones", 2)
+      val id = LayerId("ones", 10)
 
       val catalog = S3RasterCatalog("climate-catalog", "catalog3", () => new MockS3Client )
 
@@ -33,7 +33,7 @@ class S3RasterCatalogSpec extends FunSpec
       it("should be able to filter?"){
         val rdd = catalog
           .query[SpatialKey](id)
-          .filter(GridBounds(2, 2, 3, 3))
+          .where(Intersects(GridBounds(2, 2, 3, 3)))
           .toRDD
           
         info(s"RDD count: ${rdd.count}")
@@ -58,9 +58,17 @@ class S3RasterCatalogSpec extends FunSpec
         }        
       }
 
-      val spaceId = LayerId("oneSpace", 2)
+      RasterRDDQueryTest.spatialTest.foreach { test =>
+        it(test.name){
+          val rdd = catalog.read[SpatialKey](id, test.query)
+          info(rdd.metaData.gridBounds.toString)
+          rdd.map(_._1).collect should contain theSameElementsAs test.expected
+        }
+      }
+
+      val spaceId = LayerId("coordinates", 10)
       it("should save a spacetime layer"){
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, true).write(spaceId, AllOnesSpaceTime)        
+        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, true).write(spaceId, CoordinateSpaceTime)
       }
 
       it("should load a spacetime layer"){
@@ -74,6 +82,14 @@ class S3RasterCatalogSpec extends FunSpec
         val list = catalog.attributeStore.readAll[S3LayerMetaData]("metadata")
         list.foreach(s => info(s.toString))
       }
+
+      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
+        it(test.name){
+          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          rdd.map(_._1).collect should contain theSameElementsAs test.expected
+        }
+      }
+
     }
   }
 }

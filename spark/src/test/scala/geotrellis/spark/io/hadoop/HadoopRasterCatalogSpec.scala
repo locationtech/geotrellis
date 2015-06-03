@@ -95,7 +95,7 @@ class HadoopRasterCatalogSpec extends FunSpec
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
 
-          val query = new RasterRDDQuery[SpatialKey].where(tileBounds)
+          val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = catalog
@@ -106,7 +106,7 @@ class HadoopRasterCatalogSpec extends FunSpec
             }
           val filteredRdd = catalog
             .query[SpatialKey](LayerId("ones", 10))
-            .filter(tileBounds)
+            .where(Intersects(tileBounds))
             .toRDD
 
           filteredRdd.count should be (expected.size)
@@ -117,9 +117,9 @@ class HadoopRasterCatalogSpec extends FunSpec
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,611,915,613)        
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
-          val filtered = catalog.query[SpatialKey](layerId).filter(tileBounds).toRDD
+          val filtered = catalog.query[SpatialKey](layerId).where(Intersects(tileBounds)).toRDD
 
-          val query = new RasterRDDQuery[SpatialKey].where(tileBounds)
+          val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = unfiltered.collect.filter { case (key, value) => 
@@ -138,7 +138,7 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("should filter out the correct keys with different grid bounds") {
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
-          val query = new RasterRDDQuery[SpatialKey].where(tileBounds)
+          val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
           val filtered = catalog.read[SpatialKey](layerId, query)
 
@@ -158,9 +158,9 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         it("should be able to combine pairs via Traversable"){
           val tileBounds = GridBounds(915,611,917,616)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", 10)).filter(tileBounds).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).filter(tileBounds).toRDD
-          val rdd3 = catalog.query[SpatialKey](LayerId("ones", 10)).filter(tileBounds).toRDD
+          val rdd1 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd3 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
 
           val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
             pairs.toSeq.reverse.head
@@ -219,6 +219,13 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
       }
 
+      RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
+        it(test.name){
+          val rdd = catalog.read[SpatialKey](test.layerId, test.query)
+          rdd.map(_._1).collect should contain theSameElementsAs test.expected
+        }
+      }
+
       it("should have ran") {
         ran should be (true)
       }
@@ -227,8 +234,19 @@ class HadoopRasterCatalogSpec extends FunSpec
         val coordST = CoordinateSpaceTime
         catalog
           .writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear)
-          .write(LayerId("coordST", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordST", 10)).toRDD, coordST)
+          .write(LayerId("coordinates", 10), coordST)
+        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+      }
+
+      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
+        it("ZCurveKeyIndexMethod.byYear: " + test.name){
+          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val found = rdd.map(_._1).collect
+          info(s"missing: ${test.expected diff found}")
+          info(s"unwanted: ${found diff test.expected}")
+
+          found should contain theSameElementsAs test.expected
+        }
       }
 
       it("ZCurveKeyIndexMethod.by(DateTime => Int)") {
@@ -237,8 +255,15 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         catalog
           .writer[SpaceTimeKey](ZCurveKeyIndexMethod.by(tIndex))
-          .write(LayerId("coordST", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordST", 10)).toRDD, coordST)
+          .write(LayerId("coordinates", 10), coordST)
+        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+      }
+
+      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
+        it("ZCurveKeyIndexMethod.by(DateTime => Int): " + test.name){
+          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          rdd.map(_._1).collect should contain theSameElementsAs test.expected
+        }
       }
 
       it("HilbertKeyIndexMethod with min, max, and resolution") {
@@ -247,8 +272,8 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         catalog
           .writer[SpaceTimeKey](HilbertKeyIndexMethod(now - 20.years, now, 4))
-          .write(LayerId("coordST", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordST", 10)).toRDD, coordST)
+          .write(LayerId("coordinates", 10), coordST)
+        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
       }
       it("HilbertKeyIndexMethod with only resolution") {
         val coordST = CoordinateSpaceTime
@@ -256,8 +281,8 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         catalog
           .writer[SpaceTimeKey](HilbertKeyIndexMethod(2))
-          .write(LayerId("coordST", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordST", 10)).toRDD, coordST)
+          .write(LayerId("coordinates", 10), coordST)
+        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
       }
     }
   }
