@@ -26,6 +26,12 @@ case object Gaussian extends ModelType
 case object Circular extends ModelType
 case object Spherical extends ModelType
 case object Exponential extends ModelType
+/*
+Should these types of Models also be implemeted?
+
+case object Power extends ModelType
+case object Wave extends ModelType
+*/
 
 /**
   Empirical semivariogram
@@ -123,6 +129,12 @@ object Semivariogram {
       case Exponential => ???
       case Circular => ???
       case Spherical => ???
+      /*
+      Should these types of Models also be implemeted?
+
+      case Power => ???
+      case Wave => ???
+      */
     }
   }
 }

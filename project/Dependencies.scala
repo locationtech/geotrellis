@@ -24,10 +24,7 @@ object Dependencies {
     "Typesafe Repo"           at "http://repo.typesafe.com/typesafe/releases/",
     "spray repo"              at "http://repo.spray.io/",
     "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots",
-    "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
-    "ScalaNLP Maven2"         at "http://repo.scalanlp.org/repo",
-    "Scala Tools Snapshots"   at "http://scala-tools.org/repo-snapshots/",
-    "Sonatype Releases"       at "https://oss.sonatype.org/content/repositories/releases/"
+    "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases"
   )
   val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
@@ -56,7 +53,6 @@ object Dependencies {
   val sprayJson     = "io.spray"        %% "spray-json"    % "1.3.1"
 
   val apacheMath    = "org.apache.commons" % "commons-math3" % "3.2"
-  val scalaBreeze   = "org.scalanlp"  %%  "breeze"  % "0.11.2"
 
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"

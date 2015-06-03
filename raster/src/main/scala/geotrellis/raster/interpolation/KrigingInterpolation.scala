@@ -6,13 +6,16 @@ import spire.syntax.cfor._
 
 abstract sealed class KrigingInterpolationMethod
 case object KrigingSimple extends KrigingInterpolationMethod
+/*
 case object KrigingOrdinary extends KrigingInterpolationMethod
 case object KrigingUniversal extends KrigingInterpolationMethod
 case object KrigingGeo extends KrigingInterpolationMethod
+*/
 
 
 object KrigingInterpolationMethod {
-  val DEFAULT = KrigingOrdinary
+  val DEFAULT = KrigingSimple
+  //val DEFAULT = KrigingOrdinary
 }
 
 abstract class KrigingInterpolation(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent,
@@ -22,11 +25,11 @@ abstract class KrigingInterpolation(method: KrigingInterpolationMethod, points: 
   private def isValid(point: Point) =
     point.x >= re.extent.xmin && point.x <= re.extent.xmax && point.y <= re.extent.ymax && point.y >= re.extent.ymin
 
-  final def interpolate(point: Point): Tile =
+  final def interpolate(point: Point): (Double, Double) =
     if (!isValid(point)) throw new IllegalArgumentException("Point out of the raster range");
     else interpolateValid(point)
 
-  protected def interpolateValid(point: Point): Tile = ???
+  protected def interpolateValid(point: Point): (Double, Double) = ???
 
   /*
   def constructSV(points:Seq[PointFeature[Int]], radius:Option[Int]=None, lag:Int=0, model:ModelType):Function1[Double,Double] = {
@@ -44,10 +47,10 @@ object KrigingInterpolation {
       /*
        * After this, create the other four implementations incrementally
        *
-      */
       case KrigingOrdinary => ???
       case KrigingUniversal => ???
       case KrigingGeo => ???
+      */
 
       /*  With the semivariogram precomputed in the val in current class
        *  To decide the way in which to go proceed

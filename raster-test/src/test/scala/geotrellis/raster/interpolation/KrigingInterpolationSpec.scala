@@ -26,10 +26,9 @@ class KrigingInterpolationSpec extends FunSpec
   val re = RasterExtent(Extent(0,0,9,10),1,1,9,10)
   val points = Seq[PointFeature[Int]](
     PointFeature(Point(0.0,0.0),10),
-    PointFeature(Point(0.0,0.0),16),
     PointFeature(Point(1.0,0.0),20),
-    PointFeature(Point(0.0,1.0),24),
-    PointFeature(Point(2.0,2.0),50)
+    PointFeature(Point(4.0,4.0),60),
+    PointFeature(Point(0.0,6.0),80)
   )
 
   val radius = Some(6)
@@ -45,13 +44,15 @@ class KrigingInterpolationSpec extends FunSpec
 
   describe("Kriging Simple Interpolation") {
 
-    it("Checking the structure of the Simple Kriging model") {
-      //krigingObject.interpolate(Point(0.0,0.0)).getClass.getSimpleName should be (Tile.getClass.getSimplename)
-      assert(checkType(krigingObject.interpolate(pointPredict)))
+    val E = 1e-4
+    val krigingSimpleTuple = krigingObject.interpolate(pointPredict)
+
+    it("should return correct prediction value") {
+      krigingSimpleTuple._1 should be (25.8681 +- E)
     }
-    /*
-    ignore("Kriging Simple Interpolation w/ parameters") {
+
+    it("should return correct prediction variance") {
+      krigingSimpleTuple._2 should be (8.2382 +- E)
     }
-    */
   }
 }
