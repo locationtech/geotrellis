@@ -138,7 +138,7 @@ class HadoopRasterCatalog(
       }
     }
 
-  def readTile[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
+  def tileReader[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     // TODO: There should be a way to do this with a Reader, not touching any InputFormats
     val layerMetaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
     val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")

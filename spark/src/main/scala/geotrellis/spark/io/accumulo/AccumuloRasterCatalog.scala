@@ -81,7 +81,7 @@ class AccumuloRasterCatalog(
     }
   }
 
-  def readTile[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
+  def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
     new Reader[K, Tile] {
       val readTile = {
         val accumuloLayerMetaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")

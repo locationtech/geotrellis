@@ -64,7 +64,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("should load out a single tile") {
           val key = catalog.query[SpatialKey](layerId).toRDD.map(_._1).collect.head
-          val getTile = catalog.readTile[SpatialKey](layerId)
+          val getTile = catalog.tileReader[SpatialKey](layerId)
           val tile = getTile(key)
           (tile.cols, tile.rows) should be ((512, 512))
         }
@@ -124,7 +124,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
       it("should load out a single tile") {
         val key = catalog.query[SpaceTimeKey](layerId).toRDD.map(_._1).collect.head
-        val getTile = catalog.readTile[SpaceTimeKey](layerId)
+        val getTile = catalog.tileReader[SpaceTimeKey](layerId)
         val tile = getTile(key)
         val actual = CoordinateSpaceTime.collect.toMap.apply(key)
         tilesEqual(tile, actual)
