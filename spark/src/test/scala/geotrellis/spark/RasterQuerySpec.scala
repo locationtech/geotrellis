@@ -23,7 +23,7 @@ class RasterQuerySpec extends FunSpec
     val keyBounds = KeyBounds(SpatialKey(1,1), SpatialKey(6,7))
 
     it("should be better then Java serialization") {
-      val query = new RasterRDDQuery[SpatialKey].filter(GridBounds(2,2,2,2))
+      val query = new RasterRDDQuery[SpatialKey].where(GridBounds(2,2,2,2))
       val outKeyBounds = query(md, keyBounds)
       info(outKeyBounds.toString)
     }
