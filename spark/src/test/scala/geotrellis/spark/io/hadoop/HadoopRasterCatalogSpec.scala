@@ -140,7 +140,7 @@ class HadoopRasterCatalogSpec extends FunSpec
           val tileBounds = GridBounds(915,612,917,613)
           val query = new RasterRDDQuery[SpatialKey].where(tileBounds)
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
-          val filtered = catalog.query[SpatialKey](layerId, query)
+          val filtered = catalog.read[SpatialKey](layerId, query)
 
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
           val expected = unfiltered.collect.filter { case (key, value) => 
