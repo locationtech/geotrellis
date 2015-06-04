@@ -242,8 +242,8 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("ZCurveKeyIndexMethod.byYear: " + test.name){
           val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
           val found = rdd.map(_._1).collect
-          info(s"missing: ${test.expected diff found}")
-          info(s"unwanted: ${found diff test.expected}")
+          info(s"missing: ${(test.expected diff found).toVector}")
+          info(s"unwanted: ${(found diff test.expected).toVector}")
 
           found should contain theSameElementsAs test.expected
         }
@@ -256,13 +256,20 @@ class HadoopRasterCatalogSpec extends FunSpec
         catalog
           .writer[SpaceTimeKey](ZCurveKeyIndexMethod.by(tIndex))
           .write(LayerId("coordinates", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+
+        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD
+        rdd.map(_._1).collect().foreach( key => info(key.toString()))
+        rastersEqual(rdd, coordST)
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it("ZCurveKeyIndexMethod.by(DateTime => Int): " + test.name){
           val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
-          rdd.map(_._1).collect should contain theSameElementsAs test.expected
+          val found = rdd.map(_._1).collect()
+          info(s"missing: ${(test.expected diff found).toVector}")
+          info(s"unwanted: ${(found diff test.expected).toVector}")
+
+          found should contain theSameElementsAs test.expected
         }
       }
 
@@ -275,6 +282,18 @@ class HadoopRasterCatalogSpec extends FunSpec
           .write(LayerId("coordinates", 10), coordST)
         rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
       }
+
+      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
+        it("HilbertKeyIndexMethod with min, max, and resolution" + test.name){
+          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val found = rdd.map(_._1).collect()
+          info(s"missing: ${(test.expected diff found).toVector}")
+          info(s"unwanted: ${(found diff test.expected).toVector}")
+
+          found should contain theSameElementsAs test.expected
+        }
+      }
+
       it("HilbertKeyIndexMethod with only resolution") {
         val coordST = CoordinateSpaceTime
         val now = DateTime.now
@@ -283,6 +302,17 @@ class HadoopRasterCatalogSpec extends FunSpec
           .writer[SpaceTimeKey](HilbertKeyIndexMethod(2))
           .write(LayerId("coordinates", 10), coordST)
         rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+      }
+
+      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
+        it("HilbertKeyIndexMethod with only resolution" + test.name){
+          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val found = rdd.map(_._1).collect()
+          info(s"missing: ${(test.expected diff found).toVector}")
+          info(s"unwanted: ${(found diff test.expected).toVector}")
+
+          found should contain theSameElementsAs test.expected
+        }
       }
     }
   }
