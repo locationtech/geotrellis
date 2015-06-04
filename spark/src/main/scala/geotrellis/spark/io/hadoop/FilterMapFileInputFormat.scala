@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.zcurve.MergeQueue
+import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 

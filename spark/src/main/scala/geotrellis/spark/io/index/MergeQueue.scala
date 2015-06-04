@@ -1,4 +1,4 @@
-package geotrellis.spark.io.index.zcurve
+package geotrellis.spark.io.index
 
 import scala.collection.TraversableOnce
 
