@@ -43,6 +43,7 @@ class HilbertSpaceTimeKeyIndex(
 ) extends KeyIndex[SpaceTimeKey] {
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
+  val temporalBinCount = math.pow(2, temporalResolution)
 
   val chc = {
     val dimensionSpec =
@@ -57,8 +58,13 @@ class HilbertSpaceTimeKeyIndex(
     new CompactHilbertCurve(dimensionSpec)
   }
 
-  def binTime(key: SpaceTimeKey): Long =
-    ((key.temporalKey.time.getMillis - startMillis) * temporalResolution) / timeWidth
+  def binTime(key: SpaceTimeKey): Long = {
+    val targetBin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth).toLong
+    if (targetBin == temporalBinCount && key.time == keyBounds.maxKey.time)
+      targetBin - 1 // index requires right bound to be exclusive but KeyBounds do not, fake that.
+    else
+      targetBin
+  }
 
   def toIndex(key: SpaceTimeKey): Long = {
     val bitVectors = 
@@ -80,12 +86,11 @@ class HilbertSpaceTimeKeyIndex(
   }
 
   def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] = {
-
-    val ranges: java.util.List[LongRange] = 
-      List(
-        LongRange.of(keyRange._1.spatialKey.col, keyRange._2.spatialKey.col),
-        LongRange.of(keyRange._1.spatialKey.row, keyRange._2.spatialKey.row),
-        LongRange.of(binTime(keyRange._1), binTime(keyRange._2))
+    val ranges: java.util.List[LongRange] =
+      List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
+        LongRange.of(keyRange._1.spatialKey.col, keyRange._2.spatialKey.col + 1),
+        LongRange.of(keyRange._1.spatialKey.row, keyRange._2.spatialKey.row + 1),
+        LongRange.of(binTime(keyRange._1), binTime(keyRange._2) + 1)
       )
 
     val  regionInspector: RegionInspector[LongRange, LongContent] = 
