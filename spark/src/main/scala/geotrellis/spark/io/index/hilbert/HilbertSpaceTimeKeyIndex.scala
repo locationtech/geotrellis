@@ -59,11 +59,11 @@ class HilbertSpaceTimeKeyIndex(
   }
 
   def binTime(key: SpaceTimeKey): Long = {
-    val targetBin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth).toLong
-    if (targetBin == temporalBinCount && key.time == keyBounds.maxKey.time)
-      targetBin - 1 // index requires right bound to be exclusive but KeyBounds do not, fake that.
+    val targetBin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
+    if (targetBin == temporalBinCount)
+      targetBin.toLong - 1 // index requires right bound to be exclusive but KeyBounds do not, fake that.
     else
-      targetBin
+      targetBin.toLong
   }
 
   def toIndex(key: SpaceTimeKey): Long = {
