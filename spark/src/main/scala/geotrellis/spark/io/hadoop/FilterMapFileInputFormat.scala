@@ -34,7 +34,7 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
       case None =>
         val r = conf.getSerialized[FilterMapFileInputFormat.FilterDefinition[K]](FilterMapFileInputFormat.FILTER_INFO_KEY)
         _filterDefinition = Some(r)
-        r
+        r._1 -> r._2.sortBy(_._1) // Index ranges MUST be sorted, the reader will NOT "go backwards"
     }
 
   override
