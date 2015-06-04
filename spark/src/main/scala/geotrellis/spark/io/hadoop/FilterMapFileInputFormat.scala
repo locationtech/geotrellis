@@ -193,9 +193,6 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
                 break = true
                 key = nextKey
                 value = nextValue
-                println(s"KEEPING: ${nextKey.index} - ${nextKey.key}")
-              } else {
-                println(s"DROPPING: ${nextKey.index} - ${nextKey.key}")
               }
             }
           }

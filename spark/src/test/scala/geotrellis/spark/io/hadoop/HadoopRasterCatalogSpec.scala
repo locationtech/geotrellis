@@ -258,7 +258,6 @@ class HadoopRasterCatalogSpec extends FunSpec
           .write(LayerId("coordinates", 10), coordST)
 
         val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD
-        rdd.map(_._1).collect().foreach( key => info(key.toString()))
         rastersEqual(rdd, coordST)
       }
 
