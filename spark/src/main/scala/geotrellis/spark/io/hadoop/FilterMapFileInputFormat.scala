@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.zcurve.MergeQueue
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 
@@ -34,7 +35,8 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
       case None =>
         val r = conf.getSerialized[FilterMapFileInputFormat.FilterDefinition[K]](FilterMapFileInputFormat.FILTER_INFO_KEY)
         _filterDefinition = Some(r)
-        r._1 -> r._2.sortBy(_._1) // Index ranges MUST be sorted, the reader will NOT "go backwards"
+        val compressedRanges = MergeQueue(r._2).sortBy(_._1).toArray
+        r._1 -> compressedRanges // Index ranges MUST be sorted, the reader will NOT do it.
     }
 
   override
@@ -85,7 +87,7 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
     super.listStatus(context).filter(fileStatusFilter)
   }
 
-  override 
+  override
   def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[KW, V] =
     new FilterMapFileRecordReader(getFilterDefinition(context.getConfiguration))
 
@@ -113,7 +115,7 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
 
     private def setNextIndexRange(index: Long = 0L): Boolean = {
       if(nextRangeIndex >= ranges.size) {
-        false 
+        false
       } else {
         // Find next index
         val (minIndex, maxIndex) = ranges(nextRangeIndex)
@@ -171,11 +173,7 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
             key = null
             value = null
           } else {
-            if(filterDefinition._1.includeKey(nextKey.key)) {
-              break = true
-              key = nextKey
-              value = nextValue
-            } else {
+            if (nextKey.index > currMaxIndex) {
               // Must be out of current index range.
               if(nextRangeIndex < ranges.size) {
                 if(!setNextIndexRange(nextKey.index)) {
@@ -189,6 +187,15 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
                 more = false
                 key = null
                 value = null
+              }
+            } else {
+              if (filterDefinition._1.includeKey(nextKey.key)) {
+                break = true
+                key = nextKey
+                value = nextValue
+                println(s"KEEPING: ${nextKey.index} - ${nextKey.key}")
+              } else {
+                println(s"DROPPING: ${nextKey.index} - ${nextKey.key}")
               }
             }
           }
