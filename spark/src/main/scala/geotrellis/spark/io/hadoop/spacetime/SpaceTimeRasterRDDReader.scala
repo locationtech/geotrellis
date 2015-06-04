@@ -44,7 +44,7 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
           classOf[TileWritable]
         )
       } else {
-        val ranges = queryKeyBounds flatMap keyIndex.indexRanges
+        val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
         inputConf.setSerialized (FilterMapFileInputFormat.FILTER_INFO_KEY,
           (queryKeyBounds, ranges.toArray))
 
