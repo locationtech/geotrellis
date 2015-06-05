@@ -2,64 +2,70 @@ package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.vector.interpolation.{KrigingVectorSimple, KrigingVectorInterpolation}
 import spire.syntax.cfor._
 
 abstract sealed class KrigingInterpolationMethod
+
 case object KrigingSimple extends KrigingInterpolationMethod
-/*
 case object KrigingOrdinary extends KrigingInterpolationMethod
 case object KrigingUniversal extends KrigingInterpolationMethod
 case object KrigingGeo extends KrigingInterpolationMethod
-*/
-
 
 object KrigingInterpolationMethod {
   val DEFAULT = KrigingSimple
   //val DEFAULT = KrigingOrdinary
 }
 
-abstract class KrigingInterpolation(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent,
-                           radius: Option[Int], chunkSize: Int, lag:Int=0, model:ModelType) {
-  protected def kriging(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag:Int=0, model:ModelType): Tile = ???
+object KrigingInterpolation {
 
-  private def isValid(point: Point) =
+  private def isValid(point: Point, re: RasterExtent): Boolean =
     point.x >= re.extent.xmin && point.x <= re.extent.xmax && point.y <= re.extent.ymax && point.y >= re.extent.ymin
 
-  final def interpolate(point: Point): (Double, Double) =
-    if (!isValid(point)) throw new IllegalArgumentException("Point out of the raster range");
-    else interpolateValid(point)
-
-  protected def interpolateValid(point: Point): (Double, Double) = ???
-
-  /*
-  def constructSV(points:Seq[PointFeature[Int]], radius:Option[Int]=None, lag:Int=0, model:ModelType):Function1[Double,Double] = {
-    Semivariogram(points, radius, lag, model)
+  private def krigingSimple(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = {
+    val cols = re.cols
+    val rows = re.rows
+    val tile = ArrayTile.alloc(TypeDouble, cols, rows)
+    if(points.isEmpty) {
+      println("The set of points for constructing the prediction is empty")
+      tile
+    } else {
+      model match {
+        case Linear =>
+          def funcInterp = KrigingVectorInterpolation(KrigingVectorSimple, points, radius, chunkSize, lag, model)
+          cfor(0)(_ < rows, _ + 1) { row =>
+            cfor(0)(_ < cols, _ + 1) { col =>
+              val (x, y) = re.gridToMap(col, row)
+              val (v, _) = funcInterp(Point(x, y))
+              //Visualizing the mapping
+              //println("(x, y) = (" + x + ", " + y + "), (col, row) = (" + col + ", " + row + ") => " + v)
+              tile.setDouble(col, row, v)
+            }
+          }
+          //Visualizing the prediction wrt the mapping
+          //println("Rows = " + rows + "\n Cols = " + cols)
+          //println(tile.asciiDraw())
+          //println(points.mkString("\n"))
+        case _ => ???
+      }
+      tile
+    }
   }
-  protected def kriging(semivariogram: Function1[Double, Double], points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], pointPredict: Point, chunkSize: Int, lag:Int=0, model:ModelType): Tile
-  val sv = constructSV(points, radius, lag, model)
-  */
-}
 
-object KrigingInterpolation {
-  def apply(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag:Int=0, model:ModelType) = {
+  private def krigingOrdinary(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = ???
+  private def krigingUniversal(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = ???
+  private def krigingGeo(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = ???
+
+  def apply(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = {
     method match {
-      case KrigingSimple => new KrigingSimpleInterpolation(method, points, re, radius, chunkSize, lag, model)
-      /*
-       * After this, create the other four implementations incrementally
-       *
-      case KrigingOrdinary => ???
-      case KrigingUniversal => ???
-      case KrigingGeo => ???
-      */
-
-      /*  With the semivariogram precomputed in the val in current class
-       *  To decide the way in which to go proceed
-      val semivariogram = Semivariogram(points, radius, lag, model)
-      case KrigingSimple => new KrigingSimpleInterpolation(semivariogram , points, re, pointPredict, chunkSize)
-      case KrigingOrdinary => new KrigingOrdinaryInterpolation(semivariogram , points, re, pointPredict, chunkSize)
-      case KrigingUniversal => new KrigingUniversalInterpolation(semivariogram , points, re, pointPredict, chunkSize)
-      case KrigingGeo => new KrigingGeoInterpolation(semivariogram , points, re, pointPredict, chunkSize)
-      */
+      case KrigingSimple => krigingSimple(points, re, radius, chunkSize, lag, model)
+      case KrigingOrdinary => krigingOrdinary(points, re, radius, chunkSize, lag, model)
+      case KrigingUniversal => krigingUniversal(points, re, radius, chunkSize, lag, model)
+      case KrigingGeo => krigingGeo(points, re, radius, chunkSize, lag, model)
+      case _ => {
+        println("The Kriging type is not recognized, using default Kriging type")
+        apply(KrigingInterpolationMethod.DEFAULT, points, re, radius, chunkSize, lag, model)
+      }
     }
   }
 }

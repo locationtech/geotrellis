@@ -33,14 +33,8 @@ class VectorToRasterSpec extends FunSpec
   describe("idwInterpolate") {
     it("matches a QGIS generated IDW raster") {
       val rs = RasterSource("schoolidw")
-      //Defines the Raster Source for "school_idw"
-
       val re = rs.rasterExtent.get
-      //Gets the rasterextent for "school_idw"
-
       val r = rs.get
-      //printR(r)
-      //Gets the complete Raster Source for "school_idw"
 
       val path = "raster-test/data/schoolgeo.json"
 
@@ -49,11 +43,8 @@ class VectorToRasterSpec extends FunSpec
       f.close
 
       val points = collection.getAllPointFeatures[Int]
-      //Points from the schoolgeo.json file
 
       val result = VectorToRaster.idwInterpolate(points, re)
-      //println(result.getClass)
-      //IDW interpolation of the json data-points and raster extent from the "school_idw" source file
       var count = 0
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
@@ -75,7 +66,6 @@ class VectorToRasterSpec extends FunSpec
 
     it("should return 0 raster if points lie outside extent") {
       val re = RasterExtent(Extent(0,0,9,10),1,1,9,10)
-      //printR(re)
       val points =
         Seq(
           Point(100,200),
@@ -83,8 +73,6 @@ class VectorToRasterSpec extends FunSpec
           Point(-310,1200)
         )
       val result = VectorToRaster.countPoints(points,re)
-      //println(result.getClass)
-      //printR(result)
       assertEqual(result, Array.fill[Int](90)(0))
     }
 
