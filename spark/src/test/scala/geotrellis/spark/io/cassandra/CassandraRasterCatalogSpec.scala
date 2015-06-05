@@ -38,8 +38,12 @@ class CassandraRasterCatalogSpec extends FunSpec
   describe("Cassandra Raster Catalog with Spatial Rasters") {
     ifCanRunSpark { 
 
-      useCassandraConfig("cassandra-default.yaml.template")
-      EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
+      // useCassandraConfig(Seq("cassandra-default.yaml.template"))
+      useCassandraConfig(Seq("another-cassandra.yaml"))
+      val host = getHost().getHostAddress
+      val nativePort : Int = getNativePort()
+      // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
+      EmbeddedCassandra.withSession(host, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
         val allOnes = new Path(inputHome, "all-ones.tif")
         val source = sc.hadoopGeoTiffRDD(allOnes)
         
@@ -95,9 +99,13 @@ class CassandraRasterCatalogSpec extends FunSpec
   }
 
   describe("Cassandra Raster Catalog with SpaceTime Rasters") {
-    ifCanRunSpark { 
-      useCassandraConfig("cassandra-default.yaml.template")
-      EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
+    ifCanRunSpark {
+      // useCassandraConfig(Seq("cassandra-default.yaml.template"))
+      useCassandraConfig(Seq("another-cassandra.yaml"))
+      val host = getHost().getHostAddress
+      val nativePort : Int = getNativePort()
+      // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
+      EmbeddedCassandra.withSession(host, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
         val tableName = "spacetime_tiles"
         
         val catalog = 
