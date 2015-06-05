@@ -41,28 +41,39 @@ class CassandraRasterCatalogSpec extends FunSpec
       // useCassandraConfig(Seq("cassandra-default.yaml.template"))
       useCassandraConfig(Seq("another-cassandra.yaml"))
       val host = getHost().getHostAddress
+      val rpcPort : Int = getRpcPort()
       val nativePort : Int = getNativePort()
       // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
-      EmbeddedCassandra.withSession(host, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
+      EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
+
         val allOnes = new Path(inputHome, "all-ones.tif")
         val source = sc.hadoopGeoTiffRDD(allOnes)
         
         val layoutScheme = ZoomedLayoutScheme(512)
         val tableName = "tiles"
-        
-        val catalog = 
-          CassandraRasterCatalog()
-        
-        Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, level) => 
+
+        // FIXME just playing
+        logInfo("SPARK LOGGING FROM CASSANDRA TEST")
+
+        val catalog =
+        CassandraRasterCatalog()
+
+        logInfo("SPARK LOGGING FROM CASSANDRA TEST catalog " + catalog.toString)
+
+        Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) =>
+
           val layerId = LayerId("ones", level.zoom)
-          
+
           it("should succeed writing to a table") {
             catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName).write(layerId, onesRdd)
+            logInfo("SPARK LOGGING FROM CASSANDRA TEST 3")
           }
-          
+
+
           it("should load out saved tiles") {
             val rdd = catalog.reader[SpatialKey].read(layerId)
             rdd.count should be > 0l
+            logInfo("SPARK LOGGING FROM CASSANDRA TEST 4")
           }
           
           it("should load out a single tile") {
@@ -103,9 +114,11 @@ class CassandraRasterCatalogSpec extends FunSpec
       // useCassandraConfig(Seq("cassandra-default.yaml.template"))
       useCassandraConfig(Seq("another-cassandra.yaml"))
       val host = getHost().getHostAddress
+      val rpcPort : Int = getRpcPort()
       val nativePort : Int = getNativePort()
       // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
-      EmbeddedCassandra.withSession(host, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
+      EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
+
         val tableName = "spacetime_tiles"
         
         val catalog = 

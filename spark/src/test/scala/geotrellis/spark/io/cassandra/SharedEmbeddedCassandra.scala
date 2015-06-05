@@ -9,6 +9,7 @@ trait SharedEmbeddedCassandra extends DataStaxEmbeddedCassandra {
   def clearCache(): Unit = CassandraConnector.evictCache()
 
   def getHost() = DataStaxEmbeddedCassandra.getHost(0)
+  def getRpcPort() = DataStaxEmbeddedCassandra.getRpcPort(0)
   def getNativePort() = DataStaxEmbeddedCassandra.getNativePort(0)
 
 }

@@ -28,11 +28,7 @@ object CassandraSession {
     session.session
 }
 
-class CassandraSession(
-  connector: CassandraConnector, 
-  val keySpace: String
-) {
-  
+class CassandraSession( connector: CassandraConnector, val keySpace: String ) {
   private val session: Session = connector.openSession()
   def close() = session.close
 }
