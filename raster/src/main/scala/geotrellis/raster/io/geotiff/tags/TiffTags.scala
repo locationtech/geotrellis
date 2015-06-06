@@ -326,10 +326,10 @@ case class TiffTags(
           }
         }
 
-        Tags(metadata, bandsMetadataBuffer)
+        Tags(metadata, bandsMetadataBuffer.toList)
       }
       case None =>
-        Tags(Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toArray)
+        Tags(Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
     }
 
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =

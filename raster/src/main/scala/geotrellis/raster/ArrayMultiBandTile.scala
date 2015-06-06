@@ -10,6 +10,9 @@ object ArrayMultiBandTile {
   def apply(bands: Tile*): ArrayMultiBandTile =
     apply(bands.toArray)
 
+  def apply(bands: Traversable[Tile]): ArrayMultiBandTile =
+    new ArrayMultiBandTile(bands.toArray)
+
   def apply(bands: Array[Tile]): ArrayMultiBandTile =
     new ArrayMultiBandTile(bands)
 }

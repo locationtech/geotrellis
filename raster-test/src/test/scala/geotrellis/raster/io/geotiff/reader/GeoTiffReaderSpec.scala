@@ -359,7 +359,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with tags") {
-      val tags = SingleBandGeoTiff.compressed(geoTiffPath("tags.tif")).tags
+      val tags = SingleBandGeoTiff.compressed(geoTiffPath("tags.tif")).tags.headTags
 
       tags("TILE_COL") should be ("6")
       tags("units") should be ("kg m-2 s-1")
@@ -391,9 +391,9 @@ class GeoTiffReaderSpec extends FunSpec
 
       val tags = geoTiff.tags
 
-      tags("HEADTAG") should be ("1")
-      tags("TAG_TYPE") should be ("HEAD")
-      tags.size should be (2)
+      tags.headTags("HEADTAG") should be ("1")
+      tags.headTags("TAG_TYPE") should be ("HEAD")
+      tags.headTags.size should be (2)
 
       val bandCount = geoTiff.tile.bandCount
 
@@ -405,7 +405,7 @@ class GeoTiffReaderSpec extends FunSpec
           "TAG_TYPE" -> s"BAND${i + 1}"
         )
 
-        tags(i) should be (correctMetadata)
+        tags.bandTags(i) should be (correctMetadata)
       }
     }
 

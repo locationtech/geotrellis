@@ -47,65 +47,6 @@ class FloatingPointPredictor(colsPerRow: Int, rowsInSegment: Int => Int, bandTyp
         }
       }
     }
-
-    // val tmp = bytes.clone
-
-    // cfor(0)(_ < rows, _ + 1) { row =>
-    //   // Reorder the float bytes.
-    //   val startCol = row * colsPerRow * bandCount
-    //   cfor(0)(_ < colsPerRow * bandCount, _ + 1) { col =>
-    //     cfor(0)(_ < bytesPerSample, _ + 1) { byteIndex =>
-    //       // bytes(bytesPerSample * col + byteIndex) =
-    //       //   tmp(byteIndex * colsPerRow + col)
-    //       // bytes(bytesPerSample * (col + startCol) + byteIndex) =
-    //       //   tmp((bytesPerSample - byteIndex - 1) * colsPerRow + col + startCol)
-
-    //       bytes(bytesPerSample * (col + startCol) + byteIndex) =
-    //         tmp(byteIndex * colsPerRow + col + startCol)
-
-    //     }
-    //   }
-    // }
-
     bytes
   }
-  //       for (BYTE = 0; BYTE < bytesPerSample; ++BYTE)
-  //       {
-  //         output[ bytes * COL + BYTE ] =
-  //           input[ BYTE * rowIncrement + COL ];
-  //         #else
-  //           output[ bytes * COL + BYTE] =
-  //             input[ (bytesPerSample-BYTE-1) * rowIncrement + COL ];
-  //         #endif
-  //       }
-  //     }
-  //   }
-  // }
-
-
-  //   val wc = colsPerRow
-
-  //       tmsize_t count = cc;
-  //       uint8 *cp = (uint8 *) cp0;
-  //       uint8 *tmp = (uint8 *)_TIFFmalloc(cc);
-
-  //       while (count > bandCount) {
-  //       	REPEAT4(bandCount, cp[bandCount] += cp[0]; cp++)
-  //       	count -= bandCount;
-  //       }
-
-  //       _TIFFmemcpy(tmp, cp0, cc);
-  //       cp = (uint8 *) cp0;
-  //       for (count = 0; count < colsPerRow; count++) {
-  //       	uint32 byte;
-  //       	for (byte = 0; byte < bytesPerSample; byte++) {
-  //       		#if WORDS_BIGENDIAN
-  //       		cp[bytesPerSample * count + byte] = tmp[byte * wc + count];
-  //       		#else
-  //       		cp[bytesPerSample * count + byte] =
-  //       			tmp[(bytesPerSample - byte - 1) * wc + count];
-  //       		#endif
-  //       	}
-  //       }
-  //       _TIFFfree(tmp);
 }
