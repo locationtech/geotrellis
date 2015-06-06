@@ -134,9 +134,13 @@ object GeotrellisBuild extends Build {
     libraryDependencies <++= scalaVersion {
       case "2.10.4" => Seq(
         "org.scala-lang" %  "scala-reflect" % "2.10.4",
-        "org.scalamacros" %% "quasiquotes" % "2.0.1")
+        "org.scalamacros" %% "quasiquotes" % "2.0.1",
+        "org.spire-math" %% "spire-macros" % "0.9.1"
+      )
       case "2.11.5" => Seq(
-        "org.scala-lang" %  "scala-reflect" % "2.11.5")
+        "org.scala-lang" %  "scala-reflect" % "2.11.5",
+        "org.spire-math" %% "spire-macros" % "0.9.1"
+      )
     },
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
@@ -198,7 +202,10 @@ object GeotrellisBuild extends Build {
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
-      scalacOptions in compile ++= Seq("-optimize"),
+      scalacOptions ++= Seq(
+        "-optimize",
+        "-language:experimental.macros"
+      ),
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
         typesafeConfig,

@@ -77,6 +77,43 @@ object ArrayTile {
 trait ArrayTile extends Tile with Serializable {
   def toArrayTile = this
 
+  def convert(cellType: CellType): Tile =
+    LazyConvertedArrayTile(this, cellType)
+
+  def foreach(f: Int => Unit): Unit = {
+    val len = size
+    var i = 0
+    while (i < len) {
+      f(apply(i))
+      i += 1
+    }
+  }
+
+  def foreachDouble(f: Double => Unit): Unit = {
+    val len = size
+    var i = 0
+    while (i < len) {
+      f(applyDouble(i))
+      i += 1
+    }
+  }
+
+  def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        visitor(col, row, get(col, row))
+      }
+    }
+  }
+
+  def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        visitor(col, row, getDouble(col, row))
+      }
+    }
+  }
+
   /**
    * Map each cell in the given raster to a new one, using the given function.
    */
@@ -89,6 +126,40 @@ trait ArrayTile extends Tile with Serializable {
       i += 1
     }
     output
+  }
+
+  /**
+   * Map each cell in the given raster to a new one, using the given function.
+   */
+  def mapDouble(f: Double => Double): Tile = {
+    val len = size
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    var i = 0
+    while (i < len) {
+      tile.updateDouble(i, f(applyDouble(i)))
+      i += 1
+    }
+    tile
+  }
+
+  def mapIntMapper(mapper: IntTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.set(col, row, mapper(col, row, get(col, row)))
+      }
+    }
+    tile
+  }
+
+  def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.setDouble(col, row, mapper(col, row, getDouble(col, row)))
+      }
+    }
+    tile
   }
 
   /**
@@ -118,21 +189,6 @@ trait ArrayTile extends Tile with Serializable {
       case ct: CompositeTile =>
         ct.combine(this)((z1, z2)=>f(z2, z1))
     }
-  }
-
-
-  /**
-   * Map each cell in the given raster to a new one, using the given function.
-   */
-  def mapDouble(f: Double => Double): Tile = {
-    val len = size
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    var i = 0
-    while (i < len) {
-      tile.updateDouble(i, f(applyDouble(i)))
-      i += 1
-    }
-    tile
   }
 
   /**

@@ -66,11 +66,10 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     withClue(s"Sizes do not match.") {
       (r.cols * r.rows) should be (arr.length)
     }
-    for(row <- 0 until r.rows) {
-      for(col <- 0 until r.cols) {
-        withClue(s"Value at ($col, $row) are not the same") {
-          r.get(col, row) should be (arr(row * r.cols + col))
-        }
+
+    r.foreach { (col, row, z) =>
+      withClue(s"Value at ($col, $row) are not the same") {
+        z should be (arr(row * r.cols + col))
       }
     }
   }
@@ -82,23 +81,21 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     val raster = get(r)
     val cols = raster.cols
     val rows = raster.rows
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        val v1 = raster.getDouble(col, row)
-        val v2 = arr(row * cols + col)
-        if(isNoData(v1)) {
-          withClue(s"Value at ($col, $row) are not the same: v1 = NoData, v2 = $v2") {
-            isNoData(v2) should be (true)
+
+    raster.foreachDouble { (col, row, v1) =>
+      val v2 = arr(row * cols + col)
+      if(isNoData(v1)) {
+        withClue(s"Value at ($col, $row) are not the same: v1 = NoData, v2 = $v2") {
+          isNoData(v2) should be (true)
+        }
+      } else {
+        if(isNoData(v2)) {
+          withClue(s"Value at ($col, $row) are not the same: v1 = $v1, v2 = NoData") {
+            isNoData(v1) should be (true)
           }
         } else {
-          if(isNoData(v2)) {
-            withClue(s"Value at ($col, $row) are not the same: v1 = $v1, v2 = NoData") {
-              isNoData(v1) should be (true)
-            }
-          } else {
-            withClue(s"Value at ($col, $row) are not the same: ") {
-              v1 should be (v2 +- threshold)
-            }
+          withClue(s"Value at ($col, $row) are not the same: ") {
+            v1 should be (v2 +- threshold)
           }
         }
       }
@@ -116,36 +113,35 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     withClue("cellTypes are not equal") { r1.cellType should be (r2.cellType) }
 
     val isFloatingPoint = r1.cellType.isFloatingPoint
-    cfor(0)(_ < r1.rows, _ + 1) { row =>
-      cfor(0)(_ < r1.cols, _ + 1) { col =>
-        if(isFloatingPoint) {
-          val v1 = r1.getDouble(col, row)
-          val v2 = r2.getDouble(col, row)
 
-          if(isNoData(v1)) {
-            withClue(s"Value at ($col, $row) are not the same: v1 = NoData, v2 = $v2") {
-              isNoData(v2) should be (true)
-            }
-          }
+    if(isFloatingPoint) {
+      r1.foreachDouble { (col, row, v1) =>
+        val v2 = r2.getDouble(col, row)
 
-          if(isNoData(v2)) {
-            withClue(s"Value at ($col, $row) are not the same: v1 = $v1, v2 = NoData") {
-              isNoData(v1) should be (true)
-            }
+        if(isNoData(v1)) {
+          withClue(s"Value at ($col, $row) are not the same: v1 = NoData, v2 = $v2") {
+            isNoData(v2) should be (true)
           }
+        }
 
-          if(math.abs(v1 - v2) >= threshold) {
-            withClue(s"Failure at (${col}, ${row}) - V1: $v1  V2: $v2") {
-              v1 should be (v2)
-            }
+        if(isNoData(v2)) {
+          withClue(s"Value at ($col, $row) are not the same: v1 = $v1, v2 = NoData") {
+            isNoData(v1) should be (true)
           }
-        } else {
-          val v1 = r1.get(col, row)
-          val v2 = r2.get(col, row)
-          if(v1 != v2) {
-            withClue(s"Failure at (${col}, ${row}) - V1: $v1  V2: $v2") {
-              r1.get(col, row) should be (r2.get(col, row))
-            }
+        }
+
+        if(math.abs(v1 - v2) >= threshold) {
+          withClue(s"Failure at (${col}, ${row}) - V1: $v1  V2: $v2") {
+            v1 should be (v2)
+          }
+        }
+      }
+    } else {
+      r1.foreach { (col, row, v1) =>
+        val v2 = r2.get(col, row)
+        if(v1 != v2) {
+          withClue(s"Failure at (${col}, ${row}) - V1: $v1  V2: $v2") {
+            r1.get(col, row) should be (r2.get(col, row))
           }
         }
       }
