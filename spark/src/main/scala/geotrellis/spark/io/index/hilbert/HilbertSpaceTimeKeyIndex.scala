@@ -44,7 +44,7 @@ class HilbertSpaceTimeKeyIndex(
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
-
+ 
   val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
@@ -59,11 +59,9 @@ class HilbertSpaceTimeKeyIndex(
   }
 
   def binTime(key: SpaceTimeKey): Long = {
-    val targetBin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
-    if (targetBin == temporalBinCount)
-      targetBin.toLong - 1 // index requires right bound to be exclusive but KeyBounds do not, fake that.
-    else
-      targetBin.toLong
+    // index requires right bound to be exclusive but KeyBounds do not, fake that.      
+    val bin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
+    (if (bin == temporalBinCount) bin - 1  else bin).toLong
   }
 
   def toIndex(key: SpaceTimeKey): Long = {
@@ -85,6 +83,7 @@ class HilbertSpaceTimeKeyIndex(
     hilbertBitVector.toExactLong
   }
 
+  // Note: this function will happilly index outside of the index keyBounds
   def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] = {
     val ranges: java.util.List[LongRange] =
       List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
@@ -122,7 +121,8 @@ class HilbertSpaceTimeKeyIndex(
 
     cfor(0)(_ < size, _ + 1) { i =>
       val range = filteredIndexRanges.get(i)
-      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd)
+      // uzaygezen ranges are exclusive on the interval, GeoTrellis index ranges are inclusive, adjusting here.
+      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd - 1)
     }
 
     result
