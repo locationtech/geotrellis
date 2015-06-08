@@ -9,7 +9,7 @@ import java.net.InetAddress
 
 object EmbeddedCassandra extends Logging {
 
-  val GtCassandraTestKeyspace = "geotrellistest"
+  val GtCassandraTestKeyspace = "test"
 
   val deleteKeyspaceCql = s"DROP KEYSPACE IF EXISTS ${GtCassandraTestKeyspace}"
   val createKeyspaceCql = s"CREATE KEYSPACE IF NOT EXISTS ${GtCassandraTestKeyspace} WITH REPLICATION = { 'class': 'SimpleStrategy', 'replication_factor': 1 }"

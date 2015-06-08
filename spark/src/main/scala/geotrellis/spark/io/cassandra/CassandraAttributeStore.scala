@@ -60,11 +60,14 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
 
     val values = session.execute(query)
 
+    // FIXME is that right to better throw those exception?
     val size = values.getAvailableWithoutFetching
     if(size == 0) {
-      sys.error(s"Attribute $attributeName not found for layer $layerId")
+      // sys.error(s"Attribute $attributeName not found for layer $layerId")
+      throw new LayerNotFoundError(layerId)
     } else if (size > 1) {
-      sys.error(s"Multiple attributes found for $attributeName for layer $layerId")
+      // sys.error(s"Multiple attributes found for $attributeName for layer $layerId")
+      throw new MultipleMatchError(layerId)
     } else {
       val (_, result) = values.one.getString("value").parseJson.convertTo[(LayerId, T)]
       result

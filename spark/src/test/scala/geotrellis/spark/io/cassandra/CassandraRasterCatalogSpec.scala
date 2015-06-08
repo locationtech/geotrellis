@@ -82,7 +82,8 @@ class CassandraRasterCatalogSpec extends FunSpec
             val tile = getTile(key)
             (tile.cols, tile.rows) should be ((512, 512))
           }
-          
+          // FIXME: Expected exception geotrellis.spark.io.package$LayerNotFoundError to be thrown,
+          // but java.lang.RuntimeException was thrown. (CassandraRasterCatalogSpec.scala:87
           it("should load out saved tiles, but only for the right zoom") {
             intercept[LayerNotFoundError] {
               catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
@@ -143,7 +144,8 @@ class CassandraRasterCatalogSpec extends FunSpec
           val actual = CoordinateSpaceTime.collect.toMap.apply(key)
           tilesEqual(tile, actual)
         }
-        
+        // FIXME: Expected exception geotrellis.spark.io.package$LayerNotFoundError to be thrown,
+        // but java.lang.RuntimeException was thrown. (CassandraRasterCatalogSpec.scala:148)
         it("should load out saved tiles, but only for the right zoom") {
           intercept[LayerNotFoundError] {
             catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom + 1)).count()
