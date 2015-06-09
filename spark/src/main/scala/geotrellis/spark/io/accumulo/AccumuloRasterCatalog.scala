@@ -30,17 +30,18 @@ class AccumuloRasterCatalog(
   instance: AccumuloInstance, 
   val attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) {
-  val accumuloInstance = instance
-  val accumuloAttributeStore = attributeStore
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
-    new FilterableRasterRDDReader[K] {
-      def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
-        val metaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]].read(instance, metaData, keyBounds, index)(layerId, filterSet)
-      }
-    }
+
+  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
+    val metadata = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
+    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")                
+    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+
+    implicitly[RasterRDDReader[K]]
+      .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))    
+  }
+
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
+    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _))
 
   def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
@@ -80,7 +81,7 @@ class AccumuloRasterCatalog(
     }
   }
 
-  def readTile[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
+  def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
     new Reader[K, Tile] {
       val readTile = {
         val accumuloLayerMetaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")

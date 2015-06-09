@@ -1,5 +1,7 @@
 package geotrellis.spark.io.index.zcurve
 
+import geotrellis.spark.io.index.MergeQueue
+
 class Z3(val z: Long) extends AnyVal {
   import Z3._
 

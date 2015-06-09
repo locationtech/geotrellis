@@ -1,7 +1,6 @@
 package geotrellis.spark.io.hadoop.spacetime
 
 import geotrellis.spark._
-import geotrellis.spark.io.FilterRanges
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
@@ -25,7 +24,7 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
     layerMetaData: HadoopLayerMetaData,
     keyIndex: KeyIndex[SpaceTimeKey],
     keyBounds: KeyBounds[SpaceTimeKey]
-  )(layerId: LayerId, filterSet: FilterSet[SpaceTimeKey])
+  )(layerId: LayerId, queryKeyBounds: Seq[KeyBounds[SpaceTimeKey]])
   (implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
     val path = layerMetaData.path
 
@@ -37,7 +36,7 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
     val inputConf = conf.withInputPath(dataPath)
 
     val writableRdd: RDD[(SpaceTimeKeyWritable, TileWritable)] =
-      if(filterSet.isEmpty) {
+      if(Seq(keyBounds) == queryKeyBounds) {
         sc.newAPIHadoopRDD(
           inputConf,
           classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]],
@@ -45,8 +44,9 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
           classOf[TileWritable]
         )
       } else {
-        inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY,
-          (filterSet, FilterRanges.spatiotemporal(filterSet, keyBounds, keyIndex).toArray))
+        val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
+        inputConf.setSerialized (FilterMapFileInputFormat.FILTER_INFO_KEY,
+          (queryKeyBounds, ranges.toArray))
 
         sc.newAPIHadoopRDD(
           inputConf,

@@ -45,69 +45,32 @@ class HilbertSpatialKeyIndexSpec extends FunSpec with Matchers{
     }
 
     it("Generates a Seq[(Long,Long)] given a key range (SpatialKey,SpatialKey)"){
+        //hand re-checked examples
+        val hilbert = HilbertSpatialKeyIndex(SpatialKey(0,0), SpatialKey(upperBound,upperBound), 2) 
 
-     //hand checked examples
-     val hilbert = HilbertSpatialKeyIndex(SpatialKey(0,0), SpatialKey(upperBound,upperBound), 2) 
-  
-     //square grids
-     var idx = hilbert.indexRanges((SpatialKey(0,0), SpatialKey(2,2))) 
-     idx.length should be (1)
-     idx(0)._1 should be (0)
-     idx(0)._2 should be (4)
+        // single point, min corner
+        var idx = hilbert.indexRanges((SpatialKey(0,0), SpatialKey(0,0))) 
+        idx.length should be (1)
+        idx.toSet should be (Set(0->0))
 
-     idx = hilbert.indexRanges((SpatialKey(0,0), SpatialKey(4,4))) 
-     idx.length should be (1)
-     idx(0)._1 should be (0)
-     idx(0)._2 should be (16)
-     
-     //check some subgrids
-     idx = hilbert.indexRanges((SpatialKey(2,1), SpatialKey(4,3))) 
-     idx.length should be (2)
-     idx(0)._1 should be (8)
-     idx(0)._2 should be (9)
-     idx(1)._1 should be (11)
-     idx(1)._2 should be (14)
+        // single point, max corner
+        idx = hilbert.indexRanges((SpatialKey(3,3), SpatialKey(3,3))) 
+        idx.length should be (1)
+        idx.toSet should be (Set(10->10)) // aha, not 15 as you might think!
 
-     idx = hilbert.indexRanges((SpatialKey(1,1), SpatialKey(3,3))) 
-     idx.length should be (3)
-     idx(0)._1 should be (2)
-     idx(0)._2 should be (3)
-     idx(1)._1 should be (7)
-     idx(1)._2 should be (9)
-     idx(2)._1 should be (13)
-     idx(2)._2 should be (14)
+        //square grids
+        idx = hilbert.indexRanges((SpatialKey(0,0), SpatialKey(1,1))) 
+        idx.length should be (1)
+        idx.toSet should be (Set(0->3))
 
-     //check some rows
-     idx = hilbert.indexRanges((SpatialKey(0,0), SpatialKey(4,1))) 
-     idx.length should be (2)
-     idx(0)._1 should be (0)
-     idx(0)._2 should be (2)
-     idx(1)._1 should be (14)
-     idx(1)._2 should be (16)
+        idx = hilbert.indexRanges((SpatialKey(0,0), SpatialKey(3,3))) 
+        idx.length should be (1)
+        idx.toSet should be (Set(0->15))
 
-     idx = hilbert.indexRanges((SpatialKey(0,2), SpatialKey(4,3))) 
-     idx.length should be (3)
-     idx(0)._1 should be (4)
-     idx(0)._2 should be (5)
-     idx(1)._1 should be (7)
-     idx(1)._2 should be (9)
-     idx(2)._1 should be (11)
-     idx(2)._2 should be (12)
-
-     //check some cols
-     idx = hilbert.indexRanges((SpatialKey(1,0), SpatialKey(2,4))) 
-     idx.length should be (2)
-     idx(0)._1 should be (1)
-     idx(0)._2 should be (3)
-     idx(1)._1 should be (6)
-     idx(1)._2 should be (8)
-
-     idx = hilbert.indexRanges((SpatialKey(3,0), SpatialKey(4,4))) 
-     idx.length should be (2)
-     idx(0)._1 should be (10)
-     idx(0)._2 should be (13)
-     idx(1)._1 should be (15)
-     idx(1)._2 should be (16)
-    }
+        //check some subgrid
+        idx = hilbert.indexRanges((SpatialKey(1,0), SpatialKey(3,2))) 
+        idx.length should be (3)
+        idx.toSet should be (Set(1->2, 7->8, 11->15))
+     }
   }
 }

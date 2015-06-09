@@ -17,12 +17,12 @@ import org.joda.time.{DateTimeZone, DateTime}
 
 import scala.reflect._
 
-trait RasterRDDReader[Key] extends Logging {
+trait RasterRDDReader[K] extends Logging {
   def read(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
-    keyIndex: KeyIndex[Key],
-    keyBounds: KeyBounds[Key]
-  )(layerId: LayerId, filterSet: FilterSet[Key])
-  (implicit sc: SparkContext): RasterRDD[Key]
+    keyIndex: KeyIndex[K],
+    keyBounds: KeyBounds[K]    
+  )(layerId: LayerId, queryKeyBounds: Seq[KeyBounds[K]])
+  (implicit sc: SparkContext): RasterRDD[K]
 }

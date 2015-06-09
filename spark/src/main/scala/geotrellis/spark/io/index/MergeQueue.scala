@@ -1,5 +1,14 @@
-package geotrellis.spark.io.index.zcurve
+package geotrellis.spark.io.index
 
+import scala.collection.TraversableOnce
+
+object MergeQueue{
+  def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
+    val q = new MergeQueue()
+    ranges.foreach(range => q += range)
+    q.toSeq
+  }
+}
 class MergeQueue(initialSize: Int = 1) {
   private var array = if(initialSize <= 1) { Array.ofDim[(Long, Long)](1) } else { Array.ofDim[(Long, Long)](initialSize) }
   private var _size = 0

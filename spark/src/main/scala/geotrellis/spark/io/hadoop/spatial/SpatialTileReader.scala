@@ -13,17 +13,18 @@ object SpatialTileReader extends TileReader[SpatialKey] {
   def read(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
-    index: KeyIndex[SpatialKey]
-  )(key: SpatialKey)(implicit sc: SparkContext): Tile = {
+    index: KeyIndex[SpatialKey],
+    keyBounds: KeyBounds[SpatialKey]
+  )(implicit sc: SparkContext): Tile = {
+    require(keyBounds.minKey == keyBounds.maxKey, s"TileReader expects KeyBounds for single tile, got: $keyBounds")
+    
     val path = layerMetaData.path
     val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val filterSet = new FilterSet[SpatialKey] withFilter SpaceFilter(key)
-    val i = index.toIndex(key)
-    val filterDefinition = (filterSet, Array((i,i)))
+    val filterDefinition = (Seq(keyBounds), index.indexRanges(keyBounds).toArray)
     inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, filterDefinition)
     val inputFormat = new SpatialFilterMapFileInputFormat()
 

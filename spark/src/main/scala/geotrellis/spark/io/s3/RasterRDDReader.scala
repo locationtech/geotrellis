@@ -14,10 +14,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
 
-abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
+abstract class RasterRDDReader[K: Boundable: ClassTag] extends LazyLogging {
   import RasterRDDReader._
-
-  def setFilters(filterSet: FilterSet[K], kb: KeyBounds[K], ki: KeyIndex[K]): Seq[(Long, Long)]
 
   /** Converting lower bound of Range to first Key for Marker */
   val indexToPath: (Long, Int) => String
@@ -32,32 +30,30 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
     keyIndex: KeyIndex[K],
     numPartitions: Int
   )
-  (layerId: LayerId, filterSet: FilterSet[K])
+  (layerId: LayerId, queryKeyBounds: Seq[KeyBounds[K]])
   (implicit sc: SparkContext): RasterRDD[K] = {
     val bucket = layerMetaData.bucket
     val dir = layerMetaData.key
     val rasterMetaData = layerMetaData.rasterMetaData
     logger.debug(s"Loading $layerId from $dir")
-
-    val ranges = setFilters(filterSet, keyBounds, keyIndex)
+    
+    val ranges = queryKeyBounds.map{ keyIndex.indexRanges(_) }.flatten
     val bins = balancedBin(ranges, numPartitions)
     logger.info(s"Created ${ranges.length} ranges, binned into ${bins.length} bins")
 
-    val bcClient = sc.broadcast(s3client)
-    val bcFilterSet = sc.broadcast(filterSet)
-    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-
     // Broadcast the functions that translate from a path to an index and back
-    val bcFuncs = sc.broadcast((pathToIndex, { (index: Long) => indexToPath(index, maxWidth) }))
+    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+    val BC = sc.broadcast(s3client, pathToIndex, 
+      { (index: Long) => indexToPath(index, maxWidth) },
+      { (key: K) => queryKeyBounds.includeKey(key) })
 
     val rdd =
       sc
         .parallelize(bins, bins.size)
         .mapPartitions { rangeList =>
-          val s3client: S3Client = bcClient.value.apply
-          val filterSet: FilterSet[K] = bcFilterSet.value
-          val (toIndex, toPath) = bcFuncs.value
-
+          val (fS3client, toIndex, toPath, includeKey) = BC.value
+          val s3client = fS3client()
+          
           rangeList
             .flatMap(ranges => ranges)
             .flatMap { range =>
@@ -66,7 +62,9 @@ abstract class RasterRDDReader[K: ClassTag] extends LazyLogging {
                   val is = s3client.getObject(bucket, path).getObjectContent
                   KryoSerializer.deserializeStream[(K, Tile)](is)
                  }
-                .filter{ row => filterSet.includeKey(row._1) }
+                .filter{ 
+                  row => includeKey(row._1) 
+                }
             }
         }
 

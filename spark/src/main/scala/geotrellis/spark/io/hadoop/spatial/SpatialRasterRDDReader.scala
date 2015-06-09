@@ -1,7 +1,6 @@
 package geotrellis.spark.io.hadoop.spatial
 
 import geotrellis.spark._
-import geotrellis.spark.io.FilterRanges
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
@@ -23,8 +22,8 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] with Logging {
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     keyIndex: KeyIndex[SpatialKey],
-    keyBounds: KeyBounds[SpatialKey]
-  )(layerId: LayerId, filterSet: FilterSet[SpatialKey])
+    keyBounds: KeyBounds[SpatialKey]    
+  )(layerId: LayerId, queryKeyBounds: Seq[KeyBounds[SpatialKey]])
   (implicit sc: SparkContext): RasterRDD[SpatialKey] = {
     val path = layerMetaData.path
 
@@ -36,23 +35,22 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] with Logging {
     val inputConf = conf.withInputPath(dataPath)
 
     val writableRdd: RDD[(SpatialKeyWritable, TileWritable)] =
-      if(filterSet.isEmpty) {
+      if(Seq(keyBounds) == queryKeyBounds) {
         sc.newAPIHadoopRDD(
           inputConf,
           classOf[SequenceFileInputFormat[SpatialKeyWritable, TileWritable]],
           classOf[SpatialKeyWritable],
-          classOf[TileWritable]
-        )
+          classOf[TileWritable])
       } else {
-        inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY,
-          (filterSet, FilterRanges.spatial(filterSet, keyBounds, keyIndex).toArray))
+        val ranges = queryKeyBounds.map{ keyIndex.indexRanges(_) }.flatten
+        inputConf.setSerialized (FilterMapFileInputFormat.FILTER_INFO_KEY,
+          (queryKeyBounds, ranges.toArray))
 
         sc.newAPIHadoopRDD(
           inputConf,
           classOf[SpatialFilterMapFileInputFormat],
           classOf[SpatialKeyWritable],
-          classOf[TileWritable]
-        )
+          classOf[TileWritable])
       }
 
       val rasterMetaData = layerMetaData.rasterMetaData
