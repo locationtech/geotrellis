@@ -18,6 +18,7 @@ package geotrellis.vector
 
 import scala.collection.mutable
 import org.apache.commons.math3.stat.regression.SimpleRegression
+import org.apache.commons.math3.stat.descriptive.moment.Variance
 
 abstract sealed class ModelType
 
@@ -27,8 +28,6 @@ case object Circular extends ModelType
 case object Spherical extends ModelType
 case object Exponential extends ModelType
 /*
-Should these types of Models also be implemeted?
-
 case object Power extends ModelType
 case object Wave extends ModelType
 */
@@ -71,6 +70,7 @@ object Semivariogram {
   }
 
   def apply(pts:Seq[PointFeature[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
+
     def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x,2) + math.pow(p1.y - p2.y,2)))
 
     // every pair of points and their distance from each other
@@ -129,12 +129,10 @@ object Semivariogram {
       case Exponential => ???
       case Circular => ???
       case Spherical => ???
+      }
       /*
-      Should these types of Models also be implemeted?
-
       case Power => ???
       case Wave => ???
       */
     }
   }
-}
