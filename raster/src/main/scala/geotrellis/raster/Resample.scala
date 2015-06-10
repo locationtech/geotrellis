@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -89,7 +89,7 @@ class DoubleBufferResampleAssign(src: ByteBuffer, dst: Array[Double])
   }
 }
 
-object Resample {
+object Resampleold {
   def apply[@specialized(Byte, Short, Int, Float, Double) T](
     current: RasterExtent, 
     target: RasterExtent, 
@@ -188,28 +188,28 @@ object Resample {
     }
   }
 
-  def apply(sourceTile: Tile, sourceExtent: Extent, targetExtent:RasterExtent, method: InterpolationMethod): ArrayTile = {
-    val interpolation = Interpolation(method, sourceTile, sourceExtent)
+  def apply(sourceTile: Tile, sourceExtent: Extent, targetExtent:RasterExtent, method: ResampleMethod): ArrayTile = {
+    val resample = Resample(method, sourceTile, sourceExtent)
     val (cols, rows) = (targetExtent.cols, targetExtent.rows)
     val tile = ArrayTile.empty(sourceTile.cellType, cols, rows)
 
     if(tile.cellType.isFloatingPoint) {
-      val interpolate = interpolation.interpolateDouble _
+      val resampleF = resample.resampleDouble _
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
           val x = targetExtent.gridColToMap(col)
           val y = targetExtent.gridRowToMap(row)
-          val v = interpolate(x, y)
+          val v = resampleF(x, y)
           tile.setDouble(col, row, v)
         }
       }
     } else {
-      val interpolate = interpolation.interpolate _
+      val resampleF = resample.resample _
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
           val x = targetExtent.gridColToMap(col)
           val y = targetExtent.gridRowToMap(row)
-          val v = interpolate(x, y)
+          val v = resampleF(x, y)
           tile.set(col, row, v)
         }
       }

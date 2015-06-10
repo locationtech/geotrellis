@@ -1,13 +1,13 @@
 package geotrellis.raster.reproject
 
 import geotrellis.raster._
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.proj4._
 
 import spire.syntax.cfor._
 
-case class ReprojectOptions(method: InterpolationMethod = NearestNeighbor, errorThreshold: Double = 0.125)
+case class ReprojectOptions(method: ResampleMethod = NearestNeighbor, errorThreshold: Double = 0.125)
 object ReprojectOptions {
   val DEFAULT = ReprojectOptions()
 }
@@ -52,15 +52,15 @@ object Reproject {
       val srcX = Array.ofDim[Double](newCols)
       val srcY = Array.ofDim[Double](newCols)
 
-      val interpolation = Interpolation(options.method, tile, extent)
+      val resample = Resample(options.method, tile, extent)
 
       if(tile.cellType.isFloatingPoint) {
-        val interpolate = interpolation.interpolateDouble _
+        val resampleF = resample.resampleDouble _
         cfor(0)(_ < newRows, _ + 1) { row =>
           // Reproject this whole row.
           rowTransform(destX, destY, srcX, srcY)
           cfor(0)(_ < newCols, _ + 1) { col =>
-            val v = interpolate(srcX(col), srcY(col))
+            val v = resampleF(srcX(col), srcY(col))
             newTile.setDouble(col, row, v)
 
             // Add row height for next iteration
@@ -68,7 +68,7 @@ object Reproject {
           }
         }
       } else {
-        val interpolate = interpolation.interpolate _
+        val resampleF = resample.resample _
         cfor(0)(_ < newRows, _ + 1) { row =>
           // Reproject this whole row.
           rowTransform(destX, destY, srcX, srcY)
@@ -76,7 +76,7 @@ object Reproject {
             val x = srcX(col)
             val y = srcY(col)
 
-            val v = interpolate(x, y)
+            val v = resampleF(x, y)
             newTile.set(col, row, v)
 
             // Add row height for next iteration

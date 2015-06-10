@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -44,7 +44,7 @@ final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
 
   def copy = ArrayTile(array.clone, cols, rows)
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): ArrayTile = 
     method match {
       case NearestNeighbor =>
         val resampled = Array.ofDim[Int](target.cols * target.rows).fill(NODATA)

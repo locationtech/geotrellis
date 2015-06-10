@@ -1,22 +1,22 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-class BilinearInterpolation(tile: Tile, extent: Extent)
-    extends Interpolation(tile, extent) {
+class BilinearResample(tile: Tile, extent: Extent)
+    extends Resample(tile, extent) {
 
   private val xmin = extent.xmin + cellwidth / 2.0
   private val xmax = extent.xmax - cellwidth / 2.0
   private val ymin = extent.ymin + cellheight / 2.0
   private val ymax = extent.ymax - cellheight / 2.0
 
-  override def interpolateValid(x: Double, y: Double): Int = {
+  override def resampleValid(x: Double, y: Double): Int = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     bilinearInt(leftCol, topRow, xRatio, yRatio)
   }
 
-  override def interpolateDoubleValid(x: Double, y: Double): Double = {
+  override def resampleDoubleValid(x: Double, y: Double): Double = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     bilinearDouble(leftCol, topRow, xRatio, yRatio)
   }

@@ -70,7 +70,7 @@ object RowTransform {
         computeApprox(transform, errorThreshold, srcX, srcY, destX, destY,
           midPoint, startIndex + length - midPoint)
       } else {
-        // Fill out the values based on the linear interpolation
+        // Fill out the values based on the linear resampling
         cfor(startIndex + 1)(_ < startIndex + length - 1, _ + 1) { i =>
           if(i != midPoint) {
             val dxi = srcX(i) - srcXMin

@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer
@@ -111,7 +111,7 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
 
   def toBytes(): Array[Byte] = Array(iVal.toByte)
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     BitConstantTile(v, target.cols, target.rows)
 }
 
@@ -127,7 +127,7 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile 
 
   def toBytes(): Array[Byte] = Array(v)
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
 }
 
@@ -147,7 +147,7 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTil
     arr
   }
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ShortConstantTile(v, target.cols, target.rows)
 }
 
@@ -167,7 +167,7 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
     arr
   }
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     IntConstantTile(v, target.cols, target.rows)
 }
 
@@ -187,7 +187,7 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTil
     arr
   }
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     FloatConstantTile(v, target.cols, target.rows)
 }
 
@@ -207,6 +207,6 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
     arr
   }
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     DoubleConstantTile(v, target.cols, target.rows)
 }

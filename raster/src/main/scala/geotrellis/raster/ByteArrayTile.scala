@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -37,7 +37,7 @@ final case class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
 
   def copy = ArrayTile(array.clone, cols, rows)
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): ArrayTile =
     method match {
       case NearestNeighbor =>
         val resampled = Array.ofDim[Byte](target.cols * target.rows).fill(byteNODATA)
