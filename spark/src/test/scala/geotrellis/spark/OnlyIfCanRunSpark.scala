@@ -39,7 +39,6 @@ object OnlyIfCanRunSpark extends SharedEmbeddedCassandra with Logging {
       .set("spark.cassandra.connection.rpc.port", rpcPort.toString)
       .set("spark.cassandra.connection.native.port", nativePort.toString)
 
-    // val sparkContext = SparkUtils.createLocalSparkContext("local[8]", "Test Context", new SparkConf())
     val sparkContext = SparkUtils.createLocalSparkContext("local[8]", "Test Context", sparkConf)
 
     System.clearProperty("spark.driver.port")

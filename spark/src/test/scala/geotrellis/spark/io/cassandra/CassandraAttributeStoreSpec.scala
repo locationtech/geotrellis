@@ -30,16 +30,11 @@ class CassandraAttributeStoreSpec extends FunSpec
   describe("Cassandra Attribute Catalog") {
     ifCanRunSpark {
 
-      // useCassandraConfig(Seq("cassandra-default.yaml.template"))
       useCassandraConfig(Seq("another-cassandra.yaml"))
       val host = getHost().getHostAddress
       val rpcPort : Int = getRpcPort()
       val nativePort : Int = getNativePort()
 
-      val testValue = sc.getConf.get("spark.cassandra.connection.host")
-      println(s"get sparkConf in Cassandra Attribute Catalog ${testValue} host ")
-
-      // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
       EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
         val attribStore = new CassandraAttributeStore("attributes")
         val layerId = LayerId("test", 3)

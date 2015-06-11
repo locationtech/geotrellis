@@ -20,8 +20,7 @@ object EmbeddedCassandra extends Logging {
     sparkConf.set("spark.cassandra.connection.host", host)
       .set("spark.cassandra.connection.rpc.port", rpcPort.toString)
       .set("spark.cassandra.connection.native.port", nativePort.toString)
-    // https://github.com/datastax/spark-cassandra-connector/blob/master/doc/1_connecting.md
-    // val sc = new SparkContext("spark://127.0.0.1", "test", sparkConf)
+
     println(s"set config in EmbeddedCassandra ${GtCassandraTestKeyspace} host ${host} rpc ${rpcPort.toString} native ${nativePort.toString}")
 
     val testValue = sparkConf.get("spark.cassandra.connection.host")
@@ -40,13 +39,3 @@ object EmbeddedCassandra extends Logging {
     }
   }
 }
-//
-//object EmbeddedCassandraSession {
-//  implicit def cassandraSessionToDataStaxSession(session: EmbeddedCassandraSession): Session =
-//    session.session
-//}
-//
-//class EmbeddedCassandraSession( connector: CassandraConnector,  val keySpace: String ) {
-//  private val session: Session = connector.openSession()
-//  def close() = session.close
-//}

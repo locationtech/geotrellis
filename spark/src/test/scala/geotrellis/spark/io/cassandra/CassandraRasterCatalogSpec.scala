@@ -38,12 +38,10 @@ class CassandraRasterCatalogSpec extends FunSpec
   describe("Cassandra Raster Catalog with Spatial Rasters") {
     ifCanRunSpark { 
 
-      // useCassandraConfig(Seq("cassandra-default.yaml.template"))
       useCassandraConfig(Seq("another-cassandra.yaml"))
       val host = getHost().getHostAddress
       val rpcPort : Int = getRpcPort()
       val nativePort : Int = getNativePort()
-      // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
       EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
 
         val allOnes = new Path(inputHome, "all-ones.tif")
@@ -52,13 +50,8 @@ class CassandraRasterCatalogSpec extends FunSpec
         val layoutScheme = ZoomedLayoutScheme(512)
         val tableName = "tiles"
 
-        // FIXME just playing
-        logInfo("SPARK LOGGING FROM CASSANDRA TEST")
-
         val catalog =
         CassandraRasterCatalog()
-
-        logInfo("SPARK LOGGING FROM CASSANDRA TEST catalog " + catalog.toString)
 
         Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) =>
 
@@ -66,14 +59,12 @@ class CassandraRasterCatalogSpec extends FunSpec
 
           it("should succeed writing to a table") {
             catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName).write(layerId, onesRdd)
-            logInfo("SPARK LOGGING FROM CASSANDRA TEST 3")
           }
 
 
           it("should load out saved tiles") {
             val rdd = catalog.reader[SpatialKey].read(layerId)
             rdd.count should be > 0l
-            logInfo("SPARK LOGGING FROM CASSANDRA TEST 4")
           }
           
           it("should load out a single tile") {
@@ -82,10 +73,8 @@ class CassandraRasterCatalogSpec extends FunSpec
             val tile = getTile(key)
             (tile.cols, tile.rows) should be ((512, 512))
           }
-          // FIXME: Expected exception geotrellis.spark.io.package$LayerNotFoundError to be thrown,
-          // but java.lang.RuntimeException was thrown. (CassandraRasterCatalogSpec.scala:87
           it("should load out saved tiles, but only for the right zoom") {
-            intercept[LayerNotFoundError] {
+            intercept[Attribute4LayerNotFoundError] {
               catalog.reader[SpatialKey].read(LayerId("ones", level.zoom + 1)).count()
             }
           }
@@ -112,12 +101,10 @@ class CassandraRasterCatalogSpec extends FunSpec
 
   describe("Cassandra Raster Catalog with SpaceTime Rasters") {
     ifCanRunSpark {
-      // useCassandraConfig(Seq("cassandra-default.yaml.template"))
       useCassandraConfig(Seq("another-cassandra.yaml"))
       val host = getHost().getHostAddress
       val rpcPort : Int = getRpcPort()
       val nativePort : Int = getNativePort()
-      // EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
       EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
 
         val tableName = "spacetime_tiles"
@@ -144,10 +131,8 @@ class CassandraRasterCatalogSpec extends FunSpec
           val actual = CoordinateSpaceTime.collect.toMap.apply(key)
           tilesEqual(tile, actual)
         }
-        // FIXME: Expected exception geotrellis.spark.io.package$LayerNotFoundError to be thrown,
-        // but java.lang.RuntimeException was thrown. (CassandraRasterCatalogSpec.scala:148)
         it("should load out saved tiles, but only for the right zoom") {
-          intercept[LayerNotFoundError] {
+          intercept[Attribute4LayerNotFoundError] {
             catalog.reader[SpaceTimeKey].read(LayerId("coordinates", zoom + 1)).count()
           }
         }
