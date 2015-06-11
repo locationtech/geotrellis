@@ -54,7 +54,13 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val layerId = LayerId("ones", level.zoom)
 
         it("should succeed writing to a table") {
+          info(layerId.toString)
           catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName, SocketWriteStrategy()).write(layerId, onesRdd)
+        }
+
+        it("should know when layer exists"){
+          catalog.layerExists(layerId) should be (true)
+          catalog.layerExists(LayerId("nope", 100)) should be (false)
         }
 
         it("should load out saved tiles") {
@@ -78,7 +84,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,612,916,612)
           val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
@@ -96,7 +102,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
           it(test.name){
-            val rdd = catalog.read[SpatialKey](test.layerId, test.query)
+            val rdd = catalog.read[SpatialKey](test.layerId.copy(zoom = level.zoom), test.query)
             rdd.map(_._1).collect should contain theSameElementsAs test.expected
           }
         }
@@ -184,7 +190,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = catalog.read[SpaceTimeKey](test.layerId.copy(zoom = zoom), test.query)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
       }
