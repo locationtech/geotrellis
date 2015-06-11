@@ -16,21 +16,26 @@ import spray.json.DefaultJsonProtocol._
 import org.joda.time.DateTime
 import org.scalatest._
 
-import org.apache.spark.SparkConf
+import org.apache.spark.{Logging, SparkConf}
 import com.datastax.spark.connector.cql.CassandraConnector
 
 class CassandraAttributeStoreSpec extends FunSpec
     with Matchers
     with TestFiles
     with TestEnvironment
-    with OnlyIfCanRunSpark 
+    with OnlyIfCanRunSpark
+    with Logging
     with SharedEmbeddedCassandra {
 
   describe("Cassandra Attribute Catalog") {
     ifCanRunSpark {
 
-      useCassandraConfig("cassandra-default.yaml.template")
-      EmbeddedCassandra.withSession(cassandraHost.getHostAddress(), "test") { implicit session =>
+      useCassandraConfig(Seq("another-cassandra.yaml"))
+      val host = getHost().getHostAddress
+      val rpcPort : Int = getRpcPort()
+      val nativePort : Int = getNativePort()
+
+      EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
         val attribStore = new CassandraAttributeStore("attributes")
         val layerId = LayerId("test", 3)
         

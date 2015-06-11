@@ -366,6 +366,7 @@ object GeotrellisBuild extends Build {
       parallelExecution in Test := false,
       javaOptions ++= List(
         "-Xmx8G",
+        "-XX:MaxPermSize=512m",
         s"-Djava.library.path=${Environment.javaGdalDir}",
         "-Dsun.io.serialization.extendedDebugInfo=true"
       ),

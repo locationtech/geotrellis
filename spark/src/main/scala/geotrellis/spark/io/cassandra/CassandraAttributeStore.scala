@@ -62,9 +62,9 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
 
     val size = values.getAvailableWithoutFetching
     if(size == 0) {
-      sys.error(s"Attribute $attributeName not found for layer $layerId")
+      throw new Attribute4LayerNotFoundError(attributeName, layerId)
     } else if (size > 1) {
-      sys.error(s"Multiple attributes found for $attributeName for layer $layerId")
+      throw new MultipleAttributesError(attributeName, layerId)
     } else {
       val (_, result) = values.one.getString("value").parseJson.convertTo[(LayerId, T)]
       result
