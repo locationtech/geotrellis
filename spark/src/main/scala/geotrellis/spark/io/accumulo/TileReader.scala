@@ -1,6 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import geotrellis.spark.utils._
@@ -34,9 +35,9 @@ trait TileReader[K] {
     val values = collectTile(instance, layerId, index, tileTable, key)
     val value =
       if(values.size == 0) {
-        sys.error(s"Tile with key $key not found for layer $layerId")
+        throw new TileNotFoundError(key, layerId)        
       } else if(values.size > 1) {
-        sys.error(s"Multiple tiles found for $key for layer $layerId")
+        throw new CatalogError(s"Multiple tiles found for $key for layer $layerId")
       } else {
         values.head
       }

@@ -73,12 +73,16 @@ class HadoopRasterCatalog(
 ) extends AttributeCaching[HadoopLayerMetaData] {
 
   def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
-    val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
+    try {
+      val metadata  = getLayerMetadata(layerId)
+      val keyBounds = getLayerKeyBounds(layerId)                
+      val index     = getLayerKeyIndex(layerId)
 
-    implicitly[RasterRDDReader[K]]
-      .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
+      implicitly[RasterRDDReader[K]]
+        .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
+    }
   }
 
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
@@ -149,9 +153,13 @@ class HadoopRasterCatalog(
       val tileKeyBounds = KeyBounds(key, key)
       boundable.intersect(tileKeyBounds, keyBounds) match {
         case Some(kb) =>
-          implicitly[TileReader[K]].read(catalogConfig, metadata, index, kb)
+          try {
+            implicitly[TileReader[K]].read(catalogConfig, metadata, index, kb)
+          } catch {
+            case e: UnsupportedOperationException => throw new TileNotFoundError(key, layerId)
+          }          
         case None => 
-          sys.error(s"Tile for $key is outside of layer bounds: $keyBounds")
+          throw new TileNotFoundError(key, layerId)
       }
     }
     

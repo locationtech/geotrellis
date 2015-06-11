@@ -2,6 +2,7 @@ package geotrellis.spark.io.hadoop.spacetime
 
 import geotrellis.spark._
 import geotrellis.spark.utils._
+import geotrellis.spark.io.{LayerWriteError}
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
@@ -34,7 +35,7 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with Loggi
         logDebug(s"Deleting $layerPath")
         fs.delete(layerPath, true)
       } else
-        sys.error(s"Directory already exists: $layerPath")
+        throw new LayerWriteError(layerId, s"Directory already exists: $layerPath")
     }
 
     val job = Job.getInstance(conf)

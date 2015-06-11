@@ -32,12 +32,16 @@ class AccumuloRasterCatalog(
 )(implicit sc: SparkContext) extends AttributeCaching[AccumuloLayerMetaData] {
 
   def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
-    val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
+    try {
+      val metadata  = getLayerMetadata(layerId)
+      val keyBounds = getLayerKeyBounds(layerId)                
+      val index     = getLayerKeyIndex(layerId)
 
-    implicitly[RasterRDDReader[K]]
-      .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))    
+      implicitly[RasterRDDReader[K]]
+        .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))    
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
+    }
   }
 
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
