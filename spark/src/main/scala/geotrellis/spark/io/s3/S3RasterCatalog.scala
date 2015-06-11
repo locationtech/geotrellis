@@ -40,13 +40,13 @@ class S3RasterCatalog(
   rootPath: String,
   val attributeStore: S3AttributeStore,    
   s3client: ()=>S3Client)
-(implicit sc: SparkContext) {
+(implicit sc: SparkContext) extends AttributeCaching[S3LayerMetaData] {
   import S3RasterCatalog._
 
   def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
-    val metadata  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-    val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    val metadata  = getLayerMetadata(layerId)
+    val keyBounds = getLayerKeyBounds(layerId)                
+    val index     = getLayerKeyIndex(layerId)
 
     val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
     implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
@@ -98,9 +98,9 @@ class S3RasterCatalog(
           keyIndexMethod.createIndex(indexKeyBounds)
         }
 
-        attributeStore.write(layerId, "keyIndex", index)
-        attributeStore.write(layerId, "keyBounds", keyBounds)
-        attributeStore.write(layerId, "metadata", md)
+        setLayerMetadata(layerId, md)
+        setLayerKeyBounds(layerId, keyBounds)
+        setLayerKeyIndex(layerId, index)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
@@ -110,9 +110,9 @@ class S3RasterCatalog(
     }
 
   def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
-    val metaData  = attributeStore.read[S3LayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-    val index     = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-    implicitly[TileReader[K]].read(s3client(), layerId, metaData, index, keyBounds)(_)    
+    val metadata  = getLayerMetadata(layerId)
+    val keyBounds = getLayerKeyBounds(layerId)                
+    val index     = getLayerKeyIndex(layerId)
+    implicitly[TileReader[K]].read(s3client(), layerId, metadata, index, keyBounds)(_)    
   }
 }

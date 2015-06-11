@@ -70,12 +70,12 @@ class HadoopRasterCatalog(
   rootPath: Path,
   val attributeStore: HadoopAttributeStore,
   catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
-) {
+) extends AttributeCaching[HadoopLayerMetaData] {
 
   def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
-    val metadata = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")                
-    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    val metadata  = getLayerMetadata(layerId)
+    val keyBounds = getLayerKeyBounds(layerId)                
+    val index     = getLayerKeyIndex(layerId)
 
     implicitly[RasterRDDReader[K]]
       .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
@@ -130,9 +130,9 @@ class HadoopRasterCatalog(
         val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(catalogConfig, md, keyIndex, clobber)(layerId, rdd)
 
-        attributeStore.write(layerId, "keyIndex", keyIndex)
-        attributeStore.write(layerId, "keyBounds", keyBounds)
-        attributeStore.write(layerId, "metadata", md)
+        setLayerMetadata(layerId, md)
+        setLayerKeyBounds(layerId, keyBounds)
+        setLayerKeyIndex(layerId, keyIndex)
 
         rdd.unpersist(blocking = false)
       }
@@ -140,16 +140,16 @@ class HadoopRasterCatalog(
 
   def tileReader[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     // TODO: There should be a way to do this with a Reader, not touching any InputFormats
-    val layerMetaData = attributeStore.read[HadoopLayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    val metadata  = getLayerMetadata(layerId)
+    val keyBounds = getLayerKeyBounds(layerId)                
+    val index     = getLayerKeyIndex(layerId)
     val boundable = implicitly[Boundable[K]]
     
     val readTile = (key: K) => {
       val tileKeyBounds = KeyBounds(key, key)
       boundable.intersect(tileKeyBounds, keyBounds) match {
         case Some(kb) =>
-          implicitly[TileReader[K]].read(catalogConfig, layerMetaData, index, kb)
+          implicitly[TileReader[K]].read(catalogConfig, metadata, index, kb)
         case None => 
           sys.error(s"Tile for $key is outside of layer bounds: $keyBounds")
       }

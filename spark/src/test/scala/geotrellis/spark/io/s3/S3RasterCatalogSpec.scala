@@ -23,6 +23,11 @@ class S3RasterCatalogSpec extends FunSpec
         catalog.writer[SpatialKey](ZCurveKeyIndexMethod).write(id, AllOnesTestFile)
       }
 
+      it("should know when layer exists"){
+        catalog.layerExists(id) should be (true)
+        catalog.layerExists(LayerId("nope", 100)) should be (false)
+      }
+
       it("should load from s3"){
         val rdd = catalog.query[SpatialKey](id).toRDD
         rdd.count should equal (42)

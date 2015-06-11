@@ -58,6 +58,11 @@ class HadoopRasterCatalogSpec extends FunSpec
           assert(fs.exists(new Path(catalogPath, "ones")))
         }
 
+        it("should know when layer exists"){
+          catalog.layerExists(LayerId("ones", level.zoom)) should be (true)
+          catalog.layerExists(LayerId("nope", 100)) should be (false)
+        }
+
         it("should succeed saving with single path Props"){
           catalog
             .writer[SpatialKey](RowMajorKeyIndexMethod, "sub1")
@@ -235,11 +240,11 @@ class HadoopRasterCatalogSpec extends FunSpec
         catalog
           .writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear)
           .write(LayerId("coordinates", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)        
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
-        it("ZCurveKeyIndexMethod.byYear: " + test.name){
+        it("ZCurveKeyIndexMethod.byYear: " + test.name){          
           val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
           val found = rdd.map(_._1).collect
           info(s"missing: ${(test.expected diff found).toVector}")

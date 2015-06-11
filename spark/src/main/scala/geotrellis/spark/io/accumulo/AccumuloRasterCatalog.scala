@@ -29,12 +29,12 @@ object AccumuloRasterCatalog {
 class AccumuloRasterCatalog(
   instance: AccumuloInstance, 
   val attributeStore: AccumuloAttributeStore
-)(implicit sc: SparkContext) {
+)(implicit sc: SparkContext) extends AttributeCaching[AccumuloLayerMetaData] {
 
   def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
-    val metadata = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
-    val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")                
-    val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
+    val metadata  = getLayerMetadata(layerId)
+    val keyBounds = getLayerKeyBounds(layerId)                
+    val index     = getLayerKeyIndex(layerId)
 
     implicitly[RasterRDDReader[K]]
       .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))    
@@ -70,9 +70,9 @@ class AccumuloRasterCatalog(
           keyIndexMethod.createIndex(indexKeyBounds)
         }
 
-        attributeStore.write(layerId, "metadata", md)
-        attributeStore.write(layerId, "keyBounds", keyBounds)
-        attributeStore.write(layerId, "keyIndex", index)
+        setLayerMetadata(layerId, md)
+        setLayerKeyBounds(layerId, keyBounds)
+        setLayerKeyIndex(layerId, index)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(instance, md, keyBounds, index)(layerId, rdd, strategy)
@@ -84,10 +84,10 @@ class AccumuloRasterCatalog(
   def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
     new Reader[K, Tile] {
       val readTile = {
-        val accumuloLayerMetaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[TileReader[K]].read(instance, layerId, accumuloLayerMetaData, index)(_)        
+        val metadata  = getLayerMetadata(layerId)
+        val keyBounds = getLayerKeyBounds(layerId)                
+        val index     = getLayerKeyIndex(layerId)
+        implicitly[TileReader[K]].read(instance, layerId, metadata, index)(_)        
       }
 
       def read(key: K) = readTile(key)
