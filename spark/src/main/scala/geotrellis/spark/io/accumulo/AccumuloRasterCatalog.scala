@@ -1,19 +1,16 @@
 package geotrellis.spark.io.accumulo
 
+import com.typesafe.config.ConfigFactory
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
-import geotrellis.spark.op.stats._
-import geotrellis.raster._
+import geotrellis.spark.io.json._
 import org.apache.hadoop.fs.Path
-
 import org.apache.spark.SparkContext
-
-import com.typesafe.config.{ConfigFactory,Config}
+import spray.json._
 
 import scala.reflect._
-import spray.json._
 
 object AccumuloRasterCatalog {
   def apply()(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog = {
@@ -31,21 +28,24 @@ class AccumuloRasterCatalog(
   val attributeStore: AccumuloAttributeStore
 )(implicit sc: SparkContext) extends AttributeCaching[AccumuloLayerMetaData] {
 
-  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
-    try {
-      val metadata  = getLayerMetadata(layerId)
-      val keyBounds = getLayerKeyBounds(layerId)                
-      val index     = getLayerKeyIndex(layerId)
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
+	  try {
+		  val metadata = getLayerMetadata(layerId)
+		  val keyBounds = getLayerKeyBounds(layerId)
+		  val index = getLayerKeyIndex(layerId)
 
-      implicitly[RasterRDDReader[K]]
-        .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))    
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
-    }
+		  implicitly[RasterRDDReader[K]]
+		  .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))
+	  } catch {
+		  case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
+	  }
   }
 
+	def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
+		query[K](layerId).toRDD
+
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
-    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _))
+    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read[K](layerId, _))
 
   def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
