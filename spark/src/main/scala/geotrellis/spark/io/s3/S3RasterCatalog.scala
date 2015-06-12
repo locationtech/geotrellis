@@ -1,15 +1,16 @@
 package geotrellis.spark.io.s3
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.retry.PredefinedRetryPolicies
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
+import geotrellis.spark.io.json._
 import org.apache.spark._
 import spray.json.JsonFormat
+
 import scala.reflect._
-import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
-import com.amazonaws.retry.PredefinedRetryPolicies
 
 object S3RasterCatalog {  
   def defaultS3Client = 
@@ -43,18 +44,21 @@ class S3RasterCatalog(
 (implicit sc: SparkContext) extends AttributeCaching[S3LayerMetaData] {
   import S3RasterCatalog._
 
-  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
-    try {
-      val metadata  = getLayerMetadata(layerId)
-      val keyBounds = getLayerKeyBounds(layerId)                
-      val index     = getLayerKeyIndex(layerId)
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
+	  try {
+		  val metadata = getLayerMetadata(layerId)
+		  val keyBounds = getLayerKeyBounds(layerId)
+		  val index = getLayerKeyIndex(layerId)
 
-      val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
-      implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
-    }
+		  val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
+		  implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
+	  } catch {
+		  case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
+	  }
   }
+
+	def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int = sc.defaultParallelism): RasterRDD[K] =
+		query[K](layerId, numPartitions).toRDD
 
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] ={
     new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _, sc.defaultParallelism))

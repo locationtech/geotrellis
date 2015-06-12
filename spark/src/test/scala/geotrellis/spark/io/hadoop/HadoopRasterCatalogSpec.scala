@@ -1,23 +1,19 @@
 package geotrellis.spark.io.hadoop
 
-import java.io.IOException
-
+import com.github.nscala_time.time.Imports._
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.vector._
-
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.tiling._
-import geotrellis.raster.op.local._
-import geotrellis.proj4.LatLng
 import geotrellis.spark.testfiles._
-import org.scalatest._
+import geotrellis.spark.tiling._
+import geotrellis.vector._
 import org.apache.hadoop.fs.Path
-import com.github.nscala_time.time.Imports._
-
+import org.scalatest._
 import spray.json.JsonFormat
+
 import scala.reflect._
 
 class HadoopRasterCatalogSpec extends FunSpec
@@ -78,8 +74,9 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles"){
-          val rdd = catalog.query[SpatialKey](LayerId("ones", 10)).toRDD
-          rdd.count should be > 0l
+	        val rdd = catalog.read[SpatialKey](LayerId("ones", 10))
+	        rdd.count should be > 0l
+	        rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }
 
         it("should succeed loading with single path Props"){
