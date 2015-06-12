@@ -1,16 +1,18 @@
 package geotrellis.spark.io.accumulo
 
-import com.typesafe.config.ConfigFactory
-import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.io.index._
+import geotrellis.raster._
 import org.apache.hadoop.fs.Path
+
 import org.apache.spark.SparkContext
-import spray.json._
+
+import com.typesafe.config.ConfigFactory
 
 import scala.reflect._
+import spray.json._
 
 object AccumuloRasterCatalog {
   def apply()(implicit instance: AccumuloInstance, sc: SparkContext): AccumuloRasterCatalog = {

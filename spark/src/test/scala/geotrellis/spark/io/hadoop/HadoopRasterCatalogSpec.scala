@@ -1,17 +1,18 @@
 package geotrellis.spark.io.hadoop
 
-import com.github.nscala_time.time.Imports._
-import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.testfiles._
 import geotrellis.spark.tiling._
-import geotrellis.vector._
-import org.apache.hadoop.fs.Path
+import geotrellis.proj4.LatLng
+import geotrellis.spark.testfiles._
+
 import org.scalatest._
+import org.apache.hadoop.fs.Path
+import com.github.nscala_time.time.Imports._
 import spray.json.JsonFormat
 
 import scala.reflect._

@@ -1,18 +1,19 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.retry.PredefinedRetryPolicies
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.io.index._
+
 import org.apache.spark._
 import spray.json.JsonFormat
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.retry.PredefinedRetryPolicies
 
 import scala.reflect._
 
-object S3RasterCatalog {  
+object S3RasterCatalog {
   def defaultS3Client = 
     () => {
       val provider = new DefaultAWSCredentialsProviderChain()

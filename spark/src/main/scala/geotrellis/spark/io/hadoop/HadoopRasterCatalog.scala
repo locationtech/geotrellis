@@ -1,10 +1,11 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.io.index._
+import geotrellis.raster._
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import spray.json._
