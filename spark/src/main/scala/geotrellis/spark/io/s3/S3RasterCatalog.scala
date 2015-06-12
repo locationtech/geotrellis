@@ -43,7 +43,7 @@ class S3RasterCatalog(
 (implicit sc: SparkContext) extends AttributeCaching[S3LayerMetaData] {
   import S3RasterCatalog._
 
-  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
     val metadata  = getLayerMetadata(layerId)
     val keyBounds = getLayerKeyBounds(layerId)                
     val index     = getLayerKeyIndex(layerId)
@@ -51,6 +51,9 @@ class S3RasterCatalog(
     val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
     implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
   }
+
+	def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int = sc.defaultParallelism): RasterRDD[K] =
+		query[K](layerId, numPartitions).toRDD
 
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] ={
     new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _, sc.defaultParallelism))

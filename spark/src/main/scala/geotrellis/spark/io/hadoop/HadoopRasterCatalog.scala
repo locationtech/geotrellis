@@ -72,7 +72,7 @@ class HadoopRasterCatalog(
   catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
 ) extends AttributeCaching[HadoopLayerMetaData] {
 
-  def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
     val metadata  = getLayerMetadata(layerId)
     val keyBounds = getLayerKeyBounds(layerId)                
     val index     = getLayerKeyIndex(layerId)
@@ -81,9 +81,11 @@ class HadoopRasterCatalog(
       .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
   }
 
+	def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
+		query[K](layerId).toRDD
+
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
     new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _))
-
 
   def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
     writer[K](keyIndexMethod, "")
