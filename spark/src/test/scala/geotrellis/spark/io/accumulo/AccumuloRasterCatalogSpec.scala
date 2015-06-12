@@ -64,8 +64,9 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles") {
-          val rdd = catalog.query[SpatialKey](layerId).toRDD
+          val rdd = catalog.read[SpatialKey](layerId)
           rdd.count should be > 0l
+	        rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }
 
         it("should load out a single tile") {
@@ -130,8 +131,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
         catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy()).write(layerId, CoordinateSpaceTime)
       }
       it("should load out saved tiles") {
-        val rdd = catalog.query[SpaceTimeKey](layerId).toRDD
-        rdd.count should be > 0l
+	      val rdd = catalog.read[SpaceTimeKey](layerId)
+	      rdd.count should be > 0l
       }
 
       it("should load out a single tile") {

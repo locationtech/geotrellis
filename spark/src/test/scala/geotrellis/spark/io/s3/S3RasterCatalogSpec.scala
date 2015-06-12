@@ -48,6 +48,12 @@ class S3RasterCatalogSpec extends FunSpec
         }
       }
 
+	    it("should load out saved tiles") {
+		    val rdd = catalog.read[SpatialKey](id)
+		    rdd.count should be > 0l
+		    rdd.map(_._1).collect().toSet shouldEqual rdd.map(_._1).collect().toSet
+	    }
+
       it("should read a spatial tile"){
         val reader = catalog.tileReader[SpatialKey](id)
 

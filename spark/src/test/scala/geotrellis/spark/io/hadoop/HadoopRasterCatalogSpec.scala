@@ -78,8 +78,9 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles"){
-          val rdd = catalog.query[SpatialKey](LayerId("ones", 10)).toRDD
-          rdd.count should be > 0l
+	        val rdd = catalog.read[SpatialKey](LayerId("ones", 10))
+	        rdd.count should be > 0l
+	        rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }
 
         it("should succeed loading with single path Props"){
