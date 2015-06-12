@@ -2,6 +2,7 @@ package geotrellis.spark.io.s3
 
 import org.scalatest._
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
 import geotrellis.raster.GridBounds
@@ -58,7 +59,7 @@ class S3RasterCatalogSpec extends FunSpec
       it("should error on getting a tile that is not there"){
         val reader = catalog.tileReader[SpatialKey](id)
 
-        intercept[RuntimeException]{
+        intercept[TileNotFoundError]{
           val tile = reader(SpatialKey(200,200))
         }        
       }

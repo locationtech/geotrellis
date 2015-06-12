@@ -44,12 +44,16 @@ class S3RasterCatalog(
   import S3RasterCatalog._
 
   def read[K: RasterRDDReader: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
-    val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
+    try {
+      val metadata  = getLayerMetadata(layerId)
+      val keyBounds = getLayerKeyBounds(layerId)                
+      val index     = getLayerKeyIndex(layerId)
 
-    val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
-    implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
+      val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
+      implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
+    }
   }
 
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] ={
