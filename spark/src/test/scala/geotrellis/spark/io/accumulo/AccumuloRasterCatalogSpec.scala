@@ -1,30 +1,19 @@
 package geotrellis.spark.io.accumulo
 
-import java.io.IOException
-
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.spark
-
+import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
-import geotrellis.raster.op.local._
-import geotrellis.spark.utils.SparkUtils
 import geotrellis.spark.testfiles._
-import geotrellis.proj4.LatLng
+import geotrellis.vector._
 
-import org.apache.spark._
-import org.apache.spark.rdd._
-import org.joda.time.DateTime
 import org.scalatest._
-import org.scalatest.Matchers._
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.hadoop.fs.Path
-
 import com.github.nscala_time.time.Imports._
 
 class AccumuloRasterCatalogSpec extends FunSpec
@@ -64,8 +53,9 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles") {
-          val rdd = catalog.query[SpatialKey](layerId).toRDD
+          val rdd = catalog.read[SpatialKey](layerId)
           rdd.count should be > 0l
+          rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }
 
         it("should load out a single tile") {
@@ -125,12 +115,12 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val zoom = 8
       val layerId = LayerId("coordinates", zoom)
 
-
       it("should succeed writing to a table") {
         catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy()).write(layerId, CoordinateSpaceTime)
       }
+
       it("should load out saved tiles") {
-        val rdd = catalog.query[SpaceTimeKey](layerId).toRDD
+        val rdd = catalog.read[SpaceTimeKey](layerId)
         rdd.count should be > 0l
       }
 
