@@ -1,31 +1,18 @@
 package geotrellis.spark.io.accumulo
 
-import java.io.IOException
-
+import com.github.nscala_time.time.Imports._
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.spark
-
+import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.tiling._
-import geotrellis.raster.op.local._
-import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
-import geotrellis.proj4.LatLng
-
-import org.apache.spark._
-import org.apache.spark.rdd._
-import org.joda.time.DateTime
-import org.scalatest._
-import org.scalatest.Matchers._
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import geotrellis.spark.tiling._
+import geotrellis.vector._
 import org.apache.hadoop.fs.Path
-
-import com.github.nscala_time.time.Imports._
+import org.scalatest._
 
 class AccumuloRasterCatalogSpec extends FunSpec
     with RasterRDDMatchers

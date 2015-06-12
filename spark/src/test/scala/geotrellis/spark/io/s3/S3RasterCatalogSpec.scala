@@ -1,11 +1,10 @@
 package geotrellis.spark.io.s3
 
-import org.scalatest._
+import geotrellis.raster.GridBounds
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
-import geotrellis.raster.GridBounds
-import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
+import org.scalatest._
 
 class S3RasterCatalogSpec extends FunSpec
   with TestFiles

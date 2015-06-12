@@ -1,24 +1,15 @@
 package geotrellis.spark.io.hadoop
 
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
-import geotrellis.spark.utils._
-import geotrellis.spark.op.stats._
-import geotrellis.raster._
-import org.apache.hadoop.conf.Configuration
+import geotrellis.spark.io.json._
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.SequenceFile
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
-import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFileOutputFormat}
-import org.apache.hadoop.mapreduce.{JobContext, Job}
 import org.apache.spark._
-import org.apache.spark.rdd._
-import org.apache.spark.SparkContext._
-import scala.reflect._
 import spray.json._
+
+import scala.reflect._
 
 case class HadoopRasterCatalogConfig(
   /** Compression factor for determining how many tiles can fit into
