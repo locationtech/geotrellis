@@ -1,12 +1,11 @@
 package geotrellis.spark.io.s3
 
-import org.scalatest._
+import geotrellis.raster.GridBounds
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
-import geotrellis.raster.GridBounds
-import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
+import org.scalatest._
 
 class S3RasterCatalogSpec extends FunSpec
   with TestFiles
@@ -47,6 +46,12 @@ class S3RasterCatalogSpec extends FunSpec
         rdd.collect.foreach { case (key, tile) =>
           info(key.toString)
         }
+      }
+
+      it("should load out saved tiles") {
+        val rdd = catalog.read[SpatialKey](id)
+        rdd.count should be > 0l
+        rdd.map(_._1).collect().toSet shouldEqual rdd.map(_._1).collect().toSet
       }
 
       it("should read a spatial tile"){
