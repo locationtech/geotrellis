@@ -379,9 +379,10 @@ object GeotrellisBuild extends Build {
       ),
       libraryDependencies ++=
         Seq(
-          "org.apache.accumulo" % "accumulo-core" % Version.accumulo 
+          "org.apache.accumulo" % "accumulo-core" % Version.accumulo
             exclude("org.jboss.netty", "netty")
-            exclude("org.apache.hadoop", "hadoop-client"),
+            exclude("org.apache.hadoop", "hadoop-client")
+            exclude("org.slf4j", "slf4j-api"),
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
           "org.apache.spark" %% "spark-streaming" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",

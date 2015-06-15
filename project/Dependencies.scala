@@ -56,9 +56,9 @@ object Dependencies {
 
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
-  val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.6.0"
+  val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.6.1"
   val asm           = "asm"               % "asm"       % "3.3.1"
-  
+
   val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
