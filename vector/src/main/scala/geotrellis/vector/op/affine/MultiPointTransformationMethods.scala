@@ -1,8 +1,8 @@
-package geotrellis.vector.affine
+package geotrellis.vector.op.affine
 
 import geotrellis.vector.MultiPoint
 
-trait MultiPointTransformationMethods extends Any {
+trait MultiPointTransformationMethods {
   val geom: MultiPoint
 
   def transform(trans: AffineTransformation) = trans.transform(geom)

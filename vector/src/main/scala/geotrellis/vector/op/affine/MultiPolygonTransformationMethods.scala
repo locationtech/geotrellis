@@ -1,8 +1,8 @@
-package geotrellis.vector.affine
+package geotrellis.vector.op.affine
 
 import geotrellis.vector.MultiPolygon
 
-trait MultiPolygonTransformationMethods extends Any {
+trait MultiPolygonTransformationMethods {
   val geom: MultiPolygon
 
   def transform(trans: AffineTransformation) = trans.transform(geom)

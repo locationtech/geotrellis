@@ -1,4 +1,4 @@
-package geotrellis.vector.affine
+package geotrellis.vector.op.affine
 
 import geotrellis.vector._
 import com.vividsolutions.jts.{geom => jts}
