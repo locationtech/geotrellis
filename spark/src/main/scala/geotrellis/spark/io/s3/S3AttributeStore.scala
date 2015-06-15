@@ -47,7 +47,7 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
   def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T =
     readKey[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
-      case None => throw new LayerNotFoundError(layerId)
+      case None => throw new AttributeNotFoundError(attributeName, layerId)
     }
 
   def readAll[T: ReadableWritable](attributeName: String): Map[LayerId, T] =    
@@ -56,7 +56,7 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
       .map{ os =>       
         readKey[T](os.getKey) match {
           case Some(tup) => tup
-          case None => sys.error(s"Unable to read '$attributeName' attribute from ${os.getKey}")
+          case None => throw new CatalogError(s"Unable to list $attributeName attributes from $bucket/${os.getKey}") 
         }
       }
       .toMap

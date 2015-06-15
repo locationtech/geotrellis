@@ -13,17 +13,18 @@ object SpaceTimeTileReader extends TileReader[SpaceTimeKey] {
   def read(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
-    index: KeyIndex[SpaceTimeKey]
-  )(key: SpaceTimeKey)(implicit sc: SparkContext): Tile = {
+    index: KeyIndex[SpaceTimeKey],
+    keyBounds: KeyBounds[SpaceTimeKey]
+  )(implicit sc: SparkContext): Tile = {
+    require(keyBounds.minKey == keyBounds.maxKey, s"TileReader expects KeyBounds for single tile, got: $keyBounds")
+    
     val path = layerMetaData.path
     val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val filterSet = new FilterSet[SpaceTimeKey] withFilter SpaceFilter(key) withFilter TimeFilter(key.temporalKey)
-    val i = index.toIndex(key)
-    val filterDefinition = (filterSet, Array((i,i)))
+    val filterDefinition = (Seq(keyBounds), index.indexRanges(keyBounds).toArray)
     inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, filterDefinition)
     val inputFormat = new SpaceTimeFilterMapFileInputFormat()
 
@@ -33,6 +34,5 @@ object SpaceTimeTileReader extends TileReader[SpaceTimeKey] {
       classOf[SpaceTimeKeyWritable],
       classOf[TileWritable]
     ).first._2.toTile(layerMetaData.rasterMetaData)
-
   }
 }

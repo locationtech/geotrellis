@@ -78,7 +78,7 @@ class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) e
   def this(provider: AWSCredentialsProvider, config: ClientConfiguration) =
     this(provider.getCredentials, config)
 
-  val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
+  val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials, config)
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
     s3client.listObjects(listObjectsRequest)

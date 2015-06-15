@@ -23,7 +23,7 @@ class GeoTiffS3InputFormatSpec extends FunSpec with OnlyIfCanRunSpark with Match
           classOf[GeoTiffS3InputFormat],
           classOf[ProjectedExtent],
           classOf[Tile])
-        source.cache      
+        source.map(x=>x).cache      
         val sourceCount = source.count
         sourceCount should not be (0)
         info(s"Source RDD count: ${sourceCount}")

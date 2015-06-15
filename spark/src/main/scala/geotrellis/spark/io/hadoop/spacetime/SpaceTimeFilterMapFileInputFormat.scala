@@ -8,6 +8,6 @@ import org.joda.time.{DateTimeZone, DateTime}
 
 class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable] {
   def createKey() = new SpaceTimeKeyWritable
-  def createKey(index: Long) = SpaceTimeKeyWritable(index, SpaceTimeKey(0, 0, new DateTime(0,0,0)))
+  def createKey(index: Long) = SpaceTimeKeyWritable(index, SpaceTimeKey(0, 0, new DateTime(0)))
   def createValue() = new TileWritable
 }

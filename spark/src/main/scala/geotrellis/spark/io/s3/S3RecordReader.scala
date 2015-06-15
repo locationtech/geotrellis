@@ -56,12 +56,12 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
 }
 
 object S3RecordReader {
-    def readInputStream(inStream: InputStream): Array[Byte] = {
+  def readInputStream(inStream: InputStream): Array[Byte] = {
     val bufferSize = 0x20000
     val buffer = new Array[Byte](bufferSize)
-    val outStream = new ByteArrayOutputStream(bufferSize)    
+    val outStream = new ByteArrayOutputStream(bufferSize)
     var bytes: Int = 0
-    while (bytes != -1) {      
+    while (bytes != -1) {
       bytes = inStream.read(buffer)
       if (bytes != -1) outStream.write(buffer, 0, bytes);
     }

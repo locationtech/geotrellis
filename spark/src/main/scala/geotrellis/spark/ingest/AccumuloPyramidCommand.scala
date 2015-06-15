@@ -26,10 +26,10 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
     implicit val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
     val catalog = AccumuloRasterCatalog()
 
-    val reader = catalog.reader[SpatialKey]
-    val writer = catalog.writer[SpatialKey](RowMajorKeyIndexMethod, args.table, HdfsWriteStrategy)
+  
+    val writer = catalog.writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
 
-    val rdd = reader.read(LayerId(args.layerName, args.startLevel))
+    val rdd = catalog.query[SpatialKey](LayerId(args.layerName, args.startLevel)).toRDD
 
     val layoutScheme = ZoomedLayoutScheme(256)
     val level = layoutScheme.levelFor(args.startLevel)

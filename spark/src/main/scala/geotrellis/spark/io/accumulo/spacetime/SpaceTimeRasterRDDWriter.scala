@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
-import geotrellis.index.zcurve._
+import geotrellis.spark.io.index.zcurve._
 import geotrellis.raster._
 
 import org.apache.hadoop.io.Text
@@ -27,26 +27,9 @@ import scala.collection.JavaConversions._
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
   import geotrellis.spark.io.accumulo.stringToText
-
-  /** TODO: What are the rules about the "num" parameter? */
-  def getSplits(
-    layerId: LayerId,
-    metaData: RasterMetaData,
-    keyBounds: KeyBounds[SpaceTimeKey],
-    kIndex: KeyIndex[SpaceTimeKey],
-    num: Int = 48
-  ): List[String] = {
-    val minIndex = kIndex.toIndex(keyBounds.minKey)
-    val maxIndex = kIndex.toIndex(keyBounds.maxKey)
-    val splitSize = (maxIndex - minIndex) / num
-
-    val splits = mutable.ListBuffer[String]()
-    cfor(minIndex)(_ < maxIndex, _ + splitSize) { i =>
-      splits += rowId(layerId, i + 1)
-    }
-    splits.toList
-  }
-
+  
+  def rowId(id: LayerId, index: Long): String  = spacetime.rowId (id, index)
+  
   def encode(
     layerId: LayerId,
     raster: RasterRDD[SpaceTimeKey],
@@ -56,7 +39,6 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
       new Key(rowId(id, index.toIndex(key)), id.name, timeText(key))
 
     raster
-      .sortBy{ case (key, _) => getKey(layerId, key) }
       .map { case (key, tile) => {
         val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])](key, tile.toBytes)
         getKey(layerId, key) -> new Value(value)

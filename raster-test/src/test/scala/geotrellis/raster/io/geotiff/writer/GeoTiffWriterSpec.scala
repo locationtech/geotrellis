@@ -33,6 +33,7 @@ class GeoTiffWriterSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with TestEngine
+    with TileBuilders
     with GeoTiffTestUtils {
 
   override def afterAll = purge
@@ -44,40 +45,109 @@ class GeoTiffWriterSpec extends FunSpec
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
 
-    it ("should write floating point rasters correct") {
-      val e = Extent(100.0, 400.0, 120.0, 420.0)
-      val r = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
+    it("should write GeoTiff with tags") {
+      val path = "/tmp/geotiff-writer.tif"
 
-      val path = "/tmp/float.tif"
-
-      GeoTiffWriter.write(path, r, e, testCRS)
+      val geoTiff = MultiBandGeoTiff(geoTiffPath("multi-tag.tif"))
+      GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
 
-      val GeoTiffBand(raster, extent, crs, _) = GeoTiffReader.read(path).firstBand
+      val actual = MultiBandGeoTiff(path).tags
+      val expected = geoTiff.tags
 
-      extent should equal (e)
-      raster should equal (r)
-      crs should equal (testCRS)
+      actual should be (expected)
     }
 
-    it ("should write floating point rasters with the default LatLng CRS correctly") {
+
+    it ("should write floating point rasters correct") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
-      val r = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
+      val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
-      val path = "/tmp/latlng.tif"
+      val geoTiff = SingleBandGeoTiff(t, e, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
 
-      GeoTiffWriter.write(path, r, e, LatLng)
+      val path = "/tmp/geotiff-writer.tif"
+
+      GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
 
-      val GeoTiffBand(raster, extent, crs, _) = GeoTiffReader.read(path).firstBand
+      val SingleBandGeoTiff(tile, extent, crs, _) = SingleBandGeoTiff(path)
 
       extent should equal (e)
-      raster should equal (r)
+      crs should equal (testCRS)
+      assertEqual(tile, t)
+    }
+
+    it ("should read write raster correctly") {
+      val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
+      val projectedRaster = geoTiff.projectedRaster
+      val ProjectedRaster(tile, extent, crs) = projectedRaster.reproject(LatLng)
+      val reprojGeoTiff = SingleBandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
+
+      val path = "/tmp/geotiff-writer.tif"
+
+      GeoTiffWriter.write(reprojGeoTiff, path)
+
+      addToPurge(path)
+
+      val SingleBandGeoTiff(actualTile, actualExtent, actualCrs, _) = SingleBandGeoTiff(path)
+      
+      actualExtent should equal (extent)
       crs should equal (LatLng)
+      assertEqual(actualTile, tile)
+    }
+
+    it ("should read write multibandraster correctly") {
+      val geoTiff = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+
+      val path = "/tmp/geotiff-writer.tif"
+
+      GeoTiffWriter.write(geoTiff, path)
+
+      addToPurge(path)
+
+      val gt = MultiBandGeoTiff(path)
+      
+      gt.extent should equal (geoTiff.extent)
+      gt.crs should equal (geoTiff.crs)
+      gt.tile.bandCount should equal (geoTiff.tile.bandCount)
+      for(i <- 0 until gt.tile.bandCount) {
+        val actualBand = gt.band(i)
+        val expectedBand = geoTiff.band(i)
+
+        assertEqual(actualBand, expectedBand)
+      }
+    }
+
+    it ("should write hand made multiband and read back correctly") {
+      val tile =
+        ArrayMultiBandTile(
+          positiveIntegerRaster,
+          positiveIntegerRaster.map(_ * 100),
+          positiveIntegerRaster.map(_ * 10000)
+        )
+
+      val geoTiff = MultiBandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
+
+      val path = "/tmp/geotiff-writer.tif"
+
+      GeoTiffWriter.write(geoTiff, path)
+
+      addToPurge(path)
+
+      val gt = MultiBandGeoTiff(path)
+      
+      gt.extent should equal (geoTiff.extent)
+      gt.crs should equal (geoTiff.crs)
+      gt.tile.bandCount should equal (tile.bandCount)
+      for(i <- 0 until gt.tile.bandCount) {
+        val actualBand = gt.band(i)
+        val expectedBand = tile.band(i)
+
+        assertEqual(actualBand, expectedBand)
+      }
     }
 
   }
-
 }

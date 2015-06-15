@@ -4,12 +4,12 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
-import geotrellis.spark.op.stats._
 import geotrellis.raster._
+import org.apache.hadoop.fs.Path
 
 import org.apache.spark.SparkContext
 
-import com.typesafe.config.{ConfigFactory,Config}
+import com.typesafe.config.ConfigFactory
 
 import scala.reflect._
 import spray.json._
@@ -28,23 +28,31 @@ object AccumuloRasterCatalog {
 class AccumuloRasterCatalog(
   instance: AccumuloInstance, 
   val attributeStore: AccumuloAttributeStore
-)(implicit sc: SparkContext) {
-  val accumuloInstance = instance
-  val accumuloAttributeStore = attributeStore
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
-    new FilterableRasterRDDReader[K] {
-      def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
-        val metaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[RasterRDDReader[K]].read(instance, metaData, keyBounds, index)(layerId, filterSet)
-      }
+)(implicit sc: SparkContext) extends AttributeCaching[AccumuloLayerMetaData] {
+
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
+    try {
+      val metadata  = getLayerMetadata(layerId)
+      val keyBounds = getLayerKeyBounds(layerId)
+      val index     = getLayerKeyIndex(layerId)
+
+      implicitly[RasterRDDReader[K]]
+        .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
     }
+  }
+
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
+    query[K](layerId).toRDD
+
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
+    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read[K](layerId, _))
 
   def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: Ordering: ClassTag](
     keyIndexMethod: KeyIndexMethod[K],
     tileTable: String,
-    strategy: AccumuloWriteStrategy = HdfsWriteStrategy
+    strategy: AccumuloWriteStrategy = HdfsWriteStrategy(new Path("/geotrellis-ingest"))
   ): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
@@ -68,9 +76,9 @@ class AccumuloRasterCatalog(
           keyIndexMethod.createIndex(indexKeyBounds)
         }
 
-        attributeStore.write(layerId, "metadata", md)
-        attributeStore.write(layerId, "keyBounds", keyBounds)
-        attributeStore.write(layerId, "keyIndex", index)
+        setLayerMetadata(layerId, md)
+        setLayerKeyBounds(layerId, keyBounds)
+        setLayerKeyIndex(layerId, index)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(instance, md, keyBounds, index)(layerId, rdd, strategy)
@@ -79,13 +87,13 @@ class AccumuloRasterCatalog(
     }
   }
 
-  def readTile[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
+  def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): Reader[K, Tile] =
     new Reader[K, Tile] {
       val readTile = {
-        val accumuloLayerMetaData = attributeStore.read[AccumuloLayerMetaData](layerId, "metadata")
-        val keyBounds = attributeStore.read[KeyBounds[K]](layerId, "keyBounds")
-        val index = attributeStore.read[KeyIndex[K]](layerId, "keyIndex")
-        implicitly[TileReader[K]].read(instance, layerId, accumuloLayerMetaData, index)(_)        
+        val metadata  = getLayerMetadata(layerId)
+        val keyBounds = getLayerKeyBounds(layerId)                
+        val index     = getLayerKeyIndex(layerId)
+        implicitly[TileReader[K]].read(instance, layerId, metadata, index)(_)        
       }
 
       def read(key: K) = readTile(key)

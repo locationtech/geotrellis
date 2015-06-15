@@ -73,9 +73,9 @@ object FloatArrayTile {
   }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Float): FloatArrayTile = 
-    if(isNoData(replaceNoData)) 
+    if(isNoData(replaceNoData)) {
       fromBytes(bytes, cols, rows)
-    else {
+    } else {
       val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
       val floatBuffer = byteBuffer.asFloatBuffer()
       val len = bytes.size / TypeFloat.bytes
@@ -83,8 +83,9 @@ object FloatArrayTile {
 
       cfor(0)(_ < len, _ + 1) { i =>
         val v = floatBuffer.get(i)
-        if(v == replaceNoData) 
+        if(v == replaceNoData) {
           floatArray(i) = Float.NaN
+        }
         else
           floatArray(i) = v
       }
