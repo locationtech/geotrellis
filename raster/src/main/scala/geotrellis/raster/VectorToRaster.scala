@@ -172,11 +172,4 @@ object VectorToRaster {
     }
     IntArrayTile(array, cols, rows)
   }
-/**
- *Returns the output of countPoints function, since countPoints() is not a intuitive nomenclature
- *
- */
-  def convertToRaster(points: Seq[Point], rasterExtent: RasterExtent): Tile = {
-    VectorToRaster.countPoints(Seq[Point](),rasterExtent)
-  }
 }

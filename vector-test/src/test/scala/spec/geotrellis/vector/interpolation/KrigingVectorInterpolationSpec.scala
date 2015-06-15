@@ -1,5 +1,6 @@
 package geotrellis.vector.interpolation
 
+import geotrellis.raster.interpolation.KrigingInterpolation
 import geotrellis.testkit._
 import geotrellis.vector.{Linear, Point, PointFeature, Extent}
 
@@ -18,7 +19,8 @@ with TestEngine{
   val lag = 2
   val chunkSize = 100
   val pointPredict = Point(1,1)
-  def krigingFunc = KrigingVectorInterpolation(KrigingVectorSimple, points, radius, chunkSize, lag, Linear)
+  //def krigingFunc = KrigingVectorInterpolation(KrigingSimple, points, radius, chunkSize, lag, Linear)
+  val krigingFunc = new KrigingSimple(points, radius, chunkSize, lag, Linear).createPredictor()
 
   describe("Kriging Simple Interpolation(vector)") {
 

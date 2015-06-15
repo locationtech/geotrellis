@@ -17,7 +17,7 @@
 package geotrellis.raster.interpolation
 
 import geotrellis.vector._
-import geotrellis.vector.interpolation.KrigingVectorSimple
+import geotrellis.vector.interpolation._
 import geotrellis.vector.io.json._
 import geotrellis.engine._
 import geotrellis.testkit._
@@ -48,7 +48,10 @@ class KrigingInterpolationSpec extends FunSpec
       val radius = Some(6)
       val lag = 2
       val chunkSize = 100
-      val result = KrigingInterpolation(KrigingSimple, points, re, radius, chunkSize, lag, Linear)
+      //val result = KrigingInterpolation(KrigingSimple, points, re, radius, chunkSize, lag, Linear)
+      val predictor = new KrigingSimple(points, radius, chunkSize, lag, Linear)
+      val result = KrigingInterpolation(predictor, points, re, radius, chunkSize, lag, Linear)
+      //val result = obj.createPredictor()
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
           val actual = result.get(col,row)
