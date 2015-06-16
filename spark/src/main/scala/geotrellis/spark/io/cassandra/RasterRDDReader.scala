@@ -2,10 +2,10 @@ package geotrellis.spark.io.cassandra
 
 import java.nio.ByteBuffer
 
-import geotrellis.spark.io.index.zcurve._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
+import geotrellis.spark.io.index.zcurve._
 import geotrellis.spark.utils._
 import geotrellis.raster._
 
@@ -19,10 +19,10 @@ import scala.reflect.ClassTag
 
 abstract class RasterRDDReader[K: ClassTag] {
 
-  def applyFilter(
+def applyFilter(
     rdd: CassandraRDD[(String, ByteBuffer)],
     layerId: LayerId,
-    filterSet: FilterSet[K],
+    queryKeyBounds: Seq[KeyBounds[K]],
     keyBounds: KeyBounds[K],
     index: KeyIndex[K]
   ): RDD[(String, ByteBuffer)]
@@ -30,18 +30,24 @@ abstract class RasterRDDReader[K: ClassTag] {
   def read(metaData: CassandraLayerMetaData,
     keyBounds: KeyBounds[K],
     index: KeyIndex[K]
-  )(layerId: LayerId, filters: FilterSet[K])(implicit session: CassandraSession, sc: SparkContext): RasterRDD[K] = {
+  )(layerId: LayerId,
+    queryKeyBounds: Seq[KeyBounds[K]]
+  )(
+    implicit session: CassandraSession,
+    sc: SparkContext
+  ): RasterRDD[K] = {
     val CassandraLayerMetaData(_, rasterMetaData, tileTable) = metaData
 
     val rdd: CassandraRDD[(String, ByteBuffer)] =
       sc.cassandraTable[(String, ByteBuffer)](session.keySpace, tileTable).select("reverse_index", "value")
 
+// TODO use queryKeyBounds.map ..
     val filteredRDD = {
-      if (filters.isEmpty) {
-        rdd.where("zoom = ?", layerId.zoom)
-      } else {
-        applyFilter(rdd, layerId, filters, keyBounds, index)
-      }
+      // if (keyBounds.isEmpty) {
+      //   rdd.where("zoom = ?", layerId.zoom)
+      //} else {
+        applyFilter(rdd, layerId, queryKeyBounds, keyBounds, index)
+      // }
     }
 
     val tileRDD =

@@ -7,12 +7,12 @@ import org.joda.time.DateTime
 import scala.collection.mutable
 import scala.util.matching.Regex
 
-import geotrellis.spark.io.index.zcurve._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.cassandra._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
+import geotrellis.spark.io.index.zcurve._
 import geotrellis.spark.utils._
 
 import org.apache.spark.SparkContext
@@ -42,16 +42,23 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
       List(timeChunk(start).toInt -> timeChunk(end).toInt)
   }
 
-  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey], index: KeyIndex[SpaceTimeKey]): RDD[(String, ByteBuffer)] = {
+  def applyFilter(
+    rdd: CassandraRDD[(String, ByteBuffer)],
+    layerId: LayerId,
+    queryKeyBounds: Seq[KeyBounds[SpaceTimeKey]],
+    keyBounds: KeyBounds[SpaceTimeKey],
+    index: KeyIndex[SpaceTimeKey]
+  ): RDD[(String, ByteBuffer)] = {
     val spaceFilters = mutable.ListBuffer[GridBounds]()
     val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
 
-    filterSet.filters.foreach {
-      case SpaceFilter(bounds) =>
-        spaceFilters += bounds
-      case TimeFilter(start, end) =>
-        timeFilters += ( (start, end) )
-    }
+    // TODO need to get this extra filtering back? queryKeyBounds approach?
+    // filterSet.filters.foreach {
+    //  case SpaceFilter(bounds) =>
+    //    spaceFilters += bounds
+    //  case TimeFilter(start, end) =>
+    //    timeFilters += ( (start, end) )
+    // }
 
     if(spaceFilters.isEmpty) {
       val minKey = keyBounds.minKey.spatialKey

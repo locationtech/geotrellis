@@ -20,20 +20,33 @@ import com.datastax.spark.connector._
 
 object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
 
-  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)], layerId: LayerId, filterSet: FilterSet[SpatialKey], keyBounds: KeyBounds[SpatialKey], index: KeyIndex[SpatialKey]): RDD[(String, ByteBuffer)] = {
+  def applyFilter(rdd: CassandraRDD[(String, ByteBuffer)],
+    layerId: LayerId,
+    queryKeyBounds: Seq[KeyBounds[SpatialKey]],
+    keyBounds: KeyBounds[SpatialKey],
+    index: KeyIndex[SpatialKey]
+  ): RDD[(String, ByteBuffer)] = {
+
     var tileBoundSet = false
     val rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
 
-    for (filter <- filterSet.filters) {
-      filter match {
-        case SpaceFilter(bounds) =>
-          tileBoundSet = true
+    // TODO alternative? use queryKeyBounds.map ..
+    queryKeyBounds.map{ subKeyBound =>
+      tileBoundSet = true
 
-          for(row <- bounds.rowMin to bounds.rowMax) {
-            val min = index.toIndex(SpatialKey(bounds.colMin, row))
-            val max = index.toIndex(SpatialKey(bounds.colMax, row))
-            rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min, max)
-          }
+      val keymin = subKeyBound._1
+      val keymax = subKeyBound._2
+
+      val rowmin = keymin.row
+      val rowmax = keymax.row
+
+      val colmin = keymin.col
+      val colmax = keymax.col
+
+      for(row <- rowmin to rowmax) {
+        val min = index.toIndex(SpatialKey(colmin, row))
+        val max = index.toIndex(SpatialKey(colmax, row))
+        rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min, max)
       }
     }
 
