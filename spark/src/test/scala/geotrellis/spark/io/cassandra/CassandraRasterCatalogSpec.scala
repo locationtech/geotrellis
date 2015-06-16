@@ -144,12 +144,15 @@ class CassandraRasterCatalogSpec extends FunSpec
           
           val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
 
-          // TODO
+          // TODO THIS TEST FAILS
           //val filters =
           //  new FilterSet[SpaceTimeKey]
           //    .withFilter(SpaceFilter(tileBounds))
 
-          val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd = catalog
+            .query[SpaceTimeKey](LayerId("coordinates", zoom))
+            .where(Intersects(tileBounds))
+            .toRDD
           
           rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
             tileBounds.contains(col, row) should be (true)
@@ -168,7 +171,7 @@ class CassandraRasterCatalogSpec extends FunSpec
           
           val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
 
-          // TODO
+          // TODO THIS TEST FAILS
           //val filters =
           //  new FilterSet[SpaceTimeKey]
           //    .withFilter(SpaceFilter(tileBounds))
