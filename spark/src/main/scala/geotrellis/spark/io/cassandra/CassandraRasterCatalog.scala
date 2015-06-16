@@ -27,10 +27,9 @@ object CassandraRasterCatalog {
     new CassandraRasterCatalog(attributeStore)
 }
 
-// TODO no extends AttributeCaching[CassandraLayerMetaData] yet because no attributeStore
 class CassandraRasterCatalog(
-  attributeStore: CassandraAttributeStore
-)(implicit session: CassandraSession, sc: SparkContext)  {
+  val attributeStore: CassandraAttributeStore
+)(implicit session: CassandraSession, sc: SparkContext) extends AttributeCaching[CassandraLayerMetaData] {
 
   def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
     try {
