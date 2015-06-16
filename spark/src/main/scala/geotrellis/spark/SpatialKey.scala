@@ -44,5 +44,13 @@ object SpatialKey {
     def maxBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
     }
+
+    def getKeyBounds(rdd: RasterRDD[SpatialKey]): KeyBounds[SpatialKey] = {
+      val md = rdd.metaData
+      val gb = md.gridBounds
+      KeyBounds(
+        SpatialKey(gb.colMin, gb.rowMin),
+        SpatialKey(gb.colMax, gb.rowMax))    
+    }
   }
 }
