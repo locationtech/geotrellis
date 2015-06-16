@@ -18,7 +18,7 @@ package object io {
   class LayerNotFoundError(layerId: LayerId)
       extends CatalogError(s"LayerMetaData not found for layer $layerId")
 
-  class LayerExistsError(layerId: LayerId) 
+  class LayerExistsError(layerId: LayerId)
       extends CatalogError(s"Layer ${layerId} already exists in the catalog")
 
   class LayerWriteError(layerId: LayerId, msg: String)
@@ -26,7 +26,7 @@ package object io {
 
   class AttributeNotFoundError(attributeName: String, layerId: LayerId)
     extends CatalogError(s"Attribute $attributeName not found for layer $layerId")
-   
+
   class TileNotFoundError(key: Any, layerId: LayerId)
     extends CatalogError(s"Tile with key $key not found for layer $layerId")
 
@@ -35,6 +35,5 @@ package object io {
 
   class MultipleAttributesError(attributeName: String, layerId: LayerId)
     extends CatalogError(s"Multiple attributes found for $attributeName for layer $layerId")
-
-
+    
 }

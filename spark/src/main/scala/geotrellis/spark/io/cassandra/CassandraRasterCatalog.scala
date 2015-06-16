@@ -30,8 +30,8 @@ object CassandraRasterCatalog {
 class CassandraRasterCatalog(
   attributeStore: CassandraAttributeStore
 )(implicit session: CassandraSession, sc: SparkContext) {
-  
-  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] = 
+
+  def reader[K: RasterRDDReader: JsonFormat: ClassTag](): FilterableRasterRDDReader[K] =
     new FilterableRasterRDDReader[K] {
       def read(layerId: LayerId, filterSet: FilterSet[K]): RasterRDD[K] = {
         val metaData = attributeStore.read[CassandraLayerMetaData](layerId, "metadata")
@@ -47,7 +47,7 @@ class CassandraRasterCatalog(
         // Persist since we are both calculating a histogram and saving tiles.
         rdd.persist()
 
-        val md = 
+        val md =
           CassandraLayerMetaData(
             rasterMetaData = rdd.metaData,
             keyClass = classTag[K].toString,
@@ -55,7 +55,7 @@ class CassandraRasterCatalog(
           )
 
         val keyBounds = rdd.keyBounds
-        
+
         val index = {
           val indexKeyBounds = {
             val imin = keyBounds.minKey.updateSpatialComponent(SpatialKey(0, 0))
@@ -69,7 +69,7 @@ class CassandraRasterCatalog(
         attributeStore.write[KeyBounds[K]](layerId, "keyBounds", keyBounds)
         attributeStore.write(layerId, "keyIndex", index)
 
-        val rddWriter = 
+        val rddWriter =
           implicitly[RasterRDDWriter[K]]
             .write(md, keyBounds, index)(layerId, rdd)
 

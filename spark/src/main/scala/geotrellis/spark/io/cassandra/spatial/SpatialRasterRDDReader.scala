@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import scala.collection.mutable.ArrayBuffer
 import scala.util.matching.Regex
 
-import geotrellis.index.zcurve._
+import geotrellis.spark.io.index.zcurve._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.cassandra._
@@ -36,11 +36,11 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
           }
       }
     }
-    
+
     if (!tileBoundSet) {
       rdds += rdd.where("zoom = ?", layerId.zoom)
     }
-    
+
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]]
   }
 }

@@ -35,9 +35,9 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
   }
 
   private def fetch(layerId: Option[LayerId], attributeName: String): ResultSet = {
-    val query = 
+    val query =
       layerId match {
-        case Some(id) => 
+        case Some(id) =>
           QueryBuilder.select.column("value")
             .from(session.keySpace, attributeTable)
             .where (eqs("layerId", id.toString))
@@ -52,7 +52,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
   }
 
   def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
-    val query = 
+    val query =
       QueryBuilder.select.column("value")
         .from(session.keySpace, attributeTable)
         .where (eqs("layerId", layerId.toString))
@@ -62,7 +62,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
 
     val size = values.getAvailableWithoutFetching
     if(size == 0) {
-      throw new Attribute4LayerNotFoundError(attributeName, layerId)
+      throw new AttributeNotFoundError(attributeName, layerId)
     } else if (size > 1) {
       throw new MultipleAttributesError(attributeName, layerId)
     } else {
@@ -72,7 +72,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
   }
 
   def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId,T] = {
-    val query = 
+    val query =
       QueryBuilder.select.column("value")
         .from(session.keySpace, attributeTable)
         .where(eqs("name", attributeName))
@@ -84,7 +84,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
   }
 
   def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    val update = 
+    val update =
       QueryBuilder.update(session.keySpace, attributeTable)
         .`with`(set("value", (layerId, value).toJson.compactPrint))
         .where (eqs("layerId", layerId.toString))
