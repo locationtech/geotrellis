@@ -114,7 +114,7 @@ class HadoopRasterCatalog(
           rasterMetaData = rdd.metaData, 
           path = layerPath)
 
-        val keyBounds = rdd.keyBounds
+        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
 
         val keyIndex = {
           val indexKeyBounds = {
