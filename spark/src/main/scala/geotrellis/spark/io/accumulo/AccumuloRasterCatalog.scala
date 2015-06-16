@@ -66,7 +66,7 @@ class AccumuloRasterCatalog(
             tileTable = tileTable
           )
 
-        val keyBounds = rdd.keyBounds
+        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
         val index = {
           val indexKeyBounds = {
             val imin = keyBounds.minKey.updateSpatialComponent(SpatialKey(0, 0))

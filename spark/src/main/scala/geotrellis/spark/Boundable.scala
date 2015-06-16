@@ -1,7 +1,5 @@
 package geotrellis.spark
 
-import scala.reflect.ClassTag
-
 /**
  * This type class marks K as point that can be bounded in space.
  * It is used to construct bounding hypercube for a set of Ks.
@@ -31,13 +29,6 @@ trait Boundable[K] extends Serializable {
       minBound(b1.minKey, b2.minKey),
       maxBound(b1.maxKey, b2.maxKey))
   }
-}
-
-object Boundable {
-  def getKeyBounds[K: ClassTag](rdd: RasterRDD[K])(implicit boundable: Boundable[K]): KeyBounds[K] =
-    rdd
-      .map { case (key, _) => KeyBounds(key, key) }
-      .reduce(boundable.combine)
 
   def intersect(b1: KeyBounds[K], b2: KeyBounds[K]): Option[KeyBounds[K]] = {
     val kb = KeyBounds(
