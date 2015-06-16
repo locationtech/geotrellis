@@ -58,8 +58,11 @@ class S3RasterCatalog(
     }
   }
 
-  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int = sc.defaultParallelism): RasterRDD[K] =
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int): RasterRDD[K] =
     query[K](layerId, numPartitions).toRDD
+
+  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
+    query[K](layerId, sc.defaultParallelism).toRDD
 
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] ={
     new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _, sc.defaultParallelism))
