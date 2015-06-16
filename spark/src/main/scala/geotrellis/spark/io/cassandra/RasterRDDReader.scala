@@ -41,18 +41,16 @@ def applyFilter(
     val rdd: CassandraRDD[(String, ByteBuffer)] =
       sc.cassandraTable[(String, ByteBuffer)](session.keySpace, tileTable).select("reverse_index", "value")
 
-// TODO use queryKeyBounds.map ..
     val filteredRDD = {
-      // if (keyBounds.isEmpty) {
-      //   rdd.where("zoom = ?", layerId.zoom)
-      //} else {
+      if (queryKeyBounds.isEmpty) {
+         rdd.where("zoom = ?", layerId.zoom)
+      } else {
         applyFilter(rdd, layerId, queryKeyBounds, keyBounds, index)
-      // }
+      }
     }
 
     val tileRDD =
       filteredRDD.map { case (_, value) =>
-        // seems not ideal? Cassandra resultset java.nio.nytebuffer to ByteArray conversions
         val byteArray = new Array[Byte](value.remaining)
         value.get(byteArray, 0, byteArray.length)
 

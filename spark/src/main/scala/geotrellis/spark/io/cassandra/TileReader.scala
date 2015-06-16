@@ -44,7 +44,6 @@ trait TileReader[K] {
     val byteArray = new Array[Byte](value.remaining)
     value.get(byteArray, 0, byteArray.length)
 
-    // val (_, tileBytes) = KryoSerializer.deserialize[(Key, Array[Byte])](ByteBuffer.wrap(byteArray))
     val (_, tileBytes) = KryoSerializer.deserialize[(K, Array[Byte])](byteArray)
 
     ArrayTile.fromBytes(

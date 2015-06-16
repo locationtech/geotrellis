@@ -27,7 +27,7 @@ object CassandraRasterCatalog {
     new CassandraRasterCatalog(attributeStore)
 }
 
-// TODO no extends AttributeCaching[CassandraLayerMetaData] because no attributeStore
+// TODO no extends AttributeCaching[CassandraLayerMetaData] yet because no attributeStore
 class CassandraRasterCatalog(
   attributeStore: CassandraAttributeStore
 )(implicit session: CassandraSession, sc: SparkContext)  {
