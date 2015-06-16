@@ -96,7 +96,7 @@ class S3RasterCatalog(
             bucket = bucket,
             key = path)
 
-        val keyBounds = rdd.keyBounds
+        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
         val index = {
           // Expanding spatial bounds? To allow multi-stage save?
           val indexKeyBounds = {
