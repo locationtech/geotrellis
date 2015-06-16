@@ -39,7 +39,6 @@ class CassandraRasterCatalog(
 
       implicitly[RasterRDDReader[K]]
         .read(metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))
-        // .read(instance, metadata, keyBounds, index)(layerId, query(metadata.rasterMetaData, keyBounds))
     } catch {
       case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
     }
