@@ -10,16 +10,16 @@ import geotrellis.spark.utils._
 import geotrellis.raster._
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
+import org.apache.spark.{ SparkContext, Logging}
 
 import com.datastax.spark.connector.rdd.CassandraRDD
 import com.datastax.spark.connector._
 
 import scala.reflect.ClassTag
 
-abstract class RasterRDDReader[K: ClassTag] {
+abstract class RasterRDDReader[K: ClassTag] extends Logging {
 
-def applyFilter(
+  def applyFilter(
     rdd: CassandraRDD[(String, ByteBuffer)],
     layerId: LayerId,
     queryKeyBounds: Seq[KeyBounds[K]],

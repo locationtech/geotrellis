@@ -30,24 +30,31 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
     var tileBoundSet = false
     val rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
 
-    // TODO alternative? use queryKeyBounds.map ..
-    queryKeyBounds.map{ subKeyBound =>
+    val ranges = queryKeyBounds.map{ index.indexRanges(_) }.flatten
+    logInfo(s"queryKeyBounds has ${ranges.length} ranges")
+
+    for (range <- ranges) {
+      logInfo(s"range has ${range.toString()} ")
+    }
+
+    for ( bounds <- queryKeyBounds ) {
       tileBoundSet = true
 
-      val keymin = subKeyBound._1
-      val keymax = subKeyBound._2
+      /*
+      KeyBounds(minKey, maxKey of K Type)
 
-      val rowmin = keymin.row
-      val rowmax = keymax.row
-
-      val colmin = keymin.col
-      val colmax = keymax.col
-
-      for(row <- rowmin to rowmax) {
-        val min = index.toIndex(SpatialKey(colmin, row))
-        val max = index.toIndex(SpatialKey(colmax, row))
+      SpatialKey
+      def _1 = col
+      def _2 = row
+       */
+      for(row <- bounds.minKey._2 to bounds.maxKey._2) {
+        val min = index.toIndex(SpatialKey(bounds.minKey._1, row))
+        logInfo(s"index.toIndex(SpatialKey(${bounds.minKey._1}, ${row}))")
+        val max = index.toIndex(SpatialKey(bounds.maxKey._1, row))
+        logInfo(s"index.toIndex(SpatialKey(${bounds.maxKey._1}, ${row}))")
         rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min, max)
       }
+
     }
 
     if (!tileBoundSet) {

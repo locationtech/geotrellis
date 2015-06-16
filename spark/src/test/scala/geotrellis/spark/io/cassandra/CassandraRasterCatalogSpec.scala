@@ -76,7 +76,9 @@ class CassandraRasterCatalogSpec extends FunSpec
 
           it("fetch a TileExtent from catalog") {
             val tileBounds = GridBounds(915,612,916,612)
-            // val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
+            // val filters =
+            //    new FilterSet[SpatialKey]
+            //    withFilter SpaceFilter(tileBounds)
             val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
             val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
             
@@ -141,7 +143,8 @@ class CassandraRasterCatalogSpec extends FunSpec
           val (minRow, maxRow) = (rows.min, rows.max)
           
           val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
-          
+
+          // TODO
           //val filters =
           //  new FilterSet[SpaceTimeKey]
           //    .withFilter(SpaceFilter(tileBounds))
@@ -164,7 +167,8 @@ class CassandraRasterCatalogSpec extends FunSpec
           val maxTime = times.max
           
           val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
-          
+
+          // TODO
           //val filters =
           //  new FilterSet[SpaceTimeKey]
           //    .withFilter(SpaceFilter(tileBounds))
