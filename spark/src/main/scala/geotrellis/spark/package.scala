@@ -83,6 +83,9 @@ package object spark {
   def asRasterRDD[K: ClassTag](metaData: RasterMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
     new RasterRDD[K](f, metaData)
 
+  def asMultiBandRasterRDD[K: ClassTag](metaData: RasterMetaData)(f: =>RDD[(K, MultiBandTile)]): MultiBandRasterRDD[K] =
+    new MultiBandRasterRDD[K](f, metaData)
+
   implicit class MakeRasterRDD[K: ClassTag](val rdd: RDD[(K, Tile)]) {
     def toRasterRDD(metaData: RasterMetaData) =
       new RasterRDD[K](rdd, metaData)

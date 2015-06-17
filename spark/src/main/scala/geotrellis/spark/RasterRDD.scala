@@ -23,60 +23,14 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMetaData) extends RDD[(K, Tile)](tileRdd) {
-  override val partitioner = tileRdd.partitioner
+class RasterRDD[K: ClassTag](tileRdd: RDD[(K, Tile)], val metaData: RasterMetaData) extends GeoRDD[K, Tile](tileRdd) {
+  type Self = RasterRDD[K]
 
-  override def getPartitions: Array[Partition] = firstParent[(K, Tile)].partitions
-
-  override def compute(split: Partition, context: TaskContext) =
-    firstParent[(K, Tile)].iterator(split, context)
+  def wrap(f: => RDD[(K, Tile)]): Self =
+    new RasterRDD[K](f, metaData)
 
   def convert(cellType: CellType): RasterRDD[K] =
     mapTiles(_.convert(cellType))
-
-  def reduceByKey(f: (Tile, Tile) => Tile): RasterRDD[K] =
-    asRasterRDD(metaData) { tileRdd.reduceByKey(f) }
-
-
-  def mapKeys[R: ClassTag](f: K => R): RasterRDD[R] =
-    asRasterRDD(metaData) {
-      tileRdd map { case (key, tile) => f(key) -> tile }
-    }
-
-  def mapTiles(f: Tile => Tile): RasterRDD[K] =
-    asRasterRDD(metaData) {
-      tileRdd map { case (key, tile) => key -> f(tile) }
-    }
-
-  def mapPairs[R: ClassTag](f: ((K, Tile)) => (R, Tile)): RasterRDD[R] =
-    asRasterRDD(metaData) {
-      tileRdd map { row => f(row) }
-    }
-
-  def combineTiles(other: RasterRDD[K])(f: (Tile, Tile) => Tile): RasterRDD[K] =
-    combinePairs(other) { case ((k1, t1), (k2, t2)) => (k1, f(t1, t2)) }
-
-  def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
-    asRasterRDD(metaData) {
-      zipPartitions(other, true) { (partition1, partition2) =>
-        partition1.zip(partition2) map { case (row1, row2) => f(row1, row2) }
-      }
-    }
-
-  def combinePairs(others: Traversable[RasterRDD[K]])(f: (Traversable[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
-    def create(t: (K, Tile)) = List(t)
-    def mergeValue(ts: List[(K, Tile)], t: (K, Tile)) = ts :+ t
-    def mergeContainers(ts1: List[(K, Tile)], ts2: Traversable[(K, Tile)]) = ts1 ++ ts2
-
-    asRasterRDD(metaData) {
-      (this :: others.toList)
-        .map(_.tileRdd)
-        .reduceLeft(_ ++ _)
-        .map(t => (t.id, t))
-        .combineByKey(create, mergeValue, mergeContainers)
-        .map { case (id, tiles) => f(tiles) }
-    }
-  }
 
   def minMax: (Int, Int) =
     map(_.tile.findMinMax)
