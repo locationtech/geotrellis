@@ -23,6 +23,13 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
+/**
+ *  TODO: Renames
+ * Keeping this name to minimize merge conflicts.
+ * After feature merges tree should become:
+ * TileRasterRDD[K] extends RasterRDD[K,Tile]
+ * MultiBandTileRasterRDD[K] extends RasterRDD[K, MultiBandtile]
+ */
 abstract class GeoRDD[K: ClassTag, T: ClassTag](val tileRdd: RDD[(K, T)]) extends RDD[(K, T)](tileRdd) {
   type Self <: GeoRDD[K, T]
 
