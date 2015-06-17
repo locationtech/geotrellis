@@ -10,14 +10,10 @@ object Sum extends TileIntersectionHandler[Long, Long] {
     val rasterExtent = pt.rasterExtent
     var sum: Long = 0L
 
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          val z = tile.get(col, row)
-          if (isData(z)) { sum = sum + z }
-        }
-      }
-    )
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.get(col, row)
+      if (isData(z)) { sum = sum + z }
+    }
 
     sum
   }
@@ -38,14 +34,10 @@ object SumDouble extends TileIntersectionHandler[Double, Double] {
     val rasterExtent = pt.rasterExtent
     var sum = 0.0
 
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          val z = tile.getDouble(col, row)
-          if(isData(z)) { sum = sum + z }
-        }
-      }
-    )
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.getDouble(col, row)
+      if(isData(z)) { sum = sum + z }
+    }
 
     sum
   }

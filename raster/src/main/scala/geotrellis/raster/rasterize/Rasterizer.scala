@@ -23,14 +23,9 @@ import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 
 import scala.language.higherKinds
 
-trait Callback {
-  def apply(col: Int, row: Int): Unit
-}
-
 trait Transformer[+B] {
   def apply(col: Int, row: Int): B
 }
-
 
 object Rasterizer {
   /**
@@ -42,11 +37,8 @@ object Rasterizer {
   def rasterizeWithValue(geom: Geometry, rasterExtent: RasterExtent, value: Int): Tile = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
-    val f2 = new Callback {
-        def apply(col: Int, row: Int) {
+    val f2 = (col: Int, row: Int) =>
           array(row * cols + col) = value
-        }
-      }
     foreachCellByGeometry(geom, rasterExtent)(f2)
     ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   } 
@@ -60,11 +52,8 @@ object Rasterizer {
   def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: Transformer[Int]) = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
-    val f2 = new Callback {
-        def apply(col: Int, row: Int) {
+    val f2 = (col: Int, row: Int) =>
           array(row * cols + col) = f(col, row)
-        }
-    }
     foreachCellByGeometry(feature, rasterExtent)(f2)
     ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   }
@@ -191,7 +180,7 @@ object Rasterizer {
     while(x != x1 || y != y1){
       if(0 <= x && x < re.cols &&
          0 <= y && y < re.rows) { f(x, y); }
-      e2 = err;
+      e2 = err
       if (e2 > -dx) { err -= dy; x += sx; }
       if (e2 < dy) { err += dx; y += sy; }
     }
