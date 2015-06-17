@@ -1,7 +1,7 @@
 package geotrellis.vector.interpolation
 
 import geotrellis.vector._
-import org.apache.commons.math3.linear.{LUDecomposition, MatrixUtils, RealMatrix}
+import org.apache.commons.math3.linear.{LUDecomposition, MatrixUtils, RealMatrix, CholeskyDecomposition}
 import org.apache.commons.math3.stat.descriptive.moment.Variance
 import spire.syntax.cfor._
 
@@ -160,6 +160,8 @@ class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chun
       val part1: Double = sill - cSampleMatrix.multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose()).getEntry(0, 0)
       val part2_1: RealMatrix = x0.subtract(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose())).transpose()
       val part2_2: RealMatrix = new LUDecomposition(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix)).getSolver.getInverse
+
+      val part2_2_1: RealMatrix = new CholeskyDecomposition(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix)).getSolver.getInverse
       val part2_3: RealMatrix = x0.subtract(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose()))
 
       val krigingVariance: Double = math.sqrt(part1 + part2_1.multiply(part2_2).multiply(part2_3).getEntry(0, 0))
@@ -169,5 +171,48 @@ class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chun
 }
 
 class KrigingGeo(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
-  def createPredictor(): Point => (Double, Double) = ???
+  def createPredictor(): Point => (Double, Double) = {
+    pointPredict => {
+
+      val pointSize = points.size
+      if (pointSize == 0)
+        throw new IllegalArgumentException("No Points in the observation sequence");
+
+      val attrArray = Array.ofDim[Double](pointSize, 6)
+      cfor(0)(_ < pointSize, _ + 1) { row =>
+        val s1 = points(row).geom.x
+        val s2 = points(row).geom.y
+        attrArray(row) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
+      }
+      val yMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data.toDouble).toArray)
+      val attrMatrix: RealMatrix = MatrixUtils.createRealMatrix(attrArray)
+
+      //1. OLS Estimate (Beta)
+      val betaOLS: RealMatrix = new LUDecomposition(attrMatrix.transpose().multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(yMatrix)
+      val errorOLS = yMatrix.subtract(attrMatrix.multiply(betaOLS))
+
+      //2. Empirical Variogram
+
+      //3. Fit into a semivariogram
+
+      //4. Construct a covariogram
+
+      //5. Construct the covariance matrix
+
+      //6. Beta (new) and residuals (new)
+
+      //7. Generate new semivariogram
+
+      //8. if(Threshold check) proceed, else reiterate steps 4 through 7
+
+      //9. (beta, theta) is evaluated
+
+      val prediction: Double = ???
+      //val part2_2: RealMatrix = new LUDecomposition(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix)).getSolver.getInverse
+      //val part2_2_1: RealMatrix = new CholeskyDecomposition(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix)).getSolver.getInverse
+
+      val krigingVariance: Double = ???
+      (prediction, krigingVariance)
+    }
+  }
 }

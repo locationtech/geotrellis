@@ -16,9 +16,15 @@
 
 package geotrellis.vector
 
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction.Parametric
+import org.apache.commons.math3.optim.PointVectorValuePair
+import org.apache.commons.math3.optim.nonlinear.vector.jacobian.AbstractLeastSquaresOptimizer
+import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer
+
 import scala.collection.mutable
 import org.apache.commons.math3.stat.regression.SimpleRegression
 import org.apache.commons.math3.stat.descriptive.moment.Variance
+import org.apache.commons.math3.fitting.CurveFitter
 
 abstract sealed class ModelType
 
@@ -27,10 +33,7 @@ case object Gaussian extends ModelType
 case object Circular extends ModelType
 case object Spherical extends ModelType
 case object Exponential extends ModelType
-/*
-case object Power extends ModelType
 case object Wave extends ModelType
-*/
 
 /**
   Empirical semivariogram
@@ -67,6 +70,60 @@ object Semivariogram {
         case _ => acc
       }
     f(elements,List[(T,T)]())
+  }
+
+  def explicitGaussian(r: Double, s: Double, a: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else
+        a + (s - a) * (1 - math.exp(- math.pow(h, 2) / math.pow(r, 2)))
+    }
+    /*                    | 0                             . h = 0
+     *  gamma(h; r,s,a) = |
+     *                    | a + (s-a) {1 - e^(-h^2/r^2)}  , h > 0
+     */
+  }
+
+  def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else if (h > r) {
+        a + (s - a) * ((3 * h / (2 * r)) - (math.pow(h, 3) / (2 * math.pow(r, 3)) ))
+      }
+      else  s
+    }
+    /*                    | 0                           . h = 0
+     *                    |           | 3h      h^3   |
+     *  gamma(h; r,s,a) = | a + (s-a) |---- - ------- | , 0 < h <= r
+     *                    |           | 2r     2r^3   |
+     *                    | s                           , h > r
+     */
+  }
+
+  def explicitExponential(r: Double, s: Double, a: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else
+        a + (s - a) * (1 - math.exp(- 3 * h / r))
+    }
+    /*                    | 0                           . h = 0
+     *  gamma(h; r,s,a) = |
+     *                    | a + (s-a) {1 - e^(-3h/r)}   , h > 0
+     */
+  }
+
+  def explicitWave(r: Double, s: Double, a: Double, w: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else
+        a + (s - a) * (1 - w * math.sin(h / w) / h)
+    }
+    /*                    | 0                             . h = 0
+     *                    |
+     *  gamma(h; r,s,a) = |           |       sin(h/w)  |
+     *                    | a + (s-a) |1 - w ---------- | , h > 0
+     *                    |           |         h       |
+     */
   }
 
   def apply(pts:Seq[PointFeature[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
@@ -125,14 +182,26 @@ object Semivariogram {
         val intercept = regression.getIntercept
         x => slope*x + intercept
 
+      //Least Squares minimization
       case Gaussian => ???
       case Exponential => ???
       case Circular => ???
       case Spherical => ???
-      }
       /*
-      case Power => ???
-      case Wave => ???
+      case Spherical => {
+        val leastSquare = new CurveFitter(new LevenbergMarquardtOptimizer())
+        for((x,y) <- regressionPoints) { leastSquare.addObservedPoint(x,y) }
+        val init = Array.ofDim[Double](2)
+        //val fit = leastSquare.fit(new Polynom, init)
+        //val fit = leastSquare.fit(explicitSpherical(), init)
+
+//        new AbstractLeastSquaresOptimizer() {
+//          override def doOptimize(): PointVectorValuePair = ???
+//        }
+//        new CurveFitter[]()
+      }
       */
+      case Wave => ???
+      }
     }
   }
