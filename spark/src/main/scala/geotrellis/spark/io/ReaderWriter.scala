@@ -25,8 +25,8 @@ trait FilterableRDDReader[L, K, V, R <: RDD[(K, V)]] extends Reader[L, R] {
   def filter[T](paramsList: T*)(implicit filter: Filter[K, T]): FilterableRDDReader[L, K, V, R]
 }
 
-trait RasterRDDReader[K] extends Reader[LayerId, RasterRDD[K]]
+trait RasterRDDReader[K, T] extends Reader[LayerId, RasterRDD[K, T]]
 
-trait RasterRDDWriter[K] extends Writer[LayerId, RasterRDD[K]]
+trait RasterRDDWriter[K, T] extends Writer[LayerId, RasterRDD[K, T]]
 
 trait Store[K, V] extends Reader[K, V] with Writer[K, V]

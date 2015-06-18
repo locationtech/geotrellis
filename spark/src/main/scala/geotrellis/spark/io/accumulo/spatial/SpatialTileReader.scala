@@ -12,7 +12,7 @@ import org.apache.accumulo.core.data.{Range => ARange, Key => AccumuloKey, Value
 
 import scala.collection.JavaConversions._
 
-object SpatialTileReader extends TileReader[SpatialKey] {
+class SpatialTileReader[T] extends TileReader[SpatialKey, T] {
   def collectTile(
     instance: AccumuloInstance,
     layerId: LayerId,

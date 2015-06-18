@@ -60,10 +60,10 @@ object Ingest {
    */
   def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag]
     (sourceTiles: RDD[(T, Tile)], destCRS: CRS, layoutScheme: LayoutScheme, pyramid: Boolean = false, isUniform: Boolean = false)
-    (sink: (RasterRDD[K], LayoutLevel) => Unit)
+    (sink: (RasterRDD[K, Tile], LayoutLevel) => Unit)
     (implicit tiler: Tiler[T, K]): Unit =
   {
-    def sinkLevels(rdd: RasterRDD[K], level: LayoutLevel)(free: => Unit): Unit = {    
+    def sinkLevels(rdd: RasterRDD[K, Tile], level: LayoutLevel)(free: => Unit): Unit = {    
       if (pyramid && level.zoom >= 1) {
         rdd.cache()      
         sink(rdd, level)           

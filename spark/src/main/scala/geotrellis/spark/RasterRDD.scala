@@ -23,11 +23,12 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-abstract class RasterRDD[K: ClassTag, T: ClassTag](val tileRdd: RDD[(K, T)]) extends RDD[(K, T)](tileRdd) {
-  type Self <: RasterRDD[K, T]
+class RasterRDD[K: ClassTag, T: ClassTag](val tileRdd: RDD[(K, T)], val metaData: RasterMetaData) extends RDD[(K, T)](tileRdd) {
+  type Self = RasterRDD[K, T]
 
-  def wrap(f: => RDD[(K, T)]): Self 
-
+  def wrap(f: => RDD[(K, T)]): Self =
+    new RasterRDD[K, T](f, metaData) 
+ 
   override val partitioner = tileRdd.partitioner
 
   override def getPartitions: Array[Partition] = firstParent[(K, Tile)].partitions

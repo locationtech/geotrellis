@@ -65,12 +65,12 @@ case class SocketWriteStrategy(
 ) extends AccumuloWriteStrategy
 
 
-trait RasterRDDWriter[K] {
+trait RasterRDDWriter[K, T] {
   def rowId(id: LayerId, index: Long): String  
   
   def encode(
     layerId: LayerId,
-    raster: RasterRDD[K],
+    raster: RasterRDD[K, T],
     kIndex: KeyIndex[K]
   ): RDD[(Key, Value)]
 
@@ -80,7 +80,7 @@ trait RasterRDDWriter[K] {
     keyBounds: KeyBounds[K],
     kIndex: KeyIndex[K]
   )(layerId: LayerId,
-    raster: RasterRDD[K],
+    raster: RasterRDD[K, T],
     strategy: AccumuloWriteStrategy
   )(implicit sc: SparkContext): Unit = {
     // Create table if it doesn't exist.

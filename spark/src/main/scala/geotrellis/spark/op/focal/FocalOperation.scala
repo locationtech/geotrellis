@@ -55,7 +55,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
 
   def zipWithNeighbors: RDD[(K, Tile, TileNeighbors)] = {
     val sc = rasterRDD.sparkContext
-    val bcMetadata = sc.broadcast(rasterRDD.metaData)
+    val bcMetadata = sc.broadcast(rasterRDD.metadata)
 
     val tilesWithNeighborIndices = rasterRDD.map { case (key, tile) =>
       val metadata = bcMetadata.value

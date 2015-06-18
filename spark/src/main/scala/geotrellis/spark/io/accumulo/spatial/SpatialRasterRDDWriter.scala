@@ -23,13 +23,13 @@ import spire.syntax.cfor._
 
 import scala.collection.JavaConversions._
 
-object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
+class SpatialRasterRDDWriter[T] extends RasterRDDWriter[SpatialKey, T] {
   import geotrellis.spark.io.accumulo.stringToText
   def rowId(id: LayerId, index: Long): String  = spatial.rowId (id, index)
   
   def encode(
     layerId: LayerId,
-    raster: RasterRDD[SpatialKey],
+    raster: RasterRDD[SpatialKey, T],
     index: KeyIndex[SpatialKey]
   ): RDD[(Key, Value)] = {
     def getKey(id: LayerId, key: SpatialKey): Key =
@@ -37,7 +37,7 @@ object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
 
     raster      
       .map { case (key, tile) => {
-        val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
+        val value = KryoSerializer.serialize[(SpatialKey, T)](key, tile)
         getKey(layerId, key) -> new Value(value)
       }}
   }

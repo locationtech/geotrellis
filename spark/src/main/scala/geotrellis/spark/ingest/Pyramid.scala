@@ -18,14 +18,14 @@ object Pyramid extends Logging {
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): (RasterRDD[K], LayoutLevel) = {
-    val metaData = rdd.metaData
+  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K, Tile], level: LayoutLevel, layoutScheme: LayoutScheme): (RasterRDD[K, Tile], LayoutLevel) = {
+    val metadata = rdd.metaData
     val nextLevel = layoutScheme.zoomOut(level)
     val nextMetaData = 
       RasterMetaData(
-        metaData.cellType,
-        metaData.extent,
-        metaData.crs,
+        metadata.cellType,
+        metadata.extent,
+        metadata.crs,
         nextLevel.tileLayout
       )
 
@@ -42,7 +42,7 @@ object Pyramid extends Logging {
     val firstMap: RDD[(K, (K, Tile))] =
       rdd
         .map { case (key, tile: Tile) =>
-          val extent = metaData.mapTransform(key)
+          val extent = metadata.mapTransform(key)
           val newSpatialKey = nextMetaData.mapTransform(extent.center)
           (key.updateSpatialComponent(newSpatialKey), (key, tile))
          }
@@ -59,13 +59,13 @@ object Pyramid extends Logging {
           val newTile = ArrayTile.empty(nextMetaData.cellType, nextMetaData.tileLayout.tileCols, nextMetaData.tileLayout.tileRows)
 
           for( (oldKey, tile) <- seq) {
-            val oldExtent = metaData.mapTransform(oldKey)
+            val oldExtent = metadata.mapTransform(oldKey)
             newTile.merge(newExtent, oldExtent, tile)
           }
 
           (newKey, newTile: Tile)
         }
 
-    new RasterRDD(nextRdd, nextMetaData) -> nextLevel
+    new TileRasterRDD(nextRdd, nextMetaData) -> nextLevel
   }
 }

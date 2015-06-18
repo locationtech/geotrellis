@@ -1,3 +1,3 @@
 package geotrellis.spark
 
-trait RasterRDDSeqMethods[K] { val rasterRDDs: Traversable[RasterRDD[K]] }
+trait RasterRDDSeqMethods[K] { val rasterRDDs: Traversable[TileRasterRDD[K]] }

@@ -23,7 +23,7 @@ object Reproject {
     } }
   }
 
-  def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] = {
+  def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K, Tile], destCRS: CRS): RasterRDD[K, Tile] = {
     val bcMetaData = rdd.sparkContext.broadcast(rdd.metaData)
 
     val reprojectedTiles = 
