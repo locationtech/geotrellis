@@ -1,0 +1,26 @@
+package geotrellis.spark.io.parquet.spatial
+
+import geotrellis.spark._
+import geotrellis.raster._
+import geotrellis.spark.utils.KryoSerializer
+import geotrellis.spark.io.index._
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import java.io.ByteArrayInputStream
+import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult}
+import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.services.s3.model.ObjectMetadata
+import geotrellis.spark.io.index.zcurve.Z2
+import com.typesafe.scalalogging.slf4j._
+import scala.collection.mutable.ArrayBuffer
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import scala.reflect.ClassTag
+
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
+import geotrellis.spark.io.parquet._
+
+
+object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] with LazyLogging {
+  val createTileRow = spatial.createTileRow
+}
