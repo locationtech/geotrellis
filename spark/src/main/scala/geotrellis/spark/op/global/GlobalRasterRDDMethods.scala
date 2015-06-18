@@ -14,6 +14,6 @@ trait GlobalRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   implicit val _sc: SpatialComponent[K]
 
-  def verticalFlip: RasterRDD[K] = VerticalFlip(rasterRDD)
+  def verticalFlip: RasterRDD[K, Tile] = VerticalFlip(rasterRDD)
 
 }

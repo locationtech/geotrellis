@@ -1,20 +1,20 @@
 package geotrellis.spark.op.global
 
 import geotrellis.spark._
-
+import geotrellis.raster.Tile
 import reflect.ClassTag
 
 object Viewshed {
 
-  def apply[K](rasterRDD: RasterRDD[K], startCol: Int, startRow: Int)
-    (implicit keyClassTag: ClassTag[K], _sc: SpatialComponent[K]): RasterRDD[K] = {
+  def apply[K](rasterRDD: RasterRDD[K, Tile], startCol: Int, startRow: Int)
+    (implicit keyClassTag: ClassTag[K], _sc: SpatialComponent[K]): RasterRDD[K, Tile] = {
     ???
   }
 
   private def offsets[K](
-    rasterRDD: RasterRDD[K],
+    rasterRDD: RasterRDD[K, Tile],
     startCol: Int,
-    startRow: Int): RasterRDD[K] = {
+    startRow: Int): RasterRDD[K, Tile] = {
     val metaData = rasterRDD.metaData
 
     val gridBounds = metaData.gridBounds

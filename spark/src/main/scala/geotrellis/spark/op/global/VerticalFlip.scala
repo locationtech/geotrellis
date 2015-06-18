@@ -1,15 +1,15 @@
 package geotrellis.spark.op.global
 
 import geotrellis.spark._
-
+import geotrellis.raster.Tile
 import geotrellis.raster.op.global.{VerticalFlip => VerticalTileFlip}
 
 import reflect.ClassTag
 
 object VerticalFlip {
 
-  def apply[K](rasterRDD: RasterRDD[K])
-    (implicit keyClassTag: ClassTag[K]): RasterRDD[K] = {
+  def apply[K](rasterRDD: RasterRDD[K, Tile])
+    (implicit keyClassTag: ClassTag[K]): RasterRDD[K, Tile] = {
     val gridBounds = rasterRDD.metaData.gridBounds
     val rowHeight = gridBounds.height
 

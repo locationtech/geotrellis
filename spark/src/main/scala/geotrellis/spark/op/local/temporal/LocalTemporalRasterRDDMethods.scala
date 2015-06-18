@@ -27,28 +27,28 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): RasterRDD[K] =
+    end: DateTime): RasterRDD[K, Tile] =
     aggregateWithTemporalWindow(windowSize, unit, start, end)(minReduceOp)
 
   def temporalMax(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): RasterRDD[K] =
+    end: DateTime): RasterRDD[K, Tile] =
     aggregateWithTemporalWindow(windowSize, unit, start, end)(maxReduceOp)
 
   def temporalMean(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): RasterRDD[K] =
+    end: DateTime): RasterRDD[K, Tile] =
     aggregateWithTemporalWindow(windowSize, unit, start, end)(meanReduceOp)
 
   def temporalVariance(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): RasterRDD[K] =
+    end: DateTime): RasterRDD[K, Tile] =
     aggregateWithTemporalWindow(windowSize, unit, start, end)(varianceReduceOp)
 
   private def aggregateWithTemporalWindow(
@@ -57,7 +57,7 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
     start: DateTime,
     end: DateTime)(
     reduceOp: Traversable[Tile] => Tile
-  ): RasterRDD[K] = {
+  ): RasterRDD[K, Tile] = {
     val sc = rasterRDD.sparkContext
 
     asRasterRDD(rasterRDD.metaData) {
