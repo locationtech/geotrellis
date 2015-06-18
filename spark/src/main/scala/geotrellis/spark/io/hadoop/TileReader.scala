@@ -7,12 +7,12 @@ import geotrellis.raster._
 
 import org.apache.spark.SparkContext
 
-trait TileReader[K] {
+trait TileReader[K, T] {
   /** @param keyBounds KeyBounds[K] for the single tile we'd like to pull */
   def read(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     index: KeyIndex[K],
     keyBounds: KeyBounds[K]
-  )(implicit sc: SparkContext): Tile
+  )(implicit sc: SparkContext): T
 }

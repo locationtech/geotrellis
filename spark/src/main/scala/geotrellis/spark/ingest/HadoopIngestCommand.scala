@@ -6,6 +6,7 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
 import geotrellis.vector._
+import geotrellis.raster.Tile
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import com.quantifind.sumac.ArgMain
@@ -31,7 +32,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
     Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme, args.pyramid){ (rdd, level) => 
       catalog
-        .writer[SpatialKey](RowMajorKeyIndexMethod, args.clobber)
+        .writer[SpatialKey, Tile](RowMajorKeyIndexMethod, args.clobber)
         .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }

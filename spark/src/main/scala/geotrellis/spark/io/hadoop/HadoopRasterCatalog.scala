@@ -64,43 +64,51 @@ class HadoopRasterCatalog(
   catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
 ) extends AttributeCaching[HadoopLayerMetaData] {
 
-  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
+  def read[K: Boundable: JsonFormat: ClassTag, T: ClassTag]
+  (layerId: LayerId, query: RasterRDDQuery[K])
+  (implicit rddReader: RasterRDDReader[K, T]): RasterRDD[K, T] = {
     try {
       val metadata  = getLayerMetadata(layerId)
-      val keyBounds = getLayerKeyBounds(layerId)                
-      val index     = getLayerKeyIndex(layerId)
+      val keyBounds = getLayerKeyBounds(layerId)(implicitly[RootJsonFormat[KeyBounds[K]]])
+      val index     = getLayerKeyIndex(layerId)(implicitly[RootJsonFormat[KeyIndex[K]]])
 
-      implicitly[RasterRDDReader[K]]
-        .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
+      rddReader.read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
     } catch {
       case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
     }
   }
 
-  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
-    query[K](layerId).toRDD
+  def read[K: Boundable: JsonFormat: ClassTag, T: ClassTag](layerId: LayerId)(implicit rddReader: RasterRDDReader[K, T]): RasterRDD[K, T] =
+    query[K, T](layerId).toRDD
 
-  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
-    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _))
+  def query[K: Boundable: JsonFormat: ClassTag, T: ClassTag](layerId: LayerId)(implicit rddReader: RasterRDDReader[K, T]): BoundRasterRDDQuery[K, T] =
+    new BoundRasterRDDQuery[K, T](new RasterRDDQuery[K], read(layerId, _))
 
-  def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, "")
+  def writer[K: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag, T: ClassTag]
+  (keyIndexMethod: KeyIndexMethod[K])(implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer[K, T](keyIndexMethod, "")
 
-  def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
+  def writer[K: Boundable: Ordering: JsonFormat: SpatialComponent: ClassTag, T: ClassTag]
+  (keyIndexMethod: KeyIndexMethod[K], clobber: Boolean)(implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
     writer(keyIndexMethod, "", clobber)
 
-  def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: Path): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, subDir.toString)
+  def writer[K: Boundable: Ordering: JsonFormat: SpatialComponent: ClassTag, T: ClassTag]
+  (keyIndexMethod: KeyIndexMethod[K], subDir: Path)(implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer[K, T](keyIndexMethod, subDir.toString)
 
-  def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: Path, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, subDir.toString, clobber)
+  def writer[K: Boundable: Ordering: JsonFormat: SpatialComponent: ClassTag, T: ClassTag]
+  (keyIndexMethod: KeyIndexMethod[K], subDir: Path, clobber: Boolean)(implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer[K, T](keyIndexMethod, subDir.toString, clobber)
 
-  def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, subDir, clobber = true)
+  def writer[K: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag, T: ClassTag]
+  (keyIndexMethod: KeyIndexMethod[K], subDir: String)(implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer[K, T](keyIndexMethod, subDir, clobber = true)
 
-  def writer[K: RasterRDDWriter: Boundable: Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    new Writer[LayerId, RasterRDD[K]] {
-      def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
+  def writer[K: Boundable: Ordering: JsonFormat: SpatialComponent: ClassTag, T: ClassTag]
+  (keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean)
+  (implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    new Writer[LayerId, RasterRDD[K, T]] {
+      def write(layerId: LayerId, rdd: RasterRDD[K, T]): Unit = {
         rdd.persist()
 
         val layerPath = 
@@ -124,8 +132,7 @@ class HadoopRasterCatalog(
           }
           keyIndexMethod.createIndex(indexKeyBounds)
         }
-
-        val rddWriter = implicitly[RasterRDDWriter[K]]
+        
         rddWriter.write(catalogConfig, md, keyIndex, clobber)(layerId, rdd)
 
         setLayerMetadata(layerId, md)
@@ -136,11 +143,11 @@ class HadoopRasterCatalog(
       }
     }
 
-  def tileReader[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
+  def tileReader[K: Boundable: JsonFormat: ClassTag, T: ClassTag](layerId: LayerId)(implicit tileReader: TileReader[K,T]): Reader[K, T] = {
     // TODO: There should be a way to do this with a Reader, not touching any InputFormats
     val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
+    val keyBounds = getLayerKeyBounds(layerId)(implicitly[RootJsonFormat[KeyBounds[K]]])
+    val index     = getLayerKeyIndex(layerId)(implicitly[RootJsonFormat[KeyIndex[K]]])
     val boundable = implicitly[Boundable[K]]
     
     val readTile = (key: K) => {
@@ -148,7 +155,7 @@ class HadoopRasterCatalog(
       boundable.intersect(tileKeyBounds, keyBounds) match {
         case Some(kb) =>
           try {
-            implicitly[TileReader[K]].read(catalogConfig, metadata, index, kb)
+            tileReader.read(catalogConfig, metadata, index, kb)
           } catch {
             case e: UnsupportedOperationException => throw new TileNotFoundError(key, layerId)
           }          
@@ -157,7 +164,7 @@ class HadoopRasterCatalog(
       }
     }
     
-    new Reader[K, Tile] {
+    new Reader[K, T] {
       def read(key: K) = readTile(key)
     }
   }
