@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright (c) 2015 Azavea.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,57 +23,55 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-class RasterRDD[K: ClassTag](tileRdd: RDD[(K, Tile)], val metaData: RasterMetaData) extends GeoRDD[K, Tile](tileRdd) {
-  type Self = RasterRDD[K]
+abstract class RasterRDD[K: ClassTag, T: ClassTag](val tileRdd: RDD[(K, T)]) extends RDD[(K, T)](tileRdd) {
+  type Self <: RasterRDD[K, T]
 
-  def wrap(f: => RDD[(K, Tile)]): Self =
-    new RasterRDD[K](f, metaData)
+  def wrap(f: => RDD[(K, T)]): Self 
 
-  def convert(cellType: CellType): RasterRDD[K] =
-    mapTiles(_.convert(cellType))
+  override val partitioner = tileRdd.partitioner
 
-  def minMax: (Int, Int) =
-    map(_.tile.findMinMax)
-      .reduce { (t1, t2) =>
-        val (min1, max1) = t1
-        val (min2, max2) = t2
-        val min =
-          if(isNoData(min1)) min2
-          else {
-            if(isNoData(min2)) min1
-            else math.min(min1, min2)
-          }
-        val max =
-          if(isNoData(max1)) max2
-          else {
-            if(isNoData(max2)) max1
-            else math.max(max1, max2)
-          }
-        (min, max)
-      }
+  override def getPartitions: Array[Partition] = firstParent[(K, Tile)].partitions
 
-  def minMaxDouble: (Double, Double) =
-    map(_.tile.findMinMaxDouble)
-      .reduce { (t1, t2) =>
-        val (min1, max1) = t1
-        val (min2, max2) = t2
-        val min =
-          if(isNoData(min1)) min2
-          else {
-            if(isNoData(min2)) min1
-            else math.min(min1, min2)
-          }
-        val max =
-          if(isNoData(max1)) max2
-          else {
-            if(isNoData(max2)) max1
-            else math.max(max1, max2)
-          }
-        (min, max)
-      }
+  override def compute(split: Partition, context: TaskContext) =
+    firstParent[(K, T)].iterator(split, context)  
 
-}
+  def reduceByKey(f: (T, T) => T): Self = wrap { 
+    tileRdd.reduceByKey(f) 
+  }
 
-object RasterRDD {
-  implicit class SpatialRasterRDD(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
+  def mapKeys[R: ClassTag](f: K => K): Self = wrap {
+    tileRdd map { case (key, tile) => f(key) -> tile }
+  }
+
+  def mapTiles(f: T => T): Self = wrap {
+    tileRdd map { case (key, tile) => key -> f(tile) }
+  }
+
+  def mapPairs(f: ((K, T)) => (K, T)): Self = wrap {
+    tileRdd map { row => f(row) }
+  }
+
+  def combinePairs(other: Self)(f: ((K, T), (K, T)) => (K, T)): Self = wrap {
+    zipPartitions(other, true) { (partition1, partition2) =>
+      partition1.zip(partition2) map { case (row1, row2) => f(row1, row2) }
+    }    
+  }
+
+  def combineTiles(other: Self)(f: (T, T) => T): Self =
+    combinePairs(other) { case ((k1, t1), (k2, t2)) => (k1, f(t1, t2)) }
+
+  def combinePairs(others: Traversable[Self])(f: (Traversable[(K, T)] => (K, T))): Self = {
+    def create(t: (K, T)) = Vector(t)
+    def mergeValue(ts: Vector[(K, T)], t: (K, T)) = ts :+ t
+    def mergeContainers(ts1: Vector[(K, T)], ts2: Traversable[(K, T)]) = ts1 ++ ts2
+
+    wrap {
+      (this :: others.toList)
+        .map(_.tileRdd)
+        .reduceLeft(_ ++ _)
+        .map(t => (t._1, t))
+        .combineByKey(create, mergeValue, mergeContainers)
+        .map { case (id, tiles) => f(tiles) }
+    }
+  }
 }

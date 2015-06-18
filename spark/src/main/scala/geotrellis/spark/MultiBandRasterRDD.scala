@@ -23,7 +23,7 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-class MultiBandRasterRDD[K: ClassTag](tileRdd: RDD[(K, MultiBandTile)], val metaData: RasterMetaData) extends GeoRDD[K, MultiBandTile](tileRdd) {
+class MultiBandRasterRDD[K: ClassTag](tileRdd: RDD[(K, MultiBandTile)], val metaData: RasterMetaData) extends RasterRDD[K, MultiBandTile](tileRdd) {
   type Self = MultiBandRasterRDD[K]
   
   def wrap(f: => RDD[(K, MultiBandTile)]): MultiBandRasterRDD[K] =
