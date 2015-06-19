@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.raster._
 
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
@@ -32,12 +33,12 @@ object TestFiles extends Logging {
 }
 
 trait TestFiles { self: OnlyIfCanRunSpark =>
-  def spatialTestFile(layerName: String): RasterRDD[SpatialKey] = {
-    TestFiles.catalog.query[SpatialKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
+  def spatialTestFile(layerName: String): RasterRDD[SpatialKey, Tile] = {
+    TestFiles.catalog.query[SpatialKey, Tile](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }
 
-  def spaceTimeTestFile(layerName: String): RasterRDD[SpaceTimeKey] = {
-    TestFiles.catalog.query[SpaceTimeKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
+  def spaceTimeTestFile(layerName: String): RasterRDD[SpaceTimeKey, Tile] = {
+    TestFiles.catalog.query[SpaceTimeKey, Tile](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }
 
   def AllOnesTestFile =

@@ -44,7 +44,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("should succeed writing to a table") {
           info(layerId.toString)
-          catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName, SocketWriteStrategy()).write(layerId, onesRdd)
+          catalog.writer[SpatialKey, Tile](RowMajorKeyIndexMethod, tableName, SocketWriteStrategy()).write(layerId, onesRdd)
         }
 
         it("should know when layer exists"){
@@ -53,28 +53,28 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles") {
-          val rdd = catalog.read[SpatialKey](layerId)
+          val rdd = catalog.read[SpatialKey, Tile](layerId)
           rdd.count should be > 0l
           rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }
 
         it("should load out a single tile") {
-          val key = catalog.query[SpatialKey](layerId).toRDD.map(_._1).collect.head
-          val getTile = catalog.tileReader[SpatialKey](layerId)
+          val key = catalog.query[SpatialKey, Tile](layerId).toRDD.map(_._1).collect.head
+          val getTile = catalog.tileReader[SpatialKey, Tile](layerId)
           val tile = getTile(key)
           (tile.cols, tile.rows) should be ((512, 512))
         }
 
         it("should load out saved tiles, but only for the right zoom") {
           intercept[LayerNotFoundError] {
-            catalog.query[SpatialKey](LayerId("ones", level.zoom + 1)).toRDD.count()
+            catalog.query[SpatialKey, Tile](LayerId("ones", level.zoom + 1)).toRDD.count()
           }
         }
 
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,612,916,612)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd1 = catalog.query[SpatialKey, Tile](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey, Tile](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
@@ -92,7 +92,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
           it(test.name){
-            val rdd = catalog.read[SpatialKey](test.layerId.copy(zoom = level.zoom), test.query)
+            val rdd = catalog.read[SpatialKey, Tile](test.layerId.copy(zoom = level.zoom), test.query)
             rdd.map(_._1).collect should contain theSameElementsAs test.expected
           }
         }
@@ -116,17 +116,17 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val layerId = LayerId("coordinates", zoom)
 
       it("should succeed writing to a table") {
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy()).write(layerId, CoordinateSpaceTime)
+        catalog.writer[SpaceTimeKey, Tile](ZCurveKeyIndexMethod.byYear, tableName, SocketWriteStrategy()).write(layerId, CoordinateSpaceTime)
       }
 
       it("should load out saved tiles") {
-        val rdd = catalog.read[SpaceTimeKey](layerId)
+        val rdd = catalog.read[SpaceTimeKey, Tile](layerId)
         rdd.count should be > 0l
       }
 
       it("should load out a single tile") {
-        val key = catalog.query[SpaceTimeKey](layerId).toRDD.map(_._1).collect.head
-        val getTile = catalog.tileReader[SpaceTimeKey](layerId)
+        val key = catalog.query[SpaceTimeKey, Tile](layerId).toRDD.map(_._1).collect.head
+        val getTile = catalog.tileReader[SpaceTimeKey, Tile](layerId)
         val tile = getTile(key)
         val actual = CoordinateSpaceTime.collect.toMap.apply(key)
         tilesEqual(tile, actual)
@@ -134,7 +134,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
       it("should load out saved tiles, but only for the right zoom") {
         intercept[LayerNotFoundError] {
-          catalog.query[SpaceTimeKey](LayerId("coordinates", zoom + 1)).toRDD.count()
+          catalog.query[SpaceTimeKey, Tile](LayerId("coordinates", zoom + 1)).toRDD.count()
         }
       }
 
@@ -147,7 +147,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val (minRow, maxRow) = (rows.min, rows.max)
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
-        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).where(Intersects(tileBounds)).toRDD
+        val rdd = catalog.query[SpaceTimeKey, Tile](LayerId("coordinates", zoom)).where(Intersects(tileBounds)).toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
@@ -167,7 +167,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
 
         val rdd = catalog
-          .query[SpaceTimeKey](LayerId("coordinates", zoom))
+          .query[SpaceTimeKey, Tile](LayerId("coordinates", zoom))
           .where(Intersects(tileBounds))
           .where(Between(maxTime,maxTime))
           .toRDD
@@ -180,7 +180,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId.copy(zoom = zoom), test.query)
+          val rdd = catalog.read[SpaceTimeKey, Tile](test.layerId.copy(zoom = zoom), test.query)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
       }

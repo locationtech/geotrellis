@@ -47,7 +47,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
         new RasterRDD(combinedRDDs, metaData)
       }
 
-      def groupRasterRDDToRastersByTemporalKey(rasterRDD: RasterRDD[SpaceTimeKey]): Map[DateTime, Tile] = {
+      def groupRasterRDDToRastersByTemporalKey(rasterRDD: RasterRDD[SpaceTimeKey, Tile]): Map[DateTime, Tile] = {
         val metaData = rasterRDD.metaData
         val gridBounds = metaData.mapTransform(metaData.extent)
         val tileLayout = 

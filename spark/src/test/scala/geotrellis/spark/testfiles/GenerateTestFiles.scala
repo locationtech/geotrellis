@@ -82,7 +82,7 @@ object GenerateTestFiles {
 
 //      println(rdd.stitch.asciiDraw)
 
-      catalog.writer[SpatialKey](RowMajorKeyIndexMethod, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.writer[SpatialKey, Tile](RowMajorKeyIndexMethod, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }
@@ -121,7 +121,7 @@ object GenerateTestFiles {
 
 //      println(rdd.stitch.asciiDraw)
 
-      catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.writer[SpaceTimeKey, Tile](ZCurveKeyIndexMethod.byYear, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }

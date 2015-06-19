@@ -17,7 +17,7 @@ trait RasterRDDBuilders {
   def createRasterRDD(
     sc: SparkContext,
     tile: Tile,
-    tileLayout: TileLayout): RasterRDD[SpatialKey] = {
+    tileLayout: TileLayout): RasterRDD[SpatialKey, Tile] = {
 
     val extent = defaultCRS.worldExtent
 
@@ -66,7 +66,7 @@ trait RasterRDDBuilders {
     sc: SparkContext,
     tiles: Traversable[(Tile, DateTime)],
     tileLayout: TileLayout,
-    cellType: CellType = TypeInt): RasterRDD[SpaceTimeKey] = {
+    cellType: CellType = TypeInt): RasterRDD[SpaceTimeKey, Tile] = {
 
     val extent = defaultCRS.worldExtent
 
