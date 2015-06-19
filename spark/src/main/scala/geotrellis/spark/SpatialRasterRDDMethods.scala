@@ -3,7 +3,7 @@ package geotrellis.spark
 import geotrellis.raster._
 
 trait SpatialRasterRDDMethods {
-  val rdd: TileRasterRDD[SpatialKey]
+  val rdd: RasterRDD[SpatialKey, Tile]
 
   /**
    * Collects and stitches all the tiles in the RasterRDD into one CompositeTile.

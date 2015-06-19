@@ -66,6 +66,6 @@ object Pyramid extends Logging {
           (newKey, newTile: Tile)
         }
 
-    new TileRasterRDD(nextRdd, nextMetaData) -> nextLevel
+    new RasterRDD(nextRdd, nextMetaData) -> nextLevel
   }
 }

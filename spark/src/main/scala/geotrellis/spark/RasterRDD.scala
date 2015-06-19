@@ -76,3 +76,7 @@ class RasterRDD[K: ClassTag, T: ClassTag](val tileRdd: RDD[(K, T)], val metaData
     }
   }
 }
+
+object RasterRDD {
+  implicit class SpatialRasterRDD(val rdd: RasterRDD[SpatialKey, Tile]) extends SpatialRasterRDDMethods
+}

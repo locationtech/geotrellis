@@ -14,7 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentialsProvider}
 
-abstract class RasterRDDReader[K: Boundable: ClassTag] extends LazyLogging {
+abstract class RasterRDDReader[K: Boundable: ClassTag, T: ClassTag] extends LazyLogging {
   import RasterRDDReader._
 
   /** Converting lower bound of Range to first Key for Marker */
@@ -31,7 +31,7 @@ abstract class RasterRDDReader[K: Boundable: ClassTag] extends LazyLogging {
     numPartitions: Int
   )
   (layerId: LayerId, queryKeyBounds: Seq[KeyBounds[K]])
-  (implicit sc: SparkContext): RasterRDD[K] = {
+  (implicit sc: SparkContext): RasterRDD[K, T] = {
     val bucket = layerMetaData.bucket
     val dir = layerMetaData.key
     val rasterMetaData = layerMetaData.rasterMetaData
@@ -60,7 +60,7 @@ abstract class RasterRDDReader[K: Boundable: ClassTag] extends LazyLogging {
               listKeys(s3client, bucket, dir, range, toPath, toIndex)
                 .map { path =>
                   val is = s3client.getObject(bucket, path).getObjectContent
-                  KryoSerializer.deserializeStream[(K, Tile)](is)
+                  KryoSerializer.deserializeStream[(K, T)](is)
                  }
                 .filter{ 
                   row => includeKey(row._1) 

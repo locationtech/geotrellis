@@ -9,7 +9,7 @@ import org.apache.spark.SparkContext
 import scala.collection.JavaConversions._
 import com.amazonaws.services.s3.model.AmazonS3Exception
 
-trait TileReader[K] {
+trait TileReader[K, T] {
   val encodeKey: (K, KeyIndex[K], Int) => String 
 
   def read(
@@ -18,7 +18,7 @@ trait TileReader[K] {
     lmd: S3LayerMetaData,
     index: KeyIndex[K],
     keyBounds: KeyBounds[K])
-  (key: K): Tile = {
+  (key: K): T = {
 
     val maxLen = { // lets find out the widest key we can possibly have
       def digits(x: Long): Int = if (x < 10) 1 else 1 + digits(x/10)
@@ -34,7 +34,7 @@ trait TileReader[K] {
         throw new TileNotFoundError(key, layerId)        
     }
 
-    val (storedKey, tile) = KryoSerializer.deserializeStream[(K, Tile)](is)
+    val (storedKey, tile) = KryoSerializer.deserializeStream[(K, T)](is)
 
     require(storedKey == key, "They key requested must match the key retreived.")    
 

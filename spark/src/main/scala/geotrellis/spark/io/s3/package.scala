@@ -1,15 +1,16 @@
 package geotrellis.spark.io
 
 import geotrellis.spark.{SpaceTimeKey, SpatialKey}
+import scala.reflect.ClassTag
 
 package object s3 {
-  implicit lazy val s3SpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val s3SpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
-  implicit lazy val s3SpatialRasterTileReader = spatial.SpatialTileReader
+  implicit def s3SpatialRasterRDDReader[T: ClassTag] = new spatial.SpatialRasterRDDReader[T]
+  implicit def s3SpatialRasterRDDWriter[T: ClassTag] = new spatial.SpatialRasterRDDWriter[T]
+  implicit def s3SpatialRasterTileReader[T: ClassTag] = new spatial.SpatialTileReader[T]
 
-  implicit lazy val s3SpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val s3SpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
-  implicit lazy val s3SpaceTimeRasterTileReader = spacetime.SpaceTimeTileReader
+  implicit def s3SpaceTimeRasterRDDReader[T: ClassTag] = new spacetime.SpaceTimeRasterRDDReader[T]
+  implicit def s3SpaceTimeRasterRDDWriter[T: ClassTag] = new spacetime.SpaceTimeRasterRDDWriter[T]
+  implicit def s3SpaceTimeRasterTileReader[T: ClassTag] = new spacetime.SpaceTimeTileReader[T]
 
   private[s3]
   def maxIndexWidth(maxIndex: Long): Int = {

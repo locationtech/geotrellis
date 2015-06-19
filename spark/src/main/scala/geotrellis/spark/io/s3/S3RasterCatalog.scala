@@ -7,7 +7,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 
 import org.apache.spark._
-import spray.json.JsonFormat
+import spray.json.{RootJsonFormat, JsonFormat}
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.retry.PredefinedRetryPolicies
 
@@ -45,45 +45,64 @@ class S3RasterCatalog(
 (implicit sc: SparkContext) extends AttributeCaching[S3LayerMetaData] {
   import S3RasterCatalog._
 
-  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism): RasterRDD[K] = {
+  def read[K: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (layerId: LayerId, rasterQuery: RasterRDDQuery[K], numPartitions: Int = sc.defaultParallelism)
+    (implicit rddReader: RasterRDDReader[K, T]): RasterRDD[K, T] = {
+
     try {
       val metadata  = getLayerMetadata(layerId)
-      val keyBounds = getLayerKeyBounds(layerId)                
-      val index     = getLayerKeyIndex(layerId)
+      val keyBounds = getLayerKeyBounds(layerId)(implicitly[RootJsonFormat[KeyBounds[K]]])                
+      val index     = getLayerKeyIndex(layerId)(implicitly[RootJsonFormat[KeyIndex[K]]])                
 
       val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
-      implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
+      rddReader.read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
     } catch {
       case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
     }
   }
 
-  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int): RasterRDD[K] =
-    query[K](layerId, numPartitions).toRDD
+  def read[K: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (layerId: LayerId, numPartitions: Int)
+    (implicit rddReader: RasterRDDReader[K, T]): RasterRDD[K, T] =
+    read(layerId, new RasterRDDQuery[K], numPartitions)
 
-  def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
-    query[K](layerId, sc.defaultParallelism).toRDD
+  def read[K: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (layerId: LayerId)
+    (implicit rddReader: RasterRDDReader[K, T]): RasterRDD[K, T] =
+    read(layerId, new RasterRDDQuery[K], sc.defaultParallelism)
 
-  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] ={
-    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _, sc.defaultParallelism))
+  def query[K: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (layerId: LayerId)
+    (implicit rddReader: RasterRDDReader[K, T]): BoundRasterRDDQuery[K, T] ={
+    new BoundRasterRDDQuery[K, T](new RasterRDDQuery[K], read(layerId, _, sc.defaultParallelism))
   }
 
-  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int): BoundRasterRDDQuery[K] = {
-    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _, numPartitions))
+  def query[K: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (layerId: LayerId, numPartitions: Int)
+    (implicit rddReader: RasterRDDReader[K, T]): BoundRasterRDDQuery[K, T] = {
+    new BoundRasterRDDQuery[K, T](new RasterRDDQuery[K], read(layerId, _, numPartitions))
   }
 
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, clobber = true)
+  def writer[K: SpatialComponent: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (keyIndexMethod: KeyIndexMethod[K])
+    (implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer(keyIndexMethod, clobber = true)
 
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, subDir, clobber = true)
+  def writer[K: SpatialComponent: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (keyIndexMethod: KeyIndexMethod[K], subDir: String)
+    (implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer(keyIndexMethod, subDir, clobber = true)
 
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, "", clobber = true)  
+  def writer[K: SpatialComponent: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (keyIndexMethod: KeyIndexMethod[K], clobber: Boolean)
+    (implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    writer(keyIndexMethod, "", clobber = true)  
   
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    new Writer[LayerId, RasterRDD[K]] {
-      def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
+  def writer[K: SpatialComponent: Boundable: JsonFormat: ClassTag, T: ClassTag]
+    (keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean)
+    (implicit rddWriter: RasterRDDWriter[K, T]): Writer[LayerId, RasterRDD[K, T]] =
+    new Writer[LayerId, RasterRDD[K, T]] {
+      def write(layerId: LayerId, rdd: RasterRDD[K, T]): Unit = {
         rdd.persist()
 
         val path = 
@@ -113,18 +132,17 @@ class S3RasterCatalog(
         setLayerMetadata(layerId, md)
         setLayerKeyBounds(layerId, keyBounds)
         setLayerKeyIndex(layerId, index)
-
-        val rddWriter = implicitly[RasterRDDWriter[K]]
+        
         rddWriter.write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
       }
     }
 
-  def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
+  def tileReader[K: JsonFormat: ClassTag, T: ClassTag](layerId: LayerId)(implicit tileReader: TileReader[K, T]): K => T = {
     val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
-    implicitly[TileReader[K]].read(s3client(), layerId, metadata, index, keyBounds)(_)    
+    val keyBounds = getLayerKeyBounds(layerId)(implicitly[RootJsonFormat[KeyBounds[K]]])                
+    val index     = getLayerKeyIndex(layerId)(implicitly[RootJsonFormat[KeyIndex[K]]])                
+    tileReader.read(s3client(), layerId, metadata, index, keyBounds)(_)    
   }
 }

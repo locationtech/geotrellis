@@ -18,6 +18,6 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
 import org.joda.time.format.ISODateTimeFormat
 
-object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] with LazyLogging {
+class SpaceTimeRasterRDDWriter[T: ClassTag] extends RasterRDDWriter[SpaceTimeKey, T] with LazyLogging {
   val encodeKey = spacetime.encodeKey
 }
