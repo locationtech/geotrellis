@@ -67,7 +67,7 @@ class HadoopRasterCatalog(
   def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
     try {
       val metadata  = getLayerMetadata(layerId)
-      val keyBounds = getLayerKeyBounds(layerId)                
+      val keyBounds = getLayerKeyBounds(layerId)
       val index     = getLayerKeyIndex(layerId)
 
       implicitly[RasterRDDReader[K]]
@@ -103,15 +103,15 @@ class HadoopRasterCatalog(
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         rdd.persist()
 
-        val layerPath = 
+        val layerPath =
           if (subDir == "")
             new Path(rootPath, catalogConfig.layerDataDir(layerId))
           else
             new Path(new Path(rootPath, subDir), catalogConfig.layerDataDir(layerId))
-        
-        val md = HadoopLayerMetaData(        
-          keyClass = classTag[K].toString, 
-          rasterMetaData = rdd.metaData, 
+
+        val md = HadoopLayerMetaData(
+          keyClass = classTag[K].toString,
+          rasterMetaData = rdd.metaData,
           path = layerPath)
 
         val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
@@ -139,10 +139,10 @@ class HadoopRasterCatalog(
   def tileReader[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     // TODO: There should be a way to do this with a Reader, not touching any InputFormats
     val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
+    val keyBounds = getLayerKeyBounds(layerId)
     val index     = getLayerKeyIndex(layerId)
     val boundable = implicitly[Boundable[K]]
-    
+
     val readTile = (key: K) => {
       val tileKeyBounds = KeyBounds(key, key)
       boundable.intersect(tileKeyBounds, keyBounds) match {
@@ -151,12 +151,12 @@ class HadoopRasterCatalog(
             implicitly[TileReader[K]].read(catalogConfig, metadata, index, kb)
           } catch {
             case e: UnsupportedOperationException => throw new TileNotFoundError(key, layerId)
-          }          
-        case None => 
+          }
+        case None =>
           throw new TileNotFoundError(key, layerId)
       }
     }
-    
+
     new Reader[K, Tile] {
       def read(key: K) = readTile(key)
     }

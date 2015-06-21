@@ -9,10 +9,10 @@ package geotrellis.spark
  */
 trait Boundable[K] extends Serializable {
   def minBound(p1: K, p2: K): K
-  
+
   def maxBound(p1: K, p2: K): K
-  
-  def include(p: K, bounds: KeyBounds[K]): KeyBounds[K] = {    
+
+  def include(p: K, bounds: KeyBounds[K]): KeyBounds[K] = {
     KeyBounds(
       minBound(bounds.minKey, p),
       maxBound(bounds.maxKey, p))

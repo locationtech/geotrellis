@@ -27,21 +27,21 @@ import scalaz.concurrent.Task
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
+private[s3] abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
   val encodeKey: (K, KeyIndex[K], Int) => String
 
   def write(
-    s3client: ()=>S3Client, 
-    bucket: String, 
+    s3client: ()=>S3Client,
+    bucket: String,
     layerPath: String,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K],
     clobber: Boolean)
   (layerId: LayerId, rdd: RasterRDD[K])
   (implicit sc: SparkContext): Unit = {
-    // TODO: Check if I am clobbering things        
+    // TODO: Check if I am clobbering things
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
-        
+
     val maxLen = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
 
     val bcClient = sc.broadcast(s3client)
@@ -55,11 +55,11 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
 
         val s3client: S3Client = bcClient.value.apply
 
-        val requests: Process[Task, PutObjectRequest] = 
+        val requests: Process[Task, PutObjectRequest] =
           Process.unfold(partition){ iter =>
             if (iter.hasNext) {
               val row = iter.next
-              val index = keyIndex.toIndex(row._1) 
+              val index = keyIndex.toIndex(row._1)
               val bytes = KryoSerializer.serialize[(K, Tile)](row)
               val metadata = new ObjectMetadata()
               metadata.setContentLength(bytes.length)
@@ -70,19 +70,19 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
               None
             }
           }
-        
+
         val pool = Executors.newFixedThreadPool(32)
 
         val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
-          Process eval Task { 
+          Process eval Task {
             request.getInputStream.reset // reset in case of retransmission to avoid 400 error
-            s3client.putObject(request) 
+            s3client.putObject(request)
           }(pool).retryEBO {
             case e: AmazonS3Exception if e.getStatusCode == 503 => true
             case _ => false
           }
-        }   
-    
+        }
+
         val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 8) { requests map (write) }
 
         results.run.run
@@ -90,5 +90,5 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
       }
 
     logger.info(s"Finished saving tiles to ${layerPath}")
-  }   
+  }
 }
