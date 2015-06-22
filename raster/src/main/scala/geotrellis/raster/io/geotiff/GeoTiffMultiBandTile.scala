@@ -1,7 +1,6 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.interpolation.InterpolationMethod
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.vector.Extent
 

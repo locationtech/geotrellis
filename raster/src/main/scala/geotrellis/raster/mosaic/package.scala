@@ -1,7 +1,7 @@
 package geotrellis.raster
 
 import geotrellis.vector._
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 
 import spire.syntax.cfor._
 
@@ -35,7 +35,7 @@ package object mosaic {
     def merge(extent: Extent, otherExtent: Extent, other: Tile): Tile =
       merge(extent, otherExtent, other, NearestNeighbor)
 
-    def merge(extent: Extent, otherExtent: Extent, other: Tile, method: InterpolationMethod): Tile =
+    def merge(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod): Tile =
       otherExtent & extent match {
         case Some(sharedExtent) =>
           val mutableTile = tile.mutable
@@ -44,22 +44,22 @@ package object mosaic {
           val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
 
           if(tile.cellType.isFloatingPoint) {
-            val interpolate = Interpolation(method, other, otherExtent).interpolateDouble _
+            val resampleF = Resample(method, other, otherExtent).resampleDouble _
             cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if(isNoData(tile.getDouble(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
-                  mutableTile.setDouble(col, row, interpolate(x, y))
+                  mutableTile.setDouble(col, row, resampleF(x, y))
                 }
               }
             }
           } else {
-            val interpolate = Interpolation(method, other, otherExtent).interpolate _
+            val resampleF = Resample(method, other, otherExtent).resample _
             cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if(isNoData(tile.get(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
-                  mutableTile.set(col, row, interpolate(x, y))
+                  mutableTile.set(col, row, resampleF(x, y))
                 }
               }
             }

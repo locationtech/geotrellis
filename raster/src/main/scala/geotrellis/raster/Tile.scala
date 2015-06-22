@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.op.stats._
 
@@ -137,20 +137,20 @@ trait Tile extends IterableTile with MappableTile[Tile] {
   }
 
   def resample(source: Extent, target: RasterExtent): Tile =
-    resample(source, target, InterpolationMethod.DEFAULT)
+    resample(source, target, ResampleMethod.DEFAULT)
 
-  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile
+  def resample(source: Extent, target: RasterExtent, method: ResampleMethod): Tile
 
   def resample(source: Extent, target: Extent): Tile =
-    resample(source, target, InterpolationMethod.DEFAULT)
+    resample(source, target, ResampleMethod.DEFAULT)
 
-  def resample(source: Extent, target: Extent, method: InterpolationMethod): Tile =
+  def resample(source: Extent, target: Extent, method: ResampleMethod): Tile =
     resample(source, RasterExtent(source, cols, rows).createAligned(target), method)
 
   def resample(source: Extent, targetCols: Int, targetRows: Int): Tile =
-    resample(source, targetCols, targetRows, InterpolationMethod.DEFAULT)
+    resample(source, targetCols, targetRows, ResampleMethod.DEFAULT)
 
-  def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): Tile =
+  def resample(source: Extent, targetCols: Int, targetRows: Int, method: ResampleMethod): Tile =
     resample(source, RasterExtent(source, targetCols, targetRows), method)
 
   /** Only changes the resolution */

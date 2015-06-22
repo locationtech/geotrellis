@@ -1,6 +1,6 @@
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.op.stats._
 import geotrellis.macros._
@@ -112,20 +112,20 @@ trait MultiBandTile extends MacroCombinableMultiBandTile[Tile] {
     macro MultiBandTileMacros.doubleCombine4_impl[Tile, MultiBandTile]
 
   // def resample(source: Extent, target: RasterExtent): MultiBandTile =
-  //   resample(source, target, InterpolationMethod.DEFAULT)
+  //   resample(source, target, ResampleMethod.DEFAULT)
 
-  // def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): MultiBandTile
+  // def resample(source: Extent, target: RasterExtent, method: ResampleMethod): MultiBandTile
 
   // def resample(source: Extent, target: Extent): MultiBandTile =
-  //   resample(source, target, InterpolationMethod.DEFAULT)
+  //   resample(source, target, ResampleMethod.DEFAULT)
 
-  // def resample(source: Extent, target: Extent, method: InterpolationMethod): MultiBandTile =
+  // def resample(source: Extent, target: Extent, method: ResampleMethod): MultiBandTile =
   //   resample(source, RasterExtent(source, cols, rows).createAligned(target), method)
 
   // def resample(source: Extent, targetCols: Int, targetRows: Int): MultiBandTile =
-  //   resample(source, targetCols, targetRows, InterpolationMethod.DEFAULT)
+  //   resample(source, targetCols, targetRows, ResampleMethod.DEFAULT)
 
-  // def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): MultiBandTile =
+  // def resample(source: Extent, targetCols: Int, targetRows: Int, method: ResampleMethod): MultiBandTile =
   //   resample(source, RasterExtent(source, targetCols, targetRows), method)
 
   // /** Only changes the resolution */

@@ -1,7 +1,7 @@
 package geotrellis.raster
 
 import geotrellis.raster.reproject._
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
@@ -37,7 +37,7 @@ case class MultiBandRaster(tile: MultiBandTile, extent: Extent) {
   // def reproject(src: CRS, dest: CRS): MultiBandRaster =
   //   tile.reproject(extent, src, dest)
 
-  // def reproject(method: InterpolationMethod, src: CRS, dest: CRS): MultiBandRaster =
+  // def reproject(method: ResampleMethod, src: CRS, dest: CRS): MultiBandRaster =
   //   tile.reproject(extent, src, dest, ReprojectOptions(method = method))
 
   // def reproject(src: CRS, dest: CRS, options: ReprojectOptions): MultiBandRaster =
