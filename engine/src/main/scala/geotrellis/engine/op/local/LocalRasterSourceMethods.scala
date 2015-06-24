@@ -20,8 +20,7 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.vector.{Geometry, Extent}
-import geotrellis.vector.io.json._
+import geotrellis.vector.Geometry
 
 trait LocalRasterSourceMethods
   extends RasterSourceMethods
