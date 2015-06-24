@@ -16,10 +16,13 @@
 
 package geotrellis.spark.op.local
 
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
+import geotrellis.vector.io.json._
+import geotrellis.vector.{Line, Polygon, Geometry}
 
 import org.scalatest.FunSpec
 

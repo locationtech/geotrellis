@@ -1,7 +1,11 @@
 package geotrellis.spark.op.local
 
+import geotrellis.raster.{TileExtents, RasterExtent, ArrayTile}
 import geotrellis.raster.op.local._
+import geotrellis.raster.rasterize.{Callback, Rasterizer}
 import geotrellis.spark._
+import geotrellis.vector.Extent
+import geotrellis.vector.Geometry
 
 trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
     with AddRasterRDDMethods[K]
