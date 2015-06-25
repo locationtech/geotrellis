@@ -2,9 +2,8 @@ package geotrellis.spark.op.local.temporal
 
 import geotrellis.raster._
 import geotrellis.raster.op.local._
-
 import geotrellis.spark._
-
+import geotrellis.spark.testkit._
 import com.github.nscala_time.time.Imports._
 
 import spire.syntax.cfor._

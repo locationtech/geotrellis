@@ -2,10 +2,10 @@ package geotrellis.spark.op.local
 
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.testkit._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
-
 import com.github.nscala_time.time.Imports.DateTime
 import org.scalatest._
 

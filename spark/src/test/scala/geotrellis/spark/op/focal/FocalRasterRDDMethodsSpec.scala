@@ -3,7 +3,7 @@ package geotrellis.spark.op.focal
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
-
+import geotrellis.spark.testkit._
 import org.scalatest.FunSpec
 
 class FocalRasterRDDMethodsSpec extends FunSpec

@@ -5,7 +5,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 
 import geotrellis.raster._
-
+import geotrellis.spark.testkit._
 import geotrellis.vector._
 
 import org.scalatest.FunSpec
