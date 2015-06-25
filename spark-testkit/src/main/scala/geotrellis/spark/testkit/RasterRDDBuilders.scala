@@ -63,54 +63,55 @@ trait RasterRDDBuilders {
     createRasterRDD(tile, defaultCrs.worldExtent, tileLayout)(sc)
   }
 
-  // def createRasterRDD(
-  //   sc: SparkContext,
-  //   tile: Tile,
-  //   tileLayout: TileLayout): RasterRDD[SpatialKey] = {
+  def createRasterRDD_Original(
+    sc: SparkContext,
+    tile: Tile,
+    tileLayout: TileLayout): RasterRDD[SpatialKey] = {
 
-  //   val extent = defaultCRS.worldExtent
+    val extent = defaultCrs.worldExtent
 
-  //   val metaData = RasterMetaData(
-  //     tile.cellType,
-  //     extent,
-  //     defaultCRS,
-  //     tileLayout
-  //   )
+    val metaData = RasterMetaData(
+      tile.cellType,
+      extent,
+      defaultCrs,
+      tileLayout
+    )
 
-  //   val re = RasterExtent(
-  //     extent = extent,
-  //     cols = tileLayout.layoutCols,
-  //     rows = tileLayout.layoutRows
-  //   )
+    val re = RasterExtent(
+      extent = extent,
+      cols = tileLayout.layoutCols,
+      rows = tileLayout.layoutRows
+    )
 
-  //   val tileBounds = re.gridBoundsFor(extent)
+    val tileBounds = re.gridBoundsFor(extent)
 
-  //   val adjustedTile =
-  //     if (tile.cols == tileLayout.totalCols.toInt &&
-  //       tile.rows == tileLayout.totalRows.toInt) tile
-  //     else CompositeTile.wrap(tile, tileLayout, cropped = false)
+    val adjustedTile =
+      if (tile.cols == tileLayout.totalCols.toInt &&
+        tile.rows == tileLayout.totalRows.toInt) tile
+      else CompositeTile.wrap(tile, tileLayout, cropped = false)
 
-  //   val tmsTiles =
-  //     tileBounds.coords.map { case (col, row) =>
+    val tmsTiles =
+      tileBounds.coords.map { case (col, row) =>
 
-  //       val targetRasterExtent =
-  //         RasterExtent(
-  //           extent = re.extentFor(GridBounds(col, row, col, row)),
-  //           cols = tileLayout.tileCols,
-  //           rows = tileLayout.tileRows
-  //         )
+        val targetRasterExtent =
+          RasterExtent(
+            extent = re.extentFor(GridBounds(col, row, col, row)),
+            cols = tileLayout.tileCols,
+            rows = tileLayout.tileRows
+          )
 
-  //       val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
+        val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
 
-  //       (SpatialKey(col, row), subTile)
-  //     }
+        (SpatialKey(col, row), subTile)
+      }
 
 
-  //   asRasterRDD(metaData) {
-  //     sc.parallelize(tmsTiles)
-  //   }
-  // }
+    asRasterRDD(metaData) {
+      sc.parallelize(tmsTiles)
+    }
+  }
 
+  // tile.resample and tile.merge does not produce the same results
   def createSpaceTimeRasterRDD(
     sc: SparkContext,
     tiles: Traversable[(Tile, DateTime)],
