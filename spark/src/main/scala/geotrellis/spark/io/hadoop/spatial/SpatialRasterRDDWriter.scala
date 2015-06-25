@@ -74,7 +74,7 @@ class SpatialRasterRDDWriter[T: ClassTag] extends RasterRDDWriter[SpatialKey, T]
       .saveAsNewAPIHadoopFile(
         layerPath.toUri.toString,
         classOf[SpatialKeyWritable],
-        classOf[TileWritable],
+        classOf[KryoWritable],
         classOf[MapFileOutputFormat],
         job.getConfiguration
     )

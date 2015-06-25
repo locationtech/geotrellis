@@ -35,13 +35,11 @@ class SpaceTimeRasterRDDWriter[T] extends RasterRDDWriter[SpaceTimeKey, T] {
     raster: RasterRDD[SpaceTimeKey, T],
     index: KeyIndex[SpaceTimeKey]
   ): RDD[(Key, Value)] = {
-    def getKey(id: LayerId, key: SpaceTimeKey): Key =
-      new Key(rowId(id, index.toIndex(key)), id.name, timeText(key))
 
     raster
       .map { case (key, tile) => {
         val value = KryoSerializer.serialize[(SpaceTimeKey, T)](key, tile)
-        getKey(layerId, key) -> new Value(value)
+        new Key(spacetime.rowId(layerId, index.toIndex(key)), layerId.name, timeText(key)) -> new Value(value)
       }}
   }
 }

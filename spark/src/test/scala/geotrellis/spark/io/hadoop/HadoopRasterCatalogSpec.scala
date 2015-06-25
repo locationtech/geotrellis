@@ -75,7 +75,7 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
 
         it("should load out saved tiles") {
-          val rdd = catalog.read[SpatialKey, Tile](LayerId("ones", 10))
+          val rdd = catalog.read[SpatialKey, Tile](LayerId("ones", level.zoom))
           rdd.count should be > 0l
           rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }

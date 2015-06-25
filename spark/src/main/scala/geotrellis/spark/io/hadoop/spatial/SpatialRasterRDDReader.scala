@@ -34,13 +34,13 @@ class SpatialRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpatialKey, T]
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val writableRdd: RDD[(SpatialKeyWritable, KryoWritable[T])] =
+    val writableRdd: RDD[(SpatialKeyWritable, KryoWritable)] =
       if(Seq(keyBounds) == queryKeyBounds) {
         sc.newAPIHadoopRDD(
           inputConf,
-          classOf[SequenceFileInputFormat[SpatialKeyWritable, KryoWritable[T]]],
+          classOf[SequenceFileInputFormat[SpatialKeyWritable, KryoWritable]],
           classOf[SpatialKeyWritable],
-          classOf[KryoWritable[T]])
+          classOf[KryoWritable])
       } else {
         val ranges = queryKeyBounds.map{ keyIndex.indexRanges(_) }.flatten
         inputConf.setSerialized (FilterMapFileInputFormat.FILTER_INFO_KEY,
@@ -48,16 +48,16 @@ class SpatialRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpatialKey, T]
 
         sc.newAPIHadoopRDD(
           inputConf,
-          classOf[SpatialFilterMapFileInputFormat[T]],
+          classOf[SpatialFilterMapFileInputFormat],
           classOf[SpatialKeyWritable],
-          classOf[KryoWritable[T]])
+          classOf[KryoWritable])
       }
 
       val rasterMetaData = layerMetaData.rasterMetaData
-
+      val classTagT = implicitly[ClassTag[T]]
       asRasterRDD(rasterMetaData) {
         writableRdd.map  { case (keyWritable, tileWritable) =>
-          (keyWritable.get._2, tileWritable.get)
+          (keyWritable.get._2, tileWritable.get[T]()(classTagT))
         }
       }
   }

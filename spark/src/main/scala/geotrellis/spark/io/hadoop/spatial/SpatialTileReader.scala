@@ -30,10 +30,10 @@ class SpatialTileReader[T: ClassTag] extends TileReader[SpatialKey, T] {
 
     sc.newAPIHadoopRDD(
       inputConf,
-      classOf[SpatialFilterMapFileInputFormat[T]],
+      classOf[SpatialFilterMapFileInputFormat],
       classOf[SpatialKeyWritable],
-      classOf[KryoWritable[T]]
-    ).first._2.get
+      classOf[KryoWritable]
+    ).first._2.get[T]
 
   }
 }

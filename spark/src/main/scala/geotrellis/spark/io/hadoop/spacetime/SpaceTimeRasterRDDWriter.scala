@@ -74,7 +74,7 @@ class SpaceTimeRasterRDDWriter[T: ClassTag] extends RasterRDDWriter[SpaceTimeKey
       .saveAsNewAPIHadoopFile(
         layerPath.toUri.toString,
         classOf[SpaceTimeKeyWritable],
-        classOf[TileWritable],
+        classOf[KryoWritable],
         classOf[MapFileOutputFormat],
         job.getConfiguration
     )

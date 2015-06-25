@@ -35,13 +35,13 @@ class SpaceTimeRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpaceTimeKey
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val writableRdd: RDD[(SpaceTimeKeyWritable, KryoWritable[T])] =
+    val writableRdd: RDD[(SpaceTimeKeyWritable, KryoWritable)] =
       if(Seq(keyBounds) == queryKeyBounds) {
         sc.newAPIHadoopRDD(
           inputConf,
-          classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, KryoWritable[T]]],
+          classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, KryoWritable]],
           classOf[SpaceTimeKeyWritable],
-          classOf[KryoWritable[T]]
+          classOf[KryoWritable]
         )
       } else {
         val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
@@ -50,17 +50,17 @@ class SpaceTimeRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpaceTimeKey
 
         sc.newAPIHadoopRDD(
           inputConf,
-          classOf[SpaceTimeFilterMapFileInputFormat[T]],
+          classOf[SpaceTimeFilterMapFileInputFormat],
           classOf[SpaceTimeKeyWritable],
-          classOf[KryoWritable[T]]
+          classOf[KryoWritable]
         )
       }
 
       val rasterMetaData = layerMetaData.rasterMetaData
-
+      val classTagT = implicitly[ClassTag[T]]
       asRasterRDD(rasterMetaData) {
         writableRdd.map  { case (keyWritable, tileWritable) =>
-          (keyWritable.get._2, tileWritable.get)
+          (keyWritable.get._2, tileWritable.get[T]()(classTagT))
         }
       }
   }

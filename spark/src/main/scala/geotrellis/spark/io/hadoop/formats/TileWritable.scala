@@ -23,6 +23,7 @@ import org.apache.hadoop.io.Writable
 import java.io.{ DataInput, DataOutput }
 
 class TileWritable() extends Writable with Serializable {
+  private var _tag: Byte = -1
   private var _bytes: Array[Byte] = Array()
 
   def set(tile: Tile): Unit = 

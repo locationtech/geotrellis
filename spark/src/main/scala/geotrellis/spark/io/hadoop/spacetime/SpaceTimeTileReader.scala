@@ -31,9 +31,9 @@ class SpaceTimeTileReader[T: ClassTag] extends TileReader[SpaceTimeKey, T] {
 
     sc.newAPIHadoopRDD(
       inputConf,
-      classOf[SpaceTimeFilterMapFileInputFormat[T]],
+      classOf[SpaceTimeFilterMapFileInputFormat],
       classOf[SpaceTimeKeyWritable],
-      classOf[KryoWritable[T]]
-    ).first._2.get
+      classOf[KryoWritable]
+    ).first._2.get[T]
   }
 }

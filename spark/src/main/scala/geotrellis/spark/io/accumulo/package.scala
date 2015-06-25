@@ -17,11 +17,11 @@ package object accumulo {
 
   implicit def accumuloSpatialRasterRDDReader[T: ClassTag] = new spatial.SpatialRasterRDDReader[T]
   implicit def accumuloSpatialTileReader[T: ClassTag] = new spatial.SpatialTileReader[T]
-  implicit def accumuloSpatialRasterRDDWriter[T] = new spatial.SpatialRasterRDDWriter[T]
+  implicit def accumuloSpatialRasterRDDWriter[T: ClassTag] = new spatial.SpatialRasterRDDWriter[T]
 
   implicit def accumuloSpaceTimeRasterRDDReader[T: ClassTag] = new spacetime.SpaceTimeRasterRDDReader[T]
   implicit def accumuloSpaceTimeTileReader[T: ClassTag] = new spacetime.SpaceTimeTileReader[T]
-  implicit def accumuloSpaceTimeRasterRDDWriter[T] = new spacetime.SpaceTimeRasterRDDWriter[T]
+  implicit def accumuloSpaceTimeRasterRDDWriter[T: ClassTag] = new spacetime.SpaceTimeRasterRDDWriter[T]
 
   implicit class scannerIterator(scan: Scanner) extends Iterator[(Key, Value)] {
     val iter = scan.iterator

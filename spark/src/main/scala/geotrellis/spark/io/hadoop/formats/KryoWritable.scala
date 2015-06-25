@@ -24,10 +24,10 @@ import org.apache.hadoop.io.Writable
 import java.io.{ DataInput, DataOutput }
 import scala.reflect.ClassTag
 
-class KryoWritable[T: ClassTag] extends Writable with Serializable {
+class KryoWritable extends Writable with Serializable {
   private var _bytes: Array[Byte] = Array()
 
-  def set(thing: T): Unit = 
+  def set[T: ClassTag](thing: T): Unit = 
     _bytes = KryoSerializer.serialize[T](thing)
 
   def write(out: DataOutput): Unit = {
@@ -42,13 +42,13 @@ class KryoWritable[T: ClassTag] extends Writable with Serializable {
     in.readFully(_bytes, 0, size)
   }
 
-  def get(): T = 
+  def get[T: ClassTag](): T = 
     KryoSerializer.deserialize[T](_bytes)
 }
 
 object KryoWritable {
   def apply[T: ClassTag](thing: T) = {
-    val tw = new KryoWritable[T]
+    val tw = new KryoWritable
     tw.set(thing)
     tw
   }
