@@ -68,6 +68,7 @@ object GeotrellisBuild extends Build {
     },
 
     publishArtifact in Test := false,
+    publishArtifact in (Compile, packageDoc) := false,
 
     pomIncludeRepository := { _ => false },
     licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),

@@ -34,8 +34,9 @@ object CassandraIngestCommand extends ArgMain[CassandraIngestArgs] with Logging 
 
     val sparkConf = sparkContext.getConf
     val hadoopConf = sparkContext.hadoopConfiguration
-    sparkConf.set("spark.cassandra.connection.host", args.host)
-
+    // TODO needs to be set at the creation of the spark context, doesn't do anything here
+    // sparkConf.set("spark.cassandra.connection.host", args.host)
+    logInfo("spark.cassandra.connection.host " + sparkConf.get("spark.cassandra.connection.host"))
 
     Cassandra.withSession(args.host, args.keyspace) { implicit session =>
       val source = sparkContext.hadoopGeoTiffRDD(args.inPath).repartition(args.partitions)
