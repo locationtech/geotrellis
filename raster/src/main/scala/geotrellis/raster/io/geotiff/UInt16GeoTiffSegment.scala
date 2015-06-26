@@ -22,7 +22,7 @@ class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   val size: Int = bytes.size / 2
 
-  def get(i: Int): Int = buffer.get(i) % 0xFFFF
+  def get(i: Int): Int = buffer.get(i) & 0xFFFF
 
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))
