@@ -16,9 +16,46 @@ import org.apache.spark._
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable
 
+object RasterRDDBuilders extends RasterRDDBuilders
+
 trait RasterRDDBuilders {
   def defaultCrs = LatLng
   def defaultLayoutSceheme = ZoomedLayoutScheme(tileSize = 256)
+
+  /**
+   * Cuts up a tile to fit a given TileLayout. 
+   * 
+   * However, The resulting tileset can only accuratly express the original tile if the tile diemsions
+   * are exact multiple of the layout columns. For instance, when tiling a 256x256 tile into a TileLayout with 4 columns and 3 rows each of the 
+   * layout tiles must have 256/3 = 85.33_ pixels. Choosing 85 pixels crops the original tile, while choosing 86 creates NoData pixels.
+   *
+   * In this method we choose to crop. This must be kept in mind when comparing the result of operations on the tileset vs operations on source tile.
+   */
+  def cutTile(input: Tile, extent: Extent, crs: CRS, tileLayout: TileLayout): Array[(SpatialKey, Tile)] = {  
+    val worldExtent = crs.worldExtent
+    
+    val metaData = RasterMetaData(input.cellType, extent, crs, tileLayout)
+    val outputMapTransform = metaData.mapTransform
+
+    val tile = 
+      if (tileLayout.totalCols.toInt != input.cols || tileLayout.totalRows.toInt != input.rows)
+        input.crop(tileLayout.totalCols.toInt, tileLayout.totalRows.toInt)
+      else
+        input
+
+    val tiles = 
+      for {
+        (col, row) <- outputMapTransform(extent).coords // iterate over all tiles we should have for input extent in the world layout
+      } yield {
+        val key = SpatialKey(col, row)
+        val worldTileExtent = outputMapTransform(key)
+        val outTile = ArrayTile.empty(tile.cellType, tileLayout.tileCols, tileLayout.tileRows)       
+        outTile.merge(worldTileExtent, extent, tile)
+        key -> (outTile: Tile)
+      }
+
+    tiles
+  }
 
   /** Create RasterRDD from single band GeoTiff */
   def createRasterRDD(path: String)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {
@@ -36,130 +73,52 @@ trait RasterRDDBuilders {
     createRasterRDD(tile, extent, defaultCrs, tileLayout)
   }
 
-  def createRasterRDD(tile: Tile, extent: Extent, crs: CRS, tileLayout: TileLayout)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {
-    val worldExtent = crs.worldExtent
-
-    val outputMapTransform = new MapKeyTransform(worldExtent, tileLayout.layoutCols, tileLayout.layoutRows)
-    val metaData = RasterMetaData(tile.cellType, extent, crs, tileLayout)
-
-    val tmsTiles = 
-      for {
-        (col, row) <- outputMapTransform(extent).coords // iterate over all tiles we should have for input extent in the world layout
-      } yield {
-        val key = SpatialKey(col, row)
-        val worldTileExtent = outputMapTransform(key)
-        val outTile = ArrayTile.empty(tile.cellType, tileLayout.tileCols, tileLayout.tileRows)       
-        outTile.merge(worldTileExtent, extent, tile)
-        key -> outTile
-      }
-
-    asRasterRDD(metaData) {
-      sc.parallelize(tmsTiles)
-    }
-  }
-
-  /** This method supports old style of tests, it should not be used */
   def createRasterRDD(sc: SparkContext, tile: Tile, tileLayout: TileLayout): RasterRDD[SpatialKey] = {
     createRasterRDD(tile, defaultCrs.worldExtent, tileLayout)(sc)
   }
 
-  def createRasterRDD_Original(
-    sc: SparkContext,
-    tile: Tile,
-    tileLayout: TileLayout): RasterRDD[SpatialKey] = {
-
-    val extent = defaultCrs.worldExtent
-
-    val metaData = RasterMetaData(
-      tile.cellType,
-      extent,
-      defaultCrs,
-      tileLayout
-    )
-
-    val re = RasterExtent(
-      extent = extent,
-      cols = tileLayout.layoutCols,
-      rows = tileLayout.layoutRows
-    )
-
-    val tileBounds = re.gridBoundsFor(extent)
-
-    val adjustedTile =
-      if (tile.cols == tileLayout.totalCols.toInt &&
-        tile.rows == tileLayout.totalRows.toInt) tile
-      else CompositeTile.wrap(tile, tileLayout, cropped = false)
-
-    val tmsTiles =
-      tileBounds.coords.map { case (col, row) =>
-
-        val targetRasterExtent =
-          RasterExtent(
-            extent = re.extentFor(GridBounds(col, row, col, row)),
-            cols = tileLayout.tileCols,
-            rows = tileLayout.tileRows
-          )
-
-        val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
-
-        (SpatialKey(col, row), subTile)
+  def createRasterRDD(input: Tile, extent: Extent, crs: CRS, tileLayout: TileLayout)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {      
+    new RasterRDD(
+      sc.parallelize(cutTile(input, extent, crs, tileLayout)), 
+      RasterMetaData(input.cellType, extent, crs, tileLayout))
       }
 
 
-    asRasterRDD(metaData) {
-      sc.parallelize(tmsTiles)
-    }
-  }
-
-  // tile.resample and tile.merge does not produce the same results
   def createSpaceTimeRasterRDD(
     sc: SparkContext,
-    tiles: Traversable[(Tile, DateTime)],
+    tiles: Seq[(Tile, DateTime)],
     tileLayout: TileLayout,
-    cellType: CellType = TypeInt): RasterRDD[SpaceTimeKey] = {
+    cellType: CellType = TypeInt
+  ): RasterRDD[SpaceTimeKey] = {
+    createSpaceTimeRasterRDD(tiles, defaultCrs.worldExtent, defaultCrs, tileLayout, cellType)(sc)
+  }
 
-    val extent = defaultCrs.worldExtent
+  def createSpaceTimeRasterRDD(tiles: Seq[(Tile, DateTime)], extent: Extent, tileLayout: TileLayout, cellType: CellType)
+  (implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = 
+    createSpaceTimeRasterRDD(tiles, extent, defaultCrs, tileLayout, cellType)
 
-    val metaData = RasterMetaData(
-      cellType,
-      extent,
-      defaultCrs,
-      tileLayout
-    )
+  def createSpaceTimeRasterRDD(tiles: Seq[(Tile, DateTime)], tileLayout: TileLayout, cellType: CellType)
+  (implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = 
+    createSpaceTimeRasterRDD(tiles, defaultCrs.worldExtent, defaultCrs, tileLayout, cellType)
 
-    val re = RasterExtent(
-      extent = extent,
-      cols = tileLayout.layoutCols,
-      rows = tileLayout.layoutRows
-    )
-
-    val tileBounds = re.gridBoundsFor(extent)
-
-    val tmsTiles = mutable.ListBuffer[(SpaceTimeKey, Tile)]()
-
-    for( (tile, time) <- tiles) {
-      val adjustedTile =
-        if (tile.cols == tileLayout.totalCols.toInt &&
-          tile.rows == tileLayout.totalRows.toInt) tile
-        else CompositeTile.wrap(tile, tileLayout, cropped = false)
-
-      tmsTiles ++=
-        tileBounds.coords.map { case (col, row) =>
-
-          val targetRasterExtent =
-            RasterExtent(
-              extent = re.extentFor(GridBounds(col, row, col, row)),
-              cols = tileLayout.tileCols,
-              rows = tileLayout.tileRows
-            )
-
-          val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
-
-          (SpaceTimeKey(col, row, time), subTile)
-        }
+  def createSpaceTimeRasterRDD(
+    tiles: Seq[(Tile, DateTime)],
+    extent: Extent,
+    crs: CRS,
+    tileLayout: TileLayout,
+    cellType: CellType)
+  (implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
+    val tmsTiles = 
+      tiles
+        .flatMap { case (tile, date) =>        
+          cutTile(tile, extent, crs, tileLayout)
+            .map { case (key, tile) => 
+              SpaceTimeKey(key, TemporalKey(date)) -> tile
     }
-    asRasterRDD(metaData) {
-      sc.parallelize(tmsTiles)
     }
+
+    new RasterRDD(
+      sc.parallelize(tmsTiles), 
+      RasterMetaData(cellType, extent, crs, tileLayout))
   }
 }
