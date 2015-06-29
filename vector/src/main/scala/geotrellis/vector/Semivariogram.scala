@@ -33,8 +33,8 @@ case object Exponential extends ModelType
 case object Wave extends ModelType
 
 /**
-  Empirical semivariogram
-*/
+Empirical semivariogram
+  */
 object Semivariogram {
   case class Bucket(start:Double,end:Double) {
     private val points = mutable.Set[(PointFeature[Int],PointFeature[Int])]()
@@ -48,7 +48,7 @@ object Semivariogram {
     def midpoint = (start + end) / 2.0
     def isEmpty = points.isEmpty
     def semivariance = {
-      val sumOfSquares = 
+      val sumOfSquares =
         points.foldLeft(0.0){ case(acc,(x,y)) =>
           acc + math.pow((x.data-y.data),2)
         }
@@ -156,9 +156,9 @@ object Semivariogram {
             .filter { case (distance,_) => distance <= dmax }
             .toSeq
         case None =>
-            makePairs(pts.toList)
-              .map{ case(a,b) => (distance(a.geom, b.geom), (a,b)) }
-              .toSeq
+          makePairs(pts.toList)
+            .map{ case(a,b) => (distance(a.geom, b.geom), (a,b)) }
+            .toSeq
       }
 
     val buckets:Seq[Bucket] =
@@ -186,7 +186,7 @@ object Semivariogram {
 
     // use midpoint of buckets for distance
     val empiricalSemivariogram:Seq[(Double,Double)] =
-      // empty buckets are first removed
+    // empty buckets are first removed
       buckets.filter ( b => !b.isEmpty)
         .map { b => (b.midpoint,b.semivariance) }
 
@@ -222,11 +222,8 @@ object Semivariogram {
           def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
             val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
             cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-              if (x(i)==0) {
-                jacobianRet(i)(0) = 0
-                jacobianRet(i)(1) = 0
-                jacobianRet(i)(2) = 0
-              }
+              if (x(i) == 0)
+                jacobianRet(i) = Array.fill[Double](3)(0)
               else {
                 jacobianRet(i)(0) = (variables(2) - variables(1)) * (2 * math.pow(x(i), 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x(i), 2) / math.pow(variables(0), 2))
                 jacobianRet(i)(1) = 1 - math.exp(-1 * math.pow(x(i), 2) / math.pow(variables(0), 2))
@@ -255,7 +252,7 @@ object Semivariogram {
         val optimizer: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
         val weights: Array[Double] = Array.fill[Double](empiricalSemivariogram.length)(1)
         val initialSolution: Array[Double] = Array[Double](1, 1, 1)
-        val optimum: PointVectorValuePair = optimizer.optimize(100, problem, problem.calculateTarget(), weights, initialSolution)
+        val optimum: PointVectorValuePair = optimizer.optimize(Int.MaxValue, problem, problem.calculateTarget(), weights, initialSolution)
         val optimalValues: Array[Double] = optimum.getPoint
         println("r: " + optimalValues(0))
         println("s: " + optimalValues(1))
@@ -283,11 +280,8 @@ object Semivariogram {
           def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
             val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
             cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-              if (x(i)==0) {
-                jacobianRet(i)(0) = 0
-                jacobianRet(i)(1) = 0
-                jacobianRet(i)(2) = 0
-              }
+              if (x(i) == 0)
+                jacobianRet(i) = Array.fill[Double](3)(0)
               else {
                 jacobianRet(i)(0) = (variables(2) - variables(1)) * (3 * x(i) / math.pow(variables(0), 2)) * math.exp(-3 * x(i) / variables(0))
                 jacobianRet(i)(1) = 1 - math.exp(-3 * x(i) / variables(0))
@@ -316,7 +310,7 @@ object Semivariogram {
         val optimizer: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
         val weights: Array[Double] = Array.fill[Double](empiricalSemivariogram.length)(1)
         val initialSolution: Array[Double] = Array[Double](1, 1, 1)
-        val optimum: PointVectorValuePair = optimizer.optimize(100, problem, problem.calculateTarget(), weights, initialSolution)
+        val optimum: PointVectorValuePair = optimizer.optimize(Int.MaxValue, problem, problem.calculateTarget(), weights, initialSolution)
         val optimalValues: Array[Double] = optimum.getPoint
         println("r: " + optimalValues(0))
         println("s: " + optimalValues(1))
@@ -344,11 +338,8 @@ object Semivariogram {
           def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
             val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
             cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-              if (x(i)==0) {
-                jacobianRet(i)(0) = 0
-                jacobianRet(i)(1) = 0
-                jacobianRet(i)(2) = 0
-              }
+              if (x(i) == 0)
+                jacobianRet(i) = Array.fill[Double](3)(0)
               else {
                 jacobianRet(i)(0) = (-2 * variables(1) * x(i)) / (math.Pi * math.pow(variables(0), 2)) + (variables(1) * math.pow(x(i), 2)) / (math.pow(variables(0), 2) * math.sqrt(1 - math.pow(x(i) / variables(0), 2)))
                 jacobianRet(i)(1) = 1 - (2 / math.Pi) * math.acos(x(i) / variables(0)) + math.sqrt(1 - math.pow(x(i) / variables(0), 2))
@@ -377,7 +368,7 @@ object Semivariogram {
         val optimizer: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
         val weights: Array[Double] = Array.fill[Double](empiricalSemivariogram.length)(1)
         val initialSolution: Array[Double] = Array[Double](1, 1, 1)
-        val optimum: PointVectorValuePair = optimizer.optimize(100, problem, problem.calculateTarget(), weights, initialSolution)
+        val optimum: PointVectorValuePair = optimizer.optimize(Int.MaxValue, problem, problem.calculateTarget(), weights, initialSolution)
         val optimalValues: Array[Double] = optimum.getPoint
         println("r: " + optimalValues(0))
         println("s: " + optimalValues(1))
@@ -405,11 +396,8 @@ object Semivariogram {
           def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
             val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
             cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-              if (x(i)==0) {
-                jacobianRet(i)(0) = 0
-                jacobianRet(i)(1) = 0
-                jacobianRet(i)(2) = 0
-              }
+              if (x(i) == 0)
+                jacobianRet(i) = Array.fill[Double](3)(0)
               else if (x(i)>0 && x(i)<=variables(0)) {
                 jacobianRet(i)(0) = (variables(1) - variables(2)) * ((-3*x(i))/(2*math.pow(variables(0),2)) + (3 * math.pow(x(i),3)/(2 * math.pow(variables(0),4))))
                 jacobianRet(i)(1) = ((3 * x(i))/(2 * variables(0))) - (math.pow(x(i),3)/(2 * math.pow(variables(0),3)))
@@ -443,7 +431,7 @@ object Semivariogram {
         val optimizer: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
         val weights: Array[Double] = Array.fill[Double](empiricalSemivariogram.length)(1)
         val initialSolution: Array[Double] = Array[Double](1, 1, 1)
-        val optimum: PointVectorValuePair = optimizer.optimize(100, problem, problem.calculateTarget(), weights, initialSolution)
+        val optimum: PointVectorValuePair = optimizer.optimize(Int.MaxValue, problem, problem.calculateTarget(), weights, initialSolution)
         val optimalValues: Array[Double] = optimum.getPoint
         println("r: " + optimalValues(0))
         println("s: " + optimalValues(1))
@@ -471,11 +459,8 @@ object Semivariogram {
           def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
             val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
             cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-              if (x(i)==0) {
-                jacobianRet(i)(0) = 0
-                jacobianRet(i)(1) = 0
-                jacobianRet(i)(2) = 0
-              }
+              if (x(i) == 0)
+                jacobianRet(i) = Array.fill[Double](3)(0)
               else {
                 jacobianRet(i)(0) = -1 * (variables(1) - variables(2)) * ((-1/x(i)) * (math.sin(x(i)/variables(0)) + (-1 / variables(0)) * math.cos(x(i)/variables(0))))
                 jacobianRet(i)(1) = 1 - variables(0) * math.sin(x(i) / variables(0))
@@ -504,12 +489,12 @@ object Semivariogram {
         val optimizer: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
         val weights: Array[Double] = Array.fill[Double](empiricalSemivariogram.length)(1)
         val initialSolution: Array[Double] = Array[Double](1, 1, 1)
-        val optimum: PointVectorValuePair = optimizer.optimize(100, problem, problem.calculateTarget(), weights, initialSolution)
+        val optimum: PointVectorValuePair = optimizer.optimize(Int.MaxValue, problem, problem.calculateTarget(), weights, initialSolution)
         val optimalValues: Array[Double] = optimum.getPoint
         println("w: " + optimalValues(0))
         println("s: " + optimalValues(1))
         println("a: " + optimalValues(2))
         explicitWave(optimalValues(0), optimalValues(1), optimalValues(2))
-      }
     }
   }
+}

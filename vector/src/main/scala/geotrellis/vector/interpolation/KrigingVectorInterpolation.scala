@@ -49,7 +49,7 @@ class KrigingSimple(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSi
     pointPredict => {
       val pointSize = points.size
       if (pointSize == 0)
-        throw new IllegalArgumentException("No Points in the observation sequence");
+        throw new IllegalArgumentException("No Points in the observation sequence")
       val mean: Double = points.foldLeft(0.0)(_ + _.data) / pointSize
       val sv = Semivariogram(points, radius, lag, model)
 
@@ -72,7 +72,7 @@ class KrigingOrdinary(points: Seq[PointFeature[Int]], radius: Option[Int], chunk
     pointPredict => {
       val pointSize = points.size
       if (pointSize == 0)
-        throw new IllegalArgumentException("No Points in the observation sequence");
+        throw new IllegalArgumentException("No Points in the observation sequence")
       val sv = Semivariogram(points, radius, lag, model)
 
       val covariogram: RealMatrix = getCovariogramMatrix(sv, points)
@@ -103,7 +103,7 @@ class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chun
     pointPredict => {
       val pointSize = points.size
       if (pointSize == 0)
-        throw new IllegalArgumentException("No Points in the observation sequence");
+        throw new IllegalArgumentException("No Points in the observation sequence")
 
       //OLS Estimation
       val attrArray = Array.ofDim[Double](pointSize, 6)
@@ -176,7 +176,7 @@ class KrigingGeo(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize:
 
       val pointSize = points.size
       if (pointSize == 0)
-        throw new IllegalArgumentException("No Points in the observation sequence");
+        throw new IllegalArgumentException("No Points in the observation sequence")
 
       val attrArray = Array.ofDim[Double](pointSize, 6)
       cfor(0)(_ < pointSize, _ + 1) { row =>
