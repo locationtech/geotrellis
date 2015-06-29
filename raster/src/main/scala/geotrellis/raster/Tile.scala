@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.raster.op.stats._
 
