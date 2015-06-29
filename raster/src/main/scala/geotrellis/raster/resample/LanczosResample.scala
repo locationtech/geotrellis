@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -11,25 +11,25 @@ import spire.syntax.cfor._
   * Implemented exactly as in:
   * http://en.wikipedia.org/wiki/Lanczos_resampling#Multidimensional_interpolation
   *
-  * GDAL uses a Lanczos interpolation radius, *a*, as 3, so our cubic size here is
+  * GDAL uses a Lanczos resample radius, *a*, as 3, so our cubic size here is
   * 6 * 6.
   *
-  * This falls back to the Bilinear interpolation when all 6 * 6 points can't be
+  * This falls back to the Bilinear resample when all 6 * 6 points can't be
   * established.
   */
-class LanczosInterpolation(tile: Tile, extent: Extent)
-    extends CubicInterpolation(tile, extent, 6) {
+class LanczosResample(tile: Tile, extent: Extent)
+    extends CubicResample(tile, extent, 6) {
 
-  private val lanczos = new LanczosInterpolator
+  private val lanczos = new LanczosResampler
 
-  override def cubicInterpolation(
+  override def cubicResample(
     t: Tile,
     x: Double,
-    y: Double): Double = lanczos.interpolate(t, x, y)
+    y: Double): Double = lanczos.resample(t, x, y)
 
 }
 
-class LanczosInterpolator {
+class LanczosResampler {
 
   private val Radius = 3 // Taken from GDAL
 
@@ -51,7 +51,7 @@ class LanczosInterpolator {
     else 0
 
   @inline
-  def interpolate(
+  def resample(
     t: Tile,
     x: Double,
     y: Double): Double = {

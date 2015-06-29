@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -6,7 +6,7 @@ import geotrellis.vector.Extent
 import spire.syntax.cfor._
 
 /**
-  * Uses the Akima cubic spline interpolation.
+  * Uses the Akima cubic spline resample.
   *
   * The paper can be found here:
   * http://www.leg.ufpr.br/lib/exe/fetch.php/wiki:internas:biblioteca:akima.pdf
@@ -14,21 +14,21 @@ import spire.syntax.cfor._
   * A more graspable explanation can be found here:
   * http://www.iue.tuwien.ac.at/phd/rottinger/node60.html
   */
-class BicubicSplineInterpolation(tile: Tile, extent: Extent)
-    extends BicubicInterpolation(tile, extent, 6) {
+class BicubicSplineResample(tile: Tile, extent: Extent)
+    extends BicubicResample(tile, extent, 6) {
 
-  private val interpolator = new CubicSplineInterpolation
+  private val resampler = new CubicSplineResample
 
-  override def uniCubicInterpolation(p: Array[Double], x: Double) =
-    interpolator.interpolate(p, x)
+  override def uniCubicResample(p: Array[Double], x: Double) =
+    resampler.resample(p, x)
 
 }
 
-class CubicSplineInterpolation {
+class CubicSplineResample {
 
   private val Xs = Array(0, 1, 2, 3, 4, 5)
 
-  def interpolate(p: Array[Double], x: Double): Double = {
+  def resample(p: Array[Double], x: Double): Double = {
     val n = p.size
     val u = Array.ofDim[Double](n + 3)
     cfor(0)(_ < n - 1, _ + 1) { i =>

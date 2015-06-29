@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -7,22 +7,22 @@ import spire.syntax.cfor._
 
 /**
   * This abstract class serves as a base class for the family of
-  * cubic interpolation algorithms implemented. As a constructor argument
+  * cubic resample algorithms implemented. As a constructor argument
   * it takes the dimension of the cube. It takes the closest dimension ^ 2
-  * points and then interpolates over those points.
+  * points and then resamples over those points.
   *
   * If there is less then dimension ^ 2 points obtainable for the current point
-  * the implementation falls back on bilinear interpolation.
+  * the implementation falls back on bilinear resample.
   *
   * Note that this class is single-threaded.
   */
-abstract class CubicInterpolation(tile: Tile, extent: Extent, dimension: Int)
-    extends BilinearInterpolation(tile, extent) {
+abstract class CubicResample(tile: Tile, extent: Extent, dimension: Int)
+    extends BilinearResample(tile, extent) {
 
   private val cubicTile =
     ArrayTile(Array.ofDim[Double](dimension * dimension), dimension, dimension)
 
-  protected def cubicInterpolation(
+  protected def cubicResample(
     t: Tile,
     x: Double,
     y: Double): Double
@@ -44,21 +44,21 @@ abstract class CubicInterpolation(tile: Tile, extent: Extent, dimension: Int)
     }
   }
 
-  override def interpolateValid(x: Double, y: Double): Int = {
+  override def resampleValid(x: Double, y: Double): Int = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     if (!validCubicCoords(leftCol, topRow)) bilinearInt(leftCol, topRow, xRatio, yRatio)
     else {
       setCubicValues(leftCol, topRow, tile.get)
-      cubicInterpolation(cubicTile, xRatio, yRatio).round.toInt
+      cubicResample(cubicTile, xRatio, yRatio).round.toInt
     }
   }
 
-  override def interpolateDoubleValid(x: Double, y: Double): Double = {
+  override def resampleDoubleValid(x: Double, y: Double): Double = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     if (!validCubicCoords(leftCol, topRow)) bilinearDouble(leftCol, topRow, xRatio, yRatio)
     else {
       setCubicValues(leftCol, topRow, tile.getDouble)
-      cubicInterpolation(cubicTile, xRatio, yRatio)
+      cubicResample(cubicTile, xRatio, yRatio)
     }
   }
 

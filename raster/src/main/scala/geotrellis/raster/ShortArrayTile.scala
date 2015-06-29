@@ -41,16 +41,6 @@ final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   }
 
   def copy = ArrayTile(array.clone, cols, rows)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Short](target.cols * target.rows).fill(shortNODATA)
-        Resample[Short](RasterExtent(current, cols, rows), target, array, resampled)
-        ShortArrayTile(resampled, target.cols, target.rows)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }
 
 object ShortArrayTile {

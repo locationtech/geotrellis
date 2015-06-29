@@ -83,16 +83,6 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 
   def toBytes: Array[Byte] = array.clone
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Byte]((target.cols * target.rows + 7) / 8).fill(byteNODATA)
-        Resample(RasterExtent(current, cols, rows), target, new BitResampleAssign(array, resampled))
-        BitArrayTile(resampled, target.cols, target.rows)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }
 
 object BitArrayTile {
