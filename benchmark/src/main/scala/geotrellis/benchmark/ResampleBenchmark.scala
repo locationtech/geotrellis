@@ -2,7 +2,7 @@ package geotrellis.benchmark
 
 import geotrellis.raster._
 import geotrellis.raster.reproject._
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 
 import geotrellis.vector.Extent
 
@@ -10,9 +10,9 @@ import geotrellis.proj4._
 
 import com.google.caliper.Param
 
-trait InterpolationBenchmark extends OperationBenchmark {
+trait ResampleBenchmark extends OperationBenchmark {
 
-  def interp: InterpolationMethod
+  def resamp: ResampleMethod
 
   val tileName = "SBN_farm_mkt"
 
@@ -33,14 +33,14 @@ trait InterpolationBenchmark extends OperationBenchmark {
     extent = Extent(0, 0, size / 100.0, size / 100.0)
   }
 
-  def timeInterpolation(reps: Int) = run(reps)(interpolate)
+  def timeResample(reps: Int) = run(reps)(resample)
 
-  def interpolate =
-    tile.reproject(extent, LatLng, WebMercator, ReprojectOptions(interp, 0.0))
+  def resample =
+    tile.reproject(extent, LatLng, WebMercator, ReprojectOptions(resamp, 0.0))
 
-  def timeInterpolationDouble(reps: Int) = run(reps)(interpolateDouble)
+  def timeResampleDouble(reps: Int) = run(reps)(resampleDouble)
 
-  def interpolateDouble =
-    tileDouble.reproject(extent, LatLng, WebMercator, ReprojectOptions(interp, 0.0))
+  def resampleDouble =
+    tileDouble.reproject(extent, LatLng, WebMercator, ReprojectOptions(resamp, 0.0))
 
 }
