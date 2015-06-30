@@ -22,8 +22,9 @@ import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 import scala.util._
 
-object OnlyIfCanRunSpark {
-  lazy val _sc = Try{
+
+trait OnlyIfCanRunSpark extends FunSpec with BeforeAndAfterAll {
+  val _sc = Try{
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
 
@@ -34,10 +35,6 @@ object OnlyIfCanRunSpark {
 
     sparkContext
   }
-}
-
-trait OnlyIfCanRunSpark extends FunSpec with BeforeAndAfterAll {
-  import OnlyIfCanRunSpark._
 
   implicit def sc: SparkContext = _sc.get
   
@@ -46,5 +43,9 @@ trait OnlyIfCanRunSpark extends FunSpec with BeforeAndAfterAll {
       case Success(sc) => f
       case Failure(error) => ignore(error.getMessage) {}
     }    
-  }  
+  } 
+
+  override def afterAll() {
+    if (_sc.isSuccess) sc.stop()
+  }
 }
