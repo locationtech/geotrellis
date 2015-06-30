@@ -144,6 +144,81 @@ object Semivariogram {
      */
   }
 
+  def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](3)(0)
+      else {
+        jacobianRet(0) = (variables(2) - variables(1)) * (2 * math.pow(x, 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
+        jacobianRet(1) = 1 - math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
+        jacobianRet(2) = 1 - jacobianRet(1)
+      }
+      jacobianRet
+    }
+  }
+
+  def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](3)(0)
+      else {
+        jacobianRet(0) = (-2 * variables(1) * x) / (math.Pi * math.pow(variables(0), 2)) + (variables(1) * math.pow(x, 2)) / (math.pow(variables(0), 2) * math.sqrt(1 - math.pow(x / variables(0), 2)))
+        jacobianRet(1) = 1 - (2 / math.Pi) * math.acos(x / variables(0)) + math.sqrt(1 - math.pow(x / variables(0), 2))
+        jacobianRet(2) = 1 - jacobianRet(1)
+      }
+
+      jacobianRet
+    }
+  }
+
+  def jacobianSpherical(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](3)(0)
+      else if (x>0 && x<=variables(0)) {
+        jacobianRet(0) = (variables(1) - variables(2)) * ((-3*x)/(2*math.pow(variables(0),2)) + (3 * math.pow(x,3)/(2 * math.pow(variables(0),4))))
+        jacobianRet(1) = ((3 * x)/(2 * variables(0))) - (math.pow(x,3)/(2 * math.pow(variables(0),3)))
+        jacobianRet(2) = 1 - jacobianRet(1)
+      }
+      else
+        jacobianRet = Array[Double](0, 1, 0)
+
+      jacobianRet
+    }
+  }
+
+  def jacobianExponential(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](3)(0)
+      else {
+        jacobianRet(0) = (variables(2) - variables(1)) * (3 * x / math.pow(variables(0), 2)) * math.exp(-3 * x / variables(0))
+        jacobianRet(1) = 1 - math.exp(-3 * x / variables(0))
+        jacobianRet(2) = 1 - jacobianRet(1)
+      }
+
+      jacobianRet
+    }
+  }
+  def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](3)(0)
+      else {
+        jacobianRet(0) = -1 * (variables(1) - variables(2)) * ((-1/x) * (math.sin(x/variables(0)) + (-1 / variables(0)) * math.cos(x / variables(0))))
+        jacobianRet(1) = 1 - variables(0) * math.sin(x / variables(0))
+        jacobianRet(2) = 1 - jacobianRet(1)
+      }
+
+      jacobianRet
+    }
+  }
+
   def apply(pts:Seq[PointFeature[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Double => Double = {
 
     def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x,2) + math.pow(p1.y - p2.y,2)))
@@ -232,13 +307,7 @@ object Semivariogram {
             def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
               val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
               cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-                if (x(i) == 0)
-                  jacobianRet(i) = Array.fill[Double](3)(0)
-                else {
-                  jacobianRet(i)(0) = (variables(2) - variables(1)) * (2 * math.pow(x(i), 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x(i), 2) / math.pow(variables(0), 2))
-                  jacobianRet(i)(1) = 1 - math.exp(-1 * math.pow(x(i), 2) / math.pow(variables(0), 2))
-                  jacobianRet(i)(2) = 1 - jacobianRet(i)(1)
-                }
+                jacobianRet(i) = jacobianGaussian(variables)(x(i))
               }
               jacobianRet
             }
@@ -301,13 +370,7 @@ object Semivariogram {
             def jacobian(variables: Array[Double]): Array[Array[Double]] = {
               val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
               cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-                if (x(i) == 0)
-                  jacobianRet(i) = Array.fill[Double](3)(0)
-                else {
-                  jacobianRet(i)(0) = (variables(2) - variables(1)) * (3 * x(i) / math.pow(variables(0), 2)) * math.exp(-3 * x(i) / variables(0))
-                  jacobianRet(i)(1) = 1 - math.exp(-3 * x(i) / variables(0))
-                  jacobianRet(i)(2) = 1 - jacobianRet(i)(1)
-                }
+                jacobianRet(i) = jacobianExponential(variables)(x(i))
               }
               jacobianRet
             }
@@ -372,13 +435,7 @@ object Semivariogram {
             def jacobian(variables: Array[Double]): Array[Array[Double]] = {
               val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
               cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-                if (x(i) == 0)
-                  jacobianRet(i) = Array.fill[Double](3)(0)
-                else {
-                  jacobianRet(i)(0) = (-2 * variables(1) * x(i)) / (math.Pi * math.pow(variables(0), 2)) + (variables(1) * math.pow(x(i), 2)) / (math.pow(variables(0), 2) * math.sqrt(1 - math.pow(x(i) / variables(0), 2)))
-                  jacobianRet(i)(1) = 1 - (2 / math.Pi) * math.acos(x(i) / variables(0)) + math.sqrt(1 - math.pow(x(i) / variables(0), 2))
-                  jacobianRet(i)(2) = 1 - jacobianRet(i)(1)
-                }
+                jacobianRet(i) = jacobianCircular(variables)(x(i))
               }
               jacobianRet
             }
@@ -443,15 +500,7 @@ object Semivariogram {
             def jacobian(variables: Array[Double]): Array[Array[Double]] = {
               val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
               cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-                if (x(i) == 0)
-                  jacobianRet(i) = Array.fill[Double](3)(0)
-                else if (x(i)>0 && x(i)<=variables(0)) {
-                  jacobianRet(i)(0) = (variables(1) - variables(2)) * ((-3*x(i))/(2*math.pow(variables(0),2)) + (3 * math.pow(x(i),3)/(2 * math.pow(variables(0),4))))
-                  jacobianRet(i)(1) = ((3 * x(i))/(2 * variables(0))) - (math.pow(x(i),3)/(2 * math.pow(variables(0),3)))
-                  jacobianRet(i)(2) = 1 - jacobianRet(i)(1)
-                }
-                else
-                  jacobianRet(i) = Array[Double](0, 1, 0)
+                jacobianRet(i) = jacobianSpherical(variables)(x(i))
               }
               jacobianRet
             }
@@ -516,13 +565,7 @@ object Semivariogram {
             def jacobian(variables: Array[Double]): Array[Array[Double]] = {
               val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
               cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-                if (x(i) == 0)
-                  jacobianRet(i) = Array.fill[Double](3)(0)
-                else {
-                  jacobianRet(i)(0) = -1 * (variables(1) - variables(2)) * ((-1/x(i)) * (math.sin(x(i)/variables(0)) + (-1 / variables(0)) * math.cos(x(i)/variables(0))))
-                  jacobianRet(i)(1) = 1 - variables(0) * math.sin(x(i) / variables(0))
-                  jacobianRet(i)(2) = 1 - jacobianRet(i)(1)
-                }
+                jacobianRet(i) = jacobianWave(variables)(x(i))
               }
               jacobianRet
             }
