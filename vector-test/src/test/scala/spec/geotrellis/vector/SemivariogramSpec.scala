@@ -200,9 +200,6 @@ class SemivariogramSpec extends FunSpec
       val semivariogramGaussian = Semivariogram(points,limit,0,Gaussian)
       //semivariogram(0) should be (sv(0) +- 0.0001)
       //semivariogram(10) should be (sv(10) +- 0.0001)
-
-      //The deprecated functions generate optimization result
-      //The new replacement functions throw runtime errors at the some specific inputs (SemivariogramSpecNew[Spec].scala)
       1 should be (1 +-1)
     }
   }
