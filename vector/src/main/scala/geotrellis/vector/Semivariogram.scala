@@ -82,6 +82,18 @@ object Semivariogram {
      */
   }
 
+  def explicitGaussianNugget(r: Double, s: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else
+        s * (1 - math.exp(- math.pow(h, 2) / math.pow(r, 2)))
+    }
+    /*                  | 0                             . h = 0
+     *  gamma(h; r,s) = |
+     *                  | s {1 - e^(-h^2/r^2)}          , h > 0
+     */
+  }
+
   def explicitCircular(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -102,6 +114,26 @@ object Semivariogram {
      */
   }
 
+  def explicitCircularNugget(r: Double, s: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else if (h > r)
+        s
+      else
+        s * (1 - (2 / math.Pi) * math.acos(h/r) + math.sqrt(1 - math.pow(h, 2) / math.pow(r, 2)))
+    }
+    /*                  | 0                                                      , h = 0
+     *                  |
+     *                  |        |                                   _________ |
+     *                  |        |      2                | h |      /    h^2   |
+     *  gamme(h; r,s) = |   s  * |1 - ----- * cos_inverse|---| +   /1 - -----  | , 0 < h <= r
+     *                  |        |      pi               | r |   \/      r^2   |
+     *                  |        |                                             |
+     *                  |
+     *                  | s                                                      , h > r
+     */
+  }
+
   def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -118,6 +150,22 @@ object Semivariogram {
      */
   }
 
+  def explicitSphericalNugget(r: Double, s: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else if (h > r) {
+        s * ((3 * h / (2 * r)) - (math.pow(h, 3) / (2 * math.pow(r, 3)) ))
+      }
+      else  s
+    }
+    /*                  | 0                    . h = 0
+     *                  |    | 3h      h^3   |
+     *  gamma(h; r,s) = | s  |---- - ------- | , 0 < h <= r
+     *                  |    | 2r     2r^3   |
+     *                  | s                    , h > r
+     */
+  }
+
   def explicitExponential(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -127,6 +175,18 @@ object Semivariogram {
     /*                    | 0                           . h = 0
      *  gamma(h; r,s,a) = |
      *                    | a + (s-a) {1 - e^(-3h/r)}   , h > 0
+     */
+  }
+
+  def explicitExponentialNugget(r: Double, s: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else
+        s * (1 - math.exp(- 3 * h / r))
+    }
+    /*                  | 0                   . h = 0
+     *  gamma(h; r,s) = |
+     *                  | s {1 - e^(-3h/r)}   , h > 0
      */
   }
 
@@ -144,6 +204,20 @@ object Semivariogram {
      */
   }
 
+  def explicitWaveNugget(w: Double, s: Double): Double => Double = {
+    h: Double => {
+      if (h == 0) 0
+      else
+        s * (1 - w * math.sin(h / w) / h)
+    }
+    /*                  | 0                      . h = 0
+     *                  |
+     *  gamma(h; w,s) = |    |       sin(h/w)  |
+     *                  | s  |1 - w ---------- | , h > 0
+     *                  |    |         h       |
+     */
+  }
+
   def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
@@ -158,17 +232,42 @@ object Semivariogram {
     }
   }
 
+  def jacobianGaussianNugget(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](2)(0)
+      else {
+        jacobianRet(0) = variables(1) * (2 * math.pow(x, 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
+        jacobianRet(1) = 1 - math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
+      }
+      jacobianRet
+    }
+  }
+
   def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
         jacobianRet = Array.fill[Double](3)(0)
       else {
-        jacobianRet(0) = (-2 * variables(1) * x) / (math.Pi * math.pow(variables(0), 2)) + (variables(1) * math.pow(x, 2)) / (math.pow(variables(0), 2) * math.sqrt(1 - math.pow(x / variables(0), 2)))
+        jacobianRet(0) = (-2 * (variables(1) - variables(2)) * x) / (math.Pi * math.pow(variables(0), 2)) + ((variables(1) - variables(2)) * math.pow(x, 2)) / (math.pow(variables(0), 2) * math.sqrt(1 - math.pow(x / variables(0), 2)))
         jacobianRet(1) = 1 - (2 / math.Pi) * math.acos(x / variables(0)) + math.sqrt(1 - math.pow(x / variables(0), 2))
         jacobianRet(2) = 1 - jacobianRet(1)
       }
+      jacobianRet
+    }
+  }
 
+  def jacobianCircularNugget(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](2)(0)
+      else {
+        jacobianRet(0) = (-2 * variables(1) * x) / (math.Pi * math.pow(variables(0), 2)) + (variables(1) * math.pow(x, 2)) / (math.pow(variables(0), 2) * math.sqrt(1 - math.pow(x / variables(0), 2)))
+        jacobianRet(1) = 1 - (2 / math.Pi) * math.acos(x / variables(0)) + math.sqrt(1 - math.pow(x / variables(0), 2))
+      }
       jacobianRet
     }
   }
@@ -185,7 +284,21 @@ object Semivariogram {
       }
       else
         jacobianRet = Array[Double](0, 1, 0)
+      jacobianRet
+    }
+  }
 
+  def jacobianSphericalNugget(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](2)(0)
+      else if (x>0 && x<=variables(0)) {
+        jacobianRet(0) = variables(1) * ((-3*x)/(2*math.pow(variables(0),2)) + (3 * math.pow(x,3)/(2 * math.pow(variables(0),4))))
+        jacobianRet(1) = ((3 * x)/(2 * variables(0))) - (math.pow(x,3)/(2 * math.pow(variables(0),3)))
+      }
+      else
+        jacobianRet = Array[Double](0, 1)
       jacobianRet
     }
   }
@@ -200,10 +313,23 @@ object Semivariogram {
         jacobianRet(1) = 1 - math.exp(-3 * x / variables(0))
         jacobianRet(2) = 1 - jacobianRet(1)
       }
-
       jacobianRet
     }
   }
+
+  def jacobianExponentialNugget(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](2)(0)
+      else {
+        jacobianRet(0) = -1 * variables(1) * (3 * x / math.pow(variables(0), 2)) * math.exp(-3 * x / variables(0))
+        jacobianRet(1) = 1 - math.exp(-3 * x / variables(0))
+      }
+      jacobianRet
+    }
+  }
+
   def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
@@ -214,7 +340,19 @@ object Semivariogram {
         jacobianRet(1) = 1 - variables(0) * math.sin(x / variables(0))
         jacobianRet(2) = 1 - jacobianRet(1)
       }
+      jacobianRet
+    }
+  }
 
+  def jacobianWaveNugget(variables: Array[Double]): Double => Array[Double] = {
+    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
+    x: Double => {
+      if (x == 0)
+        jacobianRet = Array.fill[Double](2)(0)
+      else {
+        jacobianRet(0) = -1 * variables(1) * ((-1/x) * (math.sin(x/variables(0)) + (-1 / variables(0)) * math.cos(x / variables(0))))
+        jacobianRet(1) = 1 - variables(0) * math.sin(x / variables(0))
+      }
       jacobianRet
     }
   }
@@ -316,6 +454,47 @@ object Semivariogram {
             }
           }
         }
+
+        class GaussianNuggetProblem {
+          var x: Array[Double] = Array()
+          var y: Array[Double] = Array()
+
+          def addPoint(Px: Double, Py: Double) = {
+            x = x :+ Px
+            y = y :+ Py
+          }
+          def calculateTarget(): Array[Double] = {
+            val target: Array[Double] = Array.ofDim[Double](y.length)
+            cfor(0)(_ < y.length, _ + 1) { i =>
+              target(i) = y(i)
+            }
+            target
+          }
+          def retMVF(): MultivariateVectorFunction = {
+            new MultivariateVectorFunction {
+              def value(variables: Array[Double]): Array[Double] = {
+                val values: Array[Double] = Array.ofDim[Double](x.length)
+                cfor(0)(_ < values.length, _ + 1) { i =>
+                  values(i) = explicitGaussianNugget(variables(0), variables(1))(x(i))
+                }
+                values
+              }
+            }
+          }
+          def retMMF(): MultivariateMatrixFunction = {
+            def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
+              val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 2)
+              cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
+                jacobianRet(i) = jacobianGaussianNugget(variables)(x(i))
+              }
+              jacobianRet
+            }
+            new MultivariateMatrixFunction {
+              override def value(doubles: Array[Double]): Array[Array[Double]] = jacobianConstruct(doubles)
+            }
+          }
+        }
+
         val problem = new GaussianProblem
         for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
 
@@ -331,13 +510,38 @@ object Semivariogram {
         val opt: Optimum = lmo.optimize(lsp)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
-        //output data
-        println("variable0: " + optimalValues(0))
-        println("variable1: " + optimalValues(1))
-        println("variable2: " + optimalValues(2))
-        println("Iteration number: "+opt.getIterations)
-        println("Evaluation number: "+opt.getEvaluations)
-        explicitGaussian(optimalValues(0), optimalValues(1), optimalValues(2))
+        if (optimalValues(2) < 0) {
+          val problem = new GaussianNuggetProblem
+          for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
+
+          val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
+          lsb.model(problem.retMVF(), problem.retMMF())
+          lsb.target(problem.calculateTarget())
+          lsb.start(Array.fill[Double](2)(1))
+          lsb.maxEvaluations(Int.MaxValue)
+          lsb.maxIterations(Int.MaxValue)
+
+          val lsp: LeastSquaresProblem = lsb.build
+          val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
+          val opt: Optimum = lmo.optimize(lsp)
+          val optimalValues: Array[Double] = opt.getPoint.toArray
+
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitGaussianNugget(optimalValues(0), optimalValues(1))
+        }
+        else {
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("variable2: " + optimalValues(2))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitGaussian(optimalValues(0), optimalValues(1), optimalValues(2))
+        }
 
       case Exponential =>
         class ExponentialProblem {
@@ -381,6 +585,49 @@ object Semivariogram {
             }
           }
         }
+
+        class ExponentialNuggetProblem {
+          var x: Array[Double] = Array()
+          var y: Array[Double] = Array()
+
+          def addPoint(Px: Double, Py: Double) = {
+            x = x :+ Px
+            y = y :+ Py
+          }
+          def calculateTarget(): Array[Double] = {
+            val target: Array[Double] = Array.ofDim[Double](y.length)
+            cfor(0)(_ < y.length, _ + 1) { i =>
+              target(i) = y(i)
+            }
+            target
+          }
+          def retMVF(): MultivariateVectorFunction = {
+            new MultivariateVectorFunction {
+              override def value(variables: Array[Double]): Array[Double] = {
+                val values: Array[Double] = Array.ofDim[Double](x.length)
+                cfor(0)(_ < values.length, _ + 1) { i =>
+                  values(i) = explicitExponentialNugget(variables(0), variables(1))(x(i))
+                }
+                values
+              }
+            }
+          }
+          def retMMF(): MultivariateMatrixFunction = {
+            def jacobian(variables: Array[Double]): Array[Array[Double]] = {
+              val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 2)
+              cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
+                jacobianRet(i) = jacobianExponentialNugget(variables)(x(i))
+              }
+              jacobianRet
+            }
+            new MultivariateMatrixFunction {
+              override def value(doubles: Array[Double]): Array[Array[Double]] = {
+                jacobian(doubles)
+              }
+            }
+          }
+        }
+
         val problem = new ExponentialProblem
         for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
 
@@ -396,13 +643,38 @@ object Semivariogram {
         val opt: Optimum = lmo.optimize(lsp)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
-        //output data
-        println("variable0: " + optimalValues(0))
-        println("variable1: " + optimalValues(1))
-        println("variable2: " + optimalValues(2))
-        println("Iteration number: "+opt.getIterations)
-        println("Evaluation number: "+opt.getEvaluations)
-        explicitExponential(optimalValues(0), optimalValues(1), optimalValues(2))
+        if (optimalValues(2) < 0) {
+          val problem = new ExponentialNuggetProblem
+          for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
+
+          val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
+          lsb.model(problem.retMVF(), problem.retMMF())
+          lsb.target(problem.calculateTarget())
+          lsb.start(Array.fill[Double](2)(1))
+          lsb.maxEvaluations(Int.MaxValue)
+          lsb.maxIterations(Int.MaxValue)
+
+          val lsp: LeastSquaresProblem = lsb.build
+          val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
+          val opt: Optimum = lmo.optimize(lsp)
+          val optimalValues: Array[Double] = opt.getPoint.toArray
+
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitExponentialNugget(optimalValues(0), optimalValues(1))
+        }
+        else {
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("variable2: " + optimalValues(2))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitExponential(optimalValues(0), optimalValues(1), optimalValues(2))
+        }
 
       case Circular =>
         class CircularProblem {
@@ -446,6 +718,49 @@ object Semivariogram {
             }
           }
         }
+
+        class CircularNuggetProblem {
+          var x: Array[Double] = Array()
+          var y: Array[Double] = Array()
+
+          def addPoint(Px: Double, Py: Double) = {
+            x = x :+ Px
+            y = y :+ Py
+          }
+          def calculateTarget(): Array[Double] = {
+            val target: Array[Double] = Array.ofDim[Double](y.length)
+            cfor(0)(_ < y.length, _ + 1) { i =>
+              target(i) = y(i)
+            }
+            target
+          }
+          def retMVF(): MultivariateVectorFunction = {
+            new MultivariateVectorFunction {
+              override def value(variables: Array[Double]): Array[Double] = {
+                val values: Array[Double] = Array.ofDim[Double](x.length)
+                cfor(0)(_ < values.length, _ + 1) { i =>
+                  values(i) = explicitCircularNugget(variables(0), variables(1))(x(i))
+                }
+                values
+              }
+            }
+          }
+          def retMMF(): MultivariateMatrixFunction = {
+            def jacobian(variables: Array[Double]): Array[Array[Double]] = {
+              val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 2)
+              cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
+                jacobianRet(i) = jacobianCircularNugget(variables)(x(i))
+              }
+              jacobianRet
+            }
+            new MultivariateMatrixFunction {
+              override def value(doubles: Array[Double]): Array[Array[Double]] = {
+                jacobian(doubles)
+              }
+            }
+          }
+        }
+
         val problem = new CircularProblem
         for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
 
@@ -461,13 +776,38 @@ object Semivariogram {
         val opt: Optimum = lmo.optimize(lsp)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
-        //output data
-        println("variable0: " + optimalValues(0))
-        println("variable1: " + optimalValues(1))
-        println("variable2: " + optimalValues(2))
-        println("Iteration number: "+opt.getIterations)
-        println("Evaluation number: "+opt.getEvaluations)
-        explicitCircular(optimalValues(0), optimalValues(1), optimalValues(2))
+        if (optimalValues(2) < 0) {
+          val problem = new CircularNuggetProblem
+          for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
+
+          val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
+          lsb.model(problem.retMVF(), problem.retMMF())
+          lsb.target(problem.calculateTarget())
+          lsb.start(Array.fill[Double](2)(1))
+          lsb.maxEvaluations(Int.MaxValue)
+          lsb.maxIterations(Int.MaxValue)
+
+          val lsp: LeastSquaresProblem = lsb.build
+          val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
+          val opt: Optimum = lmo.optimize(lsp)
+          val optimalValues: Array[Double] = opt.getPoint.toArray
+
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitCircularNugget(optimalValues(0), optimalValues(1))
+        }
+        else {
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("variable2: " + optimalValues(2))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitCircular(optimalValues(0), optimalValues(1), optimalValues(2))
+        }
 
       case Spherical =>
         class SphericalProblem {
@@ -511,6 +851,49 @@ object Semivariogram {
             }
           }
         }
+
+        class SphericalNuggetProblem {
+          var x: Array[Double] = Array()
+          var y: Array[Double] = Array()
+
+          def addPoint(Px: Double, Py: Double) = {
+            x = x :+ Px
+            y = y :+ Py
+          }
+          def calculateTarget(): Array[Double] = {
+            val target: Array[Double] = Array.ofDim[Double](y.length)
+            cfor(0)(_ < y.length, _ + 1) { i =>
+              target(i) = y(i)
+            }
+            target
+          }
+          def retMVF(): MultivariateVectorFunction = {
+            new MultivariateVectorFunction {
+              override def value(variables: Array[Double]): Array[Double] = {
+                val values: Array[Double] = Array.ofDim[Double](x.length)
+                cfor(0)(_ < values.length, _ + 1) { i =>
+                  values(i) = explicitSphericalNugget(variables(0), variables(1))(x(i))
+                }
+                values
+              }
+            }
+          }
+          def retMMF(): MultivariateMatrixFunction = {
+            def jacobian(variables: Array[Double]): Array[Array[Double]] = {
+              val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 2)
+              cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
+                jacobianRet(i) = jacobianSphericalNugget(variables)(x(i))
+              }
+              jacobianRet
+            }
+            new MultivariateMatrixFunction {
+              override def value(doubles: Array[Double]): Array[Array[Double]] = {
+                jacobian(doubles)
+              }
+            }
+          }
+        }
+
         val problem = new SphericalProblem
         for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
 
@@ -526,13 +909,39 @@ object Semivariogram {
         val opt: Optimum = lmo.optimize(lsp)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
-        //output data
-        println("variable0: " + optimalValues(0))
-        println("variable1: " + optimalValues(1))
-        println("variable2: " + optimalValues(2))
-        println("Iteration number: "+opt.getIterations)
-        println("Evaluation number: "+opt.getEvaluations)
-        explicitSpherical(optimalValues(0), optimalValues(1), optimalValues(2))
+        if (optimalValues(2) < 0) {
+          val problem = new SphericalNuggetProblem
+          for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
+
+          val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
+          lsb.model(problem.retMVF(), problem.retMMF())
+          lsb.target(problem.calculateTarget())
+          lsb.start(Array.fill[Double](2)(1))
+          lsb.maxEvaluations(Int.MaxValue)
+          lsb.maxIterations(Int.MaxValue)
+
+          val lsp: LeastSquaresProblem = lsb.build
+          val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
+          val opt: Optimum = lmo.optimize(lsp)
+          val optimalValues: Array[Double] = opt.getPoint.toArray
+
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("variable2: " + optimalValues(2))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitSphericalNugget(optimalValues(0), optimalValues(1))
+        }
+        else {
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("variable2: " + optimalValues(2))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitSpherical(optimalValues(0), optimalValues(1), optimalValues(2))
+        }
 
       case Wave =>
         class WaveProblem {
@@ -576,6 +985,49 @@ object Semivariogram {
             }
           }
         }
+
+        class WaveNuggetProblem {
+          var x: Array[Double] = Array()
+          var y: Array[Double] = Array()
+
+          def addPoint(Px: Double, Py: Double) = {
+            x = x :+ Px
+            y = y :+ Py
+          }
+          def calculateTarget(): Array[Double] = {
+            val target: Array[Double] = Array.ofDim[Double](y.length)
+            cfor(0)(_ < y.length, _ + 1) { i =>
+              target(i) = y(i)
+            }
+            target
+          }
+          def retMVF(): MultivariateVectorFunction = {
+            new MultivariateVectorFunction {
+              override def value(variables: Array[Double]): Array[Double] = {
+                val values: Array[Double] = Array.ofDim[Double](x.length)
+                cfor(0)(_ < values.length, _ + 1) { i =>
+                  values(i) = explicitWaveNugget(variables(0), variables(1))(x(i))
+                }
+                values
+              }
+            }
+          }
+          def retMMF(): MultivariateMatrixFunction = {
+            def jacobian(variables: Array[Double]): Array[Array[Double]] = {
+              val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 2)
+              cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
+                jacobianRet(i) = jacobianWaveNugget(variables)(x(i))
+              }
+              jacobianRet
+            }
+            new MultivariateMatrixFunction {
+              override def value(doubles: Array[Double]): Array[Array[Double]] = {
+                jacobian(doubles)
+              }
+            }
+          }
+        }
+
         val problem = new WaveProblem
         for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
 
@@ -591,13 +1043,38 @@ object Semivariogram {
         val opt: Optimum = lmo.optimize(lsp)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
-        //output data
-        println("variable0: " + optimalValues(0))
-        println("variable1: " + optimalValues(1))
-        println("variable2: " + optimalValues(2))
-        println("Iteration number: "+opt.getIterations)
-        println("Evaluation number: "+opt.getEvaluations)
-        explicitWave(optimalValues(0), optimalValues(1), optimalValues(2))
+        if (optimalValues(2) < 0) {
+          val problem = new WaveNuggetProblem
+          for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
+
+          val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
+          lsb.model(problem.retMVF(), problem.retMMF())
+          lsb.target(problem.calculateTarget())
+          lsb.start(Array.fill[Double](2)(1))
+          lsb.maxEvaluations(Int.MaxValue)
+          lsb.maxIterations(Int.MaxValue)
+
+          val lsp: LeastSquaresProblem = lsb.build
+          val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
+          val opt: Optimum = lmo.optimize(lsp)
+          val optimalValues: Array[Double] = opt.getPoint.toArray
+
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitWaveNugget(optimalValues(0), optimalValues(1))
+        }
+        else {
+          //output data
+          println("variable0: " + optimalValues(0))
+          println("variable1: " + optimalValues(1))
+          println("variable2: " + optimalValues(2))
+          println("Iteration number: "+opt.getIterations)
+          println("Evaluation number: "+opt.getEvaluations)
+          explicitWave(optimalValues(0), optimalValues(1), optimalValues(2))
+        }
     }
   }
 }

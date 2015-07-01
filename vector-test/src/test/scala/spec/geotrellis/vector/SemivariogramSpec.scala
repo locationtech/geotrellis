@@ -24,7 +24,7 @@ class SemivariogramSpec extends FunSpec
                            with Matchers 
                            with TestEngine 
                            with TileBuilders {
-  describe("Semivariogram") {
+  describe("Linear Semivariogram") {
     it("Semivariogram (Bucketed)") {
       val points = Seq[PointFeature[Int]](
         PointFeature(Point(0.0,0.0),10),
@@ -187,8 +187,10 @@ class SemivariogramSpec extends FunSpec
       semivariogram(0) should be (sv(0) +- 0.0001)
       semivariogram(10) should be (sv(10) +- 0.0001)
     }
+  }
 
-    it("Gaussian Semivariogram") {
+  describe("Gaussian Semivariogram") {
+    ignore("Gaussian Semivariogram") {
       val points = Seq[PointFeature[Int]](
         PointFeature(Point(0.0,0.0),10),
         PointFeature(Point(0.0,0.0),16),
