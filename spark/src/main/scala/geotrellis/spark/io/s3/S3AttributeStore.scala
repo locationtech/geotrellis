@@ -30,11 +30,13 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
 
+  def path(parts: String*) = parts.filter(_.nonEmpty).mkString("/")
+
   def attributePath(id: LayerId, attributeName: String): String =
-    s"$rootPath/_attributes/${attributeName}__${id.name}__${id.zoom}.json"
+    path(rootPath, "_attributes", "${attributeName}__${id.name}__${id.zoom}.json")
 
   def attributePrefix(attributeName: String): String =
-    s"$rootPath/_attributes/${attributeName}__"
+    path(rootPath, "_attributes", "${attributeName}__")
 
   private def readKey[T: ReadableWritable](key: String): Option[(LayerId, T)] = {
     val is = s3Client.getObject(bucket, key).getObjectContent()
