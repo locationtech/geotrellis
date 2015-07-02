@@ -29,7 +29,8 @@ object S3RasterCatalog {
   private def layerPath(layerId: LayerId) = 
     s"${layerId.name}/${layerId.zoom}"  
 
-  def apply(bucket: String) = apply(bucket, "", defaultS3Client)
+  def apply(bucket: String)(implicit sc: SparkContext): S3RasterCatalog =
+    apply(bucket, "", defaultS3Client)
 
   def apply(bucket: String, rootPath: String, s3client: () => S3Client = defaultS3Client)
     (implicit sc: SparkContext): S3RasterCatalog = {
