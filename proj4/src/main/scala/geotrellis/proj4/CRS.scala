@@ -125,10 +125,6 @@ object CRS {
 
     def NADcompare(group: Stream[String]) = {
       val concatenated ="proj"+(group(1).replace("  "," ")).split("proj")(1)+" "+group(2)+" "+group(3)+" "+group(4)
-      println("concat:"+concatenated)
-      println("orignal:"+proj4String)
-      if(concatenated!=proj4String) println("not equal")
-      else println("equal")
       concatenated!=proj4String
     }
 
