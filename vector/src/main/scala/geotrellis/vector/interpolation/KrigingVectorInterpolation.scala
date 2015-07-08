@@ -10,7 +10,8 @@ trait KrigingInterpolationMethod{
 
   def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))
 
-  def getCovariogramMatrix(sv: Function1[Double, Double], points: Seq[PointFeature[Int]]): RealMatrix = {
+  //def getCovariogramMatrix(sv: Function1[Double, Double], points: Seq[PointFeature[Int]]): RealMatrix = {
+  def getCovariogramMatrix(sv: Function1[Double, Double], points: Seq[PointFeature[Double]]): RealMatrix = {
     //TODO : Select a subdomain(range/cross-validaiton) from the given PointSequence for smaller covariogram computation
     //Range selection is done, execute the cross-validation as well; added features for bandwidth input
     val pointSize = points.size
@@ -28,11 +29,13 @@ trait KrigingInterpolationMethod{
     MatrixUtils.createRealMatrix(covariogram)
   }
 
-  def getPredictionSet(points: Seq[PointFeature[Int]], bandwidth: Double, point: Point): Seq[PointFeature[Int]] = {
+  //def getPredictionSet(points: Seq[PointFeature[Int]], bandwidth: Double, point: Point): Seq[PointFeature[Int]] = {
+  def getPredictionSet(points: Seq[PointFeature[Double]], bandwidth: Double, point: Point): Seq[PointFeature[Double]] = {
     points.filter(x => distance(x.geom, point) < bandwidth)
   }
 
-  def getSill(sv: Function1[Double, Double], points: Seq[PointFeature[Int]], model: ModelType) : Double = {
+  //def getSill(sv: Function1[Double, Double], points: Seq[PointFeature[Int]], model: ModelType) : Double = {
+  def getSill(sv: Function1[Double, Double], points: Seq[PointFeature[Double]], model: ModelType) : Double = {
     model match {
       case Linear =>
         sv(1) - sv(0)
@@ -44,7 +47,8 @@ trait KrigingInterpolationMethod{
   }
 }
 
-class KrigingSimple(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+//class KrigingSimple(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+class KrigingSimple(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingInterpolationMethod {
   def createPredictor(): Point => (Double, Double) = {
     pointPredict => {
       val pointSize = points.size
@@ -67,7 +71,8 @@ class KrigingSimple(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSi
   }
 }
 
-class KrigingOrdinary(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+//class KrigingOrdinary(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+class KrigingOrdinary(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingInterpolationMethod {
   def createPredictor(): Point => (Double, Double) = {
     pointPredict => {
       val pointSize = points.size
@@ -98,7 +103,7 @@ class KrigingOrdinary(points: Seq[PointFeature[Int]], radius: Option[Int], chunk
 /*
 class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType, ols: OLSType) extends KrigingInterpolationMethod {
 */
-class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+class KrigingUniversal(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingInterpolationMethod {
   def createPredictor(): Point => (Double, Double) = {
     pointPredict => {
       val pointSize = points.size
@@ -131,7 +136,8 @@ class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chun
 
       //Prediction Set
       //TODO : Check if n >= k + 2 holds else reiterate the set generation process
-      val predictionSet: Seq[PointFeature[Int]] = getPredictionSet(points, radius.get.toDouble, pointPredict)
+      //val predictionSet: Seq[PointFeature[Int]] = getPredictionSet(points, radius.get.toDouble, pointPredict)
+      val predictionSet: Seq[PointFeature[Double]] = getPredictionSet(points, radius.get.toDouble, pointPredict)
 
       val covariogramSample: RealMatrix = getCovariogramMatrix(sv, predictionSet)
       val covariogramSampleInverse: RealMatrix = new LUDecomposition(covariogramSample).getSolver.getInverse
@@ -170,7 +176,8 @@ class KrigingUniversal(points: Seq[PointFeature[Int]], radius: Option[Int], chun
   }
 }
 
-class KrigingGeo(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+//class KrigingGeo(points: Seq[PointFeature[Int]], radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType) extends KrigingInterpolationMethod {
+class KrigingGeo(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingInterpolationMethod {
   def createPredictor(): Point => (Double, Double) = {
     pointPredict => {
 

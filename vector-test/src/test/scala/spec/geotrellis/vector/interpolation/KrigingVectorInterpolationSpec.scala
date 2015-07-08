@@ -9,13 +9,15 @@ import org.scalatest._
 class KrigingVectorInterpolationSpec extends FunSpec
 with TestEngine{
 
-  val points = Seq[PointFeature[Int]](
+  //val points = Seq[PointFeature[Int]](
+  val points = Seq[PointFeature[Double]](
     PointFeature(Point(0.0,0.0),10),
     PointFeature(Point(1.0,0.0),20),
     PointFeature(Point(4.0,4.0),60),
     PointFeature(Point(0.0,6.0),80)
   )
-  val radius = Some(6)
+  //val radius = Some(6)
+  val radius:Option[Double] = Some(6)
   val lag = 2
   val chunkSize = 100
   val pointPredict = Point(1,1)

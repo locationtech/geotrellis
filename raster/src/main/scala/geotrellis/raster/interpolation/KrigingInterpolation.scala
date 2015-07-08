@@ -10,7 +10,8 @@ object KrigingInterpolation {
   private def isValid(point: Point, re: RasterExtent): Boolean =
     point.x >= re.extent.xmin && point.x <= re.extent.xmax && point.y <= re.extent.ymax && point.y >= re.extent.ymin
 
-  def apply(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = {
+  //def apply(method: KrigingInterpolationMethod, points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int], chunkSize: Int, lag: Int = 0, model: ModelType): Tile = {
+  def apply(method: KrigingInterpolationMethod, points: Seq[PointFeature[Double]], re: RasterExtent, radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType): Tile = {
     val cols = re.cols
     val rows = re.rows
     val tile = ArrayTile.alloc(TypeDouble, cols, rows)

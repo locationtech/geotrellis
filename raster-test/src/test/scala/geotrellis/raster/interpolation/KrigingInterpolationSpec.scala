@@ -38,14 +38,16 @@ class KrigingInterpolationSpec extends FunSpec
 
       val extent = Extent(0,0,9,10)
       val re = RasterExtent(extent, 1, 1, 9, 10)
-      val points = Seq[PointFeature[Int]](
+      //val points = Seq[PointFeature[Int]](
+      val points = Seq[PointFeature[Double]](
         PointFeature(Point(0.0,0.0),10),
         PointFeature(Point(1.0,0.0),20),
         PointFeature(Point(4.0,4.0),60),
         PointFeature(Point(0.0,6.0),80)
       )
 
-      val radius = Some(6)
+      //val radius = Some(6)
+      val radius: Option[Double] = Some(6)
       val lag = 2
       val chunkSize = 100
       //val result = KrigingInterpolation(KrigingSimple, points, re, radius, chunkSize, lag, Linear)
