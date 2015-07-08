@@ -12,7 +12,7 @@ class UInt16GeoTiffTile(
   val noDataValue: Option[Double]
 ) extends GeoTiffTile(segmentLayout, compression) with UInt16GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
-    val arr = Array.ofDim[Int](cols * rows)
+    val arr = Array.ofDim[Short](cols * rows)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = 
         getSegment(segmentIndex)
@@ -21,11 +21,11 @@ class UInt16GeoTiffTile(
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
         if(col < cols && row < rows) {
-          arr(row * cols + col) = segment.get(i)
+          arr(row * cols + col) = segment.getRaw(i)
         }
       }
     }
-    IntArrayTile(arr, cols, rows)
+    UShortArrayTile(arr, cols, rows)
   }
 }
 

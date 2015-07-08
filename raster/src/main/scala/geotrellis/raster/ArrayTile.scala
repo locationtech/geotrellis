@@ -25,7 +25,9 @@ object ArrayTile {
     t match {
       case TypeBit    => BitArrayTile.ofDim(cols, rows)
       case TypeByte   => ByteArrayTile.ofDim(cols, rows)
+      case TypeUByte  => UByteArrayTile.ofDim(cols, rows)
       case TypeShort  => ShortArrayTile.ofDim(cols, rows)
+      case TypeUShort  => UShortArrayTile.ofDim(cols, rows)
       case TypeInt    => IntArrayTile.ofDim(cols, rows)
       case TypeFloat  => FloatArrayTile.ofDim(cols, rows)
       case TypeDouble => DoubleArrayTile.ofDim(cols, rows)
@@ -35,7 +37,9 @@ object ArrayTile {
     t match {
       case TypeBit    => BitArrayTile.empty(cols, rows)
       case TypeByte   => ByteArrayTile.empty(cols, rows)
+      case TypeUByte  => UByteArrayTile.empty(cols, rows)
       case TypeShort  => ShortArrayTile.empty(cols, rows)
+      case TypeUShort  => UShortArrayTile.empty(cols, rows)
       case TypeInt    => IntArrayTile.empty(cols, rows)
       case TypeFloat  => FloatArrayTile.empty(cols, rows)
       case TypeDouble => DoubleArrayTile.empty(cols, rows)
@@ -45,7 +49,9 @@ object ArrayTile {
     t match {
       case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows)
       case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows)
+      case TypeUByte  => UByteArrayTile.fromBytes(bytes, cols, rows)
       case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows)
+      case TypeUShort  => UShortArrayTile.fromBytes(bytes, cols, rows)
       case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows)
       case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows)
       case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows)
@@ -55,7 +61,9 @@ object ArrayTile {
     t match {
       case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
       case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case TypeUByte  => UByteArrayTile.fromBytes(bytes, cols, rows)
       case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case TypeUShort  => UShortArrayTile.fromBytes(bytes, cols, rows)
       case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
       case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
       case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)

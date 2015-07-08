@@ -1,19 +1,3 @@
-/*
- * Copyright (c) 2014 Azavea.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package geotrellis.raster
 
 import geotrellis.vector.Extent
@@ -62,5 +46,70 @@ object ByteArrayTile {
         arr(i) = bytes(i)
       }
       ByteArrayTile(arr, cols, rows)
+    }
+}
+
+final case class NoDataByteArrayTile(array: Array[Byte], cols: Int, rows: Int, nd: Byte)
+  extends MutableArrayTile with IntBasedArrayTile {
+
+  val cellType = TypeByte
+
+  val ndI = nd.toInt
+
+  def apply(i: Int) = { val z = array(i).toInt ; if(z == ndI) NODATA else z }
+  def update(i: Int, z: Int) { array(i) = if(z == nd) nd else z.toByte  }
+
+  def toBytes: Array[Byte] = array.clone
+
+  def copy = ArrayTile(array.clone, cols, rows)
+
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile =
+    method match {
+      case NearestNeighbor =>
+        val resampled = Array.ofDim[Byte](target.cols * target.rows).fill(byteNODATA)
+        Resample(RasterExtent(current, cols, rows), target, new ByteBufferResampleAssign(ByteBuffer.wrap(array), resampled))
+        NoDataByteArrayTile(resampled, target.cols, target.rows, nd)
+      case _ =>
+        Resample(this, current, target, method)
+    }
+}
+
+object NoDataByteArrayTile {
+  def ofDim(cols: Int, rows: Int, nd: Byte): NoDataByteArrayTile =
+    new NoDataByteArrayTile(Array.ofDim[Byte](cols * rows), cols, rows, nd)
+
+  def empty(cols: Int, rows: Int, nd: Byte): NoDataByteArrayTile =
+    new NoDataByteArrayTile(Array.ofDim[Byte](cols * rows).fill(byteNODATA), cols, rows, nd)
+
+  def fill(v: Byte, cols: Int, rows: Int, nd: Byte): NoDataByteArrayTile =
+    new NoDataByteArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows, nd)
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, nd: Byte): NoDataByteArrayTile =
+    NoDataByteArrayTile(bytes.clone, cols, rows, nd)
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, nd: Byte, replaceNoData: Byte): NoDataByteArrayTile =
+    fromBytes(bytes, cols, rows, nd)
+}
+
+final case class NoNoDataByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
+  extends MutableArrayTile with IntBasedArrayTile {
+
+  val cellType = TypeByte
+
+  def apply(i: Int) = array(i).toInt
+  def update(i: Int, z: Int) = array(i) = z.toByte
+
+  def toBytes: Array[Byte] = array.clone
+
+  def copy = ArrayTile(array.clone, cols, rows)
+
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile =
+    method match {
+      case NearestNeighbor =>
+        val resampled = Array.ofDim[Byte](target.cols * target.rows).fill(byteNODATA)
+        Resample(RasterExtent(current, cols, rows), target, new ByteBufferResampleAssign(ByteBuffer.wrap(array), resampled))
+        NoNoDataByteArrayTile(resampled, target.cols, target.rows)
+      case _ =>
+        Resample(this, current, target, method)
     }
 }

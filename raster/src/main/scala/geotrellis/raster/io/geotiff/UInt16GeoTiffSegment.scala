@@ -22,7 +22,8 @@ class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   val size: Int = bytes.size / 2
 
-  def get(i: Int): Int = buffer.get(i) & 0xFFFF
+  def getRaw(i: Int): Short = buffer.get(i) // Get's the signed short, negative values are incorrect
+  def get(i: Int): Int = buffer.get(i) % 0xFFFF
 
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))
@@ -33,11 +34,11 @@ class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte => 
+      case TypeByte | TypeUByte => 
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2b(get(i)) }
         arr
-      case TypeShort =>
+      case TypeShort| TypeUShort  =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
         arr.toArrayByte()

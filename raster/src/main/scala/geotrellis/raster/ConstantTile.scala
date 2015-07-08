@@ -36,7 +36,9 @@ trait ConstantTile extends Tile {
     newType match {
       case TypeBit => BitConstantTile(if(iVal == 0) false else true, cols, rows)
       case TypeByte => ByteConstantTile(iVal.toByte, cols, rows)
+      case TypeUByte => UByteConstantTile(iVal.toByte, cols, rows)
       case TypeShort => ShortConstantTile(iVal.toShort, cols, rows)
+      case TypeUShort => UShortConstantTile(iVal.toShort, cols, rows)
       case TypeInt => IntConstantTile(iVal, cols, rows)
       case TypeFloat => FloatConstantTile(dVal.toFloat, cols, rows)
       case TypeDouble => DoubleConstantTile(dVal, cols, rows)
@@ -124,6 +126,22 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile 
   def toBytes(): Array[Byte] = Array(v)
 }
 
+case class UByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = b2i(v)
+  protected val dVal = b2d(v)
+
+  val cellType = TypeByte
+
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
+
+  def toBytes(): Array[Byte] = Array(v)
+
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+    ByteConstantTile(v, target.cols, target.rows)
+}
+
 case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = s2i(v)
   protected val dVal = s2d(v)
@@ -140,6 +158,27 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTil
     arr
   }
 }
+
+case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = v & 0xFFFF
+  protected val dVal = iVal.toDouble
+
+  val cellType = TypeShort
+
+  def toArrayTile(): ArrayTile = mutable
+
+  def mutable(): MutableArrayTile = ShortArrayTile.fill(v, cols, rows)
+
+  def toBytes(): Array[Byte] = {
+    val arr = Array.ofDim[Byte](cellType.bytes)
+    ByteBuffer.wrap(arr).asShortBuffer.put(v)
+    arr
+  }
+
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+    ShortConstantTile(v, target.cols, target.rows)
+}
+
 
 case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = v

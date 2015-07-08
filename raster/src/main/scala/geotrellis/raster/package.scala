@@ -39,16 +39,13 @@ package object raster {
   @inline final val doubleNODATA = Double.NaN
 
 
-  def isNoData(b: Byte): Boolean = macro NoDataMacros.isNoDataByte_impl
-  def isNoData(s: Short): Boolean = macro NoDataMacros.isNoDataShort_impl
+  // def isNoData(b: Byte): Boolean = macro NoDataMacros.isNoDataByte_impl
+  // def isNoData(s: Short): Boolean = macro NoDataMacros.isNoDataShort_impl
   def isNoData(i: Int): Boolean = macro NoDataMacros.isNoDataInt_impl
   def isNoData(f: Float): Boolean = macro NoDataMacros.isNoDataFloat_impl
   def isNoData(d: Double): Boolean = macro NoDataMacros.isNoDataDouble_impl
 
-  def isData(b: Byte): Boolean = macro NoDataMacros.isDataByte_impl
-  def isData(s: Short): Boolean = macro NoDataMacros.isDataShort_impl
   def isData(i: Int): Boolean = macro NoDataMacros.isDataInt_impl
-  def isData(f: Float): Boolean = macro NoDataMacros.isDataFloat_impl
   def isData(d: Double): Boolean = macro NoDataMacros.isDataDouble_impl
 
   def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl

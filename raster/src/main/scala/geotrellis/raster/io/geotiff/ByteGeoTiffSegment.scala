@@ -10,8 +10,8 @@ import spire.syntax.cfor._
 
 class NoDataByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Byte) extends ByteGeoTiffSegment(bytes) {
   override
-  def get(i: Int): Byte = {
-    val v = super.get(i)
+  def get(i: Int): Int = {
+    val v = super.getRaw(i)
     if(v == noDataValue) { byteNODATA }
     else { v }
   }
@@ -20,10 +20,11 @@ class NoDataByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Byte) extends By
 class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   val size: Int = bytes.size
 
-  def getInt(i: Int): Int = b2i(get(i))
-  def getDouble(i: Int): Double = b2d(get(i))
+  def getInt(i: Int): Int = get(i)
+  def getDouble(i: Int): Double = i2d(get(i))
 
-  def get(i: Int): Byte = bytes(i)
+  def get(i: Int): Int = bytes(i) & 0xFF
+  def getRaw(i: Int): Byte = bytes(i)
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -31,11 +32,11 @@ class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte => 
+      case TypeByte | TypeUByte => 
         bytes
-      case TypeShort =>
+      case TypeShort | TypeUShort =>
         val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = b2s(get(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
         arr.toArrayByte()
       case TypeInt =>
         val arr = Array.ofDim[Int](size)
@@ -43,7 +44,7 @@ class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         arr.toArrayByte()
       case TypeFloat =>
         val arr = Array.ofDim[Float](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = b2f(get(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = i2f(get(i)) }
         arr.toArrayByte()
       case TypeDouble =>
         val arr = Array.ofDim[Double](size)

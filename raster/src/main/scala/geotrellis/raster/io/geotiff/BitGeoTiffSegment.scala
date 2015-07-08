@@ -32,11 +32,11 @@ class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends Ge
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case TypeBit => bytes
-      case TypeByte =>
+      case TypeByte | TypeUByte =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i) }
         arr
-      case TypeShort =>
+      case TypeShort | TypeUShort =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = b2s(get(i)) }
         arr.toArrayByte()

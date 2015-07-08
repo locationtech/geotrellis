@@ -98,6 +98,7 @@ object ResampleAssign {
   ): Unit =
     apply(current, target, new ArrayResampleAssign(source, result))
 
+  /** The fast version of nearest neighbor resampling against Arrays */
   def apply(current: RasterExtent, target: RasterExtent, assign: ResampleAssign): Unit = {
     if(!current.extent.intersects(target.extent)) {
       return

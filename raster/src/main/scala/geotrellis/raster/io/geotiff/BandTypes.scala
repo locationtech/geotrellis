@@ -35,8 +35,10 @@ object BandType {
   def forCellType(cellType: CellType): BandType = 
     cellType match {
       case TypeBit => BitBandType
-      case TypeByte => ByteBandType
+      case TypeByte => Int16BandType
+      case TypeUByte => ByteBandType
       case TypeShort => Int16BandType
+      case TypeUShort => UInt16BandType
       case TypeInt => Int32BandType
       case TypeFloat => Float32BandType
       case TypeDouble => Float64BandType
@@ -54,14 +56,14 @@ object ByteBandType extends BandType {
   val bitsPerSample = 8
   val unsigned = false
   val sampleFormat = SignedInt
-  def cellType = TypeByte
+  def cellType = TypeUByte
 }
 
 object UInt16BandType extends BandType {
   val bitsPerSample = 16
   val unsigned = true
   val sampleFormat = UnsignedInt
-  def cellType = TypeInt // Because unsigned, need to move up width
+  def cellType = TypeUShort
 }
 
 object Int16BandType extends BandType {
@@ -75,7 +77,7 @@ object UInt32BandType extends BandType {
   val bitsPerSample = 32
   val unsigned = true
   val sampleFormat = UnsignedInt
-  def cellType = TypeFloat // Because unsigned, need to move up width
+  def cellType = TypeFloat // Because unsigned, need to account for values greater than Int.MaxValue
 }
 
 object Int32BandType extends BandType {
