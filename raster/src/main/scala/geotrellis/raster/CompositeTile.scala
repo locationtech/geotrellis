@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -151,9 +150,6 @@ case class CompositeTile(tiles: Seq[Tile],
 
   def convert(cellType: CellType): Tile =
     LazyConvertedArrayTile(this, cellType)
-
-  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod) = 
-    toArrayTile.resample(source, target, method)
 
   def toArrayTile(): ArrayTile = mutable
 

@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation.InterpolationMethod
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -269,6 +268,4 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   def toBytes: Array[Byte]
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile 
 }

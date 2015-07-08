@@ -17,6 +17,7 @@
 package geotrellis.raster.io.arg
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.raster.io.Filesystem
 import geotrellis.vector.Extent
 
@@ -140,33 +141,33 @@ object ArgReader {
     typ match {
       case TypeBit =>
         val resampled = Array.ofDim[Byte]((cols*rows + 7)/8)
-        Resample(re, targetRe, new BitResampleAssign(bytes, resampled))
+        ResampleAssign(re, targetRe, new BitResampleAssign(bytes, resampled))
         BitArrayTile(resampled, cols, rows)
       case TypeByte =>
         // ByteBuffer assign benchmarked faster than just using Array[Byte] for source.
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
-        Resample(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
         ByteArrayTile(resampled, cols, rows)
       case TypeShort =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
-        Resample(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
         ShortArrayTile(resampled, cols, rows)
       case TypeInt =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Int](cols*rows).fill(NODATA)
-        Resample(re, targetRe, new IntBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new IntBufferResampleAssign(buffer, resampled))
         IntArrayTile(resampled, cols, rows)
       case TypeFloat =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Float](cols*rows).fill(Float.NaN)
-        Resample(re, targetRe, new FloatBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new FloatBufferResampleAssign(buffer, resampled))
         FloatArrayTile(resampled, cols, rows)
       case TypeDouble =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Double](cols*rows).fill(Double.NaN)
-        Resample(re, targetRe, new DoubleBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new DoubleBufferResampleAssign(buffer, resampled))
         DoubleArrayTile(resampled, cols, rows)
     }
   }

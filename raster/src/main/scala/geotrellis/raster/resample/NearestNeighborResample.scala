@@ -1,12 +1,12 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-class NearestNeighborInterpolation(tile: Tile, extent: Extent)
-    extends Interpolation(tile, extent) {
+class NearestNeighborResample(tile: Tile, extent: Extent)
+    extends Resample(tile, extent) {
 
-  override def interpolateValid(x: Double, y: Double): Int = {
+  override def resampleValid(x: Double, y: Double): Int = {
     val col = {
       val c = re.mapXToGrid(x)
       if(c < tile.cols) c else tile.cols - 1
@@ -20,7 +20,7 @@ class NearestNeighborInterpolation(tile: Tile, extent: Extent)
     tile.get(col, row)
   }
 
-  override def interpolateDoubleValid(x: Double, y: Double): Double = {
+  override def resampleDoubleValid(x: Double, y: Double): Double = {
     val col = {
       val c = re.mapXToGrid(x)
       if(c < tile.cols) c else tile.cols - 1

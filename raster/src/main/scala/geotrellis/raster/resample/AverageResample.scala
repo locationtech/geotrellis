@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -8,8 +8,8 @@ import spire.syntax.cfor._
 /**
   * Takes the average value of the tile and interpolates all points to that.
   */
-class AverageInterpolation(tile: Tile, extent: Extent)
-    extends Interpolation(tile, extent) {
+class AverageResample(tile: Tile, extent: Extent)
+    extends Resample(tile, extent) {
 
   private val RoundingScale = 5
 
@@ -45,8 +45,8 @@ class AverageInterpolation(tile: Tile, extent: Extent)
       nodata
   }
 
-  override def interpolateValid(x: Double, y: Double): Int = average
+  override def resampleValid(x: Double, y: Double): Int = average
 
-  override def interpolateDoubleValid(x: Double, y: Double): Double = averageDouble
+  override def resampleDoubleValid(x: Double, y: Double): Double = averageDouble
 
 }

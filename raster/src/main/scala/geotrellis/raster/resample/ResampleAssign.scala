@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.raster
+package geotrellis.raster.resample
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -89,7 +89,7 @@ class DoubleBufferResampleAssign(src: ByteBuffer, dst: Array[Double])
   }
 }
 
-object Resample {
+object ResampleAssign {
   def apply[@specialized(Byte, Short, Int, Float, Double) T](
     current: RasterExtent, 
     target: RasterExtent, 
@@ -177,7 +177,7 @@ object Resample {
             val dst_i = dst_span + dst_col
             assign(src_i, dst_i)
           }
-          
+
           // increase our X map coordinate
           x += dst_cellwidth
         }
@@ -186,35 +186,5 @@ object Resample {
       // decrease our Y map coordinate
       y -= dst_cellheight
     }
-  }
-
-  def apply(sourceTile: Tile, sourceExtent: Extent, targetExtent:RasterExtent, method: InterpolationMethod): ArrayTile = {
-    val interpolation = Interpolation(method, sourceTile, sourceExtent)
-    val (cols, rows) = (targetExtent.cols, targetExtent.rows)
-    val tile = ArrayTile.empty(sourceTile.cellType, cols, rows)
-
-    if(tile.cellType.isFloatingPoint) {
-      val interpolate = interpolation.interpolateDouble _
-      cfor(0)(_ < rows, _ + 1) { row =>
-        cfor(0)(_ < cols, _ + 1) { col =>
-          val x = targetExtent.gridColToMap(col)
-          val y = targetExtent.gridRowToMap(row)
-          val v = interpolate(x, y)
-          tile.setDouble(col, row, v)
-        }
-      }
-    } else {
-      val interpolate = interpolation.interpolate _
-      cfor(0)(_ < rows, _ + 1) { row =>
-        cfor(0)(_ < cols, _ + 1) { col =>
-          val x = targetExtent.gridColToMap(col)
-          val y = targetExtent.gridRowToMap(row)
-          val v = interpolate(x, y)
-          tile.set(col, row, v)
-        }
-      }
-    }
-    
-    tile
   }
 }

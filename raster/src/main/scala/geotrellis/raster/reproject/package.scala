@@ -1,10 +1,9 @@
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 import geotrellis.proj4._
-import geotrellis.raster.interpolation._
 
 import spire.syntax.cfor._
 
@@ -17,7 +16,7 @@ package object reproject {
     def reproject(extent: Extent, src: CRS, dest: CRS): Raster =
       reproject(extent, src, dest, ReprojectOptions.DEFAULT)
 
-    def reproject(method: InterpolationMethod, extent: Extent, src: CRS, dest: CRS): Raster =
+    def reproject(method: ResampleMethod, extent: Extent, src: CRS, dest: CRS): Raster =
       reproject(extent, src, dest, ReprojectOptions(method = method))
 
     def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): Raster =
