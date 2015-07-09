@@ -17,6 +17,8 @@
 package geotrellis.raster.op.local
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterizer
+import geotrellis.vector.{Geometry, Extent}
 
 trait LocalMethods extends TileMethods
                       with AddMethods
@@ -181,4 +183,23 @@ trait LocalMethods extends TileMethods
     */
   def localTanh(): Tile =
     Tanh(tile)
+
+  /** Masks this tile by the given Geometry. */
+  def mask(ext: Extent, geom: Geometry): Tile =
+    mask(ext, Seq(geom))
+
+  /** Masks this tile by the given Geometry. */
+  def mask(ext: Extent, geoms: Iterable[Geometry]): Tile = {
+    val re = RasterExtent(tile, ext)
+    val result = ArrayTile.empty(tile.cellType, tile.cols, tile.rows)
+    for (g <- geoms) {
+      Rasterizer.foreachCellByGeometry(g, re) {
+        if (tile.cellType.isFloatingPoint)
+          (col: Int, row: Int) => result.setDouble(col, row, tile.getDouble(col, row))
+        else
+          (col: Int, row: Int) => result.set(col, row, tile.get(col, row))
+      }
+    }
+    result
+  }
 }
