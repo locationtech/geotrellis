@@ -36,14 +36,11 @@ object TestLineSet {
             } else {
               (p2.x, p2.y, p1.x, p1.y)
             }
-          
-          val minRowDouble = re.mapYToGridDouble(y1)
-          val maxRowDouble = re.mapYToGridDouble(y0)
 
-          val minRow = (math.floor(re.mapYToGridDouble(y1) + 0.5)).toInt
-          val maxRow = (math.floor(re.mapYToGridDouble(y0) - 0.5)).toInt
+          val minRow = math.floor(re.mapYToGridDouble(y1) + 0.5).toInt
+          val maxRow = math.floor(re.mapYToGridDouble(y0) - 0.5).toInt
 
-          val inverseSlope = (x1 - x0).toDouble / (y1 - y0).toDouble
+          val inverseSlope = (x1 - x0) / (y1 - y0)
 
           if (minRow > maxRow ||
               p1.y == p2.y ||
