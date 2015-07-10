@@ -71,11 +71,11 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
             }
           }
         
-        val pool = Executors.newFixedThreadPool(32)
+        val pool = Executors.newFixedThreadPool(8)
 
         val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
           Process eval Task { 
-            request.getInputStream.reset // reset in case of retransmission to avoid 400 error
+            request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
             s3client.putObject(request) 
           }(pool).retryEBO {
             case e: AmazonS3Exception if e.getStatusCode == 503 => true
@@ -83,10 +83,10 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
           }
         }   
     
-        val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 8) { requests map (write) }
+        val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { requests map write }
 
         results.run.run
-        pool.shutdown
+        pool.shutdown()
       }
 
     logger.info(s"Finished saving tiles to ${layerPath}")
