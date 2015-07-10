@@ -1,7 +1,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.interpolation.InterpolationMethod
+import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.vector.Extent
 
@@ -338,9 +338,6 @@ abstract class GeoTiffTile(
           f(z, other.get(col, row))
         }
     }
-
-  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    Resample(this, source, target, method)
 
   def toArray(): Array[Int] = 
     toArrayTile.toArray

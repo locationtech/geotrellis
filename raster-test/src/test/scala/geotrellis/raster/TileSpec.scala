@@ -19,6 +19,7 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 import geotrellis.testkit._
 import geotrellis.raster.op.local._
+import geotrellis.raster.resample._
 
 import org.scalatest._
 import scala.collection.mutable

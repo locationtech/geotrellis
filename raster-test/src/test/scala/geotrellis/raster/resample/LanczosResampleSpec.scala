@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -6,35 +6,35 @@ import geotrellis.vector.Extent
 import org.scalatest._
 
 /**
-  * Since lanczos interpolation inherits from cubic interpolation it
+  * Since lanczos resample inherits from cubic resample it
   * is only needed to test the actual math, the rest is tested in the cubic
-  * interpolation spec and the bilinear interpolation spec.
+  * resample spec and the bilinear resample spec.
   *
-  * It is also known that the bicubic interpolation resolves, if the cube
-  * is D * D points, first D rows then the D values of each interpolation
-  * result, and interpolates them.
+  * It is also known that the bicubic resample resolves, if the cube
+  * is D * D points, first D rows then the D values of each resample
+  * result, and resample them.
   *
-  * The lanczos interpolation is not divided into unidimensional interpolations
-  * when doing bidiminensional interpolations. Therefore the testing revolves
+  * The lanczos resample is not divided into unidimensional resamples
+  * when doing bidiminensional resamples. Therefore the testing revolves
   * around testing different matrices.
   *
-  * The LanczosInterpolation class uses a helper class, which is the only class
+  * The LanczosResample class uses a helper class, which is the only class
   * being tested here.
   *
   * I haven't been able to find a single good source for lanczos
-  * interpolation in two dimensions.
+  * resample in two dimensions.
   *
   * These values are calculated by hand by Johan Stenberg, and should match the
   * GeoTrellis lanczos lnterpolation implementation.
   */
-class LanczosInterpolationSpec extends FunSpec with Matchers {
+class LanczosResampleSpec extends FunSpec with Matchers {
 
   val Eps = 1e-6
 
-  describe("unidimensional lanczos interpolation should work correctly") {
+  describe("unidimensional lanczos resample should work correctly") {
 
     it("should work correctly") {
-      val interp = new LanczosInterpolator
+      val resamp = new LanczosResampler
 
       val inputAndAnswers = List[(Double, Double)](
         (0, 1),
@@ -52,17 +52,17 @@ class LanczosInterpolationSpec extends FunSpec with Matchers {
       )
 
       for ((input, answer) <- inputAndAnswers)
-        interp.lanczos(input) should be (answer +- Eps)
+        resamp.lanczos(input) should be (answer +- Eps)
     }
 
   }
 
   /*
-   * If we know that the unidimensional lanczos interpolation actually works,
-   * we only need to verify that the twodimensional lanczos interpolation
+   * If we know that the unidimensional lanczos resample actually works,
+   * we only need to verify that the twodimensional lanczos resample
    * accumulates the unidimensional results correctly.
    */
-  describe("bidimensional lanczos interpolation should work correctly") {
+  describe("bidimensional lanczos resample should work correctly") {
 
     it("should iterate through all values correctly") {
       val tile = ArrayTile(Array(
@@ -73,11 +73,11 @@ class LanczosInterpolationSpec extends FunSpec with Matchers {
         25, 26, 27, 28, 29, 30.0,
         31, 32, 33, 34, 35, 36.0), 6, 6)
 
-      val interp = new LanczosInterpolator {
+      val resamp = new LanczosResampler {
         override def lanczos(v: Double) = 1
       }
 
-      interp.interpolate(tile, 0, 0) should be (666)
+      resamp.resample(tile, 0, 0) should be (666)
     }
 
     it("should iterate through all values correctly and let x and y contribute equally") {
@@ -89,13 +89,13 @@ class LanczosInterpolationSpec extends FunSpec with Matchers {
         25, 26, 27, 28, 29, 30.0,
         31, 32, 33, 34, 35, 36.0), 6, 6)
 
-      val interp = new LanczosInterpolator {
+      val resamp = new LanczosResampler {
         override def lanczos(v: Double) = if (v % 1 != 0) 1 else 0
       }
 
-      interp.interpolate(tile, 0, 0.5) should be (0)
-      interp.interpolate(tile, 0.5, 0) should be (0)
-      interp.interpolate(tile, 0.5, 0.5) should be (666)
+      resamp.resample(tile, 0, 0.5) should be (0)
+      resamp.resample(tile, 0.5, 0) should be (0)
+      resamp.resample(tile, 0.5, 0.5) should be (666)
     }
 
   }
