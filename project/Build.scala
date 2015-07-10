@@ -94,7 +94,7 @@ object GeotrellisBuild extends Build {
   )
 
   val defaultAssemblySettings =
-    assemblySettings ++
+    assemblySettings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++
   Seq(
     test in assembly := {},
     mergeStrategy in assembly <<= (mergeStrategy in assembly) {
@@ -334,8 +334,8 @@ object GeotrellisBuild extends Build {
         scalatest % "test"
       )
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+  defaultAssemblySettings
+
 
   // Project: admin
   lazy val admin: Project =
@@ -383,7 +383,6 @@ object GeotrellisBuild extends Build {
             exclude("org.apache.hadoop", "hadoop-client"),
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
-          "com.quantifind" %% "sumac" % "0.3.0",
           "de.javakaffee" % "kryo-serializers" % "0.27",
           "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
           logging, awsSdkS3,
@@ -406,8 +405,23 @@ object GeotrellisBuild extends Build {
         import geotrellis.spark.tiling._
         """
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+  defaultAssemblySettings
+
+
+  lazy val sparkEtl =
+    Project(id = "spark-etl", base = file("spark-etl"))
+      .dependsOn(spark)
+      .settings(defaultAssemblySettings: _*)
+      .settings(
+        name := "geotrellis-spark-etl",
+        libraryDependencies ++= Seq(
+          "com.google.inject" % "guice" % "3.0",
+          "com.google.inject.extensions" % "guice-multibindings" % "3.0",
+          "org.rogach" %% "scallop" % "0.9.5",
+          sparkCore % "provided"
+        )
+      )
+
 
   lazy val graph: Project =
     Project("graph", file("graph"))
@@ -433,8 +447,7 @@ object GeotrellisBuild extends Build {
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       )
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+  defaultAssemblySettings
 
 
   // Project: index
