@@ -43,7 +43,7 @@ class BilinearResample(tile: Tile, extent: Extent)
   }
 
   def bilinearInt(leftCol: Int, topRow: Int, xRatio: Double, yRatio: Double): Int =
-    bilinear(leftCol, topRow, xRatio, yRatio, tile.get).round.toInt
+    d2i(bilinearDouble(leftCol, topRow, xRatio, yRatio))
 
   def bilinearDouble(leftCol: Int, topRow: Int, xRatio: Double, yRatio: Double): Double =
     bilinear(leftCol, topRow, xRatio, yRatio, tile.getDouble)
@@ -61,27 +61,39 @@ class BilinearResample(tile: Tile, extent: Extent)
     var accumDivisor = 0.0
 
     if (leftCol >= 0 && topRow >= 0 && leftCol < cols && topRow < rows) {
-      val mult = invXR * invYR
-      accumDivisor += mult
-      accum += f(leftCol, topRow) * mult
+      val z = f(leftCol, topRow)
+      if(isData(z)) {
+        val mult = invXR * invYR
+        accumDivisor += mult
+        accum += f(leftCol, topRow) * mult
+      }
     }
 
     if (rightCol >= 0 && topRow >= 0 && rightCol < cols && topRow < rows) {
-      val mult = (1 - invXR) * invYR
-      accumDivisor += mult
-      accum += f(rightCol, topRow) * mult
+      val z = f(rightCol, topRow)
+      if(isData(z)) {
+        val mult = (1 - invXR) * invYR
+        accumDivisor += mult
+        accum += f(rightCol, topRow) * mult
+      }
     }
 
     if (leftCol >= 0 && bottomRow >= 0 && leftCol < cols && bottomRow < rows) {
-      val mult = invXR * (1 - invYR)
-      accumDivisor += mult
-      accum += f(leftCol, bottomRow) * mult
+      val z = f(leftCol, bottomRow)
+      if(isData(z)) {
+        val mult = invXR * (1 - invYR)
+        accumDivisor += mult
+        accum += f(leftCol, bottomRow) * mult
+      }
     }
 
     if (rightCol >= 0 && bottomRow >= 0 && rightCol < cols && bottomRow < rows) {
-      val mult = (1 - invXR) * (1 - invYR)
-      accumDivisor += mult
-      accum += f(rightCol, bottomRow) * mult
+      val z = f(rightCol, bottomRow)
+      if(isData(z)) {
+        val mult = (1 - invXR) * (1 - invYR)
+        accumDivisor += mult
+        accum += f(rightCol, bottomRow) * mult
+      }
     }
 
     accum / accumDivisor
