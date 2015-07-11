@@ -7,7 +7,6 @@ import org.osgeo.proj4j._
 import scala.io.Source
 
 object CRS {
-  //CRSFactory is a java class
   private val crsFactory = new CRSFactory
 
   /**
@@ -66,74 +65,24 @@ object CRS {
   def fromString(name: String, proj4Params: String): CRS =
     new CRS{ val crs = crsFactory.createFromParameters(name, proj4Params) }
 
-  /*
-  Returns the WKT representation given an EPSG code in the format EPSG:[number]
+
+  /**
+   * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known-text String.
+   * @param wktString
+   * @return
    */
-  def fromNameToWKT(name :String): String ={
-    val code = name.split(":")(1)
+  def fromWKT(wktString :String): CRS ={
+    val epsgCode = getCodeOfWKTString("EPSG",wktString)
 
-    val dataStream=Source.fromFile("proj4/src/main/resources/wkt/epsg.properties").getLines().toStream.dropWhile(line=>line.split("=")(0)!=code)
-
-    if(dataStream.length>0) {
-      val array = dataStream(0).split("=")
-      println(array(1))
-      array(1)
-    }
-    else "Please enter a valid code"
+    fromName(epsgCode)
   }
 
-  /*
-  Returns the numeric code of a proj4string given the authority
-   */
-  def getCodeOfProj4String(authority:String,proj4String: String):String={
-    val filePrefix = "proj4/src/main/resources/nad/"
 
-    def getCode(file:String):String=authority match {
-      case "EPSG"=>{
-        val dataStream =Source.fromFile(file).getLines().toStream.dropWhile(line=>line.startsWith("#") || "+proj"+((line.replace("  "," ")).split("proj"))(1)!=proj4String)
-        if(dataStream.length>0){
-          code(dataStream(0))
-        }
-        else "Enter a valid String"
-      }
-      case "ESRI"=>{
-        val dataStream =Source.fromFile(file).getLines().toStream.dropWhile(line=>line.startsWith("#") || "+proj"+(line.split("proj"))(1)!=proj4String)
-        if(dataStream.length>0){
-          code(dataStream(0))
-        }
-        else "Enter a valid String"
-      }
-      case "NAD27" | "NAD83"=>{
-        val groupedStreamIterator:Iterator[Stream[String]] = Source.fromFile(file).getLines().toStream.drop(6).grouped(6)
-
-        val dropped = groupedStreamIterator.dropWhile(group=>NADcompare(group))
-
-        if(dropped.hasNext){
-          val group= dropped.next()
-          code(group(1))
-        }
-        else "Enter a valid String"
-      }
-
-    }
-
-    def code(line:String)={
-      val array = line.split(" ")
-      val length = array(0).length
-      authority+":"+array(0).substring(1,length-1)
-    }
-
-    def NADcompare(group: Stream[String]) = {
-      val concatenated ="proj"+(group(1).replace("  "," ")).split("proj")(1)+" "+group(2)+" "+group(3)+" "+group(4)
-      concatenated!=proj4String
-    }
-
-    getCode(getFile(filePrefix,authority))
-
-  }
-
-  /*
-  Returns the numeric code of a WKT string given the authority
+  /**
+   * Returns the numeric code of a WKT string given the authority
+   * @param authority
+   * @param wktString
+   * @return
    */
   def getCodeOfWKTString(authority:String,wktString:String)={
     val filePrefix = "proj4/src/main/resources/wkt/"
@@ -148,7 +97,7 @@ object CRS {
     else "Enter a valid String"
   }
 
-  def getFile(filePrefix:String,authority:String)=authority match{
+  private def getFile(filePrefix:String,authority:String)=authority match{
     case "EPSG"=>filePrefix+"epsg"
     case "ESRI"=>filePrefix+"esri"
     case "NAD27"=>filePrefix+"nad27"
@@ -163,6 +112,8 @@ trait CRS extends Serializable {
   val Epsilon = 1e-8
 
   private[proj4] val crs: CoordinateReferenceSystem
+
+  lazy val epsgCode: Option[String]= getEPSGCodeOfProj4String(toProj4String+" <>")
 
   protected def factory = CRS.crsFactory
 
@@ -219,4 +170,56 @@ trait CRS extends Serializable {
     } else false
   }
 
+  /**
+   * Returns the WKT representation of the Coordinate Reference System
+   * @return
+   */
+  def toWKT(): String ={
+    epsgCode match {
+      case None=>"Unable to convert"
+      case Some(string) => fromNameToWKT(epsgCode.get)
+    }
+  }
+
+  /**
+   * Returns the WKT representation given an EPSG code in the format EPSG:[number]
+   * @param name
+   * @return
+   */
+  def fromNameToWKT(name :String): String ={
+    val code = name.split(":")(1)
+
+    val dataStream=Source.fromFile("proj4/src/main/resources/wkt/epsg.properties").getLines().toStream.dropWhile(line=>line.split("=")(0)!=code)
+
+    if(dataStream.length>0) {
+      val array = dataStream(0).split("=")
+      array(1)
+    }
+    else "Please enter a valid code"
+  }
+
+  /**
+   * Returns the numeric EPSG code of a proj4string
+   * @param proj4String
+   * @return
+   */
+  def getEPSGCodeOfProj4String(proj4String: String):Option[String]={
+    val filePrefix = "proj4/src/main/resources/nad/"
+
+    def code(line:String):Option[String]={
+      val array = line.split(" ")
+      val length = array(0).length
+      Some("EPSG:"+array(0).substring(1,length-1))
+    }
+
+    val dataStream =Source.fromFile(filePrefix+"epsg").getLines().toStream.dropWhile(line=>line.startsWith("#") || "+proj"+((line).split("proj"))(1)!=proj4String)
+
+    if(dataStream.length>0){
+      code(dataStream(0))
+    }
+    else {
+      None
+    }
+
+  }
 }
