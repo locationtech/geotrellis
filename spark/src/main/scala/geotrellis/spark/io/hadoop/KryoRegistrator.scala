@@ -24,13 +24,25 @@ import com.esotericsoftware.kryo.Kryo
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
     kryo.register(classOf[SpatialKeyWritable])
+    kryo.register(classOf[SpaceTimeKeyWritable])
     kryo.register(classOf[TileWritable])
+    kryo.register(classOf[geotrellis.raster.BitArrayTile])
+    kryo.register(classOf[geotrellis.raster.ByteArrayFiller])
+    kryo.register(classOf[geotrellis.raster.FloatArrayTile])
+    kryo.register(classOf[geotrellis.raster.DoubleArrayTile])
+    kryo.register(classOf[geotrellis.raster.ShortArrayTile])
+    kryo.register(classOf[geotrellis.raster.IntArrayTile])
     kryo.register(classOf[org.apache.accumulo.core.client.impl.ConnectorImpl])
     kryo.register(classOf[org.apache.accumulo.core.client.mock.MockConnector])
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
     kryo.register(classOf[org.joda.time.DateTime], new de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer)
     kryo.register(classOf[org.joda.time.Interval], new de.javakaffee.kryoserializers.jodatime.JodaIntervalSerializer)
+    kryo.register(classOf[geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex])
+    kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex])
+    kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex])
+    kryo.register(classOf[geotrellis.spark.io.index.hilbert.HilbertSpatialKeyIndex])
+    kryo.register(classOf[geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex])
 
     // de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer.registerSerializers(kryo)
     import java.util._
@@ -43,6 +55,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register( Collections.singletonList( "" ).getClass(), new CollectionsSingletonListSerializer )
     kryo.register( Collections.singleton( "" ).getClass(), new CollectionsSingletonSetSerializer )
     kryo.register( Collections.singletonMap( "", "" ).getClass(), new CollectionsSingletonMapSerializer )
+
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
     SynchronizedCollectionsSerializer.registerSerializers( kryo )
   }
