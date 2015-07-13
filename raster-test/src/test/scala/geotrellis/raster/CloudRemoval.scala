@@ -1,11 +1,17 @@
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.{Tile, TypeInt}
-import geotrellis.raster.io.arg.ArgReader
-import geotrellis.raster.io.geotiff.compression.Decompressor
+import geotrellis.raster.{IntArrayTile, Tile}
+
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff._
 import geotrellis.testkit.TestEngine
+
+import spire.syntax.cfor._
+
+import java.lang.Math.{sqrt, pow}
+
+import scala.annotation.tailrec
+import scala.util.Random
 
 import org.scalatest.FunSpec
 
@@ -78,50 +84,114 @@ class CloudRemoval extends FunSpec
 
     }*/
 
-    it("should identify cloud pixels") {
+    it("should identify cloud pixels by performing K-Means") {
+
+      case class Point(x: Int) {
+        def distanceTo(that: Point) = Math.abs(this.x - that.x)
+
+        def sum(that: Point) = Point(this.x + that.x)
+
+        def divideBy(number: Int) = Point(this.x / number)
+
+        override def toString = s"$x"
+      }
+
       val basePath = "/home/kamikaze/gsoc/cropped_images/"
       val writePath = "/home/kamikaze/gsoc/cloud_images/"
       val band = "/B2_cropped.TIF"
 
       val image: SingleBandGeoTiff = SingleBandGeoTiff(basePath + "image00/B2_cropped.TIF")
       var cloudTile: Tile = image.tile
+
       val imRows = image.tile.rows
       val imCols = image.tile.cols
       val num_images = 47
       //val checkArray = new Array[Array[Int](2)](imRows*imCols)
-      var less: Int = 0
-      var more: Int = 0
+      //var less: Int = 0
+      //var more: Int = 0
       val threshold = 15000
-      var len: Int = 0
+      //var len: Int = 0
 
-      val checkArray = Array.ofDim[Boolean](imCols, imRows)
+      //val checkArray = Array.ofDim[Boolean](imCols, imRows)
 
       val imTiles = new Array[Tile](num_images)
 
-      for (i <- 0 to 46)
-      {
-        println(i)
+      //val minThresholds = IntArrayTile.empty(imCols, imRows)
+      //val maxThresholds = IntArrayTile.empty(imCols, imRows)
+
+      cfor(0)(i => i < num_images, i => i + 1)(i =>
         imTiles(i) = SingleBandGeoTiff(basePath + "image" + "%02d".format(i) + band).tile
-        //println(imTiles(i).findMinMax)
-        //cloudTile = imTiles(i).map((col, row, x) => if(x > 20000) 65535 else 0)
-        GeoTiffWriter.write(SingleBandGeoTiff(imTiles(i), image.extent, image.crs), writePath + "image" + "%02d".format(i) + ".TIF")
+      )
+
+      val k: Int = 3
+
+      def createRandomCentroids(points: List[Point]): Map[Point, List[Point]] = {
+        val randomIndices = collection.mutable.HashSet[Int]()
+        val random = new Random()
+        while (randomIndices.size < k) {
+          randomIndices += random.nextInt(points.size)
+        }
+
+        points
+          .zipWithIndex
+          .filter({ case (_, index) => randomIndices.contains(index) })
+          .map({ case (point, _) => (point, Nil) })
+          .toMap
       }
 
+      @tailrec
+      def buildClusters(points: List[Point], prevClusters: Map[Point, List[Point]]): Map[Point, List[Point]] = {
+        val nextClusters = points.map({ point =>
+          val byDistanceToPoint = new Ordering[Point] {
+            override def compare(p1: Point, p2: Point) = p1.distanceTo(point) compareTo p2.distanceTo(point)
+          }
 
-      for (i <- 0 to imCols-1) {
-        for(j <- 0 to imRows-1) {
-          len = imTiles.filter(tile => tile.get(i, j) > threshold).length
-          //print(len)
-          checkArray(i)(j) = len > 0
-          //println(checkArray(i)(j))
+          (point, prevClusters.keys min byDistanceToPoint)
+        }).groupBy({ case (_, centroid) => centroid })
+          .map({ case (centroid, pointsToCentroids) =>
+          val points = pointsToCentroids.map({ case (point, _) => point })
+          (centroid, points)
+        })
+
+        if (prevClusters != nextClusters) {
+          val nextClustersWithBetterCentroids = nextClusters.map({
+            case (centroid, members) =>
+              val (sum, count) = members.foldLeft((Point(0), 0))({ case ((acc, c), curr) => (acc sum curr, c + 1) })
+              (sum divideBy count, members)
+          })
+
+          buildClusters(points, nextClustersWithBetterCentroids)
+        } else {
+          prevClusters
         }
       }
 
-      for (i <- 0 to 46)
-      {
-        println(i)
-        cloudTile = imTiles(i).map((col, row, x) => if(checkArray(col)(row) && x > threshold) 65535 else 0)
-        GeoTiffWriter.write(SingleBandGeoTiff(cloudTile, image.extent, image.crs), writePath + "image" + "%02d".format(i) + ".TIF")
+
+      cfor(0)(_ < 1, _ + 1) { col =>
+        cfor(0)(_ < 1, _ + 1) { row =>
+          val pixels = Array.ofDim[Int](num_images)
+          val points = Array.ofDim[Point](num_images)
+          cfor(0)(_ < num_images, _ + 1) { i =>
+            pixels(i) = imTiles(i).get(col, row)
+            points(i) = new Point(pixels(i))
+
+            //println("Here");
+            //println(points)
+          }
+          
+          val randomCentroids = createRandomCentroids(points.toList)
+          val clusters = buildClusters(points.toList, randomCentroids)
+          clusters.foreach({
+            case (centroid, members) =>
+              members.foreach({ member => println(s"Centroid: $centroid Member: $member") })
+          })
+
+          //val minThreshold: Int = ???
+          //val maxThreshold: Int = ???
+
+          //minThresholds.set(col, row, minThreshold)
+          //maxThresholds.set(col, row, maxThreshold)
+        }
       }
     }
 
