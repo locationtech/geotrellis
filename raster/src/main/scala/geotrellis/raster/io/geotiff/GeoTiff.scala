@@ -14,6 +14,9 @@ trait GeoTiff {
 
   def write(path: String): Unit =
     GeoTiffWriter.write(this, path)
+
+  def toByteArray: Array[Byte] =
+    GeoTiffWriter.write(this)
 }
 
 object GeoTiff {

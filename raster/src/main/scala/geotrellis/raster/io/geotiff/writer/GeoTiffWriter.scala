@@ -47,6 +47,21 @@ object GeoTiffWriter {
       fos.close
     }
   }
+
+  def write(geoTiff: GeoTiff): Array[Byte] = {
+    val bos = new ByteArrayOutputStream()
+    try {
+      val dos = new DataOutputStream(bos)
+      try {
+        new GeoTiffWriter(geoTiff, dos).write()
+        bos.toByteArray
+      } finally {
+        dos.close
+      }
+    } finally {
+      bos.close
+    }
+  }
 }
 
 class GeoTiffWriter(geoTiff: GeoTiff, dos: DataOutputStream) {
