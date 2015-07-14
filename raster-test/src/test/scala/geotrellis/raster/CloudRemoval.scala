@@ -6,6 +6,8 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff._
 import geotrellis.testkit.TestEngine
 
+import scala.collection.mutable
+
 import spire.syntax.cfor._
 
 import java.lang.Math.{sqrt, pow}
@@ -84,7 +86,7 @@ class CloudRemoval extends FunSpec
 
     }*/
 
-    it("should identify cloud pixels by performing K-Means") {
+    /*it("should identify cloud pixels by performing K-Means") {
 
       case class Point(x: Int) {
         def distanceTo(that: Point) = Math.abs(this.x - that.x)
@@ -178,7 +180,7 @@ class CloudRemoval extends FunSpec
             //println("Here");
             //println(points)
           }
-          
+
           val randomCentroids = createRandomCentroids(points.toList)
           val clusters = buildClusters(points.toList, randomCentroids)
           clusters.foreach({
@@ -193,6 +195,83 @@ class CloudRemoval extends FunSpec
           //maxThresholds.set(col, row, maxThreshold)
         }
       }
+    }*/
+
+    it("should identify cloud pixels by clustering valuse b/w min and max thresholds") {
+
+      val basePath = "/home/kamikaze/gsoc/cropped_images/"
+      val writePath = "/home/kamikaze/gsoc/cloud_images/"
+      val band = "/B2_cropped.TIF"
+
+      val image: SingleBandGeoTiff = SingleBandGeoTiff(basePath + "image00/B2_cropped.TIF")
+      var cloudTile: Tile = image.tile
+
+      val imRows = image.tile.rows
+      val imCols = image.tile.cols
+      val num_images = 47
+      //val checkArray = new Array[Array[Int](2)](imRows*imCols)
+      //var less: Int = 0
+      //var more: Int = 0
+      val threshold = 15000
+      //var len: Int = 0
+
+      //val checkArray = Array.ofDim[Boolean](imCols, imRows)
+
+      val imTiles = new Array[Tile](num_images)
+
+      val minThreshold = 7000
+      val maxThreshold = 20000
+
+      val minThresholds = IntArrayTile.empty(imCols, imRows)
+      val maxThresholds = IntArrayTile.empty(imCols, imRows)
+
+      val minValues = Array.ofDim[Int](imCols, imRows)
+      val maxValues = Array.ofDim[Int](imCols, imRows)
+
+      var minCount = 0
+      var maxCount = 0
+
+      cfor(0)(i => i < num_images, i => i + 1) { i =>
+        imTiles(i) = SingleBandGeoTiff(basePath + "image" + "%02d".format(i) + band).tile
+        GeoTiffWriter.write(SingleBandGeoTiff(imTiles(i), image.extent, image.crs), "/home/kamikaze/gsoc/blue_images/" + "image" + "%02d".format(i) + ".TIF")
+      }
+
+      cfor(0)(_ < imCols, _ + 1) { col =>
+        cfor(0)(_ < imRows, _ + 1) { row =>
+          val pixels = Array.ofDim[Int](num_images)
+          minCount = 0
+          maxCount = 0
+          cfor(0)(_ < num_images, _ + 1) { i =>
+            pixels(i) = imTiles(i).get(col, row)
+
+            if (pixels(i) > maxThreshold)
+              maxCount = maxCount + 1
+
+            else if (pixels(i) < minThreshold)
+              minCount = minCount + 1
+          }
+
+          maxValues(col)(row) = maxCount
+          if (maxCount > 0)
+            maxThresholds.set(col, row, maxThreshold)
+
+          minValues(col)(row) = minCount
+          if (minCount > 0)
+            minThresholds.set(col, row, maxThreshold)
+
+        }
+      }
+
+      def cloudiness(col: Int, row: Int) =
+      {
+        println("The pixel at Col: " + col + " Row: " + row + " is above max. threshold (cloudy) in " + maxValues(col)(row) + " images.")
+        println("The pixel at Col: " + col + " Row: " + row + " is below min. threshold in " + minValues(col)(row) + " images.")
+      }
+
+      GeoTiffWriter.write(SingleBandGeoTiff(maxThresholds, image.extent, image.crs), "/home/kamikaze/gsoc/maxThresholds.TIF")
+
+      println(cloudiness(100, 100))
+
     }
 
 /*
