@@ -23,6 +23,8 @@ import com.esotericsoftware.kryo.Kryo
 
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
+    kryo.register(classOf[Tuple2])
+    kryo.register(classOf[::])
     kryo.register(classOf[SpatialKeyWritable])
     kryo.register(classOf[SpaceTimeKeyWritable])
     kryo.register(classOf[TileWritable])
@@ -43,6 +45,9 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.hilbert.HilbertSpatialKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex])
+    kryo.register(classOf[geotrellis.vector.ProjectedExtent])
+    kryo.register(classOf[geotrellis.vector.Extent])
+    kryo.register(classOf[geotrellis.proj4.CRS])
 
     // de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer.registerSerializers(kryo)
     import java.util._
