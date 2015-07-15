@@ -1,6 +1,162 @@
 package geotrellis.proj4
 
+import java.io.{DataOutputStream, File}
+
 import org.osgeo.proj4j._
+
+import scala.io.Source
+
+object CRS {
+  //CRSFactory is a java class
+  private val crsFactory = new CRSFactory
+
+  /**
+   * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
+   * CRS names are of the form: "<tt>authority:code</tt>",
+   * with the components being:
+   * <ul>
+   * <li><b><tt>authority</tt></b> is a code for a namespace supported by
+   * PROJ.4.
+   * Currently supported values are
+   * <tt>EPSG</tt>,
+   * <tt>ESRI</tt>,
+   * <tt>WORLD</tt>,
+   * <tt>NA83</tt>,
+   * <tt>NAD27</tt>.
+   * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
+   * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
+   * For example, in the <tt>EPSG</tt> namespace a code is an integer value
+   * which identifies a CRS definition in the EPSG database.
+   * (Codes are read and handled as strings).
+   * </ul>
+   * An example of a valid CRS name is <tt>EPSG:3005</tt>.
+   * <p>
+   * @param name the name of a coordinate system, with optional authority prefix
+   * @return the [[CoordinateReferenceSystem]] corresponding to the given name
+   */
+  def fromName(name: String): CRS =
+    new CRS { val crs = crsFactory.createFromName(name) }
+
+  /**
+   * Creates a [[CoordinateReferenceSystem]]
+   * from a PROJ.4 projection parameter string.
+   * <p>
+   * An example of a valid PROJ.4 projection parameter string is:
+   * <pre>
+   * +proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000 +y_0=0 +ellps=GRS80 +units=m
+   * </pre>
+   * @param proj4Params a PROJ.4 projection parameter string
+   * @return the specified [[CoordinateReferenceSystem]]
+   */
+  def fromString(proj4Params: String): CRS =
+    new CRS { val crs = crsFactory.createFromParameters(null, proj4Params) }
+
+  /**
+   * Creates a [[CoordinateReferenceSystem]]
+   * from a PROJ.4 projection parameter string.
+   * <p>
+   * An example of a valid PROJ.4 projection parameter string is:
+   * <pre>
+   * +proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000 +y_0=0 +ellps=GRS80 +units=m
+   * </pre>
+   * @param name a name for this coordinate system.
+   * @param proj4Params a PROJ.4 projection parameter string
+   * @return the specified [[CoordinateReferenceSystem]]
+   */
+  def fromString(name: String, proj4Params: String): CRS =
+    new CRS{ val crs = crsFactory.createFromParameters(name, proj4Params) }
+
+  /*
+  Returns the WKT representation given an EPSG code in the format EPSG:[number]
+   */
+  def fromNameToWKT(name :String): String ={
+    val code = name.split(":")(1)
+
+    val dataStream=Source.fromFile("proj4/src/main/resources/wkt/epsg.properties").getLines().toStream.dropWhile(line=>line.split("=")(0)!=code)
+
+    if(dataStream.length>0) {
+      val array = dataStream(0).split("=")
+      println(array(1))
+      array(1)
+    }
+    else "Please enter a valid code"
+  }
+
+  /*
+  Returns the numeric code of a proj4string given the authority
+   */
+  def getCodeOfProj4String(authority:String,proj4String: String):String={
+    val filePrefix = "proj4/src/main/resources/nad/"
+
+    def getCode(file:String):String=authority match {
+      case "EPSG"=>{
+        val dataStream =Source.fromFile(file).getLines().toStream.dropWhile(line=>line.startsWith("#") || "+proj"+((line.replace("  "," ")).split("proj"))(1)!=proj4String)
+        if(dataStream.length>0){
+          code(dataStream(0))
+        }
+        else "Enter a valid String"
+      }
+      case "ESRI"=>{
+        val dataStream =Source.fromFile(file).getLines().toStream.dropWhile(line=>line.startsWith("#") || "+proj"+(line.split("proj"))(1)!=proj4String)
+        if(dataStream.length>0){
+          code(dataStream(0))
+        }
+        else "Enter a valid String"
+      }
+      case "NAD27" | "NAD83"=>{
+        val groupedStreamIterator:Iterator[Stream[String]] = Source.fromFile(file).getLines().toStream.drop(6).grouped(6)
+
+        val dropped = groupedStreamIterator.dropWhile(group=>NADcompare(group))
+
+        if(dropped.hasNext){
+          val group= dropped.next()
+          code(group(1))
+        }
+        else "Enter a valid String"
+      }
+
+    }
+
+    def code(line:String)={
+      val array = line.split(" ")
+      val length = array(0).length
+      authority+":"+array(0).substring(1,length-1)
+    }
+
+    def NADcompare(group: Stream[String]) = {
+      val concatenated ="proj"+(group(1).replace("  "," ")).split("proj")(1)+" "+group(2)+" "+group(3)+" "+group(4)
+      concatenated!=proj4String
+    }
+
+    getCode(getFile(filePrefix,authority))
+
+  }
+
+  /*
+  Returns the numeric code of a WKT string given the authority
+   */
+  def getCodeOfWKTString(authority:String,wktString:String)={
+    val filePrefix = "proj4/src/main/resources/wkt/"
+    val file = getFile(filePrefix,authority)+".properties"
+
+    val dataStream = Source.fromFile(file).getLines().toStream.dropWhile(line=>line.split("=")(1)!=wktString)
+
+    if(dataStream.length>0){
+      val array = dataStream(0).split("=")
+      authority+":"+array(0)
+    }
+    else "Enter a valid String"
+  }
+
+  def getFile(filePrefix:String,authority:String)=authority match{
+    case "EPSG"=>filePrefix+"epsg"
+    case "ESRI"=>filePrefix+"esri"
+    case "NAD27"=>filePrefix+"nad27"
+    case "NAD83"=>filePrefix+"nad83"
+  }
+}
+
+
 
 trait CRS extends Serializable {
 
@@ -63,64 +219,4 @@ trait CRS extends Serializable {
     } else false
   }
 
-}
-
-object CRS {
-  private val crsFactory = new CRSFactory
-
-  /**
-    * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
-    * CRS names are of the form: "<tt>authority:code</tt>",
-    * with the components being:
-    * <ul>
-    * <li><b><tt>authority</tt></b> is a code for a namespace supported by
-    * PROJ.4.
-    * Currently supported values are
-    * <tt>EPSG</tt>,
-    * <tt>ESRI</tt>,
-    * <tt>WORLD</tt>,
-    * <tt>NA83</tt>,
-    * <tt>NAD27</tt>.
-    * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
-    * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
-    * For example, in the <tt>EPSG</tt> namespace a code is an integer value
-    * which identifies a CRS definition in the EPSG database.
-    * (Codes are read and handled as strings).
-    * </ul>
-    * An example of a valid CRS name is <tt>EPSG:3005</tt>.
-    * <p>
-    * @param name the name of a coordinate system, with optional authority prefix
-    * @return the [[CoordinateReferenceSystem]] corresponding to the given name
-    */
-  def fromName(name: String): CRS =
-    new CRS { val crs = crsFactory.createFromName(name) }
-
-  /**
-    * Creates a [[CoordinateReferenceSystem]]
-    * from a PROJ.4 projection parameter string.
-    * <p>
-    * An example of a valid PROJ.4 projection parameter string is:
-    * <pre>
-    * +proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000 +y_0=0 +ellps=GRS80 +units=m
-    * </pre>
-    * @param proj4Params a PROJ.4 projection parameter string
-    * @return the specified [[CoordinateReferenceSystem]]
-    */
-  def fromString(proj4Params: String): CRS =
-    new CRS { val crs = crsFactory.createFromParameters(null, proj4Params) }
-
-  /**
-    * Creates a [[CoordinateReferenceSystem]]
-    * from a PROJ.4 projection parameter string.
-    * <p>
-    * An example of a valid PROJ.4 projection parameter string is:
-    * <pre>
-    * +proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000 +y_0=0 +ellps=GRS80 +units=m
-    * </pre>
-    * @param name a name for this coordinate system.
-    * @param proj4Params a PROJ.4 projection parameter string
-    * @return the specified [[CoordinateReferenceSystem]]
-    */
-  def fromString(name: String, proj4Params: String): CRS =
-    new CRS{ val crs = crsFactory.createFromParameters(name, proj4Params) }
 }
