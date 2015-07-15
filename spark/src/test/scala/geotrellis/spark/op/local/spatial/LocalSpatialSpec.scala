@@ -56,8 +56,6 @@ class LocalSpatialSpec extends FunSpec
                .map { case (x, y) => (x + dx, y + dy) })
 
         def check(mask: Polygon): Unit = {
-          println(rdd.mask(mask).asciiDraw())
-          println(tile.mask(worldExt, mask).asciiDraw())
           val masked = rdd.mask(mask).stitch.toArray()
           val expected = tile.mask(worldExt, mask).toArray()
           masked.zip(expected).foreach { case (m, e) =>
