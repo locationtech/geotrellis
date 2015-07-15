@@ -23,8 +23,8 @@ import com.esotericsoftware.kryo.Kryo
 
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
-    kryo.register(classOf[Tuple2])
-    kryo.register(classOf[::])
+    kryo.register(classOf[(_,_)])
+    kryo.register(classOf[::[_]])
     kryo.register(classOf[SpatialKeyWritable])
     kryo.register(classOf[SpaceTimeKeyWritable])
     kryo.register(classOf[TileWritable])
