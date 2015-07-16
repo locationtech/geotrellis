@@ -4,10 +4,10 @@ import spray.json._
 import spray.json.JsonFormat
 
 object GeoJson {
-  def parse[T: JsonFormat](json: String) = 
+  def parse[T: JsonReader](json: String) = 
     json.parseJson.convertTo[T]
 
-  def fromFile[T: JsonFormat](path: String) = {
+  def fromFile[T: JsonReader](path: String) = {
     val src = scala.io.Source.fromFile(path)
     val txt = 
       try {
