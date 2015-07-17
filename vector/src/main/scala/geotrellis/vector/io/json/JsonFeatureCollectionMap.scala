@@ -57,7 +57,6 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
     }
   }
 
-
   //-- Used for Deserialization
   /**
    * This method locates the correct JsonFormat for F through implicit scope and
@@ -66,7 +65,7 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
    * @tparam F type of Feature to return
    * @return Vector or Feature objects that were successfully parsed
    */
-  def getAll[F :JsonFormat]: Map[String, F] = {
+  def getAll[F :JsonReader]: Map[String, F] = {
     var ret = Map[String, F]()
     features.foreach{ f =>
       Try(f.convertTo[F]) match {
@@ -78,15 +77,15 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
     ret.toMap
   }
 
-  def getAllFeatures[F <: Feature[_] :JsonFormat]: Map[String, F] =
+  def getAllFeatures[F <: Feature[_] :JsonReader]: Map[String, F] =
     getAll[F]
 
-  def getAllPointFeatures[D: JsonFormat]()         = getAll[PointFeature[D]]
-  def getAllLineFeatures[D: JsonFormat]()          = getAll[LineFeature[D]]
-  def getAllPolygonFeatures[D: JsonFormat]()       = getAll[PolygonFeature[D]]
-  def getAllMultiPointFeatures[D: JsonFormat]()    = getAll[MultiPointFeature[D]]
-  def getAllMultiLineFeatures[D: JsonFormat]()     = getAll[MultiLineFeature[D]]
-  def getAllMultiPolygonFeatures[D: JsonFormat]()  = getAll[MultiPolygonFeature[D]]
+  def getAllPointFeatures[D: JsonReader]()         = getAll[PointFeature[D]]
+  def getAllLineFeatures[D: JsonReader]()          = getAll[LineFeature[D]]
+  def getAllPolygonFeatures[D: JsonReader]()       = getAll[PolygonFeature[D]]
+  def getAllMultiPointFeatures[D: JsonReader]()    = getAll[MultiPointFeature[D]]
+  def getAllMultiLineFeatures[D: JsonReader]()     = getAll[MultiLineFeature[D]]
+  def getAllMultiPolygonFeatures[D: JsonReader]()  = getAll[MultiPolygonFeature[D]]
 
   def getAllPoints()         = getAll[Point]
   def getAllLines()          = getAll[Line]

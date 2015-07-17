@@ -17,7 +17,7 @@ package object json extends GeoJsonSupport {
     }
   }
 
-  implicit class FeaturesToGeoJson[D: JsonFormat](features: Traversable[Feature[D]]) {
+  implicit class FeaturesToGeoJson[D: JsonWriter](features: Traversable[Feature[D]]) {
     def toGeoJson: String = {
       JsonFeatureCollection(features).toJson.compactPrint
     }
@@ -29,13 +29,13 @@ package object json extends GeoJsonSupport {
     def withCrs(crs: CRS) = WithCrs(geom, crs)
   }
 
-  implicit class RichFeature[D: JsonFormat](feature: Feature[D]){
+  implicit class RichFeature[D: JsonWriter](feature: Feature[D]){
     def toGeoJson: String = writeFeatureJson[D](feature).compactPrint
 
     def withCrs(crs: CRS) = WithCrs(feature, crs)
   }
 
   implicit class RichString(val s: String) extends AnyVal {
-    def parseGeoJson[T: JsonFormat] = s.parseJson.convertTo[T]
+    def parseGeoJson[T: JsonReader] = s.parseJson.convertTo[T]
   }
 }
