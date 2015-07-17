@@ -3,6 +3,8 @@ package geotrellis.vector
 import geotrellis.proj4._
 
 package object reproject {
+  type DI = DummyImplicit
+
   object Reproject {
     def apply(t: (Double, Double), src: CRS, dest: CRS): (Double, Double) =
       apply(t, Transform(src, dest))
@@ -16,10 +18,11 @@ package object reproject {
     def apply(p: Point, transform: Transform): Point =
       transform(p.x, p.y)
 
-    def apply[D](pf:PointFeature[D], src: CRS, dest: CRS): PointFeature[D] =
+    // For features, name explicitly, or else type erasure kicks in.
+    def pointFeature[D](pf: PointFeature[D], src: CRS, dest: CRS): PointFeature[D] =
       PointFeature[D](apply(pf.geom, src, dest), pf.data)
 
-    def apply[D](pf:PointFeature[D], transform: Transform): PointFeature[D] =
+    def pointFeature[D](pf: PointFeature[D], transform: Transform): PointFeature[D] =
       PointFeature[D](apply(pf.geom, transform), pf.data)
 
     def apply(l: Line, src: CRS, dest: CRS): Line =
@@ -28,10 +31,10 @@ package object reproject {
     def apply(l: Line, transform: Transform): Line =
       Line(l.points.map { p => transform(p.x, p.y) })
 
-    def apply[D](lf: LineFeature[D], src: CRS, dest: CRS): LineFeature[D] =
+    def lineFeature[D](lf: LineFeature[D], src: CRS, dest: CRS): LineFeature[D] =
       LineFeature(apply(lf.geom, src, dest), lf.data)
 
-    def apply[D](lf: LineFeature[D], transform: Transform): LineFeature[D] =
+    def lineFeature[D](lf: LineFeature[D], transform: Transform): LineFeature[D] =
       LineFeature(apply(lf.geom, transform), lf.data)
 
     def apply(p: Polygon, src: CRS, dest: CRS): Polygon = 
@@ -48,13 +51,13 @@ package object reproject {
       val f = Transform(src, dest)
       val sw = f(extent.xmin, extent.ymin)
       val ne = f(extent.xmax, extent.ymax)
-      Extent(sw._1,sw._2,ne._1,ne._2)
+      Extent(sw._1, sw._2, ne._1, ne._2)
     }
 
-    def apply[D](pf: PolygonFeature[D], src: CRS, dest: CRS): PolygonFeature[D] =
+    def polygonFeature[D](pf: PolygonFeature[D], src: CRS, dest: CRS): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, src, dest), pf.data)
 
-    def apply[D](pf: PolygonFeature[D], transform: Transform): PolygonFeature[D] =
+    def polygonFeature[D](pf: PolygonFeature[D], transform: Transform): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, transform), pf.data)
 
     def apply(mp: MultiPoint, src: CRS, dest: CRS): MultiPoint =
@@ -63,10 +66,10 @@ package object reproject {
     def apply(mp: MultiPoint, transform: Transform): MultiPoint =
       MultiPoint(mp.points.map { p => transform(p.x, p.y) })
 
-    def apply[D](mpf: MultiPointFeature[D], src: CRS, dest: CRS): MultiPointFeature[D] =
+    def multiPointFeature[D](mpf: MultiPointFeature[D], src: CRS, dest: CRS): MultiPointFeature[D] =
       MultiPointFeature(apply(mpf.geom, src, dest), mpf.data)
 
-    def apply[D](mpf: MultiPointFeature[D], transform: Transform): MultiPointFeature[D] =
+    def multiPointFeature[D](mpf: MultiPointFeature[D], transform: Transform): MultiPointFeature[D] =
       MultiPointFeature(apply(mpf.geom, transform), mpf.data)
 
     def apply(ml: MultiLine, src: CRS, dest: CRS): MultiLine =
@@ -75,10 +78,10 @@ package object reproject {
     def apply(ml: MultiLine, transform: Transform): MultiLine =
       MultiLine(ml.lines.map(apply(_, transform)))
 
-    def apply[D](mlf: MultiLineFeature[D], src: CRS, dest: CRS): MultiLineFeature[D] =
+    def multiLineFeature[D](mlf: MultiLineFeature[D], src: CRS, dest: CRS): MultiLineFeature[D] =
       MultiLineFeature(apply(mlf, src, dest), mlf.data)
 
-    def apply[D](mlf: MultiLineFeature[D], transform: Transform): MultiLineFeature[D] =
+    def multiLineFeature[D](mlf: MultiLineFeature[D], transform: Transform): MultiLineFeature[D] =
       MultiLineFeature(apply(mlf, transform), mlf.data)
 
     def apply(mp: MultiPolygon, src: CRS, dest: CRS): MultiPolygon =
@@ -87,10 +90,10 @@ package object reproject {
     def apply(mp: MultiPolygon, transform: Transform): MultiPolygon =
       MultiPolygon(mp.polygons.map(apply(_, transform)))
 
-    def apply[D](mpf: MultiPolygonFeature[D], src: CRS, dest: CRS): MultiPolygonFeature[D] =
+    def multiPolygonFeature[D](mpf: MultiPolygonFeature[D], src: CRS, dest: CRS): MultiPolygonFeature[D] =
       MultiPolygonFeature(apply(mpf.geom, src, dest), mpf.data)
 
-    def apply[D](mpf: MultiPolygonFeature[D], transform: Transform): MultiPolygonFeature[D] =
+    def multiPolygonFeature[D](mpf: MultiPolygonFeature[D], transform: Transform): MultiPolygonFeature[D] =
       MultiPolygonFeature(apply(mpf.geom, transform: Transform), mpf.data)
 
     def apply(gc: GeometryCollection, src: CRS, dest: CRS): GeometryCollection = 
@@ -116,10 +119,10 @@ package object reproject {
       )
 
 
-    def apply[D](gcf: GeometryCollectionFeature[D], src: CRS, dest: CRS): GeometryCollectionFeature[D] =
+    def geometryCollectionFeature[D](gcf: GeometryCollectionFeature[D], src: CRS, dest: CRS): GeometryCollectionFeature[D] =
       GeometryCollectionFeature(apply(gcf.geom, src, dest), gcf.data)
 
-    def apply[D](gcf: GeometryCollectionFeature[D], transform: Transform): GeometryCollectionFeature[D] =
+    def geometryCollectionFeature[D](gcf: GeometryCollectionFeature[D], transform: Transform): GeometryCollectionFeature[D] =
       GeometryCollectionFeature(apply(gcf.geom, transform), gcf.data)
 
     def apply(g: Geometry, src: CRS, dest: CRS): Geometry =
@@ -137,22 +140,22 @@ package object reproject {
       }
 
 
-    def apply[D](f: Feature[D], src: CRS, dest: CRS): Feature[D] =
-      apply(f, Transform(src, dest))
+    def geometryFeature[D](f: Feature[Geometry, D], src: CRS, dest: CRS): Feature[Geometry, D] =
+      geometryFeature(f, Transform(src, dest))
 
-    def apply[D](f: Feature[D], transform: Transform): Feature[D] =
-      f match {
-        case pf: PointFeature[D] => apply(pf, transform)
-        case lf: LineFeature[D] => apply(lf, transform)
-        case pf: PolygonFeature[D] => apply(pf, transform)
-        case mpf: MultiPointFeature[D] => apply(mpf, transform)
-        case mlf: MultiLineFeature[D] => apply(mlf, transform)
-        case mpf: MultiPolygonFeature[D] => apply(mpf, transform)
-        case gcf: GeometryCollectionFeature[D] => apply(gcf, transform)
+    def geometryFeature[D](f: Feature[Geometry, D], transform: Transform): Feature[Geometry, D] =
+      f.geom match {
+        case p: Point => pointFeature(Feature(p, f.data), transform)
+        case l: Line => lineFeature(Feature(l, f.data), transform)
+        case p: Polygon => polygonFeature(Feature(p, f.data), transform)
+        case mp: MultiPoint => multiPointFeature(Feature(mp, f.data), transform)
+        case ml: MultiLine => multiLineFeature(Feature(ml, f.data), transform)
+        case mp: MultiPolygon => multiPolygonFeature(Feature(mp, f.data), transform)
+        case gc: GeometryCollection => geometryCollectionFeature(Feature(gc, f.data), transform)
       }
   }
 
-  implicit class ReprojectTuple(t: (Double,Double)) { 
+  implicit class ReprojectTuple(t: (Double, Double)) { 
     def reproject(src: CRS, dest: CRS): (Double, Double) = Reproject(t, src, dest) 
     def reproject(transform: Transform): (Double, Double) = Reproject(t, transform) 
   }
@@ -163,8 +166,8 @@ package object reproject {
   }
 
   implicit class ReprojectPointFeature[D](pf: PointFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): PointFeature[D] = Reproject(pf, src, dest) 
-    def reproject(transform: Transform): PointFeature[D] = Reproject(pf, transform) 
+    def reproject(src: CRS, dest: CRS): PointFeature[D] = Reproject.pointFeature(pf, src, dest) 
+    def reproject(transform: Transform): PointFeature[D] = Reproject.pointFeature(pf, transform) 
   }
 
   implicit class ReprojectLine(l: Line) { 
@@ -173,8 +176,8 @@ package object reproject {
   }
 
   implicit class ReprojectLineFeature[D](lf: LineFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): LineFeature[D] = Reproject(lf, src, dest) 
-    def reproject(transform: Transform): LineFeature[D] = Reproject(lf, transform) 
+    def reproject(src: CRS, dest: CRS): LineFeature[D] = Reproject.lineFeature(lf, src, dest) 
+    def reproject(transform: Transform): LineFeature[D] = Reproject.lineFeature(lf, transform) 
   }
 
   implicit class ReprojectPolygon(p: Polygon) { 
@@ -188,8 +191,8 @@ package object reproject {
   }
 
   implicit class ReprojectPolygonFeature[D](pf: PolygonFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): PolygonFeature[D] = Reproject(pf, src, dest) 
-    def reproject(transform: Transform): PolygonFeature[D] = Reproject(pf, transform) 
+    def reproject(src: CRS, dest: CRS): PolygonFeature[D] = Reproject.polygonFeature(pf, src, dest) 
+    def reproject(transform: Transform): PolygonFeature[D] = Reproject.polygonFeature(pf, transform) 
   }
 
   implicit class ReprojectMultiPoint(mp: MultiPoint) { 
@@ -198,8 +201,8 @@ package object reproject {
   }
 
   implicit class ReprojectMultiPointFeature[D](mpf: MultiPointFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): MultiPointFeature[D] = Reproject(mpf, src, dest) 
-    def reproject(transform: Transform): MultiPointFeature[D] = Reproject(mpf, transform) 
+    def reproject(src: CRS, dest: CRS): MultiPointFeature[D] = Reproject.multiPointFeature(mpf, src, dest) 
+    def reproject(transform: Transform): MultiPointFeature[D] = Reproject.multiPointFeature(mpf, transform)
   }
 
   implicit class ReprojectMutliLine(ml: MultiLine) { 
@@ -208,8 +211,8 @@ package object reproject {
   }
 
   implicit class ReprojectMutliLineFeature[D](mlf: MultiLineFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): MultiLineFeature[D] = Reproject(mlf, src, dest) 
-    def reproject(transform: Transform): MultiLineFeature[D] = Reproject(mlf, transform) 
+    def reproject(src: CRS, dest: CRS): MultiLineFeature[D] = Reproject.multiLineFeature(mlf, src, dest) 
+    def reproject(transform: Transform): MultiLineFeature[D] = Reproject.multiLineFeature(mlf, transform) 
   }
 
   implicit class ReprojectMutliPolygon(mp: MultiPolygon) { 
@@ -218,8 +221,8 @@ package object reproject {
   }
 
   implicit class ReprojectMutliPolygonFeature[D](mpf: MultiPolygonFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): MultiPolygonFeature[D] = Reproject(mpf, src, dest) 
-    def reproject(transform: Transform): MultiPolygonFeature[D] = Reproject(mpf, transform) 
+    def reproject(src: CRS, dest: CRS): MultiPolygonFeature[D] = Reproject.multiPolygonFeature(mpf, src, dest) 
+    def reproject(transform: Transform): MultiPolygonFeature[D] = Reproject.multiPolygonFeature(mpf, transform)
   }
 
   implicit class ReprojectGeometryCollection(gc: GeometryCollection) { 
@@ -228,8 +231,8 @@ package object reproject {
   }
 
   implicit class ReprojectGeometryCollectionFeature[D](gcf: GeometryCollectionFeature[D]) { 
-    def reproject(src: CRS, dest: CRS): GeometryCollectionFeature[D] = Reproject(gcf, src, dest) 
-    def reproject(transform: Transform): GeometryCollectionFeature[D] = Reproject(gcf, transform) 
+    def reproject(src: CRS, dest: CRS): GeometryCollectionFeature[D] = Reproject.geometryCollectionFeature(gcf, src, dest) 
+    def reproject(transform: Transform): GeometryCollectionFeature[D] = Reproject.geometryCollectionFeature(gcf, transform)
   }
 
   implicit class ReprojectGeometry(g: Geometry) { 
@@ -237,8 +240,8 @@ package object reproject {
     def reproject(transform: Transform): Geometry = Reproject(g, transform) 
   }
 
-  implicit class ReprojectFeature[D](f: Feature[D]) { 
-    def reproject(src: CRS, dest: CRS): Feature[D] = Reproject(f, src, dest) 
-    def reproject(transform: Transform): Feature[D] = Reproject(f, transform) 
+  implicit class ReprojectFeature[D](f: Feature[Geometry, D]) { 
+    def reproject(src: CRS, dest: CRS): Feature[Geometry, D] = Reproject.geometryFeature(f, src, dest) 
+    def reproject(transform: Transform): Feature[Geometry, D] = Reproject.geometryFeature(f, transform) 
   }
 }

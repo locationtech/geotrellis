@@ -23,6 +23,15 @@ import scala.collection.JavaConversions._
 
 package object vector extends SeqMethods {
 
+  type PointFeature[D] = Feature[Point, D]
+  type LineFeature[D] = Feature[Line, D]
+  type PolygonFeature[D] = Feature[Polygon, D]
+  type MultiPointFeature[D] = Feature[MultiPoint, D]
+  type MultiLineFeature[D] = Feature[MultiLine, D]
+  type MultiPolygonFeature[D] = Feature[MultiPolygon, D]
+  type GeometryCollectionFeature[D] = Feature[GeometryCollection, D]
+
+
   implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
     Point(t._1,t._2)
 
@@ -118,7 +127,4 @@ package object vector extends SeqMethods {
                        multiPoints, multiLines, multiPolygons,
                        geometryCollections)
   }
-
-  implicit def featureToGeometry(f: Feature[_]): Geometry = f.geom
-
 }
