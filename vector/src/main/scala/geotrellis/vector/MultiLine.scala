@@ -30,8 +30,18 @@ object MultiLine {
   def apply(ls: Line*): MultiLine = 
     MultiLine(ls)
 
-  def apply(ls: Traversable[Line])(implicit d: DummyImplicit): MultiLine = 
+  def apply(ls: Traversable[Line]): MultiLine = 
     MultiLine(factory.createMultiLineString(ls.map(_.jtsGeom).toArray))
+
+  def apply(ls: Array[Line]): MultiLine = {
+    val len = ls.length
+    val arr = Array.ofDim[jts.LineString](len)
+    cfor(0)(_ < len, _ + 1) { i =>
+      arr(i) = ls(i).jtsGeom
+    }
+
+    MultiLine(factory.createMultiLineString(arr))
+  }
 
   implicit def jts2MultiLine(jtsGeom: jts.MultiLineString): MultiLine = apply(jtsGeom)
 }

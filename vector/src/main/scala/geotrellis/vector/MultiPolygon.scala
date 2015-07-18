@@ -32,6 +32,16 @@ object MultiPolygon {
   def apply(ps: Traversable[Polygon]): MultiPolygon =
     MultiPolygon(factory.createMultiPolygon(ps.map(_.jtsGeom).toArray))
 
+  def apply(ps: Array[Polygon]): MultiPolygon = {
+    val len = ps.length
+    val arr = Array.ofDim[jts.Polygon](len)
+    cfor(0)(_ < len, _ + 1) { i =>
+      arr(i) = ps(i).jtsGeom
+    }
+
+    MultiPolygon(factory.createMultiPolygon(arr))
+  }
+
   implicit def jts2MultiPolygon(jtsGeom: jts.MultiPolygon): MultiPolygon = apply(jtsGeom)
 }
 

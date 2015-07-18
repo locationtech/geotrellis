@@ -26,6 +26,9 @@ object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
     Polygon(jtsGeom)
 
+  def apply(exterior: Seq[Point]): Polygon =
+    apply(Line(exterior), Set())
+
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
