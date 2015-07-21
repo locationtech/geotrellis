@@ -38,22 +38,20 @@ class KrigingInterpolationSpec extends FunSpec
 
       val extent = Extent(0,0,9,10)
       val re = RasterExtent(extent, 1, 1, 9, 10)
-      //val points = Seq[PointFeature[Int]](
-      val points = Seq[PointFeature[Double]](
-        PointFeature(Point(0.0,0.0),10),
-        PointFeature(Point(1.0,0.0),20),
-        PointFeature(Point(4.0,4.0),60),
-        PointFeature(Point(0.0,6.0),80)
-      )
+      val path = "raster-test/data/nickel.json"
+      val f = scala.io.Source.fromFile(path)
+      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+      f.close()
+      val points: Seq[PointFeature[Double]] = collection.getAllPointFeatures[Double]()
 
       //val radius = Some(6)
       val radius: Option[Double] = Some(6)
       val lag = 2
       val chunkSize = 100
-      //val result = KrigingInterpolation(KrigingSimple, points, re, radius, chunkSize, lag, Linear)
-      val predictor = new KrigingSimple(points, radius, chunkSize, lag, Linear)
-      val result = KrigingInterpolation(predictor, points, re, radius, chunkSize, lag, Linear)
-      //val result = obj.createPredictor()
+      val semivariogram: Double => Double = Semivariogram(points, 0, 0, Spherical)
+      val objectPredictor = new KrigingSimple(points, 0, Array(1, 1, 1), Spherical)
+      val predictValue = objectPredictor.predict(Array(Point(1.0, 1.0)))
+      val result = KrigingInterpolation(objectPredictor, points, re, radius, chunkSize, lag, Linear)
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
           val actual = result.get(col,row)

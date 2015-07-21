@@ -21,8 +21,9 @@ import org.apache.commons.math3.stat.regression.SimpleRegression
 import org.apache.commons.math3.analysis.{MultivariateMatrixFunction, MultivariateVectorFunction}
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum
 import org.apache.commons.math3.fitting.leastsquares.{LevenbergMarquardtOptimizer, LeastSquaresBuilder, LeastSquaresProblem}
-import org.apache.commons.math3.linear.DiagonalMatrix
+import org.apache.commons.math3.linear.{MatrixUtils, RealMatrix, DiagonalMatrix}
 import spire.syntax.cfor._
+
 
 abstract sealed class ModelType
 
@@ -210,7 +211,9 @@ object Semivariogram {
 
   def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
-      if (h == 0) 0
+      //if (h == 0) 0
+      //TODO : Investigate if the standard usage is the f(0) = a or f(0) = 0
+      if (h == 0) a
       else if (h > r) s
       else {
         a + (s - a) * ((3 * h / (2 * r)) - (math.pow(h, 3) / (2 * math.pow(r, 3)) ))
@@ -520,6 +523,9 @@ object Semivariogram {
         for((x,y) <- empiricalSemivariogram) { regression.addData(x,y) }
         val slope = regression.getSlope
         val intercept = regression.getIntercept
+        this.r = 0
+        this.s = slope
+        this.a = intercept
         x => slope*x + intercept
 
       //Least Squares minimization
@@ -546,7 +552,7 @@ object Semivariogram {
           for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = 0
@@ -555,7 +561,7 @@ object Semivariogram {
           definition
         }
         else {
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = optimalValues(2)
@@ -586,7 +592,7 @@ object Semivariogram {
           for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = 0
@@ -595,7 +601,7 @@ object Semivariogram {
           definition
         }
         else {
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = optimalValues(2)
@@ -626,7 +632,7 @@ object Semivariogram {
           for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = 0
@@ -635,7 +641,7 @@ object Semivariogram {
           definition
         }
         else {
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = optimalValues(2)
@@ -666,7 +672,7 @@ object Semivariogram {
           for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = 0
@@ -675,7 +681,7 @@ object Semivariogram {
           definition
         }
         else {
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = optimalValues(2)
@@ -706,7 +712,7 @@ object Semivariogram {
           for((x,y) <- empiricalSemivariogram) { problem.addPoint(x,y) }
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = 0
@@ -715,7 +721,7 @@ object Semivariogram {
           definition
         }
         else {
-          printOptimization(opt)
+          //printOptimization(opt)
           this.r = optimalValues(0)
           this.s = optimalValues(1)
           this.a = optimalValues(2)
@@ -796,12 +802,118 @@ object Semivariogram {
     empiricalSemivariogram
   }
 
-  def apply(pts:Seq[PointFeature[Double]],radius:Option[Double]=None,lag:Double=0,model:ModelType):Double => Double = {
+  //def fitNew(pts:Seq[PointFeature[Double]], es: Seq[(Double,Double)], maxDistance: Double, model:ModelType): Double => Double = {
+  def fitNonLinear(pts:Seq[PointFeature[Double]], es: Seq[(Double,Double)], model:ModelType): Double => Double = {
+    def stdev(data: Array[Double]): Double = {
+      if (data.length < 2)
+        return Double.NaN
+      // average
+      val mean: Double = data.sum / data.length
+      // reduce function
+      def f(sum: Double, tail: Double): Double = {
+        val dif = tail - mean
+        sum + dif * dif
+      }
 
-    //Constructing Empirical Semivariogram
-    val empiricalSemivariogram:Seq[(Double,Double)] = constructEmpirical(pts, radius, lag, model)
+      val sum = data.foldLeft(0.0)((s, t) => f(s, t))
+      math.sqrt(sum / (data.length - 1))
+    }
+    val D: Array[Double] = Array.tabulate(es.length){i => es(i)._1}
+    val G: Array[Double] = Array.tabulate(es.length){i => es(i)._2}
+    val start: Array[Double] = Array.fill(3)(0)
+    start(0) = D.foldLeft(D(0)) { case (maxM, e) => math.max(maxM, e) }
+    val Z: Array[Double] = Array.tabulate(pts.length){i => pts(i).data}
+    start(1) = math.pow(stdev(Z), 2)
+    start(2) = math.max(0, G.foldLeft(D(0)) { case (minM, e) => math.min(minM, e) })
+    //println("Initial estimate = " + start.mkString("; "))
+    fit(es, model, start)
+  }
 
-    //Fitting the empirical variogram to the input model
-    fit(empiricalSemivariogram, model)
+  def variogram(pts:Seq[PointFeature[Double]], maxdist: Double, binmax: Int): Array[(Double, Double)] = {
+    var empiricalSemivariogram: Array[(Double, Double)] = Array()
+    val n: Int = pts.length
+    val X: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n){i => pts(i).geom.x})
+    val Y: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n){i => pts(i).geom.y})
+    val Z: Array[Double] = Array.tabulate(n){j => pts(j).data}
+    val UCol: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
+    val XX: RealMatrix = X.multiply(UCol.transpose()).subtract(UCol.multiply(X.transpose()))
+    val YY: RealMatrix = Y.multiply(UCol.transpose()).subtract(UCol.multiply(Y.transpose()))
+    val Distance: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(n, n){(i, j) =>
+      if (i>j) math.sqrt(math.pow(XX.getEntry(i,j), 2) + math.pow(YY.getEntry(i,j), 2))
+      else  0
+    })
+    var SeqDist: Array[Array[Double]] = Array()
+    cfor(0)(_ < n, _ + 1) { i: Int =>
+      cfor(0)(_ < n, _ + 1) { j: Int =>
+        if(Distance.getEntry(j,i) > 0) {SeqDist = SeqDist :+ Array(j,i,Distance.getEntry(j,i))}
+      }
+    }
+    val (dMin, dMax) = {
+      val xs = Array.tabulate(SeqDist.length){i => SeqDist(i)(2)}
+      if (xs.isEmpty)
+        throw new UnsupportedOperationException("Zero distances")
+      xs.foldLeft((xs(0), xs(0)))
+      { case ((min, max), e) => (math.min(min, e), math.max(max, e))}
+    }
+    val maxDistance = if(maxdist == 0) dMax / 2 else maxdist
+    val binMax = if(binmax == 0) 100 else binmax
+    if (dMin >= maxDistance)
+      throw new UnsupportedOperationException("dMin >= maxDistance")
+    val SortSeqDist: Array[Array[Double]] = SeqDist.sortBy(_(2))
+    val SortSeqDistMat: RealMatrix = MatrixUtils.createRealMatrix(SortSeqDist)
+    val binLimit: Int = SortSeqDistMat.getRowDimension
+    val n0_S: Double = Array.tabulate(binLimit){i => if (SortSeqDistMat.getEntry(i,2) <= maxDistance) 1 else 0}.sum
+    val binSize: Int = math.ceil(n0_S / binMax).toInt
+    val binNum: Int = if(binSize >= 30) binMax else math.ceil(n0_S/30).toInt
+
+    cfor(0)(_ < binNum, _ + 1) { i: Int =>
+      val n0: Int = i*binSize + 1 - 1
+      val n1Temp: Int = (i+1)*binSize - 1
+      val n1: Int = if(n1Temp > binLimit) binLimit - 1 else n1Temp
+      val binSizeLocal: Int = n1-n0+1
+      val S1: Array[Int] = Array.tabulate(n1-n0+1){j => SortSeqDist(n0 + j)(0).toInt}
+      val S2: Array[Int] = Array.tabulate(n1-n0+1){j => SortSeqDist(n0 + j)(1).toInt}
+      val Li: Double = Array.tabulate(n1-n0+1){j => SortSeqDist(n0 + j)(2)}.sum / binSizeLocal
+      val Vi: Double = Array.tabulate(n1-n0+1){j =>
+        math.pow(Z(S1(j)) - Z(S2(j)), 2)
+      }.sum / (2 * binSizeLocal)
+      empiricalSemivariogram = empiricalSemivariogram :+ (Li, Vi)
+    }
+
+    empiricalSemivariogram
+  }
+
+  def explicitModel(svParam: Array[Double], model: ModelType): Double => Double = {
+    val (r: Double, s: Double, a: Double) = (svParam(0), svParam(1), svParam(2))
+    model match {
+      case Linear       =>  x: Double => x*s + a
+      case Circular     =>  explicitCircular(r, s, a)
+      case Spherical    =>  explicitSpherical(r, s, a)
+      case Gaussian     =>  explicitGaussian(r, s, a)
+      case Exponential  =>  explicitExponential(r, s, a)
+      case Wave         =>  explicitWave(r, s, a)
+    }
+  }
+
+  def apply(pts:Seq[PointFeature[Double]], radius:Option[Double]=None, lag:Double=0, model:ModelType):Double => Double = {
+    model match {
+      case Linear =>
+        fit(constructEmpirical(pts, radius, lag, model), model)
+      case _ =>
+        throw new UnsupportedOperationException("Non linear semivariograms do not accept radii and lags")
+    }
+  }
+
+  def apply(pts:Seq[PointFeature[Double]], maxdist: Double, binmax: Int, model:ModelType) = {
+    model match {
+      case Linear =>
+        throw new UnsupportedOperationException("Linear semivariogram does not accept maxDist and maxBin values")
+      case _ =>
+        //Constructing Empirical Semivariogram
+        val empiricalSemivariogram:Seq[(Double,Double)] = variogram(pts, maxdist, binmax)
+
+        //Fitting the empirical variogram to the input model
+        fitNonLinear(pts, empiricalSemivariogram, model)
+    }
   }
 }

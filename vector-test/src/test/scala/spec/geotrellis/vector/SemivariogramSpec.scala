@@ -57,6 +57,7 @@ class SemivariogramSpec extends FunSpec
       val sv = (x:Double) => slope*x + intercept
 
 
+      //val semivariogram = Semivariogram(points,None,2,Linear)
       val semivariogram = Semivariogram(points,None,2,Linear)
       //val semivariogram = Semivariogram(points,None,2)(Linear)
       semivariogram(0) should be (sv(0) +- 0.0001)
