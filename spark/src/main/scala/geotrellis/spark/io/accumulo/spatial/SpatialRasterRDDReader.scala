@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo.spatial
 
 import geotrellis.spark._
-import geotrellis.spark.io.FilterRanges
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
@@ -21,23 +20,26 @@ import scala.collection.JavaConversions._
 
 object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
 
-  def setFilters(
+  def getCube(
     job: Job,
     layerId: LayerId,
-    filterSet: FilterSet[SpatialKey],
     keyBounds: KeyBounds[SpatialKey],
     keyIndex: KeyIndex[SpatialKey]
-  ): Unit = {
-    var tileBoundSet = false
-
-    val ranges =
-      FilterRanges.spatial(filterSet, keyBounds, keyIndex).map {
-        case (min, max) =>
-          new ARange(rowId(layerId, min), rowId(layerId, max))
+  )(implicit sc: SparkContext): RDD[(Key, Value)] = {
+    val ranges = 
+      keyIndex.indexRanges(keyBounds) 
+      .map { case (min: Long, max: Long) =>
+        new ARange(rowId(layerId,min), true, rowId(layerId,max), true)
       }
-    InputFormatBase.setRanges(job, ranges)
 
-    //Set the filter for layer we need
-    InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)
+    InputFormatBase.setRanges(job, ranges)
+    InputFormatBase.fetchColumns(job, new APair(new Text(layerId.name), null: Text) :: Nil)   
+
+    sc.newAPIHadoopRDD(
+      job.getConfiguration,
+      classOf[BatchAccumuloInputFormat],
+      classOf[Key],
+      classOf[Value]
+    )
   }
 }

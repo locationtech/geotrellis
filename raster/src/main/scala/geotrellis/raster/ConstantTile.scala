@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer
@@ -33,7 +32,6 @@ trait ConstantTile extends Tile {
   def toArray(): Array[Int] = Array.ofDim[Int](cols * rows).fill(iVal)
   def toArrayDouble(): Array[Double] = Array.ofDim[Double](cols * rows).fill(dVal)
 
-  override
   def convert(newType: CellType): Tile = 
     newType match {
       case TypeBit => BitConstantTile(if(iVal == 0) false else true, cols, rows)
@@ -44,29 +42,65 @@ trait ConstantTile extends Tile {
       case TypeDouble => DoubleConstantTile(dVal, cols, rows)
     }
 
-  override def foreach(f: Int => Unit) {
+  def foreach(f: Int => Unit) {
     var i = 0
     val len = size
     while (i < len) { f(iVal); i += 1 }
   }
 
-  override def foreachDouble(f: Double => Unit) = {
+  def foreachDouble(f: Double => Unit) = {
     var i = 0
     val len = size
     while (i < len) { f(dVal); i += 1 }
   }
 
+  def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        visitor(col, row, iVal)
+      }
+    }
+  }
+
+  def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        visitor(col, row, dVal)
+      }
+    }
+  }
+
   def map(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows)
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = other.map(z => f(iVal, z))
 
-  override def mapDouble(f: Double => Double): Tile = DoubleConstantTile(f(dVal), cols, rows)
-  override def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = other.mapDouble(z => f(dVal, z))
+  def mapDouble(f: Double => Double): Tile = DoubleConstantTile(f(dVal), cols, rows)
+  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = other.mapDouble(z => f(dVal, z))
+
+  def mapIntMapper(mapper: IntTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.set(col, row, mapper(col, row, get(col, row)))
+      }
+    }
+    tile
+  }
+
+  def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        tile.setDouble(col, row, mapper(col, row, getDouble(col, row)))
+      }
+    }
+    tile
+  }
 }
 
 object BitConstantTile { def apply(i: Int, cols: Int, rows: Int): BitConstantTile = BitConstantTile(if(i == 0) false else true, cols, rows) }
 case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = if(v) 1 else NODATA
-  protected val dVal = if(v) 1.0 else Double.NaN
+  protected val iVal = if(v) 1 else 0
+  protected val dVal = if(v) 1.0 else 0.0
 
   val cellType = TypeBit
 
@@ -75,9 +109,6 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   def mutable(): MutableArrayTile = BitArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = Array(iVal.toByte)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    BitConstantTile(v, target.cols, target.rows)
 }
 
 case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
@@ -91,9 +122,6 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile 
   def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = Array(v)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    ByteConstantTile(v, target.cols, target.rows)
 }
 
 case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
@@ -111,9 +139,6 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTil
     ByteBuffer.wrap(arr).asShortBuffer.put(v)
     arr
   }
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    ShortConstantTile(v, target.cols, target.rows)
 }
 
 case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
@@ -131,9 +156,6 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
     ByteBuffer.wrap(arr).asIntBuffer.put(v)
     arr
   }
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    IntConstantTile(v, target.cols, target.rows)
 }
 
 case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTile {
@@ -151,9 +173,6 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTil
     ByteBuffer.wrap(arr).asFloatBuffer.put(v)
     arr
   }
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    FloatConstantTile(v, target.cols, target.rows)
 }
 
 case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantTile {
@@ -171,7 +190,4 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
     ByteBuffer.wrap(arr).asDoubleBuffer.put(v)
     arr
   }
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
-    DoubleConstantTile(v, target.cols, target.rows)
 }

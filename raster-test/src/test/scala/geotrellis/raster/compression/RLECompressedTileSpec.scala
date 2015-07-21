@@ -1,7 +1,7 @@
 package geotrellis.raster.compression
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff._
 
 import geotrellis.engine._
 import geotrellis.testkit._
@@ -50,7 +50,7 @@ class RLECompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress aspect.tif with RLE correctly") {
-      val tile = GeoTiffReader.read("raster-test/data/aspect.tif").bands.head.tile
+      val tile = SingleBandGeoTiff("raster-test/data/aspect.tif").tile
 
       val compressedTile = tile.compress(RLE)
 
@@ -62,7 +62,7 @@ class RLECompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress slope.tif with RLE correctly") {
-      val tile = GeoTiffReader.read("raster-test/data/slope.tif").bands.head.tile
+      val tile = SingleBandGeoTiff("raster-test/data/slope.tif").tile
 
       val compressedTile = tile.compress(RLE)
 

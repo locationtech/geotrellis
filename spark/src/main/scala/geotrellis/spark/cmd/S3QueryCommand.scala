@@ -38,12 +38,11 @@ object S3QueryCommand extends ArgMain[S3QueryArgs] with Logging {
 
     val catalog = S3RasterCatalog(args.bucket, args.key)
     val attrib = catalog.attributeStore
-    val reader = catalog.reader[SpatialKey]()    
     val lmd = attrib.read[S3LayerMetaData](args.layerId, "metaData")
     val md = lmd.rasterMetaData
     val bounds = md.gridBounds
     println("Catalog bounds: $bounds")    
-    val rdd = reader.read(args.layerId, FilterSet(SpaceFilter(args.bounds)))
+    val rdd = catalog.query[SpatialKey](args.layerId).where(Intersects(args.bounds)).toRDD
     println(s"Expected Count: ${args.bounds.coords.length}")
     println(s"Record Count: ${rdd.count}")
   }

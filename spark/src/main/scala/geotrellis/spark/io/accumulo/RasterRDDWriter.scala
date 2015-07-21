@@ -121,7 +121,7 @@ trait RasterRDDWriter[K] {
           fs.delete(outPath, true)
           fs.delete(failuresPath, true)
         } else {
-          sys.error(s"Accumulo bulk ingest for $layerId failed at $ingestPath")
+          throw new LayerWriteError(layerId, s"Accumulo bulk ingest failed at $ingestPath")
         }
       }
 

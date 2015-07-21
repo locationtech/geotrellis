@@ -43,7 +43,8 @@ class HilbertSpaceTimeKeyIndex(
 ) extends KeyIndex[SpaceTimeKey] {
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
-
+  val temporalBinCount = math.pow(2, temporalResolution)
+ 
   val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
@@ -57,8 +58,11 @@ class HilbertSpaceTimeKeyIndex(
     new CompactHilbertCurve(dimensionSpec)
   }
 
-  def binTime(key: SpaceTimeKey): Long =
-    ((key.temporalKey.time.getMillis - startMillis) * temporalResolution) / timeWidth
+  def binTime(key: SpaceTimeKey): Long = {
+    // index requires right bound to be exclusive but KeyBounds do not, fake that.      
+    val bin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
+    (if (bin == temporalBinCount) bin - 1  else bin).toLong
+  }
 
   def toIndex(key: SpaceTimeKey): Long = {
     val bitVectors = 
@@ -79,13 +83,13 @@ class HilbertSpaceTimeKeyIndex(
     hilbertBitVector.toExactLong
   }
 
+  // Note: this function will happilly index outside of the index keyBounds
   def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] = {
-
-    val ranges: java.util.List[LongRange] = 
-      List(
-        LongRange.of(keyRange._1.spatialKey.col, keyRange._2.spatialKey.col),
-        LongRange.of(keyRange._1.spatialKey.row, keyRange._2.spatialKey.row),
-        LongRange.of(binTime(keyRange._1), binTime(keyRange._2))
+    val ranges: java.util.List[LongRange] =
+      List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
+        LongRange.of(keyRange._1.spatialKey.col, keyRange._2.spatialKey.col + 1),
+        LongRange.of(keyRange._1.spatialKey.row, keyRange._2.spatialKey.row + 1),
+        LongRange.of(binTime(keyRange._1), binTime(keyRange._2) + 1)
       )
 
     val  regionInspector: RegionInspector[LongRange, LongContent] = 
@@ -117,7 +121,8 @@ class HilbertSpaceTimeKeyIndex(
 
     cfor(0)(_ < size, _ + 1) { i =>
       val range = filteredIndexRanges.get(i)
-      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd)
+      // uzaygezen ranges are exclusive on the interval, GeoTrellis index ranges are inclusive, adjusting here.
+      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd - 1)
     }
 
     result

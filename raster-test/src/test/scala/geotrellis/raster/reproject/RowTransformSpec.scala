@@ -7,7 +7,7 @@ import geotrellis.vector.io.json._
 import geotrellis.testkit._
 import geotrellis.proj4._
 import geotrellis.testkit.vector._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff._
 
 import org.scalatest._
 
@@ -62,9 +62,8 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate WebMercator -> LatLng for raster extent") {
-      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif")
-        .firstBand
+      val Raster(expected, expectedExtent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val re = RasterExtent(expected, expectedExtent)
 
@@ -93,9 +92,8 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate EPSG:32618 -> WebMercator for raster extent") {
-      val GeoTiffBand(expected, expectedExtent, _, _) = GeoTiffReader
-        .read("raster-test/data/reproject/slope_epsg32618.tif")
-        .firstBand
+      val Raster(expected, expectedExtent) = 
+        SingleBandGeoTiff("raster-test/data/reproject/slope_epsg32618.tif").raster
 
       val re = RasterExtent(expected, expectedExtent)
 
