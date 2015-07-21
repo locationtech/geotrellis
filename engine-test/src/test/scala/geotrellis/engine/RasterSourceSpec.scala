@@ -279,8 +279,8 @@ class RasterSourceSpec extends FunSpec
       val newRows = rows - 2
       rs.resample(newCols, newRows).run match {
         case Complete(r,_) =>
-          assertEqual(r, Array(10, 100, 1000, 10000,
-                               30, 300, 3000, 30000))
+          assertEqual(r, Array(20, 200, 2000, 20000,
+                               40, 400, 4000, 40000))
         case Error(msg,trace) =>
           println(msg)
           println(trace)

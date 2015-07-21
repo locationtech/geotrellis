@@ -21,37 +21,4 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with LazyL
     val tileIdRx(tileId) = s
     tileId.toLong
   }
-
-  def setFilters(filterSet: FilterSet[SpaceTimeKey], keyBounds: KeyBounds[SpaceTimeKey], keyIndex: KeyIndex[SpaceTimeKey]): Seq[(Long, Long)] = {
-    val spaceFilters = mutable.ListBuffer[GridBounds]()
-    val timeFilters = mutable.ListBuffer[(DateTime, DateTime)]()
-
-    filterSet.filters.foreach {
-      case SpaceFilter(bounds) => 
-        spaceFilters += bounds
-      case TimeFilter(start, end) =>
-        timeFilters += ( (start, end) )
-    }
-
-    if(spaceFilters.isEmpty) {
-      val minKey = keyBounds.minKey.spatialKey
-      val maxKey = keyBounds.maxKey.spatialKey
-      spaceFilters += GridBounds(minKey.col, minKey.row, maxKey.col, maxKey.row)
-    }
-
-    if(timeFilters.isEmpty) {
-      val minKey = keyBounds.minKey.temporalKey
-      val maxKey = keyBounds.maxKey.temporalKey
-      timeFilters += ( (minKey.time, maxKey.time) )
-    }
-    
-    (for {
-      bounds <- spaceFilters
-      (timeStart, timeEnd) <- timeFilters
-    } yield {
-      keyIndex.indexRanges(
-        SpaceTimeKey(bounds.colMin, bounds.rowMin, timeStart), 
-        SpaceTimeKey(bounds.colMax, bounds.rowMax, timeEnd))
-    }).flatten
-  }
 }

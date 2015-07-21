@@ -88,6 +88,9 @@ class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |}""".stripMargin
     )
 
+//    implicitly[spray.httpx.unmarshalling.Unmarshaller[geotrellis.vector.PointFeature[String]]]
+//    implicitly[spray.httpx.unmarshalling.Unmarshaller[geotrellis.vector.io.json.WithCrs[geotrellis.vector.PointFeature[String]]]]
+
     marshal(f.withCrs(crs)) should equal (Right(body))
     body.as[WithCrs[PointFeature[String]]] should equal (Right(WithCrs(f, crs)))
   }

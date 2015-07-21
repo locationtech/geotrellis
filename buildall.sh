@@ -1,3 +1,18 @@
 #!/bin/bash
 
-./sbt -J-Xmx2G  "project index" test "project proj4" test "project vector-test" test "project raster-test" test "project geotools" compile "project benchmark" compile "project demo" compile "project vector-benchmark" compile "project engine-test" test "project spark" package "project spark" test "project spark" test "project dev" compile "project services" compile "project jetty" compile "project admin" compile "project slick" test:compile "project gdal" test:compile
+./sbt -J-Xmx2G "project proj4" test || { exit 1; } 
+./sbt -J-Xmx2G "project vector-test" test || { exit 1; }
+./sbt -J-Xmx2G "project raster-test" test || { exit 1; } 
+./sbt -J-Xmx2G "project spark" test  || { exit 1; }
+./sbt -J-Xmx2G "project engine-test" test || { exit 1; } 
+./sbt -J-Xmx2G "project index" test || { exit 1; }
+./sbt -J-Xmx2G "project benchmark" compile || { exit 1; } 
+./sbt -J-Xmx2G "project slick" test:compile || { exit 1; } 
+./sbt -J-Xmx2G "project gdal" test:compile || { exit 1; }
+./sbt -J-Xmx2G "project geotools" compile || { exit 1; } 
+./sbt -J-Xmx2G "project demo" compile || { exit 1; } 
+./sbt -J-Xmx2G "project dev" compile || { exit 1; } 
+./sbt -J-Xmx2G "project services" compile || { exit 1; } 
+./sbt -J-Xmx2G "project jetty" compile || { exit 1; } 
+./sbt -J-Xmx2G "project admin" compile || { exit 1; } 
+./sbt -J-Xmx2G "project vector-benchmark" compile || { exit 1; } 

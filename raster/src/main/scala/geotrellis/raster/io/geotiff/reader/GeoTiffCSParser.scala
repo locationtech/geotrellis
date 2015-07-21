@@ -16,20 +16,21 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
-import geotrellis.raster.io.geotiff.reader.GeoKeys._
-import geotrellis.raster.io.geotiff.reader.ModelTypes._
-import geotrellis.raster.io.geotiff.reader.MapSystems._
-import geotrellis.raster.io.geotiff.reader.ProjectedLinearUnits._
-import geotrellis.raster.io.geotiff.reader.GeographicCSTypes._
-import geotrellis.raster.io.geotiff.reader.EPSGProjectionTypes._
-import geotrellis.raster.io.geotiff.reader.GDALEPSGProjectionTypes._
-import geotrellis.raster.io.geotiff.reader.ProjectionTypesMap._
-import geotrellis.raster.io.geotiff.reader.PrimeMeridianTypes._
-import geotrellis.raster.io.geotiff.reader.AngularUnitTypes._
-import geotrellis.raster.io.geotiff.reader.DatumTypes._
-import geotrellis.raster.io.geotiff.reader.EllipsoidTypes._
-import geotrellis.raster.io.geotiff.reader.CoordinateTransformTypes._
+import geotrellis.raster.io.geotiff.tags._
+import CommonPublicValues._
+import GeoKeys._
+import ModelTypes._
+import MapSystems._
+import ProjectedLinearUnits._
+import GeographicCSTypes._
+import EPSGProjectionTypes._
+import GDALEPSGProjectionTypes._
+import ProjectionTypesMap._
+import PrimeMeridianTypes._
+import AngularUnitTypes._
+import DatumTypes._
+import EllipsoidTypes._
+import CoordinateTransformTypes._
 
 import geotrellis.proj4.EPSGCSVReader
 import geotrellis.proj4.CSVFileConstants._
@@ -62,14 +63,14 @@ case class GeoTiffGDALParameters(
 
 object GeoTiffCSParser {
 
-  def apply(directory: ImageDirectory) = new GeoTiffCSParser(directory)
+  def apply(directory: TiffTags) = new GeoTiffCSParser(directory)
 
 }
 
 /**
   * This class is indirectly ported from the GDAL github repository.
   */
-class GeoTiffCSParser(directory: ImageDirectory) {
+class GeoTiffCSParser(directory: TiffTags) {
 
   private val geoKeyDirectory = directory.geoKeyDirectory
 

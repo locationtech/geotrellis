@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.raster.op.stats._
 
@@ -31,7 +30,7 @@ import collection.mutable.ArrayBuffer
 /**
   * Base trait for a Tile.
   */
-trait Tile {
+trait Tile extends IterableTile with MappableTile[Tile] {
 
   val gridBounds = GridBounds(0, 0, cols - 1, rows - 1)
 
@@ -59,18 +58,17 @@ trait Tile {
   def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
     if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
-  val cols: Int
-  val rows: Int
+  def cols: Int
+  def rows: Int
   lazy val dimensions: (Int, Int) = (cols, rows)
   lazy val size = cols * rows
 
   /** Create a mutable copy of this tile */
   def mutable: MutableArrayTile 
 
-  val cellType: CellType
+  def cellType: CellType
 
-  def convert(cellType: CellType): Tile =
-    LazyConvertedTile(this, cellType)
+  def convert(cellType: CellType): Tile
 
   /**
     * Get value at given coordinates.
@@ -87,19 +85,9 @@ trait Tile {
   def toArrayDouble(): Array[Double]
   def toBytes(): Array[Byte]
 
-  def foreach(f: Int=>Unit): Unit =
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        f(get(col, row))
-      }
-    }
+  def foreach(f: Int=>Unit): Unit
 
-  def foreachDouble(f: Double=>Unit): Unit =
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        f(getDouble(col, row))
-      }
-    }
+  def foreachDouble(f: Double=>Unit): Unit 
 
   def map(f: Int => Int): Tile
   def combine(r2: Tile)(f: (Int, Int) => Int): Tile
@@ -146,28 +134,6 @@ trait Tile {
     val (min, max) = findMinMaxDouble
     normalize(min, max, newMin, newMax)
   }
-
-  def resample(source: Extent, target: RasterExtent): Tile =
-    resample(source, target, InterpolationMethod.DEFAULT)
-
-  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile
-
-  def resample(source: Extent, target: Extent): Tile =
-    resample(source, target, InterpolationMethod.DEFAULT)
-
-  def resample(source: Extent, target: Extent, method: InterpolationMethod): Tile =
-    resample(source, RasterExtent(source, cols, rows).createAligned(target), method)
-
-  def resample(source: Extent, targetCols: Int, targetRows: Int): Tile =
-    resample(source, targetCols, targetRows, InterpolationMethod.DEFAULT)
-
-  def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): Tile =
-    resample(source, RasterExtent(source, targetCols, targetRows), method)
-
-  /** Only changes the resolution */
-  def resample(targetCols: Int, targetRows: Int): Tile =
-    resample(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
-
 
   def crop(cols: Int, rows: Int): Tile =
     CroppedTile(this, GridBounds(0, 0, cols - 1, rows - 1))

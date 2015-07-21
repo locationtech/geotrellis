@@ -28,7 +28,8 @@ object Filesystem {
     val size = f.length.toInt
     val channel = fis.getChannel
     val buffer = channel.map(READ_ONLY, 0, size)
-    fis.close
+    channel.close()
+    fis.close()
     
     // read 256K at a time out of the buffer into our array
     var i = 0

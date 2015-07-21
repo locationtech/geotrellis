@@ -66,9 +66,9 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
   def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
 
     val ranges: java.util.List[LongRange] = 
-      List(
-        LongRange.of(keyRange._1.col, keyRange._2.col),
-        LongRange.of(keyRange._1.row, keyRange._2.row)
+      List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
+        LongRange.of(keyRange._1.col, keyRange._2.col + 1),
+        LongRange.of(keyRange._1.row, keyRange._2.row + 1)
       )
 
     val  regionInspector: RegionInspector[LongRange, LongContent] = 
@@ -100,7 +100,8 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
 
     cfor(0)(_ < size, _ + 1) { i =>
       val range = filteredIndexRanges.get(i)
-      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd)
+      //LongRange is exclusive on upper bound, adjusting for it here with - 1
+      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd - 1)
     }
 
     result

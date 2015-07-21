@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -32,7 +31,7 @@ import spire.syntax.cfor._
  * allocate an Array[Byte] with length=1.
  */
 final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
-  extends MutableArrayTile with IntBasedArrayTile {
+  extends MutableArrayTile {
   // i >> 3 is the same as i / 8 but faster
   // i & 7 is the same as i % 8 but faster
   // i & 1 is the same as i % 2 but faster
@@ -49,16 +48,13 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
 
   def apply(i: Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
 
-  def update(i: Int, z: Int): Unit = {
-    val div = i >> 3
-    if ((z & 1) == 0) {
-      // unset the nth bit
-      array(div) = (array(div) & ~(1 << (i & 7))).toByte
-    } else {
-      // set the nth bit
-      array(div) = (array(div) | (1 << (i & 7))).toByte
-    }
-  }
+  def update(i: Int, z: Int): Unit = 
+    BitArrayTile.update(array, i, z)
+
+  def applyDouble(i: Int): Double = i2d(apply(i))
+
+  def updateDouble(i: Int, z: Double): Unit = 
+    BitArrayTile.updateDouble(array, i, z)
 
   override def map(f: Int => Int) = {
     val f0 = f(0) & 1
@@ -86,20 +82,24 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 
   def toBytes: Array[Byte] = array.clone
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Byte]((target.cols * target.rows + 7) / 8).fill(byteNODATA)
-        Resample(RasterExtent(current, cols, rows), target, new BitResampleAssign(array, resampled))
-        BitArrayTile(resampled, target.cols, target.rows)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }
 
 object BitArrayTile {
-  def ofDim(cols: Int, rows: Int): BitArrayTile = 
+  def update(arr: Array[Byte], i: Int, z: Int): Unit = {
+    val div = i >> 3
+    if ((z & 1) == 0) {
+      // unset the nth bit
+      arr(div) = (arr(div) & ~(1 << (i & 7))).toByte
+    } else {
+      // set the nth bit
+      arr(div) = (arr(div) | (1 << (i & 7))).toByte
+    }
+  }
+
+  def updateDouble(arr: Array[Byte], i: Int, z: Double) : Unit =
+    update(arr, i, if(isData(z)) z.toInt else 0)
+
+  def ofDim(cols: Int, rows: Int): BitArrayTile =
     new BitArrayTile(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
 
   def empty(cols: Int, rows: Int): BitArrayTile = 

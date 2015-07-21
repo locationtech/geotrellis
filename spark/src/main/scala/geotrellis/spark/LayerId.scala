@@ -6,3 +6,7 @@ case class LayerId(name: String, zoom: Int) {
   def toString: String = 
     s"""Layer(name = "$name", zoom = $zoom)"""
 }
+
+object LayerId{
+  implicit def fromTuple(tup: (String, Int)) = LayerId(tup._1, tup._2)
+}

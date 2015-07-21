@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -41,16 +40,6 @@ final case class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
   }
 
   def copy = ArrayTile(array.clone, cols, rows)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Float](target.cols * target.rows).fill(Float.NaN)
-        Resample[Float](RasterExtent(current, cols, rows), target, array, resampled)
-        FloatArrayTile(resampled, target.cols, target.rows)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }
 
 object FloatArrayTile {
@@ -73,9 +62,9 @@ object FloatArrayTile {
   }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Float): FloatArrayTile = 
-    if(isNoData(replaceNoData)) 
+    if(isNoData(replaceNoData)) {
       fromBytes(bytes, cols, rows)
-    else {
+    } else {
       val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
       val floatBuffer = byteBuffer.asFloatBuffer()
       val len = bytes.size / TypeFloat.bytes
@@ -83,8 +72,9 @@ object FloatArrayTile {
 
       cfor(0)(_ < len, _ + 1) { i =>
         val v = floatBuffer.get(i)
-        if(v == replaceNoData) 
+        if(v == replaceNoData) {
           floatArray(i) = Float.NaN
+        }
         else
           floatArray(i) = v
       }

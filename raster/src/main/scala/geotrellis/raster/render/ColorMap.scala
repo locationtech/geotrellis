@@ -155,7 +155,7 @@ case class IntColorMap(breaksToColors: Map[Int, Int],
   }
 
   def render(r: Tile) =
-      r.convert(TypeByte).map(apply)
+      r.convert(TypeByte).map { z => apply(z) }
 
   def cache(h: Histogram): ColorMap = {
     val ch = h.mutable
@@ -217,7 +217,7 @@ case class DoubleColorMap(breaksToColors: Map[Double, Int],
   }
 
   def render(r: Tile) =
-      r.mapDouble(apply)
+      r.mapDouble { z => apply(z) }
 
   def cache(h: Histogram): ColorMap = {
     val ch = h.mutable

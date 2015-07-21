@@ -9,6 +9,15 @@ case class KeyBounds[K](
 )
 
 object KeyBounds {
+  implicit class KeyBoundsSeqMethods[K: Boundable](seq: Seq[KeyBounds[K]]){
+    def includeKey(key: K): Boolean = {
+      val boundable = implicitly[Boundable[K]]
+      seq
+        .map{ kb => boundable.includes(key, kb) }
+        .foldLeft(false)(_ || _)    
+    }
+  }
+
   implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
 
   implicit def keyBoundsFormat[K: JsonFormat]: RootJsonFormat[KeyBounds[K]] =

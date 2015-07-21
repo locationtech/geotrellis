@@ -21,7 +21,7 @@ object SpatialKey {
   implicit def ordering[A <: SpatialKey]: Ordering[A] =
     Ordering.by(sk => (sk.col, sk.row))
 
-  implicit object SpatialKeyFormat extends RootJsonFormat[SpatialKey] {
+  implicit val spatialKeyFormat = new RootJsonFormat[SpatialKey] {
     def write(key: SpatialKey) =
       JsObject(
         "col" -> JsNumber(key.col),

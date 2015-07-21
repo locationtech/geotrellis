@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import geotrellis.spark.utils._
@@ -30,7 +31,7 @@ trait TileReader[K] {
       client.getObject(lmd.bucket, path).getObjectContent    
     } catch {
       case e: AmazonS3Exception if e.getStatusCode == 404 =>
-        sys.error(s"Tile with key $key not found for layer $layerId")
+        throw new TileNotFoundError(key, layerId)        
     }
 
     val (storedKey, tile) = KryoSerializer.deserializeStream[(K, Tile)](is)

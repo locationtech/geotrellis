@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 
@@ -17,10 +18,10 @@ object FilterMapFileInputFormat {
   val SPLITS_FILE_PATH = "splits_file_path"
   val FILTER_INFO_KEY = "geotrellis.spark.io.hadoop.filterinfo"
 
-  type FilterDefinition[K] = (FilterSet[K], Array[(Long, Long)])
+  type FilterDefinition[K] = (Seq[KeyBounds[K]], Array[(Long, Long)])
 }
 
-abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] with IndexedKeyWritable[K], V >: Null <: Writable]() extends FileInputFormat[KW, V] {
+abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComparable[KW] with IndexedKeyWritable[K], V >: Null <: Writable]() extends FileInputFormat[KW, V] {
   var _filterDefinition: Option[FilterMapFileInputFormat.FilterDefinition[K]] = None
 
   def createKey(): KW
@@ -34,7 +35,8 @@ abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] 
       case None =>
         val r = conf.getSerialized[FilterMapFileInputFormat.FilterDefinition[K]](FilterMapFileInputFormat.FILTER_INFO_KEY)
         _filterDefinition = Some(r)
-        r
+        val compressedRanges = MergeQueue(r._2).sortBy(_._1).toArray
+        r._1 -> compressedRanges // Index ranges MUST be sorted, the reader will NOT do it.
     }
 
   override
@@ -85,7 +87,7 @@ abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] 
     super.listStatus(context).filter(fileStatusFilter)
   }
 
-  override 
+  override
   def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[KW, V] =
     new FilterMapFileRecordReader(getFilterDefinition(context.getConfiguration))
 
@@ -113,7 +115,7 @@ abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] 
 
     private def setNextIndexRange(index: Long = 0L): Boolean = {
       if(nextRangeIndex >= ranges.size) {
-        false 
+        false
       } else {
         // Find next index
         val (minIndex, maxIndex) = ranges(nextRangeIndex)
@@ -171,11 +173,7 @@ abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] 
             key = null
             value = null
           } else {
-            if(filterDefinition._1.includeKey(nextKey.key)) {
-              break = true
-              key = nextKey
-              value = nextValue
-            } else {
+            if (nextKey.index > currMaxIndex) {
               // Must be out of current index range.
               if(nextRangeIndex < ranges.size) {
                 if(!setNextIndexRange(nextKey.index)) {
@@ -189,6 +187,12 @@ abstract class FilterMapFileInputFormat[K, KW >: Null <: WritableComparable[KW] 
                 more = false
                 key = null
                 value = null
+              }
+            } else {
+              if (filterDefinition._1.includeKey(nextKey.key)) {
+                break = true
+                key = nextKey
+                value = nextValue
               }
             }
           }

@@ -134,9 +134,13 @@ object GeotrellisBuild extends Build {
     libraryDependencies <++= scalaVersion {
       case "2.10.4" => Seq(
         "org.scala-lang" %  "scala-reflect" % "2.10.4",
-        "org.scalamacros" %% "quasiquotes" % "2.0.1")
+        "org.scalamacros" %% "quasiquotes" % "2.0.1",
+        "org.spire-math" %% "spire-macros" % "0.9.1"
+      )
       case "2.11.5" => Seq(
-        "org.scala-lang" %  "scala-reflect" % "2.11.5")
+        "org.scala-lang" %  "scala-reflect" % "2.11.5",
+        "org.spire-math" %% "spire-macros" % "0.9.1"
+      )
     },
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
@@ -198,7 +202,10 @@ object GeotrellisBuild extends Build {
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
-      scalacOptions in compile ++= Seq("-optimize"),
+      scalacOptions ++= Seq(
+        "-optimize",
+        "-language:experimental.macros"
+      ),
       addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
       libraryDependencies ++= Seq(
         typesafeConfig,
@@ -357,7 +364,7 @@ object GeotrellisBuild extends Build {
   lazy val spark: Project =
     Project("spark", file("spark"))
       .settings(sparkSettings: _*)
-      .dependsOn(raster, gdal, index)
+      .dependsOn(raster, gdal)
 
   lazy val sparkSettings =
     Seq(
@@ -459,7 +466,7 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++=
         Seq(
           "org.gdal"         % "gdal"       % "1.10.1",
-          "com.github.scopt" % "scopt_2.10" % "3.2.0",
+          "com.github.scopt" %% "scopt" % "3.3.0",
           scalatest % "test"
         ),
       resolvers ++=
