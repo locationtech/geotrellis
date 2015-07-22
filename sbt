@@ -95,7 +95,7 @@ make_url () {
   category="$2"
   version="$3"
   
-  echo "http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/$version/sbt-launch.jar"
+  echo "http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/$version/jars/sbt-launch.jar"
 }
 
 declare -r default_jvm_opts="-Dfile.encoding=UTF8"
@@ -207,7 +207,7 @@ download_url () {
 
   mkdir -p $(dirname "$jar") && {
     if which curl >/dev/null; then
-      curl --fail --silent "$url" --output "$jar"
+      curl --fail --silent -L "$url" --output "$jar"
     elif which wget >/dev/null; then
       wget --quiet -O "$jar" "$url"
     fi
