@@ -485,7 +485,7 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++=
         Seq(
           "org.gdal"         % "gdal"       % "1.10.1",
-          "com.github.scopt" % "scopt_2.10" % "3.2.0",
+          "com.github.scopt" %% "scopt" % "3.3.0",
           scalatest % "test"
         ),
       resolvers ++=

@@ -1,45 +1,46 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import org.scalatest._
 
-class BilinearInterpolationSpec extends FunSpec with Matchers {
+class BilinearResampleSpec extends FunSpec with Matchers {
 
   val Epsilon = 1e-9
 
-  def testInterpolationInt(
+  def testResampleInt(
     x: Double,
     y: Double,
     res: Double,
     tile: Tile = ArrayTile(Array[Int](1, 2, 3, 4), 2, 2),
     extent: Extent = Extent(0, 0, 1, 1)) = {
-    val bi = new BilinearInterpolation(tile, extent)
-    bi.interpolate(x, y) should be (res)
+    val bi = new BilinearResample(tile, extent)
+    bi.resample(x, y) should be (res)
   }
 
-  def testInterpolationDouble(
+  def testResampleDouble(
     x: Double,
     y: Double,
     res: Double,
     tile: Tile = ArrayTile(Array[Double](1, 2, 3, 4), 2, 2),
     extent: Extent = Extent(0, 0, 1, 1)) = {
-    val bi = new BilinearInterpolation(tile, extent)
-    bi.interpolateDouble(x, y) should be (res +- Epsilon)
+    val bi = new BilinearResample(tile, extent)
+    bi.resampleDouble(x, y) should be (res +- Epsilon)
   }
 
   def testBilinearSquareCenter(tile: Tile, result: Double) =
-    testInterpolationDouble(0.5, 0.5, result, tile)
+    testResampleDouble(0.5, 0.5, result, tile)
 
-  describe("interpolates correctly at square center") {
+  describe("Resamples correctly at square center") {
 
-    it("should interpolate correctly when all values same") {
+    it("should resample correctly when all values same") {
       val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
       testBilinearSquareCenter(tile, 100)
     }
 
-    it("should interpolate correctly with one different value and three same") {
+    it("should resample correctly with one different value and three same") {
       val tiles = List(
         ArrayTile(Array[Int](200, 100, 100, 100), 2, 2),
         ArrayTile(Array[Int](100, 200, 100, 100), 2, 2),
@@ -50,7 +51,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       tiles.foreach(testBilinearSquareCenter(_, 125))
     }
 
-    it("should interpolate correctly when values different in pairs") {
+    it("should resample correctly when values different in pairs") {
       val tiles = List(
         ArrayTile(Array[Int](200, 100, 200, 100), 2, 2),
         ArrayTile(Array[Int](100, 200, 200, 100), 2, 2),
@@ -63,7 +64,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       tiles.foreach(testBilinearSquareCenter(_, 150))
     }
 
-    it("should interpolate correctly with two different values and two same") {
+    it("should resample correctly with two different values and two same") {
       val tiles = List(
         ArrayTile(Array[Int](200, 100, 300, 100), 2, 2),
         ArrayTile(Array[Int](100, 300, 200, 100), 2, 2),
@@ -76,7 +77,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       tiles.foreach(testBilinearSquareCenter(_, 175))
     }
 
-    it("should interpolate correctly with all values different") {
+    it("should resample correctly with all values different") {
       val tiles = List(
         ArrayTile(Array[Int](200, 0, 300, 100), 2, 2),
         ArrayTile(Array[Int](100, 300, 200, 0), 2, 2),
@@ -91,19 +92,19 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
 
   }
 
-  describe("interpolates correctly at various points in bounding rectangle") {
+  describe("resamples correctly at various points in bounding rectangle") {
 
-    it("should interpolate correctly when all values are same and points are varying") {
+    it("should resample correctly when all values are same and points are varying") {
       val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
       val res = 100
 
       for (x <- 1 to 99; y <- 1 to 99) {
         val (xr, yr) = (x.toDouble / 100, y.toDouble / 100)
-        testInterpolationDouble(xr, yr, res, tile)
+        testResampleDouble(xr, yr, res, tile)
       }
     }
 
-    it("should interpolate correctly when varying values and points") {
+    it("should resample correctly when varying values and points") {
 
       // 1 contrib = 1 * 0.75 * 0.75 = 0.5625
       // 2 contrib = 2 * 0.75 * 0.25 = 0.375
@@ -111,7 +112,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib = 4 * 0.25 * 0.25 = 0.25
       // accum divisor = 1
       // res = 1.75
-      testInterpolationDouble(0.375, 0.625, 1.75)
+      testResampleDouble(0.375, 0.625, 1.75)
 
       // 1 contrib: 1 * 0.49 * 1 = 0.49
       // 2 contrib: 2 * 0.51 * 1 = 1.02
@@ -119,7 +120,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib: 0
       // accum divisor = 1
       // res = 1.51
-      testInterpolationDouble(0.51, 1, 1.52)
+      testResampleDouble(0.51, 1, 1.52)
 
       // 1 contrib: 0
       // 2 contrib: 0
@@ -127,36 +128,36 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib: 4 * 0.49 * 1 = 1.96
       // accum divisor = 1
       // res = 3.49
-      testInterpolationDouble(0.49, 0, 3.48)
+      testResampleDouble(0.49, 0, 3.48)
     }
 
   }
 
-  describe("interpolates correctly at various points at border of rectangle") {
+  describe("resamples correctly at various points at border of rectangle") {
 
-    it("should interpolate correctly when all values are same and points are varying") {
+    it("should resample correctly when all values are same and points are varying") {
       val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
       val res = 100
       val extent = Extent(0, 0, 1, 1)
 
       for (y <- 1 to 99) {
         val (xr, yr) = (0, y.toDouble / 100)
-        testInterpolationDouble(xr, yr, res, tile)
+        testResampleDouble(xr, yr, res, tile)
       }
 
       for (y <- 1 to 99) {
         val (xr, yr) = (1, y.toDouble / 100)
-        testInterpolationDouble(xr, yr, res, tile)
+        testResampleDouble(xr, yr, res, tile)
       }
 
       for (x <- 1 to 99) {
         val (xr, yr) = (x.toDouble / 100, 0)
-        testInterpolationDouble(xr, yr, res, tile)
+        testResampleDouble(xr, yr, res, tile)
       }
 
       for (x <- 1 to 99) {
         val (xr, yr) = (x.toDouble / 100, 1)
-        testInterpolationDouble(xr, yr, res, tile)
+        testResampleDouble(xr, yr, res, tile)
       }
     }
 
@@ -169,7 +170,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       y: Double,
       extent: Extent = Extent(0, 0, 1, 1)) = {
       val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
-      val bi = new BilinearInterpolation(tile, extent)
+      val bi = new BilinearResample(tile, extent)
       bi.resolveTopLeftCoordsAndRatios(x, y)
     }
 
@@ -294,71 +295,71 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
 
   }
 
-  describe("interpolation should work correctly") {
+  describe("resample should work correctly") {
 
-    it("should interpolate correctly at top left corner") {
-      testInterpolationInt(0, 1, 1)
-      testInterpolationDouble(0, 1, 1)
+    it("should resample correctly at top left corner") {
+      testResampleInt(0, 1, 1)
+      testResampleDouble(0, 1, 1)
     }
 
-    it("should interpolate correctly at top right corner") {
-      testInterpolationInt(1, 1, 2)
-      testInterpolationDouble(1, 1, 2)
+    it("should resample correctly at top right corner") {
+      testResampleInt(1, 1, 2)
+      testResampleDouble(1, 1, 2)
     }
 
-    it("should interpolate correctly at bottom left corner") {
-      testInterpolationInt(0, 0, 3)
-      testInterpolationDouble(0, 0, 3)
+    it("should resample correctly at bottom left corner") {
+      testResampleInt(0, 0, 3)
+      testResampleDouble(0, 0, 3)
     }
 
-    it("should interpolate correctly at bottom right corner") {
-      testInterpolationInt(1, 0, 4)
-      testInterpolationDouble(1, 0, 4)
+    it("should resample correctly at bottom right corner") {
+      testResampleInt(1, 0, 4)
+      testResampleDouble(1, 0, 4)
     }
 
-    it("should interpolate correctly at top center") {
-      testInterpolationInt(0.5, 1, 2)
-      testInterpolationDouble(0.5, 1, 1.5)
+    it("should resample correctly at top center") {
+      testResampleInt(0.5, 1, 2)
+      testResampleDouble(0.5, 1, 1.5)
     }
 
-    it("should interpolate correctly at bottom center") {
-      testInterpolationInt(0.5, 0, 4)
-      testInterpolationDouble(0.5, 0, 3.5)
+    it("should resample correctly at bottom center") {
+      testResampleInt(0.5, 0, 4)
+      testResampleDouble(0.5, 0, 3.5)
     }
 
-    it("should interpolate correctly at left center") {
-      testInterpolationInt(0, 0.5, 2)
-      testInterpolationDouble(0, 0.5, 2)
+    it("should resample correctly at left center") {
+      testResampleInt(0, 0.5, 2)
+      testResampleDouble(0, 0.5, 2)
     }
 
-    it("should interpolate correctly at right center") {
-      testInterpolationInt(1, 0.5, 3)
-      testInterpolationDouble(1, 0.5, 3)
+    it("should resample correctly at right center") {
+      testResampleInt(1, 0.5, 3)
+      testResampleDouble(1, 0.5, 3)
     }
 
-    it("should interpolate correctly at center") {
-      testInterpolationInt(0.5, 0.5, 3)
-      testInterpolationDouble(0.5, 0.5, 2.5)
+    it("should resample correctly at center") {
+      testResampleInt(0.5, 0.5, 3)
+      testResampleDouble(0.5, 0.5, 2.5)
     }
 
-    it("should interpolate correctly at x = 0.25, y = 0.25") {
-      testInterpolationInt(0.375, 0.625, 2)
-      testInterpolationDouble(0.375, 0.625, 1.75)
+    it("should resample correctly at x = 0.25, y = 0.25") {
+      testResampleInt(0.375, 0.625, 2)
+      testResampleDouble(0.375, 0.625, 1.75)
     }
 
-    it("should interpolate correctly at x = 0.25, y = 0.75") {
-      testInterpolationInt(0.375, 0.375, 3)
-      testInterpolationDouble(0.375, 0.375, 2.75)
+    it("should resample correctly at x = 0.25, y = 0.75") {
+      testResampleInt(0.375, 0.375, 3)
+      testResampleDouble(0.375, 0.375, 2.75)
     }
 
-    it("should interpolate correctly at x = 0.75, y = 0.25") {
-      testInterpolationInt(0.625, 0.625, 2)
-      testInterpolationDouble(0.625, 0.625, 2.25)
+    it("should resample correctly at x = 0.75, y = 0.25") {
+      testResampleInt(0.625, 0.625, 2)
+      testResampleDouble(0.625, 0.625, 2.25)
     }
 
-    it("should interpolate correctly at x = 0.75, y = 0.75") {
-      testInterpolationInt(0.625, 0.375, 3)
-      testInterpolationDouble(0.625, 0.375, 3.25)
+    it("should resample correctly at x = 0.75, y = 0.75") {
+      testResampleInt(0.625, 0.375, 3)
+      testResampleDouble(0.625, 0.375, 3.25)
     }
 
   }

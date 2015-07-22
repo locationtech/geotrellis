@@ -59,7 +59,7 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
    * @tparam F type of Feature to return
    * @return Vector or Feature objects that were successfully parsed
    */
-  def getAll[F :JsonFormat]: Vector[F] = {
+  def getAll[F: JsonReader]: Vector[F] = {
     val ret = new VectorBuilder[F]()
     features.foreach{ f =>
       Try(f.convertTo[F]) match {
@@ -71,15 +71,15 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
     ret.result()
   }
 
-  def getAllFeatures[F <: Feature[_] :JsonFormat]: Vector[F] = 
+  def getAllFeatures[F <: Feature[_] :JsonReader]: Vector[F] = 
     getAll[F]
 
-  def getAllPointFeatures[D: JsonFormat]()         = getAll[PointFeature[D]]
-  def getAllLineFeatures[D: JsonFormat]()          = getAll[LineFeature[D]]
-  def getAllPolygonFeatures[D: JsonFormat]()       = getAll[PolygonFeature[D]]
-  def getAllMultiPointFeatures[D: JsonFormat]()    = getAll[MultiPointFeature[D]]
-  def getAllMultiLineFeatures[D: JsonFormat]()     = getAll[MultiLineFeature[D]]
-  def getAllMultiPolygonFeatures[D: JsonFormat]()  = getAll[MultiPolygonFeature[D]]
+  def getAllPointFeatures[D: JsonReader]()         = getAll[PointFeature[D]]
+  def getAllLineFeatures[D: JsonReader]()          = getAll[LineFeature[D]]
+  def getAllPolygonFeatures[D: JsonReader]()       = getAll[PolygonFeature[D]]
+  def getAllMultiPointFeatures[D: JsonReader]()    = getAll[MultiPointFeature[D]]
+  def getAllMultiLineFeatures[D: JsonReader]()     = getAll[MultiLineFeature[D]]
+  def getAllMultiPolygonFeatures[D: JsonReader]()  = getAll[MultiPolygonFeature[D]]
 
   def getAllPoints()         = getAll[Point]
   def getAllLines()          = getAll[Line]

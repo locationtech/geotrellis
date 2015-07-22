@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -8,28 +8,28 @@ import collection._
 import org.scalatest._
 
 /**
-  * Since the abstract bicubic interpolation inherits from cubic
-  * interpolation all that is tested here is that the points are evaluated
-  * and passed to the uniCubicInterpolation method in the correct order.
+  * Since the abstract bicubic resample inherits from cubic
+  * resample all that is tested here is that the points are evaluated
+  * and passed to the uniCubicResample method in the correct order.
   */
-class BicubicInterpolationSpec extends FunSpec with Matchers {
+class BicubicResampleSpec extends FunSpec with Matchers {
 
-  // Returned if bicubic interpolation is used.
-  // Bilinear interpolation should never be able to return this
+  // Returned if bicubic resample is used.
+  // Bilinear resample should never be able to return this
   // value from the given tile and extent.
   val B = -1337
 
-  class BicubicInterpolation4By4(tile: Tile, extent: Extent) extends
-      BicubicInterpolation(tile, extent, 4) {
+  class BicubicResample4By4(tile: Tile, extent: Extent) extends
+      BicubicResample(tile, extent, 4) {
 
-    override def uniCubicInterpolation(p: Array[Double], x: Double): Double = B
+    override def uniCubicResample(p: Array[Double], x: Double): Double = B
 
   }
 
-  class BicubicInterpolation6By6(tile: Tile, extent: Extent) extends
-      BicubicInterpolation(tile, extent, 6) {
+  class BicubicResample6By6(tile: Tile, extent: Extent) extends
+      BicubicResample(tile, extent, 6) {
 
-    override def uniCubicInterpolation(p: Array[Double], x: Double): Double = B
+    override def uniCubicResample(p: Array[Double], x: Double): Double = B
 
   }
 
@@ -49,8 +49,8 @@ class BicubicInterpolationSpec extends FunSpec with Matchers {
 
       val h = d / 2
 
-      val lastInterpArr = Array.ofDim[Double](d)
-      for (i <- 0 until d) lastInterpArr(i) = (d - i)
+      val lastResampArr = Array.ofDim[Double](d)
+      for (i <- 0 until d) lastResampArr(i) = (d - i)
 
       for (i <- h - 1 until d2 - h; j <- d2 - h until h - 1 by -1) {
         val (x, y) = (cellSize + i, cellSize + j)
@@ -65,8 +65,8 @@ class BicubicInterpolationSpec extends FunSpec with Matchers {
 
         var c = q.size + 1
 
-        val interp = new BicubicInterpolation(tile, extent, d) {
-          override def uniCubicInterpolation(
+        val resamp = new BicubicResample(tile, extent, d) {
+          override def uniCubicResample(
             p: Array[Double],
             x: Double): Double = {
             if (q.isEmpty && c != 1) fail
@@ -74,7 +74,7 @@ class BicubicInterpolationSpec extends FunSpec with Matchers {
               val arr = q.dequeue
               p should be (arr)
             } else {
-              p should be (lastInterpArr)
+              p should be (lastResampArr)
             }
 
             c -= 1
@@ -84,7 +84,7 @@ class BicubicInterpolationSpec extends FunSpec with Matchers {
         }
 
         withClue(s"Failed on ($x, $y): ") {
-          interp.interpolate(x, y) should be (c)
+          resamp.resample(x, y) should be (c)
         }
 
         c should be (0)

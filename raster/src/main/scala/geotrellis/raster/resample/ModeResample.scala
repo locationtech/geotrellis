@@ -1,4 +1,4 @@
-package geotrellis.raster.interpolation
+package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.raster.op.stats._
@@ -10,10 +10,10 @@ import collection._
 import spire.syntax.cfor._
 
 /**
-  * Takes the most common value in the tile and interpolates all points to that.
+  * Takes the most common value in the tile and resamples all points to that.
   */
-class ModeInterpolation(tile: Tile, extent: Extent)
-    extends Interpolation(tile, extent) {
+class ModeResample(tile: Tile, extent: Extent)
+    extends Resample(tile, extent) {
 
   private lazy val mostCommonValue = FastMapHistogram.fromTile(tile).getMode
 
@@ -45,10 +45,10 @@ class ModeInterpolation(tile: Tile, extent: Extent)
     max
   }
 
-  override def interpolateValid(x: Double, y: Double): Int =
+  override def resampleValid(x: Double, y: Double): Int =
     mostCommonValue
 
-  override def interpolateDoubleValid(x: Double, y: Double): Double =
+  override def resampleDoubleValid(x: Double, y: Double): Double =
     mostCommonValueDouble
 
 }

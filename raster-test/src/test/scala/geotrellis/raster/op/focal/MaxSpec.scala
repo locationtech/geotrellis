@@ -41,7 +41,7 @@ class MaxSpec extends FunSpec with Matchers with TileBuilders with TestEngine wi
       tile.focalMax(Square(1)) should be (createTile(expected))
     }
 
-    it("square min r=1 on doubles what the fuck?") {
+    it("square min r=1 on doubles") {
       val input = createTile(Array(
         1.2,1.3,1.1,1.4,
         2.4,2.1,2.5,2.2,

@@ -29,6 +29,9 @@ object S3RasterCatalog {
   private def layerPath(layerId: LayerId) = 
     s"${layerId.name}/${layerId.zoom}"  
 
+  def apply(bucket: String)(implicit sc: SparkContext): S3RasterCatalog =
+    apply(bucket, "", defaultS3Client)
+
   def apply(bucket: String, rootPath: String, s3client: () => S3Client = defaultS3Client)
     (implicit sc: SparkContext): S3RasterCatalog = {
     
@@ -86,11 +89,7 @@ class S3RasterCatalog(
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
         rdd.persist()
 
-        val path = 
-          if (subDir != "")
-            s"${rootPath}/${subDir}/${layerPath(layerId)}"
-          else
-            s"${rootPath}/${layerPath(layerId)}"
+        val path = List(rootPath, subDir, layerPath(layerId)).filter(_.nonEmpty).mkString("/")
 
         val md = S3LayerMetaData(
             layerId = layerId,

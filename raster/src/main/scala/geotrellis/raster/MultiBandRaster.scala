@@ -1,7 +1,6 @@
 package geotrellis.raster
 
 import geotrellis.raster.reproject._
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
