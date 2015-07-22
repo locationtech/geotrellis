@@ -95,7 +95,7 @@ make_url () {
   category="$2"
   version="$3"
   
-  echo "http://typesafe.artifactoryonline.com/typesafe/ivy-$category/$groupid/sbt-launch/$version/sbt-launch.jar"
+  echo "http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/$version/sbt-launch.jar"
 }
 
 declare -r default_jvm_opts="-Dfile.encoding=UTF8"
