@@ -370,7 +370,7 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-spark",
       fork := true,
-      parallelExecution in Test := false,
+      parallelExecution in ThisBuild := false,
       javaOptions ++= List(
         "-Xmx8G",
         s"-Djava.library.path=${Environment.javaGdalDir}",
