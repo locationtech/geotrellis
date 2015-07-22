@@ -31,6 +31,16 @@ object MultiPoint {
   def apply(ps: Traversable[Point]): MultiPoint =
     MultiPoint(factory.createMultiPoint(ps.map(_.jtsGeom).toArray))
 
+  def apply(ps: Array[Point]): MultiPoint = {
+    val len = ps.length
+    val arr = Array.ofDim[jts.Point](len)
+    cfor(0)(_ < len, _ + 1) { i =>
+      arr(i) = ps(i).jtsGeom
+    }
+
+    MultiPoint(factory.createMultiPoint(arr))
+  }
+
   def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): MultiPoint =
     MultiPoint(factory.createMultiPoint(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray))
 

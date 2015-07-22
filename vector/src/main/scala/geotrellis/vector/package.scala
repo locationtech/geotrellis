@@ -88,10 +88,13 @@ package object vector extends SeqMethods {
   }
 
   implicit def seqPointToMultiPoint(ps: Seq[Point]): MultiPoint = MultiPoint(ps)
+  implicit def arrayPointToMultiPoint(ps: Array[Point]): MultiPoint = MultiPoint(ps)
 
   implicit def seqLineToMultiLine(ps: Seq[Line]): MultiLine = MultiLine(ps)
+  implicit def arrayLineToMultiLine(ps: Array[Line]): MultiLine = MultiLine(ps)
 
   implicit def seqPolygonToMultiPolygon(ps: Seq[Polygon]): MultiPolygon = MultiPolygon(ps)
+  implicit def arrayPolygonToMultiPolygon(ps: Array[Polygon]): MultiPolygon = MultiPolygon(ps)
 
   implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection = {
     val points = mutable.ListBuffer[Point]()
