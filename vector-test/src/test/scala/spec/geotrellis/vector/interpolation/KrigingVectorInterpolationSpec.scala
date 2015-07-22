@@ -34,7 +34,8 @@ with TestEngine{
       val points : Seq[PointFeature[Double]] = generateLogPoints(collection.getAllPointFeatures[Double]())
       val testPointFeatures : Seq[PointFeature[Double]] = Seq{PointFeature(Point(659000, 586000), 3.0488)}
       val testPoints: Array[Point] = Array.tabulate(testPointFeatures.length){i => testPointFeatures(i).geom}
-      val sv: Double => Double = Semivariogram(points, 30000, 0, Spherical)
+      //val sv: Double => Double = Semivariogram(points, 30000, 0, Spherical)
+      val sv: Double => Double = NonLinearSemivariogram(points, 30000, 0, Spherical)
       val svParam: Array[Double] = Array(Semivariogram.r, Semivariogram.s, Semivariogram.a)
       val krigingVal: Array[(Double, Double)] = new KrigingSimple(points, 5000, svParam, Spherical).predict(testPoints)
       val E = 1e-4
@@ -59,7 +60,8 @@ with TestEngine{
       val points : Seq[PointFeature[Double]] = generateLogPoints(collection.getAllPointFeatures[Double]())
       val testPointFeatures : Seq[PointFeature[Double]] = Seq{PointFeature(Point(659000, 586000), 3.0461)}
       val testPoints: Array[Point] = Array.tabulate(testPointFeatures.length){i => testPointFeatures(i).geom}
-      val sv: Double => Double = Semivariogram(points, 30000, 0, Spherical)
+      //val sv: Double => Double = Semivariogram(points, 30000, 0, Spherical)
+      val sv: Double => Double = NonLinearSemivariogram(points, 30000, 0, Spherical)
       val svParam: Array[Double] = Array(Semivariogram.r, Semivariogram.s, Semivariogram.a)
       val krigingVal: Array[(Double, Double)] = new KrigingOrdinary(points, 5000, sv, svParam, Spherical).predict(testPoints)
       val E = 1e-4
@@ -85,7 +87,8 @@ with TestEngine{
       val points : Seq[PointFeature[Double]] = collection.getAllPointFeatures[Double]()
       val testPointFeatures : Seq[PointFeature[Double]] = Seq{PointFeature(Point(659000, 586000), 3.0461)}
       val testPoints: Array[Point] = Array.tabulate(testPointFeatures.length){i => testPointFeatures(i).geom}
-      val sv: Double => Double = Semivariogram(points, 0, 0, Spherical)
+      //val sv: Double => Double = Semivariogram(points, 0, 0, Spherical)
+      val sv: Double => Double = NonLinearSemivariogram(points, 0, 0, Spherical)
       val svParam: Array[Double] = Array(Semivariogram.r, Semivariogram.s, Semivariogram.a)
       println("The cobalt values are : " + svParam.mkString(" "))
       /*val krigingVal: Array[(Double, Double)] = new KrigingOrdinary(points, 5000, sv, svParam, Spherical).predict(testPoints)

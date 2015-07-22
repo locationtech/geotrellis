@@ -48,7 +48,8 @@ class KrigingInterpolationSpec extends FunSpec
       val radius: Option[Double] = Some(6)
       val lag = 2
       val chunkSize = 100
-      val semivariogram: Double => Double = Semivariogram(points, 0, 0, Spherical)
+      //val semivariogram: Double => Double = Semivariogram(points, 0, 0, Spherical)
+      val semivariogram: Double => Double = NonLinearSemivariogram(points, 0, 0, Spherical)
       val objectPredictor = new KrigingSimple(points, 0, Array(1, 1, 1), Spherical)
       val predictValue = objectPredictor.predict(Array(Point(1.0, 1.0)))
       val result = KrigingInterpolation(objectPredictor, points, re, radius, chunkSize, lag, Linear)
