@@ -2,7 +2,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.spark.testfiles._
-
+import geotrellis.spark.op.local._
 import org.scalatest.FunSpec
 
 class RasterRDDSpec extends FunSpec
@@ -15,7 +15,7 @@ class RasterRDDSpec extends FunSpec
     ifCanRunSpark {
 
       it("should find integer min/max of AllOnesTestFile") {
-        val ones: RasterRDD[SpatialKey] = AllOnesTestFile
+        val ones = AllOnesTestFile
         val (min, max) = ones.minMax
 
         min should be (1)

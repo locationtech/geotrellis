@@ -13,7 +13,7 @@ import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
 
 import scala.reflect.ClassTag
 
-abstract class RasterRDDReader[K: ClassTag] {
+abstract class RasterRDDReader[K: ClassTag, T: ClassTag] {
 
   def getCube(
     job: Job,
@@ -28,7 +28,7 @@ abstract class RasterRDDReader[K: ClassTag] {
     index: KeyIndex[K]
   )(layerId: LayerId, 
     queryKeyBounds: Seq[KeyBounds[K]]
-  )(implicit sc: SparkContext): RasterRDD[K] = {
+  )(implicit sc: SparkContext): RasterRDD[K, T] = {
     val AccumuloLayerMetaData(_, rasterMetaData, tileTable) = metadata
 
     val tileRdd = 
@@ -41,15 +41,8 @@ abstract class RasterRDDReader[K: ClassTag] {
       }
       .reduce(_ union _)
       .map { case (akey, value) =>
-        val (key, tileBytes) = KryoSerializer.deserialize[(K, Array[Byte])](value.get)
-        val tile =
-          ArrayTile.fromBytes(
-            tileBytes,
-            rasterMetaData.cellType,
-            rasterMetaData.tileLayout.tileCols,
-            rasterMetaData.tileLayout.tileRows)
-        (key, tile: Tile)
-
+        val (key, tile) = KryoSerializer.deserialize[(K, T)](value.get)
+        (key, tile)
       }
 
     new RasterRDD(tileRdd, rasterMetaData)

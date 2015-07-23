@@ -27,7 +27,7 @@ import scalaz.concurrent.Task
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
+abstract class RasterRDDWriter[K: Boundable: ClassTag, T: ClassTag] extends LazyLogging {
   val encodeKey: (K, KeyIndex[K], Int) => String
 
   def write(
@@ -37,7 +37,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K],
     clobber: Boolean)
-  (layerId: LayerId, rdd: RasterRDD[K])
+  (layerId: LayerId, rdd: RasterRDD[K, T])
   (implicit sc: SparkContext): Unit = {
     // TODO: Check if I am clobbering things        
     logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
@@ -60,7 +60,7 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
             if (iter.hasNext) {
               val row = iter.next
               val index = keyIndex.toIndex(row._1) 
-              val bytes = KryoSerializer.serialize[(K, Tile)](row)
+              val bytes = KryoSerializer.serialize[(K, T)](row)
               val metadata = new ObjectMetadata()
               metadata.setContentLength(bytes.length)
               val is = new ByteArrayInputStream(bytes)

@@ -3,50 +3,51 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.op.local._
+import geotrellis.raster.Tile
 
 trait LocalRasterRDDSeqMethods[K] extends RasterRDDSeqMethods[K] {
 
-  private def r(f: Traversable[(K, Tile)] => (K, Tile)): RasterRDD[K] =
+  private def r(f: Traversable[(K, Tile)] => (K, Tile)): RasterRDD[K, Tile] =
     rasterRDDs.headOption match {
       case Some(head) => head.combinePairs(rasterRDDs.tail.toSeq)(f)
       case None => sys.error("raster rdd operations can't be applied to empty seq!")
     }
 
-  def localAdd: RasterRDD[K] = r {
+  def localAdd: RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Add(tiles.map(_.tile)))
   }
 
   /** Gives the count of unique values at each location in a set of Tiles.*/
-  def localVariety: RasterRDD[K] = r {
+  def localVariety: RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Variety(tiles.map(_.tile)))
   }
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean: RasterRDD[K] = r {
+  def localMean: RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Mean(tiles.map(_.tile)))
   }
 
-  def localMin: RasterRDD[K] = r {
+  def localMin: RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Min(tiles.map(_.tile)))
   }
 
-  def localMinN(n: Int): RasterRDD[K] = r {
+  def localMinN(n: Int): RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, MinN(n, tiles.map(_.tile)))
   }
 
-  def localMax: RasterRDD[K] = r {
+  def localMax: RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Max(tiles.map(_.tile)))
   }
 
-  def localMaxN(n: Int): RasterRDD[K] = r {
+  def localMaxN(n: Int): RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, MaxN(n, tiles.map(_.tile)))
   }
 
-  def localMinority(n: Int = 0): RasterRDD[K] = r {
+  def localMinority(n: Int = 0): RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Minority(n, tiles.map(_.tile)))
   }
 
-  def localMajority(n: Int = 0): RasterRDD[K] = r {
+  def localMajority(n: Int = 0): RasterRDD[K, Tile] = r {
     case tiles => (tiles.head.id, Majority(n, tiles.map(_.tile)))
   }
 }

@@ -12,7 +12,7 @@ trait MajorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the
     * most numerous.
     */
-  def localMajority(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
+  def localMajority(others: Traversable[RasterRDD[K, Tile]]): RasterRDD[K, Tile] =
     rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Majority(tiles.map(_.tile)))
@@ -21,13 +21,13 @@ trait MajorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the
     * most numerous.
     */
-  def localMajority(rs: RasterRDD[K]*): RasterRDD[K] =
+  def localMajority(rs: RasterRDD[K, Tile]*): RasterRDD[K, Tile] =
     localMajority(rs)
   /**
     * Assigns to each cell the value within the given rasters that is the
     * nth most numerous.
     */
-  def localMajority(n: Int, others: Traversable[RasterRDD[K]]): RasterRDD[K] =
+  def localMajority(n: Int, others: Traversable[RasterRDD[K, Tile]]): RasterRDD[K, Tile] =
     rasterRDD.combinePairs(others.toSeq) {
       case tiles =>
         (tiles.head.id, Majority(n, tiles.map(_.tile)))
@@ -37,6 +37,6 @@ trait MajorityRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the
     * nth most numerous.
     */
-  def localMajority(n: Int, rs: RasterRDD[K]*): RasterRDD[K] =
+  def localMajority(n: Int, rs: RasterRDD[K, Tile]*): RasterRDD[K, Tile] =
     localMajority(n, rs)
 }

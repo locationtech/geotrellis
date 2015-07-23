@@ -1,5 +1,6 @@
 package geotrellis.spark.ingest
 
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.cmd.args._
 import geotrellis.spark.io.accumulo._
@@ -27,14 +28,14 @@ object AccumuloPyramidCommand extends ArgMain[AccumuloPyramidArgs] with Logging 
     val catalog = AccumuloRasterCatalog()
 
   
-    val writer = catalog.writer[SpatialKey](RowMajorKeyIndexMethod, args.table)
+    val writer = catalog.writer[SpatialKey, Tile](RowMajorKeyIndexMethod, args.table)
 
-    val rdd = catalog.query[SpatialKey](LayerId(args.layerName, args.startLevel)).toRDD
+    val rdd = catalog.query[SpatialKey, Tile](LayerId(args.layerName, args.startLevel)).toRDD
 
     val layoutScheme = ZoomedLayoutScheme(256)
     val level = layoutScheme.levelFor(args.startLevel)
 
-    val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
+    val save = { (rdd: RasterRDD[SpatialKey, Tile], level: LayoutLevel) =>
       writer.write(LayerId(args.layerName, level.zoom), rdd)
     }
   }

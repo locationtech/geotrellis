@@ -50,7 +50,7 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         it("should succeed saving with default Props"){
           catalog
-            .writer[SpatialKey](RowMajorKeyIndexMethod)
+            .writer[SpatialKey, Tile](RowMajorKeyIndexMethod)
             .write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "ones")))
         }
@@ -62,35 +62,35 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         it("should succeed saving with single path Props"){
           catalog
-            .writer[SpatialKey](RowMajorKeyIndexMethod, "sub1")
+            .writer[SpatialKey, Tile](RowMajorKeyIndexMethod, "sub1")
             .write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/ones")))
         }
 
         it("should succeed saving with double path Props"){
           catalog
-            .writer[SpatialKey](RowMajorKeyIndexMethod, "sub1/sub2")
+            .writer[SpatialKey, Tile](RowMajorKeyIndexMethod, "sub1/sub2")
             .write(LayerId("ones", level.zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
         }
 
         it("should load out saved tiles") {
-          val rdd = catalog.read[SpatialKey](LayerId("ones", 10))
+          val rdd = catalog.read[SpatialKey, Tile](LayerId("ones", level.zoom))
           rdd.count should be > 0l
           rdd.map(_._1).collect().toSet shouldEqual onesRdd.map(_._1).collect().toSet
         }
 
         it("should succeed loading with single path Props"){
-          catalog.query[SpatialKey](LayerId("ones", level.zoom)).toRDD.count should be > 0l
+          catalog.query[SpatialKey, Tile](LayerId("ones", level.zoom)).toRDD.count should be > 0l
         }
 
         it("should succeed loading with double path Props"){
-          catalog.query[SpatialKey](LayerId("ones", level.zoom)).toRDD.count should be > 0l
+          catalog.query[SpatialKey, Tile](LayerId("ones", level.zoom)).toRDD.count should be > 0l
         }
 
         it("should load out saved tiles, but only for the right zoom"){
           intercept[LayerNotFoundError] {
-            catalog.query[SpatialKey](LayerId("ones", 9)).toRDD.count()
+            catalog.query[SpatialKey, Tile](LayerId("ones", 9)).toRDD.count()
           }
         }
 
@@ -102,13 +102,13 @@ class HadoopRasterCatalogSpec extends FunSpec
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = catalog
-            .query[SpatialKey](layerId)
+            .query[SpatialKey, Tile](layerId)
             .toRDD
             .collect.filter { case (key, _) =>
               queryKeyBounds.includeKey(key)
             }
           val filteredRdd = catalog
-            .query[SpatialKey](LayerId("ones", 10))
+            .query[SpatialKey, Tile](LayerId("ones", 10))
             .where(Intersects(tileBounds))
             .toRDD
 
@@ -119,8 +119,8 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("should filter out the correct keys") {
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,611,915,613)        
-          val unfiltered = catalog.query[SpatialKey](layerId).toRDD
-          val filtered = catalog.query[SpatialKey](layerId).where(Intersects(tileBounds)).toRDD
+          val unfiltered = catalog.query[SpatialKey, Tile](layerId).toRDD
+          val filtered = catalog.query[SpatialKey, Tile](layerId).where(Intersects(tileBounds)).toRDD
 
           val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
@@ -142,8 +142,8 @@ class HadoopRasterCatalogSpec extends FunSpec
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
           val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
-          val unfiltered = catalog.query[SpatialKey](layerId).toRDD
-          val filtered = catalog.read[SpatialKey](layerId, query)
+          val unfiltered = catalog.query[SpatialKey, Tile](layerId).toRDD
+          val filtered = catalog.read[SpatialKey, Tile](layerId, query)
 
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
           val expected = unfiltered.collect.filter { case (key, value) => 
@@ -161,9 +161,9 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         it("should be able to combine pairs via Traversable"){
           val tileBounds = GridBounds(915,611,917,616)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
-          val rdd3 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd1 = catalog.query[SpatialKey, Tile](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey, Tile](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd3 = catalog.query[SpatialKey, Tile](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
 
           val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
             pairs.toSeq.reverse.head
@@ -179,11 +179,11 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("should load one tile") {
           val key = SpatialKey(915,612)
 
-          val unfiltered = catalog.query[SpatialKey](LayerId("ones", 10)).toRDD
+          val unfiltered = catalog.query[SpatialKey, Tile](LayerId("ones", 10)).toRDD
           val (_, expected) = unfiltered.collect.filter { case (k, _) => k == key }.head
 
 
-          val getTile = catalog.tileReader[SpatialKey](LayerId("ones", 10))
+          val getTile = catalog.tileReader[SpatialKey, Tile](LayerId("ones", 10))
           val actual = getTile(key)
 
           tilesEqual(actual, expected)
@@ -224,7 +224,7 @@ class HadoopRasterCatalogSpec extends FunSpec
 
       RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpatialKey](test.layerId, test.query)
+          val rdd = catalog.read[SpatialKey, Tile](test.layerId, test.query)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
       }
@@ -236,14 +236,14 @@ class HadoopRasterCatalogSpec extends FunSpec
       it("ZCurveKeyIndexMethod.byYear") {
         val coordST = CoordinateSpaceTime
         catalog
-          .writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear)
+          .writer[SpaceTimeKey, Tile](ZCurveKeyIndexMethod.byYear)
           .write(LayerId("coordinates", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)        
+        rastersEqual(catalog.query[SpaceTimeKey, Tile](LayerId("coordinates", 10)).toRDD, coordST)        
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it("ZCurveKeyIndexMethod.byYear: " + test.name){          
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = catalog.read[SpaceTimeKey, Tile](test.layerId, test.query)
           val found = rdd.map(_._1).collect
           info(s"missing: ${(test.expected diff found).toVector}")
           info(s"unwanted: ${(found diff test.expected).toVector}")
@@ -257,16 +257,16 @@ class HadoopRasterCatalogSpec extends FunSpec
         val tIndex = (x: DateTime) =>  if (x < DateTime.now) 1 else 0
 
         catalog
-          .writer[SpaceTimeKey](ZCurveKeyIndexMethod.by(tIndex))
+          .writer[SpaceTimeKey, Tile](ZCurveKeyIndexMethod.by(tIndex))
           .write(LayerId("coordinates", 10), coordST)
 
-        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD
+        val rdd = catalog.query[SpaceTimeKey, Tile](LayerId("coordinates", 10)).toRDD
         rastersEqual(rdd, coordST)
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it("ZCurveKeyIndexMethod.by(DateTime => Int): " + test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = catalog.read[SpaceTimeKey, Tile](test.layerId, test.query)
           val found = rdd.map(_._1).collect()
           info(s"missing: ${(test.expected diff found).toVector}")
           info(s"unwanted: ${(found diff test.expected).toVector}")
@@ -280,14 +280,14 @@ class HadoopRasterCatalogSpec extends FunSpec
         val now = DateTime.now
 
         catalog
-          .writer[SpaceTimeKey](HilbertKeyIndexMethod(now - 20.years, now, 4))
+          .writer[SpaceTimeKey, Tile](HilbertKeyIndexMethod(now - 20.years, now, 4))
           .write(LayerId("coordinates", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+        rastersEqual(catalog.query[SpaceTimeKey, Tile](LayerId("coordinates", 10)).toRDD, coordST)
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it("HilbertKeyIndexMethod with min, max, and resolution" + test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = catalog.read[SpaceTimeKey, Tile](test.layerId, test.query)
           val found = rdd.map(_._1).collect()
           info(s"missing: ${(test.expected diff found).toVector}")
           info(s"unwanted: ${(found diff test.expected).toVector}")
@@ -301,14 +301,14 @@ class HadoopRasterCatalogSpec extends FunSpec
         val now = DateTime.now
 
         catalog
-          .writer[SpaceTimeKey](HilbertKeyIndexMethod(2))
+          .writer[SpaceTimeKey, Tile](HilbertKeyIndexMethod(2))
           .write(LayerId("coordinates", 10), coordST)
-        rastersEqual(catalog.query[SpaceTimeKey](LayerId("coordinates", 10)).toRDD, coordST)
+        rastersEqual(catalog.query[SpaceTimeKey, Tile](LayerId("coordinates", 10)).toRDD, coordST)
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it("HilbertKeyIndexMethod with only resolution" + test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = catalog.read[SpaceTimeKey, Tile](test.layerId, test.query)
           val found = rdd.map(_._1).collect()
           info(s"missing: ${(test.expected diff found).toVector}")
           info(s"unwanted: ${(found diff test.expected).toVector}")

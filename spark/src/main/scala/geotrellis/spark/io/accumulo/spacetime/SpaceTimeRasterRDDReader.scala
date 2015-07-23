@@ -23,8 +23,9 @@ import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
+import scala.reflect.ClassTag
 
-object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
+class SpaceTimeRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpaceTimeKey, T] {
   def getCube(
     job: Job,
     layerId: LayerId,

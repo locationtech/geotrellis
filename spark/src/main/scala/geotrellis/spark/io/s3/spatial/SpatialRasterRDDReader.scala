@@ -3,13 +3,13 @@ package geotrellis.spark.io.s3.spatial
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.spark.io.index._
-
+import scala.reflect.ClassTag
 import geotrellis.spark.io.s3._
 import org.apache.spark.SparkContext
 import com.typesafe.scalalogging.slf4j._
 import scala.util.matching.Regex  
 
-object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] with LazyLogging {
+class SpatialRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpatialKey, T] with LazyLogging {
   val tileIdRx: Regex = """.+\/(\d+)""".r
 
   val indexToPath = encodeIndex

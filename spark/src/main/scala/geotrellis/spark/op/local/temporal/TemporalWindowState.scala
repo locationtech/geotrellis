@@ -1,7 +1,7 @@
 package geotrellis.spark.op.local.temporal
 
 import geotrellis.spark._
-
+import geotrellis.raster.Tile
 import org.joda.time.{DateTimeZone, DateTime}
 
 import reflect.ClassTag
@@ -37,7 +37,7 @@ object TemporalWindowHelper {
 }
 
 case class TemporalWindowState[K](
-  rasterRDD: RasterRDD[K],
+  rasterRDD: RasterRDD[K, Tile],
   method: Int,
   windowSize: Option[Int] = None,
   unit: Option[Int] = None,
@@ -65,7 +65,7 @@ case class TemporalWindowState[K](
     if (state != 1) badState
     else copy(start = Some(s))
 
-  def to(to: DateTime): RasterRDD[K] =
+  def to(to: DateTime): RasterRDD[K, Tile] =
     if (state != 2) badState
     else method match {
       case Average => rasterRDD.temporalMean(windowSize.get, unit.get, start.get, to)

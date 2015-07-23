@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
-import geotrellis.raster.GridBounds
+import geotrellis.raster._
 
 import org.scalatest._
 
@@ -21,7 +21,7 @@ class S3RasterCatalogSpec extends FunSpec
       val catalog = S3RasterCatalog("climate-catalog", "catalog3", () => new MockS3Client )
 
       it("should save to s3"){
-        catalog.writer[SpatialKey](ZCurveKeyIndexMethod).write(id, AllOnesTestFile)
+        catalog.writer[SpatialKey, Tile](ZCurveKeyIndexMethod).write(id, AllOnesTestFile)
       }
 
       it("should know when layer exists"){
@@ -30,7 +30,7 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should load from s3"){
-        val rdd = catalog.query[SpatialKey](id).toRDD
+        val rdd = catalog.query[SpatialKey, Tile](id).toRDD
         rdd.count should equal (42)
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
@@ -38,7 +38,7 @@ class S3RasterCatalogSpec extends FunSpec
 
       it("should be able to filter?"){
         val rdd = catalog
-          .query[SpatialKey](id)
+          .query[SpatialKey, Tile](id)
           .where(Intersects(GridBounds(2, 2, 3, 3)))
           .toRDD
           
@@ -50,20 +50,20 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should load out saved tiles") {
-        val rdd = catalog.read[SpatialKey](id)
+        val rdd = catalog.read[SpatialKey, Tile](id)
         rdd.count should be > 0l
         rdd.map(_._1).collect().toSet shouldEqual rdd.map(_._1).collect().toSet
       }
 
       it("should read a spatial tile"){
-        val reader = catalog.tileReader[SpatialKey](id)
+        val reader = catalog.tileReader[SpatialKey, Tile](id)
 
         val tile = reader(SpatialKey(2,2))
         tile.foreach { x=> x should be (1) }
       }
 
       it("should error on getting a tile that is not there"){
-        val reader = catalog.tileReader[SpatialKey](id)
+        val reader = catalog.tileReader[SpatialKey, Tile](id)
 
         intercept[TileNotFoundError]{
           val tile = reader(SpatialKey(200,200))
@@ -72,7 +72,7 @@ class S3RasterCatalogSpec extends FunSpec
 
       RasterRDDQueryTest.spatialTest.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpatialKey](id, test.query)
+          val rdd = catalog.read[SpatialKey, Tile](id, test.query)
           info(rdd.metaData.gridBounds.toString)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
@@ -80,11 +80,11 @@ class S3RasterCatalogSpec extends FunSpec
 
       val spaceId = LayerId("coordinates", 10)
       it("should save a spacetime layer"){
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, true).write(spaceId, CoordinateSpaceTime)
+        catalog.writer[SpaceTimeKey, Tile](ZCurveKeyIndexMethod.byYear, true).write(spaceId, CoordinateSpaceTime)
       }
 
       it("should load a spacetime layer"){
-        val rdd = catalog.query[SpaceTimeKey](spaceId).toRDD
+        val rdd = catalog.query[SpaceTimeKey, Tile](spaceId).toRDD
         rdd.count should equal (210)
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
@@ -97,7 +97,7 @@ class S3RasterCatalogSpec extends FunSpec
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = catalog.read[SpaceTimeKey, Tile](test.layerId, test.query)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
       }

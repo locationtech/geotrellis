@@ -80,16 +80,16 @@ package object spark {
     def tile: Tile = tup._2
   }
 
-  def asRasterRDD[K: ClassTag](metaData: RasterMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
-    new RasterRDD[K](f, metaData)
+  def asRasterRDD[K: ClassTag, T: ClassTag](metaData: RasterMetaData)(f: =>RDD[(K, T)]): RasterRDD[K, T] =
+    new RasterRDD[K, T](f, metaData)
 
-  implicit class MakeRasterRDD[K: ClassTag](val rdd: RDD[(K, Tile)]) {
+  implicit class MakeRasterRDD[K: ClassTag, T: ClassTag](val rdd: RDD[(K, T)]) {
     def toRasterRDD(metaData: RasterMetaData) =
-      new RasterRDD[K](rdd, metaData)
+      new RasterRDD[K, T](rdd, metaData)
   }
 
-  implicit class RDDTraversableExtensions[K: ClassTag](rs: Traversable[RasterRDD[K]]) {
-    def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RasterRDD[K] =
+  implicit class RDDTraversableExtensions[K: ClassTag, T: ClassTag](rs: Traversable[RasterRDD[K, T]]) {
+    def combinePairs(f: (Traversable[(K, T)] => (K, T))): RasterRDD[K, T] =
       rs.head.combinePairs(rs.tail)(f)
   }
 }

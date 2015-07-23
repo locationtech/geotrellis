@@ -49,7 +49,7 @@ object Tiler {
   def apply[T, K: SpatialComponent: ClassTag]
     (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
     (rdd: RDD[(T, Tile)], metaData: RasterMetaData)
-      : RasterRDD[K] = {
+      : RasterRDD[K, Tile] = {
     val tiles = apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout)
     new RasterRDD(tiles, metaData)
   }
@@ -57,7 +57,7 @@ object Tiler {
   def apply[T: IngestKey, K: SpatialComponent: ClassTag]
     (rdd: RDD[(T, Tile)], metaData: RasterMetaData)
     (createKey: (T, SpatialKey) => K)
-      : RasterRDD[K] = {
+      : RasterRDD[K, Tile] = {
     val getExtent = (inKey: T) => inKey.projectedExtent.extent
     val tiles = apply(getExtent, createKey)(rdd, metaData)
     new RasterRDD(tiles, metaData)
@@ -67,7 +67,7 @@ object Tiler {
     ( rdd: RDD[(Extent, Tile)],
       metaData: RasterMetaData,
       createKey: (Extent, SpatialKey) => K
-    ): RasterRDD[K] =
+    ): RasterRDD[K, Tile] =
   {
     val getExtent = (inKey: Extent) => inKey
     val tiles = apply(getExtent, createKey)(rdd, metaData)

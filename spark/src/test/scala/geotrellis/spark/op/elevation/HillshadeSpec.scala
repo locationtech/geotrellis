@@ -23,7 +23,7 @@ class HillshadeSpec extends FunSpec with TestEnvironment
 
       it("should get the same result on elevation for spark op as single raster op") {
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.hillshade(re.cellSize)
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.hillshade()
+        val sparkOp = (rdd: RasterRDD[SpatialKey, Tile]) => rdd.hillshade()
 
         val path = "aspect.tif"
 

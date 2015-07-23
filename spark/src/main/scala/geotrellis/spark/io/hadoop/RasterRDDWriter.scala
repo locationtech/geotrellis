@@ -17,12 +17,12 @@ import org.apache.hadoop.mapreduce.Job
 
 import scala.reflect._
 
-trait RasterRDDWriter[Key] extends Logging {
+trait RasterRDDWriter[K, T] extends Logging {
   def write(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
-    keyIndex: KeyIndex[Key],
+    keyIndex: KeyIndex[K],
     clobber: Boolean = true)
-  (layerId: LayerId, rdd: RasterRDD[Key])
+  (layerId: LayerId, rdd: RasterRDD[K, T])
   (implicit sc: SparkContext): Unit
 }

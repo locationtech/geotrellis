@@ -25,23 +25,21 @@ import spire.syntax.cfor._
 import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 
-object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
+class SpaceTimeRasterRDDWriter[T] extends RasterRDDWriter[SpaceTimeKey, T] {
   import geotrellis.spark.io.accumulo.stringToText
   
   def rowId(id: LayerId, index: Long): String  = spacetime.rowId (id, index)
   
   def encode(
     layerId: LayerId,
-    raster: RasterRDD[SpaceTimeKey],
+    raster: RasterRDD[SpaceTimeKey, T],
     index: KeyIndex[SpaceTimeKey]
   ): RDD[(Key, Value)] = {
-    def getKey(id: LayerId, key: SpaceTimeKey): Key =
-      new Key(rowId(id, index.toIndex(key)), id.name, timeText(key))
 
     raster
       .map { case (key, tile) => {
-        val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])](key, tile.toBytes)
-        getKey(layerId, key) -> new Value(value)
+        val value = KryoSerializer.serialize[(SpaceTimeKey, T)](key, tile)
+        new Key(spacetime.rowId(layerId, index.toIndex(key)), layerId.name, timeText(key)) -> new Value(value)
       }}
   }
 }

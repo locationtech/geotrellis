@@ -1,5 +1,6 @@
 package geotrellis.spark.ingest
 
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.ingest.NetCDFIngestCommand._
 import geotrellis.spark.tiling._
@@ -37,7 +38,7 @@ object NetCDFIngestHDFSCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
     Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme, args.pyramid, true) { (rdd, level) => 
       catalog
-        .writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, args.clobber)
+        .writer[SpaceTimeKey, Tile](ZCurveKeyIndexMethod.byYear, args.clobber)
         .write(LayerId(args.layerName, level.zoom), rdd)
     }
   }

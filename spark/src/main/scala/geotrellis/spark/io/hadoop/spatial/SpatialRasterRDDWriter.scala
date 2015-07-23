@@ -17,13 +17,13 @@ import org.apache.hadoop.mapreduce.Job
 
 import scala.reflect.ClassTag
 
-object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] with Logging {
+class SpatialRasterRDDWriter[T: ClassTag] extends RasterRDDWriter[SpatialKey, T] with Logging {
   def write(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     keyIndex: KeyIndex[SpatialKey],
     clobber: Boolean = true)
-  (layerId: LayerId, rdd: RasterRDD[SpatialKey])
+  (layerId: LayerId, rdd: RasterRDD[SpatialKey, T])
   (implicit sc: SparkContext): Unit = {
     val layerPath = layerMetaData.path
     val conf = sc.hadoopConfiguration
@@ -65,7 +65,7 @@ object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] with Logging {
     val sortedWritable = {
       // Define methods called within KryoClosure inside a local scope
       rdd
-        .map(KryoClosure { case (key, tile) => (SpatialKeyWritable(closureKeyIndex.toIndex(key), key), TileWritable(tile)) })
+        .map(KryoClosure { case (key, tile) => (SpatialKeyWritable(closureKeyIndex.toIndex(key), key), KryoWritable(tile)) })
         .sortByKey(numPartitions = partitions)
         .cache
     }
@@ -74,7 +74,7 @@ object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] with Logging {
       .saveAsNewAPIHadoopFile(
         layerPath.toUri.toString,
         classOf[SpatialKeyWritable],
-        classOf[TileWritable],
+        classOf[KryoWritable],
         classOf[MapFileOutputFormat],
         job.getConfiguration
     )

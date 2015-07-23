@@ -18,15 +18,17 @@ package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.spark._
 import geotrellis.raster._
+import geotrellis.spark.utils.KryoSerializer
 
 import org.apache.hadoop.io.Writable
 import java.io.{ DataInput, DataOutput }
+import scala.reflect.ClassTag
 
-class TileWritable() extends Writable with Serializable {
+class KryoWritable extends Writable with Serializable {
   private var _bytes: Array[Byte] = Array()
 
-  def set(tile: Tile): Unit = 
-    _bytes = tile.toBytes
+  def set[T: ClassTag](thing: T): Unit = 
+    _bytes = KryoSerializer.serialize[T](thing)
 
   def write(out: DataOutput): Unit = {
     val size = _bytes.size
@@ -40,17 +42,14 @@ class TileWritable() extends Writable with Serializable {
     in.readFully(_bytes, 0, size)
   }
 
-  def toTile(metaData: RasterMetaData): Tile =
-    toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
-
-  def toTile(cellType: CellType, cols: Int, rows: Int): Tile =
-    ArrayTile.fromBytes(_bytes, cellType, cols, rows)
+  def get[T: ClassTag](): T = 
+    KryoSerializer.deserialize[T](_bytes)
 }
 
-object TileWritable {
-  def apply(tile: Tile) = {
-    val tw = new TileWritable
-    tw.set(tile)
+object KryoWritable {
+  def apply[T: ClassTag](thing: T) = {
+    val tw = new KryoWritable
+    tw.set(thing)
     tw
   }
 }

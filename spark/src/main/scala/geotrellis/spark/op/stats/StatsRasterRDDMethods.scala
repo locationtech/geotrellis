@@ -6,10 +6,11 @@ import geotrellis.raster.histogram._
 import geotrellis.spark._
 import org.apache.spark.SparkContext._
 import geotrellis.raster.op.stats._
+import geotrellis.raster.Tile
 
 trait StatsRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
-  def averageByKey: RasterRDD[K] = {
+  def averageByKey: RasterRDD[K, Tile] = {
     val createCombiner = (tile: Tile) => tile -> 1
     val mergeValue = (tup: (Tile, Int), tile2: Tile) => {
       val (tile1, count) = tup

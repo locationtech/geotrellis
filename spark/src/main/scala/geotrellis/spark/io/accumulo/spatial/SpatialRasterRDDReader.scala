@@ -17,8 +17,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConversions._
+import scala.reflect.ClassTag
 
-object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
+class SpatialRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpatialKey, T] {
 
   def getCube(
     job: Job,

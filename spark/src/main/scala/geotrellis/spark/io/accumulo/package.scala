@@ -10,17 +10,18 @@ import org.apache.accumulo.core.data.{Range => ARange, Mutation, Key, Value}
 import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
 
 import scala.collection.JavaConversions._
+import scala.reflect.ClassTag
 
 package object accumulo {
   implicit def stringToText(s: String) = new Text(s)
 
-  implicit lazy val accumuloSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val accumuloSpatialTileReader = spatial.SpatialTileReader
-  implicit lazy val accumuloSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
+  implicit def accumuloSpatialRasterRDDReader[T: ClassTag] = new spatial.SpatialRasterRDDReader[T]
+  implicit def accumuloSpatialTileReader[T: ClassTag] = new spatial.SpatialTileReader[T]
+  implicit def accumuloSpatialRasterRDDWriter[T: ClassTag] = new spatial.SpatialRasterRDDWriter[T]
 
-  implicit lazy val accumuloSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val accumuloSpaceTimeTileReader = spacetime.SpaceTimeTileReader
-  implicit lazy val accumuloSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
+  implicit def accumuloSpaceTimeRasterRDDReader[T: ClassTag] = new spacetime.SpaceTimeRasterRDDReader[T]
+  implicit def accumuloSpaceTimeTileReader[T: ClassTag] = new spacetime.SpaceTimeTileReader[T]
+  implicit def accumuloSpaceTimeRasterRDDWriter[T: ClassTag] = new spacetime.SpaceTimeRasterRDDWriter[T]
 
   implicit class scannerIterator(scan: Scanner) extends Iterator[(Key, Value)] {
     val iter = scan.iterator

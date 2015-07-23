@@ -4,6 +4,7 @@ import geotrellis.spark.{LayerId, KeyBounds}
 import geotrellis.spark.io.index.KeyIndex
 import scala.reflect._
 import scala.util.Try
+import spray.json._
 
 trait AttributeCaching[MetadataType] {
 
@@ -19,14 +20,14 @@ trait AttributeCaching[MetadataType] {
         id,
         attributeStore.read[MetadataType](id, "metadata"))    
   
-  def getLayerKeyBounds[K: ClassTag](id: LayerId)(implicit ev: attributeStore.ReadableWritable[KeyBounds[K]]): KeyBounds[K] =    
+  def getLayerKeyBounds[K](id: LayerId)(implicit ev: attributeStore.ReadableWritable[KeyBounds[K]]): KeyBounds[K] =    
     keyBoundsCache
       .getOrElseUpdate(
         id, 
         attributeStore.read[KeyBounds[K]](id, "keyBounds"))
       .asInstanceOf[KeyBounds[K]]
   
-  def getLayerKeyIndex[K: ClassTag](id: LayerId)(implicit ev: attributeStore.ReadableWritable[KeyIndex[K]]): KeyIndex[K] =
+  def getLayerKeyIndex[K](id: LayerId)(implicit ev: attributeStore.ReadableWritable[KeyIndex[K]]): KeyIndex[K] =
     keyIndexCache
       .getOrElseUpdate(
         id, 
@@ -38,12 +39,12 @@ trait AttributeCaching[MetadataType] {
     metadataCache(id) = metadata
   }
   
-  def setLayerKeyBounds[K: ClassTag](id: LayerId, keyBounds: KeyBounds[K])(implicit ev: attributeStore.ReadableWritable[KeyBounds[K]]) = {
+  def setLayerKeyBounds[K](id: LayerId, keyBounds: KeyBounds[K])(implicit ev: attributeStore.ReadableWritable[KeyBounds[K]]) = {
     attributeStore.write[KeyBounds[K]](id, "keyBounds", keyBounds)
     keyBoundsCache(id) = keyBounds
   }
   
-  def setLayerKeyIndex[K: ClassTag](id: LayerId, keyIndex: KeyIndex[K])(implicit ev: attributeStore.ReadableWritable[KeyIndex[K]])= {
+  def setLayerKeyIndex[K](id: LayerId, keyIndex: KeyIndex[K])(implicit ev: attributeStore.ReadableWritable[KeyIndex[K]])= {
     attributeStore.write[KeyIndex[K]](id, "keyIndex", keyIndex)
     keyIndexCache(id) = keyIndex
   }

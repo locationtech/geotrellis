@@ -32,13 +32,13 @@ import scala.reflect._
 
 package object hadoop {
 
-  implicit lazy val hadoopSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val hadoopSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
-  implicit lazy val hadoopSpatialTileReader = spatial.SpatialTileReader
+  implicit def hadoopSpatialRasterRDDReader[T: ClassTag] = new spatial.SpatialRasterRDDReader[T]
+  implicit def hadoopSpatialRasterRDDWriter[T: ClassTag] = new spatial.SpatialRasterRDDWriter[T]
+  implicit def hadoopSpatialTileReader[T: ClassTag] = new spatial.SpatialTileReader[T]
 
-  implicit lazy val hadoopSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val hadoopSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
-  implicit lazy val hadoopSpaceTimeTileReader = spacetime.SpaceTimeTileReader
+  implicit def hadoopSpaceTimeRasterRDDReader[T: ClassTag] = new spacetime.SpaceTimeRasterRDDReader[T]
+  implicit def hadoopSpaceTimeRasterRDDWriter[T: ClassTag] = new spacetime.SpaceTimeRasterRDDWriter[T]
+  implicit def hadoopSpaceTimeTileReader[T: ClassTag] = new spacetime.SpaceTimeTileReader[T]
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 

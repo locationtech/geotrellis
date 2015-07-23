@@ -31,7 +31,7 @@ trait OpAsserter extends FunSpec
     layoutRows: Int = 3)
     (
       rasterOp: (Tile, RasterExtent) => Tile,
-      sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+      sparkOp: RasterRDD[SpatialKey, Tile] => RasterRDD[SpatialKey, Tile],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
     val tile = ArgReader.read(basePath + path)
@@ -44,7 +44,7 @@ trait OpAsserter extends FunSpec
     layoutRows: Int = 3)
     (
       rasterOp: (Tile, RasterExtent) => Tile,
-      sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+      sparkOp: RasterRDD[SpatialKey, Tile] => RasterRDD[SpatialKey, Tile],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
     val tile = SingleBandGeoTiff(basePath + path).tile
@@ -57,7 +57,7 @@ trait OpAsserter extends FunSpec
     layoutRows: Int = 3)
     (
       rasterOp: (Tile, RasterExtent) => Tile,
-      sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+      sparkOp: RasterRDD[SpatialKey, Tile] => RasterRDD[SpatialKey, Tile],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
     val (rasterRDD, tile) = 
@@ -78,7 +78,7 @@ trait OpAsserter extends FunSpec
     sc: SparkContext,
     input: Tile,
     layoutCols: Int,
-    layoutRows: Int): (RasterRDD[SpatialKey], Tile) = {
+    layoutRows: Int): (RasterRDD[SpatialKey, Tile], Tile) = {
     val (cols, rows) = (input.cols, input.rows)
 
     val tileLayout = 

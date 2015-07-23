@@ -5,17 +5,17 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
-
+import scala.reflect.ClassTag
 import org.apache.spark.SparkContext
 
-object SpatialTileReader extends TileReader[SpatialKey] {
+class SpatialTileReader[T: ClassTag] extends TileReader[SpatialKey, T] {
 
   def read(
     catalogConfig: HadoopRasterCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     index: KeyIndex[SpatialKey],
     keyBounds: KeyBounds[SpatialKey]
-  )(implicit sc: SparkContext): Tile = {
+  )(implicit sc: SparkContext): T = {
     require(keyBounds.minKey == keyBounds.maxKey, s"TileReader expects KeyBounds for single tile, got: $keyBounds")
     
     val path = layerMetaData.path
@@ -32,8 +32,8 @@ object SpatialTileReader extends TileReader[SpatialKey] {
       inputConf,
       classOf[SpatialFilterMapFileInputFormat],
       classOf[SpatialKeyWritable],
-      classOf[TileWritable]
-    ).first._2.toTile(layerMetaData.rasterMetaData)
+      classOf[KryoWritable]
+    ).first._2.get[T]
 
   }
 }

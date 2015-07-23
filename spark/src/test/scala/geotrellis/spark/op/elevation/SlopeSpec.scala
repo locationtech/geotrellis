@@ -19,7 +19,7 @@ class SlopeSpec extends FunSpec with TestEnvironment
 
       it("should match gdal computed slope raster") {
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize)
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.slope()
+        val sparkOp = (rdd: RasterRDD[SpatialKey, Tile]) => rdd.slope()
 
         val path = "aspect.tif"
 

@@ -120,7 +120,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
     }
 
   def focal(n: Neighborhood)
-    (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
+    (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K, Tile] = {
     val sc = rasterRDD.sparkContext
     val bcCalc = sc.broadcast(calc)
     val bcNeighborhood = sc.broadcast(n)
@@ -141,7 +141,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
   }
 
   def focalWithExtent(n: Neighborhood)
-    (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
+    (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K, Tile] = {
     val sc = rasterRDD.sparkContext
     val bcCalc = sc.broadcast(calc)
     val bcNeighborhood = sc.broadcast(n)

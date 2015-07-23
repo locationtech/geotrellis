@@ -17,7 +17,7 @@ import org.joda.time.{DateTimeZone, DateTime}
 import scala.reflect._
 
 // TODO: Refactor the writer and reader logic to abstract over the key type.
-object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Logging {
+class SpaceTimeRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpaceTimeKey, T] with Logging {
 
   def read(
     catalogConfig: HadoopRasterCatalogConfig,
@@ -25,7 +25,7 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
     keyIndex: KeyIndex[SpaceTimeKey],
     keyBounds: KeyBounds[SpaceTimeKey]
   )(layerId: LayerId, queryKeyBounds: Seq[KeyBounds[SpaceTimeKey]])
-  (implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
+  (implicit sc: SparkContext): RasterRDD[SpaceTimeKey, T] = {
     val path = layerMetaData.path
 
     val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
@@ -35,13 +35,13 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val writableRdd: RDD[(SpaceTimeKeyWritable, TileWritable)] =
+    val writableRdd: RDD[(SpaceTimeKeyWritable, KryoWritable)] =
       if(Seq(keyBounds) == queryKeyBounds) {
         sc.newAPIHadoopRDD(
           inputConf,
-          classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, TileWritable]],
+          classOf[SequenceFileInputFormat[SpaceTimeKeyWritable, KryoWritable]],
           classOf[SpaceTimeKeyWritable],
-          classOf[TileWritable]
+          classOf[KryoWritable]
         )
       } else {
         val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
@@ -52,15 +52,15 @@ object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with Loggi
           inputConf,
           classOf[SpaceTimeFilterMapFileInputFormat],
           classOf[SpaceTimeKeyWritable],
-          classOf[TileWritable]
+          classOf[KryoWritable]
         )
       }
 
       val rasterMetaData = layerMetaData.rasterMetaData
-
+      val classTagT = implicitly[ClassTag[T]]
       asRasterRDD(rasterMetaData) {
         writableRdd.map  { case (keyWritable, tileWritable) =>
-          (keyWritable.get._2, tileWritable.toTile(rasterMetaData))
+          (keyWritable.get._2, tileWritable.get[T]()(classTagT))
         }
       }
   }

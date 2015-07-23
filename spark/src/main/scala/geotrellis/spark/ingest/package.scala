@@ -10,7 +10,7 @@ import geotrellis.spark._
 import spire.syntax.cfor._
 
 package object ingest {
-  type Tiler[T, K] = (RDD[(T, Tile)], RasterMetaData) => RasterRDD[K]
+  type Tiler[T, K] = (RDD[(T, Tile)], RasterMetaData) => RasterRDD[K, Tile]
   type IngestKey[T] = KeyComponent[T, ProjectedExtent]
 
   implicit class IngestKeyWrapper[T: IngestKey](key: T) {

@@ -9,10 +9,10 @@ import org.apache.spark.SparkContext
 import com.typesafe.scalalogging.slf4j._
 import com.github.nscala_time.time.Imports._
 import scala.util.matching.Regex
-
+import scala.reflect.ClassTag
 import scala.collection.mutable
 
-object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] with LazyLogging {
+class SpaceTimeRasterRDDReader[T: ClassTag] extends RasterRDDReader[SpaceTimeKey, T] with LazyLogging {
   val tileIdRx: Regex = """.+\/(\d+)-\d{4}.+$""".r    
 
   val indexToPath = encodeIndex

@@ -8,11 +8,8 @@ import geotrellis.raster._
 import geotrellis.spark._
 
 import org.apache.spark.rdd._
-
 import org.apache.spark.SparkContext._
-
 import spire.syntax.cfor._
-
 import collection.immutable.HashMap
 
 trait ZonalRasterRDDMethods[K] extends RasterRDDMethods[K] {
@@ -30,12 +27,12 @@ trait ZonalRasterRDDMethods[K] extends RasterRDDMethods[K] {
     res
   }
 
-  def zonalHistogram(zonesRasterRDD: RasterRDD[K]): Map[Int, Histogram] =
+  def zonalHistogram(zonesRasterRDD: RasterRDD[K, Tile]): Map[Int, Histogram] =
     rasterRDD.join(zonesRasterRDD)
       .map((t: (K, (Tile, Tile))) => ZonalHistogram(t._2._1, t._2._2))
       .fold(Map[Int, Histogram]())(mergeMaps)
 
-  def zonalPercentage(zonesRasterRDD: RasterRDD[K]): RasterRDD[K] = {
+  def zonalPercentage(zonesRasterRDD: RasterRDD[K, Tile]): RasterRDD[K, Tile] = {
     val sc = rasterRDD.sparkContext
     val zoneHistogramMap = zonalHistogram(zonesRasterRDD)
     val zoneSumMap = zoneHistogramMap.map { case (k, v) => k -> v.getTotalCount }

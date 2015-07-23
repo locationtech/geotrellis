@@ -18,33 +18,34 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.Multiply
+import geotrellis.raster.Tile
 
 trait MultiplyRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Multiply a constant value from each cell.*/
-  def localMultiply(i: Int): RasterRDD[K] =
+  def localMultiply(i: Int): RasterRDD[K, Tile] =
     rasterRDD.mapPairs { case (t, r) => (t, Multiply(r, i)) }
   /** Multiply a constant value from each cell.*/
-  def *(i: Int): RasterRDD[K] = localMultiply(i)
+  def *(i: Int): RasterRDD[K, Tile] = localMultiply(i)
   /** Multiply a constant value from each cell.*/
-  def *:(i: Int): RasterRDD[K] = localMultiply(i)
+  def *:(i: Int): RasterRDD[K, Tile] = localMultiply(i)
   /** Multiply a double constant value from each cell.*/
-  def localMultiply(d: Double): RasterRDD[K] =
+  def localMultiply(d: Double): RasterRDD[K, Tile] =
     rasterRDD.mapPairs { case (t, r) => (t, Multiply(r, d)) }
   /** Multiply a double constant value from each cell.*/
-  def *(d: Double): RasterRDD[K] = localMultiply(d)
+  def *(d: Double): RasterRDD[K, Tile] = localMultiply(d)
   /** Multiply a double constant value from each cell.*/
-  def *:(d: Double): RasterRDD[K] = localMultiply(d)
+  def *:(d: Double): RasterRDD[K, Tile] = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(other: RasterRDD[K]): RasterRDD[K] =
+  def localMultiply(other: RasterRDD[K, Tile]): RasterRDD[K, Tile] =
     rasterRDD.combineTiles(other) { case (t1, t2) => Multiply(t1, t2) }
   /** Multiply the values of each cell in each raster. */
-  def *(other: RasterRDD[K]): RasterRDD[K] = localMultiply(other)
+  def *(other: RasterRDD[K, Tile]): RasterRDD[K, Tile] = localMultiply(other)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(others: Seq[RasterRDD[K]]): RasterRDD[K] =
+  def localMultiply(others: Seq[RasterRDD[K, Tile]]): RasterRDD[K, Tile] =
     rasterRDD.combinePairs(others) {
       case tiles =>
         (tiles.head.id, Multiply(tiles.map(_.tile)))
     }
   /** Multiply the values of each cell in each raster. */
-  def *(others: Seq[RasterRDD[K]]): RasterRDD[K] = localMultiply(others)
+  def *(others: Seq[RasterRDD[K, Tile]]): RasterRDD[K, Tile] = localMultiply(others)
 }

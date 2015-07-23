@@ -20,25 +20,24 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable
 
 import spire.syntax.cfor._
-
+import scala.reflect.ClassTag
 import scala.collection.JavaConversions._
 
-object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
-  import geotrellis.spark.io.accumulo.stringToText
+class SpatialRasterRDDWriter[T: ClassTag] extends RasterRDDWriter[SpatialKey, T] {
   def rowId(id: LayerId, index: Long): String  = spatial.rowId (id, index)
-  
+
   def encode(
     layerId: LayerId,
-    raster: RasterRDD[SpatialKey],
+    raster: RasterRDD[SpatialKey, T],
     index: KeyIndex[SpatialKey]
   ): RDD[(Key, Value)] = {
-    def getKey(id: LayerId, key: SpatialKey): Key =
-      new Key(rowId(id, index.toIndex(key)), id.name)
-
+    val classTagT = implicitly[ClassTag[(SpatialKey, T)]]
+    val id = layerId
+    val idx = index
     raster      
       .map { case (key, tile) => {
-        val value = KryoSerializer.serialize[(SpatialKey, Array[Byte])](key, tile.toBytes)
-        getKey(layerId, key) -> new Value(value)
+        val value = KryoSerializer.serialize[(SpatialKey, T)](key, tile)(classTagT)
+        new Key(spatial.rowId(layerId, idx.toIndex(key))) -> new Value(value)
       }}
   }
 }

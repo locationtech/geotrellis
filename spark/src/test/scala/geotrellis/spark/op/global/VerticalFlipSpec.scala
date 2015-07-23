@@ -19,7 +19,7 @@ class VerticalFlipSpec extends FunSpec with TestEnvironment
 
       it("should perform as the non-distributed raster operation") {
         val rasterOp = (tile: Tile, re: RasterExtent) => tile.verticalFlip
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.verticalFlip
+        val sparkOp = (rdd: RasterRDD[SpatialKey, Tile]) => rdd.verticalFlip
 
         val path = "aspect.tif"
 

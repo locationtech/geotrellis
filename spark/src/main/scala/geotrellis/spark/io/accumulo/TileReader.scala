@@ -16,7 +16,7 @@ import org.apache.accumulo.core.data.{Range => ARange, Value}
 import scala.collection.JavaConversions._
 
 
-trait TileReader[K] {
+trait TileReader[K, T] {
   def collectTile(
     instance: AccumuloInstance,
     layerId: LayerId,
@@ -30,7 +30,7 @@ trait TileReader[K] {
     layerId: LayerId,
     accumuloLayerMetaData: AccumuloLayerMetaData,
     index: KeyIndex[K]
-  )(key: K): Tile = {
+  )(key: K): T = {
     val AccumuloLayerMetaData(_, rasterMetaData, tileTable) = accumuloLayerMetaData
     val values = collectTile(instance, layerId, index, tileTable, key)
     val value =
@@ -42,13 +42,7 @@ trait TileReader[K] {
         values.head
       }
 
-    val (_, tileBytes) = KryoSerializer.deserialize[(K, Array[Byte])](value.get)
-
-    ArrayTile.fromBytes(
-      tileBytes,
-      rasterMetaData.cellType,
-      rasterMetaData.tileLayout.tileCols,
-      rasterMetaData.tileLayout.tileRows
-    )
+    val (_, tile) = KryoSerializer.deserialize[(K, T)](value.get)
+    tile
   }
 }
