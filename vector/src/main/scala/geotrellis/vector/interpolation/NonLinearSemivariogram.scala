@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2015 Azavea.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.vector.interpolation
 
 import geotrellis.vector._
@@ -344,25 +360,25 @@ object NonLinearSemivariogram {
       }
   }
 
-  def apply(svParam: Array[Double], model: ModelType): Double => Double = {
+  def apply(svParam: Array[Double], model: ModelType): Semivariogram = {
     if(svParam.length == 3)
-      explicitModel(svParam, model)
+      Semivariogram(explicitModel(svParam, model), svParam(0), svParam(1), svParam(2))
     else
-      explicitNuggetModel(svParam, model)
+      Semivariogram(explicitNuggetModel(svParam, model), svParam(0), svParam(1), 0)
   }
 
-  def apply(range: Double, sill: Double, nugget: Double, model: ModelType): Double => Double = {
-    explicitModel(range, sill, nugget, model)
+  def apply(range: Double, sill: Double, nugget: Double, model: ModelType): Semivariogram = {
+    Semivariogram(explicitModel(range, sill, nugget, model), range, sill, nugget)
   }
 
-  def apply(range: Double, sill: Double, model: ModelType): Double => Double = {
-    explicitNuggetModel(range, sill, model)
+  def apply(range: Double, sill: Double, model: ModelType): Semivariogram = {
+    Semivariogram(explicitNuggetModel(range, sill, model), range, sill, 0)
   }
 
-  def apply(pts: Seq[PointFeature[Double]], maxdist: Double, binmax: Int, model: ModelType): Double => Double = {
+  def apply(pts: Array[PointFeature[Double]], maxdist: Double, binmax: Int, model: ModelType): Semivariogram = {
     // Construct slope and intercept
     val abc = EmpiricalVariogram.nonlinear(pts, maxdist, binmax)
-    val empiricalSemivariogram: Seq[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}.toSeq
+    val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
     val es = empiricalSemivariogram
 
     //Fitting the empirical variogram to the input model

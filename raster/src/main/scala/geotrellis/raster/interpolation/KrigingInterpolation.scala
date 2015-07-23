@@ -1,8 +1,25 @@
+/*
+ * Copyright (c) 2015 Azavea.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.interpolation._
+
 import spire.syntax.cfor._
 
 object KrigingInterpolation {
@@ -12,7 +29,7 @@ object KrigingInterpolation {
 
   def apply(method: KrigingVectorInterpolationMethod, points: Seq[PointFeature[Double]], re: RasterExtent, maxdist: Double, binmax: Double, model: ModelType): Tile = {
     model match {
-      case Linear => throw new UnsupportedOperationException("Linear semivariogram does not accept maxDist and maxBin values")
+      case Linear(_,_) => throw new UnsupportedOperationException("Linear semivariogram does not accept maxDist and maxBin values")
       case _ =>
         val cols = re.cols
         val rows = re.rows
@@ -32,17 +49,15 @@ object KrigingInterpolation {
     }
   }
 
-  def apply(method: KrigingVectorInterpolationMethod, points: Seq[PointFeature[Double]], re: RasterExtent, radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType): Tile = {
+  def apply(method: KrigingVectorInterpolationMethod, points: Array[PointFeature[Double]], re: RasterExtent, radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType): Tile = {
     model match {
-      case Linear =>
+      case Linear(_,_) =>
         val cols = re.cols
         val rows = re.rows
         val tile = ArrayTile.alloc(TypeDouble, cols, rows)
         if (points.isEmpty) {
-          println("The set of points for constructing the prediction is empty")
-          tile
+          throw new IllegalArgumentException("The set of points for constructing the prediction is empty")
         } else {
-          //val funcInterp = method.createPredictor(points, radius, chunkSize, lag, model, method)
           val funcInterp = method.createPredictor()
           cfor(0)(_ < rows, _ + 1) { row =>
             cfor(0)(_ < cols, _ + 1) { col =>

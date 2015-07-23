@@ -19,7 +19,6 @@ package geotrellis.raster.interpolation
 import geotrellis.vector._
 import geotrellis.vector.interpolation._
 import geotrellis.vector.io.json._
-import geotrellis.engine._
 import geotrellis.testkit._
 import geotrellis.raster._
 
@@ -42,17 +41,16 @@ class KrigingInterpolationSpec extends FunSpec
       val f = scala.io.Source.fromFile(path)
       val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
       f.close()
-      val points: Seq[PointFeature[Double]] = collection.getAllPointFeatures[Double]()
+      val points: Array[PointFeature[Double]] = collection.getAllPointFeatures[Double]().toArray
 
       //val radius = Some(6)
       val radius: Option[Double] = Some(6)
       val lag = 2
       val chunkSize = 100
-      //val semivariogram: Double => Double = Semivariogram(points, 0, 0, Spherical)
-      val semivariogram: Double => Double = NonLinearSemivariogram(points, 0, 0, Spherical)
+      val semivariogram: Semivariogram = NonLinearSemivariogram(points, 0, 0, Spherical)
       val objectPredictor = new KrigingSimple(points, 0, Array(1, 1, 1), Spherical)
       val predictValue = objectPredictor.predict(Array(Point(1.0, 1.0)))
-      val result = KrigingInterpolation(objectPredictor, points, re, radius, chunkSize, lag, Linear)
+      val result = KrigingInterpolation(objectPredictor, points, re, radius, chunkSize, lag, Linear.apply(radius, lag))
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
           val actual = result.get(col,row)

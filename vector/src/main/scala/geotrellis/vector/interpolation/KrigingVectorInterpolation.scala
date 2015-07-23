@@ -1,7 +1,24 @@
-package geotrellis.vector.interpolation
+/*
+ * Copyright (c) 2015 Azavea.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+package geotrellis.vector.interpolation
 import geotrellis.vector._
+
 import org.apache.commons.math3.linear._
+
 import spire.syntax.cfor._
 
 trait KrigingVectorInterpolationMethod{
@@ -120,7 +137,8 @@ class KrigingSimple(points: Seq[PointFeature[Double]], bandwidth: Double, svPara
   }
 }
 
-class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, sv: Double => Double, svParam: Array[Double], model: ModelType) extends KrigingVectorInterpolationMethod {
+class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svParam: Array[Double], model: ModelType) extends KrigingVectorInterpolationMethod {
+  val sv: Double => Double = NonLinearSemivariogram.explicitModel(svParam, model)
   def createPredictor(): Point => (Double, Double) = {
     P: Point => predict(Array(P))(0)
   }
@@ -170,8 +188,8 @@ class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, sv: 
   }
 }
 
-class KrigingUniversal(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingVectorInterpolationMethod {
-  def getCovariogramMatrix(sv: Function1[Double, Double], sill: Double, points: Seq[PointFeature[Double]]): RealMatrix = {
+class KrigingUniversal(points: Array[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingVectorInterpolationMethod {
+  def getCovariogramMatrix(sv: Semivariogram, sill: Double, points: Seq[PointFeature[Double]]): RealMatrix = {
     val pointSize = points.size
     val nugget = sv(0)
     val covariogram = Array.ofDim[Double](pointSize, pointSize)
@@ -205,8 +223,7 @@ class KrigingUniversal(points: Seq[PointFeature[Double]], radius: Option[Double]
       val errorOLS = yMatrix.subtract(attrMatrix.multiply(betaOLS))
 
       //Covariance Estimation
-      //val sv = Semivariogram(points, radius, lag, model)
-      val sv = NonLinearSemivariogram(points, 1.0, lag.toInt, model)
+      val sv: Semivariogram = NonLinearSemivariogram(points, 1.0, lag.toInt, model)
 
       //Full covariogram
       val sill: Double = Semivariogram.s
@@ -261,7 +278,7 @@ class KrigingUniversal(points: Seq[PointFeature[Double]], radius: Option[Double]
 }
 
 class KrigingGeo(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingVectorInterpolationMethod {
-  def getCovariogramMatrix(sv: Function1[Double, Double], sill: Double, points: Seq[PointFeature[Double]]): RealMatrix = {
+  def getCovariogramMatrix(sv: Semivariogram, sill: Double, points: Seq[PointFeature[Double]]): RealMatrix = {
     val pointSize = points.size
     val nugget = sv(0)
     val covariogram = Array.ofDim[Double](pointSize, pointSize)
@@ -294,19 +311,17 @@ class KrigingGeo(points: Seq[PointFeature[Double]], radius: Option[Double], chun
       //1. OLS Estimate (Beta)
       //Solving :     X * betaOLS = y
       var beta: RealMatrix = new LUDecomposition(attrMatrix.transpose().multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(yMatrix)
-      println(beta)
       var error = yMatrix.subtract(attrMatrix.multiply(beta))
 
       while (convergence > 0.001)
       {
         val betaOld: RealMatrix = beta
         val errorOld: RealMatrix = error
-        val pointsNew: Seq[PointFeature[Double]] =
-          ((0 until pointSize) map {row => PointFeature(points(row).geom, errorOld.getEntry(row, 0)) }) toSeq
-        //val empiricalSemivariogram: Seq[(Double,Double)] = Semivariogram.constructEmpirical(pointsNew, radius, lag, model)
+        val pointsNew: Array[PointFeature[Double]] =
+          Array.tabulate(pointSize){row => PointFeature(points(row).geom, errorOld.getEntry(row, 0)) }
         val abc = EmpiricalVariogram.nonlinear(pointsNew, 1.0, lag.toInt)
-        val empiricalSemivariogram: Seq[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}.toSeq
-        val sv: Double => Double = Semivariogram.fit(empiricalSemivariogram, model)
+        val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
+        val sv: Semivariogram = Semivariogram.fit(empiricalSemivariogram, model)
         val sill: Double = Semivariogram.s
         val covariogram: RealMatrix = getCovariogramMatrix(sv, sill, points)
         val covarianceInverse: RealMatrix = new LUDecomposition(covariogram).getSolver.getInverse
@@ -319,12 +334,11 @@ class KrigingGeo(points: Seq[PointFeature[Double]], radius: Option[Double], chun
         convergence = Delta
       }
 
-      val pointsNew: Seq[PointFeature[Double]] =
-        ((0 until pointSize) map {row => PointFeature(points(row).geom, error.getEntry(row, 0)) }) toSeq
-      //val empiricalSemivariogram: Seq[(Double,Double)] = Semivariogram.constructEmpirical(pointsNew, radius, lag, model)
+      val pointsNew: Array[PointFeature[Double]] =
+        Array.tabulate(pointSize) {row: Int => PointFeature(points(row).geom, error.getEntry(row, 0)) }
       val abc = EmpiricalVariogram.nonlinear(pointsNew, 1.0, lag.toInt)
-      val empiricalSemivariogram: Seq[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}.toSeq
-      val sv: Double => Double = Semivariogram.fit(empiricalSemivariogram, model)
+      val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
+      val sv: Semivariogram = Semivariogram.fit(empiricalSemivariogram, model)
       val sill: Double = Semivariogram.s
       val covariogram: RealMatrix = getCovariogramMatrix(sv, sill, points)
       val covarianceInverse: RealMatrix = new LUDecomposition(covariogram).getSolver.getInverse
@@ -333,7 +347,7 @@ class KrigingGeo(points: Seq[PointFeature[Double]], radius: Option[Double], chun
       val predictionSet: Seq[PointFeature[Double]] = points.filter(x => distance(x.geom, pointPredict) < radius.get.toDouble)
       val covariogramSample: RealMatrix = getCovariogramMatrix(sv, sill, predictionSet)
       val covariogramSampleInverse: RealMatrix = new LUDecomposition(covariogramSample).getSolver.getInverse
-      val sillSample: Double = if(model == Linear) sv(1) - sv(0) else Semivariogram.s
+      val sillSample: Double = Semivariogram.s
       val pointSampleSize = predictionSet.size
       val ySampleMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(predictionSet.map(x => x.data.toDouble).toArray)
 

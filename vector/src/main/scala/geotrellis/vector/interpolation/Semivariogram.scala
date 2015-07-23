@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright (c) 2015 Azavea.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,25 @@ import spire.syntax.cfor._
 
 abstract sealed class ModelType
 
-case object Linear extends ModelType
+case class Linear (radius: Option[Double], lag: Double) extends ModelType
+
+object Linear {
+  def apply(): Linear =
+    Linear(None, 0.0)
+
+  def withLag(lag: Double): Linear =
+    Linear(None, lag)
+
+  def withRadius(radius: Double): Linear =
+    Linear(Option(radius), 0.0)
+
+  def apply(radius: Double, lag: Double): Linear =
+    Linear(Some(radius), lag)
+}
+
+abstract class NonLinearModelType(maxDist: Double, binMax: Int)
+
+// Non-linear
 case object Gaussian extends ModelType
 case object Circular extends ModelType
 case object Spherical extends ModelType
@@ -36,9 +54,14 @@ abstract class Semivariogram(val range: Double, val sill: Double, val nugget: Do
 }
 
 object Semivariogram {
-  var r: Double = 0
-  var s: Double = 0
-  var a: Double = 0
+  def apply(f: Double => Double, range: Double, sill: Double, nugget: Double): Semivariogram =
+    new Semivariogram(range, sill, nugget) {
+      def apply(x: Double): Double = f(x)
+    }
+
+  var r: Double = 0   //Range
+  var s: Double = 0   //Sill
+  var a: Double = 0   //Nugget
 
   trait LeastSquaresFittingProblem {
     var x: Array[Double] = Array()
@@ -157,14 +180,14 @@ object Semivariogram {
       println("(" + x(i) + "," + y(i) + ") => " + f(x(i)))
     }
 
-  def fit(empiricalSemivariogram: Seq[(Double, Double)], model: ModelType): Double => Double = {
+  def fit(empiricalSemivariogram: Array[(Double, Double)], model: ModelType): Semivariogram = {
     fit(empiricalSemivariogram, model, Array.fill[Double](3)(1))
   }
 
-  def fit(es: Seq[(Double, Double)], model: ModelType, begin: Array[Double]): Double => Double = {
+  def fit(es: Array[(Double, Double)], model: ModelType, begin: Array[Double]): Semivariogram = {
     val empiricalSemivariogram: Seq[(Double, Double)] = es
     model match {
-      case Linear =>
+      case Linear(_,_) =>
         // Construct slope and intercept
         val regression = new SimpleRegression
         for((x, y) <- empiricalSemivariogram) { regression.addData(x, y) }
@@ -173,18 +196,18 @@ object Semivariogram {
         this.r = 0
         this.s = slope
         this.a = intercept
-        x => slope*x + intercept
+        Semivariogram(x => slope*x + intercept, 0, slope, intercept)
 
       //Least Squares minimization
       case Gaussian =>
         class GaussianProblem extends LeastSquaresFittingProblem {
           start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram(r, s, a, Gaussian)
+          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Gaussian)
           def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Gaussian)
         }
         class GaussianNuggetProblem extends LeastSquaresFittingNuggetProblem {
           start = begin.drop(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram(r, s, Gaussian)
+          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Gaussian)
           def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] =  NonLinearSemivariogram.jacobianModel(variables, Gaussian)
         }
 
@@ -192,7 +215,6 @@ object Semivariogram {
         for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
         val opt: Optimum = optConstructor(problem)
         val optimalValues: Array[Double] = opt.getPoint.toArray
-        println(empiricalSemivariogram.length)
 
         if (optimalValues(2) < 0) {
           val problem = new GaussianNuggetProblem
@@ -214,12 +236,12 @@ object Semivariogram {
       case Exponential =>
         class ExponentialProblem extends LeastSquaresFittingProblem {
           start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram(r, s, a, Exponential)
+          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Exponential)
           def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
         }
         class ExponentialNuggetProblem extends LeastSquaresFittingNuggetProblem {
           start = begin.drop(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram(r, s, Exponential)
+          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Exponential)
           def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
         }
 
@@ -248,12 +270,12 @@ object Semivariogram {
       case Circular =>
         class CircularProblem extends LeastSquaresFittingProblem {
           start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram(r, s, a, Circular)
+          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Circular)
           def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
         }
         class CircularNuggetProblem extends LeastSquaresFittingNuggetProblem {
           start = begin.drop(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram(r, s, Circular)
+          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Circular)
           def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
         }
 
@@ -282,12 +304,12 @@ object Semivariogram {
       case Spherical =>
         class SphericalProblem extends LeastSquaresFittingProblem {
           start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram(r, s, a, Spherical)
+          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Spherical)
           def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
         }
         class SphericalNuggetProblem extends LeastSquaresFittingNuggetProblem {
           start = begin.drop(1)
-          def valueFuncNugget(w: Double, s: Double): Double => Double = NonLinearSemivariogram(r, s, Spherical)
+          def valueFuncNugget(w: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Spherical)
           def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
         }
 
@@ -316,12 +338,12 @@ object Semivariogram {
       case Wave =>
         class WaveProblem extends LeastSquaresFittingProblem {
           start = begin
-          def valueFunc(w: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram(w, s, a, Wave)
+          def valueFunc(w: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(w, s, a, Wave)
           def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
         }
         class WaveNuggetProblem extends LeastSquaresFittingNuggetProblem {
           start = begin.drop(1)
-          def valueFuncNugget(w: Double, s: Double): Double => Double = NonLinearSemivariogram(w, s, Wave)
+          def valueFuncNugget(w: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(w, s, Wave)
           def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
         }
 

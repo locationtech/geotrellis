@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright (c) 2015 Azavea.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ class SemivariogramSpec extends FunSpec
                            with TileBuilders {
   describe("Linear Semivariogram") {
     it("Semivariogram (Bucketed)") {
-      val points = Seq[PointFeature[Double]](
+      val points = Array[PointFeature[Double]](
         PointFeature(Point(0.0,0.0),10),
         PointFeature(Point(1.0,0.0),20),
         PointFeature(Point(4.0,4.0),60),
@@ -55,16 +55,13 @@ class SemivariogramSpec extends FunSpec
       val intercept = -417.85714
       val sv = (x:Double) => slope*x + intercept
 
-
-      //val semivariogram = Semivariogram(points,None,2,Linear)
       val semivariogram = LinearSemivariogram(points, None, 2)
-      //val semivariogram = Semivariogram(points,None,2)(Linear)
       semivariogram(0) should be (sv(0) +- 0.0001)
       semivariogram(10) should be (sv(10) +- 0.0001)
     }
 
     it("Semivariogram (Bucketed w/ Limit)") {
-      val points = Seq[PointFeature[Double]](
+      val points = Array[PointFeature[Double]](
         PointFeature(Point(0.0,0.0),10),
         PointFeature(Point(1.0,0.0),20),
         PointFeature(Point(4.0,4.0),60),
@@ -96,14 +93,13 @@ class SemivariogramSpec extends FunSpec
       val sv = (x:Double) => slope*x + intercept
       val limit:Option[Double] = Some(6)
 
-      //val semivariogram = Semivariogram(points,limit,2,Linear)
       val semivariogram = LinearSemivariogram(points,limit,2)
       semivariogram(0) should be (sv(0) +- 0.0001)
       semivariogram(10) should be (sv(10) +- 0.0001)
     }
 
     it("Semivariogram (Non-Bucketed)") {
-      val points = Seq[PointFeature[Double]](
+      val points = Array[PointFeature[Double]](
         PointFeature(Point(0.0,0.0),10),
         PointFeature(Point(0.0,0.0),16),
         PointFeature(Point(1.0,0.0),20),
@@ -141,14 +137,13 @@ class SemivariogramSpec extends FunSpec
       val intercept = -128.93555
       val sv = (x:Double) => slope*x + intercept
 
-      //val semivariogram = Semivariogram(points,None,0,Linear)
       val semivariogram = LinearSemivariogram(points,None,0)
       semivariogram(0) should be (sv(0) +- 0.0001)
       semivariogram(10) should be (sv(10) +- 0.0001)
     }
 
     it("Semivariogram (Non-Bucketed w/ Limit)") {
-      val points = Seq[PointFeature[Double]](
+      val points = Array[PointFeature[Double]](
         PointFeature(Point(0.0,0.0),10),
         PointFeature(Point(0.0,0.0),16),
         PointFeature(Point(1.0,0.0),20),
@@ -195,7 +190,7 @@ class SemivariogramSpec extends FunSpec
 
   describe("Non-linear optimizations") {
     it("Gaussian Semivariogram w/o starting point") {
-      val sv: Double => Double = NonLinearSemivariogram(15, 90, 18, Gaussian)
+      val sv: Semivariogram = NonLinearSemivariogram(15, 90, 18, Gaussian)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((1.0,18.31928994121732),
                                                                   (3.0,20.823160381032732),
                                                                   (9.0,39.767304522885766))
@@ -207,7 +202,7 @@ class SemivariogramSpec extends FunSpec
 
     it("Gaussian Semivariogram w/ starting point") {
       val start: Array[Double] = Array[Double](1, 1, 1)
-      val sv: Double => Double = NonLinearSemivariogram(15, 90, 18, Gaussian)
+      val sv: Semivariogram = NonLinearSemivariogram(15, 90, 18, Gaussian)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((1.0,18.31928994121732),
                                                                   (3.0,20.823160381032732),
                                                                   (9.0,39.767304522885766))
@@ -218,7 +213,7 @@ class SemivariogramSpec extends FunSpec
     }
 
     it("Exponential Semivariogram w/o starting point") {
-      val sv: Double => Double = NonLinearSemivariogram(100, 120, 25.5, Exponential)
+      val sv: Semivariogram = NonLinearSemivariogram(100, 120, 25.5, Exponential)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((1.0,28.29289707966598),
                                                                   (2.0,31.003251576288495),
                                                                   (8.0,45.663667129210694),
@@ -231,7 +226,7 @@ class SemivariogramSpec extends FunSpec
 
     it("Exponential Semivariogram w/ starting point") {
       val start: Array[Double] = Array[Double](1, 1, 1)
-      val sv: Double => Double = NonLinearSemivariogram(100, 120, 25.5, Exponential)
+      val sv: Semivariogram = NonLinearSemivariogram(100, 120, 25.5, Exponential)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((1.0,28.29289707966598),
                                                                   (2.0,31.003251576288495),
                                                                   (8.0,45.663667129210694),
@@ -250,7 +245,7 @@ class SemivariogramSpec extends FunSpec
 
       //Next test case handles the same problem with an appropriate guess
 
-      val sv: Double => Double = NonLinearSemivariogram(12, 20, 8, Circular)
+      val sv: Semivariogram = NonLinearSemivariogram(12, 20, 8, Circular)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((1.0,9.271764348975337),
                                                                   (2.0,10.534640218523169),
                                                                   (9.0,18.26847664622735),
@@ -265,23 +260,20 @@ class SemivariogramSpec extends FunSpec
 
     it("Circular Semivariogram w/ starting point") {
       val start: Array[Double] = Array[Double](12, 22, 10)
-      val sv: Double => Double = NonLinearSemivariogram(12, 20, 8, Circular)
+      val sv: Semivariogram = NonLinearSemivariogram(12, 20, 8, Circular)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((1.0,9.271764348975337),
                                                                   (2.0,10.534640218523169),
                                                                   (9.0,18.26847664622735),
                                                                   (10.0,19.044740230185127),
                                                                   (11.0,19.657832500414067))
       val semivariogramCircular = Semivariogram.fit(empiricalSemivariogram, Circular, start)
-      println(Semivariogram.r)
-      println(Semivariogram.s)
-      println(Semivariogram.a)
       semivariogramCircular(0) should be (sv(0) +- 0.0001)
       semivariogramCircular(5) should be (sv(5) +- 0.0001)
       semivariogramCircular(10) should be (sv(10) +- 0.0001)
     }
 
     it("Spherical Semivariogram w/o starting point") {
-      val sv: Double => Double = NonLinearSemivariogram(6, 4, 1, Spherical)
+      val sv: Semivariogram = NonLinearSemivariogram(6, 4, 1, Spherical)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((0.7,1.522618),
                                                                   (0.8,1.596444),
                                                                   (2.0,2.444444),
@@ -300,7 +292,7 @@ class SemivariogramSpec extends FunSpec
 
     it("Spherical Semivariogram w/ starting point") {
       val start: Array[Double] = Array[Double](1, 1, 1)
-      val sv: Double => Double = NonLinearSemivariogram(6, 4, 1, Spherical)
+      val sv: Semivariogram = NonLinearSemivariogram(6, 4, 1, Spherical)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((0.7,1.522618),
                                                                   (0.8,1.596444),
                                                                   (2.0,2.444444),
@@ -319,7 +311,7 @@ class SemivariogramSpec extends FunSpec
 
     it("Wave Semivariogram w/o starting point") {
       val (r, s, a) = (0.6, 0.6, 0)
-      val sv: Double => Double = NonLinearSemivariogram(r, s, a, Wave)
+      val sv: Semivariogram = NonLinearSemivariogram(r, s, a, Wave)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((0.09,0.002247470105603111),
                                                                   (0.16,0.007085869927046118),
                                                                   (0.2,0.011049545766925961),
@@ -342,7 +334,7 @@ class SemivariogramSpec extends FunSpec
 
     it("Wave Semivariogram w/ starting point") {
       val start: Array[Double] = Array[Double](1, 1, 1)
-      val sv: Double => Double = NonLinearSemivariogram(0.6, 0.6, 0, Wave)
+      val sv: Semivariogram = NonLinearSemivariogram(0.6, 0.6, 0, Wave)
       val empiricalSemivariogram: Array[(Double, Double)] = Array((0.09,0.002247470105603111),
                                                                   (0.16,0.007085869927046118),
                                                                   (0.2,0.011049545766925961),
