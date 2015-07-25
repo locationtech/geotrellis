@@ -4,10 +4,15 @@ import java.io.{DataOutputStream, File}
 import geotrellis.proj4.io.wkt.WKT
 import org.osgeo.proj4j._
 
+import scala.collection.mutable
 import scala.io.Source
 
 object CRS {
   private val crsFactory = new CRSFactory
+
+  private val filePrefix = "proj4/src/main/resources/nad/"
+
+  private lazy val proj4ToEPSGMap = new Memoize[String,Option[String]](readEPSGCodeFromFile,mutable.Map.empty[String,Option[String]])
 
   /**
    * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
@@ -71,18 +76,16 @@ object CRS {
       override val epsgCode: Option[String] = getEPSGCode(toProj4String+" <>")
     }
 
-
   /**
    * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known-text String.
    * @param wktString
    * @return
    */
   def fromWKT(wktString :String): CRS ={
-    val epsgCode = WKT.getEPSGCode(wktString)
+    val epsgCode:String = WKT.getEPSGCode(wktString)
 
     fromName(epsgCode)
   }
-
 
   /**
    * Returns the numeric EPSG code of a proj4string
@@ -90,23 +93,21 @@ object CRS {
    * @return
    */
   def getEPSGCode(proj4String: String):Option[String]={
-    val filePrefix = "proj4/src/main/resources/nad/"
+     proj4ToEPSGMap(proj4String)
+  }
 
+  private def readEPSGCodeFromFile(proj4String: String): Option[String] ={
     def code(line:String):Option[String]={
       val array = line.split(" ")
       val length = array(0).length
-      Some("EPSG:"+array(0).substring(1,length-1))
+      Some(array(0).substring(1,length-1))
     }
 
-    val dataStream =Source.fromFile(filePrefix+"epsg").getLines().toStream.dropWhile(line=>line.startsWith("#") || "+proj"+((line).split("proj"))(1)!=proj4String)
+    Source.fromFile(filePrefix+"epsg").getLines().find(line=> !line.startsWith("#") && "+proj"+((line).split("proj"))(1)==proj4String) match {
+      case Some(line) => code(line)
 
-    if(dataStream.length>0){
-      code(dataStream(0))
+      case None => None
     }
-    else {
-      None
-    }
-
   }
 }
 
@@ -128,7 +129,6 @@ trait CRS extends Serializable {
 
   def toProj4String: String =
     crs.getParameterString
-
 
   /**
    * Returns the WKT representation of the Coordinate Reference System

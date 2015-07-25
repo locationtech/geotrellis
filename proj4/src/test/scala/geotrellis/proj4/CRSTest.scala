@@ -15,7 +15,6 @@ class CRSTest extends FunSpec{
     assert(proj4string==string)
   }
 
-
   it("Should return the WKT string of the passed EPSG code"){
     val crs = CRS.fromName("EPSG:4010")
 
