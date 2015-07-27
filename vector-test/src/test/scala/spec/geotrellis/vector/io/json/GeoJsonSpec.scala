@@ -37,7 +37,6 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val json = """{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":"Data"}"""
     val expected = PointFeature(Point(1,1), "Data")
 
-    GeoJson.parse[Feature[String]](json) should equal (expected)
     GeoJson.parse[PointFeature[String]](json) should equal (expected)
   }
 
