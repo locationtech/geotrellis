@@ -3,8 +3,6 @@ package geotrellis.vector
 import geotrellis.proj4._
 
 package object reproject {
-  type DI = DummyImplicit
-
   object Reproject {
     def apply(t: (Double, Double), src: CRS, dest: CRS): (Double, Double) =
       apply(t, Transform(src, dest))
