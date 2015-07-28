@@ -14,6 +14,7 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       default = Some(StorageLevel.MEMORY_AND_DISK_SER))
   val inputProps   = props[String]('I',
                       descr = "parameters for input module")
+
   val output       = opt[String]("output", required = true,
                       descr ="name of output module (ex: s3, hadoop, accumulo")
   val layerName    = opt[String]("layer", required = true,
@@ -23,15 +24,14 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
   val tileSize     = opt[Int]("tileSize",
                       descr = "Tile size in pixels (default: 256)",
                       default = Some(256))
-
-  val outputProps  = props[String]('O',
-                      descr = "parameters for output module")
   val clobber      = opt[Boolean]("clobber",
                       descr = "clobber layer on save (default: false)",
                       default = Some(false))
   val pyramid      = opt[Boolean]("pyramid",
                       descr = "pyramid layer on save (default: false)",
                       default = Some(false))
+  val outputProps  = props[String]('O',
+                      descr = "parameters for output module")
 
   implicit def crsConverter: ValueConverter[CRS] = singleArgConverter[CRS](CRS.fromName)
   implicit def storageLevelConvert: ValueConverter[StorageLevel] = singleArgConverter[StorageLevel](StorageLevel.fromString)
