@@ -57,7 +57,8 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
     val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq
 
-    points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq should be (points)
+    points.toGeoJson.parseGeoJson[GeometryCollection].points should be (points)
+
   }
 
   it should "parse string to point features and back again" in {
