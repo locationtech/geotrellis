@@ -36,15 +36,6 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
 
   def ++=[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) = addAll(features)
 
-  def add(geometry: Geometry) =
-    buffer = geometry.toJson :: buffer
-  def +=(geometry: Geometry) = add(geometry)
-
-  def addAll(geometries: Seq[Geometry]) =
-    geometries.foreach(add(_))
-
-  def ++=(geometries: Seq[Geometry]) = addAll(geometries)
-
   def toJson: JsValue =
     JsObject(
       "type" -> JsString("FeatureCollection"),
@@ -98,12 +89,6 @@ object JsonFeatureCollection{
     fc ++= features.toList
     fc
   }
-
-/*  def apply(geometries: Traversable[Geometry]) = {
-    val fc = new JsonFeatureCollection()
-    fc ++= geometries.toList
-    fc
-  }*/
 
   def apply(features: Traversable[JsValue])(implicit d: DummyImplicit): JsonFeatureCollection =
     new JsonFeatureCollection(features.toList)
