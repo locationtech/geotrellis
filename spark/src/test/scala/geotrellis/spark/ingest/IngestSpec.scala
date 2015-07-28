@@ -39,14 +39,6 @@ class IngestSpec extends FunSpec
 
       ifGdalInstalled {
         it("should ingest time-band NetCDF") {
-          implicit val tiler: Tiler[NetCdfBand, SpaceTimeKey] = {
-            val getExtent = (inKey: NetCdfBand) => inKey.extent
-            val createKey = (inKey: NetCdfBand, spatialComponent: SpatialKey) =>
-            SpaceTimeKey(spatialComponent, inKey.time)
-
-            Tiler(getExtent, createKey)
-          }
-
           val expectedKeys = List(
             SpaceTimeKey(SpatialKey(1,1),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),
             SpaceTimeKey(SpatialKey(2,0),TemporalKey(DateTime.parse("2006-01-16T12:00:00.000Z"))),

@@ -72,7 +72,7 @@ class PyramidSpec extends FunSpec
         val layoutScheme = ZoomedLayoutScheme(2)
         val level = layoutScheme.levelFor(2)
 
-        val (levelOneRDD, levelOne) = Pyramid.up(rdd, level, layoutScheme)
+        val (levelOne, levelOneRDD) = Pyramid.up(rdd, level, layoutScheme)
 
         levelOne.tileLayout should be (TileLayout(2, 2, 2, 2))
         val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
