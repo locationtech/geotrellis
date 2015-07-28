@@ -99,11 +99,11 @@ object JsonFeatureCollection{
     fc
   }
 
-  def apply(geometries: Traversable[Geometry]) = {
+/*  def apply(geometries: Traversable[Geometry]) = {
     val fc = new JsonFeatureCollection()
     fc ++= geometries.toList
     fc
-  }
+  }*/
 
   def apply(features: Traversable[JsValue])(implicit d: DummyImplicit): JsonFeatureCollection =
     new JsonFeatureCollection(features.toList)

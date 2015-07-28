@@ -7,7 +7,6 @@ import spray.json.JsonFormat
 package object json extends GeoJsonSupport {
   implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) extends AnyVal {
     def toGeoJson: String = {
-      //JsonFeatureCollection(geoms).toJson.compactPrint
       GeometryCollection(geoms).toJson.compactPrint
     }
   }
