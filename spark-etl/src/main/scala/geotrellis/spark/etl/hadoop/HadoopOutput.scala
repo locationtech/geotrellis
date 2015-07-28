@@ -1,8 +1,8 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.spark.etl._
+import geotrellis.spark.etl.OutputPlugin
 
-trait HadoopIngest extends IngestPlugin {
+trait HadoopOutput extends OutputPlugin {
   val name = "hadoop"
   val requiredKeys = Array("path")
 }

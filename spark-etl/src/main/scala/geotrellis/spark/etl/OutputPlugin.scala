@@ -4,7 +4,7 @@ import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{LayerId, RasterRDD}
 import scala.reflect.ClassTag
 
-trait SinkPlugin {
+trait OutputPlugin {
   def name: String
   def key: ClassTag[_]
   def requiredKeys: Array[String]

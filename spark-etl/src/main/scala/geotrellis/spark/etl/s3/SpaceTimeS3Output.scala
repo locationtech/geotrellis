@@ -5,7 +5,7 @@ import geotrellis.spark.io.s3.S3RasterCatalog
 import geotrellis.spark.{SpaceTimeKey, LayerId, RasterRDD, SpatialKey}
 import scala.reflect._
 
-class SpaceTimeS3Sink extends S3Sink {
+class SpaceTimeS3Output extends S3Output {
   val key = classTag[SpaceTimeKey]
 
   def apply[K](id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]) = {

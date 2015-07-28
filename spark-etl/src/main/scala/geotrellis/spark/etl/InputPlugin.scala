@@ -8,7 +8,7 @@ import org.apache.spark.storage.StorageLevel
 
 import scala.reflect._
 
-trait IngestPlugin {
+trait InputPlugin {
   def name: String
   def format: String
   def key: ClassTag[_]

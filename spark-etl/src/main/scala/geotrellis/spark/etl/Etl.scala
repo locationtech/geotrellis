@@ -18,20 +18,20 @@ object Etl {
 case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*) {
   val conf = new EtlConf(args)
 
-  val (ingestPlugin, outputPlugin) = {
+  val (inputPlugin, outputPlugin) = {
     val injector = Guice.createInjector(modules: _*)
 
-    val ingest = injector
-      .findBindingsByType(new TypeLiteral[IngestPlugin]{})
+    val input = injector
+      .findBindingsByType(new TypeLiteral[InputPlugin]{})
       .asScala
       .map { _.getProvider.get }
-      .find { _.suitableFor(conf.ingest(), conf.format(), classTag[K]) }
-      .getOrElse(sys.error(s"Unable to find ingest module of type '${conf.ingest()}' for format `${conf.format()} and key ${classTag[K]}"))
+      .find { _.suitableFor(conf.input(), conf.format(), classTag[K]) }
+      .getOrElse(sys.error(s"Unable to find input module of type '${conf.input()}' for format `${conf.format()} and key ${classTag[K]}"))
 
-    ingest.validate(conf.ingestProps)
+    input.validate(conf.inputProps)
 
     val output = injector
-      .findBindingsByType(new TypeLiteral[SinkPlugin]{})
+      .findBindingsByType(new TypeLiteral[OutputPlugin]{})
       .asScala
       .map { _.getProvider.get }
       .find { _.suitableFor(conf.output(), classTag[K]) }
@@ -39,11 +39,11 @@ case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module
 
     output.validate(conf.outputProps)
 
-    (ingest, output)
+    (input, output)
   }
 
-  def ingest()(implicit sc: SparkContext): (LayerId, RasterRDD[K]) = {
-    val (level, rdd) = ingestPlugin[K](conf.cache(), conf.crs(), ZoomedLayoutScheme(conf.tileSize()), conf.ingestProps)
+  def load()(implicit sc: SparkContext): (LayerId, RasterRDD[K]) = {
+    val (level, rdd) = inputPlugin[K](conf.cache(), conf.crs(), ZoomedLayoutScheme(conf.tileSize()), conf.inputProps)
     LayerId(conf.layerName(), level.zoom) -> rdd
   }
 

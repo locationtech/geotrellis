@@ -1,10 +1,10 @@
 package geotrellis.spark.etl.accumulo
 
-import geotrellis.spark.etl.SinkPlugin
+import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.accumulo.AccumuloInstance
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
-trait AccumuloSink extends SinkPlugin {
+trait AccumuloOutput extends OutputPlugin {
   val name = "accumulo"
   val requiredKeys = Array("instance", "zookeeper", "user", "password", "table")
 

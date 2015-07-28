@@ -11,7 +11,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.storage.StorageLevel
 import scala.reflect._
 
-class GeoTiffS3Ingest extends S3Ingest {
+class GeoTiffS3Input extends S3Input {
   val format = "geotiff"
   val key = classTag[SpatialKey]
 

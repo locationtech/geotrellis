@@ -7,7 +7,7 @@ import org.apache.hadoop.fs.Path
 
 import scala.reflect._
 
-class SpaceTimeHadoopSink extends HadoopSink {
+class SpaceTimeHadoopOutput extends HadoopOutput {
   val key = classTag[SpaceTimeKey]
 
   def apply[K](id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]) = {

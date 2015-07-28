@@ -1,8 +1,8 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.spark.etl.SinkPlugin
+import geotrellis.spark.etl._
 
-trait HadoopSink extends SinkPlugin {
+trait HadoopInput extends InputPlugin {
   val name = "hadoop"
   val requiredKeys = Array("path")
 }

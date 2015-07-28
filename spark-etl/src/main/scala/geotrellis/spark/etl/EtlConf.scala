@@ -5,19 +5,19 @@ import org.apache.spark.storage.StorageLevel
 import org.rogach.scallop._
 
 class EtlConf(args: Seq[String]) extends ScallopConf(args){
-  val ingest       = opt[String]("ingest", required = true,
-                      descr = "name of ingest module (ex: s3, hadoop)")
+  val input       = opt[String]("input", required = true,
+                      descr = "name of input module (ex: s3, hadoop)")
   val format       = opt[String]("format", required = true,
-                      descr = "format of ingest (ex: geotiff)")
+                      descr = "input file format (ex: geotiff)")
   val cache        = opt[StorageLevel]("cache",
                       descr = "spark rdd storage level to be used for caching (default: MEMORY_AND_DISK_SER)",
                       default = Some(StorageLevel.MEMORY_AND_DISK_SER))
-  val ingestProps  = props[String]('I',
+  val inputProps   = props[String]('I',
                       descr = "parameters for input module")
   val output       = opt[String]("output", required = true,
                       descr ="name of output module (ex: s3, hadoop, accumulo")
   val layerName    = opt[String]("layer", required = true,
-                      descr = "Name of the layer to be ingested")
+                      descr = "Name of the input layer")
   val crs          = opt[CRS]("crs", required = true,
                       descr = "target CRS for the layer (ex: EPSG:3857")
   val tileSize     = opt[Int]("tileSize",
