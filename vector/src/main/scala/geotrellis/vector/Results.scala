@@ -17,8 +17,58 @@
 package geotrellis.vector
 
 import com.vividsolutions.jts.{geom => jts}
+import scala.reflect._
 
-private[vector] trait GeometryResultMethods { def toGeometry(): Option[Geometry] }
+private[vector] trait GeometryResultMethods { 
+  /** Returns this result as an option, unless this is NoResult, in which case it returns None */
+  def toGeometry(): Option[Geometry]
+
+  /** returns this result as the specified geometry type, unless it is not the correct geometry type or NoResult,
+    * in which case it returns None */
+  def as[G <: Geometry : ClassTag]: Option[G] =
+    toGeometry.flatMap { g =>
+      if(classTag[G].runtimeClass.isInstance(g)) Some(g.asInstanceOf[G])
+      else None
+    }
+
+  /** returns this result as a MultiPoint if it's a Point or MultiPoint, otherwise returns None */
+  def asMultiPoint: Option[MultiPoint] =
+    toGeometry.flatMap { g =>
+      g match {
+        case p: Point => Some(MultiPoint(p))
+        case mp: MultiPoint => Some(mp)
+        case _ => None
+      }
+    }
+
+  /** returns this result as a MultiLine if it's a Line or MultiLine, otherwise returns None */
+  def asMultiLine: Option[MultiLine] =
+    toGeometry.flatMap { g =>
+      g match {
+        case l: Line => Some(MultiLine(l))
+        case ml: MultiLine => Some(ml)
+        case _ => None
+      }
+    }
+
+  /** returns this result as a MultiPolygon if it's a Polygon or MultiPolygon, otherwise returns None */
+  def asMultiPolygon: Option[MultiPolygon] =
+    toGeometry.flatMap { g =>
+      g match {
+        case p: Polygon => Some(MultiPolygon(p))
+        case mp: MultiPolygon => Some(mp)
+        case _ => None
+      }
+    }
+
+  /** returns this result as a MultiPoint if it's a Point or MultiPoint, otherwise returns None */
+  def asGeometryCollection: GeometryCollection =
+    toGeometry match {
+      case Some(g) => GeometryCollection(Seq(g))
+      case None => GeometryCollection()
+    }
+}
+
 abstract sealed trait GeometryResult extends GeometryResultMethods
 object GeometryResult {
   implicit def resultToGeometry(result: GeometryResult): Option[Geometry] =
