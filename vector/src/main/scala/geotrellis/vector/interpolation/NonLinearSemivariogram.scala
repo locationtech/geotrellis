@@ -32,17 +32,8 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitGaussianNugget(r: Double, s: Double): Double => Double = {
-    h: Double => {
-      if (h == 0) 0
-      else
-        s * (1 - math.exp(- math.pow(h, 2) / math.pow(r, 2)))
-    }
-    /*                   | 0                             . h = 0
-     *  gamma(h; r, s) = |
-     *                   | s {1 - e^(-h^2 / r^2)}          , h > 0
-     */
-  }
+  def explicitGaussianNugget(r: Double, s: Double): Double => Double =
+    explicitGaussian(r, s, 0)
 
   def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
@@ -91,26 +82,8 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitCircularNugget(r: Double, s: Double): Double => Double = {
-    h: Double => {
-      if (h == 0) 0
-      else if (h > r)
-        s
-      else
-        s * (1 - (2 / math.Pi) * math.acos(h/r) + ((2 * h) / (math.Pi * r)) * math.sqrt(1 - math.pow(h, 2) / math.pow(r, 2)))
-    }
-
-    /*                   | 0                                                              , h = 0
-     *                   |
-     *                   |     |                                              _________ |
-     *                   |     |      2                | h |      2h         /    h^2   |
-     *  gamme(h; r, s) = | s * |1 - ----- * cos_inverse|---| + -------- *   /1 - -----  | , 0 < h <= r
-     *                   |     |      pi               | r |    pi * r    \/      r^2   |
-     *                   |     |                                                        |
-     *                   |
-     *                   | s                                                              , h > r
-     */
-  }
+  def explicitCircularNugget(r: Double, s: Double): Double => Double =
+    explicitCircular(r, s, 0)
 
   def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
@@ -156,27 +129,15 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitSphericalNugget(r: Double, s: Double): Double => Double = {
-    h: Double => {
-      if (h == 0) 0
-      else if (h > r) s
-      else {
-        s * ((3 * h / (2 * r)) - (math.pow(h, 3) / (2 * math.pow(r, 3)) ))
-      }
-    }
-    /*                   | 0                    . h = 0
-     *                   |    | 3h      h^3   |
-     *  gamma(h; r, s) = | s  |---- - ------- | , 0 < h <= r
-     *                   |    | 2r     2r^3   |
-     *                   | s                    , h > r
-     */
-  }
+  def explicitSphericalNugget(r: Double, s: Double): Double => Double =
+    explicitSpherical(r, s, 0)
 
   def jacobianSpherical(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](3)(0)
+        //jacobianRet = Array.fill[Double](3)(0)
+        jacobianRet = Array[Double](0, 0, 1)
       else if (x > 0 && x <= variables(0)) {
         jacobianRet(0) = (variables(1) - variables(2)) * ((-3 * x)/(2 * math.pow(variables(0), 2)) + (3 * math.pow(x, 3)/(2 * math.pow(variables(0), 4))))
         jacobianRet(1) = ((3 * x)/(2 * variables(0))) - (0.5 * math.pow(x / variables(0), 3))
@@ -215,17 +176,8 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitExponentialNugget(r: Double, s: Double): Double => Double = {
-    h: Double => {
-      if (h == 0) 0
-      else
-        s * (1 - math.exp(- 3 * h / r))
-    }
-    /*                   | 0                        . h = 0
-     *  gamma(h; r, s) = |
-     *                   | s {1 - e^(-3 * h / r)}   , h > 0
-     */
-  }
+  def explicitExponentialNugget(r: Double, s: Double): Double => Double =
+    explicitExponential(r, s, 0)
 
   def jacobianExponential(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
@@ -268,19 +220,8 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitWaveNugget(w: Double, s: Double): Double => Double = {
-    h: Double => {
-      if (h == 0) 0
-      else
-        s * (1 - w * math.sin(h / w) / h)
-    }
-    /*                   | 0                        . h = 0
-     *                   |
-     *  gamma(h; w, s) = |    |       sin(h / w)  |
-     *                   | s  |1 - w ------------ | , h > 0
-     *                   |    |           h       |
-     */
-  }
+  def explicitWaveNugget(w: Double, s: Double): Double => Double =
+    explicitWave(w, s, 0)
 
   def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
@@ -367,19 +308,18 @@ object NonLinearSemivariogram {
       Semivariogram(explicitNuggetModel(svParam, model), svParam(0), svParam(1), 0)
   }
 
-  def apply(range: Double, sill: Double, nugget: Double, model: ModelType): Semivariogram = {
+  def apply(range: Double, sill: Double, nugget: Double, model: ModelType): Semivariogram =
     Semivariogram(explicitModel(range, sill, nugget, model), range, sill, nugget)
-  }
 
-  def apply(range: Double, sill: Double, model: ModelType): Semivariogram = {
+  def apply(range: Double, sill: Double, model: ModelType): Semivariogram =
     Semivariogram(explicitNuggetModel(range, sill, model), range, sill, 0)
-  }
 
   def apply(pts: Array[PointFeature[Double]], maxdist: Double, binmax: Int, model: ModelType): Semivariogram = {
-    // Construct slope and intercept
     val abc = EmpiricalVariogram.nonlinear(pts, maxdist, binmax)
     val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
     val es = empiricalSemivariogram
+    /*println("The length of es = " + es.length)
+    println(es.mkString("\n"))*/
 
     //Fitting the empirical variogram to the input model
     def stdev(data: Array[Double]): Double = {
@@ -403,6 +343,8 @@ object NonLinearSemivariogram {
     val Z: Array[Double] = Array.tabulate(pts.length){i => pts(i).data}
     start(1) = math.pow(stdev(Z), 2)
     start(2) = math.max(0, G.foldLeft(D(0)) { case (minM, e) => math.min(minM, e) })
+    /*println("Weird shit!")
+    println(model + " => " + start.mkString(" "))*/
     Semivariogram.fit(es, model, start)
   }
 }

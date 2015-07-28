@@ -30,7 +30,7 @@ object EmpiricalVariogram {
 
   def nonlinear(pts: Array[PointFeature[Double]], maxdist: Double, binmax: Int): EmpiricalVariogram  =
     NonLinearEmpiricalVariogram(pts, maxdist, binmax)
-  
+
   def linear(pts: Array[PointFeature[Double]], radius: Option[Double] = None, lag: Double = 0.0): Array[(Double, Double)] =
     LinearEmpiricalVariogram(pts, radius, lag)
 }
@@ -61,11 +61,17 @@ object NonLinearEmpiricalVariogram {
       }
     }
 
+    var n_S: Int = 0
+    var sortedDistancesAll: Array[(Int, Int, Double)] = Array()
     val sortedDistances: Array[(Int, Int, Double)] = {
       val q = distances.dequeueAll
+      sortedDistancesAll = q.toArray
+      n_S = q.length
       if(maxdist == 0) {
         val md = dMax / 2.0
+        //println("md = " + md)
         val result = q.takeWhile(_._3 <= md).toArray
+        //n_S = q.length
         if(result.length == 0) {
           // This is a strangely uniform dataset.
           // Assume that the maxDistances is the
@@ -82,21 +88,27 @@ object NonLinearEmpiricalVariogram {
         result
       }
     }
+    //println("n_S = " + n_S)
     val n0_S: Int = sortedDistances.length
     val binMax: Int = if(binmax == 0) 100 else binmax
-    val binSize: Int = math.ceil(n0_S * 1.0 / binMax).toInt
-    val binNum: Int = if(binSize >= 30) binMax else math.ceil(n0_S/30).toInt
+    //println("binMax = " + binMax)
+    var binSize: Int = math.ceil(n0_S * 1.0 / binMax).toInt
+    val binNum: Int = if(binSize >= 30) binMax else {binSize = 30;math.ceil(n0_S/30.0).toInt}
+    //println("binNum = " + binNum)
+    //println("n0_S = " + n0_S)
     val empiricalSemivariogram = new EmpiricalVariogram(binNum)
     val Z: Array[Double] = Array.tabulate(n){j => pts(j).data}
+    //println(sortedDistancesAll.mkString("\n"))
 
     cfor(0)(_ < binNum, _ + 1) { i: Int =>
       val n0: Int = i * binSize + 1 - 1
       val n1Temp: Int = (i + 1) * binSize - 1
-      val n1: Int = if (n1Temp > n0_S) n0_S - 1 else n1Temp
+      val n1: Int = if (n1Temp > n_S) n_S - 1 else n1Temp
+      //println(n0 + ", " + n1)
       val binSizeLocal: Int = n1 - n0 + 1
-      val S1: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._1 }
-      val S2: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._2 }
-      val Li: Double = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._3 }.sum / binSizeLocal
+      val S1: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistancesAll(n0 + j)._1 }
+      val S2: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistancesAll(n0 + j)._2 }
+      val Li: Double = Array.tabulate(n1 - n0 + 1) { j => sortedDistancesAll(n0 + j)._3 }.sum / binSizeLocal
       val Vi: Double = Array.tabulate(n1 - n0 + 1) { j =>
         math.pow(Z(S1(j)) - Z(S2(j)), 2)
       }.sum / (2 * binSizeLocal)

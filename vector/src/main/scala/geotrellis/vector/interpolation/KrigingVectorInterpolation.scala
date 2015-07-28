@@ -26,6 +26,21 @@ trait KrigingVectorInterpolationMethod{
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)]
 
   def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))
+
+  def varianceMatrixGen(sv: Semivariogram, distanceM: RealMatrix): RealMatrix = {
+    val n: Int = distanceM.getRowDimension
+    val varMatrix: RealMatrix = MatrixUtils.createRealMatrix(n, n)
+
+    //Variance shifts to sill, if distance>range
+    cfor(0)(_ < n, _ + 1) { i =>
+      cfor(0)(_ < n, _ + 1) { j =>
+        distanceM.setEntry(i,j,math.min(distanceM.getEntry(i,j), sv.range))
+        varMatrix.setEntry(i,j,sv(distanceM.getEntry(i,j)))
+      }
+    }
+    varMatrix
+  }
+
   def varianceMatrixGen(range: Double, sill: Double, nugget: Double, sv: Double => Double, distanceM: RealMatrix): RealMatrix = {
     val n: Int = distanceM.getRowDimension
     val varMatrix: RealMatrix = MatrixUtils.createRealMatrix(n, n)
@@ -48,6 +63,22 @@ trait KrigingVectorInterpolationMethod{
     }
     distanceID
   }
+  def getPointDistancesGeo(points: Seq[PointFeature[Double]], distanceID: Array[(PointFeature[Double], Int)], bandwidth: Double, point: Point): Array[Int] = {
+    //Returns the indices of points close to the point for prediction within the given bandwidth
+    //In case the number of points<3; it returns the closest three points
+    var sequenceID: Array[Int] = Array()
+    cfor(0)(_ < points.length, _ + 1) { j: Int =>
+      val curDist = distance(points(j).geom, point)
+      if (curDist < bandwidth)
+        sequenceID = sequenceID :+ j
+    }
+    if (sequenceID.length < 5) {
+      distanceID.sortWith((f, s) => f._1.data < s._1.data)
+      Array() :+ distanceID(0)._2 :+ distanceID(1)._2 :+ distanceID(2)._2 :+ distanceID(3)._2 :+ distanceID(4)._2
+    }
+    else
+      sequenceID
+  }
   def getPointDistances(points: Seq[PointFeature[Double]], distanceID: Array[(PointFeature[Double], Int)], bandwidth: Double, point: Point): Array[Int] = {
     //Returns the indices of points close to the point for prediction within the given bandwidth
     //In case the number of points<3; it returns the closest three points
@@ -65,6 +96,13 @@ trait KrigingVectorInterpolationMethod{
     }
     else
       sequenceID
+  }
+
+  def absArray(Arr: Array[Double]): Array[Double] = {
+    cfor(0)(_ < Arr.length, _ + 1) { i =>
+      Arr(i) = math.abs(Arr(i))
+    }
+    Arr
   }
 
   def distanceMatrix(xy: RealMatrix): RealMatrix = {
@@ -127,7 +165,7 @@ class KrigingSimple(points: Seq[PointFeature[Double]], bandwidth: Double, svPara
         if (d.getEntry(j, 0) == 0)
           covVec.setEntry(j, 0, covVec.getEntry(j, 0) + nugget)
       }
-      var mu: Double = points.foldLeft(0.0)(_ + _.data) / n
+      val mu: Double = points.foldLeft(0.0)(_ + _.data) / n
       val kTemp: RealMatrix = covVec.transpose().multiply(CC)
       val kPredict = mu + kTemp.multiply(VMatrix.getSubMatrix(distanceID, Array(0)).subtract(UCol.getSubMatrix(distanceID, Array(0)).scalarMultiply(mu))).getEntry(0, 0)
       val kVar = math.sqrt(sill - kTemp.multiply(covVec).getEntry(0, 0))
@@ -161,7 +199,7 @@ class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svPa
     if (rank < C.getRowDimension)
       C = C.add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(0.0000001))
     val muTemp: RealMatrix = colUnit.transpose().multiply(new EigenDecomposition(C).getSolver.getInverse)
-    var mu: Double = muTemp.multiply(VMatrix).getEntry(0, 0) / muTemp.multiply(colUnit).getEntry(0, 0)
+    val mu: Double = muTemp.multiply(VMatrix).getEntry(0, 0) / muTemp.multiply(colUnit).getEntry(0, 0)
     val Residual: RealMatrix = VMatrix.subtract(colUnit.scalarMultiply(mu))
     cfor(0)(_ < pointMatrix.length, _ + 1) { i: Int =>
       val pointPredict: Point = pointMatrix(i)
@@ -188,197 +226,174 @@ class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svPa
   }
 }
 
-class KrigingUniversal(points: Array[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingVectorInterpolationMethod {
-  def getCovariogramMatrix(sv: Semivariogram, sill: Double, points: Seq[PointFeature[Double]]): RealMatrix = {
-    val pointSize = points.size
-    val nugget = sv(0)
-    val covariogram = Array.ofDim[Double](pointSize, pointSize)
-    cfor(0)(_ < pointSize, _ + 1) { row =>
-      //covariogram(row)(row) = sill - nugget
-      covariogram(row)(row) = sill
-      cfor(0)(_ < row, _ + 1) { col =>
-        covariogram(row)(col) = sill - sv(distance(points(row).geom, points(col).geom))
-        covariogram(col)(row) = covariogram(row)(col)
-      }
-    }
-    MatrixUtils.createRealMatrix(covariogram)
-  }
+class KrigingUniversal(points: Array[PointFeature[Double]], attributeSample: Array[Array[Double]], attribute: Array[Array[Double]], bandwidth: Double, model: ModelType) extends KrigingVectorInterpolationMethod {
+
   def createPredictor(): Point => (Double, Double) = {
-    pointPredict => {
-      val pointSize = points.size
-      if (pointSize == 0)
-        throw new IllegalArgumentException("No Points in the observation sequence")
-
-      //OLS Estimation
-      val attrArray = Array.ofDim[Double](pointSize, 6)
-      cfor(0)(_ < pointSize, _ + 1) { row =>
-        val s1 = points(row).geom.x
-        val s2 = points(row).geom.y
-        attrArray(row) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
-      }
-      val yMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data.toDouble).toArray)
-      val attrMatrix: RealMatrix = MatrixUtils.createRealMatrix(attrArray)
-      val betaOLS: RealMatrix = new LUDecomposition(attrMatrix.transpose().multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(yMatrix)
-
-      val errorOLS = yMatrix.subtract(attrMatrix.multiply(betaOLS))
-
-      //Covariance Estimation
-      val sv: Semivariogram = NonLinearSemivariogram(points, 1.0, lag.toInt, model)
-
-      //Full covariogram
-      val sill: Double = Semivariogram.s
-      val covariogram: RealMatrix = getCovariogramMatrix(sv, sill, points)
-      val covarianceInverse: RealMatrix = new LUDecomposition(covariogram).getSolver.getInverse
-
-      //GLS Estimation (Full matrix)
-      val betaN: RealMatrix = new LUDecomposition(attrMatrix.transpose().multiply(covarianceInverse).multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(covarianceInverse).multiply(yMatrix)
-
-      //Prediction Set
-      //TODO : Check if n >= k + 2 holds else reiterate the set generation process
-      val predictionSet: Seq[PointFeature[Double]] = points.filter(x => distance(x.geom, pointPredict) < radius.get)
-
-      val covariogramSample: RealMatrix = getCovariogramMatrix(sv, sill, predictionSet)
-      val covariogramSampleInverse: RealMatrix = new LUDecomposition(covariogramSample).getSolver.getInverse
-      val sillSample: Double = Semivariogram.s
-      val pointSampleSize = predictionSet.size
-      val ySampleMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(predictionSet.map(x => x.data.toDouble).toArray)
-
-      val cSampleMatrix: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(1, pointSampleSize) { (_, i) => sill - sv(distance(pointPredict, predictionSet(i).geom)) })
-      val attrSampleArray = Array.ofDim[Double](pointSampleSize, pointSampleSize)
-      cfor(0)(_ < pointSampleSize, _ + 1) { row =>
-        val s1 = predictionSet(row).geom.x
-        val s2 = predictionSet(row).geom.y
-        attrSampleArray(row) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
-      }
-      val attrSampleMatrix: RealMatrix = MatrixUtils.createRealMatrix(attrSampleArray)
-      val errorSampleMatrix: RealMatrix = ySampleMatrix.subtract(attrSampleMatrix.multiply(betaN))
-
-      val errorPoint: Double = cSampleMatrix.multiply(covariogramSampleInverse).multiply(errorSampleMatrix).getEntry(0, 0)
-      val x0Array = Array.ofDim[Double](1, pointSize)
-      val s1 = pointPredict.x
-      val s2 = pointPredict.y
-      x0Array(0) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
-      val x0: RealMatrix = MatrixUtils.createRealMatrix(x0Array)
-      val prediction: Double = x0.multiply(betaN).getEntry(0, 0) + errorPoint
-
-      val part1: Double = sill - cSampleMatrix.multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose()).getEntry(0, 0)
-      val part2_1: RealMatrix = x0.subtract(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose())).transpose()
-      val part2_2: RealMatrix = new LUDecomposition(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix)).getSolver.getInverse
-
-      val part2_2_1: RealMatrix = new CholeskyDecomposition(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix)).getSolver.getInverse
-      val part2_3: RealMatrix = x0.subtract(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose()))
-
-      val krigingVariance: Double = math.sqrt(part1 + part2_1.multiply(part2_2).multiply(part2_3).getEntry(0, 0))
-      (prediction, krigingVariance)
-    }
+    P: Point => predict(Array(P))(0)
   }
-  def predict(rasterData: Array[Point]): Array[(Double, Double)] = {
-    Array((1.0, 1.0))
+
+  def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
+    val n: Int = points.length
+    if (n == 0)
+      throw new IllegalArgumentException("No points in the training dataset")
+
+    val k: Int = attributeSample(0).length
+    val UCol: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
+    val attrSample = Array.ofDim[Double](n, k+1)
+    cfor(0)(_ < n, _ + 1) { row =>
+      attrSample(row) = Array(1.0) ++ attributeSample(row)
+    }
+    val XX: RealMatrix = MatrixUtils.createRealMatrix(attrSample)
+    val S: RealMatrix = new EigenDecomposition(MatrixUtils.createRealDiagonalMatrix(Array.tabulate(k+1){i => absArray(XX.getColumn(i)).max})).getSolver.getInverse
+    val Z: RealMatrix = XX.multiply(S)
+    val MTemp: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(points.length, 2) {
+      (i, j) => {
+        if (j == 0) points(i).geom.x
+        else points(i).geom.y
+      }
+    })
+    val y0: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data))
+    var bb: RealMatrix = new SingularValueDecomposition(Z).getSolver.solve(y0)
+    var b: RealMatrix = S.multiply(bb)
+    val e: RealMatrix = y0.subtract(XX.multiply(b))
+    val pointsFitting: Array[PointFeature[Double]] = Array.tabulate(n) {row: Int => PointFeature(points(row).geom, e.getEntry(row, 0)) }
+    val res: Semivariogram = NonLinearSemivariogram(pointsFitting, 0, 0, model)
+
+    //Covariogram Matrix
+    var C: RealMatrix = UCol.multiply(UCol.transpose()).scalarMultiply(res.sill).subtract(varianceMatrixGen(res, distanceMatrix(MTemp))).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(res.nugget))
+    val rank: Int = new SingularValueDecomposition(C).getRank
+    if (rank < C.getRowDimension)
+      C = C.add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(0.0001))
+    val AA: RealMatrix = new LUDecomposition(new CholeskyDecomposition(C).getL).getSolver.getInverse
+    bb = new SingularValueDecomposition(AA.multiply(Z)).getSolver.solve(AA.multiply(y0))
+    b = S.multiply(bb)
+    val N: Int = pointMatrix.length
+    val XXArrayNew = Array.ofDim[Double](N, k+1)
+    cfor(0)(_ < N, _ + 1) { row =>
+      XXArrayNew(row) = Array(1.0) ++ attribute(row)
+    }
+    val XXNew: RealMatrix = MatrixUtils.createRealMatrix(XXArrayNew)
+    val prediction: Array[(Double, Double)] = Array.ofDim[(Double, Double)](pointMatrix.length)
+    val Residual: RealMatrix = y0.subtract(XX.multiply(b))
+    cfor(0)(_ < N, _ + 1) { i: Int =>
+      val distanceSeq: Array[(PointFeature[Double], Int)] = getDistances(points, pointMatrix(i))
+      val distanceID: Array[Int] = getPointDistancesGeo(points, distanceSeq, bandwidth, pointMatrix(i))
+      val CC: RealMatrix = new SingularValueDecomposition(C.getSubMatrix(distanceID, distanceID)).getSolver.getInverse
+      val d: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n) { i => distanceSeq(i)._1.data }).getSubMatrix(distanceID, Array(0))
+      val cSmall: RealMatrix = UCol.getSubMatrix(distanceID, Array(0)).scalarMultiply(res.sill).subtract(MatrixUtils.createRealMatrix(Array.tabulate(d.getRowDimension, 1){(i, _) => res(d.getEntry(i,0))}))
+      cfor(0)(_ < d.getRowDimension, _ + 1) { j: Int =>
+        if (d.getEntry(j, 0) == 0)
+          cSmall.setEntry(j, 0, cSmall.getEntry(j, 0) + res.nugget)
+      }
+      val kPredict: Double = MatrixUtils.createRowRealMatrix(XXNew.getRow(i)).multiply(b).getEntry(0,0) + cSmall.transpose().multiply(CC).multiply(Residual.getSubMatrix(distanceID,Array(0))).getEntry(0,0)
+      val ZZ: RealMatrix = Z.getSubMatrix(distanceID, Array.tabulate(XX.getColumnDimension){i => i})
+      val rankTemp: Int = new SingularValueDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getRank
+      val B: RealMatrix =
+        if (rankTemp < k + 1)
+          S.multiply(new SingularValueDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getSolver.getInverse).multiply(S)
+        else
+          S.multiply(new EigenDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getSolver.getInverse).multiply(S)
+      val kVarTemp: RealMatrix = MatrixUtils.createColumnRealMatrix(XXNew.getRow(i)).subtract(XX.getSubMatrix(distanceID, Array.tabulate(XX.getColumnDimension){i => i}).transpose().multiply(CC).multiply(cSmall))
+      val kVar: Double = math.sqrt(res.sill - cSmall.transpose().multiply(CC).multiply(cSmall).getEntry(0,0) + kVarTemp.transpose().multiply(B).multiply(kVarTemp).getEntry(0,0))
+      prediction(i) = (kPredict, kVar)
+    }
+    prediction
   }
 }
 
-class KrigingGeo(points: Seq[PointFeature[Double]], radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType) extends KrigingVectorInterpolationMethod {
-  def getCovariogramMatrix(sv: Semivariogram, sill: Double, points: Seq[PointFeature[Double]]): RealMatrix = {
-    val pointSize = points.size
-    val nugget = sv(0)
-    val covariogram = Array.ofDim[Double](pointSize, pointSize)
-    cfor(0)(_ < pointSize, _ + 1) { row =>
-      //covariogram(row)(row) = sill - nugget
-      covariogram(row)(row) = sill
-      cfor(0)(_ < row, _ + 1) { col =>
-        covariogram(row)(col) = sill - sv(distance(points(row).geom, points(col).geom))
-        covariogram(col)(row) = covariogram(row)(col)
-      }
-    }
-    MatrixUtils.createRealMatrix(covariogram)
-  }
+class KrigingGeo(points: Array[PointFeature[Double]], attributeSample: Array[Array[Double]], attribute: Array[Array[Double]], bandwidth: Double, model: ModelType) extends KrigingVectorInterpolationMethod {
+
   def createPredictor(): Point => (Double, Double) = {
-    pointPredict => {
-      val pointSize = points.size
-      if (pointSize == 0)
-        throw new IllegalArgumentException("No Points in the observation sequence")
-
-      val attrArray = Array.ofDim[Double](pointSize, 6)
-      cfor(0)(_ < pointSize, _ + 1) { row =>
-        val s1 = points(row).geom.x
-        val s2 = points(row).geom.y
-        attrArray(row) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
-      }
-      val yMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data.toDouble).toArray)
-      val attrMatrix: RealMatrix = MatrixUtils.createRealMatrix(attrArray)
-      var convergence: Double = 1
-
-      //1. OLS Estimate (Beta)
-      //Solving :     X * betaOLS = y
-      var beta: RealMatrix = new LUDecomposition(attrMatrix.transpose().multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(yMatrix)
-      var error = yMatrix.subtract(attrMatrix.multiply(beta))
-
-      while (convergence > 0.001)
-      {
-        val betaOld: RealMatrix = beta
-        val errorOld: RealMatrix = error
-        val pointsNew: Array[PointFeature[Double]] =
-          Array.tabulate(pointSize){row => PointFeature(points(row).geom, errorOld.getEntry(row, 0)) }
-        val abc = EmpiricalVariogram.nonlinear(pointsNew, 1.0, lag.toInt)
-        val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
-        val sv: Semivariogram = Semivariogram.fit(empiricalSemivariogram, model)
-        val sill: Double = Semivariogram.s
-        val covariogram: RealMatrix = getCovariogramMatrix(sv, sill, points)
-        val covarianceInverse: RealMatrix = new LUDecomposition(covariogram).getSolver.getInverse
-        beta = new LUDecomposition(attrMatrix.transpose().multiply(covarianceInverse).multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(covarianceInverse).multiply(yMatrix)
-        error = yMatrix.subtract(attrMatrix.multiply(beta))
-        var Delta: Double = 0
-        cfor(0)(_ < 6, _ + 1) { row =>
-          Delta = math.max(Delta, math.abs((beta.getEntry(row, 0) - betaOld.getEntry(row, 0)) / betaOld.getEntry(row, 0)))
-        }
-        convergence = Delta
-      }
-
-      val pointsNew: Array[PointFeature[Double]] =
-        Array.tabulate(pointSize) {row: Int => PointFeature(points(row).geom, error.getEntry(row, 0)) }
-      val abc = EmpiricalVariogram.nonlinear(pointsNew, 1.0, lag.toInt)
-      val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
-      val sv: Semivariogram = Semivariogram.fit(empiricalSemivariogram, model)
-      val sill: Double = Semivariogram.s
-      val covariogram: RealMatrix = getCovariogramMatrix(sv, sill, points)
-      val covarianceInverse: RealMatrix = new LUDecomposition(covariogram).getSolver.getInverse
-
-      val betaN: RealMatrix = new LUDecomposition(attrMatrix.transpose().multiply(covarianceInverse).multiply(attrMatrix)).getSolver.getInverse.multiply(attrMatrix.transpose()).multiply(covarianceInverse).multiply(yMatrix)
-      val predictionSet: Seq[PointFeature[Double]] = points.filter(x => distance(x.geom, pointPredict) < radius.get.toDouble)
-      val covariogramSample: RealMatrix = getCovariogramMatrix(sv, sill, predictionSet)
-      val covariogramSampleInverse: RealMatrix = new LUDecomposition(covariogramSample).getSolver.getInverse
-      val sillSample: Double = Semivariogram.s
-      val pointSampleSize = predictionSet.size
-      val ySampleMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(predictionSet.map(x => x.data.toDouble).toArray)
-
-      val cSampleMatrix: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(1, pointSampleSize) { (_, i) => sill - sv(distance(pointPredict, predictionSet(i).geom)) })
-      val attrSampleArray = Array.ofDim[Double](pointSampleSize, pointSampleSize)
-      cfor(0)(_ < pointSampleSize, _ + 1) { row =>
-        val s1 = predictionSet(row).geom.x
-        val s2 = predictionSet(row).geom.y
-        attrSampleArray(row) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
-      }
-      val attrSampleMatrix: RealMatrix = MatrixUtils.createRealMatrix(attrSampleArray)
-      val errorSampleMatrix: RealMatrix = ySampleMatrix.subtract(attrSampleMatrix.multiply(betaN))
-
-      val errorPoint: Double = cSampleMatrix.multiply(covariogramSampleInverse).multiply(errorSampleMatrix).getEntry(0, 0)
-      val x0Array = Array.ofDim[Double](1, pointSize)
-      val s1 = pointPredict.x
-      val s2 = pointPredict.y
-      x0Array(0) = Array(1, s1, s2, s1 * s1, s1 * s2, s2 * s2)
-      val x0: RealMatrix = MatrixUtils.createRealMatrix(x0Array)
-      val prediction: Double = x0.multiply(betaN).getEntry(0, 0) + errorPoint
-      val part1: Double = sill - cSampleMatrix.multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose()).getEntry(0, 0)
-      val part2_1: RealMatrix = x0.transpose().subtract(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose())).transpose()
-      var kTemp = attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(attrSampleMatrix).add(MatrixUtils.createRealIdentityMatrix(6))
-      val part2_2: RealMatrix = new LUDecomposition(kTemp).getSolver.getInverse
-      val part2_3: RealMatrix = x0.transpose().subtract(attrSampleMatrix.transpose().multiply(covariogramSampleInverse).multiply(cSampleMatrix.transpose()))
-
-      val krigingVariance: Double = math.sqrt(part1 + part2_1.multiply(part2_2).multiply(part2_3).getEntry(0, 0))
-      (prediction, krigingVariance)
-    }
+    P: Point => predict(Array(P))(0)
   }
-  def predict(rasterData: Array[Point]): Array[(Double, Double)] = {
-    Array((1.0, 1.0))
+
+  def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
+    val n: Int = points.length
+    if (n == 0)
+      throw new IllegalArgumentException("No points in the training dataset")
+
+    val k: Int = attributeSample(0).length
+    val UCol: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
+    val attrSample = Array.ofDim[Double](n, k+1)
+    cfor(0)(_ < n, _ + 1) { row =>
+      attrSample(row) = Array(1.0) ++ attributeSample(row)
+    }
+    val XX: RealMatrix = MatrixUtils.createRealMatrix(attrSample)
+    val S: RealMatrix = new EigenDecomposition(MatrixUtils.createRealDiagonalMatrix(Array.tabulate(k+1){i => absArray(XX.getColumn(i)).max})).getSolver.getInverse
+    val Z: RealMatrix = XX.multiply(S)
+    val MTemp: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(points.length, 2) {
+      (i, j) => {
+        if (j == 0) points(i).geom.x
+        else points(i).geom.y
+      }
+    })
+    val D: RealMatrix = distanceMatrix(MTemp)
+    val y0: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data))
+    var bb: RealMatrix = new SingularValueDecomposition(Z).getSolver.solve(y0)
+    var b: RealMatrix = S.multiply(bb)
+    var e: RealMatrix = y0.subtract(XX.multiply(b))
+    var pointsFitting: Array[PointFeature[Double]] = Array.tabulate(n) {row: Int => PointFeature(points(row).geom, e.getEntry(row, 0)) }
+    var res: Semivariogram = NonLinearSemivariogram(pointsFitting, 0, 0, model)
+    var delta: Double = 1.0
+    var A: RealMatrix = UCol
+    var AA: RealMatrix = UCol
+    println("Delta = " + delta)
+    while (delta > 0.001) {
+      val b0: RealMatrix = b
+      var C: RealMatrix = UCol.multiply(UCol.transpose()).scalarMultiply(res.sill).subtract(varianceMatrixGen(res, D)).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(res.nugget))
+      val rank: Int = new SingularValueDecomposition(C).getRank
+      if (rank < C.getRowDimension)
+        C = C.add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(0.0001))
+      A = new CholeskyDecomposition(C).getL
+      AA = new LUDecomposition(A).getSolver.getInverse
+      bb = new SingularValueDecomposition(AA.multiply(Z)).getSolver.solve(AA.multiply(y0))
+      b = S.multiply(bb)
+      e = y0.subtract(XX.multiply(b))
+      pointsFitting = Array.tabulate(n) {row: Int => PointFeature(points(row).geom, e.getEntry(row, 0)) }
+      val process: Array[Double] = b.subtract(b0).getColumn(0)
+      delta = absArray(Array.tabulate(process.length){i => math.abs(process(i))/b0.getEntry(i,0)}).max
+      println("Delta = " + delta)
+      if(delta > 0.001)
+        res = NonLinearSemivariogram(pointsFitting, 0, 0, model)
+    }
+    val C: RealMatrix = UCol.multiply(UCol.transpose()).scalarMultiply(res.sill).subtract(varianceMatrixGen(res, D)).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(res.nugget))
+    val cov_bb: RealMatrix = new LUDecomposition(Z.transpose().multiply(AA.transpose().multiply(AA).multiply(Z))).getSolver.getInverse
+    val cov_b: RealMatrix = S.multiply(cov_bb.multiply(S.transpose()))
+    e = y0.subtract(XX.multiply(b))
+    val N: Int = pointMatrix.length
+    val XXArrayNew = Array.ofDim[Double](N, k+1)
+    cfor(0)(_ < N, _ + 1) { row =>
+      XXArrayNew(row) = Array(1.0) ++ attribute(row)
+    }
+    val XXNew: RealMatrix = MatrixUtils.createRealMatrix(XXArrayNew)
+    val prediction: Array[(Double, Double)] = Array.ofDim[(Double, Double)](pointMatrix.length)
+    val Residual: RealMatrix = y0.subtract(XX.multiply(b))
+    cfor(0)(_ < N, _ + 1) { i: Int =>
+      val pointPredict: Point = pointMatrix(i)
+      val distanceSeq: Array[(PointFeature[Double], Int)] = getDistances(points, pointPredict)
+      val distanceID: Array[Int] = getPointDistancesGeo(points, distanceSeq, bandwidth, pointPredict)
+      val distanceFromSample: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n) { i => distanceSeq(i)._1.data })
+      val CC: RealMatrix = new SingularValueDecomposition(C.getSubMatrix(distanceID, distanceID)).getSolver.getInverse
+      val d: RealMatrix = distanceFromSample.getSubMatrix(distanceID, Array(0))
+      val c: RealMatrix = UCol.getSubMatrix(distanceID, Array(0)).scalarMultiply(res.sill).subtract(MatrixUtils.createRealMatrix(Array.tabulate(d.getRowDimension, 1){(i, _) => res(d.getEntry(i,0))}))
+      cfor(0)(_ < d.getRowDimension, _ + 1) { j: Int =>
+        if (d.getEntry(j, 0) == 0)
+          c.setEntry(j, 0, c.getEntry(j, 0) + res.nugget)
+      }
+      val kPredict: Double = MatrixUtils.createRowRealMatrix(XXNew.getRow(i)).multiply(b).getEntry(0,0) + c.transpose().multiply(CC).multiply(Residual.getSubMatrix(distanceID,Array(0))).getEntry(0,0)
+      val wSmall: RealMatrix = MatrixUtils.createColumnRealMatrix(XXNew.getRow(i))
+      val W: RealMatrix = XX.getSubMatrix(distanceID, Array.tabulate(XX.getColumnDimension){i => i})
+      val ZZ: RealMatrix = Z.getSubMatrix(distanceID, Array.tabulate(XX.getColumnDimension){i => i})
+      val rankTemp: Int = new SingularValueDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getRank
+      val B: RealMatrix =
+        if (rankTemp < k + 1)
+          S.multiply(new SingularValueDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getSolver.getInverse).multiply(S)
+        else
+          S.multiply(new EigenDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getSolver.getInverse).multiply(S)
+      val kVarTemp: RealMatrix = wSmall.subtract(W.transpose().multiply(CC).multiply(c))
+      val kVar: Double = math.sqrt(res.sill - c.transpose().multiply(CC).multiply(c).getEntry(0,0) + kVarTemp.transpose().multiply(B).multiply(kVarTemp).getEntry(0,0))
+      prediction(i) = (kPredict, kVar)
+    }
+    prediction
   }
 }
