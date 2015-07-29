@@ -12,7 +12,7 @@ object CRS {
 
   private val filePrefix = "proj4/src/main/resources/nad/"
 
-  private lazy val proj4ToEPSGMap = new Memoize[String,Option[String]](readEPSGCodeFromFile,mutable.Map.empty[String,Option[String]])
+  private lazy val proj4ToEPSGMap = new Memoize[String,Option[String]](readEPSGCodeFromFile)
 
   /**
    * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
@@ -40,7 +40,7 @@ object CRS {
    */
   def fromName(name: String): CRS =
     new CRS { val crs = crsFactory.createFromName(name)
-      override val epsgCode: Option[String] = getEPSGCode(toProj4String+" <>")
+      override val epsgCode: Option[Int] = getEPSGCode(toProj4String+" <>")
     }
 
   /**
@@ -56,7 +56,7 @@ object CRS {
    */
   def fromString(proj4Params: String): CRS =
     new CRS { val crs = crsFactory.createFromParameters(null, proj4Params)
-      override val epsgCode: Option[String] = getEPSGCode(toProj4String+" <>")
+      override val epsgCode: Option[Int] = getEPSGCode(toProj4String+" <>")
     }
 
   /**
@@ -73,7 +73,7 @@ object CRS {
    */
   def fromString(name: String, proj4Params: String): CRS =
     new CRS{ val crs = crsFactory.createFromParameters(name, proj4Params)
-      override val epsgCode: Option[String] = getEPSGCode(toProj4String+" <>")
+      override val epsgCode: Option[Int] = getEPSGCode(toProj4String+" <>")
     }
 
   /**
@@ -92,8 +92,11 @@ object CRS {
    * @param proj4String
    * @return
    */
-  def getEPSGCode(proj4String: String):Option[String]={
-     proj4ToEPSGMap(proj4String)
+  def getEPSGCode(proj4String: String):Option[Int]={
+     proj4ToEPSGMap(proj4String) match {
+       case Some(code) => Some(code.toInt)
+       case None =>  None
+     }
   }
 
   private def readEPSGCodeFromFile(proj4String: String): Option[String] ={
@@ -119,7 +122,7 @@ trait CRS extends Serializable {
 
   private[proj4] val crs: CoordinateReferenceSystem
 
-  val epsgCode: Option[String]
+  val epsgCode: Option[Int]
 
   protected def factory = CRS.crsFactory
 

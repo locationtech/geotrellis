@@ -3,7 +3,8 @@ import scala.collection.mutable
 /**
  * @author Manuri Perera
  */
-class Memoize[T, R](f: T => R,map:mutable.Map[T,R]) extends (T => R) {
+class Memoize[T, R](f: T => R) extends (T => R) {
+  val map: mutable.Map[T,R] = mutable.Map.empty[T,R]
   def apply(x: T): R = {
     if (map.contains(x)) {
       map(x)

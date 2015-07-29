@@ -13,17 +13,17 @@ import scala.io.Source
 object WKT {
   private val file = "proj4/src/main/resources/wkt/epsg.properties"
 
-  private lazy val EPSGCodeToWKTMap = new Memoize[String,String](retrieveWKTStringFromFile,mutable.Map.empty[String,String])
+  private lazy val epsgcodetowktmap = new Memoize[String,String](retrieveWKTStringFromFile)
 
-  private lazy val WKTToEPSGCodeMap = new Memoize[String,String](retrieveEPSGCodeFromFile,mutable.Map.empty[String,String])
+  private lazy val wkttoepsgcodemap = new Memoize[String,String](retrieveEPSGCodeFromFile)
 
   /**
    * Returns the WKT representation given an EPSG code in the format EPSG:[number]
    * @param code
    * @return
    */
-  def fromEPSGCode(code :String): String ={
-    EPSGCodeToWKTMap(code)
+  def fromEPSGCode(code :Int): String ={
+    epsgcodetowktmap(code.toString)
   }
 
   /**
@@ -32,7 +32,7 @@ object WKT {
    * @return
    */
   def getEPSGCode(wktString:String)={
-    WKTToEPSGCodeMap(wktString)
+    wkttoepsgcodemap(wktString)
   }
 
   private def retrieveWKTStringFromFile(code:String):String= {
