@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.Job
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
-  val defaultTiffExtensions: Seq[String] = Seq(".tif", ".tiff")
+  val defaultTiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF")
 
   def hadoopGeoTiffRDD(path: String): RDD[(ProjectedExtent, Tile)] =
     hadoopGeoTiffRDD(new Path(path), defaultTiffExtensions)
@@ -30,7 +30,7 @@ trait HadoopSparkContextMethods {
 
   def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, Tile)] = {
     val searchPath = path.toString match {
-      case p if tiffExtensions.exists(p.contains) => path
+      case p if tiffExtensions.exists(p.endsWith) => path
       case p => new Path(p + "/*" + tiffExtensions.mkString("{", ",", "}"))
     }
 
