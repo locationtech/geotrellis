@@ -34,14 +34,6 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
     featureMaps.foreach{ f => buffer = writeFeatureJsonWithID(f) :: buffer }
   def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
-  def add(geometry: Geometry) =
-    buffer = geometry.toJson :: buffer
-  def +=(id: String, geometry: Geometry) = add(geometry)
-
-  def addAll(geometries: Seq[Geometry]) =
-    geometries.foreach{ f => add(f) }
-  def ++=(geometries: Seq[Geometry]) = addAll(geometries)
-
   def toJson: JsValue =
     JsObject(
       "type" -> JsString("FeatureCollection"),
@@ -102,12 +94,6 @@ object JsonFeatureCollectionMap {
   def apply[G <: Geometry, D: JsonWriter](features: Traversable[(String, Feature[G, D])]) = {
     val fc = new JsonFeatureCollectionMap()
     fc ++= features.toList
-    fc
-  }
-
-  def apply(geometries: Traversable[Geometry]) = {
-    val fc = new JsonFeatureCollectionMap()
-    fc ++= geometries.toList
     fc
   }
 
