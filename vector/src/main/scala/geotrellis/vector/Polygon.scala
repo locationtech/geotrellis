@@ -128,12 +128,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
-   * Returns the minimum extent that contains this Polygon.
-   */
-  lazy val envelope: Extent =
-    jtsGeom.getEnvelopeInternal
-
-  /**
    * Returns this Polygon's perimeter.
    * A Polygon's perimeter is the length of its exterior and interior
    * boundaries.

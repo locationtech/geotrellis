@@ -147,5 +147,19 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     }
   }
 
+  it should "convert polygons in GeoJson GeometryCollection" in  {
+
+    val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+    val l2 = Line(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
+
+    val p1: Polygon = Polygon(l1)
+    val p2: Polygon = Polygon(l2)
+
+    val json = Seq(p1, p2).toGeoJson
+    val polygonsBack = json.parseGeoJson[GeometryCollection].polygons
+
+    polygonsBack should be (Seq(p1, p2))
+  }
+
 }
 
