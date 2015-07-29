@@ -22,6 +22,10 @@ import geotrellis.vector.interpolation._
 
 import spire.syntax.cfor._
 
+/**
+ * @author Vishal Anand
+ */
+
 object KrigingInterpolation {
 
   private def isValid(point: Point, re: RasterExtent): Boolean =
@@ -49,9 +53,9 @@ object KrigingInterpolation {
     }
   }
 
-  def apply(method: KrigingVectorInterpolationMethod, points: Array[PointFeature[Double]], re: RasterExtent, radius: Option[Double], chunkSize: Double, lag: Double = 0, model: ModelType): Tile = {
+  def apply(method: KrigingVectorInterpolationMethod, points: Array[PointFeature[Double]], re: RasterExtent, chunkSize: Double, model: ModelType): Tile = {
     model match {
-      case Linear(_,_) =>
+      case Linear(radius, lag) =>
         val cols = re.cols
         val rows = re.rows
         val tile = ArrayTile.alloc(TypeDouble, cols, rows)

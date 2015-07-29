@@ -16,18 +16,20 @@
 
 package geotrellis.vector.interpolation
 import geotrellis.vector._
-
 import org.apache.commons.math3.linear._
-
 import spire.syntax.cfor._
+
+/**
+ * @author Vishal Anand
+ */
 
 trait KrigingVectorInterpolationMethod{
   def createPredictor(): Point => (Double, Double)
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)]
 
-  def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))
+  private def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))
 
-  def varianceMatrixGen(sv: Semivariogram, distanceM: RealMatrix): RealMatrix = {
+  protected def varianceMatrixGen(sv: Semivariogram, distanceM: RealMatrix): RealMatrix = {
     val n: Int = distanceM.getRowDimension
     val varMatrix: RealMatrix = MatrixUtils.createRealMatrix(n, n)
 
@@ -41,71 +43,55 @@ trait KrigingVectorInterpolationMethod{
     varMatrix
   }
 
-  def varianceMatrixGen(range: Double, sill: Double, nugget: Double, sv: Double => Double, distanceM: RealMatrix): RealMatrix = {
-    val n: Int = distanceM.getRowDimension
-    val varMatrix: RealMatrix = MatrixUtils.createRealMatrix(n, n)
-
-    //Variance shifts to sill, if distance>range
-    cfor(0)(_ < n, _ + 1) { i =>
-      cfor(0)(_ < n, _ + 1) { j =>
-        distanceM.setEntry(i,j,math.min(distanceM.getEntry(i,j), range))
-        varMatrix.setEntry(i,j,sv(distanceM.getEntry(i,j)))
-      }
-    }
-    varMatrix
-  }
-
-  def getDistances(points: Seq[PointFeature[Double]], point: Point): Array[(PointFeature[Double], Int)] = {
-    //Returns a cluster of distances of pointPredict from the Sample Point Set along with the indices
+  /**
+   * Returns a cluster of distances of pointPredict from the Sample Point Set along with the indices
+   */
+  protected def getDistances(points: Seq[PointFeature[Double]], point: Point): Array[(PointFeature[Double], Int)] = {
     var distanceID: Array[(PointFeature[Double], Int)] = Array()
     cfor(0)(_ < points.length, _ + 1) { j: Int =>
       distanceID = distanceID :+(PointFeature(points(j).geom, distance(points(j).geom, point)), j)
     }
     distanceID
   }
-  def getPointDistancesGeo(points: Seq[PointFeature[Double]], distanceID: Array[(PointFeature[Double], Int)], bandwidth: Double, point: Point): Array[Int] = {
-    //Returns the indices of points close to the point for prediction within the given bandwidth
-    //In case the number of points<3; it returns the closest three points
+
+  /**
+   * Returns the indices of points close to the point for prediction within the given bandwidth
+   * In case the number of points < minPoints; it returns the closest minPoints number of points
+   */
+  protected def getPointDistances(points: Seq[PointFeature[Double]], distanceID: Array[(PointFeature[Double], Int)], minPoints: Int, bandwidth: Double, point: Point): Array[Int] = {
+
     var sequenceID: Array[Int] = Array()
     cfor(0)(_ < points.length, _ + 1) { j: Int =>
       val curDist = distance(points(j).geom, point)
       if (curDist < bandwidth)
         sequenceID = sequenceID :+ j
     }
-    if (sequenceID.length < 5) {
+    if (sequenceID.length < minPoints) {
+      var result: Array[Int] = Array()
       distanceID.sortWith((f, s) => f._1.data < s._1.data)
-      Array() :+ distanceID(0)._2 :+ distanceID(1)._2 :+ distanceID(2)._2 :+ distanceID(3)._2 :+ distanceID(4)._2
-    }
-    else
-      sequenceID
-  }
-  def getPointDistances(points: Seq[PointFeature[Double]], distanceID: Array[(PointFeature[Double], Int)], bandwidth: Double, point: Point): Array[Int] = {
-    //Returns the indices of points close to the point for prediction within the given bandwidth
-    //In case the number of points<3; it returns the closest three points
-    var sequenceID: Array[Int] = Array()
-    cfor(0)(_ < points.length, _ + 1) { j: Int =>
-      val curDist = distance(points(j).geom, point)
-      if (curDist < bandwidth)
-        sequenceID = sequenceID :+ j
-    }
-    if (sequenceID.length < 3) {
-      var sequence3ID: Array[Int] = Array()
-      distanceID.sortWith((f, s) => f._1.data < s._1.data)
-      sequence3ID = sequence3ID :+ distanceID(0)._2 :+ distanceID(1)._2 :+ distanceID(2)._2
-      sequence3ID
+      cfor(0)(_ < minPoints, _ + 1) { i =>
+        result = result :+ distanceID(i)._2
+      }
+      result
     }
     else
       sequenceID
   }
 
-  def absArray(Arr: Array[Double]): Array[Double] = {
-    cfor(0)(_ < Arr.length, _ + 1) { i =>
-      Arr(i) = math.abs(Arr(i))
+  /**
+   * Returns the absolute values of a given array
+   */
+  protected def absArray(arr: Array[Double]): Array[Double] = {
+    cfor(0)(_ < arr.length, _ + 1) { i =>
+      arr(i) = math.abs(arr(i))
     }
-    Arr
+    arr
   }
 
-  def distanceMatrix(xy: RealMatrix): RealMatrix = {
+  /**
+   * Computes the pairwise distance as a matrix
+   */
+  protected def distanceMatrix(xy: RealMatrix): RealMatrix = {
     def repmat(mat: RealMatrix, n: Int, m: Int): RealMatrix = {
       val rd: Int = mat.getRowDimension
       val cd: Int = mat.getColumnDimension
@@ -131,30 +117,45 @@ trait KrigingVectorInterpolationMethod{
   }
 }
 
-class KrigingSimple(points: Seq[PointFeature[Double]], bandwidth: Double, svParam: Array[Double], model: ModelType) extends KrigingVectorInterpolationMethod {
-  val sv: Double => Double = NonLinearSemivariogram.explicitModel(svParam, model)
+/**
+ * @param points          Sample points for training
+ * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+ * @param sv              [[Semivariogram]] to be used for Kriging prediction
+ */
+class KrigingSimple(points: Seq[PointFeature[Double]], bandwidth: Double, sv: Semivariogram) extends KrigingVectorInterpolationMethod {
+
+  /**
+   * Simple Kriging Prediction for a single point
+   */
   def createPredictor(): Point => (Double, Double) = {
     P: Point => predict(Array(P))(0)
   }
+
+  /**
+   * Simple Kriging Prediction for an Array of points
+   * @param pointMatrix Points to be Krigred
+   * @return            Tuples of (krigedValues, krigedVariance) for each of the kriged points
+   */
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
     val n: Int = points.length
     val UCol: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
     val prediction: Array[(Double, Double)] = Array.ofDim[(Double, Double)](pointMatrix.length)
     val VMatrix: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data).toArray)
-    val XY: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(points.length, 2) {
+    val xy: RealMatrix = MatrixUtils.createRealMatrix(Array.tabulate(points.length, 2) {
       (i, j) => {
         if (j == 0) points(i).geom.x
         else points(i).geom.y
       }
     })
-    val distances: RealMatrix = distanceMatrix(XY)
-    val (range: Double, sill: Double, nugget: Double) = (svParam(0) ,svParam(1) ,svParam(2))
+    val distances: RealMatrix = distanceMatrix(xy)
+    //val (range: Double, sill: Double, nugget: Double) = (svParam(0) ,svParam(1) ,svParam(2))
+    val (range: Double, sill: Double, nugget: Double) = (sv.range, sv.sill, sv.nugget)
     //Covariogram Matrix
-    val C: RealMatrix = UCol.multiply(UCol.transpose()).scalarMultiply(sill).subtract(varianceMatrixGen(range, sill, nugget, sv, distances)).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(nugget))
+    val C: RealMatrix = UCol.multiply(UCol.transpose()).scalarMultiply(sill).subtract(varianceMatrixGen(sv, distances)).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(nugget))
     cfor(0)(_ < pointMatrix.length, _ + 1) { i: Int =>
       val pointPredict: Point = pointMatrix(i)
       val distanceSeq: Array[(PointFeature[Double], Int)] = getDistances(points, pointPredict)
-      val distanceID: Array[Int] = getPointDistances(points, distanceSeq, bandwidth, pointPredict)
+      val distanceID: Array[Int] = getPointDistances(points, distanceSeq, 3, bandwidth, pointPredict)
       val distanceFromSample: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n) { i => distanceSeq(i)._1.data })
       //Local Covariances
       val CC: RealMatrix = new EigenDecomposition(C.getSubMatrix(distanceID, distanceID)).getSolver.getInverse
@@ -175,11 +176,25 @@ class KrigingSimple(points: Seq[PointFeature[Double]], bandwidth: Double, svPara
   }
 }
 
-class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svParam: Array[Double], model: ModelType) extends KrigingVectorInterpolationMethod {
-  val sv: Double => Double = NonLinearSemivariogram.explicitModel(svParam, model)
+/**
+ * @param points          Sample points for training
+ * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+ * @param sv              [[Semivariogram]] to be used for Kriging prediction
+ */
+class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, sv: Semivariogram) extends KrigingVectorInterpolationMethod {
+
+  /**
+   * Ordinary Kriging Prediction for a single point
+   */
   def createPredictor(): Point => (Double, Double) = {
     P: Point => predict(Array(P))(0)
   }
+
+  /**
+   * Ordinary Kriging Prediction for an Array of points
+   * @param pointMatrix Points to be Krigred
+   * @return            Tuples of (krigedValues, krigedVariance) for each of the kriged points
+   */
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
     val n: Int = points.length
     val colUnit: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
@@ -192,9 +207,9 @@ class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svPa
       }
     })
     val distances: RealMatrix = distanceMatrix(XY)
-    val (range: Double, sill: Double, nugget: Double) = (svParam(0) ,svParam(1) ,svParam(2))
+    val (range: Double, sill: Double, nugget: Double) = (sv.range, sv.sill, sv.nugget)
     //Covariogram Matrix
-    var C: RealMatrix = colUnit.multiply(colUnit.transpose()).scalarMultiply(sill).subtract(varianceMatrixGen(range, sill, nugget, sv, distances)).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(nugget))
+    var C: RealMatrix = colUnit.multiply(colUnit.transpose()).scalarMultiply(sill).subtract(varianceMatrixGen(sv, distances)).add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(nugget))
     val rank: Int = new SingularValueDecomposition(C).getRank
     if (rank < C.getRowDimension)
       C = C.add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(0.0000001))
@@ -204,7 +219,7 @@ class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svPa
     cfor(0)(_ < pointMatrix.length, _ + 1) { i: Int =>
       val pointPredict: Point = pointMatrix(i)
       val distanceSeq: Array[(PointFeature[Double], Int)] = getDistances(points, pointPredict)
-      val distanceID: Array[Int] = getPointDistances(points, distanceSeq, bandwidth, pointPredict)
+      val distanceID: Array[Int] = getPointDistances(points, distanceSeq, 3, bandwidth, pointPredict)
       val distanceFromSample: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n) { i => distanceSeq(i)._1.data })
       //Local Covariogrances
       val CC: RealMatrix = new EigenDecomposition(C.getSubMatrix(distanceID, distanceID)).getSolver.getInverse
@@ -226,12 +241,27 @@ class KrigingOrdinary(points: Seq[PointFeature[Double]], bandwidth: Double, svPa
   }
 }
 
+/**
+ * @param points          Sample points for training
+ * @param attributeSample Sample points' attribute matrix (which decides how the point coordinates guide the pointData's value)
+ * @param attribute       Prediction points' attribute matrix
+ * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+ * @param model           The [[ModelType]] to be used for prediction
+ */
 class KrigingUniversal(points: Array[PointFeature[Double]], attributeSample: Array[Array[Double]], attribute: Array[Array[Double]], bandwidth: Double, model: ModelType) extends KrigingVectorInterpolationMethod {
 
+  /**
+   * Universal Kriging Prediction for a single point
+   */
   def createPredictor(): Point => (Double, Double) = {
     P: Point => predict(Array(P))(0)
   }
 
+  /**
+   * Universal Kriging Prediction for an Array of points
+   * @param pointMatrix Points to be Krigred
+   * @return            Tuples of (krigedValues, krigedVariance) for each of the kriged points
+   */
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
     val n: Int = points.length
     if (n == 0)
@@ -277,7 +307,7 @@ class KrigingUniversal(points: Array[PointFeature[Double]], attributeSample: Arr
     val Residual: RealMatrix = y0.subtract(XX.multiply(b))
     cfor(0)(_ < N, _ + 1) { i: Int =>
       val distanceSeq: Array[(PointFeature[Double], Int)] = getDistances(points, pointMatrix(i))
-      val distanceID: Array[Int] = getPointDistancesGeo(points, distanceSeq, bandwidth, pointMatrix(i))
+      val distanceID: Array[Int] = getPointDistances(points, distanceSeq, k+2, bandwidth, pointMatrix(i))
       val CC: RealMatrix = new SingularValueDecomposition(C.getSubMatrix(distanceID, distanceID)).getSolver.getInverse
       val d: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n) { i => distanceSeq(i)._1.data }).getSubMatrix(distanceID, Array(0))
       val cSmall: RealMatrix = UCol.getSubMatrix(distanceID, Array(0)).scalarMultiply(res.sill).subtract(MatrixUtils.createRealMatrix(Array.tabulate(d.getRowDimension, 1){(i, _) => res(d.getEntry(i,0))}))
@@ -301,12 +331,27 @@ class KrigingUniversal(points: Array[PointFeature[Double]], attributeSample: Arr
   }
 }
 
+/**
+ * @param points          Sample points for training
+ * @param attributeSample Sample points' attribute matrix (which decides how the point coordinates guide the pointData's value)
+ * @param attribute       Prediction points' attribute matrix
+ * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+ * @param model           The [[ModelType]] to be used for prediction
+ */
 class KrigingGeo(points: Array[PointFeature[Double]], attributeSample: Array[Array[Double]], attribute: Array[Array[Double]], bandwidth: Double, model: ModelType) extends KrigingVectorInterpolationMethod {
 
+  /**
+   * Geostatistical Kriging Prediction for a single point
+   */
   def createPredictor(): Point => (Double, Double) = {
     P: Point => predict(Array(P))(0)
   }
 
+  /**
+   * Geostatistical Kriging Prediction for an Array of points
+   * @param pointMatrix Points to be Krigred
+   * @return            Tuples of (krigedValues, krigedVariance) for each of the kriged points
+   */
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
     val n: Int = points.length
     if (n == 0)
@@ -361,17 +406,17 @@ class KrigingGeo(points: Array[PointFeature[Double]], attributeSample: Array[Arr
     val cov_b: RealMatrix = S.multiply(cov_bb.multiply(S.transpose()))
     e = y0.subtract(XX.multiply(b))
     val N: Int = pointMatrix.length
-    val XXArrayNew = Array.ofDim[Double](N, k+1)
+    val predictionAttrArray = Array.ofDim[Double](N, k+1)
     cfor(0)(_ < N, _ + 1) { row =>
-      XXArrayNew(row) = Array(1.0) ++ attribute(row)
+      predictionAttrArray(row) = Array(1.0) ++ attribute(row)
     }
-    val XXNew: RealMatrix = MatrixUtils.createRealMatrix(XXArrayNew)
+    val predictionAttr: RealMatrix = MatrixUtils.createRealMatrix(predictionAttrArray)
     val prediction: Array[(Double, Double)] = Array.ofDim[(Double, Double)](pointMatrix.length)
     val Residual: RealMatrix = y0.subtract(XX.multiply(b))
     cfor(0)(_ < N, _ + 1) { i: Int =>
       val pointPredict: Point = pointMatrix(i)
       val distanceSeq: Array[(PointFeature[Double], Int)] = getDistances(points, pointPredict)
-      val distanceID: Array[Int] = getPointDistancesGeo(points, distanceSeq, bandwidth, pointPredict)
+      val distanceID: Array[Int] = getPointDistances(points, distanceSeq, k+2, bandwidth, pointPredict)
       val distanceFromSample: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.tabulate(n) { i => distanceSeq(i)._1.data })
       val CC: RealMatrix = new SingularValueDecomposition(C.getSubMatrix(distanceID, distanceID)).getSolver.getInverse
       val d: RealMatrix = distanceFromSample.getSubMatrix(distanceID, Array(0))
@@ -380,8 +425,8 @@ class KrigingGeo(points: Array[PointFeature[Double]], attributeSample: Array[Arr
         if (d.getEntry(j, 0) == 0)
           c.setEntry(j, 0, c.getEntry(j, 0) + res.nugget)
       }
-      val kPredict: Double = MatrixUtils.createRowRealMatrix(XXNew.getRow(i)).multiply(b).getEntry(0,0) + c.transpose().multiply(CC).multiply(Residual.getSubMatrix(distanceID,Array(0))).getEntry(0,0)
-      val wSmall: RealMatrix = MatrixUtils.createColumnRealMatrix(XXNew.getRow(i))
+      val kPredict: Double = MatrixUtils.createRowRealMatrix(predictionAttr.getRow(i)).multiply(b).getEntry(0,0) + c.transpose().multiply(CC).multiply(Residual.getSubMatrix(distanceID,Array(0))).getEntry(0,0)
+      val wSmall: RealMatrix = MatrixUtils.createColumnRealMatrix(predictionAttr.getRow(i))
       val W: RealMatrix = XX.getSubMatrix(distanceID, Array.tabulate(XX.getColumnDimension){i => i})
       val ZZ: RealMatrix = Z.getSubMatrix(distanceID, Array.tabulate(XX.getColumnDimension){i => i})
       val rankTemp: Int = new SingularValueDecomposition(ZZ.transpose().multiply(CC).multiply(ZZ)).getRank

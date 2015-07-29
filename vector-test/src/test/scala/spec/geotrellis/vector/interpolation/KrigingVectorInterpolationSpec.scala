@@ -29,10 +29,10 @@ class KrigingVectorInterpolationSpec extends FunSpec
 with TestEngine{
 
   def generatePoints(pointsData : Array[PointFeature[Double]]): Array[PointFeature[Double]] = {
-    (1 to pointsData.size).filterNot(_ % 5 == 0).map { i => pointsData(i-1)}.toArray
+    (1 to pointsData.length).filterNot(_ % 5 == 0).map { i => pointsData(i-1)}.toArray
   }
   def generateLogPoints(pointsData : Array[PointFeature[Double]]): Array[PointFeature[Double]] = {
-    (1 to pointsData.size).filter(_ % 1 == 0).map { i => PointFeature(pointsData(i-1).geom, math.log(pointsData(i-1).data))}.toArray
+    (1 to pointsData.length).filter(_ % 1 == 0).map { i => PointFeature(pointsData(i-1).geom, math.log(pointsData(i-1).data))}.toArray
   }
 
   describe("Kriging Simple Interpolation(vector) : Nickel") {
@@ -45,8 +45,7 @@ with TestEngine{
       val testPointFeatures : Array[PointFeature[Double]] = Array(PointFeature(Point(659000, 586000), 3.0488))
       val testPoints: Array[Point] = Array.tabulate(testPointFeatures.length){i => testPointFeatures(i).geom}
       val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
-      val svParam: Array[Double] = Array(Semivariogram.r, Semivariogram.s, Semivariogram.a)
-      val krigingVal: Array[(Double, Double)] = new KrigingSimple(points, 5000, svParam, Spherical).predict(testPoints)
+      val krigingVal: Array[(Double, Double)] = new KrigingSimple(points, 5000, sv).predict(testPoints)
       val E = 1e-4
       var error: List[Double] = Nil
       cfor(0)(_ < testPoints.length, _ + 1) { i =>
@@ -66,8 +65,7 @@ with TestEngine{
       val testPointFeatures : Seq[PointFeature[Double]] = Seq{PointFeature(Point(659000, 586000), 3.0461)}
       val testPoints: Array[Point] = Array.tabulate(testPointFeatures.length){i => testPointFeatures(i).geom}
       val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
-      val svParam: Array[Double] = Array(Semivariogram.r, Semivariogram.s, Semivariogram.a)
-      val krigingVal: Array[(Double, Double)] = new KrigingOrdinary(points, 5000, svParam, Spherical).predict(testPoints)
+      val krigingVal: Array[(Double, Double)] = new KrigingOrdinary(points, 5000, sv).predict(testPoints)
       val E = 1e-4
       var error: List[Double] = Nil
       cfor(0)(_ < testPoints.length, _ + 1) { i =>
@@ -79,7 +77,6 @@ with TestEngine{
 
   describe("Kriging Geo Interpolation(vector) : Venice") {
     it("should return correct prediction value") {
-      println("The testing starts")
       val points: Array[PointFeature[Double]] =   Array(PointFeature(Point(720, 436), -0.99), PointFeature(Point(538, 397), -2.50),
                                                         PointFeature(Point(518, 395), -1.18), PointFeature(Point(612, 365), 0.43),
                                                         PointFeature(Point(562, 287), -1.66), PointFeature(Point(544, 248), -1.18),
@@ -124,11 +121,14 @@ with TestEngine{
         val Ev: Double = math.exp(-1 * c1)
         attributes(i) = Array(Ev, Dl, Dv)
       }
+      val E: Double = 1.4
       val krigingVal: Array[(Double, Double)] = new KrigingGeo(points, attributesSample, attributes, 50, Spherical).predict(location)
-      /*
       //This test can be visualized with spline interpolation
+      /*cfor(0)(_ < krigingVal.length, _ + 1) { i =>
+        println(location(i).x + ", " + location(i).y + ", " + attributes(i).mkString(", ") + ", " + krigingVal(i)._1 + ", " + krigingVal(i)._2)
+      }*/
 
-      val krigingValInsideVenice: Array[(Double, Double)] = new KrigingGeo(points, attributesSample, attributes, 50, Spherical).predict(location)
+      /*val krigingValInsideVenice: Array[(Double, Double)] = new KrigingGeo(points, attributesSample, attributes, 50, Spherical).predict(location)
       val E: Double = 1.4
       val ptsInsideVenice: Array[Point] = Array()
       cfor(0)(_ < ptsInsideVenice.length, _ + 1) { i =>

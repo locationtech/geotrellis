@@ -22,6 +22,10 @@ import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, Least
 import org.apache.commons.math3.stat.regression.SimpleRegression
 import spire.syntax.cfor._
 
+/**
+ * @author Vishal Anand
+ */
+
 abstract sealed class ModelType
 
 case class Linear (radius: Option[Double], lag: Double) extends ModelType
@@ -180,24 +184,23 @@ object Semivariogram {
       println("(" + x(i) + "," + y(i) + ") => " + f(x(i)))
     }
 
-  def fit(empiricalSemivariogram: Array[(Double, Double)], model: ModelType): Semivariogram = {
+  /**
+   * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
+   * @param model                   the [[ModelType]] into which the input has to be fitted
+   * @return                        [[Semivariogram]]
+   */
+  def fit(empiricalSemivariogram: EmpiricalVariogram, model: ModelType): Semivariogram = {
     fit(empiricalSemivariogram, model, Array.fill[Double](3)(1))
   }
 
-  def fit(es: Array[(Double, Double)], model: ModelType, begin: Array[Double]): Semivariogram = {
-    val empiricalSemivariogram: Seq[(Double, Double)] = es
+  /**
+   * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
+   * @param model                   the [[ModelType]] into which the input has to be fitted
+   * @param begin                   the starting point of the optimization search of (range, sill, nugget) values
+   * @return                        [[Semivariogram]]
+   */
+  def fit(empiricalSemivariogram: EmpiricalVariogram, model: ModelType, begin: Array[Double]): Semivariogram = {
     model match {
-      case Linear(_,_) =>
-        // Construct slope and intercept
-        val regression = new SimpleRegression
-        for((x, y) <- empiricalSemivariogram) { regression.addData(x, y) }
-        val slope = regression.getSlope
-        val intercept = regression.getIntercept
-        this.r = 0
-        this.s = slope
-        this.a = intercept
-        Semivariogram(x => slope*x + intercept, 0, slope, intercept)
-
       //Least Squares minimization
       case Gaussian =>
         class GaussianProblem extends LeastSquaresFittingProblem {
@@ -212,13 +215,15 @@ object Semivariogram {
         }
 
         val problem = new GaussianProblem
-        for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+        problem.x = empiricalSemivariogram.distances
+        problem.y = empiricalSemivariogram.variance
         val opt: Optimum = optConstructor(problem)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
         if (optimalValues(2) < 0) {
           val problem = new GaussianNuggetProblem
-          for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+          problem.x = empiricalSemivariogram.distances
+          problem.y = empiricalSemivariogram.variance
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
           this.r = optimalValues(0)
@@ -246,13 +251,15 @@ object Semivariogram {
         }
 
         val problem = new ExponentialProblem
-        for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+        problem.x = empiricalSemivariogram.distances
+        problem.y = empiricalSemivariogram.variance
         val opt: Optimum = optConstructor(problem)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
         if (optimalValues(2) < 0) {
           val problem = new ExponentialNuggetProblem
-          for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+          problem.x = empiricalSemivariogram.distances
+          problem.y = empiricalSemivariogram.variance
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
           this.r = optimalValues(0)
@@ -280,13 +287,15 @@ object Semivariogram {
         }
 
         val problem = new CircularProblem
-        for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+        problem.x = empiricalSemivariogram.distances
+        problem.y = empiricalSemivariogram.variance
         val opt: Optimum = optConstructor(problem)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
         if (optimalValues(2) < 0) {
           val problem = new CircularNuggetProblem
-          for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+          problem.x = empiricalSemivariogram.distances
+          problem.y = empiricalSemivariogram.variance
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
           this.r = optimalValues(0)
@@ -314,13 +323,15 @@ object Semivariogram {
         }
 
         val problem = new SphericalProblem
-        for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+        problem.x = empiricalSemivariogram.distances
+        problem.y = empiricalSemivariogram.variance
         val opt: Optimum = optConstructor(problem)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
         if (optimalValues(2) < 0) {
           val problem = new SphericalNuggetProblem
-          for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+          problem.x = empiricalSemivariogram.distances
+          problem.y = empiricalSemivariogram.variance
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
           this.r = optimalValues(0)
@@ -348,13 +359,15 @@ object Semivariogram {
         }
 
         val problem = new WaveProblem
-        for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+        problem.x = empiricalSemivariogram.distances
+        problem.y = empiricalSemivariogram.variance
         val opt: Optimum = optConstructor(problem)
         val optimalValues: Array[Double] = opt.getPoint.toArray
 
         if (optimalValues(2) < 0) {
           val problem = new WaveNuggetProblem
-          for((x, y) <- empiricalSemivariogram) { problem.addPoint(x, y) }
+          problem.x = empiricalSemivariogram.distances
+          problem.y = empiricalSemivariogram.variance
           val opt: Optimum = optConstructor(problem)
           val optimalValues: Array[Double] = opt.getPoint.toArray
           this.r = optimalValues(0)
@@ -368,6 +381,7 @@ object Semivariogram {
           this.a = optimalValues(2)
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Wave)
         }
+      case _ => throw new UnsupportedOperationException("Fitting for $model can not be done in this function")
     }
   }
 }

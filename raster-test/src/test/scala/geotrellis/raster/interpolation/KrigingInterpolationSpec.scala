@@ -31,9 +31,9 @@ class KrigingInterpolationSpec extends FunSpec
                                with TestEngine
                                with TileBuilders {
 
-  describe("Kriging Simple Interpolate (Raster )") {
+  describe("Kriging Simple Interpolate (Raster) : Cobalt") {
 
-    ignore("should generate correct Prediction") {
+    ignore("simple kriging prediction") {
 
       val extent = Extent(0,0,9,10)
       val re = RasterExtent(extent, 1, 1, 9, 10)
@@ -48,18 +48,61 @@ class KrigingInterpolationSpec extends FunSpec
       val lag = 2
       val chunkSize = 100
       val semivariogram: Semivariogram = NonLinearSemivariogram(points, 0, 0, Spherical)
-      val objectPredictor = new KrigingSimple(points, 0, Array(1, 1, 1), Spherical)
+      val objectPredictor = new KrigingSimple(points, 0, semivariogram)
       val predictValue = objectPredictor.predict(Array(Point(1.0, 1.0)))
-      val result = KrigingInterpolation(objectPredictor, points, re, radius, chunkSize, lag, Linear.apply(radius, lag))
+      val result = KrigingInterpolation(objectPredictor, points, re, chunkSize, Linear.apply(radius, lag))
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
           val actual = result.get(col,row)
           val expected = actual
-          //The predictions of the Kriging Simple model look good (smooth curves), based on the visualization of Tiles predicted vs the input point sequences
-          //Have to generate a dataset from a raster source and then compare the results
+          //The pointwise Kriging is tested, thus the raster is also by extension correct (Have to put in a suitable stub)
           assert(actual === expected)
         }
       }
+    }
+  }
+
+  describe("Kriging Ordinary Interpolate (Raster) : Cobalt") {
+
+    ignore("ordniary kriging prediction") {
+
+      val extent = Extent(0,0,9,10)
+      val re = RasterExtent(extent, 1, 1, 9, 10)
+      val path = "raster-test/data/nickel.json"
+      val f = scala.io.Source.fromFile(path)
+      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+      f.close()
+      val points: Array[PointFeature[Double]] = collection.getAllPointFeatures[Double]().toArray
+
+      val radius: Option[Double] = Some(6)
+      val lag = 2
+      val chunkSize = 100
+      val semivariogram: Semivariogram = NonLinearSemivariogram(points, 0, 0, Spherical)
+      val objectPredictor = new KrigingOrdinary(points, 0, semivariogram)
+      val predictValue = objectPredictor.predict(Array(Point(1.0, 1.0)))
+      val result = KrigingInterpolation(objectPredictor, points, re, chunkSize, Linear.apply(radius, lag))
+      for(col <- 0 until re.cols) {
+        for(row <- 0 until re.rows) {
+          val actual = result.get(col,row)
+          val expected = actual
+          //The pointwise Kriging is tested, thus the raster is also by extension correct (Have to put in a suitable stub)
+          assert(actual === expected)
+        }
+      }
+    }
+  }
+
+  describe("Kriging Universal Interpolate (Raster) : Venice") {
+
+    ignore("universal kriging prediction") {
+      //The pointwise Kriging is tested, thus the raster is also by extension correct (Have to put in a suitable stub)
+    }
+  }
+
+  describe("Kriging Geostatistical Interpolate (Raster) : Venice") {
+
+    ignore("geostatistical kriging prediction") {
+      //The pointwise Kriging is tested, thus the raster is also by extension correct (Have to put in a suitable stub)
     }
   }
 }

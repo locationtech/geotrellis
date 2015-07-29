@@ -18,9 +18,15 @@ package geotrellis.vector.interpolation
 
 import geotrellis.vector._
 
+/**
+ * @author Vishal Anand
+ */
+
 object NonLinearSemivariogram {
 
-  def explicitGaussian(r: Double, s: Double, a: Double): Double => Double = {
+  /** Explicit [[Gaussian]] Semivariogram model
+    */
+  private def explicitGaussian(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
       else
@@ -32,10 +38,13 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitGaussianNugget(r: Double, s: Double): Double => Double =
+  private def explicitGaussianNugget(r: Double, s: Double): Double => Double =
     explicitGaussian(r, s, 0)
 
-  def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
+  /** [[Gaussian]] Semivariogram model's Jacobian for use in fitting an empirical semivariogram
+    * to the explicit models
+    */
+  private def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
@@ -49,7 +58,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  def jacobianGaussianNugget(variables: Array[Double]): Double => Array[Double] = {
+  private def jacobianGaussianNugget(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
@@ -62,7 +71,9 @@ object NonLinearSemivariogram {
     }
   }
 
-  def explicitCircular(r: Double, s: Double, a: Double): Double => Double = {
+  /** Explicit [[Circular]] Semivariogram model
+    */
+  private def explicitCircular(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
       else if (h > r)
@@ -82,10 +93,13 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitCircularNugget(r: Double, s: Double): Double => Double =
+  private def explicitCircularNugget(r: Double, s: Double): Double => Double =
     explicitCircular(r, s, 0)
 
-  def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
+  /** [[Circular]] Semivariogram model's Jacobian for use in fitting an empirical semivariogram
+    * to the explicit models
+    */
+  private def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
@@ -99,7 +113,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  def jacobianCircularNugget(variables: Array[Double]): Double => Array[Double] = {
+  private def jacobianCircularNugget(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
@@ -112,7 +126,9 @@ object NonLinearSemivariogram {
     }
   }
 
-  def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
+  /** Explicit [[Spherical]] Semivariogram model
+    */
+  private def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       //if (h == 0) 0
       //TODO : Investigate if the standard usage is f(0) = a or f(0) = 0
@@ -129,10 +145,13 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitSphericalNugget(r: Double, s: Double): Double => Double =
+  private def explicitSphericalNugget(r: Double, s: Double): Double => Double =
     explicitSpherical(r, s, 0)
 
-  def jacobianSpherical(variables: Array[Double]): Double => Array[Double] = {
+  /** [[Spherical]] Semivariogram model's Jacobian for use in fitting an empirical semivariogram
+    * to the explicit models
+    */
+  private def jacobianSpherical(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
@@ -149,7 +168,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  def jacobianSphericalNugget(variables: Array[Double]): Double => Array[Double] = {
+  private def jacobianSphericalNugget(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
@@ -164,7 +183,9 @@ object NonLinearSemivariogram {
     }
   }
 
-  def explicitExponential(r: Double, s: Double, a: Double): Double => Double = {
+  /** Explicit [[Exponential]] Semivariogram model
+   */
+  private def explicitExponential(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
       else
@@ -176,10 +197,13 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitExponentialNugget(r: Double, s: Double): Double => Double =
+  private def explicitExponentialNugget(r: Double, s: Double): Double => Double =
     explicitExponential(r, s, 0)
 
-  def jacobianExponential(variables: Array[Double]): Double => Array[Double] = {
+  /** [[Exponential]] Semivariogram model's Jacobian for use in fitting an empirical semivariogram
+    * to the explicit models
+    */
+  private def jacobianExponential(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
@@ -193,7 +217,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  def jacobianExponentialNugget(variables: Array[Double]): Double => Array[Double] = {
+  private def jacobianExponentialNugget(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
@@ -206,7 +230,9 @@ object NonLinearSemivariogram {
     }
   }
 
-  def explicitWave(w: Double, s: Double, a: Double): Double => Double = {
+  /** Explicit [[Wave]] Semivariogram model
+    */
+  private def explicitWave(w: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
       else
@@ -220,10 +246,13 @@ object NonLinearSemivariogram {
      */
   }
 
-  def explicitWaveNugget(w: Double, s: Double): Double => Double =
+  private def explicitWaveNugget(w: Double, s: Double): Double => Double =
     explicitWave(w, s, 0)
 
-  def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
+  /** [[Wave]] Semivariogram model's Jacobian for use in fitting an empirical semivariogram
+    * to the explicit models
+    */
+  private def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
@@ -237,7 +266,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  def jacobianWaveNugget(variables: Array[Double]): Double => Array[Double] = {
+  private def jacobianWaveNugget(variables: Array[Double]): Double => Array[Double] = {
     var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
@@ -250,10 +279,11 @@ object NonLinearSemivariogram {
     }
   }
 
-  def explicitNuggetModel(svParam: Array[Double], model: ModelType): Double => Double = {
+  private def explicitNuggetModel(svParam: Array[Double], model: ModelType): Double => Double = {
     val (range: Double, sill: Double) = (svParam(0), svParam(1))
     explicitNuggetModel(range, sill, model)
   }
+
   def explicitNuggetModel(range: Double, sill: Double, model: ModelType): Double => Double = {
     model match {
       case Circular     =>  explicitCircularNugget(range, sill)
@@ -265,10 +295,23 @@ object NonLinearSemivariogram {
     }
   }
 
+  /**
+   * @param svParam Semivariogram parameters in Array format (range, sill, nugget) or (range, sill)
+   * @param model   [[ModelType]] input
+   * @return        Semivariogram function
+   */
   def explicitModel(svParam: Array[Double], model: ModelType): Double => Double = {
     val (range: Double, sill: Double, nugget: Double) = (svParam(0), svParam(1), svParam(2))
     explicitModel(range, sill, nugget, model)
   }
+
+  /**
+   * @param range   Range of Semivariogram
+   * @param sill    Sill (flattening value) of Semivariogram
+   * @param nugget  Nugget (intercept value) of Semivariogram
+   * @param model   [[ModelType]] input
+   * @return        Semivariogram function
+   */
   def explicitModel(range: Double, sill: Double, nugget: Double, model: ModelType): Double => Double = {
     model match {
       case Circular     =>  explicitCircular(range, sill, nugget)
@@ -280,6 +323,11 @@ object NonLinearSemivariogram {
     }
   }
 
+  /**
+   * @param variables The (range, sill, nugget) variable's current value being used while optimizing the function parameters
+   * @param model     The [[ModelType]] being fitted into
+   * @return          [[https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant]]
+   */
   def jacobianModel(variables: Array[Double], model: ModelType): Double => Array[Double] = {
     if(variables.length == 3)
       model match {
@@ -308,18 +356,28 @@ object NonLinearSemivariogram {
       Semivariogram(explicitNuggetModel(svParam, model), svParam(0), svParam(1), 0)
   }
 
+  /**
+   * @param range   Range (Flattening point) of [[Semivariogram]]
+   * @param sill    Sill (flattening value) of [[Semivariogram]]
+   * @param nugget  Nugget (intercept value) of [[Semivariogram]]
+   * @param model   [[NonLinearModelType]] model to be returned
+   * @return        [[Semivariogram]]
+   */
   def apply(range: Double, sill: Double, nugget: Double, model: ModelType): Semivariogram =
     Semivariogram(explicitModel(range, sill, nugget, model), range, sill, nugget)
 
   def apply(range: Double, sill: Double, model: ModelType): Semivariogram =
     Semivariogram(explicitNuggetModel(range, sill, model), range, sill, 0)
 
-  def apply(pts: Array[PointFeature[Double]], maxdist: Double, binmax: Int, model: ModelType): Semivariogram = {
-    val abc = EmpiricalVariogram.nonlinear(pts, maxdist, binmax)
-    val empiricalSemivariogram: Array[(Double, Double)] = Array.tabulate(abc.distances.length){i => (abc.distances(i), abc.variance(i))}
-    val es = empiricalSemivariogram
-    /*println("The length of es = " + es.length)
-    println(es.mkString("\n"))*/
+  /**
+   * @param pts                   Points to be modelled and fitted
+   * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram used for fitting
+   * @param binMaxCount           the maximum number of bins in the empirical variogram
+   * @param model                 The [[ModelType]] being fitted into
+   * @return                      [[Semivariogram]]
+   */
+  def apply(pts: Array[PointFeature[Double]], maxDistanceBandwidth: Double, binMaxCount: Int, model: ModelType): Semivariogram = {
+    val es: EmpiricalVariogram = EmpiricalVariogram.nonlinear(pts, maxDistanceBandwidth, binMaxCount)
 
     //Fitting the empirical variogram to the input model
     def stdev(data: Array[Double]): Double = {
@@ -336,15 +394,13 @@ object NonLinearSemivariogram {
       val sum = data.foldLeft(0.0)((s, t) => f(s, t))
       math.sqrt(sum / (data.length - 1))
     }
-    val D: Array[Double] = Array.tabulate(es.length){i => es(i)._1}
-    val G: Array[Double] = Array.tabulate(es.length){i => es(i)._2}
+    val dist: Array[Double] = es.distances
+    val varianceValue: Array[Double] = es.variance
     val start: Array[Double] = Array.fill(3)(0)
-    start(0) = D.foldLeft(D(0)) { case (maxM, e) => math.max(maxM, e) }
+    start(0) = dist.foldLeft(dist(0)) { case (maxM, e) => math.max(maxM, e) }
     val Z: Array[Double] = Array.tabulate(pts.length){i => pts(i).data}
     start(1) = math.pow(stdev(Z), 2)
-    start(2) = math.max(0, G.foldLeft(D(0)) { case (minM, e) => math.min(minM, e) })
-    /*println("Weird shit!")
-    println(model + " => " + start.mkString(" "))*/
+    start(2) = math.max(0, varianceValue.foldLeft(dist(0)) { case (minM, e) => math.min(minM, e) })
     Semivariogram.fit(es, model, start)
   }
 }

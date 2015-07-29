@@ -16,27 +16,48 @@
 
 package geotrellis.vector.interpolation
 import geotrellis.vector._
-
 import spire.syntax.cfor._
-
 import scala.collection.mutable
 
+/**
+ * @author Vishal Anand
+ */
+
 class EmpiricalVariogram(length: Int) {
-  val distances = Array.ofDim[Double](length)
-  val variance = Array.ofDim[Double](length)
+  var distances = Array.ofDim[Double](length)
+  var variance = Array.ofDim[Double](length)
 }
 
+/** This creates an empirical variogram from the dataset, which is
+  * then used to fit into one of the semivariogram [[ModelType]] for use in
+  * Kriging Interpolation
+  */
 object EmpiricalVariogram {
 
+  /** Computes empirical semivariogram  for [[Spherical]], [[Gaussian]], [[Exponential]], [[Circular]] and [[Wave]] models
+    *
+    * @param pts      [[PointFeature]] array for creating the variogram
+    * @param maxdist  The bandwidth of variations that the empirical variogram is supposed to capture
+    * @param binmax   The maximum number of bins in the empirical variogram to be created
+    */
   def nonlinear(pts: Array[PointFeature[Double]], maxdist: Double, binmax: Int): EmpiricalVariogram  =
     NonLinearEmpiricalVariogram(pts, maxdist, binmax)
 
+  /**
+   * Computes empirical semivariogram  for [[Linear]] model
+   */
   def linear(pts: Array[PointFeature[Double]], radius: Option[Double] = None, lag: Double = 0.0): Array[(Double, Double)] =
     LinearEmpiricalVariogram(pts, radius, lag)
 }
 
 object NonLinearEmpiricalVariogram {
-  def apply(pts: Array[PointFeature[Double]], maxdist: Double, binmax: Int) = {
+  /**
+   * @param pts                   Points to be modelled into variogram
+   * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram
+   * @param binMaxCount           the maximum number of bins in the empirical variogram
+   * @return                      [[EmpiricalVariogram]]
+   */
+  def apply(pts: Array[PointFeature[Double]], maxDistanceBandwidth: Double, binMaxCount: Int): EmpiricalVariogram = {
     val points = pts.toArray
     val n: Int = points.length
 
@@ -50,11 +71,11 @@ object NonLinearEmpiricalVariogram {
         val dx = pts(i).geom.x - pts(j).geom.x
         val dy = pts(i).geom.y - pts(j).geom.y
         val d = math.sqrt(dx * dx + dy * dy)
-        if(maxdist == 0) {
+        if(maxDistanceBandwidth == 0) {
           if(d > dMax) dMax = d
           distances += ((i, j, d))
         } else {
-          if(d <= maxdist) {
+          if(d <= maxDistanceBandwidth) {
             distances += ((i, j, d))
           }
         }
@@ -62,58 +83,49 @@ object NonLinearEmpiricalVariogram {
     }
 
     var n_S: Int = 0
-    var sortedDistancesAll: Array[(Int, Int, Double)] = Array()
-    val sortedDistances: Array[(Int, Int, Double)] = {
+    var sortedDistances: Array[(Int, Int, Double)] = Array()
+    val n0_S: Int = {
       val q = distances.dequeueAll
-      sortedDistancesAll = q.toArray
+      sortedDistances= q.toArray
       n_S = q.length
-      if(maxdist == 0) {
+      if(maxDistanceBandwidth == 0) {
         val md = dMax / 2.0
-        //println("md = " + md)
         val result = q.takeWhile(_._3 <= md).toArray
-        //n_S = q.length
         if(result.length == 0) {
           // This is a strangely uniform dataset.
           // Assume that the maxDistances is the
           // actual maximum distance in the dataset.
-          q.toArray
+          q.toArray.length
         } else {
-          result
+          result.length
         }
       } else {
-        val result = q.toArray
-        if(result.length == 0) {
+        val ret = q.toArray.length
+        if(ret == 0) {
           throw new IllegalArgumentException("No points in the dataset with a distance below $maxDistance")
         }
-        result
+        ret
       }
     }
-    //println("n_S = " + n_S)
-    val n0_S: Int = sortedDistances.length
-    val binMax: Int = if(binmax == 0) 100 else binmax
-    //println("binMax = " + binMax)
+    val binMax: Int = if(binMaxCount == 0) 100 else binMaxCount
     var binSize: Int = math.ceil(n0_S * 1.0 / binMax).toInt
     val binNum: Int = if(binSize >= 30) binMax else {binSize = 30;math.ceil(n0_S/30.0).toInt}
-    //println("binNum = " + binNum)
-    //println("n0_S = " + n0_S)
     val empiricalSemivariogram = new EmpiricalVariogram(binNum)
     val Z: Array[Double] = Array.tabulate(n){j => pts(j).data}
-    //println(sortedDistancesAll.mkString("\n"))
 
     cfor(0)(_ < binNum, _ + 1) { i: Int =>
       val n0: Int = i * binSize + 1 - 1
       val n1Temp: Int = (i + 1) * binSize - 1
       val n1: Int = if (n1Temp > n_S) n_S - 1 else n1Temp
-      //println(n0 + ", " + n1)
       val binSizeLocal: Int = n1 - n0 + 1
-      val S1: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistancesAll(n0 + j)._1 }
-      val S2: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistancesAll(n0 + j)._2 }
-      val Li: Double = Array.tabulate(n1 - n0 + 1) { j => sortedDistancesAll(n0 + j)._3 }.sum / binSizeLocal
-      val Vi: Double = Array.tabulate(n1 - n0 + 1) { j =>
-        math.pow(Z(S1(j)) - Z(S2(j)), 2)
+      val s1: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._1 }
+      val s2: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._2 }
+      val li: Double = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._3 }.sum / binSizeLocal
+      val vi: Double = Array.tabulate(n1 - n0 + 1) { j =>
+        math.pow(Z(s1(j)) - Z(s2(j)), 2)
       }.sum / (2 * binSizeLocal)
-      empiricalSemivariogram.distances(i) = Li
-      empiricalSemivariogram.variance(i) = Vi
+      empiricalSemivariogram.distances(i) = li
+      empiricalSemivariogram.variance(i) = vi
     }
     empiricalSemivariogram
   }
@@ -139,7 +151,6 @@ object LinearEmpiricalVariogram {
       (sumOfSquares / points.size) / 2
     }
   }
-
 
   /** Produces unique pairs of points */
   def makePairs[T](elements: List[T]): List[(T, T)] = {
