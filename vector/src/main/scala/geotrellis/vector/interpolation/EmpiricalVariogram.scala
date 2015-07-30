@@ -23,16 +23,16 @@ import scala.collection.mutable
  * @author Vishal Anand
  */
 
-class EmpiricalVariogram(length: Int) {
-  var distances = Array.ofDim[Double](length)
-  var variance = Array.ofDim[Double](length)
-}
+class EmpiricalVariogram(val distances: Array[Double], val variance: Array[Double])
 
 /** This creates an empirical variogram from the dataset, which is
   * then used to fit into one of the semivariogram [[ModelType]] for use in
   * Kriging Interpolation
   */
 object EmpiricalVariogram {
+
+  def apply(length: Int): EmpiricalVariogram =
+    new EmpiricalVariogram(Array.ofDim[Double](length), Array.ofDim[Double](length))
 
   /** Computes empirical semivariogram  for [[Spherical]], [[Gaussian]], [[Exponential]], [[Circular]] and [[Wave]] models
     *
@@ -82,36 +82,42 @@ object NonLinearEmpiricalVariogram {
       }
     }
 
-    var n_S: Int = 0
-    var sortedDistances: Array[(Int, Int, Double)] = Array()
-    val n0_S: Int = {
+    val (n_S, sortedDistances, n0_S) = {
       val q = distances.dequeueAll
-      sortedDistances= q.toArray
-      n_S = q.length
-      if(maxDistanceBandwidth == 0) {
-        val md = dMax / 2.0
-        val result = q.takeWhile(_._3 <= md).toArray
-        if(result.length == 0) {
-          // This is a strangely uniform dataset.
-          // Assume that the maxDistances is the
-          // actual maximum distance in the dataset.
-          q.toArray.length
+      val sortedDistances = q.toArray
+      val n_S = q.length
+      val n0_S =
+        if (maxDistanceBandwidth == 0) {
+          val md = dMax / 2.0
+          val result = q.takeWhile(_._3 <= md).toArray
+          if (result.length == 0) {
+            // This is a strangely uniform dataset.
+            // Assume that the maxDistances is the
+            // actual maximum distance in the dataset.
+            q.toArray.length
+          } else {
+            result.length
+          }
         } else {
-          result.length
+          val ret = q.toArray.length
+          if (ret == 0) {
+            throw new IllegalArgumentException("No points in the dataset with a distance below $maxDistance")
+          }
+          ret
         }
-      } else {
-        val ret = q.toArray.length
-        if(ret == 0) {
-          throw new IllegalArgumentException("No points in the dataset with a distance below $maxDistance")
-        }
-        ret
-      }
+      (n_S, sortedDistances, n0_S)
     }
+
     val binMax: Int = if(binMaxCount == 0) 100 else binMaxCount
-    var binSize: Int = math.ceil(n0_S * 1.0 / binMax).toInt
-    val binNum: Int = if(binSize >= 30) binMax else {binSize = 30;math.ceil(n0_S/30.0).toInt}
-    val empiricalSemivariogram = new EmpiricalVariogram(binNum)
-    val Z: Array[Double] = Array.tabulate(n){j => pts(j).data}
+    val (binSize, binNum) = {
+      val binSize = math.ceil(n0_S * 1.0 / binMax).toInt
+      if(binSize >= 30) (binSize, binMax)
+      else { (30, math.ceil(n0_S/30.0).toInt) }
+    }
+
+    val empiricalDistances = Array.ofDim[Double](binNum)
+    val empiricalVariance = Array.ofDim[Double](binNum)
+    val data: Array[Double] = Array.tabulate(n){ j => pts(j).data }
 
     cfor(0)(_ < binNum, _ + 1) { i: Int =>
       val n0: Int = i * binSize + 1 - 1
@@ -121,13 +127,14 @@ object NonLinearEmpiricalVariogram {
       val s1: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._1 }
       val s2: Array[Int] = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._2 }
       val li: Double = Array.tabulate(n1 - n0 + 1) { j => sortedDistances(n0 + j)._3 }.sum / binSizeLocal
-      val vi: Double = Array.tabulate(n1 - n0 + 1) { j =>
-        math.pow(Z(s1(j)) - Z(s2(j)), 2)
-      }.sum / (2 * binSizeLocal)
-      empiricalSemivariogram.distances(i) = li
-      empiricalSemivariogram.variance(i) = vi
+      val vi: Double =
+        Array.tabulate(n1 - n0 + 1) { j =>
+          math.pow(data(s1(j)) - data(s2(j)), 2)
+        }.sum / (2 * binSizeLocal)
+      empiricalDistances(i) = li
+      empiricalVariance(i) = vi
     }
-    empiricalSemivariogram
+    new EmpiricalVariogram(empiricalDistances, empiricalVariance)
   }
 }
 

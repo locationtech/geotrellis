@@ -16,12 +16,6 @@
 
 package geotrellis.vector.interpolation
 
-import org.apache.commons.math3.analysis.{MultivariateMatrixFunction, MultivariateVectorFunction}
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum
-import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, LeastSquaresProblem, LevenbergMarquardtOptimizer}
-import org.apache.commons.math3.stat.regression.SimpleRegression
-import spire.syntax.cfor._
-
 /**
  * @author Vishal Anand
  */
@@ -63,127 +57,6 @@ object Semivariogram {
       def apply(x: Double): Double = f(x)
     }
 
-  var r: Double = 0   //Range
-  var s: Double = 0   //Sill
-  var a: Double = 0   //Nugget
-
-  trait LeastSquaresFittingProblem {
-    var x: Array[Double] = Array()
-    var y: Array[Double] = Array()
-    var start: Array[Double] = Array()
-
-    def addPoint(Px: Double, Py: Double) = {
-      x = x :+ Px
-      y = y :+ Py
-    }
-    def calculateTarget(): Array[Double] = y
-    def valueFunc(w: Double, s: Double, a: Double): Double => Double
-    def jacobianFunc(variables: Array[Double]): Double => Array[Double]
-
-    def retMVF(): MultivariateVectorFunction = {
-      new MultivariateVectorFunction {
-        def value(variables: Array[Double]): Array[Double] = {
-          val values: Array[Double] = Array.ofDim[Double](x.length)
-          cfor(0)(_ < values.length, _ + 1) { i =>
-            values(i) = valueFunc(variables(0), variables(1), variables(2))(x(i))
-          }
-          values
-        }
-      }
-    }
-    def retMMF(): MultivariateMatrixFunction = {
-      def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
-        val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 3)
-        cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-          jacobianRet(i) = jacobianFunc(variables)(x(i))
-        }
-        jacobianRet
-      }
-      new MultivariateMatrixFunction {
-        override def value(doubles: Array[Double]): Array[Array[Double]] = jacobianConstruct(doubles)
-      }
-    }
-  }
-
-  trait LeastSquaresFittingNuggetProblem {
-    var x: Array[Double] = Array()
-    var y: Array[Double] = Array()
-    var start: Array[Double] = Array()
-
-    def addPoint(Px: Double, Py: Double) = {
-      x = x :+ Px
-      y = y :+ Py
-    }
-    def calculateTarget(): Array[Double] = y
-
-    def valueFuncNugget(w: Double, s: Double): Double => Double
-    def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double]
-
-    def retMVF(): MultivariateVectorFunction = {
-      new MultivariateVectorFunction {
-        def value(variables: Array[Double]): Array[Double] = {
-          val values: Array[Double] = Array.ofDim[Double](x.length)
-          cfor(0)(_ < values.length, _ + 1) { i =>
-            values(i) = valueFuncNugget(variables(0), variables(1))(x(i))
-          }
-          values
-        }
-      }
-    }
-    def retMMF(): MultivariateMatrixFunction = {
-      def jacobianConstruct(variables: Array[Double]): Array[Array[Double]] = {
-        val jacobianRet: Array[Array[Double]] = Array.ofDim[Double](x.length, 2)
-        cfor(0)(_ < jacobianRet.length, _ + 1) { i =>
-          jacobianRet(i) = jacobianFuncNugget(variables)(x(i))
-        }
-        jacobianRet
-      }
-      new MultivariateMatrixFunction {
-        override def value(doubles: Array[Double]): Array[Array[Double]] = jacobianConstruct(doubles)
-      }
-    }
-  }
-
-  def optConstructor(problem: AnyRef) = {
-    val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
-    val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()
-    problem match {
-      case problem: LeastSquaresFittingProblem =>
-        lsb.model(problem.retMVF(), problem.retMMF())
-        lsb.target(problem.calculateTarget())
-        lsb.start(problem.start)
-        lsb.maxEvaluations(Int.MaxValue)
-        lsb.maxIterations(Int.MaxValue)
-
-        val lsp: LeastSquaresProblem = lsb.build
-        lmo.optimize(lsp)
-
-      case problem: LeastSquaresFittingNuggetProblem =>
-        lsb.model(problem.retMVF(), problem.retMMF())
-        lsb.target(problem.calculateTarget())
-        lsb.start(problem.start)
-        lsb.maxEvaluations(Int.MaxValue)
-        lsb.maxIterations(Int.MaxValue)
-
-        val lsp: LeastSquaresProblem = lsb.build
-        lmo.optimize(lsp)
-    }
-  }
-
-  def printOptimization(opt: Optimum) = {
-    val optimalValues = opt.getPoint.toArray
-    cfor(0)(_ < optimalValues.length, _ + 1) { i =>
-      println("variable" + i + ": " + optimalValues(i))
-    }
-    println("Iteration number: "+opt.getIterations)
-    println("Evaluation number: "+opt.getEvaluations)
-  }
-
-  def printPrediction(x: Array[Double], y: Array[Double], f: Double => Double) =
-    cfor(0)(_ < x.length, _ + 1) { i =>
-      println("(" + x(i) + "," + y(i) + ") => " + f(x(i)))
-    }
-
   /**
    * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
    * @param model                   the [[ModelType]] into which the input has to be fitted
@@ -203,185 +76,120 @@ object Semivariogram {
     model match {
       //Least Squares minimization
       case Gaussian =>
-        class GaussianProblem extends LeastSquaresFittingProblem {
-          start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Gaussian)
-          def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Gaussian)
-        }
-        class GaussianNuggetProblem extends LeastSquaresFittingNuggetProblem {
-          start = begin.dropRight(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Gaussian)
-          def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] =  NonLinearSemivariogram.jacobianModel(variables, Gaussian)
-        }
-
-        val problem = new GaussianProblem
-        problem.x = empiricalSemivariogram.distances
-        problem.y = empiricalSemivariogram.variance
-        val opt: Optimum = optConstructor(problem)
-        val optimalValues: Array[Double] = opt.getPoint.toArray
+        //Gaussian Problem
+        val problem =
+          new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Gaussian)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Gaussian)
+          }
+        val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          val problem = new GaussianNuggetProblem
-          problem.x = empiricalSemivariogram.distances
-          problem.y = empiricalSemivariogram.variance
-          val opt: Optimum = optConstructor(problem)
-          val optimalValues: Array[Double] = opt.getPoint.toArray
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = 0
+          //Gaussian Nugget Problem
+          val nuggetProblem =
+            new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Gaussian)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Gaussian)
+            }
+
+          val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), Gaussian)
         }
-        else {
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = optimalValues(2)
+        else
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Gaussian)
-        }
 
       case Exponential =>
-        class ExponentialProblem extends LeastSquaresFittingProblem {
-          start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Exponential)
-          def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
-        }
-        class ExponentialNuggetProblem extends LeastSquaresFittingNuggetProblem {
-          start = begin.dropRight(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Exponential)
-          def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
-        }
-
-        val problem = new ExponentialProblem
-        problem.x = empiricalSemivariogram.distances
-        problem.y = empiricalSemivariogram.variance
-        val opt: Optimum = optConstructor(problem)
-        val optimalValues: Array[Double] = opt.getPoint.toArray
+        //Exponential Problem
+        val problem =
+          new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Exponential)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
+          }
+        val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          val problem = new ExponentialNuggetProblem
-          problem.x = empiricalSemivariogram.distances
-          problem.y = empiricalSemivariogram.variance
-          val opt: Optimum = optConstructor(problem)
-          val optimalValues: Array[Double] = opt.getPoint.toArray
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = 0
+          val nuggetProblem =
+            new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Exponential)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
+            }
+
+          val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), Exponential)
         }
-        else {
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = optimalValues(2)
+        else
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Exponential)
-        }
 
       case Circular =>
-        class CircularProblem extends LeastSquaresFittingProblem {
-          start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Circular)
-          def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
-        }
-        class CircularNuggetProblem extends LeastSquaresFittingNuggetProblem {
-          start = begin.dropRight(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Circular)
-          def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
-        }
-
-        val problem = new CircularProblem
-        problem.x = empiricalSemivariogram.distances
-        problem.y = empiricalSemivariogram.variance
-        val opt: Optimum = optConstructor(problem)
-        val optimalValues: Array[Double] = opt.getPoint.toArray
+        //Circular Problem
+        val problem =
+          new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Circular)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
+          }
+        val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          val problem = new CircularNuggetProblem
-          problem.x = empiricalSemivariogram.distances
-          problem.y = empiricalSemivariogram.variance
-          val opt: Optimum = optConstructor(problem)
-          val optimalValues: Array[Double] = opt.getPoint.toArray
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = 0
+          //Circular Nugget Problem
+          val nuggetProblem =
+            new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Circular)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
+            }
+
+          val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), Circular)
         }
-        else {
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = optimalValues(2)
+        else
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Circular)
-        }
 
       case Spherical =>
-        class SphericalProblem extends LeastSquaresFittingProblem {
-          start = begin
-          def valueFunc(r: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(r, s, a, Spherical)
-          def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
-        }
-        class SphericalNuggetProblem extends LeastSquaresFittingNuggetProblem {
-          start = begin.dropRight(1)
-          def valueFuncNugget(r: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Spherical)
-          def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
-        }
-
-        val problem = new SphericalProblem
-        problem.x = empiricalSemivariogram.distances
-        problem.y = empiricalSemivariogram.variance
-        val opt: Optimum = optConstructor(problem)
-        val optimalValues: Array[Double] = opt.getPoint.toArray
+        //Spherical Problem
+        val problem =
+          new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Spherical)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
+          }
+        val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          val problem = new SphericalNuggetProblem
-          problem.x = empiricalSemivariogram.distances
-          problem.y = empiricalSemivariogram.variance
-          val opt: Optimum = optConstructor(problem)
-          val optimalValues: Array[Double] = opt.getPoint.toArray
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = 0
+          //Spherical Nugget Problem
+          val nuggetProblem =
+            new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Spherical)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
+            }
+
+          val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), Spherical)
         }
-        else {
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = optimalValues(2)
+        else
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Spherical)
-        }
 
       case Wave =>
-        class WaveProblem extends LeastSquaresFittingProblem {
-          start = begin
-          def valueFunc(w: Double, s: Double, a: Double): Double => Double = NonLinearSemivariogram.explicitModel(w, s, a, Wave)
-          def jacobianFunc(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
-        }
-        class WaveNuggetProblem extends LeastSquaresFittingNuggetProblem {
-          start = begin.dropRight(1)
-          def valueFuncNugget(w: Double, s: Double): Double => Double = NonLinearSemivariogram.explicitNuggetModel(w, s, Wave)
-          def jacobianFuncNugget(variables: Array[Double]): Double => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
-        }
-
-        val problem = new WaveProblem
-        problem.x = empiricalSemivariogram.distances
-        problem.y = empiricalSemivariogram.variance
-        val opt: Optimum = optConstructor(problem)
-        val optimalValues: Array[Double] = opt.getPoint.toArray
+        //Wave Problem
+        val problem =
+          new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
+            override def valueFunc(w: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(w, s, a, Wave)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
+          }
+        val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          val problem = new WaveNuggetProblem
-          problem.x = empiricalSemivariogram.distances
-          problem.y = empiricalSemivariogram.variance
-          val opt: Optimum = optConstructor(problem)
-          val optimalValues: Array[Double] = opt.getPoint.toArray
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = 0
+          //Wave Nugget Problem
+          val nuggetProblem =
+            new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
+              override def valueFuncNugget(w: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(w, s, Wave)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
+            }
+
+          val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), Wave)
         }
-        else {
-          this.r = optimalValues(0)
-          this.s = optimalValues(1)
-          this.a = optimalValues(2)
+        else
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Wave)
-        }
-      case _ => throw new UnsupportedOperationException("Fitting for $model can not be done in this function")
+
+      case _ => throw new UnsupportedOperationException("Fitting for $model can not be performed in this function")
     }
   }
 }

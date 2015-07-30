@@ -279,7 +279,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  private def explicitNuggetModel(svParam: Array[Double], model: ModelType): Double => Double = {
+  def explicitNuggetModel(svParam: Array[Double], model: ModelType): Double => Double = {
     val (range: Double, sill: Double) = (svParam(0), svParam(1))
     explicitNuggetModel(range, sill, model)
   }
