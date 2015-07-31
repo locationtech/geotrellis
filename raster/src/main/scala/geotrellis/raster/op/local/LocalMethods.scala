@@ -189,7 +189,7 @@ trait LocalMethods extends TileMethods
     mask(ext, Seq(geom))
 
   /** Masks this tile by the given Geometry. */
-  def mask(ext: Extent, geoms: Iterable[Geometry]): Tile = {
+  def mask(ext: Extent, geoms: Traversable[Geometry]): Tile = {
     val re = RasterExtent(tile, ext)
     val result = ArrayTile.empty(tile.cellType, tile.cols, tile.rows)
     for (g <- geoms) {

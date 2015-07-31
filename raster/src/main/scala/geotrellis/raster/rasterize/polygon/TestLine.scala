@@ -26,7 +26,7 @@ object TestLineSet {
       line
         .points
         .sliding(2)
-        .map { l =>
+        .flatMap { l =>
           val p1 = l(0)
           val p2 = l(1)
 
@@ -55,7 +55,6 @@ object TestLineSet {
             Some(TestLine(minRow, maxRow, x0, y0, x1, y1, inverseSlope))
           }
          }
-        .flatten
         .toList
     
     TestLineSet(testLines, rowMin, rowMax)

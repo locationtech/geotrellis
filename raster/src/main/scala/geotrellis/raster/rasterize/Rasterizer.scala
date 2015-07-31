@@ -79,6 +79,7 @@ object Rasterizer {
       case p: Line          => foreachCellByLineString(p, re)(f)
       case p: Polygon       => PolygonRasterizer.foreachCellByPolygon(p, re)(f)
       case p: MultiPolygon  => foreachCellByMultiPolygon(p, re)(f)
+      case p: GeometryCollection => p.geometries.foreach(foreachCellByGeometry(_, re)(f))
       case _ => ()
     } //TODO - is this really needed? Seems like we can do this with method overloading now
   }
