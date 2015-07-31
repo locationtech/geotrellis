@@ -16,6 +16,7 @@
 
 package geotrellis.vector
 
+import com.vividsolutions.jts.geom.TopologyException
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 import geotrellis.vector._
@@ -154,6 +155,16 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+   */
+  def safeIntersection(p: Point): PointGeometryIntersectionResult =
+    try intersection(p)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
+    }
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and mp.
    */
   def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
@@ -165,6 +176,16 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    */
   def intersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(mp.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+   */
+  def safeIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
+    try intersection(mp)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(mp.jtsGeom))
+    }
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
@@ -182,6 +203,16 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+   */
+  def safeIntersection(g: OneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
+    try intersection(g)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
+    }
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and g.
    */
   def &(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
@@ -194,6 +225,15 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   def intersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
 
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+   */
+  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+    try intersection(g)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
+    }
 
   // -- Union
 

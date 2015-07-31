@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
-import scala.math.{min, max, round, ceil, floor}
+import scala.math.{min, max, ceil}
 
 case class GeoAttrsError(msg: String) extends Exception(msg)
 
