@@ -103,7 +103,7 @@ object CRS {
       val length = array(0).length
       Some(array(0).substring(1, length - 1))
     }
-    printf("proj4string:"+proj4String)
+
     Source.fromFile(s"${filePrefix}epsg")
       .getLines
       .find { line =>

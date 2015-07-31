@@ -20,20 +20,16 @@ object WKT {
    * @param code
    * @return
    */
-  def fromEPSGCode(code: Int): String = {
-    epsgcodetowktmap(code.toString)
-  }
+  def fromEPSGCode(code: Int): String = epsgcodetowktmap(code.toString)
 
   /**
    * Returns the numeric code of a WKT string given the authority
    * @param wktString
    * @return
    */
-  def getEPSGCode(wktString: String) = {
-    wkttoepsgcodemap(wktString)
-  }
+  def getEPSGCode(wktString: String) = wkttoepsgcodemap(wktString)
 
-  private def retrieveWKTStringFromFile(code: String): String = {
+  private def retrieveWKTStringFromFile(code: String): String =
     Source.fromFile(file).getLines().find(_.split("=")(0) == code) match {
       case Some(string) =>
         val array = string.split("=")
@@ -41,9 +37,8 @@ object WKT {
       case None =>
         throw new NotFoundException(s"Unable to find WKT representation of EPSG:$code")
     }
-  }
 
-  private def retrieveEPSGCodeFromFile(wktString: String): String = {
+  private def retrieveEPSGCodeFromFile(wktString: String): String =
     Source.fromFile(file).getLines().find(_.split("=")(1) == wktString) match {
       case Some(string) =>
         val array = string.split("=")
@@ -51,5 +46,4 @@ object WKT {
       case None =>
         throw new NotFoundException(s"Unable to find the EPSG code of $wktString")
     }
-  }
 }
