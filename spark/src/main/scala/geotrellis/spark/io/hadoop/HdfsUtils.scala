@@ -84,7 +84,7 @@ object HdfsUtils extends Logging {
 
     val globStatus = fs.globStatus(path)
     if (globStatus == null)
-      throw new IOException(s"Invalid path: $path")
+      throw new IOException(s"No matching file(s) for path: $path")
 
     addFiles(globStatus)
     files.toList
