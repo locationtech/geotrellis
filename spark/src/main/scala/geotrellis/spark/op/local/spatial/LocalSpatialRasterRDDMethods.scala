@@ -15,7 +15,7 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterR
   def mask(geoms: Traversable[Polygon]): RasterRDD[K] =
     _mask { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.intersection(tileExtent).toGeometry()
+        val intersections = g.safeIntersection(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
       tile.mask(tileExtent, tileGeoms)
@@ -29,7 +29,7 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterR
   def mask(geoms: Traversable[MultiPolygon])(implicit d: DummyImplicit): RasterRDD[K] =
     _mask { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.intersection(tileExtent).toGeometry()
+        val intersections = g.safeIntersection(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
       tile.mask(tileExtent, tileGeoms)

@@ -17,6 +17,7 @@
 package geotrellis.vector
 
 import GeomFactory._
+import com.vividsolutions.jts.geom.TopologyException
 
 import com.vividsolutions.jts.{geom => jts}
 
@@ -83,21 +84,41 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     intersection(p)
   def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
+  def safeIntersection(p: Point): PointGeometryIntersectionResult =
+    try intersection(p)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
+    }
 
   def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
   def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
+  def safeIntersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
+    try intersection(l)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(l.jtsGeom))
+    }
 
   def &(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     intersection(g)
   def intersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
+  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+    try intersection(g)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
+    }
 
   def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
   def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     ls.intersection(this)
+  def safeIntersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
+    try intersection(ls)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(ls.jtsGeom))
+    }
 
   // -- Union
 
