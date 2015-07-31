@@ -1,10 +1,8 @@
 package geotrellis.proj4
 
-import java.io.{DataOutputStream, File}
 import geotrellis.proj4.io.wkt.WKT
 import org.osgeo.proj4j._
 
-import scala.collection.mutable
 import scala.io.Source
 
 object CRS {
@@ -12,7 +10,7 @@ object CRS {
 
   private val filePrefix = "proj4/src/main/resources/nad/"
 
-  private lazy val proj4ToEPSGMap = new Memoize[String,Option[String]](readEPSGCodeFromFile)
+  private lazy val proj4ToEPSGMap = new Memoize[String, Option[String]](readEPSGCodeFromFile)
 
   /**
    * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
@@ -38,10 +36,12 @@ object CRS {
    * @param name the name of a coordinate system, with optional authority prefix
    * @return the [[CoordinateReferenceSystem]] corresponding to the given name
    */
-  def fromName(name: String): CRS =
-    new CRS { val crs = crsFactory.createFromName(name)
-      override val epsgCode: Option[Int] = getEPSGCode(toProj4String+" <>")
+  def fromName(name: String): CRS = {
+    new CRS {
+      val crs = crsFactory.createFromName(name)
+      override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
+  }
 
   /**
    * Creates a [[CoordinateReferenceSystem]]
@@ -55,8 +55,9 @@ object CRS {
    * @return the specified [[CoordinateReferenceSystem]]
    */
   def fromString(proj4Params: String): CRS =
-    new CRS { val crs = crsFactory.createFromParameters(null, proj4Params)
-      override val epsgCode: Option[Int] = getEPSGCode(toProj4String+" <>")
+    new CRS {
+      val crs = crsFactory.createFromParameters(null, proj4Params)
+      override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
 
   /**
@@ -72,8 +73,9 @@ object CRS {
    * @return the specified [[CoordinateReferenceSystem]]
    */
   def fromString(name: String, proj4Params: String): CRS =
-    new CRS{ val crs = crsFactory.createFromParameters(name, proj4Params)
-      override val epsgCode: Option[Int] = getEPSGCode(toProj4String+" <>")
+    new CRS {
+      val crs = crsFactory.createFromParameters(name, proj4Params)
+      override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
 
   /**
@@ -81,8 +83,8 @@ object CRS {
    * @param wktString
    * @return
    */
-  def fromWKT(wktString :String): CRS ={
-    val epsgCode:String = WKT.getEPSGCode(wktString)
+  def fromWKT(wktString: String): CRS = {
+    val epsgCode: String = WKT.getEPSGCode(wktString)
 
     fromName(epsgCode)
   }
@@ -92,28 +94,26 @@ object CRS {
    * @param proj4String
    * @return
    */
-  def getEPSGCode(proj4String: String):Option[Int]={
-     proj4ToEPSGMap(proj4String) match {
-       case Some(code) => Some(code.toInt)
-       case None =>  None
-     }
-  }
+  def getEPSGCode(proj4String: String): Option[Int] =
+    proj4ToEPSGMap(proj4String).map(_.toInt)
 
-  private def readEPSGCodeFromFile(proj4String: String): Option[String] ={
-    def code(line:String):Option[String]={
+  private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
+    def code(line: String): Option[String] = {
       val array = line.split(" ")
       val length = array(0).length
-      Some(array(0).substring(1,length-1))
+      Some(array(0).substring(1, length - 1))
     }
-
-    Source.fromFile(filePrefix+"epsg").getLines().find(line=> !line.startsWith("#") && "+proj"+((line).split("proj"))(1)==proj4String) match {
-      case Some(line) => code(line)
-
-      case None => None
-    }
+    printf("proj4string:"+proj4String)
+    Source.fromFile(s"${filePrefix}epsg")
+      .getLines
+      .find { line =>
+      !line.startsWith("#") && {
+        val proj4Body = line.split("proj")(1)
+        s"+proj$proj4Body" == proj4String
+      }
+    }.map { line => code(line) }.get
   }
 }
-
 
 
 trait CRS extends Serializable {
@@ -137,7 +137,7 @@ trait CRS extends Serializable {
    * Returns the WKT representation of the Coordinate Reference System
    * @return
    */
-  def toWKT(): Option[String] ={
+  def toWKT(): Option[String] = {
     epsgCode.map(WKT.fromEPSGCode(_))
   }
 
@@ -154,12 +154,12 @@ trait CRS extends Serializable {
 
   private def compareProj4Strings(p1: String, p2: String) = {
     def toProj4Map(s: String): Map[String, String] =
-      s.trim.split(" ").map( x =>
+      s.trim.split(" ").map(x =>
         if (x.startsWith("+")) x.substring(1) else x).map(x => {
-          val index = x.indexOf('=')
-          if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
-          else (x -> None)
-        }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
+        val index = x.indexOf('=')
+        if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
+        else (x -> None)
+      }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
         .filter { case (a, b) => !b.isEmpty }.map { case (a, b) => (a -> b.get) }
         .map { case (a, b) => if (b == "latlong") (a -> "longlat") else (a, b) }
         .filter { case (a, b) => (a != "to_meter" || b != "1.0") }

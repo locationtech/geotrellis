@@ -1,28 +1,26 @@
 package geotrellis.proj4.io.wkt
 
 import geotrellis.proj4.Memoize
-
-import scala.collection.mutable
 import org.osgeo.proj4j.NotFoundException
 
 import scala.io.Source
 
 /**
-* @author Manuri Perera
-*/
+ * @author Manuri Perera
+ */
 object WKT {
   private val file = "proj4/src/main/resources/wkt/epsg.properties"
 
-  private lazy val epsgcodetowktmap = new Memoize[String,String](retrieveWKTStringFromFile)
+  private lazy val epsgcodetowktmap = new Memoize[String, String](retrieveWKTStringFromFile)
 
-  private lazy val wkttoepsgcodemap = new Memoize[String,String](retrieveEPSGCodeFromFile)
+  private lazy val wkttoepsgcodemap = new Memoize[String, String](retrieveEPSGCodeFromFile)
 
   /**
    * Returns the WKT representation given an EPSG code in the format EPSG:[number]
    * @param code
    * @return
    */
-  def fromEPSGCode(code :Int): String ={
+  def fromEPSGCode(code: Int): String = {
     epsgcodetowktmap(code.toString)
   }
 
@@ -31,11 +29,11 @@ object WKT {
    * @param wktString
    * @return
    */
-  def getEPSGCode(wktString:String)={
+  def getEPSGCode(wktString: String) = {
     wkttoepsgcodemap(wktString)
   }
 
-  private def retrieveWKTStringFromFile(code:String):String= {
+  private def retrieveWKTStringFromFile(code: String): String = {
     Source.fromFile(file).getLines().find(_.split("=")(0) == code) match {
       case Some(string) =>
         val array = string.split("=")
@@ -45,7 +43,7 @@ object WKT {
     }
   }
 
-  private def retrieveEPSGCodeFromFile(wktString:String):String = {
+  private def retrieveEPSGCodeFromFile(wktString: String): String = {
     Source.fromFile(file).getLines().find(_.split("=")(1) == wktString) match {
       case Some(string) =>
         val array = string.split("=")
