@@ -20,8 +20,6 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
-import spire.syntax.cfor._
-
 object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.

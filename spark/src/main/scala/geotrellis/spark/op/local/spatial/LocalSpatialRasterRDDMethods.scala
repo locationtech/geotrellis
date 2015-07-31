@@ -5,8 +5,6 @@ import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.vector._
 
-import scala.annotation.tailrec
-
 abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterRDDMethods[K] with Serializable {
 
   /** Masks this raster by the given Polygon. */

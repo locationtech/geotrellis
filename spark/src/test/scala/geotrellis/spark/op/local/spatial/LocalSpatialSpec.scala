@@ -16,9 +16,6 @@
 
 package geotrellis.spark.op.local.spatial
 
-import com.vividsolutions.jts.geom.PrecisionModel
-import com.vividsolutions.jts.precision.GeometryPrecisionReducer
-import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.testfiles._

@@ -16,7 +16,6 @@
 
 package geotrellis.raster.rasterize
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer

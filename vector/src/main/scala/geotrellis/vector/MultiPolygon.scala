@@ -17,7 +17,6 @@
 package geotrellis.vector
 
 import GeomFactory._
-import geotrellis.vector._
 
 import com.vividsolutions.jts.{geom => jts}
 
