@@ -31,7 +31,9 @@ trait HadoopSparkContextMethods {
   def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, Tile)] = {
     val searchPath = path.toString match {
       case p if tiffExtensions.exists(p.endsWith) => path
-      case p => new Path(p + "/*" + tiffExtensions.mkString("{", ",", "}"))
+      case p =>
+        val extensions = tiffExtensions.mkString("{", ",", "}")
+        new Path(s"$p/*$extensions")
     }
 
     val updatedConf =
