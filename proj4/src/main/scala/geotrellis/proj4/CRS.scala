@@ -6,42 +6,9 @@ import org.osgeo.proj4j._
 import scala.io.Source
 
 object CRS {
-  private val crsFactory = new CRSFactory
-
-  private val filePrefix = "proj4/src/main/resources/nad/"
-
   private lazy val proj4ToEPSGMap = new Memoize[String, Option[String]](readEPSGCodeFromFile)
-
-  /**
-   * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
-   * CRS names are of the form: "<tt>authority:code</tt>",
-   * with the components being:
-   * <ul>
-   * <li><b><tt>authority</tt></b> is a code for a namespace supported by
-   * PROJ.4.
-   * Currently supported values are
-   * <tt>EPSG</tt>,
-   * <tt>ESRI</tt>,
-   * <tt>WORLD</tt>,
-   * <tt>NA83</tt>,
-   * <tt>NAD27</tt>.
-   * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
-   * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
-   * For example, in the <tt>EPSG</tt> namespace a code is an integer value
-   * which identifies a CRS definition in the EPSG database.
-   * (Codes are read and handled as strings).
-   * </ul>
-   * An example of a valid CRS name is <tt>EPSG:3005</tt>.
-   * <p>
-   * @param name the name of a coordinate system, with optional authority prefix
-   * @return the [[CoordinateReferenceSystem]] corresponding to the given name
-   */
-  def fromName(name: String): CRS = {
-    new CRS {
-      val crs = crsFactory.createFromName(name)
-      override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
-    }
-  }
+  private val crsFactory = new CRSFactory
+  private val filePrefix = "proj4/src/main/resources/nad/"
 
   /**
    * Creates a [[CoordinateReferenceSystem]]
@@ -59,6 +26,14 @@ object CRS {
       val crs = crsFactory.createFromParameters(null, proj4Params)
       override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
+
+  /**
+   * Returns the numeric EPSG code of a proj4string
+   * @param proj4String
+   * @return
+   */
+  def getEPSGCode(proj4String: String): Option[Int] =
+    proj4ToEPSGMap(proj4String).map(_.toInt)
 
   /**
    * Creates a [[CoordinateReferenceSystem]]
@@ -90,12 +65,33 @@ object CRS {
   }
 
   /**
-   * Returns the numeric EPSG code of a proj4string
-   * @param proj4String
-   * @return
+   * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
+   * CRS names are of the form: "<tt>authority:code</tt>",
+   * with the components being:
+   * <ul>
+   * <li><b><tt>authority</tt></b> is a code for a namespace supported by
+   * PROJ.4.
+   * Currently supported values are
+   * <tt>EPSG</tt>,
+   * <tt>ESRI</tt>,
+   * <tt>WORLD</tt>,
+   * <tt>NA83</tt>,
+   * <tt>NAD27</tt>.
+   * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
+   * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
+   * For example, in the <tt>EPSG</tt> namespace a code is an integer value
+   * which identifies a CRS definition in the EPSG database.
+   * (Codes are read and handled as strings).
+   * </ul>
+   * An example of a valid CRS name is <tt>EPSG:3005</tt>.
+   * <p>
+   * @param name the name of a coordinate system, with optional authority prefix
+   * @return the [[CoordinateReferenceSystem]] corresponding to the given name
    */
-  def getEPSGCode(proj4String: String): Option[Int] =
-    proj4ToEPSGMap(proj4String).map(_.toInt)
+  def fromName(name: String): CRS = new CRS {
+    val crs = crsFactory.createFromName(name)
+    override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+  }
 
   private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
     def code(line: String): Option[String] = {
@@ -111,7 +107,10 @@ object CRS {
         val proj4Body = line.split("proj")(1)
         s"+proj$proj4Body" == proj4String
       }
-    }.map { line => code(line) }.get
+    }.map { line => code(line) } match {
+      case Some(value) => value
+      case None => throw new NotFoundException(s"The EPSG code cannot be found for the proj4 string $proj4String")
+    }
   }
 }
 
@@ -119,31 +118,25 @@ object CRS {
 trait CRS extends Serializable {
 
   val Epsilon = 1e-8
-
-  private[proj4] val crs: CoordinateReferenceSystem
-
   val epsgCode: Option[Int]
-
-  protected def factory = CRS.crsFactory
+  private[proj4] val crs: CoordinateReferenceSystem
 
   /** Override this function to handle reprojecting to another CRS in a more performant way */
   def alternateTransform(dest: CRS): Option[(Double, Double) => (Double, Double)] =
     None
 
-  def toProj4String: String =
-    crs.getParameterString
-
   /**
    * Returns the WKT representation of the Coordinate Reference System
    * @return
    */
-  def toWKT(): Option[String] = {
-    epsgCode.map(WKT.fromEPSGCode(_))
-  }
+  def toWKT(): Option[String] = epsgCode.map(WKT.fromEPSGCode(_))
+
 
   // TODO: Do these better once more things are ported
   override
   def hashCode = toProj4String.hashCode
+
+  def toProj4String: String = crs.getParameterString
 
   override
   def equals(o: Any): Boolean =
@@ -186,4 +179,6 @@ trait CRS extends Serializable {
       else s1 == s2
     } else false
   }
+
+  protected def factory = CRS.crsFactory
 }
