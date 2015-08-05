@@ -40,6 +40,10 @@ trait Geometry {
   def interiorPoint: PointOrNoResult =
     jtsGeom.getInteriorPoint
 
+  def envelope: Extent =
+    if(jtsGeom.isEmpty) Extent(0.0, 0.0, 0.0, 0.0)
+    else jtsGeom.getEnvelopeInternal
+
   override
   def equals(other: Any): Boolean =
     other match {

@@ -9,16 +9,13 @@ import org.apache.spark.Logging
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 
-import monocle._
-import monocle.syntax._
-
 import scala.reflect.ClassTag
 
 object Pyramid extends Logging {
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): (RasterRDD[K], LayoutLevel) = {
+  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): (LayoutLevel, RasterRDD[K]) = {
     val metaData = rdd.metaData
     val nextLevel = layoutScheme.zoomOut(level)
     val nextMetaData = 
@@ -53,8 +50,6 @@ object Pyramid extends Logging {
 
     val nextRdd: RDD[(K, Tile)] =
         combined.map { case (newKey: K, seq: Seq[(K, Tile)]) =>
-          val key = seq.head._1
-
           val newExtent = nextMetaData.mapTransform(newKey)
           val newTile = ArrayTile.empty(nextMetaData.cellType, nextMetaData.tileLayout.tileCols, nextMetaData.tileLayout.tileRows)
 
@@ -66,6 +61,6 @@ object Pyramid extends Logging {
           (newKey, newTile: Tile)
         }
 
-    new RasterRDD(nextRdd, nextMetaData) -> nextLevel
+    nextLevel -> new RasterRDD(nextRdd, nextMetaData)
   }
 }

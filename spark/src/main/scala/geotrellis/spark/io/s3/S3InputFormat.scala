@@ -94,6 +94,14 @@ object S3InputFormat {
     conf.set(PREFIX, prefix)        
   }
 
+  def setBucket(job: Job, bucket: String) ={
+    job.getConfiguration.set(BUCKET, bucket)
+  }
+
+  def setPrefix(job: Job, prefix: String) ={
+    job.getConfiguration.set(PREFIX, prefix)
+  }
+
   /** Set maximum number of keys per split, less may be returned */
   def setMaxKeys(job: Job, limit: Int) = {
     val conf = job.getConfiguration

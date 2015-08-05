@@ -99,12 +99,6 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   /** Get the number of vertices in this geometry */
   lazy val vertexCount: Int = jtsGeom.getNumPoints
 
-  /**
-   * Returns the minimum extent that contains this Line.
-   */
-  lazy val envelope: Extent =
-    jtsGeom.getEnvelopeInternal
-
   /** Returns the length of this Line. */
   lazy val length: Double =
     jtsGeom.getLength

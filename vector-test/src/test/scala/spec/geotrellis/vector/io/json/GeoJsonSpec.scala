@@ -57,7 +57,8 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
     val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq
 
-    points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq should be (points)
+    points.toGeoJson.parseGeoJson[GeometryCollection].points should be (points)
+
   }
 
   it should "parse string to point features and back again" in {
@@ -144,6 +145,20 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     intercept[DeserializationException] {
       json.parseGeoJson[JsonFeatureCollectionMap].getAllPointFeatures[DataBox]
     }
+  }
+
+  it should "convert polygons in GeoJson GeometryCollection" in  {
+
+    val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+    val l2 = Line(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
+
+    val p1: Polygon = Polygon(l1)
+    val p2: Polygon = Polygon(l2)
+
+    val json = Seq(p1, p2).toGeoJson
+    val polygonsBack = json.parseGeoJson[GeometryCollection].polygons
+
+    polygonsBack should be (Seq(p1, p2))
   }
 
 }

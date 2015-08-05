@@ -19,9 +19,8 @@ package geotrellis.engine.op.local
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op.local._
-import geotrellis.raster.rasterize.{Rasterizer, Callback}
-import geotrellis.vector.{Geometry, Extent}
-import geotrellis.vector.io.json._
+import geotrellis.raster.rasterize.Rasterizer
+import geotrellis.vector.Geometry
 
 trait LocalRasterSourceMethods
   extends RasterSourceMethods
@@ -210,15 +209,13 @@ trait LocalRasterSourceMethods
       val result = ArrayTile.empty(tile.cellType, cols, rows)
       for(g <- geoms) {
         if(tile.cellType.isFloatingPoint) {
-          Rasterizer.foreachCellByGeometry(g, re)(new Callback {
-            def apply(col: Int, row: Int) =
+          Rasterizer.foreachCellByGeometry(g, re) { (col: Int, row: Int) =>
               result.setDouble(col, row, tile.getDouble(col, row))
-          })
+          }
         } else {
-          Rasterizer.foreachCellByGeometry(g, re)(new Callback {
-            def apply(col: Int, row: Int) =
+          Rasterizer.foreachCellByGeometry(g, re) { (col: Int, row: Int) =>
               result.set(col, row, tile.get(col, row))
-          })
+          }
         }
       }
       result:Tile

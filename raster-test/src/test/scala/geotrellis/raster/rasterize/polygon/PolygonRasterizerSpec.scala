@@ -175,12 +175,9 @@ class RasterizePolygonSpec extends FunSuite
         val p1 = Polygon(g1)
         var sum = 0
         val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-        val r = PolygonRasterizer.foreachCellByPolygon(p1, re)(
-          new Callback {
-            def apply(x:Int, y:Int) {
-              sum = sum + 1
-            }
-          })
+        val r = PolygonRasterizer.foreachCellByPolygon(p1, re) { (x:Int, y:Int) =>
+          sum = sum + 1
+        }
 
         (sum, count)
       }else{
@@ -208,12 +205,9 @@ class RasterizePolygonSpec extends FunSuite
     val re = RasterExtent(Extent(-1, -1, 5, 5), 6, 6)
 
     var sum = 0
-    PolygonRasterizer.foreachCellByPolygon(p, re)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          sum = sum + 1
-        }
-      })
+    PolygonRasterizer.foreachCellByPolygon(p, re) { (col: Int, row: Int) =>
+      sum = sum + 1
+    }
 
     sum should be (12)
   }

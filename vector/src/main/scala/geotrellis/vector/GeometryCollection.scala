@@ -85,14 +85,6 @@ class GeometryCollection(
   lazy val area: Double =
     jtsGeom.getArea
 
-  /**
-   * Returns the minimum extent that contains all the geometries in
-   * this GeometryCollection.
-   */
-  lazy val envelope: Extent =
-    if(jtsGeom.isEmpty) Extent(0.0, 0.0, 0.0, 0.0)
-    else jtsGeom.getEnvelopeInternal
-
   override def equals(that: Any): Boolean = {
     that match {
       case that: GeometryCollection =>
