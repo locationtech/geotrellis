@@ -22,16 +22,12 @@ import geotrellis.vector.interpolation._
 
 import spire.syntax.cfor._
 
-/**
- * @author Vishal Anand
- */
-
 object KrigingInterpolation {
 
   private def isValid(point: Point, re: RasterExtent): Boolean =
     point.x >= re.extent.xmin && point.x <= re.extent.xmax && point.y <= re.extent.ymax && point.y >= re.extent.ymin
 
-  def apply(method: KrigingVectorInterpolationMethod, points: Seq[PointFeature[Double]], re: RasterExtent, maxdist: Double, binmax: Double, model: ModelType): Tile = {
+  def apply(method: KrigingVectorBase, points: Seq[PointFeature[Double]], re: RasterExtent, maxdist: Double, binmax: Double, model: ModelType): Tile = {
     model match {
       case Linear(_,_) => throw new UnsupportedOperationException("Linear semivariogram does not accept maxDist and maxBin values")
       case _ =>
@@ -53,7 +49,7 @@ object KrigingInterpolation {
     }
   }
 
-  def apply(method: KrigingVectorInterpolationMethod, points: Array[PointFeature[Double]], re: RasterExtent, chunkSize: Double, model: ModelType): Tile = {
+  def apply(method: KrigingVectorBase, points: Array[PointFeature[Double]], re: RasterExtent, chunkSize: Double, model: ModelType): Tile = {
     model match {
       case Linear(radius, lag) =>
         val cols = re.cols

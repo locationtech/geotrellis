@@ -18,10 +18,6 @@ package geotrellis.vector.interpolation
 
 import geotrellis.vector._
 
-/**
- * @author Vishal Anand
- */
-
 object NonLinearSemivariogram {
 
   /** Explicit [[Gaussian]] Semivariogram model

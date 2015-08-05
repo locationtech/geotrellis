@@ -22,10 +22,6 @@ import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, Least
 import spire.syntax.cfor._
 
 /**
- * @author Vishal Anand
- */
-
-/**
  * Computes fitting of the given empirical semivariogram using a [[ModelType]]'s function definitions valueFunc() and jacobianFunc()
  * @param x     Empirical Semivariogram distance value
  * @param y     Empirical Semivariogram's corresponding variance values

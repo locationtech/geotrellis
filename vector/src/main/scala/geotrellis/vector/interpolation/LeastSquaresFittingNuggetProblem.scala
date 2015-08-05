@@ -22,10 +22,6 @@ import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, Least
 import spire.syntax.cfor._
 
 /**
- * @author Vishal Anand
- */
-
-/**
  * Computes fitting of the given empirical semivariogram while forcing the nugget value to 0
  * (this is invoked when the normal fitting causes a negative nugget value, which is mathematically pointless in Kriging estimation),
  * @param x     Empirical Semivariogram distance value

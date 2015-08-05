@@ -16,10 +16,6 @@
 
 package geotrellis.vector.interpolation
 
-/**
- * @author Vishal Anand
- */
-
 abstract sealed class ModelType
 
 case class Linear (radius: Option[Double], lag: Double) extends ModelType

@@ -19,10 +19,6 @@ import geotrellis.vector._
 import spire.syntax.cfor._
 import scala.collection.mutable
 
-/**
- * @author Vishal Anand
- */
-
 class EmpiricalVariogram(val distances: Array[Double], val variance: Array[Double])
 
 /** This creates an empirical variogram from the dataset, which is

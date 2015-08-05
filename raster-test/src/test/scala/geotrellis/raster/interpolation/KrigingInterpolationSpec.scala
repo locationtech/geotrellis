@@ -43,7 +43,6 @@ class KrigingInterpolationSpec extends FunSpec
       f.close()
       val points: Array[PointFeature[Double]] = collection.getAllPointFeatures[Double]().toArray
 
-      //val radius = Some(6)
       val radius: Option[Double] = Some(6)
       val lag = 2
       val chunkSize = 100
