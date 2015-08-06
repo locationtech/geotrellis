@@ -14,6 +14,7 @@ import scalaz.stream._
 import scalaz.concurrent.Task
 import geotrellis.spark.io.avro._
 import spray.json.DefaultJsonProtocol._
+import spray.json._
 
 class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
   def write(
@@ -38,7 +39,7 @@ class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     val toPath = (index: Long) => encodeIndex(index, maxWidth)
     val codec = recordCodec(implicitly[AvroRecordCodec[K]], tileUnionCodec)
 
-    attributes.write(layerId,"schema", codec.schema.toString)
+    attributes.write(layerId,"schema", codec.schema.toString.parseJson)
 
     val BC = sc.broadcast((
       s3client,

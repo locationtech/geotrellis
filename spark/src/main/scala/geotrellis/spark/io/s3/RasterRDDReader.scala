@@ -10,6 +10,7 @@ import scala.reflect.ClassTag
 import geotrellis.spark.io.avro._
 import org.apache.avro._
 import spray.json.DefaultJsonProtocol._
+import spray.json._
 
 class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
   /** Converting lower bound of Range to first Key for Marker */
@@ -35,7 +36,7 @@ class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     logger.debug(s"Loading layer from $bucket $dir, ${ranges.length} ranges split into ${bins.length} bins")
 
     // Broadcast the functions and objects we can use in the closure
-    val writerSchema: Schema = (new Schema.Parser).parse(attributes.read[String](layerId, "schema"))
+    val writerSchema: Schema = (new Schema.Parser).parse(attributes.read[JsObject](layerId, "schema").toString())
 
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val BC = sc.broadcast((
