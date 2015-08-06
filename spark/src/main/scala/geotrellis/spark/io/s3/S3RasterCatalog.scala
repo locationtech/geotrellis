@@ -55,7 +55,7 @@ class S3RasterCatalog(
       val index     = getLayerKeyIndex(layerId)
 
       val queryBounds = rasterQuery(metadata.rasterMetaData, keyBounds)
-      implicitly[RasterRDDReader[K]].read(s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
+      implicitly[RasterRDDReader[K]].read(attributeStore ,s3client, metadata, keyBounds, index, numPartitions)(layerId, queryBounds)
     } catch {
       case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
     }
@@ -114,7 +114,7 @@ class S3RasterCatalog(
         setLayerKeyIndex(layerId, index)
 
         val rddWriter = implicitly[RasterRDDWriter[K]]
-        rddWriter.write(s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
+        rddWriter.write(attributeStore, s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
 
         rdd.unpersist(blocking = false)
       }

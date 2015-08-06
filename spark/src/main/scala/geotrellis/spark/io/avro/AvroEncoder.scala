@@ -41,12 +41,17 @@ object AvroEncoder {
     encoder.flush()
     compress(jos.toByteArray)
   }
-  
+
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T = {
+    val format = implicitly[AvroRecordCodec[T]]
+    fromBinary[T](format.schema, bytes)
+  }
+
+  def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte]): T = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](schema)
+    val reader = new GenericDatumReader[GenericRecord](writerSchema, schema)
     val decoder = DecoderFactory.get().binaryDecoder(decompress(bytes), null)
     val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
     format.decode(rec)

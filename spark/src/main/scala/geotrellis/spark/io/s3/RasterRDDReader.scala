@@ -1,18 +1,22 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark._
+import geotrellis.spark.io.AttributeStore
 import geotrellis.spark.io.index.KeyIndex
+import org.apache.avro.Schema.Parser
 import org.apache.spark.SparkContext
 import com.typesafe.scalalogging.slf4j._
 import scala.reflect.ClassTag
 import geotrellis.spark.io.avro._
+import org.apache.avro._
+import spray.json.DefaultJsonProtocol._
 
 class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
-
   /** Converting lower bound of Range to first Key for Marker */
   val indexToPath: (Long, Int) => String = encodeIndex
 
   def read(
+    attributes: S3AttributeStore,
     s3client: ()=>S3Client,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
@@ -31,20 +35,23 @@ class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     logger.debug(s"Loading layer from $bucket $dir, ${ranges.length} ranges split into ${bins.length} bins")
 
     // Broadcast the functions and objects we can use in the closure
+    val writerSchema: Schema = (new Schema.Parser).parse(attributes.read[String](layerId, "schema"))
+
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val BC = sc.broadcast((
       s3client,
       { (index: Long) => indexToPath(index, maxWidth) },
       { (key: K) => queryKeyBounds.includeKey(key) },
       geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
-        geotrellis.spark.io.avro.tileUnionCodec)
+        geotrellis.spark.io.avro.tileUnionCodec),
+      writerSchema
     ))
 
     val rdd =
       sc
         .parallelize(bins, bins.size)
         .mapPartitions { rangeList =>
-          val (fS3client, toPath, includeKey, recCodec) = BC.value
+          val (fS3client, toPath, includeKey, recCodec, schema) = BC.value
           val s3client = fS3client()
 
           rangeList
@@ -54,7 +61,7 @@ class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
                 val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
                 val is = s3client.getObject(bucket, path).getObjectContent
                 val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
-                val recs = AvroEncoder.fromBinary(bytes)(recCodec)
+                val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
                 recs
                   .filter( row => includeKey(row._1) )
                   .map { case (key, tile) => key -> tile }

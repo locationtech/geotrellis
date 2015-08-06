@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark._
+import geotrellis.spark.io.AttributeStore
 import geotrellis.spark.io.index._
 import org.apache.spark.SparkContext
 import java.io.ByteArrayInputStream
@@ -12,15 +13,18 @@ import java.util.concurrent.Executors
 import scalaz.stream._
 import scalaz.concurrent.Task
 import geotrellis.spark.io.avro._
+import spray.json.DefaultJsonProtocol._
 
 class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
   def write(
+    attributes: S3AttributeStore,
     s3client: ()=>S3Client, 
     bucket: String, 
     layerPath: String,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K],
-    clobber: Boolean)
+    clobber: Boolean
+    )
   (layerId: LayerId, rdd: RasterRDD[K])
   (implicit sc: SparkContext): Unit = {
 //    if (s3client().listObjectsIterator(bucket, layerPath, 1).hasNext && ! clobber)
@@ -32,9 +36,13 @@ class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     val dir = layerPath
 
     val toPath = (index: Long) => encodeIndex(index, maxWidth)
+    val codec = recordCodec(implicitly[AvroRecordCodec[K]], tileUnionCodec)
+
+    attributes.write(layerId,"schema", codec.schema.toString(true))
+
     val BC = sc.broadcast((
       s3client,
-      recordCodec(implicitly[AvroRecordCodec[K]], tileUnionCodec)
+      codec
     ))
 
     logger.info(s"Saving RasterRDD ${rdd.name} to $bucket  $layerPath")

@@ -24,7 +24,7 @@ import java.io.ByteArrayInputStream
  */
 class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
                       (implicit sc: SparkContext) extends AttributeStore {
-  type ReadableWritable[T] = RootJsonFormat[T]
+  type ReadableWritable[T] = JsonFormat[T]
 
   /** NOTE:
    * S3 is eventually consistent, therefore it is possible to write an attribute and fail to read it
