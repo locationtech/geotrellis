@@ -385,7 +385,7 @@ object GeotrellisBuild extends Build {
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
           "de.javakaffee" % "kryo-serializers" % "0.27",
           "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
-          logging, awsSdkS3,
+          logging, awsSdkS3, avro,
           spire,
           monocleCore, monocleMacro,
           nscalaTime,

@@ -1,35 +1,19 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark._
-import geotrellis.raster._
-import geotrellis.spark.io._
-import geotrellis.spark.utils.KryoSerializer
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3._
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import java.io.ByteArrayInputStream
-import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult}
-import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.services.s3.model.ObjectMetadata
-import geotrellis.spark.io.index.zcurve.Z2
+import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult, ObjectMetadata}
 import com.typesafe.scalalogging.slf4j._
-import scala.collection.mutable.ArrayBuffer
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import scala.reflect.ClassTag
-import scala.concurrent._
 import java.util.concurrent.Executors
-import scala.concurrent.duration._
-import scalaz.stream.async._
 import scalaz.stream._
-import scalaz.concurrent.Strategy
 import scalaz.concurrent.Task
-import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
+import geotrellis.spark.io.avro._
 
-abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
-  val encodeKey: (K, KeyIndex[K], Int) => String
-
+class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
   def write(
     s3client: ()=>S3Client, 
     bucket: String, 
@@ -39,56 +23,67 @@ abstract class RasterRDDWriter[K: Boundable: ClassTag] extends LazyLogging {
     clobber: Boolean)
   (layerId: LayerId, rdd: RasterRDD[K])
   (implicit sc: SparkContext): Unit = {
-    // TODO: Check if I am clobbering things        
-    logger.info(s"Saving RasterRDD for $layerId to ${layerPath}")
-        
-    val maxLen = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+//    if (s3client().listObjectsIterator(bucket, layerPath, 1).hasNext && ! clobber)
+//      throw new LayerWriteError(layerId, s"Directory already exists: $layerPath")
 
-    val bcClient = sc.broadcast(s3client)
+    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+
     val catalogBucket = bucket
-    val path = layerPath
-    val ek = encodeKey
+    val dir = layerPath
+
+    val toPath = (index: Long) => encodeIndex(index, maxWidth)
+    val BC = sc.broadcast((
+      s3client,
+      geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
+        geotrellis.spark.io.avro.tileUnionCodec)
+    ))
+
+    logger.info(s"Saving RasterRDD ${rdd.name} to $bucket  $layerPath")
 
     rdd
+      .groupBy{ row => keyIndex.toIndex(row._1) } // TODO: this can be a map in spatial case
       .foreachPartition { partition =>
         import geotrellis.spark.utils.TaskUtils._
 
-        val s3client: S3Client = bcClient.value.apply
+        val (getS3Client, recsCodec) = BC.value
+        val s3client: S3Client = getS3Client()
 
-        val requests: Process[Task, PutObjectRequest] = 
+        val requests: Process[Task, PutObjectRequest] =
           Process.unfold(partition){ iter =>
             if (iter.hasNext) {
-              val row = iter.next
-              val index = keyIndex.toIndex(row._1) 
-              val bytes = KryoSerializer.serialize[(K, Tile)](row)
+              val recs = iter.next()
+              val index = recs._1
+              val pairs = recs._2.toVector
+              val bytes = AvroEncoder.toBinary(pairs)(recsCodec)
               val metadata = new ObjectMetadata()
               metadata.setContentLength(bytes.length)
               val is = new ByteArrayInputStream(bytes)
-              val request = new PutObjectRequest(catalogBucket, s"$path/${ek(row._1, keyIndex, maxLen)}", is, metadata)
+              val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
+              val request = new PutObjectRequest(catalogBucket, path, is, metadata)
               Some(request, iter)
             } else  {
               None
             }
           }
-        
+
         val pool = Executors.newFixedThreadPool(8)
 
         val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
-          Process eval Task { 
+          Process eval Task {
             request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-            s3client.putObject(request) 
+            s3client.putObject(request)
           }(pool).retryEBO {
             case e: AmazonS3Exception if e.getStatusCode == 503 => true
             case _ => false
           }
-        }   
-    
+        }
+
         val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { requests map write }
 
         results.run.run
         pool.shutdown()
       }
 
-    logger.info(s"Finished saving tiles to ${layerPath}")
+    logger.info(s"Finished saving tiles to $layerPath")
   }   
 }
