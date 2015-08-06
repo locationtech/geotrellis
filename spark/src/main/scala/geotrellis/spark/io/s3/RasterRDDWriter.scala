@@ -34,8 +34,7 @@ class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     val toPath = (index: Long) => encodeIndex(index, maxWidth)
     val BC = sc.broadcast((
       s3client,
-      geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
-        geotrellis.spark.io.avro.tileUnionCodec)
+      recordCodec(implicitly[AvroRecordCodec[K]], tileUnionCodec)
     ))
 
     logger.info(s"Saving RasterRDD ${rdd.name} to $bucket  $layerPath")

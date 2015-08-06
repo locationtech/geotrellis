@@ -4,7 +4,7 @@ import org.scalatest._
 import TileCodecs._
 import geotrellis.raster._
 
-class TileCodecsSpec extends FunSpec {
+class TileCodecsSpec extends FunSpec with AvroTools {
   describe("TileCodecs") {
     it("encodes ShortArrayTile"){
       roundTrip(ShortArrayTile.fill(45,10,15))
