@@ -20,10 +20,9 @@ import java.io.ByteArrayInputStream
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
  * 
  * @param bucket    S3 bucket to use for attribute store
- * @param layerKey  path in the bucket for given LayerId, not ending in "/"
+ * @param rootPath  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
-                      (implicit sc: SparkContext) extends AttributeStore {
+class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) extends AttributeStore {
   type ReadableWritable[T] = JsonFormat[T]
 
   /** NOTE:
@@ -72,4 +71,15 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
   }
+}
+
+object S3AttributeStore {
+  def apply(s3client: S3Client, bucket: String, root: String) =
+    new S3AttributeStore(s3client, bucket, root)
+
+  def apply(bucket: String, root: String): S3AttributeStore =
+    apply(S3Client.default, bucket, root)
+
+  def apply(bucket: String): S3AttributeStore =
+    apply(bucket, "")
 }

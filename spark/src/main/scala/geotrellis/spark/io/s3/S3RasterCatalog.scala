@@ -8,31 +8,17 @@ import geotrellis.spark.io.index._
 
 import org.apache.spark._
 import spray.json.JsonFormat
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.retry.PredefinedRetryPolicies
 
 import scala.reflect._
 
 object S3RasterCatalog {
-  def defaultS3Client = 
-    () => {
-      val provider = new DefaultAWSCredentialsProviderChain()
-      val config = new com.amazonaws.ClientConfiguration
-      config.setMaxConnections(128)
-      config.setMaxErrorRetry(16)
-      config.setConnectionTimeout(100000)
-      config.setSocketTimeout(100000)
-      config.setRetryPolicy(PredefinedRetryPolicies.getDefaultRetryPolicyWithCustomMaxRetries(32))
-      new AmazonS3Client(provider, config)
-    }
-  
   private def layerPath(layerId: LayerId) = 
     s"${layerId.name}/${layerId.zoom}"  
 
   def apply(bucket: String)(implicit sc: SparkContext): S3RasterCatalog =
-    apply(bucket, "", defaultS3Client)
+    apply(bucket, "", () => S3Client.default)
 
-  def apply(bucket: String, rootPath: String, s3client: () => S3Client = defaultS3Client)
+  def apply(bucket: String, rootPath: String, s3client: () => S3Client = () => S3Client.default)
     (implicit sc: SparkContext): S3RasterCatalog = {
     
     val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath)

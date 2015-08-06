@@ -9,3 +9,9 @@ trait AttributeStore {
   def readAll[T: ReadableWritable](attributeName: String): Map[LayerId, T]
   def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit
 }
+
+object AttributeStore {
+  type Aux[F[_]] = AttributeStore {
+    type ReadableWritable[T] = F[T]
+  }
+}
