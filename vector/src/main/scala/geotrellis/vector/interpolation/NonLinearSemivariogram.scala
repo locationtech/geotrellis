@@ -46,7 +46,8 @@ object NonLinearSemivariogram {
       if (x == 0)
         jacobianRet = Array.fill[Double](3)(0)
       else {
-        jacobianRet(0) = (variables(2) - variables(1)) * (2 * math.pow(x, 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
+        jacobianRet(0) =
+          (variables(2) - variables(1)) * (2 * math.pow(x, 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
         jacobianRet(1) = 1 - math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
         jacobianRet(2) = 1 - jacobianRet(1)
       }
@@ -154,8 +155,8 @@ object NonLinearSemivariogram {
         //jacobianRet = Array.fill[Double](3)(0)
         jacobianRet = Array[Double](0, 0, 1)
       else if (x > 0 && x <= variables(0)) {
-        jacobianRet(0) = (variables(1) - variables(2)) * ((-3 * x)/(2 * math.pow(variables(0), 2)) + (3 * math.pow(x, 3)/(2 * math.pow(variables(0), 4))))
-        jacobianRet(1) = ((3 * x)/(2 * variables(0))) - (0.5 * math.pow(x / variables(0), 3))
+        jacobianRet(0) = (variables(1) - variables(2)) * ((-3 * x) / (2 * math.pow(variables(0), 2)) + (3 * math.pow(x, 3)/(2 * math.pow(variables(0), 4))))
+        jacobianRet(1) = (3 * x) / (2 * variables(0)) - (0.5 * math.pow(x / variables(0), 3))
         jacobianRet(2) = 1 - jacobianRet(1)
       }
       else
@@ -287,7 +288,8 @@ object NonLinearSemivariogram {
       case Gaussian     =>  explicitGaussianNugget(range, sill)
       case Exponential  =>  explicitExponentialNugget(range, sill)
       case Wave         =>  explicitWaveNugget(range, sill)
-      case _            => throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
+      case _            =>
+        throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
     }
   }
 
@@ -315,7 +317,8 @@ object NonLinearSemivariogram {
       case Gaussian     =>  explicitGaussian(range, sill, nugget)
       case Exponential  =>  explicitExponential(range, sill, nugget)
       case Wave         =>  explicitWave(range, sill, nugget)
-      case _            => throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
+      case _            =>
+        throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
     }
   }
 
@@ -332,7 +335,8 @@ object NonLinearSemivariogram {
         case Gaussian     => jacobianGaussian(variables)
         case Exponential  => jacobianExponential(variables)
         case Wave         => jacobianWave(variables)
-        case _            => throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
+        case _            =>
+          throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
       }
     else
       model match {
@@ -341,7 +345,8 @@ object NonLinearSemivariogram {
         case Gaussian     => jacobianGaussianNugget(variables)
         case Exponential  => jacobianExponentialNugget(variables)
         case Wave         => jacobianWaveNugget(variables)
-        case _            => throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
+        case _            =>
+          throw new UnsupportedOperationException("$model is an invalid model or is not implemented")
       }
   }
 
@@ -372,8 +377,12 @@ object NonLinearSemivariogram {
    * @param model                 The [[ModelType]] being fitted into
    * @return                      [[Semivariogram]]
    */
-  def apply(pts: Array[PointFeature[Double]], maxDistanceBandwidth: Double, binMaxCount: Int, model: ModelType): Semivariogram = {
-    val es: EmpiricalVariogram = EmpiricalVariogram.nonlinear(pts, maxDistanceBandwidth, binMaxCount)
+  def apply(pts: Array[PointFeature[Double]],
+            maxDistanceBandwidth: Double,
+            binMaxCount: Int,
+            model: ModelType): Semivariogram = {
+    val es: EmpiricalVariogram =
+      EmpiricalVariogram.nonlinear(pts, maxDistanceBandwidth, binMaxCount)
 
     //Fitting the empirical variogram to the input model
     def stdev(data: Array[Double]): Double = {
@@ -393,10 +402,16 @@ object NonLinearSemivariogram {
     val dist: Array[Double] = es.distances
     val varianceValue: Array[Double] = es.variance
     val start: Array[Double] = Array.fill(3)(0)
-    start(0) = dist.foldLeft(dist(0)) { case (maxM, e) => math.max(maxM, e) }
-    val Z: Array[Double] = Array.tabulate(pts.length){i => pts(i).data}
+    start(0) =
+      dist.foldLeft(dist(0))
+      { case (maxM, e) => math.max(maxM, e) }
+    val Z: Array[Double] =
+      Array.tabulate(pts.length)
+      {i => pts(i).data}
     start(1) = math.pow(stdev(Z), 2)
-    start(2) = math.max(0, varianceValue.foldLeft(dist(0)) { case (minM, e) => math.min(minM, e) })
+    start(2) =
+      math.max(0, varianceValue.foldLeft(dist(0))
+                { case (minM, e) => math.min(minM, e) })
     Semivariogram.fit(es, model, start)
   }
 }

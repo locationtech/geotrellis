@@ -43,7 +43,9 @@ case object Spherical extends ModelType
 case object Exponential extends ModelType
 case object Wave extends ModelType
 
-abstract class Semivariogram(val range: Double, val sill: Double, val nugget: Double) {
+abstract class Semivariogram(val range: Double,
+                             val sill: Double,
+                             val nugget: Double) {
   def apply(x: Double): Double
 }
 
@@ -68,15 +70,19 @@ object Semivariogram {
    * @param begin                   the starting point of the optimization search of (range, sill, nugget) values
    * @return                        [[Semivariogram]]
    */
-  def fit(empiricalSemivariogram: EmpiricalVariogram, model: ModelType, begin: Array[Double]): Semivariogram = {
+  def fit(empiricalSemivariogram: EmpiricalVariogram,
+          model: ModelType,
+          begin: Array[Double]): Semivariogram = {
     model match {
       //Least Squares minimization
       case Gaussian =>
         //Gaussian Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
-            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Gaussian)
-            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Gaussian)
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
+              NonLinearSemivariogram.explicitModel(r, s, a, Gaussian)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] =
+              NonLinearSemivariogram.jacobianModel(variables, Gaussian)
           }
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
@@ -84,8 +90,10 @@ object Semivariogram {
           //Gaussian Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
-              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Gaussian)
-              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Gaussian)
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
+                NonLinearSemivariogram.explicitNuggetModel(r, s, Gaussian)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] =
+                NonLinearSemivariogram.jacobianModel(variables, Gaussian)
             }
 
           val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
@@ -98,16 +106,20 @@ object Semivariogram {
         //Exponential Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
-            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Exponential)
-            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
+              NonLinearSemivariogram.explicitModel(r, s, a, Exponential)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] =
+              NonLinearSemivariogram.jacobianModel(variables, Exponential)
           }
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
-              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Exponential)
-              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Exponential)
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
+                NonLinearSemivariogram.explicitNuggetModel(r, s, Exponential)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] =
+                NonLinearSemivariogram.jacobianModel(variables, Exponential)
             }
 
           val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
@@ -120,8 +132,10 @@ object Semivariogram {
         //Circular Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
-            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Circular)
-            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
+              NonLinearSemivariogram.explicitModel(r, s, a, Circular)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] =
+              NonLinearSemivariogram.jacobianModel(variables, Circular)
           }
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
@@ -129,8 +143,10 @@ object Semivariogram {
           //Circular Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
-              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Circular)
-              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Circular)
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
+                NonLinearSemivariogram.explicitNuggetModel(r, s, Circular)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] =
+                NonLinearSemivariogram.jacobianModel(variables, Circular)
             }
 
           val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
@@ -143,8 +159,10 @@ object Semivariogram {
         //Spherical Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
-            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(r, s, a, Spherical)
-            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
+            override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
+              NonLinearSemivariogram.explicitModel(r, s, a, Spherical)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] =
+              NonLinearSemivariogram.jacobianModel(variables, Spherical)
           }
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
@@ -152,8 +170,10 @@ object Semivariogram {
           //Spherical Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
-              override def valueFuncNugget(r: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(r, s, Spherical)
-              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Spherical)
+              override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
+                NonLinearSemivariogram.explicitNuggetModel(r, s, Spherical)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] =
+                NonLinearSemivariogram.jacobianModel(variables, Spherical)
             }
 
           val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray
@@ -166,8 +186,10 @@ object Semivariogram {
         //Wave Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
-            override def valueFunc(w: Double, s: Double, a: Double): (Double) => Double = NonLinearSemivariogram.explicitModel(w, s, a, Wave)
-            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
+            override def valueFunc(w: Double, s: Double, a: Double): (Double) => Double =
+              NonLinearSemivariogram.explicitModel(w, s, a, Wave)
+            override def jacobianFunc(variables: Array[Double]): (Double) => Array[Double] =
+              NonLinearSemivariogram.jacobianModel(variables, Wave)
           }
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
@@ -175,8 +197,10 @@ object Semivariogram {
           //Wave Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
-              override def valueFuncNugget(w: Double, s: Double): (Double) => Double = NonLinearSemivariogram.explicitNuggetModel(w, s, Wave)
-              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] = NonLinearSemivariogram.jacobianModel(variables, Wave)
+              override def valueFuncNugget(w: Double, s: Double): (Double) => Double =
+                NonLinearSemivariogram.explicitNuggetModel(w, s, Wave)
+              override def jacobianFuncNugget(variables: Array[Double]): (Double) => Array[Double] =
+                NonLinearSemivariogram.jacobianModel(variables, Wave)
             }
 
           val optimalValues: Array[Double] = nuggetProblem.optimum.getPoint.toArray

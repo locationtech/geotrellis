@@ -243,9 +243,9 @@ class SemivariogramSpec extends FunSpec
       semivariogramExponential(10) should be (sv(10) +- 0.0001)
     }
 
-    ignore("Circular Semivariogram w/o starting point") {
+    it("Circular Semivariogram w/o starting point") {
 
-      //This fails, since NaN starts appearing in the Jacobian matrix while searching for the solution.
+      //This throws an exception, since NaN starts appearing in the Jacobian matrix while searching for the solution.
       //So, in such cases, the user should supply an adequate starting point looking at the sample data; which will help
       //in obtaining the appropriate optimization
 
@@ -257,11 +257,16 @@ class SemivariogramSpec extends FunSpec
           distances = Array(1.0, 2.0, 9.0, 10.0, 11.0),
           variance  = Array(9.271764348975337, 10.534640218523169, 18.26847664622735, 19.044740230185127, 19.657832500414067))
 
-      val start: Array[Double] = Array[Double](12, 22, 10)
-      val semivariogramCircular = Semivariogram.fit(empiricalSemivariogram, Circular)
-      semivariogramCircular(0) should be (sv(0) +- 0.0001)
-      semivariogramCircular(5) should be (sv(5) +- 0.0001)
-      semivariogramCircular(10) should be (sv(10) +- 0.0001)
+      val semivariogramCircular =
+        try {
+          Semivariogram.fit(empiricalSemivariogram, Circular)
+        } catch {
+          case e: Exception =>
+            //Exception encountered(IllegalStateException, NaN occurrence) as expected due to lack of adequate starting point for optimization
+            null
+        }
+
+      semivariogramCircular should equal (null)
     }
 
     it("Circular Semivariogram w/ starting point") {
