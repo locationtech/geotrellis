@@ -18,8 +18,4 @@ abstract class AvroRecordCodec[T: ClassTag] extends AvroCodec[T, GenericRecord] 
   def supported[O](other: O): Boolean = {
     implicitly[ClassTag[T]].unapply(other).isDefined
   }
-
-  implicit class GenericRecordMethods(rec: GenericRecord) {
-    def apply[X](name: String) = rec.get(name).asInstanceOf[X]
-  }
 }
