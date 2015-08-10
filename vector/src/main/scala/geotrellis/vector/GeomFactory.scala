@@ -17,7 +17,14 @@
 package geotrellis.vector
 
 import com.vividsolutions.jts.geom
+import com.vividsolutions.jts.geom.PrecisionModel
+import com.vividsolutions.jts.precision.GeometryPrecisionReducer
 
 private[vector] object GeomFactory {
+
   val factory = new geom.GeometryFactory()
+
+  // 12 digits is maximum to avoid [[TopologyException]], see http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
+  lazy val simplifier = new GeometryPrecisionReducer(new PrecisionModel(12))
+
 }

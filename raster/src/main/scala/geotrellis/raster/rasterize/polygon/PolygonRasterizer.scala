@@ -20,14 +20,12 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
-import spire.syntax.cfor._
-
 object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
   def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean=false)(f: Callback): Unit = 
-    if (p.intersects(re.extent)) { 
+    if (p.intersects(re.extent)) {
 
       val (edges, rowMinOrg, rowMaxOrg) = {
         val TestLineSet(lines, rowMin, rowMax) =
@@ -43,7 +41,7 @@ object PolygonRasterizer {
 
       var activeEdges: List[Intercept] = List[Intercept]()
 
-      if (rowMaxOrg > 0 && rowMinOrg < re.rows) {
+      if (rowMaxOrg >= 0 && rowMinOrg < re.rows) {
         val rowMin = math.max(0, rowMinOrg)
         val rowMax = math.min(re.rows - 1, rowMaxOrg)
 
@@ -54,7 +52,7 @@ object PolygonRasterizer {
           // * Update the x intercepts of each line for the next line.
           activeEdges = activeEdges.map { edge => Intercept(edge.line, y, re) }
 
-          val newEdges = 
+          val newEdges =
             edges
               .getOrElse(row, List[TestLine]())
               .map( line => Intercept(line, y, re) )
@@ -73,7 +71,7 @@ object PolygonRasterizer {
               for(col <- math.max(minCol, 0) to math.min(maxCol, re.cols - 1 )) {
                 f(col, row)
               }
-            }             
+            }
           }
 
           // ** Remove from AET those entries for which row = rowMax

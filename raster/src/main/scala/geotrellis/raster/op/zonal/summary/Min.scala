@@ -9,14 +9,10 @@ object Min extends TileIntersectionHandler[Int, Int] {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
     var min = NODATA
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          val z = tile.get(col, row)
-          if (isData(z) && (z < min || isNoData(min)) ) { min = z }
-        }
-      }
-    )
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.get(col, row)
+      if (isData(z) && (z < min || isNoData(min)) ) { min = z }
+    }
     min
   }
 
@@ -43,14 +39,10 @@ object MinDouble extends TileIntersectionHandler[Double, Double] {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
     var min = Double.NaN
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          val z = tile.getDouble(col, row)
-          if (isData(z) && (z < min || isNoData(min))) { min = z }
-        }
-      }
-    )
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.getDouble(col, row)
+      if (isData(z) && (z < min || isNoData(min))) { min = z }
+    }
 
     min
   }
