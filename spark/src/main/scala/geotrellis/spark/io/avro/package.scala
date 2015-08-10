@@ -9,13 +9,12 @@ package object avro {
     def apply[X](name: String) = rec.get(name).asInstanceOf[X]
   }
 
-  val tileUnionCodec = new AvroUnionCodec[Tile](
+  implicit def tileUnionCodec = new AvroUnionCodec[Tile](
     ByteArrayTileCodec,
     FloatArrayTileCodec,
     DoubleArrayTileCodec,
     ShortArrayTileCodec,
     IntArrayTileCodec)
 
-  implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec] = new TupleCodec[A, B]
-  def recordCodec[K: AvroRecordCodec, V: AvroRecordCodec] = new TileRecordCodec[K, V]
+  implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec] = TupleCodec[A, B]
 }

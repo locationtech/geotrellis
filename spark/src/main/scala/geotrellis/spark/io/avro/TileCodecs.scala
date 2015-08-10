@@ -19,6 +19,7 @@ object TileCodecs {
     def encode(tile: ShortArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
     }
 

@@ -1,5 +1,6 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io.AttributeStore
 import geotrellis.spark.io.index._
@@ -37,7 +38,7 @@ class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     val dir = layerPath
 
     val toPath = (index: Long) => encodeIndex(index, maxWidth)
-    val codec = recordCodec(implicitly[AvroRecordCodec[K]], tileUnionCodec)
+    val codec = KeyValueRecordCodec[K, Tile]
 
     attributes.write(layerId,"schema", codec.schema.toString.parseJson)
 

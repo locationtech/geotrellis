@@ -2,7 +2,7 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.avro.{KeyValueRecordCodec, AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import com.amazonaws.services.s3.model.AmazonS3Exception
@@ -29,11 +29,8 @@ class TileReader[K: AvroRecordCodec] {
         throw new TileNotFoundError(key, layerId)        
     }
 
-    val recCodec = geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
-      geotrellis.spark.io.avro.tileUnionCodec)
-
     val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
-    val recs = AvroEncoder.fromBinary(bytes)(recCodec)
+    val recs = AvroEncoder.fromBinary(bytes)(KeyValueRecordCodec[K, Tile])
 
     recs
       .find( row => row._1 == key )

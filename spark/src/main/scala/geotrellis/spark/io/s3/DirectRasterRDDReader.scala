@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import org.apache.spark.SparkContext
@@ -42,8 +43,7 @@ class DirectRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends Ras
       s3client,
       { (index: Long) => indexToPath(index, maxWidth) },
       { (key: K) => queryKeyBounds.includeKey(key) },
-      geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
-        geotrellis.spark.io.avro.tileUnionCodec),
+      KeyValueRecordCodec[K, Tile],
       writerSchema
       ))
 

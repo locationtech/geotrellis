@@ -15,7 +15,7 @@ class TileRecordSpec extends FunSpec with AvroTools {
         SpatialKey(3,4) -> DoubleArrayTile.fill(3,10,12)
       )
 
-      val codec = new TileRecordCodec[SpatialKey, DoubleArrayTile]
+      val codec = new KeyValueRecordCodec[SpatialKey, DoubleArrayTile]
 
       roundTrip(pairs)(codec)
     }

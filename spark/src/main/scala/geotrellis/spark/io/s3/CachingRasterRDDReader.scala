@@ -1,9 +1,8 @@
 package geotrellis.spark.io.s3
 
 import java.io.{FileOutputStream, FileInputStream, File}
-import java.util.concurrent.Executors
-
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import org.apache.spark.SparkContext
@@ -49,49 +48,51 @@ class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirec
       s3client,
       { (index: Long) => indexToPath(index, maxWidth) },
       { (key: K) => queryKeyBounds.includeKey(key) },
-      geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
-        geotrellis.spark.io.avro.tileUnionCodec),
+      KeyValueRecordCodec[K, Tile],
       writerSchema,
       cacheDirectory
     ))
 
     val rdd =
-      sc
-        .parallelize(bins, bins.size)
-        .mapPartitions { rangeList =>
-          val (fS3client, toPath, includeKey, recCodec, schema, cacheDir) = BC.value
-          val s3client = fS3client()
+      sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+        // The partitions in this case have exactly one element, which is
+        // the sequence of ranges that is the corresponding element in bins.
 
-          rangeList
-            .flatMap(ranges => ranges)
-            .flatMap { range =>
-              {for (index <- range._1 to range._2) yield {
-                val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
-                val cachePath = new File(cacheDir, s"${layerId.name}__${layerId.zoom}__$index")
+        val (fS3client, toPath, includeKey, recCodec, schema, cacheDir) = BC.value
+        val s3client = fS3client()
 
-                Try{
-                  new FileInputStream(cachePath)
-                }
-                .recover {
-                  case e => s3client.getObject(bucket, path).getObjectContent
-                }
-                .map { is =>
-                  val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
+        val tileSeq: Iterator[Seq[(K, Tile)]] =
+          for{
+            rangeList <- partition // Unpack the one element of this partition, the rangeList.
+            range <- rangeList
+            index <- range._1 to range._2
+          } yield {
+            val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
+            val cachePath = new File(cacheDir, s"${layerId.name}__${layerId.zoom}__$index")
 
-                  val cacheOut = new FileOutputStream(cachePath)
-                  cacheOut.write(bytes)
-                  cacheOut.close()
+            Try { new FileInputStream(cachePath) }
+              .recover {
+                case e => s3client.getObject(bucket, path).getObjectContent
+              }
+              .map { is =>
+                val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
 
-                  val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
-                  recs.filter { row => includeKey(row._1) }
-                }
-                .recover {
-                  case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
-                }.get
+                val cacheOut = new FileOutputStream(cachePath)
+                cacheOut.write(bytes)
+                cacheOut.close()
 
-              }}.flatten
-            }
-        }
+                val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
+                recs.filter { row => includeKey(row._1) }
+              }
+              .recover {
+                case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
+              }
+              .get
+          }
+
+        tileSeq.flatten
+      }
 
     new RasterRDD[K](rdd, rasterMetaData)
   }

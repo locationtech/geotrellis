@@ -21,8 +21,8 @@ object KeyCodecs {
 
     def decode(rec: GenericRecord): SpatialKey =
       SpatialKey(
-        rec.get("col").asInstanceOf[Int],
-        rec.get("row").asInstanceOf[Int])
+        rec[Int]("col"),
+        rec[Int]("row"))
 
   }
 
@@ -46,12 +46,12 @@ object KeyCodecs {
     }
 
     def decode(rec: GenericRecord) = {
-      val millis = rec.get("millis").asInstanceOf[Long]
-      val offset = rec.get("offset").asInstanceOf[Int]
+      val millis = rec[Long]("millis")
+      val offset = rec[Int]("offset")
       val zone = DateTimeZone.forOffsetMillis(offset)
       SpaceTimeKey(
-        rec.get("col").asInstanceOf[Int],
-        rec.get("row").asInstanceOf[Int],
+        rec[Int]("col"),
+        rec[Int]("row"),
         new DateTime(millis, zone)
       )
     }

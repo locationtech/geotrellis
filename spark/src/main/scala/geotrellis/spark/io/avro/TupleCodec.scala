@@ -18,3 +18,7 @@ class TupleCodec[A, B](implicit a: AvroRecordCodec[A], b: AvroRecordCodec[B]) ex
   def decode(rec: GenericRecord) =
     a.decode(rec[GenericRecord]("_1")) -> b.decode(rec[GenericRecord]("_2"))
 }
+
+object TupleCodec {
+  def apply[A: AvroRecordCodec, B: AvroRecordCodec] = new TupleCodec[A, B]
+}
