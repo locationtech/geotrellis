@@ -9,14 +9,10 @@ object Max extends TileIntersectionHandler[Int, Int] {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
     var max = NODATA
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          val z = tile.get(col, row)
-          if (isData(z) && (z > max || isNoData(max)) ) { max = z }
-        }
-      }
-    )
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.get(col, row)
+      if (isData(z) && (z > max || isNoData(max)) ) { max = z }
+    }
     max
   }
 
@@ -43,15 +39,10 @@ object MaxDouble extends TileIntersectionHandler[Double, Double] {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
     var max = Double.NaN
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply(col: Int, row: Int) {
-          val z = tile.getDouble(col, row)
-          if (isData(z) && (z > max || isNoData(max))) { max = z }
-        }
-      }
-    )
-
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.getDouble(col, row)
+      if (isData(z) && (z > max || isNoData(max))) { max = z }
+    }
     max
   }
 
