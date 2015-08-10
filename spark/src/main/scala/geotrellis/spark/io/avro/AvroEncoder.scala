@@ -61,7 +61,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-      val writer = new GenericDatumWriter[GenericRecord](schema)
+    val writer = new GenericDatumWriter[GenericRecord](schema)
     val jos = new ByteArrayOutputStream()
     val encoder = EncoderFactory.get().jsonEncoder(schema, jos)
     writer.write(format.encode(thing), encoder)
@@ -73,7 +73,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-      val reader = new GenericDatumReader[GenericRecord](schema)
+    val reader = new GenericDatumReader[GenericRecord](schema)
     val decoder = DecoderFactory.get().jsonDecoder(schema, json)
     val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
     format.decode(rec)
