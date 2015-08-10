@@ -36,23 +36,15 @@ object Mean extends TileIntersectionHandler[MeanResult, Double] {
     var sum = 0.0
     var count = 0L
     if(tile.cellType.isFloatingPoint) {
-      Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-        new Callback {
-          def apply(col: Int, row: Int) {
-            val z = tile.getDouble(col, row)
-            if (isData(z)) { sum = sum + z; count = count + 1 }
-          }
-        }
-      )
+      Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+        val z = tile.getDouble(col, row)
+        if (isData(z)) { sum = sum + z; count = count + 1 }
+      }
     } else {
-      Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-        new Callback {
-          def apply(col: Int, row: Int) {
-            val z = tile.get(col, row)
-            if (isData(z)) { sum = sum + z; count = count + 1 }
-          }
-        }
-      )
+      Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+        val z = tile.get(col, row)
+        if (isData(z)) { sum = sum + z; count = count + 1 }
+      }
     }
 
     MeanResult(sum, count)

@@ -11,18 +11,29 @@ import org.apache.hadoop.mapreduce.Job
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
-  val DefaultTiffExtension: String = ".tif"
+  val defaultTiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF")
 
   def hadoopGeoTiffRDD(path: String): RDD[(ProjectedExtent, Tile)] =
-    hadoopGeoTiffRDD(new Path(path), DefaultTiffExtension)
+    hadoopGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
   def hadoopGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, Tile)] =
-    hadoopGeoTiffRDD(new Path(path), tiffExtension)
+    hadoopGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopGeoTiffRDD(path: Path, tiffExtension: String = DefaultTiffExtension): RDD[(ProjectedExtent, Tile)] = {
+  def hadoopGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(ProjectedExtent, Tile)] =
+    hadoopGeoTiffRDD(new Path(path), tiffExtensions)
+
+  def hadoopGeoTiffRDD(path: Path): RDD[(ProjectedExtent, Tile)] =
+    hadoopGeoTiffRDD(path, defaultTiffExtensions)
+
+  def hadoopGeoTiffRDD(path: Path, tiffExtension: String): RDD[(ProjectedExtent, Tile)] =
+    hadoopGeoTiffRDD(path, Seq(tiffExtension))
+
+  def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, Tile)] = {
     val searchPath = path.toString match {
-      case p if p.contains(tiffExtension) => path
-      case p => new Path(s"$p/*$tiffExtension")
+      case p if tiffExtensions.exists(p.endsWith) => path
+      case p =>
+        val extensions = tiffExtensions.mkString("{", ",", "}")
+        new Path(s"$p/*$extensions")
     }
 
     val updatedConf =

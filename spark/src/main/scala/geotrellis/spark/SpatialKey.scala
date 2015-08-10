@@ -1,7 +1,6 @@
 package geotrellis.spark
 
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
 case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
