@@ -1,81 +1,24 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import geotrellis.spark._
-import geotrellis.spark.io.AttributeStore
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import geotrellis.spark.{RasterRDD, LayerId, KeyBounds}
 import geotrellis.spark.io.index.KeyIndex
-import org.apache.avro.Schema.Parser
 import org.apache.spark.SparkContext
-import com.typesafe.scalalogging.slf4j._
-import scala.reflect.ClassTag
-import geotrellis.spark.io.avro._
-import org.apache.avro._
-import spray.json.DefaultJsonProtocol._
-import spray.json._
 
-class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
-  /** Converting lower bound of Range to first Key for Marker */
-  val indexToPath: (Long, Int) => String = encodeIndex
+trait RasterRDDReader[K] {
+
+  val indexToPath: (Long, Int) => String
 
   def read(
     attributes: S3AttributeStore,
-    s3client: ()=>S3Client,
+    s3client: () => S3Client,
     layerMetaData: S3LayerMetaData,
     keyBounds: KeyBounds[K],
     keyIndex: KeyIndex[K],
     numPartitions: Int
-  )
-  (layerId: LayerId, queryKeyBounds: Seq[KeyBounds[K]])
-  (implicit sc: SparkContext): RasterRDD[K] = {
-    val bucket = layerMetaData.bucket
-    val dir = layerMetaData.key
-    val rasterMetaData = layerMetaData.rasterMetaData
-
-    // TODO: now that we don't have to LIST, can we prefix key with a hash to get better throughput ?
-    val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
-    val bins = RasterRDDReader.balancedBin(ranges, numPartitions)
-    logger.debug(s"Loading layer from $bucket $dir, ${ranges.length} ranges split into ${bins.length} bins")
-
-    // Broadcast the functions and objects we can use in the closure
-    val writerSchema: Schema = (new Schema.Parser).parse(attributes.read[JsObject](layerId, "schema").toString())
-
-    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-    val BC = sc.broadcast((
-      s3client,
-      { (index: Long) => indexToPath(index, maxWidth) },
-      { (key: K) => queryKeyBounds.includeKey(key) },
-      geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
-        geotrellis.spark.io.avro.tileUnionCodec),
-      writerSchema
-    ))
-
-    val rdd =
-      sc
-        .parallelize(bins, bins.size)
-        .mapPartitions { rangeList =>
-          val (fS3client, toPath, includeKey, recCodec, schema) = BC.value
-          val s3client = fS3client()
-
-          rangeList
-            .flatMap(ranges => ranges)
-            .flatMap { range =>
-              {for (index <- range._1 to range._2) yield {
-                val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
-
-                try {
-                  val is = s3client.getObject(bucket, path).getObjectContent
-                  val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
-                  val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
-                  recs.filter { row => includeKey(row._1) }
-                } catch {
-                  case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
-                }
-              }}.flatten
-            }
-        }
-
-      new RasterRDD[K](rdd, rasterMetaData)
-  }
+    )
+    (layerId: LayerId, queryKeyBounds: Seq[KeyBounds[K]])
+    (implicit sc: SparkContext): RasterRDD[K]
 }
 
 object RasterRDDReader extends LazyLogging {
@@ -83,13 +26,13 @@ object RasterRDDReader extends LazyLogging {
    * Will attempt to bin ranges into buckets, each containing at least the average number of elements.
    * Trailing bins may be empty if the count is too high for number of ranges.
    */
-  protected def balancedBin(ranges: Seq[(Long, Long)], count: Int ): Seq[Seq[(Long, Long)]] = {
+  def balancedBin(ranges: Seq[(Long, Long)], count: Int ): Seq[Seq[(Long, Long)]] = {
     var stack = ranges.toList
 
     def len(r: (Long, Long)) = r._2 - r._1 + 1l
     val total = ranges.foldLeft(0l){ (s,r) => s + len(r) }
     val binWidth = total / count + 1
-    
+
     def splitRange(range: (Long, Long), take: Long): ((Long, Long), (Long, Long)) = {
       assert(len(range) > take)
       (range._1, range._1 + take - 1) -> (range._1 + take, range._2)
@@ -101,7 +44,7 @@ object RasterRDDReader extends LazyLogging {
     while (stack.nonEmpty) {
       if (len(stack.head) + sum <= binWidth){
         val take = stack.head
-        arr(i) = take :: arr(i) 
+        arr(i) = take :: arr(i)
         sum += len(take)
         stack = stack.tail
       }else{
