@@ -1,5 +1,6 @@
 package geotrellis.spark.io.s3
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import geotrellis.spark._
 import geotrellis.spark.io.AttributeStore
 import geotrellis.spark.io.index.KeyIndex
@@ -60,12 +61,15 @@ class RasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
             .flatMap { range =>
               {for (index <- range._1 to range._2) yield {
                 val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
-                val is = s3client.getObject(bucket, path).getObjectContent
-                val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
-                val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
-                recs
-                  .filter( row => includeKey(row._1) )
-                  .map { case (key, tile) => key -> tile }
+
+                try {
+                  val is = s3client.getObject(bucket, path).getObjectContent
+                  val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
+                  val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
+                  recs.filter { row => includeKey(row._1) }
+                } catch {
+                  case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
+                }
               }}.flatten
             }
         }
