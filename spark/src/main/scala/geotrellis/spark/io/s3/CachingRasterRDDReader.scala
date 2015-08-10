@@ -13,11 +13,7 @@ import geotrellis.spark.io.avro._
 import org.apache.avro._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
-
-
 import scala.util.Try
-import scalaz.concurrent.Task
-import scalaz.stream.Process
 
 class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirectory: File) extends  RasterRDDReader[K]  with LazyLogging {
   /** Converting lower bound of Range to first Key for Marker */
@@ -34,6 +30,8 @@ class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirec
     numPartitions: Int)
   (layerId: LayerId, queryKeyBounds: Seq[KeyBounds[K]])
   (implicit sc: SparkContext): RasterRDD[K] = {
+    require(cacheDirectory.isDirectory, s"$cacheDirectory must be a directory")
+
     val bucket = layerMetaData.bucket
     val dir = layerMetaData.key
     val rasterMetaData = layerMetaData.rasterMetaData
@@ -54,15 +52,14 @@ class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirec
       geotrellis.spark.io.avro.recordCodec(implicitly[AvroRecordCodec[K]],
         geotrellis.spark.io.avro.tileUnionCodec),
       writerSchema,
-      cacheDirectory,
-      layerId
+      cacheDirectory
     ))
 
     val rdd =
       sc
         .parallelize(bins, bins.size)
         .mapPartitions { rangeList =>
-          val (fS3client, toPath, includeKey, recCodec, schema, cacheDir, id) = BC.value
+          val (fS3client, toPath, includeKey, recCodec, schema, cacheDir) = BC.value
           val s3client = fS3client()
 
           rangeList
@@ -70,8 +67,8 @@ class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirec
             .flatMap { range =>
               {for (index <- range._1 to range._2) yield {
                 val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
-                val cachePath = new File(cacheDir, s"${id.name}__${id.zoom}__$index")
-                
+                val cachePath = new File(cacheDir, s"${layerId.name}__${layerId.zoom}__$index")
+
                 Try{
                   new FileInputStream(cachePath)
                 }
