@@ -20,7 +20,7 @@ object Imagery {
     var count = 0
     cfor(0)(_ < images.size, _ + 1) { i =>
       val v = images(i).get(col, row)
-      if(v < threshold) {
+      if(isData(v) && v < threshold) {
         sum += v
         count += 1
       }
@@ -65,53 +65,20 @@ object Imagery {
           maxValueBands(i) = maxVal
       }
       cloudlessTiles(i) = cloudRemovalSingleBand(singleTiles)
-      GeoTiffWriter.write(SingleBandGeoTiff(cloudlessTiles(i), extent, crs), "/tmp/cloudlessimage" + i + ".tif")
+      //GeoTiffWriter.write(SingleBandGeoTiff(cloudlessTiles(i), extent, crs), "/tmp/cloudlessimage" + i + ".tif")
     }
     ArrayMultiBandTile(cloudlessTiles)
-  }
-
-  def maxAll(a: Int, b:Int, c:Int): Int = {
-    if(a > b)
-    {
-      if(a > c)
-        a
-      else
-        c
-    }
-    else
-    {
-      if(b > c)
-        b
-      else
-        c
-    }
-  }
-
-  def minAll(a: Int, b:Int, c:Int): Int = {
-    if(a < b)
-    {
-      if(c < a)
-        c
-      else
-        a
-    }
-    else
-    {
-      if(c < b)
-        c
-      else
-        b
-    }
   }
 
   def resampleToByte(t: Tile, maxOfAllBandsAllImages: Int): Tile = {
     val byteTile = ByteArrayTile.empty(t.cols, t.rows)
     t.foreach { (col, row, z) =>
       val v = if(isData(z))
-        (z / maxOfAllBandsAllImages) * 255
+        (z.toDouble/maxOfAllBandsAllImages)*255
       else 0
 
-      byteTile.set(col, row, z)
+      //println(v)
+      byteTile.set(col, row, v.toInt)
     }
     byteTile
   }
@@ -145,11 +112,13 @@ object Imagery {
       val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile
       multiBands(i) = ArrayMultiBandTile(Array(red, green, blue))
     }
-    
+
     val cloudless = cloudRemovalMultiBand(multiBands, extent, crs)
 
-    val maxOfAllBands = maxAll(maxValueBands(0), maxValueBands(1), maxValueBands(2))
-    val minOfAllBands = minAll(minValueBands(0), minValueBands(1), minValueBands(2))
+    val maxOfAllBands = math.max(maxValueBands(0), math.max(maxValueBands(1), maxValueBands(2)))
+    val minOfAllBands = math.min(minValueBands(0), math.min(minValueBands(1), minValueBands(2)))
+
+    println(maxOfAllBands, minOfAllBands)
 
     val cloudlessRedByte = resampleToByte(cloudless.band(0), maxOfAllBands)
     val cloudlessGreenByte = resampleToByte(cloudless.band(1), maxOfAllBands)
@@ -182,9 +151,9 @@ object Imagery {
     }
     rgb.renderPng.write("/tmp/cloudlessimagergb.png")
 
-//    GeoTiffWriter.write(SingleBandGeoTiff(cloudless.band(0), extent, crs), "/tmp/cloudlessimagered.tif")
-//    GeoTiffWriter.write(SingleBandGeoTiff(cloudless.band(1), extent, crs), "/tmp/cloudlessimagegreen.tif")
-//    GeoTiffWriter.write(SingleBandGeoTiff(cloudless.band(2), extent, crs), "/tmp/cloudlessimageblue.tif")
+//    GeoTiffWriter.write(SingleBandGeoTiff(cloudlessByte.band(0), extent, crs), "/tmp/cloudlessimagered.tif")
+//    GeoTiffWriter.write(SingleBandGeoTiff(cloudlessByte.band(1), extent, crs), "/tmp/cloudlessimagegreen.tif")
+//    GeoTiffWriter.write(SingleBandGeoTiff(cloudlessByte.band(2), extent, crs), "/tmp/cloudlessimageblue.tif")
 //    GeoTiffWriter.write(MultiBandGeoTiff(cloudless, extent, crs), "/tmp/cloudlessimagergb.tif")
   }
 
