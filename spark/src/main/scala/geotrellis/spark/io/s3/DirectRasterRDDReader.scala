@@ -48,28 +48,30 @@ class DirectRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends Ras
       ))
 
     val rdd =
-      sc
-        .parallelize(bins, bins.size)
-        .mapPartitions { rangeList =>
+      sc.parallelize(bins, bins.size)
+        .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
           val (fS3client, toPath, includeKey, recCodec, schema) = BC.value
           val s3client = fS3client()
 
-          rangeList
-            .flatMap(ranges => ranges)
-            .flatMap { range =>
-              {for (index <- range._1 to range._2) yield {
-                val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
+          val tileSeq: Iterator[Seq[(K, Tile)]] =
+            for{
+              rangeList <- partition // Unpack the one element of this partition, the rangeList.
+              range <- rangeList
+              index <- range._1 to range._2
+            } yield {
+              val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
 
-                try {
-                  val is = s3client.getObject(bucket, path).getObjectContent
-                  val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
-                  val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
-                  recs.filter { row => includeKey(row._1) }
-                } catch {
-                  case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
-                }
-              }}.flatten
+              try {
+                val is = s3client.getObject(bucket, path).getObjectContent
+                val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
+                val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
+                recs.filter { row => includeKey(row._1) }
+              } catch {
+                case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
+              }
             }
+
+          tileSeq.flatten
         }
 
     new RasterRDD[K](rdd, rasterMetaData)
