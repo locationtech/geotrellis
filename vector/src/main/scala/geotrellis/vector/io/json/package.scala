@@ -158,7 +158,7 @@ package object json extends GeoJsonSupport {
     /**
      * maybe empty, a number of pointfeatures in a featurecollection should
      * be extracted as a Seq[PointFeature], not a FeatureCollection (parseGeoJson would do that instead)
-     */
+
     def extractFeatures[G <: Geometry, D]: Seq[Feature[G, D]] = {
 
       val geomClazz = implicitly[ClassTag[G]].runtimeClass
@@ -236,6 +236,7 @@ package object json extends GeoJsonSupport {
       var buffer = ArrayBuffer[Feature[G, D]]()
       buffer
     }
+*/
   }
 
 }

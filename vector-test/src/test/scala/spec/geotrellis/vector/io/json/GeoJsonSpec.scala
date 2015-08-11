@@ -205,8 +205,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val t8 = jsonFeatCol.extractGeometries[Polygon]
     t8 should be (Seq())
 
-    val t9 = jsonFeature.extractFeatures[PolygonFeature[Int]]
+    // val t9 = jsonFeature.extractFeatures[PolygonFeature[Int]]
 
   }
 }
-
