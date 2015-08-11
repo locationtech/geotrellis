@@ -29,8 +29,7 @@ class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     )
   (layerId: LayerId, rdd: RasterRDD[K])
   (implicit sc: SparkContext): Unit = {
-//    if (s3client().listObjectsIterator(bucket, layerPath, 1).hasNext && ! clobber)
-//      throw new LayerWriteError(layerId, s"Directory already exists: $layerPath")
+    // TODO: Check if we're actually clobbering
 
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
 
@@ -50,7 +49,7 @@ class RasterRDDWriter[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLoggi
     logger.info(s"Saving RasterRDD ${rdd.name} to $bucket  $layerPath")
 
     rdd
-      .groupBy{ row => keyIndex.toIndex(row._1) } // TODO: this can be a map in spatial case
+      .groupBy { row => keyIndex.toIndex(row._1) } // TODO: this can be a map in spatial case
       .foreachPartition { partition =>
         import geotrellis.spark.utils.TaskUtils._
 
