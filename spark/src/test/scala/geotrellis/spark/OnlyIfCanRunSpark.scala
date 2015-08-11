@@ -18,26 +18,18 @@ package geotrellis.spark
 
 import geotrellis.spark.io.cassandra.SharedEmbeddedCassandra
 import geotrellis.spark.utils.SparkUtils
-import org.apache.spark.{Logging, SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 import scala.util._
 
-object OnlyIfCanRunSpark extends SharedEmbeddedCassandra with Logging {
+object OnlyIfCanRunSpark extends SharedEmbeddedCassandra {
   lazy val _sc = Try{
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
 
     val sparkConf = new SparkConf()
-
-    useCassandraConfig(Seq("another-cassandra.yaml"))
-    val host = getHost().getHostAddress
-    val rpcPort : Int = getRpcPort()
-    val nativePort : Int = getNativePort()
-
-    sparkConf.set("spark.cassandra.connection.host", host)
-      .set("spark.cassandra.connection.rpc.port", rpcPort.toString)
-      .set("spark.cassandra.connection.native.port", nativePort.toString)
+    sparkConf.set("spark.cassandra.connection.host", "127.0.0.1")
 
     val sparkContext = SparkUtils.createLocalSparkContext("local[8]", "Test Context", sparkConf)
 

@@ -22,6 +22,11 @@ object Environment {
 
   lazy val hadoopVersion  = either("SPARK_HADOOP_VERSION", "2.2.0")
   lazy val sparkVersion   = either("SPARK_VERSION", "1.3.1")
+  /*
+   * spark_cassandra_connector version must correlate with the spark version
+   * https://github.com/datastax/spark-cassandra-connector
+   */
+  lazy val cassandraConnectorVersion   = either("CASSANDRA_CONNECTOR_VERSION", "1.3.0")
 
   lazy val javaGdalDir    = either("JAVA_GDAL_DIR", "/usr/local/lib")
 }

@@ -23,17 +23,14 @@ class CassandraRasterCatalogSpec extends FunSpec
     with TestFiles
     with TestEnvironment
     with OnlyIfCanRunSpark
-    with Logging 
     with SharedEmbeddedCassandra {
 
   describe("Cassandra Raster Catalog with Spatial Rasters") {
     ifCanRunSpark { 
 
       useCassandraConfig(Seq("another-cassandra.yaml"))
-      val host = getHost().getHostAddress
-      val rpcPort : Int = getRpcPort()
-      val nativePort : Int = getNativePort()
-      EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
+      val host = "127.0.0.1"
+      EmbeddedCassandra.withSession(host, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
 
         val allOnes = new Path(inputHome, "all-ones.tif")
         val source = sc.hadoopGeoTiffRDD(allOnes)
@@ -45,17 +42,16 @@ class CassandraRasterCatalogSpec extends FunSpec
         CassandraRasterCatalog()
 
         Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) =>
-
           val layerId = LayerId("ones", level.zoom)
 
           it("should succeed writing to a table") {
             catalog.writer[SpatialKey](RowMajorKeyIndexMethod, tableName).write(layerId, onesRdd)
           }
 
-          // it("should know when layer exists"){
-          //   catalog.layerExists(LayerId("ones", level.zoom)) should be (true)
-          //   catalog.layerExists(LayerId("nope", 100)) should be (false)
-          // }
+          it("should know when layer exists"){
+            catalog.layerExists(LayerId("ones", level.zoom)) should be (true)
+            catalog.layerExists(LayerId("nope", 100)) should be (false)
+          }
 
           it("should load out saved tiles") {
             val rdd = catalog.read[SpatialKey](layerId)
@@ -96,10 +92,8 @@ class CassandraRasterCatalogSpec extends FunSpec
   describe("Cassandra Raster Catalog with SpaceTime Rasters") {
     ifCanRunSpark {
       useCassandraConfig(Seq("another-cassandra.yaml"))
-      val host = getHost().getHostAddress
-      val rpcPort : Int = getRpcPort()
-      val nativePort : Int = getNativePort()
-      EmbeddedCassandra.withSession(host, rpcPort, nativePort, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
+      val host = "127.0.0.1"
+      EmbeddedCassandra.withSession(host, EmbeddedCassandra.GtCassandraTestKeyspace) { implicit session =>
 
         val tableName = "spacetime_tiles"
         
