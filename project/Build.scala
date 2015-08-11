@@ -374,7 +374,6 @@ object GeotrellisBuild extends Build {
       parallelExecution in Test := false,
       javaOptions ++= List(
         "-Xmx8G",
-        "-XX:MaxPermSize=512m",
         s"-Djava.library.path=${Environment.javaGdalDir}",
         "-Dsun.io.serialization.extendedDebugInfo=true"
       ),
@@ -385,7 +384,6 @@ object GeotrellisBuild extends Build {
             exclude("org.apache.hadoop", "hadoop-client")
             exclude("org.slf4j", "slf4j-api"),
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-          "org.apache.spark" %% "spark-streaming" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
           "de.javakaffee" % "kryo-serializers" % "0.27",
           "com.datastax.spark" %% "spark-cassandra-connector" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
