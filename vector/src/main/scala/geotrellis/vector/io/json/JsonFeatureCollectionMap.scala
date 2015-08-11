@@ -26,21 +26,13 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
   private var buffer = features
 
   //-- Used for Serialization
-  def add[D: JsonWriter](featureMap: (String, Feature[D])) =
-    buffer = writeFeatureJsonWithID[D](featureMap) :: buffer
-  def +=[D: JsonWriter](featureMap: (String, Feature[D])) = add(featureMap)
+  def add[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) =
+    buffer = writeFeatureJsonWithID(featureMap) :: buffer
+  def +=[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) = add(featureMap)
 
-  def addAll[D: JsonWriter](featureMaps: Seq[(String, Feature[D])]) =
-    featureMaps.foreach{ f => buffer = writeFeatureJsonWithID[D](f) :: buffer }
-  def ++=[D: JsonWriter](featureMaps: Seq[(String, Feature[D])]) = addAll(featureMaps)
-
-  def add(geometry: Geometry) =
-    buffer = geometry.toJson :: buffer
-  def +=(id: String, geometry: Geometry) = add(geometry)
-
-  def addAll(geometries: Seq[Geometry]) =
-    geometries.foreach{ f => add(f) }
-  def ++=(geometries: Seq[Geometry]) = addAll(geometries)
+  def addAll[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) =
+    featureMaps.foreach{ f => buffer = writeFeatureJsonWithID(f) :: buffer }
+  def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
   def toJson: JsValue =
     JsObject(
@@ -57,7 +49,6 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
     }
   }
 
-
   //-- Used for Deserialization
   /**
    * This method locates the correct JsonFormat for F through implicit scope and
@@ -66,7 +57,7 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
    * @tparam F type of Feature to return
    * @return Vector or Feature objects that were successfully parsed
    */
-  def getAll[F :JsonFormat]: Map[String, F] = {
+  def getAll[F :JsonReader]: Map[String, F] = {
     var ret = Map[String, F]()
     features.foreach{ f =>
       Try(f.convertTo[F]) match {
@@ -78,15 +69,15 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
     ret.toMap
   }
 
-  def getAllFeatures[F <: Feature[_] :JsonFormat]: Map[String, F] =
+  def getAllFeatures[F <: Feature[_, _] :JsonReader]: Map[String, F] =
     getAll[F]
 
-  def getAllPointFeatures[D: JsonFormat]()         = getAll[PointFeature[D]]
-  def getAllLineFeatures[D: JsonFormat]()          = getAll[LineFeature[D]]
-  def getAllPolygonFeatures[D: JsonFormat]()       = getAll[PolygonFeature[D]]
-  def getAllMultiPointFeatures[D: JsonFormat]()    = getAll[MultiPointFeature[D]]
-  def getAllMultiLineFeatures[D: JsonFormat]()     = getAll[MultiLineFeature[D]]
-  def getAllMultiPolygonFeatures[D: JsonFormat]()  = getAll[MultiPolygonFeature[D]]
+  def getAllPointFeatures[D: JsonReader]()         = getAll[PointFeature[D]]
+  def getAllLineFeatures[D: JsonReader]()          = getAll[LineFeature[D]]
+  def getAllPolygonFeatures[D: JsonReader]()       = getAll[PolygonFeature[D]]
+  def getAllMultiPointFeatures[D: JsonReader]()    = getAll[MultiPointFeature[D]]
+  def getAllMultiLineFeatures[D: JsonReader]()     = getAll[MultiLineFeature[D]]
+  def getAllMultiPolygonFeatures[D: JsonReader]()  = getAll[MultiPolygonFeature[D]]
 
   def getAllPoints()         = getAll[Point]
   def getAllLines()          = getAll[Line]
@@ -100,15 +91,9 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
 object JsonFeatureCollectionMap {
   def apply() = new JsonFeatureCollectionMap()
 
-  def apply[D: JsonWriter](features: Traversable[(String, Feature[D])]) = {
+  def apply[G <: Geometry, D: JsonWriter](features: Traversable[(String, Feature[G, D])]) = {
     val fc = new JsonFeatureCollectionMap()
     fc ++= features.toList
-    fc
-  }
-
-  def apply(geometries: Traversable[Geometry]) = {
-    val fc = new JsonFeatureCollectionMap()
-    fc ++= geometries.toList
     fc
   }
 

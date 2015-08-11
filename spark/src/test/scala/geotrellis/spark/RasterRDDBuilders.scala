@@ -3,6 +3,7 @@ package geotrellis.spark
 import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.spark.tiling._
 
 import org.apache.spark._

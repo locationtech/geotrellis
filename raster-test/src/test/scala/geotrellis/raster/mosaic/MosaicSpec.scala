@@ -1,6 +1,7 @@
 package geotrellis.raster.mosaic
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.engine._
 import geotrellis.testkit._
@@ -24,7 +25,7 @@ class MosaicSpec extends FunSpec
       if( (tileCols*layoutCols, tileRows*layoutRows) != (totalCols, totalRows) )
         sys.error("This test requirest that the total col\rows be divisible by the tile col\rows")
 
-      val (tile, extent) = {
+      val (tile: Tile, extent: Extent) = {
         val rs = RasterSource("SBN_inc_percap")
         val (t, e) = (get(rs), get(rs.rasterExtent).extent)
         val resampled = t.resample(e, totalCols, totalRows)

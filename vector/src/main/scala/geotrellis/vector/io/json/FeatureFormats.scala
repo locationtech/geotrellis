@@ -12,7 +12,7 @@ trait FeatureFormats {
     * @tparam The type (which must have an implicit method to resolve the transformation from json)
     * @return The GeoJson compliant spray.JsValue
     */
-  def writeFeatureJson[D: JsonWriter](obj: Feature[D]): JsValue = {
+  def writeFeatureJson[G <: Geometry, D: JsonWriter](obj: Feature[G, D]): JsValue = {
     JsObject(
       "type" -> JsString("Feature"),
       "geometry" -> GeometryFormat.write(obj.geom),
@@ -20,7 +20,7 @@ trait FeatureFormats {
     )
   }
 
-  def writeFeatureJsonWithID[D: JsonWriter](idFeature: (String, Feature[D])): JsValue = {
+  def writeFeatureJsonWithID[G <: Geometry, D: JsonWriter](idFeature: (String, Feature[G, D])): JsValue = {
     JsObject(
       "type" -> JsString("Feature"),
       "geometry" -> GeometryFormat.write(idFeature._2.geom),
@@ -29,84 +29,125 @@ trait FeatureFormats {
     )
   }
 
-  def readFeatureJson[D: JsonReader, G <: Geometry: JsonReader, F <: Feature[D]](value: JsValue)(create : (G, D) => F): F = {
+  def readFeatureJson[D: JsonReader, G <: Geometry: JsonReader](value: JsValue): Feature[G, D] = {
     value.asJsObject.getFields("type", "geometry", "properties") match {
       case Seq(JsString("Feature"), geom, data) =>
         val g = geom.convertTo[G]
         val d = data.convertTo[D]
-        create(g,d)
+        Feature(g, d)
       case _ => throw new DeserializationException("Feature expected")
     }
   }
 
-  def readFeatureJsonWithID[D: JsonReader, G <: Geometry: JsonReader, F <: Feature[D]](value: JsValue)(create : (G, D, String) => (String, F)): (String, F) = {
+  def readFeatureJsonWithID[D: JsonReader, G <: Geometry: JsonReader](value: JsValue): (String, Feature[G, D]) = {
     value.asJsObject.getFields("type", "geometry", "properties", "id") match {
       case Seq(JsString("Feature"), geom, data, id) =>
         val g = geom.convertTo[G]
         val d = data.convertTo[D]
         val i = id.toString
-        create(g, d, i)
+        (i, Feature(g, d))
       case _ => throw new DeserializationException("Feature expected")
     }
   }
 
+  implicit def pointFeatureReader[D: JsonReader] = new RootJsonReader[PointFeature[D]] {
+    override def read(json: JsValue): PointFeature[D] =
+      readFeatureJson[D, Point](json)
+  }
 
-  implicit def featureFormat[D: JsonFormat] = new RootJsonFormat[Feature[D]] {
-    override def read(json: JsValue): Feature[D] =
-      readFeatureJson[D, Geometry, Feature[D]](json) {
-        case (geom, d) => geom match {
-          case g: Point => PointFeature(g, d)
-          case g: Line => LineFeature(g, d)
-          case g: Polygon => PolygonFeature(g, d)
-          case g: MultiPoint => MultiPointFeature(g, d)
-          case g: MultiLine => MultiLineFeature(g, d)
-          case g: MultiPolygon => MultiPolygonFeature(g, d)
-          case g: GeometryCollection => GeometryCollectionFeature(g, d)
-        }
-      }
-
-    override def write(obj: Feature[D]): JsValue =
+  implicit def pointFeatureWriter[D: JsonWriter] = new RootJsonWriter[PointFeature[D]] {
+    override def write(obj: PointFeature[D]): JsValue =
       writeFeatureJson(obj)
   }
 
   implicit def pointFeatureFormat[D: JsonFormat] = new RootJsonFormat[PointFeature[D]] {
     override def read(json: JsValue): PointFeature[D] =
-      readFeatureJson[D, Point, PointFeature[D]](json){PointFeature.apply}
+      readFeatureJson[D, Point](json)
     override def write(obj: PointFeature[D]): JsValue =
+      writeFeatureJson(obj)
+  }
+
+  implicit def lineFeatureReader[D: JsonReader] = new RootJsonReader[LineFeature[D]] {
+    override def read(json: JsValue): LineFeature[D] =
+      readFeatureJson[D, Line](json)
+  }
+
+  implicit def lineFeatureWriter[D: JsonWriter] = new RootJsonWriter[LineFeature[D]] {
+    override def write(obj: LineFeature[D]): JsValue =
       writeFeatureJson(obj)
   }
 
   implicit def lineFeatureFormat[D: JsonFormat] = new RootJsonFormat[LineFeature[D]] {
     override def read(json: JsValue): LineFeature[D] =
-      readFeatureJson[D, Line, LineFeature[D]](json){LineFeature.apply}
+      readFeatureJson[D, Line](json)
     override def write(obj: LineFeature[D]): JsValue =
+      writeFeatureJson(obj)
+  }
+
+  implicit def polygonFeatureReader[D: JsonReader] = new RootJsonReader[PolygonFeature[D]] {
+    override def read(json: JsValue): PolygonFeature[D] =
+      readFeatureJson[D, Polygon](json)
+  }
+
+  implicit def polygonFeatureWriter[D: JsonWriter] = new RootJsonWriter[PolygonFeature[D]] {
+    override def write(obj: PolygonFeature[D]): JsValue =
       writeFeatureJson(obj)
   }
 
   implicit def polygonFeatureFormat[D: JsonFormat] = new RootJsonFormat[PolygonFeature[D]] {
     override def read(json: JsValue): PolygonFeature[D] =
-      readFeatureJson[D, Polygon, PolygonFeature[D]](json){PolygonFeature.apply}
+      readFeatureJson[D, Polygon](json)
     override def write(obj: PolygonFeature[D]): JsValue =
+      writeFeatureJson(obj)
+  }
+
+  implicit def multiPointFeatureReader[D: JsonReader] = new RootJsonReader[MultiPointFeature[D]] {
+    override def read(json: JsValue): MultiPointFeature[D] =
+      readFeatureJson[D, MultiPoint](json)
+  }
+
+  implicit def multiPointFeatureWriter[D: JsonWriter] = new RootJsonWriter[MultiPointFeature[D]] {
+    override def write(obj: MultiPointFeature[D]): JsValue =
       writeFeatureJson(obj)
   }
 
   implicit def multiPointFeatureFormat[D: JsonFormat] = new RootJsonFormat[MultiPointFeature[D]] {
     override def read(json: JsValue): MultiPointFeature[D] =
-      readFeatureJson[D, MultiPoint, MultiPointFeature[D]](json){MultiPointFeature.apply}
+      readFeatureJson[D, MultiPoint](json)
     override def write(obj: MultiPointFeature[D]): JsValue =
+      writeFeatureJson(obj)
+  }
+
+  implicit def multiLineFeatureReader[D: JsonReader] = new RootJsonReader[MultiLineFeature[D]] {
+    override def read(json: JsValue): MultiLineFeature[D] =
+      readFeatureJson[D, MultiLine](json)
+  }
+
+  implicit def multiLineFeatureWriter[D: JsonWriter] = new RootJsonWriter[MultiLineFeature[D]] {
+    override def write(obj: MultiLineFeature[D]): JsValue =
       writeFeatureJson(obj)
   }
 
   implicit def multiLineFeatureFormat[D: JsonFormat] = new RootJsonFormat[MultiLineFeature[D]] {
     override def read(json: JsValue): MultiLineFeature[D] =
-      readFeatureJson[D, MultiLine, MultiLineFeature[D]](json){MultiLineFeature.apply}
+      readFeatureJson[D, MultiLine](json)
     override def write(obj: MultiLineFeature[D]): JsValue =
+      writeFeatureJson(obj)
+  }
+
+  implicit def multiPolygonFeatureReader[D: JsonReader] = new RootJsonReader[MultiPolygonFeature[D]] {
+    override def read(json: JsValue): MultiPolygonFeature[D] =
+      readFeatureJson[D, MultiPolygon](json)
+  }
+
+  implicit def multiPolygonFeatureWriter[D: JsonWriter] = new RootJsonWriter[MultiPolygonFeature[D]] {
+    override def write(obj: MultiPolygonFeature[D]): JsValue =
       writeFeatureJson(obj)
   }
 
   implicit def multiPolygonFeatureFormat[D: JsonFormat] = new RootJsonFormat[MultiPolygonFeature[D]] {
     override def read(json: JsValue): MultiPolygonFeature[D] =
-      readFeatureJson[D, MultiPolygon, MultiPolygonFeature[D]](json){MultiPolygonFeature.apply}
+      readFeatureJson[D, MultiPolygon](json)
     override def write(obj: MultiPolygonFeature[D]): JsValue =
       writeFeatureJson(obj)
   }

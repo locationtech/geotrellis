@@ -10,6 +10,7 @@ import spray.http._
 import HttpCharsets._
 import MediaTypes._
 
+import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
@@ -164,9 +165,11 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     features.length should be (2)
   }
 
-  case class SomeData(name: String, value: Double)
-  implicit val someDataFormat = jsonFormat2(SomeData)
   it should "be able to handle Feature with custom data" in {
+    case class SomeData(name: String, value: Double)
+    val format = jsonFormat2(SomeData)
+    implicit val someDataFormat: JsonReader[SomeData] = format
+
     val f = PointFeature(Point(1,44), SomeData("Bob", 32.2))
 
     val body =
@@ -184,6 +187,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |}""".stripMargin
       )
 
+    implicit val _format: JsonFormat[SomeData] = format
     marshal(f) should equal (Right(body))
     body.as[PointFeature[SomeData]] should equal (Right(f))
   }

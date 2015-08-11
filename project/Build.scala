@@ -95,7 +95,7 @@ object GeotrellisBuild extends Build {
   )
 
   val defaultAssemblySettings =
-    assemblySettings ++
+    assemblySettings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++
   Seq(
     test in assembly := {},
     mergeStrategy in assembly <<= (mergeStrategy in assembly) {
@@ -335,8 +335,8 @@ object GeotrellisBuild extends Build {
         scalatest % "test"
       )
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+  defaultAssemblySettings
+
 
   // Project: admin
   lazy val admin: Project =
@@ -387,7 +387,6 @@ object GeotrellisBuild extends Build {
           "org.apache.spark" %% "spark-core" % Version.spark % "provided",
           "org.apache.spark" %% "spark-streaming" % Version.spark % "provided",
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
-          "com.quantifind" %% "sumac" % "0.3.0",
           "de.javakaffee" % "kryo-serializers" % "0.27",
           "com.datastax.spark" %% "spark-cassandra-connector" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
           "com.datastax.cassandra" % "cassandra-driver-core" % Version.cassandra_connector,
@@ -413,8 +412,23 @@ object GeotrellisBuild extends Build {
         import geotrellis.spark.tiling._
         """
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+  defaultAssemblySettings
+
+
+  lazy val sparkEtl =
+    Project(id = "spark-etl", base = file("spark-etl"))
+      .dependsOn(spark)
+      .settings(defaultAssemblySettings: _*)
+      .settings(
+        name := "geotrellis-spark-etl",
+        libraryDependencies ++= Seq(
+          "com.google.inject" % "guice" % "3.0",
+          "com.google.inject.extensions" % "guice-multibindings" % "3.0",
+          "org.rogach" %% "scallop" % "0.9.5",
+          sparkCore % "provided"
+        )
+      )
+
 
   lazy val graph: Project =
     Project("graph", file("graph"))
@@ -440,8 +454,7 @@ object GeotrellisBuild extends Build {
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       )
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+  defaultAssemblySettings
 
 
   // Project: index
@@ -473,7 +486,7 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++=
         Seq(
           "org.gdal"         % "gdal"       % "1.10.1",
-          "com.github.scopt" % "scopt_2.10" % "3.2.0",
+          "com.github.scopt" %% "scopt" % "3.3.0",
           scalatest % "test"
         ),
       resolvers ++=

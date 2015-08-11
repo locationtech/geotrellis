@@ -1,5 +1,7 @@
 package geotrellis.spark.io.s3
 
+import java.nio.charset.Charset
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -30,15 +32,17 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String)
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
 
+  def path(parts: String*) = parts.filter(_.nonEmpty).mkString("/")
+
   def attributePath(id: LayerId, attributeName: String): String =
-    s"$rootPath/_attributes/${attributeName}__${id.name}__${id.zoom}.json"
+    path(rootPath, "_attributes", s"${attributeName}__${id.name}__${id.zoom}.json")
 
   def attributePrefix(attributeName: String): String =
-    s"$rootPath/_attributes/${attributeName}__"
+    path(rootPath, "_attributes", s"${attributeName}__")
 
   private def readKey[T: ReadableWritable](key: String): Option[(LayerId, T)] = {
-    val is = s3Client.getObject(bucket, key).getObjectContent()
-    val json = Source.fromInputStream(is).mkString
+    val is = s3Client.getObject(bucket, key).getObjectContent
+    val json = Source.fromInputStream(is)(Charset.forName("UTF-8")).mkString
     is.close()
     Some(json.parseJson.convertTo[(LayerId, T)])
     // TODO: Make this crash to find out when None should be returned

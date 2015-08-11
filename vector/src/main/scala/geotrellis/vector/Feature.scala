@@ -19,28 +19,49 @@ package geotrellis.vector
 import com.vividsolutions.jts.{geom => jts}
 import spray.json._
 
-abstract class Feature[D] {
-  type G <: Geometry
-  val geom: G ; val data: D
+case class Feature[+G <: Geometry, D](geom: G, data: D) {
+  def mapGeom[T <: Geometry](f: G => T): Feature[T, D] =
+    Feature(f(geom), data)
+
+  def mapData[T](f: D => T): Feature[G, T] =
+    Feature(geom, f(data))
 }
 
-case class PointFeature[D](geom: Point, data: D) extends Feature[D] {type G = Point}
-object PointFeature { implicit def feature2Geom[D](f: PointFeature[D]): Point = f.geom }
+object Feature {
+  implicit def featureToGeometry[G <: Geometry](f: Feature[G, _]): G = f.geom  
+}
 
-case class LineFeature[D](geom: Line, data: D) extends Feature[D] {type G = Line}
-object LineFeature { implicit def feature2Geom[D](f: LineFeature[D]): Line = f.geom }
+object PointFeature {
+  def apply[D](geom: Point, data: D): Feature[Point, D] =
+    Feature(geom, data)
+}
 
-case class PolygonFeature[D](geom: Polygon, data: D) extends Feature[D] {type G = Polygon}
-object PolygonFeature { implicit def feature2Geom[D](f: PolygonFeature[D]): Polygon = f.geom }
+object LineFeature {
+  def apply[D](geom: Line, data: D): Feature[Line, D] =
+    Feature(geom, data)
+}
 
-case class MultiPointFeature[D](geom: MultiPoint, data: D) extends Feature[D] {type G = MultiPoint}
-object MultiPointFeature { implicit def feature2Geom[D](f: MultiPointFeature[D]): MultiPoint = f.geom }
+object PolygonFeature {
+  def apply[D](geom: Polygon, data: D): Feature[Polygon, D] =
+    Feature(geom, data)
+}
 
-case class MultiLineFeature[D](geom: MultiLine, data: D) extends Feature[D] {type G = MultiLine}
-object MultiLineFeature { implicit def feature2Geom[D](f: MultiLineFeature[D]): MultiLine = f.geom }
+object MultiPointFeature {
+  def apply[D](geom: MultiPoint, data: D): Feature[MultiPoint, D] =
+    Feature(geom, data)
+}
 
-case class MultiPolygonFeature[D](geom: MultiPolygon, data: D) extends Feature[D] {type G = MultiPolygon}
-object MultiPolygonFeature { implicit def feature2Geom[D](f: MultiPolygonFeature[D]): MultiPolygon = f.geom }
+object MultiLineFeature {
+  def apply[D](geom: MultiLine, data: D): Feature[MultiLine, D] =
+    Feature(geom, data)
+}
 
-case class GeometryCollectionFeature[D](geom: GeometryCollection, data: D) extends Feature[D] {type G = GeometryCollection}
-object GeometryCollectionFeature { implicit def feature2Geom[D](f: GeometryCollectionFeature[D]): GeometryCollection = f.geom }
+object MultiPolygonFeature {
+  def apply[D](geom: MultiPolygon, data: D): Feature[MultiPolygon, D] =
+    Feature(geom, data)
+}
+
+object GeometryCollectionFeature {
+  def apply[D](geom: GeometryCollection, data: D): Feature[GeometryCollection, D] =
+    Feature(geom, data)
+}
