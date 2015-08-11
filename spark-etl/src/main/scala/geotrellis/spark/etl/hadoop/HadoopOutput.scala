@@ -12,5 +12,5 @@ trait HadoopOutput extends OutputPlugin {
 
   //This should be a safe way to get a hadoop configuration that includes all the environment changes from spark
   def attributes(props: Map[String, String]) =
-    new HadoopAttributeStore(SparkHadoopUtil.get.newConfiguration(new SparkConf()), new Path(props("path")))
+    new HadoopAttributeStore(SparkHadoopUtil.get.newConfiguration(new SparkConf()), new Path(props("path"), "attributes"))
 }
