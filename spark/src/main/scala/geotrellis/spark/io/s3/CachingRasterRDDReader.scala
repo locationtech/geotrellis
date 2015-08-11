@@ -12,7 +12,7 @@ import geotrellis.spark.io.avro._
 import org.apache.avro._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
-import scala.util.Try
+import org.apache.commons.io.IOUtils
 
 class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirectory: File) extends  RasterRDDReader[K]  with LazyLogging {
   /** Converting lower bound of Range to first Key for Marker */
@@ -71,24 +71,23 @@ class CachingRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag](cacheDirec
             val path = List(dir, toPath(index)).filter(_.nonEmpty).mkString("/")
             val cachePath = new File(cacheDir, s"${layerId.name}__${layerId.zoom}__$index")
 
-            Try { new FileInputStream(cachePath) }
-              .recover {
-                case e => s3client.getObject(bucket, path).getObjectContent
-              }
-              .map { is =>
-                val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
-
-                val cacheOut = new FileOutputStream(cachePath)
-                cacheOut.write(bytes)
-                cacheOut.close()
-
-                val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
-                recs.filter { row => includeKey(row._1) }
-              }
-              .recover {
-                case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
-              }
-              .get
+            try {
+              // TODO: This could be abstracted with DirectRasterRDDReader, this would allow other caching strategies
+              val bytes =
+                if (cachePath.exists()) {
+                  IOUtils.toByteArray(new FileInputStream(cachePath))
+                } else {
+                  val s3Bytes = IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
+                  val cacheOut = new FileOutputStream(cachePath)
+                  try { cacheOut.write(s3Bytes) }
+                  finally { cacheOut.close() }
+                  s3Bytes
+                }
+              val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
+              recs.filter { row => includeKey(row._1) }
+            } catch {
+              case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
+            }
           }
 
         tileSeq.flatten
