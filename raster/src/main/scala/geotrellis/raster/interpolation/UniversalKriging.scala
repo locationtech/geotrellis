@@ -1,3 +1,19 @@
+/*
+* Copyright (c) 2015 Azavea.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package geotrellis.raster.interpolation
 
 import geotrellis.vector.PointFeature
@@ -40,7 +56,7 @@ class UniversalKriging(points: Array[PointFeature[Double]],
       { i => Array(1.0) ++ attrFunc(points(i).geom.x, points(i).geom.y) })
     val attrSize: Int = attrMatrix.getColumnDimension - 1
     val scale: RealMatrix =
-      new EigenDecomposition(
+      new LUDecomposition(
         MatrixUtils.createRealDiagonalMatrix(
           Array.tabulate(attrSize + 1)
           { i => absArray(attrMatrix.getColumn(i)).max }
@@ -61,25 +77,28 @@ class UniversalKriging(points: Array[PointFeature[Double]],
       { row: Int => PointFeature(points(row).geom, errorOLS(row)) }
 
     val res: Semivariogram = NonLinearSemivariogram(pointsFitting, 0, 0, model)
-
-    var covariogramMatrix: RealMatrix =
+    val covariogramMatrix: RealMatrix =
       unitCol.multiply(unitCol.transpose())
         .scalarMultiply(res.sill)
         .subtract(varianceMatrixGen(res, points))
         .add(MatrixUtils.createRealIdentityMatrix(n)
         .scalarMultiply(res.nugget))
 
-    val rank: Int = new SingularValueDecomposition(covariogramMatrix).getRank
-
-    if (rank < covariogramMatrix.getRowDimension)
-      covariogramMatrix = covariogramMatrix.add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(0.0001))
-
-    //Inverse of C(the covariance matrix using the fitted semivariogram) utilizing Cholesky decomposition
-    //for faster computations (after ensuring the matrix in invertible)
+    val eyen = MatrixUtils.createRealIdentityMatrix(n)
+    //Inverse of covariogramMatrix(using the fitted semivariogram) utilizing Cholesky decomposition
+    //for faster computations (ensuring that the matrix is invertible)
     val covariogramMatrixInv: RealMatrix =
-      new LUDecomposition(
-        new CholeskyDecomposition(covariogramMatrix).getL
-      ).getSolver.getInverse
+      try {
+        new LUDecomposition(
+          new CholeskyDecomposition(covariogramMatrix).getL
+        ).getSolver.getInverse
+      }
+      catch {
+        case _: Exception =>
+          new LUDecomposition(
+            new CholeskyDecomposition(covariogramMatrix.add(eyen.scalarMultiply(0.0001))).getL
+          ).getSolver.getInverse
+      }
 
     val unscaledBetaN =
       new SingularValueDecomposition(

@@ -1,3 +1,19 @@
+/*
+* Copyright (c) 2015 Azavea.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package geotrellis.raster.interpolation
 
 import geotrellis.vector.PointFeature
@@ -22,43 +38,44 @@ class OrdinaryKriging(points: Array[PointFeature[Double]],
    * @param numberOfPoints  Number of points to be Kriged
    */
   protected def createPredictorInit(numberOfPoints: Int): (Double, Double) => (Double, Double) = {
-    val n: Int = points.length
+    val n = points.length
     if (n == 0)
       throw new IllegalArgumentException("No points in the training dataset")
 
-    val unitCol: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
-    val ptData: RealMatrix = MatrixUtils.createColumnRealMatrix(points.map(x => x.data))
+    val unitCol = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
+    val ptData = MatrixUtils.createColumnRealMatrix(points.map(x => x.data))
 
-    var covariogramMatrix =
+    val eyen = MatrixUtils.createRealIdentityMatrix(n)
+    val covariogramMatrix =
       unitCol.multiply(unitCol.transpose())
         .scalarMultiply(sv.sill)
         .subtract(varianceMatrixGen(sv, points))
-        .add(
-          MatrixUtils.createRealIdentityMatrix(n)
-            .scalarMultiply(sv.nugget)
-        )
-
-    val rank: Int = new SingularValueDecomposition(covariogramMatrix).getRank
-    if (rank < covariogramMatrix.getRowDimension)
-      covariogramMatrix = covariogramMatrix.add(MatrixUtils.createRealIdentityMatrix(n).scalarMultiply(0.0000001))
-
+        .add(eyen.scalarMultiply(sv.nugget))
     val muPreComp: RealMatrix =
-      unitCol.transpose()
-        .multiply(
-          new EigenDecomposition(covariogramMatrix)
-            .getSolver.getInverse
-        )
+      try {
+        unitCol.transpose()
+          .multiply(new LUDecomposition(covariogramMatrix)
+                      .getSolver.getInverse)
+      }
+      catch {
+        case _: Exception =>
+          unitCol.transpose()
+            .multiply(new LUDecomposition(covariogramMatrix
+                          .add(eyen.scalarMultiply(0.0000001)))
+                      .getSolver.getInverse)
+      }
 
     val mu: Double = muPreComp.multiply(ptData).getEntry(0, 0) / muPreComp.multiply(unitCol).getEntry(0, 0)
     val residual: RealMatrix = ptData.subtract(unitCol.scalarMultiply(mu))
 
     (x: Double, y: Double) =>
       val pointPredict = Point(x, y)
-      val distanceSortedInfo: Array[(Int, Double)] = getPointDistancesSorted(points, 3, bandwidth,  pointPredict)
+      val distanceSortedInfo: Array[(Int, Double)] =
+        getPointDistancesSorted(points, 3, bandwidth,  pointPredict)
       val distanceID: Array[Int] = distanceSortedInfo.map(_._1)
 
       val localCovariance =
-        new EigenDecomposition(covariogramMatrix.getSubMatrix(distanceID, distanceID))
+        new LUDecomposition(covariogramMatrix.getSubMatrix(distanceID, distanceID))
           .getSolver.getInverse
 
       val distSorted = MatrixUtils.createColumnRealMatrix(distanceSortedInfo.map(_._2))
@@ -77,7 +94,8 @@ class OrdinaryKriging(points: Array[PointFeature[Double]],
           localCovVec.setEntry(j, 0, localCovVec.getEntry(j, 0) + sv.nugget)
       }
 
-      val distSortedUnit = MatrixUtils.createColumnRealMatrix(Array.fill(distanceSortedInfo.length)(1))
+      val distSortedUnit =
+        MatrixUtils.createColumnRealMatrix(Array.fill(distanceSortedInfo.length)(1))
       val scalarDenom: Double =
         distSortedUnit.transpose()
           .multiply(localCovariance)

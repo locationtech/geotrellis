@@ -1,3 +1,19 @@
+/*
+* Copyright (c) 2015 Azavea.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package geotrellis.raster.interpolation
 
 import geotrellis.vector.PointFeature
@@ -42,7 +58,7 @@ class GeoKriging(points: Array[PointFeature[Double]],
     val attrSize: Int = attrMatrix.getColumnDimension - 1
 
     val scale: RealMatrix =
-      new EigenDecomposition(
+      new LUDecomposition(
         MatrixUtils.createRealDiagonalMatrix(
           Array.tabulate(attrSize+1)
           { i => absArray(attrMatrix.getColumn(i)).max }
@@ -71,24 +87,24 @@ class GeoKriging(points: Array[PointFeature[Double]],
 
     while (delta > 0.001) {
       counter = counter + 1
-      var covariogramMatrixIter: RealMatrix =
+      val eyen = MatrixUtils.createRealIdentityMatrix(n)
+      val covariogramMatrixIter: RealMatrix =
         unitCol.multiply(unitCol.transpose())
           .scalarMultiply(res.sill)
           .subtract(varianceMatrixGen(res, points))
-          .add(
-            MatrixUtils.createRealIdentityMatrix(n)
-              .scalarMultiply(res.nugget)
-          )
-      val rank: Int = new SingularValueDecomposition(covariogramMatrixIter).getRank
-      if (rank < covariogramMatrixIter.getRowDimension)
-        covariogramMatrixIter = covariogramMatrixIter
-          .add(MatrixUtils.createRealIdentityMatrix(n)
-          .scalarMultiply(0.0001))
+          .add(eyen.scalarMultiply(res.nugget))
       val covariogramInv =
-        new SingularValueDecomposition(new CholeskyDecomposition(covariogramMatrixIter).getL)
-          .getSolver.solve(
-            MatrixUtils.createRealIdentityMatrix(n)
-          )
+        try {
+          new SingularValueDecomposition(new CholeskyDecomposition(covariogramMatrixIter).getL)
+            .getSolver.solve(eyen)
+        }
+        catch {
+          case _: Exception =>
+            new SingularValueDecomposition(new CholeskyDecomposition(covariogramMatrixIter
+                                              .add(eyen.scalarMultiply(0.0000001))).getL
+                                          ).getSolver
+              .solve(eyen)
+        }
       val unscaledBeta =
         new SingularValueDecomposition(covariogramInv.multiply(attrMatrixScaled))
           .getSolver.solve(

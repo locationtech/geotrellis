@@ -53,6 +53,7 @@ trait Kriging{
    * Returns the indices of points close to the point for prediction within the given bandwidth
    * In case the number of points < minPoints; it returns the closest minPoints number of points
    */
+
   protected def getPointDistancesSorted(points: Array[PointFeature[Double]],
                                         minPoints: Int,
                                         bandwidth: Double,
