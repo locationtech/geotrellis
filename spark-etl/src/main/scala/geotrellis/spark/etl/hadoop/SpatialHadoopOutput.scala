@@ -3,9 +3,8 @@ package geotrellis.spark.etl.hadoop
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{LayerId, RasterRDD, SpatialKey}
-import org.apache.hadoop.fs.Path
-
 import scala.reflect._
+import org.apache.hadoop.fs.Path
 
 class SpatialHadoopOutput extends HadoopOutput {
   val key = classTag[SpatialKey]

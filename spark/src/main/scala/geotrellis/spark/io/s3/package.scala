@@ -1,15 +1,16 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.{SpaceTimeKey, SpatialKey}
+import geotrellis.spark._
+import geotrellis.spark.io.avro.KeyCodecs._
 
 package object s3 {
-  implicit lazy val s3SpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val s3SpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
-  implicit lazy val s3SpatialRasterTileReader = spatial.SpatialTileReader
+  implicit def s3SpatialRasterRDDReader = new DirectRasterRDDReader[SpatialKey]
+  implicit def s3SpatialRasterRDDWriter = new RasterRDDWriter[SpatialKey]
+  implicit def s3SpatialRasterTileReader = new TileReader[SpatialKey]
 
-  implicit lazy val s3SpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val s3SpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
-  implicit lazy val s3SpaceTimeRasterTileReader = spacetime.SpaceTimeTileReader
+  implicit def s3SpaceTimeRasterRDDReader = new DirectRasterRDDReader[SpaceTimeKey]
+  implicit def s3SpaceTimeRasterRDDWriter = new RasterRDDWriter[SpaceTimeKey]
+  implicit def s3SpaceTimeRasterTileReader = new TileReader[SpaceTimeKey]
 
   private[s3]
   def maxIndexWidth(maxIndex: Long): Int = {
@@ -17,4 +18,8 @@ package object s3 {
     digits(maxIndex)
   }
 
+  private[s3]
+  val encodeIndex = (index: Long, max: Int) => {
+    index.toString.reverse.padTo(max, '0').reverse
+  }
 }
