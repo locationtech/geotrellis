@@ -1,4 +1,3 @@
-
 package geotrellis.raster.interpolation
 
 /** Methods implicitly added to tile via the package import.
@@ -7,8 +6,6 @@ package geotrellis.raster.interpolation
 trait OrdinaryKrigingMethods extends KrigingMethods {
   val tile: Tile
 
-  def ordinaryKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double) = {
-    val kriging =  SimpleKriging(points, bandwidth)
-    Interpolation(tile, extent) { (x: Double, y: Double) => kriging(x, y)._1 }
-  }
+  def ordinaryKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double) =
+    Interpolation(tile, extent)(OrdinaryKriging(points, bandwidth))
 }
