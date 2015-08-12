@@ -24,7 +24,8 @@ object CRS {
   def fromString(proj4Params: String): CRS =
     new CRS {
       val crs = crsFactory.createFromParameters(null, proj4Params)
-      override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+
+      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
 
   /**
@@ -50,7 +51,8 @@ object CRS {
   def fromString(name: String, proj4Params: String): CRS =
     new CRS {
       val crs = crsFactory.createFromParameters(name, proj4Params)
-      override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+
+      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
 
   /**
@@ -90,7 +92,8 @@ object CRS {
    */
   def fromName(name: String): CRS = new CRS {
     val crs = crsFactory.createFromName(name)
-    override val epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+
+    def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
   }
 
   private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
@@ -118,7 +121,9 @@ object CRS {
 trait CRS extends Serializable {
 
   val Epsilon = 1e-8
-  val epsgCode: Option[Int]
+
+  def epsgCode: Option[Int]
+
   private[proj4] val crs: CoordinateReferenceSystem
 
   /** Override this function to handle reprojecting to another CRS in a more performant way */
