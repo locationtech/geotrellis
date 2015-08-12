@@ -27,7 +27,7 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 
-trait Kriging{
+trait Kriging extends Function2[Double, Double, (Double Double)] {
 
   private def distance(p1: Point, p2: Point): Double =
     math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))
@@ -86,28 +86,11 @@ trait Kriging{
   private def createPredictor(numberOfPoints: Int): (Double, Double) => (Double, Double) = createPredictorInit(numberOfPoints)
   protected def createPredictorInit(numberOfPoints: Int): (Double, Double) => (Double, Double)
 
-  /**
-   * Kriging Prediction for a Tile
-   * @param tile        Tile to be Kriged
-   * @return            Tile set with the interpolated values
-   */
+  private lazy val _apply: (Double, Double) => (Double, Double) =
+    createPredictor(1)
 
-  def predict(tile: Tile, extent: Extent): Tile = {
-    val numberOfCells = tile.cols * tile.rows
-    val rasterExtent = RasterExtent(tile, extent)
-    val krigingPrediction = DoubleArrayTile.empty(tile.cols, tile.rows)
-    val predictor = createPredictor(numberOfCells)
-
-    cfor(0)(_ < tile.cols, _ + 1) { col =>
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
-        val (x, y) = rasterExtent.gridToMap(col, row)
-        val (kPredict, _) = predictor(x, y)
-        krigingPrediction.setDouble(col, row, kPredict)
-      }
-    }
-
-    krigingPrediction
-  }
+  def apply(x: Double, y: Double): (Double, Double) =
+    _apply(x, y)
 
   /**
    * Kriging Prediction for an Array of points

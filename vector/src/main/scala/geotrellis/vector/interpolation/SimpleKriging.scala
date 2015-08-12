@@ -18,11 +18,19 @@ package geotrellis.raster.interpolation
 
 import geotrellis.vector.PointFeature
 import geotrellis.vector.Point
-import geotrellis.vector.interpolation.Semivariogram
+import geotrellis.vector.interpolation._
 
 import org.apache.commons.math3.linear._
 
 import spire.syntax.cfor._
+
+object SimpleKriging {
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double): Kriging = {
+    // Another good thing about defaults, it shows how to construct them.
+    val semivariogramExponential = Semivariogram.fit(empiricalSemivariogram, Exponential)
+  }
+
+}
 
 /**
  * @param points          Sample points for Simple Kriging model training
