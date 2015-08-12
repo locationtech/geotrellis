@@ -41,30 +41,30 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](3)(0)
+        Array.fill[Double](3)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](3)
         jacobianRet(0) =
           (variables(2) - variables(1)) * (2 * math.pow(x, 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
         jacobianRet(1) = 1 - math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
         jacobianRet(2) = 1 - jacobianRet(1)
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
   private def jacobianGaussianNugget(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](2)(0)
+        Array.fill[Double](2)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](2)
         jacobianRet(0) = variables(1) * (2 * math.pow(x, 2) / math.pow(variables(0), 3)) * math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
         jacobianRet(1) = 1 - math.exp(-1 * math.pow(x, 2) / math.pow(variables(0), 2))
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
@@ -97,29 +97,29 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](3)(0)
+        Array.fill[Double](3)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](3)
         jacobianRet(0) = -4 * x * (variables(1) - variables(2)) * math.sqrt(math.pow(variables(0), 2) - math.pow(x, 2)) / (math.Pi * math.pow(variables(0), 3))
         jacobianRet(1) = 1 - (2 / math.Pi) * math.acos(x / variables(0)) + ((2 * x) / (math.Pi * variables(0))) * math.sqrt(1 - math.pow(x / variables(0), 2))
         jacobianRet(2) = 1 - jacobianRet(1)
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
   private def jacobianCircularNugget(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](2)(0)
+        Array.fill[Double](2)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](2)
         jacobianRet(0) = -4 * x * variables(1) * math.sqrt(math.pow(variables(0), 2) - math.pow(x, 2)) / (math.Pi * math.pow(variables(0), 3))
         jacobianRet(1) = 1 - (2 / math.Pi) * math.acos(x / variables(0)) + ((2 * x) / (math.Pi * variables(0))) * math.sqrt(1 - math.pow(x / variables(0), 2))
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
@@ -127,9 +127,7 @@ object NonLinearSemivariogram {
     */
   private def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
-      //if (h == 0) 0
-      //TODO : Investigate if the standard usage is f(0) = a or f(0) = 0
-      if (h == 0) a
+      if (h == 0) 0
       else if (h > r) s
       else
         a + (s - a) * ((3 * h / (2 * r)) - (math.pow(h, 3) / (2 * math.pow(r, 3)) ))
@@ -149,34 +147,33 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianSpherical(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
-        //jacobianRet = Array.fill[Double](3)(0)
-        jacobianRet = Array[Double](0, 0, 1)
+        Array.fill[Double](3)(0)
       else if (x > 0 && x <= variables(0)) {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](3)
         jacobianRet(0) = (variables(1) - variables(2)) * ((-3 * x) / (2 * math.pow(variables(0), 2)) + (3 * math.pow(x, 3)/(2 * math.pow(variables(0), 4))))
         jacobianRet(1) = (3 * x) / (2 * variables(0)) - (0.5 * math.pow(x / variables(0), 3))
         jacobianRet(2) = 1 - jacobianRet(1)
+        jacobianRet
       }
       else
-        jacobianRet = Array[Double](0, 1, 0)
-      jacobianRet
+        Array[Double](0, 1, 0)
     }
   }
 
   private def jacobianSphericalNugget(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](2)(0)
+        Array.fill[Double](2)(0)
       else if (x>0 && x<=variables(0)) {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](2)
         jacobianRet(0) = variables(1) * ((-3 * x) / (2 * math.pow(variables(0), 2)) + (3 * math.pow(x, 3)/(2 * math.pow(variables(0), 4))))
         jacobianRet(1) = ((3 * x)/(2 * variables(0))) - (0.5 * math.pow(x / variables(0), 3))
+        jacobianRet
       }
       else
-        jacobianRet = Array[Double](0, 1)
-      jacobianRet
+        Array[Double](0, 1)
     }
   }
 
@@ -201,29 +198,29 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianExponential(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](3)(0)
+        Array.fill[Double](3)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](3)
         jacobianRet(0) = (variables(2) - variables(1)) * (3 * x / math.pow(variables(0), 2)) * math.exp(-3 * x / variables(0))
         jacobianRet(1) = 1 - math.exp(-3 * x / variables(0))
         jacobianRet(2) = 1 - jacobianRet(1)
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
   private def jacobianExponentialNugget(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](2)(0)
+        Array.fill[Double](2)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](2)
         jacobianRet(0) = -1 * variables(1) * (3 * x / math.pow(variables(0), 2)) * math.exp(-3 * x / variables(0))
         jacobianRet(1) = 1 - math.exp(-3 * x / variables(0))
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
@@ -250,29 +247,29 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](3)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](3)(0)
+        Array.fill[Double](3)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](3)
         jacobianRet(0) = (variables(1) - variables(2)) * ((math.cos(x / variables(0)) / variables(0)) - (math.sin(x / variables(0)) / x))
         jacobianRet(1) = 1 - variables(0) * math.sin(x / variables(0)) / x
         jacobianRet(2) = 1 - jacobianRet(1)
+        jacobianRet
       }
-      jacobianRet
     }
   }
 
   private def jacobianWaveNugget(variables: Array[Double]): Double => Array[Double] = {
-    var jacobianRet: Array[Double] = Array.ofDim[Double](2)
     x: Double => {
       if (x == 0)
-        jacobianRet = Array.fill[Double](2)(0)
+        Array.fill[Double](2)(0)
       else {
+        val jacobianRet: Array[Double] = Array.ofDim[Double](2)
         jacobianRet(0) = variables(1) * ((math.cos(x / variables(0)) / variables(0)) - (math.sin(x / variables(0)) / x))
         jacobianRet(1) = 1 - variables(0) * math.sin(x / variables(0)) / x
+        jacobianRet
       }
-      jacobianRet
     }
   }
 

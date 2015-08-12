@@ -89,9 +89,9 @@ class OrdinaryKriging(points: Array[PointFeature[Double]],
             )
           )
 
-      cfor(0)(_ < distSorted.getRowDimension, _ + 1) { j: Int =>
-        if (distSorted.getEntry(j, 0) == 0)
-          localCovVec.setEntry(j, 0, localCovVec.getEntry(j, 0) + sv.nugget)
+      cfor(0)(_ < distSorted.getRowDimension, _ + 1) { i: Int =>
+        if (distSorted.getEntry(i, 0) == 0)
+          localCovVec.setEntry(i, 0, localCovVec.getEntry(i, 0) + sv.nugget)
       }
 
       val distSortedUnit =

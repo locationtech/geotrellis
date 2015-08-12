@@ -108,7 +108,6 @@ class UniversalKriging(points: Array[PointFeature[Double]],
 
     val betaN = scale.multiply(unscaledBetaN)
     val residual: RealMatrix = ptData.subtract(attrMatrix.multiply(betaN))
-    var i = 0
 
     (x: Double, y: Double) =>
       val pointPredict = Point(x, y)
@@ -128,9 +127,9 @@ class UniversalKriging(points: Array[PointFeature[Double]],
               { (i, _) => res(sortedDist.getEntry(i,0)) }
             )
           )
-      cfor(0)(_ < sortedDist.getRowDimension, _ + 1) { j: Int =>
-        if (sortedDist.getEntry(j, 0) == 0)
-          localCovVector.setEntry(j, 0, localCovVector.getEntry(j, 0) + res.nugget)
+      cfor(0)(_ < sortedDist.getRowDimension, _ + 1) { i: Int =>
+        if (sortedDist.getEntry(i, 0) == 0)
+          localCovVector.setEntry(i, 0, localCovVector.getEntry(i, 0) + res.nugget)
       }
 
       val curAttrVal: Array[Double] = Array(1.0) ++ attrFunc(x, y)
@@ -182,7 +181,6 @@ class UniversalKriging(points: Array[PointFeature[Double]],
             .multiply(xtVinvX)
             .multiply(kVarTemp).getEntry(0,0)
         )
-      i = i + 1
 
       (kPredict, kVar)
   }

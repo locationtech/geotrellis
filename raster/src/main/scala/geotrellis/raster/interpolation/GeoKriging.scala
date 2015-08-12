@@ -126,7 +126,7 @@ class GeoKriging(points: Array[PointFeature[Double]],
       if (delta > 0.0001) {
         res = NonLinearSemivariogram(pointsFittingIter, 0, 0, model)
         if(counter > 100)
-          delta = 0.00001
+          delta = 0.0001
       }
     }
 
@@ -138,7 +138,6 @@ class GeoKriging(points: Array[PointFeature[Double]],
           MatrixUtils.createRealIdentityMatrix(n)
             .scalarMultiply(res.nugget)
         )
-    var i = 0
     val residual: RealMatrix = ptData.subtract(attrMatrix.multiply(betaEval))
 
     (x: Double, y: Double) =>
@@ -156,15 +155,15 @@ class GeoKriging(points: Array[PointFeature[Double]],
           .scalarMultiply(res.sill)
           .subtract(
             MatrixUtils.createRealMatrix(
-              Array.tabulate(distanceID.length, 1){ (j, _) =>
-                res(sortedDist.getEntry(j,0))
+              Array.tabulate(distanceID.length, 1){ (i, _) =>
+                res(sortedDist.getEntry(i,0))
               }
             )
           )
 
-      cfor(0)(_ < distanceID.length, _ + 1) { j: Int =>
-        if (sortedDist.getEntry(j, 0) == 0)
-          localCovVector.setEntry(j, 0, localCovVector.getEntry(j, 0) + res.nugget)
+      cfor(0)(_ < distanceID.length, _ + 1) { i: Int =>
+        if (sortedDist.getEntry(i, 0) == 0)
+          localCovVector.setEntry(i, 0, localCovVector.getEntry(i, 0) + res.nugget)
       }
 
       val curAttrVal: Array[Double] = Array(1.0) ++ attrFunc(x, y)
@@ -219,7 +218,6 @@ class GeoKriging(points: Array[PointFeature[Double]],
             .multiply(xtVinvX)
             .multiply(kVarTemp).getEntry(0,0)
         )
-      i = i + 1
 
       (kPredict, kVar)
   }
