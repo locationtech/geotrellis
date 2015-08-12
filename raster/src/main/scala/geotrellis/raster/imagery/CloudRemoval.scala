@@ -10,6 +10,10 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.Extent
 import spire.syntax.cfor._
 
+import geotrellis.raster.op.stats._
+import geotrellis.raster.io.json._
+import spray.json._
+
 object Imagery {
 
   var minValueBands = new Array[Int](3)
@@ -70,11 +74,11 @@ object Imagery {
     ArrayMultiBandTile(cloudlessTiles)
   }
 
-  def resampleToByte(t: Tile, maxOfAllBandsAllImages: Int): Tile = {
+  def resampleToByte(t: Tile, minOfAllBandsAllImages: Int, maxOfAllBandsAllImages: Int): Tile = {
     val byteTile = ByteArrayTile.empty(t.cols, t.rows)
     t.foreach { (col, row, z) =>
       val v = if(isData(z))
-        (z.toDouble/maxOfAllBandsAllImages)*255
+        ((z - minOfAllBandsAllImages).toDouble/maxOfAllBandsAllImages)*255
       else 0
 
       //println(v)
@@ -99,14 +103,6 @@ object Imagery {
     val extent = SingleBandGeoTiff(fileListRed(0).toString).extent
 
     cfor(0)(_ < numImages, _ + 1) { i =>
-//      val red = SingleBandGeoTiff(fileListRed(i).toString).tile.rescale(0, 255).convert(TypeByte)
-//      val green = SingleBandGeoTiff(fileListGreen(i).toString).tile.rescale(0, 255).convert(TypeByte)
-//      val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile.rescale(0, 255).convert(TypeByte)
-
-//      val red = SingleBandGeoTiff(fileListRed(i).toString).tile.rescale(0, 255)
-//      val green = SingleBandGeoTiff(fileListGreen(i).toString).tile.rescale(0, 255)
-//      val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile.rescale(0, 255)
-
       val red = SingleBandGeoTiff(fileListRed(i).toString).tile
       val green = SingleBandGeoTiff(fileListGreen(i).toString).tile
       val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile
@@ -115,14 +111,24 @@ object Imagery {
 
     val cloudless = cloudRemovalMultiBand(multiBands, extent, crs)
 
-    val maxOfAllBands = math.max(maxValueBands(0), math.max(maxValueBands(1), maxValueBands(2)))
-    val minOfAllBands = math.min(minValueBands(0), math.min(minValueBands(1), minValueBands(2)))
+    //val maxOfAllBands = math.max(maxValueBands(0), math.max(maxValueBands(1), maxValueBands(2)))
+    //val minOfAllBands = math.min(minValueBands(0), math.min(minValueBands(1), minValueBands(2)))
 
-    println(maxOfAllBands, minOfAllBands)
+    //println(maxOfAllBands, minOfAllBands)
 
-    val cloudlessRedByte = resampleToByte(cloudless.band(0), maxOfAllBands)
-    val cloudlessGreenByte = resampleToByte(cloudless.band(1), maxOfAllBands)
-    val cloudlessBlueByte = resampleToByte(cloudless.band(2), maxOfAllBands)
+    //val hist = cloudless.band(0).histogram
+    //println(hist.toJson.prettyPrint)
+
+    val maxOfAllBands = math.max(cloudless.band(0).findMinMax._2, math.max(cloudless.band(1).findMinMax._2, cloudless.band(2).findMinMax._2))
+    val minOfAllBands = math.min(cloudless.band(0).findMinMax._1, math.max(cloudless.band(1).findMinMax._1, cloudless.band(2).findMinMax._1))
+
+    val cloudlessRedByte = resampleToByte(cloudless.band(0), minOfAllBands, maxOfAllBands)
+    val cloudlessGreenByte = resampleToByte(cloudless.band(1), minOfAllBands, maxOfAllBands)
+    val cloudlessBlueByte = resampleToByte(cloudless.band(2), minOfAllBands, maxOfAllBands)
+
+//    val cloudlessRedByte = resampleToByte(cloudless.band(0), cloudless.band(0).findMinMax._1, cloudless.band(0).findMinMax._2)
+//    val cloudlessGreenByte = resampleToByte(cloudless.band(1), cloudless.band(1).findMinMax._1, cloudless.band(1).findMinMax._2)
+//    val cloudlessBlueByte = resampleToByte(cloudless.band(2), cloudless.band(2).findMinMax._1, cloudless.band(2).findMinMax._2)
 
     val cloudlessByte = ArrayMultiBandTile(cloudlessRedByte, cloudlessGreenByte, cloudlessBlueByte)
 
@@ -156,14 +162,4 @@ object Imagery {
 //    GeoTiffWriter.write(SingleBandGeoTiff(cloudlessByte.band(2), extent, crs), "/tmp/cloudlessimageblue.tif")
 //    GeoTiffWriter.write(MultiBandGeoTiff(cloudless, extent, crs), "/tmp/cloudlessimagergb.tif")
   }
-
-  //      val cloudless = cloudRemovalMultiBand(multiBands)
-  //      val r = cloudless.band(0).rescale(0, 255).convert(TypeByte)
-  //      val g = cloudless.band(1).rescale(0, 255).convert(TypeByte)
-  //      val b = cloudless.band(2).rescale(0, 255).convert(TypeByte)
-  //      val finalimage = ArrayMultiBandTile(Array(r, g, b))
-  //val crs = SingleBandGeoTiff(fileListRed(0).toString).crs
-  //val extent = SingleBandGeoTiff(fileListRed(0).toString).extent
-  //GeoTiffWriter.write(MultiBandGeoTiff(finalimage, extent, crs), "/tmp/image.tif") }
-
 }
