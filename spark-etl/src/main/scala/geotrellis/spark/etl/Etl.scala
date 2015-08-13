@@ -1,13 +1,17 @@
 package geotrellis.spark.etl
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark.ingest.Pyramid
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{SpatialComponent, RasterRDD, LayerId}
 import geotrellis.spark.tiling.{LayoutLevel, ZoomedLayoutScheme}
+import geotrellis.spark.op.stats._
+import geotrellis.raster.io.json._
 import com.google.inject._
 import org.apache.spark.SparkContext
 import scala.reflect._
 import scala.collection.JavaConverters._
+import spray.json._
 
 object Etl {
   def apply[K: ClassTag: SpatialComponent](args: Seq[String]): Etl[K] = {
@@ -15,7 +19,7 @@ object Etl {
   }
 }
 
-case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*) {
+case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*) extends LazyLogging {
   val conf = new EtlConf(args)
 
   val (inputPlugin, outputPlugin) = {
@@ -48,17 +52,22 @@ case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module
   }
 
   def save(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K]): Unit = {
+    val attributes = outputPlugin.attributes(conf.outputProps)
     def savePyramid(level: LayoutLevel, rdd: RasterRDD[K]): Unit = {
-      outputPlugin(id.copy( zoom = level.zoom), rdd, method, conf.outputProps)
-      if (level.zoom > 1) {
+      val currentId = id.copy( zoom = level.zoom)
+      outputPlugin(currentId, rdd, method, conf.outputProps)
+      if (conf.histogram()) {
+        val histogram = rdd.histogram
+        logger.info(s"Histogram for $currentId: ${histogram.toJson.compactPrint}")
+        attributes.write(currentId, "histogram", histogram)
+      }
+
+      if (conf.pyramid() && level.zoom > 1) {
         val (nextLevel, nextRdd) = Pyramid.up(rdd, level, ZoomedLayoutScheme(conf.tileSize()))
         savePyramid(nextLevel, nextRdd)
       }
     }
 
-    if (conf.pyramid())
-      savePyramid(LayoutLevel(id.zoom, rdd.metaData.tileLayout), rdd)
-    else
-      outputPlugin(id, rdd, method, conf.outputProps)
+    savePyramid(LayoutLevel(id.zoom, rdd.metaData.tileLayout), rdd)
   }
 }
