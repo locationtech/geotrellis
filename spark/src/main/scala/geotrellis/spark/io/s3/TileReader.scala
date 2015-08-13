@@ -2,16 +2,13 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro.{KeyValueRecordCodec, AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index._
 import geotrellis.raster._
-import geotrellis.spark.utils._
-import org.apache.spark.SparkContext
-import scala.collection.JavaConversions._
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import org.apache.commons.io.IOUtils
 
-trait TileReader[K] {
-  val encodeKey: (K, KeyIndex[K], Int) => String 
-
+class TileReader[K: AvroRecordCodec] {
   def read(
     client: S3Client,
     layerId: LayerId,
@@ -19,25 +16,26 @@ trait TileReader[K] {
     index: KeyIndex[K],
     keyBounds: KeyBounds[K])
   (key: K): Tile = {
-
     val maxLen = { // lets find out the widest key we can possibly have
       def digits(x: Long): Int = if (x < 10) 1 else 1 + digits(x/10)
       digits(index.toIndex(keyBounds.maxKey))
     }
-    val path = s"${lmd.key}/${encodeKey(key, index, maxLen)}"
+    val path = s"${lmd.key}/${encodeIndex(index.toIndex(key), maxLen)}"
 
     val is = 
-    try {
-      client.getObject(lmd.bucket, path).getObjectContent    
-    } catch {
-      case e: AmazonS3Exception if e.getStatusCode == 404 =>
-        throw new TileNotFoundError(key, layerId)        
-    }
+      try {
+        client.getObject(lmd.bucket, path).getObjectContent
+      } catch {
+        case e: AmazonS3Exception if e.getStatusCode == 404 =>
+          throw new TileNotFoundError(key, layerId)
+      }
 
-    val (storedKey, tile) = KryoSerializer.deserializeStream[(K, Tile)](is)
+    val bytes = IOUtils.toByteArray(is)
+    val recs = AvroEncoder.fromBinary(bytes)(KeyValueRecordCodec[K, Tile])
 
-    require(storedKey == key, "They key requested must match the key retreived.")    
-
-    tile
+    recs
+      .find { row => row._1 == key }
+      .map { row => row._2 }
+      .getOrElse(throw new TileNotFoundError(key, layerId))
   }
 }

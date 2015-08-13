@@ -23,9 +23,6 @@ case class HadoopRasterCatalogConfig(
   /** Name of file that will contain the metadata under the layer path. */
   metaDataFileName: String,
 
-  /** Name of the subdirectory under the catalog root that will hold the attributes. */
-  attributeDir: String,
-
   /** Creates a subdirectory path based on a layer id. */
   layerDataDir: LayerId => String
 ) {
@@ -41,7 +38,6 @@ object HadoopRasterCatalogConfig {
       compressionFactor = 1.3, // Assume tiles can be compressed 30% (so, compressionFactor - 1)
       splitsFile = "splits",
       metaDataFileName = "metadata.json",
-      attributeDir = "attributes",
       layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" }
     )
 }
@@ -53,7 +49,7 @@ object HadoopRasterCatalog {
     catalogConfig: HadoopRasterCatalogConfig = HadoopRasterCatalogConfig.DEFAULT)(implicit sc: SparkContext
   ): HadoopRasterCatalog = {
     HdfsUtils.ensurePathExists(rootPath, sc.hadoopConfiguration)
-    val attributeStore = new HadoopAttributeStore(sc.hadoopConfiguration, new Path(rootPath, catalogConfig.attributeDir))
+    val attributeStore = new HadoopAttributeStore(sc.hadoopConfiguration, new Path(rootPath, "attributes"))
     new HadoopRasterCatalog(rootPath, attributeStore, catalogConfig)
   }
 }

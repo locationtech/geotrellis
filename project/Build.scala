@@ -389,7 +389,7 @@ object GeotrellisBuild extends Build {
           "com.datastax.spark" %% "spark-cassandra-connector" % Version.spark_cassandra_connector exclude("org.slf4j", "slf4j-api"),
           "com.datastax.cassandra" % "cassandra-driver-core" % Version.cassandra_connector,
           "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
-          logging, awsSdkS3,
+          logging, awsSdkS3, avro,
           spire,
           monocleCore, monocleMacro,
           nscalaTime,
@@ -423,6 +423,7 @@ object GeotrellisBuild extends Build {
           "com.google.inject" % "guice" % "3.0",
           "com.google.inject.extensions" % "guice-multibindings" % "3.0",
           "org.rogach" %% "scallop" % "0.9.5",
+          logging,
           sparkCore % "provided"
         )
       )
