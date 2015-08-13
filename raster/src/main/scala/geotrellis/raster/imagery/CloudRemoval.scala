@@ -1,18 +1,11 @@
 package geotrellis.raster.imagery
 
-import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.render._
-import geotrellis.raster.io.geotiff.{MultiBandGeoTiff, GeoTiffMultiBandTile, SingleBandGeoTiff}
+import geotrellis.raster.io.geotiff.SingleBandGeoTiff
 
 import java.io.File
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.vector.Extent
 import spire.syntax.cfor._
-
-import geotrellis.raster.op.stats._
-import geotrellis.raster.io.json._
-import spray.json._
 
 object Imagery {
 
