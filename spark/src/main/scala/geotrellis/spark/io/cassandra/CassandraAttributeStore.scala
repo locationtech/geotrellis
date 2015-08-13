@@ -8,8 +8,9 @@ import spray.json._
 import DefaultJsonProtocol._
 
 import com.datastax.driver.core.DataType.text
-import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.querybuilder.{Select, QueryBuilder}
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
+import com.datastax.driver.core.{ BoundStatement, Cluster, Row }
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.{ResultSet, Session}
 
@@ -72,12 +73,16 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
   }
 
   def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId,T] = {
+
     val query =
       QueryBuilder.select.column("value")
         .from(session.keySpace, attributeTable)
         .where(eqs("name", attributeName))
 
-    session.execute(query)
+    val preparedStatement = session.prepare(
+      s"""SELECT value FROM ${session.keySpace}.${attributeTable} WHERE name=? ALLOW FILTERING;""".stripMargin)
+
+    session.execute(preparedStatement.bind(attributeName))
       .all
       .map { _.getString("value").parseJson.convertTo[(LayerId, T)] }
       .toMap

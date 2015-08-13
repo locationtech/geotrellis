@@ -83,7 +83,19 @@ class CassandraRasterCatalogSpec extends FunSpec
 
             val tile = out.first.tile
             tile.get(115, 511) should be (2)
-          }      
+          }
+
+          it("can retreive all the metadata"){
+            val mds = catalog.attributeStore.readAll[CassandraLayerMetaData]("metadata")
+            info(mds(layerId).toString)
+          }
+
+          RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
+            it(test.name){
+              val rdd = catalog.read[SpatialKey](test.layerId.copy(zoom = level.zoom), test.query)
+              rdd.map(_._1).collect should contain theSameElementsAs test.expected
+            }
+          }
         }     
       }
     }
