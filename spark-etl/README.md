@@ -54,6 +54,7 @@ output        | Name of output module to use (ex: s3, hadoop, accumulo)
 outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
 clobber       | Overwrite the layer on save in output catalog
 pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
+histogram     | Save histogram to the output AttributeStore for every saved layer
 
 ## Extension
 
