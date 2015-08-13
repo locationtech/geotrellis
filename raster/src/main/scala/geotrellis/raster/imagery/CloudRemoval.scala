@@ -12,14 +12,14 @@ object Imagery {
   def cloudlessValue(images: Array[Tile], col: Int, row: Int, threshold: Int): Int = {
     var sum = 0
     var count = 0
-    cfor(0)(_ < images.size, _ + 1) { i =>
+    cfor(0)(_ < images.length, _ + 1) { i =>
       val v = images(i).get(col, row)
       if(isData(v) && v < threshold) {
         sum += v
         count += 1
       }
     }
-    (sum / count)
+    sum/count
   }
 
   def cloudRemovalSingleBand(images: Array[Tile]) : Tile = {
