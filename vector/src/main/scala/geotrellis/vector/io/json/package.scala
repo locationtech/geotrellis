@@ -42,13 +42,17 @@ package object json extends GeoJsonSupport {
   implicit class RichString(val s: String) extends AnyVal {
 
     /**
-     * This expects all the types to line up, throws if not.
+     * parseGeoJson, expects all the types in the json string to line up, throws if not
+     * @tparam T type of geometry or feature expected in the json string to be parsed
+     * @return The geometry or feature of type T
      */
     def parseGeoJson[T: JsonReader] = s.parseJson.convertTo[T]
 
     /**
-     * maybe empty, a number of pointfeatures in a featurecollection should
-     * be extracted as a Seq[Point], not a GeometryCollection (parseGeoJson would do that instead)
+     * extractGeometries, extracts geometries from json string,
+     * if type matches requested type G, if not it'll be empty
+     * @tparam G type of geometry desired to extract
+     * @return Seq[G] containing geometries
      */
     def extractGeometries[G <: Geometry : JsonReader: TypeTag]: Seq[G] =
       Try(s.parseJson.convertTo[G]) match {
@@ -65,6 +69,12 @@ package object json extends GeoJsonSupport {
           }
       }
 
+    /**
+     * extractFeatures, extracts features from json string,
+     * if type matches requested type F, if not it'll be empty
+     * @tparam F type of feature desired to extract
+     * @return Seq[F] containing features
+     */
     def extractFeatures[F <: Feature[_, _]: JsonReader]: Seq[F] =
       Try(s.parseJson.convertTo[F]) match {
         case Success(g) => Seq(g)
