@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.avro.KeyCodecs._
 import org.apache.spark.rdd.RDD
 
 package object s3 {
