@@ -1,7 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
-import geotrellis.spark.io.avro.KeyCodecs._
+import org.apache.spark.rdd.RDD
 
 package object s3 {
   implicit def s3SpatialRasterRDDReader = new DirectRasterRDDReader[SpatialKey]
@@ -22,4 +22,6 @@ package object s3 {
   val encodeIndex = (index: Long, max: Int) => {
     index.toString.reverse.padTo(max, '0').reverse
   }
+
+  implicit class S3RDDExtensions[K,V](rdd: RDD[(K,V)]) extends SaveToS3Methods[K, V](rdd)
 }
