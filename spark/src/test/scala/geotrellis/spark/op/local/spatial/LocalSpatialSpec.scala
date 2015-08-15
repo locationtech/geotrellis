@@ -20,7 +20,9 @@ import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.testfiles._
 import geotrellis.vector._
+import geotrellis.spark.testkit.RasterRDDBuilders
 import org.scalatest.FunSpec
+
 
 import scala.util.Random
 
