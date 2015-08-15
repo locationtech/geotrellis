@@ -69,23 +69,17 @@ class RasterizerBenchmark extends OperationBenchmark {
   }
 
   def rasterize() {
-    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re)(
-      new raster.rasterize.Callback {
-        def apply(col: Int, row: Int) {
-          tile.set(col,row,4)
-        }
-      })
+    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re) { (col: Int, row: Int) =>
+      tile.set(col,row,4)
+    }
   }
 
   //Because of a refactor Callback is not getting a geom as a param, since it can close over it if it really wanted
   //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
   def rasterizeUsingValue() {
-    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re)(
-      new raster.rasterize.Callback {
-        def apply(col: Int, row: Int) {
-          tile.set(col,row, poly.data)
-        }
-      })
+    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re) { (col: Int, row: Int) =>
+      tile.set(col,row, poly.data)
+    }
   }
 
 
@@ -100,16 +94,16 @@ class RasterizerBenchmark extends OperationBenchmark {
   def timeRasterizeTransitPoly(reps: Int) = run(reps)(rasterizeTransitPoly)
   def rasterizeTransitPoly = {
     var x = 0
-    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, true)(new geotrellis.raster.rasterize.Callback {
-      def apply(col: Int, row: Int) = x += (col + row)
-    })
+    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, true) { (col: Int, row: Int) =>
+      x += (col + row)
+    }
   }
 
   def timeRasterizeTransitPolyNoHoles(reps: Int) = run(reps)(rasterizeTransitPolyNoHoles)
   def rasterizeTransitPolyNoHoles = {
     var x = 0
-    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, true)(new geotrellis.raster.rasterize.Callback {
-      def apply(col: Int, row: Int) = x += (col + row)
-    })
+    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, true) { (col: Int, row: Int) =>
+      x += (col + row)
+    }
   }
 }

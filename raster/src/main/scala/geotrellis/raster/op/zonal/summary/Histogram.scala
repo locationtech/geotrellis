@@ -10,15 +10,10 @@ object Histogram extends TileIntersectionHandler[Histogram, Histogram] {
     val PartialTileIntersection(tile, _, polygon) = pt
     val rasterExtent = pt.rasterExtent
     val histogram = FastMapHistogram()
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent)(
-      new Callback {
-        def apply (col: Int, row: Int) {
-          val z = tile.get(col, row)
-          if (isData(z)) histogram.countItem(z, 1)
-        }
-      }
-    )
-
+    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      val z = tile.get(col, row)
+      if (isData(z)) histogram.countItem(z, 1)
+    }
     histogram
   }
 

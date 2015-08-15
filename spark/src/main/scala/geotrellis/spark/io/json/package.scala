@@ -7,17 +7,15 @@ import geotrellis.raster._
 import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
-import geotrellis.raster.histogram.Histogram
 import com.github.nscala_time.time.Imports._
 
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
 package object json {
   implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
-    new KryoJsonFormat[index.KeyIndex[K]]
+    new JavaSerializationJsonFormat[index.KeyIndex[K]]
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =

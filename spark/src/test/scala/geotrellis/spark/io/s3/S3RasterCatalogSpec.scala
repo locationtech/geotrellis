@@ -49,6 +49,17 @@ class S3RasterCatalogSpec extends FunSpec
         }
       }
 
+      it("should work when requested tiles are missing"){
+        // actual bound: GridBounds(1,1,6,7)
+        val rdd = catalog
+          .query[SpatialKey](id)
+          .where(Intersects(GridBounds(1,1,10,10)))
+          .toRDD
+        info(s"GridBounds: ${rdd.metaData.gridBounds}")
+        info(s"RDD count: ${rdd.count}")
+        rdd.count should equal (42)
+      }
+
       it("should load out saved tiles") {
         val rdd = catalog.read[SpatialKey](id)
         rdd.count should be > 0l

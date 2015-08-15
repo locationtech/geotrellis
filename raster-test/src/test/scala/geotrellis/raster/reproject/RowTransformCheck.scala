@@ -57,7 +57,7 @@ object RowTransformCheck_LatLngToWebMercator extends Properties("RowTransform") 
   case class Threshold(v: Double)
   lazy val genThreshold: Gen[Threshold] = 
     for {
-      v <- choose(0.0, 5.0)
+      v <- choose(0.1, 5.0)
     } yield Threshold(v)
 
   implicit lazy val arbThreshold: Arbitrary[Threshold] =
