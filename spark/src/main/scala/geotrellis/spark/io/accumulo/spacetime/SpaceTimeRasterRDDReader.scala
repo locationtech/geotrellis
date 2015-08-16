@@ -2,28 +2,21 @@ package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro.KeyCodecs._
-import geotrellis.spark.utils._
-import geotrellis.raster._
-import geotrellis.spark.io.index.zcurve._
+import geotrellis.spark.io.index._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
 import org.apache.accumulo.core.client.IteratorSetting
-import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat, InputFormatBase, AccumuloInputFormat}
+import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
 import org.apache.accumulo.core.util.{Pair => APair}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import org.joda.time.{DateTimeZone, DateTime}
-
-import scala.collection.mutable
 import scala.collection.JavaConversions._
-import scala.util.matching.Regex
 
 object SpaceTimeRasterRDDReader extends RasterRDDReader[SpaceTimeKey] {
   def getCube(

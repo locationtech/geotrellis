@@ -2,10 +2,8 @@ package geotrellis.spark.io.accumulo.spatial
 
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro.KeyCodecs._
-import geotrellis.spark.utils._
-import geotrellis.raster._
+import geotrellis.spark.io.index._
 
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job

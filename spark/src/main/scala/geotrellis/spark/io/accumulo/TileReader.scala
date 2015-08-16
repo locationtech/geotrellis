@@ -3,20 +3,11 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.{AvroRecordCodec, TupleCodec, AvroEncoder}
-import geotrellis.spark.io.avro.KeyCodecs._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import geotrellis.spark.utils._
-import geotrellis.spark.io.accumulo._
 
-
-import org.apache.spark.SparkContext
-import org.apache.hadoop.io.Text
-import org.apache.accumulo.core.security.Authorizations
-import org.apache.accumulo.core.data.{Range => ARange, Value}
-
-import scala.collection.JavaConversions._
-
+import org.apache.accumulo.core.data.Value
 
 abstract class TileReader[K: AvroRecordCodec] {
 

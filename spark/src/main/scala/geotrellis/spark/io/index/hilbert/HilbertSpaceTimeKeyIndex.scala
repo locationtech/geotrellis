@@ -5,7 +5,6 @@ import geotrellis.spark.io.index.KeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
-import com.google.uzaygezen.core.BitVector
 import com.google.uzaygezen.core.BitVectorFactories
 import com.google.uzaygezen.core.BacktrackingQueryBuilder
 import com.google.uzaygezen.core.RegionInspector
@@ -17,12 +16,9 @@ import com.google.uzaygezen.core.ranges.LongRange
 import com.google.uzaygezen.core.ranges.LongRangeHome
 
 import com.google.common.base.Functions
-import com.google.common.collect.ImmutableList
 
 import scala.collection.JavaConversions._
 import spire.syntax.cfor._
-
-import com.github.nscala_time.time.Imports._
 
 object HilbertSpaceTimeKeyIndex {
   def apply(minKey: SpaceTimeKey, maxKey: SpaceTimeKey, spatialResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =

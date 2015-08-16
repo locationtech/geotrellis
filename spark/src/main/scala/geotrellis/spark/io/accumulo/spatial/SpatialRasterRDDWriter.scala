@@ -8,25 +8,10 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
 import geotrellis.raster._
 
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.Job
-
-import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
-import org.apache.accumulo.core.client.mapreduce.AccumuloOutputFormat
-import org.apache.accumulo.core.client.BatchWriterConfig
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
+import org.apache.accumulo.core.data.{Key, Value}
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable
-
-import spire.syntax.cfor._
-
-import scala.collection.JavaConversions._
-
 object SpatialRasterRDDWriter extends RasterRDDWriter[SpatialKey] {
-  import geotrellis.spark.io.accumulo.stringToText
 
   lazy val writeCodec = KryoWrapper(TupleCodec[SpatialKey, Tile])
 

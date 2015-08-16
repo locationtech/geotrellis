@@ -2,17 +2,15 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro.{TupleCodec, AvroEncoder}
-import geotrellis.spark.io.avro.KeyCodecs._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.utils._
-import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.spark.SparkContext
 import org.apache.hadoop.mapreduce.Job
-import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
+import org.apache.accumulo.core.data.{Key, Value}
 
 import scala.reflect.ClassTag
 
