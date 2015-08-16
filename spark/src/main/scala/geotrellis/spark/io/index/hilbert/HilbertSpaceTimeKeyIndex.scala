@@ -45,7 +45,7 @@ class HilbertSpaceTimeKeyIndex(
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
  
-  val chc = {
+  lazy val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
         List(
