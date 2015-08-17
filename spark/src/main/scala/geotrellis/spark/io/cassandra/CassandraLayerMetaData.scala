@@ -1,25 +1,9 @@
 package geotrellis.spark.io.cassandra
 
-import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.io.json._
+import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-
 import spray.json._
-
-import com.datastax.driver.core.DataType.text
-import com.datastax.driver.core.DataType.cint
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
-import com.datastax.driver.core.Session
-
-import org.apache.spark.Logging
-
-import DefaultJsonProtocol._
-
-import scala.collection.mutable
 
 case class CassandraLayerMetaData(
   keyClass: String,

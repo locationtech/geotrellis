@@ -1,22 +1,19 @@
 package geotrellis.spark.io.cassandra
 
+import com.github.nscala_time.time.Imports._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.tiling._
+import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
+import geotrellis.spark.tiling._
 import geotrellis.vector._
-
-import org.apache.spark._
-import org.scalatest._
 import org.apache.hadoop.fs.Path
-
-import com.github.nscala_time.time.Imports._
+import org.scalatest._
 
 class CassandraRasterCatalogSpec extends FunSpec
     with RasterRDDMatchers
@@ -64,6 +61,7 @@ class CassandraRasterCatalogSpec extends FunSpec
             val tile = getTile(key)
             (tile.cols, tile.rows) should be ((512, 512))
           }
+
           it("should load out saved tiles, but only for the right zoom") {
             intercept[LayerNotFoundError] {
               catalog.query[SpatialKey](LayerId("ones", level.zoom + 1)).toRDD.count()

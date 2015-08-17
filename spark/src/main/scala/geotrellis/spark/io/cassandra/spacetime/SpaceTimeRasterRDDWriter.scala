@@ -1,22 +1,15 @@
 package geotrellis.spark.io.cassandra.spacetime
 
-import java.nio.ByteBuffer
-
+import com.datastax.driver.core.DataType.{blob, cint, text}
+import com.datastax.driver.core.schemabuilder.SchemaBuilder
+import com.datastax.spark.connector._
+import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.io.avro.KeyCodecs._
+import geotrellis.spark.io.avro.{AvroEncoder, TupleCodec}
 import geotrellis.spark.io.cassandra._
 import geotrellis.spark.io.index._
 import geotrellis.spark.utils._
-import geotrellis.raster._
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-
-import com.datastax.spark.connector.rdd.CassandraRDD
-import com.datastax.spark.connector._
-
-import com.datastax.driver.core.DataType.{text, cint, blob}
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
 
@@ -38,15 +31,20 @@ object SpaceTimeRasterRDDWriter extends RasterRDDWriter[SpaceTimeKey] {
     kIndex: KeyIndex[SpaceTimeKey],
     tileTable: String)(implicit session: CassandraSession): Unit = {
 
+    lazy val writeCodec = KryoWrapper(TupleCodec[SpaceTimeKey, Tile])
     val closureKeyIndex = kIndex
+
     raster
-      .map(KryoClosure { case (key, tile) =>
-         val value = KryoSerializer.serialize[(SpaceTimeKey, Array[Byte])]( (key, tile.toBytes) )
- 
-         val indexer = closureKeyIndex.toIndex(key).toString
-         (indexer.reverse, layerId.zoom, indexer, timeText(key), layerId.name, value) 
-      })
-    .saveToCassandra(session.keySpace, tileTable,
-                     SomeColumns("reverse_index", "zoom", "indexer", "date", "name", "value")) 
+      .map(
+        KryoClosure {
+          case (key, tile) =>
+
+            val value = AvroEncoder.toBinary(key, tile)(writeCodec.value)
+            val indexer = closureKeyIndex.toIndex(key).toString
+
+            (indexer.reverse, layerId.zoom, indexer, timeText(key), layerId.name, value)
+        }
+      )
+      .saveToCassandra(session.keySpace, tileTable,SomeColumns("reverse_index", "zoom", "indexer", "date", "name", "value"))
   }
 }
