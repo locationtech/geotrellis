@@ -16,7 +16,7 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster.{DoubleArrayTile, RasterExtent, Tile}
+import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.vector.interpolation.Kriging
 import spire.syntax.cfor._
@@ -28,12 +28,11 @@ object Interpolation {
    * @param tile        Tile to be interpolated
    * @return            Tile set with the interpolated values
    */
-  def apply(tile: Tile, extent: Extent)(predictor: (Double, Double) => Double): Tile = {
-    val rasterExtent = RasterExtent(tile, extent)
-    val result = DoubleArrayTile.empty(tile.cols, tile.rows)
+  def apply(rasterExtent: RasterExtent)(predictor: (Double, Double) => Double): Tile = {
+    val result = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
 
-    cfor(0)(_ < tile.cols, _ + 1) { col: Int =>
-      cfor(0)(_ < tile.rows, _ + 1) { row: Int =>
+    cfor(0)(_ < result.cols, _ + 1) { col: Int =>
+      cfor(0)(_ < result.rows, _ + 1) { row: Int =>
         val (x, y) = rasterExtent.gridToMap(col, row)
         val prediction: Double = predictor(x, y)
         result.setDouble(col, row, prediction)
@@ -43,6 +42,6 @@ object Interpolation {
     result
   }
 
-  def kriging(tile: Tile, extent: Extent)(kriging: Kriging): Tile =
-    apply(tile, extent) { (x: Double, y: Double) => kriging(x, y)._1 }
+  def kriging(rasterExtent: RasterExtent)(kriging: Kriging): Tile =
+    apply(rasterExtent) { (x: Double, y: Double) => kriging(x, y)._1 }
 }

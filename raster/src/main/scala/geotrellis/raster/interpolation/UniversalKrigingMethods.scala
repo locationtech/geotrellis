@@ -16,37 +16,37 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster.Tile
-import geotrellis.vector.{PointFeature, Extent}
+import geotrellis.raster._
+import geotrellis.vector._
 import geotrellis.vector.interpolation.{ModelType, UniversalKriging}
 
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a UniversalKriging
   */
 trait UniversalKrigingMethods {
-  val tile: Tile
+  val points: Array[PointFeature[Double]]
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]]) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points))
+  def universalKriging(rasterExtent: RasterExtent) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, bandwidth))
+  def universalKriging(rasterExtent: RasterExtent, bandwidth: Double) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, bandwidth))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], model: ModelType) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, model))
+  def universalKriging(rasterExtent: RasterExtent, model: ModelType) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, model))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, bandwidth, model))
+  def universalKriging(rasterExtent: RasterExtent, bandwidth: Double, model: ModelType) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, bandwidth, model))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double]) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, attrFunc))
+  def universalKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double]) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, attrFunc))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, attrFunc, bandwidth))
+  def universalKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double], bandwidth: Double) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, attrFunc, bandwidth))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], model: ModelType) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, attrFunc, model))
+  def universalKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double], model: ModelType) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, attrFunc, model))
 
-  def universalKriging(extent: Extent, points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType) =
-    Interpolation.kriging(tile, extent)(UniversalKriging(points, attrFunc, bandwidth, model))
+  def universalKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType) =
+    Interpolation.kriging(rasterExtent)(UniversalKriging(points, attrFunc, bandwidth, model))
 }

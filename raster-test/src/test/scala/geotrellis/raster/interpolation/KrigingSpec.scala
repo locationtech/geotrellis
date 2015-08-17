@@ -44,15 +44,13 @@ class KrigingSpec extends FunSpec
 
     it("should return correct interpolated Tile") {
       val extent: Extent = Extent(620000.0, 550000.0, 670000.0, 590000.0)
-      val (cols, rows) = (25, 25)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
+      val rasterExtent = RasterExtent(extent, 25, 25)
       val krigingVal: Tile =
-        tileTest.simpleKriging(extent, points, 5000, sv)
+        points.simpleKriging(rasterExtent, 5000, sv)
       val E = 1e-4
-      val rasterExtent = RasterExtent(tileTest, extent)
 
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
+      cfor(0)(_ < rasterExtent.cols, _ + 1) { col =>
+        cfor(0)(_ < rasterExtent.rows, _ + 1) { row =>
           val (x, y) = rasterExtent.gridToMap(col, row)
           if (x == 659000 && y == 586000)
             krigingVal.getDouble(col, row) should be(3.0488 +- E)
@@ -72,15 +70,13 @@ class KrigingSpec extends FunSpec
 
     it("should return correct interpolated Tile") {
       val extent: Extent = Extent(620000.0, 550000.0, 670000.0, 590000.0)
-      val (cols, rows) = (25, 25)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
+      val rasterExtent = RasterExtent(extent, 25, 25)
       val krigingVal: Tile =
-        tileTest.ordinaryKriging(extent, points, 5000, sv)
+        points.ordinaryKriging(rasterExtent, 5000, sv)
       val E = 1e-4
-      val rasterExtent = RasterExtent(tileTest, extent)
 
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
+      cfor(0)(_ < rasterExtent.cols, _ + 1) { col =>
+        cfor(0)(_ < rasterExtent.rows, _ + 1) { row =>
           val (x, y) = rasterExtent.gridToMap(col, row)
           if (x == 659000 && y == 586000)
             krigingVal.getDouble(col, row) should be(3.0461 +- E)
@@ -124,15 +120,14 @@ class KrigingSpec extends FunSpec
 
     it("should return correct interpolated Tile") {
       val extent: Extent = Extent(137.5, 187.5, 912.5, 662.5)
-      val (cols, rows) = (31, 19)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
+      val rasterExtent = RasterExtent(extent, 31, 19)
       val krigingVal: Tile =
-        tileTest.universalKriging(extent, points, attrFunc, 50, Spherical)
+        points.universalKriging(rasterExtent, attrFunc, 50, Spherical)
       val E = 1e-4
 
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
-          krigingVal.getDouble(col, row) should be(veniceData(col * tileTest.rows + row).data +- E)
+      cfor(0)(_ < rasterExtent.cols, _ + 1) { col =>
+        cfor(0)(_ < rasterExtent.rows, _ + 1) { row =>
+          krigingVal.getDouble(col, row) should be(veniceData(col * rasterExtent.rows + row).data +- E)
         }
       }
     }
@@ -175,15 +170,13 @@ class KrigingSpec extends FunSpec
     it("should return correct interpolated Tile") {
       val E: Double = 1.4
       val extent: Extent = Extent(137.5, 187.5, 912.5, 662.5)
-      val (cols, rows) = (31, 19)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
+      val rasterExtent = RasterExtent(extent, 31, 19)
       val krigingVal: Tile =
-        tileTest.geoKriging(extent, points, attrFunc, 50, Spherical)
-      val rasterExtent = RasterExtent(tileTest, extent)
+        points.geoKriging(rasterExtent, attrFunc, 50, Spherical)
 
       var j = 0
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
+      cfor(0)(_ < rasterExtent.cols, _ + 1) { col =>
+        cfor(0)(_ < rasterExtent.rows, _ + 1) { row =>
           val (x, y) = rasterExtent.gridToMap(col, row)
           if (j < testingPointsGeo.length && x == testingPointsGeo(j).x && y == testingPointsGeo(j).y) {
             krigingVal.getDouble(col, row) should be(-3.0 +- E)
