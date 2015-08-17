@@ -14,13 +14,13 @@
 * limitations under the License.
 */
 
-package geotrellis.raster
+package geotrellis.vector
 
 package object interpolation {
 
-  implicit class InterpolationExtensions(val tile: Tile)
-    extends SimpleKrigingMethods
-    with OrdinaryKrigingMethods
-    with UniversalKrigingMethods
-    with GeoKrigingMethods
+  implicit class InterpolationVectorExtensions(val pointArr: Array[Point])
+    extends SimpleKrigingVectorMethods
+    with OrdinaryKrigingVectorMethods
+    with UniversalKrigingVectorMethods
+    with GeoKrigingVectorMethods
 }

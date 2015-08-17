@@ -14,20 +14,15 @@
 * limitations under the License.
 */
 
-package geotrellis.raster.interpolation
+package geotrellis.vector.interpolation
 
-import geotrellis.raster.{DoubleArrayTile, RasterExtent, Tile}
-import geotrellis.vector.{PointFeature, Extent}
+import geotrellis.vector.PointFeature
 import geotrellis.vector.Point
-import geotrellis.vector.interpolation.Semivariogram
-
 import org.apache.commons.math3.linear._
-
 import spire.syntax.cfor._
-
 import scala.collection.mutable
 
-trait Kriging extends Function2[Double, Double, (Double Double)] {
+trait Kriging extends Function2[Double, Double, (Double, Double)] {
 
   private def distance(p1: Point, p2: Point): Double =
     math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))
@@ -98,7 +93,7 @@ trait Kriging extends Function2[Double, Double, (Double Double)] {
    * @return            Tuples of (krigedValues, krigedVariance) for each of the kriged points
    */
   def predict(pointMatrix: Array[Point]): Array[(Double, Double)] = {
-    val krigingPrediction: Array[(Double, Double)] = Array.ofDim[(Double, Double)](pointMatrix.length)
+    val krigingPrediction = Array.ofDim[(Double, Double)](pointMatrix.length)
     val predictor = createPredictor(pointMatrix.length)
 
     cfor(0)(_ < pointMatrix.length, _ + 1) { i: Int =>

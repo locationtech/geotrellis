@@ -195,7 +195,6 @@ object LinearEmpiricalVariogram {
         // the maximum distance between two points in the field
         val dmax: Double = distancePairs.map{ case(d, _) => d }.max
         // the lower limit of the largest bucket
-        val E = 1e-4
         val lowerLimit: Double =
           (Math.floor(dmax / lag).toInt * lag) + 1
 

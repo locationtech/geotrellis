@@ -28,7 +28,7 @@ object NonLinearSemivariogram {
       else
         a + (s - a) * (1 - math.exp(- math.pow(h, 2) / math.pow(r, 2)))
     }
-    /*                      | 0                                 . h = 0
+    /*                      | 0                                 , h = 0
      *  gamma(h; r, s, a) = |
      *                      | a + (s - a) {1 - e^(-h^2 / r^2)}  , h > 0
      */
@@ -132,7 +132,7 @@ object NonLinearSemivariogram {
       else
         a + (s - a) * ((3 * h / (2 * r)) - (math.pow(h, 3) / (2 * math.pow(r, 3)) ))
     }
-    /*                      | 0                             . h = 0
+    /*                      | 0                             , h = 0
      *                      |             | 3h      h^3   |
      *  gamma(h; r, s, a) = | a + (s - a) |---- - ------- | , 0 < h <= r
      *                      |             | 2r     2r^3   |
@@ -185,7 +185,7 @@ object NonLinearSemivariogram {
       else
         a + (s - a) * (1 - math.exp(- 3 * h / r))
     }
-    /*                      | 0                                  . h = 0
+    /*                      | 0                                  , h = 0
      *  gamma(h; r, s, a) = |
      *                      | a + (s - a) {1 - e^(-3 * h / r)}   , h > 0
      */
@@ -232,7 +232,7 @@ object NonLinearSemivariogram {
       else
         a + (s - a) * (1 - w * math.sin(h / w) / h)
     }
-    /*                      | 0                                 . h = 0
+    /*                      | 0                                 , h = 0
      *                      |
      *  gamma(h; w, s, a) = |             |       sin(h / w)  |
      *                      | a + (s - a) |1 - w ------------ | , h > 0

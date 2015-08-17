@@ -14,10 +14,8 @@
 * limitations under the License.
 */
 
-package geotrellis.raster.interpolation
+package geotrellis.vector.interpolation
 
-import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
-import geotrellis.vector.interpolation._
 import geotrellis.vector.io.json._
 import geotrellis.testkit._
 import geotrellis.vector._
@@ -25,8 +23,8 @@ import spire.syntax.cfor._
 import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
-class KrigingSpec extends FunSpec
-                     with TestEngine {
+class KrigingVectorSpec extends FunSpec
+                           with TestEngine {
   def generateLogPoints(pointsData: Array[PointFeature[Double]]): Array[PointFeature[Double]] = {
     (1 to pointsData.length)
       .map { i => PointFeature(pointsData(i - 1).geom, math.log(pointsData(i - 1).data)) }
@@ -42,21 +40,17 @@ class KrigingSpec extends FunSpec
       generateLogPoints(collection.getAllPointFeatures[Double]().toArray)
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
 
-    it("should return correct interpolated Tile") {
-      val extent: Extent = Extent(620000.0, 550000.0, 670000.0, 590000.0)
-      val (cols, rows) = (25, 25)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
-      val krigingVal: Tile =
-        tileTest.simpleKriging(extent, points, 5000, sv)
+    it("should return correct prediction vector values") {
+      val testPointFeatures = Array(PointFeature(Point(659000, 586000), 3.0488))
+      val testPoints: Array[Point] =
+        Array.tabulate(testPointFeatures.length)
+        { i => testPointFeatures(i).geom }
+      val krigingVal: Array[(Double, Double)] =
+        testPoints.simpleKriging(points, 5000, sv)
       val E = 1e-4
-      val rasterExtent = RasterExtent(tileTest, extent)
 
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
-          val (x, y) = rasterExtent.gridToMap(col, row)
-          if (x == 659000 && y == 586000)
-            krigingVal.getDouble(col, row) should be(3.0488 +- E)
-        }
+      cfor(0)(_ < testPoints.length, _ + 1) { i =>
+        krigingVal(i)._1 should be(testPointFeatures(i).data +- E)
       }
     }
   }
@@ -70,21 +64,19 @@ class KrigingSpec extends FunSpec
       generateLogPoints(collection.getAllPointFeatures[Double]().toArray)
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
 
-    it("should return correct interpolated Tile") {
-      val extent: Extent = Extent(620000.0, 550000.0, 670000.0, 590000.0)
-      val (cols, rows) = (25, 25)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
-      val krigingVal: Tile =
-        tileTest.ordinaryKriging(extent, points, 5000, sv)
+    it("should return correct prediction vector values") {
+      val testPointFeatures = Seq {
+        PointFeature(Point(659000, 586000), 3.0461)
+      }
+      val testPoints: Array[Point] =
+        Array.tabulate(testPointFeatures.length)
+        { i => testPointFeatures(i).geom }
+      val krigingVal: Array[(Double, Double)] =
+        testPoints.ordinaryKriging(points, 5000, sv)
       val E = 1e-4
-      val rasterExtent = RasterExtent(tileTest, extent)
 
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
-          val (x, y) = rasterExtent.gridToMap(col, row)
-          if (x == 659000 && y == 586000)
-            krigingVal.getDouble(col, row) should be(3.0461 +- E)
-        }
+      cfor(0)(_ < testPoints.length, _ + 1) { i =>
+        krigingVal(i)._1 should be(testPointFeatures(i).data +- E)
       }
     }
   }
@@ -122,18 +114,18 @@ class KrigingSpec extends FunSpec
     f.close()
     val veniceData = collection.getAllPointFeatures[Double]().toArray
 
-    it("should return correct interpolated Tile") {
-      val extent: Extent = Extent(137.5, 187.5, 912.5, 662.5)
-      val (cols, rows) = (31, 19)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
-      val krigingVal: Tile =
-        tileTest.universalKriging(extent, points, attrFunc, 50, Spherical)
-      val E = 1e-4
+    it("should return correct prediction vector values") {
+      val s1: Range = 150 until 901 by 25
+      val s2: Range = 650 until 199 by -25
+      val location: Array[Point] =
+        (for {x <- s1; y <- s2} yield Point(x, y))
+          .toArray
+      val E: Double = 0.0001
+      val krigingVal: Array[(Double, Double)] =
+        location.universalKriging(points, attrFunc, 50, Spherical)
 
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
-          krigingVal.getDouble(col, row) should be(veniceData(col * tileTest.rows + row).data +- E)
-        }
+      cfor(0)(_ < krigingVal.length, _ + 1) { i =>
+        krigingVal(i)._1 should be(veniceData(i).data +- E)
       }
     }
   }
@@ -172,23 +164,21 @@ class KrigingSpec extends FunSpec
       Point(500, 450), Point(500, 425), Point(500, 400), Point(525, 500), Point(525, 475), Point(550, 400),
       Point(550, 375), Point(575, 400), Point(575, 375))
 
-    it("should return correct interpolated Tile") {
+    it("should return correct prediction vector values") {
+      val s1: Range = 150 until 901 by 25
+      val s2: Range = 650 until 199 by -25
+      val location: Array[Point] =
+        (for {x <- s1; y <- s2} yield Point(x, y))
+          .toArray
       val E: Double = 1.4
-      val extent: Extent = Extent(137.5, 187.5, 912.5, 662.5)
-      val (cols, rows) = (31, 19)
-      val tileTest = DoubleArrayTile.empty(cols, rows)
-      val krigingVal: Tile =
-        tileTest.geoKriging(extent, points, attrFunc, 50, Spherical)
-      val rasterExtent = RasterExtent(tileTest, extent)
+      val krigingValInsideVenice: Array[(Double, Double)] =
+        location.geoKriging(points, attrFunc, 50, Spherical)
 
       var j = 0
-      cfor(0)(_ < tileTest.cols, _ + 1) { col =>
-        cfor(0)(_ < tileTest.rows, _ + 1) { row =>
-          val (x, y) = rasterExtent.gridToMap(col, row)
-          if (j < testingPointsGeo.length && x == testingPointsGeo(j).x && y == testingPointsGeo(j).y) {
-            krigingVal.getDouble(col, row) should be(-3.0 +- E)
-            j = j + 1
-          }
+      cfor(0)(i => i < location.length && j < testingPointsGeo.length, _ + 1) { i =>
+        if (location(i).geom == testingPointsGeo(j)) {
+          krigingValInsideVenice(i)._1 should be(-3.0 +- E)
+          j = j + 1
         }
       }
     }

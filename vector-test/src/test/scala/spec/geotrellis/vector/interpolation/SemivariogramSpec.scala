@@ -194,7 +194,7 @@ class SemivariogramSpec extends FunSpec
       val empiricalSemivariogram =
         new EmpiricalVariogram(
           distances = Array(1.0, 3.0, 9.0),
-          variance = Array(18.31928994121732, 20.823160381032732, 39.767304522885766))
+          variance = Array(18.319289, 20.823160, 39.767304))
 
       val semivariogramGaussian = Semivariogram.fit(empiricalSemivariogram, Gaussian)
       semivariogramGaussian(0) should be(sv(0) +- 0.0001)
@@ -208,7 +208,7 @@ class SemivariogramSpec extends FunSpec
       val empiricalSemivariogram =
         new EmpiricalVariogram(
           distances = Array(1.0, 3.0, 9.0),
-          variance = Array(18.31928994121732, 20.823160381032732, 39.767304522885766))
+          variance = Array(18.319289, 20.823160, 39.767304))
 
       val semivariogramGaussian = Semivariogram.fit(empiricalSemivariogram, Gaussian, start)
       semivariogramGaussian(0) should be(sv(0) +- 0.0001)
@@ -221,7 +221,7 @@ class SemivariogramSpec extends FunSpec
       val empiricalSemivariogram =
         new EmpiricalVariogram(
           distances = Array(1.0, 2.0, 8.0, 9.0),
-          variance  = Array(28.29289707966598, 31.003251576288495, 45.663667129210694, 47.86063778516738))
+          variance  = Array(28.292897, 31.003251, 45.663667, 47.860637))
 
       val semivariogramExponential = Semivariogram.fit(empiricalSemivariogram, Exponential)
       semivariogramExponential(0) should be (sv(0) +- 0.0001)
@@ -235,7 +235,7 @@ class SemivariogramSpec extends FunSpec
       val empiricalSemivariogram =
         new EmpiricalVariogram(
           distances = Array(1.0, 2.0, 8.0, 9.0),
-          variance  = Array(28.29289707966598, 31.003251576288495, 45.663667129210694, 47.86063778516738))
+          variance  = Array(28.292897, 31.003251, 45.663667, 47.860637))
 
       val semivariogramExponential = Semivariogram.fit(empiricalSemivariogram, Exponential, start)
       semivariogramExponential(0) should be (sv(0) +- 0.0001)
@@ -276,7 +276,7 @@ class SemivariogramSpec extends FunSpec
       val empiricalSemivariogram =
         new EmpiricalVariogram(
           distances = Array(1.0, 2.0, 9.0, 10.0, 11.0),
-          variance  = Array(9.271764348975337, 10.534640218523169, 18.26847664622735, 19.044740230185127, 19.657832500414067))
+          variance  = Array(9.271764, 10.534640, 18.268476, 19.044740, 19.657832))
 
       val semivariogramCircular = Semivariogram.fit(empiricalSemivariogram, Circular, start)
       semivariogramCircular(0) should be (sv(0) +- 0.0001)

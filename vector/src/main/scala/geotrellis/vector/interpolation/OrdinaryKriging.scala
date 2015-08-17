@@ -14,15 +14,42 @@
 * limitations under the License.
 */
 
-package geotrellis.raster.interpolation
+package geotrellis.vector.interpolation
 
 import geotrellis.vector.PointFeature
 import geotrellis.vector.Point
-import geotrellis.vector.interpolation.Semivariogram
-
 import org.apache.commons.math3.linear._
-
 import spire.syntax.cfor._
+
+object OrdinaryKriging {
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double, sv: Semivariogram): Kriging = {
+    new OrdinaryKriging(points, bandwidth, sv)
+  }
+
+  def apply(points: Array[PointFeature[Double]], sv: Semivariogram): Kriging = {
+    new OrdinaryKriging(points, Double.MaxValue, sv)
+  }
+
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double): Kriging = {
+    val empiricalSemivariogram =
+      new EmpiricalVariogram(
+        Array.tabulate(points.length){ i => points(i).geom.x},
+        Array.tabulate(points.length){ i => points(i).geom.y}
+      )
+    val semivariogramSpherical = Semivariogram.fit(empiricalSemivariogram, Spherical)
+    new OrdinaryKriging(points, bandwidth, semivariogramSpherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]]): Kriging = {
+    val empiricalSemivariogram =
+      new EmpiricalVariogram(
+        Array.tabulate(points.length){ i => points(i).geom.x},
+        Array.tabulate(points.length){ i => points(i).geom.y}
+      )
+    val semivariogramSpherical = Semivariogram.fit(empiricalSemivariogram, Spherical)
+    new OrdinaryKriging(points, Double.MaxValue, semivariogramSpherical)
+  }
+}
 
 /**
  * @param points          Sample points for Ordinary Kriging model training

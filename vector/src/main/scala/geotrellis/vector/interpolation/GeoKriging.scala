@@ -14,15 +14,58 @@
 * limitations under the License.
 */
 
-package geotrellis.raster.interpolation
+package geotrellis.vector.interpolation
 
 import geotrellis.vector.PointFeature
 import geotrellis.vector.Point
-import geotrellis.vector.interpolation.{NonLinearSemivariogram, ModelType, Semivariogram}
-
 import org.apache.commons.math3.linear._
-
 import spire.syntax.cfor._
+
+object GeoKriging {
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType): Kriging = {
+    new GeoKriging(points, attrFunc, bandwidth, model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], model: ModelType): Kriging = {
+    new GeoKriging(points, attrFunc, Double.MaxValue, model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double): Kriging = {
+    new GeoKriging(points, attrFunc, bandwidth, Spherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double]): Kriging = {
+    new GeoKriging(points, attrFunc, Double.MaxValue, Spherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType): Kriging = {
+    new GeoKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      bandwidth,
+      model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], model: ModelType): Kriging = {
+    new GeoKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      Double.MaxValue,
+      model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double): Kriging = {
+    new GeoKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      bandwidth,
+      Spherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]]): Kriging = {
+    new GeoKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      Double.MaxValue,
+      Spherical)
+  }
+}
 
 /**
  * @param points          Sample points for Geostatistical Kriging model training
@@ -34,12 +77,6 @@ class GeoKriging(points: Array[PointFeature[Double]],
                  attrFunc: (Double, Double) => Array[Double],
                  bandwidth: Double,
                  model: ModelType) extends Kriging {
-  /**
-   * Overloaded constructor, for default attribute matrix generation
-   */
-  def this(points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType) {
-    this(points, (x, y) => Array(x, y, x * x, x * y, y * y), bandwidth, model)
-  }
 
   /**
    * Universal Kriging training with the sample points

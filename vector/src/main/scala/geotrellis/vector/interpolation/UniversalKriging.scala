@@ -14,15 +14,58 @@
 * limitations under the License.
 */
 
-package geotrellis.raster.interpolation
+package geotrellis.vector.interpolation
 
 import geotrellis.vector.PointFeature
 import geotrellis.vector.Point
-import geotrellis.vector.interpolation.{NonLinearSemivariogram, ModelType, Semivariogram}
-
 import org.apache.commons.math3.linear._
-
 import spire.syntax.cfor._
+
+object UniversalKriging {
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType): Kriging = {
+    new UniversalKriging(points, attrFunc, bandwidth, model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], model: ModelType): Kriging = {
+    new UniversalKriging(points, attrFunc, Double.MaxValue, model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double): Kriging = {
+    new UniversalKriging(points, attrFunc, bandwidth, Spherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double]): Kriging = {
+    new UniversalKriging(points, attrFunc, Double.MaxValue, Spherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType): Kriging = {
+    new UniversalKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      bandwidth,
+      model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], model: ModelType): Kriging = {
+    new UniversalKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      Double.MaxValue,
+      model)
+  }
+
+  def apply(points: Array[PointFeature[Double]], bandwidth: Double): Kriging = {
+    new UniversalKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      bandwidth,
+      Spherical)
+  }
+
+  def apply(points: Array[PointFeature[Double]]): Kriging = {
+    new UniversalKriging(points,
+      (x, y) => Array(x, y, x * x, x * y, y * y),
+      Double.MaxValue,
+      Spherical)
+  }
+}
 
 /**
  * @param points          Sample points for Universal Kriging model training
