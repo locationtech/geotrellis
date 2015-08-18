@@ -7,6 +7,9 @@ import geotrellis.spark.io.json._
 import spray.json._
 import DefaultJsonProtocol._
 
+import scala.collection.JavaConversions._
+import scala.reflect.ClassTag
+
 import com.datastax.driver.core.DataType.text
 import com.datastax.driver.core.querybuilder.{Select, QueryBuilder}
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
@@ -15,12 +18,6 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.{ResultSet, Session}
 
 import org.apache.spark.Logging
-import scala.collection.JavaConversions._
-
-object CassandraAttributeStore {
-  def apply(attributeTable: String)(implicit session: CassandraSession): CassandraAttributeStore =
-    new CassandraAttributeStore(attributeTable)
-}
 
 class CassandraAttributeStore(val attributeTable: String)(implicit session: CassandraSession) extends AttributeStore with Logging {
   type ReadableWritable[T] = RootJsonFormat[T]
@@ -52,7 +49,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
     session.execute(query)
   }
 
-  def read[T: RootJsonFormat](layerId: LayerId, attributeName: String): T = {
+  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T = {
     val query =
       QueryBuilder.select.column("value")
         .from(session.keySpace, attributeTable)
@@ -72,7 +69,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
     }
   }
 
-  def readAll[T: RootJsonFormat](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: ReadableWritable](attributeName: String): Map[LayerId,T] = {
 
     val query =
       QueryBuilder.select.column("value")
@@ -88,7 +85,7 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
       .toMap
   }
 
-  def write[T: RootJsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit = {
     val update =
       QueryBuilder.update(session.keySpace, attributeTable)
         .`with`(set("value", (layerId, value).toJson.compactPrint))
@@ -97,4 +94,9 @@ class CassandraAttributeStore(val attributeTable: String)(implicit session: Cass
 
     val results = session.execute(update)
   }
+}
+
+object CassandraAttributeStore {
+  def apply(attributeTable: String)(implicit session: CassandraSession): CassandraAttributeStore =
+    new CassandraAttributeStore(attributeTable)
 }
