@@ -7,26 +7,30 @@ import geotrellis.raster.io.geotiff.SingleBandGeoTiff
 import java.io.File
 import spire.syntax.cfor._
 
-object Imagery {
-
-  def cloudlessValue(images: Array[Tile], col: Int, row: Int, threshold: Int): Int = {
-    var sum = 0
-    var count = 0
-    cfor(0)(_ < images.length, _ + 1) { i =>
-      val v = images(i).get(col, row)
-      if(isData(v) && v < threshold) {
-        sum += v
-        count += 1
-      }
-    }
-    sum/count
-  }
-
+object CloudRemoval {
   def cloudRemovalSingleBand(images: Array[Tile]) : Tile = {
-    val dummyTile = images(0)
     val threshold = 10000
 
-    dummyTile.map((col, row, x) => cloudlessValue(images, col, row, threshold))
+    val headImage = images(0)
+    val result = ArrayTile.empty(headImage.cellType, headImage.cols, headImage.rows)
+
+    cfor(0)(_ < result.rows, _ + 1) { row =>
+      cfor(0)(_ < result.cols, _ + 1) { col =>
+        var sum = 0
+        var count = 0
+        cfor(0)(_ < images.length, _ + 1) { i =>
+          val v = images(i).get(col, row)
+          if(isData(v) && v < threshold) {
+            sum += v
+            count += 1
+          }
+        }
+        
+        result.set(col, row, sum / count)
+      }
+    }
+
+    result
   }
 
   def cloudRemovalMultiBand(images: Array[MultiBandTile]): MultiBandTile = {
