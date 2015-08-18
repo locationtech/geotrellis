@@ -161,5 +161,61 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     polygonsBack should be (Seq(p1, p2))
   }
 
-}
+  it should "extract geometries in GeoJson from different Features, Geometries or Collections" in  {
 
+    case class SomeData(name: String, value: Double)
+    implicit val someDataFormat = jsonFormat2(SomeData)
+
+    val point1 = Point(0,0)
+    val line1 = Line(point1, Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+    val poly1: Polygon = Polygon(line1)
+
+    val pointfeature1 = PointFeature(point1, SomeData("Bob", 32.2))
+    val linefeature2 = LineFeature(line1, SomeData("Alice", 31.2))
+
+    val jsonGeom = poly1.toGeoJson
+    val jsonGeomCol = Seq(point1, line1, poly1).toGeoJson
+    val jsonFeature = pointfeature1.toGeoJson
+    val jsonFeatCol = Seq(pointfeature1, linefeature2).toGeoJson
+
+    val polygonsBack = jsonGeomCol.parseGeoJson[GeometryCollection].polygons
+    polygonsBack.toSeq should be (Seq(poly1))
+
+    val t1 = jsonGeom.extractGeometries[Polygon]
+    t1 should be (Seq(poly1))
+
+    val t2 = jsonGeom.extractGeometries[Point]
+    t2 should be (Seq())
+
+    val t3 = jsonGeomCol.extractGeometries[Polygon]
+    t3 should be (Seq(poly1))
+
+    val t4 = jsonGeomCol.extractGeometries[MultiPoint]
+    t4 should be (Seq())
+
+    val t5 = jsonFeature.extractGeometries[Point]
+    t5 should be (Seq(point1))
+
+    val t6 = jsonFeature.extractGeometries[Polygon]
+    t6 should be (Seq())
+
+    val t7 = jsonFeatCol.extractGeometries[Point]
+    t7 should be (Seq(point1))
+
+    val t8 = jsonFeatCol.extractGeometries[Polygon]
+    t8 should be (Seq())
+
+    val t9 = jsonFeature.extractFeatures[PolygonFeature[SomeData]]
+    t9 should be (Seq())
+
+    val t10 = jsonFeature.extractFeatures[PointFeature[SomeData]]
+    t10 should be (Seq(pointfeature1))
+
+    val t11 = jsonFeature.extractFeatures[LineFeature[SomeData]]
+    t11 should be (Seq())
+
+    val t12 = jsonFeatCol.extractFeatures[LineFeature[SomeData]]
+    t12 should be (Seq(linefeature2))
+
+  }
+}

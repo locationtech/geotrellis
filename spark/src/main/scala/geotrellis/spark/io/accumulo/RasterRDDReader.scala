@@ -1,19 +1,20 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
+import geotrellis.spark.io.avro.{TupleCodec, AvroEncoder}
+import geotrellis.spark.io.avro._
 import geotrellis.spark.utils._
-import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.spark.SparkContext
 import org.apache.hadoop.mapreduce.Job
-import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
+import org.apache.accumulo.core.data.{Key, Value}
 
 import scala.reflect.ClassTag
 
-abstract class RasterRDDReader[K: ClassTag] {
+abstract class RasterRDDReader[K: AvroRecordCodec: ClassTag] {
 
   def getCube(
     job: Job,
@@ -31,7 +32,8 @@ abstract class RasterRDDReader[K: ClassTag] {
   )(implicit sc: SparkContext): RasterRDD[K] = {
     val AccumuloLayerMetaData(_, rasterMetaData, tileTable) = metadata
 
-    val tileRdd = 
+    val readCodec = KryoWrapper(TupleCodec[K, Tile])
+    val tileRdd =
       queryKeyBounds
       .map{ subKeyBound => 
         val job = Job.getInstance(sc.hadoopConfiguration)  
@@ -40,16 +42,8 @@ abstract class RasterRDDReader[K: ClassTag] {
         getCube(job, layerId, subKeyBound, index)        
       }
       .reduce(_ union _)
-      .map { case (akey, value) =>
-        val (key, tileBytes) = KryoSerializer.deserialize[(K, Array[Byte])](value.get)
-        val tile =
-          ArrayTile.fromBytes(
-            tileBytes,
-            rasterMetaData.cellType,
-            rasterMetaData.tileLayout.tileCols,
-            rasterMetaData.tileLayout.tileRows)
-        (key, tile: Tile)
-
+      .map { case (_, value) =>
+        AvroEncoder.fromBinary(value.get)(readCodec.value)
       }
 
     new RasterRDD(tileRdd, rasterMetaData)
