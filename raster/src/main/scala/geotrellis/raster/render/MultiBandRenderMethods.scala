@@ -30,9 +30,9 @@ trait MultiBandRenderMethods {
     val greenBand = tile.band(1)
     val blueBand = tile.band(2)
 
-    val cloudlessRedByte = resampleToByte(redBand, redBand.findMinMax._1, redBand.findMinMax._2)
-    val cloudlessGreenByte = resampleToByte(greenBand, greenBand.findMinMax._1, greenBand.findMinMax._2)
-    val cloudlessBlueByte = resampleToByte(blueBand, blueBand.findMinMax._1, blueBand.findMinMax._2)
+    val redByte = resampleToByte(redBand, redBand.findMinMax._1, redBand.findMinMax._2)
+    val greenByte = resampleToByte(greenBand, greenBand.findMinMax._1, greenBand.findMinMax._2)
+    val blueByte = resampleToByte(blueBand, blueBand.findMinMax._1, blueBand.findMinMax._2)
 
     val rgb = IntArrayTile(Array.ofDim[Int](imCols * imRows), imCols, imRows)
 
@@ -40,9 +40,9 @@ trait MultiBandRenderMethods {
       cfor(0)(_ < imCols, _ + 1) { col =>
         var v = 0
         v = {
-          val r = cloudlessRedByte.get(col, row)
-          val g = cloudlessGreenByte.get(col, row)
-          val b = cloudlessBlueByte.get(col, row)
+          val r = redByte.get(col, row)
+          val g = greenByte.get(col, row)
+          val b = blueByte.get(col, row)
           if (r == 0 && g == 0 && b == 0) 0xFF
           else {
             val cr = if (isNoData(r)) 128 else r.toByte & 0xFF
