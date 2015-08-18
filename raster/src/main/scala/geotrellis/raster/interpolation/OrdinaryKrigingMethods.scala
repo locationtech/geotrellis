@@ -16,25 +16,25 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster.Tile
-import geotrellis.vector.{PointFeature, Extent}
+import geotrellis.raster._
+import geotrellis.vector._
 import geotrellis.vector.interpolation.{Semivariogram, OrdinaryKriging}
 
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a OrdinaryKriging
   */
 trait OrdinaryKrigingMethods {
-  val tile: Tile
+  val points: Array[PointFeature[Double]]
 
-  def ordinaryKriging(extent: Extent, points: Array[PointFeature[Double]]) =
-    Interpolation.kriging(tile, extent)(OrdinaryKriging(points))
+  def ordinaryKriging(rasterExtent: RasterExtent) =
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points))
 
-  def ordinaryKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double) =
-    Interpolation.kriging(tile, extent)(OrdinaryKriging(points, bandwidth))
+  def ordinaryKriging(rasterExtent: RasterExtent, bandwidth: Double) =
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points, bandwidth))
 
-  def ordinaryKriging(extent: Extent, points: Array[PointFeature[Double]], sv: Semivariogram) =
-    Interpolation.kriging(tile, extent)(OrdinaryKriging(points, sv))
+  def ordinaryKriging(rasterExtent: RasterExtent, sv: Semivariogram) =
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points, sv))
 
-  def ordinaryKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double, sv: Semivariogram) =
-    Interpolation.kriging(tile, extent)(OrdinaryKriging(points, bandwidth, sv))
+  def ordinaryKriging(rasterExtent: RasterExtent, bandwidth: Double, sv: Semivariogram) =
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points, bandwidth, sv))
 }

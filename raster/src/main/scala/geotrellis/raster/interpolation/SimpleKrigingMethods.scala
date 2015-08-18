@@ -16,25 +16,25 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster.Tile
-import geotrellis.vector.{PointFeature, Extent}
+import geotrellis.raster._
+import geotrellis.vector._
 import geotrellis.vector.interpolation.{Semivariogram, SimpleKriging}
 
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a SimpleKriging
   */
 trait SimpleKrigingMethods {
-  val tile: Tile
+  val points: Array[PointFeature[Double]]
 
-  def simpleKriging(extent: Extent, points: Array[PointFeature[Double]]) =
-    Interpolation.kriging(tile, extent)(SimpleKriging(points))
+  def simpleKriging(rasterExtent: RasterExtent) =
+    Interpolation.kriging(rasterExtent)(SimpleKriging(points))
 
-  def simpleKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double) =
-    Interpolation.kriging(tile, extent)(SimpleKriging(points, bandwidth))
+  def simpleKriging(rasterExtent: RasterExtent, bandwidth: Double) =
+    Interpolation.kriging(rasterExtent)(SimpleKriging(points, bandwidth))
 
-  def simpleKriging(extent: Extent, points: Array[PointFeature[Double]], sv: Semivariogram) =
-    Interpolation.kriging(tile, extent)(SimpleKriging(points, sv))
+  def simpleKriging(rasterExtent: RasterExtent, sv: Semivariogram) =
+    Interpolation.kriging(rasterExtent)(SimpleKriging(points, sv))
 
-  def simpleKriging(extent: Extent, points: Array[PointFeature[Double]], bandwidth: Double, sv: Semivariogram) =
-    Interpolation.kriging(tile, extent)(SimpleKriging(points, bandwidth, sv))
+  def simpleKriging(rasterExtent: RasterExtent, bandwidth: Double, sv: Semivariogram) =
+    Interpolation.kriging(rasterExtent)(SimpleKriging(points, bandwidth, sv))
 }

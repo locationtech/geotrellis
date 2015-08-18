@@ -16,9 +16,19 @@
 
 package geotrellis.raster
 
-package object interpolation {
+import geotrellis.vector._
 
-  implicit class InterpolationExtensions(val tile: Tile)
+package object interpolation {
+  def arrayPointFeatureDToInterpolationExtensions[D <% Double](points: Array[PointFeature[D]]) =
+    new InterpolationExtensions(points.map(_.mapData { x => x: Double }))
+
+  def traversablePointFeatureDToInterpolationExtensions[D <% Double](points: Traversable[PointFeature[D]]) =
+    new InterpolationExtensions(points.map(_.mapData { x => x: Double }).toArray)
+
+  def traversablePointFeaturesToInterpolationExtensions(points: Traversable[PointFeature[Double]]) =
+    new InterpolationExtensions(points.toArray)
+
+  implicit class InterpolationExtensions[D](val points: Array[PointFeature[Double]])
     extends SimpleKrigingMethods
     with OrdinaryKrigingMethods
     with UniversalKrigingMethods
