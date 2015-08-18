@@ -23,38 +23,44 @@ trait MultiBandRenderMethods {
 
     assert(tile.bandCount == 3)
 
-    val imRows = tile.rows
-    val imCols = tile.cols
+    var (rMin, gMin, bMin) = (Int.MaxValue, Int.MaxValue, Int.MaxValue)
+    var (rMax, gMax, bMax) = (Int.MinValue, Int.MinValue, Int.MinValue)
 
-    val redBand = tile.band(0)
-    val greenBand = tile.band(1)
-    val blueBand = tile.band(2)
-
-    val redByte = resampleToByte(redBand, redBand.findMinMax._1, redBand.findMinMax._2)
-    val greenByte = resampleToByte(greenBand, greenBand.findMinMax._1, greenBand.findMinMax._2)
-    val blueByte = resampleToByte(blueBand, blueBand.findMinMax._1, blueBand.findMinMax._2)
-
-    val rgb = IntArrayTile(Array.ofDim[Int](imCols * imRows), imCols, imRows)
-
-    cfor(0)(_ < imRows, _ + 1) { row =>
-      cfor(0)(_ < imCols, _ + 1) { col =>
-        var v = 0
-        v = {
-          val r = redByte.get(col, row)
-          val g = greenByte.get(col, row)
-          val b = blueByte.get(col, row)
-          if (r == 0 && g == 0 && b == 0) 0xFF
-          else {
-            val cr = if (isNoData(r)) 128 else r.toByte & 0xFF
-            val cg = if (isNoData(g)) 128 else g.toByte & 0xFF
-            val cb = if (isNoData(b)) 128 else b.toByte & 0xFF
-
-            (cr << 24) | (cg << 16) | (cb << 8) | 0xFF
-          }
+    tile.foreach { (band, z) =>
+      if(isData(z)) {
+        if(band == 0) {
+          if(z > rMax) { rMax = z }
+          if(z < rMin) { rMin = z }
+        } else if(band == 1) {
+          if(z > gMax) { gMax = z }
+          if(z < gMin) { gMin = z }
+        } else if(band == 2) {
+          if(z > bMax) { bMax = z }
+          if(z < bMin) { bMin = z }
         }
-        rgb.set(col, row, v)
       }
     }
-    rgb.renderPng()
+
+    val rgb =
+      tile.convert(TypeInt).combine(0, 1, 2) { (r, g, b) =>
+        val scaledR =
+          if (isData(r)) { ((r - rMin).toDouble / rMax).toInt * 255 }
+          else 0
+
+        val scaledG =
+          if (isData(g)) { ((g - gMin).toDouble / gMax).toInt * 255 }
+          else 0
+
+        val scaledB =
+          if (isData(b)) { ((b - bMin).toDouble / bMax).toInt * 255 }
+          else 0
+
+        if(scaledR + scaledG + scaledB == 0) 0
+        else {
+          (scaledR << 24) | (scaledG << 16) | (scaledB << 8) | 0xFF
+        }
+      }
+
+    rgb.renderPng
   }
 }
