@@ -36,7 +36,7 @@ class LocalSpatialSpec extends FunSpec
 
       val rdd = AllOnesTestFile
       val tile = rdd.stitch
-      val worldExt = rdd.metaData.extent
+      val worldExt = rdd.metaData.dataExtent
       val height = worldExt.height.toInt
       val width = worldExt.width.toInt
 

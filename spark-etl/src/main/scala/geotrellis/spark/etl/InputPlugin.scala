@@ -14,7 +14,7 @@ trait InputPlugin {
   def key: ClassTag[_]
   def requiredKeys: Array[String]
 
-  def apply[K](lvl: StorageLevel, crs: CRS, layoutScheme: LayoutScheme, props: Map[String, String])(implicit sc: SparkContext): (LayoutLevel, RasterRDD[K])
+  def apply[K](lvl: StorageLevel, crs: CRS, scheme: LayoutScheme, props: Map[String, String])(implicit sc: SparkContext): (Int, RasterRDD[K])
 
   def validate(props: Map[String, String]) =
     requireKeys(name, props, requiredKeys)

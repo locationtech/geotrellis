@@ -247,6 +247,9 @@ object RasterExtent {
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
 
+  def apply(extent: Extent, cellSize: CellSize): RasterExtent =
+    apply(extent, cellSize.width, cellSize.height)
+
   def apply(tile: Tile, extent: Extent): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 }

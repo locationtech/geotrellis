@@ -19,7 +19,7 @@ class NetCdfHadoopInput extends HadoopInput {
     val source = sc.netCdfRDD(new Path(props("path")))
     val reprojected = source.reproject(crs).persist(lvl)
     val (layoutLevel, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojected, crs, layoutScheme, isUniform = false) { _.extent }
+      RasterMetaData.fromRdd(reprojected, crs, layoutScheme) { _.extent }
     val tiler = implicitly[Tiler[NetCdfBand, SpaceTimeKey]]
     layoutLevel -> tiler(reprojected, rasterMetaData).asInstanceOf[RasterRDD[K]]
   }

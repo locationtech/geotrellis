@@ -18,7 +18,7 @@ class TemporalGeoTiffS3Input extends S3Input {
     val source = sc.newAPIHadoopRDD(configuration(props), classOf[TemporalGeoTiffS3InputFormat], classOf[SpaceTimeInputKey], classOf[Tile])
     val reprojected = source.reproject(crs).persist(lvl)
     val (layoutLevel, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojected, crs, layoutScheme, isUniform = false) { _.extent }
+      RasterMetaData.fromRdd(reprojected, crs, layoutScheme) { _.extent }
     val tiler = implicitly[Tiler[SpaceTimeInputKey, SpaceTimeKey]]
     layoutLevel -> tiler(reprojected, rasterMetaData).asInstanceOf[RasterRDD[K]]
   }

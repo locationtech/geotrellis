@@ -27,7 +27,7 @@ class HistogramSpec extends FunSpec
 
       val tileLayout = modHundred.metaData.tileLayout
       val count = (modHundred.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-      val totalExtent = modHundred.metaData.extent
+      val totalExtent = modHundred.metaData.dataExtent
 
       it("should get correct histogram over whole raster extent") {
         val histogram = modHundred.zonalHistogram(totalExtent.toPolygon)

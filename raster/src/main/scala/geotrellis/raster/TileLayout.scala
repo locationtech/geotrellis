@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis._
 import geotrellis.vector.Extent
 
 object TileLayout {

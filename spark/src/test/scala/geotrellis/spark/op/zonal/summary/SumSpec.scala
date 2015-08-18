@@ -23,7 +23,7 @@ class SumSpec extends FunSpec
 
       val tileLayout = ones.metaData.tileLayout
       val count = (ones.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-      val totalExtent = ones.metaData.extent
+      val totalExtent = ones.metaData.dataExtent
 
       it("should get correct sum over whole raster extent") {
         ones.zonalSum(totalExtent.toPolygon) should be(count)

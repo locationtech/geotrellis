@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.spark.utils._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
@@ -49,19 +50,20 @@ package object json {
     def write(metaData: RasterMetaData) = 
       JsObject(
         "cellType" -> metaData.cellType.toJson,
-        "extent" -> metaData.extent.toJson,
-        "crs" -> metaData.crs.toJson,
-        "tileLayout" -> metaData.tileLayout.toJson
+        "dataExtent" -> metaData.dataExtent.toJson,
+        "layoutExtent" -> metaData.layoutExtent.toJson,
+        "tileLayout" -> metaData.tileLayout.toJson,
+        "crs" -> metaData.crs.toJson
       )
 
     def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "extent", "crs", "tileLayout") match {
-        case Seq(cellType, extent, crs, tileLayout) =>
+      value.asJsObject.getFields("cellType", "dataExtent", "layoutExtent", "tileLayout", "crs") match {
+        case Seq(cellType, dataExtent, layoutExtent, tileLayout, crs) =>
           RasterMetaData(
             cellType.convertTo[CellType],
-            extent.convertTo[Extent],
-            crs.convertTo[CRS],
-            tileLayout.convertTo[TileLayout]
+            LayoutDefinition(layoutExtent.convertTo[Extent], tileLayout.convertTo[TileLayout]),
+            dataExtent.convertTo[Extent],
+            crs.convertTo[CRS]
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")

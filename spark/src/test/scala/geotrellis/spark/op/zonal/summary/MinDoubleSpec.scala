@@ -23,7 +23,7 @@ class MinDoubleSpec extends FunSpec
 
       val tileLayout = inc.metaData.tileLayout
       val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-      val totalExtent = inc.metaData.extent
+      val totalExtent = inc.metaData.dataExtent
 
       it("should get correct double min over whole raster extent") {
         inc.zonalMinDouble(totalExtent.toPolygon) should be(0)

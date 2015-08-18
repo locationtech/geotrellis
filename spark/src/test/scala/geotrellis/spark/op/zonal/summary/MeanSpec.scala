@@ -23,7 +23,7 @@ class MeanSpec extends FunSpec
 
       val tileLayout = inc.metaData.tileLayout
       val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-      val totalExtent = inc.metaData.extent
+      val totalExtent = inc.metaData.dataExtent
 
       it("should get correct mean over whole raster extent") {
         inc.zonalMean(totalExtent.toPolygon) should be((count - 1) / 2.0)
