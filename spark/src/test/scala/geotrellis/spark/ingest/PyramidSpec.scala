@@ -70,11 +70,11 @@ class PyramidSpec extends FunSpec
           )
 
         val layoutScheme = ZoomedLayoutScheme(2)
-        val level = layoutScheme.levelFor(2)
+        val level = layoutScheme.levelForZoom(LatLng.worldExtent, 2)
 
-        val (levelOne, levelOneRDD) = Pyramid.up(rdd, level, layoutScheme)
+        val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)
 
-        levelOne.tileLayout should be (TileLayout(2, 2, 2, 2))
+        levelOneRDD.metaData.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
         val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
 
         results.map(_._1.temporalKey.time).distinct.sorted.toSeq should be (Seq(dt1, dt2))

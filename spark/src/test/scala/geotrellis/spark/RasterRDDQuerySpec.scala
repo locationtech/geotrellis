@@ -19,9 +19,10 @@ class RasterRDDQuerySpec extends FunSpec
     describe("RasterQuerySpec") {
       val md = RasterMetaData(
         TypeFloat,
+        LayoutDefinition(LatLng.worldExtent, TileLayout(8, 8, 3, 4)),
         Extent(-135.00000125, -89.99999, 134.99999125, 67.49999249999999),
-        LatLng,
-        TileLayout(8, 8, 3, 4))
+        LatLng
+        )
 
       val keyBounds = KeyBounds(SpatialKey(1, 1), SpatialKey(6, 7))
 

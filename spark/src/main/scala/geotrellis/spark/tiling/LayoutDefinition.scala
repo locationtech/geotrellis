@@ -3,12 +3,14 @@ package geotrellis.spark.tiling
 import geotrellis.raster.{RasterExtent, TileLayout}
 import geotrellis.vector.Extent
 
-class LayoutDefinition(val extent: Extent, val tileLayout: TileLayout) {
+case class LayoutDefinition(extent: Extent, tileLayout: TileLayout) extends Product {
   lazy val rasterExtent = RasterExtent(extent, tileLayout.totalCols, tileLayout.totalRows)
   lazy val mapTransform = MapKeyTransform(extent, tileLayout.layoutDimensions)
 
   def tileCols = tileLayout.tileCols
   def tileRows = tileLayout.tileRows
+  def layoutCols = tileLayout.layoutCols
+  def layoutRows = tileLayout.layoutCols
 }
 
 object LayoutDefinition {
@@ -34,9 +36,6 @@ object LayoutDefinition {
     extent.ymin + layout.totalRows * cellSize.height
     )
 
-    new LayoutDefinition(layoutExtent, layout)
+    LayoutDefinition(layoutExtent, layout)
   }
-
-  def apply(extent: Extent, layout: TileLayout) =
-    new LayoutDefinition(extent, layout)
 }

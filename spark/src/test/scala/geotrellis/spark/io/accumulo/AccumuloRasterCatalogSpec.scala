@@ -39,8 +39,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val catalog =
         AccumuloRasterCatalog("metadata")
 
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, level) =>
-        val layerId = LayerId("ones", level.zoom)
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, zoom) =>
+        val layerId = LayerId("ones", zoom)
 
         it("should succeed writing to a table") {
           info(layerId.toString)
@@ -67,14 +67,14 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("should load out saved tiles, but only for the right zoom") {
           intercept[LayerNotFoundError] {
-            catalog.query[SpatialKey](LayerId("ones", level.zoom + 1)).toRDD.count()
+            catalog.query[SpatialKey](LayerId("ones", zoom + 1)).toRDD.count()
           }
         }
 
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,612,916,612)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", level.zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd1 = catalog.query[SpatialKey](LayerId("ones", zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", zoom)).where(Intersects(tileBounds)).toRDD
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
@@ -92,7 +92,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         RasterRDDQueryTest.spatialTest_ones_ingested.foreach { test =>
           it(test.name){
-            val rdd = catalog.read[SpatialKey](test.layerId.copy(zoom = level.zoom), test.query)
+            val rdd = catalog.read[SpatialKey](test.layerId.copy(zoom = zoom), test.query)
             rdd.map(_._1).collect should contain theSameElementsAs test.expected
           }
         }

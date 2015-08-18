@@ -12,8 +12,6 @@ object ZoomedLayoutScheme {
   def apply(tileSize: Int = DEFAULT_TILE_SIZE) =
     new ZoomedLayoutScheme(tileSize)
 }
-case class ZoomLayoutLevel(zoom: Int, override val extent: Extent, override val tileLayout: TileLayout)
-  extends LayoutDefinition(extent, tileLayout)
 
 /** Layout for zoom levels based off of a power-of-2 scheme,
   * used in Leaflet et al.*/
@@ -58,7 +56,7 @@ class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
       zoom = level.zoom - 1,
       layout = LayoutDefinition(
         extent = layout.extent,
-        layout = TileLayout(
+        tileLayout = TileLayout(
           layout.tileLayout.layoutCols / 2,
           layout.tileLayout.layoutRows / 2,
           layout.tileLayout.tileCols,
@@ -74,7 +72,7 @@ class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
       zoom = level.zoom + 1,
       layout = LayoutDefinition(
         extent = layout.extent,
-        layout = TileLayout(
+        tileLayout = TileLayout(
           layout.tileLayout.layoutCols * 2,
           layout.tileLayout.layoutRows * 2,
           layout.tileLayout.tileCols,
