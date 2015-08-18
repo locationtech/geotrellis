@@ -16,5 +16,5 @@ package object avro {
     ShortArrayTileCodec,
     IntArrayTileCodec)
 
-  implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec] = TupleCodec[A, B]
+  implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec]: TupleCodec[A, B] = TupleCodec[A, B]
 }
