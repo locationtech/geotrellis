@@ -25,8 +25,9 @@ object Interpolation {
 
   /**
    * Interpolation for a Tile
-   * @param tile        Tile to be interpolated
-   * @return            Tile set with the interpolated values
+   * @param rasterExtent  RasterExtent to be interpolated
+   * @param predictor     The Kriging predictor function
+   * @return              Tile set with the interpolated values
    */
   def apply(rasterExtent: RasterExtent)(predictor: (Double, Double) => Double): Tile = {
     val result = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)

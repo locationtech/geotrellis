@@ -46,7 +46,8 @@ class KrigingVectorSpec extends FunSpec
         Array.tabulate(testPointFeatures.length)
         { i => testPointFeatures(i).geom }
       val krigingVal: Array[(Double, Double)] =
-        testPoints.simpleKriging(points, 5000, sv)
+        new SimpleKriging(points, 5000, sv)
+          .predict(testPoints)
       val E = 1e-4
 
       cfor(0)(_ < testPoints.length, _ + 1) { i =>
@@ -72,7 +73,8 @@ class KrigingVectorSpec extends FunSpec
         Array.tabulate(testPointFeatures.length)
         { i => testPointFeatures(i).geom }
       val krigingVal: Array[(Double, Double)] =
-        testPoints.ordinaryKriging(points, 5000, sv)
+        new OrdinaryKriging(points, 5000, sv)
+          .predict(testPoints)
       val E = 1e-4
 
       cfor(0)(_ < testPoints.length, _ + 1) { i =>
@@ -122,7 +124,8 @@ class KrigingVectorSpec extends FunSpec
           .toArray
       val E: Double = 0.0001
       val krigingVal: Array[(Double, Double)] =
-        location.universalKriging(points, attrFunc, 50, Spherical)
+        new UniversalKriging(points, attrFunc, 50, Spherical)
+          .predict(location)
 
       cfor(0)(_ < krigingVal.length, _ + 1) { i =>
         krigingVal(i)._1 should be(veniceData(i).data +- E)
@@ -172,7 +175,8 @@ class KrigingVectorSpec extends FunSpec
           .toArray
       val E: Double = 1.4
       val krigingValInsideVenice: Array[(Double, Double)] =
-        location.geoKriging(points, attrFunc, 50, Spherical)
+        new GeoKriging(points, attrFunc, 50, Spherical)
+          .predict(location)
 
       var j = 0
       cfor(0)(i => i < location.length && j < testingPointsGeo.length, _ + 1) { i =>

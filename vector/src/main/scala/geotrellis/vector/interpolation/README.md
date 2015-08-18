@@ -159,31 +159,25 @@ The methods are largely classified into different types in the way the mean(mu) 
     //Array of points to be kriged
     val location: Array[Point] = ...
 
-    //Tile to be kriged
-    val extent: Extent = ...
-    val tile = DoubleArrayTile.empty(cols, rows)
-
 There exist four major kinds of Kriging interpolation techniques, namely :
 
 #### Simple Kriging
 
     //Simple kriging, tuples of (prediction, variance) per prediction point
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+    
     val krigingVal: Array[(Double, Double)] =
-        location.simpleKriging(points, 5000, sv)
+        new SimpleKriging(points, 5000, sv)
+          .predict(location)
     /**
       * The user can also do Simple Kriging using :
-      * location.simpleKriging(points)
-      * location.simpleKriging(points, bandwidth)
-      * location.simpleKriging(points, sv)
-      * location.simpleKriging(points, bandwidth, sv)
+      * new SimpleKriging(points).predict(location)
+      * new SimpleKriging(points, bandwidth).predict(location)
+      * new SimpleKriging(points, sv).predict(location)
+      * new SimpleKriging(points, bandwidth, sv).predict(location)
       */
-    /**
-      * //For tile :
-      * val krigingVal: Tile =
-      *     tile.simpleKriging(extent, points, bandwidth, sv)
-      * //And the other overloaded calls as well
-      */
+
+It is belongs to the class of Simple Spatial Prediction Models.
 
 The simple kriging is based on the assumption that the underlying stochastic process is entirely _known_ and the spatial trend is constant, viz. the mean and covariance values of the entire interpolation set is constant (using solely the sample points)
 
@@ -193,21 +187,19 @@ The simple kriging is based on the assumption that the underlying stochastic pro
 #### Ordinary Kriging
     //Ordinary kriging, tuples of (prediction, variance) per prediction point
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+    
     val krigingVal: Array[(Double, Double)] =
-        location.ordinaryKriging(points, 5000, sv)
+        new OrdinaryKriging(points, 5000, sv)
+          .predict(location)
     /**
       * The user can also do Ordinary Kriging using :
-      * location.ordinaryKriging(points)
-      * location.ordinaryKriging(points, 5000)
-      * location.ordinaryKriging(points, sv)
-      * location.ordinaryKriging(points, 5000, sv)
+      * new OrdinaryKriging(points).predict(location)
+      * new OrdinaryKriging(points, bandwidth).predict(location)
+      * new OrdinaryKriging(points, sv).predict(location)
+      * new OrdinaryKriging(points, bandwidth, sv).predict(location)
       */
-    /**
-      * //For tile :
-      * val krigingVal: Tile =
-      *     tile.ordinaryKriging(extent, points, bandwidth, sv)
-      * //And the other overloaded calls as well
-      */
+
+It is belongs to the class of Simple Spatial Prediction Models.
 
 This method differs from the Simple Kriging appraoch in that, the constant mean is assumed to be unknown and is estimated within the model.
 
@@ -216,28 +208,27 @@ This method differs from the Simple Kriging appraoch in that, the constant mean 
 
 #### Universal Kriging
     //Universal kriging, tuples of (prediction, variance) per prediction point
+    
     val attrFunc: (Double, Double) => Array[Double] = {
       (x, y) => Array(x, y, x * x, x * y, y * y)
     }
+    
     val krigingVal: Array[(Double, Double)] =
-        location.universalKriging(points, attrFunc, 50, Spherical)
+        new UniversalKriging(points, attrFunc, 50, Spherical)
+          .predict(location)
     /**
       * The user can also do Universal Kriging using :
-      * location.universalKriging(points)
-      * location.universalKriging(points, bandwidth)
-      * location.universalKriging(points, model)
-      * location.universalKriging(points, bandwidth, model)
-      * location.universalKriging(points, attrFunc)
-      * location.universalKriging(points, attrFunc, bandwidth)
-      * location.universalKriging(points, attrFunc, model)
-      * location.universalKriging(points, attrFunc, bandwidth, model)
+      * new UniversalKriging(points).predict(location)
+      * new UniversalKriging(points, bandwidth).predict(location)
+      * new UniversalKriging(points, model).predict(location)
+      * new UniversalKriging(points, bandwidth, model).predict(location)
+      * new UniversalKriging(points, attrFunc).predict(location)
+      * new UniversalKriging(points, attrFunc, bandwidth).predict(location)
+      * new UniversalKriging(points, attrFunc, model).predict(location)
+      * new UniversalKriging(points, attrFunc, bandwidth, model).predict(location)
       */
-    /**
-      * //For tile :
-      * val krigingVal: Tile =
-      * tile.universalKriging(extent, points, attrFunc, bandwidth, model)
-      * //And the other overloaded calls as well
-      */
+
+It is belongs to the class of General Spatial Prediction Models.
 
 This model allows for explicit variation in the trend function (mean function) constructed as a linear function of spatial attributes; with the covariance values assumed to be known. This model computes the prediction using
 
@@ -249,31 +240,39 @@ Here, the "linear" refers to the linearity in parameters (beta).
 
     mu(s) = x(s)' * beta,   beta unknown; s belongs to R
     cov[eps(s), eps(s')]    known; s, s' belongs to R
+    
+The `attrFunc` function is the attribute function, which is used for evaluating non-constant spatial trend structures. Unlike the Simple and Ordinary Kriging models which rely only on the residual values for evaluating the spatial structures, the General Spatial Models may be modelled by the user based on the data (viz. evaluating the beta variable to be used for interpolation).
+
+In case the user does not specify an attribute function, by default the function used is a quadratic trend function for Point(s1, s2) :
+
+```mu(s) = beta0 + beta1*s1 + beta2*s2 + beta3*s1*s1 + beta4*s2*s2 + beta5*s1*s2```
+
+General example of a trend function is : 
+
+```mu(s) = beta0 + Sigma[ beta_j * (s1^n_j) * (s2^m_j) ]```
 
 #### Geostatistical Kriging
     //Geostatistical kriging, tuples of (prediction, variance) per prediction point
     val attrFunc: (Double, Double) => Array[Double] = {
       (x, y) => Array(x, y, x * x, x * y, y * y)
     }
+    
     val krigingVal: Array[(Double, Double)] =
-        location.geoKriging(points, attrFunc, 50, Spherical)
+        new GeoKriging(points, attrFunc, 50, Spherical)
+          .predict(location)
     /**
       * The user can also do Geostatistical Kriging using :
-      * location.geoKriging(points)
-      * location.geoKriging(points, bandwidth)
-      * location.geoKriging(points, model)
-      * location.geoKriging(points, bandwidth, model)
-      * location.geoKriging(points, attrFunc)
-      * location.geoKriging(points, attrFunc, bandwidth)
-      * location.geoKriging(points, attrFunc, model)
-      * location.geoKriging(points, attrFunc, bandwidth, model)
+      * new GeoKriging(points).predict(location)
+      * new GeoKriging(points, bandwidth).predict(location)
+      * new GeoKriging(points, model).predict(location)
+      * new GeoKriging(points, bandwidth, model).predict(location)
+      * new GeoKriging(points, attrFunc).predict(location)
+      * new GeoKriging(points, attrFunc, bandwidth).predict(location)
+      * new GeoKriging(points, attrFunc, model).predict(location)
+      * new GeoKriging(points, attrFunc, bandwidth, model).predict(location)
       */
-    /**
-      * //For tile :
-      * val krigingVal: Tile =
-      * tile.geoKriging(extent, points, attrFunc, bandwidth, model)
-      * //And the other overloaded calls as well
-      */
+
+It is belongs to the class of General Spatial Prediction Models.
 
 This model relaxes the assumption that the covariance is known.
 Thus, the beta values and covariances are simultaneously evaluated and is computationally more intensive.
