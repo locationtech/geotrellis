@@ -153,11 +153,11 @@ class KrigingVectorSpec extends FunSpec
       (x, y) =>
         val c1: Double = 0.01 * (0.873 * (x - 418) - 0.488 * (y - 458))
         val c2: Double = 0.01 * (0.488 * (x - 418) + 0.873 * (y - 458))
-        val Dl: Double = math.exp(-1.5 * c1 * c1 - c2 * c2)
-        val Dv: Double =
+        val dl: Double = math.exp(-1.5 * c1 * c1 - c2 * c2)
+        val dv: Double =
           math.exp(-1 * math.pow(math.sqrt(math.pow(x - 560, 2) + math.pow(y - 390, 2)) / 35, 8))
-        val Ev: Double = math.exp(-1 * c1)
-        Array(Ev, Dl, Dv)
+        val ev: Double = math.exp(-1 * c1)
+        Array(ev, dl, dv)
     }
     val testingPointsGeo: Array[Point] = Array(
       Point(350, 425), Point(350, 400), Point(375, 475), Point(375, 450), Point(375, 425), Point(375, 400),

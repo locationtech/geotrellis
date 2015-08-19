@@ -241,7 +241,7 @@ Here, the "linear" refers to the linearity in parameters (beta).
     mu(s) = x(s)' * beta,   beta unknown; s belongs to R
     cov[eps(s), eps(s')]    known; s, s' belongs to R
     
-The `attrFunc` function is the attribute function, which is used for evaluating non-constant spatial trend structures. Unlike the Simple and Ordinary Kriging models which rely only on the residual values for evaluating the spatial structures, the General Spatial Models may be modelled by the user based on the data (viz. evaluating the beta variable to be used for interpolation).
+The `attrFunc` function is the attribute function, which is used for evaluating non-constant spatial trend structures. Unlike the Simple and Ordinary Kriging models which rely only on the residual values for evaluating the spatial structures, the General Spatial Models may be modelled by the user based on the data (viz. evaluating the beta variable to be used for interpolation). 
 
 In case the user does not specify an attribute function, by default the function used is a quadratic trend function for Point(s1, s2) :
 
@@ -250,6 +250,8 @@ In case the user does not specify an attribute function, by default the function
 General example of a trend function is : 
 
 ```mu(s) = beta0 + Sigma[ beta_j * (s1^n_j) * (s2^m_j) ]```
+
+An elaborate example for understanding the `attrFunc` is mentioned in the readme file in `geotrellis.raster.interpolation` along with detailed illustrations.
 
 #### Geostatistical Kriging
     //Geostatistical kriging, tuples of (prediction, variance) per prediction point
