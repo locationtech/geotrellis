@@ -31,6 +31,11 @@ case class ProjectedExtent(extent: Extent, crs: CRS) {
     extent.reproject(crs, dest)
 }
 
+object ProjectedExtent {
+  implicit def fromTupleA(tup: (Extent, CRS)):ProjectedExtent = ProjectedExtent(tup._1, tup._2)
+  implicit def fromTupleB(tup: (CRS, Extent)):ProjectedExtent = ProjectedExtent(tup._2, tup._1)
+}
+
 /**
  * An Extent represents a rectangular region of geographic space (with a
  * particular projection). It is expressed in map coordinates.
