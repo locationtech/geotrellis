@@ -10,7 +10,7 @@ case class LayoutDefinition(extent: Extent, tileLayout: TileLayout) extends Prod
   def tileCols = tileLayout.tileCols
   def tileRows = tileLayout.tileRows
   def layoutCols = tileLayout.layoutCols
-  def layoutRows = tileLayout.layoutCols
+  def layoutRows = tileLayout.layoutRows
 }
 
 object LayoutDefinition {
