@@ -28,7 +28,7 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore 
 
   /** NOTE:
    * S3 is eventually consistent, therefore it is possible to write an attribute and fail to read it
-   * immediatly afterwards. It is not clear if this is a practical concern.
+   * immediately afterwards. It is not clear if this is a practical concern.
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
 

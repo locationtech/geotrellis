@@ -10,7 +10,7 @@ import spray.json.JsonFormat
 import scala.reflect._
 
 object S3RasterCatalog {
-  private def layerPath(layerId: LayerId) = 
+  def layerPath(layerId: LayerId) =
     s"${layerId.name}/${layerId.zoom}"  
 
   def apply(bucket: String)(implicit sc: SparkContext): S3RasterCatalog =
@@ -58,51 +58,6 @@ class S3RasterCatalog(
   def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, numPartitions: Int): BoundRasterRDDQuery[K] = {
     new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _, numPartitions))
   }
-
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, clobber = true)
-
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, subDir, clobber = true)
-
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    writer[K](keyIndexMethod, "", clobber = true)  
-  
-  def writer[K: SpatialComponent: RasterRDDWriter: Boundable: JsonFormat: ClassTag](keyIndexMethod: KeyIndexMethod[K], subDir: String, clobber: Boolean): Writer[LayerId, RasterRDD[K]] =
-    new Writer[LayerId, RasterRDD[K]] {
-      def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
-        rdd.persist()
-
-        val path = List(rootPath, subDir, layerPath(layerId)).filter(_.nonEmpty).mkString("/")
-
-        val md = S3LayerMetaData(
-            layerId = layerId,
-            keyClass = classTag[K].toString,
-            rasterMetaData = rdd.metaData,
-            bucket = bucket,
-            key = path)
-
-        val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
-        val index = {
-          // Expanding spatial bounds? To allow multi-stage save?
-          val indexKeyBounds = {
-            val imin = keyBounds.minKey.updateSpatialComponent(SpatialKey(0, 0))
-            val imax = keyBounds.maxKey.updateSpatialComponent(SpatialKey(rdd.metaData.tileLayout.layoutCols - 1, rdd.metaData.tileLayout.layoutRows - 1))
-            KeyBounds(imin, imax)
-          }
-          keyIndexMethod.createIndex(indexKeyBounds)
-        }
-
-        setLayerMetadata(layerId, md)
-        setLayerKeyBounds(layerId, keyBounds)
-        setLayerKeyIndex(layerId, index)
-
-        val rddWriter = implicitly[RasterRDDWriter[K]]
-        rddWriter.write(attributeStore, s3client, bucket, path, keyBounds, index, clobber)(layerId, rdd)
-
-        rdd.unpersist(blocking = false)
-      }
-    }
 }
 
 

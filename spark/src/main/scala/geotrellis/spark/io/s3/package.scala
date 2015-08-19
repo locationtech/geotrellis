@@ -5,10 +5,8 @@ import geotrellis.spark.io.avro.KeyCodecs._
 
 package object s3 {
   implicit def s3SpatialRasterRDDReader = new DirectRasterRDDReader[SpatialKey]
-  implicit def s3SpatialRasterRDDWriter = new RasterRDDWriter[SpatialKey]
 
   implicit def s3SpaceTimeRasterRDDReader = new DirectRasterRDDReader[SpaceTimeKey]
-  implicit def s3SpaceTimeRasterRDDWriter = new RasterRDDWriter[SpaceTimeKey]
 
   private[s3]
   def maxIndexWidth(maxIndex: Long): Int = {
@@ -20,4 +18,7 @@ package object s3 {
   val encodeIndex = (index: Long, max: Int) => {
     index.toString.reverse.padTo(max, '0').reverse
   }
+
+  def makePath(chunks: String*) =
+    chunks.filter(_.nonEmpty).mkString("/")
 }

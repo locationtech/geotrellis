@@ -5,7 +5,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
 import geotrellis.raster.{Tile, GridBounds}
-
 import org.scalatest._
 import geotrellis.spark.io.avro.KeyCodecs._
 
@@ -19,14 +18,18 @@ class S3RasterCatalogSpec extends FunSpec
       val rdd = AllOnesTestFile
       val id = LayerId("ones", 10)
 
-      val attributeStore = new S3AttributeStore("climate-catalog", "catalog3") {
+      val bucket = "climate-catalog"
+      val prefix = "catalog3"
+      val attributeStore = new S3AttributeStore(bucket, prefix) {
         override val s3Client = new MockS3Client
       }
-      val catalog = new S3RasterCatalog("climate-catalog", "catalog3", attributeStore, () => new MockS3Client )
-
+      val catalog = new S3RasterCatalog(bucket, prefix, attributeStore, () => new MockS3Client )
 
       it("should save to s3"){
-        catalog.writer[SpatialKey](ZCurveKeyIndexMethod).write(id, AllOnesTestFile)
+        val writer = new RasterRDDWriter[SpatialKey](bucket, prefix, ZCurveKeyIndexMethod)(attributeStore){
+          override val getS3Client = () => new MockS3Client
+        }
+        writer.write(id, AllOnesTestFile)
       }
 
       it("should know when layer exists"){
@@ -99,7 +102,11 @@ class S3RasterCatalogSpec extends FunSpec
 
       val spaceId = LayerId("coordinates", 10)
       it("should save a spacetime layer"){
-        catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, true).write(spaceId, CoordinateSpaceTime)
+        val writer = new RasterRDDWriter[SpaceTimeKey](bucket, prefix, ZCurveKeyIndexMethod.byYear)(attributeStore){
+          override val getS3Client = () => new MockS3Client
+        }
+
+        writer.write(spaceId, CoordinateSpaceTime)
       }
 
       it("should load a spacetime layer"){

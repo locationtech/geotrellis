@@ -46,5 +46,5 @@ trait Boundable[K] extends Serializable {
     intersect(b1,b2).isDefined
   }
 
-  def getKeyBounds(rdd: BoundRDD[K,_]): KeyBounds[K]
+  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
 }
