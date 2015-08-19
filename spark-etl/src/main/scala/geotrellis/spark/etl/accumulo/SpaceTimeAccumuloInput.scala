@@ -14,17 +14,13 @@ class SpaceTimeAccumuloInput extends AccumuloInput {
   def key = classTag[SpaceTimeKey]
 
   def apply[K](lvl: StorageLevel, crs: CRS, scheme: LayoutScheme, props: Map[String, String])(implicit sc: SparkContext) = {
-
-    val bbox = props.get("bbox").map(Extent.fromString)
-    val chunks = props("layer").split(":")
-    val id = LayerId(chunks(0), chunks(1).toInt)
+    val (id, bbox) = parse(props)
     val catalog = AccumuloRasterCatalog()(getInstance(props), sc)
 
     val rdd = bbox match {
       case Some(extent) => catalog.query[SpaceTimeKey](id).where(Intersects(extent)).toRDD
       case None => catalog.read[SpaceTimeKey](id)
     }
-
     LayoutLevel(id.zoom, rdd.metaData.tileLayout) -> rdd.asInstanceOf[RasterRDD[K]]
   }
 
