@@ -6,7 +6,9 @@ import spray.json.DefaultJsonProtocol._
 case class KeyBounds[K](
   minKey: K,
   maxKey: K
-)
+){
+  def map(f: K => K) = KeyBounds(f(minKey), f(maxKey))
+}
 
 object KeyBounds {
   implicit class KeyBoundsSeqMethods[K: Boundable](seq: Seq[KeyBounds[K]]){
