@@ -4,7 +4,7 @@ import geotrellis.raster.{RasterExtent, TileLayout}
 import geotrellis.vector.Extent
 
 case class LayoutDefinition(extent: Extent, tileLayout: TileLayout) extends Product {
-  lazy val rasterExtent = RasterExtent(extent, tileLayout.totalCols, tileLayout.totalRows)
+  lazy val rasterExtent = RasterExtent(extent, tileLayout.cellSize(extent))
   lazy val mapTransform = MapKeyTransform(extent, tileLayout.layoutDimensions)
 
   def tileCols = tileLayout.tileCols
