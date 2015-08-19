@@ -4,9 +4,10 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
-import geotrellis.raster.GridBounds
+import geotrellis.raster.{Tile, GridBounds}
 
 import org.scalatest._
+import geotrellis.spark.io.avro.KeyCodecs._
 
 class S3RasterCatalogSpec extends FunSpec
   with TestFiles
@@ -18,7 +19,11 @@ class S3RasterCatalogSpec extends FunSpec
       val rdd = AllOnesTestFile
       val id = LayerId("ones", 10)
 
-      val catalog = S3RasterCatalog("climate-catalog", "catalog3", () => new MockS3Client )
+      val attributeStore = new S3AttributeStore("climate-catalog", "catalog3") {
+        override val s3Client = new MockS3Client
+      }
+      val catalog = new S3RasterCatalog("climate-catalog", "catalog3", attributeStore, () => new MockS3Client )
+
 
       it("should save to s3"){
         catalog.writer[SpatialKey](ZCurveKeyIndexMethod).write(id, AllOnesTestFile)
@@ -67,14 +72,17 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should read a spatial tile"){
-        val reader = catalog.tileReader[SpatialKey](id)
-
+        val reader = new TileReader[SpatialKey, Tile](attributeStore, id) {
+          override val s3Client = new MockS3Client
+        }
         val tile = reader(SpatialKey(2,2))
         tile.foreach { x=> x should be (1) }
       }
 
       it("should error on getting a tile that is not there"){
-        val reader = catalog.tileReader[SpatialKey](id)
+        val reader = new TileReader[SpatialKey, Tile](attributeStore, id) {
+          override val s3Client = new MockS3Client
+        }
 
         intercept[TileNotFoundError]{
           val tile = reader(SpatialKey(200,200))

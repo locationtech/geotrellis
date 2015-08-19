@@ -1,11 +1,9 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
-
 import org.apache.spark._
 import spray.json.JsonFormat
 
@@ -21,7 +19,7 @@ object S3RasterCatalog {
   def apply(bucket: String, rootPath: String, s3client: () => S3Client = () => S3Client.default)
     (implicit sc: SparkContext): S3RasterCatalog = {
     
-    val attributeStore = new S3AttributeStore(s3client(), bucket, rootPath)
+    val attributeStore = new S3AttributeStore(bucket, rootPath)
     new S3RasterCatalog(bucket, rootPath, attributeStore, s3client)
   }
 }
@@ -105,11 +103,6 @@ class S3RasterCatalog(
         rdd.unpersist(blocking = false)
       }
     }
-
-  def tileReader[K: TileReader: JsonFormat: ClassTag](layerId: LayerId): K => Tile = {
-    val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
-    implicitly[TileReader[K]].read(s3client(), layerId, metadata, index, keyBounds)(_)    
-  }
 }
+
+
