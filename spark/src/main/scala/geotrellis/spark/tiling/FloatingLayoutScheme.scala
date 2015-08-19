@@ -2,7 +2,7 @@ package geotrellis.spark.tiling
 
 
 import geotrellis.raster.{RasterExtent, CellSize}
-import geotrellis.vector.{ProjectedExtent}
+import geotrellis.vector.ProjectedExtent
 
 object FloatingLayoutScheme {
   val DEFAULT_TILE_SIZE = 256

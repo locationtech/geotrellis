@@ -2,7 +2,7 @@ package geotrellis.spark.tiling
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster.CellSize
-import geotrellis.vector.{Extent}
+import geotrellis.vector.Extent
 import org.scalatest._
 
 class FloatingLayoutSchemeSpec extends FunSpec with Matchers {
@@ -19,7 +19,7 @@ class FloatingLayoutSchemeSpec extends FunSpec with Matchers {
       assert(level.layout.extent === Extent(0,0,40,30))
     }
 
-    it("should have enough tiles to cover the whole data"){
+    it("should have enough tiles to cover the source extent"){
       assert(level.layout.layoutCols ===  4)
       assert(level.layout.layoutRows ===  3)
     }
