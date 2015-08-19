@@ -152,6 +152,7 @@ First of all, we would like to map the coordinate system into another coordinate
 
 ![Coordinate Mapping](illustration/coordinateMapping.png)  
 
+Image taken from `Smith, T.E., (2014) Notebook on Spatial Data Analysis [online]  http://www.seas.upenn.edu/~ese502/#notebook`
 
 #### Elevation
 
@@ -167,6 +168,7 @@ First of all, we would like to map the coordinate system into another coordinate
 
 ![Industry Draw Down](illustration/industryDrawDown.png)  
 
+Image taken from `Smith, T.E., (2014) Notebook on Spatial Data Analysis [online]  http://www.seas.upenn.edu/~ese502/#notebook`
 
 
     /** Estimate of the industries' contribution to groundwater level 
@@ -177,6 +179,8 @@ First of all, we would like to map the coordinate system into another coordinate
 #### Island draw down (water usage of Venice)
 
 ![Venice Draw Down](illustration/veniceDrawDown.png)  
+
+Image taken from `Smith, T.E., (2014) Notebook on Spatial Data Analysis [online]  http://www.seas.upenn.edu/~ese502/#notebook`
 
     /** Estimate of the island's contribution to groundwater level 
       * //exp{-1.0 * (sqrt((s1-560)^2 + (s2-390)^2) / 35)^8 }
