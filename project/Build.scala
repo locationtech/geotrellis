@@ -370,12 +370,14 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-spark",
       fork := true,
-      parallelExecution in Test := false,
+      parallelExecution in ThisBuild := false,
       javaOptions ++= List(
         "-Xmx8G",
         s"-Djava.library.path=${Environment.javaGdalDir}",
         "-Dsun.io.serialization.extendedDebugInfo=true"
       ),
+      internalDependencyClasspath in Test <++= 
+        exportedProducts in Compile in LocalProject("spark-testkit"),
       libraryDependencies ++=
         Seq(
           "org.apache.accumulo" % "accumulo-core" % Version.accumulo 
@@ -423,6 +425,23 @@ object GeotrellisBuild extends Build {
         )
       )
 
+
+  lazy val sparkTestKit = 
+    Project(
+      id = "spark-testkit", 
+      base = file("spark-testkit")    
+    )    
+    .dependsOn(raster, vector, proj4)
+    .settings(defaultAssemblySettings: _*)
+    .settings(
+      name := "geotrellis-spark-testkit",
+      internalDependencyClasspath in Compile <++= 
+        exportedProducts in Compile in LocalProject("spark"),
+      libraryDependencies ++= Seq(        
+        "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+        "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
+        nscalaTime)        
+    )
 
   lazy val graph: Project =
     Project("graph", file("graph"))

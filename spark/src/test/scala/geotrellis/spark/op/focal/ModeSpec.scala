@@ -4,7 +4,7 @@ import geotrellis.spark._
 
 import geotrellis.raster.op.focal._
 import geotrellis.raster._
-
+import geotrellis.spark.testkit._
 import org.scalatest.FunSpec
 
 class ModeSpec extends FunSpec with TestEnvironment

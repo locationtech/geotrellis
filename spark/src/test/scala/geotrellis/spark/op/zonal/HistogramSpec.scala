@@ -6,7 +6,7 @@ import geotrellis.spark.testfiles._
 
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
-
+import geotrellis.spark.testkit._
 import geotrellis.vector._
 
 import org.scalatest.FunSpec

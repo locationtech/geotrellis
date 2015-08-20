@@ -28,7 +28,7 @@ object Dependencies {
   )
   val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
-  val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.0"
+  val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.4"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"

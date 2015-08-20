@@ -3,10 +3,9 @@ package geotrellis.spark.op.focal
 import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
-
+import geotrellis.spark.testkit._
 import geotrellis.spark._
 import geotrellis.spark.op.focal._
-
 import org.scalatest._
 
 class SumSpec extends FunSpec

@@ -2,7 +2,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.spark.testfiles._
-
+import geotrellis.spark.testkit._
 import org.scalatest.FunSpec
 
 class RasterRDDSpec extends FunSpec

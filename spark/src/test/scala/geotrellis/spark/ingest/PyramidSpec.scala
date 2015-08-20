@@ -8,7 +8,7 @@ import geotrellis.spark.tiling._
 import geotrellis.proj4.LatLng
 import geotrellis.spark.utils.SparkUtils
 import geotrellis.raster._
-
+import geotrellis.spark.testkit._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.hadoop.fs.Path
 import com.github.nscala_time.time.Imports._

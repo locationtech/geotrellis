@@ -4,7 +4,7 @@ import geotrellis.spark._
 
 import geotrellis.raster.op.elevation._
 import geotrellis.raster._
-
+import geotrellis.spark.testkit._
 import org.scalatest.FunSpec
 
 class SlopeSpec extends FunSpec with TestEnvironment

@@ -2,7 +2,7 @@ package geotrellis.spark.op.elevation
 
 import geotrellis.raster._
 import geotrellis.raster.op.elevation._
-
+import geotrellis.spark.testkit._
 import geotrellis.spark._
 
 import geotrellis.vector.Extent

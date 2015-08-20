@@ -3,6 +3,7 @@ package geotrellis.spark
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff._
+import geotrellis.spark.testkit._
 
 import java.io.File
 
