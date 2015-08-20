@@ -23,7 +23,12 @@ class S3RasterCatalogSpec extends FunSpec
       val attributeStore = new S3AttributeStore(bucket, prefix) {
         override val s3Client = new MockS3Client
       }
-      val catalog = new S3RasterCatalog(bucket, prefix, attributeStore, () => new MockS3Client )
+      val spatialReader = new RasterRDDReader[SpatialKey](attributeStore){
+        override val getS3Client = () => new MockS3Client
+      }
+      val spaceTimeReader = new RasterRDDReader[SpaceTimeKey](attributeStore){
+        override val getS3Client = () => new MockS3Client
+      }
 
       it("should save to s3"){
         val writer = new RasterRDDWriter[SpatialKey](bucket, prefix, ZCurveKeyIndexMethod)(attributeStore){
@@ -33,20 +38,20 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should know when layer exists"){
-        catalog.layerExists(id) should be (true)
-        catalog.layerExists(LayerId("nope", 100)) should be (false)
+        spatialReader.layerExists(id) should be (true)
+        spatialReader.layerExists(LayerId("nope", 100)) should be (false)
       }
 
       it("should load from s3"){
-        val rdd = catalog.query[SpatialKey](id).toRDD
+        val rdd = spatialReader.query(id).toRDD
         rdd.count should equal (42)
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
       }
 
       it("should be able to filter?"){
-        val rdd = catalog
-          .query[SpatialKey](id)
+        val rdd = spatialReader
+          .query(id)
           .where(Intersects(GridBounds(2, 2, 3, 3)))
           .toRDD
           
@@ -59,8 +64,8 @@ class S3RasterCatalogSpec extends FunSpec
 
       it("should work when requested tiles are missing"){
         // actual bound: GridBounds(1,1,6,7)
-        val rdd = catalog
-          .query[SpatialKey](id)
+        val rdd = spatialReader
+          .query(id)
           .where(Intersects(GridBounds(1,1,10,10)))
           .toRDD
         info(s"GridBounds: ${rdd.metaData.gridBounds}")
@@ -69,7 +74,7 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should load out saved tiles") {
-        val rdd = catalog.read[SpatialKey](id)
+        val rdd = spatialReader.read(id)
         rdd.count should be > 0l
         rdd.map(_._1).collect().toSet shouldEqual rdd.map(_._1).collect().toSet
       }
@@ -94,7 +99,7 @@ class S3RasterCatalogSpec extends FunSpec
 
       RasterRDDQueryTest.spatialTest.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpatialKey](id, test.query)
+          val rdd = spatialReader.read(id, test.query)
           info(rdd.metaData.gridBounds.toString)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
@@ -110,20 +115,20 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should load a spacetime layer"){
-        val rdd = catalog.query[SpaceTimeKey](spaceId).toRDD
+        val rdd = spaceTimeReader.query(spaceId).toRDD
         rdd.count should equal (210)
         info(s"RDD count: ${rdd.count}")
         info(rdd.metaData.gridBounds.toString)
       }
 
       it("should list all metadata") {
-        val list = catalog.attributeStore.readAll[S3LayerMetaData]("metadata")
+        val list = spaceTimeReader.attributeStore.readAll[S3LayerMetaData]("metadata")
         list.foreach(s => info(s.toString))
       }
 
       RasterRDDQueryTest.spaceTimeTest.foreach { test =>
         it(test.name){
-          val rdd = catalog.read[SpaceTimeKey](test.layerId, test.query)
+          val rdd = spaceTimeReader.read(test.layerId, test.query)
           rdd.map(_._1).collect should contain theSameElementsAs test.expected
         }
       }

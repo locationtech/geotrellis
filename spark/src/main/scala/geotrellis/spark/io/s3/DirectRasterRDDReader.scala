@@ -3,7 +3,9 @@ package geotrellis.spark.io.s3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import geotrellis.raster.Tile
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.{Reader, AttributeCaching, Writer}
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.utils.KryoWrapper
 import org.apache.spark.SparkContext
 import com.typesafe.scalalogging.slf4j._
 import scala.reflect.ClassTag
@@ -12,11 +14,11 @@ import org.apache.avro._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
-class DirectRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends RasterRDDReader[K] with LazyLogging {
+class DirectRasterRDDReader[K: AvroRecordCodec: Boundable: ClassTag] extends LazyLogging {
   /** Converting lower bound of Range to first Key for Marker */
-  override val indexToPath: (Long, Int) => String = encodeIndex
+  val indexToPath: (Long, Int) => String = encodeIndex
 
-  override def read(
+  def read(
     attributes: S3AttributeStore,
     s3client: ()=>S3Client,
     layerMetaData: S3LayerMetaData,

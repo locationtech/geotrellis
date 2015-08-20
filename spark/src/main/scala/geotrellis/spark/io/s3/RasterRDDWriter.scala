@@ -32,7 +32,7 @@ class RasterRDDWriter[K: SpatialComponent: Boundable: AvroRecordCodec: JsonForma
     require(clobber, "S3 writer does not yet perform a clobber check") // TODO: Check for clobber
 
     val bucket = this.bucket
-    val prefix = makePath(keyPrefix, S3RasterCatalog.layerPath(id))
+    val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
 
     val metadata = S3LayerMetaData(
       layerId = id,
