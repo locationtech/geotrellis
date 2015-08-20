@@ -20,7 +20,7 @@ import com.datastax.driver.core.{ResultSet, Session}
 import org.apache.spark.Logging
 
 class CassandraAttributeStore(val attributeTable: String)(implicit session: CassandraSession) extends AttributeStore with Logging {
-  type ReadableWritable[T] = RootJsonFormat[T]
+  type ReadableWritable[T] = JsonFormat[T]
 
   // Create the attribute table if it doesn't exist
   {
