@@ -1,13 +1,6 @@
 package geotrellis.spark.io
 
-import geotrellis.spark._
-import geotrellis.spark.io.avro.KeyCodecs._
-
 package object s3 {
-  implicit def s3SpatialRasterRDDReader = new DirectRasterRDDReader[SpatialKey]
-
-  implicit def s3SpaceTimeRasterRDDReader = new DirectRasterRDDReader[SpaceTimeKey]
-
   private[s3]
   def maxIndexWidth(maxIndex: Long): Int = {
     def digits(x: Long): Int = if (x < 10) 1 else 1 + digits(x/10)
