@@ -74,6 +74,19 @@ package object mosaic {
   }
 
   implicit class MultiBandTileMerger(val tile: MultiBandTile) {
+    def merge(other: MultiBandTile): MultiBandTile = {
+      val bands: Seq[Tile] =
+        for {
+          bandIndex <- tile.bandCount
+          thisBand = tile.band(bandIndex)
+          thatBand = other.band(bandIndex)
+        } yield {
+          thisBand.merge(thatBand)
+        }
+
+      ArrayMultiBandTile(bands)
+    }
+
     def merge(extent: Extent, otherExtent: Extent, other: MultiBandTile): MultiBandTile =
       merge(extent, otherExtent, other, NearestNeighbor)
 
