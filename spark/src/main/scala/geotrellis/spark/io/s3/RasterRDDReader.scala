@@ -43,8 +43,9 @@ class RasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: JsonForma
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val toPath = (index: Long) => encodeIndex(index, maxWidth)
+    val _getS3Client = getS3Client
 
-    val BC = KryoWrapper((getS3Client, recordCodec, writerSchema))
+    val BC = KryoWrapper((_getS3Client, recordCodec, writerSchema))
 
     val rdd =
       sc.parallelize(bins, bins.size)
