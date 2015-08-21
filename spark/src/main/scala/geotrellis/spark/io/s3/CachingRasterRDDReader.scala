@@ -8,7 +8,7 @@ import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
-import geotrellis.spark.io.{FilteringRasterRDDReader, AttributeCaching}
+import geotrellis.spark.io.{Cache, FilteringRasterRDDReader, AttributeCaching}
 import geotrellis.spark.io.avro.{AvroEncoder, KeyValueRecordCodec, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import org.apache.avro.Schema
@@ -36,7 +36,7 @@ class CachingRasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: Js
     val rasterMetadata = metadata.rasterMetaData
     val queryKeyBounds = rasterQuery(rasterMetadata, keyBounds)
     val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
-    val bins = RasterRDDReader.balancedBin(ranges, numPartitions)
+    val bins = RDDReader.balancedBin(ranges, numPartitions)
 
     logger.debug(s"Loading layer from $bucket $prefix, ${ranges.length} ranges split into ${bins.length} bins")
 
