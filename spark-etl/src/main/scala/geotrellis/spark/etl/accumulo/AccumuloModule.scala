@@ -9,7 +9,12 @@ import geotrellis.spark.etl.{OutputPlugin, InputPlugin}
 
 object AccumuloModule extends AbstractModule {
   override def configure() {
+    val inputBinder = Multibinder.newSetBinder(binder(), classOf[InputPlugin])
+    inputBinder.addBinding().to(classOf[SpatialAccumuloInput])
+    inputBinder.addBinding().to(classOf[SpaceTimeAccumuloInput])
+
     val outputBinder = Multibinder.newSetBinder(binder(), classOf[OutputPlugin])
     outputBinder.addBinding().to(classOf[SpatialAccumuloOutput])
+    outputBinder.addBinding().to(classOf[SpaceTimeAccumuloOutput])
   }
 }

@@ -15,7 +15,7 @@ import spray.json._
 
 object Etl {
   def apply[K: ClassTag: SpatialComponent](args: Seq[String]): Etl[K] = {
-    new Etl(args, s3.S3Module, hadoop.HadoopModule)
+    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
   }
 }
 
