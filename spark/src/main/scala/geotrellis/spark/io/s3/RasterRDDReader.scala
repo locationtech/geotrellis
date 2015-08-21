@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io.json._
-import geotrellis.spark.io.{FilteringRasterRDDReader, AttributeCaching}
+import geotrellis.spark.io.{Cache, FilteringRasterRDDReader, AttributeCaching}
 import geotrellis.spark.io.avro.AvroRecordCodec
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
@@ -14,7 +14,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class RasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag]
-(val attributeStore: S3AttributeStore)(implicit sc: SparkContext)
+(val attributeStore: S3AttributeStore, getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)(implicit sc: SparkContext)
   extends FilteringRasterRDDReader[K] with AttributeCaching[S3LayerMetaData] with LazyLogging {
 
   val getS3Client: () => S3Client = () => S3Client.default
@@ -33,7 +33,8 @@ class RasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: JsonForma
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
     val reader = new RDDReader[K, Tile](bucket, getS3Client)
-    val rdd = reader.read(queryKeyBounds, keyIndex, keyPath, writerSchema, numPartitions)
+    val cache = getCache.map(f => f(id))
+    val rdd = reader.read(queryKeyBounds, keyIndex, keyPath, writerSchema, numPartitions, cache)
     new RasterRDD[K](rdd, rasterMetadata)
   }
 }

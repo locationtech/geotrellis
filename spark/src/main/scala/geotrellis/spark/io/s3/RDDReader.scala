@@ -3,10 +3,12 @@ package geotrellis.spark.io.s3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
+import geotrellis.spark.io.Cache
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.avro.{AvroEncoder, KeyValueRecordCodec, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import org.apache.avro.Schema
+import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -14,7 +16,14 @@ import scala.reflect.ClassTag
 
 class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](bucket: String, getS3Client: () => S3Client)(implicit sc: SparkContext) {
 
-  def read(queryKeyBounds: Seq[KeyBounds[K]], keyIndex: KeyIndex[K], keyPath: Long => String, writerSchema: Schema, numPartitions: Int): RDD[(K, V)] = {
+  def read(
+    queryKeyBounds: Seq[KeyBounds[K]],
+    keyIndex: KeyIndex[K],
+    keyPath: Long => String,
+    writerSchema: Schema,
+    numPartitions: Int,
+    cache: Option[Cache[Long, Array[Byte]]] = None
+  ): RDD[(K, V)] = {
     val bucket = this.bucket
     val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
     val bins = RDDReader.balancedBin(ranges, numPartitions)
@@ -23,12 +32,12 @@ class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: Cla
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _getS3Client = getS3Client
 
-    val BC = KryoWrapper((_getS3Client, recordCodec, writerSchema))
+    val BC = KryoWrapper((_getS3Client, recordCodec, writerSchema, cache))
 
     val rdd =
       sc.parallelize(bins, bins.size)
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          val (getS3Client, recCodec, schema) = BC.value
+          val (getS3Client, recCodec, schema, cache) = BC.value
           val s3client = getS3Client()
 
           val tileSeq: Iterator[Seq[(K, V)]] =
@@ -38,10 +47,20 @@ class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: Cla
               index <- range._1 to range._2
             } yield {
               val path = keyPath(index)
+              val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
 
               try {
-                val is = s3client.getObject(bucket, path).getObjectContent
-                val bytes = org.apache.commons.io.IOUtils.toByteArray(is)
+                val bytes: Array[Byte] =
+                  cache match {
+                    case Some(cache) =>
+                      cache(index).getOrElse {
+                        val s3Bytes = getS3Bytes()
+                        cache.update(index, s3Bytes)
+                        s3Bytes
+                      }
+                    case None =>
+                      getS3Bytes()
+                  }
                 val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
                 recs.filter { row => includeKey(row._1) }
               } catch {
