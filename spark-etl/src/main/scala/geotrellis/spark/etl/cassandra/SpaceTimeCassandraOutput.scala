@@ -14,10 +14,6 @@ class SpaceTimeCassandraOutput extends CassandraOutput {
 
   def apply[K](id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]) = {
 
-    // AccumuloRasterCatalog()(getInstance(props), rdd.sparkContext)
-    //  .writer[SpaceTimeKey](method.asInstanceOf[KeyIndexMethod[SpaceTimeKey]], props("table"))
-    //  .write(id, rdd.asInstanceOf[RasterRDD[SpaceTimeKey]])
-
     implicit val sparkContext = rdd.sparkContext
     Cassandra.withSession(props("host"), props("keyspace")) { implicit session =>
       CassandraRasterCatalog()
