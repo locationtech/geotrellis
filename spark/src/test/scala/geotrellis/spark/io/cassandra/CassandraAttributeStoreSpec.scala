@@ -1,23 +1,12 @@
 package geotrellis.spark.io.cassandra
 
-import java.io.IOException
-
-import geotrellis.raster._
-import geotrellis.raster.io.json._
 import geotrellis.raster.histogram._
-
+import geotrellis.raster.io.json._
 import geotrellis.spark._
-
-import geotrellis.spark.testfiles._
 import geotrellis.spark.op.stats._
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-import org.joda.time.DateTime
+import geotrellis.spark.testfiles._
 import org.scalatest._
-
-import org.apache.spark.{Logging, SparkConf}
-import com.datastax.spark.connector.cql.CassandraConnector
+import spray.json._
 
 class CassandraAttributeStoreSpec extends FunSpec
     with Matchers

@@ -1,8 +1,7 @@
 package geotrellis.spark.io.cassandra
 
 import geotrellis.spark._
-
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.{DateTime, DateTimeZone}
 
 package object spacetime {
   private[spacetime] def timeChunk(time: DateTime): String =

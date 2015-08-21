@@ -1,22 +1,15 @@
 package geotrellis.spark.io.cassandra.spatial
 
 import java.nio.ByteBuffer
+import geotrellis.spark.io.avro.KeyCodecs._
 
-import scala.collection.mutable.ArrayBuffer
-import scala.util.matching.Regex
-
-import geotrellis.spark.io.index.zcurve._
-import geotrellis.raster._
+import com.datastax.spark.connector.rdd.CassandraRDD
 import geotrellis.spark._
 import geotrellis.spark.io.cassandra._
 import geotrellis.spark.io.index._
-import geotrellis.spark.utils._
-
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import com.datastax.spark.connector.rdd.CassandraRDD
-import com.datastax.spark.connector._
+import scala.collection.mutable.ArrayBuffer
 
 object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
 
@@ -31,27 +24,20 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
     val rdds = ArrayBuffer[CassandraRDD[(String, ByteBuffer)]]()
 
     val ranges = queryKeyBounds.map{ index.indexRanges(_) }.flatten
-    logInfo(s"queryKeyBounds has ${ranges.length} ranges")
+    logger.debug(s"queryKeyBounds has ${ranges.length} ranges")
 
     for (range <- ranges) {
-      logInfo(s"range has ${range.toString()} ")
+      logger.debug(s"range has ${range.toString()} ")
     }
 
     for ( bounds <- queryKeyBounds ) {
       tileBoundSet = true
 
-      /*
-      KeyBounds(minKey, maxKey of K Type)
-
-      SpatialKey
-      def _1 = col
-      def _2 = row
-       */
       for(row <- bounds.minKey._2 to bounds.maxKey._2) {
         val min = index.toIndex(SpatialKey(bounds.minKey._1, row))
-        logInfo(s"index.toIndex(SpatialKey(${bounds.minKey._1}, ${row}))")
+        logger.debug(s"index.toIndex(SpatialKey(${bounds.minKey._1}, ${row}))")
         val max = index.toIndex(SpatialKey(bounds.maxKey._1, row))
-        logInfo(s"index.toIndex(SpatialKey(${bounds.maxKey._1}, ${row}))")
+        logger.debug(s"index.toIndex(SpatialKey(${bounds.maxKey._1}, ${row}))")
         rdds += rdd.where("zoom = ? AND indexer >= ? AND indexer <= ?", layerId.zoom, min, max)
       }
 
@@ -61,6 +47,7 @@ object SpatialRasterRDDReader extends RasterRDDReader[SpatialKey] {
       rdds += rdd.where("zoom = ?", layerId.zoom)
     }
 
+    // TODO: eventually find a more performant approach than union of thousands of RDDs
     rdd.context.union(rdds.toSeq).asInstanceOf[RDD[(String, ByteBuffer)]]
   }
 }

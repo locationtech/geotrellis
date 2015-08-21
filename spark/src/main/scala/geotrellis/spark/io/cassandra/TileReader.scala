@@ -1,20 +1,15 @@
 package geotrellis.spark.io.cassandra
 
+import com.datastax.driver.core.ResultSet
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec, TupleCodec}
 import geotrellis.spark.io.index._
-import geotrellis.raster._
 import geotrellis.spark.utils._
 
-import org.apache.spark.SparkContext
+abstract class TileReader[K: AvroRecordCodec] {
 
-import scala.collection.JavaConversions._
-
-import com.datastax.driver.core.ResultSet
-
-import java.nio.ByteBuffer
-
-trait TileReader[K] {
   def collectTile(
     layerId: LayerId,
     kIndex: KeyIndex[K],
@@ -28,6 +23,7 @@ trait TileReader[K] {
     index: KeyIndex[K]
   )(key: K)(implicit session: CassandraSession): Tile = {
 
+    val readCodec = KryoWrapper(TupleCodec[K, Tile])
     val CassandraLayerMetaData(_, rasterMetaData, tileTable) = cassandraLayerMetaData
     val results = collectTile(layerId, index, tileTable, key)
 
@@ -44,13 +40,7 @@ trait TileReader[K] {
     val byteArray = new Array[Byte](value.remaining)
     value.get(byteArray, 0, byteArray.length)
 
-    val (_, tileBytes) = KryoSerializer.deserialize[(K, Array[Byte])](byteArray)
-
-    ArrayTile.fromBytes(
-      tileBytes,
-      rasterMetaData.cellType,
-      rasterMetaData.tileLayout.tileCols,
-      rasterMetaData.tileLayout.tileRows
-    )
+    val (_, tile) = AvroEncoder.fromBinary(byteArray)(readCodec.value)
+    tile
   }
 }

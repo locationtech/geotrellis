@@ -1,18 +1,15 @@
 package geotrellis.spark.io.cassandra
 
+import com.typesafe.config.ConfigFactory
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
-import geotrellis.spark.op.stats._
-import geotrellis.raster._
-
+import geotrellis.spark.io.json._
 import org.apache.spark.SparkContext
-
-import com.typesafe.config.{ConfigFactory,Config}
+import spray.json._
 
 import scala.reflect._
-import spray.json._
 
 object CassandraRasterCatalog {
   def apply()(implicit session: CassandraSession, sc: SparkContext): CassandraRasterCatalog = {
@@ -56,7 +53,6 @@ class CassandraRasterCatalog(
   ): Writer[LayerId, RasterRDD[K]] = {
     new Writer[LayerId, RasterRDD[K]] {
       def write(layerId: LayerId, rdd: RasterRDD[K]): Unit = {
-        // Persist since we are both calculating a histogram and saving tiles.
         rdd.persist()
 
         val md =
