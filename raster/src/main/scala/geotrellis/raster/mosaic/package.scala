@@ -7,8 +7,18 @@ import spire.syntax.cfor._
 
 package object mosaic {
 
+  implicit def blankTile = new BlankTile[Tile] {
+    def makeFrom(prototype: Tile, cellType: CellType, cols: Int, rows: Int) =
+      ArrayTile.empty(cellType, cols, rows)
+  }
+
+  implicit def blankMultiBandTile = new BlankTile[MultiBandTile] {
+    def makeFrom(prototype: MultiBandTile, cellType: CellType, cols: Int, rows: Int) =
+      ArrayMultiBandTile.empty(prototype.bandCount, cellType, cols, rows)
+  }
+
   /** Tile methods used by the mosaicing function to merge tiles. */
-  implicit class TileMerger(val tile: Tile) {
+  implicit class TileMerger(val tile: Tile) extends MergeTile[Tile] {
     def merge(other: Tile): Tile = {
       val mutableTile = tile.mutable
       Seq(tile, other).assertEqualDimensions
@@ -32,9 +42,6 @@ package object mosaic {
 
       mutableTile
     }
-
-    def merge(extent: Extent, otherExtent: Extent, other: Tile): Tile =
-      merge(extent, otherExtent, other, NearestNeighbor)
 
     def merge(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod): Tile =
       otherExtent & extent match {
@@ -73,30 +80,27 @@ package object mosaic {
       }
   }
 
-  implicit class MultiBandTileMerger(val tile: MultiBandTile) {
+  implicit class MultiBandTileMerger(val tile: MultiBandTile) extends MergeTile[MultiBandTile] {
     def merge(other: MultiBandTile): MultiBandTile = {
       val bands: Seq[Tile] =
         for {
-          bandIndex <- tile.bandCount
-          thisBand = tile.band(bandIndex)
-          thatBand = other.band(bandIndex)
+          bandIndex <- 0 until tile.bandCount
         } yield {
+          val thisBand = tile.band(bandIndex)
+          val thatBand = other.band(bandIndex)
           thisBand.merge(thatBand)
         }
 
       ArrayMultiBandTile(bands)
     }
 
-    def merge(extent: Extent, otherExtent: Extent, other: MultiBandTile): MultiBandTile =
-      merge(extent, otherExtent, other, NearestNeighbor)
-
     def merge(extent: Extent, otherExtent: Extent, other: MultiBandTile, method: ResampleMethod): MultiBandTile = {
       val bands: Seq[Tile] =
         for {
-          bandIndex <- tile.bandCount
-          thisBand = tile.band(bandIndex)
-          thatBand = other.band(bandIndex)
+          bandIndex <- 0 until tile.bandCount
         } yield {
+          val thisBand = tile.band(bandIndex)
+          val thatBand = other.band(bandIndex)
           thisBand.merge(extent, otherExtent, thatBand, method)
         }
 

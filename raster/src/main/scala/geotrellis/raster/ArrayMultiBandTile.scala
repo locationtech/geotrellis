@@ -14,6 +14,10 @@ object ArrayMultiBandTile {
 
   def apply(bands: Array[Tile]): ArrayMultiBandTile =
     new ArrayMultiBandTile(bands)
+
+  def empty(bands: Int, t: CellType, cols: Int, rows: Int): ArrayMultiBandTile = {
+    ArrayMultiBandTile(for (_ <- 0 until bands) yield ArrayTile.empty(t, cols, rows))
+  }
 }
 
 class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {

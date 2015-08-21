@@ -10,14 +10,14 @@ import org.apache.spark.SparkContext._
 import scala.reflect.ClassTag
 
 object Tiler {
-  def cutTiles[T, K: SpatialComponent: ClassTag] (
+  def cutTiles[T, K: SpatialComponent: ClassTag, TileType: BlankTile] (
     getExtent: T=> Extent,
     createKey: (T, SpatialKey) => K,
-    rdd: RDD[(T, Tile)],
+    rdd: RDD[(T, TileType)],
     mapTransform: MapKeyTransform,
     cellType: CellType,
     tileLayout: TileLayout
-  ): RDD[(K, Tile)] =
+  )(implicit ev: TileType => MergeTile[TileType]): RDD[(K, TileType)] =
     rdd
       .flatMap { tup =>
         val (inKey, tile) = tup
@@ -26,9 +26,9 @@ object Tiler {
           .coords
           .map  { spatialComponent =>
             val outKey = createKey(inKey, spatialComponent)
-            val tmsTile = ArrayTile.empty(cellType, tileLayout.tileCols, tileLayout.tileRows)
+            val tmsTile: TileType = implicitly[BlankTile[TileType]].makeFrom(tile, cellType, tileLayout.tileCols, tileLayout.tileRows)
             tmsTile.merge(mapTransform(outKey), extent, tile)
-
+            tmsTile.merge(tile)
             (outKey, tmsTile)
           }
        }
