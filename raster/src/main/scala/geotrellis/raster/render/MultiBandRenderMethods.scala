@@ -9,18 +9,6 @@ trait MultiBandRenderMethods {
 
   def renderPng(): Png = {
 
-    def resampleToByte(t: Tile, minVal: Int, maxVal: Int): Tile = {
-      val byteTile = ByteArrayTile.empty(t.cols, t.rows)
-      t.foreach { (col, row, z) =>
-        val v = if (isData(z))
-          ((z - minVal).toDouble / maxVal) * 255
-        else 0
-
-        byteTile.set(col, row, v.toInt)
-      }
-      byteTile
-    }
-
     assert(tile.bandCount == 3)
 
     var (rMin, gMin, bMin) = (Int.MaxValue, Int.MaxValue, Int.MaxValue)
@@ -44,20 +32,20 @@ trait MultiBandRenderMethods {
     val rgb =
       tile.convert(TypeInt).combine(0, 1, 2) { (r, g, b) =>
         val scaledR =
-          if (isData(r)) { ((r - rMin).toDouble / rMax).toInt * 255 }
+          if (isData(r)) { (((r - rMin).toDouble / rMax) * 255).toInt }
           else 0
 
         val scaledG =
-          if (isData(g)) { ((g - gMin).toDouble / gMax).toInt * 255 }
+          if (isData(g)) { (((g - gMin).toDouble / gMax) * 255).toInt }
           else 0
 
         val scaledB =
-          if (isData(b)) { ((b - bMin).toDouble / bMax).toInt * 255 }
+          if (isData(b)) { (((b - bMin).toDouble / bMax) * 255).toInt }
           else 0
 
         if(scaledR + scaledG + scaledB == 0) 0
         else {
-          (scaledR << 24) | (scaledG << 16) | (scaledB << 8) | 0xFF
+          ((scaledR & 0xFF) << 24) | ((scaledG & 0xFF) << 16) | ((scaledB & 0xFF) << 8) | 0xFF
         }
       }
 

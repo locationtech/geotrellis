@@ -8,9 +8,8 @@ import java.io.File
 import spire.syntax.cfor._
 
 object CloudRemoval {
-  def cloudRemovalSingleBand(images: Array[Tile]) : Tile = {
-    val threshold = 10000
 
+  def cloudRemovalSingleBand(images: Array[Tile], threshold: Int) : Tile = {
     val headImage = images(0)
     val result = ArrayTile.empty(headImage.cellType, headImage.cols, headImage.rows)
 
@@ -33,8 +32,7 @@ object CloudRemoval {
     result
   }
 
-  def cloudRemovalMultiBand(images: Array[MultiBandTile]): MultiBandTile = {
-
+  def cloudRemovalMultiBand(images: Array[MultiBandTile], threshold: Int): MultiBandTile = {
     val numBands = images(0).bandCount
     val numImages = images.length
 
@@ -46,35 +44,14 @@ object CloudRemoval {
       cfor(0)(j => j < numImages, j => j + 1) { j =>
         singleTiles(j) = images(j).band(i)
       }
-      cloudlessTiles(i) = cloudRemovalSingleBand(singleTiles)
+      cloudlessTiles(i) = cloudRemovalSingleBand(singleTiles, threshold)
     }
+
     ArrayMultiBandTile(cloudlessTiles)
   }
 
-  def main(args: Array[String]) : Unit = {
-    val dirRed = new File(args(0))
-    val dirGreen = new File(args(1))
-    val dirBlue = new File(args(2))
-
-    val fileListRed = dirRed.listFiles.filter(_.isFile).toList.toArray
-    val fileListGreen = dirGreen.listFiles.filter(_.isFile).toList.toArray
-    val fileListBlue = dirBlue.listFiles.filter(_.isFile).toList.toArray
-
-    val numImages = fileListRed.length
-
-    assert(numImages == fileListBlue.length && numImages == fileListGreen.length)
-
-    val multiBands = Array.ofDim[MultiBandTile](numImages)
-
-    cfor(0)(_ < numImages, _ + 1) { i =>
-      val red = SingleBandGeoTiff(fileListRed(i).toString).tile
-      val green = SingleBandGeoTiff(fileListGreen(i).toString).tile
-      val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile
-
-      multiBands(i) = ArrayMultiBandTile(Array(red, green, blue))
-    }
-
-    val cloudless = cloudRemovalMultiBand(multiBands)
-    cloudless.renderPng().write("/tmp/cloudless.png")
+  def cloudRemovalMultiBand(images: Array[MultiBandTile]): MultiBandTile = {
+    cloudRemovalMultiBand(images, 10000)
   }
+
 }
