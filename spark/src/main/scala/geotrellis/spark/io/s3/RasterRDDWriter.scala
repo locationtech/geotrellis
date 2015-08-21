@@ -1,21 +1,14 @@
 package geotrellis.spark.io.s3
 
-import java.io.ByteArrayInputStream
-import java.util.concurrent.Executors
-import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult, ObjectMetadata, PutObjectRequest}
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.KeyCodecs._
-import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod, KeyIndex}
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.io.index.KeyIndexMethod
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
-import scalaz.concurrent.Task
-import scalaz.stream.{Process, nondeterminism}
 import com.typesafe.scalalogging.slf4j._
 
 class RasterRDDWriter[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag](
