@@ -40,23 +40,19 @@ class CachingRasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: Js
 
     logger.debug(s"Loading layer from $bucket $prefix, ${ranges.length} ranges split into ${bins.length} bins")
 
-    val indexToPath: (Long, Int) => String = encodeIndex
     val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.read[JsObject](id, "schema").toString())
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+    val recordCodec = KeyValueRecordCodec[K, Tile]
+    val boundable = implicitly[Boundable[K]]
+    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val toPath = (index: Long) => encodeIndex(index, maxWidth)
 
-    val BC = KryoWrapper((
-      getS3Client,
-      { (index: Long) => indexToPath(index, maxWidth) },
-      { (key: K) => queryKeyBounds.includeKey(key) },
-      KeyValueRecordCodec[K, Tile],
-      writerSchema,
-      cacheDirectory
-      ))
+    val BC = KryoWrapper((getS3Client, recordCodec, writerSchema, cacheDirectory))
 
     val rdd =
       sc.parallelize(bins, bins.size)
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          val (getS3Client, toPath, includeKey, recCodec, schema, cacheDir) = BC.value
+          val (getS3Client, recCodec, schema, cacheDir) = BC.value
           val s3client = getS3Client()
 
           val tileSeq: Iterator[Seq[(K, Tile)]] =
