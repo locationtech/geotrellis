@@ -13,15 +13,6 @@ trait CassandraOutput extends OutputPlugin {
   val name = "cassandra"
   val requiredKeys = Array("host", "keyspace", "table")
 
-  // Attention, spark.cassandra.connection.host needs to be set
-  // at the creation of the spark context, eg with spark-submit --conf
-  def getSession(props: Map[String, String]) : CassandraSession = {
-    val sparkConf = new SparkConf()
-    sparkConf.set("spark.cassandra.connection.host", props("host"))
-    val connector = CassandraConnector(sparkConf)
-    new CassandraSession(connector, props("keyspace"))
-  }
-
   def attributes(props: Map[String, String]) = {
     implicit val session = getSession(props)
     CassandraAttributeStore("attributes")
