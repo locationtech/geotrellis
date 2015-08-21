@@ -27,7 +27,9 @@ abstract class RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: Clas
   def write(rdd: RDD[(K, V)], keyIndex: KeyIndex[K], keyPath: Long => String, oneToOne: Boolean): Unit = {
     implicit val sc = rdd.sparkContext
     val bucket = this.bucket
-    val BC = KryoWrapper((getS3Client, KeyValueRecordCodec[K, V]))
+    val codec  = KeyValueRecordCodec[K, V]
+
+    val BC = KryoWrapper((getS3Client, codec))
 
     if (oneToOne) {
       rdd.map { case row => keyIndex.toIndex(row._1) -> Vector(row) }
