@@ -33,20 +33,20 @@ object Tiler {
           }
        }
 
-  def apply[T, K: SpatialComponent: ClassTag](
+  def apply[T, K: SpatialComponent: ClassTag, TileType: BlankTile: ClassTag](
     getExtent: T=> Extent,
     createKey: (T, SpatialKey) => K,
-    rdd: RDD[(T, Tile)],
+    rdd: RDD[(T, TileType)],
     mapTransform: MapKeyTransform,
     cellType: CellType,
     tileLayout: TileLayout
-  ): RDD[(K, Tile)] =
+  )(implicit ev: TileType => MergeTile[TileType]): RDD[(K, TileType)] =
     cutTiles(getExtent, createKey, rdd, mapTransform, cellType, tileLayout)
-      .reduceByKey { case (tile1: Tile, tile2: Tile) =>
+      .reduceByKey { case (tile1: TileType, tile2: TileType) =>
         tile1.merge(tile2)
       }
 
-  def apply[T, K: SpatialComponent: ClassTag]
+  def apply[T, K: SpatialComponent: ClassTag, TileType: BlankTile]
     (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
     (rdd: RDD[(T, Tile)], metaData: RasterMetaData)
       : RasterRDD[K] = {
@@ -54,24 +54,24 @@ object Tiler {
     new RasterRDD(tiles, metaData)
   }
 
-  def apply[T: IngestKey, K: SpatialComponent: ClassTag]
-    (rdd: RDD[(T, Tile)], metaData: RasterMetaData)
-    (createKey: (T, SpatialKey) => K)
-      : RasterRDD[K] = {
-    val getExtent = (inKey: T) => inKey.projectedExtent.extent
-    val tiles = apply(getExtent, createKey)(rdd, metaData)
-    new RasterRDD(tiles, metaData)
-  }
+//  def apply[T: IngestKey, K: SpatialComponent: ClassTag]
+//    (rdd: RDD[(T, Tile)], metaData: RasterMetaData)
+//    (createKey: (T, SpatialKey) => K)
+//      : RasterRDD[K] = {
+//    val getExtent = (inKey: T) => inKey.projectedExtent.extent
+//    val tiles = apply(getExtent, createKey)(rdd, metaData)
+//    new RasterRDD(tiles, metaData)
+//  }
 
-  def apply[K: SpatialComponent: ClassTag]
-    ( rdd: RDD[(Extent, Tile)],
-      metaData: RasterMetaData,
-      createKey: (Extent, SpatialKey) => K
-    ): RasterRDD[K] =
-  {
-    val getExtent = (inKey: Extent) => inKey
-    val tiles = apply(getExtent, createKey)(rdd, metaData)
-    new RasterRDD(tiles, metaData)
-  }
+//  def apply[K: SpatialComponent: ClassTag]
+//    ( rdd: RDD[(Extent, Tile)],
+//      metaData: RasterMetaData,
+//      createKey: (Extent, SpatialKey) => K
+//    ): RasterRDD[K] =
+//  {
+//    val getExtent = (inKey: Extent) => inKey
+//    val tiles = apply(getExtent, createKey)(rdd, metaData)
+//    new RasterRDD(tiles, metaData)
+//  }
 
 }
