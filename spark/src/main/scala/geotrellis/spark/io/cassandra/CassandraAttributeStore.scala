@@ -1,5 +1,6 @@
 package geotrellis.spark.io.cassandra
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -17,9 +18,7 @@ import com.datastax.driver.core.{ BoundStatement, Cluster, Row }
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.{ResultSet, Session}
 
-import org.apache.spark.Logging
-
-class CassandraAttributeStore(val attributeTable: String)(implicit session: CassandraSession) extends AttributeStore with Logging {
+class CassandraAttributeStore(val attributeTable: String)(implicit session: CassandraSession) extends AttributeStore with LazyLogging {
   type ReadableWritable[T] = JsonFormat[T]
 
   // Create the attribute table if it doesn't exist

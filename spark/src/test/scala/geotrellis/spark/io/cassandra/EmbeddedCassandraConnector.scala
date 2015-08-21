@@ -3,7 +3,6 @@ package geotrellis.spark.io.cassandra
 import com.datastax.driver.core.Session
 import com.datastax.spark.connector.cql._
 import org.apache.spark.SparkContext
-import org.apache.spark.Logging
 
 import java.net.InetAddress
 
