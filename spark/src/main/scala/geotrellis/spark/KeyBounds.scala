@@ -11,6 +11,12 @@ case class KeyBounds[K](
 }
 
 object KeyBounds {
+  def includeKey[K](seq: Seq[KeyBounds[K]], key: K)(implicit boundable: Boundable[K]) = {
+    seq
+      .map{ kb => boundable.includes(key, kb) }
+      .foldLeft(false)(_ || _)
+  }
+
   implicit class KeyBoundsSeqMethods[K: Boundable](seq: Seq[KeyBounds[K]]){
     def includeKey(key: K): Boolean = {
       val boundable = implicitly[Boundable[K]]
