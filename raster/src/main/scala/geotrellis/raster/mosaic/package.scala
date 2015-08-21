@@ -6,15 +6,16 @@ import geotrellis.raster.resample._
 import spire.syntax.cfor._
 
 package object mosaic {
+
   /** Tile methods used by the mosaicing function to merge tiles. */
   implicit class TileMerger(val tile: Tile) {
     def merge(other: Tile): Tile = {
       val mutableTile = tile.mutable
       Seq(tile, other).assertEqualDimensions
-      if(tile.cellType.isFloatingPoint) {
+      if (tile.cellType.isFloatingPoint) {
         cfor(0)(_ < tile.rows, _ + 1) { row =>
           cfor(0)(_ < tile.cols, _ + 1) { col =>
-            if(isNoData(tile.getDouble(col, row))) {
+            if (isNoData(tile.getDouble(col, row))) {
               mutableTile.setDouble(col, row, other.getDouble(col, row))
             }
           }
@@ -22,7 +23,7 @@ package object mosaic {
       } else {
         cfor(0)(_ < tile.rows, _ + 1) { row =>
           cfor(0)(_ < tile.cols, _ + 1) { col =>
-            if(isNoData(tile.get(col, row))) {
+            if (isNoData(tile.get(col, row))) {
               mutableTile.setDouble(col, row, other.get(col, row))
             }
           }
@@ -40,14 +41,14 @@ package object mosaic {
         case Some(sharedExtent) =>
           val mutableTile = tile.mutable
           val re = RasterExtent(extent, tile.cols, tile.rows)
-          val gb @ GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
+          val gb@GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
           val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
 
-          if(tile.cellType.isFloatingPoint) {
+          if (tile.cellType.isFloatingPoint) {
             val interpolate = Resample(method, other, otherExtent).resampleDouble _
             cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
-                if(isNoData(tile.getDouble(col, row))) {
+                if (isNoData(tile.getDouble(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
                   mutableTile.setDouble(col, row, interpolate(x, y))
                 }
@@ -57,7 +58,7 @@ package object mosaic {
             val interpolate = Resample(method, other, otherExtent).resample _
             cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
-                if(isNoData(tile.get(col, row))) {
+                if (isNoData(tile.get(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
                   mutableTile.set(col, row, interpolate(x, y))
                 }
@@ -70,5 +71,23 @@ package object mosaic {
         case _ =>
           tile
       }
+  }
+
+  implicit class MultiBandTileMerger(val tile: MultiBandTile) {
+    def merge(extent: Extent, otherExtent: Extent, other: MultiBandTile): MultiBandTile =
+      merge(extent, otherExtent, other, NearestNeighbor)
+
+    def merge(extent: Extent, otherExtent: Extent, other: MultiBandTile, method: ResampleMethod): MultiBandTile = {
+      val bands: Seq[Tile] =
+        for {
+          bandIndex <- tile.bandCount
+          thisBand = tile.band(bandIndex)
+          thatBand = other.band(bandIndex)
+        } yield {
+          thisBand.merge(extent, otherExtent, thatBand, method)
+        }
+
+      ArrayMultiBandTile(bands)
+    }
   }
 }
