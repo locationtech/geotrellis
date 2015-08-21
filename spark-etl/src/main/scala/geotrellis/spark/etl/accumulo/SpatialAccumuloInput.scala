@@ -20,7 +20,7 @@ class SpatialAccumuloInput extends AccumuloInput {
       case Some(extent) => catalog.query[SpatialKey](id).where(Intersects(extent)).toRDD
       case None => catalog.read[SpatialKey](id)
     }
-    LayoutLevel(id.zoom, rdd.metaData.tileLayout) -> rdd.asInstanceOf[RasterRDD[K]]
+    id.zoom -> rdd.asInstanceOf[RasterRDD[K]]
   }
 
 }
