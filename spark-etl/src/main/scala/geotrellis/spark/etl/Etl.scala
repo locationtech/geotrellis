@@ -15,10 +15,10 @@ import spray.json._
 
 object Etl {
   def apply[K: ClassTag: SpatialComponent](args: Seq[String])(fLayoutScheme: Int => LayoutScheme): Etl[K] =
-    new Etl(args, s3.S3Module, hadoop.HadoopModule)(fLayoutScheme)
+    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(fLayoutScheme)
 
   def apply[K: ClassTag: SpatialComponent](args: Seq[String]) =
-    new Etl(args, s3.S3Module, hadoop.HadoopModule)(ZoomedLayoutScheme(_))
+    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(ZoomedLayoutScheme(_))
 }
 
 case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*)(fLayoutScheme: Int => LayoutScheme) extends LazyLogging {
