@@ -20,7 +20,7 @@ object Pyramid extends Logging {
       RasterMetaData(
         metaData.cellType,
         nextLevel,
-        metaData.dataExtent, // TODO no way, these have to change
+        metaData.dataExtent,
         metaData.crs
       )
 
