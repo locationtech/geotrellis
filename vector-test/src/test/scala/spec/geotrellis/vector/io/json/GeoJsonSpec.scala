@@ -217,5 +217,11 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val t12 = jsonFeatCol.extractFeatures[LineFeature[SomeData]]
     t12 should be (Seq(linefeature2))
 
+    // catch java.lang.AssertionError from Polygon.scala "Empty Geometry"
+    intercept[java.lang.AssertionError] {
+      val line2 = Line(point1, point1, point1, point1, point1)
+      val poly2: Polygon = Polygon(line2)
+      poly2.toGeoJson.extractGeometries[Polygon] should be (Seq())
+    }
   }
 }

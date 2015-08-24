@@ -57,16 +57,21 @@ package object json extends GeoJsonSupport {
     def extractGeometries[G <: Geometry : JsonReader: TypeTag]: Seq[G] =
       Try(s.parseJson.convertTo[G]) match {
         case Success(g) => Seq(g)
-        case _ =>
+        case Failure(_: spray.json.DeserializationException) =>
           Try(s.parseGeoJson[JsonFeatureCollection]) match {
             case Success(featureCollection) =>
               featureCollection.getAll[G]
-            case _ =>
+            case Failure(_: spray.json.DeserializationException) =>
               Try(s.parseGeoJson[GeometryCollection]) match {
                 case Success(gc) => gc.getAll[G]
-                case _ => Seq()
+                case Failure(_: spray.json.DeserializationException) => Seq()
+                case Failure(e) => throw e
               }
+            case Failure(e) =>
+              throw e
           }
+        case Failure(e) =>
+          throw e
       }
 
     /**
@@ -78,12 +83,15 @@ package object json extends GeoJsonSupport {
     def extractFeatures[F <: Feature[_, _]: JsonReader]: Seq[F] =
       Try(s.parseJson.convertTo[F]) match {
         case Success(g) => Seq(g)
-        case _ =>
+        case Failure(_: spray.json.DeserializationException) =>
           Try(s.parseGeoJson[JsonFeatureCollection]) match {
             case Success(featureCollection) =>
               featureCollection.getAll[F]
-            case _ => Seq()
+            case Failure(_: spray.json.DeserializationException) => Seq()
+            case Failure(e) => throw e
           }
+        case Failure(e) =>
+          throw e
       }
   }
 
