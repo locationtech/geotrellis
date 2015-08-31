@@ -337,6 +337,20 @@ object GeotrellisBuild extends Build {
   defaultAssemblySettings
 
 
+  // Project: examples
+  lazy val examples: Project =
+    Project("examples", file("examples"))
+      .settings(examplesSettings: _*)
+      .dependsOn(raster, vector)
+
+  lazy val examplesSettings =
+    Seq(
+      name := "geotrellis-examples",
+      fork := true
+    ) ++
+  spray.revolver.RevolverPlugin.Revolver.settings ++
+  defaultAssemblySettings
+
   // Project: admin
   lazy val admin: Project =
     Project("admin", file("admin"))
