@@ -8,7 +8,6 @@ lazy val commonSettings = Seq(
   organization := "com.azavea.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url(Info.url)),
-  conflictWarning in ThisBuild := ConflictWarning.disable,  // disable annoying warnings about 2.10.x quasiquotes
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
