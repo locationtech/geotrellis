@@ -7,16 +7,6 @@ import spire.syntax.cfor._
 
 package object mosaic {
 
-  implicit def blankTile = new BlankTile[Tile] {
-    def makeFrom(prototype: Tile, cellType: CellType, cols: Int, rows: Int) =
-      ArrayTile.empty(cellType, cols, rows)
-  }
-
-  implicit def blankMultiBandTile = new BlankTile[MultiBandTile] {
-    def makeFrom(prototype: MultiBandTile, cellType: CellType, cols: Int, rows: Int) =
-      ArrayMultiBandTile.empty(prototype.bandCount, cellType, cols, rows)
-  }
-
   /** Tile methods used by the mosaicing function to merge tiles. */
   implicit class TileMerger(val tile: Tile) extends MergeTile[Tile] {
     def merge(other: Tile): Tile = {

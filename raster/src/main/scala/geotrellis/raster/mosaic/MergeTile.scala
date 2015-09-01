@@ -13,7 +13,3 @@ trait MergeTile[T] {
     merge(extent, otherExtent, other, NearestNeighbor)
 }
 
-trait BlankTile[T]{
-  def makeFrom(prototype: T, cellType: CellType, cols: Int, rows: Int): T
-}
-

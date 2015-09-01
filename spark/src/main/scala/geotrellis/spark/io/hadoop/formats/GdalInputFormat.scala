@@ -73,7 +73,7 @@ object NetCdfBand {
     )
   }
 
-  implicit def tiler: Tiler[NetCdfBand, SpaceTimeKey] = {
+  implicit def tiler: Tiler[NetCdfBand, SpaceTimeKey, Tile] = {
     val getExtent = (inKey: NetCdfBand) => inKey.extent
     val createKey = (inKey: NetCdfBand, spatialComponent: SpatialKey) => SpaceTimeKey(spatialComponent, inKey.time)
     Tiler(getExtent, createKey)

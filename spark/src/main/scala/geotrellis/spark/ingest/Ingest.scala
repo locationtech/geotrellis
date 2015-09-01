@@ -60,7 +60,7 @@ object Ingest {
   def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag]
     (sourceTiles: RDD[(T, Tile)], destCRS: CRS, layoutScheme: LayoutScheme, pyramid: Boolean = false)
     (sink: (RasterRDD[K], Int) => Unit)
-    (implicit tiler: Tiler[T, K]): Unit =
+    (implicit tiler: Tiler[T, K, Tile]): Unit =
   {
     def sinkLevels(rdd: RasterRDD[K], level: Int)(free: => Unit): Unit = {
       if (pyramid && level >= 1) {
@@ -82,7 +82,17 @@ object Ingest {
         key.projectedExtent.extent
       }
 
-    val rasterRdd = tiler(reprojectedTiles, rasterMetaData).cache()        
-    sinkLevels(rasterRdd, layoutLevel){ reprojectedTiles.unpersist(blocking = false) }      
+    val tiledRdd = tiler(reprojectedTiles, rasterMetaData).cache()
+    val rasterRdd = new RasterRDD(tiledRdd, rasterMetaData)
+    sinkLevels(rasterRdd, layoutLevel){ reprojectedTiles.unpersist(blocking = false) }
   }
+}
+
+object UseCase {
+  val rdd: RDD[(IngestKey, Tile)] = ???
+
+  val md = rdd.collectMetadata(LatLng, ZoomedLayoutScheme)
+  val tiled = rdd.tile(md)
+
+
 }

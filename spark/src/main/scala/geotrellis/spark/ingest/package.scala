@@ -10,7 +10,8 @@ import geotrellis.spark._
 import spire.syntax.cfor._
 
 package object ingest {
-  type Tiler[T, K] = (RDD[(T, Tile)], RasterMetaData) => RasterRDD[K]
+  // TODO: consider Tiler[T, K, F[K]]
+  type Tiler[T, K, TileType] = (RDD[(T, TileType)], RasterMetaData) => RDD[(K, TileType)]
   type IngestKey[T] = KeyComponent[T, ProjectedExtent]
 
   implicit class IngestKeyWrapper[T: IngestKey](key: T) {
@@ -24,11 +25,11 @@ package object ingest {
 
   implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
 
-  implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] = {
-      val getExtent = (inKey: ProjectedExtent) => inKey.extent
-      val createKey = (inKey: ProjectedExtent, spatialComponent: SpatialKey) => spatialComponent
-      Tiler(getExtent, createKey)
-    }
+  implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey, Tile] = {
+    val getExtent = (inKey: ProjectedExtent) => inKey.extent
+    val createKey = (inKey: ProjectedExtent, spatialComponent: SpatialKey) => spatialComponent
+    Tiler(getExtent, createKey)
+  }
 
   implicit class ReprojectWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
     def reproject(destCRS: CRS): RDD[(T, Tile)] = Reproject(rdd, destCRS)
