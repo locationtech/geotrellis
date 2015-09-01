@@ -8,6 +8,7 @@ lazy val commonSettings = Seq(
   organization := "com.azavea.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url(Info.url)),
+  conflictWarning in ThisBuild := ConflictWarning.disable,  // disable annoying warnings about 2.10.x quasiquotes
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
@@ -22,7 +23,8 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   bintrayPackageLabels := Info.tags,
-  bintrayOrganization := Some("azaveaci"),
+  bintrayOrganization := Some("azavea"),
+  bintrayRepository := "geotrellis",
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
   pomExtra := (
     <scm>
@@ -42,7 +44,7 @@ lazy val commonSettings = Seq(
         </developer>
       </developers>),
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " }
-)
+) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val root = Project("geotrellis", file(".")).
   dependsOn(raster, vector, proj4).
@@ -63,11 +65,11 @@ lazy val macros = Project("macros", file("macros")).
       case "2.10.4" => Seq(
         "org.scala-lang" %  "scala-reflect" % "2.10.4",
         "org.scalamacros" %% "quasiquotes" % "2.0.1",
-        "org.spire-math" %% "spire-macros" % "0.9.1"
+        "org.spire-math" %% "spire-macros" % "0.10.1"
       )
       case "2.11.5" => Seq(
         "org.scala-lang" %  "scala-reflect" % "2.11.5",
-        "org.spire-math" %% "spire-macros" % "0.9.1"
+        "org.spire-math" %% "spire-macros" % "0.10.1"
       )
     },
     resolvers += Resolver.sonatypeRepo("snapshots"),
