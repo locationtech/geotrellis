@@ -106,12 +106,12 @@ lazy val proj4 = Project("proj4", file("proj4")).
       openCSV,
       "org.parboiled" %% "parboiled" % "2.0.0" % "test",
       scalatest   % "test",
-      scalacheck  % "test")      
+      scalacheck  % "test")
   )
 
 
 lazy val raster = Project("raster", file("raster")).
-  dependsOn(macros, vector).    
+  dependsOn(macros, vector).
   settings(commonSettings: _*).
   settings(
     name := "geotrellis-raster",
@@ -121,7 +121,7 @@ lazy val raster = Project("raster", file("raster")).
     scalacOptions ++= Seq(
       "-optimize",
       "-language:experimental.macros"),
-    libraryDependencies ++= Seq(
+     libraryDependencies ++= Seq(
       typesafeConfig,
       jts,
       spire,
@@ -261,6 +261,8 @@ lazy val spark = Project("spark", file("spark")).
       nscalaTime,
       scalazStream,
       scalatest % "test"),
+    resolvers +=
+       "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     initialCommands in console :=
       """
       import geotrellis.raster._
