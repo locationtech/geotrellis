@@ -3,8 +3,8 @@ import Dependencies._
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
+  crossScalaVersions := Version.crossScala,
   description := Info.description,
-  crossScalaVersions := Seq("2.11.5", "2.10.4"),
   organization := "com.azavea.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url(Info.url)),
@@ -22,11 +22,13 @@ lazy val commonSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
-  bintrayPackageLabels := Info.tags,
+
   bintrayOrganization := Some("azavea"),
   bintrayRepository := "geotrellis",
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
-  pomExtra := (
+  bintrayPackageLabels := Info.tags,
+
+    pomExtra := (
     <scm>
       <url>git@github.com:geotrellis/geotrellis.git</url>
       <connection>scm:git:git@github.com:geotrellis/geotrellis.git</connection>
