@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.s3.SaveToS3Methods
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
@@ -65,4 +66,6 @@ package object hadoop {
       KryoSerializer.deserialize(s.toCharArray.map(_.toByte))
     }
   }
+
+  implicit class S3RDDHadoop[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
 }
