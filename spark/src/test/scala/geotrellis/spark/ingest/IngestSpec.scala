@@ -31,7 +31,7 @@ class IngestSpec extends FunSpec
     ifCanRunSpark {
       it("should ingest GeoTiff"){
         val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
-        Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(512)){ (rdd, zoom) =>
+        Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512)){ (rdd, zoom) =>
           zoom should be (10)
           rdd.count should be (8)
         }
@@ -61,7 +61,7 @@ class IngestSpec extends FunSpec
           )
 
           val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
-          Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, ZoomedLayoutScheme(512)){ (rdd, level) =>
+          Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512)){ (rdd, level) =>
             val ingestKeys = rdd.map(_._1).collect
             ingestKeys should contain only (expectedKeys: _*)
           }

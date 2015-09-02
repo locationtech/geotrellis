@@ -67,7 +67,7 @@ object RasterMetaData {
   def fromRdd[T](rdd: RDD[(T, Tile)], crs: CRS, scheme: LayoutScheme)
                 (getExtent: T => Extent): (Int, RasterMetaData) = {
     val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
-    val LayoutLevel(zoom, layout) = scheme.levelFor(ProjectedExtent(uncappedExtent, crs), cellSize)
+    val LayoutLevel(zoom, layout) = scheme.levelFor(uncappedExtent, cellSize)
     zoom -> RasterMetaData(cellType, layout, uncappedExtent, crs)
   }
 }

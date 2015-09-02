@@ -41,7 +41,7 @@ class HadoopRasterCatalogSpec extends FunSpec
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
-      val layoutScheme = ZoomedLayoutScheme(512)
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
       var ran = false
 

@@ -2,7 +2,7 @@ package geotrellis.spark.tiling
 
 
 import geotrellis.raster.{RasterExtent, CellSize}
-import geotrellis.vector.ProjectedExtent
+import geotrellis.vector.{Extent, ProjectedExtent}
 
 object FloatingLayoutScheme {
   val DEFAULT_TILE_SIZE = 256
@@ -12,8 +12,8 @@ object FloatingLayoutScheme {
 }
 
 class FloatingLayoutScheme(tileSize: Int) extends LayoutScheme {
-  def levelFor(pe: ProjectedExtent, cellSize: CellSize) =
-    0 -> LayoutDefinition(RasterExtent(pe.extent, cellSize), tileSize)
+  def levelFor(extent: Extent, cellSize: CellSize) =
+    0 -> LayoutDefinition(RasterExtent(extent, cellSize), tileSize)
 
   def zoomOut(level: LayoutLevel) =
     throw new UnsupportedOperationException("zoomOut not supported for FloatingLayoutScheme")

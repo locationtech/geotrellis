@@ -1,6 +1,7 @@
 package geotrellis.spark.etl
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import geotrellis.proj4.CRS
 import geotrellis.spark.ingest.Pyramid
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{SpatialComponent, RasterRDD, LayerId}
@@ -14,16 +15,16 @@ import scala.collection.JavaConverters._
 import spray.json._
 
 object Etl {
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String])(fLayoutScheme: Int => LayoutScheme): Etl[K] =
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String])(fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
     new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(fLayoutScheme)
 
   def apply[K: ClassTag: SpatialComponent](args: Seq[String]) =
-    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(ZoomedLayoutScheme(_))
+    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(ZoomedLayoutScheme.apply)
 }
 
-case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*)(fLayoutScheme: Int => LayoutScheme) extends LazyLogging {
+case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*)(fLayoutScheme: (CRS, Int) => LayoutScheme) extends LazyLogging {
   val conf = new EtlConf(args)
-  val scheme = fLayoutScheme(conf.tileSize())
+  val scheme = fLayoutScheme(conf.crs(), conf.tileSize())
 
   val (inputPlugin, outputPlugin) = {
     val injector = Guice.createInjector(modules: _*)
