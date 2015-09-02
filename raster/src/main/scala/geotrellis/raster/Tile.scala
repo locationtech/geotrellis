@@ -30,9 +30,7 @@ import collection.mutable.ArrayBuffer
 /**
   * Base trait for a Tile.
   */
-trait Tile extends IterableTile with MappableTile[Tile] {
-
-  val gridBounds = GridBounds(0, 0, cols - 1, rows - 1)
+trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
 
   def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
     if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)
@@ -58,15 +56,8 @@ trait Tile extends IterableTile with MappableTile[Tile] {
   def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
     if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
-  def cols: Int
-  def rows: Int
-  lazy val dimensions: (Int, Int) = (cols, rows)
-  lazy val size = cols * rows
-
   /** Create a mutable copy of this tile */
   def mutable: MutableArrayTile 
-
-  def cellType: CellType
 
   def convert(cellType: CellType): Tile
 
