@@ -20,7 +20,7 @@ object Pyramid extends Logging {
       RasterMetaData(
         metaData.cellType,
         nextLevel,
-        metaData.dataExtent,
+        metaData.extent,
         metaData.crs
       )
 
@@ -59,6 +59,6 @@ object Pyramid extends Logging {
           (newKey, newTile: Tile)
         }
 
-    nextZoom -> new RasterRDD(nextRdd, nextMetaData)
+    (nextZoom, new RasterRDD(nextRdd, nextMetaData))
   }
 }

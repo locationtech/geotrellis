@@ -23,7 +23,7 @@ class MaxSpec extends FunSpec
 
       val tileLayout = inc.metaData.tileLayout
       val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-      val totalExtent = inc.metaData.dataExtent
+      val totalExtent = inc.metaData.extent
 
       it("should get correct max over whole raster extent") {
         inc.zonalMax(totalExtent.toPolygon) should be(count - 1)
