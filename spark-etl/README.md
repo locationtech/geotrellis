@@ -56,6 +56,24 @@ clobber       | Overwrite the layer on save in output catalog
 pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
 histogram     | Save histogram to the output AttributeStore for every saved layer
 
+
+#### Supported Inputs
+
+Output    | Options
+----------|----------------
+hadoop    | path
+s3        | bucket, key, splitSize
+
+#### Supported Outputs
+
+Output    | Options
+----------|----------------
+hadoop    | path
+accumulo  | instance, zookeeper, user, password, table
+s3        | bucket, key
+render    | path, format=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{RGBA};...'
+
+
 ## Extension
 
 In order to provide your own input or output modules you must extend `InputPlugin` (src/main/scala/geotrellis/spark/etl/InputPlugin) and
