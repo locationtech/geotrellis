@@ -46,6 +46,6 @@ object Reproject {
         Tiler(getExtent, createKey)
       }
 
-    tiler(reprojectedTiles, metadata)
+    tiler(reprojectedTiles, metaData)
   }
 }
