@@ -68,9 +68,9 @@ object Rasterizer {
    * 
    * @param geom  Feature for calculation
    * @param re       RasterExtent to use for iterating through cells
-   * @param f        A function that takes (col: Int, row: Int, rasterValue: Int, feature: Feature)
+   * @param f        A function that takes (col: Int, row: Int) and produces nothing
    */
-  def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: Callback): Unit = {
+  def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     geom match {
       case p: Point         => foreachCellByPoint(p, re)(f)
       case p: MultiPoint    => foreachCellByMultiPoint(p, re)(f)
@@ -89,20 +89,20 @@ object Rasterizer {
    * The function f is a closure that should alter a mutable variable by side
    * effect (to avoid boxing).  
    */
-  def foreachCellByPoint(geom: Point, re: RasterExtent)(f: Callback) {
+  def foreachCellByPoint(geom: Point, re: RasterExtent)(f: (Int, Int) => Unit) {
     val col = re.mapXToGrid(geom.x)
     val row = re.mapYToGrid(geom.y)
     f(col, row)
   }
 
-  def foreachCellByMultiPoint(p: MultiPoint, re: RasterExtent)(f: Callback) {
+  def foreachCellByMultiPoint(p: MultiPoint, re: RasterExtent)(f: (Int, Int) => Unit) {
     p.points.foreach(foreachCellByPoint(_, re)(f))
   }
 
   /**
    * Invoke a function on each point in a sequences of Points.
    */
-  def foreachCellByPointSeq(pSet: Seq[Point], re: RasterExtent)(f: Callback) {
+  def foreachCellByPointSeq(pSet: Seq[Point], re: RasterExtent)(f: (Int, Int) => Unit) {
     pSet.foreach(foreachCellByPoint(_, re)(f))
   }
   
@@ -112,7 +112,7 @@ object Rasterizer {
    * @param re  RasterExtent used to determine cols and rows
    * @param f   Function to apply: f(cols, row, feature)
    */
-  def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: Callback) {
+  def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: (Int, Int) => Unit) {
     g.lines.foreach(foreachCellByLineString(_, re)(f))
   }
 
@@ -122,7 +122,7 @@ object Rasterizer {
    * @param re  RasterExtent used to determine cols and rows
    * @param f   Function to apply: f(cols, row, feature)
    */
-  def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: Callback) {
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: (Int, Int) => Unit) {
      PolygonRasterizer.foreachCellByPolygon(p, re)(f)
   }
 
@@ -133,7 +133,7 @@ object Rasterizer {
    * @param re  RasterExtent used to determine cols and rows
    * @param f   Function to apply: f(cols, row, feature)
    */
-  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: Callback) {
+  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: (Int, Int) => Unit) {
     p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re)(f))
   }
 
@@ -141,7 +141,7 @@ object Rasterizer {
    * Iterates over the cells determined by the segments of a LineString.
    * The iteration happens in the direction from the first point to the last point.
    */
-  def foreachCellByLineString(line: Line, re: RasterExtent)(f: Callback) {
+  def foreachCellByLineString(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
     val cells = (for(coord <- line.jtsGeom.getCoordinates()) yield { 
       (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y)) 
     }).toList
@@ -166,7 +166,7 @@ object Rasterizer {
    * @param    f                  Function to apply: f(cols, row, feature)
    */
   def foreachCellInGridLine[D](x0: Int, y0: Int, x1: Int, y1: Int, p: Line, re: RasterExtent, skipLast: Boolean = false)
-                              (f: Callback) = {
+                              (f: (Int, Int) => Unit) = {
     val dx=math.abs(x1-x0)
     val sx=if (x0<x1) 1 else -1
     val dy=math.abs(y1-y0)
