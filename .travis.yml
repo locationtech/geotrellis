@@ -17,3 +17,7 @@ jdk:
   - openjdk7
   - oraclejdk7
 sudo: false
+cache:
+  directories:
+    - $HOME/.ivy2
+    - $HOME/.sbt
