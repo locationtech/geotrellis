@@ -17,15 +17,6 @@
 import sbt._
 
 object Dependencies {
-  val resolutionRepos = Seq(
-    "Local Maven Repository"  at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-    "NL4J Repository"         at "http://nativelibs4java.sourceforge.net/maven/",
-    "maven2 dev repository"   at "http://download.java.net/maven/2",
-    "Typesafe Repo"           at "http://repo.typesafe.com/typesafe/releases/",
-    "spray repo"              at "http://repo.spray.io/",
-    "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots",
-    "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases"
-  )
   val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
   val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.0"
@@ -43,7 +34,7 @@ object Dependencies {
   val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % Version.akka
   val akkaCluster   = "com.typesafe.akka" %% "akka-cluster" % Version.akka
 
-  val spire         = "org.spire-math" %% "spire" % "0.7.5"
+  val spire         = "org.spire-math" %% "spire" % "0.10.1"
 
   val sprayClient   = "io.spray"        %% "spray-client"  % Version.spray
   val sprayRouting  = "io.spray"        %% "spray-routing" % Version.spray
