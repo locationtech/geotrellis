@@ -13,5 +13,6 @@ object HadoopModule extends AbstractModule {
     val outputBinder = Multibinder.newSetBinder(binder(), classOf[OutputPlugin])
     outputBinder.addBinding().to(classOf[SpatialHadoopOutput])
     outputBinder.addBinding().to(classOf[SpaceTimeHadoopOutput])
+    outputBinder.addBinding().to(classOf[SpatialRenderOutput])
   }
 }

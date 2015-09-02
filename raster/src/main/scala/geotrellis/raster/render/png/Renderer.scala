@@ -42,7 +42,7 @@ object Renderer {
   /** Include a precomputed histogram to cache the color map and speed up the rendering. */
   def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Option[Histogram]): Renderer = {
     val n = limits.length
-    if(colors.length < 255) {
+    if(colors.length <= 256) {
       val indices = (0 until colors.length).toArray
       val rgbs = new Array[Int](256)
       val as = new Array[Int](256)

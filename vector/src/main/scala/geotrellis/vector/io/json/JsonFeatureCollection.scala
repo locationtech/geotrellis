@@ -56,7 +56,8 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
       Try(f.convertTo[F]) match {
         case Success(feature) =>
           ret += feature
-        case _ => //didn't match, live to fight another match
+        case Failure(_: spray.json.DeserializationException) =>  //didn't match, live to fight another match
+        case Failure(e) => throw e // but bubble up other exceptions
       }
     }
     ret.result()
