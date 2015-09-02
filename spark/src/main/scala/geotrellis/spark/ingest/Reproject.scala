@@ -37,7 +37,7 @@ object Reproject {
         ((key, newExtent), newTile)
       }
 
-    val metadata =
+    val metaData =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metaData.layout) { key => key._2 }
 
     val tiler: Tiler[(K, Extent), K] = {
