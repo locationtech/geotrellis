@@ -87,12 +87,3 @@ object Ingest {
     sinkLevels(rasterRdd, layoutLevel){ reprojectedTiles.unpersist(blocking = false) }
   }
 }
-
-object UseCase {
-  val rdd: RDD[(IngestKey, Tile)] = ???
-
-  val md = rdd.collectMetadata(LatLng, ZoomedLayoutScheme)
-  val tiled = rdd.tile(md)
-
-
-}

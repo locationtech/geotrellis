@@ -59,16 +59,18 @@ trait S3Client extends LazyLogging {
 }
 
 object S3Client {
-  def default = {
-    val provider = new DefaultAWSCredentialsProviderChain()
+  def defaultConfiguration = {
     val config = new com.amazonaws.ClientConfiguration
     config.setMaxConnections(128)
     config.setMaxErrorRetry(16)
     config.setConnectionTimeout(100000)
     config.setSocketTimeout(100000)
     config.setRetryPolicy(PredefinedRetryPolicies.getDefaultRetryPolicyWithCustomMaxRetries(32))
-    new AmazonS3Client(provider, config)
+    config
   }
+
+  def default =
+    new AmazonS3Client(new DefaultAWSCredentialsProviderChain(), defaultConfiguration)
 }
 
 class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) extends S3Client {
