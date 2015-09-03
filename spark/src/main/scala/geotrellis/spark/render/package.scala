@@ -33,7 +33,7 @@ package object render {
       if (uri.getScheme == "s3")
         rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
       else
-        rdd.saveToHadoop(uri, key => fill(parseFriendlyTemplate, id, key), paintTile)
+        rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
     }
 
     /**
@@ -56,7 +56,7 @@ package object render {
       if (uri.getScheme == "s3")
         rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
       else
-        rdd.saveToHadoop(uri, key => fill(parseFriendlyTemplate, id, key), paintTile)
+        rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
     }
   }
 }
