@@ -39,7 +39,7 @@ object MultiBandReproject {
     val tiler: Tiler[(K, Extent), K, MultiBandTile] = {
       val getExtent = (inKey: (K, Extent)) => inKey._2
       val createKey = (inKey: (K, Extent), spatialComponent: SpatialKey) => inKey._1.updateSpatialComponent(spatialComponent)
-      MultiBandTiler(getExtent, createKey)
+      Tiler(getExtent, createKey) _
     }
 
     new MultiBandRasterRDD(tiler(reprojectedTiles, metadata), metadata)

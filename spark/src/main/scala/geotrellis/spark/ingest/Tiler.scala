@@ -10,14 +10,14 @@ import org.apache.spark.SparkContext._
 import scala.reflect.ClassTag
 
 object Tiler {
-  def cutTiles[T, K: SpatialComponent: ClassTag] (
+  def cutTiles[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag] (
     getExtent: T=> Extent,
     createKey: (T, SpatialKey) => K,
-    rdd: RDD[(T, Tile)],
+    rdd: RDD[(T, TileType)],
     mapTransform: MapKeyTransform,
     cellType: CellType,
     tileLayout: TileLayout
-  ): RDD[(K, Tile)] =
+  ): RDD[(K, TileType)] =
     rdd
       .flatMap { tup =>
         val (inKey, tile) = tup
@@ -26,29 +26,29 @@ object Tiler {
           .coords
           .map  { spatialComponent =>
             val outKey = createKey(inKey, spatialComponent)
-            val tmsTile: Tile =  ArrayTile.empty(cellType, tileLayout.tileCols, tileLayout.tileRows)
-            tmsTile.merge(mapTransform(outKey), extent, tile)
-            tmsTile.merge(tile)
-            (outKey, tmsTile)
+            val newTile = tile.prototype(tileLayout.tileCols, tileLayout.tileRows)
+            newTile.merge(mapTransform(outKey), extent, tile)
+            newTile.merge(tile)
+            (outKey, newTile)
           }
        }
 
-  def apply[T, K: SpatialComponent: ClassTag](
+  def apply[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag](
     getExtent: T=> Extent,
     createKey: (T, SpatialKey) => K,
-    rdd: RDD[(T, Tile)],
+    rdd: RDD[(T, TileType)],
     mapTransform: MapKeyTransform,
     cellType: CellType,
     tileLayout: TileLayout
-  ): RDD[(K, Tile)] =
+  ): RDD[(K, TileType)] =
     cutTiles(getExtent, createKey, rdd, mapTransform, cellType, tileLayout)
-      .reduceByKey { case (tile1: Tile, tile2: Tile) =>
+      .reduceByKey { case (tile1, tile2) =>
         tile1.merge(tile2)
       }
 
-  def apply[T, K: SpatialComponent: ClassTag]
+  def apply[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag]
     (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
-    (rdd: RDD[(T, Tile)], metaData: RasterMetaData): RDD[(K, Tile)] = {
+    (rdd: RDD[(T, TileType)], metaData: RasterMetaData): RDD[(K, TileType)] = {
 
     apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout)
   }
