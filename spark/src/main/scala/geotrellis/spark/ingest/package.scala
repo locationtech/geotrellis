@@ -2,12 +2,8 @@ package geotrellis.spark
 
 import geotrellis.vector._
 import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.proj4.CRS
 import org.apache.spark.rdd._
 import monocle.syntax._
-import geotrellis.spark._
-import spire.syntax.cfor._
 
 package object ingest {
   type Tiler[T, K, TileType] = (RDD[(T, TileType)], RasterMetaData) => RDD[(K, TileType)]
@@ -19,7 +15,7 @@ package object ingest {
     def projectedExtent: ProjectedExtent = key &|-> _projectedExtent.lens get
 
     def updateProjectedExtent(pe: ProjectedExtent): T =
-      key &|-> _projectedExtent.lens set(pe)
+      key &|-> _projectedExtent.lens set (pe)
   }
 
   implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
@@ -30,11 +26,15 @@ package object ingest {
     Tiler(getExtent, createKey)
   }
 
-  implicit class ReprojectWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
-    def reproject(destCRS: CRS): RDD[(T, Tile)] = Reproject(rdd, destCRS)
+  type CellGridPrototypeView[TileType] = TileType => CellGridPrototype[TileType]
+
+  implicit class withTilePrototypeMethods(tile: Tile) extends CellGridPrototype[Tile] {
+    def prototype(cols: Int, rows: Int) =
+      ArrayTile.empty(tile.cellType, cols, rows)
   }
 
-  implicit class ReprojectMultiBandWrapper[T: IngestKey](rdd: RDD[(T, MultiBandTile)]) {
-    def reproject(destCRS: CRS): RDD[(T, MultiBandTile)] = Reproject(rdd, destCRS)
+  implicit class withMultiBandTilePrototype(tile: MultiBandTile) extends CellGridPrototype[MultiBandTile] {
+    def prototype(cols: Int, rows: Int) =
+      ArrayMultiBandTile.empty(tile.cellType, tile.bandCount, cols, rows)
   }
 }
