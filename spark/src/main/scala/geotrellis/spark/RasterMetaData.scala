@@ -36,11 +36,11 @@ case class RasterMetaData(
 }
 
 object RasterMetaData {
-  def envelopeExtent[T](rdd: RDD[(T, Tile)])(getExtent: T => Extent): (Extent, CellType, CellSize) = {
+  def envelopeExtent[K, V <: CellGrid](rdd: RDD[(K, V)])(getExtent: K => Extent): (Extent, CellType, CellSize) = {
     rdd
-      .map { case (key, tile) =>
+      .map { case (key, grid) =>
         val extent = getExtent(key)
-        (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows))
+        (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows))
       }
       .reduce { (t1, t2) =>
         val (e1, ct1, cs1) = t1
@@ -56,18 +56,19 @@ object RasterMetaData {
   /**
    * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
    */
-  def fromRdd[T](rdd: RDD[(T, Tile)], crs: CRS, layout: LayoutDefinition)
-                (getExtent: T => Extent): RasterMetaData = {
+  def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition)
+                (getExtent: K => Extent): RasterMetaData = {
     val (uncappedExtent, cellType, _) = envelopeExtent(rdd)(getExtent)
     RasterMetaData(cellType, layout, uncappedExtent, crs)
   }
 
-  /** Delegate the choice of layout to the LayoutScheme and return it's choice,
-    * which could contain extra information, like zoom. */
-  def fromRdd[T](rdd: RDD[(T, Tile)], crs: CRS, scheme: LayoutScheme)
-                (getExtent: T => Extent): (Int, RasterMetaData) = {
+  /**
+   * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
+   */
+  def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme)
+                (getExtent: K => Extent): (Int, RasterMetaData) = {
     val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
     val LayoutLevel(zoom, layout) = scheme.levelFor(ProjectedExtent(uncappedExtent, crs), cellSize)
-    zoom -> RasterMetaData(cellType, layout, uncappedExtent, crs)
+    (zoom, RasterMetaData(cellType, layout, uncappedExtent, crs))
   }
 }

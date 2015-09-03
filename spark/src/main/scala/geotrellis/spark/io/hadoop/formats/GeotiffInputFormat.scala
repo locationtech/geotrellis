@@ -21,46 +21,17 @@ import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
-import geotrellis.proj4._
 
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.FSDataInputStream
-
-import org.apache.hadoop.mapreduce.InputSplit
-import org.apache.hadoop.mapreduce.JobContext
-import org.apache.hadoop.mapreduce.RecordReader
-import org.apache.hadoop.mapreduce.TaskAttemptContext
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
-import org.apache.hadoop.mapreduce.lib.input.FileSplit
-
-import java.nio.ByteBuffer
-
-class GeotiffInputFormat extends FileInputFormat[ProjectedExtent, Tile] {
-  override def isSplitable(context: JobContext, fileName: Path) = false
-
-  override def createRecordReader(
-    split: InputSplit,
-    context: TaskAttemptContext): RecordReader[ProjectedExtent, Tile] = new GeotiffRecordReader
-
+class GeotiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
+  def read(bytes: Array[Byte]): (ProjectedExtent, Tile) = {
+    val ProjectedRaster(tile, extent, crs) = SingleBandGeoTiff(bytes).projectedRaster
+    (ProjectedExtent(extent, crs), tile)
+  }
 }
 
-class GeotiffRecordReader extends RecordReader[ProjectedExtent, Tile] {
-  private var tup: (ProjectedExtent, Tile) = null
-  private var hasNext: Boolean = true
-
-  def initialize(split: InputSplit, context: TaskAttemptContext) = {
-    val path = split.asInstanceOf[FileSplit].getPath()
-    val conf = context.getConfiguration()
-    val bytes = HdfsUtils.readBytes(path, conf)
-
-    val ProjectedRaster(tile, extent, crs) = SingleBandGeoTiff(bytes).projectedRaster
-
-    tup = (ProjectedExtent(extent, crs), tile)
+class MultiBandGeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, MultiBandTile] {
+  def read(bytes: Array[Byte]): (ProjectedExtent, MultiBandTile) = {
+    val gt = MultiBandGeoTiff(bytes)
+    (ProjectedExtent(gt.extent, gt.crs), gt.tile)
   }
-
-  def close = {}
-  def getCurrentKey = tup._1
-  def getCurrentValue = { hasNext = false ; tup._2 }
-  def getProgress = 1
-  def nextKeyValue = hasNext
 }

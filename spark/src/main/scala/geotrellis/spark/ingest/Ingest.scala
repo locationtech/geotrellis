@@ -64,8 +64,8 @@ object Ingest {
   {
     def sinkLevels(rdd: RasterRDD[K], level: Int)(free: => Unit): Unit = {
       if (pyramid && level >= 1) {
-        rdd.cache()      
-        sink(rdd, level)           
+        rdd.cache()
+        sink(rdd, level)
         free
         val (nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, level)
         // we must do it now so we can unpersist the source before recurse

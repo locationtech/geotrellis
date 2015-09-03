@@ -10,14 +10,8 @@ import java.util.Locale
 
 import math.BigDecimal
 
-trait MultiBandTile extends MacroCombinableMultiBandTile[Tile] {
+trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
   def bandCount: Int
-  def cellType: CellType
-  def cols: Int
-  def rows: Int
-
-  def dimensions: (Int, Int) = (cols, rows)
-  def size = cols * rows
 
   def band(bandIndex: Int): Tile
 
