@@ -26,6 +26,12 @@ package object ingest {
     Tiler(getExtent, createKey)
   }
 
+  implicit def projectedExtentToSpatialKeyMultiBandTiler: Tiler[ProjectedExtent, SpatialKey, MultiBandTile] = {
+    val getExtent = (inKey: ProjectedExtent) => inKey.extent
+    val createKey = (inKey: ProjectedExtent, spatialComponent: SpatialKey) => spatialComponent
+    Tiler(getExtent, createKey)
+  }
+
   type CellGridPrototypeView[TileType] = TileType => CellGridPrototype[TileType]
 
   implicit class withTilePrototypeMethods(tile: Tile) extends CellGridPrototype[Tile] {
