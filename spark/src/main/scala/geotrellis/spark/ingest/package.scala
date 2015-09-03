@@ -29,12 +29,19 @@ package object ingest {
   type CellGridPrototypeView[TileType] = TileType => CellGridPrototype[TileType]
 
   implicit class withTilePrototypeMethods(tile: Tile) extends CellGridPrototype[Tile] {
+    def prototype(cellType: CellType, cols: Int, rows: Int) =
+      ArrayTile.empty(cellType, cols, rows)
+
     def prototype(cols: Int, rows: Int) =
-      ArrayTile.empty(tile.cellType, cols, rows)
+      prototype(tile.cellType, cols, rows)
+
   }
 
   implicit class withMultiBandTilePrototype(tile: MultiBandTile) extends CellGridPrototype[MultiBandTile] {
+    def prototype(cellType: CellType, cols: Int, rows: Int) =
+      ArrayMultiBandTile.empty(cellType, tile.bandCount, cols, rows)
+
     def prototype(cols: Int, rows: Int) =
-      ArrayMultiBandTile.empty(tile.cellType, tile.bandCount, cols, rows)
+      prototype(tile.cellType, cols, rows)
   }
 }
