@@ -28,7 +28,6 @@ object Tiler {
             val outKey = createKey(inKey, spatialComponent)
             val newTile = tile.prototype(cellType, tileLayout.tileCols, tileLayout.tileRows)
             newTile.merge(mapTransform(outKey), extent, tile)
-            newTile.merge(tile)
             (outKey, newTile)
           }
        }
