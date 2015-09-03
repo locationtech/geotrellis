@@ -12,7 +12,7 @@ package object reproject {
   // the second two arrays with transformed coordinates (srcX, srcY, dstX, dstY)
   type RowTransform = (Array[Double], Array[Double], Array[Double], Array[Double]) => Unit
 
-  implicit class ReprojectExtentsion(val tile: Tile) {
+  implicit class ReprojectExtension(val tile: Tile) {
     def reproject(extent: Extent, src: CRS, dest: CRS): Raster =
       reproject(extent, src, dest, ReprojectOptions.DEFAULT)
 
@@ -20,6 +20,17 @@ package object reproject {
       reproject(extent, src, dest, ReprojectOptions(method = method))
 
     def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): Raster =
+      Reproject(tile, extent, src, dest, options)
+  }
+
+  implicit class ReprojectMultiBandExtension(val tile: MultiBandTile) {
+    def reproject(extent: Extent, src: CRS, dest: CRS): MultiBandRaster =
+      reproject(extent, src, dest, ReprojectOptions.DEFAULT)
+
+    def reproject(method: ResampleMethod, extent: Extent, src: CRS, dest: CRS): MultiBandRaster =
+      reproject(extent, src, dest, ReprojectOptions(method = method))
+
+    def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): MultiBandRaster =
       Reproject(tile, extent, src, dest, options)
   }
 }
