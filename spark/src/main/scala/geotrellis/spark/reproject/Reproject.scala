@@ -48,7 +48,7 @@ object Reproject {
       Tiler(getExtent, createKey)
     }
 
-    new RasterRDD(tiler(reprojectedTiles, metadata), metadata)
+    new RasterRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
   }
 
   def apply[K: SpatialComponent: ClassTag](
@@ -75,7 +75,7 @@ object Reproject {
       Tiler(getExtent, createKey) _
     }
 
-    new MultiBandRasterRDD(tiler(reprojectedTiles, metadata), metadata)
+    new MultiBandRasterRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
   }
 
   def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] =

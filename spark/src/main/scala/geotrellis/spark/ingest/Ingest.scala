@@ -16,6 +16,8 @@
 
 package geotrellis.spark.ingest
 
+import geotrellis.raster.reproject.ReprojectOptions
+import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.reproject._
@@ -52,17 +54,23 @@ object Ingest {
    * @tparam K            type of output tile key, must have SpatialComponent
    * @return
    */
-  def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag]
-    (sourceTiles: RDD[(T, Tile)], destCRS: CRS, layoutScheme: LayoutScheme, pyramid: Boolean = false, cacheLevel: StorageLevel = StorageLevel.NONE)
+  def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag](
+      sourceTiles: RDD[(T, Tile)],
+      destCRS: CRS,
+      layoutScheme: LayoutScheme,
+      pyramid: Boolean = false,
+      cacheLevel: StorageLevel = StorageLevel.NONE,
+      resampleMethod: ResampleMethod = NearestNeighbor
+    )
     (sink: (RasterRDD[K], Int) => Unit)
     (implicit tiler: Tiler[T, K, Tile]): Unit =
   {
 
     sourceTiles.persist()
-    val reprojectedTiles = sourceTiles.reproject(destCRS).cache()
+    val reprojectedTiles = sourceTiles.reproject(destCRS, ReprojectOptions(resampleMethod)).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = tiler(reprojectedTiles, rasterMetaData).cache()
+    val tiledRdd = tiler(reprojectedTiles, rasterMetaData, resampleMethod).cache()
     val rasterRdd = new RasterRDD(tiledRdd, rasterMetaData)
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {

@@ -48,8 +48,8 @@ object Tiler {
       }
 
   def apply[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag]
-    (getExtent: T=> Extent, createKey: (T, SpatialKey) => K,  resampleMethod: ResampleMethod = NearestNeighbor)
-    (rdd: RDD[(T, TileType)], metaData: RasterMetaData): RDD[(K, TileType)] = {
+    (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
+    (rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod = NearestNeighbor): RDD[(K, TileType)] = {
 
     apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout, resampleMethod)
   }

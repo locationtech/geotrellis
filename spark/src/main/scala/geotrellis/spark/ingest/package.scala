@@ -1,12 +1,13 @@
 package geotrellis.spark
 
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.vector._
 import geotrellis.raster._
 import org.apache.spark.rdd._
 import monocle.syntax._
 
 package object ingest {
-  type Tiler[T, K, TileType] = (RDD[(T, TileType)], RasterMetaData) => RDD[(K, TileType)]
+  type Tiler[T, K, TileType] = (RDD[(T, TileType)], RasterMetaData, ResampleMethod) => RDD[(K, TileType)]
   type IngestKey[T] = KeyComponent[T, ProjectedExtent]
 
   implicit class IngestKeyWrapper[T: IngestKey](key: T) {
