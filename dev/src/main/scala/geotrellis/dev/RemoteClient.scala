@@ -58,7 +58,7 @@ import akka.cluster.ClusterEvent.MemberUp
 import akka.serialization._
 
 class RemoteClientApplication extends Bootable {
-  val server = new Engine("remoteEngine", Catalog.fromPath("raster-test/data/catalog.json"))
+  val server = new Engine("remoteEngine", Catalog.fromPath("../raster-test/data/catalog.json"))
   val router = server.getRouter()
 
   def startup() {
