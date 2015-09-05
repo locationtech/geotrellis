@@ -1,6 +1,6 @@
 package geotrellis.raster
 
-trait CellGrid {
+trait CellGrid extends Serializable {
   def cols: Int
   def rows: Int
   def cellType: CellType
