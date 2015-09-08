@@ -158,7 +158,7 @@ trait FocalOperation[K] extends RasterRDDMethods[K] {
         neighborhoodTile,
         neighborhood,
         Some(analysisArea),
-        metadata.rasterExtent
+        metadata.layout.rasterExtent
       )
 
       (key, res)
