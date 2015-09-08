@@ -24,8 +24,6 @@ case class RasterMetaData(
   def mapTransform = layout.mapTransform
   /** TileLayout of the layout */
   def tileLayout = layout.tileLayout
-  /** Full extent of the layout */
-  def layoutExtent = layout.extent
   /** GridBounds of data tiles in the layout */
   def gridBounds = mapTransform(extent)
 
