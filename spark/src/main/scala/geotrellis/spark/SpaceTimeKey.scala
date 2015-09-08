@@ -56,7 +56,7 @@ object SpaceTimeKey {
       SpaceTimeKey(math.max(a.col, b.col), math.max(a.row, b.row), if (a.time > b.time) a.time else b.time )
     }
 
-    def getKeyBounds(rdd: RasterRDD[SpaceTimeKey]): KeyBounds[SpaceTimeKey] = {      
+    def getKeyBounds(rdd: BoundRDD[SpaceTimeKey, _]): KeyBounds[SpaceTimeKey] = {
       rdd
         .map{ case (k, tile) => KeyBounds(k, k) }
         .reduce { combine }

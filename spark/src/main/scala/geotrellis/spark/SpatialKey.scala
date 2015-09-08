@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark.SpaceTimeKey.Boundable._
 import spray.json._
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
@@ -44,12 +45,10 @@ object SpatialKey {
       SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
     }
 
-    def getKeyBounds(rdd: RasterRDD[SpatialKey]): KeyBounds[SpatialKey] = {
-      val md = rdd.metaData
-      val gb = md.gridBounds
-      KeyBounds(
-        SpatialKey(gb.colMin, gb.rowMin),
-        SpatialKey(gb.colMax, gb.rowMax))    
+    def getKeyBounds(rdd: BoundRDD[SpatialKey, _]): KeyBounds[SpatialKey] = {
+      rdd
+        .map{ case (k, tile) => KeyBounds(k, k) }
+        .reduce { combine }
     }
   }
 }
