@@ -1,5 +1,6 @@
 package geotrellis.raster.io.geotiff.tags
 
+import ProjectionTypesMap._
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 import geotrellis.raster.io.geotiff.utils._
 
@@ -96,7 +97,7 @@ case class GeogCSParameterKeys(
 
 @Lenses("_")
 case class ProjectedCSParameterKeys(
-  projectedCSType: Int = -1,
+  projectedCSType: Int = UserDefinedProjectionType,
   pcsCitation: Option[Array[String]] = None,
   projection: Option[Int] = None,
   projCoordTrans: Option[Int] = None,

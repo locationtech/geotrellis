@@ -39,13 +39,13 @@ case class TiffTags(
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
 ) {
 
-  def compression = 
-    (this 
-      &|-> TiffTags._basicTags 
+  def compression =
+    (this
+      &|-> TiffTags._basicTags
       ^|-> BasicTags._compression get)
 
-  def hasStripStorage(): Boolean = 
-    (this 
+  def hasStripStorage(): Boolean =
+    (this
       &|-> TiffTags._tileTags
       ^|-> TileTags._tileWidth get).isEmpty
 
@@ -63,7 +63,7 @@ case class TiffTags(
           throw new MalformedGeoTiffException(s"Bad PlanarConfiguration tag: $i")
     }
 
-  def rowsInStrip(index: Int): Option[Long] = 
+  def rowsInStrip(index: Int): Option[Long] =
     if (hasStripStorage) {
       (this &|->
         TiffTags._basicTags ^|->
@@ -84,7 +84,7 @@ case class TiffTags(
             throw new IllegalArgumentException("index is bad.")
           }
         }
-        case None => 
+        case None =>
           throw new MalformedGeoTiffException("bad rows/tile structure")
       }
     } else {
@@ -99,7 +99,7 @@ case class TiffTags(
         TiffTags._tileTags ^|->
         TileTags._tileLength get).get.toInt
 
-  def bitsPerPixel(): Int = 
+  def bitsPerPixel(): Int =
     bitsPerSample * bandCount
 
   def bytesPerPixel: Int =
@@ -107,7 +107,7 @@ case class TiffTags(
 
   def bitsPerSample: Int =
     (this
-      &|-> TiffTags._basicTags 
+      &|-> TiffTags._basicTags
       ^|-> BasicTags._bitsPerSample get)
 
   def imageSegmentByteSize(index: Int): Long =
@@ -154,22 +154,22 @@ case class TiffTags(
   def cols = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageWidth get)
   def rows = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageLength get)
 
-  def extent: Extent = 
-    (this 
+  def extent: Extent =
+    (this
       &|-> TiffTags._geoTiffTags
       ^|-> GeoTiffTags._modelTransformation get
     ) match {
-      case Some(trans) if (trans.validateAsMatrix && trans.size == 4 && trans(0).size == 4) => 
+      case Some(trans) if (trans.validateAsMatrix && trans.size == 4 && trans(0).size == 4) =>
         transformationModelSpace(trans)
-      case _ => 
-        (this 
+      case _ =>
+        (this
           &|-> TiffTags._geoTiffTags
           ^|-> GeoTiffTags._modelTiePoints get
         ) match {
           case Some(tiePoints) if (!tiePoints.isEmpty) =>
             tiePointsModelSpace(
               tiePoints,
-              (this 
+              (this
                 &|-> TiffTags._geoTiffTags
                 ^|-> GeoTiffTags._modelPixelScale get
               )
@@ -181,16 +181,36 @@ case class TiffTags(
 
   def bandType: BandType = {
     val sampleFormat =
-      (this 
+      (this
         &|-> TiffTags._dataSampleFormatTags
         ^|-> DataSampleFormatTags._sampleFormat get)
 
     BandType(bitsPerSample, sampleFormat)
   }
 
-  def crs: CRS = proj4String match {
-    case Some(s) => CRS.fromString(s)
-    case None => LatLng
+  def proj4String: Option[String] = try {
+    GeoTiffCSTags.getProj4String
+  } catch {
+    case e: Exception => {
+      None
+    }
+  }
+
+  def pcs: Int = try {
+    GeoTiffCSTags.pcs
+  } catch {
+    case e: Exception => 32767
+  }
+
+  lazy val crs: CRS = {
+    if (pcs != 32767) {
+      CRS.fromName(s"EPSG:${pcs}")
+    } else {
+      proj4String match {
+        case Some(s) => CRS.fromString(s)
+        case None => LatLng
+      }
+    }
   }
 
   def geoKeyDirectory = geoTiffTags.geoKeyDirectory.getOrElse {
@@ -288,11 +308,7 @@ case class TiffTags(
   def setGDALNoData(input: String) = (this &|-> TiffTags._geoTiffTags
     ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
 
-  def proj4String: Option[String] = try {
-    GeoTiffCSParser(this).getProj4String
-  } catch {
-    case e: Exception => None
-  }
+  lazy val GeoTiffCSTags = GeoTiffCSParser(this)
 
   def tags: Tags =
     (this &|->
@@ -301,7 +317,7 @@ case class TiffTags(
     ) match {
       case Some(str) => {
         val xml = XML.loadString(str.trim)
-        val (metadataXML, bandsMetadataXML) = 
+        val (metadataXML, bandsMetadataXML) =
           (xml \ "Item")
             .groupBy(_ \ "@sample")
             .partition(_._1.isEmpty)
@@ -342,17 +358,17 @@ case class TiffTags(
 
   def segmentCount: Int =
     if (hasStripStorage) {
-      (this 
-        &|-> TiffTags._basicTags 
+      (this
+        &|-> TiffTags._basicTags
         ^|-> BasicTags._stripByteCounts get) match {
         case Some(stripByteCounts) =>
           stripByteCounts.size
-        case None => 
+        case None =>
           throw new MalformedGeoTiffException("No StripByteCount information.")
       }
     } else {
-      (this 
-        &|-> TiffTags._tileTags 
+      (this
+        &|-> TiffTags._tileTags
         ^|-> TileTags._tileOffsets get) match {
         case Some(tileOffsets) =>
           tileOffsets.size

@@ -190,8 +190,8 @@ class GeoTiffReaderSpec extends FunSpec
         case None => fail
       }
 
-      val sampleFormat = 
-        (tiffTags 
+      val sampleFormat =
+        (tiffTags
           &|-> TiffTags._dataSampleFormatTags
           ^|-> DataSampleFormatTags._sampleFormat get)
       sampleFormat should be (3)
@@ -311,6 +311,29 @@ class GeoTiffReaderSpec extends FunSpec
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
       crs should equal(correctCRS)
+    }
+
+    it("should read ndvi-web-mercator.tif CS correctly") {
+      val crs = SingleBandGeoTiff.compressed(geoTiffPath("ndvi-web-mercator.tif")).crs
+
+      val correctCRS = CRS.fromString("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs")
+
+      crs.toProj4String should equal(correctCRS.toProj4String)
+    }
+
+    it("should read ny-state-plane.tif CS correctly") {
+      val crs = SingleBandGeoTiff.compressed(geoTiffPath("ny-state-plane.tif")).crs
+
+      val correctCRS = CRS.fromString("+proj=tmerc +lat_0=40 +lon_0=-74.33333333333333 +k=0.999966667 +x_0=152400.3048006096 +y_0=0 +datum=NAD27 +units=us-ft +no_defs ")
+
+      crs.toProj4String should equal(correctCRS.toProj4String)
+    }
+
+    it("should read alaska-polar-3572.tif CS correctly") {
+      val crs = SingleBandGeoTiff.compressed(geoTiffPath("alaska-polar-3572.tif")).crs
+
+      val correctCRS = CRS.fromString("+proj=laea +lat_0=90 +lon_0=-150 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ")
+      crs.toProj4String should equal(correctCRS.toProj4String)
     }
 
   }

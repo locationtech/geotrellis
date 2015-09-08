@@ -1975,6 +1975,8 @@ object ProjectionTypesMap {
   import EPSGProjectionTypes._
   import GDALEPSGProjectionTypes._
 
+  val UserDefinedProjectionType = 32767
+
   val projectionTypesMap = HashMap[Int, Int](
     PCS_NAD83_Alabama_East -> Proj_Alabama_CS83_East,
     PCS_NAD83_Alabama_West -> Proj_Alabama_CS83_West,

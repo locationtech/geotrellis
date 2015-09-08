@@ -78,6 +78,8 @@ class GeoTiffCSParser(directory: TiffTags) {
 
   def getProj4String: Option[String] = getProj4String(createGeoTiffGDALParameters)
 
+  lazy val pcs: Int = createGeoTiffGDALParameters.pcs
+
   private def createGeoTiffGDALParameters: GeoTiffGDALParameters = {
     val gtgp = GeoTiffGDALParameters()
 
