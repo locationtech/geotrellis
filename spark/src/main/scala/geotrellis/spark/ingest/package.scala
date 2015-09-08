@@ -1,10 +1,13 @@
 package geotrellis.spark
 
+import geotrellis.proj4.CRS
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
+import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.vector._
 import geotrellis.raster._
 import org.apache.spark.rdd._
 import monocle.syntax._
+
 
 package object ingest {
   type Tiler[T, K, TileType] = (RDD[(T, TileType)], RasterMetaData, ResampleMethod) => RDD[(K, TileType)]
@@ -33,6 +36,7 @@ package object ingest {
     Tiler(getExtent, createKey)
   }
 
+
   type CellGridPrototypeView[TileType] = TileType => CellGridPrototype[TileType]
 
   implicit class withTilePrototypeMethods(tile: Tile) extends CellGridPrototype[Tile] {
@@ -50,5 +54,21 @@ package object ingest {
 
     def prototype(cols: Int, rows: Int) =
       prototype(tile.cellType, cols, rows)
+  }
+
+  implicit class withCollectMetadataMethods[K: IngestKey, TileType <: CellGrid](rdd: RDD[(K, TileType)]) {
+    def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData) = {
+      RasterMetaData.fromRdd(rdd, crs, layoutScheme)(_.projectedExtent.extent)
+    }
+
+    def collectMetaData(crs: CRS, layout: LayoutDefinition): RasterMetaData = {
+      RasterMetaData.fromRdd(rdd, crs, layout)(_.projectedExtent.extent)
+    }
+  }
+
+  implicit class withTilerMethods[T, K, TileType](tiles: RDD[(T, TileType)]) {
+    def tile(rasterMetaData: RasterMetaData, resampleMethod: ResampleMethod = NearestNeighbor)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] = {
+      tiler(tiles, rasterMetaData, resampleMethod)
+    }
   }
 }
