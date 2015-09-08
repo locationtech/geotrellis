@@ -49,7 +49,7 @@ class RemoteServerApplication extends Bootable {
   val id = "remoteServer"
 
   println()
-  val f = new java.io.File( "raster-test/data/catalog.json" ).getCanonicalPath
+  val f = new java.io.File( "../raster-test/data/catalog.json" ).getCanonicalPath
   println(f)
   //val f = "src/test/resources/catalog.json"
   val server = new Engine(id, Catalog.fromPath(f))
