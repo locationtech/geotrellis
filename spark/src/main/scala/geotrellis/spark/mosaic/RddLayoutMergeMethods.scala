@@ -1,13 +1,15 @@
 package geotrellis.spark.mosaic
 
+import scala.reflect.ClassTag
+
+import org.apache.spark.rdd.RDD
 
 import geotrellis.raster.mosaic.MergeView
 import geotrellis.spark._
 import geotrellis.spark.ingest.CellGridPrototypeView
 import geotrellis.spark.tiling.LayoutDefinition
-import org.apache.spark.rdd.RDD
 
-class RddLayoutMergeMethods[K: SpatialComponent, TileType: MergeView: CellGridPrototypeView](
+class RddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag](
  rdd: (RDD[(K, TileType)], LayoutDefinition))
 extends MergeMethods[(RDD[(K, TileType)], LayoutDefinition)] {
 

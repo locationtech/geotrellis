@@ -1,14 +1,17 @@
 package geotrellis.spark.mosaic
 
-import org.apache.spark.rdd.RDD
+import scala.reflect.ClassTag
+
+import org.apache.spark.rdd.{PairRDDFunctions, RDD}
+
 import geotrellis.raster.mosaic.MergeView
 
-class RddMergeMethods[K, TileType: MergeView](
+class RddMergeMethods[K: ClassTag, TileType: MergeView: ClassTag](
  rdd: RDD[(K, TileType)])
 extends MergeMethods[RDD[(K, TileType)]]{
    def merge(other: RDD[(K, TileType)]): RDD[(K, TileType)] = {
      val fMerge = (_: TileType).merge(_: TileType)
-     rdd
+     new PairRDDFunctions(rdd)
        .cogroup(other)
        .map { case (key, (myTiles, otherTiles)) =>
          if (myTiles.nonEmpty && otherTiles.nonEmpty) {
