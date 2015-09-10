@@ -61,3 +61,17 @@ extends MergeMethods[(RDD[(K, TileType)], LayoutDefinition)] {
     (thisRdd.merge(cutRdd), thisLayout)
   }
 }
+
+class RasterRddMergeMethods[K: SpatialComponent](rdd: RasterRDD[K]) extends MergeMethods[RasterRDD[K]] {
+  def merge(other: RasterRDD[K]) = {
+    val (outRdd, _) = (rdd.tileRdd, rdd.metaData.layout).merge(other.tileRdd, rdd.metaData.layout)
+    new RasterRDD(outRdd, rdd.metaData)
+  }
+}
+
+class MultiBandRasterRddMergeMethods[K: SpatialComponent](rdd: MultiBandRasterRDD[K]) extends MergeMethods[MultiBandRasterRDD[K]] {
+  def merge(other: MultiBandRasterRDD[K]) = {
+    val (outRdd, _) = (rdd.tileRdd, rdd.metaData.layout).merge(other.tileRdd, rdd.metaData.layout)
+    new MultiBandRasterRDD(outRdd, rdd.metaData)
+  }
+}
