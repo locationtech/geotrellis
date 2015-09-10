@@ -6,7 +6,7 @@ import geotrellis.spark.io.avro.KeyCodecs._
 import org.scalatest._
 import geotrellis.raster._
 
-class TileRecordSpec extends FunSpec with AvroTools {
+class TileRecordSpec extends FunSpec with AvroTools with Matchers {
   describe("TileRecordCodecs") {
     it("encodes (key,tile) pairs"){
       val pairs = Vector(
