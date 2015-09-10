@@ -1,6 +1,7 @@
 package geotrellis.spark
 
 import geotrellis.proj4.CRS
+import geotrellis.raster.mosaic.MergeView
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.vector._
@@ -71,4 +72,6 @@ package object ingest {
       tiler(tiles, rasterMetaData, resampleMethod)
     }
   }
+
+  implicit class withMergeMethods[K, TileType: MergeView](rdd: RDD[(K, TileType)]) extends MergeMethods[K, TileType](rdd)
 }
