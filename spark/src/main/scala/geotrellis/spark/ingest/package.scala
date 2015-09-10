@@ -73,5 +73,9 @@ package object ingest {
     }
   }
 
-  implicit class withMergeMethods[K, TileType: MergeView](rdd: RDD[(K, TileType)]) extends MergeMethods[K, TileType](rdd)
+  implicit class withRddMergeMethods[K, TileType: MergeView](rdd: RDD[(K, TileType)])
+    extends RddMergeMethods[K, TileType](rdd)
+
+  implicit class withRddLayoutMergeMethods[K, TileType: MergeView](rdd: (RDD[(K, TileType)], LayoutDefinition))
+    extends RddLayoutMergeMethods[K, TileType](rdd)
 }
