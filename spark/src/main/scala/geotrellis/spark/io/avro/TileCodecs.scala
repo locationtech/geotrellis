@@ -117,5 +117,26 @@ object TileCodecs {
     }
   }
 
+  implicit object ArrayMultiBandTileCodec extends AvroRecordCodec[ArrayMultiBandTile] {
+    lazy val schema = SchemaBuilder
+      .record("ArrayMultiBandTile").namespace("geotrellis.raster")
+      .fields()
+      .name("bands").`type`().array().items.`type`(tileUnionCodec.schema).noDefault()
+      .endRecord()
 
+    def encode(tile: ArrayMultiBandTile, rec: GenericRecord) = {
+      val bands = for (i <- 0 until tile.bandCount) yield tile.band(i)
+      rec.put("bands", bands.map(tileUnionCodec.encode).asJavaCollection)
+    }
+
+    def decode(rec: GenericRecord) = {
+      val bands = rec.get("bands")
+        .asInstanceOf[java.util.Collection[GenericRecord]]
+        .asScala // notice that Avro does not have native support for Short primitive
+        .map(tileUnionCodec.decode)
+        .toArray
+
+      new ArrayMultiBandTile(bands)
+    }
+  }
 }

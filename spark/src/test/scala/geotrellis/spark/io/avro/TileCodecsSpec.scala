@@ -21,5 +21,9 @@ class TileCodecsSpec extends FunSpec with AvroTools {
     it("encodes ByteArrayTile"){
       roundTrip(ByteArrayTile.fill(127,10,15))
     }
+    it("encodes ArrayMultiBandTile"){
+      val tiles= for (i <- 0 to 3) yield DoubleArrayTile.fill(53232322.4,10,15)
+      roundTrip(ArrayMultiBandTile(tiles))
+    }
   }
 }
