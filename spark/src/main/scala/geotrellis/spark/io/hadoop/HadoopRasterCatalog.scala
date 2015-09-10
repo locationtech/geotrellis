@@ -76,8 +76,8 @@ class HadoopRasterCatalog(
   def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): RasterRDD[K] =
     query[K](layerId).toRDD
 
-  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K] =
-    new BoundRasterRDDQuery[K](new RasterRDDQuery[K], read(layerId, _))
+  def query[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId): BoundRasterRDDQuery[K, RasterRDD] =
+    new BoundRasterRDDQuery(new RasterRDDQuery[K], read(layerId, _))
 
   def writer[K: RasterRDDWriter: Boundable:Ordering: JsonFormat: SpatialComponent: ClassTag](keyIndexMethod: KeyIndexMethod[K]): Writer[LayerId, RasterRDD[K]] =
     writer[K](keyIndexMethod, "")

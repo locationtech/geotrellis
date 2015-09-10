@@ -3,11 +3,13 @@ package geotrellis.spark.io.s3
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark._
-import geotrellis.spark.io.s3.RDDWriter
 import geotrellis.spark.io.{AttributeCaching, Writer}
 import geotrellis.spark.io.avro.{KeyValueRecordCodec, AvroRecordCodec}
+import geotrellis.spark.io.avro.TileCodecs._
+import geotrellis.spark.io.json._
 import geotrellis.spark.io.index.KeyIndexMethod
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
@@ -17,7 +19,7 @@ class MultiBandRasterRDDWriter[K: SpatialComponent: Boundable: AvroRecordCodec: 
   keyIndexMethod: KeyIndexMethod[K],
   clobber: Boolean = true)
 (val attributeStore: S3AttributeStore = S3AttributeStore(bucket, keyPrefix))
-  extends  Writer[LayerId, RasterRDD[K]] with AttributeCaching[S3LayerMetaData] with LazyLogging {
+  extends  Writer[LayerId, MultiBandRasterRDD[K]] with AttributeCaching[S3LayerMetaData] with LazyLogging {
 
   val getS3Client: ()=>S3Client = () => S3Client.default
 

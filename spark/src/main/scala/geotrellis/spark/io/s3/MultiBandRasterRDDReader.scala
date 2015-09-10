@@ -6,6 +6,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.{Cache, FilteringRasterRDDReader, AttributeCaching}
 import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.io.avro.TileCodecs._
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import spray.json.{JsObject, JsonFormat}
@@ -15,7 +16,7 @@ import scala.reflect.ClassTag
 
 class MultiBandRasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag]
 (val attributeStore: S3AttributeStore, getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)(implicit sc: SparkContext)
-  extends FilteringRasterRDDReader[K] with AttributeCaching[S3LayerMetaData] with LazyLogging {
+  extends FilteringRasterRDDReader[K, MultiBandRasterRDD] with AttributeCaching[S3LayerMetaData] with LazyLogging {
 
   val getS3Client: () => S3Client = () => S3Client.default
   val defaultNumPartitions = sc.defaultParallelism

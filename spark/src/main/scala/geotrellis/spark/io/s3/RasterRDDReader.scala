@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
 
 class RasterRDDReader[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag]
 (val attributeStore: S3AttributeStore, getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)(implicit sc: SparkContext)
-  extends FilteringRasterRDDReader[K] with AttributeCaching[S3LayerMetaData] with LazyLogging {
+  extends FilteringRasterRDDReader[K, RasterRDD] with AttributeCaching[S3LayerMetaData] with LazyLogging {
 
   val getS3Client: () => S3Client = () => S3Client.default
   val defaultNumPartitions = sc.defaultParallelism
