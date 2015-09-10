@@ -18,7 +18,7 @@ object Reproject {
 
     rdd.map { case (key, tile) =>
       val ProjectedExtent(extent, crs) = key.projectedExtent
-      val (newTile , newExtent) = tile.reproject(extent, crs, destCRS)
+      val Product2(newTile , newExtent) = tile.reproject(extent, crs, destCRS)
       val newKey = key.updateProjectedExtent(ProjectedExtent(newExtent, destCRS))
       (newKey, newTile)
     }
