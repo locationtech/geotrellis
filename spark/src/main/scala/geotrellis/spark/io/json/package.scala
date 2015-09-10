@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.spark.utils._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
@@ -50,21 +51,37 @@ package object json {
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,
-        "crs" -> metaData.crs.toJson,
-        "tileLayout" -> metaData.tileLayout.toJson
+        "layoutDefinition" -> metaData.layout.toJson,
+        "crs" -> metaData.crs.toJson
       )
 
     def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "extent", "crs", "tileLayout") match {
-        case Seq(cellType, extent, crs, tileLayout) =>
+      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs") match {
+        case Seq(cellType, extent, layoutDefinition, crs) =>
           RasterMetaData(
             cellType.convertTo[CellType],
+            layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
-            crs.convertTo[CRS],
-            tileLayout.convertTo[TileLayout]
+            crs.convertTo[CRS]
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
+      }
+  }
+
+  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
+    def write(obj: LayoutDefinition) =
+      JsObject(
+        "extent" -> obj.extent.toJson,
+        "tileLayout" -> obj.tileLayout.toJson
+      )
+
+    def read(json: JsValue) =
+      json.asJsObject.getFields("extent", "tileLayout") match {
+        case Seq(extent, tileLayout) =>
+          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
+        case _ =>
+          throw new DeserializationException("LayoutDefinition expected")
       }
   }
 

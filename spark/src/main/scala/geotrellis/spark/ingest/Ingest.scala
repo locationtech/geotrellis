@@ -49,9 +49,8 @@ object Ingest {
    *
    * @param sourceTiles   RDD of tiles that have Extent and CRS
    * @param destCRS       CRS to be used by the output layer
-   * @param LayoutScheme  LayoutScheme to be used by output layer
+   * @param layoutScheme  LayoutScheme to be used by output layer
    * @param pyramid       Pyramid up to level 1, sink function will be called for each level
-   * @param isUniform     Flag that all input tiles share an the same extent (optimization)
    * @param tiler         Tiler that can understand the input and out keys (implicit)
    * @param sink          function that utilize the result of the ingest, assumed to force materialization of the RDD
    * @tparam T            type of input tile key
@@ -59,18 +58,18 @@ object Ingest {
    * @return
    */
   def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag]
-    (sourceTiles: RDD[(T, Tile)], destCRS: CRS, layoutScheme: LayoutScheme, pyramid: Boolean = false, isUniform: Boolean = false)
-    (sink: (RasterRDD[K], LayoutLevel) => Unit)
+    (sourceTiles: RDD[(T, Tile)], destCRS: CRS, layoutScheme: LayoutScheme, pyramid: Boolean = false)
+    (sink: (RasterRDD[K], Int) => Unit)
     (implicit tiler: Tiler[T, K]): Unit =
   {
-    def sinkLevels(rdd: RasterRDD[K], level: LayoutLevel)(free: => Unit): Unit = {    
-      if (pyramid && level.zoom >= 1) {
+    def sinkLevels(rdd: RasterRDD[K], level: Int)(free: => Unit): Unit = {
+      if (pyramid && level >= 1) {
         rdd.cache()      
         sink(rdd, level)           
         free
-        val (nextLevel, nextRdd) = Pyramid.up(rdd, level, layoutScheme)
+        val (nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, level)
         // we must do it now so we can unpersist the source before recurse
-        sinkLevels(nextRdd, nextLevel){ rdd.unpersist(blocking = false) }
+        sinkLevels(nextRdd, nextZoom){ rdd.unpersist(blocking = false) }
       } else {
         sink(rdd, level)
       }
@@ -79,7 +78,7 @@ object Ingest {
     val reprojectedTiles = sourceTiles.reproject(destCRS).cache()
     // execution is going to fork here to collect the RasterMetaData
     val (layoutLevel, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme, isUniform) { key: T =>
+      RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme) { key: T =>
         key.projectedExtent.extent
       }
 

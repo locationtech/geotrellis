@@ -1,6 +1,7 @@
 package geotrellis.spark.tiling
 
 import geotrellis.raster._
+import geotrellis.spark._
 import geotrellis.vector._
 
 /** A LayoutScheme is something that provides LayoutLevels based on an integer id or 
@@ -12,22 +13,12 @@ import geotrellis.vector._
   */
 trait LayoutScheme {
   def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel
-  def levelFor(levelId: Int): LayoutLevel
   def zoomOut(level: LayoutLevel): LayoutLevel
   def zoomIn(level: LayoutLevel): LayoutLevel
 }
 
-case class LayoutLevel(zoom: Int, tileLayout: TileLayout)
+case class LayoutLevel(zoom: Int, layout: LayoutDefinition)
 
-/** Layout scheme for dealing with no zoom levels */
-object SingleLayoutScheme {
-  def apply(tileLayout: TileLayout): LayoutScheme = 
-    new LayoutScheme {
-      val layoutLevel = LayoutLevel(0, tileLayout)
-
-      def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel = layoutLevel
-      def levelFor(levelId: Int): LayoutLevel = layoutLevel
-      def zoomOut(level: LayoutLevel): LayoutLevel = layoutLevel
-      def zoomIn(level: LayoutLevel): LayoutLevel = layoutLevel
-    }
+object LayoutLevel {
+  implicit def fromTuple(tup: (Int, LayoutDefinition)): LayoutLevel = LayoutLevel(tup._1, tup._2)
 }

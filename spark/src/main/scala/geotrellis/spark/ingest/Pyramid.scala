@@ -4,10 +4,8 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.mosaic._
-
 import org.apache.spark.Logging
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext._
 
 import scala.reflect.ClassTag
 
@@ -15,15 +13,15 @@ object Pyramid extends Logging {
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): (LayoutLevel, RasterRDD[K]) = {
+  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], layoutScheme: LayoutScheme, zoom: Int): (Int, RasterRDD[K]) = {
     val metaData = rdd.metaData
-    val nextLevel = layoutScheme.zoomOut(level)
+    val LayoutLevel(nextZoom, nextLevel) = layoutScheme.zoomOut(LayoutLevel(zoom, rdd.metaData.layout))
     val nextMetaData = 
       RasterMetaData(
         metaData.cellType,
+        nextLevel,
         metaData.extent,
-        metaData.crs,
-        nextLevel.tileLayout
+        metaData.crs
       )
 
     // Functions for combine step
@@ -61,6 +59,6 @@ object Pyramid extends Logging {
           (newKey, newTile: Tile)
         }
 
-    nextLevel -> new RasterRDD(nextRdd, nextMetaData)
+    (nextZoom, new RasterRDD(nextRdd, nextMetaData))
   }
 }

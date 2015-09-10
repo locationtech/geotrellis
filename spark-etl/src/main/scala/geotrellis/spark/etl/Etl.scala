@@ -1,10 +1,11 @@
 package geotrellis.spark.etl
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import geotrellis.proj4.CRS
 import geotrellis.spark.ingest.Pyramid
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{SpatialComponent, RasterRDD, LayerId}
-import geotrellis.spark.tiling.{LayoutLevel, ZoomedLayoutScheme}
+import geotrellis.spark.tiling.{LayoutScheme, LayoutLevel, ZoomedLayoutScheme}
 import geotrellis.spark.op.stats._
 import geotrellis.raster.io.json._
 import com.google.inject._
@@ -14,13 +15,16 @@ import scala.collection.JavaConverters._
 import spray.json._
 
 object Etl {
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String]): Etl[K] = {
-    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
-  }
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String])(fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
+    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(fLayoutScheme)
+
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String]) =
+    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(ZoomedLayoutScheme.apply)
 }
 
-case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*) extends LazyLogging {
+case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*)(fLayoutScheme: (CRS, Int) => LayoutScheme) extends LazyLogging {
   val conf = new EtlConf(args)
+  val scheme = fLayoutScheme(conf.crs(), conf.tileSize())
 
   val (inputPlugin, outputPlugin) = {
     val injector = Guice.createInjector(modules: _*)
@@ -47,14 +51,14 @@ case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module
   }
 
   def load()(implicit sc: SparkContext): (LayerId, RasterRDD[K]) = {
-    val (level, rdd) = inputPlugin[K](conf.cache(), conf.crs(), ZoomedLayoutScheme(conf.tileSize()), conf.inputProps)
-    LayerId(conf.layerName(), level.zoom) -> rdd
+    val (zoom, rdd) = inputPlugin[K](conf.cache(), conf.crs(), scheme, conf.inputProps)
+    LayerId(conf.layerName(), zoom) -> rdd
   }
 
   def save(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K]): Unit = {
     val attributes = outputPlugin.attributes(conf.outputProps)
-    def savePyramid(level: LayoutLevel, rdd: RasterRDD[K]): Unit = {
-      val currentId = id.copy( zoom = level.zoom)
+    def savePyramid(zoom: Int, rdd: RasterRDD[K]): Unit = {
+      val currentId = id.copy( zoom = zoom)
       outputPlugin(currentId, rdd, method, conf.outputProps)
       if (conf.histogram()) {
         val histogram = rdd.histogram
@@ -62,12 +66,12 @@ case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module
         attributes.write(currentId, "histogram", histogram)
       }
 
-      if (conf.pyramid() && level.zoom > 1) {
-        val (nextLevel, nextRdd) = Pyramid.up(rdd, level, ZoomedLayoutScheme(conf.tileSize()))
+      if (conf.pyramid() && zoom > 1) {
+        val (nextLevel, nextRdd) = Pyramid.up(rdd, scheme, zoom)
         savePyramid(nextLevel, nextRdd)
       }
     }
 
-    savePyramid(LayoutLevel(id.zoom, rdd.metaData.tileLayout), rdd)
+    savePyramid(id.zoom, rdd)
   }
 }

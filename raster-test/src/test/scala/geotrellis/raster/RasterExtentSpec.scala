@@ -334,7 +334,7 @@ class RasterExtentSpec extends FunSpec with Matchers
       val cols = 10
       val rows = 9
       val expected = RasterExtent(ext, cellWidth, cellHeight, cols, rows)
-      val actual = RasterExtent(ext, cellWidth, cellHeight)
+      val actual = RasterExtent(ext, CellSize(cellWidth, cellHeight))
 
       actual should be (expected)
     }
