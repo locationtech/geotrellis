@@ -20,11 +20,14 @@ import collection.immutable.Map
 
 import collection.mutable.ListBuffer
 
+import geotrellis.proj4.CRS
+
 import geotrellis.raster.io.geotiff.tags._
 import EllipsoidTypes._
 import DatumTypes._
 import GeographicCSTypes._
 import EllipsoidTypes._
+import ProjectionTypesMap._
 import CommonPublicValues._
 import GeoKeys._
 import ModelTypes._
@@ -33,15 +36,15 @@ import ProjectedLinearUnits._
 
 case class GeoDirectoryTags(shortTags: Array[(Int, Int, Int, Int)], doubles: Array[Double])
 
-object Proj4StringParser {
+object CoordinateSystemParser {
 
   val GeoTiffDoubleTag = 0x87b0
 
-  def apply(proj4String: String): Proj4StringParser =
-    new Proj4StringParser(proj4String)
+  def apply(crs: CRS): CoordinateSystemParser =
+    new CoordinateSystemParser(crs)
 
-  def parse(proj4String: String): GeoDirectoryTags = {
-    val (s, d) = apply(proj4String).parse
+  def parse(crs: CRS): GeoDirectoryTags = {
+    val (s, d) = apply(crs).parse
     GeoDirectoryTags(s, d)
   }
 
@@ -51,9 +54,11 @@ class MalformedProj4Exception(message: String) extends RuntimeException(message)
 
 class GeoTiffWriterLimitationException(message: String) extends RuntimeException(message)
 
-class Proj4StringParser(val proj4String: String) {
+class CoordinateSystemParser(val crs: CRS) {
 
-  import Proj4StringParser._
+  import CoordinateSystemParser._
+
+  private val proj4String: String = crs.toProj4String
 
   private val proj4Map: Map[String, String] =
     proj4String.split('+').
@@ -98,17 +103,28 @@ class Proj4StringParser(val proj4String: String) {
     // For the raster type is pixel area
     geoKeysIntBuffer ++= List((GTRasterTypeGeoKey, 1))
 
-    val (projPropsGeoKeysInt, projPropsDoubles) = projProps
-    geoKeysIntBuffer ++= projPropsGeoKeysInt
-    doublesBuffer ++= projPropsDoubles
+    val projectedCSTypkeGeoValue = crs.epsgCode.getOrElse(UserDefinedProjectionType)
 
-    val (gcsOrDatumGeoKeysInt, gcsOrDatumDoubles) = gcsOrDatumProps
-    geoKeysIntBuffer ++= gcsOrDatumGeoKeysInt
-    doublesBuffer ++= gcsOrDatumDoubles
+    if (projectedCSTypkeGeoValue != UserDefinedProjectionType) {
+      val projPropsGeoKeysInt: List[(Int, Int)] = List(
+        (GTModelTypeGeoKey, ModelTypeProjected),
+        (GeogAngularUnitsGeoKey, 9102),
+        (ProjectedCSTypeGeoKey, projectedCSTypkeGeoValue)
+      )
+      geoKeysIntBuffer ++= projPropsGeoKeysInt
+    } else {
+      val (projPropsGeoKeysInt, projPropsDoubles) = projProps
+      geoKeysIntBuffer ++= projPropsGeoKeysInt
+      doublesBuffer ++= projPropsDoubles
 
-    val (ellipsoidGeoKeysInt, ellipsoidDoubles) = ellipsoidProps
-    geoKeysIntBuffer ++= ellipsoidGeoKeysInt
-    doublesBuffer ++= ellipsoidDoubles
+      val (gcsOrDatumGeoKeysInt, gcsOrDatumDoubles) = gcsOrDatumProps
+      geoKeysIntBuffer ++= gcsOrDatumGeoKeysInt
+      doublesBuffer ++= gcsOrDatumDoubles
+
+      val (ellipsoidGeoKeysInt, ellipsoidDoubles) = ellipsoidProps
+      geoKeysIntBuffer ++= ellipsoidGeoKeysInt
+      doublesBuffer ++= ellipsoidDoubles
+    }
 
     val (linearUnitsGeoKeysInt, linearUnitsDoubles) = linearUnitProps
     geoKeysIntBuffer ++= linearUnitsGeoKeysInt
@@ -161,10 +177,13 @@ class Proj4StringParser(val proj4String: String) {
     val zone = getInt("zone")
     val south = proj4Map.contains("south")
 
+    val epsgCodeBase = if (south) 32700 else 32600
+
     val geoKeysInt = List(
       (GTModelTypeGeoKey, ModelTypeProjected),
       (ProjectedCSTypeGeoKey, UserDefinedCPV),
-      (ProjCoordTransGeoKey, CT_TransverseMercator)
+      (ProjCoordTransGeoKey, CT_TransverseMercator),
+      (ProjectedCSTypeGeoKey, epsgCodeBase + zone)
     )
 
     val doubles = List(
@@ -172,7 +191,7 @@ class Proj4StringParser(val proj4String: String) {
       (ProjNatOriginLongGeoKey, zone * 6 - 183.0),
       (ProjScaleAtNatOriginGeoKey, 0.9996),
       (ProjFalseEastingGeoKey, 500000.0),
-      (ProjFalseNorthingGeoKey, if (south) 0.0 else 10000000.0)
+      (ProjFalseNorthingGeoKey, if (south) 10000000.0 else 0.0)
     )
 
     (geoKeysInt, doubles)
