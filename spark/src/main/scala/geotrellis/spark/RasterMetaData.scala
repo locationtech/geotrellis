@@ -53,7 +53,7 @@ object RasterMetaData {
    * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
    */
   def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition)
-                (getExtent: T => Extent): RasterMetaData = {
+                (getExtent: K => Extent): RasterMetaData = {
     val (uncappedExtent, cellType, _) = envelopeExtent(rdd)(getExtent)
     RasterMetaData(cellType, layout, uncappedExtent, crs)
   }
