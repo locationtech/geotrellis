@@ -11,13 +11,13 @@ import org.apache.spark.rdd._
 /**
  * @param cellType    value type of each cell
  * @param layout      definition of the tiled raster layout
- * @param dataExtent  Extent covering the source data
+ * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
 case class RasterMetaData(
   cellType: CellType,
   layout: LayoutDefinition,
-  dataExtent: Extent,
+  extent: Extent,
   crs: CRS
 ) {
   /** Transformations between tiling scheme and map references */
@@ -29,7 +29,7 @@ case class RasterMetaData(
   /** Full extent of the layout */
   def layoutExtent = layout.extent
   /** GridBounds of data tiles in the layout */
-  def gridBounds = mapTransform(dataExtent)
+  def gridBounds = mapTransform(extent)
 
   def tileTransform(tileScheme: TileScheme): TileKeyTransform =
     tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
@@ -68,7 +68,7 @@ object RasterMetaData {
   def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme)
                 (getExtent: K => Extent): (Int, RasterMetaData) = {
     val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
-    val LayoutLevel(zoom, layout) = scheme.levelFor(ProjectedExtent(uncappedExtent, crs), cellSize)
+    val LayoutLevel(zoom, layout) = scheme.levelFor(uncappedExtent, cellSize)
     (zoom, RasterMetaData(cellType, layout, uncappedExtent, crs))
   }
 }

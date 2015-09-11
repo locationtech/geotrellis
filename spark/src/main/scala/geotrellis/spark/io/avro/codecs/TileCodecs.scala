@@ -1,12 +1,15 @@
-package geotrellis.spark.io.avro
+package geotrellis.spark.io.avro.codecs
 
-import geotrellis.raster._
-import org.apache.avro.generic._
-import org.apache.avro.SchemaBuilder
-import scala.collection.JavaConverters._
 import java.nio.ByteBuffer
 
-object TileCodecs {
+import geotrellis.raster._
+import geotrellis.spark.io.avro._
+import org.apache.avro.SchemaBuilder
+import org.apache.avro.generic._
+
+import scala.collection.JavaConverters._
+
+trait TileCodecs {
   implicit object ShortArrayTileCodec extends AvroRecordCodec[ShortArrayTile] {
     lazy val schema = SchemaBuilder
       .record("ShortArrayTile").namespace("geotrellis.raster")
@@ -141,3 +144,5 @@ object TileCodecs {
     }
   }
 }
+
+object TileCodecs extends TileCodecs

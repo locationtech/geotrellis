@@ -5,7 +5,8 @@ import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.{Cache, FilteringRasterRDDReader, AttributeCaching}
-import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import spray.json.{JsObject, JsonFormat}

@@ -2,8 +2,10 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro.{KeyValueRecordCodec, AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.io.IOUtils
 import spray.json.JsonFormat

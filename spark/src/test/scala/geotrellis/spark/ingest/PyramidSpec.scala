@@ -69,7 +69,7 @@ class PyramidSpec extends FunSpec
             tileLayout
           )
 
-        val layoutScheme = ZoomedLayoutScheme(2)
+        val layoutScheme = ZoomedLayoutScheme(LatLng, 2)
         val level = layoutScheme.levelForZoom(LatLng.worldExtent, 2)
 
         val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)

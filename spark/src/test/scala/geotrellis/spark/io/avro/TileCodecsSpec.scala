@@ -1,5 +1,6 @@
 package geotrellis.spark.io.avro
 
+import geotrellis.spark.io.avro.codecs.TileCodecs
 import org.scalatest._
 import TileCodecs._
 import geotrellis.raster._

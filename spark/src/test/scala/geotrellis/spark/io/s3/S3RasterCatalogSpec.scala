@@ -2,11 +2,12 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro.codecs.KeyCodecs
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles._
 import geotrellis.raster.{Tile, GridBounds}
 import org.scalatest._
-import geotrellis.spark.io.avro.KeyCodecs._
+import KeyCodecs._
 
 class S3RasterCatalogSpec extends FunSpec
   with TestFiles

@@ -9,7 +9,7 @@ import geotrellis.spark.ingest._
 import org.scalatest._
 
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with OnlyIfCanRunSpark {
-  val layoutScheme = ZoomedLayoutScheme()
+  val layoutScheme = ZoomedLayoutScheme(LatLng)
 
   describe("Temporal GeoTiff S3 InputFormat"){
     ifCanRunSpark {

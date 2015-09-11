@@ -42,18 +42,20 @@ class BilinearResample(tile: Tile, extent: Extent)
     (leftCol, topRow, xRatio, yRatio)
   }
 
-  def bilinearInt(leftCol: Int, topRow: Int, xRatio: Double, yRatio: Double): Int =
-    bilinear(leftCol, topRow, xRatio, yRatio, tile.get).round.toInt
+  def bilinearInt(leftCol: Int, topRow: Int, xRatio: Double, yRatio: Double): Int = {
+    val v = bilinear(leftCol, topRow, xRatio, yRatio)
+    if(isData(v)) { math.round(v).toInt }
+    else NODATA
+  }
 
   def bilinearDouble(leftCol: Int, topRow: Int, xRatio: Double, yRatio: Double): Double =
-    bilinear(leftCol, topRow, xRatio, yRatio, tile.getDouble)
+    bilinear(leftCol, topRow, xRatio, yRatio)
 
   private def bilinear(
     leftCol: Int,
     topRow: Int,
     xRatio: Double,
-    yRatio: Double,
-    f: (Int, Int) => Double): Double = {
+    yRatio: Double): Double = {
     val (rightCol, bottomRow) = (leftCol + 1, topRow + 1)
     val (invXR, invYR) = (1 - xRatio, 1 - yRatio)
 
@@ -61,27 +63,39 @@ class BilinearResample(tile: Tile, extent: Extent)
     var accumDivisor = 0.0
 
     if (leftCol >= 0 && topRow >= 0 && leftCol < cols && topRow < rows) {
-      val mult = invXR * invYR
-      accumDivisor += mult
-      accum += f(leftCol, topRow) * mult
+      val z = tile.getDouble(leftCol, topRow)
+      if(isData(z)) {
+        val mult = invXR * invYR
+        accumDivisor += mult
+        accum += z * mult
+      }
     }
 
     if (rightCol >= 0 && topRow >= 0 && rightCol < cols && topRow < rows) {
-      val mult = (1 - invXR) * invYR
-      accumDivisor += mult
-      accum += f(rightCol, topRow) * mult
+      val z = tile.getDouble(rightCol, topRow)
+      if(isData(z)) {
+        val mult = (1 - invXR) * invYR
+        accumDivisor += mult
+        accum += z * mult
+      }
     }
 
     if (leftCol >= 0 && bottomRow >= 0 && leftCol < cols && bottomRow < rows) {
-      val mult = invXR * (1 - invYR)
-      accumDivisor += mult
-      accum += f(leftCol, bottomRow) * mult
+      val z = tile.getDouble(leftCol, bottomRow)
+      if(isData(z)) {
+        val mult = invXR * (1 - invYR)
+        accumDivisor += mult
+        accum += z * mult
+      }
     }
 
     if (rightCol >= 0 && bottomRow >= 0 && rightCol < cols && bottomRow < rows) {
-      val mult = (1 - invXR) * (1 - invYR)
-      accumDivisor += mult
-      accum += f(rightCol, bottomRow) * mult
+      val z = tile.getDouble(rightCol, bottomRow)
+      if(isData(z)) {
+        val mult = (1 - invXR) * (1 - invYR)
+        accumDivisor += mult
+        accum += z * mult
+      }
     }
 
     accum / accumDivisor

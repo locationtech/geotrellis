@@ -50,23 +50,38 @@ package object json {
     def write(metaData: RasterMetaData) = 
       JsObject(
         "cellType" -> metaData.cellType.toJson,
-        "dataExtent" -> metaData.dataExtent.toJson,
-        "layoutExtent" -> metaData.layoutExtent.toJson,
-        "tileLayout" -> metaData.tileLayout.toJson,
+        "extent" -> metaData.extent.toJson,
+        "layoutDefinition" -> metaData.layout.toJson,
         "crs" -> metaData.crs.toJson
       )
 
     def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "dataExtent", "layoutExtent", "tileLayout", "crs") match {
-        case Seq(cellType, dataExtent, layoutExtent, tileLayout, crs) =>
+      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs") match {
+        case Seq(cellType, extent, layoutDefinition, crs) =>
           RasterMetaData(
             cellType.convertTo[CellType],
-            LayoutDefinition(layoutExtent.convertTo[Extent], tileLayout.convertTo[TileLayout]),
-            dataExtent.convertTo[Extent],
+            layoutDefinition.convertTo[LayoutDefinition],
+            extent.convertTo[Extent],
             crs.convertTo[CRS]
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
+      }
+  }
+
+  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
+    def write(obj: LayoutDefinition) =
+      JsObject(
+        "extent" -> obj.extent.toJson,
+        "tileLayout" -> obj.tileLayout.toJson
+      )
+
+    def read(json: JsValue) =
+      json.asJsObject.getFields("extent", "tileLayout") match {
+        case Seq(extent, tileLayout) =>
+          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
+        case _ =>
+          throw new DeserializationException("LayoutDefinition expected")
       }
   }
 

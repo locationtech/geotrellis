@@ -3,10 +3,11 @@ package geotrellis.spark.io.s3
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark._
+import geotrellis.spark.io.avro.codecs.TileCodecs
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.{Cache, FilteringRasterRDDReader, AttributeCaching}
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.avro.TileCodecs._
+import TileCodecs._
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import spray.json.{JsObject, JsonFormat}

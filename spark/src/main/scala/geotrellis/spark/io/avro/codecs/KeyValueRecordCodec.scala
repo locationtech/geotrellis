@@ -1,7 +1,9 @@
-package geotrellis.spark.io.avro
+package geotrellis.spark.io.avro.codecs
 
-import org.apache.avro.generic.GenericRecord
+import geotrellis.spark.io.avro.AvroRecordCodec
 import org.apache.avro._
+import org.apache.avro.generic.GenericRecord
+
 import scala.collection.JavaConverters._
 
 class KeyValueRecordCodec[K, V](implicit a: AvroRecordCodec[K], b: AvroRecordCodec[V]) extends AvroRecordCodec[Vector[(K, V)]] {

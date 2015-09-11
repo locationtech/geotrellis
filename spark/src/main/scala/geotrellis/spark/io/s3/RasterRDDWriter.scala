@@ -3,8 +3,10 @@ package geotrellis.spark.io.s3
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndexMethod
 import spray.json._
 import spray.json.DefaultJsonProtocol._

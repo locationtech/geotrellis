@@ -8,7 +8,7 @@ import org.scalatest._
 class FloatingLayoutSchemeSpec extends FunSpec with Matchers {
   describe("FloatingLayoutScheme"){
     val scheme: LayoutScheme = FloatingLayoutScheme(10)
-    val level = scheme.levelFor(LatLng -> Extent(0,0,37,27), CellSize(1,1))
+    val level = scheme.levelFor(Extent(0,0,37,27), CellSize(1,1))
 
     it("should pad the layout to match source resolution"){
       assert(level.layout.tileLayout.totalCols === 40)

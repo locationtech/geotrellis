@@ -49,7 +49,7 @@ object Pyramid extends Logging {
     val nextMetaData = RasterMetaData(
       rdd.metaData.cellType,
       nextLayout,
-      rdd.metaData.dataExtent,
+      rdd.metaData.layout.extent,
       rdd.metaData.crs
     )
     val nextRdd = up(rdd, rdd.metaData.layout, nextLayout)
@@ -61,7 +61,7 @@ object Pyramid extends Logging {
     val nextMetaData = RasterMetaData(
       rdd.metaData.cellType,
       nextLayout,
-      rdd.metaData.dataExtent,
+      rdd.metaData.layout.extent,
       rdd.metaData.crs
     )
     val nextRdd = up(rdd, rdd.metaData.layout, nextLayout)

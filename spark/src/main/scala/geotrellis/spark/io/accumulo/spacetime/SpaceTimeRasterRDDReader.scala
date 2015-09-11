@@ -2,7 +2,8 @@ package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.avro.KeyCodecs._
+import geotrellis.spark.io.avro.codecs.KeyCodecs
+import KeyCodecs._
 import geotrellis.spark.io.index._
 
 import org.apache.hadoop.io.Text

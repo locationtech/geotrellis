@@ -3,6 +3,11 @@ package geotrellis.spark.tiling
 import geotrellis.raster.{RasterExtent, TileLayout}
 import geotrellis.vector.Extent
 
+/**
+ * Defines tiled raster layout
+ * @param extent      extent covered by the layout tiles, could be greater than extent of data in the layer
+ * @param tileLayout  tile layout (tile cols, tile rows, tile pixel size)
+ */
 case class LayoutDefinition(extent: Extent, tileLayout: TileLayout) extends Product {
   lazy val rasterExtent = RasterExtent(extent, tileLayout.cellSize(extent))
   lazy val mapTransform = MapKeyTransform(extent, tileLayout.layoutDimensions)

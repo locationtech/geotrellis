@@ -23,7 +23,7 @@ class MinSpec extends FunSpec
 
       val tileLayout = inc.metaData.tileLayout
       val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-      val totalExtent = inc.metaData.dataExtent
+      val totalExtent = inc.metaData.extent
 
       it("should get correct min over whole raster extent") {
         inc.zonalMin(totalExtent.toPolygon) should be(0)

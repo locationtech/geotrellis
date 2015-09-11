@@ -21,7 +21,6 @@ object Dependencies {
   val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
   val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
-  val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % Version.monocle

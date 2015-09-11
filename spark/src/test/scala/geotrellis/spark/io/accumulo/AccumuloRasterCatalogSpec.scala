@@ -31,7 +31,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
-      val layoutScheme = ZoomedLayoutScheme(512)
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
       val tableName = "tiles"
       if (!tableOps.exists(tableName))
         tableOps.create(tableName)
