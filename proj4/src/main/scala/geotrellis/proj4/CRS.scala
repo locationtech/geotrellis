@@ -97,12 +97,6 @@ object CRS {
   }
 
   private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
-    def code(line: String): Option[String] = {
-      val array = line.split(" ")
-      val length = array(0).length
-      Some(array(0).substring(1, length - 1))
-    }
-
     Source.fromFile(s"${filePrefix}epsg")
       .getLines
       .find { line =>
@@ -110,9 +104,10 @@ object CRS {
         val proj4Body = line.split("proj")(1)
         s"+proj$proj4Body" == proj4String
       }
-    }.map { line => code(line) } match {
-      case Some(value) => value
-      case None => throw new NotFoundException(s"The EPSG code cannot be found for the proj4 string $proj4String")
+    }.flatMap { l =>
+        val array = l.split(" ")
+        val length = array(0).length
+        Some(array(0).substring(1, length - 1))
     }
   }
 }
