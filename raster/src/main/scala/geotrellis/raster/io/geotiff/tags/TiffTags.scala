@@ -196,15 +196,15 @@ case class TiffTags(
     }
   }
 
-  def pcs: Int = try {
+  def projectedCoordinateSystem: Int = try {
     GeoTiffCSTags.pcs
   } catch {
     case e: Exception => 32767
   }
 
   lazy val crs: CRS = {
-    if (pcs != 32767) {
-      CRS.fromName(s"EPSG:${pcs}")
+    if (projectedCoordinateSystem != 32767) {
+      CRS.fromName(s"EPSG:${projectedCoordinateSystem}")
     } else {
       proj4String match {
         case Some(s) => CRS.fromString(s)
