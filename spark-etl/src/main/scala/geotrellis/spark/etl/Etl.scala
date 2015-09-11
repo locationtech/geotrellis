@@ -15,14 +15,24 @@ import scala.collection.JavaConverters._
 import spray.json._
 
 object Etl {
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String])(fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
-    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(fLayoutScheme)
+  val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
+  val defaultLayoutScheme = ZoomedLayoutScheme.apply _
 
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String]) =
-    new Etl(args, s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)(ZoomedLayoutScheme.apply)
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String]): Etl[K] =
+    apply(args, defaultModules)
+
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module]): Etl[K] =
+    new Etl(args, modules, defaultLayoutScheme)
+
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String], fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
+    new Etl(args, defaultModules, fLayoutScheme)
+
+  def apply[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module], fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
+    new Etl(args, modules, fLayoutScheme)
+
 }
 
-case class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Module*)(fLayoutScheme: (CRS, Int) => LayoutScheme) extends LazyLogging {
+class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module], fLayoutScheme: (CRS, Int) => LayoutScheme) extends LazyLogging {
   val conf = new EtlConf(args)
   val scheme = fLayoutScheme(conf.crs(), conf.tileSize())
 
