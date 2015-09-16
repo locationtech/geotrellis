@@ -20,10 +20,39 @@ import java.io.File
 
 import org.scalatest._
 
+object GenerateGeoTiffTestFiles {
+  def main(args: Array[String]): Unit =
+    GeoTiffTestUtils.initializeTestFiles(true)
+}
+
+object GeoTiffTestUtils {
+  val testDirPath = "raster-test/data/geotiff-test-files"
+
+  def initializeTestFiles(force: Boolean): Unit = {
+    val exists = new File(testDirPath).exists
+    if(force && exists) {
+      val file = new File(testDirPath)
+      def getRecursively(f: File): Seq[File] =
+        (f.listFiles.filter(_.isDirectory).flatMap(getRecursively) ++ f.listFiles) :+ f
+
+      getRecursively(new File(testDirPath)).foreach { f =>
+        if (!f.delete())
+          throw new RuntimeException("Failed to delete " + f.getAbsolutePath)
+      }
+    }
+    if(!(new File(testDirPath)).exists) {
+      println("UNCOMPRESSING TEST FILES")
+      ZipArchive.unZip("raster-test/data/geotiff-test-files.zip", "raster-test/data")
+    }
+  }
+}
+
 trait GeoTiffTestUtils extends Matchers {
+  import GeoTiffTestUtils._
+
   def geoTiffPath(name: String): String = {
-    initializeTestFiles
-    s"raster-test/data/geotiff-test-files/$name"
+    initializeTestFiles()
+    s"$testDirPath/$name"
   }
 
   def baseDataPath = "raster-test/data"
@@ -32,12 +61,7 @@ trait GeoTiffTestUtils extends Matchers {
 
   var writtenFiles = Vector[String]()
 
-  def initializeTestFiles(): Unit = {
-    if(!new File("raster-test/data/geotiff-test-files").exists) {
-      println("UNCOMPRESSING TEST FILES")
-      ZipArchive.unZip("raster-test/data/geotiff-test-files.zip", "raster-test/data")
-    }
-  }  
+  def initializeTestFiles(): Unit = GeoTiffTestUtils.initializeTestFiles(false)
 
   protected def addToPurge(path: String) = synchronized {
     writtenFiles = writtenFiles :+ path

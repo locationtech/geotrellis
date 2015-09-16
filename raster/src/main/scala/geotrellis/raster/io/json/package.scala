@@ -79,4 +79,22 @@ package object json {
           throw new DeserializationException("TileLayout expected.")
       }
   }
+
+  implicit object GridBoundsFormat extends RootJsonFormat[GridBounds] {
+    def write(gridBounds: GridBounds) =
+      JsObject(
+        "colMin" -> JsNumber(gridBounds.colMin),
+        "rowMin" -> JsNumber(gridBounds.rowMin),
+        "colMax" -> JsNumber(gridBounds.colMax),
+        "rowMax" -> JsNumber(gridBounds.rowMax)
+      )
+
+    def read(value: JsValue): GridBounds =
+      value.asJsObject.getFields("colMin", "rowMin", "colMax", "rowMax") match {
+        case Seq(JsNumber(colMin), JsNumber(rowMin), JsNumber(colMax), JsNumber(rowMax)) =>
+          GridBounds(colMin.toInt, rowMin.toInt, colMax.toInt, rowMax.toInt)
+        case _ =>
+          throw new DeserializationException("GridBounds expected.")
+      }
+  }
 }
