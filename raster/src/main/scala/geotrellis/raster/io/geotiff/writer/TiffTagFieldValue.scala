@@ -32,7 +32,7 @@ case class TiffTagFieldValue(
 }
 
 object TiffTagFieldValue {
-  def apply(tag: Int, fieldType: Int, length: Int, value: Int)(implicit toBytes: ToBytes): TiffTagFieldValue = 
+  def apply(tag: Int, fieldType: Int, length: Int, value: Int)(implicit toBytes: ToBytes): TiffTagFieldValue =
     fieldType match {
       case ShortsFieldType => TiffTagFieldValue(tag, fieldType, length, toBytes(value.toShort))
       case IntsFieldType => TiffTagFieldValue(tag, fieldType, length, toBytes(value))
@@ -80,8 +80,7 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(ModelTiePointsTag, DoublesFieldType, 6, toBytes(Array(0.0, 0.0, 0.0, extent.xmin, extent.ymax, 0.0)))
 
     // GeoKeyDirectory: Tags that describe the CRS
-
-    val GeoDirectoryTags(shortGeoKeys, doubleGeoKeys) = Proj4StringParser.parse(geoTiff.crs.toProj4String)
+    val GeoDirectoryTags(shortGeoKeys, doubleGeoKeys) = CoordinateSystemParser.parse(geoTiff.crs)
 
     // Write the short values of the GeoKeyDirectory
     val shortValues = Array.ofDim[Short]( (shortGeoKeys.length + 1) * 4)
@@ -117,13 +116,13 @@ object TiffTagFieldValue {
           fieldValues += TiffTagFieldValue(TileWidthTag, IntsFieldType, 1, toBytes(tileCols))
           fieldValues += TiffTagFieldValue(TileLengthTag, IntsFieldType, 1, toBytes(tileRows))
           fieldValues += TiffTagFieldValue(TileByteCountsTag, IntsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
-          
+
           { offsets: Array[Int] => TiffTagFieldValue(TileOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets)) }
         case s: Striped =>
           val rowsPerStrip = imageData.segmentLayout.tileLayout.tileRows
           fieldValues += TiffTagFieldValue(RowsPerStripTag, IntsFieldType, 1, toBytes(rowsPerStrip))
           fieldValues += TiffTagFieldValue(StripByteCountsTag, IntsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
-          
+
           { offsets: Array[Int] => TiffTagFieldValue(StripOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets)) }
       }
 

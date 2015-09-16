@@ -2,26 +2,33 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.spark.tiling._
-import geotrellis.vector.Extent
+import geotrellis.vector.{ProjectedExtent, Extent}
 
 import geotrellis.proj4.CRS
 
 import org.apache.spark.rdd._
 
+/**
+ * @param cellType    value type of each cell
+ * @param layout      definition of the tiled raster layout
+ * @param extent      extent covering the source data cells
+ * @param crs         CRS of the raster projection
+ */
 case class RasterMetaData(
   cellType: CellType,
+  layout: LayoutDefinition,
   extent: Extent,
-  crs: CRS,
-  tileLayout: TileLayout
+  crs: CRS
 ) {
+  /** Transformations between tiling scheme and map references */
+  def mapTransform = layout.mapTransform
+  /** TileLayout of the layout */
+  def tileLayout = layout.tileLayout
+  /** GridBounds of data tiles in the layout */
+  def gridBounds = mapTransform(extent)
 
-  lazy val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
-
-  lazy val gridBounds = mapTransform(extent)
-
-  lazy val rasterExtent = RasterExtent(extent, gridBounds.width, gridBounds.height)
-
-  def tileTransform(tileScheme: TileScheme): TileKeyTransform = tileScheme(tileLayout.layoutCols, tileLayout.layoutRows)
+  def tileTransform(tileScheme: TileScheme): TileKeyTransform =
+    tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
 }
 
 object RasterMetaData {
@@ -45,32 +52,18 @@ object RasterMetaData {
   /**
    * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
    */
-  def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, tileLayout: TileLayout)
+  def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition)
                 (getExtent: K => Extent): RasterMetaData = {
-    val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) = envelopeExtent(rdd)(getExtent)
-    val worldExtent = crs.worldExtent
-    val extentIntersection = worldExtent.intersection(uncappedExtent).get
-    RasterMetaData(cellType, extentIntersection, crs, tileLayout)
+    val (uncappedExtent, cellType, _) = envelopeExtent(rdd)(getExtent)
+    RasterMetaData(cellType, layout, uncappedExtent, crs)
   }
 
-  /**
-   * Compose Extents from given raster tiles and pick the closest [[LayoutLevel]] in the [[LayoutScheme]].
-   * @param isUniform   all the tiles in the RDD are known to have the same extent
-   */
-  def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, layoutScheme: LayoutScheme, isUniform: Boolean = false)
-                (getExtent: K => Extent): (LayoutLevel, RasterMetaData) = {
-    val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
-      if(isUniform) {
-        val (key, tile) = rdd.first
-        val extent = getExtent(key)
-        (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows))
-      } else {
-        envelopeExtent(rdd)(getExtent)
-      }
-
-    val worldExtent = crs.worldExtent
-    val layoutLevel: LayoutLevel = layoutScheme.levelFor(worldExtent, cellSize)
-    val extentIntersection = worldExtent.intersection(uncappedExtent).get
-    (layoutLevel, RasterMetaData(cellType, extentIntersection, crs, layoutLevel.tileLayout))
+  /** Delegate the choice of layout to the LayoutScheme and return it's choice,
+    * which could contain extra information, like zoom. */
+  def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme)
+                (getExtent: K => Extent): (Int, RasterMetaData) = {
+    val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
+    val LayoutLevel(zoom, layout) = scheme.levelFor(uncappedExtent, cellSize)
+    zoom -> RasterMetaData(cellType, layout, uncappedExtent, crs)
   }
 }

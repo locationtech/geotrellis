@@ -46,8 +46,9 @@ abstract class CubicResample(tile: Tile, extent: Extent, dimension: Int)
 
   override def resampleValid(x: Double, y: Double): Int = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
-    if (!validCubicCoords(leftCol, topRow)) bilinearInt(leftCol, topRow, xRatio, yRatio)
-    else {
+    if (!validCubicCoords(leftCol, topRow)) {
+      bilinearInt(leftCol, topRow, xRatio, yRatio)
+    } else {
       setCubicValues(leftCol, topRow, tile.get)
       cubicResample(cubicTile, xRatio, yRatio).round.toInt
     }
@@ -55,8 +56,9 @@ abstract class CubicResample(tile: Tile, extent: Extent, dimension: Int)
 
   override def resampleDoubleValid(x: Double, y: Double): Double = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
-    if (!validCubicCoords(leftCol, topRow)) bilinearDouble(leftCol, topRow, xRatio, yRatio)
-    else {
+    if (!validCubicCoords(leftCol, topRow)) {
+      bilinearDouble(leftCol, topRow, xRatio, yRatio)
+    } else {
       setCubicValues(leftCol, topRow, tile.getDouble)
       cubicResample(cubicTile, xRatio, yRatio)
     }

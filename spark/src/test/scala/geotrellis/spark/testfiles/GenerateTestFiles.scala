@@ -41,7 +41,7 @@ object GenerateTestFiles {
     val gridBounds = GridBounds(1, 1, 6, 7)
     val extent = mapTransform(gridBounds)
 
-    val md = RasterMetaData(cellType, extent, crs, tileLayout)
+    val md = RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
 
     generateSpatial(catalog, md)
     generateSpaceTime(catalog, md)

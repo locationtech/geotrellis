@@ -24,9 +24,9 @@ trait RasterRDDBuilders {
 
     val metaData = RasterMetaData(
       tile.cellType,
+      LayoutDefinition(extent, tileLayout),
       extent,
-      defaultCRS,
-      tileLayout
+      defaultCRS
     )
 
     val re = RasterExtent(
@@ -73,9 +73,9 @@ trait RasterRDDBuilders {
 
     val metaData = RasterMetaData(
       cellType,
+      LayoutDefinition(extent, tileLayout),
       extent,
-      defaultCRS,
-      tileLayout
+      defaultCRS
     )
 
     val re = RasterExtent(

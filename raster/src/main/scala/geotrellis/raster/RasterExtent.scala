@@ -241,10 +241,10 @@ object RasterExtent {
     RasterExtent(extent, cw, ch, cols, rows)
   }
 
-  def apply(extent: Extent, cellwidth: Double, cellheight: Double): RasterExtent = {
-    val cols = (extent.width / cellwidth).toInt
-    val rows = (extent.height / cellheight).toInt
-    RasterExtent(extent, cellwidth, cellheight, cols, rows)
+  def apply(extent: Extent, cellSize: CellSize): RasterExtent = {
+    val cols = (extent.width / cellSize.width).toInt
+    val rows = (extent.height / cellSize.height).toInt
+    RasterExtent(extent, cellSize.width, cellSize.height, cols, rows)
   }
 
   def apply(tile: Tile, extent: Extent): RasterExtent =

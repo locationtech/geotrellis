@@ -24,11 +24,11 @@ object Reproject {
   }
 
   def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] = {
-    val bcMetaData = rdd.sparkContext.broadcast(rdd.metaData)
+    val bcMetadata = rdd.sparkContext.broadcast(rdd.metaData)
 
-    val reprojectedTiles = 
+    val reprojectedTiles =
       rdd.map { case (key, tile) =>
-        val metaData = bcMetaData.value
+        val metaData = bcMetadata.value
         val crs = metaData.crs
         val mapTransform = metaData.mapTransform
 
@@ -37,8 +37,8 @@ object Reproject {
         ((key, newExtent), newTile)
       }
 
-    val metaData = 
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metaData.tileLayout) { key => key._2 }
+    val metaData =
+      RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metaData.layout) { key => key._2 }
 
     val tiler: Tiler[(K, Extent), K] = {
         val getExtent = (inKey: (K, Extent)) => inKey._2

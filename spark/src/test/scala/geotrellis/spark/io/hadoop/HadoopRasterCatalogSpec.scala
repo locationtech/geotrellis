@@ -41,36 +41,36 @@ class HadoopRasterCatalogSpec extends FunSpec
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
-      val layoutScheme = ZoomedLayoutScheme(512)
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
       var ran = false
 
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, level) =>
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (onesRdd, zoom) =>
         ran = true
 
         it("should succeed saving with default Props"){
           catalog
             .writer[SpatialKey](RowMajorKeyIndexMethod)
-            .write(LayerId("ones", level.zoom), onesRdd)
+            .write(LayerId("ones", zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "ones")))
         }
 
         it("should know when layer exists"){
-          catalog.layerExists(LayerId("ones", level.zoom)) should be (true)
+          catalog.layerExists(LayerId("ones", zoom)) should be (true)
           catalog.layerExists(LayerId("nope", 100)) should be (false)
         }
 
         it("should succeed saving with single path Props"){
           catalog
             .writer[SpatialKey](RowMajorKeyIndexMethod, "sub1")
-            .write(LayerId("ones", level.zoom), onesRdd)
+            .write(LayerId("ones", zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/ones")))
         }
 
         it("should succeed saving with double path Props"){
           catalog
             .writer[SpatialKey](RowMajorKeyIndexMethod, "sub1/sub2")
-            .write(LayerId("ones", level.zoom), onesRdd)
+            .write(LayerId("ones", zoom), onesRdd)
           assert(fs.exists(new Path(catalogPath, "sub1/sub2/ones")))
         }
 
@@ -81,11 +81,11 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
 
         it("should succeed loading with single path Props"){
-          catalog.query[SpatialKey](LayerId("ones", level.zoom)).toRDD.count should be > 0l
+          catalog.query[SpatialKey](LayerId("ones", zoom)).toRDD.count should be > 0l
         }
 
         it("should succeed loading with double path Props"){
-          catalog.query[SpatialKey](LayerId("ones", level.zoom)).toRDD.count should be > 0l
+          catalog.query[SpatialKey](LayerId("ones", zoom)).toRDD.count should be > 0l
         }
 
         it("should load out saved tiles, but only for the right zoom"){
