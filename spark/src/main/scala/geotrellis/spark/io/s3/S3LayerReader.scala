@@ -56,3 +56,11 @@ class S3LayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileTyp
     cons.makeContainer(rdd, keyBounds, metadata)
   }
 }
+
+object S3LayerReader {
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+      bucket: String,
+      prefix: String,
+      getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None): S3LayerReader[K, TileType, Container] =
+    new S3LayerReader[K, TileType, Container](new S3AttributeStore(bucket, prefix), getCache)
+}
