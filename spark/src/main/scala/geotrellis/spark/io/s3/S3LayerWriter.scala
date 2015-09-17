@@ -8,7 +8,6 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndexMethod
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -40,7 +39,7 @@ class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileTyp
   val getS3Client: ()=>S3Client = () => S3Client.default
 
   def write(id: LayerId, rdd: Container[K] with RDD[(K, TileType)]) = {
-    require(clobber, "S3 writer does not yet perform a clobber check") // TODO: Check for clobber
+    require(!attributeStore.layerExists(id) || clobber , s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
     val rasterMetaData = cons.getMetaData(rdd)
