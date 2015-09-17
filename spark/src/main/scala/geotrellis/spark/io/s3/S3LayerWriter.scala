@@ -68,3 +68,13 @@ class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileTyp
       .write(rdd, keyIndex, keyPath, oneToOne = false)
   }
 }
+
+object S3LayerWriter {
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+      bucket: String,
+      prefix: String,
+      keyIndexMethod: KeyIndexMethod[K],
+      clobber: Boolean = true)
+    (implicit cons: ContainerConstructor[K, TileType, Container]): S3LayerWriter[K, TileType, Container] = 
+    new S3LayerWriter(bucket, prefix, keyIndexMethod, clobber)(S3AttributeStore(bucket, prefix))
+}
