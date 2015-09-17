@@ -14,6 +14,7 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 import com.typesafe.scalalogging.slf4j._
+import AttributeStore.Fields
 
 /**
  * Handles writing Raster RDDs and their metadata to S3.
@@ -34,7 +35,7 @@ class S3RasterRDDWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, Til
     clobber: Boolean = true)
   (val attributeStore: S3AttributeStore = S3AttributeStore(bucket, keyPrefix))
   (implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId,Container[K] with RDD[(K, TileType)]] with AttributeCaching[S3LayerMetaData] with LazyLogging {
+  extends Writer[LayerId,Container[K] with RDD[(K, TileType)]] with LazyLogging {
 
   val getS3Client: ()=>S3Client = () => S3Client.default
 
@@ -43,7 +44,7 @@ class S3RasterRDDWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, Til
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
     val rasterMetaData = cons.getMetaData(rdd)
-    val metadata = S3LayerMetaData(
+    val layerMetaData = S3LayerMetaData(
       layerId = id,
       keyClass = classTag[K].toString(),
       valueClass = classTag[K].toString(),
@@ -53,15 +54,15 @@ class S3RasterRDDWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, Til
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-    setLayerMetadata(id, metadata)
-    setLayerKeyBounds(id, keyBounds)
-    setLayerKeyIndex(id, keyIndex)
-    attributeStore.write(id, "rddMetadata", rasterMetaData)(cons.metaDataFormat)
+    attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
+    attributeStore.cacheWrite(id, Fields.layerMetaData, rasterMetaData)(cons.metaDataFormat)
+    attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
+    attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
 
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
     val codec = KeyValueRecordCodec[K, Tile]
-    attributeStore.write(id,"schema", codec.schema.toString.parseJson)
+    attributeStore.cacheWrite(id,"schema", codec.schema.toString.parseJson)
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
     new S3RDDWriter[K, TileType](bucket, getS3Client)

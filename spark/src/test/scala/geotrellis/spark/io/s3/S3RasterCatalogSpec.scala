@@ -81,7 +81,7 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should read a spatial tile"){
-        val reader = new TileReader[SpatialKey, Tile](attributeStore, id) {
+        val reader = new S3TileReader[SpatialKey, Tile](attributeStore, id) {
           override val s3Client = new MockS3Client
         }
         val tile = reader(SpatialKey(2,2))
@@ -89,7 +89,7 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should error on getting a tile that is not there"){
-        val reader = new TileReader[SpatialKey, Tile](attributeStore, id) {
+        val reader = new S3TileReader[SpatialKey, Tile](attributeStore, id) {
           override val s3Client = new MockS3Client
         }
 

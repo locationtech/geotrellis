@@ -2,13 +2,15 @@ package geotrellis.spark.io.s3
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-import geotrellis.spark.io.{Cache, FilteringRasterRDDReader, AttributeCaching}
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index.KeyIndex
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import spray.json.{JsObject, JsonFormat}
 import spray.json.DefaultJsonProtocol._
+import AttributeStore.Fields
 
 import scala.reflect.ClassTag
 
@@ -26,7 +28,7 @@ class S3RasterRDDReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, Til
     val attributeStore: S3AttributeStore,
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringRasterRDDReader[K, Container[K]] with AttributeCaching[S3LayerMetaData] with LazyLogging {
+  extends FilteringRasterRDDReader[K, Container[K]] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 
@@ -34,16 +36,17 @@ class S3RasterRDDReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, Til
   val defaultNumPartitions = sc.defaultParallelism
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container[K] = {
-    val layerMetaData  = getLayerMetadata(id)
+    val layerMetaData  = attributeStore.cacheRead[S3LayerMetaData](id, Fields.layerMetaData)
+    val metadata  = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
+    val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
+    val keyIndex  = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
+
     val bucket = layerMetaData.bucket
     val prefix = layerMetaData.key
 
-    val metadata  = attributeStore.read(id, "rddMetadata")(cons.metaDataFormat)
-    val keyBounds = getLayerKeyBounds[K](id)
-    val keyIndex  = getLayerKeyIndex[K](id)
     val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
-    val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.read[JsObject](id, "schema").toString())
+    val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
     val reader = new S3RDDReader[K, TileType](bucket, getS3Client)
