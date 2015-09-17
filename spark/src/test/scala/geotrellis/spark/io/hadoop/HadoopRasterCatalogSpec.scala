@@ -56,8 +56,8 @@ class HadoopRasterCatalogSpec extends FunSpec
         }
 
         it("should know when layer exists"){
-          catalog.layerExists(LayerId("ones", zoom)) should be (true)
-          catalog.layerExists(LayerId("nope", 100)) should be (false)
+          catalog.attributeStore.layerExists(LayerId("ones", zoom)) should be (true)
+          catalog.attributeStore.layerExists(LayerId("nope", 100)) should be (false)
         }
 
         it("should succeed saving with single path Props"){

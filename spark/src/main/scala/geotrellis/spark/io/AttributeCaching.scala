@@ -1,7 +1,6 @@
 package geotrellis.spark.io
 
 import geotrellis.spark.LayerId
-import scala.util.Try
 
 trait AttributeCaching { self: AttributeStore =>
   private val cache = new collection.mutable.HashMap[(LayerId, String), Any]
@@ -14,12 +13,6 @@ trait AttributeCaching { self: AttributeStore =>
     cache.update(layerId -> attributeName, value)
     write[T](layerId, attributeName, value)
   }
-
-//  def layerExists(id: LayerId): Boolean = {
-//    import spray.json._
-//    import spray.json.DefaultJsonProtocol._
-//    Try(cacheRead[JsValue](id, AttributeStore.Fields.keyIndex)).isSuccess
-//  }
 
   def clearCache() = {
     cache.clear()

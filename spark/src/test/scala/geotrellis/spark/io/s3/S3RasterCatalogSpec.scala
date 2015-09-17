@@ -38,8 +38,8 @@ class S3RasterCatalogSpec extends FunSpec
       }
 
       it("should know when layer exists"){
-        spatialReader.layerExists(id) should be (true)
-        spatialReader.layerExists(LayerId("nope", 100)) should be (false)
+        spatialReader.attributeStore.layerExists(id) should be (true)
+        spatialReader.attributeStore.layerExists(LayerId("nope", 100)) should be (false)
       }
 
       it("should load from s3"){

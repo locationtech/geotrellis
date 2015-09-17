@@ -48,8 +48,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should know when layer exists"){
-          catalog.layerExists(layerId) should be (true)
-          catalog.layerExists(LayerId("nope", 100)) should be (false)
+          catalog.attributeStore.layerExists(layerId) should be (true)
+          catalog.attributeStore.layerExists(LayerId("nope", 100)) should be (false)
         }
 
         it("should load out saved tiles") {

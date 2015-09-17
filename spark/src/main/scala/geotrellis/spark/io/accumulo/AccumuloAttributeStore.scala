@@ -30,17 +30,17 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
       ops.create(attributeTable)
   }
 
-  private def fetch(layerId: Option[LayerId], attributeName: String): Vector[Value] = {
+  private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
     val scanner  = connector.createScanner(attributeTable, new Authorizations())
-    layerId.map { id => 
+    layerId.foreach { id =>
       scanner.setRange(new Range(new Text(id.toString)))
     }    
     scanner.fetchColumnFamily(new Text(attributeName))
-    scanner.iterator.toVector.map(_.getValue)
+    scanner.iterator.map(_.getValue)
   }
 
   def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T = {
-    val values = fetch(Some(layerId), attributeName)
+    val values = fetch(Some(layerId), attributeName).toVector
 
     if(values.size == 0) {
       throw new AttributeNotFoundError(attributeName, layerId)
@@ -67,4 +67,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     connector.write(attributeTable, mutation)
   }
 
+  def layerExists(layerId: LayerId): Boolean = {
+    fetch(Some(layerId), AttributeStore.Fields.layerMetaData).nonEmpty
+  }
 }
