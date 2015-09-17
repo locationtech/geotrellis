@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3RasterRDDReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+class S3LayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
     val attributeStore: S3AttributeStore,
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])

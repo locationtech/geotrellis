@@ -28,7 +28,7 @@ import AttributeStore.Fields
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3RasterRDDWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
     bucket: String,
     keyPrefix: String,
     keyIndexMethod: KeyIndexMethod[K],
