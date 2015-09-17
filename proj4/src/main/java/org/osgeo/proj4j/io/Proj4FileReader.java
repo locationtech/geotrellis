@@ -22,7 +22,7 @@ public class Proj4FileReader
         // TODO: use simpler parser than StreamTokenizer for speed and flexibility
         // TODO: parse CSes line-at-a-time (this allows preserving CS param string for later access)
     
-  	String filename = "/nad/" + authorityCode.toLowerCase();
+        String filename = "/geotrellis/proj4/nad/" + authorityCode.toLowerCase();
   	InputStream inStr = Proj4FileReader.class.getResourceAsStream( filename );
   	if (inStr == null) {
             throw new IllegalStateException("Unable to access CRS file: " + filename);

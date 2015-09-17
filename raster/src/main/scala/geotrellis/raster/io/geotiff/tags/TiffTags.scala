@@ -189,18 +189,19 @@ case class TiffTags(
   }
 
   def proj4String: Option[String] = try {
-    GeoTiffCSTags.getProj4String
+    geoTiffCSTags.getProj4String
   } catch {
     case e: Exception => {
       None
     }
   }
 
-  def projectedCoordinateSystem: Int = try {
-    GeoTiffCSTags.pcs
-  } catch {
-    case e: Exception => 32767
-  }
+  def projectedCoordinateSystem: Int =
+    if(geoTiffTags.geoKeyDirectory.isDefined) {
+      geoTiffCSTags.pcs
+    } else {
+      32767
+    }
 
   lazy val crs: CRS = {
     if (projectedCoordinateSystem != 32767) {
@@ -308,7 +309,7 @@ case class TiffTags(
   def setGDALNoData(input: String) = (this &|-> TiffTags._geoTiffTags
     ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
 
-  lazy val GeoTiffCSTags = GeoTiffCSParser(this)
+  lazy val geoTiffCSTags = GeoTiffCSParser(this)
 
   def tags: Tags =
     (this &|->
