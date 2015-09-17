@@ -20,7 +20,7 @@ import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
 import com.typesafe.scalalogging.slf4j._
 
-class RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](bucket: String, getS3Client: ()=>S3Client) {
+class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](bucket: String, getS3Client: ()=>S3Client) {
 
   def write(rdd: RDD[(K, V)], keyIndex: KeyIndex[K], keyPath: Long => String, oneToOne: Boolean): Unit = {
     implicit val sc = rdd.sparkContext

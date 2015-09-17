@@ -18,7 +18,7 @@ class SpaceTimeAccumuloInput extends AccumuloInput {
     val catalog = AccumuloRasterCatalog()(getInstance(props), sc)
 
     val rdd = bbox match {
-      case Some(extent) => catalog.query[SpaceTimeKey](id).where(Intersects(extent)).toRDD
+      case Some(extent) => catalog.query[SpaceTimeKey](id).where(RasterIntersects(extent)).toRDD
       case None => catalog.read[SpaceTimeKey](id)
     }
     id.zoom -> rdd.asInstanceOf[RasterRDD[K]]

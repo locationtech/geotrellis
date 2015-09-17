@@ -2,6 +2,7 @@ package geotrellis.spark
 
 import geotrellis.spark.io.json._
 import monocle._
+import org.apache.spark.rdd.RDD
 
 import org.joda.time.DateTime
 
@@ -56,7 +57,7 @@ object SpaceTimeKey {
       SpaceTimeKey(math.max(a.col, b.col), math.max(a.row, b.row), if (a.time > b.time) a.time else b.time )
     }
 
-    def getKeyBounds(rdd: BoundRDD[SpaceTimeKey, _]): KeyBounds[SpaceTimeKey] = {
+    def getKeyBounds(rdd: RDD[(SpaceTimeKey, X)] forSome {type X}): KeyBounds[SpaceTimeKey] = {
       rdd
         .map{ case (k, tile) => KeyBounds(k, k) }
         .reduce { combine }

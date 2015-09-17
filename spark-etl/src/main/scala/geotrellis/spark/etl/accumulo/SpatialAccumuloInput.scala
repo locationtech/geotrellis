@@ -17,7 +17,7 @@ class SpatialAccumuloInput extends AccumuloInput {
     val catalog = AccumuloRasterCatalog()(getInstance(props), sc)
 
     val rdd = bbox match {
-      case Some(extent) => catalog.query[SpatialKey](id).where(Intersects(extent)).toRDD
+      case Some(extent) => catalog.query[SpatialKey](id).where(RasterIntersects(extent)).toRDD
       case None => catalog.read[SpatialKey](id)
     }
     (id.zoom, rdd.asInstanceOf[RasterRDD[K]])

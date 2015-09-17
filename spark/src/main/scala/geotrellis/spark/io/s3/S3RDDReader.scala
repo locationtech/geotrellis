@@ -15,7 +15,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](bucket: String, getS3Client: () => S3Client)(implicit sc: SparkContext) {
+class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](bucket: String, getS3Client: () => S3Client)(implicit sc: SparkContext) {
 
   def read(
     queryKeyBounds: Seq[KeyBounds[K]],
@@ -27,7 +27,7 @@ class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: Cla
   ): RDD[(K, V)] = {
     val bucket = this.bucket
     val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
-    val bins = RDDReader.balancedBin(ranges, numPartitions)
+    val bins = S3RDDReader.balancedBin(ranges, numPartitions)
     val recordCodec = KeyValueRecordCodec[K, V]
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
@@ -76,7 +76,7 @@ class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: Cla
   }
 }
 
-object RDDReader extends LazyLogging {
+object S3RDDReader extends LazyLogging {
   /**
    * Will attempt to bin ranges into buckets, each containing at least the average number of elements.
    * Trailing bins may be empty if the count is too high for number of ranges.

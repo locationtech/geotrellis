@@ -98,7 +98,7 @@ class HadoopRasterCatalogSpec extends FunSpec
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
 
-          val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
+          val query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(tileBounds))
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = catalog
@@ -109,7 +109,7 @@ class HadoopRasterCatalogSpec extends FunSpec
             }
           val filteredRdd = catalog
             .query[SpatialKey](LayerId("ones", 10))
-            .where(Intersects(tileBounds))
+            .where(RasterIntersects(tileBounds))
             .toRDD
 
           filteredRdd.count should be (expected.size)
@@ -120,9 +120,9 @@ class HadoopRasterCatalogSpec extends FunSpec
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,611,915,613)        
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
-          val filtered = catalog.query[SpatialKey](layerId).where(Intersects(tileBounds)).toRDD
+          val filtered = catalog.query[SpatialKey](layerId).where(RasterIntersects(tileBounds)).toRDD
 
-          val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
+          val query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(tileBounds))
           val queryKeyBounds = resolveQuery(catalog, layerId, query)
 
           val expected = unfiltered.collect.filter { case (key, value) => 
@@ -141,7 +141,7 @@ class HadoopRasterCatalogSpec extends FunSpec
         it("should filter out the correct keys with different grid bounds") {
           val layerId = LayerId("ones", 10)
           val tileBounds = GridBounds(915,612,917,613)
-          val query = new RasterRDDQuery[SpatialKey].where(Intersects(tileBounds))
+          val query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(tileBounds))
           val unfiltered = catalog.query[SpatialKey](layerId).toRDD
           val filtered = catalog.read[SpatialKey](layerId, query)
 
@@ -161,9 +161,9 @@ class HadoopRasterCatalogSpec extends FunSpec
 
         it("should be able to combine pairs via Traversable"){
           val tileBounds = GridBounds(915,611,917,616)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
-          val rdd3 = catalog.query[SpatialKey](LayerId("ones", 10)).where(Intersects(tileBounds)).toRDD
+          val rdd1 = catalog.query[SpatialKey](LayerId("ones", 10)).where(RasterIntersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", 10)).where(RasterIntersects(tileBounds)).toRDD
+          val rdd3 = catalog.query[SpatialKey](LayerId("ones", 10)).where(RasterIntersects(tileBounds)).toRDD
 
           val expected = rdd1.combinePairs(Seq(rdd2, rdd3)){ pairs: Traversable[(SpatialKey, Tile)] =>
             pairs.toSeq.reverse.head
