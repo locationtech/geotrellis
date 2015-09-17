@@ -61,6 +61,7 @@ object S3LayerReader {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
       bucket: String,
       prefix: String,
-      getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None): S3LayerReader[K, TileType, Container] =
+      getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
+    (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container]): S3LayerReader[K, TileType, Container] =
     new S3LayerReader[K, TileType, Container](new S3AttributeStore(bucket, prefix), getCache)
 }
