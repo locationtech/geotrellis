@@ -6,8 +6,10 @@ basic ETL code using GeoTrellis without having to specify the type and configura
 Input layer may be modified using any of the existing raster operations before being saved.
 
 ```scala
+import geotrellis.spark.utils.SparkUtils
+
 object GeoTrellisETL extends App {
-  val etl = Etl[SpatialKey](args, S3Module, HadoopModule)
+  val etl = Etl[SpatialKey](args)
 
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL")
   val (id, rdd) = etl.load()
@@ -79,3 +81,27 @@ render    | path, format=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{R
 In order to provide your own input or output modules you must extend `InputPlugin` (src/main/scala/geotrellis/spark/etl/InputPlugin) and
 `OutputPlugin` (src/main/scala/geotrellis/spark/etl/OutputPlugin) respectively. These subclasses must be registered in a Guice `Module` and provided
 to the `Etl` constructor.
+
+Once defined you can pass the list of modules to be used for ETL like so:
+
+```scala
+val etl = Etl[SpatialKey](args, Etl(args, List(s3.S3Module, hadoop.HadoopModule)))
+```
+
+## Layout Schemes
+
+GeoTrellis is able to tile layers in either `ZoomedLayoutScheme`, matching TMS pyramid, or `FloatingLayoutScheme`, matching the native resolution of input raster.
+
+`ZoomedLayoutScheme` is the default choice, but you may override it by passing a function to the `Etl` constructor like so:
+
+```scala
+
+  Etl(args, (crs, tileSize) => ZoomedLayoutScheme(crs, tileSize))
+  // or
+  Etl(args, (_, tileSize) => FloatingLayoutScheme(tileSize))
+```
+
+Note that `ZoomedLayoutScheme` needs to know the world extent, which it gets from the CRS, in order to build the TMS pyramid layout.
+This will likely cause resampling of input rasters to match the resolution of the TMS levels.
+
+On other hand `FloatingLayoutScheme` will discover the native resolution and extent and partition it by given tile size without resampling.
