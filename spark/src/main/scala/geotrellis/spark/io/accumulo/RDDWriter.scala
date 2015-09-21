@@ -1,30 +1,17 @@
 package geotrellis.spark.io.accumulo
 
-import java.util.UUID
-
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
-import geotrellis.spark.utils._
-import geotrellis.spark.io.hadoop._
 
 import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.fs.Path
 
-import org.apache.spark._
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
-import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, AccumuloFileOutputFormat}
-import org.apache.accumulo.core.client.BatchWriterConfig
+import org.apache.accumulo.core.data.{Key, Value}
 
 import scala.collection.JavaConversions._
-
-import scalaz.concurrent.Task
-import scalaz.stream._
 
 
 class RDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance: AccumuloInstance){
