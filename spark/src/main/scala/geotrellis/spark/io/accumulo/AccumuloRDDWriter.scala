@@ -14,7 +14,7 @@ import org.apache.accumulo.core.data.{Key, Value}
 import scala.collection.JavaConversions._
 
 
-class RDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance: AccumuloInstance){
+class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance: AccumuloInstance){
   def write(
       raster: RDD[(K, TileType)],
       table: String,
@@ -59,7 +59,7 @@ class RDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance: Accumul
 
 }
 
-object RDDWriter {
+object AccumuloRDDWriter {
   /**
    * Mapping KeyBounds of Extent to SFC ranges will often result in a set of non-contigrious ranges.
    * The indices exluded by these ranges should not be included in split calcluation as they will never be seen.

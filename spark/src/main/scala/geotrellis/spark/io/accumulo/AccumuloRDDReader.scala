@@ -17,7 +17,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 
-abstract class RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag] {
+abstract class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag] {
   def read(
       instance: AccumuloInstance,
       table: String,
