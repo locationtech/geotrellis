@@ -404,7 +404,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       cfor(0)(_ < 4, _ + 1) { i =>
         val tile = mbTile.band(i)
-        tile.cellType should be (TypeByte)
+        tile.cellType should be (TypeUByte)
         tile.dimensions should be ((500, 500))
       }
     }

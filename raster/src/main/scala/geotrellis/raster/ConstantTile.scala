@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer
@@ -138,7 +139,7 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile
 
   def toBytes(): Array[Byte] = Array(v)
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
 }
 
@@ -167,7 +168,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTi
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = ShortArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = UShortArrayTile.fill(v, cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
@@ -175,7 +176,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTi
     arr
   }
 
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
+  def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ShortConstantTile(v, target.cols, target.rows)
 }
 

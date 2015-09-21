@@ -42,7 +42,9 @@ object TiffTagFieldValue {
     cellType match {
       case TypeBit => None
       case TypeByte => Some(byteNODATA.toString)
+      case TypeUByte => Some(ubyteNODATA.toString)
       case TypeShort => Some(shortNODATA.toString)
+      case TypeUShort => Some(ushortNODATA.toString)
       case TypeInt => Some(NODATA.toString)
       case (TypeFloat | TypeDouble) => Some("nan")
     }

@@ -29,6 +29,7 @@ object GeoTiffTile {
   ): GeoTiffTile =
     bandType match {
       case BitBandType     => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+      case UByteBandType   => new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case ByteBandType    => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case UInt16BandType  => new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case Int16BandType   => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
@@ -165,7 +166,7 @@ abstract class GeoTiffTile(
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
-      val newBytes = segment.map(f)
+      val newBytes = segment.map(f(_))
       arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
     }
 

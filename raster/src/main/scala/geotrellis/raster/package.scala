@@ -33,7 +33,9 @@ package object raster {
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
+  @inline final val ubyteNODATA = Byte.MinValue & 0xFF
   @inline final val shortNODATA = Short.MinValue
+  @inline final val ushortNODATA = Short.MinValue & 0xFFFF
   @inline final val NODATA = Int.MinValue
   @inline final val floatNODATA = Float.NaN
   @inline final val doubleNODATA = Double.NaN
@@ -46,6 +48,7 @@ package object raster {
   def isNoData(d: Double): Boolean = macro NoDataMacros.isNoDataDouble_impl
 
   def isData(i: Int): Boolean = macro NoDataMacros.isDataInt_impl
+  def isData(f: Float): Boolean = macro NoDataMacros.isDataFloat_impl
   def isData(d: Double): Boolean = macro NoDataMacros.isDataDouble_impl
 
   def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl

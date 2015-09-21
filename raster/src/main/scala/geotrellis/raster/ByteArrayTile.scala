@@ -1,6 +1,7 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
+import geotrellis.raster.resample._
 
 import spire.syntax.cfor._
 import java.nio.ByteBuffer
@@ -62,16 +63,6 @@ final case class NoDataByteArrayTile(array: Array[Byte], cols: Int, rows: Int, n
   def toBytes: Array[Byte] = array.clone
 
   def copy = ArrayTile(array.clone, cols, rows)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile =
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Byte](target.cols * target.rows).fill(byteNODATA)
-        Resample(RasterExtent(current, cols, rows), target, new ByteBufferResampleAssign(ByteBuffer.wrap(array), resampled))
-        NoDataByteArrayTile(resampled, target.cols, target.rows, nd)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }
 
 object NoDataByteArrayTile {
@@ -102,14 +93,4 @@ final case class NoNoDataByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   def toBytes: Array[Byte] = array.clone
 
   def copy = ArrayTile(array.clone, cols, rows)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile =
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Byte](target.cols * target.rows).fill(byteNODATA)
-        Resample(RasterExtent(current, cols, rows), target, new ByteBufferResampleAssign(ByteBuffer.wrap(array), resampled))
-        NoNoDataByteArrayTile(resampled, target.cols, target.rows)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }

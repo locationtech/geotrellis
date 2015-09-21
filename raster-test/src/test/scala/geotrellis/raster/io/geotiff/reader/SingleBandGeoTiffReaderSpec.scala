@@ -63,7 +63,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
 
     it("must read Striped Bit aspect, convert to byte, and match gdal converted byte file") {
       val actual = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile.convert(TypeByte)
-      val expected = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit-to-byte_uncompressed_striped.tif")).tile.toArrayTile
+      val expected = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit-to-byte_uncompressed_striped.tif")).tile.toArrayTile.convert(TypeByte)
 
       assertEqual(actual, expected)
     }
@@ -107,9 +107,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
     val expected = expectedTile(TypeBit, testTiffBitValue _)
     val t = "bit"
 
-//    writeExpectedTile(expected, t)
-
-    it("should read each varition of compression and striped/tiled") {
+    it("should read each variation of compression and striped/tiled") {
       println(s"Testing $t:")
       for(
         c <- compression;
@@ -125,17 +123,15 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
     }
   }
 
-  describe("Reading Byte GeoTiffs") {
+  describe("Reading UByte GeoTiffs") {
     def testTiffByteValue(col: Int, row: Int): Double = {
       (col * 1000.0 + row) % 128
     }
 
-    val expected = expectedTile(TypeByte, testTiffByteValue _)
+    val expected = expectedTile(TypeUByte, testTiffByteValue _)
     val t = "byte"
 
-    // writeExpectedTile(expected, t)
-
-    it("should read each varition of compression and striped/tiled") {
+    it("should read each variation of compression and striped/tiled") {
       println(s"Testing $t:")
       for(
         c <- compression;
@@ -156,12 +152,12 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       col + row
     }
 
-    val expected = expectedTile(TypeInt, testTiffShortValue _)
+    val expected = expectedTile(TypeUShort, testTiffShortValue _)
     val t = "uint16"
 
 //    writeExpectedTile(expected, t)
 
-    it("should read each varition of compression and striped/tiled") {
+    it("should read each variation of compression and striped/tiled") {
       println(s"Testing $t:")
       for(
         c <- compression;
@@ -288,8 +284,6 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
 
     val expected = expectedTile(TypeDouble, testTiffDoubleValue _)
     val t = "float64"
-
-//    writeExpectedTile(expected, t)
 
     it("should read each varition of compression and striped/tiled") {
       println(s"Testing $t:")

@@ -20,7 +20,8 @@ object BandType {
   def apply(bitsPerSample: Int, sampleFormat: Int): BandType = 
     (bitsPerSample, sampleFormat) match {
       case (1, _) => BitBandType
-      case (8, _) => ByteBandType
+      case (8, UnsignedInt) => UByteBandType
+      case (8, SignedInt) => ByteBandType
       case (16, UnsignedInt) => UInt16BandType
       case (16, SignedInt) => Int16BandType
       case (32, UnsignedInt) => UInt32BandType
@@ -35,10 +36,10 @@ object BandType {
   def forCellType(cellType: CellType): BandType = 
     cellType match {
       case TypeBit => BitBandType
-      case TypeByte => Int16BandType
-      case TypeUByte => ByteBandType
-      case TypeShort => Int16BandType
+      case TypeUByte => UByteBandType
+      case TypeByte => ByteBandType
       case TypeUShort => UInt16BandType
+      case TypeShort => Int16BandType
       case TypeInt => Int32BandType
       case TypeFloat => Float32BandType
       case TypeDouble => Float64BandType
@@ -52,11 +53,18 @@ object BitBandType extends BandType {
   def cellType = TypeBit
 }
 
+object UByteBandType extends BandType {
+  val bitsPerSample = 8
+  val unsigned = true
+  val sampleFormat = UnsignedInt
+  def cellType = TypeUByte
+}
+
 object ByteBandType extends BandType {
   val bitsPerSample = 8
   val unsigned = false
   val sampleFormat = SignedInt
-  def cellType = TypeUByte
+  def cellType = TypeByte
 }
 
 object UInt16BandType extends BandType {

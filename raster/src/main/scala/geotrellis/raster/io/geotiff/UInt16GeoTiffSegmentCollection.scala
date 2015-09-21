@@ -6,7 +6,7 @@ trait UInt16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = UInt16GeoTiffSegment
 
   val bandType = UInt16BandType
-  val cellType = TypeInt
+  val cellType = TypeUShort
 
   val noDataValue: Option[Double]
 

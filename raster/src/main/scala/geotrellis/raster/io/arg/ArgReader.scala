@@ -156,7 +156,7 @@ object ArgReader {
       case TypeUByte =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
-        Resample(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
         UByteArrayTile(resampled, cols, rows)
       case TypeShort =>
         val buffer = ByteBuffer.wrap(bytes)
@@ -166,7 +166,7 @@ object ArgReader {
       case TypeUShort =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
-        Resample(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
+        ResampleAssign(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
         UShortArrayTile(resampled, cols, rows)
       case TypeInt =>
         val buffer = ByteBuffer.wrap(bytes)

@@ -1,6 +1,5 @@
 package geotrellis.raster
 
-import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -14,7 +13,7 @@ final case class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
 
   val cellType = TypeUShort
 
-  def apply(i: Int) = array(i) & 0xFFFF
+  def apply(i: Int) = (array(i) & 0xFFFF).toInt
   def update(i: Int, z: Int) { array(i) = z.toShort }
 
   def toBytes: Array[Byte] = {
@@ -25,16 +24,6 @@ final case class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   }
 
   def copy = UShortArrayTile(array.clone, cols, rows)
-
-  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): ArrayTile = 
-    method match {
-      case NearestNeighbor =>
-        val resampled = Array.ofDim[Short](target.cols * target.rows).fill(shortNODATA)
-        Resample[Short](RasterExtent(current, cols, rows), target, array, resampled)
-        ShortArrayTile(resampled, target.cols, target.rows)
-      case _ =>
-        Resample(this, current, target, method)
-    }
 }
 
 object UShortArrayTile {
@@ -56,22 +45,22 @@ object UShortArrayTile {
     UShortArrayTile(shortArray, cols, rows)
   }
 
-  // def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): UShortArrayTile = 
-  //   if(isNoData(replaceNoData))
-  //     fromBytes(bytes, cols, rows)
-  //   else {
-  //     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
-  //     val shortBuffer = byteBuffer.asShortBuffer()
-  //     val len = bytes.length / TypeShort.bytes
-  //     val shortArray = new Array[Short](len)
-  //     cfor(0)(_ < len, _ + 1) { i =>
-  //       val v = shortBuffer.get(i)
-  //       if(v == replaceNoData)
-  //         shortArray(i) = shortNODATA
-  //       else
-  //         shortArray(i) = v
-  //     }
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): UShortArrayTile =
+    if(isNoData(replaceNoData))
+      fromBytes(bytes, cols, rows)
+    else {
+      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
+      val shortBuffer = byteBuffer.asShortBuffer()
+      val len = bytes.length / TypeShort.bytes
+      val shortArray = new Array[Short](len)
+      cfor(0)(_ < len, _ + 1) { i =>
+        val v = shortBuffer.get(i)
+        if(v == replaceNoData)
+          shortArray(i) = shortNODATA
+        else
+          shortArray(i) = v
+      }
 
-  //     UShortArrayTile(shortArray, cols, rows)
-  //   }
+      UShortArrayTile(shortArray, cols, rows)
+    }
 }

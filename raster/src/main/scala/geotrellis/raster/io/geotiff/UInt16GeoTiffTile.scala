@@ -29,27 +29,3 @@ class UInt16GeoTiffTile(
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

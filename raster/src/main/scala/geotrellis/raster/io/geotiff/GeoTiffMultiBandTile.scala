@@ -34,6 +34,8 @@ object GeoTiffMultiBandTile {
     bandType match {
       case BitBandType => 
         new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+      case UByteBandType    => 
+        new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case ByteBandType    => 
         new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case UInt16BandType  => 
