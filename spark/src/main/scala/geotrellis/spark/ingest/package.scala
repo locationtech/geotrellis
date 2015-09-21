@@ -56,7 +56,7 @@ package object ingest {
       prototype(tile.cellType, cols, rows)
   }
 
-  implicit class withCollectMetadataMethods[K: IngestKey, TileType <: CellGrid](rdd: RDD[(K, TileType)]) {
+  implicit class withCollectMetadataMethods[K: IngestKey, TileType <: CellGrid](rdd: RDD[(K, TileType)]) extends Serializable {
     def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData) = {
       RasterMetaData.fromRdd(rdd, crs, layoutScheme)(_.projectedExtent.extent)
     }
