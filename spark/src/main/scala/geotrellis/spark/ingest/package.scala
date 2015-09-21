@@ -66,8 +66,8 @@ package object ingest {
     }
   }
 
-  implicit class withTilerMethods[T, K, TileType](tiles: RDD[(T, TileType)]) {
-    def tile(rasterMetaData: RasterMetaData, resampleMethod: ResampleMethod = NearestNeighbor)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] = {
+  implicit class withTilerMethods[T, TileType](tiles: RDD[(T, TileType)]){
+    def tile[K](rasterMetaData: RasterMetaData, resampleMethod: ResampleMethod = NearestNeighbor)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] = {
       tiler(tiles, rasterMetaData, resampleMethod)
     }
   }
