@@ -66,61 +66,8 @@ class RDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance: Accumul
     }.map { case (key: Key, pairs) =>
       (key, new Value(AvroEncoder.toBinary(pairs.toVector)(codec)))
     }
-    
-    strategy match {
-      case strategy @ HdfsWriteStrategy(ingestPath) =>
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        val conf = job.getConfiguration
-        val outPath = HdfsUtils.tmpPath(ingestPath, UUID.randomUUID.toString, conf)
-        val failuresPath = outPath.suffix("-failures")
 
-        HdfsUtils.ensurePathExists(failuresPath, conf)
-        kvPairs
-          .sortBy{ case (key, _) => key }
-          .saveAsNewAPIHadoopFile(
-            outPath.toString,
-            classOf[Key],
-            classOf[Value],
-            classOf[AccumuloFileOutputFormat],
-            conf)
-
-        val ops = instance.connector.tableOperations()
-        ops.importDirectory(table, outPath.toString, failuresPath.toString, true)
-
-        // cleanup ingest directories on success
-        val fs = ingestPath.getFileSystem(conf)
-        if( fs.exists(new Path(outPath, "_SUCCESS")) ) {
-          fs.delete(outPath, true)
-          fs.delete(failuresPath, true)
-        } else {
-          throw new java.io.IOException(s"Accumulo bulk ingest failed at $ingestPath")
-        }
-
-      case SocketWriteStrategy(config: BatchWriterConfig) =>
-        val BC = KryoWrapper((instance, config))
-        kvPairs.foreachPartition { partition =>
-          val (instance, config) = BC.value
-          val writer = instance.connector.createBatchWriter(table, config)
-
-          val mutations: Process[Task, Mutation] =
-            Process.unfold(partition){ iter =>
-              if (iter.hasNext) {
-                val (key, value) = iter.next()
-                val mutation = new Mutation(key.getRow)
-                mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
-                Some(mutation, iter)
-              } else  {
-                None
-              }
-            }
-
-          val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } }
-          val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-          nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes).run.run
-          writer.close()
-        }
-      }
+    strategy.write(kvPairs, instance, table)
   }
 
 }
