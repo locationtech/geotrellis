@@ -42,7 +42,7 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
             in.mkString
           }
           finally {
-            in.close
+            in.close()
           }
         txt.parseJson.convertTo[(LayerId, T)]
       }
@@ -82,5 +82,9 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
       out.close()
       fdos.close()
     }
+  }
+
+  def layerExists(layerId: LayerId): Boolean = {
+    HdfsUtils.listFiles(attributePath(layerId, AttributeStore.Fields.layerMetaData), hadoopConfiguration).nonEmpty
   }
 }

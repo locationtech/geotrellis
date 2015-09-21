@@ -72,6 +72,10 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore 
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
   }
+
+  def layerExists(layerId: LayerId): Boolean = {
+    s3Client.listObjectsIterator(bucket, AttributeStore.Fields.layerMetaData, 1).nonEmpty
+  }
 }
 
 object S3AttributeStore {

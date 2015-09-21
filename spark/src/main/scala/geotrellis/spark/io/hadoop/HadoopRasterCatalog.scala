@@ -1,7 +1,9 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io._
+import geotrellis.spark.io.accumulo.AccumuloLayerMetaData
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
@@ -57,17 +59,16 @@ object HadoopRasterCatalog {
 class HadoopRasterCatalog(
   rootPath: Path,
   val attributeStore: HadoopAttributeStore,
-  catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
-) extends AttributeCaching[HadoopLayerMetaData] {
+  catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext) {
 
   def read[K: RasterRDDReader: Boundable: JsonFormat: ClassTag](layerId: LayerId, query: RasterRDDQuery[K]): RasterRDD[K] = {
     try {
-      val metadata  = getLayerMetadata(layerId)
-      val keyBounds = getLayerKeyBounds(layerId)                
-      val index     = getLayerKeyIndex(layerId)
+      val metadata  = attributeStore.cacheRead[HadoopLayerMetaData](layerId, Fields.layerMetaData)
+      val keyBounds = attributeStore.cacheRead[KeyBounds[K]](layerId, Fields.keyBounds)
+      val keyIndex  = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
 
       implicitly[RasterRDDReader[K]]
-        .read(catalogConfig, metadata, index, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
+        .read(catalogConfig, metadata, keyIndex, keyBounds)(layerId, query(metadata.rasterMetaData, keyBounds))
     } catch {
       case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId)
     }
@@ -124,9 +125,9 @@ class HadoopRasterCatalog(
         val rddWriter = implicitly[RasterRDDWriter[K]]
         rddWriter.write(catalogConfig, md, keyIndex, clobber)(layerId, rdd)
 
-        setLayerMetadata(layerId, md)
-        setLayerKeyBounds(layerId, keyBounds)
-        setLayerKeyIndex(layerId, keyIndex)
+        attributeStore.cacheWrite(layerId, Fields.layerMetaData, md)
+        attributeStore.cacheWrite(layerId, Fields.keyBounds, keyBounds)
+        attributeStore.cacheWrite(layerId, Fields.keyIndex, keyIndex)
 
         rdd.unpersist(blocking = false)
       }
@@ -134,9 +135,9 @@ class HadoopRasterCatalog(
 
   def tileReader[K: Boundable: JsonFormat: TileReader: ClassTag](layerId: LayerId): Reader[K, Tile] = {
     // TODO: There should be a way to do this with a Reader, not touching any InputFormats
-    val metadata  = getLayerMetadata(layerId)
-    val keyBounds = getLayerKeyBounds(layerId)                
-    val index     = getLayerKeyIndex(layerId)
+    val metadata  = attributeStore.cacheRead[HadoopLayerMetaData](layerId, Fields.layerMetaData)
+    val keyBounds = attributeStore.cacheRead[KeyBounds[K]](layerId, Fields.keyBounds)
+    val keyIndex  = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
     val boundable = implicitly[Boundable[K]]
     
     val readTile = (key: K) => {
@@ -144,7 +145,7 @@ class HadoopRasterCatalog(
       boundable.intersect(tileKeyBounds, keyBounds) match {
         case Some(kb) =>
           try {
-            implicitly[TileReader[K]].read(catalogConfig, metadata, index, kb)
+            implicitly[TileReader[K]].read(catalogConfig, metadata, keyIndex, kb)
           } catch {
             case e: UnsupportedOperationException => throw new TileNotFoundError(key, layerId)
           }          
