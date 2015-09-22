@@ -25,7 +25,7 @@ class SpaceTimeAccumuloRDDWriter[TileType: AvroRecordCodec](
   val codec  = KeyValueRecordCodec[K, TileType]
   val schema = codec.schema
 
-  def write(raster: RDD[(K, TileType)], table: String, columnFamily: Text, getRowId: (K) => Text, oneToOne: Boolean = false): Unit = {
+  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, getRowId: (K) => String, oneToOne: Boolean = false): Unit = {
     implicit val sc = raster.sparkContext
 
     val ops = instance.connector.tableOperations()
