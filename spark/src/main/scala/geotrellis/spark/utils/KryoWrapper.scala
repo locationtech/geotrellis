@@ -51,6 +51,7 @@ class KryoWrapper[T: ClassTag] extends Serializable {
   private def readObject(in: java.io.ObjectInputStream) {
     in.defaultReadObject()
     setValueSerialized(valueSerialized)
+    //println(s"Reading KryoWrapper $this - $value")
   }
 
 }

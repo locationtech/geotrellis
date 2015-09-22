@@ -10,7 +10,7 @@ import org.apache.avro.generic._
 import scala.collection.JavaConverters._
 
 trait TileCodecs {
-  implicit object ShortArrayTileCodec extends AvroRecordCodec[ShortArrayTile] {
+  implicit def shortArrayTileCodec: AvroRecordCodec[ShortArrayTile] = new AvroRecordCodec[ShortArrayTile] {
     lazy val schema = SchemaBuilder
       .record("ShortArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -36,7 +36,7 @@ trait TileCodecs {
     }
   }
 
-  implicit object IntArrayTileCodec extends AvroRecordCodec[IntArrayTile] {
+  implicit def intArrayTileCodec: AvroRecordCodec[IntArrayTile] = new AvroRecordCodec[IntArrayTile] {
     lazy val schema = SchemaBuilder
       .record("IntArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -57,7 +57,7 @@ trait TileCodecs {
     }
   }
 
-  implicit object FloatArrayTileCodec extends AvroRecordCodec[FloatArrayTile] {
+  implicit def floatArrayTileCodec: AvroRecordCodec[FloatArrayTile] = new AvroRecordCodec[FloatArrayTile] {
     lazy val schema = SchemaBuilder
       .record("FloatArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -78,7 +78,7 @@ trait TileCodecs {
     }
   }
 
-  implicit object DoubleArrayTileCodec extends AvroRecordCodec[DoubleArrayTile] {
+  implicit def doubleArrayTileCodec: AvroRecordCodec[DoubleArrayTile] = new AvroRecordCodec[DoubleArrayTile] {
     lazy val schema = SchemaBuilder
       .record("DoubleArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -99,7 +99,7 @@ trait TileCodecs {
     }
   }
 
-  implicit object ByteArrayTileCodec extends AvroRecordCodec[ByteArrayTile] {
+  implicit def byteArrayTileCodec: AvroRecordCodec[ByteArrayTile] = new AvroRecordCodec[ByteArrayTile] {
     lazy val schema = SchemaBuilder
       .record("ByteArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -121,7 +121,7 @@ trait TileCodecs {
   }
 
 
-  implicit object MultiBandTileCodec extends AvroRecordCodec[MultiBandTile] {
+  implicit def multiBandTileCodec: AvroRecordCodec[MultiBandTile] = new AvroRecordCodec[MultiBandTile] {
     lazy val schema = SchemaBuilder
       .record("ArrayMultiBandTile").namespace("geotrellis.raster")
       .fields()

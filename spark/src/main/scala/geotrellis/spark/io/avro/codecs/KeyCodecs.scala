@@ -7,7 +7,7 @@ import org.apache.avro.generic._
 import org.joda.time.{DateTime, DateTimeZone}
 
 trait KeyCodecs {
-  implicit object SpatialKeyAvroFormat extends AvroRecordCodec[SpatialKey] {
+  implicit def spatialKeyAvroFormat = new AvroRecordCodec[SpatialKey] {
     def schema = SchemaBuilder
       .record("SpatialKey").namespace("geotrellis.spark")
       .fields()
@@ -27,7 +27,7 @@ trait KeyCodecs {
 
   }
 
-  implicit object SpaceTimeKeyAvroFormat extends AvroRecordCodec[SpaceTimeKey] {
+  implicit def spaceTimeKeyAvroFormat = new AvroRecordCodec[SpaceTimeKey] {
     def schema = SchemaBuilder
       .record("SpaceTimeKey").namespace("geotrellis.spark")
       .fields()
