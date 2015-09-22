@@ -21,5 +21,6 @@ object AttributeStore {
     val keyBounds = "keyBounds"
     val keyIndex = "keyIndex"
     val rddMetadata = "rddMetadata"
+    val schema = "schema"
   }
 }

@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
+import org.apache.avro.Schema
 
 import org.apache.hadoop.io.Text
 
@@ -12,20 +13,33 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Value}
 
 import scala.collection.JavaConversions._
+import scala.reflect.ClassTag
 
+trait IAccumuloRDDWriter[K, TileType] {
+  def schema: Schema
 
-class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance: AccumuloInstance){
+  def write(
+    raster: RDD[(K, TileType)],
+    table: String, columnFamily: Text,
+    getRowId: (K) => Text,
+    oneToOne: Boolean = false): Unit
+}
+
+class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
+    instance: AccumuloInstance,
+    strategy: AccumuloWriteStrategy)
+  extends IAccumuloRDDWriter[K, TileType] {
+
+  val codec  = KeyValueRecordCodec[K, TileType]
+  val schema = codec.schema
+
   def write(
       raster: RDD[(K, TileType)],
       table: String,
-      localityGroup: Option[String],
-      keyBounds: KeyBounds[K],
-      keyIndex: KeyIndex[K],
-      getRowId: Long => String,
-      getColFamily: K => String,
-      getColQualifier: K => String,
-      oneToOne: Boolean = false,
-      strategy: AccumuloWriteStrategy): Unit = {
+      columnFamily: Text,
+      getRowId: (K) => Text,
+      oneToOne: Boolean = false): Unit = {
+
     implicit val sc = raster.sparkContext
 
     // Create table if it doesn't exist.
@@ -33,17 +47,11 @@ class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](instance:
     if (! ops.exists(table))
       ops.create(table)
 
-    if (localityGroup.isDefined) {
-      val groups = ops.getLocalityGroups(table)
-      val newGroup: java.util.Set[Text] = Set(new Text(localityGroup.get))
-      ops.setLocalityGroups(table, groups.updated(table, newGroup))
-    }
-    
-    val codec  = KeyValueRecordCodec[K, TileType]
+    val groups = ops.getLocalityGroups(table)
+    val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
+    ops.setLocalityGroups(table, groups.updated(table, newGroup))
 
-    val encodeKey = (key: K) => {
-      new Key(getRowId(keyIndex.toIndex(key)), getColFamily(key), getColQualifier(key))
-    }
+    val encodeKey = (key: K) => new Key(getRowId(key), columnFamily, null: Text)
 
     val kvPairs: RDD[(Key, Value)] = {
       if (oneToOne)

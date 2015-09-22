@@ -12,15 +12,7 @@ import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => C
 import scala.collection.JavaConversions._
 
 package object accumulo {
-  implicit def stringToText(s: String) = new Text(s)
-
-  implicit lazy val accumuloSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val accumuloSpatialTileReader = spatial.SpatialTileReader
-  implicit lazy val accumuloSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
-
-  implicit lazy val accumuloSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val accumuloSpaceTimeTileReader = spacetime.SpaceTimeTileReader
-  implicit lazy val accumuloSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
+  implicit def stringToText(s: String): Text = new Text(s)
 
   implicit class scannerIterator(scan: Scanner) extends Iterator[(Key, Value)] {
     val iter = scan.iterator

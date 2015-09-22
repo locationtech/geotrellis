@@ -6,10 +6,9 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import spray.json._
 
-
 case class AccumuloLayerMetaData(
   keyClass: String,
-  rasterMetaData: RasterMetaData,  
+  valueClass: String,
   tileTable: String
 )
 
@@ -18,20 +17,19 @@ object AccumuloLayerMetaData {
     def write(md: AccumuloLayerMetaData) =
       JsObject(
         "keyClass" -> JsString(md.keyClass),
-        "rasterMetaData" -> md.rasterMetaData.toJson,
+        "valueClass" -> JsString(md.valueClass),
         "tileTable" -> JsString(md.tileTable)
       )
 
     def read(value: JsValue): AccumuloLayerMetaData =
       value.asJsObject.getFields("keyClass", "rasterMetaData", "tileTable") match {
-        case Seq(JsString(keyClass), rasterMetaData, JsString(tileTable)) =>
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable)) =>
           AccumuloLayerMetaData(
             keyClass,
-            rasterMetaData.convertTo[RasterMetaData], 
+            valueClass,
             tileTable)
         case _ =>
           throw new DeserializationException("AccumuloLayerMetaData expected")
       }
   }
-
 }
