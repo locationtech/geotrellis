@@ -22,14 +22,14 @@ object AccumuloLayerMetaData {
       )
 
     def read(value: JsValue): AccumuloLayerMetaData =
-      value.asJsObject.getFields("keyClass", "rasterMetaData", "tileTable") match {
+      value.asJsObject.getFields("keyClass", "valueClass", "tileTable") match {
         case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable)) =>
           AccumuloLayerMetaData(
             keyClass,
             valueClass,
             tileTable)
         case _ =>
-          throw new DeserializationException("AccumuloLayerMetaData expected")
+          throw new DeserializationException(s"AccumuloLayerMetaData expected, got: $value")
       }
   }
 }
