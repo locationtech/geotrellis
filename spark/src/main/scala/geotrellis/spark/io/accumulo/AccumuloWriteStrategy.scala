@@ -71,6 +71,9 @@ case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
     }
   }
 }
+object HdfsWriteStrategy {
+  def apply(ingestPath: String): HdfsWriteStrategy = HdfsWriteStrategy(new Path(ingestPath))
+}
 
 /**
  * This strategy will create one BatchWriter per partition and attempt to stream the records to the target tablets.

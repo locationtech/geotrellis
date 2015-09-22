@@ -2,6 +2,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.json._
+import geotrellis.spark.io.avro._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io.{AttributeStore, ContainerConstructor, Writer}
@@ -34,15 +35,34 @@ class AccumuloLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, 
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
-    attributeStore.cacheWrite(id, Fields.layerMetaData, rasterMetaData)(cons.metaDataFormat)
+    attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
     attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
     attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
     attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
 
     val getRowId = (key: K) =>
-      new Text(f"${id.zoom}%02d_${keyIndex.toIndex(key)}%06d")
+      f"${id.zoom}%02d_${keyIndex.toIndex(key)}%06d"
 
     rddWriter.write(rdd, table, id.name, getRowId, oneToOne = false)
 
   }
+}
+
+object AccumuloLayerWriter {
+  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
+
+  def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, C[_]](
+      instance: AccumuloInstance,
+      table: String,
+      indexMethod: KeyIndexMethod[K],
+      strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+    (implicit cons: ContainerConstructor[K, V, C]): AccumuloLayerWriter[K, V, C] =
+    new AccumuloLayerWriter[K, V, C](
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),
+      keyIndexMethod = indexMethod,
+      table = table
+    )
+
+
 }
