@@ -1,6 +1,7 @@
 package geotrellis.spark
 
 import geotrellis.raster.{Tile, MultiBandTile}
+import geotrellis.spark.io.ContainerConstructor
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
@@ -14,7 +15,7 @@ class MultiBandRasterRDD[K: ClassTag](val tileRdd: RDD[(K, MultiBandTile)], val 
 
 object MultiBandRasterRDD {
   implicit def constructor[K: JsonFormat : ClassTag] =
-    new geotrellis.spark.io.s3.ContainerConstructor[K, MultiBandTile, MultiBandRasterRDD] {
+    new ContainerConstructor[K, MultiBandTile, MultiBandRasterRDD] {
       type MetaDataType = RasterMetaData
       implicit def metaDataFormat = geotrellis.spark.io.json.RasterMetaDataFormat
 

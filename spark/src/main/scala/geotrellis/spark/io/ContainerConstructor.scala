@@ -1,11 +1,8 @@
-package geotrellis.spark.io.s3
+package geotrellis.spark.io
 
-import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
 
 /**
  * This TypeClass abstracts away the specific RDD container, like `RasterRDD` and `MultiBandRasterRDD` allowing them 
