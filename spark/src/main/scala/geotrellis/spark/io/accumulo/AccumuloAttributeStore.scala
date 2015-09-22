@@ -1,5 +1,6 @@
 package geotrellis.spark.io.accumulo
 
+import com.typesafe.config.ConfigFactory
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -18,6 +19,9 @@ import org.apache.hadoop.io.Text
 object AccumuloAttributeStore { 
   def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =
     new AccumuloAttributeStore(connector, attributeTable)
+
+  def apply(connector: Connector): AccumuloAttributeStore =
+    apply(connector, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
 }
 
 class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore with Logging {
