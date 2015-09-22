@@ -44,9 +44,18 @@ object HadoopRasterCatalogConfig {
 
 
 object HadoopRasterCatalog {
+  def apply(rootPath: String)(implicit sc: SparkContext): HadoopRasterCatalog =
+    apply(new Path(rootPath))
+
+  def apply(rootPath: String, catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext): HadoopRasterCatalog =
+    apply(new Path(rootPath), catalogConfig)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopRasterCatalog = 
+    apply(rootPath, HadoopRasterCatalogConfig.DEFAULT)
+
   def apply(
     rootPath: Path,
-    catalogConfig: HadoopRasterCatalogConfig = HadoopRasterCatalogConfig.DEFAULT)(implicit sc: SparkContext
+    catalogConfig: HadoopRasterCatalogConfig)(implicit sc: SparkContext
   ): HadoopRasterCatalog = {
     HdfsUtils.ensurePathExists(rootPath, sc.hadoopConfiguration)
     val attributeStore = new HadoopAttributeStore(sc.hadoopConfiguration, new Path(rootPath, "attributes"))
