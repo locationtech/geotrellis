@@ -59,13 +59,14 @@ class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCo
     InputFormatBase.fetchColumns(job, List(new APair(columnFamily, null: Text)).asJava)
     iterators.foreach(InputFormatBase.addIterator(job, _))
 
+    val kwWriterSchema = KryoWrapper(writerSchema)
     sc.newAPIHadoopRDD(
       job.getConfiguration,
       classOf[BatchAccumuloInputFormat],
       classOf[Key],
       classOf[Value])
     .map { case (_, value) =>
-      AvroEncoder.fromBinary(writerSchema, value.get)(codec.value)
+      AvroEncoder.fromBinary(kwWriterSchema.value, value.get)(codec.value)
     }
     .flatMap { pairs: Vector[(K, V)] =>
       pairs.filter(pair => includeKey(pair._1))

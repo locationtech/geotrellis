@@ -1,9 +1,12 @@
 package geotrellis.spark.io.accumulo
 
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
+
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
+import geotrellis.spark.utils.KryoWrapper
 import org.apache.avro.Schema
 
 import org.apache.hadoop.io.Text
@@ -18,11 +21,7 @@ import scala.reflect.ClassTag
 trait IAccumuloRDDWriter[K, TileType] {
   def schema: Schema
 
-  def write(
-    raster: RDD[(K, TileType)],
-    table: String, columnFamily: Text,
-    getRowId: (K) => Text,
-    oneToOne: Boolean = false): Unit
+  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, getRowId: (K) => String, oneToOne: Boolean = false): Unit
 }
 
 class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
@@ -33,13 +32,7 @@ class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
   val codec  = KeyValueRecordCodec[K, TileType]
   val schema = codec.schema
 
-  def write(
-      raster: RDD[(K, TileType)],
-      table: String,
-      columnFamily: Text,
-      getRowId: (K) => Text,
-      oneToOne: Boolean = false): Unit = {
-
+  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, getRowId: (K) => String, oneToOne: Boolean = false): Unit = {
     implicit val sc = raster.sparkContext
 
     // Create table if it doesn't exist.
@@ -51,15 +44,16 @@ class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
     val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
     ops.setLocalityGroups(table, groups.updated(table, newGroup))
 
-    val encodeKey = (key: K) => new Key(getRowId(key), columnFamily, null: Text)
+    val encodeKey = (key: K) => new Key(getRowId(key), columnFamily)
 
+    val kwCodec = KryoWrapper(codec)
     val kvPairs: RDD[(Key, Value)] = {
       if (oneToOne)
         raster.map { case row => encodeKey(row._1) -> Vector(row) }
       else
         raster.groupBy { row => encodeKey(row._1) }
-    }.map { case (key: Key, pairs) =>
-      (key, new Value(AvroEncoder.toBinary(pairs.toVector)(codec)))
+    }.map { case (key, pairs) =>
+      (key, new Value(AvroEncoder.toBinary(pairs.toVector)(kwCodec.value)))
     }
 
     strategy.write(kvPairs, instance, table)
