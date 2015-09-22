@@ -60,7 +60,7 @@ class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileTyp
 
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
-    val codec = KeyValueRecordCodec[K, Tile]
+    val codec = KeyValueRecordCodec[K, TileType]
     attributeStore.cacheWrite(id,"schema", codec.schema.toString.parseJson)
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
