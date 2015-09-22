@@ -2,9 +2,9 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{KeyBounds, LayerId}
+import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.io.{CatalogError, TileNotFoundError, Reader}
+import geotrellis.spark.io.{ContainerConstructor, CatalogError, TileNotFoundError, Reader}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.json._
@@ -12,6 +12,7 @@ import org.apache.accumulo.core.data.{Value, Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
+import org.apache.spark.SparkContext
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.collection.JavaConversions._
@@ -20,7 +21,7 @@ import scala.reflect.ClassTag
 
 class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
     instance: AccumuloInstance,
-    val attributeStore: S3AttributeStore,
+    val attributeStore: AccumuloAttributeStore,
     layerId: LayerId)
   extends Reader[K, V] {
 
@@ -54,4 +55,13 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
       tiles.head._2
     }
   }
+}
+
+object AccumuloTileReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag](
+      instance: AccumuloInstance, id: LayerId): AccumuloTileReader[K, V] =
+    new AccumuloTileReader[K, V](
+      instance = instance,
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      layerId = id)
 }
