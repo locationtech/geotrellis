@@ -80,7 +80,7 @@ object Between {
 
   /** Define Between filter for a tuple of DateTimes */
   implicit def forDateTimeTuple[K: TemporalComponent : Boundable, M] =
-    new RDDFilter[K, RasterBetween.type, (DateTime, DateTime), M] {
+    new RDDFilter[K, Between.type, (DateTime, DateTime), M] {
       def apply(metadata: M, kb: KeyBounds[K], range: (DateTime, DateTime)) = {
         val queryBounds = KeyBounds(
           kb.minKey updateTemporalComponent TemporalKey(range._1),
