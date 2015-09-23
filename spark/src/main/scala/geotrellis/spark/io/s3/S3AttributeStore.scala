@@ -22,12 +22,13 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param rootPath  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) extends AttributeStore {
+class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore {
   type ReadableWritable[T] = JsonFormat[T]
+  val s3Client: S3Client = S3Client.default
 
   /** NOTE:
    * S3 is eventually consistent, therefore it is possible to write an attribute and fail to read it
-   * immediatly afterwards. It is not clear if this is a practical concern.
+   * immediately afterwards. It is not clear if this is a practical concern.
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
 
@@ -71,14 +72,15 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) ext
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
   }
+
+  def layerExists(layerId: LayerId): Boolean = {
+    s3Client.listObjectsIterator(bucket, AttributeStore.Fields.layerMetaData, 1).nonEmpty
+  }
 }
 
 object S3AttributeStore {
-  def apply(s3client: S3Client, bucket: String, root: String) =
-    new S3AttributeStore(s3client, bucket, root)
-
-  def apply(bucket: String, root: String): S3AttributeStore =
-    apply(S3Client.default, bucket, root)
+  def apply(bucket: String, root: String) =
+    new S3AttributeStore(bucket, root)
 
   def apply(bucket: String): S3AttributeStore =
     apply(bucket, "")

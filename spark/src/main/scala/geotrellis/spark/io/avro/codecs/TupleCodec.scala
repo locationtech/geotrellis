@@ -1,7 +1,8 @@
-package geotrellis.spark.io.avro
+package geotrellis.spark.io.avro.codecs
 
-import org.apache.avro.generic.GenericRecord
+import geotrellis.spark.io.avro._
 import org.apache.avro._
+import org.apache.avro.generic.GenericRecord
 
 class TupleCodec[A, B](implicit a: AvroRecordCodec[A], b: AvroRecordCodec[B]) extends AvroRecordCodec[(A, B)] {
   def schema = SchemaBuilder.record("Tuple2").namespace("scala")

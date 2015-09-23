@@ -1,11 +1,12 @@
-package geotrellis.spark.io.avro
+package geotrellis.spark.io.avro.codecs
 
+import geotrellis.spark.io.avro._
 import geotrellis.spark.{SpaceTimeKey, SpatialKey}
-import org.apache.avro.generic._
 import org.apache.avro._
+import org.apache.avro.generic._
 import org.joda.time.{DateTime, DateTimeZone}
 
-object KeyCodecs {
+trait KeyCodecs {
   implicit object SpatialKeyAvroFormat extends AvroRecordCodec[SpatialKey] {
     def schema = SchemaBuilder
       .record("SpatialKey").namespace("geotrellis.spark")
@@ -58,3 +59,5 @@ object KeyCodecs {
   }
 
 }
+
+object KeyCodecs extends KeyCodecs

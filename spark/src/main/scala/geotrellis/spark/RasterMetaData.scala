@@ -11,7 +11,7 @@ import org.apache.spark.rdd._
 /**
  * @param cellType    value type of each cell
  * @param layout      definition of the tiled raster layout
- * @param extent      extent covering the source data cells
+ * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
 case class RasterMetaData(
@@ -22,8 +22,12 @@ case class RasterMetaData(
 ) {
   /** Transformations between tiling scheme and map references */
   def mapTransform = layout.mapTransform
+  /** Layout raster extent */
+  def rasterExtent = layout.rasterExtent
   /** TileLayout of the layout */
   def tileLayout = layout.tileLayout
+  /** Full extent of the layout */
+  def layoutExtent = layout.extent
   /** GridBounds of data tiles in the layout */
   def gridBounds = mapTransform(extent)
 
@@ -32,6 +36,8 @@ case class RasterMetaData(
 }
 
 object RasterMetaData {
+  implicit def toMapTransformView(rmd: RasterMetaData): MapKeyTransform = rmd.mapTransform
+
   def envelopeExtent[K, V <: CellGrid](rdd: RDD[(K, V)])(getExtent: K => Extent): (Extent, CellType, CellSize) = {
     rdd
       .map { case (key, grid) =>
@@ -58,12 +64,13 @@ object RasterMetaData {
     RasterMetaData(cellType, layout, uncappedExtent, crs)
   }
 
-  /** Delegate the choice of layout to the LayoutScheme and return it's choice,
-    * which could contain extra information, like zoom. */
+  /**
+   * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
+   */
   def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme)
                 (getExtent: K => Extent): (Int, RasterMetaData) = {
     val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
     val LayoutLevel(zoom, layout) = scheme.levelFor(uncappedExtent, cellSize)
-    zoom -> RasterMetaData(cellType, layout, uncappedExtent, crs)
+    (zoom, RasterMetaData(cellType, layout, uncappedExtent, crs))
   }
 }

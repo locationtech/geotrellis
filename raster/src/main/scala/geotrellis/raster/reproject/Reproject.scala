@@ -87,4 +87,13 @@ object Reproject {
 
       Raster(newTile, newExtent)
     }
+
+  def apply(tile: MultiBandTile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): MultiBandRaster = {
+    val bands =
+      for ( bandIndex <- 0 until tile.bandCount ) yield {
+        tile.band(bandIndex).reproject(extent, src, dest, options)
+      }
+
+    MultiBandRaster(ArrayMultiBandTile(bands.map(_.tile)), bands.head.extent)
+  }
 }

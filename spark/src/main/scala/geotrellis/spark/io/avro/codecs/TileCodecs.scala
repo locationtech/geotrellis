@@ -1,12 +1,15 @@
-package geotrellis.spark.io.avro
+package geotrellis.spark.io.avro.codecs
 
-import geotrellis.raster._
-import org.apache.avro.generic._
-import org.apache.avro.SchemaBuilder
-import scala.collection.JavaConverters._
 import java.nio.ByteBuffer
 
-object TileCodecs {
+import geotrellis.raster._
+import geotrellis.spark.io.avro._
+import org.apache.avro.SchemaBuilder
+import org.apache.avro.generic._
+
+import scala.collection.JavaConverters._
+
+trait TileCodecs {
   implicit object ShortArrayTileCodec extends AvroRecordCodec[ShortArrayTile] {
     lazy val schema = SchemaBuilder
       .record("ShortArrayTile").namespace("geotrellis.raster")
@@ -118,4 +121,28 @@ object TileCodecs {
   }
 
 
+  implicit object MultiBandTileCodec extends AvroRecordCodec[MultiBandTile] {
+    lazy val schema = SchemaBuilder
+      .record("ArrayMultiBandTile").namespace("geotrellis.raster")
+      .fields()
+      .name("bands").`type`().array().items.`type`(tileUnionCodec.schema).noDefault()
+      .endRecord()
+
+    def encode(tile: MultiBandTile, rec: GenericRecord) = {
+      val bands = for (i <- 0 until tile.bandCount) yield tile.band(i)
+      rec.put("bands", bands.map(tileUnionCodec.encode).asJavaCollection)
+    }
+
+    def decode(rec: GenericRecord) = {
+      val bands = rec.get("bands")
+        .asInstanceOf[java.util.Collection[GenericRecord]]
+        .asScala // notice that Avro does not have native support for Short primitive
+        .map(tileUnionCodec.decode)
+        .toArray
+
+      new ArrayMultiBandTile(bands)
+    }
+  }
 }
+
+object TileCodecs extends TileCodecs

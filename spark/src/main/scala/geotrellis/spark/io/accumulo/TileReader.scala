@@ -2,7 +2,8 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.{AvroRecordCodec, TupleCodec, AvroEncoder}
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
 import geotrellis.spark.utils._

@@ -48,12 +48,12 @@ object RasterRDDFilter {
 }
 
 
-object Intersects {
-  def apply[T](value: T) = RasterRDDFilter.Value[Intersects.type, T](value)
+object RasterIntersects {
+  def apply[T](value: T) = RasterRDDFilter.Value[RasterIntersects.type, T](value)
 
   /** Define Intersects filter for GridBounds */   
   implicit def forGridBounds[K: SpatialComponent: Boundable] =
-    new RasterRDDFilter[K, Intersects.type, GridBounds] {
+    new RasterRDDFilter[K, RasterIntersects.type, GridBounds] {
       def apply(metadata: RasterMetaData, kb: KeyBounds[K], bounds: GridBounds) = {
         val queryBounds = KeyBounds(
           kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
@@ -64,7 +64,7 @@ object Intersects {
   
   /** Define Intersects filter for Extent */
   implicit def forExtent[K: SpatialComponent: Boundable] =
-    new RasterRDDFilter[K, Intersects.type, Extent] {
+    new RasterRDDFilter[K, RasterIntersects.type, Extent] {
       def apply(metadata: RasterMetaData, kb: KeyBounds[K], extent: Extent) = {
         val bounds = metadata.mapTransform(extent)
         val queryBounds = KeyBounds(
@@ -75,12 +75,12 @@ object Intersects {
     }
 }
 
-object Between {
-  def apply[T](start: T, end: T) = RasterRDDFilter.Value[Between.type, (T, T)](start -> end)
+object RasterBetween {
+  def apply[T](start: T, end: T) = RasterRDDFilter.Value[RasterBetween.type, (T, T)](start -> end)
 
   /** Define Between filter for a tuple of DateTimes */
   implicit def forDateTimeTuple[K: TemporalComponent : Boundable] =
-    new RasterRDDFilter[K, Between.type, (DateTime, DateTime)] {
+    new RasterRDDFilter[K, RasterBetween.type, (DateTime, DateTime)] {
       def apply(metadata: RasterMetaData, kb: KeyBounds[K], range: (DateTime, DateTime)) = {
         val queryBounds = KeyBounds(
           kb.minKey updateTemporalComponent TemporalKey(range._1),

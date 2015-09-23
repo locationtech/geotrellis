@@ -37,9 +37,9 @@ class RasterRDDQuery[K: Boundable](
 /**
  * Wrapper for [[RasterRDDQuery]] that binds it to some function that is able to produce a [[RasterRDD]].
  */
-class BoundRasterRDDQuery[K](query: RasterRDDQuery[K], f: RasterRDDQuery[K] => RasterRDD[K]) {
-  def where[F, T](params: RasterRDDFilter.Expression[F, T])(implicit ev: RasterRDDFilter[K,F,T]): BoundRasterRDDQuery[K] =
-    new BoundRasterRDDQuery(query.where(params), f)
+class BoundRasterRDDQuery[K, RDDContainer[_]](query: RasterRDDQuery[K], f: RasterRDDQuery[K] => RDDContainer[K]) {
+  def where[F, T](params: RasterRDDFilter.Expression[F, T])(implicit ev: RasterRDDFilter[K,F,T]): BoundRasterRDDQuery[K, RDDContainer] =
+    new BoundRasterRDDQuery[K, RDDContainer](query.where(params), f)
 
-  def toRDD: RasterRDD[K] = f(query)
+  def toRDD: RDDContainer[K] = f(query)
 }

@@ -1,13 +1,13 @@
 package geotrellis.spark.etl.hadoop
 
 import geotrellis.proj4.CRS
-import geotrellis.spark.etl._
+import geotrellis.raster.Tile
+import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark.ingest._
-import geotrellis.spark.io.hadoop.formats.NetCdfBand
+import geotrellis.spark.reproject._
 import geotrellis.spark.tiling.LayoutScheme
-import geotrellis.spark.{SpaceTimeKey, RasterRDD, RasterMetaData, SpatialKey}
+import geotrellis.spark.{RasterRDD, RasterMetaData, SpatialKey}
 import geotrellis.vector.ProjectedExtent
-import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.storage.StorageLevel
 
@@ -23,8 +23,8 @@ class GeoTiffHadoopInput extends HadoopInput {
     val reprojected = source.reproject(crs).persist(lvl)
     val (layoutLevel, rasterMetaData) =
       RasterMetaData.fromRdd(reprojected, crs, layoutScheme) { _.extent }
-    val tiler = implicitly[Tiler[ProjectedExtent, SpatialKey]]
-    layoutLevel -> tiler(reprojected, rasterMetaData).asInstanceOf[RasterRDD[K]]
+    val tiler = implicitly[Tiler[ProjectedExtent, SpatialKey, Tile]]
+    layoutLevel -> tiler(reprojected, rasterMetaData, NearestNeighbor).asInstanceOf[RasterRDD[K]]
   }
 }
 

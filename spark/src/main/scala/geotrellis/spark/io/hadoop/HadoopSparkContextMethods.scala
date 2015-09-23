@@ -47,6 +47,34 @@ trait HadoopSparkContextMethods {
     )
   }
 
+  def hadoopMultiBandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultiBandTile)] =
+    hadoopMultiBandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+
+  def hadoopMultiBandGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, MultiBandTile)] =
+    hadoopMultiBandGeoTiffRDD(new Path(path), Seq(tiffExtension))
+
+  def hadoopMultiBandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultiBandTile)] =
+    hadoopMultiBandGeoTiffRDD(new Path(path), tiffExtensions)
+
+  def hadoopMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultiBandTile)] = {
+    val searchPath = path.toString match {
+      case p if tiffExtensions.exists(p.endsWith) => path
+      case p =>
+        val extensions = tiffExtensions.mkString("{", ",", "}")
+        new Path(s"$p/*$extensions")
+    }
+
+    val updatedConf =
+      sc.hadoopConfiguration.withInputDirectory(searchPath)
+
+    sc.newAPIHadoopRDD(
+      updatedConf,
+      classOf[MultiBandGeoTiffInputFormat],
+      classOf[ProjectedExtent],
+      classOf[MultiBandTile]
+    )
+  }
+
   def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
     val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)
 

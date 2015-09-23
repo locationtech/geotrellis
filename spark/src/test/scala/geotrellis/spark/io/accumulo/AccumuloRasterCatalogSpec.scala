@@ -48,8 +48,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
         }
 
         it("should know when layer exists"){
-          catalog.layerExists(layerId) should be (true)
-          catalog.layerExists(LayerId("nope", 100)) should be (false)
+          catalog.attributeStore.layerExists(layerId) should be (true)
+          catalog.attributeStore.layerExists(LayerId("nope", 100)) should be (false)
         }
 
         it("should load out saved tiles") {
@@ -73,8 +73,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         it("fetch a TileExtent from catalog") {
           val tileBounds = GridBounds(915,612,916,612)
-          val rdd1 = catalog.query[SpatialKey](LayerId("ones", zoom)).where(Intersects(tileBounds)).toRDD
-          val rdd2 = catalog.query[SpatialKey](LayerId("ones", zoom)).where(Intersects(tileBounds)).toRDD
+          val rdd1 = catalog.query[SpatialKey](LayerId("ones", zoom)).where(RasterIntersects(tileBounds)).toRDD
+          val rdd2 = catalog.query[SpatialKey](LayerId("ones", zoom)).where(RasterIntersects(tileBounds)).toRDD
 
           val out = rdd1.combinePairs(rdd2) { case (tms1, tms2) =>
             require(tms1.id == tms2.id)
@@ -147,7 +147,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
         val (minRow, maxRow) = (rows.min, rows.max)
 
         val tileBounds = GridBounds(minCol + 1, minRow + 1, maxCol, maxRow)
-        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).where(Intersects(tileBounds)).toRDD
+        val rdd = catalog.query[SpaceTimeKey](LayerId("coordinates", zoom)).where(RasterIntersects(tileBounds)).toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>
           tileBounds.contains(col, row) should be (true)
@@ -168,8 +168,8 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
         val rdd = catalog
           .query[SpaceTimeKey](LayerId("coordinates", zoom))
-          .where(Intersects(tileBounds))
-          .where(Between(maxTime,maxTime))
+          .where(RasterIntersects(tileBounds))
+          .where(RasterBetween(maxTime,maxTime))
           .toRDD
 
         rdd.map(_._1).collect.foreach { case SpaceTimeKey(col, row, time) =>

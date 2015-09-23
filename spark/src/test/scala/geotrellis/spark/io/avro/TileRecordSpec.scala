@@ -1,12 +1,13 @@
 package geotrellis.spark.io.avro
 
 import geotrellis.spark.SpatialKey
-import geotrellis.spark.io.avro.TileCodecs._
-import geotrellis.spark.io.avro.KeyCodecs._
+import geotrellis.spark.io.avro.codecs.{KeyValueRecordCodec, TileCodecs, KeyCodecs}
+import TileCodecs._
+import KeyCodecs._
 import org.scalatest._
 import geotrellis.raster._
 
-class TileRecordSpec extends FunSpec with AvroTools {
+class TileRecordSpec extends FunSpec with AvroTools with Matchers {
   describe("TileRecordCodecs") {
     it("encodes (key,tile) pairs"){
       val pairs = Vector(
