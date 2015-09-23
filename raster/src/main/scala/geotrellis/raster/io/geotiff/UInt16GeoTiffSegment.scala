@@ -8,21 +8,13 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-class NoDataUInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Int) extends UInt16GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Int = {
-    val v = super.get(i)
-    if(v == noDataValue) { NODATA }
-    else { v }
-  }
-}
 
 class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asShortBuffer
 
   val size: Int = bytes.size / 2
 
-  def getRaw(i: Int): Short = buffer.get(i) // Get's the signed short, negative values are incorrect
+  def getRaw(i: Int): Short = buffer.get(i) // Gets the signed short
   def get(i: Int): Int = buffer.get(i) & 0xFFFF
 
   def getInt(i: Int): Int = get(i)

@@ -8,14 +8,6 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-class NoDataByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Byte) extends ByteGeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Int = {
-    val v = super.getRaw(i)
-    if(v == noDataValue) { byteNODATA }
-    else { v }
-  }
-}
 
 class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   val size: Int = bytes.size

@@ -26,7 +26,6 @@ trait Resulting[T] {
 }
 /** Trait defining the ability to initialize the focal calculation with a raster. */
 trait Initialization {
-  //def init(r: Tile): Unit
 }
 
 /**
@@ -143,7 +142,7 @@ trait ShortArrayTileResult extends Initialization with Resulting[Tile] { self: F
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val tile: ShortArrayTile = ShortArrayTile.fill(0, cols, rows)
+  val tile: ShortArrayTile = ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
 
 //  def init(r: Tile) = {
 //    cols = r.cols

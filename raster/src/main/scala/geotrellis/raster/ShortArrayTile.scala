@@ -14,7 +14,7 @@ final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   val cellType = TypeShort
 
   def apply(i: Int) = s2i(array(i))
-  def update(i: Int, z: Int) { array(i) = if(z == NODATA) shortNODATA else z.toShort }
+  def update(i: Int, z: Int) { array(i) = i2s(z) }
 
   def toBytes: Array[Byte] = {
     val pixels = new Array[Byte](array.length * cellType.bytes)

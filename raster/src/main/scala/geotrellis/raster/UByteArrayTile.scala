@@ -14,7 +14,7 @@ final case class UByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   val cellType = TypeUByte
 
   def apply(i: Int) = array(i) & 0xFF
-  def update(i: Int, z: Int) { array(i) = z.toByte }
+  def update(i: Int, z: Int) { array(i) = if(z == NODATA) 0.toByte else z.toByte }
 
   def toBytes: Array[Byte] = array.clone
 
@@ -35,7 +35,7 @@ object UByteArrayTile {
     UByteArrayTile(bytes.clone, cols, rows)
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): UByteArrayTile = {
-    println("Unsigned bytes (such as those most commonly used in byte-based geotiffs) lack a NoData value; any default value will be ignored")
+    println("WARNING: Unsigned bytes (such as those most commonly used in byte-based geotiffs) lack a NoData value; any default value will be ignored")
     fromBytes(bytes, cols, rows)
   }
 }

@@ -62,8 +62,8 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
     }
 
     it("must read Striped Bit aspect, convert to byte, and match gdal converted byte file") {
-      val actual = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile.convert(TypeByte)
-      val expected = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit-to-byte_uncompressed_striped.tif")).tile.toArrayTile.convert(TypeByte)
+      val actual = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile.convert(TypeUByte)
+      val expected = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit-to-byte_uncompressed_striped.tif")).tile.toArrayTile
 
       assertEqual(actual, expected)
     }
