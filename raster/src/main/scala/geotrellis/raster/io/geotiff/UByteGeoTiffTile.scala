@@ -20,8 +20,6 @@ class UByteGeoTiffTile(
         val segment =
           getSegment(segmentIndex)
         val size = segment.bytes.size
-        println(arr.size)
-        println("arraycopy", segment.bytes(0), 0, arr(0), i, size)
         System.arraycopy(segment.bytes, 0, arr, i, size)
         i += size
       }

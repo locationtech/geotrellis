@@ -13,7 +13,7 @@ final case class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
 
   val cellType = TypeUShort
 
-  def apply(i: Int) = (array(i) & 0xFFFF).toInt
+  def apply(i: Int) = array(i) & 0xFFFF
   def update(i: Int, z: Int) { array(i) = z.toShort }
 
   def toBytes: Array[Byte] = {

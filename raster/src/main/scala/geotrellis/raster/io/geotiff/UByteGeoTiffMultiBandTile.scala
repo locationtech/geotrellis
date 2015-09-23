@@ -18,21 +18,16 @@ class UByteGeoTiffMultiBandTile(
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
     new SegmentCombiner {
-      private val arr = Array.ofDim[Int](targetSize)
+      private val arr = Array.ofDim[Byte](targetSize)
 
       def set(targetIndex: Int, v: Int): Unit = {
-        arr(targetIndex) = v
+        arr(targetIndex) = i2b(v)
       }
 
       def setDouble(targetIndex: Int, v: Double): Unit = {
-        arr(targetIndex) = d2s(v)
+        arr(targetIndex) = d2b(v)
       }
 
-      def getBytes(): Array[Byte] = {
-        val result = new Array[Byte](targetSize * TypeInt.bytes)
-        val bytebuff = ByteBuffer.wrap(result)
-        bytebuff.asIntBuffer.put(arr)
-        result
-      }
+      def getBytes(): Array[Byte] = arr
     }
 }

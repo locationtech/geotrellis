@@ -55,7 +55,7 @@ class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   def map(f: Int => Int): Array[Byte] = {
     val arr = bytes.clone
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = i2b(f(getInt(i)))
+      arr(i) = i2b(f(getInt(i)) & 0xFF)
     }
     arr
   }

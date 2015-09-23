@@ -58,24 +58,24 @@ class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   // NOTE: Maps to Int32 bytes.
   def map(f: Int => Int): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
+    val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = f(getInt(i))
+      arr(i) = (f(getInt(i)) & 0xFFFF).toShort
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * TypeShort.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
+    bytebuff.asShortBuffer.put(arr)
     result
   }
 
   def mapDouble(f: Double => Double): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
+    val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2i(f(getDouble(i)))
+      arr(i) = (d2i(f(getDouble(i))) & 0xFFFF).toShort
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * TypeShort.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
+    bytebuff.asShortBuffer.put(arr)
     result
   }
 

@@ -12,6 +12,8 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
+import java.util.Arrays
+
 class ByteGeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
@@ -29,14 +31,8 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
       val tile =
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
-      import java.util.Arrays
-
-      println("other",MultiBandGeoTiff.compressed(p("striped", "pixel")).tile.band(2).get(0,1))
-      println("tile",tile)
       val actual = tile.combine(_.sum)
-      println("TST",actual.get(0,0))
       val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
-      println("expectation", actual, expected)
 
       assertEqual(actual, expected)
     }
@@ -88,7 +84,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(0), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
