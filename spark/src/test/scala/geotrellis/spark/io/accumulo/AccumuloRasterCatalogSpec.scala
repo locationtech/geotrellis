@@ -6,6 +6,7 @@ import geotrellis.raster.op.local._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
+import geotrellis.spark.io.accumulo.spacetime.{SpaceTimeAccumuloRDDReader, SpaceTimeAccumuloRDDWriter}
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.hadoop._
@@ -36,7 +37,6 @@ class AccumuloRasterCatalogSpec extends FunSpec
       val tableName = "tiles"
       if (!tableOps.exists(tableName))
         tableOps.create(tableName)
-
 
 
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme){ (onesRdd, zoom) =>
@@ -185,6 +185,26 @@ class AccumuloRasterCatalogSpec extends FunSpec
           time should be (maxTime)
         }
       }
+
+      val customId = LayerId("cust",8)
+      it("should write using custom spacetime rdd writer"){
+        val writer = new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](
+          attributeStore = AccumuloAttributeStore(accumulo.connector),
+          rddWriter = new SpaceTimeAccumuloRDDWriter(accumulo, SocketWriteStrategy()),
+          keyIndexMethod = ZCurveKeyIndexMethod.byYear,
+          table = "customst")
+
+        writer.write(customId, CoordinateSpaceTime)
+      }
+
+      it("should read using custom spacetime rdd reader") {
+        val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD](
+          AccumuloAttributeStore(accumulo.connector),
+          new SpaceTimeAccumuloRDDReader[Tile](accumulo))
+
+        reader.read(customId).count should not be 0
+      }
+
 
 //      RasterRDDQueryTest.spaceTimeTest.foreach { test =>
 //        it(test.name){

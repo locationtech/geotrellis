@@ -5,12 +5,11 @@ import geotrellis.spark.SpaceTimeKey
 import geotrellis.spark.io.accumulo.{AccumuloInstance, BaseAccumuloRDDWriter}
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.utils.KryoWrapper
 import org.apache.accumulo.core.data.{Key, Value}
 import org.apache.hadoop.io.Text
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTimeZone
-
-import scala.collection.JavaConversions._
 
 /**
  * This class implements writing SpaceTime keyed RDDs by using Accumulo column qualifier to store the dates of each tile.
@@ -28,20 +27,16 @@ class SpaceTimeAccumuloRDDWriter[TileType: AvroRecordCodec](
   def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit = {
     implicit val sc = raster.sparkContext
 
-    val ops = instance.connector.tableOperations()
-    if (! ops.exists(table))
-      ops.create(table)
-
-    val groups = ops.getLocalityGroups(table)
-    val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
-    ops.setLocalityGroups(table, groups.updated(table, newGroup))
+    ensureTableExists(table)
+    makeLocalityGroup(table, columnFamily)
 
     val timeText = (key: K) =>
-      new Text(key.temporalKey.time.withZone(DateTimeZone.UTC).toString)
+      new Text(key.time.withZone(DateTimeZone.UTC).toString)
 
+    val kwCodec = KryoWrapper(codec)
     val kvPairs = raster
       .map { case tuple @ (key, _) =>
-        val value = new Value(AvroEncoder.toBinary(Vector(tuple))(codec))
+        val value: Value = new Value(AvroEncoder.toBinary(Vector(tuple))(kwCodec.value))
         val rowKey = new Key(keyToRowId(key), columnFamily, timeText(key))
         (rowKey, value)
       }

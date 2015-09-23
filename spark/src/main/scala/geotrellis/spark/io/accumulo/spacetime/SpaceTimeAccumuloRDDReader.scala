@@ -4,7 +4,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.utils.KryoWrapper
 import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
@@ -22,19 +21,17 @@ import scala.reflect.ClassTag
 class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: AccumuloInstance)
   extends BaseAccumuloRDDReader[SpaceTimeKey, V] {
 
-  type K = SpaceTimeKey
-
   def read(
       table: String,
       columnFamily: Text,
       writerSchema: Schema,
-      queryKeyBounds: Seq[KeyBounds[K]],
-      decomposeBounds: KeyBounds[K] => Seq[AccumuloRange])
-    (implicit sc: SparkContext): RDD[(K, V)] = {
+      queryKeyBounds: Seq[KeyBounds[SpaceTimeKey]],
+      decomposeBounds: KeyBounds[SpaceTimeKey] => Seq[AccumuloRange])
+    (implicit sc: SparkContext): RDD[(SpaceTimeKey, V)] = {
 
-    val codec = KryoWrapper(KeyValueRecordCodec[K, V])
-    val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val codec = KryoWrapper(KeyValueRecordCodec[SpaceTimeKey, V])
+    val includeKey = (key: SpaceTimeKey) => KeyBounds.includeKey(queryKeyBounds, key)(SpaceTimeKey.Boundable)
+    val kwWriterSchema = KryoWrapper(writerSchema)
 
     queryKeyBounds
       .map { bound =>
@@ -54,17 +51,19 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
               "startInclusive" -> "true",
               "endInclusive" -> "true").asJava))
 
-        val kwWriterSchema = KryoWrapper(writerSchema)
         sc.newAPIHadoopRDD(
           job.getConfiguration,
           classOf[BatchAccumuloInputFormat],
           classOf[Key],
           classOf[Value])
-        .map { case (_, value) =>
+      }
+      .map { rdd =>
+        rdd.map { case (_, value) =>
           AvroEncoder.fromBinary(kwWriterSchema.value, value.get)(codec.value)
+
         }
-        .flatMap { pairs: Vector[(K, V)] =>
-          pairs.filter(pair => includeKey(pair._1))
+        .flatMap { pairs =>
+          pairs.filter{ pair => includeKey(pair._1) }
         }
       }
       .reduce(_ union _)

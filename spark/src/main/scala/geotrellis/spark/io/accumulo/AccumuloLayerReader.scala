@@ -17,7 +17,7 @@ import scala.reflect._
 
 class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
     val attributeStore: AttributeStore.Aux[JsonFormat],
-    rddReader: AccumuloRDDReader[K, TileType])
+    rddReader: BaseAccumuloRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
   extends FilteringRasterRDDReader[K, Container[K]] {
 
