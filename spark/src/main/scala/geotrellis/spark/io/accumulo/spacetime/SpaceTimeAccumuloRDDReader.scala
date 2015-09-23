@@ -8,7 +8,7 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.utils.KryoWrapper
 import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
-import org.apache.accumulo.core.data.{Key, Range => ARange, Value}
+import org.apache.accumulo.core.data.{Range => AccumuloRange, Key, Value}
 import org.apache.accumulo.core.util.{Pair => APair}
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
@@ -20,18 +20,16 @@ import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: AccumuloInstance)
-  extends IAccumuloRDDReader[SpaceTimeKey, V] {
+  extends BaseAccumuloRDDReader[SpaceTimeKey, V] {
 
   type K = SpaceTimeKey
 
   def read(
       table: String,
       columnFamily: Text,
-      getRow: Long => Text,
-      keyIndex: KeyIndex[K],
-      queryKeyBounds: Seq[KeyBounds[K]],
       writerSchema: Schema,
-      iterators: Seq[IteratorSetting] = Seq.empty)
+      queryKeyBounds: Seq[KeyBounds[K]],
+      decomposeBounds: KeyBounds[K] => Seq[AccumuloRange])
     (implicit sc: SparkContext): RDD[(K, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
@@ -44,11 +42,7 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
         instance.setAccumuloConfig(job)
         InputFormatBase.setInputTableName(job, table)
 
-        val ranges =
-          keyIndex.indexRanges(bound)
-          .map { case (min, max) => new ARange(getRow(min), true, getRow(max), true) }
-          .asJava
-
+        val ranges = decomposeBounds(bound).asJava
         InputFormatBase.setRanges(job, ranges)
         InputFormatBase.fetchColumns(job, List(new APair(columnFamily, null: Text)).asJava)
         InputFormatBase.addIterator(job,
@@ -60,15 +54,14 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
               "startInclusive" -> "true",
               "endInclusive" -> "true").asJava))
 
-        iterators.foreach(InputFormatBase.addIterator(job, _))
-
+        val kwWriterSchema = KryoWrapper(writerSchema)
         sc.newAPIHadoopRDD(
           job.getConfiguration,
           classOf[BatchAccumuloInputFormat],
           classOf[Key],
           classOf[Value])
         .map { case (_, value) =>
-          AvroEncoder.fromBinary(writerSchema, value.get)(codec.value)
+          AvroEncoder.fromBinary(kwWriterSchema.value, value.get)(codec.value)
         }
         .flatMap { pairs: Vector[(K, V)] =>
           pairs.filter(pair => includeKey(pair._1))
@@ -76,6 +69,4 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
       }
       .reduce(_ union _)
   }
-
-
 }

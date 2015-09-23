@@ -7,8 +7,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io.{AttributeStore, ContainerConstructor, Writer}
 import org.apache.spark.rdd.RDD
-
-import org.apache.hadoop.io.Text
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -16,7 +14,7 @@ import scala.reflect._
 
 class AccumuloLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
     val attributeStore: AttributeStore.Aux[JsonFormat],
-    rddWriter: IAccumuloRDDWriter[K, TileType],
+    rddWriter: BaseAccumuloRDDWriter[K, TileType],
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
   (implicit val cons: ContainerConstructor[K, TileType, Container])
@@ -40,8 +38,7 @@ class AccumuloLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, 
     attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
     attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
 
-    val getRowId = (key: K) =>
-      f"${id.zoom}%02d_${keyIndex.toIndex(key)}%06d"
+    val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
 
     rddWriter.write(rdd, table, id.name, getRowId, oneToOne = false)
 
@@ -63,6 +60,4 @@ object AccumuloLayerWriter {
       keyIndexMethod = indexMethod,
       table = table
     )
-
-
 }

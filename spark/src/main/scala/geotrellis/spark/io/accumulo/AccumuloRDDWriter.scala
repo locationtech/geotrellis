@@ -1,7 +1,5 @@
 package geotrellis.spark.io.accumulo
 
-import java.io.{ByteArrayOutputStream, ObjectOutputStream}
-
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
@@ -16,35 +14,47 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Value}
 
 import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
 
-trait IAccumuloRDDWriter[K, TileType] {
+trait BaseAccumuloRDDWriter[K, TileType] {
   def schema: Schema
+  def instance: AccumuloInstance
 
-  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, getRowId: (K) => String, oneToOne: Boolean = false): Unit
+  def ensureTableExists(tableName: String): Unit = {
+    val ops = instance.connector.tableOperations()
+    if (! ops.exists(tableName))
+      ops.create(tableName)
+  }
+
+  def makeLocalityGroup(tableName: String, columnFamily: String): Unit = {
+    val ops = instance.connector.tableOperations()
+    val groups = ops.getLocalityGroups(tableName)
+    val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
+    ops.setLocalityGroups(tableName, groups.updated(tableName, newGroup))
+  }
+  
+  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit
 }
 
 class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
-    instance: AccumuloInstance,
+    val instance: AccumuloInstance,
     strategy: AccumuloWriteStrategy)
-  extends IAccumuloRDDWriter[K, TileType] {
+  extends BaseAccumuloRDDWriter[K, TileType] {
 
   val codec  = KeyValueRecordCodec[K, TileType]
   val schema = codec.schema
 
-  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, getRowId: (K) => String, oneToOne: Boolean = false): Unit = {
+  def write(
+      raster: RDD[(K, TileType)],
+      table: String,
+      columnFamily: String,
+      keyToRowId: (K) => Text,
+      oneToOne: Boolean = false): Unit = {
     implicit val sc = raster.sparkContext
 
-    // Create table if it doesn't exist.
-    val ops = instance.connector.tableOperations()
-    if (! ops.exists(table))
-      ops.create(table)
+    ensureTableExists(table)
+    makeLocalityGroup(table, columnFamily.toString)
 
-    val groups = ops.getLocalityGroups(table)
-    val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
-    ops.setLocalityGroups(table, groups.updated(table, newGroup))
-
-    val encodeKey = (key: K) => new Key(getRowId(key), columnFamily)
+    val encodeKey = (key: K) => new Key(keyToRowId(key), columnFamily)
 
     val kwCodec = KryoWrapper(codec)
     val kvPairs: RDD[(Key, Value)] = {
@@ -58,7 +68,6 @@ class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
 
     strategy.write(kvPairs, instance, table)
   }
-
 }
 
 object AccumuloRDDWriter {

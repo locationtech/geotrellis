@@ -2,7 +2,7 @@ package geotrellis.spark.io.accumulo.spacetime
 
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.SpaceTimeKey
-import geotrellis.spark.io.accumulo.{AccumuloInstance, IAccumuloRDDWriter}
+import geotrellis.spark.io.accumulo.{AccumuloInstance, BaseAccumuloRDDWriter}
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import org.apache.accumulo.core.data.{Key, Value}
@@ -17,15 +17,15 @@ import scala.collection.JavaConversions._
  * This allows the use of server side filters for refinement of spatio-temporal queries.
  */
 class SpaceTimeAccumuloRDDWriter[TileType: AvroRecordCodec](
-    instance: AccumuloInstance,
+    val instance: AccumuloInstance,
     strategy: AccumuloWriteStrategy
-  ) extends IAccumuloRDDWriter[SpaceTimeKey, TileType] {
+  ) extends BaseAccumuloRDDWriter[SpaceTimeKey, TileType] {
   type K = SpaceTimeKey
 
   val codec  = KeyValueRecordCodec[K, TileType]
   val schema = codec.schema
 
-  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, getRowId: (K) => String, oneToOne: Boolean = false): Unit = {
+  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit = {
     implicit val sc = raster.sparkContext
 
     val ops = instance.connector.tableOperations()
@@ -42,7 +42,7 @@ class SpaceTimeAccumuloRDDWriter[TileType: AvroRecordCodec](
     val kvPairs = raster
       .map { case tuple @ (key, _) =>
         val value = new Value(AvroEncoder.toBinary(Vector(tuple))(codec))
-        val rowKey = new Key(getRowId(key), columnFamily, timeText(key))
+        val rowKey = new Key(keyToRowId(key), columnFamily, timeText(key))
         (rowKey, value)
       }
 

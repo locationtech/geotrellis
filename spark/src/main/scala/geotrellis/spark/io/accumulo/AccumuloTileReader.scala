@@ -31,7 +31,7 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
     .parse(attributeStore.cacheRead[JsObject](layerId, Fields.schema).toString())
   val codec = KeyValueRecordCodec[K, V]
 
-  val rowId = (index: Long) => new Text(f"${layerId.zoom}%02d_$index%06d")
+  val rowId = (index: Long) => new Text(long2Bytes(index))
 
   def read(key: K): V = {
     val scanner  = instance.connector.createScanner(layerMetaData.tileTable, new Authorizations())

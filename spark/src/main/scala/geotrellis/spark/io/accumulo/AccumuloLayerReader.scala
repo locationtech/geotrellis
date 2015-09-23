@@ -9,8 +9,7 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
-
-import org.apache.hadoop.io.Text
+import org.apache.accumulo.core.data.{Range => AccumuloRange, Key}
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -32,15 +31,22 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, T
       val metadata = attributeStore.cacheRead[MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
       val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
       val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
-      val queryKeyBounds = rasterQuery(metadata, keyBounds)
       val writerSchema: Schema = (new Schema.Parser)
         .parse(attributeStore.cacheRead[JsObject](id, Fields.schema).toString())
 
-      val getRow = (index: Long) =>
-        new Text(f"${id.zoom}%02d_$index%06d")
+      val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
-      val rdd = rddReader.read(layerMetaData.tileTable, id.name, getRow, keyIndex, queryKeyBounds, writerSchema)
+      def indexToKey(index: Long): Key = {
+        val none = Array.empty[Byte]
+        new Key(long2Bytes(index), none, none, none, Long.MaxValue, true)
+      }
+      // TODO: Decide if KeyBounds[K] => Range is most useful, or tuple of String, Text, or Array[Byte]
+      val decompose = (bounds: KeyBounds[K]) =>
+        keyIndex.indexRanges(bounds).map{ case (min, max) =>
+          new AccumuloRange(indexToKey(min), true, indexToKey(max), true)
+        }
 
+      val rdd = rddReader.read(layerMetaData.tileTable, id.name, writerSchema, queryKeyBounds, decompose)
       cons.makeContainer(rdd, keyBounds, metadata)
     } catch { // TODO: Decide if this is actually helpful, this hides the real error
       case e: AttributeNotFoundError => throw new LayerNotFoundError(id)
