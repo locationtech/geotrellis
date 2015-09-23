@@ -34,17 +34,8 @@ object UByteArrayTile {
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): UByteArrayTile =
     UByteArrayTile(bytes.clone, cols, rows)
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): UByteArrayTile =
-    if(isNoData(replaceNoData))
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): UByteArrayTile = {
+    println("Unsigned bytes (such as those most commonly used in byte-based geotiffs) lack a NoData value; any default value will be ignored")
     fromBytes(bytes, cols, rows)
-    else {
-      val arr = bytes.clone
-      cfor(0)(_ < arr.size, _ + 1) { i =>
-        val v = bytes(i)
-        if(v == replaceNoData)
-        arr(i) = byteNODATA
-        arr(i) = bytes(i)
-      }
-      UByteArrayTile(arr, cols, rows)
-    }
+  }
 }
