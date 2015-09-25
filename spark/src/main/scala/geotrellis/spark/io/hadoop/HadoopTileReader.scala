@@ -3,6 +3,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io._
+import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import org.apache.hadoop.fs.Path

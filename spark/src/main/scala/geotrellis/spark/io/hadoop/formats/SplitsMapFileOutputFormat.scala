@@ -1,7 +1,7 @@
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.io.hadoop.formats
 
-import org.apache.hadoop.io._
 import org.apache.hadoop.fs._
+import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.output._
 

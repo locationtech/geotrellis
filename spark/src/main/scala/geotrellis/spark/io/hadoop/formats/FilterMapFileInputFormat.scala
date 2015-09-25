@@ -1,13 +1,11 @@
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.spark._
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.MergeQueue
-import geotrellis.spark.utils._
-import geotrellis.spark.io.hadoop.formats._
-
-import org.apache.hadoop.io._
-import org.apache.hadoop.fs._
 import org.apache.hadoop.conf._
+import org.apache.hadoop.fs._
+import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
