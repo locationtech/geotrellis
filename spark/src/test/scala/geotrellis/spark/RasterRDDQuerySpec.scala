@@ -2,9 +2,7 @@ package geotrellis.spark
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster._
-import geotrellis.spark
 import geotrellis.vector._
-import geotrellis.spark._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testfiles._
@@ -12,7 +10,7 @@ import org.joda.time.DateTime
 
 import org.scalatest._
 
-class RasterRDDQuerySpec extends FunSpec
+class RDDQuerySpec extends FunSpec
   with TestEnvironment with TestFiles  with Matchers with OnlyIfCanRunSpark {
 
   ifCanRunSpark {
@@ -27,14 +25,14 @@ class RasterRDDQuerySpec extends FunSpec
       val keyBounds = KeyBounds(SpatialKey(1, 1), SpatialKey(6, 7))
 
       it("should be better then Java serialization") {
-        val query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(GridBounds(2, 2, 2, 2)))
+        val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(GridBounds(2, 2, 2, 2)))
         val outKeyBounds = query(md, keyBounds)
         info(outKeyBounds.toString)
       }
 
       it("should throw on intersecting regions") {
-        val query = new RasterRDDQuery[SpatialKey]
-          .where(RasterIntersects(GridBounds(2, 2, 2, 2)) or RasterIntersects(GridBounds(2, 2, 2, 2)))
+        val query = new RDDQuery[SpatialKey, RasterMetaData]
+          .where(Intersects(GridBounds(2, 2, 2, 2)) or Intersects(GridBounds(2, 2, 2, 2)))
 
         intercept[RuntimeException] {
           query(md, keyBounds)
@@ -43,7 +41,7 @@ class RasterRDDQuerySpec extends FunSpec
 
     }
 
-    describe("RasterRDDQuery KeyBounds generation") {
+    describe("RDDQuery KeyBounds generation") {
       def spatialKeyBoundsKeys(kb: KeyBounds[SpatialKey]) = {
         for {
           row <- kb.minKey.row to kb.maxKey.row
@@ -57,7 +55,7 @@ class RasterRDDQuerySpec extends FunSpec
 
       it("should generate KeyBounds for single region") {
         val bounds1 = GridBounds(1, 1, 3, 2)
-        val query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(bounds1))
+        val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(bounds1))
         val expected = for ((x, y) <- bounds1.coords) yield SpatialKey(x, y)
 
         val found = query(md, kb).flatMap(spatialKeyBoundsKeys)
@@ -70,7 +68,7 @@ class RasterRDDQuerySpec extends FunSpec
       it("should generate KeyBounds for two regions") {
         val bounds1 = GridBounds(1, 1, 3, 3)
         val bounds2 = GridBounds(4, 5, 6, 6)
-        val query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(bounds1) or RasterIntersects(bounds2))
+        val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(bounds1) or Intersects(bounds2))
         val expected = for ((x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x, y)
 
         val found = query(md, kb).flatMap(spatialKeyBoundsKeys)
@@ -84,27 +82,27 @@ class RasterRDDQuerySpec extends FunSpec
   }
 }
 
-case class RasterRDDQueryTest[K](name: String, layerId: LayerId, query: RasterRDDQuery[K], expected: Seq[K])
+case class RDDQueryTest[K](name: String, layerId: LayerId, query: RDDQuery[K, RasterMetaData], expected: Seq[K])
 
-object RasterRDDQueryTest {
+object RDDQueryTest {
   val spatialTest = List(
   {
     val bounds1 = GridBounds(1,1,3,3)
 
-    RasterRDDQueryTest[SpatialKey](
+    RDDQueryTest[SpatialKey](
       name = "query GridBounds",
       layerId = LayerId("ones", 10),
-      query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(bounds1)),
+      query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(bounds1)),
       expected = for ( (x, y) <- bounds1.coords) yield SpatialKey(x,y))
   },
   {
     val bounds1 = GridBounds(1,1,3,3)
     val bounds2 = GridBounds(4,5,6,6)
 
-    RasterRDDQueryTest[SpatialKey](
+    RDDQueryTest[SpatialKey](
       name = "query disjoint GridBounds",
       layerId = LayerId("ones", 10),
-      query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(bounds1) or RasterIntersects(bounds2)),
+      query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(bounds1) or Intersects(bounds2)),
       expected = for ( (x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x,y))
   })
 
@@ -112,20 +110,20 @@ object RasterRDDQueryTest {
   {
     val bounds1 = GridBounds(915, 612, 916, 612)
 
-    RasterRDDQueryTest[SpatialKey](
+    RDDQueryTest[SpatialKey](
       name = "query GridBounds",
       layerId = LayerId("ones", 10),
-      query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(bounds1)),
+      query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(bounds1)),
       expected = for ( (x, y) <- bounds1.coords) yield SpatialKey(x,y))
   },
   {
     val bounds1 = GridBounds(915, 612, 916, 612)
     val bounds2 = GridBounds(915, 613, 916, 613)
 
-    RasterRDDQueryTest[SpatialKey](
+    RDDQueryTest[SpatialKey](
       name = "query disjoint GridBounds",
       layerId = LayerId("ones", 10),
-      query = new RasterRDDQuery[SpatialKey].where(RasterIntersects(bounds1) or RasterIntersects(bounds2)),
+      query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(bounds1) or Intersects(bounds2)),
       expected = for ( (x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x,y))
   })
 
@@ -139,12 +137,12 @@ object RasterRDDQueryTest {
     val bounds1 = GridBounds(1,1,3,3)
     val bounds2 = GridBounds(4,5,6,6)
 
-    RasterRDDQueryTest[SpaceTimeKey](
+    RDDQueryTest[SpaceTimeKey](
       name = "query Disjunction on space and time",
       layerId = LayerId("coordinates", 10),
-      query = new RasterRDDQuery[SpaceTimeKey]
-        .where(RasterIntersects(bounds1) or RasterIntersects(bounds2))
-        .where(RasterBetween(dates(0), dates(1)) or RasterBetween(dates(2),dates(3))),
+      query = new RDDQuery[SpaceTimeKey, RasterMetaData]
+        .where(Intersects(bounds1) or Intersects(bounds2))
+        .where(Between(dates(0), dates(1)) or Between(dates(2),dates(3))),
       expected = for {
         spatial <- bounds1.coords ++ bounds2.coords
         time <- dates
@@ -163,10 +161,10 @@ object RasterRDDQueryTest {
     val bounds1 = GridBounds(1,1,3,3)
     val bounds2 = GridBounds(4,5,6,6)
 
-    RasterRDDQueryTest[SpaceTimeKey](
+    RDDQueryTest[SpaceTimeKey](
       name = "query disjunction on space",
       layerId = LayerId("coordinates", 10),
-      query = new RasterRDDQuery[SpaceTimeKey].where(RasterIntersects(bounds1) or RasterIntersects(bounds2)),
+      query = new RDDQuery[SpaceTimeKey, RasterMetaData].where(Intersects(bounds1) or Intersects(bounds2)),
       expected = for {
         spatial <- bounds1.coords ++ bounds2.coords
         time <- dates

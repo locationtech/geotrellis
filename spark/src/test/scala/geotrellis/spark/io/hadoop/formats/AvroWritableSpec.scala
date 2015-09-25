@@ -17,10 +17,17 @@
 package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.raster._
-
+import geotrellis.spark.io.hadoop._
 import org.scalatest._
+import scala.reflect._
 
-class TileWritableSpec extends FunSpec with Matchers {
+class AvroWritableSpec extends FunSpec with Matchers {
+  def initAvroWritable[T, TW <: AvroWritable[T]: ClassTag](t: T): TW = {
+    val tw = classTag[TW].runtimeClass.newInstance().asInstanceOf[TW]
+    tw.set(t)
+    tw
+  }
+
   describe("conversion from/to TileWritable") {
 
     val cols = 2
@@ -29,31 +36,31 @@ class TileWritableSpec extends FunSpec with Matchers {
     
     it("should convert from Array of ints to TileWritable and back") {
       val expected = Array.fill[Int](size)(1)
-      val actual = TileWritable(IntArrayTile(expected, cols, rows)).toTile(TypeInt, cols, rows)
+      val actual = initAvroWritable[Tile, TileWritable](IntArrayTile(expected, cols, rows))
       expected should be(actual.asInstanceOf[IntArrayTile].array)
     }
 
     it("should convert from Array of shorts to TileWritable and back") {
       val expected = Array.fill[Short](size)(1)
-      val actual = TileWritable(ShortArrayTile(expected, cols, rows)).toTile(TypeShort, cols, rows)
+      val actual = initAvroWritable[Tile, TileWritable](ShortArrayTile(expected, cols, rows)).get()
       expected should be(actual.asInstanceOf[ShortArrayTile].array)
     }
 
     it("should convert from Array of doubles to TileWritable and back") {
       val expected = Array.fill[Double](size)(1)
-      val actual = TileWritable(DoubleArrayTile(expected, cols, rows)).toTile(TypeDouble, cols, rows)
+      val actual = initAvroWritable[Tile, TileWritable](DoubleArrayTile(expected, cols, rows)).get()
       expected should be(actual.asInstanceOf[DoubleArrayTile].array)
     }
 
     it("should convert from Array of floats to TileWritable and back") {
       val expected = Array.fill[Float](size)(1)
-      val actual = TileWritable(FloatArrayTile(expected, cols, rows)).toTile(TypeFloat, cols, rows)
+      val actual = initAvroWritable[Tile, TileWritable](FloatArrayTile(expected, cols, rows)).get()
       expected should be(actual.asInstanceOf[FloatArrayTile].array)
     }
 
     it("should convert from Array of bytes to TileWritable and back") {
       val expected = Array.fill[Byte](size)(1)
-      val actual = TileWritable(ByteArrayTile(expected, cols, rows)).toTile(TypeByte, cols, rows)
+      val actual = initAvroWritable[Tile, TileWritable](ByteArrayTile(expected, cols, rows)).get()
       expected should be(actual.asInstanceOf[ByteArrayTile].array)
     }
 
@@ -64,7 +71,7 @@ class TileWritableSpec extends FunSpec with Matchers {
       val cols = 8
       val rows = 4
       
-      val actual = TileWritable(BitArrayTile(expected, cols, rows)).toTile(TypeBit, cols, rows)
+      val actual = initAvroWritable[Tile, TileWritable](BitArrayTile(expected, cols, rows)).get()
       expected should be(actual.asInstanceOf[BitArrayTile].array)
     }
   }

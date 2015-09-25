@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
 
 import org.apache.hadoop.conf.Configuration
 
-class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore {
+class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore {
   type ReadableWritable[T] = JsonFormat[T]
 
   val fs = attributeDir.getFileSystem(hadoopConfiguration)
@@ -85,6 +85,16 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
   }
 
   def layerExists(layerId: LayerId): Boolean = {
-    HdfsUtils.listFiles(attributePath(layerId, AttributeStore.Fields.layerMetaData), hadoopConfiguration).nonEmpty
+    val path = attributePath(layerId, AttributeStore.Fields.layerMetaData)
+    val fs = path.getFileSystem(hadoopConfiguration)
+    fs.exists(path)
   }
+}
+
+object HadoopAttributeStore {
+  def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
+    new HadoopAttributeStore(config, rootPath)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
+    new HadoopAttributeStore(sc.hadoopConfiguration, rootPath)
 }

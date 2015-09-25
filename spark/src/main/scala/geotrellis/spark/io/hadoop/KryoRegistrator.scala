@@ -25,9 +25,9 @@ class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
     kryo.register(classOf[(_,_)])
     kryo.register(classOf[::[_]])
-    kryo.register(classOf[SpatialKeyWritable])
-    kryo.register(classOf[SpaceTimeKeyWritable])
-    kryo.register(classOf[TileWritable])
+    kryo.register(classOf[geotrellis.spark.io.hadoop.SpatialKeyWritable])
+    kryo.register(classOf[geotrellis.spark.io.hadoop.SpaceTimeKeyWritable])
+    kryo.register(classOf[geotrellis.spark.io.hadoop.TileWritable])
     kryo.register(classOf[geotrellis.raster.BitArrayTile])
     kryo.register(classOf[geotrellis.raster.ByteArrayFiller])
     kryo.register(classOf[geotrellis.raster.FloatArrayTile])

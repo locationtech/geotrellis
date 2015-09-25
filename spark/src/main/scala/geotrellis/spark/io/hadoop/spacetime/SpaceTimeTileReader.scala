@@ -11,7 +11,7 @@ import org.apache.spark.SparkContext
 object SpaceTimeTileReader extends TileReader[SpaceTimeKey] {
 
   def read(
-    catalogConfig: HadoopRasterCatalogConfig,
+    catalogConfig: HadoopCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     index: KeyIndex[SpaceTimeKey],
     keyBounds: KeyBounds[SpaceTimeKey]
@@ -33,6 +33,6 @@ object SpaceTimeTileReader extends TileReader[SpaceTimeKey] {
       classOf[SpaceTimeFilterMapFileInputFormat],
       classOf[SpaceTimeKeyWritable],
       classOf[TileWritable]
-    ).first._2.toTile(layerMetaData.rasterMetaData)
+    ).first._2.get()
   }
 }

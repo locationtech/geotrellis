@@ -1,5 +1,6 @@
 package geotrellis.spark.testfiles
 
+import geotrellis.raster.Tile
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
@@ -15,29 +16,36 @@ object TestFiles extends Logging {
     new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
   }
 
-  def catalog(implicit sc: SparkContext): HadoopRasterCatalog = {
+  def init(implicit sc: SparkContext) = {
     val conf = sc.hadoopConfiguration
     val localFS = catalogPath.getFileSystem(sc.hadoopConfiguration)
     val needGenerate = !localFS.exists(catalogPath)
-
-    val catalog = HadoopRasterCatalog(catalogPath)
-
     if (needGenerate) {
       logInfo(s"test-catalog empty, generating at $catalogPath")
-      GenerateTestFiles.generate(catalog)
-    }
 
-    catalog
+      GenerateTestFiles.generate(catalogPath)
+    }
   }
+
+  def spatialReader(implicit sc: SparkContext) = {
+    init
+    HadoopLayerReader[SpatialKey, Tile, RasterRDD](catalogPath)
+  }
+
+  def spaceTimeReader(implicit sc: SparkContext) = {
+    init
+    HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](catalogPath)
+  }
+
 }
 
 trait TestFiles { self: OnlyIfCanRunSpark =>
   def spatialTestFile(layerName: String): RasterRDD[SpatialKey] = {
-    TestFiles.catalog.query[SpatialKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
+    TestFiles.spatialReader.query(LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }
 
   def spaceTimeTestFile(layerName: String): RasterRDD[SpaceTimeKey] = {
-    TestFiles.catalog.query[SpaceTimeKey](LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
+    TestFiles.spaceTimeReader.query(LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }
 
   def AllOnesTestFile =

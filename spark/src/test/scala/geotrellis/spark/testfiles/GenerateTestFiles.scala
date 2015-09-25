@@ -33,7 +33,7 @@ import com.github.nscala_time.time.Imports._
 
 /** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
 object GenerateTestFiles {
-  def generate(catalog: HadoopRasterCatalog)(implicit sc: SparkContext): Unit = {
+  def generate(catalogPath: Path)(implicit sc: SparkContext): Unit = {
     val cellType = TypeFloat
     val crs = LatLng
     val tileLayout = TileLayout(8, 8, 3, 4)
@@ -42,12 +42,11 @@ object GenerateTestFiles {
     val extent = mapTransform(gridBounds)
 
     val md = RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
-
-    generateSpatial(catalog, md)
-    generateSpaceTime(catalog, md)
+    generateSpatial(HadoopLayerWriter[SpatialKey, Tile, RasterRDD](catalogPath, RowMajorKeyIndexMethod), md)
+    generateSpaceTime(HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](catalogPath, ZCurveKeyIndexMethod.byYear), md)
   }
 
-  def generateSpatial(catalog: HadoopRasterCatalog, md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+  def generateSpatial(catalog: HadoopLayerWriter[SpatialKey, Tile, RasterRDD], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
     // Spatial Tiles
@@ -82,12 +81,12 @@ object GenerateTestFiles {
 
 //      println(rdd.stitch.asciiDraw)
 
-      catalog.writer[SpatialKey](RowMajorKeyIndexMethod, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }
 
-  def generateSpaceTime(catalog: HadoopRasterCatalog, md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+  def generateSpaceTime(catalog: HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
 
@@ -121,7 +120,7 @@ object GenerateTestFiles {
 
 //      println(rdd.stitch.asciiDraw)
 
-      catalog.writer[SpaceTimeKey](ZCurveKeyIndexMethod.byYear, clobber = true).write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
+      catalog.write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
 
   }
@@ -134,6 +133,6 @@ object GenerateTestFiles {
     }
 
     // This will cause the catalog to be generated.
-    val catalog = TestFiles.catalog(sc)
+    TestFiles.init
   }
 }

@@ -11,7 +11,7 @@ import org.apache.spark.SparkContext
 object SpatialTileReader extends TileReader[SpatialKey] {
 
   def read(
-    catalogConfig: HadoopRasterCatalogConfig,
+    catalogConfig: HadoopCatalogConfig,
     layerMetaData: HadoopLayerMetaData,
     index: KeyIndex[SpatialKey],
     keyBounds: KeyBounds[SpatialKey]
@@ -33,7 +33,7 @@ object SpatialTileReader extends TileReader[SpatialKey] {
       classOf[SpatialFilterMapFileInputFormat],
       classOf[SpatialKeyWritable],
       classOf[TileWritable]
-    ).first._2.toTile(layerMetaData.rasterMetaData)
+    ).first._2.get()
 
   }
 }

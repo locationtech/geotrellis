@@ -1,45 +1,37 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
-import geotrellis.spark.io.s3.SaveToS3Methods
-import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
-
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.raster._
-import geotrellis.vector.Extent
-
-import geotrellis.proj4._
-
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.SequenceFile
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.MapFileOutputFormat
-import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.Job
-import org.apache.spark.Logging
-import org.apache.commons.codec.binary.Base64
-
-import java.io.PrintWriter
-import java.nio.ByteBuffer
-import geotrellis.spark.tiling._
 
 import scala.reflect._
 
 package object hadoop {
+  implicit def stringToPath(path: String): Path = new Path(path)
 
-  implicit lazy val hadoopSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val hadoopSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
-  implicit lazy val hadoopSpatialTileReader = spatial.SpatialTileReader
+  class SpatialKeyWritable() extends AvroKeyWritable[SpatialKey, SpatialKeyWritable]
+  class SpaceTimeKeyWritable() extends AvroKeyWritable[SpaceTimeKey, SpaceTimeKeyWritable]
 
-  implicit lazy val hadoopSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val hadoopSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
-  implicit lazy val hadoopSpaceTimeTileReader = spacetime.SpaceTimeTileReader
+  class TileWritable() extends AvroWritable[Tile]
+  class MultiBandTileWritable() extends AvroWritable[MultiBandTile]
+
+  class SpatialFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, TileWritable]
+  class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable]
+
+  implicit def spatialHadoopFormat =
+    HadoopFormat.Aux[SpatialKey, Tile, SpatialKeyWritable, TileWritable, SpatialFilterMapFileInputFormat]
+  implicit def spaceTimeHadoopFormat =
+    HadoopFormat.Aux[SpaceTimeKey, Tile, SpaceTimeKeyWritable, TileWritable, SpaceTimeFilterMapFileInputFormat]
+
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 

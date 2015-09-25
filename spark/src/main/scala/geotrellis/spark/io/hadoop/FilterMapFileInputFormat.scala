@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
 import scala.collection.JavaConversions._
+import scala.reflect._
 
 object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration
@@ -21,13 +22,20 @@ object FilterMapFileInputFormat {
   type FilterDefinition[K] = (Seq[KeyBounds[K]], Array[(Long, Long)])
 }
 
-abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComparable[KW] with IndexedKeyWritable[K], V >: Null <: Writable]() extends FileInputFormat[KW, V] {
+abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComparable[KW] with IndexedKeyWritable[K] : ClassTag, V >: Null <: Writable : ClassTag]() extends FileInputFormat[KW, V] {
   var _filterDefinition: Option[FilterMapFileInputFormat.FilterDefinition[K]] = None
 
-  def createKey(): KW
-  def createKey(index: Long): KW
+  def createKey(): KW =
+    classTag[KW].runtimeClass.newInstance().asInstanceOf[KW]
 
-  def createValue(): V
+  def createKey(index: Long): KW = {
+    val kw = classTag[KW].runtimeClass.newInstance().asInstanceOf[KW]
+    kw.setIndex(index)
+    kw
+  }
+
+  def createValue(): V =
+    classTag[V].runtimeClass.newInstance().asInstanceOf[V]
 
   def getFilterDefinition(conf: Configuration): FilterMapFileInputFormat.FilterDefinition[K] =
     _filterDefinition match {
@@ -47,7 +55,6 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
     // Read the index, figure out if this file has any of the desired values.
     def fileStatusFilter(fileStatus: FileStatus): Boolean = {
       val indexPath = new Path(fileStatus.getPath.getParent, "index")
-      val fs = indexPath.getFileSystem(conf)
       val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
 
       val minKey = createKey
