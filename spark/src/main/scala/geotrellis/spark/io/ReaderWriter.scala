@@ -12,7 +12,7 @@ trait Writer[K, V] extends ((K,V) => Unit) {
   def apply(key: K, value: V): Unit = write(key, value)
 }
 
-trait RDDReader[ID, ReturnType] extends Reader[ID, ReturnType] {
+trait LayerReader[ID, ReturnType] extends Reader[ID, ReturnType] {
   val defaultNumPartitions: Int
 
   def read(id: ID, numPartitions: Int): ReturnType
@@ -21,7 +21,7 @@ trait RDDReader[ID, ReturnType] extends Reader[ID, ReturnType] {
     read(id, defaultNumPartitions)
 }
 
-abstract class FilteringRDDReader[ID, K: Boundable, ReturnType] extends RDDReader[ID, ReturnType] {
+abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerReader[ID, ReturnType] {
   type MetaDataType
 
   def read(id: ID, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): ReturnType

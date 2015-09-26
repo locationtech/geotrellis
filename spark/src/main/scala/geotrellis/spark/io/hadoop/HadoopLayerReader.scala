@@ -27,32 +27,36 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, 
   val attributeStore: HadoopAttributeStore,
   rddReader: HadoopRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringRDDReader[LayerId, K, Container[K]] with LazyLogging {
+  extends FilteringLayerReader[LayerId, K, Container[K]] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 
   val defaultNumPartitions = sc.defaultParallelism
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container[K] = {
-    val layerMetaData  = attributeStore.cacheRead[HadoopLayerMetaData](id, Fields.layerMetaData)
-    val metadata  = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
-    val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
+    try {
+      val layerMetaData = attributeStore.cacheRead[HadoopLayerMetaData](id, Fields.layerMetaData)
+      val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
+      val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
 
-    val layerPath = layerMetaData.path
-    val queryKeyBounds = rasterQuery(metadata, keyBounds)
+      val layerPath = layerMetaData.path
+      val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
-    //val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
+      //val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
 
-    val rdd: RDD[(K, TileType)] =
-      if (queryKeyBounds == Seq(keyBounds)) {
-        rddReader.readFully(layerPath)
-      } else{
-        val keyIndex  = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
-        val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-        rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
-      }
+      val rdd: RDD[(K, TileType)] =
+        if (queryKeyBounds == Seq(keyBounds)) {
+          rddReader.readFully(layerPath)
+        } else {
+          val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
+          val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+          rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
+        }
 
-    cons.makeContainer(rdd, keyBounds, metadata)
+      cons.makeContainer(rdd, keyBounds, metadata)
+    } catch {
+      case e: Exception => throw new LayerReadError(id).initCause(e)
+    }
   }
 }
 

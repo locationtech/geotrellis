@@ -5,7 +5,7 @@ import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.{ContainerConstructor, Writer}
+import geotrellis.spark.io.{LayerWriteError, ContainerConstructor, Writer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -37,14 +37,18 @@ class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, Ti
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-    attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
-    attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
-    attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
-    attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
-    // TODO: Writers need to handle Schema changes
-    //attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
+    try {
+      attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
+      attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
+      attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
+      attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
+      // TODO: Writers need to handle Schema changes
+      //attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
 
-    rddWriter.write(rdd, layerPath, keyIndex)
+      rddWriter.write(rdd, layerPath, keyIndex)
+    } catch {
+      case e: Exception => throw new LayerWriteError(id).initCause(e)
+    }
   }
 }
 

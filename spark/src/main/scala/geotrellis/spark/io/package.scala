@@ -15,14 +15,14 @@ package object io {
   // Custom exceptions
   class CatalogError(val message: String) extends Exception(message)
 
-  class LayerNotFoundError(layerId: LayerId)
+  class LayerReadError(layerId: LayerId)
       extends CatalogError(s"LayerMetaData not found for layer $layerId")
 
   class LayerExistsError(layerId: LayerId) 
-      extends CatalogError(s"Layer ${layerId} already exists in the catalog")
+      extends CatalogError(s"Layer $layerId already exists in the catalog")
 
-  class LayerWriteError(layerId: LayerId, msg: String)
-      extends CatalogError(s"Failed to write ${layerId}: $msg")
+  class LayerWriteError(layerId: LayerId)
+      extends CatalogError(s"Failed to write $layerId")
 
   class AttributeNotFoundError(attributeName: String, layerId: LayerId)
     extends CatalogError(s"Attribute $attributeName not found for layer $layerId")

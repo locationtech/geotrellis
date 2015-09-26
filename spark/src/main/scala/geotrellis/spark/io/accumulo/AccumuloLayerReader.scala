@@ -19,7 +19,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, T
     val attributeStore: AttributeStore.Aux[JsonFormat],
     rddReader: BaseAccumuloRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringRDDReader[LayerId, K, Container[K]] {
+  extends FilteringLayerReader[LayerId, K, Container[K]] {
 
   type MetaDataType = cons.MetaDataType
 
@@ -49,7 +49,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, T
       val rdd = rddReader.read(layerMetaData.tileTable, id.name, writerSchema, queryKeyBounds, decompose)
       cons.makeContainer(rdd, keyBounds, metadata)
     } catch { // TODO: Decide if this is actually helpful, this hides the real error
-      case e: AttributeNotFoundError => throw new LayerNotFoundError(id)
+      case e: AttributeNotFoundError => throw new LayerReadError(id)
     }
   }
 }
