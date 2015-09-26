@@ -19,7 +19,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, T
     val attributeStore: AttributeStore.Aux[JsonFormat],
     rddReader: BaseAccumuloRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringRasterRDDReader[K, Container[K]] {
+  extends FilteringRDDReader[LayerId, K, Container[K]] {
 
   type MetaDataType = cons.MetaDataType
 

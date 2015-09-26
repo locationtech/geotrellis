@@ -27,7 +27,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, 
   val attributeStore: HadoopAttributeStore,
   rddReader: HadoopRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringRasterRDDReader[K, Container[K]] with LazyLogging {
+  extends FilteringRDDReader[LayerId, K, Container[K]] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 

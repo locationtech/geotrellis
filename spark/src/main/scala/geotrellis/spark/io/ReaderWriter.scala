@@ -12,29 +12,29 @@ trait Writer[K, V] extends ((K,V) => Unit) {
   def apply(key: K, value: V): Unit = write(key, value)
 }
 
-trait SimpleRasterRDDReader[K, ReturnType] extends Reader[K, ReturnType] {
+trait RDDReader[ID, ReturnType] extends Reader[ID, ReturnType] {
   val defaultNumPartitions: Int
 
-  def read(id: LayerId, numPartitions: Int): ReturnType
+  def read(id: ID, numPartitions: Int): ReturnType
 
-  def read(id: LayerId): ReturnType =
+  def read(id: ID): ReturnType =
     read(id, defaultNumPartitions)
 }
 
-abstract class FilteringRasterRDDReader[K: Boundable, ReturnType] extends SimpleRasterRDDReader[K, ReturnType] {
+abstract class FilteringRDDReader[ID, K: Boundable, ReturnType] extends RDDReader[ID, ReturnType] {
   type MetaDataType
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): ReturnType
+  def read(id: ID, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): ReturnType
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType]): ReturnType =
+  def read(id: ID, rasterQuery: RDDQuery[K, MetaDataType]): ReturnType =
     read(id, rasterQuery, defaultNumPartitions)
 
-  def read(id: LayerId, numPartitions: Int): ReturnType =
+  def read(id: ID, numPartitions: Int): ReturnType =
     read(id, new RDDQuery[K, MetaDataType], numPartitions)
 
-  def query(layerId: LayerId): BoundRDDQuery[K, MetaDataType, ReturnType] =
+  def query(layerId: ID): BoundRDDQuery[K, MetaDataType, ReturnType] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _))
 
-  def query(layerId: LayerId, numPartitions: Int): BoundRDDQuery[K, MetaDataType, ReturnType] =
+  def query(layerId: ID, numPartitions: Int): BoundRDDQuery[K, MetaDataType, ReturnType] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
 }

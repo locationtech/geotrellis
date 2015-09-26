@@ -28,7 +28,7 @@ class S3LayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileTyp
     val attributeStore: S3AttributeStore,
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringRasterRDDReader[K, Container[K]] with LazyLogging {
+  extends FilteringRDDReader[LayerId, K, Container[K]] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 
