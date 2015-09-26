@@ -72,17 +72,17 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
 
       var i = 0
       val arr = filterDefinition._2
-      val len = arr.size
+      val len = arr.length
+
+
       while(i < len) {
         val (min, max) = arr(i)
 
-        if(iMin < min) {
-          if(iMax < min) { return false }
-          else { return true }
-        }
+        // max index in this file is smaller than what we're looking for, abort (assert: ranges are sorted in asc)
+        if (iMax < min) return false
 
-        if(iMin < max) { return true }
-
+        // check if this query ranges overlap at all with min/max index from the sequence file
+        if (iMin <= max && min <= iMax) return true
         i += 1
       }
 
@@ -119,25 +119,25 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
     private var nextRangeIndex: Int = 0
 
     private def setNextIndexRange(index: Long = 0L): Boolean = {
-      if(nextRangeIndex >= ranges.size) {
+      if(nextRangeIndex >= ranges.length) {
         false
       } else {
         // Find next index
-        val (minIndex, maxIndex) = ranges(nextRangeIndex)
+        val (minIndexInRange, maxIndexInRange) = ranges(nextRangeIndex)
         nextRangeIndex += 1
 
-        if(index > maxIndex) {
+        if(index > maxIndexInRange) {
           setNextIndexRange(index)
         } else {
-          currMinIndex = minIndex
-          currMaxIndex = maxIndex
+          currMinIndex = minIndexInRange
+          currMaxIndex = maxIndexInRange
 
           // Seek to the beginning of this index range
           val seekKey =
-            if(minIndex < index) {
+            if(minIndexInRange < index) {
               createKey(index)
             } else {
-              createKey(minIndex)
+              createKey(minIndexInRange)
             }
 
           // Need to use "getClosest" with before = true
@@ -145,6 +145,7 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
           // and then calling next will get the key after the correct key.
           // Since there's no seek(before = true), we need to call get,
           // and read in a dummy value
+
           mapFile.getClosest(seekKey, createValue, true)
           true
         }
@@ -158,9 +159,6 @@ abstract class FilterMapFileInputFormat[K: Boundable, KW >: Null <: WritableComp
       val fileSplit = split.asInstanceOf[FileSplit]
       val dataPath = fileSplit.getPath
       val mapFilePath = dataPath.getParent
-
-      val fs = dataPath.getFileSystem(conf)
-
       this.mapFile = new MapFile.Reader(mapFilePath, conf)
       setNextIndexRange()
     }
