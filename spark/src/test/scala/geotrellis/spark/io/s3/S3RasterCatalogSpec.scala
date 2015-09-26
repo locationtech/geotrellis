@@ -23,15 +23,15 @@ class S3RasterCatalogSpec extends FunSpec
       val attributeStore = new S3AttributeStore(bucket, prefix) {
         override val s3Client = new MockS3Client
       }
-      val spatialReader = new S3LayerReader[SpatialKey, Tile, RasterRDD](attributeStore){
+      val spatialReader = new S3LayerReader[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore){
         override val getS3Client = () => new MockS3Client
       }
-      val spaceTimeReader = new S3LayerReader[SpatialKey, Tile, RasterRDD](attributeStore){
+      val spaceTimeReader = new S3LayerReader[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore){
         override val getS3Client = () => new MockS3Client
       }
 
       it("should save to s3"){
-        val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD](bucket, prefix, ZCurveKeyIndexMethod)(attributeStore){
+        val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](bucket, prefix, ZCurveKeyIndexMethod)(attributeStore){
           override val getS3Client = () => new MockS3Client
         }
         writer.write(id, AllOnesTestFile)

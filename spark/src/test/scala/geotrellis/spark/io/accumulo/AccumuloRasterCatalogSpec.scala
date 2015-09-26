@@ -188,7 +188,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
 
       val customId = LayerId("cust",8)
       it("should write using custom spacetime rdd writer"){
-        val writer = new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](
+        val writer = new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
           attributeStore = AccumuloAttributeStore(accumulo.connector),
           rddWriter = new SpaceTimeAccumuloRDDWriter(accumulo, SocketWriteStrategy()),
           keyIndexMethod = ZCurveKeyIndexMethod.byYear,
@@ -198,7 +198,7 @@ class AccumuloRasterCatalogSpec extends FunSpec
       }
 
       it("should read using custom spacetime rdd reader") {
-        val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD](
+        val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
           AccumuloAttributeStore(accumulo.connector),
           new SpaceTimeAccumuloRDDReader[Tile](accumulo))
 

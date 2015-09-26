@@ -127,7 +127,7 @@ object RasterRDD {
   implicit class SpatialRasterRDD(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
 
   implicit def constructor[K: JsonFormat : ClassTag] =
-    new ContainerConstructor[K, Tile, RasterRDD] {
+    new ContainerConstructor[K, Tile, RasterRDD[K]] {
       type MetaDataType = RasterMetaData
       implicit def metaDataFormat = geotrellis.spark.io.json.RasterMetaDataFormat
 

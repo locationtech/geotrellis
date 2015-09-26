@@ -23,17 +23,17 @@ import scala.reflect.ClassTag
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
+class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
   val attributeStore: HadoopAttributeStore,
   rddReader: HadoopRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringLayerReader[LayerId, K, Container[K]] with LazyLogging {
+  extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container[K] = {
+  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     try {
       val layerMetaData = attributeStore.cacheRead[HadoopLayerMetaData](id, Fields.layerMetaData)
       val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
@@ -64,15 +64,15 @@ object HadoopLayerReader {
   def apply[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
     attributeStore: HadoopAttributeStore,
     rddReader: HadoopRDDReader[K, TileType])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container]) =
-  new HadoopLayerReader[K, TileType, Container](attributeStore, rddReader)
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container[K]]) =
+  new HadoopLayerReader[K, TileType, Container[K]](attributeStore, rddReader)
 
   def apply[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
     rootPath: Path)
   (implicit
     sc: SparkContext,
     format: HadoopFormat[K, TileType],
-    cons: ContainerConstructor[K, TileType, Container]): HadoopLayerReader[K, TileType, Container] =
+    cons: ContainerConstructor[K, TileType, Container[K]]): HadoopLayerReader[K, TileType, Container[K]] =
     apply(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[K, TileType](HadoopCatalogConfig.DEFAULT))
 
 

@@ -15,11 +15,11 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
-class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container](
     val attributeStore: AttributeStore.Aux[JsonFormat],
     rddReader: BaseAccumuloRDDReader[K, TileType])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringLayerReader[LayerId, K, Container[K]] {
+  extends FilteringLayerReader[LayerId, K, Container] {
 
   type MetaDataType = cons.MetaDataType
 
@@ -56,8 +56,8 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, T
 
 object AccumuloLayerReader {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, C[_]](instance: AccumuloInstance)
-    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, C]): AccumuloLayerReader[K, V, C] =
-    new AccumuloLayerReader[K, V, C](
+    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, C[K]]): AccumuloLayerReader[K, V, C[K]] =
+    new AccumuloLayerReader (
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
 

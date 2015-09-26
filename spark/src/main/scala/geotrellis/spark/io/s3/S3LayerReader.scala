@@ -24,18 +24,18 @@ import scala.reflect.ClassTag
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+class S3LayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container](
     val attributeStore: S3AttributeStore,
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
-  extends FilteringLayerReader[LayerId, K, Container[K]] with LazyLogging {
+  extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 
   val getS3Client: () => S3Client = () => S3Client.default
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container[K] = {
+  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     val layerMetaData  = attributeStore.cacheRead[S3LayerMetaData](id, Fields.layerMetaData)
     val metadata  = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
     val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
@@ -62,6 +62,6 @@ object S3LayerReader {
       bucket: String,
       prefix: String,
       getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-    (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container]): S3LayerReader[K, TileType, Container] =
-    new S3LayerReader[K, TileType, Container](new S3AttributeStore(bucket, prefix), getCache)
+    (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container[K]]): S3LayerReader[K, TileType, Container[K]] =
+    new S3LayerReader(new S3AttributeStore(bucket, prefix), getCache)
 }

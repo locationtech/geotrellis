@@ -46,7 +46,7 @@ object GenerateTestFiles {
     generateSpaceTime(HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](catalogPath, ZCurveKeyIndexMethod.byYear), md)
   }
 
-  def generateSpatial(catalog: HadoopLayerWriter[SpatialKey, Tile, RasterRDD], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+  def generateSpatial(catalog: HadoopLayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
     // Spatial Tiles
@@ -86,7 +86,7 @@ object GenerateTestFiles {
 
   }
 
-  def generateSpaceTime(catalog: HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+  def generateSpaceTime(catalog: HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
 

@@ -12,15 +12,15 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
-class AccumuloLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
+class AccumuloLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
     val attributeStore: AttributeStore.Aux[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, TileType],
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
   (implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId, Container[K] with RDD[(K, TileType)]] {
+  extends Writer[LayerId, Container with RDD[(K, TileType)]] {
 
-  def write(id: LayerId, rdd: Container[K] with RDD[(K, TileType)]): Unit = {
+  def write(id: LayerId, rdd: Container with RDD[(K, TileType)]): Unit = {
     val layerMetaData =
       AccumuloLayerMetaData(
         keyClass = classTag[K].toString(),
@@ -53,8 +53,8 @@ object AccumuloLayerWriter {
       table: String,
       indexMethod: KeyIndexMethod[K],
       strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-    (implicit cons: ContainerConstructor[K, V, C]): AccumuloLayerWriter[K, V, C] =
-    new AccumuloLayerWriter[K, V, C](
+    (implicit cons: ContainerConstructor[K, V, C[K]]): AccumuloLayerWriter[K, V, C[K]] =
+    new AccumuloLayerWriter(
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),
       keyIndexMethod = indexMethod,

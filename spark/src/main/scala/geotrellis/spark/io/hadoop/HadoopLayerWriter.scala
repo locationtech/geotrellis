@@ -14,15 +14,15 @@ import spray.json._
 
 import scala.reflect._
 
-class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
+class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
   rootPath: Path,
   val attributeStore: HadoopAttributeStore,
   rddWriter: HadoopRDDWriter[K, TileType],
   keyIndexMethod: KeyIndexMethod[K])
 (implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId, Container[K] with RDD[(K, TileType)]] {
+  extends Writer[LayerId, Container with RDD[(K, TileType)]] {
 
-  def write(id: LayerId, rdd: Container[K] with RDD[(K, TileType)]): Unit = {
+  def write(id: LayerId, rdd: Container with RDD[(K, TileType)]): Unit = {
     implicit val sc = rdd.sparkContext
 
     val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
@@ -59,8 +59,8 @@ object HadoopLayerWriter {
     attributeStore: HadoopAttributeStore,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit cons: ContainerConstructor[K, V, C]): HadoopLayerWriter[K, V, C] =
-    new HadoopLayerWriter[K, V, C](
+  (implicit cons: ContainerConstructor[K, V, C[K]]): HadoopLayerWriter[K, V, C[K]] =
+    new HadoopLayerWriter (
       rootPath = rootPath,
       attributeStore = attributeStore,
       rddWriter = rddWriter,
@@ -71,7 +71,7 @@ object HadoopLayerWriter {
     rootPath: Path,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, C]): HadoopLayerWriter[K, V, C] =
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, C[K]]): HadoopLayerWriter[K, V, C[K]] =
     apply(
       rootPath = rootPath,
       attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), sc.hadoopConfiguration),
@@ -84,7 +84,7 @@ object HadoopLayerWriter {
   (implicit
     sc: SparkContext,
     format: HadoopFormat[K, V],
-    cons: ContainerConstructor[K, V, C]): HadoopLayerWriter[K, V, C] =
+    cons: ContainerConstructor[K, V, C[K]]): HadoopLayerWriter[K, V, C[K]] =
     apply(
       rootPath = rootPath,
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),

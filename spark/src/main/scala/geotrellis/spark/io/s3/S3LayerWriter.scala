@@ -27,18 +27,18 @@ import AttributeStore.Fields
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container](
     bucket: String,
     keyPrefix: String,
     keyIndexMethod: KeyIndexMethod[K],
     clobber: Boolean = true)
   (val attributeStore: S3AttributeStore = S3AttributeStore(bucket, keyPrefix))
   (implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId,Container[K] with RDD[(K, TileType)]] with LazyLogging {
+  extends Writer[LayerId, Container with RDD[(K, TileType)]] with LazyLogging {
 
   val getS3Client: ()=>S3Client = () => S3Client.default
 
-  def write(id: LayerId, rdd: Container[K] with RDD[(K, TileType)]) = {
+  def write(id: LayerId, rdd: Container with RDD[(K, TileType)]) = {
     require(!attributeStore.layerExists(id) || clobber , s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
@@ -75,6 +75,6 @@ object S3LayerWriter {
       prefix: String,
       keyIndexMethod: KeyIndexMethod[K],
       clobber: Boolean = true)
-    (implicit cons: ContainerConstructor[K, TileType, Container]): S3LayerWriter[K, TileType, Container] = 
+    (implicit cons: ContainerConstructor[K, TileType, Container[K]]): S3LayerWriter[K, TileType, Container[K]] =
     new S3LayerWriter(bucket, prefix, keyIndexMethod, clobber)(S3AttributeStore(bucket, prefix))
 }
