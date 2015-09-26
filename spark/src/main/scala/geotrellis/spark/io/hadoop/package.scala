@@ -20,7 +20,6 @@ package object hadoop {
 
   class SpatialKeyWritable() extends AvroKeyWritable[SpatialKey, SpatialKeyWritable]
   class SpaceTimeKeyWritable() extends AvroKeyWritable[SpaceTimeKey, SpaceTimeKeyWritable]
-
   class TileWritable() extends AvroWritable[Tile]
   class MultiBandTileWritable() extends AvroWritable[MultiBandTile]
 
@@ -28,7 +27,6 @@ package object hadoop {
   class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable]
   class SpatialMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, MultiBandTileWritable]
   class SpaceTimeMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, MultiBandTileWritable]
-
 
   implicit def spatialHadoopFormat =
     HadoopFormat.Aux[SpatialKey, Tile, SpatialKeyWritable, TileWritable, SpatialFilterMapFileInputFormat]
