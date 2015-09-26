@@ -3,8 +3,8 @@ package geotrellis.spark.io.hadoop
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.{AttributeStore, FilteringRasterRDDReader, ContainerConstructor, Cache}
-import geotrellis.spark.{KeyBounds, RDDQuery, LayerId, Boundable}
+import geotrellis.spark.io._
+import geotrellis.spark.{KeyBounds, LayerId, Boundable}
 import geotrellis.spark.io.json._
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path

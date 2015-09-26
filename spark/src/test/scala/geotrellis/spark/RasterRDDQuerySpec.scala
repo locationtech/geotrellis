@@ -2,6 +2,7 @@ package geotrellis.spark
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster._
+import geotrellis.spark.io.{RDDQuery, Between, Intersects}
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._

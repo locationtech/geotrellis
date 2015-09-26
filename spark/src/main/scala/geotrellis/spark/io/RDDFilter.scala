@@ -1,8 +1,10 @@
-package geotrellis.spark
+package geotrellis.spark.io
 
-import geotrellis.raster.GridBounds
-import geotrellis.vector.Extent
 import com.github.nscala_time.time.Imports._
+import geotrellis.raster.GridBounds
+import geotrellis.spark._
+import geotrellis.vector.Extent
+
 import scala.annotation.implicitNotFound
 
 @implicitNotFound("Unable to filter ${K} by ${F}, Please provide RDDFilter[${K}, ${F}, ${T}]")

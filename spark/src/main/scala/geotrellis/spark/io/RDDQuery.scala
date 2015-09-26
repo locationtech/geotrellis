@@ -1,5 +1,7 @@
 
-package geotrellis.spark
+package geotrellis.spark.io
+
+import geotrellis.spark.{Boundable, KeyBounds}
 
 /**
  * Accumulation of [[RasterRDDFilter]]s that will be asked to filter layer [[KeyBounds]]
