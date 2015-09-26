@@ -26,12 +26,18 @@ package object hadoop {
 
   class SpatialFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, TileWritable]
   class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable]
+  class SpatialMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, MultiBandTileWritable]
+  class SpaceTimeMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, MultiBandTileWritable]
+
 
   implicit def spatialHadoopFormat =
     HadoopFormat.Aux[SpatialKey, Tile, SpatialKeyWritable, TileWritable, SpatialFilterMapFileInputFormat]
   implicit def spaceTimeHadoopFormat =
     HadoopFormat.Aux[SpaceTimeKey, Tile, SpaceTimeKeyWritable, TileWritable, SpaceTimeFilterMapFileInputFormat]
-
+  implicit def spatialMultiBandHadoopFormat =
+    HadoopFormat.Aux[SpatialKey, MultiBandTile, SpatialKeyWritable, MultiBandTileWritable, SpatialMultiBandFilterMapFileInputFormat]
+  implicit def spaceTimeMultiBandHadoopFormat =
+    HadoopFormat.Aux[SpaceTimeKey, MultiBandTile, SpaceTimeKeyWritable, MultiBandTileWritable, SpaceTimeMultiBandFilterMapFileInputFormat]
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 
