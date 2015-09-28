@@ -37,7 +37,7 @@ class AvroWritableSpec extends FunSpec with Matchers {
     it("should convert from Array of ints to TileWritable and back") {
       val expected = Array.fill[Int](size)(1)
       val actual = initAvroWritable[Tile, TileWritable](IntArrayTile(expected, cols, rows))
-      expected should be(actual.asInstanceOf[IntArrayTile].array)
+      expected should be(actual.get().asInstanceOf[IntArrayTile].array)
     }
 
     it("should convert from Array of shorts to TileWritable and back") {
