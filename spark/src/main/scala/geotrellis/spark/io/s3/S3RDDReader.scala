@@ -5,9 +5,10 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io.Cache
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{MergeQueue, KeyIndex}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
+import org.apache.accumulo.core.data.Range
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
@@ -15,18 +16,25 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](bucket: String, getS3Client: () => S3Client)(implicit sc: SparkContext) {
+class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
+(implicit sc: SparkContext) {
+
+  def getS3Client: () => S3Client = () => S3Client.default
 
   def read(
-    queryKeyBounds: Seq[KeyBounds[K]],
-    keyIndex: KeyIndex[K],
+    bucket: String,
     keyPath: Long => String,
-    writerSchema: Schema,
-    numPartitions: Int,
-    cache: Option[Cache[Long, Array[Byte]]] = None
+    queryKeyBounds: Seq[KeyBounds[K]],
+    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    writerSchema: Option[Schema] = None,
+    cache: Option[Cache[Long, Array[Byte]]] = None,
+    numPartitions: Int = sc.defaultParallelism
   ): RDD[(K, V)] = {
-    val bucket = this.bucket
-    val ranges = queryKeyBounds.flatMap(keyIndex.indexRanges(_))
+    val ranges = if (queryKeyBounds.length > 1)
+      MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
+    else
+      queryKeyBounds.flatMap(decomposeBounds)
+
     val bins = S3RDDReader.balancedBin(ranges, numPartitions)
     val recordCodec = KeyValueRecordCodec[K, V]
     val boundable = implicitly[Boundable[K]]
@@ -62,7 +70,7 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
                     case None =>
                       getS3Bytes()
                   }
-                val recs = AvroEncoder.fromBinary(schema, bytes)(recCodec)
+                val recs = AvroEncoder.fromBinary(schema.getOrElse(recCodec.schema), bytes)(recCodec)
                 recs.filter { row => includeKey(row._1) }
               } catch {
                 case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty

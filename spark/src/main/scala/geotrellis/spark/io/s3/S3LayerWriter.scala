@@ -27,16 +27,17 @@ import AttributeStore.Fields
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container](
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
+    val attributeStore: S3AttributeStore,
+    rddWriter: S3RDDWriter[K, TileType],
+    keyIndexMethod: KeyIndexMethod[K],
     bucket: String,
     keyPrefix: String,
-    keyIndexMethod: KeyIndexMethod[K],
     clobber: Boolean = true)
-  (val attributeStore: S3AttributeStore = S3AttributeStore(bucket, keyPrefix))
   (implicit val cons: ContainerConstructor[K, TileType, Container])
   extends Writer[LayerId, Container with RDD[(K, TileType)]] with LazyLogging {
 
-  val getS3Client: ()=>S3Client = () => S3Client.default
+  def getS3Client: ()=>S3Client = () => S3Client.default
 
   def write(id: LayerId, rdd: Container with RDD[(K, TileType)]) = {
     require(!attributeStore.layerExists(id) || clobber , s"$id already exists")
@@ -54,18 +55,16 @@ class S3LayerWriter[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileTyp
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
-    attributeStore.cacheWrite(id, Fields.layerMetaData, rasterMetaData)(cons.metaDataFormat)
+    attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
     attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
     attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
+    attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
 
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
-    val codec = KeyValueRecordCodec[K, TileType]
-    attributeStore.cacheWrite(id,"schema", codec.schema.toString.parseJson)
+    val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-    new S3RDDWriter[K, TileType](bucket, getS3Client)
-      .write(rdd, keyIndex, keyPath, oneToOne = false)
+    rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
   }
 }
 
@@ -76,5 +75,8 @@ object S3LayerWriter {
       keyIndexMethod: KeyIndexMethod[K],
       clobber: Boolean = true)
     (implicit cons: ContainerConstructor[K, TileType, Container[K]]): S3LayerWriter[K, TileType, Container[K]] =
-    new S3LayerWriter(bucket, prefix, keyIndexMethod, clobber)(S3AttributeStore(bucket, prefix))
+    new S3LayerWriter(
+      S3AttributeStore(bucket, prefix),
+      new S3RDDWriter[K, TileType](),
+      keyIndexMethod, bucket, prefix, clobber)
 }

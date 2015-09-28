@@ -24,36 +24,40 @@ import scala.reflect.ClassTag
  * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container](
+class S3LayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
     val attributeStore: S3AttributeStore,
+    rddReader: S3RDDReader[K, TileType],
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
 
-  val getS3Client: () => S3Client = () => S3Client.default
   val defaultNumPartitions = sc.defaultParallelism
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
-    val layerMetaData  = attributeStore.cacheRead[S3LayerMetaData](id, Fields.layerMetaData)
-    val metadata  = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
-    val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
-    val keyIndex  = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
+    try {
+      val layerMetaData = attributeStore.cacheRead[S3LayerMetaData](id, Fields.layerMetaData)
+      val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
+      val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
+      val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
 
-    val bucket = layerMetaData.bucket
-    val prefix = layerMetaData.key
+      val bucket = layerMetaData.bucket
+      val prefix = layerMetaData.key
 
-    val queryKeyBounds = rasterQuery(metadata, keyBounds)
+      val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
-    val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
-    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
-    val reader = new S3RDDReader[K, TileType](bucket, getS3Client)
-    val cache = getCache.map(f => f(id))
-    val rdd = reader.read(queryKeyBounds, keyIndex, keyPath, writerSchema, numPartitions, cache)
+      val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
+      val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+      val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
+      val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+      val cache = getCache.map(f => f(id))
+      val rdd = rddReader.read(bucket, keyPath, queryKeyBounds, decompose, Some(writerSchema), cache, numPartitions)
 
-    cons.makeContainer(rdd, keyBounds, metadata)
+      cons.makeContainer(rdd, keyBounds, metadata)
+    } catch {
+      case e: Exception => throw new LayerReadError(id).initCause(e)
+    }
   }
 }
 
@@ -63,5 +67,8 @@ object S3LayerReader {
       prefix: String,
       getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
     (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container[K]]): S3LayerReader[K, TileType, Container[K]] =
-    new S3LayerReader(new S3AttributeStore(bucket, prefix), getCache)
+    new S3LayerReader(
+      new S3AttributeStore(bucket, prefix),
+      new S3RDDReader[K, TileType],
+      getCache)
 }
