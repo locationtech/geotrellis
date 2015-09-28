@@ -120,6 +120,26 @@ trait TileCodecs {
     }
   }
 
+  implicit def bitArrayTileCodec: AvroRecordCodec[BitArrayTile] = new AvroRecordCodec[BitArrayTile] {
+    lazy val schema = SchemaBuilder
+      .record("BitArrayTile").namespace("geotrellis.raster")
+      .fields()
+      .name("cols").`type`().intType().noDefault()
+      .name("rows").`type`().intType().noDefault()
+      .name("cells").`type`().bytesType().noDefault()
+      .endRecord()
+
+    def encode(tile: BitArrayTile, rec: GenericRecord) = {
+      rec.put("cols", tile.cols)
+      rec.put("rows", tile.rows)
+      rec.put("cells", ByteBuffer.wrap(tile.array))
+    }
+
+    def decode(rec: GenericRecord) = {
+      val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
+      new BitArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+    }
+  }
 
   implicit def multiBandTileCodec: AvroRecordCodec[MultiBandTile] = new AvroRecordCodec[MultiBandTile] {
     lazy val schema = SchemaBuilder
