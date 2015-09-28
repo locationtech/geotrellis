@@ -52,6 +52,14 @@ abstract class AvroKeyWritable[T: AvroRecordCodec: Ordering, F <: AvroKeyWritabl
 
   override def hashCode = get().hashCode
 
+  override def equals(other: Any): Boolean = {
+    other match {
+      case kw: AvroKeyWritable[T, F] =>
+        kw.index == index && kw.key == key
+      case _ => false
+    }
+  }
+
   def compareTo(other: F): Int = {
     if (this._index < other._index) -1
     else if (this._index > other._index) 1
