@@ -38,10 +38,9 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     read should be equals sample.collect().toMap
   }
 
-  it("should read a single V that exists") {
+  it("should read a single value") {
     val tileReader = tiles.read(layerId)
     val key = sample.keys.first()
-    info(s"Key: $key")
     val readV: V = tileReader.read(key)
     val expectedV: V = sample.filter(_._1 == key).values.first()
     readV should be equals expectedV
@@ -85,23 +84,37 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] =>
 
 
   it("query disjunction on space") {
-    query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect() should
-      contain theSameElementsAs {
+    val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect()
+
+    val expected = {
        for {
           (col, row) <- bounds1.coords ++ bounds2.coords
           time <- dates
         } yield SpaceTimeKey(col, row, time)
       }
+
+    //info(s"missing: ${(expected diff actual).toList}")
+    //info(s"unwanted: ${(actual diff expected).toList}")
+
+    actual should contain theSameElementsAs expected
   }
 
   it("query disjunction on space and time") {
-    query.where(Intersects(bounds1) or Intersects(bounds2))
-      .where(Between(dates(0), dates(1)) or Between(dates(3),dates(4))).toRDD.keys.collect() should
-      contain theSameElementsAs {
-        for {
-          (col, row) <- bounds1.coords ++ bounds2.coords
-          time <- dates diff Seq(dates(2))
-        } yield SpaceTimeKey(col, row, time)
+    val actual = query.where(Intersects(bounds1) or Intersects(bounds2))
+      .where(Between(dates(0), dates(1)) or Between(dates(3),dates(4))).toRDD.keys.collect()
+
+    val expected = {
+      for {
+        (col, row) <- bounds1.coords ++ bounds2.coords
+        time <- dates diff Seq(dates(2))
+      } yield {
+        SpaceTimeKey(col, row, time)
       }
+    }
+
+    //info(s"missing: ${(expected diff actual).toList}")
+    //info(s"unwanted: ${(actual diff expected).toList}")
+
+    actual should contain theSameElementsAs expected
   }
 }
