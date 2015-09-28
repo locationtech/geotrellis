@@ -34,7 +34,7 @@ object HilbertSpatialKeyIndex {
 }
 
 class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int, yResolution: Int) extends KeyIndex[SpatialKey] {
-  val chc = {
+  @transient lazy val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
         List(
