@@ -46,6 +46,22 @@ package object json {
       }
   }
 
+  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
+    def write(obj: LayoutDefinition) =
+      JsObject(
+        "extent" -> obj.extent.toJson,
+        "tileLayout" -> obj.tileLayout.toJson
+      )
+
+    def read(json: JsValue) =
+      json.asJsObject.getFields("extent", "tileLayout") match {
+        case Seq(extent, tileLayout) =>
+          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
+        case _ =>
+          throw new DeserializationException("LayoutDefinition expected")
+      }
+  }
+  
   implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
     def write(metaData: RasterMetaData) = 
       JsObject(
@@ -69,21 +85,7 @@ package object json {
       }
   }
 
-  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
-    def write(obj: LayoutDefinition) =
-      JsObject(
-        "extent" -> obj.extent.toJson,
-        "tileLayout" -> obj.tileLayout.toJson
-      )
 
-    def read(json: JsValue) =
-      json.asJsObject.getFields("extent", "tileLayout") match {
-        case Seq(extent, tileLayout) =>
-          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
-        case _ =>
-          throw new DeserializationException("LayoutDefinition expected")
-      }
-  }
 
   implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
     def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
