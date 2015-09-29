@@ -40,31 +40,35 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Cont
   def getS3Client: ()=>S3Client = () => S3Client.default
 
   def write(id: LayerId, rdd: Container with RDD[(K, TileType)]) = {
-    require(!attributeStore.layerExists(id) || clobber , s"$id already exists")
-    implicit val sc = rdd.sparkContext
-    val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-    val rasterMetaData = cons.getMetaData(rdd)
-    val layerMetaData = S3LayerMetaData(
-      layerId = id,
-      keyClass = classTag[K].toString(),
-      valueClass = classTag[K].toString(),
-      bucket = bucket,
-      key = prefix)
+    try {
+      require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
+      implicit val sc = rdd.sparkContext
+      val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
+      val rasterMetaData = cons.getMetaData(rdd)
+      val layerMetaData = S3LayerMetaData(
+        layerId = id,
+        keyClass = classTag[K].toString(),
+        valueClass = classTag[K].toString(),
+        bucket = bucket,
+        key = prefix)
 
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
+      val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-    attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
-    attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
-    attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
-    attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
-    attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
+      attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
+      attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
+      attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
+      attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
+      attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
 
-    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
+      val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+      val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
 
-    logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-    rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+      logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
+      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    } catch {
+      case e: Exception => throw new LayerWriteError(id).initCause(e)
+    }
   }
 }
 
