@@ -34,8 +34,15 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   }
 
   it("should read a layer back"){
-    val read = reader.read(layerId).collect().toMap
-    read should be equals sample.collect().toMap
+    val actual = reader.read(layerId).keys.collect()
+    val expected = sample.keys.collect()
+
+    if (expected.diff(actual).nonEmpty)
+      info(s"missing: ${(expected diff actual).toList}")
+    if (actual.diff(expected).nonEmpty)
+      info(s"unwanted: ${(actual diff expected).toList}")
+
+    actual should contain theSameElementsAs expected
   }
 
   it("should read a single value") {
@@ -60,16 +67,29 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] =>
   }
 
   it("query inside layer bounds") {
-    query.where(Intersects(bounds1)).toRDD.keys.collect() should
-      contain theSameElementsAs (for ( (x, y) <- bounds1.coords) yield SpatialKey(x,y))
+    val actual = query.where(Intersects(bounds1)).toRDD.keys.collect()
+    val expected = for ( (x, y) <- bounds1.coords) yield SpatialKey(x,y)
+
+    if (expected.diff(actual).nonEmpty)
+      info(s"missing: ${(expected diff actual).toList}")
+    if (actual.diff(expected).nonEmpty)
+      info(s"unwanted: ${(actual diff expected).toList}")
+
+    actual should contain theSameElementsAs expected
   }
 
   it("disjoint query on space") {
-    query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect() should
-      contain theSameElementsAs (for ( (x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x,y))
+    val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect()
+    val expected = for ( (x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x,y)
+
+    if (expected.diff(actual).nonEmpty)
+      info(s"missing: ${(expected diff actual).toList}")
+    if (actual.diff(expected).nonEmpty)
+      info(s"unwanted: ${(actual diff expected).toList}")
+
+    actual should contain theSameElementsAs expected
   }
 }
-
 
 
 trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] =>
@@ -93,8 +113,10 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] =>
         } yield SpaceTimeKey(col, row, time)
       }
 
-    //info(s"missing: ${(expected diff actual).toList}")
-    //info(s"unwanted: ${(actual diff expected).toList}")
+    if (expected.diff(actual).nonEmpty)
+      info(s"missing: ${(expected diff actual).toList}")
+    if (actual.diff(expected).nonEmpty)
+      info(s"unwanted: ${(actual diff expected).toList}")
 
     actual should contain theSameElementsAs expected
   }
@@ -112,8 +134,10 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] =>
       }
     }
 
-    //info(s"missing: ${(expected diff actual).toList}")
-    //info(s"unwanted: ${(actual diff expected).toList}")
+    if (expected.diff(actual).nonEmpty)
+      info(s"missing: ${(expected diff actual).toList}")
+    if (actual.diff(expected).nonEmpty)
+      info(s"unwanted: ${(actual diff expected).toList}")
 
     actual should contain theSameElementsAs expected
   }
