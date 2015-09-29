@@ -65,6 +65,6 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
           pairs.filter{ pair => includeKey(pair._1) }
         }
       }
-      .reduce(_ union _)
+      .fold(sc.emptyRDD[(SpaceTimeKey, V)])(_ union _)
   }
 }
