@@ -35,16 +35,16 @@ trait BaseAccumuloRDDWriter[K, TileType] {
   def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit
 }
 
-class AccumuloRDDWriter[K: AvroRecordCodec, TileType: AvroRecordCodec](
+class AccumuloRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](
     val instance: AccumuloInstance,
     strategy: AccumuloWriteStrategy)
-  extends BaseAccumuloRDDWriter[K, TileType] {
+  extends BaseAccumuloRDDWriter[K, V] {
 
-  val codec  = KeyValueRecordCodec[K, TileType]
+  val codec  = KeyValueRecordCodec[K, V]
   val schema = codec.schema
 
   def write(
-      raster: RDD[(K, TileType)],
+      raster: RDD[(K, V)],
       table: String,
       columnFamily: String,
       keyToRowId: (K) => Text,

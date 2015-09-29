@@ -21,14 +21,14 @@ import scala.reflect.ClassTag
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @param getCache        Optional cache function to be used when reading S3 objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
+class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     val attributeStore: S3AttributeStore,
-    rddReader: S3RDDReader[K, TileType],
+    rddReader: S3RDDReader[K, V],
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
+  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
@@ -62,13 +62,13 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Cont
 }
 
 object S3LayerReader {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
       bucket: String,
       prefix: String,
       getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-    (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container[K]]): S3LayerReader[K, TileType, Container[K]] =
+    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): S3LayerReader[K, V, Container[K]] =
     new S3LayerReader(
       new S3AttributeStore(bucket, prefix),
-      new S3RDDReader[K, TileType],
+      new S3RDDReader[K, V],
       getCache)
 }

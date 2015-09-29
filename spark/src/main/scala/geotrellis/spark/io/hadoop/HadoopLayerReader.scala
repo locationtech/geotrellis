@@ -20,13 +20,13 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
+class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   val attributeStore: HadoopAttributeStore,
-  rddReader: HadoopRDDReader[K, TileType])
-  (implicit sc: SparkContext, val cons: ContainerConstructor[K, TileType, Container])
+  rddReader: HadoopRDDReader[K, V])
+  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
   type MetaDataType  = cons.MetaDataType
@@ -44,7 +44,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, 
 
       //val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
 
-      val rdd: RDD[(K, TileType)] =
+      val rdd: RDD[(K, V)] =
         if (queryKeyBounds == Seq(keyBounds)) {
           rddReader.readFully(layerPath)
         } else {
@@ -61,11 +61,11 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, 
 }
 
 object HadoopLayerReader {
-  def apply[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     attributeStore: HadoopAttributeStore,
-    rddReader: HadoopRDDReader[K, TileType])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, TileType, Container[K]]) =
-  new HadoopLayerReader[K, TileType, Container[K]](attributeStore, rddReader)
+    rddReader: HadoopRDDReader[K, V])
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]) =
+  new HadoopLayerReader[K, V, Container[K]](attributeStore, rddReader)
 
   def apply[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container[_]](
     rootPath: Path)

@@ -14,15 +14,15 @@ import spray.json._
 
 import scala.reflect._
 
-class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
+class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   rootPath: Path,
   val attributeStore: HadoopAttributeStore,
-  rddWriter: HadoopRDDWriter[K, TileType],
+  rddWriter: HadoopRDDWriter[K, V],
   keyIndexMethod: KeyIndexMethod[K])
-(implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId, Container with RDD[(K, TileType)]] {
+(implicit val cons: ContainerConstructor[K, V, Container])
+  extends Writer[LayerId, Container with RDD[(K, V)]] {
 
-  def write(id: LayerId, rdd: Container with RDD[(K, TileType)]): Unit = {
+  def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     implicit val sc = rdd.sparkContext
 
     val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
@@ -30,11 +30,11 @@ class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, Ti
     val layerMetaData =
       HadoopLayerMetaData(
         keyClass = classTag[K].toString(),
-        valueClass = classTag[TileType].toString(),
+        valueClass = classTag[V].toString(),
         path = layerPath
       )
     val rasterMetaData = cons.getMetaData(rdd)
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     try {
@@ -54,12 +54,12 @@ class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, Ti
 
 object HadoopLayerWriter {
 
-  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, C[_]](
+  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     rootPath: Path,
     attributeStore: HadoopAttributeStore,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit cons: ContainerConstructor[K, V, C[K]]): HadoopLayerWriter[K, V, C[K]] =
+  (implicit cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
     new HadoopLayerWriter (
       rootPath = rootPath,
       attributeStore = attributeStore,
@@ -67,24 +67,24 @@ object HadoopLayerWriter {
       keyIndexMethod = indexMethod
     )
 
-  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, C[_]](
+  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     rootPath: Path,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, C[K]]): HadoopLayerWriter[K, V, C[K]] =
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
     apply(
       rootPath = rootPath,
       attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), sc.hadoopConfiguration),
       rddWriter = rddWriter,
       indexMethod = indexMethod)
 
-  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, C[_]](
+  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     rootPath: Path,
     indexMethod: KeyIndexMethod[K])
   (implicit
     sc: SparkContext,
     format: HadoopFormat[K, V],
-    cons: ContainerConstructor[K, V, C[K]]): HadoopLayerWriter[K, V, C[K]] =
+    cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
     apply(
       rootPath = rootPath,
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),

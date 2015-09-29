@@ -12,24 +12,24 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
-class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
+class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     val attributeStore: AttributeStore.Aux[JsonFormat],
-    rddWriter: BaseAccumuloRDDWriter[K, TileType],
+    rddWriter: BaseAccumuloRDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
-  (implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId, Container with RDD[(K, TileType)]] {
+  (implicit val cons: ContainerConstructor[K, V, Container])
+  extends Writer[LayerId, Container with RDD[(K, V)]] {
 
-  def write(id: LayerId, rdd: Container with RDD[(K, TileType)]): Unit = {
+  def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     try {
       val layerMetaData =
         AccumuloLayerMetaData(
           keyClass = classTag[K].toString(),
-          valueClass = classTag[TileType].toString(),
+          valueClass = classTag[V].toString(),
           tileTable = table
         )
       val rasterMetaData = cons.getMetaData(rdd)
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
@@ -50,12 +50,12 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag
 object AccumuloLayerWriter {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
-  def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, C[_]](
+  def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
       instance: AccumuloInstance,
       table: String,
       indexMethod: KeyIndexMethod[K],
       strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-    (implicit cons: ContainerConstructor[K, V, C[K]]): AccumuloLayerWriter[K, V, C[K]] =
+    (implicit cons: ContainerConstructor[K, V, Container[K]]): AccumuloLayerWriter[K, V, Container[K]] =
     new AccumuloLayerWriter(
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),

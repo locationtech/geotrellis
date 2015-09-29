@@ -24,22 +24,22 @@ import AttributeStore.Fields
  * @param clobber         flag to overwrite raster if already present on S3
  * @param attributeStore  AttributeStore to be used for storing raster metadata
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam TileType       Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Container](
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     val attributeStore: S3AttributeStore,
-    rddWriter: S3RDDWriter[K, TileType],
+    rddWriter: S3RDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
     bucket: String,
     keyPrefix: String,
     clobber: Boolean = true)
-  (implicit val cons: ContainerConstructor[K, TileType, Container])
-  extends Writer[LayerId, Container with RDD[(K, TileType)]] with LazyLogging {
+  (implicit val cons: ContainerConstructor[K, V, Container])
+  extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
 
   def getS3Client: ()=>S3Client = () => S3Client.default
 
-  def write(id: LayerId, rdd: Container with RDD[(K, TileType)]) = {
+  def write(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {
       require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
       implicit val sc = rdd.sparkContext
@@ -52,7 +52,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Cont
         bucket = bucket,
         key = prefix)
 
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, TileType)]])
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
@@ -73,14 +73,14 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, TileType: ClassTag, Cont
 }
 
 object S3LayerWriter {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, TileType: AvroRecordCodec: ClassTag, Container[_]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
       bucket: String,
       prefix: String,
       keyIndexMethod: KeyIndexMethod[K],
       clobber: Boolean = true)
-    (implicit cons: ContainerConstructor[K, TileType, Container[K]]): S3LayerWriter[K, TileType, Container[K]] =
+    (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerWriter[K, V, Container[K]] =
     new S3LayerWriter(
       S3AttributeStore(bucket, prefix),
-      new S3RDDWriter[K, TileType](),
+      new S3RDDWriter[K, V](),
       keyIndexMethod, bucket, prefix, clobber)
 }

@@ -15,16 +15,16 @@ import org.joda.time.DateTimeZone
  * This class implements writing SpaceTime keyed RDDs by using Accumulo column qualifier to store the dates of each tile.
  * This allows the use of server side filters for refinement of spatio-temporal queries.
  */
-class SpaceTimeAccumuloRDDWriter[TileType: AvroRecordCodec](
+class SpaceTimeAccumuloRDDWriter[V: AvroRecordCodec](
     val instance: AccumuloInstance,
     strategy: AccumuloWriteStrategy
-  ) extends BaseAccumuloRDDWriter[SpaceTimeKey, TileType] {
+  ) extends BaseAccumuloRDDWriter[SpaceTimeKey, V] {
   type K = SpaceTimeKey
 
-  val codec  = KeyValueRecordCodec[K, TileType]
+  val codec  = KeyValueRecordCodec[K, V]
   val schema = codec.schema
 
-  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit = {
+  def write(raster: RDD[(K, V)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit = {
     implicit val sc = raster.sparkContext
 
     ensureTableExists(table)
