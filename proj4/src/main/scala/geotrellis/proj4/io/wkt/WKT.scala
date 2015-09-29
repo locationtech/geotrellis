@@ -11,7 +11,7 @@ import scala.io.Source
 object WKT {
   private lazy val epsgcodetowktmap = new Memoize[String, String](retrieveWKTStringFromFile)
   private lazy val wkttoepsgcodemap = new Memoize[String, String](retrieveEPSGCodeFromFile)
-  private val file = "proj4/src/main/resources/wkt/epsg.properties"
+  private val wktResourcePath = "/geotrellis/proj4/wkt/epsg.properties"
 
   /**
    * Returns the WKT representation given an EPSG code in the format EPSG:[number]
@@ -27,18 +27,29 @@ object WKT {
    */
   def getEPSGCode(wktString: String) = wkttoepsgcodemap(wktString)
 
+  private def withWktFile[T](f: Iterator[String] => T) = {
+    val stream = getClass.getResourceAsStream(wktResourcePath)
+    try {
+      f(Source.fromInputStream(stream).getLines())
+    } finally {
+      stream.close()
+    }
+  }
+
   /**
    * Returns the WKT string for the passed EPSG code
    * @param code
    * @return
    */
   private def retrieveWKTStringFromFile(code: String): String =
-    Source.fromFile(file).getLines().find(_.split("=")(0) == code) match {
-      case Some(string) =>
-        val array = string.split("=")
-        array(1)
-      case None =>
-        throw new NotFoundException(s"Unable to find WKT representation of EPSG:$code")
+    withWktFile { lines =>
+      lines.find(_.split("=")(0) == code) match {
+        case Some(string) =>
+          val array = string.split("=")
+          array(1)
+        case None =>
+          throw new NotFoundException(s"Unable to find WKT representation of EPSG:$code")
+      }
     }
 
   /**
@@ -47,11 +58,13 @@ object WKT {
    * @return
    */
   private def retrieveEPSGCodeFromFile(wktString: String): String =
-    Source.fromFile(file).getLines().find(_.split("=")(1) == wktString) match {
-      case Some(string) =>
-        val array = string.split("=")
-        s"EPSG:${array(0)}"
-      case None =>
-        throw new NotFoundException(s"Unable to find the EPSG code of $wktString")
+    withWktFile { lines =>
+      lines.find(_.split("=")(1) == wktString) match {
+        case Some(string) =>
+          val array = string.split("=")
+          s"EPSG:${array(0)}"
+        case None =>
+          throw new NotFoundException(s"Unable to find the EPSG code of $wktString")
+      }
     }
 }

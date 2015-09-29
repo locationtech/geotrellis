@@ -38,10 +38,7 @@ class GeoTiffWriterSpec extends FunSpec
 
   override def afterAll = purge
 
-  private val testProj4String =
-    "+proj=lcc +lat_0=33.750000000 +lon_0=-79.000000000 +lat_1=36.166666667 +lat_2=34.333333333 +x_0=609601.220 +y_0=0.000 +units=m"
-
-  private val testCRS = CRS.fromString(testProj4String)
+  private val testCRS = CRS.fromName("EPSG:3857")
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
 
@@ -59,6 +56,38 @@ class GeoTiffWriterSpec extends FunSpec
       actual should be (expected)
     }
 
+    it("should write web mercator correctly") {
+      val path = "/tmp/geotiff-writer.tif"
+      val geoTiff = SingleBandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SingleBandGeoTiff(path).crs
+
+      actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
+    }
+
+    it("should write NY State Plane correctly") {
+      val path = "/tmp/geotiff-writer.tif"
+      val geoTiff = SingleBandGeoTiff(geoTiffPath("ny-state-plane.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SingleBandGeoTiff(path).crs
+
+      actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
+    }
+
+    it ("should write Polar stereographic correctly") {
+      val path = "/tmp/geotiff-writer.tif"
+      val geoTiff = SingleBandGeoTiff(geoTiffPath("alaska-polar-3572.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SingleBandGeoTiff(path).crs
+
+      actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
+    }
 
     it ("should write floating point rasters correct") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
@@ -92,7 +121,7 @@ class GeoTiffWriterSpec extends FunSpec
       addToPurge(path)
 
       val SingleBandGeoTiff(actualTile, actualExtent, actualCrs, _) = SingleBandGeoTiff(path)
-      
+
       actualExtent should equal (extent)
       crs should equal (LatLng)
       assertEqual(actualTile, tile)
@@ -108,7 +137,7 @@ class GeoTiffWriterSpec extends FunSpec
       addToPurge(path)
 
       val gt = MultiBandGeoTiff(path)
-      
+
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)
       gt.tile.bandCount should equal (geoTiff.tile.bandCount)
@@ -137,7 +166,7 @@ class GeoTiffWriterSpec extends FunSpec
       addToPurge(path)
 
       val gt = MultiBandGeoTiff(path)
-      
+
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)
       gt.tile.bandCount should equal (tile.bandCount)
@@ -162,7 +191,7 @@ class GeoTiffWriterSpec extends FunSpec
       val bytes = GeoTiffWriter.write(geoTiff)
 
       val gt = MultiBandGeoTiff(bytes)
-      
+
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)
       gt.tile.bandCount should equal (tile.bandCount)

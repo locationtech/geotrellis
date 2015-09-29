@@ -21,7 +21,7 @@ import au.com.bytecode.opencsv.CSVReader
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
-import java.io.FileReader
+import java.io.InputStreamReader
 
 object CSVFileConstants {
 
@@ -84,21 +84,27 @@ class EPSGCSVReader {
     fileName: String,
     code: Int,
     codeFlag: String): Option[Map[String, String]] = {
+    val resourcePath = s"/geotrellis/proj4/$fileName"
+    val stream = getClass.getResourceAsStream(resourcePath)
+    if(stream == null) { sys.error(s"Cannot find resource $resourcePath") }
     val reader =
-      new CSVReader(new FileReader(s"proj4/src/main/resources/$fileName"))
+      new CSVReader(new InputStreamReader(stream))
+    try {
+      val headers = reader.readNext.map(_.toUpperCase)
+      val listBuffer = ListBuffer[Map[String, String]]()
 
-    val headers = reader.readNext.map(_.toUpperCase)
-    val listBuffer = ListBuffer[Map[String, String]]()
+      var input: Array[String] = reader.readNext
+      var resMap: Option[Map[String, String]] = None
+      while (input != null && resMap == None) {
+        val map = (headers zip input).toMap
+        if (map.get(codeFlag) == Some(code.toString)) resMap = Some(map)
+        else input = reader.readNext
+      }
 
-    var input: Array[String] = reader.readNext
-    var resMap: Option[Map[String, String]] = None
-    while (input != null && resMap == None) {
-      val map = (headers zip input).toMap
-      if (map.get(codeFlag) == Some(code.toString)) resMap = Some(map)
-      else input = reader.readNext
+      resMap
+    } finally {
+      reader.close()
     }
-
-    resMap
   }
 
 }

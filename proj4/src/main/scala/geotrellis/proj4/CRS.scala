@@ -8,7 +8,7 @@ import scala.io.Source
 object CRS {
   private lazy val proj4ToEPSGMap = new Memoize[String, Option[String]](readEPSGCodeFromFile)
   private val crsFactory = new CRSFactory
-  private val filePrefix = "proj4/src/main/resources/nad/"
+  private val filePrefix = "/geotrellis/proj4/nad/"
 
   /**
    * Creates a [[CoordinateReferenceSystem]]
@@ -97,22 +97,22 @@ object CRS {
   }
 
   private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
-    def code(line: String): Option[String] = {
-      val array = line.split(" ")
-      val length = array(0).length
-      Some(array(0).substring(1, length - 1))
-    }
-
-    Source.fromFile(s"${filePrefix}epsg")
-      .getLines
-      .find { line =>
-      !line.startsWith("#") && {
-        val proj4Body = line.split("proj")(1)
-        s"+proj$proj4Body" == proj4String
-      }
-    }.map { line => code(line) } match {
-      case Some(value) => value
-      case None => throw new NotFoundException(s"The EPSG code cannot be found for the proj4 string $proj4String")
+    val stream = getClass.getResourceAsStream(s"${filePrefix}epsg")
+    try {
+      Source.fromInputStream(stream)
+        .getLines
+        .find { line =>
+          !line.startsWith("#") && {
+            val proj4Body = line.split("proj")(1)
+            s"+proj$proj4Body" == proj4String
+          }
+        }.flatMap { l =>
+          val array = l.split(" ")
+          val length = array(0).length
+          Some(array(0).substring(1, length - 1))
+        }
+    } finally {
+      stream.close()
     }
   }
 }

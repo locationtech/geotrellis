@@ -1,5 +1,6 @@
 package geotrellis.raster
 
+import scala.collection.mutable
 import spire.syntax.cfor._
 
 object GridBounds {
@@ -22,6 +23,15 @@ object GridBounds {
     }
     GridBounds(colMin, rowMin, colMax, rowMax)
   }
+
+  /** Creates a sequence of distinct GridBounds out of a set of potentially overlapping
+    * grid bounds */
+  def distinct(gridBounds: Traversable[GridBounds]): Seq[GridBounds] =
+    gridBounds.foldLeft(Seq[GridBounds]()) { (acc, bounds) =>
+      acc ++ acc.foldLeft(Seq(bounds)) { (cuts, bounds) =>
+        cuts.flatMap(_ - bounds)
+      }
+    }
 }
 
 /**
@@ -29,8 +39,9 @@ object GridBounds {
  * These coordinates are inclusive.
  */
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
-  val width = colMax - colMin + 1
-  val height = rowMax - rowMin + 1
+  def width = colMax - colMin + 1
+  def height = rowMax - rowMin + 1
+  def size = width * height
 
   def contains(col: Int, row: Int): Boolean =
     (colMin <= col && col <= colMax) &&
@@ -39,6 +50,50 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def intersects(other: GridBounds): Boolean =
     !(colMax < other.colMin || other.colMax < colMin) &&
     !(rowMax < other.rowMin || other.rowMax < rowMin)
+
+  def -(other: GridBounds): Seq[GridBounds] = minus(other)
+  def minus(other: GridBounds): Seq[GridBounds] =
+    if(!intersects(other)) {
+      Seq(this)
+    } else {
+      val overlapColMin =
+        if(colMin < other.colMin) other.colMin
+        else colMin
+
+      val overlapColMax =
+        if(colMax < other.colMax) colMax
+        else other.colMax
+
+      val overlapRowMin =
+        if(rowMin < other.rowMin) other.rowMin
+        else rowMin
+
+      val overlapRowMax =
+        if(rowMax < other.rowMax) rowMax
+        else other.rowMax
+
+      val result = mutable.ListBuffer[GridBounds]()
+      // Left cut
+      if(colMin < overlapColMin) {
+        result += GridBounds(colMin, rowMin, overlapColMin - 1, rowMax)
+      }
+
+      // Right cut
+      if(overlapColMax < colMax) {
+        result += GridBounds(overlapColMax + 1, rowMin, colMax, rowMax)
+      }
+
+      // Top cut
+      if(rowMin < overlapRowMin) {
+        result += GridBounds(overlapColMin, rowMin, overlapColMax, overlapRowMin - 1)
+      }
+
+      // Bottom cut
+      if(overlapRowMax < rowMax) {
+        result += GridBounds(overlapColMin, overlapRowMax + 1, overlapColMax, rowMax)
+      }
+      result
+    }
 
   def coords: Array[(Int, Int)] = {
     val arr = Array.ofDim[(Int, Int)](width*height)
