@@ -24,9 +24,7 @@ object AccumuloAttributeStore {
     apply(connector, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
 }
 
-class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore with Logging {
-  type ReadableWritable[T] = JsonFormat[T]
-
+class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()
@@ -43,7 +41,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     scanner.iterator.map(_.getValue)
   }
 
-  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T = {
+  def read[T: Format](layerId: LayerId, attributeName: String): T = {
     val values = fetch(Some(layerId), attributeName).toVector
 
     if(values.size == 0) {
@@ -55,13 +53,13 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     }
   }
 
-  def readAll[T: ReadableWritable](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
     fetch(None, attributeName)
       .map{ _.toString.parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 
-  def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation(layerId.toString)
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),

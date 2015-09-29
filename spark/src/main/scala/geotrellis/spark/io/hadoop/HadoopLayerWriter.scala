@@ -1,12 +1,10 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.{LayerWriteError, ContainerConstructor, Writer}
-import org.apache.hadoop.conf.Configuration
+import geotrellis.spark.io.{AttributeStore, LayerWriteError, ContainerConstructor, Writer}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -16,7 +14,7 @@ import scala.reflect._
 
 class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   rootPath: Path,
-  val attributeStore: HadoopAttributeStore,
+  val attributeStore: AttributeStore[JsonFormat],
   rddWriter: HadoopRDDWriter[K, V],
   keyIndexMethod: KeyIndexMethod[K])
 (implicit val cons: ContainerConstructor[K, V, Container])

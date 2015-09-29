@@ -25,7 +25,7 @@ import AttributeStore.Fields
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-    val attributeStore: S3AttributeStore,
+    val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
     bucket: String,

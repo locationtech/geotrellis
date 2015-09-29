@@ -17,7 +17,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
 class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container](
-    val attributeStore: AttributeStore.Aux[JsonFormat],
+    val attributeStore: AttributeStore[JsonFormat],
     rddReader: BaseAccumuloRDDReader[K, V])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] {

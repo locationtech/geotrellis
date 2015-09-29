@@ -13,7 +13,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
 class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-    val attributeStore: AttributeStore.Aux[JsonFormat],
+    val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
