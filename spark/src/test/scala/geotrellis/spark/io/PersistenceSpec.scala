@@ -78,6 +78,10 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] =>
     actual should contain theSameElementsAs expected
   }
 
+  it("query outside of layer bounds") {
+    query.where(Intersects(GridBounds(10,10, 15,15))).toRDD.collect() should be (empty)
+  }
+
   it("disjoint query on space") {
     val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect()
     val expected = for ( (x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x,y)
@@ -102,6 +106,9 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] =>
   val bounds1 = GridBounds(1,1,3,3)
   val bounds2 = GridBounds(4,5,6,6)
 
+  it("query outside of layer bounds") {
+    query.where(Intersects(GridBounds(10,10, 15,15))).toRDD.collect() should be (empty)
+  }
 
   it("query disjunction on space") {
     val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect()
