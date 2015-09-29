@@ -35,11 +35,11 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     try {
-      val layerMetaData = attributeStore.cacheRead[HadoopLayerMetaData](id, Fields.layerMetaData)
-      val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
+      val header = attributeStore.cacheRead[HadoopLayerHeader](id, Fields.header)
+      val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.metaData)(cons.metaDataFormat)
       val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
 
-      val layerPath = layerMetaData.path
+      val layerPath = header.path
       val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
       //val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())

@@ -22,18 +22,18 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     try {
-      val layerMetaData =
-        AccumuloLayerMetaData(
+      val header =
+        AccumuloLayerHeader(
           keyClass = classTag[K].toString(),
           valueClass = classTag[V].toString(),
           tileTable = table
         )
-      val rasterMetaData = cons.getMetaData(rdd)
+      val metaData = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-      attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
-      attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
+      attributeStore.cacheWrite(id, Fields.header, header)
+      attributeStore.cacheWrite(id, Fields.metaData, metaData)(cons.metaDataFormat)
       attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
       attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
       attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)

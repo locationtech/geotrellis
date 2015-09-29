@@ -74,7 +74,7 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore 
   }
 
   def layerExists(layerId: LayerId): Boolean = {
-    s3Client.listObjectsIterator(bucket, AttributeStore.Fields.layerMetaData, 1).nonEmpty
+    s3Client.listObjectsIterator(bucket, AttributeStore.Fields.header, 1).nonEmpty
   }
 }
 

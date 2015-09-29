@@ -28,22 +28,22 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
     try {
-      val layerMetaData = attributeStore.cacheRead[AccumuloLayerMetaData](id, Fields.layerMetaData)
-      val metadata = attributeStore.cacheRead[MetaDataType](id, Fields.rddMetadata)(cons.metaDataFormat)
+      val storageMetaData = attributeStore.cacheRead[AccumuloLayerHeader](id, Fields.header)
+      val metaData = attributeStore.cacheRead[MetaDataType](id, Fields.metaData)(cons.metaDataFormat)
       val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
       val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
       val writerSchema: Schema = (new Schema.Parser)
         .parse(attributeStore.cacheRead[JsObject](id, Fields.schema).toString())
 
-      val queryKeyBounds = rasterQuery(metadata, keyBounds)
+      val queryKeyBounds = rasterQuery(metaData, keyBounds)
 
       val decompose = (bounds: KeyBounds[K]) =>
         keyIndex.indexRanges(bounds).map{ case (min, max) =>
           new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
         }
 
-      val rdd = rddReader.read(layerMetaData.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
-      cons.makeContainer(rdd, keyBounds, metadata)
+      val rdd = rddReader.read(storageMetaData.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
+      cons.makeContainer(rdd, keyBounds, metaData)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }

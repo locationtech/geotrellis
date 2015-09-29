@@ -18,7 +18,7 @@ class HadoopTileReader[K: JsonFormat: ClassTag, V](val attributeStore: HadoopAtt
   val conf = attributeStore.hadoopConfiguration
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val layerMetaData = attributeStore.cacheRead[HadoopLayerMetaData](layerId, Fields.layerMetaData)
+    val layerMetaData = attributeStore.cacheRead[HadoopLayerHeader](layerId, Fields.header)
     val keyIndex = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
     val dataPath = layerMetaData.path.suffix(catalogConfig.SEQFILE_GLOB)
     val inputConf = conf.withInputPath(dataPath)

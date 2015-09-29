@@ -1,12 +1,9 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -44,8 +41,8 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
       implicit val sc = rdd.sparkContext
       val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-      val rasterMetaData = cons.getMetaData(rdd)
-      val layerMetaData = S3LayerMetaData(
+      val metadata = cons.getMetaData(rdd)
+      val header = S3LayerHeader(
         layerId = id,
         keyClass = classTag[K].toString(),
         valueClass = classTag[K].toString(),
@@ -55,8 +52,8 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-      attributeStore.cacheWrite(id, Fields.layerMetaData, layerMetaData)
-      attributeStore.cacheWrite(id, Fields.rddMetadata, rasterMetaData)(cons.metaDataFormat)
+      attributeStore.cacheWrite(id, Fields.header, header)
+      attributeStore.cacheWrite(id, Fields.metaData, metadata)(cons.metaDataFormat)
       attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
       attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
       attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)

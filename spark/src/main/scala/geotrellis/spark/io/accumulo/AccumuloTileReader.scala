@@ -26,7 +26,7 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
   val rowId = (index: Long) => new Text(long2Bytes(index))
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val layerMetaData = attributeStore.cacheRead[AccumuloLayerMetaData](layerId, Fields.layerMetaData)
+    val layerMetaData = attributeStore.cacheRead[AccumuloLayerHeader](layerId, Fields.header)
     val keyIndex = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
     val writerSchema: Schema = (new Schema.Parser)
       .parse(attributeStore.cacheRead[JsObject](layerId, Fields.schema).toString())

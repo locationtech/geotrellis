@@ -6,7 +6,7 @@ import geotrellis.spark.io.json._
 
 import spray.json._
 
-case class S3LayerMetaData(
+case class S3LayerHeader(
   layerId: LayerId,
   keyClass: String,
   valueClass: String,
@@ -14,9 +14,9 @@ case class S3LayerMetaData(
   key: String
 )
 
-object S3LayerMetaData {
-  implicit object S3LayerMetaDataFormat extends RootJsonFormat[S3LayerMetaData] {
-    def write(md: S3LayerMetaData) =
+object S3LayerHeader {
+  implicit object S3LayerMetaDataFormat extends RootJsonFormat[S3LayerHeader] {
+    def write(md: S3LayerHeader) =
       JsObject(
         "layerId" -> md.layerId.toJson,
         "keyClass" -> JsString(md.keyClass),
@@ -25,10 +25,10 @@ object S3LayerMetaData {
         "key" -> JsString(md.key.toString)
       )
 
-    def read(value: JsValue): S3LayerMetaData =
+    def read(value: JsValue): S3LayerHeader =
       value.asJsObject.getFields("layerId", "keyClass", "valueClass", "bucket", "key") match {
         case Seq(layerId, JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key)) =>
-          S3LayerMetaData(
+          S3LayerHeader(
             layerId.convertTo[LayerId], 
             keyClass,
             valueClass,

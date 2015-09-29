@@ -4,25 +4,25 @@ import org.apache.hadoop.fs.Path
 
 import spray.json._
 
-case class HadoopLayerMetaData(
+case class HadoopLayerHeader(
   keyClass: String,
   valueClass: String,
   path: Path
 )
 
-object HadoopLayerMetaData {
-  implicit object HadoopLayerMetaDataFormat extends RootJsonFormat[HadoopLayerMetaData] {
-    def write(md: HadoopLayerMetaData) =
+object HadoopLayerHeader {
+  implicit object HadoopLayerMetaDataFormat extends RootJsonFormat[HadoopLayerHeader] {
+    def write(md: HadoopLayerHeader) =
       JsObject(
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "path" -> JsString(md.path.toString)
       )
 
-    def read(value: JsValue): HadoopLayerMetaData =
+    def read(value: JsValue): HadoopLayerHeader =
       value.asJsObject.getFields("keyClass", "valueClass", "path") match {
         case Seq(JsString(keyClass), JsString(valueClass), JsString(path)) =>
-          HadoopLayerMetaData(
+          HadoopLayerHeader(
             keyClass, 
             valueClass,
             new Path(path))

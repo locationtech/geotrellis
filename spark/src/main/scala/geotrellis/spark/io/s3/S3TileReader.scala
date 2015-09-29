@@ -20,7 +20,7 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec]
   val s3Client: S3Client = S3Client.default
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val layerMetaData = attributeStore.cacheRead[S3LayerMetaData](layerId, Fields.layerMetaData)
+    val layerMetaData = attributeStore.cacheRead[S3LayerHeader](layerId, Fields.header)
     val keyBounds = attributeStore.cacheRead[KeyBounds[K]](layerId, Fields.keyBounds)
     val keyIndex = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
 

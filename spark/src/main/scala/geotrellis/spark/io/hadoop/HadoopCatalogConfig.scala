@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.AccumuloLayerMetaData
+import geotrellis.spark.io.accumulo.AccumuloLayerHeader
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.raster._

@@ -85,7 +85,7 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
   }
 
   def layerExists(layerId: LayerId): Boolean = {
-    val path = attributePath(layerId, AttributeStore.Fields.layerMetaData)
+    val path = attributePath(layerId, AttributeStore.Fields.header)
     val fs = path.getFileSystem(hadoopConfiguration)
     fs.exists(path)
   }

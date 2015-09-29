@@ -17,10 +17,10 @@ object AttributeStore {
   }
 
   object Fields {
-    val layerMetaData = "metadata"
+    val header = "header"
     val keyBounds = "keyBounds"
     val keyIndex = "keyIndex"
-    val rddMetadata = "rddMetadata"
+    val metaData = "metadata"
     val schema = "schema"
   }
 }
