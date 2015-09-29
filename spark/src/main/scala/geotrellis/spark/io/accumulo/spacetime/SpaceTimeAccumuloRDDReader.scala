@@ -24,9 +24,9 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
   def read(
       table: String,
       columnFamily: Text,
-      writerSchema: Schema,
       queryKeyBounds: Seq[KeyBounds[SpaceTimeKey]],
-      decomposeBounds: KeyBounds[SpaceTimeKey] => Seq[AccumuloRange])
+      decomposeBounds: KeyBounds[SpaceTimeKey] => Seq[AccumuloRange],
+      writerSchema: Option[Schema])
     (implicit sc: SparkContext): RDD[(SpaceTimeKey, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[SpaceTimeKey, V])
@@ -59,8 +59,7 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
       }
       .map { rdd =>
         rdd.map { case (_, value) =>
-          AvroEncoder.fromBinary(kwWriterSchema.value, value.get)(codec.value)
-
+          AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
         }
         .flatMap { pairs =>
           pairs.filter{ pair => includeKey(pair._1) }

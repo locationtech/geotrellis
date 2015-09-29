@@ -1,5 +1,6 @@
 package geotrellis.spark.io
 
+import geotrellis.spark.LayerId
 import org.apache.hadoop.io.Text
 import org.apache.spark._
 
@@ -16,6 +17,8 @@ package object accumulo {
 
   def long2Bytes(x: Long): Array[Byte] =
     Array[Byte](x>>56 toByte, x>>48 toByte, x>>40 toByte, x>>32 toByte, x>>24 toByte, x>>16 toByte, x>>8 toByte, x toByte)
+
+  def columnFamily(id: LayerId) = s"${id.name}:${id.zoom}"
 
   def index2RowId(index: Long): Text = new Text(long2Bytes(index))
 

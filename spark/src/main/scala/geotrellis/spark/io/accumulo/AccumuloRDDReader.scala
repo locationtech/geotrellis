@@ -20,9 +20,9 @@ trait BaseAccumuloRDDReader[K, V] {
   def read(
     table: String,
     columnFamily: Text,
-    writerSchema: Schema,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[AccumuloRange])
+    decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
+    writerSchema: Option[Schema])
     (implicit sc: SparkContext): RDD[(K, V)]
 }
 
@@ -31,9 +31,9 @@ class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCo
   def read(
       table: String,
       columnFamily: Text,
-      writerSchema: Schema,
       queryKeyBounds: Seq[KeyBounds[K]],
-      decomposeBounds: KeyBounds[K] => Seq[AccumuloRange])
+      decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
+      writerSchema: Option[Schema] = None)
     (implicit sc: SparkContext): RDD[(K, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
@@ -55,10 +55,10 @@ class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCo
       classOf[Key],
       classOf[Value])
     .map { case (_, value) =>
-      AvroEncoder.fromBinary(kwWriterSchema.value, value.get)(codec.value)
+      AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
     }
     .flatMap { pairs: Vector[(K, V)] =>
-      pairs.filter(pair => includeKey(pair._1))
+      pairs.filter { pair => includeKey(pair._1) }
     }
   }
 }

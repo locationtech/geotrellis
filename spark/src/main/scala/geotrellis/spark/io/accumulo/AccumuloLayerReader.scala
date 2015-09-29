@@ -8,6 +8,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import org.apache.avro.Schema
+import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange, Key}
 import spray.json._
@@ -36,20 +37,15 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, T
 
       val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
-      def indexToKey(index: Long): Key = {
-        val none = Array.empty[Byte]
-        new Key(long2Bytes(index), none, none, none, Long.MaxValue, true)
-      }
-      // TODO: Decide if KeyBounds[K] => Range is most useful, or tuple of String, Text, or Array[Byte]
       val decompose = (bounds: KeyBounds[K]) =>
         keyIndex.indexRanges(bounds).map{ case (min, max) =>
-          new AccumuloRange(indexToKey(min), true, indexToKey(max), true)
+          new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
         }
 
-      val rdd = rddReader.read(layerMetaData.tileTable, id.name, writerSchema, queryKeyBounds, decompose)
+      val rdd = rddReader.read(layerMetaData.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
       cons.makeContainer(rdd, keyBounds, metadata)
-    } catch { // TODO: Decide if this is actually helpful, this hides the real error
-      case e: AttributeNotFoundError => throw new LayerReadError(id)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
   }
 }
