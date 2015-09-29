@@ -16,26 +16,29 @@ import com.typesafe.config.{ConfigFactory,Config}
 import org.apache.accumulo.core.client.ClientConfiguration
 
 
-trait AccumuloInstance {
+trait AccumuloInstance  extends Serializable {
   def connector: Connector
   def instanceName: String
   def setAccumuloConfig(job: Job): Unit
 }
 
 object AccumuloInstance {
-  def apply(instanceName: String, zookeeper: String, user: String, token: AuthenticationToken): AccumuloInstance =
-    BaseAccumuloInstance(instanceName, zookeeper, user, token)
+  def apply(instanceName: String, zookeeper: String, user: String, token: AuthenticationToken): AccumuloInstance = {
+    val tokenBytes = AuthenticationToken.AuthenticationTokenSerializer.serialize(token)
+    BaseAccumuloInstance(instanceName, zookeeper, user, tokenBytes)
+  }
 }
 
 case class BaseAccumuloInstance(
   instanceName: String, zookeeper: String,
-  user: String, token: AuthenticationToken) extends AccumuloInstance
+  user: String, tokenBytes: Array[Byte]) extends AccumuloInstance
 {
-  val instance: Instance = instanceName match {
+  @transient lazy val token = AuthenticationToken.AuthenticationTokenSerializer.deserialize("AuthenticationToken", tokenBytes)
+  @transient lazy val instance: Instance = instanceName match {
     case "fake" => new MockInstance("fake") //in-memory only
     case _      => new ZooKeeperInstance(instanceName, zookeeper)
   }
-  val connector: Connector = instance.getConnector(user, token)
+  @transient lazy val connector: Connector = instance.getConnector(user, token)
 
 
   def setAccumuloConfig(job: Job): Unit = {

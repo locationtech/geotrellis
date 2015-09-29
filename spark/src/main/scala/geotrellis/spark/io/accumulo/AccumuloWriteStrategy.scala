@@ -95,9 +95,9 @@ case class SocketWriteStrategy(
   config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32) 
 ) extends AccumuloWriteStrategy {
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
-    val BC = KryoWrapper((instance, config))
+    val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
     kvPairs.foreachPartition { partition =>
-      val (instance, config) = BC.value
+      val (config) = serializeWrapper.value
       val writer = instance.connector.createBatchWriter(table, config)
 
       val mutations: Process[Task, Mutation] =
