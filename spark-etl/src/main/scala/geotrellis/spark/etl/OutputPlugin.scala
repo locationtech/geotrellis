@@ -11,7 +11,7 @@ trait OutputPlugin {
   def key: ClassTag[_]
   def requiredKeys: Array[String]
 
-  def attributes(props: Map[String, String]): AttributeStore.Aux[JsonFormat]
+  def attributes(props: Map[String, String]): AttributeStore[JsonFormat]
 
   def apply[K](id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]): Unit
 
