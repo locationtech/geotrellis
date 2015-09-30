@@ -7,7 +7,7 @@ import geotrellis.vector.Extent
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Unable to filter ${K} by ${F}, Please provide RDDFilter[${K}, ${F}, ${T}]")
+@implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide RDDFilter[${K}, ${F}, ${T}, ${M}]")
 trait RDDFilter[K, F, T, M] {
   /** Should reduce one of the dimensions in KeyBounds using information from param
     * @param metadata  M of the layer being filtered
@@ -65,10 +65,11 @@ object Intersects {
     }
 
   /** Define Intersects filter for Extent */
-  implicit def forExtent[K: SpatialComponent: Boundable, M: MapKeyTransformView] =
+  implicit def forExtent[K: SpatialComponent: Boundable, M] =
     new RDDFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
-      val bounds: GridBounds = metadata.mapTransform(extent)
+      // TODO: Stopgap. We can not ask for an implicit for PDT, so we do this cast. Safe while there is only one type of Metadata.
+      val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
       val queryBounds = KeyBounds(
         kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
         kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))

@@ -20,13 +20,6 @@ class Playground extends FunSpec
 
   describe("Playground") {
     ifCanRunSpark {
-      val accumulo = AccumuloInstance(
-        instanceName = "fake",
-        zookeeper = "localhost",
-        user = "root",
-        token = new PasswordToken("")
-      )
-
       val source = sc.netCdfRDD(new Path("file:/Users/eugene/tmp/gcm/tas-access1-rcp85.nc"))
       val (_, rmd) = source.collectMetaData(LatLng, FloatingLayoutScheme(278))
       val tiled = source.tile[SpaceTimeKey](rmd)

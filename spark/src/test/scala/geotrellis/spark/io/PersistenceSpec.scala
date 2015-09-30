@@ -3,6 +3,7 @@ package geotrellis.spark.io
 import geotrellis.raster._
 import com.github.nscala_time.time.Imports._
 import geotrellis.spark._
+import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
 import org.scalatest._
@@ -92,6 +93,12 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] =>
       info(s"unwanted: ${(actual diff expected).toList}")
 
     actual should contain theSameElementsAs expected
+  }
+
+  it("should filter by extent") {
+    val extent = Extent(-10, -10, 10, 10) // this should intersect the four central tiles in 8x8 layout
+    query.where(Intersects(extent)).toRDD.keys.collect() should
+      contain theSameElementsAs { for ((col, row) <- GridBounds(3,3,4,4).coords) yield SpatialKey(col, row) }
   }
 }
 

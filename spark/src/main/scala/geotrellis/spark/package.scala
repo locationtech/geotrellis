@@ -38,10 +38,6 @@ package object spark {
   type SpatialComponent[K] = KeyComponent[K, SpatialKey]
   type TemporalComponent[K] = KeyComponent[K, TemporalKey]
 
-  type MapKeyTransformView[A] = A => {
-    def mapTransform: MapKeyTransform
-  }
-
   implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
     val _spatialComponent = implicitly[SpatialComponent[K]]
 
