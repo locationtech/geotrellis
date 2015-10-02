@@ -1,12 +1,17 @@
 package geotrellis.spark.etl
 
 import geotrellis.proj4.CRS
+import geotrellis.raster.{CellType, CellSize}
 import geotrellis.spark.tiling.{FloatingLayoutScheme, ZoomedLayoutScheme}
+import geotrellis.vector.Extent
 import org.apache.spark.storage.StorageLevel
 import org.rogach.scallop._
+import scala.util.{Success, Try, Failure}
 import reflect.runtime.universe._
 
 class EtlConf(args: Seq[String]) extends ScallopConf(args){
+  import EtlConf._
+
   val input       = opt[String]("input", required = true,
                       descr = "name of input module (ex: s3, hadoop)")
   val format       = opt[String]("format", required = true,
@@ -15,8 +20,22 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "spark rdd storage level to be used for caching (default: MEMORY_AND_DISK_SER)",
                       default = Some(StorageLevel.MEMORY_AND_DISK_SER))
   val layoutScheme = opt[LayoutSchemeProvider]("layoutScheme",
-                      descr = "layout scheme to use for tiling: (tms, floating)",
-                      default = Some((crs, tileSize) => ZoomedLayoutScheme(crs, tileSize)))(EtlConf.layoutSchemeConverter)
+                      descr = "layout scheme to use for tiling: (tms, floating)")(layoutSchemeConverter)
+
+  val layoutExtent = opt[Extent]("layoutExtent",
+                      descr = "extent of the layout to be used, provide instead of layoutScheme (format: xmin,ymin,xmax,ymax)"
+                      )(extentConverter)
+
+  val cellSize     = opt[CellSize]("cellSize",
+                      descr = "cell size of the layout, provide instead of layoutScheme (format: width,height)"
+                      )(cellSizeConverter)
+
+  val cellType     = opt[CellType]("cellType",
+                      descr = "cell type of the layout (format: bool, int8, float32, ...")(cellTypeConverter)
+
+  conflicts(layoutScheme, List(layoutExtent, cellSize))
+  dependsOnAll(layoutExtent, List(cellSize, cellType))
+
   val inputProps   = props[String]('I',
                       descr = "parameters for input module")
 
@@ -47,10 +66,10 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
   implicit def storageLevelConvert: ValueConverter[StorageLevel] = singleArgConverter[StorageLevel](StorageLevel.fromString)
 }
 object EtlConf {
- val layoutSchemeConverter = new ValueConverter[LayoutSchemeProvider] {
-   val validNames = List ("tms", "floating")
+  def layoutSchemeConverter = new ValueConverter[LayoutSchemeProvider] {
+    val validNames = List ("tms", "floating")
 
-   def parse(s : List[(String, List[String])]) = s match {
+    def parse(s : List[(String, List[String])]) = s match {
      case (_, schemeName :: Nil) :: Nil  if validNames contains schemeName =>
         Right(Some(schemeName match {
           case "floating" =>
@@ -58,12 +77,68 @@ object EtlConf {
           case "tms" =>
             (crs: CRS, tileSize: Int) => ZoomedLayoutScheme(crs, tileSize)
         }))
+     case Nil =>
+       Right(None)
      case _ =>
        Left("wrong arguments format")
-   }
+    }
 
-   val tag = typeTag[LayoutSchemeProvider]
-   val argType = org.rogach.scallop.ArgType.LIST
- }
+    val tag = typeTag[LayoutSchemeProvider]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
+
+  def extentConverter = new ValueConverter[Extent] {
+    def wrong(msg: String) = Left(s"wrong arguments format: $msg")
+    def parse(s : List[(String, List[String])]) = s match {
+      case (_, str :: Nil) :: Nil  =>
+        Try { Extent.fromString(str) } match {
+          case Success(extent) =>
+            Right(Some(extent))
+          case Failure(e) =>
+            wrong(e.getMessage)
+        }
+      case Nil  =>
+        Right(None)
+      case _ =>
+        wrong("use: xmin,ymin,xmax,ymax")
+    }
+
+    val tag = typeTag[Extent]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
+
+  def cellSizeConverter = new ValueConverter[CellSize] {
+    val wrong = Left("wrong arguments format, use: width,height")
+    def parse(s : List[(String, List[String])]) = s match {
+      case (_, str :: Nil) :: Nil  =>
+        Try { CellSize.fromString(str) } match {
+          case Success(cs) => Right(Some(cs))
+          case Failure(_) => wrong
+        }
+      case Nil  =>
+        Right(None)
+      case _ => wrong
+    }
+
+    val tag = typeTag[CellSize]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
+
+  def cellTypeConverter = new ValueConverter[CellType] {
+    val wrong = Left("wrong arguments format (ex: bool, int16, float32, ...")
+    def parse(s : List[(String, List[String])]) = s match {
+      case (_, str :: Nil) :: Nil  =>
+        Try { CellType.fromString(str) } match {
+          case Success(cs) => Right(Some(cs))
+          case Failure(_) => wrong
+        }
+      case Nil  =>
+        Right(None)
+      case _ => wrong
+    }
+
+    val tag = typeTag[CellType]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
 }
 
