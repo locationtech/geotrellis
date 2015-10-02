@@ -52,6 +52,10 @@ cache         | Spark RDD storage level to be used for caching (default: MEMORY_
 layerName     | Layer name to provide as result of the input
 crs           | Desired CRS for input layer. May trigger raster reprojection. (ex: EPSG:3857")
 tileSize      | Pixel height and width of each tile in the input layer
+layoutScheme  | Scheme to be used to determine raster resolution and extent (ex: tms, floating)
+layoutExtent  | Explicit alternative to use of `layoutScheme` (format: xmin,ymin,xmax,ymax)
+cellSize      | Width and Height of each pixel (format: width,height)
+cellType      | Value of type of the target raster (ex: bool, int8, int32, int64, float32, float64)
 output        | Name of output module to use (ex: s3, hadoop, accumulo)
 outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
 clobber       | Overwrite the layer on save in output catalog
@@ -92,16 +96,14 @@ val etl = Etl[SpatialKey](args, Etl(args, List(s3.S3Module, hadoop.HadoopModule)
 
 GeoTrellis is able to tile layers in either `ZoomedLayoutScheme`, matching TMS pyramid, or `FloatingLayoutScheme`, matching the native resolution of input raster.
 
-`ZoomedLayoutScheme` is the default choice, but you may override it by passing a function to the `Etl` constructor like so:
-
-```scala
-
-  Etl(args, (crs, tileSize) => ZoomedLayoutScheme(crs, tileSize))
-  // or
-  Etl(args, (_, tileSize) => FloatingLayoutScheme(tileSize))
-```
+These alternatives may be selecting by using the `layoutScheme` option.
 
 Note that `ZoomedLayoutScheme` needs to know the world extent, which it gets from the CRS, in order to build the TMS pyramid layout.
 This will likely cause resampling of input rasters to match the resolution of the TMS levels.
 
 On other hand `FloatingLayoutScheme` will discover the native resolution and extent and partition it by given tile size without resampling.
+
+### User Defined Layout
+
+You may bypass the metadata collection step by providing `layoutExtent`, `cellSize`, and `cellType` instead of the `layoutScheme` option.
+Together with `tileSize` option this is enough to fully define the raster metadata and start the tiling process.
