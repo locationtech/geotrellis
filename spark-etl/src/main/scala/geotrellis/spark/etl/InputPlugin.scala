@@ -1,18 +1,10 @@
 package geotrellis.spark.etl
 
 import geotrellis.proj4.CRS
-import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.raster.{CellType, Tile, CellGrid}
-import geotrellis.spark.etl.accumulo._
-import geotrellis.spark.io.{Intersects, FilteringLayerReader, Reader}
-import geotrellis.spark.io.accumulo.AccumuloLayerReader
-import geotrellis.spark.reproject._
-import geotrellis.spark.{SpaceTimeKey, LayerId, RasterMetaData, RasterRDD}
-import geotrellis.spark.ingest._
+import geotrellis.raster.{CellType, Tile}
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
-import geotrellis.vector.Extent
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
 trait InputPlugin[K] extends Serializable {
