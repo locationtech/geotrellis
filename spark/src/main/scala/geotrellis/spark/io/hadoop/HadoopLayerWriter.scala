@@ -5,6 +5,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io.{AttributeStore, LayerWriteError, ContainerConstructor, Writer}
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -69,10 +70,10 @@ object HadoopLayerWriter {
     rootPath: Path,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
+  (implicit cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
     apply(
       rootPath = rootPath,
-      attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), sc.hadoopConfiguration),
+      attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration),
       rddWriter = rddWriter,
       indexMethod = indexMethod)
 
@@ -80,7 +81,6 @@ object HadoopLayerWriter {
     rootPath: Path,
     indexMethod: KeyIndexMethod[K])
   (implicit
-    sc: SparkContext,
     format: HadoopFormat[K, V],
     cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
     apply(
