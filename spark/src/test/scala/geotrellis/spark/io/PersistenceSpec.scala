@@ -23,8 +23,8 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
 
   val layerId = LayerId("sample", 1)
   lazy val query = reader.query(layerId)
-
-  ifCanRunSpark {
+  
+  if (canRunSpark) {
 
     it("should not find layer before write") {
       intercept[LayerReadError] {
@@ -64,7 +64,7 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] with OnlyIf
   val bounds1 = GridBounds(1,1,3,3)
   val bounds2 = GridBounds(4,5,6,6)
 
-  ifCanRunSpark {
+  if (canRunSpark) {
 
     it("filters past layout bounds") {
       query.where(Intersects(GridBounds(6, 2, 7, 3))).toRDD.keys.collect() should
@@ -120,7 +120,7 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] with 
   val bounds1 = GridBounds(1,1,3,3)
   val bounds2 = GridBounds(4,5,6,6)
 
-  ifCanRunSpark {
+  if (canRunSpark) {
     it("query outside of layer bounds") {
       query.where(Intersects(GridBounds(10, 10, 15, 15))).toRDD.collect() should be(empty)
     }
