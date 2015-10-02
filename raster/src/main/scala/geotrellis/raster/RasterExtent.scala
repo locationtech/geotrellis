@@ -33,6 +33,11 @@ object CellSize {
     val (cols, rows) = dims
     apply(extent, cols, rows)
   }
+
+  def fromString(s:String) = {
+    val Array(width, height) = s.split(",").map(_.toDouble)
+    CellSize(width, height)
+  }
 }
 
 /**
