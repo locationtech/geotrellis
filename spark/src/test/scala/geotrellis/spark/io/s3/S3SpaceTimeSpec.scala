@@ -18,38 +18,38 @@ abstract class S3SpaceTimeSpec
   val bucket = "mock-bucket"
   val prefix = "catalog"
 
-  val attributeStore = new S3AttributeStore(bucket, prefix) {
+  lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override val s3Client = new MockS3Client
   }
-  val rddReader = new S3RDDReader[SpaceTimeKey, Tile]() {
+  lazy val rddReader = new S3RDDReader[SpaceTimeKey, Tile]() {
     override val getS3Client = () => new MockS3Client
   }
-  val rddWriter = new S3RDDWriter[SpaceTimeKey, Tile](){
+  lazy val rddWriter = new S3RDDWriter[SpaceTimeKey, Tile](){
     override val getS3Client = () => new MockS3Client
   }
-  val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddReader, None)
-  val tiles = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
+  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddReader, None)
+  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client
   }
-  val sample =  CoordinateSpaceTime
+  lazy val sample =  CoordinateSpaceTime
 }
 
 class S3SpaceTimeZCurveByYearSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod.byYear, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod.byYear, bucket, prefix, true)
 }
 
 class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, bucket, prefix, true)
 }
 
 class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), bucket, prefix, true)
 }
 
 class S3SpaceTimeHilbertWithResolutionSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, HilbertKeyIndexMethod(2), bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore,rddWriter, HilbertKeyIndexMethod(2), bucket, prefix, true)
 }

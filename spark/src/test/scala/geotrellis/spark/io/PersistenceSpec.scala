@@ -11,15 +11,14 @@ import scala.reflect._
 
 abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: OnlyIfCanRunSpark =>
   type Container <: RDD[(K, V)]
-  type MetaData = reader.MetaDataType
   type TestReader = FilteringLayerReader[LayerId, K, Container]
   type TestWriter = Writer[LayerId, Container]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
-  val sample: Container
-  val reader: TestReader
-  val writer: TestWriter
-  val tiles: TestTileReader
+  def sample: Container
+  def reader: TestReader
+  def writer: TestWriter
+  def tiles: TestTileReader
 
   val layerId = LayerId("sample", 1)
   lazy val query = reader.query(layerId)

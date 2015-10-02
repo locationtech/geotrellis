@@ -15,23 +15,23 @@ abstract class HadoopSpaceTimeSpec
           with CoordinateSpaceTimeTests {
   type Container = RasterRDD[SpaceTimeKey]
 
-  val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
-  val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
-  val sample =  CoordinateSpaceTime
+  lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
+  lazy val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
+  lazy val sample =  CoordinateSpaceTime
 }
 
 class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
-  val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.byYear)
+  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.byYear)
 }
 
 class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
-  val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 })
+  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 })
 }
 
 class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
-  val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))
+  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))
 }
 
 class HadoopSpaceTimeHilbertWithResolutionSpec extends HadoopSpaceTimeSpec {
-  val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal,  HilbertKeyIndexMethod(2))
+  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal,  HilbertKeyIndexMethod(2))
 }

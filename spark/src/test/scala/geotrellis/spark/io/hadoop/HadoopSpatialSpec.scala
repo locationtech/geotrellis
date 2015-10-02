@@ -12,21 +12,21 @@ abstract class HadoopSpatialSpec
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
   type Container = RasterRDD[SpatialKey]
-  val reader = HadoopLayerReader[SpatialKey, Tile, RasterRDD](outputLocal)
-  val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
-  val sample = AllOnesTestFile
+  lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterRDD](outputLocal)
+  lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
+  lazy val sample = AllOnesTestFile
 }
 
 class HadoopSpatialRowMajorSpec extends HadoopSpatialSpec {
-  val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, RowMajorKeyIndexMethod)
+  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, RowMajorKeyIndexMethod)
 }
 
 class HadoopSpatialZCurveSpec extends HadoopSpatialSpec {
-  val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod)
+  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod)
 }
 
 class HadoopSpatialHilbertSpec extends HadoopSpatialSpec {
-  val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod)
+  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod)
 }
 
 
