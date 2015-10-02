@@ -53,8 +53,8 @@ class Etl[K: TypeTag: SpatialComponent](args: Seq[String], modules: Seq[TypedMod
     
   lazy val outputPlugin =
     combinedModule
-      .findSubclassOf[OutputPlugin]
-      .find { _.suitableFor(conf.output(), classTagK) }
+      .findSubclassOf[OutputPlugin[K]]
+      .find { _.suitableFor(conf.output()) }
       .getOrElse(sys.error(s"Unable to find output module of type '${conf.output()}'"))
 
   def load()(implicit sc: SparkContext): (LayerId, RasterRDD[K]) = {

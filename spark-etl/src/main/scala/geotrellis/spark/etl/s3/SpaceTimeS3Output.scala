@@ -7,11 +7,7 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.{SpaceTimeKey, LayerId, RasterRDD}
 import scala.reflect._
 
-class SpaceTimeS3Output extends S3Output {
-  val key = classTag[SpaceTimeKey]
-
-  def apply[K](id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]) = {
-    S3LayerWriter[SpaceTimeKey, Tile, RasterRDD](props("bucket"), props("key"), method.asInstanceOf[KeyIndexMethod[SpaceTimeKey]])
-      .write(id, rdd.asInstanceOf[RasterRDD[SpaceTimeKey]])
-  }
+class SpaceTimeS3Output extends S3Output[SpaceTimeKey] {
+  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
+    S3LayerWriter[SpaceTimeKey, Tile, RasterRDD](props("bucket"), props("key"), method)
 }

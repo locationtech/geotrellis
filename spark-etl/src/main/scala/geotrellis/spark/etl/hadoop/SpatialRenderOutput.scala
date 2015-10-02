@@ -11,12 +11,11 @@ import org.apache.hadoop.conf.ConfServlet.BadFormatException
 import scala.reflect._
 
 
-class SpatialRenderOutput extends OutputPlugin {
+class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
   def name = "render"
   def key = classTag[SpatialKey]
   def requiredKeys = Array("path", "format")
   def attributes(props: Map[String, String]) = null
-
   /**
    * Parses into ColorBreaks a string of limits and their colors in hex RGBA
    * Only used for rendering PNGs
@@ -38,7 +37,7 @@ class SpatialRenderOutput extends OutputPlugin {
     }
   }
   
-  def apply[K](id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]) =
+  override def apply(id: LayerId, rdd: RasterRDD[SpatialKey], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
     props("format").toLowerCase match {
       case "png" =>
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderPng(id, props("path"), parseBreaks(props.get("breaks")))
@@ -46,5 +45,6 @@ class SpatialRenderOutput extends OutputPlugin {
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderGeoTiff(id, props("path"))
     }
 
+  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) = ???
 }
 
