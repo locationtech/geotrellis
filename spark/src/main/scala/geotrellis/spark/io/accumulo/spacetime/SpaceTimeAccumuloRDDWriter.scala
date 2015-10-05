@@ -33,10 +33,10 @@ class SpaceTimeAccumuloRDDWriter[V: AvroRecordCodec](
     val timeText = (key: K) =>
       new Text(key.time.withZone(DateTimeZone.UTC).toString)
 
-    val kwCodec = KryoWrapper(codec)
+    val _codec = codec
     val kvPairs = raster
       .map { case tuple @ (key, _) =>
-        val value: Value = new Value(AvroEncoder.toBinary(Vector(tuple))(kwCodec.value))
+        val value: Value = new Value(AvroEncoder.toBinary(Vector(tuple))(_codec))
         val rowKey = new Key(keyToRowId(key), columnFamily, timeText(key))
         (rowKey, value)
       }

@@ -55,15 +55,15 @@ class AccumuloRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](
     makeLocalityGroup(table, columnFamily.toString)
 
     val encodeKey = (key: K) => new Key(keyToRowId(key), columnFamily)
+    val _codec = codec
 
-    val kwCodec = KryoWrapper(codec)
     val kvPairs: RDD[(Key, Value)] = {
       if (oneToOne)
         raster.map { case row => encodeKey(row._1) -> Vector(row) }
       else
         raster.groupBy { row => encodeKey(row._1) }
     }.map { case (key, pairs) =>
-      (key, new Value(AvroEncoder.toBinary(pairs.toVector)(kwCodec.value)))
+      (key, new Value(AvroEncoder.toBinary(pairs.toVector)(_codec)))
     }
 
     strategy.write(kvPairs, instance, table)

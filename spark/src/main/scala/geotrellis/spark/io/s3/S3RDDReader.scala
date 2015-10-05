@@ -36,18 +36,17 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
       queryKeyBounds.flatMap(decomposeBounds)
 
     val bins = S3RDDReader.balancedBin(ranges, numPartitions)
-    val recordCodec = KeyValueRecordCodec[K, V]
+
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val _recordCodec = KeyValueRecordCodec[K, V]
     val _getS3Client = getS3Client
-
-    val BC = KryoWrapper((_getS3Client, recordCodec, writerSchema, cache))
+    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     val rdd =
       sc.parallelize(bins, bins.size)
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          val (getS3Client, recCodec, schema, cache) = BC.value
-          val s3client = getS3Client()
+          val s3client = _getS3Client()
 
           val tileSeq: Iterator[Seq[(K, V)]] =
             for{
@@ -70,7 +69,7 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
                     case None =>
                       getS3Bytes()
                   }
-                val recs = AvroEncoder.fromBinary(schema.getOrElse(recCodec.schema), bytes)(recCodec)
+                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
                 recs.filter { row => includeKey(row._1) }
               } catch {
                 case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty

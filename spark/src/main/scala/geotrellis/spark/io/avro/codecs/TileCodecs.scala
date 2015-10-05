@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 trait TileCodecs {
   implicit def shortArrayTileCodec: AvroRecordCodec[ShortArrayTile] = new AvroRecordCodec[ShortArrayTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("ShortArrayTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
@@ -37,7 +37,7 @@ trait TileCodecs {
   }
 
   implicit def intArrayTileCodec: AvroRecordCodec[IntArrayTile] = new AvroRecordCodec[IntArrayTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("IntArrayTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
@@ -58,7 +58,7 @@ trait TileCodecs {
   }
 
   implicit def floatArrayTileCodec: AvroRecordCodec[FloatArrayTile] = new AvroRecordCodec[FloatArrayTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("FloatArrayTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
@@ -79,7 +79,7 @@ trait TileCodecs {
   }
 
   implicit def doubleArrayTileCodec: AvroRecordCodec[DoubleArrayTile] = new AvroRecordCodec[DoubleArrayTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("DoubleArrayTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
@@ -100,7 +100,7 @@ trait TileCodecs {
   }
 
   implicit def byteArrayTileCodec: AvroRecordCodec[ByteArrayTile] = new AvroRecordCodec[ByteArrayTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("ByteArrayTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
@@ -121,7 +121,7 @@ trait TileCodecs {
   }
 
   implicit def bitArrayTileCodec: AvroRecordCodec[BitArrayTile] = new AvroRecordCodec[BitArrayTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("BitArrayTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
@@ -142,7 +142,7 @@ trait TileCodecs {
   }
 
   implicit def multiBandTileCodec: AvroRecordCodec[MultiBandTile] = new AvroRecordCodec[MultiBandTile] {
-    lazy val schema = SchemaBuilder
+    def schema = SchemaBuilder
       .record("ArrayMultiBandTile").namespace("geotrellis.raster")
       .fields()
       .name("bands").`type`().array().items.`type`(tileUnionCodec.schema).noDefault()

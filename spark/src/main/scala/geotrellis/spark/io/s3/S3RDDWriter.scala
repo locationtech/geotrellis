@@ -28,9 +28,9 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
 
   def write(rdd: RDD[(K, V)], bucket: String, keyPath: K => String, oneToOne: Boolean): Unit = {
     implicit val sc = rdd.sparkContext
-    val gs3 = getS3Client
-    new ObjectOutputStream(new ByteArrayOutputStream).writeObject(gs3)
-    val BC = KryoWrapper((getS3Client, codec))
+
+    val _getS3Client = getS3Client
+    val _codec = codec
 
     if (oneToOne) {
       rdd.map { case row => keyPath(row._1) -> Vector(row) }
@@ -38,7 +38,7 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
       rdd.groupBy { row => keyPath(row._1) }
     }.foreachPartition { partition =>
       import geotrellis.spark.utils.TaskUtils._
-      val (getS3Client, recsCodec) = BC.value
+      val getS3Client = _getS3Client
       val s3client: S3Client = getS3Client()
 
       val requests: Process[Task, PutObjectRequest] =
@@ -47,7 +47,7 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
             val recs = iter.next()
             val key = recs._1
             val pairs = recs._2.toVector
-            val bytes = AvroEncoder.toBinary(pairs)(recsCodec)
+            val bytes = AvroEncoder.toBinary(pairs)(_codec)
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
