@@ -23,6 +23,12 @@ object GeoTiff {
   def apply(tile: Tile, extent: Extent, crs: CRS): SingleBandGeoTiff =
     SingleBandGeoTiff(tile, extent, crs)
 
+  def apply(raster: Raster, crs: CRS): SingleBandGeoTiff =
+    apply(raster.tile, raster.extent, crs)
+
   def apply(tile: MultiBandTile, extent: Extent, crs: CRS): MultiBandGeoTiff =
     MultiBandGeoTiff(tile, extent, crs)
+
+  def apply(raster: MultiBandRaster, crs: CRS): MultiBandGeoTiff =
+    apply(raster.tile, raster.extent, crs)
 }
