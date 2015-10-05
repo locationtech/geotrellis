@@ -79,7 +79,9 @@ object HdfsWriteStrategy {
  * This strategy will create one BatchWriter per partition and attempt to stream the records to the target tablets.
  * In order to gain some parallism this strategy will create a number of splits in the target table equal to the number
  * of tservers in the cluster. This is suitable for smaller ingests, or where HdfsWriteStrategy is otherwise not possible.
- * 
+ *
+ * This strategy will not create splits before starting to write. If you wish to do that use [[AccumuloUtils.getSplits]] first.
+ *
  * There is a problem in Accumulo 1.6 (fixed in 1.7) where the split creation does not wait for the resulting
  * empty tablets to distribute through the cluster before returning. This will create a warm-up period where the
  * pressure the ingest writers on that node will delay tablet re-balancing.
