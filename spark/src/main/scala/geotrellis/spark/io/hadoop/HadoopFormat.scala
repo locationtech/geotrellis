@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.hadoop.formats._
+import org.apache.hadoop.io.{Writable, WritableComparable}
 
 import org.apache.hadoop.mapreduce.{OutputFormat, InputFormat}
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
@@ -19,7 +20,7 @@ trait HadoopFormat[K, V] extends Serializable {
   type VW <: AvroWritable[V]
   type FilteredInputFormat <: InputFormat[KW, VW]
   type FullInputFormat <: InputFormat[KW, VW]
-  type FullOutputFormat <: OutputFormat[KW, VW]
+  type FullOutputFormat <: OutputFormat[WritableComparable[_], Writable]
 
   def kClass: Class[KW]
   def vClass: Class[VW]
@@ -44,7 +45,7 @@ object HadoopFormat {
 
       // These are always suitable and not required to be explicitly specified
       type FullInputFormat = SequenceFileInputFormat[KWP, VWP]
-      type FullOutputFormat = MapFileOutputFormat[KWP, VWP]
+      type FullOutputFormat = MapFileOutputFormat
 
       val kClass = classTag[KWP].runtimeClass.asInstanceOf[Class[KW]]
       val vClass = classTag[VWP].runtimeClass.asInstanceOf[Class[VW]]
