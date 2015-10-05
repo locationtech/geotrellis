@@ -8,4 +8,5 @@ object HadoopModule extends TypedModule {
   register(new SpatialHadoopOutput)
   register(new SpaceTimeHadoopOutput)
   register(new SpatialRenderOutput)
+  register(new GeoTiffSequenceHadoopInput)
 }
