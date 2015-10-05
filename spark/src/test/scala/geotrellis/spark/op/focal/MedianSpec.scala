@@ -31,7 +31,7 @@ class MedianSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMedian(Square(1)).stitch.toArray
+        val res = rasterRDD.focalMedian(Square(1)).stitch.tile.toArray
 
         val expected = Array(
           7, 1, 1,    1, 2, 3,    4, 4, 4,

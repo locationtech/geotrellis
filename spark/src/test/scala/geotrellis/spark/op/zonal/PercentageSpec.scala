@@ -61,8 +61,8 @@ class PercentageSpec extends FunSpec
           TileLayout(3, 4, 3, 2)
         )
 
-        val actual = rdd.zonalPercentage(zonesRDD).stitch
-        val expected = rdd.stitch.zonalPercentage(zonesRDD.stitch)
+        val actual = rdd.zonalPercentage(zonesRDD).stitch.tile
+        val expected = rdd.stitch.tile.zonalPercentage(zonesRDD.stitch.tile)
 
         (actual.cols, actual.rows) should be (expected.cols, expected.rows)
 

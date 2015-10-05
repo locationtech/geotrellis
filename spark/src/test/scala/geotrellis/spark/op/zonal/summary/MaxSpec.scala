@@ -41,7 +41,7 @@ class MaxSpec extends FunSpec
         )
 
         val result = inc.zonalMax(quarterExtent.toPolygon)
-        val expected = inc.stitch.zonalMax(totalExtent, quarterExtent.toPolygon)
+        val expected = inc.stitch.tile.zonalMax(totalExtent, quarterExtent.toPolygon)
 
         result should be (expected)
       }

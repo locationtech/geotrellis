@@ -41,7 +41,7 @@ class MinSpec extends FunSpec
         )
 
         val result = inc.zonalMin(quarterExtent.toPolygon)
-        val expected = inc.stitch.zonalMin(totalExtent, quarterExtent.toPolygon)
+        val expected = inc.stitch.tile.zonalMin(totalExtent, quarterExtent.toPolygon)
 
         result should be (expected)
       }

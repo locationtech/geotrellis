@@ -40,7 +40,7 @@ class MeanSpec extends FunSpec
           totalExtent.ymin + yd / 2
         )
         val result = inc.zonalMean(quarterExtent.toPolygon)
-        val expected = inc.stitch.zonalMean(totalExtent, quarterExtent.toPolygon)
+        val expected = inc.stitch.tile.zonalMean(totalExtent, quarterExtent.toPolygon)
 
         result should be (expected)
       }

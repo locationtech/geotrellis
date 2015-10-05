@@ -59,8 +59,8 @@ class HistogramSpec extends FunSpec
           TileLayout(3, 4, 3, 2)
         )
 
-        val r = rdd.stitch
-        val zones = zonesRDD.stitch
+        val r = rdd.stitch.tile
+        val zones = zonesRDD.stitch.tile
         val (cols, rows) = (r.cols, r.rows)
 
         val zoneValues = mutable.Map[Int, mutable.ListBuffer[Int]]()

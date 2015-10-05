@@ -33,7 +33,7 @@ class MeanSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMean(Square(1)).stitch.toArrayDouble
+        val res = rasterRDD.focalMean(Square(1)).stitch.tile.toArrayDouble
 
         val expected = Array(
           5.666, 3.8, 2.166,   1.666,   2.5, 4.166,    5.166, 5.166,   4.5,
@@ -59,7 +59,7 @@ class MeanSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMean(Circle(1)).stitch.toArrayDouble
+        val res = rasterRDD.focalMean(Circle(1)).stitch.tile.toArrayDouble
 
         val expected = Array(
           5.022,3.876,2.602,    2.054, 2.749, 3.846,    4.652, 4.708, 4.444,

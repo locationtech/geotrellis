@@ -30,7 +30,7 @@ class MaxSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMax(Square(1)).stitch.toArray
+        val res = rasterRDD.focalMax(Square(1)).stitch.tile.toArray
 
         val expected = Array(
           9, 9, 7,    2, 2, 2,    3, 3, 3,
@@ -56,7 +56,7 @@ class MaxSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMax(Square(2)).stitch.toArray
+        val res = rasterRDD.focalMax(Square(2)).stitch.tile.toArray
 
         val expected = Array(
           9, 9, 9,    8, 3, 3,    3, 3, 3,
@@ -82,7 +82,7 @@ class MaxSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMax(Circle(1)).stitch.toArray
+        val res = rasterRDD.focalMax(Circle(1)).stitch.tile.toArray
 
         val expected = Array(
           9, 7, 7,    2, 2, 2,    1, 3, 1,

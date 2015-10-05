@@ -79,7 +79,7 @@ object GenerateTestFiles {
           sc.parallelize(tiles)
         }
 
-//      println(rdd.stitch.asciiDraw)
+//      println(rdd.stitch.tile.asciiDraw)
 
       catalog.write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
@@ -118,7 +118,7 @@ object GenerateTestFiles {
           sc.parallelize(tiles)
         }
 
-//      println(rdd.stitch.asciiDraw)
+//      println(rdd.stitch.tile.asciiDraw)
 
       catalog.write(LayerId(s"$name", TestFiles.ZOOM_LEVEL), rdd)
     }
