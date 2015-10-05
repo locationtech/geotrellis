@@ -71,7 +71,7 @@ class HadoopRDDWriter[K, V](catalogConfig: HadoopCatalogConfig)(implicit format:
         path.toUri.toString,
         fmt.kClass,
         fmt.vClass,
-        classOf[MapFileOutputFormat],
+        fmt.fullOutputFormatClass,
         job.getConfiguration
       )
 
