@@ -17,8 +17,8 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
   val format       = opt[String]("format", required = true,
                       descr = "input file format (ex: geotiff)")
   val cache        = opt[StorageLevel]("cache",
-                      descr = "spark rdd storage level to be used for caching (default: MEMORY_AND_DISK_SER)",
-                      default = Some(StorageLevel.MEMORY_AND_DISK_SER))
+                      descr = "spark rdd storage level to be used for caching (default: NONE)",
+                      default = Some(StorageLevel.NONE))
   val layoutScheme = opt[LayoutSchemeProvider]("layoutScheme",
                       descr = "layout scheme to use for tiling: (tms, floating)")(layoutSchemeConverter)
 
