@@ -120,7 +120,7 @@ trait ByteBufferExtensions {
       if (length <= 4) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, offset)
         cfor(0)( _ < length, _ + 1) { i =>
-          sb.append(byteBuffer.get.toChar)
+          sb.append(bb.get.toChar)
         }
       } else {
         val oldPos = byteBuffer.position
