@@ -82,7 +82,7 @@ class MockS3Client() extends S3Client with LazyLogging {
       } else {
         val ex = new AmazonS3ExceptionBuilder()
         ex.setErrorCode("NoSuchKey")
-        ex.setErrorMessage("The specified key does not exist")
+        ex.setErrorMessage(s"The specified key does not exist: $key")
         ex.setStatusCode(404)
         throw ex.build
       }
