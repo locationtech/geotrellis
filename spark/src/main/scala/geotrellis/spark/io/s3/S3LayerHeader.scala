@@ -11,7 +11,7 @@ case class S3LayerHeader(
 )
 
 object S3LayerHeader {
-  implicit object S3LayerMetaDataFormat extends RootJsonFormat[S3LayerHeader] {
+  implicit object S3LayerHeaderFormat extends RootJsonFormat[S3LayerHeader] {
     def write(md: S3LayerHeader) =
       JsObject(
         "keyClass" -> JsString(md.keyClass),
@@ -35,7 +35,7 @@ object S3LayerHeader {
 
         case stuff =>
           println(stuff)
-          throw new DeserializationException(s"S3LayerMetaData expected, got: $value")
+          throw new DeserializationException(s"S3LayerHeader expected, got: $value")
       }
   }
 }
