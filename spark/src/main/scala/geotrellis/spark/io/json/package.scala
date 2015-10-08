@@ -9,6 +9,7 @@ import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import com.github.nscala_time.time.Imports._
+import org.apache.avro.Schema
 
 import spray.json._
 
@@ -97,5 +98,10 @@ package object json {
         case _ =>
           throw new DeserializationException("DateTime expected")
       }
+  }
+
+  implicit object SchemaFormat extends RootJsonFormat[Schema] {
+    def read(json: JsValue) = (new Schema.Parser).parse(json.toString())
+    def write(obj: Schema) = obj.toString.parseJson
   }
 }
