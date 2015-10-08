@@ -1,15 +1,15 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io.{AttributeStore, LayerWriteError, ContainerConstructor, Writer}
+import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
@@ -37,12 +37,9 @@ class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V:
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     try {
-      attributeStore.cacheWrite(id, Fields.header, header)
-      attributeStore.cacheWrite(id, Fields.metaData, metaData)(cons.metaDataFormat)
-      attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
-      attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
+      implicit val mdFormat = cons.metaDataFormat
+      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
       // TODO: Writers need to handle Schema changes
-      //attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
 
       rddWriter.write(rdd, layerPath, keyIndex)
     } catch {

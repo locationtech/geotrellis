@@ -1,14 +1,14 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
-import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class HadoopTileReader[K: JsonFormat: ClassTag, V](val attributeStore: HadoopAttributeStore)
@@ -18,8 +18,10 @@ class HadoopTileReader[K: JsonFormat: ClassTag, V](val attributeStore: HadoopAtt
   val conf = attributeStore.hadoopConfiguration
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val layerMetaData = attributeStore.cacheRead[HadoopLayerHeader](layerId, Fields.header)
-    val keyIndex = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
+
+    val (layerMetaData, _, _, keyIndex, _) =
+      attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, KeyIndex[K], Unit](layerId)
+
     val dataPath = layerMetaData.path.suffix(catalogConfig.SEQFILE_GLOB)
     val inputConf = conf.withInputPath(dataPath)
     

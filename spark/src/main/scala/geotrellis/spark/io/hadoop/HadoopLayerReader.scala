@@ -1,17 +1,15 @@
 package geotrellis.spark.io.hadoop
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import geotrellis.spark.{KeyBounds, LayerId, Boundable}
 import geotrellis.spark.io.json._
-import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json.{JsonFormat, JsObject}
-
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 
@@ -35,20 +33,17 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     try {
-      val header = attributeStore.cacheRead[HadoopLayerHeader](id, Fields.header)
-      val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.metaData)(cons.metaDataFormat)
-      val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
+      implicit val mdFormat = cons.metaDataFormat
+      val (header, metadata, keyBounds, keyIndex, writerSchema) =
+        attributeStore.readLayerAttributes[HadoopLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
 
       val layerPath = header.path
       val queryKeyBounds = rasterQuery(metadata, keyBounds)
-
-      //val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
 
       val rdd: RDD[(K, V)] =
         if (queryKeyBounds == Seq(keyBounds)) {
           rddReader.readFully(layerPath)
         } else {
-          val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
           val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
           rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
         }

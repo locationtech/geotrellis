@@ -2,8 +2,9 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.LayerId
+import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io.AttributeStore.Fields
+import geotrellis.spark.io.s3.S3LayerHeader
 import geotrellis.spark.io.{CatalogError, TileNotFoundError, Reader}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.json._
@@ -26,10 +27,8 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
   val rowId = (index: Long) => new Text(long2Bytes(index))
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val layerMetaData = attributeStore.cacheRead[AccumuloLayerHeader](layerId, Fields.header)
-    val keyIndex = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
-    val writerSchema: Schema = (new Schema.Parser)
-      .parse(attributeStore.cacheRead[JsObject](layerId, Fields.schema).toString())
+    val (layerMetaData, _, _, keyIndex, writerSchema) =
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, KeyIndex[K], Schema](layerId)
 
     def read(key: K): V = {
       val scanner = instance.connector.createScanner(layerMetaData.tileTable, new Authorizations())

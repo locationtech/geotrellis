@@ -1,7 +1,6 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark._
-import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.KeyIndex
@@ -9,8 +8,10 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
-import spray.json.JsonFormat
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
@@ -20,9 +21,9 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec]
   val s3Client: S3Client = S3Client.default
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val layerMetaData = attributeStore.cacheRead[S3LayerHeader](layerId, Fields.header)
-    val keyBounds = attributeStore.cacheRead[KeyBounds[K]](layerId, Fields.keyBounds)
-    val keyIndex = attributeStore.cacheRead[KeyIndex[K]](layerId, Fields.keyIndex)
+
+    val (layerMetaData, _, keyBounds, keyIndex, writerSchema) =
+      attributeStore.readLayerAttributes[S3LayerHeader, Unit, KeyBounds[K], KeyIndex[K], Schema](layerId)
 
     def read(key: K): V = {
       val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))

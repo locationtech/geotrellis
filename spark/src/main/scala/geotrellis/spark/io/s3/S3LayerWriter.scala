@@ -43,7 +43,6 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
       val metadata = cons.getMetaData(rdd)
       val header = S3LayerHeader(
-        layerId = id,
         keyClass = classTag[K].toString(),
         valueClass = classTag[K].toString(),
         bucket = bucket,
@@ -52,11 +51,8 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-      attributeStore.cacheWrite(id, Fields.header, header)
-      attributeStore.cacheWrite(id, Fields.metaData, metadata)(cons.metaDataFormat)
-      attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
-      attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
-      attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
+      implicit val mdFormat = cons.metaDataFormat
+      attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, rddWriter.schema)
 
       val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
       val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))

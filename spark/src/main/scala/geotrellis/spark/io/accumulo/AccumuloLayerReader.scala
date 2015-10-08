@@ -1,7 +1,6 @@
 package geotrellis.spark.io.accumulo
 
 
-import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
 import geotrellis.spark._
@@ -28,12 +27,10 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
     try {
-      val storageMetaData = attributeStore.cacheRead[AccumuloLayerHeader](id, Fields.header)
-      val metaData = attributeStore.cacheRead[MetaDataType](id, Fields.metaData)(cons.metaDataFormat)
-      val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
-      val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
-      val writerSchema: Schema = (new Schema.Parser)
-        .parse(attributeStore.cacheRead[JsObject](id, Fields.schema).toString())
+
+      implicit val mdFormat = cons.metaDataFormat
+      val (header, metaData, keyBounds, keyIndex, writerSchema) =
+        attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
 
       val queryKeyBounds = rasterQuery(metaData, keyBounds)
 
@@ -42,7 +39,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
           new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
         }
 
-      val rdd = rddReader.read(storageMetaData.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
+      val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
       cons.makeContainer(rdd, keyBounds, metaData)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)

@@ -1,6 +1,5 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark._
@@ -32,11 +31,8 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-      attributeStore.cacheWrite(id, Fields.header, header)
-      attributeStore.cacheWrite(id, Fields.metaData, metaData)(cons.metaDataFormat)
-      attributeStore.cacheWrite(id, Fields.keyBounds, keyBounds)
-      attributeStore.cacheWrite(id, Fields.keyIndex, keyIndex)
-      attributeStore.cacheWrite(id, Fields.schema, rddWriter.schema.toString.parseJson)
+      implicit val mdFormat = cons.metaDataFormat
+      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, rddWriter.schema)
 
       val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
 

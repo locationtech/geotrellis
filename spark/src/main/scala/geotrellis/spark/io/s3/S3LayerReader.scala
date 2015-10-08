@@ -37,17 +37,13 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     try {
-      val header = attributeStore.cacheRead[S3LayerHeader](id, Fields.header)
-      val metadata = attributeStore.cacheRead[cons.MetaDataType](id, Fields.metaData)(cons.metaDataFormat)
-      val keyBounds = attributeStore.cacheRead[KeyBounds[K]](id, Fields.keyBounds)
-      val keyIndex = attributeStore.cacheRead[KeyIndex[K]](id, Fields.keyIndex)
-
+      implicit val mdFormat = cons.metaDataFormat
+      val (header, metadata, keyBounds, keyIndex, writerSchema) =
+        attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
       val bucket = header.bucket
       val prefix = header.key
 
       val queryKeyBounds = rasterQuery(metadata, keyBounds)
-
-      val writerSchema: Schema = (new Schema.Parser).parse(attributeStore.cacheRead[JsObject](id, "schema").toString())
       val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
       val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
       val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
