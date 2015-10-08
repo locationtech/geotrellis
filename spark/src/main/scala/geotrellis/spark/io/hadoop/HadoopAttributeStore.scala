@@ -74,7 +74,7 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     val fdos = fs.create(path)
     val out = new PrintWriter(fdos)
     try {
-      val s = (layerId, value).toJson.toString
+      val s = (layerId, value).toJson.toString()
       out.println(s)
     } finally {
       out.close()
@@ -83,7 +83,7 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
   }
 
   def layerExists(layerId: LayerId): Boolean = {
-    val path = attributePath(layerId, AttributeStore.Fields.header)
+    val path = attributePath(layerId, AttributeStore.Fields.metaData)
     val fs = path.getFileSystem(hadoopConfiguration)
     fs.exists(path)
   }

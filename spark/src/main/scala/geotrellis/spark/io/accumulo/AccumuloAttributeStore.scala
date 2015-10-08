@@ -70,6 +70,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   }
 
   def layerExists(layerId: LayerId): Boolean = {
-    fetch(Some(layerId), AttributeStore.Fields.header).nonEmpty
+    fetch(Some(layerId), AttributeStore.Fields.metaData).nonEmpty
   }
 }
