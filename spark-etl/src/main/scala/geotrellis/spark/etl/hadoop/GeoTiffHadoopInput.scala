@@ -1,30 +1,14 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.proj4.CRS
-import geotrellis.spark.etl._
-import geotrellis.spark.ingest._
-import geotrellis.spark.io.hadoop.formats.NetCdfBand
-import geotrellis.spark.tiling.LayoutScheme
-import geotrellis.spark.{SpaceTimeKey, RasterRDD, RasterMetaData, SpatialKey}
+import geotrellis.spark._
 import geotrellis.vector.ProjectedExtent
-import org.apache.hadoop.fs.Path
+import geotrellis.spark.ingest._
 import org.apache.spark.SparkContext
-import org.apache.spark.storage.StorageLevel
-
-import scala.reflect._
 import geotrellis.spark.io.hadoop._
+import org.apache.spark.rdd.RDD
 
-class GeoTiffHadoopInput extends HadoopInput {
+class GeoTiffHadoopInput extends HadoopInput[ProjectedExtent, SpatialKey] {
   val format = "geotiff"
-  val key = classTag[SpatialKey]
-
-  def apply[K](lvl: StorageLevel, crs: CRS, layoutScheme: LayoutScheme, props: Map[String, String])(implicit sc: SparkContext) = {
-    val source = sc.hadoopGeoTiffRDD(props("path"))
-    val reprojected = source.reproject(crs).persist(lvl)
-    val (layoutLevel, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojected, crs, layoutScheme) { _.extent }
-    val tiler = implicitly[Tiler[ProjectedExtent, SpatialKey]]
-    layoutLevel -> tiler(reprojected, rasterMetaData).asInstanceOf[RasterRDD[K]]
-  }
+  def source(props: Parameters)(implicit sc: SparkContext): RDD[(ProjectedExtent, V)] = sc.hadoopGeoTiffRDD(props("path"))
 }
 

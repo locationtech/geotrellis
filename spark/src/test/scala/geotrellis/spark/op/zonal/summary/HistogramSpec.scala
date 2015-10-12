@@ -55,7 +55,7 @@ class HistogramSpec extends FunSpec
         )
 
         val histogram = ones.zonalHistogram(quarterExtent.toPolygon)
-        val expected = ones.stitch.zonalHistogram(totalExtent, quarterExtent.toPolygon)
+        val expected = ones.stitch.tile.zonalHistogram(totalExtent, quarterExtent.toPolygon)
 
         histogram.getMinMaxValues should be (expected.getMinMaxValues)
         histogram.getItemCount(1) should be (expected.getItemCount(1))
@@ -74,7 +74,7 @@ class HistogramSpec extends FunSpec
         val poly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
 
         val histogram = ones.zonalHistogram(poly)
-        val expected = ones.stitch.zonalHistogram(totalExtent, poly)
+        val expected = ones.stitch.tile.zonalHistogram(totalExtent, poly)
 
         histogram.getMinMaxValues should be (expected.getMinMaxValues)
         histogram.getItemCount(1) should be (expected.getItemCount(1))
@@ -103,7 +103,7 @@ class HistogramSpec extends FunSpec
         val poly = Polygon(exterior, interior)
 
         val histogram = ones.zonalHistogram(poly)
-        val expected = ones.stitch.zonalHistogram(totalExtent, poly)
+        val expected = ones.stitch.tile.zonalHistogram(totalExtent, poly)
 
         histogram.getMinMaxValues should be (expected.getMinMaxValues)
         histogram.getItemCount(1) should be (expected.getItemCount(1))

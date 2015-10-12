@@ -22,12 +22,12 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param rootPath  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) extends AttributeStore {
-  type ReadableWritable[T] = JsonFormat[T]
+class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[JsonFormat] {
+  val s3Client: S3Client = S3Client.default
 
   /** NOTE:
    * S3 is eventually consistent, therefore it is possible to write an attribute and fail to read it
-   * immediatly afterwards. It is not clear if this is a practical concern.
+   * immediately afterwards. It is not clear if this is a practical concern.
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
 
@@ -39,7 +39,7 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) ext
   def attributePrefix(attributeName: String): String =
     path(rootPath, "_attributes", s"${attributeName}__")
 
-  private def readKey[T: ReadableWritable](key: String): Option[(LayerId, T)] = {
+  private def readKey[T: Format](key: String): Option[(LayerId, T)] = {
     val is = s3Client.getObject(bucket, key).getObjectContent
     val json = Source.fromInputStream(is)(Charset.forName("UTF-8")).mkString
     is.close()
@@ -47,13 +47,13 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) ext
     // TODO: Make this crash to find out when None should be returned
   }
   
-  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T =
+  def read[T: Format](layerId: LayerId, attributeName: String): T =
     readKey[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
       case None => throw new AttributeNotFoundError(attributeName, layerId)
     }
 
-  def readAll[T: ReadableWritable](attributeName: String): Map[LayerId, T] =    
+  def readAll[T: Format](attributeName: String): Map[LayerId, T] =
     s3Client
       .listObjectsIterator(bucket, attributePrefix(attributeName))
       .map{ os =>       
@@ -64,21 +64,22 @@ class S3AttributeStore(s3Client: S3Client, bucket: String, rootPath: String) ext
       }
       .toMap
 
-  def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
     val str = (layerId, value).toJson.compactPrint
     val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible
   }
+
+  def layerExists(layerId: LayerId): Boolean = {
+    s3Client.listObjectsIterator(bucket, AttributeStore.Fields.metaData, 1).nonEmpty
+  }
 }
 
 object S3AttributeStore {
-  def apply(s3client: S3Client, bucket: String, root: String) =
-    new S3AttributeStore(s3client, bucket, root)
-
-  def apply(bucket: String, root: String): S3AttributeStore =
-    apply(S3Client.default, bucket, root)
+  def apply(bucket: String, root: String) =
+    new S3AttributeStore(bucket, root)
 
   def apply(bucket: String): S3AttributeStore =
     apply(bucket, "")

@@ -1,41 +1,37 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark._
-import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client._
-import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
-import org.apache.accumulo.core.data.{Value, Key, Mutation}
-import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.conf.Configuration
-import org.apache.spark.SparkContext
-import com.typesafe.config.{ConfigFactory,Config}
 import org.apache.accumulo.core.client.ClientConfiguration
 
 
-trait AccumuloInstance {
+trait AccumuloInstance  extends Serializable {
   def connector: Connector
   def instanceName: String
   def setAccumuloConfig(job: Job): Unit
 }
 
 object AccumuloInstance {
-  def apply(instanceName: String, zookeeper: String, user: String, token: AuthenticationToken): AccumuloInstance =
-    BaseAccumuloInstance(instanceName, zookeeper, user, token)
+  def apply(instanceName: String, zookeeper: String, user: String, token: AuthenticationToken): AccumuloInstance = {
+    val tokenBytes = AuthenticationToken.AuthenticationTokenSerializer.serialize(token)
+    val tokenClass = token.getClass.getCanonicalName
+    BaseAccumuloInstance(instanceName, zookeeper, user, (tokenClass, tokenBytes))
+  }
 }
 
 case class BaseAccumuloInstance(
   instanceName: String, zookeeper: String,
-  user: String, token: AuthenticationToken) extends AccumuloInstance
+  user: String, tokenBytes: (String, Array[Byte])) extends AccumuloInstance
 {
-  val instance: Instance = instanceName match {
+  @transient lazy val token = AuthenticationToken.AuthenticationTokenSerializer.deserialize(tokenBytes._1, tokenBytes._2)
+  @transient lazy val instance: Instance = instanceName match {
     case "fake" => new MockInstance("fake") //in-memory only
     case _      => new ZooKeeperInstance(instanceName, zookeeper)
   }
-  val connector: Connector = instance.getConnector(user, token)
+  @transient lazy val connector: Connector = instance.getConnector(user, token)
 
 
   def setAccumuloConfig(job: Job): Unit = {

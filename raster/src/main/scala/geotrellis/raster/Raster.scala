@@ -16,7 +16,7 @@ object Raster {
     r.tile
 }
 
-case class Raster(tile: Tile, extent: Extent) {
+case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
   lazy val rasterExtent = RasterExtent(extent, tile.cols, tile.rows)
 
   def cols: Int = tile.cols
@@ -43,4 +43,7 @@ case class Raster(tile: Tile, extent: Extent) {
   def reproject(src: CRS, dest: CRS, options: ReprojectOptions): Raster =
     tile.reproject(extent, src, dest, options)
 
+  def _1 = tile
+
+  def _2 = extent
 }

@@ -1,6 +1,7 @@
 package geotrellis.spark.etl
 
 import geotrellis.spark.tiling.{FloatingLayoutScheme, ZoomedLayoutScheme}
+import org.scalatest._
 
 object EtlSpec {
   // Test that ETL module can be instantiated in convenient ways
@@ -8,7 +9,4 @@ object EtlSpec {
 
   Etl(args)
   Etl(args, List(s3.S3Module, hadoop.HadoopModule))
-  Etl(args, List(s3.S3Module), (crs, tileSize) => ZoomedLayoutScheme(crs, tileSize))
-  Etl(args, (crs, tileSize) => ZoomedLayoutScheme(crs, tileSize))
-  Etl(args, List(s3.S3Module), (_, tileSize) => FloatingLayoutScheme(tileSize))
 }

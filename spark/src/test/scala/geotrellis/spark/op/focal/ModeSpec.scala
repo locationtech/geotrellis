@@ -31,7 +31,7 @@ class ModeSpec extends FunSpec with TestEnvironment
           TileLayout(3, 2, 3, 2)
         )
 
-        val res = rasterRDD.focalMode(Square(1)).stitch.toArray
+        val res = rasterRDD.focalMode(Square(1)).stitch.tile.toArray
 
         val expected = Array(
           nd, 1, 1,    1, 2, 2,   nd,nd,nd,

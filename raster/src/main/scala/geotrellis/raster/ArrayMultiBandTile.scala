@@ -15,7 +15,6 @@ object ArrayMultiBandTile {
   def apply(bands: Array[Tile]): ArrayMultiBandTile =
     new ArrayMultiBandTile(bands)
 
-
   def alloc(t: CellType, bands: Int, cols: Int, rows: Int): ArrayMultiBandTile = {
     ArrayMultiBandTile(for (_ <- 0 until bands) yield ArrayTile.alloc(t, cols, rows))
   }

@@ -15,7 +15,7 @@ object MultiBandRaster {
     r.tile
 }
 
-case class MultiBandRaster(tile: MultiBandTile, extent: Extent) {
+case class MultiBandRaster(tile: MultiBandTile, extent: Extent) extends Product2[MultiBandTile, Extent] {
   lazy val rasterExtent = RasterExtent(extent, tile.cols, tile.rows)
 
   def cols: Int = tile.cols
@@ -42,4 +42,7 @@ case class MultiBandRaster(tile: MultiBandTile, extent: Extent) {
   // def reproject(src: CRS, dest: CRS, options: ReprojectOptions): MultiBandRaster =
   //   tile.reproject(extent, src, dest, options)
 
+  def _1 = tile
+
+  def _2 = extent
 }

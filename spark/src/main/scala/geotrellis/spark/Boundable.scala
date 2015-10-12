@@ -1,5 +1,7 @@
 package geotrellis.spark
 
+import org.apache.spark.rdd.RDD
+
 /**
  * This type class marks K as point that can be bounded in space.
  * It is used to construct bounding hypercube for a set of Ks.
@@ -46,5 +48,5 @@ trait Boundable[K] extends Serializable {
     intersect(b1,b2).isDefined
   }
 
-  def getKeyBounds(rdd: RasterRDD[K]): KeyBounds[K]
+  def getKeyBounds(rdd: RDD[(K, V)] forSome {type V}): KeyBounds[K]
 }

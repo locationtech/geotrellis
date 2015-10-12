@@ -17,13 +17,16 @@
 package geotrellis.spark
 
 import geotrellis.raster._
+import geotrellis.spark.io.ContainerConstructor
 import org.apache.spark.SparkContext._
 import org.apache.spark._
 import org.apache.spark.rdd._
+import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMetaData) extends RDD[(K, Tile)](tileRdd) {
+class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMetaData)
+  extends BoundRDD[K, Tile](tileRdd) {
   override val partitioner = tileRdd.partitioner
 
   override def getPartitions: Array[Partition] = firstParent[(K, Tile)].partitions
@@ -122,4 +125,16 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
 
 object RasterRDD {
   implicit class SpatialRasterRDD(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
+
+  implicit def constructor[K: JsonFormat : ClassTag] =
+    new ContainerConstructor[K, Tile, RasterRDD[K]] {
+      type MetaDataType = RasterMetaData
+      implicit def metaDataFormat = geotrellis.spark.io.json.RasterMetaDataFormat
+
+      def getMetaData(raster: RasterRDD[K]): RasterMetaData =
+        raster.metaData
+
+      def makeContainer(rdd: RDD[(K, Tile)], bounds: KeyBounds[K], metadata: MetaDataType) =
+        new RasterRDD(rdd, metadata)
+    }
 }

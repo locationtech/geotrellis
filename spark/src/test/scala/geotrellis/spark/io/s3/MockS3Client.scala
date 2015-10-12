@@ -1,6 +1,5 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.auth.AWSCredentialsProvider
 import java.io.{InputStream, ByteArrayInputStream}
 import com.amazonaws.services.s3.model._
 import java.util.concurrent.ConcurrentHashMap
@@ -14,11 +13,23 @@ class MockS3Client() extends S3Client with LazyLogging {
   def listObjects(r: ListObjectsRequest): ObjectListing = this.synchronized {
     if (null == r.getMaxKeys)
       r.setMaxKeys(64)
+
+    val ol = new ObjectListing
+    ol.setBucketName(r.getBucketName)
+    ol.setPrefix(r.getPrefix)
+    ol.setDelimiter(r.getDelimiter)
+    ol.setMaxKeys(r.getMaxKeys)
+    val listing = ol.getObjectSummaries
+
+
     val bucket = getBucket(r.getBucketName)
     var marker = r.getMarker
     
     if (null == marker) {
-      marker = bucket.findFirstKey(r.getPrefix).get
+      bucket.findFirstKey(r.getPrefix) match {
+        case Some(key) => marker = key
+        case None => return ol
+      }
       logger.debug(s"MOVING MARKER prefix=${r.getPrefix} marker=${marker}")
     }
 
@@ -26,13 +37,6 @@ class MockS3Client() extends S3Client with LazyLogging {
     var nextMarker: String = null
     val iter = bucket.entries.from(marker).iterator
     logger.debug(s"LISTING prefix=${r.getPrefix}, marker=$marker")
-    
-    val ol = new ObjectListing
-    ol.setBucketName(r.getBucketName)
-    ol.setPrefix(r.getPrefix)
-    ol.setDelimiter(r.getDelimiter)
-    ol.setMaxKeys(r.getMaxKeys)
-    val listing = ol.getObjectSummaries
     
     var endSeen = false
     while (iter.hasNext && keyCount <= r.getMaxKeys) {
@@ -63,29 +67,34 @@ class MockS3Client() extends S3Client with LazyLogging {
   def getObject(r: GetObjectRequest): S3Object =  this.synchronized {
     val bucket = getBucket(r.getBucketName)
     val key = r.getKey
-    if (bucket.contains(key)){
-      val obj = new S3Object()
-      val bytes = bucket(key)      
-      val md = new ObjectMetadata()
-      md.setContentLength(bytes.length)            
-      obj.setKey(key)      
-      obj.setBucketName(r.getBucketName)
-      obj.setObjectContent(new ByteArrayInputStream(bytes))      
-      obj.setObjectMetadata(md)
-      obj
-    }else{
-      val ex = new AmazonS3ExceptionBuilder()
-      ex.setErrorCode("NoSuchKey")
-      ex.setErrorMessage("The specified key does not exist")
-      ex.setStatusCode(404)      
-      throw ex.build
+    logger.debug(s"GET ${r.getKey}")
+    bucket.synchronized {
+      if (bucket.contains(key)) {
+        val obj = new S3Object()
+        val bytes = bucket(key)
+        val md = new ObjectMetadata()
+        md.setContentLength(bytes.length)
+        obj.setKey(key)
+        obj.setBucketName(r.getBucketName)
+        obj.setObjectContent(new ByteArrayInputStream(bytes))
+        obj.setObjectMetadata(md)
+        obj
+      } else {
+        val ex = new AmazonS3ExceptionBuilder()
+        ex.setErrorCode("NoSuchKey")
+        ex.setErrorMessage(s"The specified key does not exist: $key")
+        ex.setStatusCode(404)
+        throw ex.build
+      }
     }
   }
 
   def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {    
     logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
-    bucket.put(r.getKey, streamToBytes(r.getInputStream))
+    bucket.synchronized {
+      bucket.put(r.getKey, streamToBytes(r.getInputStream))
+    }
     new PutObjectResult()
   }
 }

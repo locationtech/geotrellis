@@ -1,8 +1,10 @@
 package geotrellis.spark.io.hadoop.formats
 
-import org.apache.hadoop.io._
-
-trait IndexedKeyWritable[K] { 
-  def index: Long 
+trait IndexedKeyWritable[K] extends Indexed {
   def key: K
+}
+
+trait Indexed {
+  def index: Long
+  def setIndex(index: Long): Unit
 }

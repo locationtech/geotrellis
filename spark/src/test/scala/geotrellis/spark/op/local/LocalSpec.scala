@@ -36,7 +36,7 @@ class LocalSpec extends FunSpec
       val evo1Minus1 = EveryOther1ElseMinus1TestFile
 
       val (cols: Int, rows: Int) = {
-        val tile = ones.stitch
+        val tile = ones.stitch.tile
         (tile.cols, tile.rows)
       }
 

@@ -29,7 +29,7 @@ class RowMajorSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey]) extends KeyIndex
     cfor(0)(_ <= rows, _ + 1) { i =>
       val row = rowMin + i
       val min = toIndex(colMin, row)
-      result(i) = (min, min + cols)
+      result(i) = (min, min + cols - 1)
     }
     result
   }

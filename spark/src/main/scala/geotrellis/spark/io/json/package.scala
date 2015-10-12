@@ -9,6 +9,7 @@ import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import com.github.nscala_time.time.Imports._
+import org.apache.avro.Schema
 
 import spray.json._
 
@@ -46,6 +47,22 @@ package object json {
       }
   }
 
+  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
+    def write(obj: LayoutDefinition) =
+      JsObject(
+        "extent" -> obj.extent.toJson,
+        "tileLayout" -> obj.tileLayout.toJson
+      )
+
+    def read(json: JsValue) =
+      json.asJsObject.getFields("extent", "tileLayout") match {
+        case Seq(extent, tileLayout) =>
+          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
+        case _ =>
+          throw new DeserializationException("LayoutDefinition expected")
+      }
+  }
+  
   implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
     def write(metaData: RasterMetaData) = 
       JsObject(
@@ -69,21 +86,7 @@ package object json {
       }
   }
 
-  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
-    def write(obj: LayoutDefinition) =
-      JsObject(
-        "extent" -> obj.extent.toJson,
-        "tileLayout" -> obj.tileLayout.toJson
-      )
 
-    def read(json: JsValue) =
-      json.asJsObject.getFields("extent", "tileLayout") match {
-        case Seq(extent, tileLayout) =>
-          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
-        case _ =>
-          throw new DeserializationException("LayoutDefinition expected")
-      }
-  }
 
   implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
     def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
@@ -95,5 +98,10 @@ package object json {
         case _ =>
           throw new DeserializationException("DateTime expected")
       }
+  }
+
+  implicit object SchemaFormat extends RootJsonFormat[Schema] {
+    def read(json: JsValue) = (new Schema.Parser).parse(json.toString())
+    def write(obj: Schema) = obj.toString.parseJson
   }
 }

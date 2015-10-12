@@ -14,9 +14,7 @@ import scala.reflect.ClassTag
 
 import org.apache.hadoop.conf.Configuration
 
-class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore {
-  type ReadableWritable[T] = JsonFormat[T]
-
+class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore[JsonFormat] {
   val fs = attributeDir.getFileSystem(hadoopConfiguration)
 
   // Create directory if it doesn't exist
@@ -33,7 +31,7 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
     new Path(s"*___${attributeName}.json")
 
 
-  private def readFile[T: ReadableWritable](path: Path): Option[(LayerId, T)] = {
+  private def readFile[T: Format](path: Path): Option[(LayerId, T)] = {
     HdfsUtils
       .getLineScanner(path, hadoopConfiguration)
       .map{ in =>  
@@ -42,19 +40,19 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
             in.mkString
           }
           finally {
-            in.close
+            in.close()
           }
         txt.parseJson.convertTo[(LayerId, T)]
       }
   }
 
-  def read[T: ReadableWritable](layerId: LayerId, attributeName: String): T =
+  def read[T: Format](layerId: LayerId, attributeName: String): T =
     readFile[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
       case None => throw new AttributeNotFoundError(attributeName, layerId)
     }
 
-  def readAll[T: ReadableWritable](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
     HdfsUtils
       .listFiles( attributeWildcard(attributeName), hadoopConfiguration)    
       .map{ path: Path => 
@@ -66,7 +64,7 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
       .toMap
   }
 
-  def write[T: ReadableWritable](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {
@@ -76,11 +74,25 @@ class HadoopAttributeStore(hadoopConfiguration: Configuration, attributeDir: Pat
     val fdos = fs.create(path)
     val out = new PrintWriter(fdos)
     try {
-      val s = (layerId, value).toJson.toString
+      val s = (layerId, value).toJson.toString()
       out.println(s)
     } finally {
       out.close()
       fdos.close()
     }
   }
+
+  def layerExists(layerId: LayerId): Boolean = {
+    val path = attributePath(layerId, AttributeStore.Fields.metaData)
+    val fs = path.getFileSystem(hadoopConfiguration)
+    fs.exists(path)
+  }
+}
+
+object HadoopAttributeStore {
+  def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
+    new HadoopAttributeStore(config, rootPath)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
+    new HadoopAttributeStore(sc.hadoopConfiguration, rootPath)
 }

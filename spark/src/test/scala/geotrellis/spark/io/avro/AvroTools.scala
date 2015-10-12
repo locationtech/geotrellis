@@ -2,13 +2,13 @@ package geotrellis.spark.io.avro
 
 import org.scalatest._
 
-trait AvroTools { self: Assertions =>
+trait AvroTools { self: Matchers =>
   def roundTrip[T](thing: T)(implicit codec: AvroRecordCodec[T]): Unit = {
     val bytes = AvroEncoder.toBinary(thing)
     val fromBytes = AvroEncoder.fromBinary[T](bytes)
-    assert(fromBytes === thing)
+    fromBytes should be equals thing
     val json = AvroEncoder.toJson(thing)
     val fromJson = AvroEncoder.fromJson[T](json)
-    assert(fromJson === thing)
+    fromJson should be equals thing
   }
 }

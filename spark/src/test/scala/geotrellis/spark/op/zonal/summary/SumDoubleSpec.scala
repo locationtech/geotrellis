@@ -41,7 +41,7 @@ class SumDoubleSpec extends FunSpec
         )
 
         val result = ones.zonalSumDouble(quarterExtent.toPolygon)
-        val expected = ones.stitch.zonalSumDouble(totalExtent, quarterExtent.toPolygon)
+        val expected = ones.stitch.tile.zonalSumDouble(totalExtent, quarterExtent.toPolygon)
 
         result should be (expected)
       }
@@ -59,7 +59,7 @@ class SumDoubleSpec extends FunSpec
         val poly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
 
         val result = ones.zonalSumDouble(poly)
-        val expected = ones.stitch.zonalSumDouble(totalExtent, poly)
+        val expected = ones.stitch.tile.zonalSumDouble(totalExtent, poly)
 
         result should be (expected)
       }
@@ -86,7 +86,7 @@ class SumDoubleSpec extends FunSpec
 
         val poly = Polygon(exterior, interior)
         val result = ones.zonalSumDouble(poly)
-        val expected = ones.stitch.zonalSumDouble(totalExtent, poly)
+        val expected = ones.stitch.tile.zonalSumDouble(totalExtent, poly)
 
         result should be (expected)
 

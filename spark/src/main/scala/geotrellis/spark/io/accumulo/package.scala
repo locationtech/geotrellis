@@ -1,5 +1,6 @@
 package geotrellis.spark.io
 
+import geotrellis.spark.LayerId
 import org.apache.hadoop.io.Text
 import org.apache.spark._
 
@@ -12,15 +13,14 @@ import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => C
 import scala.collection.JavaConversions._
 
 package object accumulo {
-  implicit def stringToText(s: String) = new Text(s)
+  implicit def stringToText(s: String): Text = new Text(s)
 
-  implicit lazy val accumuloSpatialRasterRDDReader = spatial.SpatialRasterRDDReader
-  implicit lazy val accumuloSpatialTileReader = spatial.SpatialTileReader
-  implicit lazy val accumuloSpatialRasterRDDWriter = spatial.SpatialRasterRDDWriter
+  def long2Bytes(x: Long): Array[Byte] =
+    Array[Byte](x>>56 toByte, x>>48 toByte, x>>40 toByte, x>>32 toByte, x>>24 toByte, x>>16 toByte, x>>8 toByte, x toByte)
 
-  implicit lazy val accumuloSpaceTimeRasterRDDReader = spacetime.SpaceTimeRasterRDDReader
-  implicit lazy val accumuloSpaceTimeTileReader = spacetime.SpaceTimeTileReader
-  implicit lazy val accumuloSpaceTimeRasterRDDWriter = spacetime.SpaceTimeRasterRDDWriter
+  def columnFamily(id: LayerId) = s"${id.name}:${id.zoom}"
+
+  def index2RowId(index: Long): Text = new Text(long2Bytes(index))
 
   implicit class scannerIterator(scan: Scanner) extends Iterator[(Key, Value)] {
     val iter = scan.iterator

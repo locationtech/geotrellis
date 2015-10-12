@@ -1,67 +1,64 @@
 package geotrellis.spark.etl
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import geotrellis.proj4.CRS
-import geotrellis.spark.ingest.Pyramid
+import geotrellis.raster.RasterExtent
+import geotrellis.spark.ingest._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.{SpatialComponent, RasterRDD, LayerId}
-import geotrellis.spark.tiling.{LayoutScheme, LayoutLevel, ZoomedLayoutScheme}
+import geotrellis.spark._
+import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.spark.op.stats._
 import geotrellis.raster.io.json._
-import com.google.inject._
 import org.apache.spark.SparkContext
 import scala.reflect._
-import scala.collection.JavaConverters._
 import spray.json._
+
+import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
-  val defaultLayoutScheme = ZoomedLayoutScheme.apply _
 
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String]): Etl[K] =
+  def apply[K: TypeTag: SpatialComponent](args: Seq[String]): Etl[K] =
     apply(args, defaultModules)
 
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module]): Etl[K] =
-    new Etl(args, modules, defaultLayoutScheme)
-
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String], fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
-    new Etl(args, defaultModules, fLayoutScheme)
-
-  def apply[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module], fLayoutScheme: (CRS, Int) => LayoutScheme): Etl[K] =
-    new Etl(args, modules, fLayoutScheme)
+  def apply[K: TypeTag: SpatialComponent](args: Seq[String], modules: Seq[TypedModule]): Etl[K] =
+    new Etl[K](args, modules)
 
 }
 
-class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module], fLayoutScheme: (CRS, Int) => LayoutScheme) extends LazyLogging {
+class Etl[K: TypeTag: SpatialComponent](args: Seq[String], modules: Seq[TypedModule]) extends LazyLogging {
+  implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass( typeTag[K].tpe )).asInstanceOf[ClassTag[K]]
+
   val conf = new EtlConf(args)
-  val scheme = fLayoutScheme(conf.crs(), conf.tileSize())
 
-  val (inputPlugin, outputPlugin) = {
-    val injector = Guice.createInjector(modules: _*)
-
-    val input = injector
-      .findBindingsByType(new TypeLiteral[InputPlugin]{})
-      .asScala
-      .map { _.getProvider.get }
-      .find { _.suitableFor(conf.input(), conf.format(), classTag[K]) }
-      .getOrElse(sys.error(s"Unable to find input module of type '${conf.input()}' for format `${conf.format()} and key ${classTag[K]}"))
-
-    input.validate(conf.inputProps)
-
-    val output = injector
-      .findBindingsByType(new TypeLiteral[OutputPlugin]{})
-      .asScala
-      .map { _.getProvider.get }
-      .find { _.suitableFor(conf.output(), classTag[K]) }
-      .getOrElse(sys.error(s"Unable to find output module of type '${conf.output()}' and key ${classTag[K]}"))
-
-    output.validate(conf.outputProps)
-
-    (input, output)
+  val scheme: Either[LayoutScheme, LayoutDefinition] = {
+    if (conf.layoutScheme.isDefined) {
+      val scheme = conf.layoutScheme()(conf.crs(), conf.tileSize())
+      logger.info(scheme.toString)
+      Left(scheme)
+    } else if (conf.layoutExtent.isDefined) {
+      val layout = LayoutDefinition(RasterExtent(conf.layoutExtent(), conf.cellSize()), conf.tileSize())
+      logger.info(layout.toString)
+      Right(layout)
+    } else
+      sys.error("Either layoutScheme or layoutExtent with cellSize must be provided")
   }
 
+  val combinedModule = modules reduce (_ union _)
+  
+  lazy val inputPlugin =
+    combinedModule
+      .findSubclassOf[InputPlugin[K]]
+      .find( _.suitableFor(conf.input(), conf.format()) )
+      .getOrElse(sys.error(s"Unable to find input module of type '${conf.input()}' for format `${conf.format()}"))
+    
+  lazy val outputPlugin =
+    combinedModule
+      .findSubclassOf[OutputPlugin[K]]
+      .find { _.suitableFor(conf.output()) }
+      .getOrElse(sys.error(s"Unable to find output module of type '${conf.output()}'"))
+
   def load()(implicit sc: SparkContext): (LayerId, RasterRDD[K]) = {
-    val (zoom, rdd) = inputPlugin[K](conf.cache(), conf.crs(), scheme, conf.inputProps)
+    val (zoom, rdd) = inputPlugin(conf.cache(), conf.crs(), scheme, conf.cellType.get, conf.inputProps)
     LayerId(conf.layerName(), zoom) -> rdd
   }
 
@@ -76,12 +73,19 @@ class Etl[K: ClassTag: SpatialComponent](args: Seq[String], modules: Seq[Module]
         attributes.write(currentId, "histogram", histogram)
       }
 
-      if (conf.pyramid() && zoom > 1) {
-        val (nextLevel, nextRdd) = Pyramid.up(rdd, scheme, zoom)
-        savePyramid(nextLevel, nextRdd)
+      scheme match {
+        case Left(s) =>
+          if (conf.pyramid() && zoom > 1) {
+            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom)
+            savePyramid(nextLevel, nextRdd)
+          }
+        case Right(_) =>
+          if (conf.pyramid())
+            logger.error("Pyramiding only supported with layoutScheme, skipping pyramid step")
       }
     }
 
     savePyramid(id.zoom, rdd)
+    logger.info("Done")
   }
 }
