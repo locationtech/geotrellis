@@ -43,7 +43,9 @@ object ArgReader {
       json.getString("datatype") match {
         case "bool" => TypeBit
         case "int8" => TypeByte
+        case "uint8" => TypeUByte
         case "int16" => TypeShort
+        case "uint16" => TypeUShort
         case "int32" => TypeInt
         case "float32" => TypeFloat
         case "float64" => TypeDouble
@@ -65,7 +67,9 @@ object ArgReader {
       cellType match {
         case TypeBit => Raster(BitConstantTile(d2i(v), cols, rows), extent)
         case TypeByte => Raster(ByteConstantTile(d2b(v), cols, rows), extent)
+        case TypeUByte => Raster(UByteConstantTile(d2b(v), cols, rows), extent)
         case TypeShort => Raster(ShortConstantTile(d2s(v), cols, rows), extent)
+        case TypeUShort => Raster(UShortConstantTile(d2s(v), cols, rows), extent)
         case TypeInt => Raster(IntConstantTile(d2i(v), cols, rows), extent)
         case TypeFloat => Raster(FloatConstantTile(d2f(v), cols, rows), extent)
         case TypeDouble => Raster(DoubleConstantTile(v, cols, rows), extent)
@@ -149,11 +153,21 @@ object ArgReader {
         val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
         ResampleAssign(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
         ByteArrayTile(resampled, cols, rows)
+      case TypeUByte =>
+        val buffer = ByteBuffer.wrap(bytes)
+        val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
+        ResampleAssign(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
+        UByteArrayTile(resampled, cols, rows)
       case TypeShort =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
         ResampleAssign(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
         ShortArrayTile(resampled, cols, rows)
+      case TypeUShort =>
+        val buffer = ByteBuffer.wrap(bytes)
+        val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
+        ResampleAssign(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
+        UShortArrayTile(resampled, cols, rows)
       case TypeInt =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Int](cols*rows).fill(NODATA)

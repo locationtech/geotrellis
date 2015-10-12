@@ -52,7 +52,9 @@ case object TypeBit extends CellType(1, "bool", false) {
 }
 
 case object TypeByte extends CellType(8, "int8", false)
+case object TypeUByte extends CellType(8, "uint8", false)
 case object TypeShort extends CellType(16, "int16", false)
+case object TypeUShort extends CellType(16, "uint16", false)
 case object TypeInt extends CellType(32, "int32", false)
 case object TypeFloat extends CellType(32, "float32", true)
 case object TypeDouble extends CellType(64, "float64", true)
@@ -69,7 +71,9 @@ object CellType {
 
   def fromString(name: String): CellType = name match {
     case "int8"     => TypeByte
+    case "uint8"    => TypeUByte
     case "int16"    => TypeShort
+    case "uint16"   => TypeUShort
     case "int32"    => TypeInt
     case "float32"  => TypeFloat
     case "float64"  => TypeDouble
@@ -78,9 +82,11 @@ object CellType {
 
   def toAwtType(cellType: CellType): Int = cellType match {
     case TypeBit | TypeByte => DataBuffer.TYPE_BYTE
-    case TypeDouble         => DataBuffer.TYPE_DOUBLE
-    case TypeFloat          => DataBuffer.TYPE_FLOAT
-    case TypeInt            => DataBuffer.TYPE_INT
+    case TypeUByte          => DataBuffer.TYPE_SHORT
     case TypeShort          => DataBuffer.TYPE_SHORT
+    case TypeUShort         => DataBuffer.TYPE_INT
+    case TypeInt            => DataBuffer.TYPE_INT
+    case TypeFloat          => DataBuffer.TYPE_FLOAT
+    case TypeDouble         => DataBuffer.TYPE_DOUBLE
   }
 }

@@ -8,20 +8,13 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-class NoDataUInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Int) extends UInt16GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Int = {
-    val v = super.get(i)
-    if(v == noDataValue) { NODATA }
-    else { v }
-  }
-}
 
 class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asShortBuffer
 
   val size: Int = bytes.size / 2
 
+  def getRaw(i: Int): Short = buffer.get(i) // Gets the signed short
   def get(i: Int): Int = buffer.get(i) & 0xFFFF
 
   def getInt(i: Int): Int = get(i)
@@ -33,11 +26,11 @@ class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte => 
+      case TypeByte | TypeUByte => 
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2b(get(i)) }
         arr
-      case TypeShort =>
+      case TypeShort | TypeUShort  =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
         arr.toArrayByte()
@@ -57,24 +50,24 @@ class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   // NOTE: Maps to Int32 bytes.
   def map(f: Int => Int): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
+    val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = f(getInt(i))
+      arr(i) = (f(getInt(i)) & 0xFFFF).toShort
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * TypeShort.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
+    bytebuff.asShortBuffer.put(arr)
     result
   }
 
   def mapDouble(f: Double => Double): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
+    val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2i(f(getDouble(i)))
+      arr(i) = (d2i(f(getDouble(i))) & 0xFFFF).toShort
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * TypeShort.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
+    bytebuff.asShortBuffer.put(arr)
     result
   }
 

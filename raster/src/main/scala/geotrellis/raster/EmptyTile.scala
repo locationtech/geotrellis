@@ -30,7 +30,9 @@ object EmptyTile {
   def apply(cellType: CellType, cols: Int, rows: Int): ConstantTile with EmptyTile = cellType match {
     case TypeBit    => new BitConstantTile(false, cols, rows) with EmptyTile
     case TypeByte   => new ByteConstantTile(byteNODATA, cols, rows) with EmptyTile
+    case TypeUByte  => new UByteConstantTile(0, cols, rows) with EmptyTile
     case TypeShort  => new ShortConstantTile(shortNODATA, cols, rows) with EmptyTile
+    case TypeUShort => new UShortConstantTile(0, cols, rows) with EmptyTile
     case TypeInt    => new IntConstantTile(NODATA, cols, rows) with EmptyTile
     case TypeFloat  => new FloatConstantTile(Float.NaN, cols, rows) with EmptyTile
     case TypeDouble => new DoubleConstantTile(Double.NaN, cols, rows) with EmptyTile
