@@ -55,8 +55,6 @@ class ArgTest extends FunSuite
 
   test("check int8") {
     assert(loadRaster("/tmp/foo-int8.arg").toArray === array)
-    val l = loadRaster("/tmp/foo-int8.arg")
-    println(l.asciiDraw)
   }
 
   test("check int16") {
@@ -110,8 +108,6 @@ class ArgTest extends FunSuite
     val tile = ByteArrayTile(byteArr, cols, rows)
     ArgWriter(TypeByte).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
     val r2 = loadRaster("/tmp/fooc-int8.arg")
-    println(tile.asciiDraw)
-    println(r2.asciiDraw)
     assert(r2.toArrayTile === tile.toArrayTile)
   }
 
