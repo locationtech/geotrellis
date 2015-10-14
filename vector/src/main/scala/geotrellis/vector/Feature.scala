@@ -28,40 +28,61 @@ case class Feature[+G <: Geometry, D](geom: G, data: D) {
 }
 
 object Feature {
-  implicit def featureToGeometry[G <: Geometry](f: Feature[G, _]): G = f.geom  
+  implicit def featureToGeometry[G <: Geometry](f: Feature[G, _]): G = f.geom
 }
 
 object PointFeature {
   def apply[D](geom: Point, data: D): Feature[Point, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[Point, D]) =
+    Some(feature.geom -> feature.data)
 }
 
 object LineFeature {
   def apply[D](geom: Line, data: D): Feature[Line, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[Line, D]) =
+    Some(feature.geom -> feature.data)
 }
 
 object PolygonFeature {
   def apply[D](geom: Polygon, data: D): Feature[Polygon, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[Polygon, D]) =
+    Some(feature.geom -> feature.data)
 }
 
 object MultiPointFeature {
   def apply[D](geom: MultiPoint, data: D): Feature[MultiPoint, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[MultiPoint, D]) =
+    Some(feature.geom -> feature.data)
 }
 
 object MultiLineFeature {
   def apply[D](geom: MultiLine, data: D): Feature[MultiLine, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[MultiLine, D]) =
+    Some(feature.geom -> feature.data)
 }
 
 object MultiPolygonFeature {
   def apply[D](geom: MultiPolygon, data: D): Feature[MultiPolygon, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[MultiPolygon, D]) =
+    Some(feature.geom -> feature.data)
 }
 
 object GeometryCollectionFeature {
   def apply[D](geom: GeometryCollection, data: D): Feature[GeometryCollection, D] =
     Feature(geom, data)
+
+  def unapply[D](feature: Feature[GeometryCollection, D]) =
+    Some(feature.geom -> feature.data)
 }
