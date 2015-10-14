@@ -42,7 +42,7 @@ class GdalReaderSpec extends FunSpec with Matchers {
     }
 
     it("should read CRS from file") {
-      val rasterDataSet = Gdal.open("raster-test/data/geotiff-reader-tiffs/all-ones.tif")      
+      val rasterDataSet = Gdal.open("raster-test/data/geotiff-test-files/all-ones.tif")
       rasterDataSet.crs should equal (Some(LatLng))
     }
   }
