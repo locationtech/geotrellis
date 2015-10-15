@@ -15,7 +15,6 @@ libraryDependencies ++= Seq(
   nscalaTime,
   scalazStream,
   scalatest % "test")
-resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases"
 
 fork := true
 parallelExecution in Test := false
