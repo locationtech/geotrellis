@@ -59,7 +59,7 @@ object Dependencies {
 
   val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.34"
 
-  val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.7a"
+  val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8"
 
   val sparkCore     = "org.apache.spark" %% "spark-core" % Version.spark
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop
