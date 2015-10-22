@@ -11,12 +11,11 @@ import spire.syntax.cfor._
 
 class NoDataByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Byte) extends ByteGeoTiffSegment(bytes) {
   override
-  def get(i: Int): Int =
+  def get(i: Int): Byte =
     if (bytes(i) == noDataValue)
-      NODATA
+      byteNODATA
     else
       bytes(i)
-
 }
 
 class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
@@ -24,8 +23,7 @@ class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))
-  def get(i: Int): Int = bytes(i)
-  def getRaw(i: Int): Byte = bytes(i)
+  def get(i: Int): Byte = bytes(i)
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -33,7 +31,7 @@ class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte | TypeUByte =>       
+      case TypeByte | TypeUByte =>
         bytes
       case TypeShort | TypeUShort =>
         val arr = Array.ofDim[Short](size)

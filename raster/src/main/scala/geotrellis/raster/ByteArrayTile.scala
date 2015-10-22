@@ -45,7 +45,7 @@ object ByteArrayTile {
         if(v == replaceNoData)
           arr(i) = byteNODATA
         else
-          arr(i) = bytes(i)
+          arr(i) = v
       }
       ByteArrayTile(arr, cols, rows)
     }
