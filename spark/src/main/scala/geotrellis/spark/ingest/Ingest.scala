@@ -65,7 +65,6 @@ object Ingest {
     (sink: (RasterRDD[K], Int) => Unit)
     (implicit tiler: Tiler[T, K, Tile]): Unit =
   {
-
     sourceTiles.persist()
     val reprojectedTiles = sourceTiles.reproject(destCRS, ReprojectOptions(resampleMethod)).cache()
     val (zoom, rasterMetaData) =
@@ -85,12 +84,10 @@ object Ingest {
       }
     }
 
-    if (pyramid) {
+    if (pyramid)
       buildPyramid(zoom, rasterRdd)
         .foreach { case (z, rdd) => rdd.unpersist(true) }
-    } else
+    else
       sink(rasterRdd, zoom)
   }
 }
-
-
