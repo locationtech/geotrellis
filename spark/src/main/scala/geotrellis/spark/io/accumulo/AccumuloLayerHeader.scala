@@ -29,7 +29,7 @@ object AccumuloLayerHeader {
             valueClass,
             tileTable)
         case _ =>
-          throw new DeserializationException(s"AccumuloLayerMetaData expected, got: $value")
+          throw new DeserializationException(s"AccumuloLayerHeader expected, got: $value")
       }
   }
 }

@@ -28,6 +28,8 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
     try {
 
+      if(!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
+
       implicit val mdFormat = cons.metaDataFormat
       val (header, metaData, keyBounds, keyIndex, writerSchema) =
         attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
@@ -42,6 +44,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
       val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
       cons.makeContainer(rdd, keyBounds, metaData)
     } catch {
+      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
   }

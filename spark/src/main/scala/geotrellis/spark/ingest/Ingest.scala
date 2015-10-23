@@ -74,19 +74,21 @@ object Ingest {
     val rasterRdd = new RasterRDD(tiledRdd, rasterMetaData)
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {
-      if (zoom > 1) {
+      if (zoom >= 1) {
         rdd.persist(cacheLevel)
         sink(rdd, zoom)
         val pyramidLevel@(nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, zoom)
         pyramidLevel :: buildPyramid(nextZoom, nextRdd)
-      } else
+      } else {
+        sink(rdd, zoom)
         List((zoom, rdd))
+      }
     }
 
-    if (pyramid)
+    if (pyramid) {
       buildPyramid(zoom, rasterRdd)
         .foreach { case (z, rdd) => rdd.unpersist(true) }
-    else
+    } else
       sink(rasterRdd, zoom)
   }
 }

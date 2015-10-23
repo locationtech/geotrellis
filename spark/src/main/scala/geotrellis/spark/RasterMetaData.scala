@@ -33,6 +33,22 @@ case class RasterMetaData(
 
   def tileTransform(tileScheme: TileScheme): TileKeyTransform =
     tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
+
+  def combine(other: RasterMetaData) = {
+    val combinedExtent       = extent combine other.extent
+    val combinedLayoutExtent = layout.extent combine other.layout.extent
+    val combinedTileLayout   = layout.tileLayout combine other.layout.tileLayout
+
+    this
+      .copy(
+        extent = combinedExtent,
+        layout = this.layout
+          .copy(
+            extent     = combinedLayoutExtent,
+            tileLayout = combinedTileLayout
+          )
+      )
+  }
 }
 
 object RasterMetaData {
