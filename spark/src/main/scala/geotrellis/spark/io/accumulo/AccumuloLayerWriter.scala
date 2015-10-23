@@ -46,12 +46,12 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: MergeView: Clas
     }
   }
 
-  def update(id: LayerId, rdd: Container with RDD[(K, V)], rddReader: BaseAccumuloRDDReader[K, V])
-            (implicit sc: SparkContext) = {
+  def update(id: LayerId, rdd: Container with RDD[(K, V)], rddReader: BaseAccumuloRDDReader[K, V]) = {
     try {
       if(!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
       type MetaDataType = cons.MetaDataType
       implicit val mdFormat = cons.metaDataFormat
+      implicit val sc = rdd.sparkContext
       val header =
         AccumuloLayerHeader(
           keyClass = classTag[K].toString(),
