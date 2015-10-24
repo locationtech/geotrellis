@@ -12,5 +12,10 @@ trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val noDataValue: Option[Double]
 
   val createSegment: Int => ByteGeoTiffSegment =
-    { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) }
+    noDataValue match {
+      case Some(nd) if isData(nd) && Byte.MinValue.toDouble <= nd && nd <= Byte.MaxValue.toDouble =>        
+        { i: Int => new NoDataByteGeoTiffSegment(getDecompressedBytes(i), nd.toByte) }
+      case _ =>
+        { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) }
+    }
 }
