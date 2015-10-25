@@ -41,5 +41,14 @@ abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerR
 }
 
 abstract class LayerFormat[ID, K: Boundable, V, ReturnType] extends FilteringLayerReader[ID, K, ReturnType] with Writer[ID, ReturnType with RDD[(K, V)]] {
+  val layerReader: FilteringLayerReader[ID, K, ReturnType]
+  val layerWriter: Writer[ID, ReturnType with RDD[(K, V)]]
+
+  // dirty cast, obviously MetaData types have to be equal
+  def read(id: ID, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): ReturnType =
+    layerReader.read(id ,rasterQuery.asInstanceOf[RDDQuery[K, layerReader.MetaDataType]], numPartitions)
+
+  def write(id: ID, rdd: ReturnType with RDD[(K, V)]): Unit = layerWriter.write(id, rdd)
+
   def update(id: ID, value: ReturnType with RDD[(K, V)], numPartitions: Int): Unit
 }

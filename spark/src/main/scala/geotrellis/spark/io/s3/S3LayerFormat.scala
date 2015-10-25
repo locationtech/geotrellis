@@ -26,7 +26,8 @@ import scala.reflect._
  * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassTag, Container](
+class S3LayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+                    V: MergeView: AvroRecordCodec: ClassTag, Container](
     val attributeStore: AttributeStore[JsonFormat],
     keyIndexMethod: KeyIndexMethod[K],
     bucket: String,
@@ -38,64 +39,18 @@ class S3LayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassTag, 
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends LayerFormat[LayerId, K, V, Container] with LazyLogging {
 
-  def getS3Client: ()=>S3Client = () => S3Client.default
+  lazy val layerReader = new S3LayerReader(attributeStore, rddReader, getCache)
+  lazy val layerWriter = new S3LayerWriter(attributeStore, rddWriter, keyIndexMethod, bucket, keyPrefix, clobber)
 
-  type MetaDataType  = cons.MetaDataType
+  def getS3Client: () => S3Client = () => S3Client.default
+
+  type MetaDataType = cons.MetaDataType
 
   val defaultNumPartitions = sc.defaultParallelism
-
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
-    try {
-      implicit val mdFormat = cons.metaDataFormat
-      val (header, metadata, keyBounds, keyIndex, writerSchema) =
-        attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-      val bucket = header.bucket
-      val prefix = header.key
-
-      val queryKeyBounds = rasterQuery(metadata, keyBounds)
-      val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-      val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
-      val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-      val cache = getCache.map(f => f(id))
-      val rdd = rddReader.read(bucket, keyPath, queryKeyBounds, decompose, Some(writerSchema), cache, numPartitions)
-
-      cons.makeContainer(rdd, keyBounds, metadata)
-    } catch {
-      case e: Exception => throw new LayerReadError(id).initCause(e)
-    }
-  }
-
-  def write(id: LayerId, rdd: Container with RDD[(K, V)]) = {
-    try {
-      require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
-      val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-      val metadata = cons.getMetaData(rdd)
-      val header = S3LayerHeader(
-        keyClass = classTag[K].toString(),
-        valueClass = classTag[K].toString(),
-        bucket = bucket,
-        key = prefix)
-
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
-
-      implicit val mdFormat = cons.metaDataFormat
-      attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, rddWriter.schema)
-
-      val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-      val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
-
-      logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
-    } catch {
-      case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
-  }
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)], numPartitions: Int) = {
     try {
       require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
-      type MetaDataType = cons.MetaDataType
       implicit val mdFormat = cons.metaDataFormat
       val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
       val header = S3LayerHeader(

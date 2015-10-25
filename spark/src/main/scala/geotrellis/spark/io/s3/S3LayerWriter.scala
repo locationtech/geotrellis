@@ -34,7 +34,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   (implicit val cons: ContainerConstructor[K, V, Container])
   extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
 
-  def getS3Client: ()=>S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.default
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {

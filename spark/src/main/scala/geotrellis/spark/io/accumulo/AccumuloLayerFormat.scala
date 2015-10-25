@@ -24,54 +24,12 @@ class AccumuloLayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
      rddReader     : BaseAccumuloRDDReader[K, V])
 (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container]) extends LayerFormat[LayerId, K, V, Container] {
 
+  lazy val layerReader = new AccumuloLayerReader(attributeStore, rddReader)
+  lazy val layerWriter = new AccumuloLayerWriter(attributeStore, rddWriter, keyIndexMethod, table)
+
   type MetaDataType = cons.MetaDataType
 
   val defaultNumPartitions = sc.defaultParallelism
-
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
-    try {
-      if(!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
-      implicit val mdFormat = cons.metaDataFormat
-      val (header, metaData, keyBounds, keyIndex, writerSchema) =
-        attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-
-      val queryKeyBounds = rasterQuery(metaData, keyBounds)
-
-      val decompose = (bounds: KeyBounds[K]) =>
-        keyIndex.indexRanges(bounds).map{ case (min, max) =>
-          new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
-        }
-
-      val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
-      cons.makeContainer(rdd, keyBounds, metaData)
-    } catch {
-      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
-  }
-
-  def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
-    try {
-      val header =
-        AccumuloLayerHeader(
-          keyClass = classTag[K].toString(),
-          valueClass = classTag[V].toString(),
-          tileTable = table
-        )
-      val metaData = cons.getMetaData(rdd)
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
-
-      implicit val mdFormat = cons.metaDataFormat
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, rddWriter.schema)
-
-      val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
-
-      rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
-    } catch {
-      case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
-  }
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)], numPartitions: Int) = {
     try {

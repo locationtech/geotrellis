@@ -23,61 +23,16 @@ class HadoopLayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassT
       rddWriter     : HadoopRDDWriter[K, V])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container]) extends LayerFormat[LayerId, K, V, Container] {
 
+  lazy val layerReader = new HadoopLayerReader(attributeStore, rddReader)
+  lazy val layerWriter = new HadoopLayerWriter(rootPath, attributeStore, rddWriter, keyIndexMethod)
+
   type MetaDataType  = cons.MetaDataType
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
-    try {
-      implicit val mdFormat = cons.metaDataFormat
-      val (header, metadata, keyBounds, keyIndex, writerSchema) =
-        attributeStore.readLayerAttributes[HadoopLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
-
-      val layerPath = header.path
-      val queryKeyBounds = rasterQuery(metadata, keyBounds)
-
-      val rdd: RDD[(K, V)] =
-        if (queryKeyBounds == Seq(keyBounds)) {
-          rddReader.readFully(layerPath)
-        } else {
-          val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-          rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
-        }
-
-      cons.makeContainer(rdd, keyBounds, metadata)
-    } catch {
-      case e: Exception => throw new LayerReadError(id).initCause(e)
-    }
-  }
-
-  def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
-    val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
-
-    val header =
-      HadoopLayerHeader(
-        keyClass = classTag[K].toString(),
-        valueClass = classTag[V].toString(),
-        path = layerPath
-      )
-    val metaData = cons.getMetaData(rdd)
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
-
-    try {
-      implicit val mdFormat = cons.metaDataFormat
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
-      // TODO: Writers need to handle Schema changes
-
-      rddWriter.write(rdd, layerPath, keyIndex)
-    } catch {
-      case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
-  }
-
   def update(id: LayerId, rdd: Container with RDD[(K, V)], numPartitions: Int) = {
     try {
       if(!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
-      type MetaDataType = cons.MetaDataType
       implicit val mdFormat = cons.metaDataFormat
       val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
       val header =
