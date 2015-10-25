@@ -138,13 +138,13 @@ class S3LayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassTag, 
 }
 
 object S3LayerFormat {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassTag, Container[_]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: MergeView: AvroRecordCodec: ClassTag, Container[_]](
     bucket: String,
     prefix: String,
     keyIndexMethod: KeyIndexMethod[K],
     clobber: Boolean = true,
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerFormat[K, V, Container[K]] =
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): S3LayerFormat[K, V, Container[K]] =
     new S3LayerFormat(
       attributeStore = S3AttributeStore(bucket, prefix),
       keyIndexMethod = keyIndexMethod,
