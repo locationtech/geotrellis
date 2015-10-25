@@ -36,7 +36,6 @@ package object io {
   class TileNotFoundError(key: Any, layerId: LayerId)
     extends CatalogError(s"Tile with key $key not found for layer $layerId")
 
-
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])
     extends JsonAttributeStoreMethods(store)
 }

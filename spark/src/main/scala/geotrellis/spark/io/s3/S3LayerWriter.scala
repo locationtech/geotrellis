@@ -74,6 +74,6 @@ object S3LayerWriter {
     (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerWriter[K, V, Container[K]] =
     new S3LayerWriter(
       S3AttributeStore(bucket, prefix),
-      new S3RDDWriter[K, V](),
+      new S3RDDWriter[K, V],
       keyIndexMethod, bucket, prefix, clobber)
 }

@@ -39,3 +39,7 @@ abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerR
   def query(layerId: ID, numPartitions: Int): BoundRDDQuery[K, MetaDataType, ReturnType] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
 }
+
+abstract class LayerFormat[ID, K: Boundable, V, ReturnType] extends FilteringLayerReader[ID, K, ReturnType] with Writer[ID, ReturnType with RDD[(K, V)]] {
+  def update(id: ID, value: ReturnType with RDD[(K, V)], numPartitions: Int): Unit
+}

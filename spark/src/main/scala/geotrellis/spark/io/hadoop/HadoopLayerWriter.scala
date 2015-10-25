@@ -10,10 +10,9 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-
 import scala.reflect._
 
-class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
+class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   rootPath: Path,
   val attributeStore: AttributeStore[JsonFormat],
   rddWriter: HadoopRDDWriter[K, V],
@@ -50,7 +49,7 @@ class HadoopLayerWriter[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V:
 
 object HadoopLayerWriter {
 
-  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     rootPath: Path,
     attributeStore: HadoopAttributeStore,
     rddWriter: HadoopRDDWriter[K, V],
@@ -63,7 +62,7 @@ object HadoopLayerWriter {
       keyIndexMethod = indexMethod
     )
 
-  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     rootPath: Path,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
@@ -74,7 +73,7 @@ object HadoopLayerWriter {
       rddWriter = rddWriter,
       indexMethod = indexMethod)
 
-  def apply[K: SpatialComponent: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
     rootPath: Path,
     indexMethod: KeyIndexMethod[K])
   (implicit
