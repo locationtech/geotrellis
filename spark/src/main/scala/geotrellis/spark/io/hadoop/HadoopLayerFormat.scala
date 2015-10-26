@@ -45,7 +45,7 @@ class HadoopLayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassT
       val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
         attributeStore.readLayerAttributes[HadoopLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
 
-      if(header !== existingHeader) throw new HeaderMatchError(id, existingHeader, header)
+      if(header != existingHeader) throw new HeaderMatchError(id, existingHeader, header)
 
       val metaData = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])

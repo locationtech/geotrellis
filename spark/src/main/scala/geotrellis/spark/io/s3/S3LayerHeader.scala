@@ -8,16 +8,7 @@ case class S3LayerHeader(
   valueClass: String,
   bucket: String,
   key: String
-) {
-  def equals(that: S3LayerHeader) =
-    keyClass == that.keyClass && valueClass == that.valueClass && bucket == that.bucket && key == that.key
-
-  def ===(that: S3LayerHeader) = equals(that)
-
-  def notEquals(that: S3LayerHeader) = !equals(that)
-
-  def !==(that: S3LayerHeader) = notEquals(that)
-}
+)
 
 object S3LayerHeader {
   implicit object S3LayerHeaderFormat extends RootJsonFormat[S3LayerHeader] {

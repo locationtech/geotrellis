@@ -10,16 +10,7 @@ case class AccumuloLayerHeader(
   keyClass: String,
   valueClass: String,
   tileTable: String
-) {
-  def equals(that: AccumuloLayerHeader) =
-    keyClass == that.keyClass && valueClass == that.valueClass && tileTable == that.tileTable
-
-  def ===(that: AccumuloLayerHeader) = equals(that)
-
-  def notEquals(that: AccumuloLayerHeader) = !equals(that)
-
-  def !==(that: AccumuloLayerHeader) = notEquals(that)
-}
+)
 
 object AccumuloLayerHeader {
   implicit object AccumuloLayerMetaDataFormat extends RootJsonFormat[AccumuloLayerHeader] {

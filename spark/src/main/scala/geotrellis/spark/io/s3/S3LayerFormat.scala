@@ -62,7 +62,7 @@ class S3LayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
       val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
         attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
 
-      if(header !== existingHeader) throw new HeaderMatchError(id, existingHeader, header)
+      if(header != existingHeader) throw new HeaderMatchError(id, existingHeader, header)
 
       val metadata = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])

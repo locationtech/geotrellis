@@ -8,16 +8,7 @@ case class HadoopLayerHeader(
   keyClass: String,
   valueClass: String,
   path: Path
-) {
-  def equals(that: HadoopLayerHeader) =
-    keyClass == that.keyClass && valueClass == that.valueClass && path == that.path
-
-  def ===(that: HadoopLayerHeader) = equals(that)
-
-  def notEquals(that: HadoopLayerHeader) = !equals(that)
-
-  def !==(that: HadoopLayerHeader) = notEquals(that)
-}
+)
 
 object HadoopLayerHeader {
   implicit object HadoopLayerMetaDataFormat extends RootJsonFormat[HadoopLayerHeader] {
