@@ -33,6 +33,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     try {
+      if(!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
       implicit val mdFormat = cons.metaDataFormat
       val (header, metadata, keyBounds, keyIndex, writerSchema) =
         attributeStore.readLayerAttributes[HadoopLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)

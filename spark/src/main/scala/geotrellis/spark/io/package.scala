@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark.io.index.KeyIndexMethod
 import spray.json.JsonFormat
 import scala.util.{Failure, Success, Try}
 
@@ -35,6 +36,9 @@ package object io {
 
   class TileNotFoundError(key: Any, layerId: LayerId)
     extends CatalogError(s"Tile with key $key not found for layer $layerId")
+
+  class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
+    extends CatalogError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
 
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])
     extends JsonAttributeStoreMethods(store)

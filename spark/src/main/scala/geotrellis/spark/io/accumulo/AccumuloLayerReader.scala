@@ -40,7 +40,6 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
       val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
       cons.makeContainer(rdd, keyBounds, metaData)
     } catch {
-      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
   }

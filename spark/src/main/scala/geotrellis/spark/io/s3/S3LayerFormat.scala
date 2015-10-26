@@ -59,12 +59,14 @@ class S3LayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
         bucket = bucket,
         key = prefix)
 
+      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
+        attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+
+      if(header !== existingHeader) throw new HeaderMatchError(id, existingHeader, header)
+
       val metadata = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
       val keyIndex = keyIndexMethod.createIndex(keyBounds)
-
-      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-        attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
 
       val rasterQuery = new RDDQuery[K, MetaDataType].where(Intersects(keyBounds))
       val queryKeyBounds = rasterQuery(existingMetaData, existingKeyBounds)

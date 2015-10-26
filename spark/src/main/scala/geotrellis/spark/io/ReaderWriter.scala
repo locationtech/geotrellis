@@ -44,7 +44,7 @@ abstract class LayerFormat[ID, K: Boundable, V, ReturnType] extends FilteringLay
   val layerReader: FilteringLayerReader[ID, K, ReturnType]
   val layerWriter: Writer[ID, ReturnType with RDD[(K, V)]]
 
-  // dirty cast, obviously MetaData types have to be equal
+  /**  Dirty cast, obviously MetaData types have to be equal */
   def read(id: ID, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): ReturnType =
     layerReader.read(id ,rasterQuery.asInstanceOf[RDDQuery[K, layerReader.MetaDataType]], numPartitions)
 

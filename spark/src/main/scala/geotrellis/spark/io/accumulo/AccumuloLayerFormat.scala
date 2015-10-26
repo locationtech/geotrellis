@@ -41,12 +41,15 @@ class AccumuloLayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
           valueClass = classTag[V].toString(),
           tileTable = table
         )
-      val metaData = cons.getMetaData(rdd)
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
         attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+
+      if(header !== existingHeader) throw new HeaderMatchError(id, existingHeader, header)
+
+      val metaData = cons.getMetaData(rdd)
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+      val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       val rasterQuery = new RDDQuery[K, MetaDataType].where(Intersects(keyBounds))
       val queryKeyBounds = rasterQuery(existingMetaData, existingKeyBounds)
@@ -68,7 +71,6 @@ class AccumuloLayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
 
       rddWriter.write(combinedRdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
-      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
