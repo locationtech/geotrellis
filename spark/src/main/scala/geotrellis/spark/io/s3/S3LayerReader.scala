@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     val attributeStore: AttributeStore[JsonFormat],
     rddReader: S3RDDReader[K, V],
-    getCache: Option[LayerId => CacheStrategy[Long, Array[Byte]]] = None)
+    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
@@ -62,7 +62,7 @@ object S3LayerReader {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
       bucket: String,
       prefix: String,
-      getCache: Option[LayerId => CacheStrategy[Long, Array[Byte]]] = None)
+      getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
     (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): S3LayerReader[K, V, Container[K]] =
     new S3LayerReader(
       new S3AttributeStore(bucket, prefix),

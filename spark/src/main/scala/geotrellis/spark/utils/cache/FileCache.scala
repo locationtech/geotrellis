@@ -4,7 +4,7 @@ import java.io.{File, FileInputStream, FileOutputStream}
 
 import org.apache.commons.io.IOUtils
 
-class FileCache(cacheDirectory: String, fileChunk: Long => String) extends CacheStrategy[Long, Array[Byte]] {
+class FileCache(cacheDirectory: String, fileChunk: Long => String) extends Cache[Long, Array[Byte]] {
   val cacheRoot = new File(cacheDirectory)
   if (! cacheRoot.exists) cacheRoot.mkdirs()
   require(cacheRoot.isDirectory, s"$cacheRoot must be a directory")
