@@ -1,14 +1,14 @@
-package geotrellis.spark.io
+package geotrellis.spark.utils.cache
 
 import java.io.{File, FileInputStream, FileOutputStream}
 
 import org.apache.commons.io.IOUtils
-import geotrellis.spark.utils.cache._
 
 class FileCache(cacheDirectory: String, fileChunk: Long => String) extends CacheStrategy[Long, Array[Byte]] {
   val cacheRoot = new File(cacheDirectory)
+  if (! cacheRoot.exists) cacheRoot.mkdirs()
   require(cacheRoot.isDirectory, s"$cacheRoot must be a directory")
-  cacheRoot.mkdirs()
+
 
   private def getPath(k: Long) = new File(cacheDirectory, fileChunk(k))
 
