@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
 
-trait FocalRasterRDDMethods[K] extends RasterRDDMethods[K] with FocalOperation[K] {
+trait FocalRasterRDDMethods[K] extends FocalOperation[K] {
 
   def focalSum(n: Neighborhood) = focal(n)(Sum.apply)
   def focalMin(n: Neighborhood) = focal(n)(Min.apply)

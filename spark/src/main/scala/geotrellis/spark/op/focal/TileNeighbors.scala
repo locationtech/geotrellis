@@ -1,6 +1,7 @@
 package geotrellis.spark.op.focal
 
 import geotrellis.raster._
+import geotrellis.spark.SpatialKey
 
 trait TileNeighbors extends Serializable {
 
@@ -39,3 +40,23 @@ case class SeqTileNeighbors(seq: Seq[Option[Tile]]) extends TileNeighbors {
   def getNeighbors: Seq[Option[Tile]] = seq
 
 }
+
+object SeqTileNeighbors {
+  def fromKeys(center: SpatialKey, pairs: TraversableOnce[(SpatialKey, Tile)]) = {
+    val seq = Array.fill[Option[Tile]](8)(None)
+    pairs.foreach { case (SpatialKey(col, row), tile) =>
+      val dCol = col - center.col
+      val dRow = row - center.row
+      if (dRow == -1 && dCol ==  0) seq(0) = Some(tile)
+      else if (dRow == -1 && dCol ==  1) seq(1) = Some(tile)
+      else if (dRow ==  0 && dCol ==  1) seq(2) = Some(tile)
+      else if (dRow ==  1 && dCol ==  1) seq(3) = Some(tile)
+      else if (dRow ==  1 && dCol ==  0) seq(4) = Some(tile)
+      else if (dRow ==  1 && dCol == -1) seq(5) = Some(tile)
+      else if (dRow ==  0 && dCol == -1) seq(6) = Some(tile)
+      else if (dRow == -1 && dCol == -1) seq(7) = Some(tile)
+    }
+    SeqTileNeighbors(seq)
+  }  
+}
+

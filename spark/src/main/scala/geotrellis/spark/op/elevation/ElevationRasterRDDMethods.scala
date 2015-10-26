@@ -5,8 +5,7 @@ import geotrellis.spark.op.focal._
 import geotrellis.raster.op.elevation._
 import geotrellis.raster.op.focal._
 
-trait ElevationRasterRDDMethods[K] extends RasterRDDMethods[K]
-    with FocalOperation[K] {
+trait ElevationRasterRDDMethods[K] extends FocalOperation[K] {
 
   def aspect() =
     focalWithExtent(Square(1)) { (tile, hood, bounds, re) =>
