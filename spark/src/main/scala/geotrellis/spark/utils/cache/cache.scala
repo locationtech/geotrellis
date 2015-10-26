@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.engine
+package geotrellis.spark.utils.cache
 
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
@@ -79,7 +79,7 @@ class HashCache[T] extends Cache[T] {
  * K is the cache key
  * V is the cache value
  */
-trait CacheStrategy[K,V] {
+trait CacheStrategy[K,V] extends Serializable {
 
   /** Lookup the value for key k
    * @return Some(v) if the value was cached, None otherwise

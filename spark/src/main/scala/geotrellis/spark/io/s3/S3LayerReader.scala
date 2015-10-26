@@ -7,6 +7,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
 import org.apache.avro.Schema
+import geotrellis.spark.utils.cache._
 import org.apache.spark.SparkContext
 import spray.json.{JsObject, JsonFormat}
 import spray.json.DefaultJsonProtocol._
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
 class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     val attributeStore: AttributeStore[JsonFormat],
     rddReader: S3RDDReader[K, V],
-    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
+    getCache: Option[LayerId => CacheStrategy[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 
@@ -61,7 +62,7 @@ object S3LayerReader {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
       bucket: String,
       prefix: String,
-      getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
+      getCache: Option[LayerId => CacheStrategy[Long, Array[Byte]]] = None)
     (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): S3LayerReader[K, V, Container[K]] =
     new S3LayerReader(
       new S3AttributeStore(bucket, prefix),
