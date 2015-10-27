@@ -49,7 +49,6 @@ class AccumuloLayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
 
       val metaData = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       val rasterQuery = new RDDQuery[K, MetaDataType].where(Intersects(keyBounds))
       val queryKeyBounds = rasterQuery(existingMetaData, existingKeyBounds)
@@ -71,6 +70,7 @@ class AccumuloLayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
 
       rddWriter.write(combinedRdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
+      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }

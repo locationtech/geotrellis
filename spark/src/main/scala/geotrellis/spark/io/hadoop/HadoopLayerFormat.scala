@@ -49,7 +49,6 @@ class HadoopLayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassT
 
       val metaData = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       val rasterQuery = new RDDQuery[K, MetaDataType].where(Intersects(keyBounds))
       val queryKeyBounds = rasterQuery(existingMetaData, existingKeyBounds)
@@ -58,7 +57,7 @@ class HadoopLayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassT
         if (queryKeyBounds == Seq(existingKeyBounds)) {
           rddReader.readFully(layerPath)
         } else {
-          val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+          val decompose = (bounds: KeyBounds[K]) => existingKeyIndex.indexRanges(bounds)
           rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
         }
 
@@ -69,6 +68,7 @@ class HadoopLayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassT
       attributeStore.writeLayerAttributes(id, existingHeader, combinedMetaData, combinedKeyBounds, existingKeyIndex, Option.empty[Schema])
       rddWriter.write(combinedRdd, layerPath, existingKeyIndex)
     } catch {
+      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }

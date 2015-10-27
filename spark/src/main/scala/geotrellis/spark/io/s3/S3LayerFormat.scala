@@ -66,29 +66,30 @@ class S3LayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
 
       val metadata = cons.getMetaData(rdd)
       val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
       val rasterQuery = new RDDQuery[K, MetaDataType].where(Intersects(keyBounds))
       val queryKeyBounds = rasterQuery(existingMetaData, existingKeyBounds)
 
-      val existingMaxWidth = maxIndexWidth(keyIndex.toIndex(existingKeyBounds.maxKey))
+      val existingMaxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
       val existingKeyPath = (index: Long) => makePath(prefix, encodeIndex(index, existingMaxWidth))
-      val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+      val decompose = (bounds: KeyBounds[K]) => existingKeyIndex.indexRanges(bounds)
       val cache = getCache.map(f => f(id))
       val existing = rddReader.read(bucket, existingKeyPath, queryKeyBounds, decompose, Some(existingSchema), cache, numPartitions)
 
       val combinedMetaData = cons.combineMetaData(existingMetaData, metadata)
       val combinedKeyBounds = implicitly[Boundable[K]].combine(existingKeyBounds, keyBounds)
       val combinedRdd = existing merge rdd
+      val combinedKeyIndex = keyIndexMethod.createIndex(combinedKeyBounds)
 
-      attributeStore.writeLayerAttributes(id, existingHeader, combinedMetaData, combinedKeyBounds, existingKeyIndex, existingSchema)
+      attributeStore.writeLayerAttributes(id, existingHeader, combinedMetaData, combinedKeyBounds, combinedKeyIndex, existingSchema)
 
-      val maxWidth = maxIndexWidth(keyIndex.toIndex(combinedKeyBounds.maxKey))
-      val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
+      val maxWidth = maxIndexWidth(combinedKeyIndex.toIndex(combinedKeyBounds.maxKey))
+      val keyPath = (key: K) => makePath(prefix, encodeIndex(combinedKeyIndex.toIndex(key), maxWidth))
 
       logger.info(s"Saving RDD ${combinedRdd.name} to $bucket $prefix")
       rddWriter.write(combinedRdd, bucket, keyPath, oneToOne = false)
     } catch {
+      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
   }
