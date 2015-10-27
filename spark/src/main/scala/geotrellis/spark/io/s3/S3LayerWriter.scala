@@ -4,7 +4,8 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -61,6 +62,47 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
+    }
+  }
+
+  def update(id: LayerId, rdd: BoundRDD[K, V]) = {
+    try {
+      require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
+      implicit val sc = rdd.sparkContext
+      implicit val mdFormat = cons.metaDataFormat
+      val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
+      val header = S3LayerHeader(
+        keyClass = classTag[K].toString(),
+        valueClass = classTag[K].toString(),
+        bucket = bucket,
+        key = prefix)
+
+      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
+        attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+
+      if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
+
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+
+      val existingRange = existingKeyIndex.indexRanges(existingKeyBounds)
+      val range = keyIndexMethod.createIndex(keyBounds).indexRanges(keyBounds)
+
+      val (existingBoundMin, existingBoundMax) = existingRange.min -> existingRange.max
+      val (boundMin, boundMax) = range.min -> range.max
+
+      if (notIncluded(existingBoundMax, boundMax) || notIncluded(existingBoundMin, boundMin))
+        throw new OutOfKeyBoundsError(id)
+
+      val maxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
+      val keyPath = (key: K) => makePath(prefix, encodeIndex(existingKeyIndex.toIndex(key), maxWidth))
+
+      logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
+      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    } catch {
+      case e: HeaderMatchError[_] => throw e.initCause(e)
+      case e: OutOfKeyBoundsError => throw e.initCause(e)
+      case e: LayerNotExistsError => throw e.initCause(e)
+      case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }

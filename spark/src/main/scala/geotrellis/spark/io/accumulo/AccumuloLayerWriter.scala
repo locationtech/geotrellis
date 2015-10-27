@@ -3,8 +3,9 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.spark.io._
+import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
@@ -37,6 +38,44 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
       rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
+    }
+  }
+
+  def update(id: LayerId, rdd: BoundRDD[K, V]) = {
+    try {
+      if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
+      implicit val mdFormat = cons.metaDataFormat
+      val header =
+        AccumuloLayerHeader(
+          keyClass = classTag[K].toString(),
+          valueClass = classTag[V].toString(),
+          tileTable = table
+        )
+
+      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
+        attributeStore.readLayerAttributes[AccumuloLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+
+      if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
+
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+
+      val existingRange = existingKeyIndex.indexRanges(existingKeyBounds)
+      val range = keyIndexMethod.createIndex(keyBounds).indexRanges(keyBounds)
+
+      val (existingBoundMin, existingBoundMax) = existingRange.min -> existingRange.max
+      val (boundMin, boundMax) = range.min -> range.max
+
+      if (notIncluded(existingBoundMax, boundMax) || notIncluded(existingBoundMin, boundMin))
+        throw new OutOfKeyBoundsError(id)
+
+      val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
+
+      rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
+    } catch {
+      case e: HeaderMatchError[_] => throw e.initCause(e)
+      case e: OutOfKeyBoundsError => throw e.initCause(e)
+      case e: LayerNotExistsError => throw e.initCause(e)
+      case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }

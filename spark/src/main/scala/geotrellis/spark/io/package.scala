@@ -40,6 +40,13 @@ package object io {
   class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
     extends CatalogError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
 
+  class OutOfKeyBoundsError(layerId: LayerId)
+    extends CatalogError(s"Updating rdd is out of $layerId bounds")
+
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])
     extends JsonAttributeStoreMethods(store)
+
+  def notIncluded(set: (Long, Long), subset: (Long, Long)): Boolean =
+    if(set._1 < subset._1 && set._2 > subset._2) false
+    else true
 }

@@ -3,7 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 
-trait Reader[K, V] extends (K => V){
+trait Reader[K, V] extends (K => V) {
   def read(key: K): V
   def apply(key: K): V = read(key)
 }

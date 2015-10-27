@@ -89,7 +89,8 @@ class S3LayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
       logger.info(s"Saving RDD ${combinedRdd.name} to $bucket $prefix")
       rddWriter.write(combinedRdd, bucket, keyPath, oneToOne = false)
     } catch {
-      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
+      case e: HeaderMatchError[_] => throw e.initCause(e)
+      case e: LayerNotExistsError => throw e.initCause(e)
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
   }

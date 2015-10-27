@@ -70,7 +70,8 @@ class AccumuloLayerFormat[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
 
       rddWriter.write(combinedRdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
-      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
+      case e: HeaderMatchError[_] => throw e.initCause(e)
+      case e: LayerNotExistsError => throw e.initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }

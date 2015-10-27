@@ -2,8 +2,8 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.json._
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.{AttributeStore, LayerWriteError, ContainerConstructor, Writer}
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.io._
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -43,6 +43,45 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
       rddWriter.write(rdd, layerPath, keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
+    }
+  }
+
+  def update(id: LayerId, rdd: BoundRDD[K, V]) = {
+    try {
+      if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
+
+      implicit val sc = rdd.sparkContext
+      implicit val mdFormat = cons.metaDataFormat
+      val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
+      val header =
+        HadoopLayerHeader(
+          keyClass = classTag[K].toString(),
+          valueClass = classTag[V].toString(),
+          path = layerPath
+        )
+
+      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
+        attributeStore.readLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
+
+      if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
+
+      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+
+      val existingRange = existingKeyIndex.indexRanges(existingKeyBounds)
+      val range = keyIndexMethod.createIndex(keyBounds).indexRanges(keyBounds)
+
+      val (existingBoundMin, existingBoundMax) = existingRange.min -> existingRange.max
+      val (boundMin, boundMax) = range.min -> range.max
+
+      if (notIncluded(existingBoundMax, boundMax) || notIncluded(existingBoundMin, boundMin))
+        throw new OutOfKeyBoundsError(id)
+
+      rddWriter.write(rdd, layerPath, existingKeyIndex)
+    } catch {
+      case e: HeaderMatchError[_] => throw e.initCause(e)
+      case e: OutOfKeyBoundsError => throw e.initCause(e)
+      case e: LayerNotExistsError => throw e.initCause(e)
+      case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }

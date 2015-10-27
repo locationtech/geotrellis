@@ -68,7 +68,8 @@ class HadoopLayerFormat[K: Boundable: JsonFormat: ClassTag, V: MergeView: ClassT
       attributeStore.writeLayerAttributes(id, existingHeader, combinedMetaData, combinedKeyBounds, existingKeyIndex, Option.empty[Schema])
       rddWriter.write(combinedRdd, layerPath, existingKeyIndex)
     } catch {
-      case e: LayerNotExistsError => throw new LayerNotExistsError(id).initCause(e)
+      case e: HeaderMatchError[_] => throw e.initCause(e)
+      case e: LayerNotExistsError => throw e.initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
