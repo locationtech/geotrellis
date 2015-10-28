@@ -45,8 +45,4 @@ package object io {
 
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])
     extends JsonAttributeStoreMethods(store)
-
-  def notIncluded(set: (Long, Long), subset: (Long, Long)): Boolean =
-    if(set._1 < subset._1 && set._2 > subset._2) false
-    else true
 }
