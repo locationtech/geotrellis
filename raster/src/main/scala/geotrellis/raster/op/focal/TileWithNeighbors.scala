@@ -68,4 +68,26 @@ object TileWithNeighbors {
         ).flatten, tileLayout)
       (tiledTile, GridBounds(colMin, rowMin, colMax, rowMax))
     }
+
+  def fromOffsets(pairs: TraversableOnce[((Int, Int), Tile)]): Option[(Tile, GridBounds)]  = {
+    val seq = Array.fill[Option[Tile]](8)(None)  
+    var center: Option[Tile] = None
+    
+    pairs.foreach { case ((dCol, dRow), tile) =>
+      if (dRow == 0 && dCol == 0) center = Some(tile)
+      else if (dRow == -1 && dCol ==  0) seq(0) = Some(tile)
+      else if (dRow == -1 && dCol ==  1) seq(1) = Some(tile)
+      else if (dRow ==  0 && dCol ==  1) seq(2) = Some(tile)
+      else if (dRow ==  1 && dCol ==  1) seq(3) = Some(tile)
+      else if (dRow ==  1 && dCol ==  0) seq(4) = Some(tile)
+      else if (dRow ==  1 && dCol == -1) seq(5) = Some(tile)
+      else if (dRow ==  0 && dCol == -1) seq(6) = Some(tile)
+      else if (dRow == -1 && dCol == -1) seq(7) = Some(tile)
+    }
+
+    // if we did not find center, that means we contributed to tile that is not in the source collection
+    center.map { tile =>
+      TileWithNeighbors(tile, seq)
+    }    
+  }  
 }

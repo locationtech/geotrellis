@@ -18,25 +18,25 @@ object FocalOperation {
       (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
     val bounds = opBounds.getOrElse(GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
-    val neighbors: RDD[(K, (K, Tile))] = rdd
-      .flatMap { case (key, value) =>
+
+    rdd
+      .flatMap { case record @ (key, tile) =>
         val SpatialKey(col, row) = key.spatialComponent
         for {
-          c <- col - 1 to col + 1
-          r <- row - 1 to row + 1
-          if !(c == col && r == row) && bounds.contains(c, r)
-        } yield (key.updateSpatialComponent(SpatialKey(c, r)), (key, value))
-      }
-
-    rdd.cogroup(neighbors)
-      .flatMap { case (key, (iterV, iterW)) =>
-        iterV.map { tile =>
-          val neighbors = iterW.map { case (key, value) => (key.spatialComponent, value) }
-          val neighborsSeq = SeqTileNeighbors.fromKeys(key.spatialComponent, neighbors)
-          val (neighborhoodTile, analysisArea) = TileWithNeighbors(tile, neighborsSeq.getNeighbors)
-
-          (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
+          c <- - 1 to + 1
+          r <- - 1 to + 1
+          if bounds.contains(col + c, row + r)
+        } yield {
+          val contributesToKey = key.updateSpatialComponent(SpatialKey(col + c,  row + r))
+          (contributesToKey, ((-c, -r), tile))
         }
+      }
+      .groupByKey
+      .flatMap { case (key, neighbors) =>        
+        TileWithNeighbors.fromOffsets(neighbors)
+          .map { case (neighborhoodTile, analysisArea) =>
+            (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
+          }        
       }
   }
 
