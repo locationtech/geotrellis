@@ -3,6 +3,8 @@ package geotrellis.spark.op.focal
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
+import geotrellis.raster.mosaic._
+import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
@@ -14,29 +16,82 @@ import scala.reflect.ClassTag
 
 object FocalOperation {
 
+  object Direction extends Enumeration {
+    type Direction = Value
+    val Center, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft = Value
+
+    implicit class withMethods(direction: Value) {
+      /** Map from source of contribution to GridBounds of cells in the target focal tile*/
+      def toGridBounds(cols: Int, rows: Int, m: Int): GridBounds = direction match {
+        case Center => 
+          GridBounds(m, m, m+cols-1, m+rows-1)
+        case Left => 
+          GridBounds(m+cols, m, m+cols+m-1, m+rows-1)
+        case Right => 
+          GridBounds(0, m, m-1, m+rows-1)
+        case Top => 
+          GridBounds(m, m+rows, m+cols-1, m+rows+m-1)
+        case Bottom => 
+          GridBounds(m, 0, m+cols-1, m-1)
+        case TopLeft =>  
+          GridBounds(m+cols, m+rows, m+cols+m-1, m+rows+m-1)
+        case TopRight => 
+          GridBounds(0, m+rows, m-1, m+rows+m-1)
+        case BottomRight => 
+          GridBounds(0, 0, m-1, m-1)
+        case BottomLeft => 
+          GridBounds(m+cols, 0, m+cols+m-1, m+rows+m-1)
+      }
+    }
+  }
+
+  import Direction._
+  
   def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, opBounds: Option[GridBounds] = None)
       (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
     val bounds = opBounds.getOrElse(GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
-
+    val m: Int = neighborhood.extent // how many pixels we need for the margin        
+    
     rdd
       .flatMap { case record @ (key, tile) =>
         val SpatialKey(col, row) = key.spatialComponent
-        for {
-          c <- - 1 to + 1
-          r <- - 1 to + 1
-          if bounds.contains(col + c, row + r)
-        } yield {
-          val contributesToKey = key.updateSpatialComponent(SpatialKey(col + c,  row + r))
-          (contributesToKey, ((-c, -r), tile))
-        }
+        var slivers = new Array[(K, (Direction, Tile))](9)
+        // Tile.crop is inclusive on the max bounds, adjusting offsets to account for that
+        val cols = tile.cols-1
+        val rows = tile.rows-1
+        val mm = m - 1
+        
+        // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window
+        // Read (key -> (DD, tile)) as "Cutting off "DD" corner as tile to contribute to "DD" tile at key "key"
+        slivers(0) = key.updateSpatialComponent(SpatialKey(col, row))     -> (Center, tile.toArrayTile)
+        slivers(1) = key.updateSpatialComponent(SpatialKey(col-1, row))   -> (Left, tile.crop(0, 0, mm, rows).toArrayTile)
+        slivers(2) = key.updateSpatialComponent(SpatialKey(col+1, row))   -> (Right, tile.crop(cols-mm, 0, cols, rows).toArrayTile)
+        slivers(3) = key.updateSpatialComponent(SpatialKey(col, row-1))   -> (Top, tile.crop(0, 0,  cols, mm).toArrayTile)              
+        slivers(4) = key.updateSpatialComponent(SpatialKey(col, row+1))   -> (Bottom, tile.crop(0, rows-mm, cols, rows).toArrayTile)
+
+        slivers(5) = key.updateSpatialComponent(SpatialKey(col-1, row-1)) -> (TopLeft, tile.crop(0, 0, mm, mm).toArrayTile)
+        slivers(6) = key.updateSpatialComponent(SpatialKey(col+1, row-1)) -> (TopRight, tile.crop(cols-mm, 0, cols, mm).toArrayTile)
+        slivers(7) = key.updateSpatialComponent(SpatialKey(col+1, row+1)) -> (BottomRight, tile.crop(cols-mm, rows-mm, cols, rows).toArrayTile)
+        slivers(8) = key.updateSpatialComponent(SpatialKey(col-1, row+1)) -> (BottomLeft, tile.crop(0, rows-mm, mm, rows).toArrayTile)
+
+        slivers
       }
       .groupByKey
-      .flatMap { case (key, neighbors) =>        
-        TileWithNeighbors.fromOffsets(neighbors)
-          .map { case (neighborhoodTile, analysisArea) =>
-            (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
-          }        
+      .flatMap { case (key, neighbors) =>
+        neighbors.find( _._1 == Center) map { case (_, tile) =>
+          // assume that all tiles are of the same size
+          val cols = tile.cols
+          val rows = tile.rows          
+          val focalTile = ArrayTile.empty(tile.cellType, m+cols+m, m+rows+m)
+          
+          for ((direction, slice) <- neighbors) {
+            val updateBounds = direction.toGridBounds(cols, rows, m)
+            focalTile.update(updateBounds.colMin, updateBounds.rowMin, slice)
+          }
+          val result = calc(focalTile, neighborhood, Some(GridBounds(m, m, m+cols-1, m+rows-1)))
+          key -> result
+        }                
       }
   }
 
