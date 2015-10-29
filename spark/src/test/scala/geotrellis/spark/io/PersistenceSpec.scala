@@ -12,7 +12,7 @@ import scala.reflect._
 abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: OnlyIfCanRunSpark =>
   type Container <: RDD[(K, V)]
   type TestReader = FilteringLayerReader[LayerId, K, Container]
-  type TestWriter = Writer[LayerId, Container]
+  type TestWriter = Writer[LayerId, Container, BoundRDD[K, V]]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container
