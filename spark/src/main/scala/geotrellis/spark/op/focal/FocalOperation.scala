@@ -66,7 +66,7 @@ object FocalOperation {
         // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
         def addSlice(spatialKey: SpatialKey, direction: => Direction, sliver: => Tile) {
           if (bounds.contains(spatialKey.col, spatialKey.row)) {
-            slivers(sliverCount) = key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile)
+            slivers(sliverCount) = key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop
             sliverCount += 1
           }
         }
