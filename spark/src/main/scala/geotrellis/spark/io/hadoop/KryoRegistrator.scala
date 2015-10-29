@@ -60,6 +60,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register( Collections.singletonList( "" ).getClass(), new CollectionsSingletonListSerializer )
     kryo.register( Collections.singleton( "" ).getClass(), new CollectionsSingletonSetSerializer )
     kryo.register( Collections.singletonMap( "", "" ).getClass(), new CollectionsSingletonMapSerializer )
+    kryo.register(classOf[geotrellis.spark.op.focal.FocalOperation.Direction.Direction])
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
     SynchronizedCollectionsSerializer.registerSerializers( kryo )
