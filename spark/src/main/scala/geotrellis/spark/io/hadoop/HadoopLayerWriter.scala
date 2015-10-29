@@ -68,7 +68,7 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
       val boundable = implicitly[Boundable[K]]
       val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
 
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || boundable.includes(keyBounds.maxKey, existingKeyBounds))
+      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
         throw new OutOfKeyBoundsError(id)
 
       rddWriter.write(rdd, layerPath, existingKeyIndex)

@@ -60,7 +60,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
       val boundable = implicitly[Boundable[K]]
       val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
 
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || boundable.includes(keyBounds.maxKey, existingKeyBounds))
+      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
         throw new OutOfKeyBoundsError(id)
 
       val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
