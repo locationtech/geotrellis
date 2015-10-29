@@ -8,8 +8,10 @@ trait Reader[K, V] extends (K => V) {
   def apply(key: K): V = read(key)
 }
 
-trait Writer[K, V] extends ((K,V) => Unit) {
+/** Third type param may be not useful (think only two should be enough) */
+trait Writer[K, V, U] extends ((K,V) => Unit) {
   def write(key: K, value: V): Unit
+  def update(key: K, value: U): Unit
   def apply(key: K, value: V): Unit = write(key, value)
 }
 
@@ -38,17 +40,4 @@ abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerR
 
   def query(layerId: ID, numPartitions: Int): BoundRDDQuery[K, MetaDataType, ReturnType] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
-}
-
-abstract class LayerFormat[ID, K: Boundable, V, ReturnType] extends FilteringLayerReader[ID, K, ReturnType] with Writer[ID, ReturnType with RDD[(K, V)]] {
-  val layerReader: FilteringLayerReader[ID, K, ReturnType]
-  val layerWriter: Writer[ID, ReturnType with RDD[(K, V)]]
-
-  /**  Dirty cast, obviously MetaData types have to be equal */
-  def read(id: ID, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): ReturnType =
-    layerReader.read(id ,rasterQuery.asInstanceOf[RDDQuery[K, layerReader.MetaDataType]], numPartitions)
-
-  def write(id: ID, rdd: ReturnType with RDD[(K, V)]): Unit = layerWriter.write(id, rdd)
-
-  def update(id: ID, value: ReturnType with RDD[(K, V)], numPartitions: Int): Unit
 }

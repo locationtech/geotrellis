@@ -33,7 +33,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     keyPrefix: String,
     clobber: Boolean = true)
   (implicit val cons: ContainerConstructor[K, V, Container])
-  extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
+  extends Writer[LayerId, Container with RDD[(K, V)], BoundRDD[K, V]] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -82,13 +82,10 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
 
       if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
 
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
+      val boundable = implicitly[Boundable[K]]
+      val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
 
-      val (existingIndexMin, existingIndexMax) = existingKeyIndex.toIndex(existingKeyBounds.minKey) -> existingKeyIndex.toIndex(existingKeyBounds.maxKey)
-      val (indexMin, indexMax) = keyIndex.toIndex(keyBounds.minKey) -> keyIndex.toIndex(keyBounds.maxKey)
-
-      if (existingIndexMin > indexMin || existingIndexMax < indexMax)
+      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || boundable.includes(keyBounds.maxKey, existingKeyBounds))
         throw new OutOfKeyBoundsError(id)
 
       val maxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))

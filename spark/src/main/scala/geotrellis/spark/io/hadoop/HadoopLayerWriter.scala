@@ -18,7 +18,7 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
   rddWriter: HadoopRDDWriter[K, V],
   keyIndexMethod: KeyIndexMethod[K])
 (implicit val cons: ContainerConstructor[K, V, Container])
-  extends Writer[LayerId, Container with RDD[(K, V)]] {
+  extends Writer[LayerId, Container with RDD[(K, V)], BoundRDD[K, V]] {
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     implicit val sc = rdd.sparkContext
@@ -65,13 +65,10 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
 
       if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
 
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
+      val boundable = implicitly[Boundable[K]]
+      val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
 
-      val (existingIndexMin, existingIndexMax) = existingKeyIndex.toIndex(existingKeyBounds.minKey) -> existingKeyIndex.toIndex(existingKeyBounds.maxKey)
-      val (indexMin, indexMax) = keyIndex.toIndex(keyBounds.minKey) -> keyIndex.toIndex(keyBounds.maxKey)
-
-      if (existingIndexMin > indexMin || existingIndexMax < indexMax)
+      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || boundable.includes(keyBounds.maxKey, existingKeyBounds))
         throw new OutOfKeyBoundsError(id)
 
       rddWriter.write(rdd, layerPath, existingKeyIndex)
