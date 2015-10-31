@@ -9,9 +9,8 @@ trait Reader[K, V] extends (K => V) {
 }
 
 /** Third type param may be not useful (think only two should be enough) */
-trait Writer[K, V, U] extends ((K,V) => Unit) {
+trait Writer[K, V] extends ((K,V) => Unit) {
   def write(key: K, value: V): Unit
-  def update(key: K, value: U): Unit
   def apply(key: K, value: V): Unit = write(key, value)
 }
 
@@ -40,4 +39,14 @@ abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerR
 
   def query(layerId: ID, numPartitions: Int): BoundRDDQuery[K, MetaDataType, ReturnType] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
+}
+
+abstract class UpdatingLayerWriter[ID, K: Boundable, V, ReturnType] extends Writer[ID, ReturnType] {
+  def update(id: ID, rdd: RDD[(K, V)]): Unit
+
+  def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, RDD[(K, V)]], rdd: RDD[(K, V)])
+                 (merge: (RDD[(K, V)]) => RDD[(K, V)]) = {
+    val existing = reader.query(id).where(Intersects(implicitly[Boundable[K]].getKeyBounds(rdd))).toRDD
+    update(id, merge(existing))
+  }
 }

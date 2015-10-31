@@ -16,7 +16,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
   (implicit val cons: ContainerConstructor[K, V, Container])
-  extends Writer[LayerId, Container with RDD[(K, V)], BoundRDD[K, V]] {
+  extends UpdatingLayerWriter[LayerId, K, V, Container with RDD[(K, V)]] {
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     try {
@@ -41,7 +41,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
     }
   }
 
-  def update(id: LayerId, rdd: BoundRDD[K, V]) = {
+  def update(id: LayerId, rdd: RDD[(K, V)]) = {
     try {
       if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
       implicit val mdFormat = cons.metaDataFormat
@@ -58,7 +58,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
       if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
 
       val boundable = implicitly[Boundable[K]]
-      val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+      val keyBounds = boundable.getKeyBounds(rdd)
 
       if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
         throw new OutOfKeyBoundsError(id)

@@ -33,7 +33,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     keyPrefix: String,
     clobber: Boolean = true)
   (implicit val cons: ContainerConstructor[K, V, Container])
-  extends Writer[LayerId, Container with RDD[(K, V)], BoundRDD[K, V]] with LazyLogging {
+  extends UpdatingLayerWriter[LayerId, K, V, Container with RDD[(K, V)]] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -65,7 +65,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     }
   }
 
-  def update(id: LayerId, rdd: BoundRDD[K, V]) = {
+  def update(id: LayerId, rdd: RDD[(K, V)]) = {
     try {
       require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
       implicit val sc = rdd.sparkContext
