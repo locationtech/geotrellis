@@ -36,6 +36,32 @@ trait TileCodecs {
     }
   }
 
+  implicit def uShortArrayTileCodec: AvroRecordCodec[UShortArrayTile] = new AvroRecordCodec[UShortArrayTile] {
+    def schema = SchemaBuilder
+      .record("UShortArrayTile").namespace("geotrellis.raster")
+      .fields()
+      .name("cols").`type`().intType().noDefault()
+      .name("rows").`type`().intType().noDefault()
+      .name("cells").`type`().array().items().intType().noDefault()
+      .endRecord()
+
+    def encode(tile: UShortArrayTile, rec: GenericRecord) = {
+      rec.put("cols", tile.cols)
+      rec.put("rows", tile.rows)
+      // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
+      rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+    }
+
+    def decode(rec: GenericRecord) = {
+      val array  = rec.get("cells")
+        .asInstanceOf[java.util.Collection[Int]]
+        .asScala // notice that Avro does not have native support for Short primitive
+        .map(_.toShort)
+        .toArray
+      new UShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+    }
+  }
+
   implicit def intArrayTileCodec: AvroRecordCodec[IntArrayTile] = new AvroRecordCodec[IntArrayTile] {
     def schema = SchemaBuilder
       .record("IntArrayTile").namespace("geotrellis.raster")
@@ -117,6 +143,27 @@ trait TileCodecs {
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
       new ByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+    }
+  }
+
+  implicit def uByteArrayTileCodec: AvroRecordCodec[UByteArrayTile] = new AvroRecordCodec[UByteArrayTile] {
+    def schema = SchemaBuilder
+      .record("UByteArrayTile").namespace("geotrellis.raster")
+      .fields()
+      .name("cols").`type`().intType().noDefault()
+      .name("rows").`type`().intType().noDefault()
+      .name("cells").`type`().bytesType().noDefault()
+      .endRecord()
+
+    def encode(tile: UByteArrayTile, rec: GenericRecord) = {
+      rec.put("cols", tile.cols)
+      rec.put("rows", tile.rows)
+      rec.put("cells", ByteBuffer.wrap(tile.array))
+    }
+
+    def decode(rec: GenericRecord) = {
+      val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
+      new UByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
