@@ -22,7 +22,7 @@ package object io {
   class LayerExistsError(layerId: LayerId)
     extends CatalogError(s"Layer $layerId already exists in the catalog")
 
-  class LayerNotExistsError(layerId: LayerId)
+  class LayerNotExistsError[ID](layerId: ID)
     extends CatalogError(s"Layer $layerId not exists in the catalog")
 
   class LayerWriteError(layerId: LayerId)

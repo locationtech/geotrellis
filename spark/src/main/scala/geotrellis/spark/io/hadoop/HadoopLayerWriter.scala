@@ -73,9 +73,6 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
 
       rddWriter.write(rdd, layerPath, existingKeyIndex)
     } catch {
-      case e: HeaderMatchError[_] => throw e.initCause(e)
-      case e: OutOfKeyBoundsError => throw e.initCause(e)
-      case e: LayerNotExistsError => throw e.initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }

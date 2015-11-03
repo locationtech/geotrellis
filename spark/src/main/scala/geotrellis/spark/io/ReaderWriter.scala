@@ -45,8 +45,8 @@ abstract class UpdatingLayerWriter[ID, K: Boundable, V, ReturnType] extends Writ
   def update(id: ID, rdd: RDD[(K, V)]): Unit
 
   def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, RDD[(K, V)]], rdd: RDD[(K, V)])
-                 (merge: (RDD[(K, V)]) => RDD[(K, V)]) = {
+                 (merge: (RDD[(K, V)], RDD[(K, V)]) => RDD[(K, V)]) = {
     val existing = reader.query(id).where(Intersects(implicitly[Boundable[K]].getKeyBounds(rdd))).toRDD
-    update(id, merge(existing))
+    update(id, merge(existing, rdd))
   }
 }

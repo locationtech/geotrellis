@@ -94,9 +94,6 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
       rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
     } catch {
-      case e: HeaderMatchError[_] => throw e.initCause(e)
-      case e: OutOfKeyBoundsError => throw e.initCause(e)
-      case e: LayerNotExistsError => throw e.initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }

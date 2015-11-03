@@ -67,9 +67,6 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
 
       rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
-      case e: HeaderMatchError[_] => throw e.initCause(e)
-      case e: OutOfKeyBoundsError => throw e.initCause(e)
-      case e: LayerNotExistsError => throw e.initCause(e)
       case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
