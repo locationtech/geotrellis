@@ -7,6 +7,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
 import org.apache.avro.Schema
+import geotrellis.spark.utils.cache._
 import org.apache.spark.SparkContext
 import spray.json.{JsObject, JsonFormat}
 import spray.json.DefaultJsonProtocol._

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.engine
+package geotrellis.spark.utils.cache
 
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
@@ -22,64 +22,12 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable
 
-/**
- * Trait for a T-keyed, any valued cache.
- */
-trait Cache[T] extends Serializable {
-  /** Lookup the value for key k
-   * @return Some(v) if the value was cached, None otherwise
-   */
-  def lookup[V](k: T):Option[V]
-
-  /** Insert the value v (keyed by k) into the cache
-   * @return true if the value was inserted into the cache
-   */
-  def insert[V](k: T, v: V):Boolean
-
-  /** Remove k from the cache */
-  def remove[V](k: T):Option[V]
-
-  /** Lookup the value for key k
-   * If the value is in the cache, return it.
-   * Otherwise, insert the value v and return it
-   *
-   * Note: This method does not guarantee that v will be in the cache when it returns
-   *
-   * @return the cached value keyed to k or the computed value of v
-   */
-  def getOrInsert[V](k: T, vv: => V):V = lookup(k) match {
-    case Some(v) => v
-    case None => {insert(k, vv); vv}
-  }
-}
-
-/**
- * Simple HashMap backed cache keyed by String and can hold any type.
- */
-class HashCache[T] extends Cache[T] {
-  val cache = new mutable.HashMap[T,Any].empty
-
-  def lookup[V](k: T):Option[V] =
-    cache.get(k) match {
-      case Some(v) => Some(v.asInstanceOf[V])
-      case None => None
-    }
-
-  def remove[V](k: T):Option[V] =
-    cache.remove(k) match {
-      case Some(v) => Some(v.asInstanceOf[V])
-      case None => None
-    }
-
-  def insert[V](k: T, v: V):Boolean = { cache.put(k,v.asInstanceOf[Any]); true }
-}
-
 /** Base trait for a caching strategy
  *
  * K is the cache key
  * V is the cache value
  */
-trait CacheStrategy[K,V] {
+trait Cache[K,V] extends Serializable {
 
   /** Lookup the value for key k
    * @return Some(v) if the value was cached, None otherwise
@@ -112,7 +60,7 @@ trait CacheStrategy[K,V] {
 /** A Cache Strategy that completely ignores caching and always returns the input object
  * Operations on this cache execute in O(1) time
  */
-class NoCacheStrategy[K,V] extends CacheStrategy[K,V] {
+class NoCache[K,V] extends Cache[K,V] {
   def lookup(k: K):Option[V] = None
   def insert(k: K, v: V):Boolean = false
   def remove(k: K):Option[V] = None
@@ -121,15 +69,15 @@ class NoCacheStrategy[K,V] extends CacheStrategy[K,V] {
 /** An unbounded hash-backed cache
  * Operations on this cache execute in O(1) time
  */
-trait HashBackedCache[K,V] extends CacheStrategy[K,V] {
-  val cache = new HashMap[K,V].empty
+trait HashBackedCache[K,V] extends Cache[K,V] {
+  val cache = new mutable.HashMap[K,V].empty
 
   def lookup(k: K):Option[V] = cache.get(k)
   def remove(k: K):Option[V] = cache.remove(k)
   def insert(k: K, v: V):Boolean = { cache.put(k,v); true }
 }
 
-trait LoggingCache[K,V] extends CacheStrategy[K,V] {
+trait LoggingCache[K,V] extends Cache[K,V] {
   abstract override def lookup(k: K):Option[V] = super.lookup(k) match {
     case None => {
       //println(s"Cache miss on $k")
@@ -145,7 +93,7 @@ trait LoggingCache[K,V] extends CacheStrategy[K,V] {
 /** A hash backed cache with a size boundary
  * Operations on this cache may required O(N) time to execute (N = size of cache)
  */
-trait BoundedCache[K,V] extends CacheStrategy[K,V] {
+trait BoundedCache[K,V] extends Cache[K,V] {
 
   /** Return the size of a a given cache item
    * If items are objects (for example) this might just be: (x) => 1
@@ -277,7 +225,7 @@ class MRUCache[K,V](val maxSize: Long, val sizeOf: V => Long = (v:V) => 1) exten
 /** Atomic cache provides an atomic getOrInsert(k,v) method
  * This cache assumes that (k,v) pair is immutable
  */
-trait AtomicCache[K,V] extends CacheStrategy[K,V] {
+trait AtomicCache[K,V] extends Cache[K,V] {
   val bigLock:Lock = new ReentrantLock()
 
   val currentlyLoading:HashMap[K,Lock] = new HashMap[K,Lock].empty

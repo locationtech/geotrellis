@@ -9,14 +9,21 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 
+class NoDataByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Byte) extends ByteGeoTiffSegment(bytes) {
+  override
+  def get(i: Int): Byte =
+    if (bytes(i) == noDataValue)
+      byteNODATA
+    else
+      bytes(i)
+}
+
 class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   val size: Int = bytes.size
 
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))
-
-  def get(i: Int): Int = bytes(i) & 0xFF
-  def getRaw(i: Int): Byte = bytes(i)
+  def get(i: Int): Byte = bytes(i)
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -24,7 +31,7 @@ class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte | TypeUByte => 
+      case TypeByte | TypeUByte =>
         bytes
       case TypeShort | TypeUShort =>
         val arr = Array.ofDim[Short](size)
@@ -52,7 +59,7 @@ class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     arr
   }
 
-  def mapDouble(f: Double => Double): Array[Byte] = 
+  def mapDouble(f: Double => Double): Array[Byte] =
     map(z => d2i(f(i2d(z))))
 
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
