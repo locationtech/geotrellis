@@ -3,12 +3,11 @@ package geotrellis.spark.io.s3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
-import geotrellis.spark.io.Cache
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{MergeQueue, KeyIndex}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
-import org.apache.accumulo.core.data.Range
+import geotrellis.spark.utils.cache.Cache
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
@@ -61,11 +60,7 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
                 val bytes: Array[Byte] =
                   cache match {
                     case Some(cache) =>
-                      cache(index).getOrElse {
-                        val s3Bytes = getS3Bytes()
-                        cache.update(index, s3Bytes)
-                        s3Bytes
-                      }
+                      cache.getOrInsert(index, getS3Bytes())
                     case None =>
                       getS3Bytes()
                   }

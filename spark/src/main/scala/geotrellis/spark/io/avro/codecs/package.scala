@@ -9,7 +9,9 @@ package object codecs extends TileCodecs with KeyCodecs {
     doubleArrayTileCodec,
     shortArrayTileCodec,
     intArrayTileCodec,
-    bitArrayTileCodec)
+    bitArrayTileCodec,
+    uByteArrayTileCodec,
+    uShortArrayTileCodec)
 
   implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec]: TupleCodec[A, B] = TupleCodec[A, B]
 }
