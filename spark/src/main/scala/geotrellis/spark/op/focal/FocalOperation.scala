@@ -3,6 +3,8 @@ package geotrellis.spark.op.focal
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
+import geotrellis.raster.mosaic._
+import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
@@ -10,160 +12,118 @@ import org.apache.spark.SparkContext._
 import spire.syntax.cfor._
 
 import annotation.tailrec
+import scala.reflect.ClassTag
+import scala.collection.mutable.ArrayBuffer
 
 object FocalOperation {
 
-  private def getNeighborCoordinates(gridBounds: GridBounds, col: Int, row: Int) = {
+  def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, opBounds: Option[GridBounds] = None)
+      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
-    val index = (row % 3) * 3 + (col % 3)
+    val bounds = opBounds.getOrElse(GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
+    val m: Int = neighborhood.extent // how many pixels we need for the margin        
+    
+    rdd
+      .flatMap { case record @ (key, tile) =>
+        val SpatialKey(col, row) = key.spatialComponent
+        val slivers = new ArrayBuffer[(K, (Direction, Tile))](9)
 
-    val neighborCoordinates = Array.ofDim[Option[(Int, Int)]](9)
-    cfor(0)(_ < 9, _ + 1) { i =>
-      val (dy, dx) = FocalOperation.indicesDifferenceToCoords(index, i)
-      val (r, c) = (row + dy, col + dx)
+        // Tile.crop is inclusive on the max bounds, adjusting offsets to account for that
+        val cols = tile.cols-1
+        val rows = tile.rows-1
+        val mm = m - 1
+        
+        // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
+        def addSlice(spatialKey: SpatialKey, direction: => Direction, sliver: => Tile) {
+          if (bounds.contains(spatialKey.col, spatialKey.row))
+            slivers += key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop                    
+        }
 
-      neighborCoordinates(i) =
-        if (c >= gridBounds.width || r >= gridBounds.height || c < 0 || r < 0) None
-        else Some((r, c))
-    }
+        // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window        
+        addSlice(SpatialKey(col,row), Center, tile)
+      
+        addSlice(SpatialKey(col-1, row), Left, tile.crop(0, 0, mm, rows))
+        addSlice(SpatialKey(col+1, row), Right, tile.crop(cols-mm, 0, cols, rows))
+        addSlice(SpatialKey(col, row-1), Top, tile.crop(0, 0,  cols, mm))
+        addSlice(SpatialKey(col, row+1), Bottom, tile.crop(0, rows-mm, cols, rows))
 
-    neighborCoordinates.toSeq
+        addSlice(SpatialKey(col-1, row-1), TopLeft, tile.crop(0, 0, mm, mm))
+        addSlice(SpatialKey(col+1, row-1), TopRight, tile.crop(cols-mm, 0, cols, mm))
+        addSlice(SpatialKey(col+1, row+1), BottomRight, tile.crop(cols-mm, rows-mm, cols, rows))
+        addSlice(SpatialKey(col-1, row+1), BottomLeft, tile.crop(0, rows-mm, mm, rows))
+
+        slivers
+      }
+      .groupByKey
+      .flatMap { case (key, neighbors) =>
+        neighbors.find( _._1 == Center) map { case (_, tile) =>
+          // assume that all tiles are of the same size
+          val cols = tile.cols
+          val rows = tile.rows          
+          val focalTile = ArrayTile.empty(tile.cellType, m+cols+m, m+rows+m)
+          
+          for ((direction, slice) <- neighbors) {
+            val updateBounds = direction.toGridBounds(cols, rows, m)
+            focalTile.update(updateBounds.colMin, updateBounds.rowMin, slice)
+          }
+          val result = calc(focalTile, neighborhood, Some(GridBounds(m, m, m+cols-1, m+rows-1)))
+          key -> result
+        }                
+      }
   }
 
-  private def indicesDifferenceToCoords(from: Int, to: Int) = {
-    val xStart = if (from % 3 == 0) 0 else if (from % 3 == 1) -1 else 1
-    val yStart = if (from / 3 == 0) 0 else if (from / 3 == 1) -1 else 1
-
-    val y = (yStart + to / 3) % 3 match {
-      case 2 => -1
-      case y => y
-    }
-
-    val x = (xStart + to % 3) % 3 match {
-      case 2 => -1
-      case x => x
-    }
-
-    (y, x)
+  def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
+      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
+    new RasterRDD(
+      apply(rasterRDD, neighborhood, Some(rasterRDD.metaData.gridBounds))(calc),
+      rasterRDD.metaData)
   }
-
 }
 
-trait FocalOperation[K] extends RasterRDDMethods[K] {
-
-  val _sc: SpatialComponent[K]
-
-  def zipWithNeighbors: RDD[(K, Tile, TileNeighbors)] = {
-    val sc = rasterRDD.sparkContext
-    val bcMetadata = sc.broadcast(rasterRDD.metaData)
-
-    val tilesWithNeighborIndices = rasterRDD.map { case (key, tile) =>
-      val metadata = bcMetadata.value
-      val gridBounds = metadata.gridBounds
-      val SpatialKey(col, row) = key
-      (key, tile, FocalOperation.getNeighborCoordinates(gridBounds, col, row))
-    }
-
-    getNeighbors(tilesWithNeighborIndices)
-  }
-
-  private def getNeighbors(
-    rdd: RDD[(K, Tile, Seq[Option[(Int, Int)]])]
-  ): RDD[(K, Tile, TileNeighbors)] = {
-    val sc = rdd.sparkContext
-    val start = sc.parallelize(Seq[(K, Tile, TileNeighbors)]())
-
-    getNeighbors(rdd, start)
-  }
-
-  @tailrec
-  private def getNeighbors(
-    rdd: RDD[(K, Tile, Seq[Option[(Int, Int)]])],
-    res: RDD[(K, Tile, TileNeighbors)],
-    idx: Int = 0): RDD[(K, Tile, TileNeighbors)] =
-    if (idx == 9) res
-    else {
-      val sc = rdd.sparkContext
-      val bcMetadata = sc.broadcast(rasterRDD.metaData)
-
-      val part = 
-        rdd
-          .groupBy { case(key, tile, seq) => seq(idx) }
-          .filter { case(k, it) => !k.isEmpty }
-          .map { case(k, it) => (k.get, it) }
-          .map { case((row, col), seq) =>
-            val neighborMap: Map[(Int, Int), (K, Tile)] =
-              seq.map { case(k, t, _) =>
-                val SpatialKey(col, row) = k
-                (k, t, (row, col))
-              }.groupBy(_._3).map(t => {
-                val k = t._1
-                val v = t._2.head
-                (k, (v._1, v._2))
-              })
-
-            val (key, tile) = neighborMap((row, col))
-
-            val tileNeighborsSeq = Seq(
-              (-1, 0), (-1, 1), (0, 1), (1, 1),
-              (1, 0), (1, -1), (0, -1), (-1, -1)
-            ).map { case(dy, dx) =>
-                neighborMap.get((row + dy, col + dx)).map(_._2)
-            }
-
-            val tileNeighbors: TileNeighbors = SeqTileNeighbors(tileNeighborsSeq)
-
-            (key, tile, tileNeighbors)
-        }
-
-      getNeighbors(rdd, res ++ part, idx + 1)
-    }
+abstract class FocalOperation[K: SpatialComponent: ClassTag] extends RasterRDDMethods[K] {
 
   def focal(n: Neighborhood)
-    (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
-    val sc = rasterRDD.sparkContext
-    val bcCalc = sc.broadcast(calc)
-    val bcNeighborhood = sc.broadcast(n)
-
-    val rdd = 
-      zipWithNeighbors
-        .map { case (key, center, neighbors) =>
-          val calc = bcCalc.value
-          val neighborhood = bcNeighborhood.value
-
-          val (neighborhoodTile, analysisArea) =
-            TileWithNeighbors(center, neighbors.getNeighbors)
-          //      println(key)
-          (key, calc(neighborhoodTile, neighborhood, Some(analysisArea)))
-        }
-
-    new RasterRDD(rdd, rasterRDD.metaData)
-  }
+      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] =
+    FocalOperation(rasterRDD, n)(calc)
 
   def focalWithExtent(n: Neighborhood)
-    (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
-    val sc = rasterRDD.sparkContext
-    val bcCalc = sc.broadcast(calc)
-    val bcNeighborhood = sc.broadcast(n)
-    val bcMetadata = sc.broadcast(rasterRDD.metaData)
-
-    val rdd = zipWithNeighbors.map { case (key, center, neighbors) =>
-      val calc = bcCalc.value
-      val neighborhood = bcNeighborhood.value
-      val metadata = bcMetadata.value
-
-      val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors.getNeighbors)
-
-      val res = calc(
-        neighborhoodTile,
-        neighborhood,
-        Some(analysisArea),
-        metadata.layout.rasterExtent
-      )
-
-      (key, res)
+      (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
+    val extent = rasterRDD.metaData.layout.rasterExtent
+    FocalOperation(rasterRDD, n){ (tile, n, bounds) =>
+      calc(tile, n, bounds, extent)
     }
-
-    new RasterRDD(rdd, rasterRDD.metaData)
   }
+}
+
+sealed trait Direction {
+  /** Map from source of contribution to GridBounds of cells in the target focal tile*/
+  def toGridBounds(cols: Int, rows: Int, m: Int): GridBounds
+}
+
+case object Center extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m, m, m+cols-1, m+rows-1)
+}
+case object Top extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m, m+rows, m+cols-1, m+rows+m-1)
+}
+case object TopRight extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(0, m+rows, m-1, m+rows+m-1)
+}
+case object Right extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(0, m, m-1, m+rows-1)
+}
+case object BottomRight extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(0, 0, m-1, m-1)
+}
+case object Bottom extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m, 0, m+cols-1, m-1)
+}
+case object BottomLeft extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m+cols, 0, m+cols+m-1, m+rows+m-1)
+}
+case object Left extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m+cols, m, m+cols+m-1, m+rows-1)
+}
+case object TopLeft extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m+cols, m+rows, m+cols+m-1, m+rows+m-1)
 }
