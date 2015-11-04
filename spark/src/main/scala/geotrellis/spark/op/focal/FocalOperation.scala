@@ -17,37 +17,6 @@ import scala.collection.mutable.ArrayBuffer
 
 object FocalOperation {
 
-  object Direction extends Enumeration {
-    type Direction = Value
-    val Center, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft = Value
-
-    implicit class withMethods(direction: Value) {
-      /** Map from source of contribution to GridBounds of cells in the target focal tile*/
-      def toGridBounds(cols: Int, rows: Int, m: Int): GridBounds = direction match {
-        case Center => 
-          GridBounds(m, m, m+cols-1, m+rows-1)
-        case Left => 
-          GridBounds(m+cols, m, m+cols+m-1, m+rows-1)
-        case Right => 
-          GridBounds(0, m, m-1, m+rows-1)
-        case Top => 
-          GridBounds(m, m+rows, m+cols-1, m+rows+m-1)
-        case Bottom => 
-          GridBounds(m, 0, m+cols-1, m-1)
-        case TopLeft =>  
-          GridBounds(m+cols, m+rows, m+cols+m-1, m+rows+m-1)
-        case TopRight => 
-          GridBounds(0, m+rows, m-1, m+rows+m-1)
-        case BottomRight => 
-          GridBounds(0, 0, m-1, m-1)
-        case BottomLeft => 
-          GridBounds(m+cols, 0, m+cols+m-1, m+rows+m-1)
-      }
-    }
-  }
-
-  import Direction._
-  
   def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, opBounds: Option[GridBounds] = None)
       (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
@@ -124,4 +93,37 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends RasterRDDMe
       calc(tile, n, bounds, extent)
     }
   }
+}
+
+sealed trait Direction {
+  /** Map from source of contribution to GridBounds of cells in the target focal tile*/
+  def toGridBounds(cols: Int, rows: Int, m: Int): GridBounds
+}
+
+case object Center extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m, m, m+cols-1, m+rows-1)
+}
+case object Top extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m, m+rows, m+cols-1, m+rows+m-1)
+}
+case object TopRight extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(0, m+rows, m-1, m+rows+m-1)
+}
+case object Right extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(0, m, m-1, m+rows-1)
+}
+case object BottomRight extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(0, 0, m-1, m-1)
+}
+case object Bottom extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m, 0, m+cols-1, m-1)
+}
+case object BottomLeft extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m+cols, 0, m+cols+m-1, m+rows+m-1)
+}
+case object Left extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m+cols, m, m+cols+m-1, m+rows-1)
+}
+case object TopLeft extends Direction {
+  def toGridBounds(cols: Int, rows: Int, m: Int) = GridBounds(m+cols, m+rows, m+cols+m-1, m+rows+m-1)
 }
