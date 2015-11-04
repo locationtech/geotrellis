@@ -13,6 +13,7 @@ import spire.syntax.cfor._
 
 import annotation.tailrec
 import scala.reflect.ClassTag
+import scala.collection.mutable.ArrayBuffer
 
 object FocalOperation {
 
@@ -56,8 +57,8 @@ object FocalOperation {
     rdd
       .flatMap { case record @ (key, tile) =>
         val SpatialKey(col, row) = key.spatialComponent
-        val slivers = new Array[(K, (Direction, Tile))](9)
-        var sliverCount = 0
+        val slivers = new ArrayBuffer[(K, (Direction, Tile))](9)
+
         // Tile.crop is inclusive on the max bounds, adjusting offsets to account for that
         val cols = tile.cols-1
         val rows = tile.rows-1
@@ -65,10 +66,8 @@ object FocalOperation {
         
         // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
         def addSlice(spatialKey: SpatialKey, direction: => Direction, sliver: => Tile) {
-          if (bounds.contains(spatialKey.col, spatialKey.row)) {
-            slivers(sliverCount) = key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop
-            sliverCount += 1
-          }
+          if (bounds.contains(spatialKey.col, spatialKey.row))
+            slivers += key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop                    
         }
 
         // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window        
@@ -84,7 +83,7 @@ object FocalOperation {
         addSlice(SpatialKey(col+1, row+1), BottomRight, tile.crop(cols-mm, rows-mm, cols, rows))
         addSlice(SpatialKey(col-1, row+1), BottomLeft, tile.crop(0, rows-mm, mm, rows))
 
-        slivers.take(sliverCount)
+        slivers
       }
       .groupByKey
       .flatMap { case (key, neighbors) =>
