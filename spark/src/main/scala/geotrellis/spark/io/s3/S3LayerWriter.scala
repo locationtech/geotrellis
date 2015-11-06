@@ -33,7 +33,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     keyPrefix: String,
     clobber: Boolean = true)
   (implicit val cons: ContainerConstructor[K, V, Container])
-  extends UpdatingLayerWriter[LayerId, K, V, Container with RDD[(K, V)]] with LazyLogging {
+  extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -62,39 +62,6 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
-  }
-
-  def update(id: LayerId, rdd: RDD[(K, V)]) = {
-    try {
-      require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
-      implicit val sc = rdd.sparkContext
-      implicit val mdFormat = cons.metaDataFormat
-      val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-      val header = S3LayerHeader(
-        keyClass = classTag[K].toString(),
-        valueClass = classTag[K].toString(),
-        bucket = bucket,
-        key = prefix)
-
-      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-        attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-
-      if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
-
-      val boundable = implicitly[Boundable[K]]
-      val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
-        throw new OutOfKeyBoundsError(id)
-
-      val maxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
-      val keyPath = (key: K) => makePath(prefix, encodeIndex(existingKeyIndex.toIndex(key), maxWidth))
-
-      logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
-    } catch {
-      case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }

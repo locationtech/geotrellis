@@ -41,7 +41,7 @@ abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerR
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
 }
 
-abstract class UpdatingLayerWriter[ID, K: Boundable, V, ReturnType] extends Writer[ID, ReturnType] {
+abstract class LayerUpdater[ID, K: Boundable, V, ReturnType] {
   def update(id: ID, rdd: RDD[(K, V)]): Unit
 
   def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, RDD[(K, V)]], rdd: RDD[(K, V)])

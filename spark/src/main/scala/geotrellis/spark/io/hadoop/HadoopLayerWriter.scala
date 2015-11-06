@@ -18,7 +18,7 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
   rddWriter: HadoopRDDWriter[K, V],
   keyIndexMethod: KeyIndexMethod[K])
 (implicit val cons: ContainerConstructor[K, V, Container])
-  extends UpdatingLayerWriter[LayerId, K, V, Container with RDD[(K, V)]] {
+  extends Writer[LayerId, Container with RDD[(K, V)]] {
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     implicit val sc = rdd.sparkContext
@@ -43,37 +43,6 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
       rddWriter.write(rdd, layerPath, keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
-  }
-
-  def update(id: LayerId, rdd: RDD[(K, V)]) = {
-    try {
-      if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
-
-      implicit val sc = rdd.sparkContext
-      implicit val mdFormat = cons.metaDataFormat
-      val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
-      val header =
-        HadoopLayerHeader(
-          keyClass = classTag[K].toString(),
-          valueClass = classTag[V].toString(),
-          path = layerPath
-        )
-
-      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-        attributeStore.readLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
-
-      if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
-
-      val boundable = implicitly[Boundable[K]]
-      val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
-        throw new OutOfKeyBoundsError(id)
-
-      rddWriter.write(rdd, layerPath, existingKeyIndex)
-    } catch {
-      case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }

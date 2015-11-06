@@ -16,7 +16,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
   (implicit val cons: ContainerConstructor[K, V, Container])
-  extends UpdatingLayerWriter[LayerId, K, V, Container with RDD[(K, V)]] {
+  extends Writer[LayerId, Container with RDD[(K, V)]] {
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
     try {
@@ -38,36 +38,6 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
       rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
-  }
-
-  def update(id: LayerId, rdd: RDD[(K, V)]) = {
-    try {
-      if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
-      implicit val mdFormat = cons.metaDataFormat
-      val header =
-        AccumuloLayerHeader(
-          keyClass = classTag[K].toString(),
-          valueClass = classTag[V].toString(),
-          tileTable = table
-        )
-
-      val (existingHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-        attributeStore.readLayerAttributes[AccumuloLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-
-      if (existingHeader != header) throw new HeaderMatchError(id, existingHeader, header)
-
-      val boundable = implicitly[Boundable[K]]
-      val keyBounds = boundable.getKeyBounds(rdd)
-
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
-        throw new OutOfKeyBoundsError(id)
-
-      val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
-
-      rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
-    } catch {
-      case e: Exception => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }
