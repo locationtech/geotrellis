@@ -53,6 +53,12 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
       updater.update(layerId, sample)
     }
 
+    it("should not update a layer") {
+      intercept[LayerUpdateError] {
+        updater.update(layerId, sc.emptyRDD[(K, V)].asInstanceOf[Container])
+      }
+    }
+
     it("should read a single value") {
       val tileReader = tiles.read(layerId)
       val key = sample.keys.first()
