@@ -16,6 +16,7 @@ abstract class HadoopSpaceTimeSpec
   type Container = RasterRDD[SpaceTimeKey]
 
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
+  lazy val updater = HadoopLayerUpdater[SpaceTimeKey, Tile, RasterRDD](outputLocal)
   lazy val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
   lazy val sample =  CoordinateSpaceTime
 }

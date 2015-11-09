@@ -29,7 +29,10 @@ class AccumuloSpaceTimeAlternativeSpec
       keyIndexMethod = ZCurveKeyIndexMethod.byYear,
       table = "tiles")
 
+  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]] (
+    AccumuloAttributeStore(instance.connector),
+    new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
+
   lazy val tiles = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample =  CoordinateSpaceTime
-
 }

@@ -13,11 +13,13 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type Container <: RDD[(K, V)]
   type TestReader = FilteringLayerReader[LayerId, K, Container]
   type TestWriter = Writer[LayerId, Container]
+  type TestUpdater = LayerUpdater[LayerId, K, V, Container]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container
   def reader: TestReader
   def writer: TestWriter
+  def updater: TestUpdater
   def tiles: TestTileReader
 
   val layerId = LayerId("sample", 1)
@@ -45,6 +47,10 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
         info(s"unwanted: ${(actual diff expected).toList}")
 
       actual should contain theSameElementsAs expected
+    }
+
+    it("should update a layer") {
+      updater.update(layerId, sample)
     }
 
     it("should read a single value") {
