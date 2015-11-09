@@ -3,12 +3,11 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
-
 import scala.reflect._
 
 class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
@@ -17,7 +16,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
   (implicit val cons: ContainerConstructor[K, V, Container])
   extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] {
 
-  def update(id: LayerId, rdd: RDD[(K, V)]) = {
+  def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {
       if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
       implicit val sc = rdd.sparkContext

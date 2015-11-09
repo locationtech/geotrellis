@@ -41,11 +41,11 @@ abstract class FilteringLayerReader[ID, K: Boundable, ReturnType] extends LayerR
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
 }
 
-abstract class LayerUpdater[ID, K: Boundable, V, ReturnType] {
-  def update(id: ID, rdd: RDD[(K, V)]): Unit
+abstract class LayerUpdater[ID, K: Boundable, V, Container <: RDD[(K, V)]] {
+  def update(id: ID, rdd: Container): Unit
 
-  def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, RDD[(K, V)]], rdd: RDD[(K, V)])
-                 (merge: (RDD[(K, V)], RDD[(K, V)]) => RDD[(K, V)]) = {
+  def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, Container], rdd: Container)
+                 (merge: (Container, Container) => Container) = {
     val existing = reader.query(id).where(Intersects(implicitly[Boundable[K]].getKeyBounds(rdd))).toRDD
     update(id, merge(existing, rdd))
   }

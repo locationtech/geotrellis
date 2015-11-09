@@ -2,15 +2,13 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
-import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import spray.json.DefaultJsonProtocol._
 import spray.json._
-
 import scala.reflect._
 
 class HadoopLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
@@ -19,7 +17,7 @@ class HadoopLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contai
 (implicit val cons: ContainerConstructor[K, V, Container])
   extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] {
 
-  def update(id: LayerId, rdd: RDD[(K, V)]) = {
+  def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {
       if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
 
@@ -71,5 +69,3 @@ object HadoopLayerUpdater {
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT)
     )
 }
-
-

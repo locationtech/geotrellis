@@ -4,12 +4,11 @@ import com.typesafe.scalalogging.slf4j._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
-
 import scala.reflect._
 
 class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
@@ -21,7 +20,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update(id: LayerId, rdd: RDD[(K, V)]) = {
+  def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {
       require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
       implicit val sc = rdd.sparkContext
