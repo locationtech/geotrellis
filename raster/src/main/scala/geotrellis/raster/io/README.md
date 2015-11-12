@@ -1,7 +1,8 @@
-# GeoTrellis Raster IO
+# geotrellis.raster.io
 
-#### GeoTiff format
-"GeoTIFF represents an effort by over 160 different remote sensing, GIS, cartographic, and surveying related companies and organizations to establish a TIFF based interchange format for georeferenced raster imagery." [GeoTiff resources](https://trac.osgeo.org/geotiff/)
+As elsewhere, `geotrellis.raster`'s `io` package defines means of serializing and deserializing its parent package's data for persistance and networking uses. Here are `geotrellis.raster.io`'s packages:
 
-#### ARG format
-The Azavea Raster Grid (ARG) format was developed by [Azavea](http://www.azavea.com) for persisting raster data. By storing metadata in a separate JSON file and avoiding compression, ARGfiles can be read more quickly than comparable GeoTiffs. GeoTrellis leans more heavily on GeoTiffs now that they are supported (through the ARG package in this directory) and have become the de facto standard in the geospatial community.
+- [`geotrellis.raster.io.arg`](./arg) defines methods for moving data into and out of the [Azavea Raster Grid format](http://geotrellis.io/documentation/0.9.0/geotrellis/io/arg/).
+- [`geotrellis.raster.io.ascii`](./ascii) defines methods for interacting with ascii-art representations of rasters.
+- [`geotrellis.raster.io.geotiff`](./geotiff) defines tools for reading and writing `.tif` files. This is what you're most likely to find useful. It contains a `reader` and `writer` package.
+- [`geotrellis.raster.io.json`](./json) defines tools for encoding/decoding raster data (typically not the entire raster...) as json.
