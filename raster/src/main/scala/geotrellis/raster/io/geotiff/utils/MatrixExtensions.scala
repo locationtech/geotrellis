@@ -48,7 +48,7 @@ trait MatrixExtensions {
           for (j <- 0 until second(0).size) {
             var sum: Double = 0
             for (k <- 0 until second.size) {
-              sum += matrix(i)(j) * second(k)(j)
+              sum += matrix(i)(k) * second(k)(j)
             }
 
             res(i)(j) = sum
