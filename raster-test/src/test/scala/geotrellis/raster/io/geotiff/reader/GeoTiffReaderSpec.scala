@@ -92,7 +92,7 @@ class GeoTiffReaderSpec extends FunSpec
     if(compressed.extent.max.distance(Point(69.9955397,  40.0044603))>0.0001) {
       compressed.extent.max should be (Point(69.9955397,  40.0044603))
     }
-*/
+
   }
 
   describe("reading compressed file must yield same image array as uncompressed file") {
