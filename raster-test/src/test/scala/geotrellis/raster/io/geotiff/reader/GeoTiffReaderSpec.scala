@@ -78,7 +78,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("reading modelTransformation.tiff") {
     val path = "modelTransformation.tiff"
-    val compressed: SingleBandGeoTiff = SingleBandGeoTiff.compressed(s"$baseDataPath/$path")
+    val compressed: SingleBandGeoTiff = SingleBandGeoTiff.compressed(geoTiffPath(path))
     val tile = compressed.tile
     val bounds = tile.gridBounds
     bounds.width should be (1121)
