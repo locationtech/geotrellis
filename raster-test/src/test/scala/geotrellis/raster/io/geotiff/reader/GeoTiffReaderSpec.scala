@@ -23,11 +23,12 @@ import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.op.zonal.summary._
 
-import geotrellis.vector.Extent
+import geotrellis.vector.{Point, Extent}
 import geotrellis.testkit._
 import geotrellis.proj4.{CRS, LatLng}
 
 import monocle.syntax._
+import org.scalactic.Tolerance
 
 import scala.io.{Source, Codec}
 import scala.collection.immutable.HashMap
@@ -73,6 +74,25 @@ class GeoTiffReaderSpec extends FunSpec
       assertEqual(tile, expectedTile)
     }
 
+  }
+
+  describe("reading modelTransformation.tiff") {
+    val path = "modelTransformation.tiff"
+    val compressed: SingleBandGeoTiff = SingleBandGeoTiff.compressed(s"$baseDataPath/$path")
+    val tile = compressed.tile
+    val bounds = tile.gridBounds
+    bounds.width should be (1121)
+
+    import Tolerance._
+    compressed.crs should be (CRS.fromName("EPSG:4326"))
+    if(compressed.extent.min.distance(Point(59.9955397,  30.0044603))>0.0001) {
+      compressed.extent.min should be (Point(59.9955397,  30.0044603))
+    }
+
+    if(compressed.extent.max.distance(Point(69.9955397,  40.0044603))>0.0001) {
+      compressed.extent.max should be (Point(69.9955397,  40.0044603))
+    }
+*/
   }
 
   describe("reading compressed file must yield same image array as uncompressed file") {

@@ -230,7 +230,7 @@ case class TiffTags(
 
   private def transformationModelSpace(modelTransformation: Array[Array[Double]]) = {
     def matrixMult(pixel: Pixel3D) = Pixel3D.fromArray((modelTransformation *
-      Array(Array(pixel.x, pixel.y, pixel.z, 1))).flatten.take(3))
+      Array(Array(pixel.x),Array( pixel.y),Array( pixel.z),Array( 1))).flatten.take(3))
 
     getExtentFromModelFunction(matrixMult)
   }
