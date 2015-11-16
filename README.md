@@ -72,7 +72,6 @@ You can find more information and talk to developers (let us know what you're wo
 
   - [The mailing list](https://groups.google.com/group/geotrellis-user)
   - [Gitter](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-  - IRC:  #geotrellis on freenode
 
 
 ## Contributors
