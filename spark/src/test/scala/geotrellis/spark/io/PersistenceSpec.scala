@@ -83,7 +83,7 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] with OnlyIf
 
       val update = sc.parallelize(
         (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-          (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+        (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
       ).asInstanceOf[Container]
 
       intercept[LayerUpdateError] {
