@@ -53,7 +53,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
       updater.update(layerId, sample)
     }
 
-    it("should not update a layer") {
+    it("should not update a layer (empty set)") {
       intercept[LayerUpdateError] {
         updater.update(layerId, sc.emptyRDD[(K, V)].asInstanceOf[Container])
       }
@@ -76,6 +76,20 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] with OnlyIf
   val bounds2 = GridBounds(4,5,6,6)
 
   if (canRunSpark) {
+
+    it("should not update a layer (keys out of bounds)") {
+      intercept[LayerUpdateError] {
+        val (minKey, minTile) = sample.sortByKey().first()
+        val (maxKey, maxTile) = sample.sortByKey(false).first()
+
+        val update = sc.parallelize(
+          (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
+          (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+        ).asInstanceOf[Container]
+
+        updater.update(layerId, update)
+      }
+    }
 
     it("filters past layout bounds") {
       query.where(Intersects(GridBounds(6, 2, 7, 3))).toRDD.keys.collect() should
