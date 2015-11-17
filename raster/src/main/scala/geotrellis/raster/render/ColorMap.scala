@@ -24,7 +24,9 @@ import scala.collection.mutable
 sealed abstract class ColorMapType
 
 case object GreaterThan extends ColorMapType
+case object GreaterThanOrEqualTo extends ColorMapType
 case object LessThan extends ColorMapType
+case object LessThanOrEqualTo extends ColorMapType
 case object Exact extends ColorMapType
 
 case class ColorMapOptions(
@@ -42,6 +44,9 @@ object ColorMapOptions {
 
   def apply(nd: Int): ColorMapOptions =
     ColorMapOptions(LessThan, nd)
+
+  implicit def colorMapTypeToOptions(colorMapType: ColorMapType): ColorMapOptions =
+    ColorMapOptions(colorMapType)
 }
 
 object ColorMap {
@@ -58,11 +63,28 @@ object ColorMap {
   def apply(breaksToColors: Map[Double, Int], options: ColorMapOptions): DoubleColorMap =
     DoubleColorMap(breaksToColors, options)
 
+  def apply(colorBreaks: ColorBreaks): ColorMap =
+    apply(colorBreaks, ColorMapOptions.Default)
+
+  def apply(colorBreaks: ColorBreaks, options: ColorMapOptions): ColorMap =
+    colorBreaks.toColorMap(options)
+
   def apply(breaks: Array[Int], color: Array[Int]): IntColorMap =
     apply(breaks, color, ColorMapOptions.Default)
 
   def apply(breaks: Array[Int], colors: Array[Int], options: ColorMapOptions): IntColorMap = {
     val breaksToColors: Map[Int, Int] =
+      breaks.zip(colors)
+            .toMap
+
+    apply(breaksToColors, options)
+  }
+
+  def apply(breaks: Array[Double], color: Array[Int]): DoubleColorMap =
+    apply(breaks, color, ColorMapOptions.Default)
+
+  def apply(breaks: Array[Double], colors: Array[Int], options: ColorMapOptions): DoubleColorMap = {
+    val breaksToColors: Map[Double, Int] =
       breaks.zip(colors)
             .toMap
 
@@ -114,9 +136,9 @@ case class IntColorMap(breaksToColors: Map[Int, Int],
                       options: ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
   val orderedBreaks: Array[Int] =
     options.colorMapType match {
-      case LessThan =>
+      case LessThan | LessThanOrEqualTo =>
         breaksToColors.keys.toArray.sorted
-      case GreaterThan =>
+      case GreaterThan | GreaterThanOrEqualTo =>
         breaksToColors.keys.toArray.sorted.reverse
       case Exact =>
         breaksToColors.keys.toArray
@@ -125,12 +147,16 @@ case class IntColorMap(breaksToColors: Map[Int, Int],
   val orderedColors: Array[Int] = orderedBreaks.map(breaksToColors(_))
   lazy val colors = orderedColors
 
-  val zCheck: (Int, Int)=>Boolean =
+  val zCheck: (Int, Int) => Boolean =
     options.colorMapType match {
       case LessThan =>
         { (z: Int, i: Int) => z > orderedBreaks(i) }
+      case LessThanOrEqualTo =>
+        { (z: Int, i: Int) => z >= orderedBreaks(i) }
       case GreaterThan =>
         { (z: Int, i: Int) => z < orderedBreaks(i) }
+      case GreaterThanOrEqualTo =>
+        { (z: Int, i: Int) => z <= orderedBreaks(i) }
       case Exact =>
         { (z: Int, i: Int) => z != orderedBreaks(i) }
     }
@@ -178,20 +204,24 @@ case class DoubleColorMap(breaksToColors: Map[Double, Int],
   lazy val colors = breaksToColors.values.toArray
   val orderedBreaks: Array[Double] =
     options.colorMapType match {
-      case LessThan =>
+      case LessThan | LessThanOrEqualTo =>
         breaksToColors.keys.toArray.sorted
-      case GreaterThan =>
+      case GreaterThan | GreaterThanOrEqualTo =>
         breaksToColors.keys.toArray.sorted.reverse
       case Exact =>
         breaksToColors.keys.toArray
     }
 
-  val zCheck: (Double, Int)=>Boolean =
+  val zCheck: (Double, Int) => Boolean =
     options.colorMapType match {
       case LessThan =>
         { (z: Double, i: Int) => z > orderedBreaks(i) }
+      case LessThanOrEqualTo =>
+        { (z: Double, i: Int) => z >= orderedBreaks(i) }
       case GreaterThan =>
         { (z: Double, i: Int) => z < orderedBreaks(i) }
+      case GreaterThanOrEqualTo =>
+        { (z: Double, i: Int) => z <= orderedBreaks(i) }
       case Exact =>
         { (z: Double, i: Int) => z != orderedBreaks(i) }
     }
