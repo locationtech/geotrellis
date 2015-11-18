@@ -27,6 +27,9 @@ object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
     Polygon(jtsGeom)
 
+  def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =
+    apply(Line(exterior), Set())
+
   def apply(exterior: Seq[Point]): Polygon =
     apply(Line(exterior), Set())
 
@@ -230,6 +233,24 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
    */
   def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+    try intersection(g)
+    catch {
+      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
+    }
+
+  def &(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
+    intersection(g)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g.
+   */
+  def intersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
+    jtsGeom.intersection(g.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+   */
+  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))

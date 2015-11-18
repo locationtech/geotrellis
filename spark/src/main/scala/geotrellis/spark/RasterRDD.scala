@@ -81,6 +81,13 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
     }
   }
 
+  def asRasters()(implicit sc: SpatialComponent[K]): RDD[(K, Raster)] =
+    mapPartitions({ part =>
+      part.map { case (key, tile) =>
+        (key, Raster(tile, metaData.mapTransform(key)))
+      }
+    }, true)
+
   def minMax: (Int, Int) =
     map(_.tile.findMinMax)
       .reduce { (t1, t2) =>

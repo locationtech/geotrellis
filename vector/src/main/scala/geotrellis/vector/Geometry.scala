@@ -21,10 +21,8 @@ import geotrellis.proj4.CRS
 
 trait Geometry {
 
-  val jtsGeom: jts.Geometry
+  def jtsGeom: jts.Geometry
 
-// This assertion is commented out because it too easily throws exceptions
-// assert(jtsGeom.isValid, s"Geometry is invalid: $this")
   def isValid: Boolean =
     jtsGeom.isValid
 
