@@ -139,28 +139,27 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   lazy val perimeter: Double =
     jtsGeom.getLength
 
-
   // -- Intersection
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and p.
    */
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and p.
    */
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
    */
-  def safeIntersection(p: Point): PointGeometryIntersectionResult =
+  def safeIntersection(p: Point): PointOrNoResult =
     try intersection(p)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
@@ -233,24 +232,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
    */
   def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
-    try intersection(g)
-    catch {
-      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
-    }
-
-  def &(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersection(g)
-  /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Polygon and g.
-   */
-  def intersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    jtsGeom.intersection(g.jtsGeom)
-  /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
-   */
-  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))

@@ -107,14 +107,14 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this MultiLine and p.
    */
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this MultiLine and p.
    */
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**

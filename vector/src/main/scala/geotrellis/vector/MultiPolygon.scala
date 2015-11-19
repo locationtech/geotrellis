@@ -90,11 +90,11 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
       _.intersection(_)
     }
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
-  def safeIntersection(p: Point): PointGeometryIntersectionResult =
+  def safeIntersection(p: Point): PointOrNoResult =
     try intersection(p)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
@@ -128,16 +128,6 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     try intersection(ls)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(ls.jtsGeom))
-    }
-
-  def &(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersection(g)
-  def intersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    jtsGeom.intersection(g.jtsGeom)
-  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    try intersection(g)
-    catch {
-      case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
   // -- Union

@@ -118,7 +118,9 @@ class MaskSpec extends FunSpec
           val expected =
             if (mask.intersects(re.gridToMap(x, y))) tile.get(x, y)
             else NODATA
-          v should be(expected)
+          withClue(s"\n\nMASK: ${mask.toGeoJson}\nRASTEREXT $re\n\n") {
+            v should be(expected)
+          }
         }
 
       for {
