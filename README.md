@@ -75,16 +75,27 @@ You can find more information and talk to developers (let us know what you're wo
 
 Throughout this repo, you'll find documentation which aims to clear up
 confusions specific to the module in which they're found.
-+ [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster)
-  contains documentation about the creating and using rasters
-+ [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector)
-  contains documentation about creating and using vectors
-+ [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4) contains
-  documentation about the proj4j wrapper used by GeoTrellis for
-converting between projections
 
-You can browse a full index of all source documentation in [the
-index.](./INDEX.md)
+## Index of in-source Documentation in-source Documentation in-source
+Documentation
+
+1. [deploy-ec2](./scripts/deploy-ec2)
+2. [`geotrellis.graph`](./graph)
+3. [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4)
+converting between projections
+4. [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster)
+  contains documentation about the creating and using rasters
+  1. [`geotrellis.raster.imagery`](./raster/src/main/scala/geotrellis/raster/imagery)
+  2. [`geotrellis.raster.interpolation`](./raster/src/main/scala/geotrellis/raster/interpolation)
+  3. [`geotrellis.raster.io`](./raster/src/main/scala/geotrellis/raster/io)
+  4. [`geotrellis.raster.op`](./raster/src/main/scala/geotrellis/raster/op)
+  5. [`geotrellis.raster.render`](./raster/src/main/scala/geotrellis/raster/render)
+5. [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector)
+  contains documentation about creating and using vectors
+  1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation)
+  2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/)
+6. [spark-etl](./spark-etl)
+
 
 ## Contributors
 

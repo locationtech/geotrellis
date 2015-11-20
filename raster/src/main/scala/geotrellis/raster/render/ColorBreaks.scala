@@ -16,6 +16,8 @@
 
 package geotrellis.raster.render
 
+import scala.util.Try
+
 import geotrellis.raster.histogram.Histogram
 import java.util.Locale
 
@@ -144,5 +146,25 @@ object ColorBreaks {
   def apply(histogram: Histogram, colors: Array[Int]): IntColorBreaks = {
     val limits = histogram.getQuantileBreaks(colors.length)
     new IntColorBreaks(limits, sample(colors, limits.length))
+  }
+
+  def fromStringDouble(str: String): Option[DoubleColorBreaks] = {
+    val split = str.split(';').map(_.trim.split(':'))
+    Try {
+      val limits = split.map { pair => pair(0).toDouble }
+      val colors = split.map { pair => BigInt(pair(1), 16).toInt }
+      require(limits.size == colors.size)
+      ColorBreaks(limits, colors)
+    }.toOption
+  }
+
+  def fromStringInt(str: String): Option[IntColorBreaks] = {
+    val split = str.split(';').map(_.trim.split(':'))
+    Try {
+      val limits = split.map { pair => pair(0).toInt }
+      val colors = split.map { pair => BigInt(pair(1), 16).toInt }
+      require(limits.size == colors.size)
+      ColorBreaks(limits, colors)
+    }.toOption
   }
 }
