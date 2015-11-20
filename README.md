@@ -76,8 +76,7 @@ You can find more information and talk to developers (let us know what you're wo
 Throughout this repo, you'll find documentation which aims to clear up
 confusions specific to the module in which they're found.
 
-## Index of in-source Documentation in-source Documentation in-source
-Documentation
+## Index of in-source Documentation
 
 1. [deploy-ec2](./scripts/deploy-ec2)
 2. [`geotrellis.graph`](./graph)
