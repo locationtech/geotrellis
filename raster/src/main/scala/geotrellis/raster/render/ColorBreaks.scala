@@ -66,9 +66,9 @@ class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends Col
 }
 
 /**
-  * IntColorBreaks describes a way to render a raster into a colored image.
+  * DoubleColorBreaks describes a way to render a raster into a colored image.
   *
-  * This class defines a set of Int value ranges and assigns a color to
+  * This class defines a set of Double value ranges and assigns a color to
   * each value range.
   *
   * @param limits  An array with the maximum value of each range
