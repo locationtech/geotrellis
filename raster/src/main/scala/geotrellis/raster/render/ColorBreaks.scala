@@ -21,30 +21,39 @@ import java.util.Locale
 
 /**
   * ColorBreaks describes a way to render a raster into a colored image.
+  */
+trait ColorBreaks extends Serializable {
+  def colors: Array[Int]
+  def length: Int
+  def replaceColors(newColors: Array[Int]): ColorBreaks
+  def mapColors(f: Int => Int): ColorBreaks
+  def toColorMap(): ColorMap = toColorMap(ColorMapOptions.Default)
+  def toColorMap(options: ColorMapOptions): ColorMap
+}
+
+/**
+  * IntColorBreaks describes a way to render a raster into a colored image.
   *
-  * This class defines a set of value ranges and assigns a color to
+  * This class defines a set of Int value ranges and assigns a color to
   * each value range.
   *
   * @param limits  An array with the maximum value of each range
   * @param colors  An array with the color assigned to each range
   */
-case class ColorBreaks(limits: Array[Int], colors: Array[Int]) {
+class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends ColorBreaks {
   assert(limits.length == colors.length)
   assert(colors.length > 0)
 
-  val lastColor = colors(colors.length - 1)
-
   def length = limits.length
 
-  def get(z: Int): Int = {
-    var i = 0
-    val last = colors.length - 1
-    while (i < last) {
-      if (z <= limits(i)) return colors(i)
-      i += 1
-    }
-    lastColor
-  }
+  def replaceColors(newColors: Array[Int]): ColorBreaks =
+    new IntColorBreaks(limits, newColors)
+
+  def mapColors(f: Int => Int): ColorBreaks =
+    new IntColorBreaks(limits, colors.map(f))
+
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
+    ColorMap(limits, colors, options)
 
   override def toString = {
     val limitsStr = limits.mkString("Array(", ", ", ")")
@@ -52,9 +61,44 @@ case class ColorBreaks(limits: Array[Int], colors: Array[Int]) {
       colors
         .map("%08x" formatLocal(Locale.ENGLISH, _))
         .mkString("Array(", ", ", ")")
-    s"ColorBreaks($limitsStr, $colorsStr)"
+    s"IntColorBreaks($limitsStr, $colorsStr)"
   }
 }
+
+/**
+  * DoubleColorBreaks describes a way to render a raster into a colored image.
+  *
+  * This class defines a set of Double value ranges and assigns a color to
+  * each value range.
+  *
+  * @param limits  An array with the maximum value of each range
+  * @param colors  An array with the color assigned to each range
+  */
+class DoubleColorBreaks(val limits: Array[Double], val colors: Array[Int]) extends ColorBreaks {
+  assert(limits.length == colors.length)
+  assert(colors.length > 0)
+
+  def length = limits.length
+
+  def replaceColors(newColors: Array[Int]): ColorBreaks =
+    new DoubleColorBreaks(limits, newColors)
+
+  def mapColors(f: Int => Int): ColorBreaks =
+    new DoubleColorBreaks(limits, colors.map(f))
+
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
+    ColorMap(limits, colors, options)
+
+  override def toString = {
+    val limitsStr = limits.mkString("Array(", ", ", ")")
+    val colorsStr =
+      colors
+        .map("%08x" formatLocal(Locale.ENGLISH, _))
+        .mkString("Array(", ", ", ")")
+    s"DoubleColorBreaks($limitsStr, $colorsStr)"
+  }
+}
+
 
 object ColorBreaks {
   /**
@@ -72,27 +116,33 @@ object ColorBreaks {
     * @param limits  An array of the maximum value of each range
     * @param colors  An array of RGBA color values
     */
-  def assign(limits: Array[Int], colors: Array[Int]) = {
-    if (limits.length != colors.length) {
-      val used = new Array[Int](limits.length)
+  private def sample(colors: Array[Int], numSamples: Int) = {
+    if (numSamples != colors.length) {
+      val used = new Array[Int](numSamples)
       used(0) = colors(0)
 
-      val b = limits.length - 1
+      val b = numSamples - 1
       val c = colors.length - 1
       var i = 1
-      while (i < limits.length) {
+      while (i < numSamples) {
         used(i) = colors(math.round(i.toDouble * c / b).toInt)
         i += 1
       }
 
-      new ColorBreaks(limits, used)
+      used
     } else {
-      new ColorBreaks(limits, colors)
+      colors
     }
   }
 
-  def apply(histogram: Histogram, colors: Array[Int]): ColorBreaks = {
+  def apply(limits: Array[Int], colors: Array[Int]): IntColorBreaks =
+    new IntColorBreaks(limits, sample(colors, limits.length))
+
+  def apply(limits: Array[Double], colors: Array[Int]): DoubleColorBreaks =
+    new DoubleColorBreaks(limits, sample(colors, limits.length))
+
+  def apply(histogram: Histogram, colors: Array[Int]): IntColorBreaks = {
     val limits = histogram.getQuantileBreaks(colors.length)
-    assign(limits, colors)
+    new IntColorBreaks(limits, sample(colors, limits.length))
   }
 }
