@@ -73,6 +73,18 @@ You can find more information and talk to developers (let us know what you're wo
   - [The mailing list](https://groups.google.com/group/geotrellis-user)
   - [Gitter](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+Throughout this repo, you'll find documentation which aims to clear up
+confusions specific to the module in which they're found.
++ [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster)
+  contains documentation about the creating and using rasters
++ [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector)
+  contains documentation about creating and using vectors
++ [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4) contains
+  documentation about the proj4j wrapper used by GeoTrellis for
+converting between projections
+
+You can browse a full index of all source documentation in [the
+index.](./INDEX.md)
 
 ## Contributors
 
@@ -88,7 +100,6 @@ You can find more information and talk to developers (let us know what you're wo
  - Mark Landry
  - Walt Chen
  - Eugene Cheipesh
- 
 
 ## Contributing
 
