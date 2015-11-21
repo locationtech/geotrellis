@@ -12,7 +12,8 @@ class AccumuloSpaceTimeAlternativeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests {
+          with CoordinateSpaceTimeTests
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)

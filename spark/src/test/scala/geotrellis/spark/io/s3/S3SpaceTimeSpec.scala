@@ -13,7 +13,8 @@ abstract class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests {
+          with CoordinateSpaceTimeTests
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
   val bucket = "mock-bucket"
   val prefix = "catalog"

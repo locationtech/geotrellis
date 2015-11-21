@@ -19,7 +19,6 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   def sample: Container
   def reader: TestReader
   def writer: TestWriter
-  def updater: TestUpdater
   def tiles: TestTileReader
 
   val layerId = LayerId("sample", 1)
@@ -47,16 +46,6 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
         info(s"unwanted: ${(actual diff expected).toList}")
 
       actual should contain theSameElementsAs expected
-    }
-
-    it("should update a layer") {
-      updater.update(layerId, sample)
-    }
-
-    it("should not update a layer (empty set)") {
-      intercept[LayerUpdateError] {
-        updater.update(layerId, sc.emptyRDD[(K, V)].asInstanceOf[Container])
-      }
     }
 
     it("should read a single value") {

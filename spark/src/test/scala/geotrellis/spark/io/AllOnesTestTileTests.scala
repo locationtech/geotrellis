@@ -11,20 +11,6 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] with OnlyIf
 
   if (canRunSpark) {
 
-    it("should not update a layer (keys out of bounds)") {
-      val (minKey, minTile) = sample.sortByKey().first()
-      val (maxKey, maxTile) = sample.sortByKey(false).first()
-
-      val update = sc.parallelize(
-        (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-        (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-      ).asInstanceOf[Container]
-
-      intercept[LayerUpdateError] {
-        updater.update(layerId, update)
-      }
-    }
-
     it("filters past layout bounds") {
       query.where(Intersects(GridBounds(6, 2, 7, 3))).toRDD.keys.collect() should
         contain theSameElementsAs Array(SpatialKey(6, 3), SpatialKey(6, 2))
