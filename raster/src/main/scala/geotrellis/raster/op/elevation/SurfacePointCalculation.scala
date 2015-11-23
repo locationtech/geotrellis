@@ -179,7 +179,8 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       if(col < 0 || colBorderMax < col || row < 0 || rowBorderMax < row) {
         focalVal
       } else {
-        r.getDouble(col, row)
+        val z = r.getDouble(col, row)
+        if (isNoData(z)) focalVal else z
       }
     }
 

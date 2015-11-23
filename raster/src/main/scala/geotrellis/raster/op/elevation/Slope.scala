@@ -15,6 +15,9 @@ import geotrellis.raster.op.focal.Angles._
  *
  * Slope is computed in degrees from horizontal.
  *
+ * If Slope operations encounters NoData in its neighborhood, that neighborhood cell well be treated as having
+ * the same elevation as the focal cell.
+ *
  * The expression for slope is:
  * {{{
  * val slope = atan(sqrt(pow(`dz / dy`, 2) * pow(`dz / dx`, 2)))
