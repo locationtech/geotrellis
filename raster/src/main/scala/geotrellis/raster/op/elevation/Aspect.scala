@@ -14,6 +14,9 @@ import geotrellis.raster.op.focal.Angles._
   *
   * As with slope, aspect is calculated from estimates of the partial derivatives dz / dx and dz / dy.
   *
+  * If Aspect operations encounters NoData in its neighborhood, that neighborhood cell well be treated as having
+  * the same elevation as the focal cell.
+  *
   * Aspect is computed in degrees from due north, i.e. as an azimuth in degrees not radians.
   * The expression for aspect is:
   * {{{
