@@ -21,6 +21,7 @@ trait ContainerConstructor[K, V, C] {
 
   def getMetaData(container: C): MetaDataType
   def makeContainer(rdd: RDD[(K, V)], bounds: KeyBounds[K], metadata: MetaDataType): C
+  def combineMetaData(that: MetaDataType, other: MetaDataType): MetaDataType
 }
 
 

@@ -13,13 +13,15 @@ abstract class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests {
+          with CoordinateSpaceTimeTests
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 
   lazy val reader = AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD](instance)
+  lazy val updater = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD](instance, SocketWriteStrategy())
   lazy val tiles = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample =  CoordinateSpaceTime
 }
