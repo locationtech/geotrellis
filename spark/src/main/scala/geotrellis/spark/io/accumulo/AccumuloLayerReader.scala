@@ -1,6 +1,5 @@
 package geotrellis.spark.io.accumulo
 
-
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
 import geotrellis.spark._
@@ -9,10 +8,9 @@ import geotrellis.spark.io._
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
-import org.apache.accumulo.core.data.{Range => AccumuloRange, Key}
+import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-
 import scala.reflect._
 
 class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container](
@@ -27,7 +25,6 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
     try {
-
       implicit val mdFormat = cons.metaDataFormat
       val (header, metaData, keyBounds, keyIndex, writerSchema) =
         attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)

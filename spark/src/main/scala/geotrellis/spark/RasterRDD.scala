@@ -136,5 +136,8 @@ object RasterRDD {
 
       def makeContainer(rdd: RDD[(K, Tile)], bounds: KeyBounds[K], metadata: MetaDataType) =
         new RasterRDD(rdd, metadata)
+
+      def combineMetaData(that: MetaDataType, other: MetaDataType): MetaDataType =
+        that.combine(other)
     }
 }

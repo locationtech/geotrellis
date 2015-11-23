@@ -12,7 +12,8 @@ class AccumuloSpaceTimeAlternativeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests {
+          with CoordinateSpaceTimeTests
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
@@ -29,7 +30,10 @@ class AccumuloSpaceTimeAlternativeSpec
       keyIndexMethod = ZCurveKeyIndexMethod.byYear,
       table = "tiles")
 
+  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]] (
+    AccumuloAttributeStore(instance.connector),
+    new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
+
   lazy val tiles = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample =  CoordinateSpaceTime
-
 }

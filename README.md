@@ -2,13 +2,20 @@
 
 [![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-*GeoTrellis* is a Scala library and framework for creating processes to work with raster data under the Apache 2 License.
+*GeoTrellis* is a Scala library and framework that uses Spark to work with raster data.  It is released under the Apache 2 License.
 
 GeoTrellis reads, writes, and operates on raster data as fast as possible. It implements many [Map Algebra](http://en.wikipedia.org/wiki/Map_algebra) operations as well as vector to raster or raster to vector operations.
 
-GeoTrellis provides tools to render rasters into PNGs or to convert information about the rasters into JSON. It aims to provide raster processing at web speeds (sub-10 ms) for RESTful endpoints and to provide fast batch processing of enormous rasters.
+GeoTrellis also provides tools to render rasters into PNGs or to store metadata about raster files as JSON. It aims to provide raster processing at web speeds (sub-second or less) with RESTful endpoints as well as provide fast batch processing of large raster data sets.
 
-Please visit the **[project site](http://geotrellis.io)** for more information.
+Please visit the **[project site](http://geotrellis.io)** for more information as well as some interactive demos.
+
+
+##Contact and Support
+You can find more information and talk to developers (let us know what you're working on!) at:
+
+  - [Gitter](https://gitter.im/geotrellis/geotrellis)
+  - [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
 
 
 ## Example
@@ -59,41 +66,30 @@ scala> meanTile.getDouble(0, 0)  // Should equal (1 + 7 + 9) / 3
 res1: Double = 5.666666666666667
 ```
 
+## Index of ReadMe docs
+Throughout this repo, you'll find readme documents specific to particular the modules in which they're found.
+
+1. [deploy-ec2](./scripts/deploy-ec2) - deploying GeoTrellis on AWS EC2
+2. [`geotrellis.graph`](./graph) - experimental code for converting to/from RasterRDDs and GraphX
+3. [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4) - converting raster data between projections
+4. [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster) - documentation about creating and using raster data
+  1. [`geotrellis.raster.imagery`](./raster/src/main/scala/geotrellis/raster/imagery) - cloud removal with multi-band imagery
+  2. [`geotrellis.raster.interpolation`](./raster/src/main/scala/geotrellis/raster/interpolation) - Kriging interpolation from raster data
+  3. [`geotrellis.raster.io`](./raster/src/main/scala/geotrellis/raster/io)
+  4. [`geotrellis.raster.op`](./raster/src/main/scala/geotrellis/raster/op) - Map Algebra operations
+  5. [`geotrellis.raster.render`](./raster/src/main/scala/geotrellis/raster/render) - rendering results as PNGs
+5. [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector) - creating and using vector data
+  1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation) - Kriging interpoloation from vector point data
+  2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/) - parsing vector data as GeoJSON
+6. [spark-etl](./spark-etl) - ingesting raster data and storing as Raster RDDs using Spark
+
+
 
 ## API Reference
 
 *Scaladocs* for the latest version of the project can be found here:
 
 [http://geotrellis.github.com/scaladocs/latest/#geotrellis.package](http://geotrellis.github.com/scaladocs/latest/#geotrellis.package)
-
-
-##Contact and Support
-You can find more information and talk to developers (let us know what you're working on!) at:
-
-  - [The mailing list](https://groups.google.com/group/geotrellis-user)
-  - [Gitter](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Throughout this repo, you'll find documentation which aims to clear up
-confusions specific to the module in which they're found.
-
-## Index of in-source Documentation
-
-1. [deploy-ec2](./scripts/deploy-ec2)
-2. [`geotrellis.graph`](./graph)
-3. [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4)
-converting between projections
-4. [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster)
-  contains documentation about the creating and using rasters
-  1. [`geotrellis.raster.imagery`](./raster/src/main/scala/geotrellis/raster/imagery)
-  2. [`geotrellis.raster.interpolation`](./raster/src/main/scala/geotrellis/raster/interpolation)
-  3. [`geotrellis.raster.io`](./raster/src/main/scala/geotrellis/raster/io)
-  4. [`geotrellis.raster.op`](./raster/src/main/scala/geotrellis/raster/op)
-  5. [`geotrellis.raster.render`](./raster/src/main/scala/geotrellis/raster/render)
-5. [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector)
-  contains documentation about creating and using vectors
-  1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation)
-  2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/)
-6. [spark-etl](./spark-etl)
 
 
 ## Contributors

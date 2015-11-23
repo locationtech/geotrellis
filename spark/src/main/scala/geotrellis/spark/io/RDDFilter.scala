@@ -53,6 +53,14 @@ object RDDFilter {
 object Intersects {
   def apply[T](value: T) = RDDFilter.Value[Intersects.type, T](value)
 
+  /** Define Intersects filter for KeyBounds */
+  implicit def forKeyBounds[K: Boundable, M] =
+    new RDDFilter[K, Intersects.type, KeyBounds[K], M] {
+      def apply(metadata: M, kb1: KeyBounds[K], kb2: KeyBounds[K]) = {
+        implicitly[Boundable[K]].intersect(kb2, kb1)
+      }
+    }
+
   /** Define Intersects filter for GridBounds */
   implicit def forGridBounds[K: SpatialComponent: Boundable, M] =
     new RDDFilter[K, Intersects.type, GridBounds, M] {
