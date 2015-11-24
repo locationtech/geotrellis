@@ -141,9 +141,19 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     if(isNoData(base(1))) {
       s.`dz/dx` = Double.NaN
       s.`dz/dy` = Double.NaN
+    } else {
+      val neValue = if(isData(east(0))) east(0) else base(1)
+      val eValue = if(isData(east(1))) east(1) else base(1)
+      val seValue = if(isData(east(2))) east(2) else base(1)
+      val nValue = if(isData(base(0))) base(0) else base(1)
+      val sValue = if(isData(base(2))) base(2) else base(1)
+      val nwValue = if(isData(west(0))) west(0) else base(1)
+      val wValue = if(isData(west(1))) west(1) else base(1)
+      val swValue = if(isData(west(2))) west(2) else base(1)
+
+      s.`dz/dx` = (neValue + 2*eValue + seValue - nwValue - 2*wValue - swValue) / (8 * cellWidth)
+      s.`dz/dy` = (swValue + 2*sValue + seValue - nwValue - 2*nValue - neValue) / (8 * cellHeight)
     }
-    s.`dz/dx` = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cellWidth)
-    s.`dz/dy` = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * cellHeight)
   }
 
   /**
@@ -179,15 +189,14 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       if(col < 0 || colBorderMax < col || row < 0 || rowBorderMax < row) {
         focalVal
       } else {
-        val z = r.getDouble(col, row)
-        if (isNoData(z)) focalVal else z
+        r.getDouble(col, row)
       }
     }
 
     var focalValue = r.getDouble(colMin, rowMin)
     
     // Handle top row
-    
+
     /// Top Left
     west(0) = getValSafe(colMin-1, rowMin-1, focalValue)
     west(1) = getValSafe(colMin-1, rowMin  , focalValue)

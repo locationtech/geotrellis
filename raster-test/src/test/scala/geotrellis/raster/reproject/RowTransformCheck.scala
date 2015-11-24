@@ -44,11 +44,13 @@ object RowTransformCheck_LatLngToWebMercator extends Properties("RowTransform") 
 
   lazy val genTestCase: Gen[TestCase] =
     for {
-      extent <- genExtent
-      size <- Gen.choose(50,100)
-      points <- Gen.containerOfN[Seq,Point](size,genPoint(extent.xmin, extent.ymin, extent.xmax, extent.ymax))
+      extent <- genExtent;
+      size <- Gen.choose(50,100);
+      y <- choose(extent.ymin, extent.ymax)
     } yield {
-      TestCase(extent, points.map(_.x).toArray, points.map(_.y).toArray)
+      val re = RasterExtent(extent, size, size)
+      val xs = (0 until size).map { col => re.gridColToMap(col) }.toArray
+      TestCase(extent, xs.sorted.toArray, (0 until size).map { i => y }.toArray)
     }
 
   implicit lazy val arbTestCase: Arbitrary[TestCase] =
@@ -78,13 +80,23 @@ object RowTransformCheck_LatLngToWebMercator extends Properties("RowTransform") 
     val srcProjected = src.map(_.reproject(transform))
     val dest = destX.zip(destY).map { case (x, y) => Point(x, y) }
 
-    srcProjected.zip(dest)
-       .map { case(p1, p2) => 
-         val dx = p1.x - p2.x
-         val dy = p1.y - p2.y
-         math.sqrt(dx*dx + dy*dy) < threshold
-       }
-      .foldLeft(true)(_ && _)
+    val result = 
+      srcProjected.zip(dest)
+        .map { case(p1, p2) =>
+          val dx = math.abs(p1.x - p2.x)
+          val dy = math.abs(p1.y - p2.y)
+          (dx + dy) < threshold
+        }
+        .foldLeft(true)(_ && _)
+
+    if(!result) {
+      println("ERRORED!")
+      println(s"Extent: $extent")
+      println(s"srcX: ${srcX.toSeq}")
+      println(s"srcY: ${srcY.toSeq}")
+      println(s"threshold: ${thresh}")
+    }
+    result
   }
 }
 
@@ -108,11 +120,13 @@ object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") wit
 
   lazy val genTestCase: Gen[TestCase] =
     for {
-      extent <- genExtent
-      size <- Gen.choose(50,100)
-      points <- Gen.containerOfN[Seq,Point](size,genPoint(extent.xmin, extent.ymin, extent.xmax, extent.ymax))
+      extent <- genExtent;
+      size <- Gen.choose(50,100);
+      y <- choose(extent.ymin, extent.ymax)
     } yield {
-      TestCase(extent, points.map(_.x).toArray, points.map(_.y).toArray)
+      val re = RasterExtent(extent, size, size)
+      val xs = (0 until size).map { col => re.gridColToMap(col) }.toArray
+      TestCase(extent, xs.sorted.toArray, (0 until size).map { i => y }.toArray)
     }
 
   implicit lazy val arbTestCase: Arbitrary[TestCase] =
@@ -135,7 +149,8 @@ object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") wit
     val TestCase(extent, lng, lat) = testCase
     val (srcX, srcY) = {
       val reproj = lng.zip(lat).map { case (x, y) => Point(x, y).reproject(llToUtm) }
-      (reproj.map(_.x).toArray, reproj.map(_.y))
+      // In order to keep the input linear, only take the y value of the first reprojected point.
+      (reproj.map(_.x).toArray, (0 until lng.size).map(x => reproj.head.y).toArray)
     }
 
     val threshold = thresh.v
@@ -149,14 +164,24 @@ object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") wit
     val srcProjected = src.map(_.reproject(utmToWebMercator))
     val dest = destX.zip(destY).map { case (x, y) => Point(x, y) }
 
-    srcProjected.zip(dest)
-       .map { case(p1, p2) => 
-         val dx = p1.x - p2.x
-         val dy = p1.y - p2.y
-         val d  = math.sqrt(dx*dx + dy*dy) 
-         if(d >= threshold) { println(s"$p1 should be $p2") }
-         d < threshold
-       }
-      .foldLeft(true)(_ && _)
+    val result =
+      srcProjected.zip(dest)
+        .map { case(p1, p2) =>
+          val dx = math.abs(p1.x - p2.x)
+          val dy = math.abs(p1.y - p2.y)
+          val d  = dx + dy
+          if(d >= threshold) { println(s"$p1 should be $p2") }
+          d < threshold
+        }
+        .foldLeft(true)(_ && _)
+
+    if(!result) {
+      println("ERRORED!")
+      println(s"Extent: $extent")
+      println(s"srcX: ${srcX.toSeq}")
+      println(s"srcY: ${srcY.toSeq}")
+      println(s"threshold: ${thresh}")
+    }
+    result
   }
 }

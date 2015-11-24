@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vector.io
+package geotrellis.vector.io.wkt
 
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.{geom => jts}

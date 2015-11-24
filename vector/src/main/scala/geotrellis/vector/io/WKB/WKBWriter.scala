@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vector.io
+package geotrellis.vector.io.wkb
 
 import java.io.{ByteArrayOutputStream}
 import java.util.Locale
