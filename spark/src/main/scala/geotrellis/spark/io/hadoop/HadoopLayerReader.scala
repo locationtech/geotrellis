@@ -69,7 +69,4 @@ object HadoopLayerReader {
     format: HadoopFormat[K, TileType],
     cons: ContainerConstructor[K, TileType, Container[K]]): HadoopLayerReader[K, TileType, Container[K]] =
     apply(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[K, TileType](HadoopCatalogConfig.DEFAULT))
-
-
-
 }

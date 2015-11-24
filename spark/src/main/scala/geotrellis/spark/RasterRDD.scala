@@ -61,9 +61,7 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
 
   def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
-      zipPartitions(other, true) { (partition1, partition2) =>
-        partition1.zip(partition2) map { case (row1, row2) => f(row1, row2) }
-      }
+      this.join(other).map { case (key, (tile1, tile2)) => f((key, tile1), (key, tile2)) }
     }
 
   def combinePairs(others: Traversable[RasterRDD[K]])(f: (Traversable[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
@@ -143,5 +141,8 @@ object RasterRDD {
 
       def makeContainer(rdd: RDD[(K, Tile)], bounds: KeyBounds[K], metadata: MetaDataType) =
         new RasterRDD(rdd, metadata)
+
+      def combineMetaData(that: MetaDataType, other: MetaDataType): MetaDataType =
+        that.combine(other)
     }
 }

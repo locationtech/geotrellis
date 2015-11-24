@@ -26,30 +26,37 @@ import scala.collection.mutable
 case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: ColorType) {
   def render(r: Tile) =
     colorMap.render(r).convert(cellType)
+
   def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
   def apply(breaks: ColorBreaks, nodata: Int): Renderer =
-    apply(breaks.limits, breaks.colors, nodata)
+    apply(breaks, nodata, None)
 
   def apply(limits: Array[Int], colors: Array[Int], nodata: Int): Renderer =
-    apply(limits, colors, nodata, None)
+    apply(ColorBreaks(limits, colors), nodata, None)
+
+  // def apply(limits: Array[Double], colors: Array[Int], nodata: Int): Renderer =
+  //   apply(ColorBreaks(limits, colors), nodata, None)
 
   def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Histogram): Renderer =
-    apply(limits, colors, nodata, Some(h))
+    apply(ColorBreaks(limits, colors), nodata, Some(h))
+
+  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Histogram): Renderer =
+    apply(colorBreaks, nodata, Some(h))
 
   /** Include a precomputed histogram to cache the color map and speed up the rendering. */
-  def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Option[Histogram]): Renderer = {
-    val n = limits.length
-    if(colors.length <= 256) {
-      val indices = (0 until colors.length).toArray
+  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Option[Histogram]): Renderer = {
+    val len = colorBreaks.length
+    if(len <= 256) {
+      val indices = (0 until len).toArray
       val rgbs = new Array[Int](256)
       val as = new Array[Int](256)
 
       var i = 0
-      while (i < n) {
-        val c = colors(i)
+      while (i < len) {
+        val c = colorBreaks.colors(i)
         rgbs(i) = c >> 8
         as(i) = c & 0xff
         i += 1
@@ -57,7 +64,7 @@ object Renderer {
       rgbs(255) = 0
       as(255) = 0
       val colorType = Indexed(rgbs, as)
-      val colorMap = ColorMap(limits, indices, ColorMapOptions(LessThan, 255))
+      val colorMap = colorBreaks.replaceColors(indices).toColorMap(ColorMapOptions(LessThan, 255))
       h match {
         case Some(hist) =>
           Renderer(colorMap.cache(hist), TypeByte, colorType)
@@ -69,15 +76,15 @@ object Renderer {
       var opaque = true
       var grey = true
       var i = 0
-      while (i < colors.length) {
-        val c = colors(i)
+      while (i < len) {
+        val c = colorBreaks.colors(i)
         opaque &&= Color.isOpaque(c)
         grey &&= Color.isGrey(c)
         i += 1
       }
 
       if (grey && opaque) {
-        val colorMap = ColorMap(limits, colors.map(z => (z >> 8) & 0xff), ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.mapColors { z => (z >> 8) & 0xff }.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeByte, Grey(nodata))
@@ -85,7 +92,7 @@ object Renderer {
             Renderer(colorMap, TypeByte, Grey(nodata))
         }
       } else if (opaque) {
-        val colorMap = ColorMap(limits, colors.map(z => z >> 8), ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.mapColors { z => z >> 8 }.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeInt, Rgb(nodata))
@@ -93,7 +100,7 @@ object Renderer {
             Renderer(colorMap, TypeInt, Rgb(nodata))
         }
       } else if (grey) {
-        val colorMap = ColorMap(limits, colors.map(z => z & 0xffff), ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.mapColors { z => z & 0xffff }.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeShort, Greya)
@@ -101,7 +108,7 @@ object Renderer {
             Renderer(colorMap, TypeShort, Greya)
         }
       } else {
-        val colorMap = ColorMap(limits, colors, ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeInt, Rgba)

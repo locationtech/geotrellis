@@ -4,7 +4,8 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -34,7 +35,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   (implicit val cons: ContainerConstructor[K, V, Container])
   extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
 
-  def getS3Client: ()=>S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.default
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {
@@ -74,6 +75,6 @@ object S3LayerWriter {
     (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerWriter[K, V, Container[K]] =
     new S3LayerWriter(
       S3AttributeStore(bucket, prefix),
-      new S3RDDWriter[K, V](),
+      new S3RDDWriter[K, V],
       keyIndexMethod, bucket, prefix, clobber)
 }

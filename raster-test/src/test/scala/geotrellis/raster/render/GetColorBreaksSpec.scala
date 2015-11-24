@@ -47,5 +47,13 @@ class GetColorBreaksSpec extends FunSpec
       colorBreaks.limits should be (Array(12, 15, 66, 95))
       colorBreaks.colors should be (Array(g, y, o, r))
     }
+
+    it("can come from a string.") {
+      val goodString = "12:00ff00ff;15:ffff00ff"
+      ColorBreaks.fromStringInt(goodString) should not be empty
+
+      val badString = "12:0bad_data0ff00ff;15:ffff00ff"
+      ColorBreaks.fromStringInt(badString) shouldBe empty
+    }
   }
 }
