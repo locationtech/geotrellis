@@ -4,56 +4,92 @@ import geotrellis.raster._
 import geotrellis.vector._
 
 trait ZonalSummaryMethods extends TileMethods {
-  def zonalSummary[T, U](
-    extent: Extent,
-    polygon: Polygon,
-    handleFullTile: Tile => T,
-    handlePartialTile: (Raster, Polygon) => T,
-    combineResults: Seq[T] => U): U = {
+  def zonalSummary[T](extent: Extent, polygon: Polygon, handler: TileIntersectionHandler[T]): T = {
     val results = {
       if(polygon.contains(extent)) {
-        Seq(handleFullTile(tile))
+        Seq(handler.handleFullTile(tile))
       } else {
         polygon.intersection(extent) match {
           case PolygonResult(intersection) =>
-            Seq(handlePartialTile(Raster(tile, extent), intersection))
+            Seq(handler.handlePartialTile(Raster(tile, extent), intersection))
           case MultiPolygonResult(mp) =>
             mp.polygons.map { intersection =>
-              handlePartialTile(Raster(tile, extent), intersection)
+              handler.handlePartialTile(Raster(tile, extent), intersection)
             }
           case _ => Seq()
         }
       }
     }
 
-    combineResults(results)
+    handler.combineResults(results)
   }
 
-  def zonalSummary[T, U](extent: Extent, polygon: Polygon, handler: TileIntersectionHandler[T]): T =
-    zonalSummary(extent, polygon, handler.handleFullTile, handler.handlePartialTile, handler.combineResults)
+  def zonalSummary[T](extent: Extent, multiPolygon: MultiPolygon, handler: TileIntersectionHandler[T]): T = {
+    val results = {
+      if(multiPolygon.contains(extent)) {
+        Seq(handler.handleFullTile(tile))
+      } else {
+        multiPolygon.intersection(extent) match {
+          case PolygonResult(intersection) =>
+            Seq(handler.handlePartialTile(Raster(tile, extent), intersection))
+          case MultiPolygonResult(mp) =>
+            mp.polygons.map { intersection =>
+              handler.handlePartialTile(Raster(tile, extent), intersection)
+            }
+          case _ => Seq()
+        }
+      }
+    }
 
-  def zonalHistogram(extent: Extent, polygon: Polygon): histogram.Histogram =
-    zonalSummary(extent, polygon, Histogram)
+    handler.combineResults(results)
+  }
 
-  def zonalMax(extent: Extent, polygon: Polygon): Int =
-    zonalSummary(extent, polygon, Max)
+  def zonalHistogram(extent: Extent, geom: Polygon): histogram.Histogram =
+    zonalSummary(extent, geom, Histogram)
 
-  def zonalMaxDouble(extent: Extent, polygon: Polygon): Double =
-    zonalSummary(extent, polygon, MaxDouble)
+  def zonalHistogram(extent: Extent, geom: MultiPolygon): histogram.Histogram =
+    zonalSummary(extent, geom, Histogram)
 
-  def zonalMin(extent: Extent, polygon: Polygon): Int =
-    zonalSummary(extent, polygon, Min)
+  def zonalMax(extent: Extent, geom: Polygon): Int =
+    zonalSummary(extent, geom, Max)
 
-  def zonalMinDouble(extent: Extent, polygon: Polygon): Double =
-    zonalSummary(extent, polygon, MinDouble)
+  def zonalMax(extent: Extent, geom: MultiPolygon): Int =
+    zonalSummary(extent, geom, Max)
 
-  def zonalMean(extent: Extent, polygon: Polygon): Double =
-    zonalSummary(extent, polygon, Mean).mean
+  def zonalMaxDouble(extent: Extent, geom: Polygon): Double =
+    zonalSummary(extent, geom, MaxDouble)
 
-  def zonalSum(extent: Extent, polygon: Polygon): Long =
-    zonalSummary(extent, polygon, Sum)
+  def zonalMaxDouble(extent: Extent, geom: MultiPolygon): Double =
+    zonalSummary(extent, geom, MaxDouble)
 
-  def zonalSumDouble(extent: Extent, polygon: Polygon): Double =
-    zonalSummary(extent, polygon, SumDouble)
+  def zonalMin(extent: Extent, geom: Polygon): Int =
+    zonalSummary(extent, geom, Min)
+
+  def zonalMin(extent: Extent, geom: MultiPolygon): Int =
+    zonalSummary(extent, geom, Min)
+
+  def zonalMinDouble(extent: Extent, geom: Polygon): Double =
+    zonalSummary(extent, geom, MinDouble)
+
+  def zonalMinDouble(extent: Extent, geom: MultiPolygon): Double =
+    zonalSummary(extent, geom, MinDouble)
+
+  def zonalMean(extent: Extent, geom: Polygon): Double =
+    zonalSummary(extent, geom, Mean).mean
+
+  def zonalMean(extent: Extent, geom: MultiPolygon): Double =
+    zonalSummary(extent, geom, Mean).mean
+
+  def zonalSum(extent: Extent, geom: Polygon): Long =
+    zonalSummary(extent, geom, Sum)
+
+  def zonalSum(extent: Extent, geom: MultiPolygon): Long =
+    zonalSummary(extent, geom, Sum)
+
+  def zonalSumDouble(extent: Extent, geom: Polygon): Double =
+    zonalSummary(extent, geom, SumDouble)
+
+  def zonalSumDouble(extent: Extent, geom: MultiPolygon): Double =
+    zonalSummary(extent, geom, SumDouble)
 
 }

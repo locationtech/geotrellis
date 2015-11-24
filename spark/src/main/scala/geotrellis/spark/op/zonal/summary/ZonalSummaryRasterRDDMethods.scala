@@ -18,6 +18,9 @@ trait ZonalSummaryFeatureRDDMethods[G <: Geometry, D] {
   def zonalSummary[T: ClassTag](polygon: Polygon, zeroValue: T)(handler: ZonalSummaryHandler[G, D, T]): T =
     featureRdd.aggregate(zeroValue)(handler.mergeOp(polygon, zeroValue), handler.combineOp)
 
+  def zonalSummary[T: ClassTag](multiPolygon: MultiPolygon, zeroValue: T)(handler: ZonalSummaryHandler[G, D, T]): T =
+    featureRdd.aggregate(zeroValue)(handler.mergeOp(multiPolygon, zeroValue), handler.combineOp)
+
 }
 
 trait ZonalSummaryKeyedFeatureRDDMethods[K, G <: Geometry, D] {
@@ -26,6 +29,9 @@ trait ZonalSummaryKeyedFeatureRDDMethods[K, G <: Geometry, D] {
 
   def zonalSummaryByKey[T: ClassTag](polygon: Polygon, zeroValue: T)(handler: ZonalSummaryHandler[G, D, T]): RDD[(K, T)] =
     featureRdd.aggregateByKey(zeroValue)(handler.mergeOp(polygon, zeroValue), handler.combineOp)
+
+  def zonalSummaryByKey[T: ClassTag](multiPolygon: MultiPolygon, zeroValue: T)(handler: ZonalSummaryHandler[G, D, T]): RDD[(K, T)] =
+    featureRdd.aggregateByKey(zeroValue)(handler.mergeOp(multiPolygon, zeroValue), handler.combineOp)
 }
 
 trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
@@ -42,6 +48,16 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
       .map(_._2.asFeature)
       .zonalSummary(polygon, zeroValue)(handler)
 
+  def zonalSummary[T: ClassTag](
+    multiPolygon: MultiPolygon,
+    zeroValue: T,
+    handler: TileIntersectionHandler[T]
+  ): T =
+    rasterRDD
+      .asRasters
+      .map(_._2.asFeature)
+      .zonalSummary(multiPolygon, zeroValue)(handler)
+
   def zonalSummaryByKey[T: ClassTag, L: ClassTag](
     polygon: Polygon,
     zeroValue: T,
@@ -53,28 +69,63 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
       .map { case (key, raster) => (fKey(key), raster.asFeature) }
       .zonalSummaryByKey(polygon, zeroValue)(handler)
 
+  def zonalSummaryByKey[T: ClassTag, L: ClassTag](
+    multiPolygon: MultiPolygon,
+    zeroValue: T,
+    handler: TileIntersectionHandler[T],
+    fKey: K => L
+  ): RDD[(L, T)] =    
+    rasterRDD
+      .asRasters
+      .map { case (key, raster) => (fKey(key), raster.asFeature) }
+      .zonalSummaryByKey(multiPolygon, zeroValue)(handler)
+
   def zonalHistogram(polygon: Polygon): Histogram =
     zonalSummary(polygon, FastMapHistogram(), Histogram)
+
+  def zonalHistogram(multiPolygon: MultiPolygon): Histogram =
+    zonalSummary(multiPolygon, FastMapHistogram(), Histogram)
 
   def zonalMax(polygon: Polygon): Int =
     zonalSummary(polygon, Int.MinValue, Max)
 
+  def zonalMax(multiPolygon: MultiPolygon): Int =
+    zonalSummary(multiPolygon, Int.MinValue, Max)
+
   def zonalMaxDouble(polygon: Polygon): Double =
     zonalSummary(polygon, Double.MinValue, MaxDouble)
+
+  def zonalMaxDouble(multiPolygon: MultiPolygon): Double =
+    zonalSummary(multiPolygon, Double.MinValue, MaxDouble)
 
   def zonalMin(polygon: Polygon): Int =
     zonalSummary(polygon, Int.MaxValue, Min)
 
+  def zonalMin(multiPolygon: MultiPolygon): Int =
+    zonalSummary(multiPolygon, Int.MaxValue, Min)
+
   def zonalMinDouble(polygon: Polygon): Double =
     zonalSummary(polygon, Double.MaxValue, MinDouble)
+
+  def zonalMinDouble(multiPolygon: MultiPolygon): Double =
+    zonalSummary(multiPolygon, Double.MaxValue, MinDouble)
 
   def zonalMean(polygon: Polygon): Double =
     zonalSummary(polygon, MeanResult(0.0, 0L), Mean).mean
 
+  def zonalMean(multiPolygon: MultiPolygon): Double =
+    zonalSummary(multiPolygon, MeanResult(0.0, 0L), Mean).mean
+
   def zonalSum(polygon: Polygon): Long =
     zonalSummary(polygon, 0L, Sum)
 
+  def zonalSum(multiPolygon: MultiPolygon): Long =
+    zonalSummary(multiPolygon, 0L, Sum)
+
   def zonalSumDouble(polygon: Polygon): Double =
     zonalSummary(polygon, 0.0, SumDouble)
+
+  def zonalSumDouble(multiPolygon: MultiPolygon): Double =
+    zonalSummary(multiPolygon, 0.0, SumDouble)
 
 }

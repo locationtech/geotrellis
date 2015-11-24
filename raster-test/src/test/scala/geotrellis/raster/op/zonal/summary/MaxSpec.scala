@@ -49,5 +49,35 @@ class MaxSpec extends FunSpec
 
       result should equal (1.0)
     }
+
+      it("computes double max over multipolygon") {
+        val rs = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
+        val tile = rs.get
+        val extent = rs.rasterExtent.get.extent
+        val zone = Extent(10,-10,30,10).toPolygon
+
+        val xd = extent.xmax - extent.xmin / 4
+        val yd = extent.ymax - extent.ymin / 4
+
+        val tri1 = Polygon( 
+          (extent.xmin + (xd / 2), extent.ymax - (yd / 2)),
+          (extent.xmin + (xd / 2) + xd, extent.ymax - (yd / 2)),
+          (extent.xmin + (xd / 2) + xd, extent.ymax - (yd)),
+          (extent.xmin + (xd / 2), extent.ymax - (yd / 2))
+        )
+
+        val tri2 = Polygon( 
+          (extent.xmax - (xd / 2), extent.ymin + (yd / 2)),
+          (extent.xmax - (xd / 2) - xd, extent.ymin + (yd / 2)),
+          (extent.xmax - (xd / 2) - xd, extent.ymin + (yd)),
+          (extent.xmax - (xd / 2), extent.ymin + (yd / 2))
+        )
+
+        val mp = MultiPolygon(tri1, tri2)
+
+        val result = tile.zonalMaxDouble(extent, mp)
+
+        result should equal (1.0)
+      }
   }
 }
