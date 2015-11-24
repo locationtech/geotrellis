@@ -35,7 +35,8 @@ import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 import java.sql._
 
 import geotrellis.vector._
-import geotrellis.vector.io._
+import geotrellis.vector.io.wkb._
+import geotrellis.vector.io.wkt._
 
 /** 
  * This class provides column types and extension methods to work with Geometry columns
