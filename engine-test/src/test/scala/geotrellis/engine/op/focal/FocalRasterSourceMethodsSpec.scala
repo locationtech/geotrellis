@@ -42,7 +42,7 @@ class FocalRasterSourceMethodsSpec extends FunSpec with TileBuilders
         3,4,3,2
       )
 
-      val neighborsOp:Op[Seq[(Tile,Seq[Option[Tile]])]] =
+      val neighborsOp:Op[Seq[(Raster,Seq[Option[Tile]])]] =
         rs1.zipWithNeighbors
            .map { seq =>
               seq.map { case (rOp,tileNeighbors) =>

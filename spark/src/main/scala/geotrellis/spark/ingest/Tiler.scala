@@ -39,8 +39,18 @@ object Tiler {
     rdd: RDD[(T, TileType)],
     mapTransform: MapKeyTransform,
     cellType: CellType,
+    tileLayout: TileLayout
+  ): RDD[(K, TileType)] =
+    apply(getExtent, createKey, rdd, mapTransform, cellType, tileLayout, NearestNeighbor)
+
+  def apply[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag](
+    getExtent: T=> Extent,
+    createKey: (T, SpatialKey) => K,
+    rdd: RDD[(T, TileType)],
+    mapTransform: MapKeyTransform,
+    cellType: CellType,
     tileLayout: TileLayout,
-    resampleMethod: ResampleMethod = NearestNeighbor
+    resampleMethod: ResampleMethod
   ): RDD[(K, TileType)] =
     cutTiles(getExtent, createKey, rdd, mapTransform, cellType, tileLayout, resampleMethod)
       .reduceByKey { case (tile1, tile2) =>
@@ -49,8 +59,7 @@ object Tiler {
 
   def apply[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag]
     (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
-    (rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod = NearestNeighbor): RDD[(K, TileType)] = {
-
+    (rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod): RDD[(K, TileType)] = {
     apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout, resampleMethod)
   }
 }
