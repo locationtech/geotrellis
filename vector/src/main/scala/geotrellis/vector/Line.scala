@@ -116,14 +116,14 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Line and p.
    */
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Line and p.
    */
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**

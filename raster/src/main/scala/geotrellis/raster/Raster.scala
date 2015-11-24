@@ -2,10 +2,13 @@ package geotrellis.raster
 
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.proj4.CRS
 
 object Raster {
+  def apply(feature: Feature[Extent, Tile]): Raster =
+    Raster(feature.data, feature.geom)
+
   implicit def tupToRaster(tup: (Tile, Extent)): Raster =
     Raster(tup._1, tup._2)
 
@@ -14,6 +17,12 @@ object Raster {
 
   implicit def rasterToTile(r: Raster): Tile =
     r.tile
+
+  implicit def rasterToFeature(r: Raster): Feature[Extent, Tile] =
+    r.asFeature
+
+  implicit def featureToRaster(feature: Feature[Extent, Tile]): Raster =
+     apply(feature)
 }
 
 case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
@@ -21,6 +30,8 @@ case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
 
   def cols: Int = tile.cols
   def rows: Int = tile.rows
+
+  def asFeature(): Feature[Extent, Tile] = ExtentFeature(extent, tile)
 
   def resample(target: RasterExtent): Raster =
     Raster(tile.resample(extent, target), target.extent)

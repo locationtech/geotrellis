@@ -1,30 +1,18 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
-import geotrellis.vector.{Extent, Polygon}
+import geotrellis.vector._
+import geotrellis.vector.op._
 
-abstract sealed trait TileIntersection
+trait TileIntersectionHandler[T] extends ZonalSummaryHandler[Extent, Tile, T] {
+  def handleContains(feature: Feature[Extent, Tile]): T = handleFullTile(feature.data)
+  def handleIntersection(polygon: Polygon, feature: Feature[Extent, Tile]) = handlePartialTile(feature, polygon)
 
-case class PartialTileIntersection(tile: Tile, extent: Extent, intersection: Polygon)
-    extends TileIntersection {
-  lazy val rasterExtent = RasterExtent(extent, tile.cols, tile.rows)
-}
+  def handlePartialTile(raster: Raster, intersection: Polygon): T
+  def handleFullTile(raster: Tile): T
 
-case class FullTileIntersection(tile: Tile) extends TileIntersection
-object FullTileIntersection {
-  implicit def tileToFullTileIntersection(tile: Tile): FullTileIntersection =
-    FullTileIntersection(tile)
-}
+  def combineResults(values: Seq[T]): T
 
-trait TileIntersectionHandler[T,U] extends Function[TileIntersection, T]
-    with Serializable {
-  def apply(ti: TileIntersection): T =
-    ti match {
-      case pt: PartialTileIntersection => handlePartialTile(pt)
-      case ft: FullTileIntersection => handleFullTile(ft)
-    }
-
-  def handlePartialTile(pt: PartialTileIntersection): T
-  def handleFullTile(ft: FullTileIntersection): T
-  def combineResults(results: Seq[T]): U
+  def combineOp(v1: T, v2: T): T =
+    combineResults(Seq(v1, v2))
 }

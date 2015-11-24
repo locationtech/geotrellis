@@ -204,10 +204,15 @@ class RasterizePolygonSpec extends FunSuite
 
     val re = RasterExtent(Extent(-1, -1, 5, 5), 6, 6)
 
+    val tile = IntArrayTile.empty(6, 6)
+
     var sum = 0
     PolygonRasterizer.foreachCellByPolygon(p, re) { (col: Int, row: Int) =>
+      println(s"$col $row")
+      tile.set(col, row, 1)
       sum = sum + 1
     }
+    println(tile.asciiDraw)
 
     sum should be (12)
   }

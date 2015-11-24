@@ -29,10 +29,10 @@ object MeanResult {
   }
 }
 
-object Mean extends TileIntersectionHandler[MeanResult, Double] {
-  def handlePartialTile(pt: PartialTileIntersection): MeanResult = {
-    val PartialTileIntersection(tile, _, polygon) = pt
-    val rasterExtent = pt.rasterExtent
+object Mean extends TileIntersectionHandler[MeanResult] {
+  def handlePartialTile(raster: Raster, polygon: Polygon): MeanResult = {
+    val Raster(tile, _) = raster
+    val rasterExtent = raster.rasterExtent
     var sum = 0.0
     var count = 0L
     if(tile.cellType.isFloatingPoint) {
@@ -50,13 +50,13 @@ object Mean extends TileIntersectionHandler[MeanResult, Double] {
     MeanResult(sum, count)
   }
 
-  def handleFullTile(ft: FullTileIntersection): MeanResult =
-    if(ft.tile.cellType.isFloatingPoint) {
-      MeanResult.fromFullTileDouble(ft.tile)
+  def handleFullTile(tile: Tile): MeanResult =
+    if(tile.cellType.isFloatingPoint) {
+      MeanResult.fromFullTileDouble(tile)
     } else {
-      MeanResult.fromFullTile(ft.tile)
+      MeanResult.fromFullTile(tile)
     }
 
-  def combineResults(rs: Seq[MeanResult]): Double =
-    rs.foldLeft(MeanResult(0.0, 0L))(_+_).mean
+  def combineResults(rs: Seq[MeanResult]): MeanResult =
+    rs.foldLeft(MeanResult(0.0, 0L))(_+_)
 }
