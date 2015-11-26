@@ -311,43 +311,54 @@ case class TiffTags(
 
   lazy val geoTiffCSTags = GeoTiffCSParser(this)
 
-  def tags: Tags =
-    (this &|->
-      TiffTags._geoTiffTags ^|->
-      GeoTiffTags._metadata get
-    ) match {
-      case Some(str) => {
-        val xml = XML.loadString(str.trim)
-        val (metadataXML, bandsMetadataXML) =
-          (xml \ "Item")
-            .groupBy(_ \ "@sample")
-            .partition(_._1.isEmpty)
+  def tags: Tags = {
+    val (headTags, bandTags) = 
+      (this &|->
+        TiffTags._geoTiffTags ^|->
+        GeoTiffTags._metadata get
+      ) match {
+        case Some(str) => {
+          val xml = XML.loadString(str.trim)
+          val (metadataXML, bandsMetadataXML) =
+            (xml \ "Item")
+              .groupBy(_ \ "@sample")
+              .partition(_._1.isEmpty)
 
-        val metadata = metadataXML
-          .map(_._2)
-          .headOption match {
-          case Some(ns) => metadataNodeSeqToMap(ns)
-          case None => Map[String, String]()
-        }
-
-        val bandsMetadataMap = bandsMetadataXML.map { case(key, ns) =>
-          (key.toString.toInt, metadataNodeSeqToMap(ns))
-        }
-
-        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](bandCount)
-
-        cfor(0)(_ < bandCount, _ + 1) { i =>
-          bandsMetadataMap.get(i) match {
-            case Some(map) => bandsMetadataBuffer(i) = map
-            case None => bandsMetadataBuffer(i) = Map()
+          val metadata = metadataXML
+            .map(_._2)
+            .headOption match {
+            case Some(ns) => metadataNodeSeqToMap(ns)
+            case None => Map[String, String]()
           }
-        }
 
-        Tags(metadata, bandsMetadataBuffer.toList)
+          val bandsMetadataMap = bandsMetadataXML.map { case(key, ns) =>
+            (key.toString.toInt, metadataNodeSeqToMap(ns))
+          }
+
+          val bandsMetadataBuffer = Array.ofDim[Map[String, String]](bandCount)
+
+          cfor(0)(_ < bandCount, _ + 1) { i =>
+            bandsMetadataMap.get(i) match {
+              case Some(map) => bandsMetadataBuffer(i) = map
+              case None => bandsMetadataBuffer(i) = Map()
+            }
+          }
+
+          (metadata, bandsMetadataBuffer.toList)
+        }
+        case None =>
+          (Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
       }
-      case None =>
-        Tags(Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
-    }
+  
+      this &|->
+        TiffTags._metadataTags ^|->
+        MetadataTags._dateTime get match {
+          case Some(dateTime) =>
+            Tags(headTags + (("TIFFTAG_DATETIME", dateTime)), bandTags)
+          case None =>
+            Tags(headTags, bandTags)
+        }
+  }
 
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
     ns.map(s => ((s \ "@name").text -> s.text)).toMap
