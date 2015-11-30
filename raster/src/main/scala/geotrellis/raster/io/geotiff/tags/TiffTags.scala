@@ -159,8 +159,17 @@ case class TiffTags(
       &|-> TiffTags._geoTiffTags
       ^|-> GeoTiffTags._modelTransformation get
     ) match {
-      case Some(trans) if (trans.validateAsMatrix && trans.size == 4 && trans(0).size == 4) =>
-        transformationModelSpace(trans)
+      case Some(trans) =>
+        assert(trans.size == 4 && trans(0).size == 4, "Malformed model transformation matrix (must be a 4 x 4 matrix)")
+
+        getExtentFromModelFunction { pixel =>
+          val transformed = Array.ofDim[Double](3)
+          cfor(0)(_ < 3, _ + 1) { row =>
+            transformed(row) = trans(row)(0) * pixel.x + trans(row)(1) * pixel.y + trans(row)(2) * pixel.z + trans(row)(3)
+          }
+
+          Pixel3D.fromArray(transformed)
+        }
       case _ =>
         (this
           &|-> TiffTags._geoTiffTags
@@ -226,13 +235,6 @@ case class TiffTags(
       Pixel3D(0, imageLength, 0),
       Pixel3D(imageWidth, 0, 0)
     )
-  }
-
-  private def transformationModelSpace(modelTransformation: Array[Array[Double]]) = {
-    def matrixMult(pixel: Pixel3D) = Pixel3D.fromArray((modelTransformation *
-      Array(Array(pixel.x, pixel.y, pixel.z, 1))).flatten.take(3))
-
-    getExtentFromModelFunction(matrixMult)
   }
 
   private def tiePointsModelSpace(tiePoints: Array[(Pixel3D, Pixel3D)],

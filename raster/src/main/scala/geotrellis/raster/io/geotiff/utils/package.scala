@@ -6,7 +6,6 @@ import java.nio.ByteBuffer
 package object utils extends ArrayExtensions
   with ByteBufferExtensions
   with ByteInverter
-  with MatrixExtensions
   with GDALNoDataParser {
 
   implicit class ShortArrayToByte(val arr: Array[Short]) extends AnyVal {
