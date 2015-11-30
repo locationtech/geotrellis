@@ -288,10 +288,13 @@ case class TiffTags(
   private def getExtentFromModelFunction(func: Pixel3D => Pixel3D) = {
     val modelPixels = getRasterBoundaries.map(func)
 
-    val (minX, minY) = (modelPixels(0).x, modelPixels(0).y)
-    val (maxX, maxY) = (modelPixels(1).x, modelPixels(1).y)
+    val (x1, y1) = (modelPixels(0).x, modelPixels(0).y)
+    val (x2, y2) = (modelPixels(1).x, modelPixels(1).y)
 
-    Extent(minX, minY, maxX, maxY)
+    Extent(math.min(x1, x2), 
+           math.min(y1, y2), 
+           math.max(x1, x2), 
+           math.max(y1, y2))
   }
 
   def hasPixelArea(): Boolean =
