@@ -27,9 +27,16 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     new Path(attributeDir, fname)
   }
 
+  def optionAttributePath(layerId: Option[LayerId], attributeName: Option[String]) =
+    new Path(attributeDir, (layerId, attributeName) match {
+      case (Some(id), Some(name)) => new Path(s"${id.name}___${id.zoom}___${name}.json")
+      case (None, Some(name))     => new Path(s"*___${name}.json")
+      case (Some(id), None)       => new Path(s"${id.name}___${id.zoom}___*.json")
+      case (None, None)           => new Path(s"*.json")
+    })
+
   def attributeWildcard(attributeName: String): Path = 
     new Path(s"*___${attributeName}.json")
-
 
   private def readFile[T: Format](path: Path): Option[(LayerId, T)] = {
     HdfsUtils
@@ -86,6 +93,14 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     val path = attributePath(layerId, AttributeStore.Fields.metaData)
     val fs = path.getFileSystem(hadoopConfiguration)
     fs.exists(path)
+  }
+
+  def delete(layerId: Option[LayerId], attributeName: Option[String]): Unit = {
+    val path = optionAttributePath(layerId, attributeName)
+
+    if(fs.exists(path)) {
+      fs.delete(path, false)
+    }
   }
 }
 

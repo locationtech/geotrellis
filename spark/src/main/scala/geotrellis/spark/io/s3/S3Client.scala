@@ -14,7 +14,7 @@ trait S3Client extends LazyLogging {
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
   
   def listObjects(bucketName: String, prefix: String): ObjectListing =          
-      listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null));
+      listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null))
 
   def getObject(getObjectRequest: GetObjectRequest): S3Object
 
@@ -22,6 +22,11 @@ trait S3Client extends LazyLogging {
 
   def getObject(bucketName: String, key: String): S3Object = 
     getObject(new GetObjectRequest(bucketName, key))
+
+  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit
+
+  def deleteObject(bucketName: String, key: String): Unit =
+    deleteObject(new DeleteObjectRequest(bucketName, key))
 
   def putObject(bucketName: String, key: String, input: InputStream, metadata: ObjectMetadata): PutObjectResult = 
     putObject(new PutObjectRequest(bucketName, key, input, metadata))
@@ -36,7 +41,7 @@ trait S3Client extends LazyLogging {
 
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =          
-      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys));
+      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
     new Iterator[S3ObjectSummary] {      
@@ -92,5 +97,9 @@ class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) e
 
   def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
     s3client.putObject(putObjectRequest)
+  }
+
+  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit = {
+    s3client.deleteObject(deleteObjectRequest)
   }
 }

@@ -3,6 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 
+/** TODO: split this files into separate files in its own package */
 trait Reader[K, V] extends (K => V) {
   def read(key: K): V
   def apply(key: K): V = read(key)
@@ -50,3 +51,4 @@ abstract class LayerUpdater[ID, K: Boundable, V, Container <: RDD[(K, V)]] {
     update(id, merge(existing, rdd))
   }
 }
+
