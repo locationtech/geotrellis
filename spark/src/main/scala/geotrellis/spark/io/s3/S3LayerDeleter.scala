@@ -10,8 +10,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
-(attributeStore: AttributeStore[JsonFormat])
-(implicit sc: SparkContext) extends LayerDeleter[LayerId] {
+  (attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext) extends LayerDeleter[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
