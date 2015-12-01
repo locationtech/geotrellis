@@ -52,3 +52,7 @@ abstract class LayerUpdater[ID, K: Boundable, V, Container <: RDD[(K, V)]] {
   }
 }
 
+trait LayerDeleter[ID] {
+  def delete(id: ID): Unit
+}
+
