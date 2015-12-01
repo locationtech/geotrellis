@@ -2,7 +2,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
-import geotrellis.spark.io.{AttributeStore, LayerDeleter}
+import geotrellis.spark.io.{LayerDeleteError, AttributeStore, LayerDeleter}
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import spray.json.JsonFormat
@@ -15,29 +15,33 @@ import scala.reflect.ClassTag
 
 /** attributeStore & connector: mb pass only connector */
 class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
-  (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[LayerId]{
+  (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[K, LayerId] {
 
   lazy val ops = connector.tableOperations()
 
   def delete(id: LayerId): Unit = {
-    val (header, _, keyBounds, keyIndex, _) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](id)
+    try {
+      val (header, _, keyBounds, keyIndex, _) =
+        attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](id)
 
-    def decompose(bounds: KeyBounds[K], keyIndex: KeyIndex[K]) =
-      keyIndex.indexRanges(bounds).map { case (min, max) =>
-        new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
-      }
+      def decompose(bounds: KeyBounds[K], keyIndex: KeyIndex[K]) =
+        keyIndex.indexRanges(bounds).map { case (min, max) =>
+          new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
+        }
 
-    val ranges = decompose(keyBounds, keyIndex)
-    val numThreads = 1
-    val config = new BatchWriterConfig()
-    config.setMaxWriteThreads(numThreads)
-    val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
-    deleter.fetchColumnFamily(columnFamily(id))
-    deleter.setRanges(ranges)
-    deleter.delete()
+      val ranges = decompose(keyBounds, keyIndex)
+      val numThreads = 1
+      val config = new BatchWriterConfig()
+      config.setMaxWriteThreads(numThreads)
+      val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
+      deleter.fetchColumnFamily(columnFamily(id))
+      deleter.setRanges(ranges)
+      deleter.delete()
 
-    attributeStore.delete(id)
+      attributeStore.delete(id)
+    } catch {
+      case e: Exception => throw new LayerDeleteError(id).initCause(e)
+    }
   }
 }
 

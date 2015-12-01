@@ -17,6 +17,7 @@ abstract class AccumuloSpatialSpec
   implicit val instance = MockAccumuloInstance()
 
   lazy val reader = AccumuloLayerReader[SpatialKey, Tile, RasterRDD](instance)
+  lazy val deleter = AccumuloLayerDeleter[SpatialKey](instance)
   lazy val tiles = AccumuloTileReader[SpatialKey, Tile](instance)
   lazy val sample = AllOnesTestFile
 }

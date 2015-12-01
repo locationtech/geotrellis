@@ -31,6 +31,9 @@ package object io {
   class LayerUpdateError(layerId: LayerId)
     extends CatalogError(s"Failed to update $layerId")
 
+  class LayerDeleteError(layerId: LayerId)
+    extends CatalogError(s"Failed to delete $layerId")
+
   class AttributeNotFoundError(attributeName: String, layerId: LayerId)
     extends CatalogError(s"Attribute $attributeName not found for layer $layerId")
 

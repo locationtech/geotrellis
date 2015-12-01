@@ -4,7 +4,7 @@ import geotrellis.raster.Tile
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark.{OnlyIfCanRunSpark, RasterRDD, SpatialKey, TestEnvironment}
+import geotrellis.spark._
 
 abstract class HadoopSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile]
@@ -13,6 +13,7 @@ abstract class HadoopSpatialSpec
           with AllOnesTestTileTests {
   type Container = RasterRDD[SpatialKey]
   lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterRDD](outputLocal)
+  lazy val deleter = HadoopLayerDeleter[SpatialKey](outputLocal)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
 }

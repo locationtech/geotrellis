@@ -101,6 +101,8 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     if(fs.exists(path)) {
       fs.delete(path, false)
     }
+
+    clearCache()
   }
 }
 

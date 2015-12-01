@@ -86,5 +86,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     }
 
     deleter.delete()
+    clearCache()
   }
 }

@@ -86,6 +86,7 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
 
   def delete(layerId: Option[LayerId], attributeName: Option[String]): Unit = {
     s3Client.deleteObject(bucket, optionAttributePath(layerId, attributeName))
+    clearCache()
   }
 }
 

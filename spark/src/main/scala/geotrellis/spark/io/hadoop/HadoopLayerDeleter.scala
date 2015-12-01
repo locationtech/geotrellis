@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.{Boundable, LayerId}
-import geotrellis.spark.io.{AttributeStore, LayerDeleter}
+import geotrellis.spark.io.{LayerDeleteError, AttributeStore, LayerDeleter}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import spray.json.JsonFormat
@@ -9,12 +9,16 @@ import scala.reflect.ClassTag
 import spray.json.DefaultJsonProtocol._
 
 class HadoopLayerDeleter[K: Boundable: JsonFormat: ClassTag]
-  (attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[LayerId] {
+  (attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[K, LayerId] {
   def delete(id: LayerId): Unit = {
-    val (header, _, _, _, _) =
-      attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, Unit, Unit](id)
-    HdfsUtils.deletePath(header.path, conf)
-    attributeStore.delete(id)
+    try {
+      val (header, _, _, _, _) =
+        attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, Unit, Unit](id)
+      HdfsUtils.deletePath(header.path, conf)
+      attributeStore.delete(id)
+    } catch {
+      case e: Exception => throw new LayerDeleteError(id).initCause(e)
+    }
   }
 }
 

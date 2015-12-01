@@ -7,6 +7,7 @@ import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
 import org.scalatest._
+import spray.json.JsonFormat
 import scala.reflect._
 
 abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: OnlyIfCanRunSpark =>
@@ -14,14 +15,19 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestReader = FilteringLayerReader[LayerId, K, Container]
   type TestWriter = Writer[LayerId, Container]
   type TestUpdater = LayerUpdater[LayerId, K, V, Container]
+  type TestDeleter = LayerDeleter[K, LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
+  type TestAttributeStore = AttributeStore[JsonFormat]
 
   def sample: Container
   def reader: TestReader
   def writer: TestWriter
+  def deleter: TestDeleter
   def tiles: TestTileReader
+  //def attributeStore: TestAttributeStore
 
   val layerId = LayerId("sample", 1)
+  val deleteLayerId = LayerId("deleteSample", 1)
   lazy val query = reader.query(layerId)
   
   if (canRunSpark) {
@@ -32,8 +38,15 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
       }
     }
 
+    it("should not delete layer before write") {
+      intercept[LayerDeleteError] {
+        deleter.delete(layerId)
+      }
+    }
+
     it("should write a layer") {
       writer.write(layerId, sample)
+      writer.write(deleteLayerId, sample)
     }
 
     it("should read a layer back") {
@@ -54,6 +67,22 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
       val readV: V = tileReader.read(key)
       val expectedV: V = sample.filter(_._1 == key).values.first()
       readV should be equals expectedV
+    }
+
+    // TODO: more specific exception type?
+    it("should delete a layer") {
+      deleter.delete(deleteLayerId)
+
+      // TODO: fix weird workaround, due to hadoop failure on count only
+      intercept[Exception] {
+        try {
+          reader.read(deleteLayerId)
+        } catch {
+          case e: Exception => e
+        } finally {
+          reader.read(deleteLayerId).count()
+        }
+      }
     }
   }
 }

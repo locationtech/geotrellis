@@ -1,11 +1,13 @@
 package geotrellis.spark.io.s3
 
 import java.io.{InputStream, ByteArrayInputStream}
+import com.amazonaws.services.s3.model.DeleteObjectsResult.DeletedObject
 import com.amazonaws.services.s3.model._
 import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import scala.collection.immutable.TreeMap
 import com.typesafe.scalalogging.slf4j._
+import scala.collection.JavaConverters._
 
 class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
@@ -97,6 +99,17 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
     new PutObjectResult()
   }
+
+  override def deleteObject(r: DeleteObjectRequest): Unit = this.synchronized {
+    logger.debug(s"DELETE ${r.getKey}")
+    val bucket = getBucket(r.getBucketName)
+    bucket.synchronized {
+      bucket.remove(r.getKey)
+    }
+    val dobj = new DeletedObject()
+    dobj.setKey(r.getKey)
+    new DeleteObjectsResult((dobj :: Nil).asJava)
+  }
 }
 
 object MockS3Client{
@@ -113,6 +126,10 @@ object MockS3Client{
 
     def contains(key: String): Boolean =
       entries.contains(key)
+
+    def remove(key: String) = {
+      entries -= key
+    }
 
     /** return first key that matches this prefix */
     def findFirstKey(prefix: String): Option[String] = {
