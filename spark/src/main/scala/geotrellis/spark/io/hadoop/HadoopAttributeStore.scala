@@ -27,13 +27,10 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     new Path(attributeDir, fname)
   }
 
-  def optionAttributePath(layerId: Option[LayerId], attributeName: Option[String]) =
-    new Path(attributeDir, (layerId, attributeName) match {
-      case (Some(id), Some(name)) => new Path(s"${id.name}___${id.zoom}___${name}.json")
-      case (None, Some(name))     => new Path(s"*___${name}.json")
-      case (Some(id), None)       => new Path(s"${id.name}___${id.zoom}___*.json")
-      case (None, None)           => new Path(s"*.json")
-    })
+  private def _delete(path: Path, recursive: Boolean = false): Unit = {
+    fs.delete(path, recursive)
+    clearCache()
+  }
 
   def attributeWildcard(attributeName: String): Path = 
     new Path(s"*___${attributeName}.json")
@@ -95,15 +92,10 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     fs.exists(path)
   }
 
-  def delete(layerId: Option[LayerId], attributeName: Option[String]): Unit = {
-    val path = optionAttributePath(layerId, attributeName)
+  def delete(layerId: LayerId): Unit = _delete(attributeDir, true)
 
-    if(fs.exists(path)) {
-      fs.delete(path, false)
-    }
-
-    clearCache()
-  }
+  def delete(layerId: LayerId, attributeName: String): Unit =
+    _delete(new Path(s"${layerId.name}___${layerId.zoom}___${attributeName}.json"))
 }
 
 object HadoopAttributeStore {

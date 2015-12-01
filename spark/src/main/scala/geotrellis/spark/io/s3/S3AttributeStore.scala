@@ -33,16 +33,11 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
 
   def path(parts: String*) = parts.filter(_.nonEmpty).mkString("/")
 
+  def attributePath(id: LayerId): String =
+    path(rootPath, "_attributes", s"*__${id.name}__${id.zoom}.json")
+
   def attributePath(id: LayerId, attributeName: String): String =
     path(rootPath, "_attributes", s"${attributeName}__${id.name}__${id.zoom}.json")
-
-  def optionAttributePath(layerId: Option[LayerId], attributeName: Option[String]): String =
-    path(rootPath, "_attributes", (layerId, attributeName) match {
-      case (Some(id), Some(name)) => s"${id.name}___${id.zoom}___${name}.json"
-      case (None, Some(name))     => s"*___${name}.json"
-      case (Some(id), None)       => s"${id.name}___${id.zoom}___*.json"
-      case (None, None)           => s"*.json"
-    })
 
   def attributePrefix(attributeName: String): String =
     path(rootPath, "_attributes", s"${attributeName}__")
@@ -84,10 +79,16 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     s3Client.listObjectsIterator(bucket, AttributeStore.Fields.metaData, 1).nonEmpty
   }
 
-  def delete(layerId: Option[LayerId], attributeName: Option[String]): Unit = {
-    s3Client.deleteObject(bucket, optionAttributePath(layerId, attributeName))
+  def _delete(path: String): Unit = {
+    s3Client.deleteObject(bucket, path)
     clearCache()
   }
+
+  def delete(layerId: LayerId): Unit =
+    _delete(attributePath(layerId))
+
+  def delete(layerId: LayerId, attributeName: String): Unit =
+    _delete(attributePath(layerId, attributeName))
 }
 
 object S3AttributeStore {

@@ -18,7 +18,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     try {
-      if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
+      if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
       implicit val sc = rdd.sparkContext
       implicit val mdFormat = cons.metaDataFormat
 

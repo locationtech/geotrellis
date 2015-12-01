@@ -41,6 +41,19 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     scanner.iterator.map(_.getValue)
   }
 
+  private def _delete(layerId: LayerId, attributeName: Option[String]): Unit = {
+    val numThreads = 1
+    val config = new BatchWriterConfig()
+    config.setMaxWriteThreads(numThreads)
+    val deleter = connector.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
+    deleter.setRanges(List(new Range(new Text(layerId.toString))))
+    attributeName.foreach { name =>
+      deleter.fetchColumnFamily(new Text(name))
+    }
+    deleter.delete()
+    clearCache()
+  }
+
   def read[T: Format](layerId: LayerId, attributeName: String): T = {
     val values = fetch(Some(layerId), attributeName).toVector
 
@@ -73,19 +86,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     fetch(Some(layerId), AttributeStore.Fields.metaData).nonEmpty
   }
 
-  def delete(layerId: Option[LayerId], attributeName: Option[String]): Unit = {
-    val numThreads = 1
-    val config = new BatchWriterConfig()
-    config.setMaxWriteThreads(numThreads)
-    val deleter = connector.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
-    layerId.foreach { id =>
-      deleter.setRanges(List(new Range(new Text(id.toString))))
-    }
-    attributeName.foreach { name =>
-      deleter.fetchColumnFamily(new Text(name))
-    }
+  def delete(layerId: LayerId): Unit = _delete(layerId, None)
 
-    deleter.delete()
-    clearCache()
-  }
+  def delete(layerId: LayerId, attributeName: String): Unit = _delete(layerId, Some(attributeName))
 }

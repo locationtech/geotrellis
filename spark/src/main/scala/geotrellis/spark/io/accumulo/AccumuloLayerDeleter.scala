@@ -13,11 +13,8 @@ import spray.json.DefaultJsonProtocol._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-/** attributeStore & connector: mb pass only connector */
 class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
   (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[K, LayerId] {
-
-  lazy val ops = connector.tableOperations()
 
   def delete(id: LayerId): Unit = {
     try {
@@ -46,6 +43,9 @@ class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
 }
 
 object AccumuloLayerDeleter {
-  def apply[K: Boundable: JsonFormat: ClassTag](instance: AccumuloInstance) =
-    new AccumuloLayerDeleter[K](AccumuloAttributeStore(instance.connector), instance.connector)
+  def apply[K: Boundable: JsonFormat: ClassTag](attributeStore: AttributeStore[JsonFormat], connector: Connector): AccumuloLayerDeleter[K] =
+    new AccumuloLayerDeleter[K](attributeStore, connector)
+
+  def apply[K: Boundable: JsonFormat: ClassTag](instance: AccumuloInstance): AccumuloLayerDeleter[K] =
+    apply[K](AccumuloAttributeStore(instance.connector), instance.connector)
 }

@@ -17,17 +17,15 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestUpdater = LayerUpdater[LayerId, K, V, Container]
   type TestDeleter = LayerDeleter[K, LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
-  type TestAttributeStore = AttributeStore[JsonFormat]
 
   def sample: Container
   def reader: TestReader
   def writer: TestWriter
   def deleter: TestDeleter
   def tiles: TestTileReader
-  //def attributeStore: TestAttributeStore
 
   val layerId = LayerId("sample", 1)
-  val deleteLayerId = LayerId("deleteSample", 1)
+  val deleteLayerId = LayerId("deleteSample", 1) // second layer to avoid data race
   lazy val query = reader.query(layerId)
   
   if (canRunSpark) {
@@ -72,16 +70,8 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     // TODO: more specific exception type?
     it("should delete a layer") {
       deleter.delete(deleteLayerId)
-
-      // TODO: fix weird workaround, due to hadoop failure on count only
-      intercept[Exception] {
-        try {
-          reader.read(deleteLayerId)
-        } catch {
-          case e: Exception => e
-        } finally {
-          reader.read(deleteLayerId).count()
-        }
+      intercept[LayerReadError] {
+        reader.read(deleteLayerId)
       }
     }
   }
