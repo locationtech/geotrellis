@@ -57,7 +57,9 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
     }
 
   def combineTiles(other: RasterRDD[K])(f: (Tile, Tile) => Tile): RasterRDD[K] =
-    combinePairs(other) { case ((k1, t1), (k2, t2)) => (k1, f(t1, t2)) }
+    asRasterRDD(metaData) {
+      this.union(other).reduceByKey(f)
+    }
 
   def combinePairs[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
