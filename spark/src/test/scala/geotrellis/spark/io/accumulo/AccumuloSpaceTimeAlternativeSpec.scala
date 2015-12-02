@@ -2,7 +2,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.Tile
 import geotrellis.spark.io.accumulo.spacetime.{SpaceTimeAccumuloRDDReader, SpaceTimeAccumuloRDDWriter}
-import geotrellis.spark.io.index.{ZCurveKeyIndexMethod}
+import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -13,7 +13,8 @@ class AccumuloSpaceTimeAlternativeSpec
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests
+          with LayerCopySpaceTimeTileTests[AccumuloLayerHeader] {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
@@ -35,6 +36,7 @@ class AccumuloSpaceTimeAlternativeSpec
     new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
 
   lazy val deleter = new AccumuloLayerDeleter[SpaceTimeKey](AccumuloAttributeStore(instance.connector), instance.connector)
+  lazy val copier  = new LayerCopier[AccumuloLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](AccumuloAttributeStore(instance.connector), reader, writer)
 
   lazy val tiles = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample =  CoordinateSpaceTime

@@ -6,13 +6,15 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
+import org.apache.hadoop.fs.Path
 import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests {
+          with CoordinateSpaceTimeTests
+          with LayerCopySpaceTimeTileTests[HadoopLayerHeader] {
   type Container = RasterRDD[SpaceTimeKey]
 
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
@@ -23,16 +25,28 @@ abstract class HadoopSpaceTimeSpec
 
 class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.byYear)
+  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
+    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
+  )
 }
 
 class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 })
+  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
+    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
+  )
 }
 
 class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))
+  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
+    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
+  )
 }
 
 class HadoopSpaceTimeHilbertWithResolutionSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal,  HilbertKeyIndexMethod(2))
+  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
+    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
+  )
 }

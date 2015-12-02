@@ -14,7 +14,8 @@ abstract class S3SpaceTimeSpec
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests
+          with LayerCopySpaceTimeTileTests[S3LayerHeader] {
   type Container = RasterRDD[SpaceTimeKey]
   val bucket = "mock-bucket"
   val prefix = "catalog"
@@ -40,19 +41,23 @@ abstract class S3SpaceTimeSpec
 class S3SpaceTimeZCurveByYearSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, ZCurveKeyIndexMethod.byYear, bucket, prefix, true)
+  lazy val copier = new LayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, reader, writer)
 }
 
 class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, bucket, prefix, true)
+  lazy val copier = new LayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, reader, writer)
 }
 
 class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), bucket, prefix, true)
+  lazy val copier = new LayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, reader, writer)
 }
 
 class S3SpaceTimeHilbertWithResolutionSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, HilbertKeyIndexMethod(2), bucket, prefix, true)
+  lazy val copier = new LayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, reader, writer)
 }

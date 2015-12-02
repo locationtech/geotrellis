@@ -25,4 +25,17 @@ object AccumuloLayerCopier {
       layerReader = AccumuloLayerReader[K, V, Container](instance),
       layerWriter = AccumuloLayerWriter[K, V, Container](instance, table, indexMethod, strategy)
     )
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+  V: AvroRecordCodec: MergeView: ClassTag, Container[_] <: RDD[(K, V)]]
+  (instance: AccumuloInstance,
+   layerReader: AccumuloLayerReader[K, V, Container[K]],
+   layerWriter: AccumuloLayerWriter[K, V, Container[K]])
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): LayerCopier[AccumuloLayerHeader, K, V, Container[K]] =
+    new LayerCopier[AccumuloLayerHeader, K, V, Container[K]](
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      layerReader = layerReader,
+      layerWriter = layerWriter
+    )
+
 }
