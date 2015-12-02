@@ -27,8 +27,11 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     new Path(attributeDir, fname)
   }
 
-  private def _delete(path: Path, recursive: Boolean = false): Unit = {
-    fs.delete(path, recursive)
+  private def _delete(path: Path): Unit = {
+    HdfsUtils
+      .listFiles(new Path(attributeDir, path), hadoopConfiguration)
+      .foreach(fs.delete(_, false))
+
     clearCache()
   }
 
@@ -92,7 +95,8 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     fs.exists(path)
   }
 
-  def delete(layerId: LayerId): Unit = _delete(attributeDir, true)
+  def delete(layerId: LayerId): Unit =
+    _delete(new Path(s"${layerId.name}___${layerId.zoom}___*.json"))
 
   def delete(layerId: LayerId, attributeName: String): Unit =
     _delete(new Path(s"${layerId.name}___${layerId.zoom}___${attributeName}.json"))

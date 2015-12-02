@@ -43,7 +43,7 @@ package object io {
   class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
     extends CatalogError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
 
-  class OutOfKeyBoundsError(layerId: LayerId)
+  class LayerOutOfKeyBoundsError(layerId: LayerId)
     extends CatalogError(s"Updating rdd is out of $layerId bounds")
 
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])

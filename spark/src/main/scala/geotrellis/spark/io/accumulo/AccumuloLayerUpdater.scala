@@ -29,13 +29,14 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
       val keyBounds = boundable.getKeyBounds(rdd)
 
       if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
-        throw new OutOfKeyBoundsError(id)
+        throw new LayerOutOfKeyBoundsError(id)
 
       val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
 
       rddWriter.write(rdd, existingHeader.tileTable, columnFamily(id), getRowId, oneToOne = false)
     } catch {
-      case e: Exception => throw new LayerUpdateError(id).initCause(e)
+      case e: AttributeNotFoundError        => throw new LayerUpdateError(id).initCause(e)
+      case e: UnsupportedOperationException => throw new LayerUpdateError(id).initCause(e)
     }
   }
 }

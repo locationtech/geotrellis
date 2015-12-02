@@ -38,6 +38,7 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
     try {
+      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
       implicit val mdFormat = cons.metaDataFormat
       val (header, metadata, keyBounds, keyIndex, writerSchema) =
         attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
@@ -53,7 +54,7 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
 
       cons.makeContainer(rdd, keyBounds, metadata)
     } catch {
-      case e: Exception => throw new LayerReadError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
   }
 }

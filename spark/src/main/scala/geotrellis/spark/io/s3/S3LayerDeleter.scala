@@ -2,7 +2,7 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.{LayerDeleteError, AttributeStore, LayerDeleter}
+import geotrellis.spark.io._
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import geotrellis.spark.io.json._
@@ -16,6 +16,7 @@ class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
 
   def delete(id: LayerId): Unit = {
     try {
+      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
       val (header, _, keyBounds, keyIndex, _) =
         attributeStore.readLayerAttributes[S3LayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](id)
 
@@ -42,7 +43,7 @@ class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
 
       attributeStore.delete(id)
     } catch {
-      case e: Exception => throw new LayerDeleteError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
   }
 }

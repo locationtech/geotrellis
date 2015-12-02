@@ -27,7 +27,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] 
         (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
       ).asInstanceOf[Container]
 
-      intercept[LayerUpdateError] {
+      intercept[LayerOutOfKeyBoundsError] {
         updater.update(layerId, update)
       }
     }

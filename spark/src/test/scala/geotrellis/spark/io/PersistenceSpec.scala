@@ -31,13 +31,13 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   if (canRunSpark) {
 
     it("should not find layer before write") {
-      intercept[LayerReadError] {
+      intercept[LayerNotFoundError] {
         reader.read(layerId)
       }
     }
 
     it("should not delete layer before write") {
-      intercept[LayerDeleteError] {
+      intercept[LayerNotFoundError] {
         deleter.delete(layerId)
       }
     }
@@ -67,10 +67,9 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
       readV should be equals expectedV
     }
 
-    // TODO: more specific exception type?
     it("should delete a layer") {
       deleter.delete(deleteLayerId)
-      intercept[LayerReadError] {
+      intercept[LayerNotFoundError] {
         reader.read(deleteLayerId)
       }
     }
