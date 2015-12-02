@@ -10,18 +10,18 @@ import scala.reflect.ClassTag
 class SpatialRDDMethods[K, V](self: RDD[(K, V)])
     (implicit kt: ClassTag[K]) extends LazyLogging {
 
-  def partitionBy(part: SpacePartitioner[K]) = {
+  def partitionBy(part: SpacePartitioner[K]): RDD[(K, V)] = {
     self.partitioner match {
       case Some(p: SpacePartitioner[_]) if p.regions sameElements part.regions  =>
         self
       case Some(p: SpacePartitioner[_]) =>
         new ReorderedRDD(self, part.numPartitions, i => part.regionIndex(p.regions(i)))
       case _ =>
-        new ShuffledRDD(self.filter(part.containsKey), part)
+        new ShuffledRDD(self.filter{ t => part.containsKey(t._1) }, part)
     }
   }
 
-  def spatialLeftJoin[W](right: RDD[(K, W)]) = {
+  def leftOuterJoin[W](right: RDD[(K, W)]) = {
     val rdds = List(self, right)
 
     val cogroup = rdds.head.partitioner match {

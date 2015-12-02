@@ -6,14 +6,17 @@ import spray.json.DefaultJsonProtocol._
 case class KeyBounds[K](
   minKey: K,
   maxKey: K
-){
+)(implicit b: Boundable[K]) {
+
+  def isEmpty = false
   def map(f: K => K) = KeyBounds(f(minKey), f(maxKey))
+  def includeKey(key: K): Boolean = b.includes(key, this)
 }
 
 object KeyBounds {
-  def includeKey[K](seq: Seq[KeyBounds[K]], key: K)(implicit boundable: Boundable[K]) = {
+  def includeKey[K](seq: Seq[KeyBounds[K]], key: K) = {
     seq
-      .map{ kb => boundable.includes(key, kb) }
+      .map{ kb => kb.includeKey(key) }
       .foldLeft(false)(_ || _)
   }
 
@@ -28,7 +31,7 @@ object KeyBounds {
 
   implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
 
-  implicit def keyBoundsFormat[K: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
+  implicit def keyBoundsFormat[K: Boundable: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
     new RootJsonFormat[KeyBounds[K]] {
 
       def write(keyBounds: KeyBounds[K]) =

@@ -10,6 +10,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
 /**
+ * This partitioner can not be used with default spark operations because it breaks Partitioner semantics.
+ * Spark Partitioner assumes that all instances of K can be assigned to a partition where as SpacePartitioner
+ * only partitions keys within the KeyBounds.
+ *
+ *
  * @param bounds  Bounds of the region we're partitioning
  */
 case class SpacePartitioner[K: ClassTag](bounds: KeyBounds[K], r: Int = 4)
@@ -18,7 +23,7 @@ case class SpacePartitioner[K: ClassTag](bounds: KeyBounds[K], r: Int = 4)
   val index: KeyIndex[K] = SpacePartitioner.gridKeyIndex(gridKey)
 
   val regions = partitionBounds(bounds)
-  println(s"Indexed $bounds with ${regions.length} partitions")
+  //  println(s"Indexed $bounds with ${regions.length} partitions")
 
   def numPartitions = regions.length
 
@@ -48,14 +53,22 @@ case class SpacePartitioner[K: ClassTag](bounds: KeyBounds[K], r: Int = 4)
     overlap.toArray
   }
 
-  /** Will return -1 for keys out of bounds */
-  def getPartition(key: Any) = {
+  def getPartition(key: Any): Int = {
     val i = index.toIndex(key.asInstanceOf[K])
-    regions.indexOf(i >> r)
+    val region  = i >> r
+    val regionIndex = regions.indexOf(i >> r)
+    if (regionIndex > -1) {
+      regionIndex
+    } else {
+      // overflow for keys, at this point this should no longer be considered spatially partitioned
+      (region % numPartitions).toInt
+    }
   }
 
-  def containsKey(key: Any): Boolean =
-    getPartition(key) > -1
+  def containsKey(key: Any): Boolean = {
+    val i = index.toIndex(key.asInstanceOf[K])
+    regions.indexOf(i >> r) > -1
+  }
 
   def combine(other: SpacePartitioner[K]): SpacePartitioner[K] =
     SpacePartitioner(boundable.combine(bounds, other.bounds))
@@ -66,7 +79,9 @@ case class SpacePartitioner[K: ClassTag](bounds: KeyBounds[K], r: Int = 4)
 
   override def equals(other: Any): Boolean = other match {
     case part: SpacePartitioner[K] if part.r == r =>
-      part.regions sameElements regions
+      val ret = part.regions sameElements regions
+      if (ret) println("REPORTING EQUALITY")
+      ret
     case _ =>
       false
   }
@@ -114,7 +129,7 @@ object SpacePartitioner {
       case 2 =>
         new KeyIndex[K] {
           private def toZ(key: K): Z2 = {
-            val arr = gridKey(key)
+            val arr: Array[Int] = gridKey(key)
             Z2(arr(0), arr(1))
           }
 
