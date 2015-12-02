@@ -49,6 +49,12 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     Some(json.parseJson.convertTo[(LayerId, T)])
     // TODO: Make this crash to find out when None should be returned
   }
+
+  private def _delete(layerId: LayerId, path: String): Unit = {
+    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
+    s3Client.deleteObject(bucket, path)
+    clearCache()
+  }
   
   def read[T: Format](layerId: LayerId, attributeName: String): T =
     readKey[T](attributePath(layerId, attributeName)) match {
@@ -79,16 +85,11 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     s3Client.listObjectsIterator(bucket, AttributeStore.Fields.metaData, 1).nonEmpty
   }
 
-  def _delete(path: String): Unit = {
-    s3Client.deleteObject(bucket, path)
-    clearCache()
-  }
-
   def delete(layerId: LayerId): Unit =
-    _delete(attributePath(layerId))
+    _delete(layerId, attributePath(layerId))
 
   def delete(layerId: LayerId, attributeName: String): Unit =
-    _delete(attributePath(layerId, attributeName))
+    _delete(layerId, attributePath(layerId, attributeName))
 }
 
 object S3AttributeStore {
