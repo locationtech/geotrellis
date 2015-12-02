@@ -83,7 +83,7 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     this(new AWSAmazonS3Client(provider, config))
 
   def this(provider: AWSCredentialsProvider) =
-    this(provider.getCredentials, new ClientConfiguration())
+    this(provider, new ClientConfiguration())
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
     s3client.listObjects(listObjectsRequest)
