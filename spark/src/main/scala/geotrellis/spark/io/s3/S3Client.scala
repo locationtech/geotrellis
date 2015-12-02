@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
+import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
@@ -73,14 +74,16 @@ object S3Client {
     new AmazonS3Client(new DefaultAWSCredentialsProviderChain(), defaultConfiguration)
 }
 
-class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) extends S3Client {
-  def this(provider: AWSCredentialsProvider) =
-    this(provider.getCredentials, new ClientConfiguration())
+class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
+
+  def this(credentials: AWSCredentials, config: ClientConfiguration) =
+    this(new AWSAmazonS3Client(credentials, config))
 
   def this(provider: AWSCredentialsProvider, config: ClientConfiguration) =
-    this(provider.getCredentials, config)
+    this(new AWSAmazonS3Client(provider, config))
 
-  val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials, config)
+  def this(provider: AWSCredentialsProvider) =
+    this(provider.getCredentials, new ClientConfiguration())
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
     s3client.listObjects(listObjectsRequest)
