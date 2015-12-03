@@ -24,24 +24,23 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
   val defaultNumPartitions = sc.defaultParallelism
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
-    try {
-      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-      implicit val mdFormat = cons.metaDataFormat
-      val (header, metaData, keyBounds, keyIndex, writerSchema) =
-        attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-
-      val queryKeyBounds = rasterQuery(metaData, keyBounds)
-
-      val decompose = (bounds: KeyBounds[K]) =>
-        keyIndex.indexRanges(bounds).map{ case (min, max) =>
-          new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
-        }
-
-      val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
-      cons.makeContainer(rdd, keyBounds, metaData)
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    implicit val mdFormat = cons.metaDataFormat
+    val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
+
+    val queryKeyBounds = rasterQuery(metaData, keyBounds)
+
+    val decompose = (bounds: KeyBounds[K]) =>
+      keyIndex.indexRanges(bounds).map { case (min, max) =>
+        new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
+      }
+
+    val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
+    cons.makeContainer(rdd, keyBounds, metaData)
   }
 }
 

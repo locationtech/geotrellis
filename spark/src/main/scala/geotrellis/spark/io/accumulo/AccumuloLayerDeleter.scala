@@ -17,29 +17,28 @@ class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
   (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[K, LayerId] {
 
   def delete(id: LayerId): Unit = {
-    try {
-      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-      val (header, _, keyBounds, keyIndex, _) =
-        attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](id)
-
-      def decompose(bounds: KeyBounds[K], keyIndex: KeyIndex[K]) =
-        keyIndex.indexRanges(bounds).map { case (min, max) =>
-          new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
-        }
-
-      val ranges = decompose(keyBounds, keyIndex)
-      val numThreads = 1
-      val config = new BatchWriterConfig()
-      config.setMaxWriteThreads(numThreads)
-      val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
-      deleter.fetchColumnFamily(columnFamily(id))
-      deleter.setRanges(ranges)
-      deleter.delete()
-
-      attributeStore.delete(id)
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    val (header, _, keyBounds, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
+
+    def decompose(bounds: KeyBounds[K], keyIndex: KeyIndex[K]) =
+      keyIndex.indexRanges(bounds).map { case (min, max) =>
+        new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
+      }
+
+    val ranges = decompose(keyBounds, keyIndex)
+    val numThreads = 1
+    val config = new BatchWriterConfig()
+    config.setMaxWriteThreads(numThreads)
+    val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
+    deleter.fetchColumnFamily(columnFamily(id))
+    deleter.setRanges(ranges)
+    deleter.delete()
+
+    attributeStore.delete(id)
   }
 }
 
