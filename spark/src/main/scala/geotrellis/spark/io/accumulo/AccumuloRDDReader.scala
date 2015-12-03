@@ -26,7 +26,7 @@ trait BaseAccumuloRDDReader[K, V] {
     (implicit sc: SparkContext): RDD[(K, V)]
 }
 
-class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
+class AccumuloRDDReader[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
   instance: AccumuloInstance) extends BaseAccumuloRDDReader[K,V] {
   def read(
       table: String,
@@ -37,8 +37,7 @@ class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCo
     (implicit sc: SparkContext): RDD[(K, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
-    val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds includeKey key
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)

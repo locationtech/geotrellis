@@ -59,8 +59,8 @@ object SpaceTimeKey {
 
     def getKeyBounds(rdd: RDD[(SpaceTimeKey, X)] forSome {type X}): KeyBounds[SpaceTimeKey] = {
       rdd
-        .map{ case (k, tile) => KeyBounds(k, k) }
-        .reduce { combine }
+        .map { case (k, tile) => KeyBounds(k, k) }
+        .reduce { _ combine _ }
     }
   }
 }

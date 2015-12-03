@@ -30,7 +30,7 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
     (implicit sc: SparkContext): RDD[(SpaceTimeKey, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[SpaceTimeKey, V])
-    val includeKey = (key: SpaceTimeKey) => KeyBounds.includeKey(queryKeyBounds, key)(SpaceTimeKey.Boundable)
+    val includeKey = (key: SpaceTimeKey) => queryKeyBounds includeKey key
     val kwWriterSchema = KryoWrapper(writerSchema)
 
     queryKeyBounds

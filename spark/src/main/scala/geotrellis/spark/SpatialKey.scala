@@ -48,7 +48,7 @@ object SpatialKey {
     def getKeyBounds(rdd: RDD[(SpatialKey, X)] forSome {type X}): KeyBounds[SpatialKey] = {
       rdd
         .map{ case (k, tile) => KeyBounds(k, k) }
-        .reduce { combine }
+        .reduce { _ combine  _ }
     }
   }
 }
