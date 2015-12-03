@@ -13,7 +13,7 @@ class SpaceRDDSpec extends FunSpec with Matchers with OnlyIfCanRunSpark {
     } yield (SpatialKey(col, row), col + row)
   }
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))
-  val pr1 = SpaceRDD(rdd1, SpacePartitioner(bounds1, 2))
+  val pr1 = new SpaceRDD(rdd1, SpacePartitioner(bounds1, 2))
 
   val rdd2: RDD[(SpatialKey, Int)] = sc.parallelize {
     for {
@@ -22,7 +22,7 @@ class SpaceRDDSpec extends FunSpec with Matchers with OnlyIfCanRunSpark {
     } yield (SpatialKey(col, row), col + row)
   }
   val bounds2 = KeyBounds(SpatialKey(5,5), SpatialKey(15,15))
-  val pr2 = SpaceRDD(rdd2, SpacePartitioner(bounds2, 2))
+  val pr2 = new SpaceRDD(rdd2, SpacePartitioner(bounds2, 2))
 
   val rdd3: RDD[(SpatialKey, Int)] = sc.parallelize {
     for {
@@ -31,10 +31,10 @@ class SpaceRDDSpec extends FunSpec with Matchers with OnlyIfCanRunSpark {
     } yield (SpatialKey(col, row), col + row)
   }
   val bounds3 = KeyBounds(SpatialKey(20,20), SpatialKey(25,25))
-  val pr3 = SpaceRDD(rdd3, SpacePartitioner(bounds3, 2))
+  val pr3 = new SpaceRDD(rdd3, SpacePartitioner(bounds3, 2))
 
   val rddEmpty = sc.emptyRDD[(SpatialKey, Int)]
-  val prEmpty = SpaceRDD(rddEmpty, SpacePartitioner[SpatialKey]())
+  val prEmpty = new SpaceRDD(rddEmpty, SpacePartitioner[SpatialKey]())
 
   def maxPartitionSize(rdd: RDD[_]): Int = {
     rdd.mapPartitions(it => Iterator(it.size)).collect().max
