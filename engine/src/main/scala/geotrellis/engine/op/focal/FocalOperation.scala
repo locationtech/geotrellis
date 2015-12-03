@@ -2,13 +2,15 @@ package geotrellis.engine.op.focal
 
 import geotrellis.engine._
 import geotrellis.raster._
+import geotrellis.vector._
 import geotrellis.raster.op.focal._
 
 trait FocalOperation extends RasterSourceMethods {
 
-  def zipWithNeighbors: Op[Seq[(Op[Tile], TileNeighbors)]] =
+  def zipWithNeighbors: Op[Seq[(Op[Raster], TileNeighbors)]] =
     (rasterSource.tiles, rasterSource.rasterDefinition).map { (seq, rd) =>
       val tileLayout = rd.tileLayout
+      val tileExtents = rd.tileExtents
 
       val colMax = tileLayout.layoutCols - 1
       val rowMax = tileLayout.layoutRows - 1
@@ -43,7 +45,7 @@ trait FocalOperation extends RasterSourceMethods {
           getTile(col - 1, row - 1)
         )
 
-        (tile, SeqTileNeighbors(tileSeq))
+        (tile.map(Raster(_, tileExtents(i))), SeqTileNeighbors(tileSeq))
       }
     }
 
@@ -53,10 +55,10 @@ trait FocalOperation extends RasterSourceMethods {
   {
     val tileOps: Op[Seq[Op[Tile]]] =
       zipWithNeighbors.map{ //map into the Op
-        _.map { case (t: Op[Tile], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
+        _.map { case (t: Op[Raster], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
 
           //Now we're mapping into tile and it's neighbors, in parallel
-          (t, ns.getNeighbors).map { case (center: Tile, neighbors: Seq[Option[Tile]]) =>
+          (t, ns.getNeighbors).map { case (Raster(center: Tile, _), neighbors: Seq[Option[Tile]]) =>
             val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)
             calc(neighborhoodTile, n, Some(analysisArea))
           }
@@ -71,13 +73,12 @@ trait FocalOperation extends RasterSourceMethods {
                      (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile) =
   {
     val tileOps: Op[Seq[Op[Tile]]] =
-      (rasterSource.rasterDefinition, zipWithNeighbors).map{ case (rd, tiles) =>
-        tiles.map { case (t: Op[Tile], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
+      (rasterSource.rasterDefinition, zipWithNeighbors).map{ case (rd, rastersWithNeighbors) =>
+        rastersWithNeighbors.map { case (r: Op[Raster], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
           //Now we're mapping into tile and it's neighbors, in parallel
-          (t, ns.getNeighbors).map { case (center: Tile, neighbors: Seq[Option[Tile]]) =>
+          (r, ns.getNeighbors).map { case (Raster(center: Tile, extent: Extent), neighbors: Seq[Option[Tile]]) =>
             val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)
-            //TODO - here we get the full RasterExtent, should it be RasterExtent of the tile/neighborhoodTile ?
-            calc(neighborhoodTile, n, Some(analysisArea), rd.rasterExtent)
+            calc(neighborhoodTile, n, Some(analysisArea), RasterExtent(extent, center.cols, center.rows))
           }
         }
       }

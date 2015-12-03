@@ -56,6 +56,9 @@ object Rasterizer {
     foreachCellByGeometry(feature, rasterExtent)(f2)
     ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   }
+
+  def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
+    foreachCellByGeometry(geom, re, false)(f)
    
   /**
    * Perform a zonal summary by invoking a function on each cell under provided features.
@@ -66,21 +69,22 @@ object Rasterizer {
    * While not ideal, this avoids the unavoidable boxing that occurs when a 
    * Function3 returns a primitive value.
    * 
-   * @param geom  Feature for calculation
-   * @param re       RasterExtent to use for iterating through cells
-   * @param f        A function that takes (col: Int, row: Int) and produces nothing
+   * @param geom                  Feature for calculation
+   * @param re                    RasterExtent to use for iterating through cells
+   * @param includeExterior       If this geometry is a polygon or multipolygon, include the exterior in the rasterization
+   * @param f                     A function that takes (col: Int, row: Int) and produces nothing
    */
-  def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
+  def foreachCellByGeometry(geom: Geometry, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit): Unit = {
     geom match {
       case p: Point         => foreachCellByPoint(p, re)(f)
       case p: MultiPoint    => foreachCellByMultiPoint(p, re)(f)
       case p: MultiLine     => foreachCellByMultiLineString(p, re)(f)
       case p: Line          => foreachCellByLineString(p, re)(f)
-      case p: Polygon       => PolygonRasterizer.foreachCellByPolygon(p, re)(f)
-      case p: MultiPolygon  => foreachCellByMultiPolygon(p, re)(f)
+      case p: Polygon       => PolygonRasterizer.foreachCellByPolygon(p, re, includeExterior)(f)
+      case p: MultiPolygon  => foreachCellByMultiPolygon(p, re, includeExterior)(f)
       case p: GeometryCollection => p.geometries.foreach(foreachCellByGeometry(_, re)(f))
       case _ => ()
-    } //TODO - is this really needed? Seems like we can do this with method overloading now
+    }
   }
     
   /**
@@ -116,25 +120,33 @@ object Rasterizer {
     g.lines.foreach(foreachCellByLineString(_, re)(f))
   }
 
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
+    foreachCellByPolygon(p, re, false)(f)
+
   /**
    * Apply function f(col, row, feature) to every cell contained within polygon.
-   * @param p   Polygon used to define zone
-   * @param re  RasterExtent used to determine cols and rows
-   * @param f   Function to apply: f(cols, row, feature)
+   * @param p                     Polygon used to define zone
+   * @param re                    RasterExtent used to determine cols and rows
+   * @param includeExterior       Include the exterior in the rasterization
+   * @param f                     Function to apply: f(cols, row, feature)
    */
-  def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: (Int, Int) => Unit) {
-     PolygonRasterizer.foreachCellByPolygon(p, re)(f)
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit) {
+     PolygonRasterizer.foreachCellByPolygon(p, re, includeExterior)(f)
   }
+
+  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
+    foreachCellByMultiPolygon(p, re, false)(f)
 
   /**
    * Apply function f to every cell contained with MultiPolygon.
    *
-   * @param p   MultiPolygon used to define zone
-   * @param re  RasterExtent used to determine cols and rows
-   * @param f   Function to apply: f(cols, row, feature)
+   * @param p                     MultiPolygon used to define zone
+   * @param re                    RasterExtent used to determine cols and rows
+   * @param includeExterior       Include the exterior in the rasterization
+   * @param f                     Function to apply: f(cols, row, feature)
    */
-  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: (Int, Int) => Unit) {
-    p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re)(f))
+  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit) {
+    p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re, includeExterior)(f))
   }
 
   /**
@@ -147,8 +159,8 @@ object Rasterizer {
     }).toList
 
     for(i <- 1 until cells.size) {
-      foreachCellInGridLine(cells(i-1)._1, 
-                            cells(i-1)._2, 
+      foreachCellInGridLine(cells(i - 1)._1, 
+                            cells(i - 1)._2, 
                             cells(i)._1, 
                             cells(i)._2, line, re, i != cells.size - 1)(f)
     }
@@ -167,14 +179,14 @@ object Rasterizer {
    */
   def foreachCellInGridLine[D](x0: Int, y0: Int, x1: Int, y1: Int, p: Line, re: RasterExtent, skipLast: Boolean = false)
                               (f: (Int, Int) => Unit) = {
-    val dx=math.abs(x1-x0)
-    val sx=if (x0<x1) 1 else -1
-    val dy=math.abs(y1-y0)
-    val sy=if (y0<y1) 1 else -1
+    val dx=math.abs(x1 - x0)
+    val sx=if (x0 < x1) 1 else -1
+    val dy=math.abs(y1 - y0)
+    val sy=if (y0 < y1) 1 else -1
     
     var x = x0
     var y = y0
-    var err = (if (dx>dy) dx else -dy)/2
+    var err = (if (dx>dy) dx else -dy) / 2
     var e2 = err
 
     while(x != x1 || y != y1){

@@ -92,14 +92,14 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this MultiPoint and p.
    */
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this MultiPoint and p.
    */
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**

@@ -56,7 +56,7 @@ trait RenderRasterSourceMethods extends RasterSourceMethods {
     rasterSource.converge.map(_.renderPng(colorBreaks, noDataColor))
 
   def renderPng(ramp: ColorRamp, breaks: Array[Int]): ValueSource[Png] =
-    renderPng(ColorBreaks.assign(breaks, ramp.toArray))
+    renderPng(ColorBreaks(breaks, ramp.toArray))
 
   def renderPng(colors: Array[Int]): ValueSource[Png] =
     rasterSource.converge.map(_.renderPng(colors))

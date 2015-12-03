@@ -1,6 +1,7 @@
 package geotrellis.vector
 
 import geotrellis.vector.reproject._
+import GeomFactory._
 import geotrellis.proj4.CRS
 
 import com.vividsolutions.jts.{geom => jts}
@@ -40,10 +41,30 @@ object ProjectedExtent {
  * An Extent represents a rectangular region of geographic space (with a
  * particular projection). It is expressed in map coordinates.
  */
-case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
+case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) extends Geometry {
+
+  def jtsGeom = 
+    factory.createPolygon(
+      factory.createLinearRing(
+        Array(
+          new jts.Coordinate(xmin, ymax),
+          new jts.Coordinate(xmax, ymax),
+          new jts.Coordinate(xmax, ymin),
+          new jts.Coordinate(xmin, ymin),
+          new jts.Coordinate(xmin, ymax)
+        )
+      ),
+      null
+    )
+    
 
   if (xmin > xmax) throw ExtentRangeError(s"x: $xmin to $xmax")
   if (ymin > ymax) throw ExtentRangeError(s"y: $ymin to $ymax")
+
+  override def isValid: Boolean = true
+  override def centroid: PointOrNoResult = PointResult(center)
+  override def envelope: Extent = this
+  override def interiorPoint: PointOrNoResult = PointResult(center)
 
   val width = xmax - xmin
   val height = ymax - ymin
@@ -245,4 +266,18 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
   def toPolygon(): Polygon = 
     Polygon( Line((xmin, ymin), (xmin, ymax), (xmax, ymax), (xmax, ymin), (xmin, ymin)) )
+
+  override
+  def equals(o: Any): Boolean =
+    o match {
+      case other: Extent => 
+        xmin == other.xmin && ymin == other.ymin &&
+        xmax == other.xmax && ymax == other.ymax
+      case _ => false
+  }
+
+  override
+  def hashCode(): Int = (xmin, ymin, xmax, ymax).hashCode
+
+  override def toString = s"Extent($xmin, $ymin, $xmax, $ymax)"
 }

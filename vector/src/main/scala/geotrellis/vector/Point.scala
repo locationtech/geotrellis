@@ -55,16 +55,85 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Point and g.
    */
-  def &(g: Geometry): PointGeometryIntersectionResult =
+  def &(g: Point): PointOrNoResult =
     intersection(g)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Point and g.
    */
-  def intersection(g: Geometry): PointGeometryIntersectionResult =
+  def intersection(g: Point): PointOrNoResult =
     jtsGeom.intersection(g.jtsGeom)
 
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def &(g: Line): PointOrNoResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def intersection(g: Line): PointOrNoResult =
+    jtsGeom.intersection(g.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def &(g: Polygon): PointOrNoResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def intersection(g: Polygon): PointOrNoResult =
+    jtsGeom.intersection(g.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def &(g: MultiPoint): PointOrNoResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def intersection(g: MultiPoint): PointOrNoResult =
+    jtsGeom.intersection(g.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def &(g: MultiLine): PointOrNoResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def intersection(g: MultiLine): PointOrNoResult =
+    jtsGeom.intersection(g.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def &(g: MultiPolygon): PointOrNoResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Point and g.
+   */
+  def intersection(g: MultiPolygon): PointOrNoResult =
+    jtsGeom.intersection(g.jtsGeom)
 
   // -- Union
 
@@ -137,7 +206,6 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    */
   def union(mp: MultiPolygon): PointMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
-
 
   // -- Difference
 

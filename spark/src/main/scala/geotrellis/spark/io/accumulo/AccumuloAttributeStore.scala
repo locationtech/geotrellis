@@ -44,7 +44,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   def read[T: Format](layerId: LayerId, attributeName: String): T = {
     val values = fetch(Some(layerId), attributeName).toVector
 
-    if(values.size == 0) {
+    if(values.isEmpty) {
       throw new AttributeNotFoundError(attributeName, layerId)
     } else if(values.size > 1) {
       throw new CatalogError(s"Multiple attributes found for $attributeName for layer $layerId")

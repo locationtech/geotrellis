@@ -4,10 +4,10 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
-object Min extends TileIntersectionHandler[Int, Int] {
-  def handlePartialTile(pt: PartialTileIntersection): Int = {
-    val PartialTileIntersection(tile, _, polygon) = pt
-    val rasterExtent = pt.rasterExtent
+object Min extends TileIntersectionHandler[Int] {
+  def handlePartialTile(raster: Raster, polygon: Polygon): Int = {
+    val Raster(tile, _) = raster
+    val rasterExtent = raster.rasterExtent
     var min = NODATA
     Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
       val z = tile.get(col, row)
@@ -16,9 +16,9 @@ object Min extends TileIntersectionHandler[Int, Int] {
     min
   }
 
-  def handleFullTile(ft: FullTileIntersection): Int = {
+  def handleFullTile(tile: Tile): Int = {
     var min = NODATA
-    ft.tile.foreach { (x: Int) =>
+    tile.foreach { (x: Int) =>
       if (isData(x) && (x < min || isNoData(min))) { min = x }
     }
     min
@@ -34,10 +34,10 @@ object Min extends TileIntersectionHandler[Int, Int] {
       }
 }
 
-object MinDouble extends TileIntersectionHandler[Double, Double] {
-  def handlePartialTile(pt: PartialTileIntersection): Double = {
-    val PartialTileIntersection(tile, _, polygon) = pt
-    val rasterExtent = pt.rasterExtent
+object MinDouble extends TileIntersectionHandler[Double] {
+  def handlePartialTile(raster: Raster, polygon: Polygon): Double = {
+    val Raster(tile, _) = raster
+    val rasterExtent = raster.rasterExtent
     var min = Double.NaN
     Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
       val z = tile.getDouble(col, row)
@@ -47,11 +47,10 @@ object MinDouble extends TileIntersectionHandler[Double, Double] {
     min
   }
 
-  def handleFullTile(ft: FullTileIntersection): Double = {
+  def handleFullTile(tile: Tile): Double = {
     var min = Double.NaN
-    ft.tile.foreachDouble { (x: Double) =>
-      if (isData(x) && (x < min || isNoData(min))) { min = x
-      }
+    tile.foreachDouble { (x: Double) =>
+      if (isData(x) && (x < min || isNoData(min))) { min = x }
     }
     min
   }

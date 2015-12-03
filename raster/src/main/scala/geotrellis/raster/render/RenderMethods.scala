@@ -18,6 +18,12 @@ trait RenderMethods extends TileMethods {
   def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): Tile =
     DoubleColorMap(breaksToColors, options).render(tile)
 
+  def color(colorBreaks: ColorBreaks): Tile =
+    colorBreaks.toColorMap.render(tile)
+
+  def color(colorBreaks: ColorBreaks, options: ColorMapOptions): Tile =
+    colorBreaks.toColorMap(options).render(tile)
+
   /** Generate a PNG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -71,13 +77,10 @@ trait RenderMethods extends TileMethods {
 
   private
   def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Png = {
-    val breaks = colorBreaks.limits
-    val colors = colorBreaks.colors
-
     val renderer =
       histogram match {
-        case Some(h) => Renderer(breaks, colors, noDataColor, h)
-        case None => Renderer(breaks, colors, noDataColor)
+        case Some(h) => Renderer(colorBreaks, noDataColor, h)
+        case None => Renderer(colorBreaks, noDataColor)
       }
 
     val r2 = renderer.render(tile)
@@ -85,7 +88,7 @@ trait RenderMethods extends TileMethods {
   }
 
   def renderPng(ramp: ColorRamp, breaks: Array[Int]): Png =
-    renderPng(ColorBreaks.assign(breaks, ramp.toArray))
+    renderPng(ColorBreaks(breaks, ramp.toArray))
 
   def renderPng(colors: Array[Int]): Png = {
     val h = tile.histogram
@@ -95,9 +98,15 @@ trait RenderMethods extends TileMethods {
   def renderPng(colors: Array[Int], numColors: Int): Png =
     renderPng(Color.chooseColors(colors, numColors))
 
-  def renderPng(colors: Array[Int], breaks: Array[Int]): Png =
+  def renderPng(breaks: Array[Int], colors: Array[Int]): Png =
     renderPng(ColorBreaks(breaks, colors), 0)
 
-  def renderPng(colors: Array[Int], breaks: Array[Int], noDataColor: Int): Png =
+  def renderPng(breaks: Array[Int], colors: Array[Int], noDataColor: Int): Png =
+    renderPng(ColorBreaks(breaks, colors), noDataColor)
+
+  def renderPng(breaks: Array[Double], colors: Array[Int]): Png =
+    renderPng(ColorBreaks(breaks, colors), 0)
+
+  def renderPng(breaks: Array[Double], colors: Array[Int], noDataColor: Int): Png =
     renderPng(ColorBreaks(breaks, colors), noDataColor)
 }

@@ -82,20 +82,13 @@ class HillshadeSpec extends FunSuite
       )
 
     val extent = rasterExtent.adjustTo(tileLayout).extent
-
     val rs = RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)
-
     val expected = source.hillshade.get
+
     rs.hillshade.run match {
       case Complete(value, hist) =>
-        // Dont check last col or last row.
-        // Reason is, because the offsetting of the tiles, the tiled version
-        // pulls in NoData's where the non tiled just has the edge value,
-        // so the calculations produce different results. Which makes sense.
-        // So if your going for accuracy don't tile something that create NoData
-        // borders.
-        cfor(0)(_ < expected.rows - 1, _ + 1) { row =>
-          cfor(0)(_ < expected.cols - 1, _ + 1) { col =>
+        cfor(0)(_ < expected.rows, _ + 1) { row =>
+          cfor(0)(_ < expected.cols, _ + 1) { col =>
             withClue (s"Value different at $col, $row: ") {
               val v1 = value.getDouble(col, row)
               val v2 = expected.getDouble(col, row)

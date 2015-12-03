@@ -90,11 +90,11 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
       _.intersection(_)
     }
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
-  def safeIntersection(p: Point): PointGeometryIntersectionResult =
+  def safeIntersection(p: Point): PointOrNoResult =
     try intersection(p)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))

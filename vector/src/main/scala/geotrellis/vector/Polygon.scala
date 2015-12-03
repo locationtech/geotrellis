@@ -27,6 +27,9 @@ object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
     Polygon(jtsGeom)
 
+  def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =
+    apply(Line(exterior), Set())
+
   def apply(exterior: Seq[Point]): Polygon =
     apply(Line(exterior), Set())
 
@@ -136,28 +139,27 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   lazy val perimeter: Double =
     jtsGeom.getLength
 
-
   // -- Intersection
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and p.
    */
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and p.
    */
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
    */
-  def safeIntersection(p: Point): PointGeometryIntersectionResult =
+  def safeIntersection(p: Point): PointOrNoResult =
     try intersection(p)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))

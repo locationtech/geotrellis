@@ -1,93 +1,96 @@
 # GeoTrellis
 
-[![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-*GeoTrellis* is a Scala library and framework for creating processes to work with raster data.
+*GeoTrellis* is a Scala library and framework that uses Spark to work with raster data.  It is released under the Apache 2 License.
 
-#### IO:
-GeoTrellis reads, writes, and operates on raster data as fast as possible. It also has functionality to warp (change the resolution and bounding box of) rasters on loading and throughout the operation sequence.
+GeoTrellis reads, writes, and operates on raster data as fast as possible. It implements many [Map Algebra](http://en.wikipedia.org/wiki/Map_algebra) operations as well as vector to raster or raster to vector operations.
 
-#### Operations:
-GeoTrellis implements many [Map Algebra](http://en.wikipedia.org/wiki/Map_algebra) operations as well as vector to raster or raster to vector operations. This is the heart of GeoTrellis: preforming geospatial operations against raster data in the fastest way possible, no matter the scale.
+GeoTrellis also provides tools to render rasters into PNGs or to store metadata about raster files as JSON. It aims to provide raster processing at web speeds (sub-second or less) with RESTful endpoints as well as provide fast batch processing of large raster data sets.
 
-##### Web Service Framework:
-GeoTrellis provides tools to render rasters into PNGs for web mapping applications, or to convert information about the rasters into JSON format. One of the main goals of GeoTrellis is to provide raster processing at web speeds (sub-10 ms) for RESTful endpoints that can be consumed by web applications. Another goal is to provide fast batch processing of very large raster data.
+Please visit the **[project site](http://geotrellis.io)** for more information as well as some interactive demos.
 
-Please visit our **[documentation page](http://geotrellis.github.com)** for more information.
 
-You can also find more information at:
+##Contact and Support
+You can find more information and talk to developers (let us know what you're working on!) at:
 
-  - IRC:  #geotrellis on freenode. Come say HI, we would love to hear about what you're working on.
-  - The mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
+  - [Gitter](https://gitter.im/geotrellis/geotrellis)
+  - [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
 
-GeoTrellis is available under the Apache 2 license.
 
-More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
-
-[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
-
-## SBT
-
-    scalaVersion := "2.10.3"
-
-    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.9.0-RC1"
-
-## Some sample GeoTrellis code
+## Example
 
 ```scala
-  // Import some libraries and operations we'll use
-  import geotrellis._
-  import geotrellis.source._
+scala> import geotrellis.raster._
+import geotrellis.raster._
 
-  // Set up the rasters and weights we'll use:
-  val r1 = RasterSource("rasterOne") // raster defined in catalog
-  val r2 = RasterSource("rasterTwo")
+scala> import geotrellis.raster.op.focal._
+import geotrellis.raster.op.focal._
 
-  // This will define a RasterSource that is dthe addition of the
-  // first raster with each cell multiplied
-  // by 5, and the second raster with each cell multiplied by 2.
-  // To understand what it means for a raster to be multiplied by an integer or
-  // for two rasters to be added, see Map Algebra documentation,
-  // GeoTrellis documentation or ask the mailing list/IRC.
-  val added  = (r1*5) + (r2*2)
+scala> val nd = NODATA
+nd: Int = -2147483648
 
-  // This divides the raster by the total weight,
-  // which will give us the the final Weighted Overlay
-  // (also called a Suitability Map).
-  val weightedOverlay = added / (5+2)
+scala> val input = Array[Int](
+     |         nd, 7, 1, 1, 3, 5, 9, 8, 2,
+     |         9, 1, 1, 2, 2, 2, 4, 3, 5,
+     |
+     |         3, 8, 1, 3, 3, 3, 1, 2, 2,
+     |         2, 4, 7, 1, nd, 1, 8, 4, 3)
+input: Array[Int] = Array(-2147483648, 7, 1, 1, 3, 5, 9, 8, 2, 9, 1, 1, 2, 
+2, 2, 4, 3, 5, 3, 8, 1, 3, 3, 3, 1, 2, 2, 2, 4, 7, 1, -2147483648, 1, 8, 4, 3)
 
-  // Now we want to render this Weighted Overlay
-  // as part of a WMS service. We could run the
-  // renderPng operation with the default color ramp
-  // (which is a Blue to Red color ramp descriped
-  // at http://geotrellis.github.io/overviews/rendering.html).
-  val rendered = weightedOverlay.renderPng
+scala> val iat = IntArrayTile(input, 9, 4)  // 9 and 4 here specify columns and rows
+iat: geotrellis.raster.IntArrayTile = IntArrayTile([I@278434d0,9,4)
 
-  // At this point we've only describe the work that
-  // we wish to be done. Once we call 'run' on the souce,
-  // we will invoke the chain of commands that we have been
-  // building up, from loading the rasters from disk to
-  // rendering the PNG of the wieghted overlay.
+// The asciiDraw method is mostly useful when you're working with small tiles
+// which can be taken in at a glance
+scala> iat.asciiDraw()
+res0: String =
+"    ND     7     1     1     3     5     9     8     2
+     9     1     1     2     2     2     4     3     5
+     3     8     1     3     3     3     1     2     2
+     2     4     7     1    ND     1     8     4     3
 
-  rendered.run match {
-    process.Complete(png, history) =>
-      // return the PNG as an Array of Bytes
-      // for spray:
-      respondWithMediaType(MediaTypes.`image/png`) {
-        complete { png }
-      }
-    process.Failure(message, history) =>
-      // handle the failure.
-      // for spray:
-      failWith { new RuntimeException(message) }
-  }
- ```
+"
+
+scala> val focalNeighborhood = Square(1)  // a 3x3 square neighborhood
+focalNeighborhood: geotrellis.raster.op.focal.Square =
+ O  O  O
+ O  O  O
+ O  O  O
+
+scala> val meanTile = iat.focalMean(focalNeighborhood)
+meanTile: geotrellis.raster.Tile = DoubleArrayTile([D@7e31c125,9,4)
+
+scala> meanTile.getDouble(0, 0)  // Should equal (1 + 7 + 9) / 3
+res1: Double = 5.666666666666667
+```
+
+## Index of ReadMe docs
+Throughout this repo, you'll find readme documents specific to particular the modules in which they're found.
+
+1. [deploy-ec2](./scripts/deploy-ec2) - deploying GeoTrellis on AWS EC2
+2. [`geotrellis.graph`](./graph) - experimental code for converting to/from RasterRDDs and GraphX
+3. [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4) - converting raster data between projections
+4. [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster) - documentation about creating and using raster data
+  1. [`geotrellis.raster.imagery`](./raster/src/main/scala/geotrellis/raster/imagery) - cloud removal with multi-band imagery
+  2. [`geotrellis.raster.interpolation`](./raster/src/main/scala/geotrellis/raster/interpolation) - Kriging interpolation from raster data
+  3. [`geotrellis.raster.io`](./raster/src/main/scala/geotrellis/raster/io)
+  4. [`geotrellis.raster.op`](./raster/src/main/scala/geotrellis/raster/op) - Map Algebra operations
+  5. [`geotrellis.raster.render`](./raster/src/main/scala/geotrellis/raster/render) - rendering results as PNGs
+5. [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector) - creating and using vector data
+  1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation) - Kriging interpoloation from vector point data
+  2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/) - parsing vector data as GeoJSON
+6. [spark-etl](./spark-etl) - ingesting raster data and storing as Raster RDDs using Spark
+
+
 
 ## API Reference
 
-You can find *Scaladocs* for the latest version of the project here:
+*Scaladocs* for the latest version of the project can be found here:
 
 [http://geotrellis.github.com/scaladocs/latest/#geotrellis.package](http://geotrellis.github.com/scaladocs/latest/#geotrellis.package)
+
 
 ## Contributors
 
@@ -103,7 +106,7 @@ You can find *Scaladocs* for the latest version of the project here:
  - Mark Landry
  - Walt Chen
  - Eugene Cheipesh
- 
+
 ## Contributing
 
 Feedback and contributions to the project, no matter what kind, are always very welcome. A CLA is required for contribution, see the [CLA FAQ](https://github.com/geotrellis/geotrellis/wiki/Contributor-license-agreement-FAQ) on the wiki for more information. Please refer to the [Scala style guide](http://docs.scala-lang.org/style/) for formatting patches to the codebase.

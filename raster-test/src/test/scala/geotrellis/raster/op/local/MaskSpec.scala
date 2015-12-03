@@ -84,6 +84,23 @@ class MaskSpec extends FunSpec
         }
     }
 
+    it ("should mask and included intersecting cell centers if including exterior") {
+
+      val tile = IntArrayTile((0 to 16).toArray, 4, 4)
+      val extent = Extent(0, 0, 4, 4)
+      val re = RasterExtent(tile, extent)
+
+      val mask = Polygon(Line( (0.5, 0.5), (0.5, 3.5), (3.5, 3.5), (3.5, 0.5), (0.5, 0.5)))
+      val masked = tile.mask(extent, mask, includeExterior = true)
+
+      masked.foreach { (x, y, v) =>
+        val expected =
+          if (mask.intersects(re.gridToMap(x, y))) tile.get(x, y)
+          else NODATA
+        v should be(expected)
+      }
+    }
+
     it ("should mask using random geometry") {
 
       val tile = positiveIntegerRaster
@@ -99,9 +116,11 @@ class MaskSpec extends FunSpec
       def check(mask: Polygon): Unit =
         tile.mask(worldExt, mask).foreach { (x, y, v) =>
           val expected =
-            if (mask.contains(re.gridToMap(x, y))) tile.get(x, y)
+            if (mask.intersects(re.gridToMap(x, y))) tile.get(x, y)
             else NODATA
-          v should be(expected)
+          withClue(s"\n\nMASK: ${mask.toGeoJson}\nRASTEREXT $re\n\n") {
+            v should be(expected)
+          }
         }
 
       for {

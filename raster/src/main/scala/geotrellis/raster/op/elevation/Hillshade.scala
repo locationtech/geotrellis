@@ -17,6 +17,9 @@ import scala.math._
  *
  * This operation uses Horn's method for computing hill shading.
  *
+ * If Hillshade operations encounters NoData in its neighborhood, that neighborhood cell well be treated as having
+ * the same elevation as the focal cell.
+ *
  * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]
  */
 object Hillshade {

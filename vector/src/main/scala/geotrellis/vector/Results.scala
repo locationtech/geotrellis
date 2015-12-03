@@ -92,17 +92,6 @@ object GeometryResult {
 
 // -- Intersection
 
-abstract sealed trait PointGeometryIntersectionResult extends GeometryResultMethods
-object PointGeometryIntersectionResult {
-  implicit def jtsToResult(geom: jts.Geometry): PointGeometryIntersectionResult =
-    geom match {
-      case g: jts.Geometry if g.isEmpty => NoResult
-      case p: jts.Point => PointResult(p)
-      case _ =>
-        sys.error(s"Unexpected result for Point-Geometry intersection: ${geom.getGeometryType}")
-    }
-}
-
 abstract sealed trait OneDimensionAtLeastOneDimensionIntersectionResult extends GeometryResultMethods
 object OneDimensionAtLeastOneDimensionIntersectionResult {
   implicit def jtsToResult(geom: jts.Geometry): OneDimensionAtLeastOneDimensionIntersectionResult =
@@ -695,6 +684,7 @@ object MultiPolygonMultiPolygonSymDifferenceResult {
 
 
 // -- Misc.
+
 abstract sealed trait PointOrNoResult extends GeometryResultMethods
 object PointOrNoResult {
   implicit def jtsToResult(geom: jts.Geometry): PointOrNoResult =
@@ -707,7 +697,6 @@ object PointOrNoResult {
 }
 
 case object NoResult extends GeometryResult
-    with PointGeometryIntersectionResult
     with OneDimensionAtLeastOneDimensionIntersectionResult
     with TwoDimensionsTwoDimensionsIntersectionResult
     with MultiPointAtLeastOneDimensionIntersectionResult
@@ -743,7 +732,6 @@ case object NoResult extends GeometryResult
 }
 
 case class PointResult(geom: Point) extends GeometryResult
-    with PointGeometryIntersectionResult
     with OneDimensionAtLeastOneDimensionIntersectionResult
     with TwoDimensionsTwoDimensionsIntersectionResult
     with MultiPointAtLeastOneDimensionIntersectionResult

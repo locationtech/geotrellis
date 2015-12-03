@@ -24,17 +24,17 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean=false)(f: Callback): Unit = 
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean = false)(f: Callback): Unit = 
     if (p.intersects(re.extent)) {
 
       val (edges, rowMinOrg, rowMaxOrg) = {
         val TestLineSet(lines, rowMin, rowMax) =
           if(p.hasHoles) {
             (p.exterior :: p.holes.toList).foldLeft(TestLineSet.EMPTY) { (acc, l) =>
-              acc.merge(TestLineSet(l, re))
+              acc.merge(TestLineSet(l, re, includeExterior))
             }
           } else {
-            TestLineSet(p.exterior, re)
+            TestLineSet(p.exterior, re, includeExterior)
           }
         (lines.groupBy(_.rowMin), rowMin, rowMax)
        }
