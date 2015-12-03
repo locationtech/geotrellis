@@ -16,15 +16,15 @@ class LayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: Cla
   (implicit val cons: ContainerConstructor[K, V, Container]) {
 
   def copy(from: LayerId, to: LayerId): Unit = {
+    if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
+    if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
+    implicit val mdFormat = cons.metaDataFormat
+    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
+      attributeStore.readLayerAttributes[Header, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](from)
+
+    val rdd = layerReader.read(from)
     try {
-      if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
-      if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
-      implicit val mdFormat = cons.metaDataFormat
-      val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-        attributeStore.readLayerAttributes[Header, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](from)
-
-      layerWriter.write(to, layerReader.read(from))
-
+      layerWriter.write(to, rdd)
       attributeStore.writeLayerAttributes[Header, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](
         to, existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
       )
