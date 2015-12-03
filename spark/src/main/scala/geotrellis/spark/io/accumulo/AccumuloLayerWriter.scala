@@ -18,22 +18,20 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Conta
   extends Writer[LayerId, Container with RDD[(K, V)]] {
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
-    try {
-      val header =
-        AccumuloLayerHeader(
-          keyClass = classTag[K].toString(),
-          valueClass = classTag[V].toString(),
-          tileTable = table
-        )
-      val metaData = cons.getMetaData(rdd)
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
+    val header =
+      AccumuloLayerHeader(
+        keyClass = classTag[K].toString(),
+        valueClass = classTag[V].toString(),
+        tileTable = table
+      )
+    val metaData = cons.getMetaData(rdd)
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+    val keyIndex = keyIndexMethod.createIndex(keyBounds)
+    val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
 
+    try {
       implicit val mdFormat = cons.metaDataFormat
       attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, rddWriter.schema)
-
-      val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
-
       rddWriter.write(rdd, table, columnFamily(id), getRowId, oneToOne = false)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)

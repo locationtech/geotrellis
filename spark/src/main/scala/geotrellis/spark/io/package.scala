@@ -28,8 +28,8 @@ package object io {
   class LayerWriteError(layerId: LayerId)
     extends CatalogError(s"Failed to write $layerId")
 
-  class LayerUpdateError(layerId: LayerId)
-    extends CatalogError(s"Failed to update $layerId")
+  class LayerUpdateError(layerId: LayerId, message: String = "")
+    extends CatalogError(s"Failed to update $layerId $message")
 
   class LayerDeleteError(layerId: LayerId)
     extends CatalogError(s"Failed to delete $layerId")

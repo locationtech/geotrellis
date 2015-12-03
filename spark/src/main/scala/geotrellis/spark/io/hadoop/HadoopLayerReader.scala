@@ -32,27 +32,26 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
   val defaultNumPartitions = sc.defaultParallelism
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
-    try {
-      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-      implicit val mdFormat = cons.metaDataFormat
-      val (header, metadata, keyBounds, keyIndex, writerSchema) =
-        attributeStore.readLayerAttributes[HadoopLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
-
-      val layerPath = header.path
-      val queryKeyBounds = rasterQuery(metadata, keyBounds)
-
-      val rdd: RDD[(K, V)] =
-        if (queryKeyBounds == Seq(keyBounds)) {
-          rddReader.readFully(layerPath)
-        } else {
-          val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-          rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
-        }
-
-      cons.makeContainer(rdd, keyBounds, metadata)
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    implicit val mdFormat = cons.metaDataFormat
+    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
+
+    val layerPath = header.path
+    val queryKeyBounds = rasterQuery(metadata, keyBounds)
+
+    val rdd: RDD[(K, V)] =
+      if (queryKeyBounds == Seq(keyBounds)) {
+        rddReader.readFully(layerPath)
+      } else {
+        val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+        rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
+      }
+
+    cons.makeContainer(rdd, keyBounds, metadata)
   }
 }
 
