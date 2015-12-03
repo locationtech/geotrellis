@@ -1,7 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.raster.Tile
-import geotrellis.spark.{LayerId, OnlyIfCanRunSpark, SpaceTimeKey, SpatialKey}
+import geotrellis.spark._
 import spray.json.JsonFormat
 
 trait LayerCopySpaceTimeTileTests[LayerHeader] { self: PersistenceSpec[SpaceTimeKey, Tile] with OnlyIfCanRunSpark =>

@@ -8,12 +8,12 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-/** Too heavy class, +weird can happen due to possible keyIndexMethod difference */
-class LayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container <: RDD[(K, V)]]
+/** Weird can happen due to possible keyIndexMethod difference */
+class LayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
   (attributeStore: AttributeStore[JsonFormat],
    layerReader: FilteringLayerReader[LayerId, K, Container],
    layerWriter: Writer[LayerId, Container with RDD[(K, V)]])
-  (implicit val cons: ContainerConstructor[K, V, Container]) {
+  (implicit val cons: ContainerConstructor[K, V, Container], containerEv: Container => Container with RDD[(K, V)]) {
 
   def copy(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
@@ -33,4 +33,3 @@ class LayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: Cla
     }
   }
 }
-

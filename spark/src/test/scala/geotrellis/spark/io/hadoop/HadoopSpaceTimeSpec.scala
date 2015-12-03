@@ -25,28 +25,20 @@ abstract class HadoopSpaceTimeSpec
 
 class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.byYear)
-  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
-    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
-  )
+  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterRDD](outputLocal, reader, writer)
 }
 
 class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 })
-  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
-    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
-  )
+  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterRDD](outputLocal, reader, writer)
 }
 
 class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))
-  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
-    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
-  )
+  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterRDD](outputLocal, reader, writer)
 }
 
 class HadoopSpaceTimeHilbertWithResolutionSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](outputLocal,  HilbertKeyIndexMethod(2))
-  lazy val copier = new LayerCopier[HadoopLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
-    HadoopAttributeStore(new Path(outputLocal, "attributes")), reader, writer
-  )
+  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterRDD](outputLocal, reader, writer)
 }

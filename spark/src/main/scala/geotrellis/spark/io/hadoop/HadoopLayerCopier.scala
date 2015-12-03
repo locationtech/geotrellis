@@ -11,20 +11,26 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object HadoopLayerCopier {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_] <: RDD[(K, V)]]
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]]
   (rootPath: Path, indexMethod: KeyIndexMethod[K])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]], format: HadoopFormat[K, V]): LayerCopier[HadoopLayerHeader, K, V, Container[K]] =
+  (implicit sc: SparkContext,
+          cons: ContainerConstructor[K, V, Container[K]],
+        format: HadoopFormat[K, V],
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[HadoopLayerHeader, K, V, Container[K]] =
     new LayerCopier[HadoopLayerHeader, K, V, Container[K]](
       attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration),
       layerReader = HadoopLayerReader[K, V, Container](rootPath),
       layerWriter = HadoopLayerWriter[K, V, Container](rootPath, indexMethod)
     )
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_] <: RDD[(K, V)]]
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]]
   (rootPath: Path,
    layerReader: HadoopLayerReader[K, V, Container[K]],
    layerWriter: HadoopLayerWriter[K, V, Container[K]])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]], format: HadoopFormat[K, V]): LayerCopier[HadoopLayerHeader, K, V, Container[K]] =
+  (implicit sc: SparkContext,
+          cons: ContainerConstructor[K, V, Container[K]],
+        format: HadoopFormat[K, V],
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[HadoopLayerHeader, K, V, Container[K]] =
     new LayerCopier[HadoopLayerHeader, K, V, Container[K]](
       attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration),
       layerReader = layerReader,

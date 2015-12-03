@@ -30,20 +30,20 @@ abstract class AccumuloSpaceTimeSpec
 
 class AccumuloSpaceTimeZCurveByYearSpec extends AccumuloSpaceTimeSpec {
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod.byYear, SocketWriteStrategy())
-  lazy val copier = new LayerCopier[AccumuloLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](AccumuloAttributeStore(instance.connector), reader, writer)
+  lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpaceTimeZCurveByFuncSpec extends AccumuloSpaceTimeSpec {
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, SocketWriteStrategy())
-  lazy val copier = new LayerCopier[AccumuloLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](AccumuloAttributeStore(instance.connector), reader, writer)
+  lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpaceTimeHilbertSpec extends AccumuloSpaceTimeSpec {
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), SocketWriteStrategy())
-  lazy val copier = new LayerCopier[AccumuloLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](AccumuloAttributeStore(instance.connector), reader, writer)
+  lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpaceTimeHilbertWithResolutionSpec extends AccumuloSpaceTimeSpec {
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles",  HilbertKeyIndexMethod(2), SocketWriteStrategy())
-  lazy val copier = new LayerCopier[AccumuloLayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](AccumuloAttributeStore(instance.connector), reader, writer)
+  lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }

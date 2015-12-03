@@ -67,6 +67,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
       readV should be equals expectedV
     }
 
+    // TODO: more specific exception type?
     it("should delete a layer") {
       deleter.delete(deleteLayerId)
       intercept[LayerNotFoundError] {
