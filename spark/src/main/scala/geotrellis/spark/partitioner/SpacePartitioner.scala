@@ -53,6 +53,9 @@ case class SpacePartitioner[K](bounds: Option[KeyBounds[K]], r: Int)
         this
     }
 
+  def intersect(other: KeyBounds[K]): SpacePartitioner[K] =
+    SpacePartitioner(bounds flatMap { _ intersect other }, r)
+
   def intersect(other: SpacePartitioner[K]): SpacePartitioner[K] =
     other.bounds match {
       case Some(b) =>
@@ -69,13 +72,13 @@ case class SpacePartitioner[K](bounds: Option[KeyBounds[K]], r: Int)
 }
 
 object SpacePartitioner {
-  def apply[K: GridKey: ClassTag](): SpacePartitioner[K] =
+  def apply[K: GridKey](): SpacePartitioner[K] =
     SpacePartitioner(None, 8)
 
-  def apply[K: GridKey: ClassTag](bounds: KeyBounds[K], r: Int): SpacePartitioner[K] =
+  def apply[K: GridKey](bounds: KeyBounds[K], r: Int): SpacePartitioner[K] =
     SpacePartitioner(Some(bounds), r)
 
-  def apply[K: GridKey: ClassTag](bounds: KeyBounds[K]): SpacePartitioner[K] =
+  def apply[K: GridKey](bounds: KeyBounds[K]): SpacePartitioner[K] =
     SpacePartitioner(Some(bounds), 8)
 
   def getPartitioner[K: ClassTag](rdd: RDD[_ <: Product2[K, _]]): Option[SpacePartitioner[K]] = {

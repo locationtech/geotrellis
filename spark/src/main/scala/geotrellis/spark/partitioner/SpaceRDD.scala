@@ -12,14 +12,19 @@ class SpaceRDD[K, V](val rdd: RDD[(K, V)], val part: SpacePartitioner[K])(implic
   extends RDD[(K, V)](
     rdd match {
       case rdd: SpaceRDD[_, _] =>
-        if (part != rdd.part)
+        if (part != rdd.part) {
           new ReorderedSpaceRDD(rdd, part)
-        else
+        } else {
           rdd
+        }
       case rdd: RDD[_] =>
         new ShuffledRDD(rdd.filter{ t => part.containsKey(t._1) }, part)
     }
   ) with LazyLogging {
+
+  def this(rdd: RDD[(K, V)], bounds: KeyBounds[K])(implicit kt: ClassTag[K], gk: GridKey[K]) = {
+    this(rdd, SpacePartitioner(bounds))
+  }
 
   override def compute(split: Partition, context: TaskContext) =
     firstParent[(K, V)].iterator(split, context)
@@ -58,6 +63,13 @@ class SpaceRDD[K, V](val rdd: RDD[(K, V)], val part: SpacePartitioner[K])(implic
       }.asInstanceOf[RDD[(K, (V,W))]]
 
     new SpaceRDD[K, (V, W)](rdd, joinPart)
+  }
+
+  def filter(bounds: KeyBounds[K]): SpaceRDD[K, V] = {
+    val filterPart = part intersect bounds
+    val rdd: RDD[(K, V)] = new ReorderedSpaceRDD(this, filterPart)
+    val filtered = rdd.filter{ r => bounds.includes(r._1) }
+    new SpaceRDD(filtered, filterPart)
   }
 }
 
