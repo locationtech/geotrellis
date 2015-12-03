@@ -8,10 +8,18 @@ import org.apache.spark.rdd._
 import scala.reflect._
 
 
-class SpaceRDD[K: ClassTag, V] private (val rdd: RDD[(K, V)], val part: SpacePartitioner[K])
-  extends RDD[(K, V)](new ShuffledRDD(rdd.filter{ t => part.containsKey(t._1) }, part)) with LazyLogging {
-
-  def bounds = part.bounds
+class SpaceRDD[K, V](val rdd: RDD[(K, V)], val part: SpacePartitioner[K])(implicit kt: ClassTag[K])
+  extends RDD[(K, V)](
+    rdd match {
+      case rdd: SpaceRDD[_, _] =>
+        if (part != rdd.part)
+          new ReorderedSpaceRDD(rdd, part)
+        else
+          rdd
+      case rdd: RDD[_] =>
+        new ShuffledRDD(rdd.filter{ t => part.containsKey(t._1) }, part)
+    }
+  ) with LazyLogging {
 
   override def compute(split: Partition, context: TaskContext) =
     firstParent[(K, V)].iterator(split, context)
@@ -19,11 +27,13 @@ class SpaceRDD[K: ClassTag, V] private (val rdd: RDD[(K, V)], val part: SpacePar
   override def getPartitions: Array[Partition] =
     firstParent[(K, V)].partitions
 
+  override val partitioner: Option[Partitioner] = Some(part)
+
   def leftOuterJoin[W](right: RDD[(K, W)]): SpaceRDD[K, (V, Option[W])] = {
     val rdds = List(this, right)
 
     val rdd =
-      new SpatialCoGroupRDD[K](rdds, part)
+      SpatialCoGroupRDD[K](rdds, part)
         .flatMapValues { case Array(l, r) =>
         if (l.isEmpty)
           Iterator.empty
@@ -37,28 +47,27 @@ class SpaceRDD[K: ClassTag, V] private (val rdd: RDD[(K, V)], val part: SpacePar
   }
 
   def join[W](right: SpaceRDD[K, W]): SpaceRDD[K, (V, W)] = {
-    part intersect right.part match {
-      case Some(joinPart) =>
-        val rdd = new SpatialCoGroupRDD[K](List(this, right), joinPart)
-          .flatMapValues { case Array(l, r) =>
-            if (l.isEmpty || r.isEmpty)
-              Iterator.empty
-            else
-              for (v <- l.iterator; w <- r.iterator) yield (v, w)
-          }.asInstanceOf[RDD[(K, (V,W))]]
+    val joinPart = part intersect right.part
 
-        new SpaceRDD[K, (V, W)](rdd, joinPart)
+    val rdd = SpatialCoGroupRDD[K](List(this, right), joinPart)
+      .flatMapValues { case Array(l, r) =>
+        if (l.isEmpty || r.isEmpty)
+          Iterator.empty
+        else
+          for (v <- l.iterator; w <- r.iterator) yield (v, w)
+      }.asInstanceOf[RDD[(K, (V,W))]]
 
-      case None =>
-        ???
-        //sparkContext.emptyRDD
-    }
+    new SpaceRDD[K, (V, W)](rdd, joinPart)
   }
 }
 
 object SpaceRDD {
   def apply[K: Boundable: GridKey: ClassTag, V](rdd: RDD[(K, V)], bounds: KeyBounds[K]): SpaceRDD[K, V] = {
-    val part = new SpacePartitioner(bounds)
+    val part = SpacePartitioner(bounds)
+    new SpaceRDD(rdd, part)
+  }
+
+  def apply[K: ClassTag, V](rdd: RDD[(K, V)], part: SpacePartitioner[K]): SpaceRDD[K, V] = {
     new SpaceRDD(rdd, part)
   }
 }

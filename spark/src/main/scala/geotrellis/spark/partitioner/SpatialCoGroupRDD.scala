@@ -5,34 +5,37 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-private [partitioner]
-class SpatialCoGroupRDD[K](rdds: Seq[RDD[_ <: Product2[K, _]]], part: SpacePartitioner[K]) extends CoGroupedRDD[K](rdds, part) {
-  override def getDependencies: Seq[Dependency[_]] = {
-    rdds
-      .map { rdd: RDD[_ <: Product2[K, _]] =>
-      if (rdd.partitioner == Some(part)) {
-        logDebug("Adding one-to-one dependency with " + rdd)
-        new OneToOneDependency(rdd)
-      } else {
-        logDebug("Adding shuffle dependency with " + rdd)
-        new ShuffleDependency[K, Any, Any](rdd.filter(r => part.containsKey(r._1)), part, None)
-      }
-    }
-  }
-}
+//class SpatialCoGroupRDD[K: ClassTag](_rdds: Seq[RDD[_ <: Product2[K, _]]], part: SpacePartitioner[K])
+//  extends CoGroupedRDD[K](_rdds.map{ rdd => SpatialCoGroupRDD.reorder(rdd, part)}, part) {
+//  override def getDependencies: Seq[Dependency[_]] = {
+//    _rdds
+//      .map { rdd: RDD[_ <: Product2[K, _]] =>
+//      if (rdd.partitioner == Some(part)) {
+//        logInfo("Adding one-to-one dependency with " + rdd)
+//        new OneToOneDependency(rdd)
+//      } else {
+//        logInfo("Adding shuffle dependency with " + rdd)
+//        new ShuffleDependency[K, Any, Any](rdd.filter(r => part.containsKey(r._1)), part, None)
+//      }
+//    }
+//  }
+//}
 
 object SpatialCoGroupRDD {
-  def apply[K: ClassTag, V](rdds: Seq[RDD[(K, V)]], part: SpacePartitioner[K]) = {
-    val reorderedRdds =
-      rdds.map { rdd =>
-        rdd.partitioner match {
-          case Some(p: SpacePartitioner[K]) =>
-            rdd.partitionBy(part)
-          case _ =>
-            rdd // this is going to end up being a ShuffleDependency
-        }
-      }
-
-    new SpatialCoGroupRDD(reorderedRdds, part)
+  def apply[K](_rdds: Seq[RDD[_ <: Product2[K, _]]], part: SpacePartitioner[K]) = {
+    val reordered = _rdds.map{ rdd => SpatialCoGroupRDD.reorder(rdd, part)}
+    new CoGroupedRDD[K](reordered, part)
   }
+
+  def reorder[K](rdd: RDD[_ <: Product2[K, _]], part: SpacePartitioner[K]): RDD[_ <: Product2[K, _]] = {
+    rdd match {
+      case rdd: SpaceRDD[K, Any] @unchecked =>
+        if (part != rdd.part)
+          new ReorderedSpaceRDD[K, Any](rdd, part)
+        else
+          rdd.asInstanceOf[RDD[Product2[K, _]]]
+      case rdd: RDD[Product2[K,_] @unchecked] =>
+        new ShuffledRDD(rdd.filter{ t => part.containsKey(t._1) }, part)
+    }
+  }.asInstanceOf[RDD[Product2[K, _]]]
 }

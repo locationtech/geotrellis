@@ -9,49 +9,24 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
-/**
- * This partitioner can not be used with default spark operations because it breaks Partitioner semantics.
- * Spark Partitioner assumes that all instances of K can be assigned to a partition where as SpacePartitioner
- * only partitions keys within the KeyBounds.
- *
- *
- * @param bounds  Bounds of the region we're partitioning
- */
-case class SpacePartitioner[K: ClassTag](bounds: KeyBounds[K], r: Int = 4)
-    (implicit gridKey: GridKey[K], boundable: Boundable[K]) extends Partitioner {
+case class SpacePartitioner[K](bounds: Option[KeyBounds[K]], r: Int)
+    (implicit gridKey: GridKey[K]) extends Partitioner {
 
-  val index: KeyIndex[K] = SpacePartitioner.gridKeyIndex(gridKey)
+  private val index: KeyIndex[K] = SpacePartitioner.gridKeyIndex(gridKey)
 
-  val regions = partitionBounds(bounds)
-  //  println(s"Indexed $bounds with ${regions.length} partitions")
-
-  def numPartitions = regions.length
-
-  def partitionBounds(b: KeyBounds[K]): Array[Long] = {
+  private def partitionBounds(b: KeyBounds[K]): Array[Long] = {
     for {
       (start, end) <- index.indexRanges(b)
       p <- (start >> r) to (end >> r)
     } yield p
   }.distinct.toArray
 
-  /** Find index of given prefix/region in this partitioner, -1 if prefix does not exist */
-  def regionIndex(region: Long): Option[Int] = {
-    // Note: Consider future design where region can overlap several partitions, would change Option -> List
-    val i = regions.indexOf(region)
-    if (i > -1) Some(i) else None
+  val regions: Array[Long] = bounds match {
+    case Some(b) => partitionBounds(b)
+    case None => Array.empty
   }
 
-  /** Inspect partitions in another partitioner and return array of indexes for those partitions that exist here */
-  def alignPartitions(other: SpacePartitioner[K]): Array[Int] = {
-    // TODO: unused
-    val overlap = new ArrayBuffer[Int]
-    for {
-      region <- other.regions
-      idx <- regionIndex(region)
-    } overlap += idx
-
-    overlap.toArray
-  }
+  def numPartitions = regions.length
 
   def getPartition(key: Any): Int = {
     val i = index.toIndex(key.asInstanceOf[K])
@@ -71,23 +46,38 @@ case class SpacePartitioner[K: ClassTag](bounds: KeyBounds[K], r: Int = 4)
   }
 
   def combine(other: SpacePartitioner[K]): SpacePartitioner[K] =
-    SpacePartitioner(boundable.combine(bounds, other.bounds))
+    other.bounds match {
+      case Some(b) =>
+        SpacePartitioner(bounds map { _ combine b }, r)
+      case None =>
+        this
+    }
 
-  def intersect(other: SpacePartitioner[K]): Option[SpacePartitioner[K]] =
-    for ( bounds <- boundable.intersect(bounds, other.bounds))
-      yield SpacePartitioner(bounds)
+  def intersect(other: SpacePartitioner[K]): SpacePartitioner[K] =
+    other.bounds match {
+      case Some(b) =>
+        SpacePartitioner(bounds flatMap { _ intersect b }, r)
+      case None =>
+        other
+    }
 
-  override def equals(other: Any): Boolean = other match {
-    case part: SpacePartitioner[K] if part.r == r =>
-      val ret = part.regions sameElements regions
-      if (ret) println("REPORTING EQUALITY")
-      ret
-    case _ =>
-      false
+  def regionIndex(region: Long): Option[Int] = {
+    // Note: Consider future design where region can overlap several partitions, would change Option -> List
+    val i = regions.indexOf(region)
+    if (i > -1) Some(i) else None
   }
 }
 
 object SpacePartitioner {
+  def apply[K: GridKey: ClassTag](): SpacePartitioner[K] =
+    SpacePartitioner(None, 8)
+
+  def apply[K: GridKey: ClassTag](bounds: KeyBounds[K], r: Int): SpacePartitioner[K] =
+    SpacePartitioner(Some(bounds), r)
+
+  def apply[K: GridKey: ClassTag](bounds: KeyBounds[K]): SpacePartitioner[K] =
+    SpacePartitioner(Some(bounds), 8)
+
   def getPartitioner[K: ClassTag](rdd: RDD[_ <: Product2[K, _]]): Option[SpacePartitioner[K]] = {
     if (rdd.partitioner.nonEmpty && rdd.partitioner.get.isInstanceOf[SpacePartitioner[K]]) {
       rdd.partitioner.asInstanceOf[Option[SpacePartitioner[K]]]
