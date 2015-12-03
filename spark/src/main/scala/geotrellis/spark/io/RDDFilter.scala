@@ -57,7 +57,7 @@ object Intersects {
   implicit def forKeyBounds[K: Boundable, M] =
     new RDDFilter[K, Intersects.type, KeyBounds[K], M] {
       def apply(metadata: M, kb1: KeyBounds[K], kb2: KeyBounds[K]) = {
-        implicitly[Boundable[K]].intersect(kb2, kb1)
+        kb2 intersect kb1
       }
     }
 

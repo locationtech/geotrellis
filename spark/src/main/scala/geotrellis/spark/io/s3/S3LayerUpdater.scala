@@ -32,7 +32,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
       val boundable = implicitly[Boundable[K]]
       val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
 
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
+      if (!(existingKeyBounds includes keyBounds.minKey) || (existingKeyBounds includes keyBounds.maxKey))
         throw new OutOfKeyBoundsError(id)
 
       val prefix = existingHeader.key
