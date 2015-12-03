@@ -6,6 +6,7 @@ import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.util.Random
 import com.amazonaws.ClientConfiguration
 
@@ -14,7 +15,12 @@ trait S3Client extends LazyLogging {
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
   
   def listObjects(bucketName: String, prefix: String): ObjectListing =          
-      listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null));
+    listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null))
+
+  def listKeys(bucketName: String, prefix: String): Seq[String] =
+    listKeys(new ListObjectsRequest(bucketName, prefix, null, null, null))
+
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String]
 
   def getObject(getObjectRequest: GetObjectRequest): S3Object
 
@@ -34,9 +40,13 @@ trait S3Client extends LazyLogging {
   def putObject(bucketName: String, key: String, bytes: Array[Byte]): PutObjectResult =
     putObject(bucketName, key, bytes, new ObjectMetadata())
 
+  def readBytes(bucketName: String, key: String): Array[Byte] =
+    readBytes(new GetObjectRequest(bucketName, key))
+
+  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =          
-      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys));
+      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
     new Iterator[S3ObjectSummary] {      
@@ -86,11 +96,46 @@ class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) e
     s3client.listObjects(listObjectsRequest)
   }
 
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = {
+    var listing: ObjectListing = null
+    val result = mutable.ListBuffer[String]()
+    do {
+      listing = s3client.listObjects(listObjectsRequest)
+      // avoid including "directories" in the input split, can cause 403 errors on GET
+      result ++= listing.getObjectSummaries.asScala.map(_.getKey).filterNot(_ endsWith "/")
+      listObjectsRequest.setMarker(listing.getNextMarker)
+    } while (listing.isTruncated)
+
+    result.toSeq
+  }
+
   def getObject(getObjectRequest: GetObjectRequest): S3Object = {
     s3client.getObject(getObjectRequest)
   }
 
   def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
     s3client.putObject(putObjectRequest)
+  }
+
+  private def readInputStream(inStream: InputStream): Array[Byte] = {
+    val bufferSize = 0x20000
+    val buffer = new Array[Byte](bufferSize)
+    val outStream = new ByteArrayOutputStream(bufferSize)
+    var bytes: Int = 0
+    while (bytes != -1) {
+      bytes = inStream.read(buffer)
+      if (bytes != -1) outStream.write(buffer, 0, bytes);
+    }
+    outStream.toByteArray
+  }
+
+  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
+    val obj = s3client.getObject(getObjectRequest)
+    val inStream = obj.getObjectContent
+    try {
+      readInputStream(inStream)
+    } finally {
+      inStream.close()
+    }
   }
 }

@@ -62,4 +62,11 @@ object Tiler {
     (rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod): RDD[(K, TileType)] = {
     apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout, resampleMethod)
   }
+
+  def apply[T, K, TileType](rdd: RDD[(T, TileType)], metaData: RasterMetaData)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] =
+    apply(rdd, metaData, NearestNeighbor)
+
+  def apply[T, K, TileType](rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] = {
+    tiler(rdd, metaData, resampleMethod)
+  }
 }

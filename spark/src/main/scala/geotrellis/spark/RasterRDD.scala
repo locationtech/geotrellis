@@ -131,6 +131,8 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
 object RasterRDD {
   implicit class SpatialRasterRDD(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
 
+  implicit def implicitToRDD[K](rasterRdd: RasterRDD[K]): RDD[(K, Tile)] = rasterRdd
+
   implicit def constructor[K: JsonFormat : ClassTag] =
     new ContainerConstructor[K, Tile, RasterRDD[K]] {
       type MetaDataType = RasterMetaData

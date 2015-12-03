@@ -63,5 +63,5 @@ package object hadoop {
     }
   }
 
-  implicit class S3RDDHadoop[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
+  implicit class RDDHadoopMethods[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
 }

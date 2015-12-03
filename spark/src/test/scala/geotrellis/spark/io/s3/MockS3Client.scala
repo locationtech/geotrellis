@@ -89,6 +89,18 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
 
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = ???
+
+  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
+    val obj = getObject(getObjectRequest)
+    val inStream = obj.getObjectContent
+    try {
+      streamToBytes(inStream)
+    } finally {
+      inStream.close()
+    }
+  }
+
   def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {    
     logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
