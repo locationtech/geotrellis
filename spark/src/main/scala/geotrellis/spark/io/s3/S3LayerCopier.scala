@@ -1,55 +1,70 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.utils.cache.Cache
-import geotrellis.spark.{LayerId, Boundable}
-import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.{AttributeStore, SparkLayerCopier, ContainerConstructor}
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.{Boundable, KeyBounds, LayerId}
+import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io._
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+import geotrellis.spark.io.json._
+import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
-object S3LayerCopier {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]]
-  (bucket: String,
-   prefix: String,
-   keyIndexMethod: KeyIndexMethod[K],
-   getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None,
-   clobber: Boolean = true)
-  (implicit sc: SparkContext,
-          cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[S3LayerHeader, K, V, Container[K]] =
-    new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
-      attributeStore = S3AttributeStore(bucket, prefix),
-      layerReader = S3LayerReader[K, V, Container](bucket, prefix, getCache),
-      layerWriter = S3LayerWriter[K, V, Container](bucket, prefix, keyIndexMethod, clobber)
-    )
-
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]]
-  (bucket: String,
-   prefix: String,
-   layerReader: S3LayerReader[K, V, Container[K]],
-   layerWriter: S3LayerWriter[K, V, Container[K]])
-  (implicit sc: SparkContext,
-          cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[S3LayerHeader, K, V, Container[K]] =
-    new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
-      attributeStore = S3AttributeStore(bucket, prefix),
-      layerReader = layerReader,
-      layerWriter = layerWriter
-    )
-
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]]
+class S3LayerCopier[K: Boundable: JsonFormat: ClassTag]
   (attributeStore: AttributeStore[JsonFormat],
-   layerReader: S3LayerReader[K, V, Container[K]],
-   layerWriter: S3LayerWriter[K, V, Container[K]])
-  (implicit sc: SparkContext,
-          cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[S3LayerHeader, K, V, Container[K]] =
-    new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
-      attributeStore = attributeStore,
-      layerReader = layerReader,
-      layerWriter = layerWriter
-    )
+       destBucket: String,
+    destKeyPrefix: String)(implicit sc: SparkContext) extends LayerCopier[LayerId] {
+
+  def getS3Client: () => S3Client = () => S3Client.default
+
+  def copy(from: LayerId, to: LayerId): Unit = {
+    if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
+    if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
+
+    val (header, _, keyBounds, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](from)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerDeleteError(from).initCause(e)
+    }
+
+    val bucket = header.bucket
+    val prefix = header.key
+    val destPrefix = makePath(destKeyPrefix, s"${to.name}/${to.zoom}")
+    val numPartitions = 1
+    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+    val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
+    val destKeyPath = (index: Long) => makePath(destPrefix, encodeIndex(index, maxWidth))
+    val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+    val ranges = decompose(keyBounds)
+    val bins = S3RDDReader.balancedBin(ranges, numPartitions)
+
+    sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+        val s3client = getS3Client()
+        for {
+          rangeList <- partition
+          range <- rangeList
+          index <- range._1 to range._2
+        } yield {
+          s3client.copyObject(bucket, keyPath(index), destBucket, destKeyPath(index))
+        }
+      }
+
+    attributeStore.copy(from, to)
+  }
+}
+
+object S3LayerCopier {
+  def apply[K: Boundable: JsonFormat: ClassTag]
+  (attributeStore: AttributeStore[JsonFormat],
+       destBucket: String,
+    destKeyPrefix: String)(implicit sc: SparkContext): S3LayerCopier[K] =
+    new S3LayerCopier[K](attributeStore, destBucket, destKeyPrefix)
+
+  def apply[K: Boundable: JsonFormat: ClassTag]
+  (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String)(implicit sc: SparkContext): S3LayerCopier[K] =
+    apply[K](S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
+
+  def apply[K: Boundable: JsonFormat: ClassTag]
+  (bucket: String, keyPrefix: String)(implicit sc: SparkContext): S3LayerCopier[K] =
+    apply[K](S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
 }

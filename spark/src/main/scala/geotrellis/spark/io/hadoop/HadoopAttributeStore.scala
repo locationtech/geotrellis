@@ -115,8 +115,10 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
           new Path(
             attributeDir,
             file.getName
-              .replace(s"${from.name}___", s"${to.name}___")
-              .replace(s"___${from.zoom}___", s"___${to.zoom}___")
+              .replace(
+                s"${from.name}___${from.zoom}___",
+                s"${to.name}___${to.zoom}___"
+              )
           ),
           hadoopConfiguration
         )

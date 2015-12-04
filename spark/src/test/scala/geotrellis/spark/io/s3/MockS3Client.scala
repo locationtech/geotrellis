@@ -100,7 +100,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     new PutObjectResult()
   }
 
-  override def deleteObject(r: DeleteObjectRequest): Unit = this.synchronized {
+  def deleteObject(r: DeleteObjectRequest): Unit = this.synchronized {
     logger.debug(s"DELETE ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
     bucket.synchronized {
@@ -109,6 +109,18 @@ class MockS3Client() extends S3Client with LazyLogging {
     val dobj = new DeletedObject()
     dobj.setKey(r.getKey)
     new DeleteObjectsResult((dobj :: Nil).asJava)
+  }
+
+  def copyObject(r: CopyObjectRequest): CopyObjectResult = this.synchronized {
+    logger.debug(s"COPY ${r.getSourceKey}")
+
+    val sourceBucket = getBucket(r.getSourceBucketName)
+    val destBucket = getBucket(r.getDestinationBucketName)
+    destBucket.synchronized {
+      val obj = getObject(r.getSourceBucketName, r.getSourceKey)
+      putObject(r.getDestinationBucketName, r.getDestinationKey, obj.getObjectContent, obj.getObjectMetadata)
+    }
+    new CopyObjectResult()
   }
 }
 

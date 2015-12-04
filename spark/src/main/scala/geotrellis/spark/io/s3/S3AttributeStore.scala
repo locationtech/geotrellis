@@ -91,7 +91,23 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
   def delete(layerId: LayerId, attributeName: String): Unit =
     _delete(layerId, attributePath(layerId, attributeName))
 
-  def copy(from: LayerId, to: LayerId): Unit = { }
+  def copy(from: LayerId, to: LayerId): Unit = {
+    if(!layerExists(from)) throw new LayerNotFoundError(from)
+    if(layerExists(to)) throw new LayerExistsError(to)
+
+    s3Client
+      .listObjectsIterator(bucket, attributePath(from))
+      .foreach { os =>
+        val key = os.getKey
+        println(key)
+        s3Client.copyObject(
+          bucket, os.getKey, bucket,
+          os.getKey.replace(
+            s"__${from.name}__${from.zoom}.json",
+            s"__${to.name}__${to.zoom}.json"
+          ))
+      }
+  }
 }
 
 object S3AttributeStore {

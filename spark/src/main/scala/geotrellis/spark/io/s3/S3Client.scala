@@ -25,6 +25,12 @@ trait S3Client extends LazyLogging {
 
   def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit
 
+  def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult
+
+  def copyObject(sourceBucketName: String, sourceKey: String,
+                 destinationBucketName: String, destinationKey: String): CopyObjectResult =
+    copyObject(new CopyObjectRequest(sourceBucketName, sourceKey, destinationBucketName, destinationKey))
+
   def deleteObject(bucketName: String, key: String): Unit =
     deleteObject(new DeleteObjectRequest(bucketName, key))
 
@@ -87,19 +93,18 @@ class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) e
 
   val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials, config)
 
-  def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
+  def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing =
     s3client.listObjects(listObjectsRequest)
-  }
 
-  def getObject(getObjectRequest: GetObjectRequest): S3Object = {
+  def getObject(getObjectRequest: GetObjectRequest): S3Object =
     s3client.getObject(getObjectRequest)
-  }
 
-  def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
+  def putObject(putObjectRequest: PutObjectRequest): PutObjectResult =
     s3client.putObject(putObjectRequest)
-  }
 
-  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit = {
+  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit =
     s3client.deleteObject(deleteObjectRequest)
-  }
+
+  def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult =
+    s3client.copyObject(copyObjectRequest)
 }
