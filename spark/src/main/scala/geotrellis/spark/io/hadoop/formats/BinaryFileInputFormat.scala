@@ -26,10 +26,10 @@ class BinaryFileRecordReader[K, V](read: Array[Byte] => (K, V)) extends RecordRe
 }
 
 trait BinaryFileInputFormat[K, V] extends FileInputFormat[K, V] {
-  def read(bytes: Array[Byte]): (K, V)
+  def read(bytes: Array[Byte], context: TaskAttemptContext): (K, V)
 
   override def isSplitable(context: JobContext, fileName: Path) = false
 
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[K, V] = 
-    new BinaryFileRecordReader(read)
+    new BinaryFileRecordReader({ bytes => read(bytes, context) })
 }

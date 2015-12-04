@@ -1,17 +1,15 @@
-package geotrellis.spark.io.s3
+package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.proj4._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.spark._
-import geotrellis.spark.ingest._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import org.apache.hadoop.mapreduce._
 import org.joda.time._
 import org.joda.time.format._
 
-
-object TemporalGeoTiffS3InputFormat {
+object SpaceTimeGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
 
@@ -34,28 +32,24 @@ object TemporalGeoTiffS3InputFormat {
   }
 }
 
-/** Read single band GeoTiff from S3 
+/** Read single band GeoTiff with a timestamp
   * Input GeoTiffs should have 'ISO_TIME' tag with ISO 8601 DateTime formated timestamp.
   * 
   * This can be configured with the hadoop configuration by providing:
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class TemporalGeoTiffS3InputFormat extends S3InputFormat[SpaceTimeInputKey,Tile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) = 
-    new S3RecordReader[SpaceTimeInputKey,Tile] {
-      def read(bytes: Array[Byte]) = {        
-        val geoTiff = SingleBandGeoTiff(bytes)
+class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[SpaceTimeInputKey, Tile] {
+  def read(bytes: Array[Byte], context: TaskAttemptContext): (SpaceTimeInputKey, Tile) = {
+    val geoTiff = SingleBandGeoTiff(bytes)
 
-        val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
-        val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
+    val timeTag = SpaceTimeGeoTiffInputFormat.getTimeTag(context)
+    val dateFormatter = SpaceTimeGeoTiffInputFormat.getTimeFormatter(context)
 
-        val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
-        val dateTime = DateTime.parse(dateTimeString, dateFormatter)
+    val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
+    val dateTime = DateTime.parse(dateTimeString, dateFormatter)
 
-        //WARNING: Assuming this is a single band GeoTiff
-        val ProjectedRaster(tile, extent, crs) = geoTiff.projectedRaster
-        (SpaceTimeInputKey(extent, crs, dateTime), tile)        
-      }
-    }     
+    val ProjectedRaster(tile, extent, crs) = geoTiff.projectedRaster
+    (SpaceTimeInputKey(extent, crs, dateTime), tile)
+  }
 }
