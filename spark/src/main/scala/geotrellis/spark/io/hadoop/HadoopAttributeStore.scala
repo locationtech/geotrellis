@@ -101,6 +101,29 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
 
   def delete(layerId: LayerId, attributeName: String): Unit =
     _delete(layerId, new Path(s"${layerId.name}___${layerId.zoom}___${attributeName}.json"))
+
+  def copy(from: LayerId, to: LayerId): Unit = {
+    if(!layerExists(from)) throw new LayerNotFoundError(from)
+    if(layerExists(to)) throw new LayerExistsError(to)
+    val pattern = new Path(s"${from.name}___${from.zoom}___*.json")
+
+    HdfsUtils
+      .listFiles(new Path(attributeDir, pattern), hadoopConfiguration)
+      .foreach { file =>
+        HdfsUtils.copyPath(
+          file,
+          new Path(
+            attributeDir,
+            file.getName
+              .replace(s"${from.name}___", s"${to.name}___")
+              .replace(s"___${from.zoom}___", s"___${to.zoom}___")
+          ),
+          hadoopConfiguration
+        )
+      }
+
+    clearCache()
+  }
 }
 
 object HadoopAttributeStore {

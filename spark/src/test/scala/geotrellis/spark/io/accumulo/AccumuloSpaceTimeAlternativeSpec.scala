@@ -15,7 +15,7 @@ class AccumuloSpaceTimeAlternativeSpec
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests
-          with LayerCopySpaceTimeTileTests[AccumuloLayerHeader] {
+          with LayerCopySpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)

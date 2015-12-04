@@ -4,9 +4,9 @@ import geotrellis.raster.Tile
 import geotrellis.spark._
 import spray.json.JsonFormat
 
-trait LayerCopySpaceTimeTileTests[LayerHeader] { self: PersistenceSpec[SpaceTimeKey, Tile] with OnlyIfCanRunSpark =>
+trait LayerCopySpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] with OnlyIfCanRunSpark =>
 
-  def copier: LayerCopier[LayerHeader, SpaceTimeKey, Tile, Container]
+  def copier: LayerCopier[LayerId]
   lazy val copiedLayerId = layerId.copy(name = s"${layerId.name}-copy")
 
   if (canRunSpark) {

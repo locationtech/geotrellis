@@ -2,7 +2,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.mosaic.MergeView
 import geotrellis.spark.Boundable
-import geotrellis.spark.io.{LayerCopier, ContainerConstructor}
+import geotrellis.spark.io.{SparkLayerCopier, ContainerConstructor}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.SparkContext
@@ -21,8 +21,8 @@ object AccumuloLayerCopier {
    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[AccumuloLayerHeader, K, V, Container[K]] =
-    new LayerCopier[AccumuloLayerHeader, K, V, Container[K]](
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[AccumuloLayerHeader, K, V, Container[K]] =
+    new SparkLayerCopier[AccumuloLayerHeader, K, V, Container[K]](
       attributeStore = AccumuloAttributeStore(instance.connector),
       layerReader = AccumuloLayerReader[K, V, Container](instance),
       layerWriter = AccumuloLayerWriter[K, V, Container](instance, table, indexMethod, strategy)
@@ -34,8 +34,8 @@ object AccumuloLayerCopier {
    layerWriter: AccumuloLayerWriter[K, V, Container[K]])
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[AccumuloLayerHeader, K, V, Container[K]] =
-    new LayerCopier[AccumuloLayerHeader, K, V, Container[K]](
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[AccumuloLayerHeader, K, V, Container[K]] =
+    new SparkLayerCopier[AccumuloLayerHeader, K, V, Container[K]](
       attributeStore = AccumuloAttributeStore(instance.connector),
       layerReader = layerReader,
       layerWriter = layerWriter

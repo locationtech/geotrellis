@@ -90,6 +90,8 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
 
   def delete(layerId: LayerId, attributeName: String): Unit =
     _delete(layerId, attributePath(layerId, attributeName))
+
+  def copy(from: LayerId, to: LayerId): Unit = { }
 }
 
 object S3AttributeStore {

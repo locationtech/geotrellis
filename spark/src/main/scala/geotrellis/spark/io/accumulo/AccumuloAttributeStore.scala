@@ -36,7 +36,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     val scanner  = connector.createScanner(attributeTable, new Authorizations())
     layerId.foreach { id =>
       scanner.setRange(new Range(new Text(id.toString)))
-    }    
+    }
     scanner.fetchColumnFamily(new Text(attributeName))
     scanner.iterator.map(_.getValue)
   }
@@ -90,4 +90,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   def delete(layerId: LayerId): Unit = _delete(layerId, None)
 
   def delete(layerId: LayerId, attributeName: String): Unit = _delete(layerId, Some(attributeName))
+
+  def copy(from: LayerId, to: LayerId): Unit = { }
 }

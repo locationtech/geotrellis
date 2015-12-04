@@ -3,7 +3,7 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.utils.cache.Cache
 import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.{AttributeStore, LayerCopier, ContainerConstructor}
+import geotrellis.spark.io.{AttributeStore, SparkLayerCopier, ContainerConstructor}
 import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -19,8 +19,8 @@ object S3LayerCopier {
    clobber: Boolean = true)
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[S3LayerHeader, K, V, Container[K]] =
-    new LayerCopier[S3LayerHeader, K, V, Container[K]](
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[S3LayerHeader, K, V, Container[K]] =
+    new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
       attributeStore = S3AttributeStore(bucket, prefix),
       layerReader = S3LayerReader[K, V, Container](bucket, prefix, getCache),
       layerWriter = S3LayerWriter[K, V, Container](bucket, prefix, keyIndexMethod, clobber)
@@ -33,8 +33,8 @@ object S3LayerCopier {
    layerWriter: S3LayerWriter[K, V, Container[K]])
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[S3LayerHeader, K, V, Container[K]] =
-    new LayerCopier[S3LayerHeader, K, V, Container[K]](
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[S3LayerHeader, K, V, Container[K]] =
+    new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
       attributeStore = S3AttributeStore(bucket, prefix),
       layerReader = layerReader,
       layerWriter = layerWriter
@@ -46,8 +46,8 @@ object S3LayerCopier {
    layerWriter: S3LayerWriter[K, V, Container[K]])
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerCopier[S3LayerHeader, K, V, Container[K]] =
-    new LayerCopier[S3LayerHeader, K, V, Container[K]](
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): SparkLayerCopier[S3LayerHeader, K, V, Container[K]] =
+    new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
       attributeStore = attributeStore,
       layerReader = layerReader,
       layerWriter = layerWriter

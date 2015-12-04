@@ -15,7 +15,7 @@ abstract class S3SpaceTimeSpec
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests
-          with LayerCopySpaceTimeTileTests[S3LayerHeader] {
+          with LayerCopySpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
   val bucket = "mock-bucket"
   val prefix = "catalog"
