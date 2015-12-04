@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
-  (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[K, LayerId] {
+  (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)

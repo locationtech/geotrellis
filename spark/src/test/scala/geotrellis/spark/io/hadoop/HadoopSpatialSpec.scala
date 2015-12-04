@@ -13,7 +13,7 @@ abstract class HadoopSpatialSpec
           with AllOnesTestTileTests {
   type Container = RasterRDD[SpatialKey]
   lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterRDD](outputLocal)
-  lazy val deleter = HadoopLayerDeleter[SpatialKey](outputLocal)
+  lazy val deleter = HadoopLayerDeleter(outputLocal)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
 }

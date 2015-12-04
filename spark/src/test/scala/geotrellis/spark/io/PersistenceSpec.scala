@@ -15,7 +15,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestReader = FilteringLayerReader[LayerId, K, Container]
   type TestWriter = Writer[LayerId, Container]
   type TestUpdater = LayerUpdater[LayerId, K, V, Container]
-  type TestDeleter = LayerDeleter[K, LayerId]
+  type TestDeleter = LayerDeleter[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container

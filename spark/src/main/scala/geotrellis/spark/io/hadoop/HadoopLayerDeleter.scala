@@ -1,15 +1,14 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.{Boundable, LayerId}
+import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import spray.json.JsonFormat
-import scala.reflect.ClassTag
 import spray.json.DefaultJsonProtocol._
 
-class HadoopLayerDeleter[K: Boundable: JsonFormat: ClassTag]
-  (attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[K, LayerId] {
+class HadoopLayerDeleter
+  (attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, _, _, _, _) = try {
@@ -23,9 +22,12 @@ class HadoopLayerDeleter[K: Boundable: JsonFormat: ClassTag]
 }
 
 object HadoopLayerDeleter {
-  def apply[K: Boundable: JsonFormat: ClassTag](rootPath: Path) =
-    new HadoopLayerDeleter[K](HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration), new Configuration)
+  def apply(attributeStore: AttributeStore[JsonFormat], conf: Configuration): HadoopLayerDeleter =
+    new HadoopLayerDeleter(attributeStore, conf)
 
-  def apply[K: Boundable: JsonFormat: ClassTag](rootPath: Path, conf: Configuration) =
-    new HadoopLayerDeleter[K](HadoopAttributeStore(new Path(rootPath, "attributes"), conf), conf)
+  def apply(rootPath: Path, conf: Configuration): HadoopLayerDeleter =
+    apply(HadoopAttributeStore(new Path(rootPath, "attributes"), conf), conf)
+
+  def apply(rootPath: Path): HadoopLayerDeleter =
+    apply(HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration), new Configuration)
 }

@@ -1,5 +1,5 @@
 package geotrellis.spark.io
 
-trait LayerDeleter[K, ID] {
+trait LayerDeleter[ID] {
   def delete(id: ID): Unit
 }
