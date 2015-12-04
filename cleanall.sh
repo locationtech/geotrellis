@@ -16,3 +16,28 @@
 ./sbt -J-Xmx2G "project jetty" clean || { exit 1; } 
 ./sbt -J-Xmx2G "project admin" clean || { exit 1; } 
 ./sbt -J-Xmx2G "project vector-benchmark" clean || { exit 1; } 
+
+
+rm -r proj4/target
+rm -r macros/target
+rm -r vector/target
+rm -r vector-test/target
+rm -r raster/target
+rm -r raster-test/target
+rm -r spark/target
+rm -r engine/target
+rm -r engine-test/target
+rm -r index/target
+rm -r benchmark/target
+rm -r slick/target
+rm -r gdal/target
+rm -r geotools/target
+rm -r demo/target
+rm -r dev/target
+rm -r services/target
+rm -r jetty/target
+rm -r admin/target
+rm -r vector-benchmark/target
+rm -r graph/target
+rm -r tasks/target
+rm -r testkit/target
