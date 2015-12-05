@@ -9,8 +9,8 @@
 #./sbt "project testkit" publish-local && \
 #./sbt "project services" publish-local && \
 #./sbt "project jetty" publish-local && \
-./sbt "project spark" publish-local #&& \
+./sbt "project spark" publish-local && \
 #./sbt "project spark-etl" publish-local && \
-./sbt "project gdal" publish-local && \
+./sbt "project gdal" publish-local #&& \
 #./sbt "project geotools" publish-local && \
 #./sbt "project slick" publish-local

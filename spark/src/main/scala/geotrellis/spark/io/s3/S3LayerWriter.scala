@@ -31,7 +31,8 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
     keyIndexMethod: KeyIndexMethod[K],
     bucket: String,
     keyPrefix: String,
-    clobber: Boolean = true)
+    clobber: Boolean = true,
+    oneToOne: Boolean = true)
   (implicit val cons: ContainerConstructor[K, V, Container])
   extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
 
@@ -59,7 +60,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
       val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
 
       logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+      rddWriter.write(rdd, bucket, keyPath, oneToOne = oneToOne)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -71,10 +72,11 @@ object S3LayerWriter {
       bucket: String,
       prefix: String,
       keyIndexMethod: KeyIndexMethod[K],
-      clobber: Boolean = true)
+      clobber: Boolean = true,
+      oneToOne: Boolean = true)
     (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerWriter[K, V, Container[K]] =
     new S3LayerWriter(
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
-      keyIndexMethod, bucket, prefix, clobber)
+      keyIndexMethod, bucket, prefix, clobber, oneToOne)
 }
