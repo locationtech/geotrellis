@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
+import geotrellis.raster.op.focal.Kernel
 
 import spire.syntax.cfor._
 
@@ -47,15 +48,15 @@ object VectorToRaster {
                        transform: D => Int, 
                        kernel: Kernel, 
                        rasterExtent: RasterExtent): Tile = {
-    val convolver = new Convolver(rasterExtent.cols, rasterExtent.rows, kernel)
+    val stamper = new KernelStamper(rasterExtent.cols, rasterExtent.rows, kernel)
     
     for(point <- points) {
       val col = rasterExtent.mapXToGrid(point.geom.x)
       val row = rasterExtent.mapYToGrid(point.geom.y)
-      convolver.stampKernel(col, row, transform(point.data))
+      stamper.stampKernel(col, row, transform(point.data))
     }
 
-    convolver.result
+    stamper.result
   }
 
   def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent): Tile =

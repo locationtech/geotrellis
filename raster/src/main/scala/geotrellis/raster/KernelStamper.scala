@@ -16,16 +16,16 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.raster.op.focal.Kernel
 
 /**
  * Supplies functionality to operations that do convolution.
  */
-case class Convolver(cols: Int, rows: Int, k: Kernel) {
+case class KernelStamper(cols: Int, rows: Int, k: Kernel) {
 
   val ktile = k.tile
-  var kernelcols = ktile.cols
-  var kernelrows = ktile.rows
+  val kernelcols = ktile.cols
+  val kernelrows = ktile.rows
 
   val tile: IntArrayTile = IntArrayTile.empty(cols, rows)
 

@@ -1,22 +1,6 @@
-/*
- * Copyright (c) 2014 Azavea.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package geotrellis.raster.op.focal
 
-package geotrellis.raster
-
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.vector.Extent
 
 /** 
@@ -25,9 +9,13 @@ import geotrellis.vector.Extent
  * Represents a neighborhood that is represented by
  * a tile.
  */
-case class Kernel(tile: Tile) {
+case class Kernel(tile: Tile) extends Neighborhood {
   if(tile.rows != tile.cols) sys.error("Kernel tile must be square")
   if(tile.rows % 2 != 1) sys.error("Kernel tile must have odd dimension")
+  val extent = (tile.rows / 2).toInt
+
+  // Not supporting masks, since masks are implemented as 0 values in the kernel weight
+  val hasMask = false
 }
 
 object Kernel {

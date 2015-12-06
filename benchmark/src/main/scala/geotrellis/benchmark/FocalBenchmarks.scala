@@ -28,8 +28,7 @@ import com.google.caliper.Benchmark
 import com.google.caliper.Param
 import com.google.caliper.runner.CaliperMain 
 import com.google.caliper.Benchmark
-import geotrellis.raster.op.focal.{Square, Circle}
-import geotrellis.raster.op.global
+import geotrellis.raster.op.focal.{Square, Circle, Convolve}
 
 import scala.math.{min, max}
 import scala.util.Random
@@ -122,5 +121,5 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeSumSquare22(reps: Int) = run(reps)(get(r.focalSum(Square(22))))
 //  def timeSumSquare22Tiled512(reps: Int) = run(reps)(Sum(tiledR512, Square(22)))
 
-  def timeConvolve(reps: Int) = run(reps)(get(global.Convolve(r, Kernel.gaussian(5, 4.0, 50.0))))
+  def timeConvolve(reps: Int) = run(reps)(get(Convolve(r, Kernel.gaussian(5, 4.0, 50.0))))
 }

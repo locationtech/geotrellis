@@ -22,9 +22,6 @@ import geotrellis.raster.op.global._
 import geotrellis.vector._
 
 trait GlobalRasterSourceMethods extends RasterSourceMethods {
-  def convolve(kernel: Kernel) =
-    rasterSource.global(Convolve(_, kernel))
-
   def costDistance(points: Seq[(Int, Int)]) = 
     rasterSource.global(CostDistance(_, points))
 
