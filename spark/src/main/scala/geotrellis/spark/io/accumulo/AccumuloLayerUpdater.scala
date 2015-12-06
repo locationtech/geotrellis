@@ -18,7 +18,6 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    if (rdd.isEmpty()) throw new LayerUpdateError(id, ": empty rdd update")
     implicit val sc = rdd.sparkContext
     implicit val mdFormat = cons.metaDataFormat
 
@@ -29,7 +28,11 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
     }
 
     val boundable = implicitly[Boundable[K]]
-    val keyBounds = boundable.getKeyBounds(rdd)
+    val keyBounds = try {
+      boundable.getKeyBounds(rdd)
+    } catch {
+      case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
+    }
 
     if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
       throw new LayerOutOfKeyBoundsError(id)
