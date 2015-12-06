@@ -22,7 +22,6 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    if (rdd.isEmpty()) throw new LayerUpdateError(id, ": empty rdd update")
     implicit val sc = rdd.sparkContext
     implicit val mdFormat = cons.metaDataFormat
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
@@ -32,7 +31,11 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
     }
 
     val boundable = implicitly[Boundable[K]]
-    val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+    val keyBounds = try {
+      boundable.getKeyBounds(rdd)
+    } catch {
+      case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
+    }
 
     if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
       throw new LayerOutOfKeyBoundsError(id)
