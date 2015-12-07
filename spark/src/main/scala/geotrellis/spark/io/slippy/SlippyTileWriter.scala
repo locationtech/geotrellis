@@ -21,11 +21,6 @@ import org.apache.hadoop.fs.Path
 import java.io.File
 import scala.collection.JavaConversions._
 
-trait TileByteWriter[T] extends Serializable {
-  def extension: String
-  def write(zoom: Int, key: SpatialKey, value: T): Array[Byte]
-}
-
 trait SlippyTileWriter[T] {
   def setupWrite(zoom: Int, rdd: RDD[(SpatialKey, T)]): RDD[(SpatialKey, T)]
   def write(zoom: Int, rdd: RDD[(SpatialKey, T)]): Unit = setupWrite(zoom, rdd).foreach { x => }
