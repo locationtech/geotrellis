@@ -36,6 +36,31 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     clearCache()
   }
 
+  private def _processFiles(from: LayerId, to: LayerId)(func: (Path, Path, Configuration) => Unit): Unit = {
+    if(!layerExists(from)) throw new LayerNotFoundError(from)
+    if(layerExists(to)) throw new LayerExistsError(to)
+    val pattern = new Path(s"${from.name}___${from.zoom}___*.json")
+
+    HdfsUtils
+      .listFiles(new Path(attributeDir, pattern), hadoopConfiguration)
+      .foreach { file =>
+        func(
+          file,
+          new Path(
+            attributeDir,
+            file.getName
+              .replace(
+                s"${from.name}___${from.zoom}___",
+                s"${to.name}___${to.zoom}___"
+              )
+          ),
+          hadoopConfiguration
+        )
+      }
+
+    clearCache()
+  }
+
   def attributeWildcard(attributeName: String): Path = 
     new Path(s"*___${attributeName}.json")
 
@@ -102,30 +127,10 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
   def delete(layerId: LayerId, attributeName: String): Unit =
     _delete(layerId, new Path(s"${layerId.name}___${layerId.zoom}___${attributeName}.json"))
 
-  def copy(from: LayerId, to: LayerId): Unit = {
-    if(!layerExists(from)) throw new LayerNotFoundError(from)
-    if(layerExists(to)) throw new LayerExistsError(to)
-    val pattern = new Path(s"${from.name}___${from.zoom}___*.json")
+  def copy(from: LayerId, to: LayerId): Unit = _processFiles(from, to)(HdfsUtils.copyPath)
 
-    HdfsUtils
-      .listFiles(new Path(attributeDir, pattern), hadoopConfiguration)
-      .foreach { file =>
-        HdfsUtils.copyPath(
-          file,
-          new Path(
-            attributeDir,
-            file.getName
-              .replace(
-                s"${from.name}___${from.zoom}___",
-                s"${to.name}___${to.zoom}___"
-              )
-          ),
-          hadoopConfiguration
-        )
-      }
+  def move(from: LayerId, to: LayerId) = _processFiles(from, to)(HdfsUtils.renamePath)
 
-    clearCache()
-  }
 }
 
 object HadoopAttributeStore {

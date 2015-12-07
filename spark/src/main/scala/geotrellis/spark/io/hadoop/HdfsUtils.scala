@@ -36,6 +36,11 @@ abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
 object HdfsUtils extends Logging {
 
+  def renamePath(from: Path, to: Path, conf: Configuration): Unit = {
+    val fs = from.getFileSystem(conf)
+    fs.rename(from, to)
+  }
+
   def copyPath(from: Path, to: Path, conf: Configuration): Unit = {
     val fsFrom = from.getFileSystem(conf)
     val fsTo = to.getFileSystem(conf)

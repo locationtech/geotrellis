@@ -50,4 +50,7 @@ class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
 object S3LayerDeleter {
   def apply[K: Boundable: JsonFormat: ClassTag](bucket: String, prefix: String)(implicit sc: SparkContext) =
     new S3LayerDeleter[K](S3AttributeStore(bucket, prefix))
+
+  def apply[K: Boundable: JsonFormat: ClassTag](attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext) =
+    new S3LayerDeleter[K](attributeStore)
 }

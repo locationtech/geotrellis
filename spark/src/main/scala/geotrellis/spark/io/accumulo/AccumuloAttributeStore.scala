@@ -95,8 +95,8 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   def delete(layerId: LayerId, attributeName: String): Unit = _delete(layerId, Some(attributeName))
 
   def copy(from: LayerId, to: LayerId): Unit = {
-    if(!layerExists(from)) throw new LayerNotFoundError(from)
-    if(layerExists(to)) throw new LayerExistsError(to)
+    if (!layerExists(from)) throw new LayerNotFoundError(from)
+    if (layerExists(to)) throw new LayerExistsError(to)
 
     val numThreads = 1
     val config = new BatchWriterConfig()
@@ -114,4 +114,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
 
     writer.close()
   }
+
+  def move(from: LayerId, to: LayerId) = { copy(from, to); delete(from) }
 }

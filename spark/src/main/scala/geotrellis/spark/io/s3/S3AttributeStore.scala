@@ -108,6 +108,8 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
           ))
       }
   }
+
+  def move(from: LayerId, to: LayerId) = { copy(from, to); delete(from) }
 }
 
 object S3AttributeStore {
