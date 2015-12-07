@@ -26,7 +26,7 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with OnlyIf
       conf.set(TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT, "2015:03:25 18:01:04")
       val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
       val rr = format.createRecordReader(null, context)
-      val (key, tile) = rr.read(Filesystem.slurp(path))
+      val (key, tile) = rr.read("key", Filesystem.slurp(path))
     }
 
     ifCanRunSpark {

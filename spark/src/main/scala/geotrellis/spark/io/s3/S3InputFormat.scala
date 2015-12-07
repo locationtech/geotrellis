@@ -64,7 +64,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       .withMaxKeys(maxKeys)
     
     var listing: ObjectListing = null
-    var splits: List[S3InputSplit] = Nil    
+    var splits: List[S3InputSplit] = Nil
     do {
       listing = s3client.listObjects(request)     
       val split = new S3InputSplit()
