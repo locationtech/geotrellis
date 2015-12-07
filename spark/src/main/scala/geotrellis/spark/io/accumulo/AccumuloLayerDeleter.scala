@@ -39,6 +39,7 @@ class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
     deleter.delete()
 
     attributeStore.delete(id)
+    attributeStore.clearCache()
   }
 }
 
