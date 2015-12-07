@@ -36,10 +36,10 @@ class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) =>
 
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)] = {
     val keys = {
-      client.listKeys(bucket, prefix)
+      client.listKeys(bucket, new File(prefix, zoom.toString).getPath)
         .map { key =>
           key match {
-            case TilePath(z, x, y) if z.toInt == zoom => Some((SpatialKey(x.toInt, y.toInt), key))
+            case TilePath(x, y) => Some((SpatialKey(x.toInt, y.toInt), key))
             case _ => None
           }
         }

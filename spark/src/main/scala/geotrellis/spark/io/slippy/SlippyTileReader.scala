@@ -21,10 +21,6 @@ import org.apache.hadoop.fs.Path
 import java.io.File
 import scala.collection.JavaConversions._
 
-trait TileByteReader[T] extends Serializable {
-  def read(zoom: Int, key: SpatialKey, bytes: Array[Byte]): T
-}
-
 trait SlippyTileReader[T] {
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)]
   def read(zoom: Int, key: SpatialKey): T
@@ -33,5 +29,5 @@ trait SlippyTileReader[T] {
 }
 
 object SlippyTileReader {
-  val TilePath = """.*/(\d+)/(\d+)/(\d+)\.\w+$""".r
+  val TilePath = """.*/(\d+)/(\d+)\.\w+$""".r
 }

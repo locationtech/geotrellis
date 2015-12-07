@@ -10,6 +10,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.util.Random
 import com.amazonaws.ClientConfiguration
+import org.apache.commons.io.IOUtils
 
 trait S3Client extends LazyLogging {
 
@@ -120,23 +121,11 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     s3client.putObject(putObjectRequest)
   }
 
-  private def readInputStream(inStream: InputStream): Array[Byte] = {
-    val bufferSize = 0x20000
-    val buffer = new Array[Byte](bufferSize)
-    val outStream = new ByteArrayOutputStream(bufferSize)
-    var bytes: Int = 0
-    while (bytes != -1) {
-      bytes = inStream.read(buffer)
-      if (bytes != -1) outStream.write(buffer, 0, bytes);
-    }
-    outStream.toByteArray
-  }
-
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
     val obj = s3client.getObject(getObjectRequest)
     val inStream = obj.getObjectContent
     try {
-      readInputStream(inStream)
+      IOUtils.toByteArray(inStream)
     } finally {
       inStream.close()
     }

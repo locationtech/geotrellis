@@ -29,7 +29,7 @@ object TemporalGeoTiffS3InputFormat {
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
-    if(df == null) { DateTimeFormat.forPattern("YYYY:MM:dd HH:mm:ss") }
+    if (df == null) { DateTimeFormat.forPattern("YYYY:MM:dd HH:mm:ss") }
     else { DateTimeFormat.forPattern(df) }
   }
 }

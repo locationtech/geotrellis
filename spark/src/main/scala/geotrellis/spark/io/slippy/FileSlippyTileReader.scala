@@ -43,11 +43,11 @@ class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(from
 
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)] = {
     val paths = {
-      listFiles(uri)
+      listFiles(new File(uri, zoom.toString).getPath)
         .flatMap { file =>
           val path = file.getAbsolutePath
           path match {
-            case TilePath(z, x, y) if z.toInt == zoom => Some((SpatialKey(x.toInt, y.toInt), path))
+            case TilePath(x, y) => Some((SpatialKey(x.toInt, y.toInt), path))
             case _ => None
           }
         }
