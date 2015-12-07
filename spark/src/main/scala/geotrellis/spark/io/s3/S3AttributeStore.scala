@@ -53,7 +53,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
   private def _delete(layerId: LayerId, path: String): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     s3Client.deleteObject(bucket, path)
-    clearCache()
   }
   
   def read[T: Format](layerId: LayerId, attributeName: String): T =
