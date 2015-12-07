@@ -36,6 +36,9 @@ case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
   def get(point: Point): Int =
     get(point.x, point.y)
 
+  def get(col: Int, row: Int): Int =
+    tile.get(col, row)
+
   def get(x: Double, y: Double): Int =
     tile.get(
       rasterExtent.mapXToGrid(x),
@@ -50,6 +53,9 @@ case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
       rasterExtent.mapXToGrid(x),
       rasterExtent.mapYToGrid(y)
     )
+
+  def getDouble(col: Int, row: Int): Double =
+    tile.getDouble(col, row)
 
   def resample(target: RasterExtent): Raster =
     Raster(tile.resample(extent, target), target.extent)
