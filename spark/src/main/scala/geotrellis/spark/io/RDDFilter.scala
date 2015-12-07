@@ -1,12 +1,14 @@
 package geotrellis.spark.io
 
 import com.github.nscala_time.time.Imports._
-import geotrellis.raster.GridBounds
+import geotrellis.raster.{GridBounds, RasterExtent}
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
-import geotrellis.vector._
+import geotrellis.vector.{Extent, Point, MultiPolygon}
 
 import scala.annotation.implicitNotFound
+
+import scala.collection.mutable
 
 @implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide RDDFilter[${K}, ${F}, ${T}, ${M}]")
 trait RDDFilter[K, F, T, M] {
@@ -53,6 +55,9 @@ object RDDFilter {
 
 
 object Intersects {
+  import geotrellis.raster.rasterize.{Rasterizer, Callback}
+  import scala.collection.mutable.ListBuffer
+
   def apply[T](value: T) = RDDFilter.Value[Intersects.type, T](value)
 
   /** Define Intersects filter for KeyBounds */
@@ -85,6 +90,51 @@ object Intersects {
       implicitly[Boundable[K]].intersect(queryBounds, kb).toSeq
     }
   }
+
+  /** Define Intersects filter for Polygon */
+  implicit def forPolygon[K: SpatialComponent: Boundable, M] =
+    new RDDFilter[K, Intersects.type, MultiPolygon, M] {
+      def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
+        val extent = polygon.envelope
+        val keyext = metadata.asInstanceOf[RasterMetaData].mapTransform(kb.minKey)
+        val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
+
+        /*
+         * Construct a rasterExtent that fits tightly around the
+         * candidate tiles (the candidate keys).  IT IS ASSUMED THAT
+         * ALL TILES HAVE THE SAME LENGTH AND HEIGHT.
+         */
+        val xmin = math.floor(extent.min.x / keyext.width) * keyext.width
+        val ymin = math.floor(extent.min.y / keyext.height) * keyext.height
+        val xmax = math.ceil(extent.max.x / keyext.width) * keyext.width
+        val ymax = math.ceil(extent.max.y / keyext.height) * keyext.height
+        val rasterExtent = RasterExtent(Extent(xmin, ymin, xmax, ymax), bounds.width, bounds.height)
+
+        /*
+         * Use the Rasterizer to construct a list of tiles which meet
+         * the query polygon.  That list of tiles is stored as an
+         * array of tuples which is then mapped-over to produce an
+         * array of KeyBounds (where the keys and KeyBounds are of the
+         * correct type).
+         */
+        val tiles = new mutable.HashSet[(Int, Int)] with mutable.SynchronizedSet[(Int, Int)]
+
+        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, true)( new Callback {
+          def apply(col : Int, row : Int): Unit = {
+            val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
+            tiles += tile
+          }
+        })
+
+        tiles
+          .map({ tile =>
+            val qb = KeyBounds(
+              kb.minKey updateSpatialComponent SpatialKey(tile._1, tile._2),
+              kb.maxKey updateSpatialComponent SpatialKey(tile._1, tile._2))
+            implicitly[Boundable[K]].intersect(qb, kb).toSeq })
+          .reduce({ (x,y) => x ++ y })
+      }
+    }
 }
 
 object Between {
