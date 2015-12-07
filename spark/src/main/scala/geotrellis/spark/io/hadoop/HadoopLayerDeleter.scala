@@ -18,6 +18,7 @@ class HadoopLayerDeleter
     }
     HdfsUtils.deletePath(header.path, conf)
     attributeStore.delete(id)
+    attributeStore.clearCache()
   }
 }
 

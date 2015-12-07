@@ -20,6 +20,7 @@ class HadoopLayerMover(rootPath: Path, attributeStore: AttributeStore[JsonFormat
     }
     HdfsUtils.renamePath(header.path, new Path(rootPath,  s"${to.name}/${to.zoom}"), sc.hadoopConfiguration)
     attributeStore.move(from, to)
+    attributeStore.clearCache()
   }
 }
 

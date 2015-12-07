@@ -44,6 +44,7 @@ class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
       }
 
     attributeStore.delete(id)
+    attributeStore.clearCache()
   }
 }
 

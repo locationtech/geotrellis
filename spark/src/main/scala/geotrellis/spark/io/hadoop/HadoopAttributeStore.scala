@@ -32,8 +32,6 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     HdfsUtils
       .listFiles(new Path(attributeDir, path), hadoopConfiguration)
       .foreach(fs.delete(_, false))
-
-    clearCache()
   }
 
   private def _processFiles(from: LayerId, to: LayerId)(func: (Path, Path, Configuration) => Unit): Unit = {
@@ -57,8 +55,6 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
           hadoopConfiguration
         )
       }
-
-    clearCache()
   }
 
   def attributeWildcard(attributeName: String): Path = 

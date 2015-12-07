@@ -55,7 +55,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
       deleter.fetchColumnFamily(new Text(name))
     }
     deleter.delete()
-    clearCache()
   }
 
   def read[T: Format](layerId: LayerId, attributeName: String): T = {
