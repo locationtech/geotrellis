@@ -4,12 +4,9 @@ import com.typesafe.config.ConfigFactory
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-
 import spray.json._
 import DefaultJsonProtocol._
-
 import scala.collection.JavaConversions._
-
 import org.apache.spark.Logging
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
@@ -33,12 +30,18 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   }
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
-    val scanner  = connector.createScanner(attributeTable, new Authorizations())
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
     layerId.foreach { id =>
       scanner.setRange(new Range(new Text(id.toString)))
     }
     scanner.fetchColumnFamily(new Text(attributeName))
     scanner.iterator.map(_.getValue)
+  }
+
+  private def fetchLayer(layerId: LayerId): Iterator[(Text, Value)] = {
+    val scanner  = connector.createScanner(attributeTable, new Authorizations())
+    scanner.setRange(new Range(new Text(layerId.toString)))
+    scanner.iterator.map { e => e.getKey.getColumnFamily -> e.getValue }
   }
 
   private def _delete(layerId: LayerId, attributeName: Option[String]): Unit = {
@@ -69,7 +72,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
 
   def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
     fetch(None, attributeName)
-      .map{ _.toString.parseJson.convertTo[(LayerId, T)] }
+      .map { _.toString.parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 
@@ -91,5 +94,24 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
 
   def delete(layerId: LayerId, attributeName: String): Unit = _delete(layerId, Some(attributeName))
 
-  def copy(from: LayerId, to: LayerId): Unit = { }
+  def copy(from: LayerId, to: LayerId): Unit = {
+    if(!layerExists(from)) throw new LayerNotFoundError(from)
+    if(layerExists(to)) throw new LayerExistsError(to)
+
+    val numThreads = 1
+    val config = new BatchWriterConfig()
+    config.setMaxWriteThreads(numThreads)
+    val writer = connector.createBatchWriter(attributeTable, config)
+
+    fetchLayer(from)
+      .foreach { case (columnFamily, value) =>
+        val mutation = new Mutation(to.toString)
+        mutation.put(
+          columnFamily, new Text(), System.currentTimeMillis(),
+          new Value((to, value.toString.parseJson.convertTo[(LayerId, JsObject)]).toJson.compactPrint.getBytes)
+        )
+      }
+
+    writer.close()
+  }
 }
