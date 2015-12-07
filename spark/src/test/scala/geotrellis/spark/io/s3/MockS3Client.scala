@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import scala.collection.immutable.TreeMap
 import com.typesafe.scalalogging.slf4j._
+import org.apache.commons.io.IOUtils
 
 class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
@@ -89,11 +90,23 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
 
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = ???
+
+  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
+    val obj = getObject(getObjectRequest)
+    val inStream = obj.getObjectContent
+    try {
+      IOUtils.toByteArray(inStream)
+    } finally {
+      inStream.close()
+    }
+  }
+
   def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {    
     logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
     bucket.synchronized {
-      bucket.put(r.getKey, streamToBytes(r.getInputStream))
+      bucket.put(r.getKey, IOUtils.toByteArray(r.getInputStream))
     }
     new PutObjectResult()
   }
@@ -133,8 +146,5 @@ object MockS3Client{
       bucket
     }
   }
-
-  def streamToBytes(is: InputStream) =
-    S3RecordReader.readInputStream(is)
 }
 

@@ -18,12 +18,23 @@ trait TileMergeMethods extends MergeMethods[Tile] {
         }
       }
     } else {
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
-        cfor(0)(_ < tile.cols, _ + 1) { col =>
-          if (isNoData(tile.get(col, row))) {
-            mutableTile.setDouble(col, row, other.get(col, row))
+      tile.cellType match {
+        case TypeUByte | TypeUShort => 
+          cfor(0)(_ < tile.rows, _ + 1) { row =>
+            cfor(0)(_ < tile.cols, _ + 1) { col =>
+              if (tile.get(col, row) == 0) {
+                mutableTile.setDouble(col, row, other.get(col, row))
+              }
+            }
           }
-        }
+        case _ =>
+          cfor(0)(_ < tile.rows, _ + 1) { row =>
+            cfor(0)(_ < tile.cols, _ + 1) { col =>
+              if (isNoData(tile.get(col, row))) {
+                mutableTile.setDouble(col, row, other.get(col, row))
+              }
+            }
+          }
       }
     }
 
@@ -49,15 +60,26 @@ trait TileMergeMethods extends MergeMethods[Tile] {
           }
         } else {
           val interpolate = Resample(method, other, otherExtent).resample _
-          cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
-            cfor(colMin)(_ <= colMax, _ + 1) { col =>
-              if (isNoData(tile.get(col, row))) {
-                val (x, y) = re.gridToMap(col, row)
-                mutableTile.set(col, row, interpolate(x, y))
+          tile.cellType match {
+            case TypeUByte | TypeUShort =>
+              cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+                cfor(colMin)(_ <= colMax, _ + 1) { col =>
+                  if (tile.get(col, row) == 0) {
+                    val (x, y) = re.gridToMap(col, row)
+                    mutableTile.set(col, row, interpolate(x, y))
+                  }
+                }
               }
-            }
+            case _ =>
+              cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+                cfor(colMin)(_ <= colMax, _ + 1) { col =>
+                  if (isNoData(tile.get(col, row))) {
+                    val (x, y) = re.gridToMap(col, row)
+                    mutableTile.set(col, row, interpolate(x, y))
+                  }
+                }
+              }
           }
-
         }
 
         mutableTile

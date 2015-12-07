@@ -48,7 +48,8 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
   // outputHomeLocal - root directory of all tests on the local file system (e.g., file:///tmp/testFiles)
   // outputHomeHdfs - root directory of all tests on hdfs (e.g., hdfs:///tmp)
   // outputLocal - directory of this particular test (e.g., file:///tmp/testFiles/geotrellis.spark.cmd.IngestSpec)
-  val (outputHomeLocal, outputHomeHdfs, outputLocal) = {
+  // outputLocalPath - Local file path of directory of this particular test (e.g., /tmp/testFiles/geotrellis.spark.cmd.IngestSpec)
+  val (outputHomeLocal, outputHomeHdfs, outputLocal, outputLocalPath) = {
     val tmpDir = System.getProperty("java.io.tmpdir")
 
     val outputHomeLocalHandle = new File(tmpDir, outputHome)
@@ -61,7 +62,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
     val outputLocalHandle = new File(outputHomeLocalHandle.toString(), name)
     if (!outputLocalHandle.exists)
       outputLocalHandle.mkdirs()
-    (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()))
+    (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()), outputLocalHandle)
   }
 
 

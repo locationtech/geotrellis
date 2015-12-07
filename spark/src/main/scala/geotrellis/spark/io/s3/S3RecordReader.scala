@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import com.typesafe.scalalogging.slf4j._
 import java.io.{InputStream, ByteArrayOutputStream}
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
+import org.apache.commons.io.IOUtils
 
 /** This reader will fetch bytes of each key one at a time using [AmazonS3Client.getObject].
   * Subclass must extend [read] method to map from S3 object bytes to (K,V) */
@@ -27,7 +28,7 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
 
   def getProgress: Float = curCount / keyCount
 
-  def read(obj: Array[Byte]): (K, V)
+  def read(key: String, obj: Array[Byte]): (K, V)
 
   def nextKeyValue(): Boolean = {
     if (keys.hasNext){
@@ -35,10 +36,10 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
       logger.debug(s"Reading: $key")
       val obj = s3client.getObject(new GetObjectRequest(bucket, key))
       val inStream = obj.getObjectContent
-      val objectData = S3RecordReader.readInputStream(inStream)
+      val objectData = IOUtils.toByteArray(inStream)
       inStream.close()
       
-      val (k, v) = read(objectData)          
+      val (k, v) = read(key, objectData)
       curKey = k
       curValue = v
       curCount += 1      
@@ -53,18 +54,4 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
   def getCurrentValue: V = curValue
 
   def close(): Unit = {}
-}
-
-object S3RecordReader {
-  def readInputStream(inStream: InputStream): Array[Byte] = {
-    val bufferSize = 0x20000
-    val buffer = new Array[Byte](bufferSize)
-    val outStream = new ByteArrayOutputStream(bufferSize)
-    var bytes: Int = 0
-    while (bytes != -1) {
-      bytes = inStream.read(buffer)
-      if (bytes != -1) outStream.write(buffer, 0, bytes);
-    }
-    outStream.toByteArray
-  }
 }

@@ -40,7 +40,7 @@ object Dependencies {
   val sprayTestkit  = "io.spray"        %% "spray-testkit" % Version.spray
   val sprayCan      = "io.spray"        %% "spray-can"     % Version.spray
   val sprayHttpx    = "io.spray"        %% "spray-httpx"   % Version.spray
-  val sprayJson     = "io.spray"        %% "spray-json"    % Version.spray
+  val sprayJson     = "io.spray"        %% "spray-json"    % Version.sprayJson
 
   val apacheMath    = "org.apache.commons" % "commons-math3" % "3.5"
 
@@ -55,7 +55,7 @@ object Dependencies {
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
     from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
-  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
+  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "2.6.0"
 
   val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.34"
 
