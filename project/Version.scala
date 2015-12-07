@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import scala.util.Properties
-
 object Version {
   val geotrellis  = "0.10.0" + Environment.versionSuffix
   /* Even though we support cross-build to 2.11 the default target is scala 2.10 primarily because Cloudera
@@ -28,6 +26,7 @@ object Version {
   val geotools    = "13.1"
   val akka        = "2.3.9"
   val spray       = "1.3.3"
+  val sprayJson   = "1.3.2"
   val jackson     = "1.6.1"
   val monocle     = "1.0.1"
   val accumulo    = "1.6.3"
