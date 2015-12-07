@@ -121,8 +121,6 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
           hadoopConfiguration
         )
       }
-
-    clearCache()
   }
 }
 
