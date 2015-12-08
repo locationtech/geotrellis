@@ -33,9 +33,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
 
   def path(parts: String*) = parts.filter(_.nonEmpty).mkString("/")
 
-  def attributePath(id: LayerId): String =
-    path(rootPath, "_attributes", s"*__${id.name}__${id.zoom}.json")
-
   def attributePath(id: LayerId, attributeName: String): String =
     path(rootPath, "_attributes", s"${attributeName}__${id.name}__${id.zoom}.json")
 
@@ -48,11 +45,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     is.close()
     Some(json.parseJson.convertTo[(LayerId, T)])
     // TODO: Make this crash to find out when None should be returned
-  }
-
-  private def _delete(layerId: LayerId, path: String): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-    s3Client.deleteObject(bucket, path)
   }
   
   def read[T: Format](layerId: LayerId, attributeName: String): T =
@@ -84,19 +76,27 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     s3Client.listObjectsIterator(bucket, AttributeStore.Fields.metaData, 1).nonEmpty
   }
 
-  def delete(layerId: LayerId): Unit =
-    _delete(layerId, attributePath(layerId))
+  def delete(layerId: LayerId, path: String): Unit = {
+    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
+    s3Client.deleteObject(bucket, path)
+  }
 
-  def delete(layerId: LayerId, attributeName: String): Unit =
-    _delete(layerId, attributePath(layerId, attributeName))
+  def delete(layerId: LayerId): Unit = {
+    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
+    s3Client
+      .listObjectsIterator(bucket, path(rootPath, "_attributes"))
+      .collect { case os if os.getKey.contains(s"__${layerId.name}__${layerId.zoom}.json") =>
+        s3Client.deleteObject(bucket, os.getKey)
+      }
+  }
 
   def copy(from: LayerId, to: LayerId): Unit = {
     if(!layerExists(from)) throw new LayerNotFoundError(from)
     if(layerExists(to)) throw new LayerExistsError(to)
 
     s3Client
-      .listObjectsIterator(bucket, attributePath(from))
-      .foreach { os =>
+      .listObjectsIterator(bucket, path(rootPath, "_attributes"))
+      .collect { case os if os.getKey.contains(s"__${from.name}__${from.zoom}.json") =>
         val key = os.getKey
         println(key)
         s3Client.copyObject(

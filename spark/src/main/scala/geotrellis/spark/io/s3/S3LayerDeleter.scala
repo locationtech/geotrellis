@@ -9,11 +9,12 @@ import geotrellis.spark.io.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
-class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
+class S3LayerDeleter[K: JsonFormat: ClassTag]
   (attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext) extends LayerDeleter[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
+  // TODO: mb to add here numPartitions: Int arg? (trick as in reader)
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, _, keyBounds, keyIndex, _) = try {
@@ -24,7 +25,7 @@ class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
 
     val bucket = header.bucket
     val prefix = header.key
-    val numPartitions = 1
+    val numPartitions = sc.defaultParallelism
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
@@ -49,6 +50,6 @@ class S3LayerDeleter[K: Boundable: JsonFormat: ClassTag]
 }
 
 object S3LayerDeleter {
-  def apply[K: Boundable: JsonFormat: ClassTag](bucket: String, prefix: String)(implicit sc: SparkContext) =
+  def apply[K: JsonFormat: ClassTag](bucket: String, prefix: String)(implicit sc: SparkContext) =
     new S3LayerDeleter[K](S3AttributeStore(bucket, prefix))
 }

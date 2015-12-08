@@ -21,17 +21,11 @@ import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
+import org.apache.hadoop.mapreduce.TaskAttemptContext
 
 class GeotiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
-  def read(bytes: Array[Byte]): (ProjectedExtent, Tile) = {
+  def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, Tile) = {
     val ProjectedRaster(tile, extent, crs) = SingleBandGeoTiff(bytes).projectedRaster
     (ProjectedExtent(extent, crs), tile)
-  }
-}
-
-class MultiBandGeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, MultiBandTile] {
-  def read(bytes: Array[Byte]): (ProjectedExtent, MultiBandTile) = {
-    val gt = MultiBandGeoTiff(bytes)
-    (ProjectedExtent(gt.extent, gt.crs), gt.tile)
   }
 }

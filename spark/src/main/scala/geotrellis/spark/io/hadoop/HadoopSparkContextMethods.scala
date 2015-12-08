@@ -1,13 +1,15 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.ingest.SpaceTimeInputKey
 
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.conf.Configuration
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
@@ -28,24 +30,36 @@ trait HadoopSparkContextMethods {
   def hadoopGeoTiffRDD(path: Path, tiffExtension: String): RDD[(ProjectedExtent, Tile)] =
     hadoopGeoTiffRDD(path, Seq(tiffExtension))
 
-  def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, Tile)] = {
-    val searchPath = path.toString match {
-      case p if tiffExtensions.exists(p.endsWith) => path
-      case p =>
-        val extensions = tiffExtensions.mkString("{", ",", "}")
-        new Path(s"$p/*$extensions")
-    }
-
-    val updatedConf =
-      sc.hadoopConfiguration.withInputDirectory(searchPath)
-
+  def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, Tile)] =
     sc.newAPIHadoopRDD(
-      updatedConf,
+      sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
       classOf[GeotiffInputFormat],
       classOf[ProjectedExtent],
       classOf[Tile]
     )
-  }
+
+  def hadoopSpaceTimeGeoTiffRDD(path: String): RDD[(SpaceTimeInputKey, Tile)] =
+    hadoopSpaceTimeGeoTiffRDD(new Path(path), defaultTiffExtensions)
+
+  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtension: String): RDD[(SpaceTimeInputKey, Tile)] =
+    hadoopSpaceTimeGeoTiffRDD(new Path(path), Seq(tiffExtension))
+
+  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(SpaceTimeInputKey, Tile)] =
+    hadoopSpaceTimeGeoTiffRDD(new Path(path), tiffExtensions)
+
+  def hadoopSpaceTimeGeoTiffRDD(path: Path): RDD[(SpaceTimeInputKey, Tile)] =
+    hadoopSpaceTimeGeoTiffRDD(path, defaultTiffExtensions)
+
+  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtension: String): RDD[(SpaceTimeInputKey, Tile)] =
+    hadoopSpaceTimeGeoTiffRDD(path, Seq(tiffExtension))
+
+  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(SpaceTimeInputKey, Tile)] =
+    sc.newAPIHadoopRDD(
+      sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
+      classOf[SpaceTimeGeoTiffInputFormat],
+      classOf[SpaceTimeInputKey],
+      classOf[Tile]
+    )
 
   def hadoopMultiBandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultiBandTile)] =
     hadoopMultiBandGeoTiffRDD(new Path(path), defaultTiffExtensions)
@@ -56,24 +70,13 @@ trait HadoopSparkContextMethods {
   def hadoopMultiBandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultiBandTile)] =
     hadoopMultiBandGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultiBandTile)] = {
-    val searchPath = path.toString match {
-      case p if tiffExtensions.exists(p.endsWith) => path
-      case p =>
-        val extensions = tiffExtensions.mkString("{", ",", "}")
-        new Path(s"$p/*$extensions")
-    }
-
-    val updatedConf =
-      sc.hadoopConfiguration.withInputDirectory(searchPath)
-
+  def hadoopMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultiBandTile)] =
     sc.newAPIHadoopRDD(
-      updatedConf,
+      sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
       classOf[MultiBandGeoTiffInputFormat],
       classOf[ProjectedExtent],
       classOf[MultiBandTile]
     )
-  }
 
   def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
     val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)

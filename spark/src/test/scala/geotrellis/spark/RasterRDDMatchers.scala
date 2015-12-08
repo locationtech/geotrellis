@@ -18,6 +18,7 @@ package geotrellis.spark
 
 import org.scalatest._
 import geotrellis.raster._
+import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
@@ -70,9 +71,9 @@ trait RasterRDDMatchers extends RasterMatchers {
     rdd.collect.map { case (_, tile) => rasterShouldBe(tile, value) }
   }
 
-  def rastersEqual(
-    first: RasterRDD[SpaceTimeKey],
-    second: RasterRDD[SpaceTimeKey])(implicit d: DummyImplicit): Unit = {
+  def rastersEqual[K](
+    first: RDD[(K, Tile)],
+    second: RDD[(K, Tile)])(implicit d: DummyImplicit): Unit = {
     first.count should be(second.count)
 
     val ft = first.collect
@@ -91,7 +92,7 @@ trait RasterRDDMatchers extends RasterMatchers {
       keyDiff2.isEmpty should be (true)
     }
 
-    val grouped: Map[SpaceTimeKey, Array[(SpaceTimeKey, Tile)]] = 
+    val grouped: Map[K, Array[(K, Tile)]] = 
       ft.union(st).groupBy(_._1)
 
     for( (key, tiles) <- grouped) {

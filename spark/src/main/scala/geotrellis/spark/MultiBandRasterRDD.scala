@@ -14,6 +14,8 @@ class MultiBandRasterRDD[K: ClassTag](val tileRdd: RDD[(K, MultiBandTile)], val 
 }
 
 object MultiBandRasterRDD {
+  implicit def implicitToRDD[K](rasterRdd: MultiBandRasterRDD[K]): RDD[(K, MultiBandTile)] = rasterRdd
+
   implicit def constructor[K: JsonFormat : ClassTag] =
     new ContainerConstructor[K, MultiBandTile, MultiBandRasterRDD[K]] {
       type MetaDataType = RasterMetaData
