@@ -30,7 +30,7 @@ abstract class S3SpaceTimeSpec
   }
   lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, true)
-  lazy val deleter = new S3LayerDeleter[SpaceTimeKey](attributeStore)
+  lazy val deleter = new S3LayerDeleter(attributeStore)
   lazy val tiles = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client
   }
