@@ -33,7 +33,7 @@ import scala.math.abs
 
 import Util._
 
-case class Encoder(settings: Settings) {
+case class PngEncoder(settings: Settings) {
   // magic numbers from the PNG spec
   final val SIGNATURE: Array[Byte] = Array[Byte](137.asInstanceOf[Byte], 80, 78, 71, 13, 10, 26, 10)
   final val IHDR: Int = 0x49484452
