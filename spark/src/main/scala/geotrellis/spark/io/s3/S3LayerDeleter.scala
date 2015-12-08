@@ -14,6 +14,7 @@ class S3LayerDeleter[K: JsonFormat: ClassTag]
 
   def getS3Client: () => S3Client = () => S3Client.default
 
+  // TODO: mb to add here numPartitions: Int arg? (trick as in reader)
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, _, keyBounds, keyIndex, _) = try {

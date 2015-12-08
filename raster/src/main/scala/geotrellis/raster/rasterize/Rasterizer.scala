@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 
+import spire.syntax.cfor._
 import scala.language.higherKinds
 
 trait Transformer[+B] {
@@ -76,14 +77,16 @@ object Rasterizer {
    */
   def foreachCellByGeometry(geom: Geometry, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit): Unit = {
     geom match {
-      case p: Point         => foreachCellByPoint(p, re)(f)
-      case p: MultiPoint    => foreachCellByMultiPoint(p, re)(f)
-      case p: MultiLine     => foreachCellByMultiLineString(p, re)(f)
-      case p: Line          => foreachCellByLineString(p, re)(f)
-      case p: Polygon       => PolygonRasterizer.foreachCellByPolygon(p, re, includeExterior)(f)
-      case p: MultiPolygon  => foreachCellByMultiPolygon(p, re, includeExterior)(f)
-      case p: GeometryCollection => p.geometries.foreach(foreachCellByGeometry(_, re)(f))
-      case _ => ()
+      case geom: Point         => foreachCellByPoint(geom, re)(f)
+      case geom: MultiPoint    => foreachCellByMultiPoint(geom, re)(f)
+      case geom: MultiLine     => foreachCellByMultiLineString(geom, re)(f)
+      case geom: Line          => foreachCellByLineString(geom, re)(f)
+      case geom: Polygon       => PolygonRasterizer.foreachCellByPolygon(geom, re, includeExterior)(f)
+      case geom: MultiPolygon  => foreachCellByMultiPolygon(geom, re, includeExterior)(f)
+      case geom: GeometryCollection => geom.geometries.foreach(foreachCellByGeometry(_, re)(f))
+      case geom: Extent => 
+        //foreachCellByExtent(geom, re, includeExterior)(f)
+        PolygonRasterizer.foreachCellByPolygon(geom, re, includeExterior)(f)
     }
   }
     
@@ -122,6 +125,58 @@ object Rasterizer {
 
   def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
     foreachCellByPolygon(p, re, false)(f)
+
+  // TODO: Make this work.
+  // def foreachCellByExtent(e: Extent, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
+  //   foreachCellByExtent(e, re, false)(f)
+
+  // def foreachCellByExtent(e: Extent, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit): Unit = {
+  //   val (cols, rows) = re.dimensions
+
+  //   val (colMin, rowMin) = {
+  //     val (c, r) = re.mapToGrid(e.xmin, e.ymax)
+  //     val (x, y) = re.gridToMap(c, r)
+  //     val col = 
+  //       if(!includeExterior) {
+  //         if(x <= e.xmin) { c + 1 } else { c }
+  //       } else {
+  //         if(x < e.xmin) { c + 1 } else { c }
+  //       }
+
+  //     val row =
+  //       if(!includeExterior) {
+  //         if(e.ymax <= y) { c + 1 } else { c }
+  //       } else {
+  //         if(e.ymax <= y) { c + 1 } else { c }
+  //       }
+  //     (math.max(col, 0).toInt, math.max(row, 0).toInt)
+  //   }
+
+  //   val (colMax, rowMax) = {
+  //     val (c, r) = re.mapToGrid(e.xmax, e.ymin)
+  //     val (x, y) = re.gridToMap(c, r)
+  //     val col = 
+  //       if(!includeExterior) {
+  //         if(e.xmax <= x) { c - 1 } else { c }
+  //       } else {
+  //         if(e.xmax < x) { c - 1 } else { c }
+  //       }
+
+  //     val row =
+  //       if(!includeExterior) {
+  //         if(y <= e.ymin) { c - 1 } else { c }
+  //       } else {
+  //         if(y < e.ymin) { c - 1 } else { c }
+  //       }
+  //     (math.max(cols, col).toInt, math.max(rows, row).toInt)
+  //   }
+
+  //   cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+  //     cfor(colMin)(_ <= colMax, _ + 1) { col =>
+  //       f(col, row)
+  //     }
+  //   }
+  // }
 
   /**
    * Apply function f(col, row, feature) to every cell contained within polygon.

@@ -1,20 +1,28 @@
 package geotrellis.spark.io.s3
 
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
+import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.util.Random
 import com.amazonaws.ClientConfiguration
+import org.apache.commons.io.IOUtils
 
 trait S3Client extends LazyLogging {
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
   
-  def listObjects(bucketName: String, prefix: String): ObjectListing =          
-      listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null))
+  def listObjects(bucketName: String, prefix: String): ObjectListing =
+    listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null))
+
+  def listKeys(bucketName: String, prefix: String): Seq[String] =
+    listKeys(new ListObjectsRequest(bucketName, prefix, null, null, null))
+
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String]
 
   def getObject(getObjectRequest: GetObjectRequest): S3Object
 
@@ -39,6 +47,10 @@ trait S3Client extends LazyLogging {
   def putObject(bucketName: String, key: String, bytes: Array[Byte]): PutObjectResult =
     putObject(bucketName, key, bytes, new ObjectMetadata())
 
+  def readBytes(bucketName: String, key: String): Array[Byte] =
+    readBytes(new GetObjectRequest(bucketName, key))
+
+  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =          
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
@@ -78,17 +90,32 @@ object S3Client {
     new AmazonS3Client(new DefaultAWSCredentialsProviderChain(), defaultConfiguration)
 }
 
-class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) extends S3Client {
-  def this(provider: AWSCredentialsProvider) =
-    this(provider.getCredentials, new ClientConfiguration())
+class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
+
+  def this(credentials: AWSCredentials, config: ClientConfiguration) =
+    this(new AWSAmazonS3Client(credentials, config))
 
   def this(provider: AWSCredentialsProvider, config: ClientConfiguration) =
-    this(provider.getCredentials, config)
+    this(new AWSAmazonS3Client(provider, config))
 
-  val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials, config)
+  def this(provider: AWSCredentialsProvider) =
+    this(provider, new ClientConfiguration())
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = {
     s3client.listObjects(listObjectsRequest)
+  }
+
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = {
+    var listing: ObjectListing = null
+    val result = mutable.ListBuffer[String]()
+    do {
+      listing = s3client.listObjects(listObjectsRequest)
+      // avoid including "directories" in the input split, can cause 403 errors on GET
+      result ++= listing.getObjectSummaries.asScala.map(_.getKey).filterNot(_ endsWith "/")
+      listObjectsRequest.setMarker(listing.getNextMarker)
+    } while (listing.isTruncated)
+
+    result.toSeq
   }
 
   def getObject(getObjectRequest: GetObjectRequest): S3Object = {
@@ -99,7 +126,16 @@ class AmazonS3Client(credentials: AWSCredentials, config: ClientConfiguration) e
     s3client.putObject(putObjectRequest)
   }
 
-  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit = {
+  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit =
     s3client.deleteObject(deleteObjectRequest)
+
+  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
+    val obj = s3client.getObject(getObjectRequest)
+    val inStream = obj.getObjectContent
+    try {
+      IOUtils.toByteArray(inStream)
+    } finally {
+      inStream.close()
+    }
   }
 }

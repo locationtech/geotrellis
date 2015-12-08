@@ -3,7 +3,7 @@ package geotrellis.spark.io
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster.GridBounds
 import geotrellis.spark._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 
 import scala.annotation.implicitNotFound
 
@@ -99,4 +99,23 @@ object Between {
         implicitly[Boundable[K]].intersect(queryBounds, kb)
       }
     }
+}
+
+object Contains {
+  def apply[T](value: T) = RDDFilter.Value[Contains.type, T](value)
+
+  /** Define Intersects filter for Extent */
+  implicit def forPoint[K: SpatialComponent: Boundable, M] =
+    new RDDFilter[K, Contains.type, Point, M] {
+    def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
+      // TODO: Stopgap. We can not ask for an implicit for PDT, so we do this cast. Safe while there is only one type of Metadata.
+      val spatialKey = metadata.asInstanceOf[RasterMetaData].mapTransform(point)
+      val queryBounds =
+        KeyBounds(
+          kb.minKey updateSpatialComponent spatialKey,
+          kb.maxKey updateSpatialComponent spatialKey
+        )
+      implicitly[Boundable[K]].intersect(queryBounds, kb)
+    }
+  }
 }

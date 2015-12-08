@@ -24,9 +24,8 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean = false)(f: Callback): Unit = 
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean = false)(f: Callback): Unit =
     if (p.intersects(re.extent)) {
-
       val (edges, rowMinOrg, rowMaxOrg) = {
         val TestLineSet(lines, rowMin, rowMax) =
           if(p.hasHoles) {
@@ -80,5 +79,5 @@ object PolygonRasterizer {
           activeEdges = activeEdges.filter(_.line.rowMax != row)
         }
       }
-    }
+  } 
 }

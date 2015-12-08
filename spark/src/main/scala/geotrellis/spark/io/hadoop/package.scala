@@ -52,6 +52,19 @@ package object hadoop {
       HdfsUtils.putFilesInConf(allFiles.mkString(","), config)
     }
 
+    /** Creates a configuration with a given directory, to search for all files
+      * with an extension contained in the given set of extensions */
+    def withInputDirectory(path: Path, extensions: Seq[String]): Configuration = {
+      val searchPath = path.toString match {
+        case p if extensions.exists(p.endsWith) => path
+        case p =>
+          val extensionsStr = extensions.mkString("{", ",", "}")
+          new Path(s"$p/*$extensionsStr")
+      }
+
+      withInputDirectory(searchPath)
+    }
+
     def setSerialized[T: ClassTag](key: String, value: T): Unit = {
       val ser = KryoSerializer.serialize(value)
       config.set(key, new String(ser.map(_.toChar)))
@@ -63,5 +76,5 @@ package object hadoop {
     }
   }
 
-  implicit class S3RDDHadoop[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
+  implicit class RDDHadoopMethods[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
 }

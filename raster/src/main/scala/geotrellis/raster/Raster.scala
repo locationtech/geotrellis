@@ -33,6 +33,24 @@ case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
 
   def asFeature(): Feature[Extent, Tile] = ExtentFeature(extent, tile)
 
+  def getValueAtPoint(point: Point): Int =
+    getValueAtPoint(point.x, point.y)
+
+  def getValueAtPoint(x: Double, y: Double): Int =
+    tile.get(
+      rasterExtent.mapXToGrid(x),
+      rasterExtent.mapYToGrid(y)
+    )
+
+  def getDoubleValueAtPoint(point: Point): Double =
+    getDoubleValueAtPoint(point.x, point.y)
+
+  def getDoubleValueAtPoint(x: Double, y: Double): Double =
+    tile.getDouble(
+      rasterExtent.mapXToGrid(x),
+      rasterExtent.mapYToGrid(y)
+    )
+
   def resample(target: RasterExtent): Raster =
     Raster(tile.resample(extent, target), target.extent)
 
