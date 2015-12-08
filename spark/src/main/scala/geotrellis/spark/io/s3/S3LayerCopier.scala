@@ -14,12 +14,12 @@ class S3LayerCopier
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def copyListing(s3: S3Client, bucket: String, listing: ObjectListing, from: LayerId, to: LayerId): Unit = {
+  def copyListing(s3Client: S3Client, bucket: String, listing: ObjectListing, from: LayerId, to: LayerId): Unit = {
     listing.getObjectSummaries.foreach { os =>
       val key = os.getKey
-      s3.copyObject(bucket, key, destBucket, key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
+      s3Client.copyObject(bucket, key, destBucket, key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
     }
-    if (listing.isTruncated) copyListing(s3, bucket, s3.listNextBatchOfObjects(listing), from, to)
+    if (listing.isTruncated) copyListing(s3Client, bucket, s3Client.listNextBatchOfObjects(listing), from, to)
   }
 
   def copy(from: LayerId, to: LayerId): Unit = {
