@@ -1,41 +1,30 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
+import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import spray.json.JsonFormat
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
-import org.apache.hadoop.io.Text
-import geotrellis.spark.io.json._
 import spray.json.DefaultJsonProtocol._
 import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
 
-class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
-  (val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[LayerId] {
+class AccumuloLayerDeleter(attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, keyBounds, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyBounds[K], KeyIndex[K], Unit](id)
+    val (header, _, _, _, _) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, Unit, Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
 
-    def decompose(bounds: KeyBounds[K], keyIndex: KeyIndex[K]) =
-      keyIndex.indexRanges(bounds).map { case (min, max) =>
-        new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
-      }
-
-    val ranges = decompose(keyBounds, keyIndex)
     val numThreads = 1
     val config = new BatchWriterConfig()
     config.setMaxWriteThreads(numThreads)
     val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
     deleter.fetchColumnFamily(columnFamily(id))
-    deleter.setRanges(ranges)
+    deleter.setRanges(new AccumuloRange() :: Nil)
     deleter.delete()
 
     attributeStore.delete(id)
@@ -44,9 +33,9 @@ class AccumuloLayerDeleter[K: Boundable: JsonFormat: ClassTag]
 }
 
 object AccumuloLayerDeleter {
-  def apply[K: Boundable: JsonFormat: ClassTag](attributeStore: AttributeStore[JsonFormat], connector: Connector): AccumuloLayerDeleter[K] =
-    new AccumuloLayerDeleter[K](attributeStore, connector)
+  def apply(attributeStore: AttributeStore[JsonFormat], connector: Connector): AccumuloLayerDeleter =
+    new AccumuloLayerDeleter(attributeStore, connector)
 
-  def apply[K: Boundable: JsonFormat: ClassTag](instance: AccumuloInstance): AccumuloLayerDeleter[K] =
-    apply[K](AccumuloAttributeStore(instance.connector), instance.connector)
+  def apply(instance: AccumuloInstance): AccumuloLayerDeleter =
+    apply(AccumuloAttributeStore(instance.connector), instance.connector)
 }
