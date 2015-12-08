@@ -27,7 +27,7 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
     new Path(attributeDir, fname)
   }
 
-  private def _delete(layerId: LayerId, path: Path): Unit = {
+  private def delete(layerId: LayerId, path: Path): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     HdfsUtils
       .listFiles(new Path(attributeDir, path), hadoopConfiguration)
@@ -118,10 +118,10 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
   }
 
   def delete(layerId: LayerId): Unit =
-    _delete(layerId, new Path(s"${layerId.name}___${layerId.zoom}___*.json"))
+    delete(layerId, new Path(s"${layerId.name}___${layerId.zoom}___*.json"))
 
   def delete(layerId: LayerId, attributeName: String): Unit =
-    _delete(layerId, new Path(s"${layerId.name}___${layerId.zoom}___${attributeName}.json"))
+    delete(layerId, new Path(s"${layerId.name}___${layerId.zoom}___${attributeName}.json"))
 
   def copy(from: LayerId, to: LayerId): Unit = _processFiles(from, to)(HdfsUtils.copyPath)
 

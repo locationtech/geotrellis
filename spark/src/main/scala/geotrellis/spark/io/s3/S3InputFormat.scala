@@ -3,6 +3,7 @@ package geotrellis.spark.io.s3
 import org.apache.hadoop.mapreduce.{InputFormat, JobContext}
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
+import com.amazonaws.regions._
 import org.apache.hadoop.mapreduce.Job
 import com.typesafe.scalalogging.slf4j._
 
@@ -28,6 +29,12 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     val key = conf.get(AWS_KEY)
     val bucket = conf.get(BUCKET)
     val prefix = conf.get(PREFIX)
+    val region: Option[Region] = {
+      val r = conf.get(REGION, null)
+      if(r != null) Some(Region.getRegion(Regions.fromName(r)))
+      else None
+    }
+
     val maxKeys: Integer = {
       val max = conf.get(MAX_KEYS)
       if (max != null)  max.toInt  else  null
@@ -42,6 +49,12 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
         new DefaultAWSCredentialsProviderChain().getCredentials
     
     val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
+
+    region match {
+      case Some(r) => 
+        s3client.setRegion(r)
+      case None =>
+    }
     
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
     logger.debug(s"Authenticationg with ID=${credentials.getAWSAccessKeyId}")
@@ -51,7 +64,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       .withMaxKeys(maxKeys)
     
     var listing: ObjectListing = null
-    var splits: List[S3InputSplit] = Nil    
+    var splits: List[S3InputSplit] = Nil
     do {
       listing = s3client.listObjects(request)     
       val split = new S3InputSplit()
@@ -74,7 +87,8 @@ object S3InputFormat {
   final val AWS_KEY = "s3.awsKey"
   final val BUCKET = "s3.bucket"
   final val PREFIX = "s3.prefix"
-  final val MAX_KEYS = "s3.maxKeys"
+  final val REGION = "s3.maxKeys"
+  final val MAX_KEYS = "s3.region"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
@@ -106,6 +120,11 @@ object S3InputFormat {
   def setMaxKeys(job: Job, limit: Int) = {
     val conf = job.getConfiguration
     conf.set(MAX_KEYS, limit.toString)
+  }
+
+  def setRegion(job: Job, region: String) = {
+    val conf = job.getConfiguration
+    conf.set(REGION, region)
   }
 
   /** Force anonymous access, bypass all key discovery */

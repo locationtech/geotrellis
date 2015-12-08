@@ -36,7 +36,7 @@ class AccumuloSpaceTimeAlternativeSpec
     AccumuloAttributeStore(instance.connector),
     new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
 
-  lazy val deleter = new AccumuloLayerDeleter[SpaceTimeKey](AccumuloAttributeStore(instance.connector), instance.connector)
+  lazy val deleter = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
   lazy val copier  = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 
   lazy val tiles  = AccumuloTileReader[SpaceTimeKey, Tile](instance)

@@ -159,8 +159,17 @@ case class TiffTags(
       &|-> TiffTags._geoTiffTags
       ^|-> GeoTiffTags._modelTransformation get
     ) match {
-      case Some(trans) if (trans.validateAsMatrix && trans.size == 4 && trans(0).size == 4) =>
-        transformationModelSpace(trans)
+      case Some(trans) =>
+        assert(trans.size == 4 && trans(0).size == 4, "Malformed model transformation matrix (must be a 4 x 4 matrix)")
+
+        getExtentFromModelFunction { pixel =>
+          val transformed = Array.ofDim[Double](3)
+          cfor(0)(_ < 3, _ + 1) { row =>
+            transformed(row) = trans(row)(0) * pixel.x + trans(row)(1) * pixel.y + trans(row)(2) * pixel.z + trans(row)(3)
+          }
+
+          Pixel3D.fromArray(transformed)
+        }
       case _ =>
         (this
           &|-> TiffTags._geoTiffTags
@@ -228,13 +237,6 @@ case class TiffTags(
     )
   }
 
-  private def transformationModelSpace(modelTransformation: Array[Array[Double]]) = {
-    def matrixMult(pixel: Pixel3D) = Pixel3D.fromArray((modelTransformation *
-      Array(Array(pixel.x, pixel.y, pixel.z, 1))).flatten.take(3))
-
-    getExtentFromModelFunction(matrixMult)
-  }
-
   private def tiePointsModelSpace(tiePoints: Array[(Pixel3D, Pixel3D)],
     pixelScaleOption: Option[(Double, Double, Double)]) =
     pixelScaleOption match {
@@ -286,10 +288,13 @@ case class TiffTags(
   private def getExtentFromModelFunction(func: Pixel3D => Pixel3D) = {
     val modelPixels = getRasterBoundaries.map(func)
 
-    val (minX, minY) = (modelPixels(0).x, modelPixels(0).y)
-    val (maxX, maxY) = (modelPixels(1).x, modelPixels(1).y)
+    val (x1, y1) = (modelPixels(0).x, modelPixels(0).y)
+    val (x2, y2) = (modelPixels(1).x, modelPixels(1).y)
 
-    Extent(minX, minY, maxX, maxY)
+    Extent(math.min(x1, x2), 
+           math.min(y1, y2), 
+           math.max(x1, x2), 
+           math.max(y1, y2))
   }
 
   def hasPixelArea(): Boolean =
@@ -311,43 +316,54 @@ case class TiffTags(
 
   lazy val geoTiffCSTags = GeoTiffCSParser(this)
 
-  def tags: Tags =
-    (this &|->
-      TiffTags._geoTiffTags ^|->
-      GeoTiffTags._metadata get
-    ) match {
-      case Some(str) => {
-        val xml = XML.loadString(str.trim)
-        val (metadataXML, bandsMetadataXML) =
-          (xml \ "Item")
-            .groupBy(_ \ "@sample")
-            .partition(_._1.isEmpty)
+  def tags: Tags = {
+    val (headTags, bandTags) = 
+      (this &|->
+        TiffTags._geoTiffTags ^|->
+        GeoTiffTags._metadata get
+      ) match {
+        case Some(str) => {
+          val xml = XML.loadString(str.trim)
+          val (metadataXML, bandsMetadataXML) =
+            (xml \ "Item")
+              .groupBy(_ \ "@sample")
+              .partition(_._1.isEmpty)
 
-        val metadata = metadataXML
-          .map(_._2)
-          .headOption match {
-          case Some(ns) => metadataNodeSeqToMap(ns)
-          case None => Map[String, String]()
-        }
-
-        val bandsMetadataMap = bandsMetadataXML.map { case(key, ns) =>
-          (key.toString.toInt, metadataNodeSeqToMap(ns))
-        }
-
-        val bandsMetadataBuffer = Array.ofDim[Map[String, String]](bandCount)
-
-        cfor(0)(_ < bandCount, _ + 1) { i =>
-          bandsMetadataMap.get(i) match {
-            case Some(map) => bandsMetadataBuffer(i) = map
-            case None => bandsMetadataBuffer(i) = Map()
+          val metadata = metadataXML
+            .map(_._2)
+            .headOption match {
+            case Some(ns) => metadataNodeSeqToMap(ns)
+            case None => Map[String, String]()
           }
-        }
 
-        Tags(metadata, bandsMetadataBuffer.toList)
+          val bandsMetadataMap = bandsMetadataXML.map { case(key, ns) =>
+            (key.toString.toInt, metadataNodeSeqToMap(ns))
+          }
+
+          val bandsMetadataBuffer = Array.ofDim[Map[String, String]](bandCount)
+
+          cfor(0)(_ < bandCount, _ + 1) { i =>
+            bandsMetadataMap.get(i) match {
+              case Some(map) => bandsMetadataBuffer(i) = map
+              case None => bandsMetadataBuffer(i) = Map()
+            }
+          }
+
+          (metadata, bandsMetadataBuffer.toList)
+        }
+        case None =>
+          (Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
       }
-      case None =>
-        Tags(Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
-    }
+  
+      this &|->
+        TiffTags._metadataTags ^|->
+        MetadataTags._dateTime get match {
+          case Some(dateTime) =>
+            Tags(headTags + (("TIFFTAG_DATETIME", dateTime)), bandTags)
+          case None =>
+            Tags(headTags, bandTags)
+        }
+  }
 
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =
     ns.map(s => ((s \ "@name").text -> s.text)).toMap

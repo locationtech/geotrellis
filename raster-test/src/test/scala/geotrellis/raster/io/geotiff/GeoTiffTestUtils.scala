@@ -36,8 +36,7 @@ object GeoTiffTestUtils {
         (f.listFiles.filter(_.isDirectory).flatMap(getRecursively) ++ f.listFiles) :+ f
 
       getRecursively(new File(testDirPath)).foreach { f =>
-        if (!f.delete())
-          throw new RuntimeException("Failed to delete " + f.getAbsolutePath)
+        if(f.exists) { java.nio.file.Files.delete(f.toPath) }
       }
     }
     if(!(new File(testDirPath)).exists) {

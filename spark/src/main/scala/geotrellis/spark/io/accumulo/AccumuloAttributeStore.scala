@@ -44,7 +44,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     scanner.iterator.map { e => e.getKey.getColumnFamily -> e.getValue }
   }
 
-  private def _delete(layerId: LayerId, attributeName: Option[String]): Unit = {
+  private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     val numThreads = 1
     val config = new BatchWriterConfig()
@@ -89,9 +89,9 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     fetch(Some(layerId), AttributeStore.Fields.metaData).nonEmpty
   }
 
-  def delete(layerId: LayerId): Unit = _delete(layerId, None)
+  def delete(layerId: LayerId): Unit = delete(layerId, None)
 
-  def delete(layerId: LayerId, attributeName: String): Unit = _delete(layerId, Some(attributeName))
+  def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
 
   def copy(from: LayerId, to: LayerId): Unit = {
     if (!layerExists(from)) throw new LayerNotFoundError(from)
