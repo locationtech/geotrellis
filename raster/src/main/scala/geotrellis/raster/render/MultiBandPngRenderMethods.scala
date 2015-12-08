@@ -3,7 +3,7 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import spire.syntax.cfor._
 
-trait MultiBandRenderMethods {
+trait MultiBandPngRenderMethods {
 
   val tile: MultiBandTile
 
