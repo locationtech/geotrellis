@@ -21,31 +21,33 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
   def getS3Client: () => S3Client = () => S3Client.default
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
-    try {
-      require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
-      implicit val sc = rdd.sparkContext
-      implicit val mdFormat = cons.metaDataFormat
-
-      val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) =
-        attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-
-      val boundable = implicitly[Boundable[K]]
-      val keyBounds = boundable.getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-
-      if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
-        throw new OutOfKeyBoundsError(id)
-
-      val prefix = existingHeader.key
-      val bucket = existingHeader.bucket
-
-      val maxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
-      val keyPath = (key: K) => makePath(prefix, encodeIndex(existingKeyIndex.toIndex(key), maxWidth))
-
-      logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    implicit val sc = rdd.sparkContext
+    implicit val mdFormat = cons.metaDataFormat
+    val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
-      case e: Exception => throw new LayerUpdateError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
+
+    val boundable = implicitly[Boundable[K]]
+    val keyBounds = try {
+      boundable.getKeyBounds(rdd)
+    } catch {
+      case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
+    }
+
+    if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
+      throw new LayerOutOfKeyBoundsError(id)
+
+    val prefix = existingHeader.key
+    val bucket = existingHeader.bucket
+
+    val maxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
+    val keyPath = (key: K) => makePath(prefix, encodeIndex(existingKeyIndex.toIndex(key), maxWidth))
+
+    logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
+    rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
   }
 }
 

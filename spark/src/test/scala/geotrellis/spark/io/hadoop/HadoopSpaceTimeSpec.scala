@@ -5,7 +5,7 @@ import geotrellis.raster.Tile
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark.{OnlyIfCanRunSpark, RasterRDD, SpaceTimeKey, TestEnvironment}
+import geotrellis.spark._
 import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
@@ -16,6 +16,7 @@ abstract class HadoopSpaceTimeSpec
   type Container = RasterRDD[SpaceTimeKey]
 
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
+  lazy val deleter = HadoopLayerDeleter(outputLocal)
   lazy val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
   lazy val sample =  CoordinateSpaceTime
 }

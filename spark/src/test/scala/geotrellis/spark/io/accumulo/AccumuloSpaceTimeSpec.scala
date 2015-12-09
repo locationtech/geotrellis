@@ -22,6 +22,7 @@ abstract class AccumuloSpaceTimeSpec
 
   lazy val reader = AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD](instance)
   lazy val updater = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD](instance, SocketWriteStrategy())
+  lazy val deleter = AccumuloLayerDeleter(instance)
   lazy val tiles = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample =  CoordinateSpaceTime
 }

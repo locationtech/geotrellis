@@ -39,25 +39,24 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
   def getS3Client: () => S3Client = () => S3Client.default
 
   def write(id: LayerId, rdd: Container with RDD[(K, V)]) = {
+    require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
+    implicit val sc = rdd.sparkContext
+    val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
+    val metadata = cons.getMetaData(rdd)
+    val header = S3LayerHeader(
+      keyClass = classTag[K].toString(),
+      valueClass = classTag[K].toString(),
+      bucket = bucket,
+      key = prefix)
+
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+    val keyIndex = keyIndexMethod.createIndex(keyBounds)
+    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
+    val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
+
     try {
-      require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
-      implicit val sc = rdd.sparkContext
-      val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-      val metadata = cons.getMetaData(rdd)
-      val header = S3LayerHeader(
-        keyClass = classTag[K].toString(),
-        valueClass = classTag[K].toString(),
-        bucket = bucket,
-        key = prefix)
-
-      val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
-      val keyIndex = keyIndexMethod.createIndex(keyBounds)
-
       implicit val mdFormat = cons.metaDataFormat
       attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, rddWriter.schema)
-
-      val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-      val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
 
       logger.info(s"Saving RDD ${id.name} to $bucket  $prefix")
       rddWriter.write(rdd, bucket, keyPath, oneToOne = oneToOne)

@@ -75,6 +75,21 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
   def layerExists(layerId: LayerId): Boolean = {
     s3Client.listObjectsIterator(bucket, AttributeStore.Fields.metaData, 1).nonEmpty
   }
+
+  def delete(layerId: LayerId, path: String): Unit = {
+    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
+    s3Client.deleteObject(bucket, path)
+  }
+
+  def delete(layerId: LayerId): Unit = {
+    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
+    s3Client
+      .listObjectsIterator(bucket, path(rootPath, "_attributes"))
+      .collect { case os if os.getKey.contains(s"__${layerId.name}__${layerId.zoom}.json") =>
+        s3Client.deleteObject(bucket, os.getKey)
+      }
+  }
+
 }
 
 object S3AttributeStore {
