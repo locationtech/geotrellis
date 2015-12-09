@@ -10,24 +10,15 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class S3LayerMover(attributeStore: AttributeStore[JsonFormat],
-                   layerCopier   : LayerCopier[LayerId],
-                   layerDeleter  : LayerDeleter[LayerId]) extends LayerMover[LayerId] {
-  def move(from: LayerId, to: LayerId): Unit = {
-    layerCopier.copy(from, to)
-    layerDeleter.delete(from)
-  }
-}
-
 object S3LayerMover {
   def apply(attributeStore: AttributeStore[JsonFormat],
             layerCopier   : LayerCopier[LayerId],
-            layerDeleter  : LayerDeleter[LayerId]): S3LayerMover =
-    new S3LayerMover(attributeStore, layerCopier, layerDeleter)
+            layerDeleter  : LayerDeleter[LayerId]): LayerMover[LayerId] =
+    new LayerMover(attributeStore, layerCopier, layerDeleter)
 
   def apply(attributeStore: AttributeStore[JsonFormat],
                     bucket: String,
-                 keyPrefix: String): S3LayerMover = {
+                 keyPrefix: String): LayerMover[LayerId] = {
     apply(
       attributeStore = attributeStore,
       layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix),
@@ -38,7 +29,7 @@ object S3LayerMover {
   def apply(bucket: String,
          keyPrefix: String,
         destBucket: String,
-     destKeyPrefix: String): S3LayerMover = {
+     destKeyPrefix: String): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
       attributeStore = attributeStore,
@@ -47,7 +38,7 @@ object S3LayerMover {
     )
   }
 
-  def apply(bucket: String, keyPrefix: String): S3LayerMover = {
+  def apply(bucket: String, keyPrefix: String): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
       attributeStore = attributeStore,

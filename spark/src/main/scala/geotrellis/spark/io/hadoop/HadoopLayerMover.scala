@@ -9,8 +9,8 @@ import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat
 
 class HadoopLayerMover(rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-                      (implicit sc: SparkContext) extends LayerMover[LayerId] {
-  def move(from: LayerId, to: LayerId): Unit = {
+                      (implicit sc: SparkContext) extends LayerMover[LayerId](null, null, null) { // dirty constructor workaround
+  override def move(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
     val (header, _, _, _, _) = try {
