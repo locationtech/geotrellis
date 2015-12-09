@@ -23,11 +23,12 @@ import geotrellis.testkit._
 
 import math.{max,min,round}
 
+import scala.collection.mutable
 import org.scalatest.FunSuite
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.{geom => jts}
 
-class RasterizePolygonSpec extends FunSuite
+class PolygonRasterizerSpec extends FunSuite
     with TestEngine
     with TileBuilders {
 
@@ -196,6 +197,19 @@ class RasterizePolygonSpec extends FunSuite
     })
   }
 
+  test("Rasterization of polygon with includeExterior and not contianing border center cells") {
+    val extent = Extent(0.0, 0.0, 10, 10)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+    val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
+
+    var s = mutable.Set[(Int, Int)]()
+    PolygonRasterizer.foreachCellByPolygon(extent2, rasterExtent, includeExterior = true) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (100)
+  }
+
   test("Rasterization of a polygon with a hole in it") {
     val p = Polygon(
       Line( (0,0), (4, 0), (4, 4), (0, 4), (0, 0) ),
@@ -208,7 +222,6 @@ class RasterizePolygonSpec extends FunSuite
 
     var sum = 0
     PolygonRasterizer.foreachCellByPolygon(p, re) { (col: Int, row: Int) =>
-      println(s"$col $row")
       tile.set(col, row, 1)
       sum = sum + 1
     }
