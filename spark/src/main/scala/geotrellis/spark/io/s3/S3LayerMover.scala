@@ -1,14 +1,8 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
-import org.apache.spark.SparkContext
-import spray.json.DefaultJsonProtocol._
+import geotrellis.spark.LayerId
 import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
 
 object S3LayerMover {
   def apply(attributeStore: AttributeStore[JsonFormat],
