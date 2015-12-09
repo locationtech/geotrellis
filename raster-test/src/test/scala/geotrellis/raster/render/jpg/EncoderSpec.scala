@@ -58,7 +58,7 @@ a9 fe b1 58 17 27 8b 22 71 2e 5e be 0a c9 bb a8
     val fh = File.createTempFile("rgb-", ".jpg")
     val path = fh.getPath
 
-    val encoder = JpgEncoder
+    val encoder = new JpgEncoder
 
     it("should render a jpg") {
       encoder.writeByteArray(tile)
@@ -78,49 +78,35 @@ a9 fe b1 58 17 27 8b 22 71 2e 5e be 0a c9 bb a8
       bytes1 should be (bytes2)
     }
 
-    /*it("should match the reference") {
-      val bytes1 = encoder.writeByteArray(tile)
-      bytes1 should be (rgb)
-    }*/
+    it("should produce different results for different compressions") {
+      val defaultEncoder = new JpgEncoder
+      val losslessEncoder = new JpgEncoder(Settings.LOSSLESS)
 
-    fh.delete()
-  }
+      val bytes1 = defaultEncoder.writeByteArray(tile)
+      val bytes2 = losslessEncoder.writeByteArray(tile)
 
-  describe("RgbEncoder") {
-    val fh = File.createTempFile("rgb-", ".jpg")
-    val path = fh.getPath
-
-    val encoder = JpgEncoder
-
-    // map RGBA values into RGB
-    val tile2 = tile.map(_ >> 8)
-
-    it("should write a jpg") {
-      encoder.writePath(path, tile2)
+      bytes1 should not be (bytes2)
     }
 
-    it("should render a jpg") {
-      encoder.writeByteArray(tile2)
-    }
+    it("should produce the same results for the same compressions") {
+      val enc1 = new JpgEncoder(Settings(0.3, false))
+      val enc2 = new JpgEncoder(Settings(0.3, false))
 
-    it("should write and render the same thing") {
-      val bytes1 = encoder.writeByteArray(tile2)
-
-      val fis = new FileInputStream(fh)
-      val bytes2 = Array.ofDim[Byte](fh.length.toInt)
-      fis.read(bytes2)
+      val bytes1 = enc1.writeByteArray(tile)
+      val bytes2 = enc2.writeByteArray(tile)
 
       bytes1 should be (bytes2)
     }
 
-    /*it("should match the reference") {
-      val bytes1 = encoder.writeByteArray(tile2)
-      println(bytes1.length)
-      println(tile2.cols * tile2.rows)
-      println(bytes1.toSeq)
-      println(rgb.toSeq)
-      bytes1 should be (rgb)
-    }*/
+    it("should produce huffman tables if set to optimize") {
+      val enc1 = new JpgEncoder(Settings(0.3, false))
+      val enc2 = new JpgEncoder(Settings(0.3, true))
+
+      val bytes1 = enc1.writeByteArray(tile)
+      val bytes2 = enc2.writeByteArray(tile)
+
+      bytes1 should not be (bytes2)
+    }
 
     fh.delete()
   }
