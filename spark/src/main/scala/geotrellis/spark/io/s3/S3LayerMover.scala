@@ -15,7 +15,6 @@ class S3LayerMover(attributeStore: AttributeStore[JsonFormat],
                    layerDeleter  : LayerDeleter[LayerId]) extends LayerMover[LayerId] {
   def move(from: LayerId, to: LayerId): Unit = {
     layerCopier.copy(from, to)
-    attributeStore.copy(from, to)
     layerDeleter.delete(from)
   }
 }
@@ -26,23 +25,35 @@ object S3LayerMover {
             layerDeleter  : LayerDeleter[LayerId]): S3LayerMover =
     new S3LayerMover(attributeStore, layerCopier, layerDeleter)
 
-  def apply[K: Boundable: JsonFormat: ClassTag]
-  (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String)(implicit sc: SparkContext): S3LayerMover = {
-    val attributeStore = S3AttributeStore(bucket, keyPrefix)
+  def apply(attributeStore: AttributeStore[JsonFormat],
+                    bucket: String,
+                 keyPrefix: String): S3LayerMover = {
     apply(
       attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier[K](attributeStore, destBucket, destKeyPrefix),
-      layerDeleter   = S3LayerDeleter[K](attributeStore)
+      layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix),
+      layerDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 
-  def apply[K: Boundable: JsonFormat: ClassTag]
-  (bucket: String, keyPrefix: String)(implicit sc: SparkContext): S3LayerMover = {
+  def apply(bucket: String,
+         keyPrefix: String,
+        destBucket: String,
+     destKeyPrefix: String): S3LayerMover = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
       attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier[K](attributeStore, bucket, keyPrefix),
-      layerDeleter   = S3LayerDeleter[K](attributeStore)
+      layerCopier    = S3LayerCopier(attributeStore, destBucket, destKeyPrefix),
+      layerDeleter   = S3LayerDeleter(attributeStore)
+    )
+  }
+
+  def apply(bucket: String, keyPrefix: String): S3LayerMover = {
+    val attributeStore = S3AttributeStore(bucket, keyPrefix)
+    apply(
+      attributeStore = attributeStore,
+      layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix),
+      layerDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 }
+

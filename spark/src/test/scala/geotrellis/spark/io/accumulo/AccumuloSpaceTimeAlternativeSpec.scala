@@ -15,7 +15,8 @@ class AccumuloSpaceTimeAlternativeSpec
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests
-          with LayerCopySpaceTimeTileTests {
+          with LayerCopySpaceTimeTileTests
+          with LayerMoveSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
@@ -38,6 +39,7 @@ class AccumuloSpaceTimeAlternativeSpec
 
   lazy val deleter = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
   lazy val copier  = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
+  lazy val mover   = AccumuloLayerMover(AccumuloAttributeStore(instance.connector), copier, deleter)
 
   lazy val tiles  = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample = CoordinateSpaceTime

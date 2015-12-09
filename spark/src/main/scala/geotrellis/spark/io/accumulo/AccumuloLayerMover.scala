@@ -12,7 +12,6 @@ class AccumuloLayerMover(attributeStore: AttributeStore[JsonFormat],
                          layerDeleter  : LayerDeleter[LayerId]) extends LayerMover[LayerId] {
   def move(from: LayerId, to: LayerId): Unit = {
     layerCopier.copy(from, to)
-    attributeStore.copy(from, to)
     layerDeleter.delete(from)
   }
 }

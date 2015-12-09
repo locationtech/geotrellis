@@ -36,7 +36,7 @@ class S3LayerDeleter(attributeStore: AttributeStore[JsonFormat]) extends LayerDe
 }
 
 object S3LayerDeleter {
-  def apply(attributeStore: AttributeStore[JsonFormat]) = new S3LayerDeleter(attributeStore)
+  def apply(attributeStore: AttributeStore[JsonFormat]): S3LayerDeleter = new S3LayerDeleter(attributeStore)
 
-  def apply(bucket: String, prefix: String) = apply(S3AttributeStore(bucket, prefix))
+  def apply(bucket: String, prefix: String): S3LayerDeleter = apply(S3AttributeStore(bucket, prefix))
 }
