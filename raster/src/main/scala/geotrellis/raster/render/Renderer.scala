@@ -28,8 +28,6 @@ import scala.collection.mutable
 case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: ColorType) {
   def render(r: Tile) =
     colorMap.render(r).convert(cellType)
-
-  def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
