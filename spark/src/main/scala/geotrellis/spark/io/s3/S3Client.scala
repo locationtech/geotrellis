@@ -3,15 +3,16 @@ package geotrellis.spark.io.s3
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
-import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
+import java.io.{InputStream, ByteArrayInputStream}
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.util.Random
 import com.amazonaws.ClientConfiguration
 import org.apache.commons.io.IOUtils
+import scala.collection.JavaConversions._
 
 trait S3Client extends LazyLogging {
 
@@ -33,6 +34,12 @@ trait S3Client extends LazyLogging {
 
   def getObject(bucketName: String, key: String): S3Object = 
     getObject(new GetObjectRequest(bucketName, key))
+
+  @tailrec
+  final def deleteListing(bucket: String, listing: ObjectListing): Unit = {
+    deleteObjects(bucket, listing.getObjectSummaries.map { os => new KeyVersion(os.getKey) }.toList)
+    if (listing.isTruncated) deleteListing(bucket, listNextBatchOfObjects(listing))
+  }
 
   def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit
 
