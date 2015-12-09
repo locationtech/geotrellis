@@ -1,7 +1,6 @@
 package geotrellis.spark.io.s3
 
-import java.io.{InputStream, ByteArrayInputStream}
-import com.amazonaws.services.s3.model.DeleteObjectsResult.DeletedObject
+import java.io.ByteArrayInputStream
 import com.amazonaws.services.s3.model._
 import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
@@ -119,9 +118,61 @@ class MockS3Client() extends S3Client with LazyLogging {
     bucket.synchronized {
       bucket.remove(r.getKey)
     }
-    val dobj = new DeletedObject()
-    dobj.setKey(r.getKey)
-    new DeleteObjectsResult((dobj :: Nil).asJava)
+  }
+
+  def listNextBatchOfObjects(r: ObjectListing): ObjectListing = this.synchronized {
+    if(!r.isTruncated) r
+    else {
+      val ol = new ObjectListing
+      ol.setBucketName(r.getBucketName)
+      ol.setPrefix(r.getPrefix)
+      ol.setDelimiter(r.getDelimiter)
+      ol.setMaxKeys(r.getMaxKeys)
+      val listing = ol.getObjectSummaries
+
+      val bucket = getBucket(r.getBucketName)
+      val marker = r.getNextMarker
+
+      var keyCount = 0
+      var nextMarker: String = null
+      val iter = bucket.entries.from(marker).iterator
+      logger.debug(s"LISTING prefix=${r.getPrefix}, marker=$marker")
+
+      var endSeen = false
+      while (iter.hasNext && keyCount <= r.getMaxKeys) {
+        val (key, bytes) = iter.next
+        if (key startsWith r.getPrefix) {
+          if (keyCount < r.getMaxKeys) {
+            logger.debug(s" + ${key}")
+            val os = new S3ObjectSummary
+            os.setBucketName(bucket.name)
+            os.setKey(key)
+            os.setSize(bytes.length)
+            listing.add(os)
+          }
+          if (keyCount == r.getMaxKeys) {
+            nextMarker = key
+          }
+          keyCount += 1
+        } else {
+          endSeen = true
+        }
+      }
+
+      ol.setNextMarker(nextMarker)
+      ol.setTruncated(null != nextMarker)
+      ol
+    }
+  }
+
+  def deleteObjects(r: DeleteObjectsRequest): Unit = {
+    val keys = r.getKeys
+    logger.debug(s"DELETE LIST ${keys}")
+
+    val bucket = getBucket(r.getBucketName)
+    bucket.synchronized {
+      bucket.remove(keys.asScala.map(_.getKey))
+    }
   }
 
   def copyObject(r: CopyObjectRequest): CopyObjectResult = this.synchronized {
@@ -141,25 +192,25 @@ object MockS3Client{
   class Bucket(val name: String) {
     var entries = new TreeMap[String, Array[Byte]]
 
-    def apply(key: String): Array[Byte] = {
+    def apply(key: String): Array[Byte] =
       entries.get(key).get
-    }
 
-    def put(key: String, bytes: Array[Byte]) = {
+    def put(key: String, bytes: Array[Byte]) =
       entries += key -> bytes
-    }
 
     def contains(key: String): Boolean =
       entries.contains(key)
 
-    def remove(key: String) = {
+    def remove(key: String) =
       entries -= key
-    }
+
+    def remove(keys: Seq[String]) =
+      entries --= keys
 
     /** return first key that matches this prefix */
     def findFirstKey(prefix: String): Option[String] = {
       entries
-        .find{ case (key, bytes) => key startsWith prefix }
+        .find { case (key, bytes) => key startsWith prefix }
         .map { _._1 }
     }
   }

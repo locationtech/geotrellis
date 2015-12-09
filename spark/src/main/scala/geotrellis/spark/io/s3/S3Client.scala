@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
 import java.io.{InputStream, ByteArrayInputStream, DataInputStream, ByteArrayOutputStream}
 import com.amazonaws.retry.PredefinedRetryPolicies
@@ -28,12 +29,22 @@ trait S3Client extends LazyLogging {
 
   def putObject(putObjectRequest: PutObjectRequest): PutObjectResult
 
-  def getObject(bucketName: String, key: String): S3Object = 
-    getObject(new GetObjectRequest(bucketName, key))
+  def listNextBatchOfObjects(listing: ObjectListing): ObjectListing
 
   def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit
 
   def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult
+
+  def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit
+
+  def getObject(bucketName: String, key: String): S3Object =
+    getObject(new GetObjectRequest(bucketName, key))
+
+  def deleteObjects(bucketName: String, keys: List[KeyVersion]): Unit = {
+    val objectsDeleteRequest = new DeleteObjectsRequest(bucketName)
+    objectsDeleteRequest.setKeys(keys.asJava)
+    deleteObjects(objectsDeleteRequest)
+  }
 
   def copyObject(sourceBucketName: String, sourceKey: String,
                  destinationBucketName: String, destinationKey: String): CopyObjectResult =
@@ -134,6 +145,12 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
 
   def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult =
     s3client.copyObject(copyObjectRequest)
+
+  def listNextBatchOfObjects(listing: ObjectListing): ObjectListing =
+    s3client.listNextBatchOfObjects(listing)
+
+   def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit =
+     s3client.deleteObjects(deleteObjectsRequest)
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
     val obj = s3client.getObject(getObjectRequest)
