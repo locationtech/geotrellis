@@ -16,42 +16,64 @@
 
 package geotrellis.raster.render.jpg
 
+import geotrellis.raster.render._
 import geotrellis.raster._
 
-import java.io.{File, ByteArrayOutputStream, FileOutputStream}
+import java.io.{File, ByteArrayOutputStream}
+import java.nio.file.Files
 import java.io.OutputStream
-import javax.imageio.ImageIO
-import javax.imageio.stream.FileImageOutputStream
+import javax.imageio._
+import javax.imageio.plugins.jpeg._
+import javax.imageio.stream._
 import java.awt.image.BufferedImage
+import java.util.Locale
 
 import scala.math.abs
 
 import spire.syntax.cfor._
 
-object JpgEncoder {
+case class JpgEncoder(settings: Settings = Settings.DEFAULT) {
 
-  def writeOutputStream(os: OutputStream, raster: Tile) {
-    val bi = new BufferedImage(raster.cols, raster.rows, BufferedImage.TYPE_INT_RGB)
-    cfor(0)(_ < raster.cols, _ + 1) { x =>
-      cfor(0)(_ < raster.rows, _ + 1) { y =>
-        bi.setRGB(x, y, raster.get(x, y))
-      }
-    }
-    ImageIO.write(bi, "jpg", os)
+  def writeParams: ImageWriteParam = {
+    val writeParams = new JPEGImageWriteParam(Locale.getDefault())
+    writeParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT)
+    writeParams.setCompressionQuality(settings.compressionQuality.toFloat)
+    writeParams.setOptimizeHuffmanTables(settings.optimize)
+    writeParams
+  }
+
+  def writeOutputStream(os: ImageOutputStream, raster: Tile) {
+    val img: BufferedImage = raster.toBufferedImage
+
+    // Write to provided output stream
+    val writer: ImageWriter = ImageIO.getImageWritersByFormatName("jpg").next()
+    writer.setOutput(os)
+    writer.write(null, new IIOImage(img, null, null), this.writeParams)
+    writer.dispose()
   }
 
   def writeByteArray(raster: Tile): Array[Byte] = {
-    val baos = new ByteArrayOutputStream()
-    writeOutputStream(baos, raster)
-    val arr = baos.toByteArray
+    val baos = new ByteArrayOutputStream
+    val cacheDir = Files.createTempDirectory("foobar").toFile()
+    cacheDir.deleteOnExit()
+    val fcios = new FileCacheImageOutputStream(baos, cacheDir)
+
+    writeOutputStream(fcios, raster)
+    fcios.flush()
+    baos.flush()
+
+    val bytes = baos.toByteArray
+    fcios.close()
     baos.close()
-    arr
+    cacheDir.delete()
+    bytes
   }
 
   def writePath(path: String, raster: Tile): Unit = {
-    val fos = new FileOutputStream(new File(path))
-    writeOutputStream(fos, raster)
-    fos.close()
+    val fios = new FileImageOutputStream(new File(path))
+    writeOutputStream(fios, raster)
+    fios.flush()
+    fios.close()
   }
 }
 

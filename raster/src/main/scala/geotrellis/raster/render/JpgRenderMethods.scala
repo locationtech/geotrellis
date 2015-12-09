@@ -17,7 +17,10 @@ trait JpgRenderMethods extends TileMethods {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderJpg(): Jpg =
-    JpgEncoder.writeByteArray(tile)
+    new JpgEncoder().writeByteArray(tile)
+
+  def renderJpg(settings: jpg.Settings) =
+    new JpgEncoder(settings).writeByteArray(tile)
 
   def renderJpg(colorRamp: ColorRamp): Jpg =
     renderJpg(colorRamp.toArray)
@@ -66,7 +69,7 @@ trait JpgRenderMethods extends TileMethods {
       }
 
     val r2 = renderer.render(tile)
-    JpgEncoder.writeByteArray(r2)
+    new JpgEncoder().writeByteArray(r2)
   }
 
   def renderJpg(ramp: ColorRamp, breaks: Array[Int]): Jpg =
