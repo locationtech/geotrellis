@@ -66,7 +66,7 @@ trait PngRenderMethods extends TileMethods {
       }
 
     val r2 = renderer.render(tile)
-    new PngEncoder(renderer.settings).writeByteArray(r2)
+    new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
   }
 
   def renderPng(ramp: ColorRamp, breaks: Array[Int]): Png =
