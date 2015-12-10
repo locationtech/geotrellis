@@ -27,7 +27,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
       attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id, ": unable to read metadata").initCause(e)
     }
 
     val boundable = implicitly[Boundable[K]]
