@@ -1,17 +1,14 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.mosaic.MergeView
-import geotrellis.spark.{KeyBounds, LayerId, Boundable}
+import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
-import org.apache.avro.Schema
+import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import scala.reflect.ClassTag
-
-
 
 object AccumuloLayerCopier {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")

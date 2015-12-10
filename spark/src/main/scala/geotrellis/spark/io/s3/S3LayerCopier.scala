@@ -1,14 +1,12 @@
 package geotrellis.spark.io.s3
 
 import com.amazonaws.services.s3.model.ObjectListing
-import geotrellis.spark.io.hadoop.HadoopLayerHeader
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import org.apache.avro.Schema
 import spray.json.JsonFormat
-import spray.json.DefaultJsonProtocol._
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag

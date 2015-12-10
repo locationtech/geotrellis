@@ -98,24 +98,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
         }
       }
   }
-
-  def copy(from: LayerId, to: LayerId): Unit = {
-    if(!layerExists(from)) throw new LayerNotFoundError(from)
-    if(layerExists(to)) throw new LayerExistsError(to)
-
-    s3Client
-      .listObjectsIterator(bucket, path(rootPath, "_attributes"))
-      .foreach { os =>
-        if (os.getKey.contains(s"__${from.name}__${from.zoom}.json")) {
-          s3Client.copyObject(
-            bucket, os.getKey, bucket,
-            os.getKey.replace(
-              s"__${from.name}__${from.zoom}.json",
-              s"__${to.name}__${to.zoom}.json"
-            ))
-        }
-      }
-  }
 }
 
 object S3AttributeStore {
