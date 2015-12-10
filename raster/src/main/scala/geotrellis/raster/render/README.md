@@ -85,3 +85,24 @@ within a given tile
 // the breakpoints concretely
 someTile.renderPng(ColorRamp(Seq(1, 5, 10)))
 ```
+
+##Render Settings
+It might be useful to tweak the rendering of images for some use cases.
+In light of this fact, both png and jpg expose a `Settings` classes
+(`geotrellis.raster.render.jpg.Settings` and
+`geotrellis.raster.render.png.Settings`) which provide a means to tune
+image encoding.
+In general, messing with this just isn't necessary. If you're unsure,
+there's a good chance this featureset isn't for you.
+
+####PNG Settings
+`png.Settings` allows you to specify a `ColorType` (bit depth and masks)
+and a `Filter`. These can both be read about on the W3 specification and
+[png Wikipedia
+page]('https://en.wikipedia.org/wiki/Portable_Network_Graphics').
+
+####JPEG Settings
+`jpg.Settings` allow specification of the compressionQuality (a Double
+from 0 to 1.0) and whether or not Huffman tables are to be computed on
+each run - often referred to as 'optimized' rendering. By default, a
+compressionQuality of 0.7 is used and Huffman table optimization is not used.
