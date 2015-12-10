@@ -50,8 +50,9 @@ trait GeoTiffTestUtils extends Matchers {
   import GeoTiffTestUtils._
 
   def geoTiffPath(name: String): String = {
-    initializeTestFiles()
-    s"$testDirPath/$name"
+    val path = s"$testDirPath/$name"
+    GeoTiffTestUtils.initializeTestFiles(!new File(path).exists)
+    path
   }
 
   def baseDataPath = "raster-test/data"
@@ -59,8 +60,6 @@ trait GeoTiffTestUtils extends Matchers {
   val Epsilon = 1e-9
 
   var writtenFiles = Vector[String]()
-
-  def initializeTestFiles(): Unit = GeoTiffTestUtils.initializeTestFiles(false)
 
   protected def addToPurge(path: String) = synchronized {
     writtenFiles = writtenFiles :+ path

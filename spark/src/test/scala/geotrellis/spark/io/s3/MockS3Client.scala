@@ -227,4 +227,3 @@ object MockS3Client{
     }
   }
 }
-
