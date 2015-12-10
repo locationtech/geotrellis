@@ -178,7 +178,6 @@ class MockS3Client() extends S3Client with LazyLogging {
   def copyObject(r: CopyObjectRequest): CopyObjectResult = this.synchronized {
     logger.debug(s"COPY ${r.getSourceKey}")
 
-    val sourceBucket = getBucket(r.getSourceBucketName)
     val destBucket = getBucket(r.getDestinationBucketName)
     destBucket.synchronized {
       val obj = getObject(r.getSourceBucketName, r.getSourceKey)

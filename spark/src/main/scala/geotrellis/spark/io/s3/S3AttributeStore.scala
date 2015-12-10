@@ -105,15 +105,15 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
 
     s3Client
       .listObjectsIterator(bucket, path(rootPath, "_attributes"))
-      .collect { case os if os.getKey.contains(s"__${from.name}__${from.zoom}.json") =>
-        val key = os.getKey
-        println(key)
-        s3Client.copyObject(
-          bucket, os.getKey, bucket,
-          os.getKey.replace(
-            s"__${from.name}__${from.zoom}.json",
-            s"__${to.name}__${to.zoom}.json"
-          ))
+      .foreach { os =>
+        if (os.getKey.contains(s"__${from.name}__${from.zoom}.json")) {
+          s3Client.copyObject(
+            bucket, os.getKey, bucket,
+            os.getKey.replace(
+              s"__${from.name}__${from.zoom}.json",
+              s"__${to.name}__${to.zoom}.json"
+            ))
+        }
       }
   }
 }
