@@ -12,7 +12,7 @@ import DefaultJsonProtocol._
 import org.apache.spark._
 import java.io.PrintWriter
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
 import scala.io.Source
 import java.io.ByteArrayInputStream
 
@@ -39,27 +39,35 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
   def attributePrefix(attributeName: String): String =
     path(rootPath, "_attributes", s"${attributeName}__")
 
-  private def readKey[T: Format](key: String): Option[(LayerId, T)] = {
+  private def readKey[T: Format](key: String): (LayerId, T) = {
     val is = s3Client.getObject(bucket, key).getObjectContent
-    val json = Source.fromInputStream(is)(Charset.forName("UTF-8")).mkString
-    is.close()
-    Some(json.parseJson.convertTo[(LayerId, T)])
-    // TODO: Make this crash to find out when None should be returned
+    val json =
+      try {
+        Source.fromInputStream(is)(Charset.forName("UTF-8")).mkString
+      } finally {
+        is.close()
+      }
+
+    json.parseJson.convertTo[(LayerId, T)]
   }
   
   def read[T: Format](layerId: LayerId, attributeName: String): T =
-    readKey[T](attributePath(layerId, attributeName)) match {
-      case Some((id, value)) => value
-      case None => throw new AttributeNotFoundError(attributeName, layerId)
+    try {
+      readKey[T](attributePath(layerId, attributeName))._2
+    } catch {
+      case e: AmazonS3Exception =>
+        throw new AttributeNotFoundError(attributeName, layerId).initCause(e)
     }
 
   def readAll[T: Format](attributeName: String): Map[LayerId, T] =
     s3Client
       .listObjectsIterator(bucket, attributePrefix(attributeName))
-      .map{ os =>       
-        readKey[T](os.getKey) match {
-          case Some(tup) => tup
-          case None => throw new CatalogError(s"Unable to list $attributeName attributes from $bucket/${os.getKey}") 
+      .map{ os =>
+        try {
+          readKey[T](os.getKey)
+        } catch {
+          case e: AmazonS3Exception =>
+            throw new CatalogError(s"Unable to list $attributeName attributes from $bucket/${os.getKey}").initCause(e)
         }
       }
       .toMap
@@ -72,9 +80,8 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     //AmazonServiceException possible
   }
 
-  def layerExists(layerId: LayerId): Boolean = {
-    s3Client.listObjectsIterator(bucket, AttributeStore.Fields.metaData, 1).nonEmpty
-  }
+  def layerExists(layerId: LayerId): Boolean =
+    s3Client.listObjectsIterator(bucket, attributePath(layerId, AttributeStore.Fields.metaData), 1).nonEmpty
 
   def delete(layerId: LayerId, path: String): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
@@ -85,8 +92,10 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     s3Client
       .listObjectsIterator(bucket, path(rootPath, "_attributes"))
-      .collect { case os if os.getKey.contains(s"__${layerId.name}__${layerId.zoom}.json") =>
-        s3Client.deleteObject(bucket, os.getKey)
+      .foreach { os =>
+        if(os.getKey.contains(s"__${layerId.name}__${layerId.zoom}.json")) {
+          s3Client.deleteObject(bucket, os.getKey)
+        }
       }
   }
 
@@ -96,15 +105,15 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
 
     s3Client
       .listObjectsIterator(bucket, path(rootPath, "_attributes"))
-      .collect { case os if os.getKey.contains(s"__${from.name}__${from.zoom}.json") =>
-        val key = os.getKey
-        println(key)
-        s3Client.copyObject(
-          bucket, os.getKey, bucket,
-          os.getKey.replace(
-            s"__${from.name}__${from.zoom}.json",
-            s"__${to.name}__${to.zoom}.json"
-          ))
+      .foreach { os =>
+        if (os.getKey.contains(s"__${from.name}__${from.zoom}.json")) {
+          s3Client.copyObject(
+            bucket, os.getKey, bucket,
+            os.getKey.replace(
+              s"__${from.name}__${from.zoom}.json",
+              s"__${to.name}__${to.zoom}.json"
+            ))
+        }
       }
   }
 

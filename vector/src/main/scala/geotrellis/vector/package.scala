@@ -26,6 +26,7 @@ package object vector extends SeqMethods {
   type PointFeature[D] = Feature[Point, D]
   type LineFeature[D] = Feature[Line, D]
   type PolygonFeature[D] = Feature[Polygon, D]
+  type ExtentFeature[D] = Feature[Extent, D]
   type MultiPointFeature[D] = Feature[MultiPoint, D]
   type MultiLineFeature[D] = Feature[MultiLine, D]
   type MultiPolygonFeature[D] = Feature[MultiPolygon, D]
@@ -81,21 +82,6 @@ package object vector extends SeqMethods {
     }).toSeq
   }
 
-  implicit def geometryCollectionToSeqGeometry(gc: jts.GeometryCollection): Seq[Geometry] = {
-    val len = gc.getNumGeometries
-    (for (i <- 0 until len) yield {
-      gc.getGeometryN(i) match {
-        case p: jts.Point => Seq[Geometry](Point(p))
-        case mp: jts.MultiPoint => multiPointToSeqPoint(mp)
-        case l: jts.LineString => Seq[Geometry](Line(l))
-        case ml: jts.MultiLineString => multiLineToSeqLine(ml)
-        case p: jts.Polygon => Seq[Geometry](Polygon(p))
-        case mp: jts.MultiPolygon => multiPolygonToSeqPolygon(mp)
-        case gc: jts.GeometryCollection => geometryCollectionToSeqGeometry(gc)
-      }
-    }).toSeq.flatten
-  }
-
   implicit def seqPointToMultiPoint(ps: Seq[Point]): MultiPoint = MultiPoint(ps)
   implicit def arrayPointToMultiPoint(ps: Array[Point]): MultiPoint = MultiPoint(ps)
 
@@ -105,29 +91,6 @@ package object vector extends SeqMethods {
   implicit def seqPolygonToMultiPolygon(ps: Seq[Polygon]): MultiPolygon = MultiPolygon(ps)
   implicit def arrayPolygonToMultiPolygon(ps: Array[Polygon]): MultiPolygon = MultiPolygon(ps)
 
-  implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection = {
-    val points = mutable.ListBuffer[Point]()
-    val lines = mutable.ListBuffer[Line]()
-    val polygons = mutable.ListBuffer[Polygon]()
-    val multiPoints = mutable.ListBuffer[MultiPoint]()
-    val multiLines = mutable.ListBuffer[MultiLine]()
-    val multiPolygons = mutable.ListBuffer[MultiPolygon]()
-    val geometryCollections = mutable.ListBuffer[GeometryCollection]()
-
-    for(g <- gs) {
-      g match {
-        case p: Point => points += p
-        case l: Line => lines += l
-        case p: Polygon => polygons += p
-        case mp: MultiPoint => multiPoints += mp
-        case ml: MultiLine => multiLines += ml
-        case mp: MultiPolygon => multiPolygons += mp
-        case gc: GeometryCollection => geometryCollections += gc
-        case _ => sys.error(s"Unknown Geometry type: $g")
-      }
-    }
-    GeometryCollection(points, lines, polygons,
-                       multiPoints, multiLines, multiPolygons,
-                       geometryCollections)
-  }
+  implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection =
+    GeometryCollection(gs)
 }

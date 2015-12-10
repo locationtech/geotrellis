@@ -87,7 +87,7 @@ trait S3Client extends LazyLogging {
       def getNextPage: Boolean =  {
         val nextRequest = request.withMarker(listing.getNextMarker)
         listing = listObjects(nextRequest)
-        listing.getObjectSummaries.asScala.iterator        
+        listing.getObjectSummaries.asScala.iterator
         iter.hasNext
       }
 

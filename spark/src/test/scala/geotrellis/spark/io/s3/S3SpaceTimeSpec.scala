@@ -30,12 +30,12 @@ abstract class S3SpaceTimeSpec
   lazy val rddWriter = new S3RDDWriter[SpaceTimeKey, Tile](){
     override val getS3Client = () => new MockS3Client
   }
-  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddReader, None)
+  lazy val reader  = new S3LayerReader[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, true)
-  lazy val deleter = new S3LayerDeleter(attributeStore)
-  lazy val copier = S3LayerCopier(attributeStore, bucket, prefix)
-  lazy val mover  = S3LayerMover(attributeStore, bucket, prefix)
-  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
+  lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }
+  lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val mover   = S3LayerMover(attributeStore, copier, deleter)
+  lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client
   }
   lazy val sample =  CoordinateSpaceTime
