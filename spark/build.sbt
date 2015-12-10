@@ -21,7 +21,7 @@ parallelExecution in Test := true
 testForkedParallel in Test := true
 
 javaOptions ++= List(
-  "-Xmx8G",
+  "-Xmx2G",
   "-XX:MaxPermSize=384m",
   s"-Djava.library.path=${Environment.javaGdalDir}",
   "-Dsun.io.serialization.extendedDebugInfo=true")
