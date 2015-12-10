@@ -17,7 +17,9 @@ libraryDependencies ++= Seq(
   scalatest % "test")
 
 fork := true
-parallelExecution in Test := false
+parallelExecution in Test := true
+testForkedParallel in Test := true
+
 javaOptions ++= List(
   "-Xmx8G",
   "-XX:MaxPermSize=384m",
