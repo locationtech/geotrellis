@@ -159,11 +159,11 @@ class PngRendererBenchmark extends OperationBenchmark {
   def timeEncoder(reps: Int) = run(reps)(runEncoder)
   def runEncoder = {
     val r2 = renderer.render(raster)
-    val bytes = new PngEncoder(renderer.settings).writeByteArray(r2)
+    val bytes = new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
   }
 
   def timeJustEncoder(reps: Int) = run(reps)(runJustEncoder)
   def runJustEncoder = {
-    val bytes = new PngEncoder(renderer.settings).writeByteArray(rendered)
+    val bytes = new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(rendered)
   }
 }
