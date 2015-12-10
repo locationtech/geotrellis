@@ -25,6 +25,7 @@ import java.util.Locale
   * ColorBreaks describes a way to render a raster into a colored image.
   */
 trait ColorBreaks extends Serializable {
+  def ndColor: Option[Int]
   def colors: Array[Int]
   def length: Int
   def replaceColors(newColors: Array[Int]): ColorBreaks
@@ -42,7 +43,7 @@ trait ColorBreaks extends Serializable {
   * @param limits  An array with the maximum value of each range
   * @param colors  An array with the color assigned to each range
   */
-class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends ColorBreaks {
+class IntColorBreaks(val limits: Array[Int], val colors: Array[Int], val ndColor: Option[Int] = None) extends ColorBreaks {
   assert(limits.length == colors.length)
   assert(colors.length > 0)
 
@@ -76,7 +77,7 @@ class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends Col
   * @param limits  An array with the maximum value of each range
   * @param colors  An array with the color assigned to each range
   */
-class DoubleColorBreaks(val limits: Array[Double], val colors: Array[Int]) extends ColorBreaks {
+class DoubleColorBreaks(val limits: Array[Double], val colors: Array[Int], val ndColor: Option[Int] = None) extends ColorBreaks {
   assert(limits.length == colors.length)
   assert(colors.length > 0)
 
@@ -138,33 +139,65 @@ object ColorBreaks {
   }
 
   def apply(limits: Array[Int], colors: Array[Int]): IntColorBreaks =
+    apply(limits, colors, None)
+
+  def apply(limits: Array[Int], colors: Array[Int], ndColor: Option[Int]): IntColorBreaks =
     new IntColorBreaks(limits, sample(colors, limits.length))
 
   def apply(limits: Array[Double], colors: Array[Int]): DoubleColorBreaks =
+    apply(limits, colors, None)
+
+  def apply(limits: Array[Double], colors: Array[Int], ndColor: Option[Int]): DoubleColorBreaks =
     new DoubleColorBreaks(limits, sample(colors, limits.length))
 
-  def apply(histogram: Histogram, colors: Array[Int]): IntColorBreaks = {
+  def apply(histogram: Histogram, colors: Array[Int]): IntColorBreaks =
+    apply(histogram, colors, None)
+
+  def apply(histogram: Histogram, colors: Array[Int], ndColor: Option[Int]): IntColorBreaks = {
     val limits = histogram.getQuantileBreaks(colors.length)
     new IntColorBreaks(limits, sample(colors, limits.length))
   }
 
-  def fromStringDouble(str: String): Option[DoubleColorBreaks] = {
-    val split = str.split(';').map(_.trim.split(':'))
+  /**
+   * A utility method for getting the NoData color from a serialization of a ColorBreaks instance.
+   * This method will grab the first 'null' field and attempt to make it work; falling back
+   * to none in case that value doesn't work.
+   */
+  private def extractNoDataColor(breaks: String): Option[Int] = {
+    val nulls = breaks.split(';').filter(_.contains("null"))
+    nulls.headOption.map { colorString =>
+      val hexColor = colorString.split(':')(1)
+      BigInt(hexColor, 16).toInt
+    }
+  }
+
+  /**
+    * Convert from a string of the form: `<BREAK>:<COLOR>;<BREAK>:<COLOR>' to Option[DoubleColorBreaks]
+   */
+  def fromStringDouble(breaks: String): Option[DoubleColorBreaks] = {
+    val split = breaks.split(';').map(_.trim.split(':'))
     Try {
       val limits = split.map { pair => pair(0).toDouble }
       val colors = split.map { pair => BigInt(pair(1), 16).toInt }
       require(limits.size == colors.size)
-      ColorBreaks(limits, colors)
+      // Handle possible NoData coloring
+      val ndColor: Option[Int] = extractNoDataColor(breaks)
+      ColorBreaks(limits, colors, ndColor)
     }.toOption
   }
 
-  def fromStringInt(str: String): Option[IntColorBreaks] = {
-    val split = str.split(';').map(_.trim.split(':'))
+  /**
+    * Convert from a string of the form: `<BREAK>:<COLOR>;<BREAK>:<COLOR>' to Option[IntColorBreaks]
+   */
+  def fromStringInt(breaks: String): Option[IntColorBreaks] = {
+    val split = breaks.split(';').map(_.trim.split(':'))
     Try {
       val limits = split.map { pair => pair(0).toInt }
       val colors = split.map { pair => BigInt(pair(1), 16).toInt }
       require(limits.size == colors.size)
-      ColorBreaks(limits, colors)
+      // Handle possible NoData coloring
+      val ndColor: Option[Int] = extractNoDataColor(breaks)
+      ColorBreaks(limits, colors, ndColor)
     }.toOption
   }
 }

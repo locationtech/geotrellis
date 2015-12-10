@@ -5,8 +5,8 @@ import java.io.{FileOutputStream, File}
 sealed trait ImageFormat
 
 case class Jpg(bytes: Array[Byte]) extends ImageFormat {
-  def write(path: String):Unit  = {
-    val fos = new FileOutputStream(new File(path))
+  def write(f: File):Unit  = {
+    val fos = new FileOutputStream(f)
     try {
       fos.write(bytes)
     } finally {
@@ -16,8 +16,8 @@ case class Jpg(bytes: Array[Byte]) extends ImageFormat {
 }
 
 case class Png(bytes: Array[Byte]) extends ImageFormat {
-  def write(path: String):Unit  = {
-    val fos = new FileOutputStream(new File(path))
+  def write(f: File):Unit  = {
+    val fos = new FileOutputStream(f)
     try {
       fos.write(bytes)
     } finally {

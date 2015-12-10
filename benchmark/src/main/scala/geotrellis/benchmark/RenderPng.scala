@@ -47,7 +47,7 @@ class RenderPngBenchmark extends OperationBenchmark {
     op =
       Literal(raster.histogram).flatMap { h =>
         val breaksOp = ColorBreaks(h, colors)
-        raster.renderPng(breaksOp, 0, h)
+        raster.renderPng(breaksOp, h)
       }
 
     source =
@@ -88,7 +88,7 @@ class RenderPngWeightedOverlayBenchmark extends OperationBenchmark {
     op =
       Literal(raster.histogram) flatMap { h =>
         val breaksOp = ColorBreaks(h, colors)
-        raster.renderPng(breaksOp, 0)
+        raster.renderPng(breaksOp)
       }
 
     source =

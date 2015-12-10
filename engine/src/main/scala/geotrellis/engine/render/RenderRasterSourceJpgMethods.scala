@@ -38,10 +38,7 @@ trait RenderRasterSourceJpgMethods extends RasterSourceMethods {
     rasterSource.converge.map(_.renderJpg(colorRamp))
 
   def renderJpg(colorBreaks: ColorBreaks): ValueSource[Jpg] =
-    renderJpg(colorBreaks, 0)
-
-  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int): ValueSource[Jpg] =
-    rasterSource.converge.map(_.renderJpg(colorBreaks, noDataColor))
+    rasterSource.converge.map(_.renderJpg(colorBreaks))
 
   def renderJpg(ramp: ColorRamp, breaks: Array[Int]): ValueSource[Jpg] =
     renderJpg(ColorBreaks(breaks, ramp.toArray))

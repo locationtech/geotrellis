@@ -22,8 +22,21 @@ trait PngRenderMethods extends TileMethods {
   def renderPng(colorRamp: ColorRamp): Png =
     renderPng(colorRamp.toArray)
 
+  /**
+    * Generate a PNG image from a raster.
+    *
+    * Use this operation when you have a raster of data that you want to visualize
+    * with an image.
+    *
+    * To render a data raster into an image, the operation needs to know which
+    * values should be painted with which colors.  To that end, you'll need to
+    * generate a ColorBreaks object which represents the value ranges and the
+    * assigned color.  One way to create these color breaks is to use the
+    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
+    * quantile class breaks.
+    */
   def renderPng(colorBreaks: ColorBreaks): Png =
-    renderPng(colorBreaks, 0)
+    renderPng(colorBreaks, None)
 
   /**
     * Generate a PNG image from a raster.
@@ -38,31 +51,15 @@ trait PngRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): Png =
-    renderPng(colorBreaks, noDataColor, None)
-
-  /**
-    * Generate a PNG image from a raster.
-    *
-    * Use this operation when you have a raster of data that you want to visualize
-    * with an image.
-    *
-    * To render a data raster into an image, the operation needs to know which
-    * values should be painted with which colors.  To that end, you'll need to
-    * generate a ColorBreaks object which represents the value ranges and the
-    * assigned color.  One way to create these color breaks is to use the
-    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks.
-    */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Png =
-    renderPng(colorBreaks, noDataColor, Some(histogram))
+  def renderPng(colorBreaks: ColorBreaks, histogram: Histogram): Png =
+    renderPng(colorBreaks, Some(histogram))
 
   private
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Png = {
+  def renderPng(colorBreaks: ColorBreaks, histogram: Option[Histogram]): Png = {
     val renderer =
       histogram match {
-        case Some(h) => Renderer(colorBreaks, noDataColor, h)
-        case None => Renderer(colorBreaks, noDataColor)
+        case Some(h) => Renderer(colorBreaks, h)
+        case None => Renderer(colorBreaks)
       }
 
     val r2 = renderer.render(tile)
@@ -74,21 +71,21 @@ trait PngRenderMethods extends TileMethods {
 
   def renderPng(colors: Array[Int]): Png = {
     val h = tile.histogram
-    renderPng(ColorBreaks(h, colors), 0, h)
+    renderPng(ColorBreaks(h, colors), h)
   }
 
   def renderPng(colors: Array[Int], numColors: Int): Png =
     renderPng(Color.chooseColors(colors, numColors))
 
   def renderPng(breaks: Array[Int], colors: Array[Int]): Png =
-    renderPng(ColorBreaks(breaks, colors), 0)
+    renderPng(ColorBreaks(breaks, colors))
 
   def renderPng(breaks: Array[Int], colors: Array[Int], noDataColor: Int): Png =
-    renderPng(ColorBreaks(breaks, colors), noDataColor)
+    renderPng(ColorBreaks(breaks, colors, Some(noDataColor)))
 
   def renderPng(breaks: Array[Double], colors: Array[Int]): Png =
-    renderPng(ColorBreaks(breaks, colors), 0)
+    renderPng(ColorBreaks(breaks, colors))
 
   def renderPng(breaks: Array[Double], colors: Array[Int], noDataColor: Int): Png =
-    renderPng(ColorBreaks(breaks, colors), noDataColor)
+    renderPng(ColorBreaks(breaks, colors, Some(noDataColor)))
 }
