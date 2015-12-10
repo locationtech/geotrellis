@@ -4,17 +4,15 @@ env:
   global:
     - secure: "XAhJXuXqnGlZlU2pGcIQKJ2rF44gIReA0arHwapFII/gR1h+2e6hgqnMXwrZaQa/EvNBaXq7nF3XcTBjrbK+ABeKA/0lOh/7ryIotP0i1YVrca69pSK9BY+Kr1y7ncLMqvoyjBziobOeVZmxbK4RflgUTIO7MKzzb5pNb9SnOK8="
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
+    - TRAVIS_BUILD="1"
 
 language: scala
 
 jdk:
 - openjdk7
-- oraclejdk7
-- oraclejdk8
 
 scala:
 - "2.10.4"
-- "2.11.5"
 
 cache:
   directories:
