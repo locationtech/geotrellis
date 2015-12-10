@@ -1,8 +1,8 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.mosaic.MergeView
-import geotrellis.spark.Boundable
 import geotrellis.spark.io.{AttributeStore, SparkLayerCopier, ContainerConstructor}
+import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.SparkContext
@@ -26,7 +26,10 @@ object AccumuloLayerCopier {
       attributeStore = AccumuloAttributeStore(instance.connector),
       layerReader = AccumuloLayerReader[K, V, Container](instance),
       layerWriter = AccumuloLayerWriter[K, V, Container](instance, table, indexMethod, strategy)
-    )
+    ) {
+      def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader =
+        header.copy(tileTable = table)
+    }
 
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]]
   (instance: AccumuloInstance,
@@ -39,7 +42,9 @@ object AccumuloLayerCopier {
       attributeStore = AccumuloAttributeStore(instance.connector),
       layerReader = layerReader,
       layerWriter = layerWriter
-    )
+    ) {
+      def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header
+    }
 
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]]
   (attributeStore: AttributeStore[JsonFormat],
@@ -52,6 +57,8 @@ object AccumuloLayerCopier {
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
-    )
+    ) {
+      def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header
+    }
 
 }

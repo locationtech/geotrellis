@@ -38,12 +38,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     scanner.iterator.map(_.getValue)
   }
 
-  private def fetchLayer(layerId: LayerId): Iterator[(Text, Value)] = {
-    val scanner  = connector.createScanner(attributeTable, new Authorizations())
-    scanner.setRange(new Range(new Text(layerId.toString)))
-    scanner.iterator.map { e => e.getKey.getColumnFamily -> e.getValue }
-  }
-
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     val numThreads = 1
@@ -92,27 +86,4 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 
   def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
-
-  def copy(from: LayerId, to: LayerId): Unit = {
-    if (!layerExists(from)) throw new LayerNotFoundError(from)
-    if (layerExists(to)) throw new LayerExistsError(to)
-
-    val numThreads = 1
-    val config = new BatchWriterConfig()
-    config.setMaxWriteThreads(numThreads)
-    val writer = connector.createBatchWriter(attributeTable, config)
-
-    fetchLayer(from)
-      .foreach { case (columnFamily, value) =>
-        val mutation = new Mutation(to.toString)
-        mutation.put(
-          columnFamily, new Text(), System.currentTimeMillis(),
-          new Value((to, value.toString.parseJson.convertTo[(LayerId, JsObject)]).toJson.compactPrint.getBytes)
-        )
-      }
-
-    writer.close()
-  }
-
-  def move(from: LayerId, to: LayerId) = { copy(from, to); delete(from) }
 }

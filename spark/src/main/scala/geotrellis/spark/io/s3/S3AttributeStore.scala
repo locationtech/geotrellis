@@ -1,17 +1,11 @@
 package geotrellis.spark.io.s3
 
 import java.nio.charset.Charset
-
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-
 import spray.json._
 import DefaultJsonProtocol._
-
-import org.apache.spark._
-import java.io.PrintWriter
-import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
 import scala.io.Source
 import java.io.ByteArrayInputStream
@@ -98,26 +92,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
         }
       }
   }
-
-  def copy(from: LayerId, to: LayerId): Unit = {
-    if(!layerExists(from)) throw new LayerNotFoundError(from)
-    if(layerExists(to)) throw new LayerExistsError(to)
-
-    s3Client
-      .listObjectsIterator(bucket, path(rootPath, "_attributes"))
-      .foreach { os =>
-        if (os.getKey.contains(s"__${from.name}__${from.zoom}.json")) {
-          s3Client.copyObject(
-            bucket, os.getKey, bucket,
-            os.getKey.replace(
-              s"__${from.name}__${from.zoom}.json",
-              s"__${to.name}__${to.zoom}.json"
-            ))
-        }
-      }
-  }
-
-  def move(from: LayerId, to: LayerId) = { copy(from, to); delete(from) }
 }
 
 object S3AttributeStore {
