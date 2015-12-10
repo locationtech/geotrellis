@@ -84,23 +84,6 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
     attributeStore.cacheWrite[JsObject](id, Fields.metaData, obj)
   }
 
-  def updateLayerAttribute[T: JsonFormat](id: LayerId, attributeName: String, attribute: T): Unit = {
-    val json   = attributeStore.cacheRead[JsObject](id, Fields.metaData)
-    val fields = json.fields
-
-    import DefaultJsonProtocol._
-    attributeStore.cacheWrite[JsObject](id, Fields.metaData, json.copy(fields =
-      fields.get(attributeName) match {
-        case Some(obj) => (fields - attributeName) + (attributeName -> attribute.toJson)
-        case _ => throw new DeserializationException(s"Could not read '$attributeName' in $json")
-      }
-    ))
-
-  }
-
-  def readLayerAttribute[T: JsonFormat](id: LayerId, attributeName: String): T =
-    attributeStore.cacheRead[JsObject](id, Fields.metaData).convertTo[T](fieldLens(attributeName))
-
   private def fieldLens[T: JsonFormat](fieldName: String): JsonFormat[T] = new JsonFormat[T] {
     def read(json: JsValue) = {
       json.asJsObject.getFields(fieldName) match {

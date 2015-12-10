@@ -51,10 +51,9 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container]
     val s3Client = getS3Client()
 
     copyListing(s3Client, bucket, s3Client.listObjects(bucket, prefix), from, to)
-    attributeStore.writeLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](
+    attributeStore.writeLayerAttributes(
       to, headerUpdate(to, header), metadata, keyBounds, keyIndex, schema
     )
-    attributeStore.delete(from)
   }
 }
 

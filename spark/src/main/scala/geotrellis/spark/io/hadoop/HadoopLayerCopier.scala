@@ -27,16 +27,15 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container]
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
     implicit val mdFormat = cons.metaDataFormat
-    val (header, metadata, keyBounds, keyIndex, schema) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](from)
+    val (header, metadata, keyBounds, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Unit](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
     HdfsUtils.copyPath(header.path, new Path(rootPath,  s"${to.name}/${to.zoom}"), sc.hadoopConfiguration)
-    attributeStore.writeLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](
-      to, headerUpdate(to, header), metadata, keyBounds, keyIndex, schema
+    attributeStore.writeLayerAttributes(
+      to, headerUpdate(to, header), metadata, keyBounds, keyIndex, Option.empty[Schema]
     )
-    attributeStore.delete(from)
   }
 }
 

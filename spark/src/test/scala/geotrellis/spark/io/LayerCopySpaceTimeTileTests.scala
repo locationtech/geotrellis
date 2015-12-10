@@ -24,9 +24,6 @@ trait LayerCopySpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] wi
 
     it("should copy a layer") {
       copier.copy(layerId, copiedLayerId)
-
-      reader.read(copiedLayerId).keys.collect().map(println)
-
       reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
     }
   }

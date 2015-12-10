@@ -28,7 +28,7 @@ abstract class SparkLayerCopier[LayerHeader: JsonFormat, K: Boundable: JsonForma
 
     try {
       layerWriter.write(to, layerReader.read(from))
-      attributeStore.writeLayerAttributes[Header, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](
+      attributeStore.writeLayerAttributes(
         to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
       )
     } catch {
