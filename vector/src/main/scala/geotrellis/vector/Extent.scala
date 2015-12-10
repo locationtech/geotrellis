@@ -43,15 +43,9 @@ object ProjectedExtent {
  */
 case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) extends Geometry {
 
-  // Validation: Do not accept extents with no width or height, or with min values greater than max values.
-  if (xmin >= xmax) {
-    if (xmin == xmax) { throw ExtentRangeError(s"Invalid Extent: Extent has no width. xmin must not equal xmax (xmin=$xmin, xmax=$xmax)") }
-    throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)")
-  }
-  if (ymin >= ymax) {
-    if (ymin == ymax) { throw ExtentRangeError(s"Invalid Extent: Extent has no heigh. ymin must not equal ymax (ymin=$ymin, ymax=$ymax)") }
-    throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)")
-  }
+  // Validation: Do not accept extents min values greater than max values.
+  if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)")  }
+  if (ymin > ymax) { throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)") }
 
   def jtsGeom =
     factory.createPolygon(
