@@ -20,19 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.engine._
 
-trait RenderRasterSourceMethods extends RasterSourceMethods {
-  def color(breaksToColors: Map[Int, Int]): RasterSource =
-    color(breaksToColors, ColorMapOptions.Default)
-
-  def color(breaksToColors: Map[Int, Int], options: ColorMapOptions): RasterSource =
-    rasterSource.mapTile(_.color(breaksToColors, options))
-
-  def color(breaksToColors: Map[Double, Int])(implicit d: DI): RasterSource =
-    color(breaksToColors, ColorMapOptions.Default)
-
-  def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): RasterSource =
-    rasterSource.mapTile(_.color(breaksToColors, options))
-
+trait RenderRasterSourcePngMethods extends RasterSourceMethods {
   /** Generate a PNG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -50,10 +38,7 @@ trait RenderRasterSourceMethods extends RasterSourceMethods {
     rasterSource.converge.map(_.renderPng(colorRamp))
 
   def renderPng(colorBreaks: ColorBreaks): ValueSource[Png] =
-    renderPng(colorBreaks, 0)
-
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): ValueSource[Png] =
-    rasterSource.converge.map(_.renderPng(colorBreaks, noDataColor))
+    rasterSource.converge.map(_.renderPng(colorBreaks))
 
   def renderPng(ramp: ColorRamp, breaks: Array[Int]): ValueSource[Png] =
     renderPng(ColorBreaks(breaks, ramp.toArray))

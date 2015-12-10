@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.render.png
+package geotrellis.raster.render
 
+import  geotrellis.raster.render.jpg._
+import  geotrellis.raster.render.png._
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.render._
@@ -26,28 +28,36 @@ import scala.collection.mutable
 case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: ColorType) {
   def render(r: Tile) =
     colorMap.render(r).convert(cellType)
-
-  def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
-  def apply(breaks: ColorBreaks, nodata: Int): Renderer =
-    apply(breaks, nodata, None)
+  def apply(colorBreaks: ColorBreaks): Renderer =
+    apply(colorBreaks, None)
+
+  def apply(limits: Array[Int], colors: Array[Int]): Renderer =
+    apply(ColorBreaks(limits, colors), None)
+
+  def apply(limits: Array[Double], colors: Array[Int]): Renderer =
+    apply(ColorBreaks(limits, colors), None)
 
   def apply(limits: Array[Int], colors: Array[Int], nodata: Int): Renderer =
-    apply(ColorBreaks(limits, colors), nodata, None)
+    apply(ColorBreaks(limits, colors, Some(nodata)), None)
 
-  // def apply(limits: Array[Double], colors: Array[Int], nodata: Int): Renderer =
-  //   apply(ColorBreaks(limits, colors), nodata, None)
+  def apply(limits: Array[Double], colors: Array[Int], nodata: Int): Renderer =
+    apply(ColorBreaks(limits, colors, Some(nodata)), None)
 
   def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Histogram): Renderer =
-    apply(ColorBreaks(limits, colors), nodata, Some(h))
+    apply(ColorBreaks(limits, colors, Some(nodata)), Some(h))
 
-  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Histogram): Renderer =
-    apply(colorBreaks, nodata, Some(h))
+  def apply(limits: Array[Double], colors: Array[Int], nodata: Int, h: Histogram): Renderer =
+    apply(ColorBreaks(limits, colors, Some(nodata)), Some(h))
+
+  def apply(colorBreaks: ColorBreaks, h: Histogram): Renderer =
+    apply(colorBreaks, Some(h))
 
   /** Include a precomputed histogram to cache the color map and speed up the rendering. */
-  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Option[Histogram]): Renderer = {
+  def apply(colorBreaks: ColorBreaks, h: Option[Histogram]): Renderer = {
+    val ndColor = colorBreaks.ndColor.getOrElse(0)
     val len = colorBreaks.length
     if(len <= 256) {
       val indices = (0 until len).toArray
@@ -84,23 +94,23 @@ object Renderer {
       }
 
       if (grey && opaque) {
-        val colorMap = colorBreaks.mapColors { z => (z >> 8) & 0xff }.toColorMap(ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.mapColors { z => (z >> 8) & 0xff }.toColorMap(ColorMapOptions(LessThan, ndColor))
         h match {
           case Some(hist) =>
-            Renderer(colorMap.cache(hist), TypeByte, Grey(nodata))
+            Renderer(colorMap.cache(hist), TypeByte, Grey(ndColor))
           case None =>
-            Renderer(colorMap, TypeByte, Grey(nodata))
+            Renderer(colorMap, TypeByte, Grey(ndColor))
         }
       } else if (opaque) {
-        val colorMap = colorBreaks.mapColors { z => z >> 8 }.toColorMap(ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.mapColors { z => z >> 8 }.toColorMap(ColorMapOptions(LessThan, ndColor))
         h match {
           case Some(hist) =>
-            Renderer(colorMap.cache(hist), TypeInt, Rgb(nodata))
+            Renderer(colorMap.cache(hist), TypeInt, Rgb(ndColor))
           case None =>
-            Renderer(colorMap, TypeInt, Rgb(nodata))
+            Renderer(colorMap, TypeInt, Rgb(ndColor))
         }
       } else if (grey) {
-        val colorMap = colorBreaks.mapColors { z => z & 0xffff }.toColorMap(ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.mapColors { z => z & 0xffff }.toColorMap(ColorMapOptions(LessThan, ndColor))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeShort, Greya)
@@ -108,7 +118,7 @@ object Renderer {
             Renderer(colorMap, TypeShort, Greya)
         }
       } else {
-        val colorMap = colorBreaks.toColorMap(ColorMapOptions(LessThan, nodata))
+        val colorMap = colorBreaks.toColorMap(ColorMapOptions(LessThan, ndColor))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeInt, Rgba)

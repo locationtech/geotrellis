@@ -3,11 +3,11 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import spire.syntax.cfor._
 
-trait MultiBandRenderMethods {
+trait MultiBandJpgRenderMethods {
 
   val tile: MultiBandTile
 
-  def renderPng(): Png = {
+  def renderJpg(): Jpg = {
 
     assert(tile.bandCount == 3)
 
@@ -49,6 +49,6 @@ trait MultiBandRenderMethods {
         }
       }
 
-    rgb.renderPng
+    rgb.renderJpg
   }
 }
