@@ -30,7 +30,7 @@ import java.io.File
  * These set of traits handle the creation and deletion of test directories on the local fs and hdfs,
  * It uses commons-io in at least one case (recursive directory deletion)
  */
-trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
+trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
   // get the name of the class which mixes in this trait
   val name = this.getClass.getName
 
@@ -43,6 +43,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
   // e.g., root directory on local file system for source data (e.g., tiffs)
   // localFS.getWorkingDirectory is for e.g., /home/jdoe/git/geotrellis
   val inputHome = new Path(localFS.getWorkingDirectory, "spark/src/test/resources/")
+  val inputHomeLocalPath = inputHome.toUri.getPath
 
   // test directory paths on local and hdfs 
   // outputHomeLocal - root directory of all tests on the local file system (e.g., file:///tmp/testFiles)

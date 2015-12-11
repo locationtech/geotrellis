@@ -13,7 +13,7 @@ object TestFiles extends Logging {
 
   def catalogPath(implicit sc: SparkContext): Path = {
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(sc.hadoopConfiguration)
-    new Path(localFS.getWorkingDirectory, "spark/src/test/resources/test-catalog")
+    new Path(inputHome.toUri.getPath, "test-catalog")
   }
 
   def init(implicit sc: SparkContext) = this.synchronized {
