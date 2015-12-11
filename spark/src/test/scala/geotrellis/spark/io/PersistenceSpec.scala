@@ -24,8 +24,8 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   def deleter: TestDeleter
   def tiles: TestTileReader
 
-  val layerId = LayerId("sample", 1)
-  val deleteLayerId = LayerId("deleteSample", 1) // second layer to avoid data race
+  val layerId = LayerId("sample-" + this.getClass.getName, 1)
+  val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
   lazy val query = reader.query(layerId)
   
   if (canRunSpark) {
