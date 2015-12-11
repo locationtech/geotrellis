@@ -24,7 +24,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id, ": unable to read metadata").initCause(e)
     }
 
     val boundable = implicitly[Boundable[K]]
