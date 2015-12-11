@@ -1,51 +1,109 @@
 package geotrellis.spark.testfiles
 
-import geotrellis.raster.Tile
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.FileUtil
-import org.apache.hadoop.fs.Path
+import com.github.nscala_time.time.Imports._
+import geotrellis.spark.tiling._
+import geotrellis.raster.{GridBounds, TileLayout, TypeFloat, Tile}
+import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
 import org.apache.spark._
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
+import geotrellis.proj4._
+import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
 
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
 
-  def catalogPath: Path = {
-    new Path(TestEnvironment.inputHome, "test-catalog")
+
+  val rasterMetaData: RasterMetaData = {
+    val cellType = TypeFloat
+    val crs = LatLng
+    val tileLayout = TileLayout(8, 8, 3, 4)
+    val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
+    val gridBounds = GridBounds(1, 1, 6, 7)
+    val extent = mapTransform(gridBounds)
+
+    RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
   }
 
-  def init(implicit sc: SparkContext) = this.synchronized {
-    val conf = sc.hadoopConfiguration
-    val localFS = catalogPath.getFileSystem(sc.hadoopConfiguration)
-    val needGenerate = !localFS.exists(catalogPath)
-    if (needGenerate) {
-      logInfo(s"test-catalog empty, generating at $catalogPath")
+  def generateSpatial(md: RasterMetaData)(implicit sc: SparkContext): Map[String, RasterRDD[SpatialKey]] = {
+    val gridBounds = md.gridBounds
+    val tileLayout = md.tileLayout
+    // Spatial Tiles
+    val spatialTestFiles = List(
+      new ConstantSpatialTiles(tileLayout, 1) -> "all-ones",
+      new ConstantSpatialTiles(tileLayout, 2) -> "all-twos",
+      new ConstantSpatialTiles(tileLayout, 100) -> "all-hundreds",
+      new IncreasingSpatialTiles(tileLayout, gridBounds) -> "increasing",
+      new DecreasingSpatialTiles(tileLayout, gridBounds) -> "decreasing",
+      new EveryOtherSpatialTiles(tileLayout, gridBounds, Double.NaN, 0.0) -> "every-other-undefined",
+      new EveryOtherSpatialTiles(tileLayout, gridBounds, 0.99, 1.01) -> "every-other-0.99-else-1.01",
+      new EveryOtherSpatialTiles(tileLayout, gridBounds, -1, 1) -> "every-other-1-else-1",
+      new ModSpatialTiles(tileLayout, gridBounds, 10000) -> "mod-10000"
+    )
 
-      GenerateTestFiles.generate(catalogPath)
+    for((tfv, name) <- spatialTestFiles) yield {
+      val tiles =
+        for(
+          row <- gridBounds.rowMin to gridBounds.rowMax;
+          col <- gridBounds.colMin to gridBounds.colMax
+        ) yield {
+          val key = SpatialKey(col, row)
+          val tile = tfv(key)
+          (key, tile)
+        }
+
+
+      val rdd =
+        asRasterRDD(md) {
+          sc.parallelize(tiles)
+        }
+
+
+      (name, rdd)
     }
-  }
+  }.toMap
 
-  def spatialReader(implicit sc: SparkContext) = {
-    init
-    HadoopLayerReader[SpatialKey, Tile, RasterRDD](catalogPath)
-  }
+  def generateSpaceTime(md: RasterMetaData)(implicit sc: SparkContext): Map[String, RasterRDD[SpaceTimeKey]] = {
+    val gridBounds = md.gridBounds
+    val tileLayout = md.tileLayout
 
-  def spaceTimeReader(implicit sc: SparkContext) = {
-    init
-    HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](catalogPath)
-  }
+    val times =
+      (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
 
+    val spaceTimeTestFiles = List(
+      new ConstantSpaceTimeTestTiles(tileLayout, 1) -> "spacetime-all-ones",
+      new ConstantSpaceTimeTestTiles(tileLayout, 2) -> "spacetime-all-twos",
+      new ConstantSpaceTimeTestTiles(tileLayout, 100) -> "spacetime-all-hundreds",
+      new CoordinateSpaceTimeTestTiles(tileLayout) -> "spacetime-coordinates"
+    )
+
+    for((tfv, name) <- spaceTimeTestFiles) yield {
+      val tiles =
+        for(
+          row <- gridBounds.rowMin to gridBounds.rowMax;
+          col <- gridBounds.colMin to gridBounds.colMax;
+          (time, timeIndex) <- times.zipWithIndex
+        ) yield {
+          val key = SpaceTimeKey(col, row, time)
+          val tile = tfv(key, timeIndex)
+          (key, tile)
+
+        }
+
+      val rdd =
+        asRasterRDD(md) {
+          sc.parallelize(tiles)
+        }
+
+      (name, rdd)
+    }
+  }.toMap
 }
 
 trait TestFiles { self: TestSparkContext =>
-  def spatialTestFile(layerName: String): RasterRDD[SpatialKey] = {
-    TestFiles.spatialReader.query(LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
-  }
+  lazy val spatialTestFile = TestFiles.generateSpatial(TestFiles.rasterMetaData)
 
-  def spaceTimeTestFile(layerName: String): RasterRDD[SpaceTimeKey] = {
-    TestFiles.spaceTimeReader.query(LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
-  }
+  lazy val spaceTimeTestFile = TestFiles.generateSpaceTime(TestFiles.rasterMetaData)
 
   def AllOnesTestFile =
     spatialTestFile("all-ones")
