@@ -11,10 +11,8 @@ import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container]
-  (attributeStore: AttributeStore[JsonFormat],
-       destBucket: String,
-    destKeyPrefix: String)
+class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
+   val attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String)
   (implicit cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
 
   type Header = S3LayerHeader
@@ -57,9 +55,7 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container]
 
 object S3LayerCopier {
   def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
-  (attributeStore: AttributeStore[JsonFormat],
-       destBucket: String,
-    destKeyPrefix: String)
+  (attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String)
   (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerCopier[K, V, Container[K]] =
     new S3LayerCopier[K, V, Container[K]](attributeStore, destBucket, destKeyPrefix)
 

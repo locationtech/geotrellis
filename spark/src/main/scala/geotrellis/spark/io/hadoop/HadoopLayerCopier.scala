@@ -10,13 +10,11 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
-
 import scala.reflect.ClassTag
 
-class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container]
-(rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-(implicit sc: SparkContext,
-        cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
+class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
+   rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
 
   type Header = HadoopLayerHeader
 
@@ -40,12 +38,13 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container]
 }
 
 object HadoopLayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
-  (rootPath: Path, attributeStore: AttributeStore[JsonFormat])
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+    rootPath: Path, attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerCopier[K, V, Container[K]] =
     new HadoopLayerCopier[K, V, Container[K]](rootPath, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
-  (rootPath: Path)(implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerCopier[K, V, Container[K]] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+    rootPath: Path)
+   (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerCopier[K, V, Container[K]] =
     apply[K, V, Container](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }
