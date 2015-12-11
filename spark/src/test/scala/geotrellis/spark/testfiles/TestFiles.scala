@@ -8,12 +8,11 @@ import org.apache.spark._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 
-object TestFiles extends TestEnvironment with Logging {
+object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
 
-  def catalogPath(implicit sc: SparkContext): Path = {
-    val inputHome = new Path(localFS.getWorkingDirectory, "spark/src/test/resources/").toUri.getPath
-    new Path(inputHome, "test-catalog")
+  def catalogPath: Path = {
+    new Path(TestEnvironment.inputHome, "test-catalog")
   }
 
   def init(implicit sc: SparkContext) = this.synchronized {

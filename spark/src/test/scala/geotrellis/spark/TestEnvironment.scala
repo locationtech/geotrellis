@@ -21,13 +21,20 @@ import geotrellis.spark.utils.SparkUtils
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.conf.Configuration
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 
 import java.io.File
 
 object TestEnvironment {
+  def getLocalFS(conf: Configuration): FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
 
+  def inputHome: Path = {
+    val conf = SparkUtils.hadoopConfiguration
+    val localFS = getLocalFS(conf)
+    new Path(localFS.getWorkingDirectory, "spark/src/test/resources/")
+  }
 }
 
 /*
@@ -42,11 +49,11 @@ trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
   val conf = SparkUtils.hadoopConfiguration
 
   // cache the local file system, no tests should have to call getFileSystem
-  val localFS = getLocalFS
+  val localFS = TestEnvironment.getLocalFS(conf)
 
   // e.g., root directory on local file system for source data (e.g., tiffs)
   // localFS.getWorkingDirectory is for e.g., /home/jdoe/git/geotrellis
-  val inputHome = new Path(localFS.getWorkingDirectory, "spark/src/test/resources/")
+  val inputHome = TestEnvironment.inputHome
   val inputHomeLocalPath = inputHome.toUri.getPath
 
   // test directory paths on local and hdfs 
@@ -90,6 +97,4 @@ trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
  
   // root directory name on both local file system and hdfs for all tests
   private final val outputHome = "testFiles"
-
-  private def getLocalFS: FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
 }
