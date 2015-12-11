@@ -27,7 +27,7 @@ object OnlyIfCanRunSpark {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
 
-    val sparkContext = SparkUtils.createLocalSparkContext("local[*]", "Test Context", new SparkConf())
+    val sparkContext = SparkUtils.createLocalSparkContext("local[1]", "Test Context", new SparkConf())
 
     System.clearProperty("spark.driver.port")
     System.clearProperty("spark.hostPort")
