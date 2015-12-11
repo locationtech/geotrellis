@@ -16,8 +16,9 @@ libraryDependencies ++= Seq(
   scalazStream,
   scalatest % "test")
 
-fork := true
-parallelExecution in Test := true
+fork in Run := true
+fork in Test := false
+//parallelExecution in Test := true
 //testForkedParallel in Test := true
 
 javaOptions ++= List(
