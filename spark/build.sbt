@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
 
 fork := true
 parallelExecution in Test := true
-testForkedParallel in Test := true
+//testForkedParallel in Test := true
 
 javaOptions ++= List(
   "-Xmx2G",
