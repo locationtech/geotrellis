@@ -26,60 +26,58 @@ class PowSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
   describe("Pow Operation") {
-    ifCanRunSpark {
-      val hundreds = AllHundredsTestFile
-      val twos = AllTwosTestFile
+    val hundreds = AllHundredsTestFile
+    val twos = AllTwosTestFile
 
-      it("should pow a raster with an integer") {
-        val res = twos ** 2
+    it("should pow a raster with an integer") {
+      val res = twos ** 2
 
-        rasterShouldBe(res, (4, 4))
+      rasterShouldBe(res, (4, 4))
 
-        rastersShouldHaveSameIdsAndTileCount(res, twos)
-      }
+      rastersShouldHaveSameIdsAndTileCount(res, twos)
+    }
 
-      it("should pow a integer with a raster") {
-        val res = 3 **: twos
+    it("should pow a integer with a raster") {
+      val res = 3 **: twos
 
-        rasterShouldBe(res, (9, 9))
+      rasterShouldBe(res, (9, 9))
 
-        rastersShouldHaveSameIdsAndTileCount(res, twos)
-      }
+      rastersShouldHaveSameIdsAndTileCount(res, twos)
+    }
 
-      it("should pow a raster with an double") {
-        val res = twos ** 1.5
+    it("should pow a raster with an double") {
+      val res = twos ** 1.5
 
-        rasterShouldBeAbout(res, (x: Int, y: Int) => math.pow(2, 1.5), 1e-6)
+      rasterShouldBeAbout(res, (x: Int, y: Int) => math.pow(2, 1.5), 1e-6)
 
-        rastersShouldHaveSameIdsAndTileCount(res, twos)
-      }
+      rastersShouldHaveSameIdsAndTileCount(res, twos)
+    }
 
-      it("should pow a double with a raster") {
-        val res = 1.5 **: twos
+    it("should pow a double with a raster") {
+      val res = 1.5 **: twos
 
-        rasterShouldBeAbout(res, (x: Int, y: Int) => math.pow(1.5, 2), 1e-10)
+      rasterShouldBeAbout(res, (x: Int, y: Int) => math.pow(1.5, 2), 1e-10)
 
-        rastersShouldHaveSameIdsAndTileCount(res, twos)
-      }
+      rastersShouldHaveSameIdsAndTileCount(res, twos)
+    }
 
 
-      it("should pow two rasters") {
-        val res = hundreds ** twos
+    it("should pow two rasters") {
+      val res = hundreds ** twos
 
-        rasterShouldBe(res, (1e4.toInt, 1e4.toInt))
+      rasterShouldBe(res, (1e4.toInt, 1e4.toInt))
 
-        rastersShouldHaveSameIdsAndTileCount(res, hundreds)
-      }
+      rastersShouldHaveSameIdsAndTileCount(res, hundreds)
+    }
 
-      it("should pow three rasters as a seq") {
-        val res = hundreds ** Seq(twos, twos)
+    it("should pow three rasters as a seq") {
+      val res = hundreds ** Seq(twos, twos)
 
-        rasterShouldBe(res, (1e8.toInt, 1e8.toInt))
+      rasterShouldBe(res, (1e8.toInt, 1e8.toInt))
 
-        rastersShouldHaveSameIdsAndTileCount(res, hundreds)
-      }
+      rastersShouldHaveSameIdsAndTileCount(res, hundreds)
     }
   }
 }

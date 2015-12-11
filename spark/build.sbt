@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   scalazStream,
   scalatest % "test")
 
-fork := false
+fork in Test := false
 
 javaOptions ++= List(
   "-Xmx2G",

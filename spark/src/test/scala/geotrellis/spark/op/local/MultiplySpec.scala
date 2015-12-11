@@ -25,39 +25,37 @@ class MultiplySpec extends FunSpec
                       with TestEnvironment
                       with TestFiles
                       with RasterRDDMatchers
-                      with OnlyIfCanRunSpark {
+                      with TestSparkContext {
 
   describe("Multiply Operation") {
-    ifCanRunSpark {
-      val twos = AllTwosTestFile
+    val twos = AllTwosTestFile
 
-      it("should multiply a constant by a raster") {
-        val fours = twos * 2
+    it("should multiply a constant by a raster") {
+      val fours = twos * 2
 
-        rasterShouldBe(fours, (4, 4))
-        rastersShouldHaveSameIdsAndTileCount(twos, fours)
-      }
+      rasterShouldBe(fours, (4, 4))
+      rastersShouldHaveSameIdsAndTileCount(twos, fours)
+    }
 
-      it("should multiply a raster by a constant") {
-        val fours = 2 *: twos
+    it("should multiply a raster by a constant") {
+      val fours = 2 *: twos
 
-        rasterShouldBe(fours, (4, 4))
-        rastersShouldHaveSameIdsAndTileCount(twos, fours)
-      }
+      rasterShouldBe(fours, (4, 4))
+      rastersShouldHaveSameIdsAndTileCount(twos, fours)
+    }
 
-      it("should multiply multiple rasters") {
-        val eights = twos * twos * twos
+    it("should multiply multiple rasters") {
+      val eights = twos * twos * twos
 
-        rasterShouldBe(eights, (8, 8))
-        rastersShouldHaveSameIdsAndTileCount(twos, eights)
-      }
+      rasterShouldBe(eights, (8, 8))
+      rastersShouldHaveSameIdsAndTileCount(twos, eights)
+    }
 
-      it("should multiply multiple rasters as a seq") {
-        val eights = twos * Seq(twos, twos)
+    it("should multiply multiple rasters as a seq") {
+      val eights = twos * Seq(twos, twos)
 
-        rasterShouldBe(eights, (8, 8))
-        rastersShouldHaveSameIdsAndTileCount(twos, eights)
-      }
+      rasterShouldBe(eights, (8, 8))
+      rastersShouldHaveSameIdsAndTileCount(twos, eights)
     }
   }
 }

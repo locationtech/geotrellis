@@ -11,7 +11,7 @@ import org.joda.time.DateTime
 
 abstract class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests {

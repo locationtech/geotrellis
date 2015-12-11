@@ -26,43 +26,41 @@ class EqualSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
   describe("Equal Operation") {
-    ifCanRunSpark {
-      val inc = IncreasingTestFile
-      val ones = AllOnesTestFile
+    val inc = IncreasingTestFile
+    val ones = AllOnesTestFile
 
-      it("should check equal between an integer and a raster") {
-        val res = inc.localEqual(1)
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
-        )
+    it("should check equal between an integer and a raster") {
+      val res = inc.localEqual(1)
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should check equal between an double and a raster") {
-        val res = inc.localEqual(1.0)
+    it("should check equal between an double and a raster") {
+      val res = inc.localEqual(1.0)
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
-        )
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should check equal between two rasters") {
-        val res = inc.localEqual(ones)
+    it("should check equal between two rasters") {
+      val res = inc.localEqual(ones)
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
-        )
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
     }
   }
 }

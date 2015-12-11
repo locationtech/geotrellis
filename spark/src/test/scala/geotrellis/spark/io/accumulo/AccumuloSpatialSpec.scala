@@ -9,7 +9,7 @@ import geotrellis.spark._
 
 abstract class AccumuloSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
   type Container = RasterRDD[SpatialKey]

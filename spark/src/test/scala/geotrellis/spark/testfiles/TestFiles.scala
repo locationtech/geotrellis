@@ -38,7 +38,7 @@ object TestFiles extends Logging {
 
 }
 
-trait TestFiles { self: OnlyIfCanRunSpark =>
+trait TestFiles { self: TestSparkContext =>
   def spatialTestFile(layerName: String): RasterRDD[SpatialKey] = {
     TestFiles.spatialReader.query(LayerId(layerName, TestFiles.ZOOM_LEVEL)).toRDD.cache
   }

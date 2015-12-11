@@ -27,65 +27,63 @@ class AndSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
   describe("And Operation") {
-    ifCanRunSpark {
-      val ones = AllOnesTestFile
-      val twos = AllTwosTestFile
-      val hundreds = AllHundredsTestFile
+    val ones = AllOnesTestFile
+    val twos = AllTwosTestFile
+    val hundreds = AllHundredsTestFile
 
-      val onesST = AllOnesSpaceTime
-      val twosST = AllTwosSpaceTime
-      val hundredsST = AllHundredsSpaceTime
+    val onesST = AllOnesSpaceTime
+    val twosST = AllTwosSpaceTime
+    val hundredsST = AllHundredsSpaceTime
 
-      it("should and a raster with a constant") {
-        val res = ones & 1
+    it("should and a raster with a constant") {
+      val res = ones & 1
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should and a spacetime raster with a constant") {
-        val res = onesST & 1
+    it("should and a spacetime raster with a constant") {
+      val res = onesST & 1
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(onesST, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(onesST, res)
+    }
 
-      it("should and a constant with a raster") {
-        val res = 1 &: ones
+    it("should and a constant with a raster") {
+      val res = 1 &: ones
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should and three different rasters") {
-        val res = ones & twos & hundreds
+    it("should and three different rasters") {
+      val res = ones & twos & hundreds
 
-        rasterShouldBe(res, (0, 0))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (0, 0))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should and a constant with a spacetime raster") {
-        val res = 1 &: onesST
+    it("should and a constant with a spacetime raster") {
+      val res = 1 &: onesST
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(onesST, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(onesST, res)
+    }
 
-      it("should and three different rasters as a seq") {
-        val res = ones & Seq(twos, hundreds)
+    it("should and three different rasters as a seq") {
+      val res = ones & Seq(twos, hundreds)
 
-        rasterShouldBe(res, (0, 0))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (0, 0))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should and three different spacetime rasters as a seq") {
-        val res = onesST & Seq(twosST, hundredsST)
+    it("should and three different spacetime rasters as a seq") {
+      val res = onesST & Seq(twosST, hundredsST)
 
-        rasterShouldBe(res, (0, 0))
-        rastersShouldHaveSameIdsAndTileCount(onesST, res)
-      }
+      rasterShouldBe(res, (0, 0))
+      rastersShouldHaveSameIdsAndTileCount(onesST, res)
     }
   }
 }

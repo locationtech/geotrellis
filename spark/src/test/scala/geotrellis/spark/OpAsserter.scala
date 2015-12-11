@@ -16,19 +16,6 @@ trait OpAsserter extends FunSpec
     with TestEnvironment
     with RasterMatchers  {
 
-  // def testArg(sc: SparkContext,
-  //   path: String,
-  //   layoutCols: Int = 4,
-  //   layoutRows: Int = 3)
-  //   (
-  //     rasterOp: (Tile, RasterExtent) => Tile,
-  //     sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
-  //     asserter: (Tile, Tile) => Unit = tilesEqual
-  //   ) = {
-  //   val tile = ArgReader.read(basePath + path)
-  //   testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
-  // }
-
   def testGeoTiff(sc: SparkContext,
     path: String,
     layoutCols: Int = 4,
