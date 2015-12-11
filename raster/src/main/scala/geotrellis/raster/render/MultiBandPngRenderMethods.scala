@@ -7,6 +7,15 @@ trait MultiBandPngRenderMethods {
 
   val tile: MultiBandTile
 
+  /**
+    * Generate a PNG image from a multiband raster.
+    *
+    * Use this operation when you have a multiband raster of data that you want to
+    * visualize with an image.
+    *
+    * To render with this method, you must first ensure that your tile is encoded
+    * with integer data whose values range from 0 to 255.
+    */
   def renderPng(): Png = {
     assert(tile.bandCount == 3)
     val rgb =
