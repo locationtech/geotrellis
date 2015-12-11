@@ -26,6 +26,10 @@ import org.scalatest.BeforeAndAfterAll
 
 import java.io.File
 
+object TestEnvironment {
+
+}
+
 /*
  * These set of traits handle the creation and deletion of test directories on the local fs and hdfs,
  * It uses commons-io in at least one case (recursive directory deletion)

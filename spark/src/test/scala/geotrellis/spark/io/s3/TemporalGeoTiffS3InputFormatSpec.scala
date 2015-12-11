@@ -18,7 +18,7 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
 
   describe("Temporal GeoTiff S3 InputFormat"){
     it("should read a custom tiff tag and format") {
-      val path = new java.io.File(inputHomeLocalPath, "test-time-tag.tif")
+      val path = new java.io.File(inputHomeLocalPath, "test-time-tag.tif").getPath
 
       val format = new TemporalGeoTiffS3InputFormat
       val conf = new Configuration(false)
