@@ -14,7 +14,7 @@ import spire.syntax.cfor._
 trait OpAsserter extends FunSpec
     with RasterRDDBuilders
     with TestEnvironment
-    with RasterMatchers  {
+    with RasterMatchers  { 
 
   def testArg(sc: SparkContext,
     path: String,
