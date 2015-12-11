@@ -33,6 +33,7 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, Container]
     attributeStore.writeLayerAttributes(
       to, headerUpdate(to, header), metadata, keyBounds, keyIndex, Option.empty[Schema]
     )
+    attributeStore.delete(from)
     attributeStore.clearCache()
   }
 }
