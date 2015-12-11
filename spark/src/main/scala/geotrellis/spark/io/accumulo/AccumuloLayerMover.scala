@@ -8,8 +8,8 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerMover {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]]
-  (instance: AccumuloInstance,
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+   instance: AccumuloInstance,
    layerReader: AccumuloLayerReader[K, V, Container[K]],
    layerWriter: AccumuloLayerWriter[K, V, Container[K]])
   (implicit sc: SparkContext,
