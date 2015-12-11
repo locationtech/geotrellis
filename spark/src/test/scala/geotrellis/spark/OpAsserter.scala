@@ -14,16 +14,7 @@ import spire.syntax.cfor._
 trait OpAsserter extends FunSpec
     with RasterRDDBuilders
     with TestEnvironment
-    with RasterMatchers  {
-
-  val basePath = {
-    val workingDir = 
-    localFS
-      .getWorkingDirectory
-      .toString
-      .substring(5)
-    s"${workingDir}/src/test/resources/"
-  }
+    with RasterMatchers  { 
 
   def testArg(sc: SparkContext,
     path: String,
@@ -34,7 +25,7 @@ trait OpAsserter extends FunSpec
       sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
-    val tile = ArgReader.read(basePath + path)
+    val tile = ArgReader.read(inputHomeLocalPath + path)
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 
@@ -47,7 +38,7 @@ trait OpAsserter extends FunSpec
       sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
-    val tile = SingleBandGeoTiff(basePath + path).tile
+    val tile = SingleBandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 

@@ -10,11 +10,10 @@ class S3LayerDeleter(attributeStore: AttributeStore[JsonFormat]) extends LayerDe
   def getS3Client: () => S3Client = () => S3Client.default
 
   def delete(id: LayerId): Unit = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, _, _, _, _) = try {
       attributeStore.readLayerAttributes[S3LayerHeader, Unit, Unit, Unit, Unit](id)
     } catch {
-      case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
     }
 
     val bucket = header.bucket

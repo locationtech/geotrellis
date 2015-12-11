@@ -13,12 +13,12 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
 import org.scalatest._
 
-class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with OnlyIfCanRunSpark {
+class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment with OnlyIfCanRunSpark {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
   describe("Temporal GeoTiff S3 InputFormat"){
     it("should read a custom tiff tag and format") {
-      val path = "src/test/resources/test-time-tag.tif"
+      val path = new java.io.File(inputHomeLocalPath, "test-time-tag.tif").getPath
 
       val format = new TemporalGeoTiffS3InputFormat
       val conf = new Configuration(false)

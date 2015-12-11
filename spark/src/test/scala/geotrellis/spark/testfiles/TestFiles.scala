@@ -11,12 +11,11 @@ import geotrellis.spark.io.hadoop._
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
 
-  def catalogPath(implicit sc: SparkContext): Path = {
-    val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(sc.hadoopConfiguration)
-    new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
+  def catalogPath: Path = {
+    new Path(TestEnvironment.inputHome, "test-catalog")
   }
 
-  def init(implicit sc: SparkContext) = {
+  def init(implicit sc: SparkContext) = this.synchronized {
     val conf = sc.hadoopConfiguration
     val localFS = catalogPath.getFileSystem(sc.hadoopConfiguration)
     val needGenerate = !localFS.exists(catalogPath)
