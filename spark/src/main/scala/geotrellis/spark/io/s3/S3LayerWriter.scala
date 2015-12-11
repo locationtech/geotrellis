@@ -26,13 +26,13 @@ import AttributeStore.Fields
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: S3RDDWriter[K, V],
-    keyIndexMethod: KeyIndexMethod[K],
-    bucket: String,
-    keyPrefix: String,
-    clobber: Boolean = true,
-    oneToOne: Boolean = false)
+   val attributeStore: AttributeStore[JsonFormat],
+   rddWriter: S3RDDWriter[K, V],
+   keyIndexMethod: KeyIndexMethod[K],
+   bucket: String,
+   keyPrefix: String,
+   clobber: Boolean = true,
+   oneToOne: Boolean = false)
   (implicit val cons: ContainerConstructor[K, V, Container])
   extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
 

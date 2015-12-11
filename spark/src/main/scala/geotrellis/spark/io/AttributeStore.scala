@@ -11,8 +11,6 @@ trait AttributeStore[F[_]] extends AttributeCaching[F] {
   def layerExists(layerId: LayerId): Boolean
   def delete(layerId: LayerId): Unit
   def delete(layerId: LayerId, attributeName: String): Unit
-  def copy(from: LayerId, to: LayerId): Unit
-  def move(from: LayerId, to: LayerId): Unit
 }
 
 object AttributeStore {

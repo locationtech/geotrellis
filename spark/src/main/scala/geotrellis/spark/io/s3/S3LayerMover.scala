@@ -1,57 +1,44 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
-import org.apache.spark.SparkContext
-import spray.json.DefaultJsonProtocol._
+import geotrellis.spark.LayerId
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class S3LayerMover(attributeStore: AttributeStore[JsonFormat],
-                   layerCopier   : LayerCopier[LayerId],
-                   layerDeleter  : LayerDeleter[LayerId]) extends LayerMover[LayerId] {
-  def move(from: LayerId, to: LayerId): Unit = {
-    layerCopier.copy(from, to)
-    layerDeleter.delete(from)
-  }
-}
-
 object S3LayerMover {
   def apply(attributeStore: AttributeStore[JsonFormat],
             layerCopier   : LayerCopier[LayerId],
-            layerDeleter  : LayerDeleter[LayerId]): S3LayerMover =
-    new S3LayerMover(attributeStore, layerCopier, layerDeleter)
+            layerDeleter  : LayerDeleter[LayerId]): LayerMover[LayerId] =
+    new LayerMover(attributeStore, layerCopier, layerDeleter)
 
-  def apply(attributeStore: AttributeStore[JsonFormat],
-                    bucket: String,
-                 keyPrefix: String): S3LayerMover = {
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
+    (attributeStore: AttributeStore[JsonFormat], bucket: String, keyPrefix: String)
+    (implicit cons: ContainerConstructor[K, V, Container[K]]): LayerMover[LayerId] = {
     apply(
       attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix),
+      layerCopier    = S3LayerCopier[K, V, Container](attributeStore, bucket, keyPrefix),
       layerDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 
-  def apply(bucket: String,
-         keyPrefix: String,
-        destBucket: String,
-     destKeyPrefix: String): S3LayerMover = {
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
+    (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String)
+    (implicit cons: ContainerConstructor[K, V, Container[K]]): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
       attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier(attributeStore, destBucket, destKeyPrefix),
+      layerCopier    = S3LayerCopier[K, V, Container](attributeStore, destBucket, destKeyPrefix),
       layerDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 
-  def apply(bucket: String, keyPrefix: String): S3LayerMover = {
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
+    (bucket: String, keyPrefix: String)(implicit cons: ContainerConstructor[K, V, Container[K]]): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
       attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix),
+      layerCopier    = S3LayerCopier[K, V, Container](attributeStore, bucket, keyPrefix),
       layerDeleter   = S3LayerDeleter(attributeStore)
     )
   }

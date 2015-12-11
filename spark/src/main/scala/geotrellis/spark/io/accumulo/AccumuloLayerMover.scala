@@ -7,25 +7,16 @@ import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
-class AccumuloLayerMover(attributeStore: AttributeStore[JsonFormat],
-                         layerCopier   : LayerCopier[LayerId],
-                         layerDeleter  : LayerDeleter[LayerId]) extends LayerMover[LayerId] {
-  def move(from: LayerId, to: LayerId): Unit = {
-    layerCopier.copy(from, to)
-    layerDeleter.delete(from)
-  }
-}
-
 object AccumuloLayerMover {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]]
-  (instance: AccumuloInstance,
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+   instance: AccumuloInstance,
    layerReader: AccumuloLayerReader[K, V, Container[K]],
    layerWriter: AccumuloLayerWriter[K, V, Container[K]])
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): AccumuloLayerMover = {
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerMover[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    new AccumuloLayerMover(
+    new LayerMover(
       attributeStore,
       AccumuloLayerCopier[K, V, Container](
         attributeStore = attributeStore,
@@ -38,14 +29,14 @@ object AccumuloLayerMover {
 
   def apply(instance: AccumuloInstance,
             layerCopier: LayerCopier[LayerId],
-            layerDeleter: LayerDeleter[LayerId]): AccumuloLayerMover = {
+            layerDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    new AccumuloLayerMover(attributeStore, layerCopier, layerDeleter)
+    new LayerMover(attributeStore, layerCopier, layerDeleter)
   }
 
   def apply(attributeStore: AttributeStore[JsonFormat],
             layerCopier: LayerCopier[LayerId],
-            layerDeleter: LayerDeleter[LayerId]): AccumuloLayerMover = {
-    new AccumuloLayerMover(attributeStore, layerCopier, layerDeleter)
+            layerDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
+    new LayerMover(attributeStore, layerCopier, layerDeleter)
   }
 }
