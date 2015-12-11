@@ -16,7 +16,7 @@ object TestFiles extends Logging {
     new Path(localFS.getWorkingDirectory, "spark/src/test/resources/test-catalog")
   }
 
-  def init(implicit sc: SparkContext) = {
+  def init(implicit sc: SparkContext) = this.syncronized {
     val conf = sc.hadoopConfiguration
     val localFS = catalogPath.getFileSystem(sc.hadoopConfiguration)
     val needGenerate = !localFS.exists(catalogPath)
