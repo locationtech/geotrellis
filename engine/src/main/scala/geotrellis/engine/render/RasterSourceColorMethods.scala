@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.engine._
 
-trait RenderRasterSourceSharedMethods extends RasterSourceMethods {
+trait RasterSourceColorMethods extends RasterSourceMethods {
   def color(breaksToColors: Map[Int, Int]): RasterSource =
     color(breaksToColors, ColorMapOptions.Default)
 

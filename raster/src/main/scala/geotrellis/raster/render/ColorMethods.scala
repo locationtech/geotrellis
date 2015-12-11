@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage
 
 import spire.syntax.cfor._
 
-trait SharedRenderMethods extends TileMethods {
+trait ColorMethods extends TileMethods {
   def color(breaksToColors: Map[Int, Int]): Tile =
     IntColorMap(breaksToColors).render(tile)
 
