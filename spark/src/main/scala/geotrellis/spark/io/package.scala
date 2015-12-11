@@ -34,6 +34,9 @@ package object io {
   class LayerDeleteError(layerId: LayerId)
     extends CatalogError(s"Failed to delete $layerId")
 
+  class LayerReindexError(layerId: LayerId)
+    extends CatalogError(s"Failed to reindex $layerId")
+
   class LayerCopyError(from: LayerId, to: LayerId)
     extends CatalogError(s"Failed to copy $from to $to")
 
