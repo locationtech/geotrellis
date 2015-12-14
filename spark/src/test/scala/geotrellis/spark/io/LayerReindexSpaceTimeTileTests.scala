@@ -1,24 +1,21 @@
 package geotrellis.spark.io
 
 import geotrellis.raster.Tile
-import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod}
-import geotrellis.spark.{LayerId, OnlyIfCanRunSpark, SpaceTimeKey, SpatialKey}
+import geotrellis.spark._
 
-trait LayerReindexSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] with OnlyIfCanRunSpark =>
+trait LayerReindexSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] with TestSparkContext =>
 
   def reindexer: TestReindexer
-  lazy val reindexedLayerId  = layerId.copy(name = s"${layerId.name}-reindexed")
+  val reindexedLayerId = LayerId("reindexedSample-" + this.getClass.getName, 1)
 
-  if (canRunSpark) {
-    it("should not reindex a layer which doesn't exists") {
-      intercept[LayerNotFoundError] {
-        reindexer.reindex(movedLayerId)
-      }
+  it("should not reindex a layer which doesn't exists") {
+    intercept[LayerNotFoundError] {
+      reindexer.reindex(movedLayerId)
     }
+  }
 
-    it("should reindex a layer") {
-      copier.copy(layerId, reindexedLayerId)
-      reindexer.reindex(reindexedLayerId)
-    }
+  it("should reindex a layer") {
+    copier.copy(layerId, reindexedLayerId)
+    reindexer.reindex(reindexedLayerId)
   }
 }
