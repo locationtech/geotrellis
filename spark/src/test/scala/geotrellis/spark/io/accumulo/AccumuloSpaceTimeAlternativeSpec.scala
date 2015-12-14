@@ -7,16 +7,13 @@ import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs._
-import org.apache.spark.rdd.RDD
 
 class AccumuloSpaceTimeAlternativeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests
-          with LayerCopySpaceTimeTileTests
-          with LayerMoveSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
