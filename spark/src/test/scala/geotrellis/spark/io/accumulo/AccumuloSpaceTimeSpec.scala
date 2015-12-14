@@ -14,8 +14,7 @@ abstract class AccumuloSpaceTimeSpec
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests
-          with LayerCopySpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
@@ -29,21 +28,25 @@ abstract class AccumuloSpaceTimeSpec
 }
 
 class AccumuloSpaceTimeZCurveByYearSpec extends AccumuloSpaceTimeSpec {
+  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod.byYear, SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpaceTimeZCurveByFuncSpec extends AccumuloSpaceTimeSpec {
+  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpaceTimeHilbertSpec extends AccumuloSpaceTimeSpec {
+  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpaceTimeHilbertWithResolutionSpec extends AccumuloSpaceTimeSpec {
+  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterRDD](instance, "tiles",  HilbertKeyIndexMethod(2), SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
 }
