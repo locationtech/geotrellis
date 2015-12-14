@@ -16,7 +16,7 @@ class AccumuloLayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag
   keyIndexMethod: KeyIndexMethod[K]) // key index to write
   (implicit sc: SparkContext,
       val cons: ContainerConstructor[K, V, Container],
-   containerEv: Container => Container with RDD[(K, V)]) extends LayerReindexer[LayerId, K, Container] {
+   containerEv: Container => Container with RDD[(K, V)]) extends LayerReindexer[LayerId] {
 
   lazy val attributeStore = AccumuloAttributeStore(instance.connector)
   lazy val layerReader    = new AccumuloLayerReader[K, V, Container](attributeStore, new AccumuloRDDReader[K, V](instance))
@@ -37,5 +37,5 @@ class AccumuloLayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag
     def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
   }
 
-  def tmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
+  def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
 }

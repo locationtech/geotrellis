@@ -14,7 +14,7 @@ class S3LayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: A
    prefix: String,
    keyIndexMethod: KeyIndexMethod[K],
    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container]) extends LayerReindexer[LayerId, K, Container] {
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container]) extends LayerReindexer[LayerId] {
 
   lazy val attributeStore = S3AttributeStore(bucket, prefix)
   lazy val layerReader    = new S3LayerReader[K, V, Container](attributeStore, new S3RDDReader[K, V], getCache)
@@ -22,5 +22,5 @@ class S3LayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: A
   lazy val layerCopier    = new S3LayerCopier[K, V, Container](attributeStore, bucket, prefix)
   val layerMover          = S3LayerMover(attributeStore, layerCopier, layerDeleter)
 
-  def tmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
+  def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
 }

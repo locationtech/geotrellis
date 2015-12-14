@@ -12,7 +12,7 @@ class HadoopLayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
    rootPath: String, keyIndexMethod: KeyIndexMethod[K])
   (implicit sc: SparkContext,
         format: HadoopFormat[K, V],
-      val cons: ContainerConstructor[K, V, Container]) extends LayerReindexer[LayerId, K, Container] {
+      val cons: ContainerConstructor[K, V, Container]) extends LayerReindexer[LayerId] {
 
   lazy val attributeStore = HadoopAttributeStore(rootPath)
   lazy val layerReader    = new HadoopLayerReader[K, V, Container](attributeStore, new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
@@ -23,5 +23,5 @@ class HadoopLayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
     rootPath       = rootPath
   )
 
-  def tmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
+  def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
 }
