@@ -20,17 +20,14 @@ abstract class HadoopSpatialSpec
 }
 
 class HadoopSpatialRowMajorSpec extends HadoopSpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, RowMajorKeyIndexMethod)
 }
 
 class HadoopSpatialZCurveSpec extends HadoopSpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, ZCurveKeyIndexMethod)
 }
 
 class HadoopSpatialHilbertSpec extends HadoopSpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterRDD](outputLocal, HilbertKeyIndexMethod)
 }
 

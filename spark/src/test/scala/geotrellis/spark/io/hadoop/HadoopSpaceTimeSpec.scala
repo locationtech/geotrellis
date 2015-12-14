@@ -6,7 +6,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
-import org.apache.hadoop.fs.Path
 import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec

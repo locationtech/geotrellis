@@ -23,19 +23,16 @@ abstract class AccumuloSpatialSpec
 }
 
 class AccumuloSpatialRowMajorSpec extends AccumuloSpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterRDD](instance, "tiles", RowMajorKeyIndexMethod, SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpatialZCurveSpec extends AccumuloSpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod, SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterRDD](instance, reader, writer)
 }
 
 class AccumuloSpatialHilbertSpec extends AccumuloSpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterRDD](instance, "tiles", HilbertKeyIndexMethod, SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterRDD](instance, reader, writer)
 }
