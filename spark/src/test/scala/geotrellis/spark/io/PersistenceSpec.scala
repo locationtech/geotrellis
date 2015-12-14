@@ -22,22 +22,15 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container
-
   def reader: TestReader
-
   def writer: TestWriter
-
   def deleter: TestDeleter
-
   def copier: TestCopier
-
   def mover: TestMover
-
   def tiles: TestTileReader
 
   val layerId = LayerId("sample-" + this.getClass.getName, 1)
-  val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1)
-  // second layer to avoid data race
+  val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
   val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
   val movedLayerId = LayerId("moveSample-" + this.getClass.getName, 1)
   lazy val query = reader.query(layerId)
