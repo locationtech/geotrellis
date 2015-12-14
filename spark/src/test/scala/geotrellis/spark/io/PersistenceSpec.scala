@@ -28,7 +28,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
 
   val layerId = LayerId("sample", 1)
   val deleteLayerId = LayerId("deleteSample", 1) // second layer to avoid data race
-  lazy val copiedLayerId = layerId.copy(name = s"${layerId.name}-copy", 1)
+  lazy val copiedLayerId = layerId.copy(name = s"${layerId.name}-copy")
   lazy val query = reader.query(layerId)
   
   if (canRunSpark) {
