@@ -44,16 +44,13 @@ abstract class S3SpatialSpec
 }
 
 class S3SpatialRowMajorSpec extends S3SpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialZCurveSpec extends S3SpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialHilbertSpec extends S3SpatialSpec {
-  override val copiedLayerId = LayerId("sample-copy" + name, 1) // avoid test collisions
   lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
 }
