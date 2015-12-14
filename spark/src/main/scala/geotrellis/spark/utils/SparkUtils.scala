@@ -45,11 +45,6 @@ object SparkUtils extends Logging {
    * It's not clear if this way of driving spark will continue to be support, perhaps for debugging
    */
   def createLocalSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
-    val sparkHome = scala.util.Properties.envOrNone("SPARK_HOME") match {
-      case Some(value) => value
-      case None        => throw new Error("Oops, SPARK_HOME is not defined")
-    }
-
     sparkConf
       .setMaster(sparkMaster)
       .setAppName(appName)

@@ -32,7 +32,7 @@ import org.apache.spark._
 import com.github.nscala_time.time.Imports._
 
 /** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
-object GenerateTestFiles {
+object GenerateTestFiles extends Logging {
   def generate(catalogPath: Path)(implicit sc: SparkContext): Unit = {
     val cellType = TypeFloat
     val crs = LatLng
@@ -42,8 +42,11 @@ object GenerateTestFiles {
     val extent = mapTransform(gridBounds)
 
     val md = RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
+    logInfo(s"Generating spatial layers...")
     generateSpatial(HadoopLayerWriter[SpatialKey, Tile, RasterRDD](catalogPath, RowMajorKeyIndexMethod), md)
+    logInfo(s"Generating spatiotemporal layers...")
     generateSpaceTime(HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](catalogPath, ZCurveKeyIndexMethod.byYear), md)
+    logInfo(s"Done generating test catalog.")
   }
 
   def generateSpatial(catalog: HadoopLayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {

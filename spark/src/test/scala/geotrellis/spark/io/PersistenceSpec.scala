@@ -10,7 +10,7 @@ import org.scalatest._
 import spray.json.JsonFormat
 import scala.reflect._
 
-abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: OnlyIfCanRunSpark =>
+abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: TestSparkContext =>
   type Container <: RDD[(K, V)]
   type TestReader = FilteringLayerReader[LayerId, K, Container]
   type TestWriter = Writer[LayerId, Container]
@@ -26,72 +26,69 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   def copier: TestCopier
   def tiles: TestTileReader
 
-  val layerId = LayerId("sample", 1)
-  val deleteLayerId = LayerId("deleteSample", 1) // second layer to avoid data race
-  lazy val copiedLayerId = layerId.copy(name = s"${layerId.name}-copy")
+  val layerId = LayerId("sample-" + this.getClass.getName, 1)
+  val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
+  val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
   lazy val query = reader.query(layerId)
   
-  if (canRunSpark) {
-
-    it("should not find layer before write") {
-      intercept[LayerNotFoundError] {
-        reader.read(layerId)
-      }
+  it("should not find layer before write") {
+    intercept[LayerNotFoundError] {
+      reader.read(layerId)
     }
+  }
 
-    it("should not delete layer before write") {
-      intercept[LayerNotFoundError] {
-        deleter.delete(layerId)
-      }
+  it("should not delete layer before write") {
+    intercept[LayerNotFoundError] {
+      deleter.delete(layerId)
     }
+  }
 
-    it("should write a layer") {
-      writer.write(layerId, sample)
-      writer.write(deleteLayerId, sample)
+  it("should write a layer") {
+    writer.write(layerId, sample)
+    writer.write(deleteLayerId, sample)
+  }
+
+  it("should read a layer back") {
+    val actual = reader.read(layerId).keys.collect()
+    val expected = sample.keys.collect()
+
+    if (expected.diff(actual).nonEmpty)
+      info(s"missing: ${(expected diff actual).toList}")
+    if (actual.diff(expected).nonEmpty)
+      info(s"unwanted: ${(actual diff expected).toList}")
+
+    actual should contain theSameElementsAs expected
+  }
+
+  it("should read a single value") {
+    val tileReader = tiles.read(layerId)
+    val key = sample.keys.first()
+    val readV: V = tileReader.read(key)
+    val expectedV: V = sample.filter(_._1 == key).values.first()
+    readV should be equals expectedV
+  }
+
+  it("should delete a layer") {
+    deleter.delete(deleteLayerId)
+    intercept[LayerNotFoundError] {
+      reader.read(deleteLayerId)
     }
+  }
 
-    it("should read a layer back") {
-      val actual = reader.read(layerId).keys.collect()
-      val expected = sample.keys.collect()
-
-      if (expected.diff(actual).nonEmpty)
-        info(s"missing: ${(expected diff actual).toList}")
-      if (actual.diff(expected).nonEmpty)
-        info(s"unwanted: ${(actual diff expected).toList}")
-
-      actual should contain theSameElementsAs expected
+  it ("shouldn't copy a layer which already exists") {
+    intercept[LayerExistsError] {
+      copier.copy(layerId, layerId)
     }
+  }
 
-    it("should read a single value") {
-      val tileReader = tiles.read(layerId)
-      val key = sample.keys.first()
-      val readV: V = tileReader.read(key)
-      val expectedV: V = sample.filter(_._1 == key).values.first()
-      readV should be equals expectedV
+  it ("shouldn't copy a layer which doesn't exists") {
+    intercept[LayerNotFoundError] {
+      copier.copy(copiedLayerId, copiedLayerId)
     }
+  }
 
-    it("should delete a layer") {
-      deleter.delete(deleteLayerId)
-      intercept[LayerNotFoundError] {
-        reader.read(deleteLayerId)
-      }
-    }
-
-    it ("shouldn't copy a layer which already exists") {
-      intercept[LayerExistsError] {
-        copier.copy(layerId, layerId)
-      }
-    }
-
-    it ("shouldn't copy a layer which doesn't exists") {
-      intercept[LayerNotFoundError] {
-        copier.copy(copiedLayerId, copiedLayerId)
-      }
-    }
-
-    it("should copy a layer") {
-      copier.copy(layerId, copiedLayerId)
-      reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
-    }
+  it("should copy a layer") {
+    copier.copy(layerId, copiedLayerId)
+    reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
   }
 }

@@ -13,12 +13,12 @@ class StyleSpec extends FunSpec with Matchers {
 
 
       val geoJson =
-        Feature(p, Style(strokeColor = "#555555", strokeWidth = 2, fillColor = "#00aa22", fillOpacity = 0.5)).toGeoJson
+        Feature(p, Style(strokeColor = "#555555", strokeWidth = "2", fillColor = "#00aa22", fillOpacity = 0.5)).toGeoJson
 
 
       val Feature(_, style) = geoJson.parseGeoJson[Feature[Polygon, Style]]
       style.strokeColor should be (Some("#555555"))
-      style.strokeWidth should be (Some(2))
+      style.strokeWidth should be (Some("2"))
       style.strokeOpacity should be (None)
       style.fillColor should be (Some("#00aa22"))
       style.fillOpacity should be (Some(0.5))

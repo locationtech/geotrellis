@@ -11,7 +11,7 @@ import org.apache.spark.rdd.RDD
 
 class AccumuloSpaceTimeAlternativeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests {
