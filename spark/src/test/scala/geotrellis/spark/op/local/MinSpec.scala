@@ -27,69 +27,67 @@ class MinSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
   describe("Min Operation") {
-    ifCanRunSpark {
-      val inc = IncreasingTestFile
-      val dec = DecreasingTestFile
-      val hundreds = AllHundredsTestFile
+    val inc = IncreasingTestFile
+    val dec = DecreasingTestFile
+    val hundreds = AllHundredsTestFile
 
-      it("should min a raster with an integer") {
-        val thresh = 721.1
-        val res = inc.localMin(thresh)
-        rasterShouldBeAbout(
-          res,
-          (tile: Tile, x: Int, y: Int) => math.min(y * tile.cols + x, thresh),
-          1e-3
-        )
+    it("should min a raster with an integer") {
+      val thresh = 721.1
+      val res = inc.localMin(thresh)
+      rasterShouldBeAbout(
+        res,
+        (tile: Tile, x: Int, y: Int) => math.min(y * tile.cols + x, thresh),
+        1e-3
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should min a raster with a double") {
-        val thresh = 873.4
-        val res = inc.localMin(thresh)
+    it("should min a raster with a double") {
+      val thresh = 873.4
+      val res = inc.localMin(thresh)
 
-        rasterShouldBeAbout(
-          res,
-          (t: Tile, x: Int, y: Int) => math.min(y * t.cols + x, thresh),
-          1e-3
-        )
+      rasterShouldBeAbout(
+        res,
+        (t: Tile, x: Int, y: Int) => math.min(y * t.cols + x, thresh),
+        1e-3
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should min two rasters") {
-        val res = inc.localMin(dec)
+    it("should min two rasters") {
+      val res = inc.localMin(dec)
 
-        rasterShouldBe(
-          res,
-          (t: Tile, x: Int, y: Int) => {
-            val decV = t.cols * t.rows - (y * t.cols + x) - 1
-            val incV = y * t.cols + x
+      rasterShouldBe(
+        res,
+        (t: Tile, x: Int, y: Int) => {
+          val decV = t.cols * t.rows - (y * t.cols + x) - 1
+          val incV = y * t.cols + x
 
-            math.min(decV, incV)
-          }
-        )
+          math.min(decV, incV)
+        }
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should min three rasters as a seq") {
-        val res = inc.localMin(Seq(dec, hundreds))
+    it("should min three rasters as a seq") {
+      val res = inc.localMin(Seq(dec, hundreds))
 
-        rasterShouldBe(
-          res,
-          (t: Tile, x: Int, y: Int) => {
-            val decV = t.cols * t.rows - (y * t.cols + x) - 1
-            val incV = y * t.cols + x
+      rasterShouldBe(
+        res,
+        (t: Tile, x: Int, y: Int) => {
+          val decV = t.cols * t.rows - (y * t.cols + x) - 1
+          val incV = y * t.cols + x
 
-            math.min(math.min(decV, incV), 100)
-          }
-        )
+          math.min(math.min(decV, incV), 100)
+        }
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
     }
   }
 }

@@ -26,65 +26,63 @@ class GreaterSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
   describe("Greater Operation") {
-    ifCanRunSpark {
-      val inc = IncreasingTestFile
-      val ones = AllOnesTestFile
+    val inc = IncreasingTestFile
+    val ones = AllOnesTestFile
 
-      it("should check greater between an integer and a raster") {
-        val res = inc > 1
+    it("should check greater between an integer and a raster") {
+      val res = inc > 1
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
-        )
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should check greater right associative between an integer and a raster") {
-        val res = 1 >>: inc
+    it("should check greater right associative between an integer and a raster") {
+      val res = 1 >>: inc
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
-        )
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should check greater between a double and a raster") {
-        val res = inc > 1.0
+    it("should check greater between a double and a raster") {
+      val res = inc > 1.0
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
-        )
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should check greater right associative between a double and a raster") {
-        val res = 1.0 >>: inc
+    it("should check greater right associative between a double and a raster") {
+      val res = 1.0 >>: inc
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
-        )
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
+      )
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
+    }
 
-      it("should check greater or equal between two rasters") {
-        val res = inc > ones
+    it("should check greater or equal between two rasters") {
+      val res = inc > ones
 
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
-        )
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
+      rasterShouldBe(
+        res,
+        (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
+      )
+      rastersShouldHaveSameIdsAndTileCount(inc, res)
     }
   }
 }

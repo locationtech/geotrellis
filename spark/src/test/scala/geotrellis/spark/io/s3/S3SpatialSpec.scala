@@ -11,13 +11,14 @@ import geotrellis.spark._
 
 abstract class S3SpatialSpec
   extends PersistenceSpec[SpatialKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
   type Container = RasterRDD[SpatialKey]
   val bucket = "mock-bucket"
   val prefix = "catalog"
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
+
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override val s3Client = new MockS3Client()
   }
@@ -33,7 +34,7 @@ abstract class S3SpatialSpec
   }
   lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore, rddWriter, true)
-  lazy val deleter = new S3LayerDeleter(attributeStore)
+  lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
   lazy val tiles = new S3TileReader[SpatialKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client()
   }
