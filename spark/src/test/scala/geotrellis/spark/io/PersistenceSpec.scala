@@ -92,17 +92,6 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     }
   }
 
-  it("shouldn't copy a layer which doesn't exists") {
-    intercept[LayerNotFoundError] {
-      copier.copy(copiedLayerId, copiedLayerId)
-    }
-  }
-
-  it("should copy a layer") {
-    copier.copy(layerId, copiedLayerId)
-    reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
-  }
-
   it("should copy a layer") {
     copier.copy(layerId, copiedLayerId)
     reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
@@ -111,12 +100,6 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   it("shouldn't move a layer which already exists") {
     intercept[LayerExistsError] {
       mover.move(layerId, layerId)
-    }
-  }
-
-  it("shouldn't move a layer which doesn't exists") {
-    intercept[LayerNotFoundError] {
-      mover.move(movedLayerId, movedLayerId)
     }
   }
 
