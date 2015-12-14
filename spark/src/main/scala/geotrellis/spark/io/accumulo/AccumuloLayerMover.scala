@@ -15,28 +15,36 @@ object AccumuloLayerMover {
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
    containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerMover[LayerId] = {
-    val attributeStore = AccumuloAttributeStore(instance.connector)
-    new LayerMover(
-      attributeStore,
-      AccumuloLayerCopier[K, V, Container](
+    val attrStore = AccumuloAttributeStore(instance.connector)
+    new LayerMover[LayerId] {
+      val attributeStore = attrStore
+      val layerCopier = AccumuloLayerCopier[K, V, Container](
         attributeStore = attributeStore,
         layerReader    = layerReader,
         layerWriter    = layerWriter
-      ),
-      AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
-    )
+      )
+      val layerDeleter = AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
+    }
+  }
+
+  def apply(attrStore: AttributeStore[JsonFormat],
+            lCopier: LayerCopier[LayerId],
+            lDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
+    new LayerMover[LayerId] {
+      val attributeStore = attrStore
+      val layerCopier    = lCopier
+      val layerDeleter   = lDeleter
+    }
   }
 
   def apply(instance: AccumuloInstance,
-            layerCopier: LayerCopier[LayerId],
-            layerDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
-    val attributeStore = AccumuloAttributeStore(instance.connector)
-    new LayerMover(attributeStore, layerCopier, layerDeleter)
-  }
-
-  def apply(attributeStore: AttributeStore[JsonFormat],
-            layerCopier: LayerCopier[LayerId],
-            layerDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
-    new LayerMover(attributeStore, layerCopier, layerDeleter)
+            lCopier: LayerCopier[LayerId],
+            lDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
+    val attrStore = AccumuloAttributeStore(instance.connector)
+    new LayerMover[LayerId] {
+      val attributeStore = attrStore
+      val layerCopier    = lCopier
+      val layerDeleter   = lDeleter
+    }
   }
 }

@@ -6,16 +6,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
-import org.apache.hadoop.fs.Path
 import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests
-          with LayerCopySpaceTimeTileTests
-          with LayerMoveSpaceTimeTileTests {
+          with CoordinateSpaceTimeTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
