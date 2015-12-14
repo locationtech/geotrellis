@@ -18,6 +18,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestDeleter = LayerDeleter[LayerId]
   type TestCopier = LayerCopier[LayerId]
   type TestMover = LayerMover[LayerId]
+  type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container

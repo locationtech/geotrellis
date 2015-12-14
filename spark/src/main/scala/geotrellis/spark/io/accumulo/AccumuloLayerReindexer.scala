@@ -9,33 +9,37 @@ import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
-class AccumuloLayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container](
-  instance: AccumuloInstance,
-  table: String, // table write to
-  strategy: AccumuloWriteStrategy,
-  keyIndexMethod: KeyIndexMethod[K]) // key index to write
-  (implicit sc: SparkContext,
-      val cons: ContainerConstructor[K, V, Container],
-   containerEv: Container => Container with RDD[(K, V)]) extends LayerReindexer[LayerId] {
+object AccumuloLayerReindexer {
+  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
-  lazy val attributeStore = AccumuloAttributeStore(instance.connector)
-  lazy val layerReader    = new AccumuloLayerReader[K, V, Container](attributeStore, new AccumuloRDDReader[K, V](instance))
-  lazy val layerDeleter   = AccumuloLayerDeleter(instance)
-  lazy val layerMover     = AccumuloLayerMover(attributeStore, layerCopier, layerDeleter)
-  lazy val layerWriter = new AccumuloLayerWriter[K, V, Container](
-    attributeStore = attributeStore,
-    rddWriter      = new AccumuloRDDWriter[K, V](instance, strategy),
-    keyIndexMethod = keyIndexMethod,
-    table          = table
-  )
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
+    instance: AccumuloInstance,
+    table: String,
+    keyIndexMethod: KeyIndexMethod[K],
+    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+   (implicit sc: SparkContext,
+          cons: ContainerConstructor[K, V, Container[K]],
+   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerReindexer[LayerId] = {
+    val attributeStore = AccumuloAttributeStore(instance.connector)
+    val layerReader = new AccumuloLayerReader[K, V, Container[K]](attributeStore, new AccumuloRDDReader[K, V](instance))
+    val layerDeleter = AccumuloLayerDeleter(instance)
+    val layerWriter = new AccumuloLayerWriter[K, V, Container[K]](
+      attributeStore = attributeStore,
+      rddWriter      = new AccumuloRDDWriter[K, V](instance, strategy),
+      keyIndexMethod = keyIndexMethod,
+      table          = table
+    )
 
-  lazy val layerCopier = new SparkLayerCopier[AccumuloLayerHeader, K, V, Container](
-    attributeStore = attributeStore,
-    layerReader    = layerReader,
-    layerWriter    = layerWriter
-  ) {
-    def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
+    val layerCopier = new SparkLayerCopier[AccumuloLayerHeader, K, V, Container[K]](
+      attributeStore = attributeStore,
+      layerReader    = layerReader,
+      layerWriter    = layerWriter
+    ) {
+      def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
+    }
+
+    val layerMover = AccumuloLayerMover(attributeStore, layerCopier, layerDeleter)
+
+    LayerReindexer(layerDeleter, layerCopier, layerMover)
   }
-
-  def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
 }

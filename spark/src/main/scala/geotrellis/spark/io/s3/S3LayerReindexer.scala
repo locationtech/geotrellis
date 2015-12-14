@@ -6,21 +6,37 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
-class S3LayerReindexer[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container](
-   bucket: String,
-   prefix: String,
-   keyIndexMethod: KeyIndexMethod[K],
-   getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container]) extends LayerReindexer[LayerId] {
+object S3LayerReindexer {
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
+    bucket: String,
+    prefix: String,
+    keyIndexMethod: KeyIndexMethod[K],
+    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None,
+    clobber: Boolean = true,
+    oneToOne: Boolean = false)
+   (implicit sc: SparkContext,
+           cons: ContainerConstructor[K, V, Container[K]],
+    containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerReindexer[LayerId] = {
+    val attributeStore = S3AttributeStore(bucket, prefix)
+    val layerReader    = S3LayerReader[K, V, Container](bucket, prefix, getCache)
+    val layerDeleter   = S3LayerDeleter(attributeStore)
+    val layerWriter    = S3LayerWriter[K, V, Container](bucket, prefix, keyIndexMethod, clobber, oneToOne)
 
-  lazy val attributeStore = S3AttributeStore(bucket, prefix)
-  lazy val layerReader    = new S3LayerReader[K, V, Container](attributeStore, new S3RDDReader[K, V], getCache)
-  lazy val layerDeleter   = S3LayerDeleter(attributeStore)
-  lazy val layerCopier    = new S3LayerCopier[K, V, Container](attributeStore, bucket, prefix)
-  val layerMover          = S3LayerMover(attributeStore, layerCopier, layerDeleter)
+    val layerCopier = new SparkLayerCopier[S3LayerHeader, K, V, Container[K]](
+      attributeStore = attributeStore,
+      layerReader    = layerReader,
+      layerWriter    = layerWriter
+    ) {
+      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
+        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
+    }
 
-  def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
+    val layerMover = S3LayerMover(attributeStore, layerCopier, layerDeleter)
+
+    LayerReindexer(layerDeleter, layerCopier, layerMover)
+  }
 }

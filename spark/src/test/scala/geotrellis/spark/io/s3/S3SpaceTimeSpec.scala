@@ -14,7 +14,8 @@ abstract class S3SpaceTimeSpec
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests
+          with LayerReindexSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
   val bucket = "mock-bucket"
   val prefix = "catalog"
@@ -32,6 +33,21 @@ abstract class S3SpaceTimeSpec
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }
   lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val reindexer = {
+    val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
+      attributeStore = attributeStore,
+      layerReader    = reader,
+      layerWriter    = new S3LayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]](
+        attributeStore, rddWriter, ZCurveKeyIndexMethod.byPattern("YMM"), bucket, prefix, true
+      )
+    ) {
+      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
+        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
+    }
+
+    val mover = S3LayerMover(attributeStore, copier, deleter)
+    LayerReindexer(deleter, copier, mover)
+  }
   lazy val mover   = S3LayerMover(attributeStore, copier, deleter)
   lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client

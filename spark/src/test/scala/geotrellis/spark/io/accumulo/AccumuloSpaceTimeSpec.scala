@@ -14,17 +14,19 @@ abstract class AccumuloSpaceTimeSpec
           with OnlyIfCanRunSpark
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests
+          with LayerReindexSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 
-  lazy val reader  = AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD](instance)
-  lazy val updater = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD](instance, SocketWriteStrategy())
-  lazy val deleter = AccumuloLayerDeleter(instance)
-  lazy val tiles   = AccumuloTileReader[SpaceTimeKey, Tile](instance)
-  lazy val sample  =  CoordinateSpaceTime
+  lazy val reader    = AccumuloLayerReader[SpaceTimeKey, Tile, RasterRDD](instance)
+  lazy val updater   = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD](instance, SocketWriteStrategy())
+  lazy val deleter   = AccumuloLayerDeleter(instance)
+  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod.byPattern("YMM"), SocketWriteStrategy())
+  lazy val tiles     = AccumuloTileReader[SpaceTimeKey, Tile](instance)
+  lazy val sample    =  CoordinateSpaceTime
 }
 
 class AccumuloSpaceTimeZCurveByYearSpec extends AccumuloSpaceTimeSpec {
