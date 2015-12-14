@@ -92,7 +92,6 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     it("should copy a layer") {
       copier.copy(layerId, copiedLayerId)
       reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
-      //deleter.delete(copiedLayerId)
     }
   }
 }
