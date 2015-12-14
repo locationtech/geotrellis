@@ -5,7 +5,7 @@ import scala.collection.mutable
 
 case class Style(
   strokeColor: Option[String],
-  strokeWidth: Option[Int],
+  strokeWidth: Option[String],
   strokeOpacity: Option[Double],
   fillColor: Option[String],
   fillOpacity: Option[Double] 
@@ -13,15 +13,15 @@ case class Style(
 
 object Style {
   def apply(
-  strokeColor: String = "",
-  strokeWidth: Int = Int.MinValue,
-  strokeOpacity: Double = Double.NaN,
-  fillColor: String = "",
-  fillOpacity: Double = Double.NaN
+    strokeColor: String = "",
+    strokeWidth: String = "",
+    strokeOpacity: Double = Double.NaN,
+    fillColor: String = "",
+    fillOpacity: Double = Double.NaN
   ): Style = 
     Style(
       if(strokeColor != "") Some(strokeColor) else None,
-      if(strokeWidth != Int.MinValue) Some(strokeWidth) else None,
+      if(strokeWidth != "") Some(strokeWidth) else None,
       if(!java.lang.Double.isNaN(strokeOpacity)) Some(strokeOpacity) else None,
       if(fillColor != "") Some(fillColor) else None,
       if(!java.lang.Double.isNaN(fillOpacity)) Some(fillOpacity) else None
@@ -41,9 +41,9 @@ object Style {
 
           val strokeWidth =
             fields.get("stroke-width") match {
-              case Some(JsNumber(v)) => Some(v.toInt)
+              case Some(JsString(v)) => Some(v)
               case None => None
-              case Some(v) => throw new DeserializationException(s"'stroke-width' property must be a number, got $v")
+              case Some(v) => throw new DeserializationException(s"'stroke-width' property must be a string, got $v")
             }
 
           val strokeOpacity =
@@ -75,7 +75,7 @@ object Style {
     def write(style: Style): JsValue = {
       val l = mutable.ListBuffer[(String, JsValue)]()
       if(style.strokeColor.isDefined) l += ( ("stroke", JsString(style.strokeColor.get)) )
-      if(style.strokeWidth.isDefined) l += ( ("stroke-width", JsNumber(style.strokeWidth.get)) )
+      if(style.strokeWidth.isDefined) l += ( ("stroke-width", JsString(style.strokeWidth.get)) )
       if(style.strokeOpacity.isDefined) l += ( ("stroke-opacity", JsNumber(style.strokeOpacity.get)) )
       if(style.fillColor.isDefined) l += ( ("fill", JsString(style.fillColor.get)) )
       if(style.fillOpacity.isDefined) l += ( ("fill-opacity", JsNumber(style.fillOpacity.get)) )

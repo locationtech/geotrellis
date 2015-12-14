@@ -16,28 +16,6 @@ trait OpAsserter extends FunSpec
     with TestEnvironment
     with RasterMatchers  {
 
-  val basePath = {
-    val workingDir = 
-    localFS
-      .getWorkingDirectory
-      .toString
-      .substring(5)
-    s"${workingDir}/src/test/resources/"
-  }
-
-  def testArg(sc: SparkContext,
-    path: String,
-    layoutCols: Int = 4,
-    layoutRows: Int = 3)
-    (
-      rasterOp: (Tile, RasterExtent) => Tile,
-      sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
-      asserter: (Tile, Tile) => Unit = tilesEqual
-    ) = {
-    val tile = ArgReader.read(basePath + path)
-    testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
-  }
-
   def testGeoTiff(sc: SparkContext,
     path: String,
     layoutCols: Int = 4,
@@ -47,7 +25,7 @@ trait OpAsserter extends FunSpec
       sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
-    val tile = SingleBandGeoTiff(basePath + path).tile
+    val tile = SingleBandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 

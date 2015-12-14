@@ -11,7 +11,7 @@ import org.joda.time.DateTime
 
 abstract class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests

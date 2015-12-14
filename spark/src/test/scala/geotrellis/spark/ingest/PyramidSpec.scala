@@ -18,81 +18,79 @@ import org.scalatest._
 class PyramidSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with OnlyIfCanRunSpark
+  with TestSparkContext
   with RasterRDDBuilders
 {
 
   describe("Pyramid") {
-    ifCanRunSpark {
-      it("should work with SpaceTimeKey rasters") {
-        val tileLayout = TileLayout(4, 4, 2, 2)
+    it("should work with SpaceTimeKey rasters") {
+      val tileLayout = TileLayout(4, 4, 2, 2)
 
-        val dt1 = new DateTime(2014, 5, 17, 4, 0)
-        val dt2 = new DateTime(2014, 5, 18, 3, 0)
+      val dt1 = new DateTime(2014, 5, 17, 4, 0)
+      val dt2 = new DateTime(2014, 5, 18, 3, 0)
 
-        val tile1 = 
-          ArrayTile(Array(
-            1, 1,  1, 1,   2, 2,  2, 2,
-            1, 1,  1, 1,   2, 2,  2, 2,
+      val tile1 =
+        ArrayTile(Array(
+          1, 1,  1, 1,   2, 2,  2, 2,
+          1, 1,  1, 1,   2, 2,  2, 2,
 
-            1, 1,  1, 1,   2, 2,  2, 2,
-            1, 1,  1, 1,   2, 2,  2, 2,
-
-
-            3, 3,  3, 3,   4, 4,  4, 4,   
-            3, 3,  3, 3,   4, 4,  4, 4,
-
-            3, 3,  3, 3,   4, 4,  4, 4,
-            3, 3,  3, 3,   4, 4,  4, 4
-          ) , 8, 8)
-
-        val tile2 = 
-          ArrayTile(Array(
-            10, 10,  10, 10,   20, 20,  20, 20,
-            10, 10,  10, 10,   20, 20,  20, 20,
-
-            10, 10,  10, 10,   20, 20,  20, 20,
-            10, 10,  10, 10,   20, 20,  20, 20,
+          1, 1,  1, 1,   2, 2,  2, 2,
+          1, 1,  1, 1,   2, 2,  2, 2,
 
 
-            30, 30,  30, 30,   40, 40,  40, 40,   
-            30, 30,  30, 30,   40, 40,  40, 40,
+          3, 3,  3, 3,   4, 4,  4, 4,
+          3, 3,  3, 3,   4, 4,  4, 4,
 
-            30, 30,  30, 30,   40, 40,  40, 40,
-            30, 30,  30, 30,   40, 40,  40, 40
-          ) , 8, 8)
+          3, 3,  3, 3,   4, 4,  4, 4,
+          3, 3,  3, 3,   4, 4,  4, 4
+        ) , 8, 8)
 
-        val rdd = 
-          createSpaceTimeRasterRDD(
-            sc,
-            Seq( (tile1, dt1), (tile2, dt2) ),
-            tileLayout
-          )
+      val tile2 =
+        ArrayTile(Array(
+          10, 10,  10, 10,   20, 20,  20, 20,
+          10, 10,  10, 10,   20, 20,  20, 20,
 
-        val layoutScheme = ZoomedLayoutScheme(LatLng, 2)
-        val level = layoutScheme.levelForZoom(LatLng.worldExtent, 2)
+          10, 10,  10, 10,   20, 20,  20, 20,
+          10, 10,  10, 10,   20, 20,  20, 20,
 
-        val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)
 
-        levelOneRDD.metaData.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
-        val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
+          30, 30,  30, 30,   40, 40,  40, 40,
+          30, 30,  30, 30,   40, 40,  40, 40,
 
-        results.map(_._1.temporalKey.time).distinct.sorted.toSeq should be (Seq(dt1, dt2))
+          30, 30,  30, 30,   40, 40,  40, 40,
+          30, 30,  30, 30,   40, 40,  40, 40
+        ) , 8, 8)
 
-        for((key, tile) <- results) {
-          val multi = 
-            if(key.temporalKey.time == dt1) 1
-            else 10
-          key.spatialKey match {
-            case SpatialKey(0, 0) =>
-              tile.toArray.distinct should be (Array(1 * multi))
-            case SpatialKey(1, 0) =>
-              tile.toArray.distinct should be (Array(2 * multi))
-            case SpatialKey(0, 1) =>
-              tile.toArray.distinct should be (Array(3 * multi))
-            case SpatialKey(1, 1) =>
-              tile.toArray.distinct should be (Array(4 * multi))
-          }
+      val rdd =
+        createSpaceTimeRasterRDD(
+          sc,
+          Seq( (tile1, dt1), (tile2, dt2) ),
+          tileLayout
+        )
+
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 2)
+      val level = layoutScheme.levelForZoom(LatLng.worldExtent, 2)
+
+      val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)
+
+      levelOneRDD.metaData.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
+      val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
+
+      results.map(_._1.temporalKey.time).distinct.sorted.toSeq should be (Seq(dt1, dt2))
+
+      for((key, tile) <- results) {
+        val multi =
+          if(key.temporalKey.time == dt1) 1
+          else 10
+        key.spatialKey match {
+          case SpatialKey(0, 0) =>
+            tile.toArray.distinct should be (Array(1 * multi))
+          case SpatialKey(1, 0) =>
+            tile.toArray.distinct should be (Array(2 * multi))
+          case SpatialKey(0, 1) =>
+            tile.toArray.distinct should be (Array(3 * multi))
+          case SpatialKey(1, 1) =>
+            tile.toArray.distinct should be (Array(4 * multi))
         }
       }
     }
