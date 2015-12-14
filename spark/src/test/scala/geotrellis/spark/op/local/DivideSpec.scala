@@ -26,40 +26,38 @@ class DivideSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
 
   describe("Divide Operation") {
-    ifCanRunSpark {
-      val twos = AllTwosTestFile
-      val hundreds = AllHundredsTestFile
+    val twos = AllTwosTestFile
+    val hundreds = AllHundredsTestFile
 
-      it("should divide raster values by a constant") {
-        val ones = twos / 2
+    it("should divide raster values by a constant") {
+      val ones = twos / 2
 
-        rasterShouldBe(ones, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(twos, ones)
-      }
+      rasterShouldBe(ones, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(twos, ones)
+    }
 
-      it("should divide from a constant, raster values") {
-        val ones = 2 /: twos
+    it("should divide from a constant, raster values") {
+      val ones = 2 /: twos
 
-        rasterShouldBe(ones, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(twos, ones)
-      }
+      rasterShouldBe(ones, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(twos, ones)
+    }
 
-      it("should divide multiple rasters") {
-        val res = hundreds / twos / twos
+    it("should divide multiple rasters") {
+      val res = hundreds / twos / twos
 
-        rasterShouldBe(res, (25, 25))
-        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
-      }
+      rasterShouldBe(res, (25, 25))
+      rastersShouldHaveSameIdsAndTileCount(hundreds, res)
+    }
 
-      it("should divide multiple rasters as a seq") {
-        val res = hundreds / Seq(twos, twos)
+    it("should divide multiple rasters as a seq") {
+      val res = hundreds / Seq(twos, twos)
 
-        rasterShouldBe(res, (25, 25))
-        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
-      }
+      rasterShouldBe(res, (25, 25))
+      rastersShouldHaveSameIdsAndTileCount(hundreds, res)
     }
   }
 }

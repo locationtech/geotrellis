@@ -27,41 +27,39 @@ class MinoritySpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
 
   describe("Minority Operation") {
-    ifCanRunSpark {
-      val ones = AllOnesTestFile
-      val twos = AllTwosTestFile
-      val hundreds = AllHundredsTestFile
+    val ones = AllOnesTestFile
+    val twos = AllTwosTestFile
+    val hundreds = AllHundredsTestFile
 
-      it("should assign the minority of each raster, as a traversable") {
-        val res = ones.localMinority(List(twos, twos, twos, hundreds, hundreds))
+    it("should assign the minority of each raster, as a traversable") {
+      val res = ones.localMinority(List(twos, twos, twos, hundreds, hundreds))
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(res, ones)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(res, ones)
+    }
 
-      it("should assign the minority of each raster, as a vararg") {
-        val res = ones.localMinority(twos, twos, hundreds, hundreds)
+    it("should assign the minority of each raster, as a vararg") {
+      val res = ones.localMinority(twos, twos, hundreds, hundreds)
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(res, ones)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(res, ones)
+    }
 
-      it("should assign the nth minority of each raster, as a traversable") {
-        val res = ones.localMinority(1, List(twos, hundreds, ones, twos, twos))
+    it("should assign the nth minority of each raster, as a traversable") {
+      val res = ones.localMinority(1, List(twos, hundreds, ones, twos, twos))
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(res, ones)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(res, ones)
+    }
 
-      it("should assign the nth minority of each raster, as a vararg") {
-        val res = ones.localMinority(1, twos, hundreds, ones, twos, twos)
+    it("should assign the nth minority of each raster, as a vararg") {
+      val res = ones.localMinority(1, twos, hundreds, ones, twos, twos)
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(res, ones)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(res, ones)
     }
   }
 }

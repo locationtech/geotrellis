@@ -13,22 +13,19 @@ import spire.syntax.cfor._
 
 class HillshadeSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark
+    with TestSparkContext
     with RasterRDDBuilders
     with OpAsserter {
 
   describe("Hillshade Elevation Spec") {
 
-    ifCanRunSpark {
+    it("should get the same result on elevation for spark op as single raster op") {
+      val rasterOp = (tile: Tile, re: RasterExtent) => tile.hillshade(re.cellSize)
+      val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.hillshade()
 
-      it("should get the same result on elevation for spark op as single raster op") {
-        val rasterOp = (tile: Tile, re: RasterExtent) => tile.hillshade(re.cellSize)
-        val sparkOp = (rdd: RasterRDD[SpatialKey]) => rdd.hillshade()
+      val path = "aspect.tif"
 
-        val path = "aspect.tif"
-
-        testGeoTiff(sc, path)(rasterOp, sparkOp)
-      }
+      testGeoTiff(sc, path)(rasterOp, sparkOp)
     }
   }
 }
