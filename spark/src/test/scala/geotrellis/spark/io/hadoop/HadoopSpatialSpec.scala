@@ -15,6 +15,7 @@ abstract class HadoopSpatialSpec
   lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterRDD](outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
   lazy val copier = HadoopLayerCopier[SpatialKey, Tile, RasterRDD](outputLocal)
+  lazy val mover  = HadoopLayerMover[SpatialKey, Tile, RasterRDD](outputLocal)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
 }

@@ -13,9 +13,13 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, Container]
-  (rootPath: Path, attributeStore: AttributeStore[JsonFormat])
+  (rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext,
-          cons: ContainerConstructor[K, V, Container]) extends LayerMover[LayerId](null, null, null) { // dirty constructor workaround
+          cons: ContainerConstructor[K, V, Container]) extends LayerMover[LayerId] {
+
+  // dirty workaround
+  val layerCopier = null
+  val layerDeleter = null
 
   def headerUpdate(id: LayerId, header: HadoopLayerHeader): HadoopLayerHeader =
     header.copy(path = new Path(rootPath, s"${id.name}/${id.zoom}"))

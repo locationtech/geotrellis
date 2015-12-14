@@ -17,6 +17,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestUpdater = LayerUpdater[LayerId, K, V, Container]
   type TestDeleter = LayerDeleter[LayerId]
   type TestCopier = LayerCopier[LayerId]
+  type TestMover = LayerMover[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container
@@ -24,11 +25,13 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   def writer: TestWriter
   def deleter: TestDeleter
   def copier: TestCopier
+  def mover: TestMover
   def tiles: TestTileReader
 
   val layerId = LayerId("sample", 1)
-  val deleteLayerId = LayerId("deleteSample", 1) // second layer to avoid data race
+  val deleteLayerId = LayerId("sample-delete", 1) // second layer to avoid data race
   val copiedLayerId = LayerId("sample-copy", 1)
+  val movedLayerId = LayerId("sample-move", 1)
   lazy val query = reader.query(layerId)
   
   if (canRunSpark) {
@@ -92,6 +95,28 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     it("should copy a layer") {
       copier.copy(layerId, copiedLayerId)
       reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
+    }
+
+    it ("shouldn't move a layer which already exists") {
+      intercept[LayerExistsError] {
+        mover.move(layerId, layerId)
+      }
+    }
+
+    it ("shouldn't move a layer which doesn't exists") {
+      intercept[LayerNotFoundError] {
+        mover.move(movedLayerId, movedLayerId)
+      }
+    }
+
+    it("should move a layer") {
+      val keysBeforeMove = reader.read(layerId).keys.collect()
+      mover.move(layerId, movedLayerId)
+      intercept[LayerNotFoundError] {
+        reader.read(layerId)
+      }
+      keysBeforeMove should contain theSameElementsAs reader.read(movedLayerId).keys.collect()
+      mover.move(movedLayerId, layerId)
     }
   }
 }

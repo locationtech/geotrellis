@@ -7,18 +7,22 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object S3LayerMover {
-  def apply(attributeStore: AttributeStore[JsonFormat],
-            layerCopier   : LayerCopier[LayerId],
-            layerDeleter  : LayerDeleter[LayerId]): LayerMover[LayerId] =
-    new LayerMover(attributeStore, layerCopier, layerDeleter)
+  def apply(attrStore: AttributeStore[JsonFormat],
+            lCopier   : LayerCopier[LayerId],
+            lDeleter  : LayerDeleter[LayerId]): LayerMover[LayerId] =
+    new LayerMover[LayerId] {
+      val attributeStore = attrStore
+      val layerCopier    = lCopier
+      val layerDeleter   = lDeleter
+    }
 
   def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
     (attributeStore: AttributeStore[JsonFormat], bucket: String, keyPrefix: String)
     (implicit cons: ContainerConstructor[K, V, Container[K]]): LayerMover[LayerId] = {
     apply(
-      attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier[K, V, Container](attributeStore, bucket, keyPrefix),
-      layerDeleter   = S3LayerDeleter(attributeStore)
+      attrStore = attributeStore,
+      lCopier    = S3LayerCopier[K, V, Container](attributeStore, bucket, keyPrefix),
+      lDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 
@@ -27,9 +31,9 @@ object S3LayerMover {
     (implicit cons: ContainerConstructor[K, V, Container[K]]): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
-      attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier[K, V, Container](attributeStore, destBucket, destKeyPrefix),
-      layerDeleter   = S3LayerDeleter(attributeStore)
+      attrStore = attributeStore,
+      lCopier    = S3LayerCopier[K, V, Container](attributeStore, destBucket, destKeyPrefix),
+      lDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 
@@ -37,9 +41,9 @@ object S3LayerMover {
     (bucket: String, keyPrefix: String)(implicit cons: ContainerConstructor[K, V, Container[K]]): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     apply(
-      attributeStore = attributeStore,
-      layerCopier    = S3LayerCopier[K, V, Container](attributeStore, bucket, keyPrefix),
-      layerDeleter   = S3LayerDeleter(attributeStore)
+      attrStore = attributeStore,
+      lCopier    = S3LayerCopier[K, V, Container](attributeStore, bucket, keyPrefix),
+      lDeleter   = S3LayerDeleter(attributeStore)
     )
   }
 }
