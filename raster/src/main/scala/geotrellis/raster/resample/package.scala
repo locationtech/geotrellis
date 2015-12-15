@@ -13,7 +13,7 @@ package object resample {
       resample(source, target, ResampleMethod.DEFAULT)
 
     def resample(extent: Extent, targetExtent: RasterExtent, method: ResampleMethod): Tile = {
-      val resampler = Resample(method, tile, extent)
+      val resampler = Resample(method, tile, extent, targetExtent.cellSize)
       val (cols, rows) = (targetExtent.cols, targetExtent.rows)
       val targetTile = ArrayTile.empty(tile.cellType, cols, rows)
 

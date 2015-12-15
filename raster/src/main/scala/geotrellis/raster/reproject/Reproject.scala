@@ -46,13 +46,13 @@ object Reproject {
 
       val destY = Array.ofDim[Double](newCols).fill(topLeftY)
 
-      
+
       // The map coordinates of the source raster, transformed from the
       // destination map coordinates on each row iteration
       val srcX = Array.ofDim[Double](newCols)
       val srcY = Array.ofDim[Double](newCols)
 
-      val resampler = Resample(options.method, tile, extent)
+      val resampler = Resample(options.method, tile, extent, newRe.cellSize)
 
       if(tile.cellType.isFloatingPoint) {
         val resample = resampler.resampleDouble _

@@ -16,7 +16,6 @@ class BicubicConvolutionResample(tile: Tile, extent: Extent)
 
   override def uniCubicResample(p: Array[Double], x: Double) =
     resampler.resample(p, x)
-
 }
 
 class CubicConvolutionResample {
