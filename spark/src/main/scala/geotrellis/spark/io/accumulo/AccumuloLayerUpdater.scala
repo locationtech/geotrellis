@@ -10,13 +10,13 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K, V)]](
+class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V])
-  (implicit val cons: ContainerConstructor[K, V, M, Container])
-  extends LayerUpdater[LayerId, K, V, M, Container] {
+  (implicit val cons: ContainerConstructor[K, V, M, C])
+  extends LayerUpdater[LayerId, K, V, M, C] {
 
-  def update(id: LayerId, rdd: Container) = {
+  def update(id: LayerId, rdd: C) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 

@@ -12,15 +12,15 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
-class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K, V)]](
+class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
   rootPath: Path,
   val attributeStore: AttributeStore[JsonFormat],
   rddWriter: HadoopRDDWriter[K, V],
   keyIndexMethod: KeyIndexMethod[K])
-(implicit cons: ContainerConstructor[K, V, M,Container])
-  extends Writer[LayerId, Container] {
+(implicit cons: ContainerConstructor[K, V, M,C])
+  extends Writer[LayerId, C] {
 
-  def write(id: LayerId, rdd: Container): Unit = {
+  def write(id: LayerId, rdd: C): Unit = {
     implicit val sc = rdd.sparkContext
 
     val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")

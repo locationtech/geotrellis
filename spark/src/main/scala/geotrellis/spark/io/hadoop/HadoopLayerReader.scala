@@ -19,17 +19,18 @@ import scala.reflect.ClassTag
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
- * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
+ * @tparam M              Type of Metadata associated with the RDD[(K,V)]
+ * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K, V)]](
+class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
   val attributeStore: AttributeStore[JsonFormat],
   rddReader: HadoopRDDReader[K, V])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, M, Container])
-  extends FilteringLayerReader[LayerId, K, M, Container] with LazyLogging {
+  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, M, C])
+  extends FilteringLayerReader[LayerId, K, M, C] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): Container = {
+  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): C = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](id)

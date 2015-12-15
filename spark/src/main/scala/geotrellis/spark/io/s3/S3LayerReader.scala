@@ -23,18 +23,19 @@ import scala.reflect.ClassTag
  * @param getCache        Optional cache function to be used when reading S3 objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
- * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
+ * @tparam M              Type of Metadata associated with the RDD[(K,V)]
+ * @tparam C              Type of RDD container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K,V)]](
+class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K,V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddReader: S3RDDReader[K, V],
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, M, Container])
-  extends FilteringLayerReader[LayerId, K, M, Container] with LazyLogging {
+  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, M, C])
+  extends FilteringLayerReader[LayerId, K, M, C] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): Container = {
+  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): C = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {

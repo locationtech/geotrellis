@@ -23,9 +23,10 @@ import AttributeStore.Fields
  * @param attributeStore  AttributeStore to be used for storing raster metadata
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
- * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
+ * @tparam M              Type of Metadata associated with the RDD[(K,V)]
+ * @tparam C              Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K, V)]](
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
@@ -33,12 +34,12 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
     keyPrefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false)
-  (implicit val cons: ContainerConstructor[K, V, M, Container])
-  extends Writer[LayerId, Container] with LazyLogging {
+  (implicit val cons: ContainerConstructor[K, V, M, C])
+  extends Writer[LayerId, C] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def write(id: LayerId, rdd: Container) = {
+  def write(id: LayerId, rdd: C) = {
     require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")

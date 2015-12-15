@@ -11,16 +11,16 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K, V)]](
+class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     clobber: Boolean = true)
-  (implicit val cons: ContainerConstructor[K, V, M, Container])
-  extends LayerUpdater[LayerId, K, V, M, Container] with LazyLogging {
+  (implicit val cons: ContainerConstructor[K, V, M, C])
+  extends LayerUpdater[LayerId, K, V, M, C] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update(id: LayerId, rdd: Container) = {
+  def update(id: LayerId, rdd: C) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
