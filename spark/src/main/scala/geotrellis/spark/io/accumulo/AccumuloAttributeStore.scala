@@ -38,12 +38,6 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     scanner.iterator.map(_.getValue)
   }
 
-  private def fetchLayer(layerId: LayerId): Iterator[(Text, Value)] = {
-    val scanner  = connector.createScanner(attributeTable, new Authorizations())
-    scanner.setRange(new Range(new Text(layerId.toString)))
-    scanner.iterator.map { e => e.getKey.getColumnFamily -> e.getValue }
-  }
-
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     val numThreads = 1
