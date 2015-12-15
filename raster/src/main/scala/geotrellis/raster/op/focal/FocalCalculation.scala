@@ -61,7 +61,7 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
 abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds]) 
     extends FocalCalculation[T](tile, kernel, analysisArea)
 {
-  def traversalStrategy = TraversalStrategy.DEFAULT
+  def traversalStrategy = ScanLineTraversalStrategy//TraversalStrategy.DEFAULT
 
   def execute(): T = {
     val cursor = new KernelCursor(tile, kernel, bounds)

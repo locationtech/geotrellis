@@ -16,6 +16,8 @@ case class Kernel(tile: Tile) extends Neighborhood {
 
   // Not supporting masks, since masks are implemented as 0 values in the kernel weight
   val hasMask = false
+
+  def cellType = tile.cellType
 }
 
 object Kernel {

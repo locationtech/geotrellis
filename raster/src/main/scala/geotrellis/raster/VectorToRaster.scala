@@ -48,7 +48,7 @@ object VectorToRaster {
                        transform: D => Int, 
                        kernel: Kernel, 
                        rasterExtent: RasterExtent): Tile = {
-    val stamper = new KernelStamper(rasterExtent.cols, rasterExtent.rows, kernel)
+    val stamper = KernelStamper(TypeInt, rasterExtent.cols, rasterExtent.rows, kernel)
     
     for(point <- points) {
       val col = rasterExtent.mapXToGrid(point.geom.x)
