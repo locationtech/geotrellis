@@ -5,25 +5,7 @@ import geotrellis.raster.render.png._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.op.stats._
 
-trait RenderMethods extends TileMethods {
-  def color(breaksToColors: Map[Int, Int]): Tile =
-    IntColorMap(breaksToColors).render(tile)
-
-  def color(breaksToColors: Map[Int, Int], options: ColorMapOptions): Tile =
-    IntColorMap(breaksToColors, options).render(tile)
-
-  def color(breaksToColors: Map[Double, Int])(implicit d: DI): Tile =
-    DoubleColorMap(breaksToColors).render(tile)
-
-  def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): Tile =
-    DoubleColorMap(breaksToColors, options).render(tile)
-
-  def color(colorBreaks: ColorBreaks): Tile =
-    colorBreaks.toColorMap.render(tile)
-
-  def color(colorBreaks: ColorBreaks, options: ColorMapOptions): Tile =
-    colorBreaks.toColorMap(options).render(tile)
-
+trait PngRenderMethods extends TileMethods {
   /** Generate a PNG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -35,7 +17,7 @@ trait RenderMethods extends TileMethods {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new Encoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
+    new PngEncoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
 
   def renderPng(colorRamp: ColorRamp): Png =
     renderPng(colorRamp.toArray)
@@ -84,7 +66,7 @@ trait RenderMethods extends TileMethods {
       }
 
     val r2 = renderer.render(tile)
-    new Encoder(renderer.settings).writeByteArray(r2)
+    new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
   }
 
   def renderPng(ramp: ColorRamp, breaks: Array[Int]): Png =
