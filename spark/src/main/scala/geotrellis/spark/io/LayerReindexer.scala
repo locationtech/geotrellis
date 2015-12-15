@@ -1,19 +1,18 @@
 package geotrellis.spark.io
 
 import geotrellis.spark.LayerId
+import org.joda.time.DateTime
 
 trait LayerReindexer[ID] {
-  val layerDeleter  : LayerDeleter[ID]
-  val layerMover    : LayerMover[ID]
-  val layerCopier   : LayerCopier[ID]
+  val layerDeleter : LayerDeleter[ID]
+  val layerMover   : LayerMover[ID]
+  val layerCopier  : LayerCopier[ID]
 
   def getTmpId(id: ID): ID
 
   def reindex(id: ID): Unit = {
-    // TODO: define reindex strategy?
     val tmpId = getTmpId(id)
-
-    layerCopier.copy(id, tmpId) // TODO: to check at least it is unique?
+    layerCopier.copy(id, tmpId)
     layerDeleter.delete(id)
     layerMover.move(tmpId, id)
   }
@@ -28,6 +27,6 @@ object LayerReindexer {
       val layerCopier  = lCopier
       val layerMover   = lMover
 
-      def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-tmp")
+      def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-${DateTime.now.getMillis}")
     }
 }
