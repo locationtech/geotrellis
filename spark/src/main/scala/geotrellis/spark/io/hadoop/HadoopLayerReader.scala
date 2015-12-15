@@ -10,7 +10,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 
@@ -26,7 +25,7 @@ import scala.reflect.ClassTag
 class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
   val attributeStore: AttributeStore[JsonFormat],
   rddReader: HadoopRDDReader[K, V])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, M, C])
+  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C])
   extends FilteringLayerReader[LayerId, K, M, C] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -34,6 +33,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
   def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): C = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+      import spray.json.DefaultJsonProtocol._
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
@@ -50,7 +50,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
         rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
       }
 
-    cons.makeContainer(rdd, keyBounds, metadata)
+    bridge(rdd -> metadata)
   }
 }
 
@@ -58,7 +58,7 @@ object HadoopLayerReader {
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     attributeStore: HadoopAttributeStore,
     rddReader: HadoopRDDReader[K, V])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, M, C]) =
+  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]) =
     new HadoopLayerReader[K, V, M, C](attributeStore, rddReader)
 
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
@@ -66,14 +66,16 @@ object HadoopLayerReader {
   (implicit
     sc: SparkContext,
     format: HadoopFormat[K, V],
-    cons: ContainerConstructor[K, V, M, C]): HadoopLayerReader[K, V, M, C] =
+    cons: Bridge[(RDD[(K, V)], M), C]): HadoopLayerReader[K, V, M, C] =
     apply(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)
-    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]]) =
-    new HadoopLayerReader(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT))
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
+    new HadoopLayerReader[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
+      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT))
 
-  def spatialMultiBand((rootPath: Path)
-    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]]) =
-    new HadoopLayerReader(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
+  def spatialMultiBand(rootPath: Path)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
+    new HadoopLayerReader[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
+      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
 }

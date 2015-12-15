@@ -15,7 +15,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Js
     rddWriter: BaseAccumuloRDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
-  (implicit val cons: ContainerConstructor[K, V, M, C])
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C])
   extends Writer[LayerId, C] {
 
   def write(id: LayerId, rdd: C): Unit = {
@@ -25,7 +25,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Js
         valueClass = classTag[V].toString(),
         tileTable = table
       )
-    val metaData = cons.getMetaData(rdd)
+    val (_, metaData) = bridge.unapply(rdd)
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
@@ -48,7 +48,7 @@ object AccumuloLayerWriter {
    table: String,
    indexMethod: KeyIndexMethod[K],
    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-  (implicit cons: ContainerConstructor[K, V, M, C]): AccumuloLayerWriter[K, V, M, C] =
+  (implicit cons: Bridge[(RDD[(K, V)], M), C]): AccumuloLayerWriter[K, V, M, C] =
     new AccumuloLayerWriter[K, V, M, C](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),

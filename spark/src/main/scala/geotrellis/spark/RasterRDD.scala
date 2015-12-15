@@ -17,7 +17,7 @@
 package geotrellis.spark
 
 import geotrellis.raster._
-import geotrellis.spark.io.ContainerConstructor
+import geotrellis.spark.io.Bridge
 import org.apache.spark.SparkContext._
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -133,12 +133,10 @@ object RasterRDD {
 
   implicit def implicitToRDD[K](rasterRdd: RasterRDD[K]): RDD[(K, Tile)] = rasterRdd
 
-  implicit def constructor[K: JsonFormat : ClassTag] =
-    new ContainerConstructor[K, Tile, RasterMetaData, RasterRDD[K]] {
-      def getMetaData(raster: RasterRDD[K]): RasterMetaData =
-        raster.metaData
+  implicit def bridge[K: JsonFormat : ClassTag] =
+    new Bridge[(RDD[(K, Tile)], RasterMetaData), RasterRDD[K]] {
+      def unapply(b: RasterRDD[K]) = (b.tileRdd, b.metaData)
 
-      def makeContainer(rdd: RDD[(K, Tile)], bounds: KeyBounds[K], metadata: RasterMetaData) =
-        new RasterRDD(rdd, metadata)
+      def apply(a: (RDD[(K, Tile)], RasterMetaData)) = new RasterRDD(a._1, a._2)
     }
 }

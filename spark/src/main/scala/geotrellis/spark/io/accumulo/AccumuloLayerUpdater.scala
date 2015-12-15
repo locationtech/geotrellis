@@ -13,7 +13,7 @@ import scala.reflect._
 class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V])
-  (implicit val cons: ContainerConstructor[K, V, M, C])
+  (implicit val cons: Bridge[(RDD[(K, V)], M), C])
   extends LayerUpdater[LayerId, K, V, M, C] {
 
   def update(id: LayerId, rdd: C) = {
@@ -53,7 +53,7 @@ object AccumuloLayerUpdater {
   V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
   (instance: AccumuloInstance,
    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-  (implicit cons: ContainerConstructor[K, V, M, C]): AccumuloLayerUpdater[K, V, M, C] =
+  (implicit cons: Bridge[(RDD[(K, V)], M), C]): AccumuloLayerUpdater[K, V, M, C] =
     new AccumuloLayerUpdater[K, V, M, C](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)

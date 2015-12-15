@@ -15,7 +15,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     clobber: Boolean = true)
-  (implicit val cons: ContainerConstructor[K, V, M, C])
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C])
   extends LayerUpdater[LayerId, K, V, M, C] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
@@ -51,12 +51,12 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
 }
 
 object S3LayerUpdater {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, Container[_] <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
       bucket: String,
       prefix: String,
       clobber: Boolean = true)
-    (implicit cons: ContainerConstructor[K, V, M, Container[K]]): S3LayerUpdater[K, V, M, Container[K]] =
-    new S3LayerUpdater[K, V, M, Container[K]](
+    (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerUpdater[K, V, M, C] =
+    new S3LayerUpdater[K, V, M, C](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       clobber
