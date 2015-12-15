@@ -17,7 +17,6 @@ import spray.json.JsonFormat
 trait ContainerConstructor[K, V, M, C] {
   def getMetaData(container: C): M
   def makeContainer(rdd: RDD[(K, V)], bounds: KeyBounds[K], metadata: M): C
-  def combineMetaData(that: M, other: M): M
 }
 
 

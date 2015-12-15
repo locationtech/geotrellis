@@ -23,8 +23,5 @@ object MultiBandRasterRDD {
 
       def makeContainer(rdd: RDD[(K, MultiBandTile)], bounds: KeyBounds[K], metadata: RasterMetaData) =
         new MultiBandRasterRDD(rdd, metadata)
-
-      def combineMetaData(that: RasterMetaData, other: RasterMetaData): RasterMetaData =
-        that.combine(other)
     }
 }
