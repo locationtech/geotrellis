@@ -49,6 +49,9 @@ package object hadoop {
     /** Creates a Configuration with all files in a directory (recursively searched)*/
     def withInputDirectory(path: Path): Configuration = {
       val allFiles = HdfsUtils.listFiles(path, config)
+      if(allFiles.isEmpty) {
+        sys.error(s"$path contains no files.")
+      }
       HdfsUtils.putFilesInConf(allFiles.mkString(","), config)
     }
 

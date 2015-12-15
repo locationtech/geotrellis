@@ -9,7 +9,7 @@ import geotrellis.spark._
 
 abstract class AccumuloSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
   type Container = RasterRDD[SpatialKey]
@@ -17,6 +17,7 @@ abstract class AccumuloSpatialSpec
   implicit val instance = MockAccumuloInstance()
 
   lazy val reader = AccumuloLayerReader[SpatialKey, Tile, RasterRDD](instance)
+  lazy val deleter = AccumuloLayerDeleter(instance)
   lazy val tiles = AccumuloTileReader[SpatialKey, Tile](instance)
   lazy val sample = AllOnesTestFile
 }

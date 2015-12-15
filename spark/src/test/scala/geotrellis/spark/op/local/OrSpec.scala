@@ -27,40 +27,38 @@ class OrSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
   describe("Or Operation") {
-    ifCanRunSpark {
-      val ones = AllOnesTestFile
-      val twos = AllTwosTestFile
-      val hundreds = AllHundredsTestFile
+    val ones = AllOnesTestFile
+    val twos = AllTwosTestFile
+    val hundreds = AllHundredsTestFile
 
-      it("should or a raster with a constant") {
-        val res = ones | 1
+    it("should or a raster with a constant") {
+      val res = ones | 1
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should or a constant with a raster") {
-        val res = 1 |: ones
+    it("should or a constant with a raster") {
+      val res = 1 |: ones
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should or three different rasters") {
-        val res = ones | twos | hundreds
+    it("should or three different rasters") {
+      val res = ones | twos | hundreds
 
-        rasterShouldBe(res, (103, 103))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (103, 103))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
+    }
 
-      it("should or three different rasters as a seq") {
-        val res = ones | Seq(twos, hundreds)
+    it("should or three different rasters as a seq") {
+      val res = ones | Seq(twos, hundreds)
 
-        rasterShouldBe(res, (103, 103))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
+      rasterShouldBe(res, (103, 103))
+      rastersShouldHaveSameIdsAndTileCount(ones, res)
     }
   }
 }

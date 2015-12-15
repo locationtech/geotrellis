@@ -3,7 +3,7 @@ package geotrellis.vector.io.json
 import geotrellis.vector._
 import geotrellis.testkit.vector._
 
-import spray.json.DeserializationException
+import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 import org.scalatest._
@@ -223,5 +223,24 @@ class GeoJsonSpec extends FlatSpec with Matchers {
       val poly2: Polygon = Polygon(line2)
       poly2.toGeoJson.extractGeometries[Polygon] should be (Seq())
     }
+  }
+
+  it should "create a geometry collection with a polygon and extent" in {
+    val extent = Extent(0.0, 0.0, 1.0, 2.0)
+    val p = Polygon((10.0, 10.0), (10.0, 20.0), (30.0, 30.0), (10.0, 10.0))
+
+    val geoJson = Seq(extent, p).toGeoJson
+    val gc = geoJson.parseGeoJson[GeometryCollection]
+    gc.polygons.size should be (2)
+    gc.polygons.toSet should be (Set(extent.toPolygon, p))
+  }
+
+  it should "create a feature collection out of a set of features" in {
+    val f1 = Feature(Polygon((10.0, 10.0), (10.0, 20.0), (30.0, 30.0), (10.0, 10.0)), JsObject("value" -> JsNumber(1)))
+    val f2 = Feature(Polygon((-10.0, -10.0), (-10.0, -20.0), (-30.0, -30.0), (-10.0, -10.0)), JsObject("value" -> JsNumber(2)))
+
+    val geoJson = Seq(f1, f2).toGeoJson
+    val datas: Set[JsObject] = geoJson.parseGeoJson[JsonFeatureCollection].getAllPolygonFeatures[JsObject]().map { f => f.data }.toSet
+    datas should be (Set(f1.data, f2.data))
   }
 }

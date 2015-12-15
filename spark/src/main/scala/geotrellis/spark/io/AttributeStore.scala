@@ -9,6 +9,8 @@ trait AttributeStore[F[_]] extends AttributeCaching[F] {
   def readAll[T: Format](attributeName: String): Map[LayerId, T]
   def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit
   def layerExists(layerId: LayerId): Boolean
+  def delete(layerId: LayerId): Unit
+  def delete(layerId: LayerId, attributeName: String): Unit
 }
 
 object AttributeStore {

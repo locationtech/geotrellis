@@ -25,41 +25,39 @@ class SubtractSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with OnlyIfCanRunSpark {
+    with TestSparkContext {
 
   describe("Subtract Operation") {
-    ifCanRunSpark {
-      val ones = AllOnesTestFile
-      val twos = AllTwosTestFile
-      val hundreds = AllHundredsTestFile
+    val ones = AllOnesTestFile
+    val twos = AllTwosTestFile
+    val hundreds = AllHundredsTestFile
 
-      it("should subtract a constant from a raster") {
-        val res = twos - 1
+    it("should subtract a constant from a raster") {
+      val res = twos - 1
 
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(twos, res)
-      }
+      rasterShouldBe(res, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(twos, res)
+    }
 
-      it("should subtract from a constant, raster values") {
-        val res = 3 -: twos
+    it("should subtract from a constant, raster values") {
+      val res = 3 -: twos
 
-        rasterShouldBe(ones, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(twos, res)
-      }
+      rasterShouldBe(ones, (1, 1))
+      rastersShouldHaveSameIdsAndTileCount(twos, res)
+    }
 
-      it("should subtract multiple rasters") {
-        val res = hundreds - twos - ones
+    it("should subtract multiple rasters") {
+      val res = hundreds - twos - ones
 
-        rasterShouldBe(res, (97, 97))
-        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
-      }
+      rasterShouldBe(res, (97, 97))
+      rastersShouldHaveSameIdsAndTileCount(hundreds, res)
+    }
 
-      it("should subtract multiple rasters as a seq") {
-        val res = hundreds - Seq(twos, ones)
+    it("should subtract multiple rasters as a seq") {
+      val res = hundreds - Seq(twos, ones)
 
-        rasterShouldBe(res, (97, 97))
-        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
-      }
+      rasterShouldBe(res, (97, 97))
+      rastersShouldHaveSameIdsAndTileCount(hundreds, res)
     }
   }
 }
