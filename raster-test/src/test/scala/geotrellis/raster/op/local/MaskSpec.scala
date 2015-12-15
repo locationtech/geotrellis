@@ -141,8 +141,7 @@ class MaskSpec extends FunSpec
         dx = Random.nextInt(width - size) - width/2 - 0.1
         dy = Random.nextInt(height - size) - height/2 - 0.1
         border = square(size, dx, dy)
-        hole = square(size/2, dx, dy)
-      } check(Polygon(border, hole))
+      } check(Polygon(border))
     }
   }
 }
