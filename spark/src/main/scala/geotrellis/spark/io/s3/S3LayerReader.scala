@@ -35,13 +35,13 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
   val defaultNumPartitions = sc.defaultParallelism
 
   def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): Container = {
-      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-      val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-        attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
-      } catch {
-        case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-      }
+    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
+    }
 
     val bucket = header.bucket
     val prefix = header.key
