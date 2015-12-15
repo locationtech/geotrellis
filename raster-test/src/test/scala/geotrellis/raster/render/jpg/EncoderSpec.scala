@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.render.png
+package geotrellis.raster.render.jpg
 
 import geotrellis.raster._
 import geotrellis.raster.render._
@@ -26,7 +26,7 @@ import java.io.{File, FileInputStream}
 
 import org.scalatest._
 
-class PngEncoderSpec extends FunSpec with Matchers {
+class JpgEncoderSpec extends FunSpec with Matchers {
 
   def parseHexByte(s: String) = Integer.parseInt(s, 16).toByte
   def parseHexBytes(cs: Array[String]) = cs.map(parseHexByte _)
@@ -43,16 +43,6 @@ a9 fe b1 58 17 27 8b 22 71 2e 5e be 0a c9 bb a8
 78 16 0d 5b 6c 11 3b 06 db 3d 95 00 00 00 00 49
 45 4e 44 ae 42 60 82""")
 
-  val rgba = parseHexString("""
-89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
-00 00 00 0a 00 00 00 0a 08 06 00 00 00 8d 32 cf
-bd 00 00 00 42 49 44 41 54 78 01 85 ce 5b 0a 00
-20 08 44 d1 11 dc ff 96 4b 2d e8 a5 93 20 fe 1c
-2e 2a 80 06 88 1d be 3a 9c 23 3e 0a b1 60 44 39
-9e d0 6b fe 41 8d 37 c8 f1 05 6b 9c c0 1c 17 f0
-c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
-00 00 00 49 45 4e 44 ae 42 60 82""")
-
   val w = 10
   val h = 10
   val data = Array.ofDim[Int](h * w)
@@ -64,74 +54,60 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
 
   val tile = ArrayTile(data, w, h)
 
-  describe("RgbaEncoder") {
-    val fh = File.createTempFile("rgba-", ".png")
+  describe("JpgEncoder") {
+    val fh = File.createTempFile("rgb-", ".jpg")
     val path = fh.getPath
 
-    val encoder = PngEncoder(Settings(Rgba, PaethFilter))
+    val encoder = new JpgEncoder
 
-    it("should render a PNG") {
+    it("should render a jpg") {
       encoder.writeByteArray(tile)
     }
 
-    it("should write a PNG") {
+    it("should write a jpg") {
       encoder.writePath(path, tile)
     }
-    
+
     it("should write and render the same thing") {
       val bytes1 = encoder.writeByteArray(tile)
-    
+
       val fis = new FileInputStream(fh)
       val bytes2 = Array.ofDim[Byte](fh.length.toInt)
       fis.read(bytes2)
-      
+
       bytes1 should be (bytes2)
     }
-    
-    it("should match the reference") {
-      val bytes1 = encoder.writeByteArray(tile)
-      bytes1 should be (rgba)
+
+    it("should produce different results for different compressions") {
+      val defaultEncoder = new JpgEncoder
+      val losslessEncoder = new JpgEncoder(Settings.LOSSLESS)
+
+      val bytes1 = defaultEncoder.writeByteArray(tile)
+      val bytes2 = losslessEncoder.writeByteArray(tile)
+
+      bytes1 should not be (bytes2)
     }
 
-    fh.delete()
-  }
+    it("should produce the same results for the same compressions") {
+      val enc1 = new JpgEncoder(Settings(0.3, false))
+      val enc2 = new JpgEncoder(Settings(0.3, false))
 
-  describe("RgbEncoder") {
-    val fh = File.createTempFile("rgb-", ".png")
-    val path = fh.getPath
-  
-    val encoder = PngEncoder(Settings(Rgb(0), PaethFilter))
-  
-    // map RGBA values into RGB
-    val tile2 = tile.map(_ >> 8)
-  
-    it("should write a PNG") {
-      encoder.writePath(path, tile2)
-    }
-  
-    it("should render a PNG") {
-      encoder.writeByteArray(tile2)
-    }
-  
-    it("should write and render the same thing") {
-      val bytes1 = encoder.writeByteArray(tile2)
-  
-      val fis = new FileInputStream(fh)
-      val bytes2 = Array.ofDim[Byte](fh.length.toInt)
-      fis.read(bytes2)
-      
+      val bytes1 = enc1.writeByteArray(tile)
+      val bytes2 = enc2.writeByteArray(tile)
+
       bytes1 should be (bytes2)
     }
-  
-    it("should match the reference") {
-      val bytes1 = encoder.writeByteArray(tile2)
-      println(bytes1.length)
-      println(tile2.cols * tile2.rows)
-      println(bytes1.toSeq)
-      println(rgb.toSeq)
-      bytes1 should be (rgb)
+
+    it("should produce huffman tables if set to optimize") {
+      val enc1 = new JpgEncoder(Settings(0.3, false))
+      val enc2 = new JpgEncoder(Settings(0.3, true))
+
+      val bytes1 = enc1.writeByteArray(tile)
+      val bytes2 = enc2.writeByteArray(tile)
+
+      bytes1 should not be (bytes2)
     }
-  
+
     fh.delete()
   }
 }

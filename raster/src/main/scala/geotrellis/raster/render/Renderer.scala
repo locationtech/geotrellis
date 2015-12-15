@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.render.png
+package geotrellis.raster.render
 
+import  geotrellis.raster.render.jpg._
+import  geotrellis.raster.render.png._
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.render._
@@ -26,8 +28,6 @@ import scala.collection.mutable
 case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: ColorType) {
   def render(r: Tile) =
     colorMap.render(r).convert(cellType)
-
-  def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
