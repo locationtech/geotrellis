@@ -1,11 +1,15 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.spark.io.accumulo.AccumuloRDDReader
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.hadoop.{HadoopCatalogConfig, HadoopRDDReader, HadoopAttributeStore}
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import org.apache.avro.Schema
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
@@ -49,4 +53,13 @@ object AccumuloLayerReader {
     new AccumuloLayerReader[K, V, M, C] (
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
+
+  def spatial(instance: AccumuloInstance)
+    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]]) =
+    new AccumuloLayerReader(AccumuloAttributeStore(instance.connector), new AccumuloRDDReader[SpatialKey, Tile](instance))
+
+  def spatialMultiBand((instance: AccumuloInstance)
+    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]]) =
+    new AccumuloLayerReader(AccumuloAttributeStore(instance.connector), new AccumuloRDDReader[SpatialKey, MultiBandTile](instance))
+
 }

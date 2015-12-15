@@ -1,9 +1,10 @@
 package geotrellis.spark.io.hadoop
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
-import geotrellis.spark.{KeyBounds, LayerId, Boundable}
+import geotrellis.spark._
 import geotrellis.spark.io.json._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -67,4 +68,12 @@ object HadoopLayerReader {
     format: HadoopFormat[K, V],
     cons: ContainerConstructor[K, V, M, C]): HadoopLayerReader[K, V, M, C] =
     apply(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
+
+  def spatial(rootPath: Path)
+    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]]) =
+    new HadoopLayerReader(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT))
+
+  def spatialMultiBand((rootPath: Path)
+    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]]) =
+    new HadoopLayerReader(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
 }

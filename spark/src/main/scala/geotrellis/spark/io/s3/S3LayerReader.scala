@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -68,4 +69,12 @@ object S3LayerReader {
       new S3AttributeStore(bucket, prefix),
       new S3RDDReader[K, V],
       getCache)
+
+  def spatial(bucket: String, prefix: String)
+    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]]) =
+    new S3LayerReader(new S3AttributeStore(bucket, prefix), new S3RDDReader[SpatialKey, Tile])
+
+  def spatialMultiBand(bucket: String, prefix: String)
+    (implicit sc: SparkContext, cons: ContainerConstructor[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]]) =
+    new S3LayerReader(new S3AttributeStore(bucket, prefix), new S3RDDReader[SpatialKey, Tile])
 }
