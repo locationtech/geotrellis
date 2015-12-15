@@ -14,8 +14,7 @@ abstract class S3SpaceTimeSpec
           with TestSparkContext
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests
-          with LayerReindexSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
   val bucket = "mock-bucket"
   val prefix = "catalog"

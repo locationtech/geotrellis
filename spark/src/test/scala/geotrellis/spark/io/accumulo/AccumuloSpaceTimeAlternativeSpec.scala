@@ -13,8 +13,7 @@ class AccumuloSpaceTimeAlternativeSpec
           with TestSparkContext
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests
-          with LayerReindexSpaceTimeTileTests {
+          with LayerUpdateSpaceTimeTileTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   override val layerId = LayerId(name, 1)

@@ -18,6 +18,7 @@ abstract class AccumuloSpatialSpec
 
   lazy val reader = AccumuloLayerReader[SpatialKey, Tile, RasterRDD](instance)
   lazy val deleter = AccumuloLayerDeleter(instance)
+  lazy val reindexer = AccumuloLayerReindexer[SpatialKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod, SocketWriteStrategy())
   lazy val tiles = AccumuloTileReader[SpatialKey, Tile](instance)
   lazy val sample = AllOnesTestFile
 }

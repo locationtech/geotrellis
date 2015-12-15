@@ -13,8 +13,7 @@ abstract class HadoopSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
           with TestSparkContext
           with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests
-          with LayerReindexSpaceTimeTileTests {
+          with CoordinateSpaceTimeTests {
   type Container = RasterRDD[SpaceTimeKey]
 
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)

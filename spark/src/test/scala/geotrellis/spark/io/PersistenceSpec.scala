@@ -28,12 +28,14 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   def deleter: TestDeleter
   def copier: TestCopier
   def mover: TestMover
+  def reindexer: TestReindexer
   def tiles: TestTileReader
 
   val layerId = LayerId("sample-" + this.getClass.getName, 1)
   val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
   val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
   val movedLayerId = LayerId("moveSample-" + this.getClass.getName, 1)
+  val reindexedLayerId = LayerId("reindexedSample-" + this.getClass.getName, 1)
   lazy val query = reader.query(layerId)
 
   it("should not find layer before write") {
@@ -105,5 +107,16 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     }
     keysBeforeMove should contain theSameElementsAs reader.read(movedLayerId).keys.collect()
     mover.move(movedLayerId, layerId)
+  }
+
+  it("should not reindex a layer which doesn't exists") {
+    intercept[LayerNotFoundError] {
+      reindexer.reindex(movedLayerId)
+    }
+  }
+
+  it("should reindex a layer") {
+    copier.copy(layerId, reindexedLayerId)
+    reindexer.reindex(reindexedLayerId)
   }
 }
