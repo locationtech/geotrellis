@@ -134,17 +134,14 @@ object RasterRDD {
   implicit def implicitToRDD[K](rasterRdd: RasterRDD[K]): RDD[(K, Tile)] = rasterRdd
 
   implicit def constructor[K: JsonFormat : ClassTag] =
-    new ContainerConstructor[K, Tile, RasterRDD[K]] {
-      type MetaDataType = RasterMetaData
-      implicit def metaDataFormat = geotrellis.spark.io.json.RasterMetaDataFormat
-
+    new ContainerConstructor[K, Tile, RasterMetaData, RasterRDD[K]] {
       def getMetaData(raster: RasterRDD[K]): RasterMetaData =
         raster.metaData
 
-      def makeContainer(rdd: RDD[(K, Tile)], bounds: KeyBounds[K], metadata: MetaDataType) =
+      def makeContainer(rdd: RDD[(K, Tile)], bounds: KeyBounds[K], metadata: RasterMetaData) =
         new RasterRDD(rdd, metadata)
 
-      def combineMetaData(that: MetaDataType, other: MetaDataType): MetaDataType =
+      def combineMetaData(that: RasterMetaData, other: RasterMetaData): RasterMetaData =
         that.combine(other)
     }
 }

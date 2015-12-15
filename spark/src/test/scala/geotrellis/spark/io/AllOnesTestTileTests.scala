@@ -1,10 +1,10 @@
 package geotrellis.spark.io
 
 import geotrellis.raster.{GridBounds, Tile}
-import geotrellis.spark.{TestSparkContext, SpatialKey}
+import geotrellis.spark.{RasterMetaData, TestSparkContext, SpatialKey}
 import geotrellis.vector.Extent
 
-trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile] with TestSparkContext =>
+trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, RasterMetaData] with TestSparkContext =>
 
   val bounds1 = GridBounds(1,1,3,3)
   val bounds2 = GridBounds(4,5,6,6)

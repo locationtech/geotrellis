@@ -14,14 +14,10 @@ import spray.json.JsonFormat
  * @tparam V Type of RDD Value (ex: Tile)
  * @tparam C RDD Container (ex: RasterRDD)
  */
-trait ContainerConstructor[K, V, C] {
-  type MetaDataType
-
-  implicit def metaDataFormat: JsonFormat[MetaDataType]
-
-  def getMetaData(container: C): MetaDataType
-  def makeContainer(rdd: RDD[(K, V)], bounds: KeyBounds[K], metadata: MetaDataType): C
-  def combineMetaData(that: MetaDataType, other: MetaDataType): MetaDataType
+trait ContainerConstructor[K, V, M, C] {
+  def getMetaData(container: C): M
+  def makeContainer(rdd: RDD[(K, V)], bounds: KeyBounds[K], metadata: M): C
+  def combineMetaData(that: M, other: M): M
 }
 
 

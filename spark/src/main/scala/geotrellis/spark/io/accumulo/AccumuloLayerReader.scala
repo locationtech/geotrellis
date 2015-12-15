@@ -9,25 +9,24 @@ import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
-class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container](
+class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddReader: BaseAccumuloRDDReader[K, V])
-  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
-  extends FilteringLayerReader[LayerId, K, Container] {
-
-  type MetaDataType = cons.MetaDataType
+  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, M, C])
+  extends FilteringLayerReader[LayerId, K, M, C] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
+  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    implicit val mdFormat = cons.metaDataFormat
+
     val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -45,10 +44,9 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 }
 
 object AccumuloLayerReader {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](instance: AccumuloInstance)
-    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): AccumuloLayerReader[K, V, Container[K]] =
-    new AccumuloLayerReader (
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](instance: AccumuloInstance)
+    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, M, C]): AccumuloLayerReader[K, V, M, C] =
+    new AccumuloLayerReader[K, V, M, C] (
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
-
 }

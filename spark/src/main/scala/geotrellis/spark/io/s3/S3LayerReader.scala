@@ -9,8 +9,8 @@ import geotrellis.spark.io.index.KeyIndex
 import org.apache.avro.Schema
 import geotrellis.spark.utils.cache._
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import spray.json.{JsObject, JsonFormat}
-import spray.json.DefaultJsonProtocol._
 import AttributeStore.Fields
 
 import scala.reflect.ClassTag
@@ -22,28 +22,26 @@ import scala.reflect.ClassTag
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @param getCache        Optional cache function to be used when reading S3 objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
+class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, Container <: RDD[(K,V)]](
     val attributeStore: AttributeStore[JsonFormat],
     rddReader: S3RDDReader[K, V],
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
-  extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
-
-  type MetaDataType  = cons.MetaDataType
+  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, M, Container])
+  extends FilteringLayerReader[LayerId, K, M, Container] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int): Container = {
-    if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    implicit val mdFormat = cons.metaDataFormat
-    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
+  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): Container = {
+      if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+
+      val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+        attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      } catch {
+        case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
+      }
 
     val bucket = header.bucket
     val prefix = header.key
@@ -60,12 +58,12 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
 }
 
 object S3LayerReader {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,  V: AvroRecordCodec: ClassTag, M: JsonFormat, Container <: RDD[(K, V)]](
       bucket: String,
       prefix: String,
       getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): S3LayerReader[K, V, Container[K]] =
-    new S3LayerReader(
+    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, M, Container]): S3LayerReader[K, V, M, Container] =
+    new S3LayerReader[K, V, M, Container](
       new S3AttributeStore(bucket, prefix),
       new S3RDDReader[K, V],
       getCache)

@@ -18,6 +18,7 @@ package geotrellis.spark.testfiles
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
@@ -43,13 +44,13 @@ object GenerateTestFiles extends Logging {
 
     val md = RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
     logInfo(s"Generating spatial layers...")
-    generateSpatial(HadoopLayerWriter[SpatialKey, Tile, RasterRDD](catalogPath, RowMajorKeyIndexMethod), md)
+    generateSpatial(HadoopLayerWriter[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](catalogPath, RowMajorKeyIndexMethod), md)
     logInfo(s"Generating spatiotemporal layers...")
-    generateSpaceTime(HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD](catalogPath, ZCurveKeyIndexMethod.byYear), md)
+    generateSpaceTime(HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](catalogPath, ZCurveKeyIndexMethod.byYear), md)
     logInfo(s"Done generating test catalog.")
   }
 
-  def generateSpatial(catalog: HadoopLayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+  def generateSpatial(catalog: HadoopLayerWriter[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
     // Spatial Tiles
@@ -89,7 +90,7 @@ object GenerateTestFiles extends Logging {
 
   }
 
-  def generateSpaceTime(catalog: HadoopLayerWriter[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
+  def generateSpaceTime(catalog: HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]], md: RasterMetaData)(implicit sc: SparkContext): Unit = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
 

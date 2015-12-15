@@ -1,12 +1,11 @@
 package geotrellis.spark.testfiles
 
 import geotrellis.raster.Tile
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.json._
 
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
@@ -28,12 +27,12 @@ object TestFiles extends Logging {
 
   def spatialReader(implicit sc: SparkContext) = {
     init
-    HadoopLayerReader[SpatialKey, Tile, RasterRDD](catalogPath)
+    HadoopLayerReader[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](catalogPath)
   }
 
   def spaceTimeReader(implicit sc: SparkContext) = {
     init
-    HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](catalogPath)
+    HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](catalogPath)
   }
 
 }
