@@ -37,6 +37,6 @@ object S3LayerReindexer {
 
     val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 
-    LayerReindexer(layerDeleter, layerCopier, layerMover)
+    GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }
 }

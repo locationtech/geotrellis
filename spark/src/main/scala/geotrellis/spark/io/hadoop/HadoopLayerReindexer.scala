@@ -55,6 +55,6 @@ object HadoopLayerReindexer {
       }
     }
 
-    LayerReindexer(layerDeleter, layerCopier, layerMover)
+    GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }
 }
