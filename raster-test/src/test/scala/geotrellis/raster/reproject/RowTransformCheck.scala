@@ -101,12 +101,13 @@ object RowTransformCheck_LatLngToWebMercator extends Properties("RowTransform") 
 }
 
 object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") with RowTransformCheck {
+  //Bounds: -78.0000, 0.0000, -72.0000, 84.0000
   lazy val genExtent: Gen[Extent] = 
     for {
-      p1 <- genPoint(-100.0,10.0,-30.0,80.0)
-      p2 <- genPoint(-100.0,10.0,-30.0,80.0)
+      p1 <- genPoint(-77.9,0.0,-72.1,83.9)
+      p2 <- genPoint(-77.9,0.0,-72.1,83.9)
     } yield {
-        val (x1, y1) = (p1.x, p1.y)
+      val (x1, y1) = (p1.x, p1.y)
       val (x2, y2) = (p2.x, p2.y)
 
       val (xmin, xmax) = 
