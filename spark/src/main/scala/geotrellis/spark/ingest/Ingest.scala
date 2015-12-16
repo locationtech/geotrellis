@@ -70,7 +70,7 @@ object Ingest {
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = tiler(reprojectedTiles, rasterMetaData, resampleMethod).cache()
-    val rasterRdd = new RasterRDD(tiledRdd, rasterMetaData)
+    val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {
       if (zoom >= 1) {

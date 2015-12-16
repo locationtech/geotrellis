@@ -74,9 +74,9 @@ object FocalOperation {
 
   def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
       (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
-    new RasterRDD(
+    new ContextRDD(
       apply(rasterRDD, neighborhood, Some(rasterRDD.metaData.gridBounds))(calc),
-      rasterRDD.metaData)
+      rasterRDD.metadata)
   }
 }
 

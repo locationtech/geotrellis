@@ -53,19 +53,19 @@ object Pyramid extends Logging {
       rdd.metaData.crs
     )
     val nextRdd = up(rdd, rdd.metaData.layout, nextLayout)
-    nextZoom -> new RasterRDD(nextRdd, nextMetaData)
+    nextZoom -> new ContextRDD(nextRdd, nextMetaData)
   }
 
-  def up[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], layoutScheme: LayoutScheme, zoom: Int): (Int, MultiBandRasterRDD[K]) = {
-    val LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(LayoutLevel(zoom, rdd.metaData.layout))
+  def up[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], layoutScheme: LayoutScheme, zoom: Int)(implicit d: DummyImplicit): (Int, MultiBandRasterRDD[K]) = {
+    val LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(LayoutLevel(zoom, rdd.metadata.layout))
     val nextMetaData = RasterMetaData(
-      rdd.metaData.cellType,
+      rdd.metadata.cellType,
       nextLayout,
-      rdd.metaData.layout.extent,
-      rdd.metaData.crs
+      rdd.metadata.layout.extent,
+      rdd.metadata.crs
     )
-    val nextRdd = up(rdd, rdd.metaData.layout, nextLayout)
-    nextZoom -> new MultiBandRasterRDD(nextRdd, nextMetaData)
+    val nextRdd = up(rdd, rdd.metadata.layout, nextLayout)
+    nextZoom -> new ContextRDD(nextRdd, nextMetaData)
   }
 
   def upLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int)
@@ -86,11 +86,11 @@ object Pyramid extends Logging {
   }
 
   def upLevels[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int)
-                                             (f: (MultiBandRasterRDD[K], Int) => MultiBandRasterRDD[K]): MultiBandRasterRDD[K] =
+                                             (f: (MultiBandRasterRDD[K], Int) => MultiBandRasterRDD[K])(implicit d: DummyImplicit): MultiBandRasterRDD[K] =
     upLevels(rdd, layoutScheme, startZoom, 0)(f)
 
   def upLevels[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int)
-                                             (f: (MultiBandRasterRDD[K], Int) => MultiBandRasterRDD[K]): MultiBandRasterRDD[K] = {
+                                             (f: (MultiBandRasterRDD[K], Int) => MultiBandRasterRDD[K])(implicit d: DummyImplicit): MultiBandRasterRDD[K] = {
     def runLevel(thisRdd: MultiBandRasterRDD[K], thisZoom: Int): (MultiBandRasterRDD[K], Int) =
       if (thisZoom > endZoom) {
         val (nextZoom, nextRdd) = Pyramid.up(f(thisRdd, thisZoom), layoutScheme, thisZoom)

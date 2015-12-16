@@ -26,7 +26,7 @@ import AttributeStore.Fields
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  * @tparam C              Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
@@ -34,16 +34,15 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
     keyPrefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false)
-  (implicit bridge: Bridge[(RDD[(K, V)], M), C])
-  extends Writer[LayerId, C] with LazyLogging {
+  extends Writer[LayerId, RDD[(K, V)] with Metadata[M]] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def write(id: LayerId, rdd: C) = {
+  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {
     require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-    val (_, metadata) = bridge.unapply(rdd)
+    val metadata = rdd.metadata
     val header = S3LayerHeader(
       keyClass = classTag[K].toString(),
       valueClass = classTag[K].toString(),
@@ -67,14 +66,13 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
 }
 
 object S3LayerWriter {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
       bucket: String,
       prefix: String,
       keyIndexMethod: KeyIndexMethod[K],
       clobber: Boolean = true,
-      oneToOne: Boolean = false)
-    (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerWriter[K, V, M, C] =
-    new S3LayerWriter[K, V, M, C](
+      oneToOne: Boolean = false): S3LayerWriter[K, V, M] =
+    new S3LayerWriter[K, V, M](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       keyIndexMethod, bucket, prefix, clobber, oneToOne)

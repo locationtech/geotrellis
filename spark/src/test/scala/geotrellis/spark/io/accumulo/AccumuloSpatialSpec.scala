@@ -13,26 +13,26 @@ abstract class AccumuloSpatialSpec
           with TestSparkContext
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
-  type Container = RasterRDD[SpatialKey]
+
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 
-  lazy val reader = AccumuloLayerReader[SpatialKey, Tile, RasterMetaData, Container](instance)
+  lazy val reader = AccumuloLayerReader[SpatialKey, Tile, RasterMetaData](instance)
   lazy val deleter = AccumuloLayerDeleter(instance)
   lazy val tiles = AccumuloTileReader[SpatialKey, Tile](instance)
   lazy val sample = AllOnesTestFile
 }
 
 class AccumuloSpatialRowMajorSpec extends AccumuloSpatialSpec {
-  lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData, Container](instance, "tiles", RowMajorKeyIndexMethod, SocketWriteStrategy())
+  lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData](instance, "tiles", RowMajorKeyIndexMethod, SocketWriteStrategy())
 }
 
 class AccumuloSpatialZCurveSpec extends AccumuloSpatialSpec {
-  lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData, Container](instance, "tiles", ZCurveKeyIndexMethod, SocketWriteStrategy())
+  lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData](instance, "tiles", ZCurveKeyIndexMethod, SocketWriteStrategy())
 }
 
 class AccumuloSpatialHilbertSpec extends AccumuloSpatialSpec {
-  lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData, Container](instance, "tiles", HilbertKeyIndexMethod, SocketWriteStrategy())
+  lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData](instance, "tiles", HilbertKeyIndexMethod, SocketWriteStrategy())
 }
 
 

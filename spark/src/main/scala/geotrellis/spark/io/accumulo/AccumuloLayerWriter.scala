@@ -10,22 +10,21 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
     table: String)
-  (implicit bridge: Bridge[(RDD[(K, V)], M), C])
-  extends Writer[LayerId, C] {
+  extends Writer[LayerId, RDD[(K, V)] with Metadata[M]] {
 
-  def write(id: LayerId, rdd: C): Unit = {
+  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val header =
       AccumuloLayerHeader(
         keyClass = classTag[K].toString(),
         valueClass = classTag[V].toString(),
         tileTable = table
       )
-    val (_, metaData) = bridge.unapply(rdd)
+    val metaData = rdd.metadata
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
@@ -43,13 +42,13 @@ object AccumuloLayerWriter {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-            V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
+            V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (instance: AccumuloInstance,
    table: String,
    indexMethod: KeyIndexMethod[K],
-   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-  (implicit cons: Bridge[(RDD[(K, V)], M), C]): AccumuloLayerWriter[K, V, M, C] =
-    new AccumuloLayerWriter[K, V, M, C](
+   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
+  ): AccumuloLayerWriter[K, V, M] =
+    new AccumuloLayerWriter[K, V, M](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),
       keyIndexMethod = indexMethod,

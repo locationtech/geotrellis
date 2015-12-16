@@ -15,7 +15,7 @@ abstract class S3SpatialSpec
           with TestSparkContext
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
-  type Container = RasterRDD[SpatialKey]
+
   val bucket = "mock-bucket"
   val prefix = "catalog"
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
@@ -33,8 +33,8 @@ abstract class S3SpatialSpec
       client
     }
   }
-  lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData, Container](attributeStore, rddReader, None)
-  lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData, Container](attributeStore, rddWriter, true)
+  lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData](attributeStore, rddReader, None)
+  lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
   lazy val tiles = new S3TileReader[SpatialKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client()
@@ -43,13 +43,13 @@ abstract class S3SpatialSpec
 }
 
 class S3SpatialRowMajorSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialZCurveSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialHilbertSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
 }
