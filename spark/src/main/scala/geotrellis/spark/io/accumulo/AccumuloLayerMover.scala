@@ -15,36 +15,14 @@ object AccumuloLayerMover {
   (implicit sc: SparkContext,
           cons: ContainerConstructor[K, V, Container[K]],
    containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerMover[LayerId] = {
-    val attrStore = AccumuloAttributeStore(instance.connector)
-    new LayerMover[LayerId] {
-      val attributeStore = attrStore
-      val layerCopier = AccumuloLayerCopier[K, V, Container](
+    val attributeStore = AccumuloAttributeStore(instance.connector)
+    new GenericLayerMover[LayerId](
+      layerCopier = AccumuloLayerCopier[K, V, Container](
         attributeStore = attributeStore,
         layerReader    = layerReader,
         layerWriter    = layerWriter
-      )
-      val layerDeleter = AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
-    }
-  }
-
-  def apply(attrStore: AttributeStore[JsonFormat],
-            lCopier: LayerCopier[LayerId],
-            lDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
-    new LayerMover[LayerId] {
-      val attributeStore = attrStore
-      val layerCopier    = lCopier
-      val layerDeleter   = lDeleter
-    }
-  }
-
-  def apply(instance: AccumuloInstance,
-            lCopier: LayerCopier[LayerId],
-            lDeleter: LayerDeleter[LayerId]): LayerMover[LayerId] = {
-    val attrStore = AccumuloAttributeStore(instance.connector)
-    new LayerMover[LayerId] {
-      val attributeStore = attrStore
-      val layerCopier    = lCopier
-      val layerDeleter   = lDeleter
-    }
+      ),
+      layerDeleter = AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
+    )
   }
 }

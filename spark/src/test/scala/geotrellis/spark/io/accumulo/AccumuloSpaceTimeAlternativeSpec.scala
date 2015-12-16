@@ -36,7 +36,7 @@ class AccumuloSpaceTimeAlternativeSpec
 
   lazy val deleter = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
   lazy val copier  = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterRDD](instance, reader, writer)
-  lazy val mover   = AccumuloLayerMover(AccumuloAttributeStore(instance.connector), copier, deleter)
+  lazy val mover   = GenericLayerMover(copier, deleter)
 
   lazy val tiles  = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample = CoordinateSpaceTime
