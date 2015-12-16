@@ -67,4 +67,38 @@ object Pyramid extends Logging {
     val nextRdd = up(rdd, rdd.metaData.layout, nextLayout)
     nextZoom -> new MultiBandRasterRDD(nextRdd, nextMetaData)
   }
+
+  def upLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int)
+                                             (f: (RasterRDD[K], Int) => RasterRDD[K]): RasterRDD[K] =
+    upLevels(rdd, layoutScheme, startZoom, 0)(f)
+
+  def upLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int)
+                                             (f: (RasterRDD[K], Int) => RasterRDD[K]): RasterRDD[K] = {
+    def runLevel(thisRdd: RasterRDD[K], thisZoom: Int): (RasterRDD[K], Int) =
+      if (thisZoom > endZoom) {
+        val (nextZoom, nextRdd) = Pyramid.up(f(thisRdd, thisZoom), layoutScheme, thisZoom)
+        runLevel(nextRdd, nextZoom)
+      } else {
+        (f(thisRdd, thisZoom), thisZoom)
+      }
+
+    runLevel(rdd, startZoom)._1
+  }
+
+  def upLevels[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int)
+                                             (f: (MultiBandRasterRDD[K], Int) => MultiBandRasterRDD[K]): MultiBandRasterRDD[K] =
+    upLevels(rdd, layoutScheme, startZoom, 0)(f)
+
+  def upLevels[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int)
+                                             (f: (MultiBandRasterRDD[K], Int) => MultiBandRasterRDD[K]): MultiBandRasterRDD[K] = {
+    def runLevel(thisRdd: MultiBandRasterRDD[K], thisZoom: Int): (MultiBandRasterRDD[K], Int) =
+      if (thisZoom > endZoom) {
+        val (nextZoom, nextRdd) = Pyramid.up(f(thisRdd, thisZoom), layoutScheme, thisZoom)
+        runLevel(nextRdd, nextZoom)
+      } else {
+        (f(thisRdd, thisZoom), thisZoom)
+      }
+
+    runLevel(rdd, startZoom)._1
+  }
 }

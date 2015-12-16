@@ -69,7 +69,3 @@ class AccumuloRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](
     strategy.write(kvPairs, instance, table)
   }
 }
-
-object AccumuloRDDWriter {
-
-}

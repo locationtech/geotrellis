@@ -204,8 +204,13 @@ object TiffTagsReader {
     def readAsciisTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetaData): TiffTags = {
 
-      val string = byteBuffer.getString(tagMetadata.length, tagMetadata.offset)
+      // Read string, but don't read in trailing 0
+      val string = byteBuffer.getString(tagMetadata.length - 1, tagMetadata.offset)
+
       tagMetadata.tag match {
+        case DateTimeTag => tiffTags &|->
+          TiffTags._metadataTags ^|->
+          MetadataTags._dateTime set(Some(string))
         case ImageDescTag => tiffTags &|->
           TiffTags._metadataTags ^|->
           MetadataTags._imageDesc set(Some(string))

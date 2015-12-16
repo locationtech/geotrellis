@@ -10,7 +10,7 @@ import geotrellis.spark.io.avro.codecs._
 
 class AccumuloSpaceTimeAlternativeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile]
-          with OnlyIfCanRunSpark
+          with TestSparkContext
           with TestEnvironment with TestFiles
           with CoordinateSpaceTimeTests
           with LayerUpdateSpaceTimeTileTests {
@@ -33,6 +33,8 @@ class AccumuloSpaceTimeAlternativeSpec
   lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterRDD[SpaceTimeKey]] (
     AccumuloAttributeStore(instance.connector),
     new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
+
+  lazy val deleter = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
 
   lazy val tiles = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample =  CoordinateSpaceTime

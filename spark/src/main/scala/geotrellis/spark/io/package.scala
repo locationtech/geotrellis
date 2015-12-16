@@ -22,14 +22,17 @@ package object io {
   class LayerExistsError(layerId: LayerId)
     extends CatalogError(s"Layer $layerId already exists in the catalog")
 
-  class LayerNotExistsError(layerId: LayerId)
-    extends CatalogError(s"Layer $layerId not exists in the catalog")
+  class LayerNotFoundError(layerId: LayerId)
+    extends CatalogError(s"Layer $layerId not found in the catalog")
 
   class LayerWriteError(layerId: LayerId)
     extends CatalogError(s"Failed to write $layerId")
 
-  class LayerUpdateError(layerId: LayerId)
-    extends CatalogError(s"Failed to update $layerId")
+  class LayerUpdateError(layerId: LayerId, message: String = "")
+    extends CatalogError(s"Failed to update $layerId $message")
+
+  class LayerDeleteError(layerId: LayerId)
+    extends CatalogError(s"Failed to delete $layerId")
 
   class AttributeNotFoundError(attributeName: String, layerId: LayerId)
     extends CatalogError(s"Attribute $attributeName not found for layer $layerId")
@@ -40,7 +43,7 @@ package object io {
   class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
     extends CatalogError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
 
-  class OutOfKeyBoundsError(layerId: LayerId)
+  class LayerOutOfKeyBoundsError(layerId: LayerId)
     extends CatalogError(s"Updating rdd is out of $layerId bounds")
 
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])

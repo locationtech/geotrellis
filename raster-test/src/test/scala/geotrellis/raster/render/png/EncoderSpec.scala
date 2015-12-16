@@ -26,7 +26,7 @@ import java.io.{File, FileInputStream}
 
 import org.scalatest._
 
-class EncoderSpec extends FunSpec with Matchers {
+class PngEncoderSpec extends FunSpec with Matchers {
 
   def parseHexByte(s: String) = Integer.parseInt(s, 16).toByte
   def parseHexBytes(cs: Array[String]) = cs.map(parseHexByte _)
@@ -68,7 +68,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
     val fh = File.createTempFile("rgba-", ".png")
     val path = fh.getPath
 
-    val encoder = Encoder(Settings(Rgba, PaethFilter))
+    val encoder = PngEncoder(Settings(Rgba, PaethFilter))
 
     it("should render a PNG") {
       encoder.writeByteArray(tile)
@@ -100,7 +100,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
     val fh = File.createTempFile("rgb-", ".png")
     val path = fh.getPath
   
-    val encoder = Encoder(Settings(Rgb(0), PaethFilter))
+    val encoder = PngEncoder(Settings(Rgb(0), PaethFilter))
   
     // map RGBA values into RGB
     val tile2 = tile.map(_ >> 8)

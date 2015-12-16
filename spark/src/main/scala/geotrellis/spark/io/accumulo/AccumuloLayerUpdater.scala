@@ -17,25 +17,32 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
   extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] {
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    implicit val sc = rdd.sparkContext
+    implicit val mdFormat = cons.metaDataFormat
+
+    val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+    }
+
+    val boundable = implicitly[Boundable[K]]
+    val keyBounds = try {
+      boundable.getKeyBounds(rdd)
+    } catch {
+      case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
+    }
+
+    if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
+      throw new LayerOutOfKeyBoundsError(id)
+
+    val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
+
     try {
-      if (!attributeStore.layerExists(id)) throw new LayerNotExistsError(id)
-      implicit val sc = rdd.sparkContext
-      implicit val mdFormat = cons.metaDataFormat
-
-      val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) =
-        attributeStore.readLayerAttributes[AccumuloLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
-
-      val boundable = implicitly[Boundable[K]]
-      val keyBounds = boundable.getKeyBounds(rdd)
-
-      if ((existingKeyBounds includes keyBounds.minKey) || !(existingKeyBounds includes keyBounds.maxKey))
-        throw new OutOfKeyBoundsError(id)
-
-      val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
-
       rddWriter.write(rdd, existingHeader.tileTable, columnFamily(id), getRowId, oneToOne = false)
     } catch {
-      case e: Exception => throw new LayerUpdateError(id).initCause(e)
+      case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
   }
 }

@@ -28,8 +28,7 @@ object Tiler {
           .map  { spatialComponent =>
             val outKey = createKey(inKey, spatialComponent)
             val newTile = tile.prototype(cellType, tileLayout.tileCols, tileLayout.tileRows)
-            newTile.merge(mapTransform(outKey), extent, tile)
-            (outKey, newTile)
+            (outKey, newTile.merge(mapTransform(outKey), extent, tile))
           }
        }
 
@@ -61,5 +60,12 @@ object Tiler {
     (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
     (rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod): RDD[(K, TileType)] = {
     apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout, resampleMethod)
+  }
+
+  def apply[T, K, TileType](rdd: RDD[(T, TileType)], metaData: RasterMetaData)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] =
+    apply(rdd, metaData, NearestNeighbor)
+
+  def apply[T, K, TileType](rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod)(implicit tiler: Tiler[T, K, TileType]): RDD[(K, TileType)] = {
+    tiler(rdd, metaData, resampleMethod)
   }
 }

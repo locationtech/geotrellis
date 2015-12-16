@@ -32,11 +32,14 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
     val _getS3Client = getS3Client
     val _codec = codec
 
-    if (oneToOne) {
-      rdd.map { case row => keyPath(row._1) -> Vector(row) }
-    } else {
-      rdd.groupBy { row => keyPath(row._1) }
-    }.foreachPartition { partition =>
+    val pathsToTiles =
+      if (oneToOne) {
+        rdd.map { case row => keyPath(row._1) -> Vector(row) }
+      } else {
+        rdd.groupBy { row => keyPath(row._1) }
+      }
+
+    pathsToTiles.foreachPartition { partition =>
       import geotrellis.spark.utils.TaskUtils._
       val getS3Client = _getS3Client
       val s3client: S3Client = getS3Client()

@@ -86,8 +86,6 @@ package object json {
       }
   }
 
-
-
   implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
     def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
 
