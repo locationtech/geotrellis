@@ -17,8 +17,8 @@ class AverageResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, cols, rows)
       val resamp = new AverageResample(tile, extent, cellsize)
-      for (i <- 0 until cols * 10; j <- 0 until rows * 10)
-        resamp.resampleValid(i / 10.0, j / 10.0) should be (NODATA)
+      for (i <- 0 until cols; j <- 0 until rows)
+        resamp.resample(i, j) should be (NODATA)
     }
 
     it("should, for a double tile, compute nodata as average") {
@@ -29,8 +29,8 @@ class AverageResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, cols, rows)
       val resamp = new AverageResample(tile, extent, cellsize)
-      for (i <- 0 until cols * 10; j <- 0 until rows * 10)
-        assert(resamp.resampleDoubleValid(i / 10.0, j / 10.0).isNaN)
+      for (i <- 0 until cols; j <- 0 until rows)
+        assert(resamp.resampleDouble(i, j).isNaN)
     }
 
   }
@@ -47,15 +47,15 @@ class AverageResampleSpec extends FunSpec with Matchers {
 
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, 2, 1)
-      val resamp = new AverageResample(tile, extent, cellsize) {}
+      val resamp = new AverageResample(tile, extent, cellsize)
       resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resampleValid(0.0, 0.0) should be (2)  // 10/4 is 2 when rounded to int
+      resamp.resample(0.0, 0.0) should be (2)  // 10/4 is 2 when rounded to int
 
       resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
-      resamp.resampleValid(3.0, 1.0) should be (7)  // 28/4 is 7 when rounded to int
+      resamp.resample(3.0, 1.0) should be (7)  // 28/4 is 7 when rounded to int
 
       resamp.contributions(2.0, 1.0) should be (Vector((1,0), (1,1), (2,0), (2,1), (3,0), (3,1)))
-      resamp.resampleValid(2.0, 1.0) should be (5)  // 35/6 is 2 when rounded to int
+      resamp.resample(2.0, 1.0) should be (5)  // 35/6 is 2 when rounded to int
     }
 
     it("should gather all and only the relevant coordinates and correctly resample to their averages for float based tiles") {
@@ -70,13 +70,13 @@ class AverageResampleSpec extends FunSpec with Matchers {
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new AverageResample(tile, extent, cellsize) {}
       resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resampleDoubleValid(0.0, 0.0) should be (2.5)  // 10/4 is 2.5
+      resamp.resampleDouble(0.0, 0.0) should be (2.5)  // 10/4 is 2.5
 
       resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
-      resamp.resampleDoubleValid(3.0, 1.0) should be (7)  // 28/4 is 7
+      resamp.resampleDouble(3.0, 1.0) should be (7)  // 28/4 is 7
 
       resamp.contributions(2.0, 1.0) should be (Vector((1,0), (1,1), (2,0), (2,1), (3,0), (3,1)))
-      resamp.resampleDoubleValid(2.0, 1.0) should be (5.83 +- 0.01)  // 35/6 is roughly 5.83
+      resamp.resampleDouble(2.0, 1.0) should be (5.83 +- 0.01)  // 35/6 is roughly 5.83
     }
 
     it("should return the same tile if not resized") {
@@ -93,6 +93,5 @@ class AverageResampleSpec extends FunSpec with Matchers {
       for (i <- 0 until cols; j <- 0 until rows)
         resamp.resample(i, j) should be (tile.get(i, j))
     }
-
   }
 }

@@ -22,14 +22,20 @@ class MedianResample(tile: Tile, extent: Extent, targetCS: CellSize)
 
   private def calculateIntMedian(indices: Seq[(Int, Int)]): Int = {
     val contributions = indices.map { case (x, y) => tile.get(x, y) }.sorted
-    val middleIndex = contributions.size / 2
-    if (middleIndex > 0) contributions(middleIndex) else Int.MinValue
+    val mid: Int = contributions.size / 2
+
+    if (contributions.isEmpty) NODATA
+    else if (contributions.size % 2 == 0) (contributions(mid - 1) + contributions(mid)) / 2
+    else contributions(mid)
   }
 
   private def calculateDoubleMedian(indices: Seq[(Int, Int)]): Double = {
     val contributions = indices.map { case (x, y) => tile.getDouble(x, y) }.sorted
-    val middleIndex = contributions.size / 2
-    if (middleIndex > 0) contributions(middleIndex) else Double.NaN
+    val mid: Int = contributions.size / 2
+
+    if (contributions.isEmpty) Double.NaN
+    else if (contributions.size % 2 == 0) (contributions(mid - 1) + contributions(mid)) / 2
+    else contributions(mid)
   }
 
   override def resampleValid(x: Double, y: Double): Int =
