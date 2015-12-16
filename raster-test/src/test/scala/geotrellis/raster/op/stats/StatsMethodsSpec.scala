@@ -39,7 +39,7 @@ class StatsMethodsSpec extends FunSpec
       val stats = RasterSource.fromPath("raster-test/data/quad8.arg").get.statistics
 
       val dev = math.sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
-      val expected = Statistics(2.5, 3, 1, dev, 1, 4)
+      val expected = Statistics(400, 2.5, 3, 1, dev, 1, 4)
 
       stats should be (expected)
     }
