@@ -58,14 +58,18 @@ abstract class AggregateResample(tile: Tile, extent: Extent, targetCS: CellSize)
     val halfWidth = targetCS.width / 2
     val halfHeight = targetCS.height / 2
 
-    val leftIndex: Int = if(x - halfWidth < 0.0) 0
-                         else (x - halfWidth).ceil.toInt
-    val rightIndex: Int = if(x + halfWidth > cols - 1) cols - 1
-                          else (x + halfWidth).floor.toInt
-    val upperIndex: Int = if(y - halfHeight < 0.0) 0
-                          else (y - halfHeight).ceil.toInt
-    val lowerIndex: Int = if(y + halfHeight > rows - 1) rows - 1
-                          else (y + halfHeight).floor.toInt
+    // Correction for indices that are offset by xmin/ymin on the extent
+    val xPrime = x - extent.xmin
+    val yPrime = y - extent.ymin
+
+    val leftIndex: Int = if(xPrime - halfWidth < 0.0) 0
+                         else (xPrime - halfWidth).ceil.toInt
+    val rightIndex: Int = if(xPrime + halfWidth > cols - 1) cols - 1
+                          else (xPrime + halfWidth).floor.toInt
+    val upperIndex: Int = if(yPrime - halfHeight < 0.0) 0
+                          else (yPrime - halfHeight).ceil.toInt
+    val lowerIndex: Int = if(yPrime + halfHeight > rows - 1) rows - 1
+                          else (yPrime + halfHeight).floor.toInt
 
     for {
       xs <- leftIndex to rightIndex

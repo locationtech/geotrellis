@@ -58,11 +58,11 @@ class AverageResampleSpec extends FunSpec with Matchers {
         cols, rows)
 
       val extent = Extent(0, 0, cols, rows)
-      val cellsize = CellSize(extent, cols, rows)
+      val cellsize = CellSize(extent, 2, 1)
       val resamp = new AverageResample(tile, extent, cellsize) {}
       println(resamp.contributions(0, 0.5), resamp.contributions(2, 0.5))
       println(resamp.resample(0, 0.5), resamp.resample(2, 0.5))
-      println(tile.resample(extent, Extent(0, 0, 4, 2), Average).asciiDraw)
+      println(tile.resample(extent, Extent(0, 0, 2, 1), Average).asciiDraw)
       resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
     }
 
