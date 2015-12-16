@@ -16,6 +16,8 @@ abstract class SparkLayerCopier[LayerHeader: JsonFormat, K: Boundable: JsonForma
 
   type Header = LayerHeader
 
+  def headerUpdate(id: LayerId, header: Header): Header
+
   def copy(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
