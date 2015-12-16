@@ -17,16 +17,13 @@
 package geotrellis.raster.op.zonal
 
 import geotrellis.raster.op.stats._
-
 import geotrellis.raster._
-
-import org.scalatest._
-
 import geotrellis.testkit._
 
-import scala.collection.mutable
-
+import org.scalatest._
 import spire.syntax.cfor._
+
+import scala.collection.mutable
 
 class ZonalStatisticsSpec extends FunSpec
                             with Matchers
