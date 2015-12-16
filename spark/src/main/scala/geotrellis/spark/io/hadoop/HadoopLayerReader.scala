@@ -22,8 +22,7 @@ import scala.reflect.ClassTag
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-  val attributeStore: AttributeStore[JsonFormat],
-  rddReader: HadoopRDDReader[K, V])
+   val attributeStore: AttributeStore[JsonFormat], rddReader: HadoopRDDReader[K, V])
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 

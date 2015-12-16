@@ -11,10 +11,8 @@ import spray.json._
 import scala.reflect._
 
 class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: BaseAccumuloRDDWriter[K, V])
-  (implicit val cons: ContainerConstructor[K, V, Container])
-  extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] {
+   val attributeStore: AttributeStore[JsonFormat], rddWriter: BaseAccumuloRDDWriter[K, V])
+  (implicit val cons: ContainerConstructor[K, V, Container]) extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] {
 
   def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)

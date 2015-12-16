@@ -98,7 +98,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
         }
       }
   }
-
 }
 
 object S3AttributeStore {

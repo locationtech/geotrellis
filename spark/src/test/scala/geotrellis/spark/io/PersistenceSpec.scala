@@ -16,16 +16,19 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
   type TestWriter = Writer[LayerId, Container]
   type TestUpdater = LayerUpdater[LayerId, K, V, Container]
   type TestDeleter = LayerDeleter[LayerId]
+  type TestCopier = LayerCopier[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container
   def reader: TestReader
   def writer: TestWriter
   def deleter: TestDeleter
+  def copier: TestCopier
   def tiles: TestTileReader
 
   val layerId = LayerId("sample-" + this.getClass.getName, 1)
   val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
+  val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
   lazy val query = reader.query(layerId)
   
   it("should not find layer before write") {
@@ -70,5 +73,22 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     intercept[LayerNotFoundError] {
       reader.read(deleteLayerId)
     }
+  }
+
+  it ("shouldn't copy a layer which already exists") {
+    intercept[LayerExistsError] {
+      copier.copy(layerId, layerId)
+    }
+  }
+
+  it ("shouldn't copy a layer which doesn't exists") {
+    intercept[LayerNotFoundError] {
+      copier.copy(copiedLayerId, copiedLayerId)
+    }
+  }
+
+  it("should copy a layer") {
+    copier.copy(layerId, copiedLayerId)
+    reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
   }
 }

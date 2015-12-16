@@ -16,18 +16,14 @@
 
 package geotrellis.spark.io.hadoop
 
+import java.io._
 import geotrellis.spark.io.hadoop.formats._
-
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.LocalFileSystem
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.io._
-
-import java.io._
 import java.util.Scanner
 
 import org.apache.spark.Logging
@@ -39,6 +35,12 @@ import scala.reflect._
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
 object HdfsUtils extends Logging {
+
+  def copyPath(from: Path, to: Path, conf: Configuration): Unit = {
+    val fsFrom = from.getFileSystem(conf)
+    val fsTo = to.getFileSystem(conf)
+    FileUtil.copy(fsFrom, from, fsTo, to, false, conf)
+  }
 
   def ensurePathExists(path: Path, conf: Configuration): Unit = {
     val fs = path.getFileSystem(conf)
