@@ -16,11 +16,6 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
    rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
 
-  type Header = HadoopLayerHeader
-
-  def headerUpdate(id: LayerId, header: Header): Header =
-    header.copy(path = new Path(rootPath, s"${id.name}/${id.zoom}"))
-
   def copy(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
@@ -30,9 +25,10 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
-    HdfsUtils.copyPath(header.path, new Path(rootPath,  s"${to.name}/${to.zoom}"), sc.hadoopConfiguration)
+    val newPath = new Path(rootPath,  s"${to.name}/${to.zoom}")
+    HdfsUtils.copyPath(header.path, newPath, sc.hadoopConfiguration)
     attributeStore.writeLayerAttributes(
-      to, headerUpdate(to, header), metadata, keyBounds, keyIndex, Option.empty[Schema]
+      to, header.copy(path = newPath), metadata, keyBounds, keyIndex, Option.empty[Schema]
     )
   }
 }

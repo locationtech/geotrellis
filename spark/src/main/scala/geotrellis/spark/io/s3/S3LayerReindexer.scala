@@ -35,7 +35,7 @@ object S3LayerReindexer {
         header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
     }
 
-    val layerMover = S3LayerMover(attributeStore, layerCopier, layerDeleter)
+    val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 
     LayerReindexer(layerDeleter, layerCopier, layerMover)
   }

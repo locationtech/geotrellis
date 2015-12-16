@@ -38,7 +38,7 @@ object AccumuloLayerReindexer {
       def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
     }
 
-    val layerMover = AccumuloLayerMover(attributeStore, layerCopier, layerDeleter)
+    val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 
     LayerReindexer(layerDeleter, layerCopier, layerMover)
   }

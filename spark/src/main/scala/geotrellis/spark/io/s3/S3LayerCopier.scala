@@ -15,11 +15,6 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
    val attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String)
   (implicit cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
 
-  type Header = S3LayerHeader
-
-  def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-    header.copy(bucket = destBucket, key = makePath(destKeyPrefix, s"${id.name}/${id.zoom}"))
-
   def getS3Client: () => S3Client = () => S3Client.default
 
   @tailrec
@@ -48,7 +43,10 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
 
     copyListing(s3Client, bucket, s3Client.listObjects(bucket, prefix), from, to)
     attributeStore.writeLayerAttributes(
-      to, headerUpdate(to, header), metadata, keyBounds, keyIndex, schema
+      to, header.copy(
+        bucket = destBucket,
+        key    = makePath(destKeyPrefix, s"${to.name}/${to.zoom}")
+      ), metadata, keyBounds, keyIndex, schema
     )
   }
 }

@@ -39,7 +39,7 @@ object HadoopLayerReindexer {
         if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
         implicit val mdFormat = cons.metaDataFormat
         val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, _) = try {
-          attributeStore.readLayerAttributes[Header, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Unit](from)
+          attributeStore.readLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Unit](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
         }
