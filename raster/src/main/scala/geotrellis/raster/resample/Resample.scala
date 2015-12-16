@@ -15,6 +15,7 @@ case object Lanczos          extends PointResampleMethod
 sealed trait AggregateResampleMethod extends ResampleMethod
 case object Average extends AggregateResampleMethod
 case object Mode    extends AggregateResampleMethod
+case object Median    extends AggregateResampleMethod
 
 
 object ResampleMethod {
@@ -92,5 +93,6 @@ object Resample {
       case Lanczos => new LanczosResample(tile, extent)
       case Average => new AverageResample(tile, extent, cs)
       case Mode => new ModeResample(tile, extent, cs)
+      case Median => new MedianResample(tile, extent, cs)
     }
 }
