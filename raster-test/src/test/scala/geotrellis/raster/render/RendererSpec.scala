@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.render.png
+package geotrellis.raster.render
 
 import geotrellis.raster._
 import geotrellis.raster.render._
+import geotrellis.raster.render.png._
 import geotrellis.raster.op.stats._
 import geotrellis.testkit._
 
