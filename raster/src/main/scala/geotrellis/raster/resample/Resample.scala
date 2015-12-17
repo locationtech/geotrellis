@@ -52,32 +52,6 @@ abstract class Resample(tile: Tile, extent: Extent) {
   protected def resampleDoubleValid(x: Double, y: Double): Double
 }
 
-abstract class AggregateResample(tile: Tile, extent: Extent, targetCS: CellSize) extends Resample(tile, extent) {
-
-  def contributions(x: Double, y: Double): Seq[(Int, Int)] = {
-    val halfWidth = targetCS.width / 2
-    val halfHeight = targetCS.height / 2
-
-    // Correction for indices that are offset by xmin/ymin on the extent
-    val xPrime = x - extent.xmin
-    val yPrime = y - extent.ymin
-
-    val leftIndex: Int = if(xPrime - halfWidth < 0.0) 0
-                         else (xPrime - halfWidth).ceil.toInt
-    val rightIndex: Int = if(xPrime + halfWidth > cols - 1) cols - 1
-                          else (xPrime + halfWidth).floor.toInt
-    val upperIndex: Int = if(yPrime - halfHeight < 0.0) 0
-                          else (yPrime - halfHeight).ceil.toInt
-    val lowerIndex: Int = if(yPrime + halfHeight > rows - 1) rows - 1
-                          else (yPrime + halfHeight).floor.toInt
-
-    for {
-      xs <- leftIndex to rightIndex
-      ys <- upperIndex to lowerIndex
-    } yield (xs, ys)
-  }
-}
-
 object Resample {
   def apply(method: PointResampleMethod, tile: Tile, extent: Extent): Resample =
     method match {
