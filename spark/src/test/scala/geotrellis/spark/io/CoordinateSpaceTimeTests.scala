@@ -2,10 +2,10 @@ package geotrellis.spark.io
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster.{GridBounds, Tile}
-import geotrellis.spark.{TestSparkContext, SpaceTimeKey}
+import geotrellis.spark.{RasterMetaData, TestSparkContext, SpaceTimeKey}
 import org.joda.time.DateTime
 
-trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile] with TestSparkContext =>
+trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestSparkContext =>
   val dates = Vector( // all the dates in the layer
     new DateTime(2010,1,1,0,0,0, DateTimeZone.UTC),
     new DateTime(2011,1,1,0,0,0, DateTimeZone.UTC),
