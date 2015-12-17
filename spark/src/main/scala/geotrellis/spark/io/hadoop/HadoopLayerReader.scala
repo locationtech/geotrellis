@@ -67,25 +67,25 @@ object HadoopLayerReader {
     sc: SparkContext,
     format: HadoopFormat[K, V],
     cons: Bridge[(RDD[(K, V)], M), C]): HadoopLayerReader[K, V, M, C] =
-    apply(HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
+    apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
     new HadoopLayerReader[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
-      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT))
+      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT))
 
   def spatialMultiBand(rootPath: Path)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
     new HadoopLayerReader[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
-      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
+      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
 
   def spaceTime(rootPath: Path)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
     new HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
-      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpaceTimeKey, Tile](HadoopCatalogConfig.DEFAULT))
+      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpaceTimeKey, Tile](HadoopCatalogConfig.DEFAULT))
 
   def spaceTimeMultiBand(rootPath: Path)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
     new HadoopLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
-      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpaceTimeKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
+      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpaceTimeKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
 }
