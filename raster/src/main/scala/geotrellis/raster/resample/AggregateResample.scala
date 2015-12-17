@@ -24,12 +24,15 @@ abstract class AggregateResample(tile: Tile, extent: Extent, targetCS: CellSize)
   def yIndices(y: Double): (Int, Int) = {
     // The Y Coordinate needs to be inverted
     val invY = extent.ymax - y
-    val top: Double = max(invY - halfWidth, extent.ymin)
-    val bottom: Double = min(invY + halfWidth, extent.ymax - 0.0001)
+    val top: Double = max(invY - halfHeight, extent.ymin)
+    val bottom: Double = min(invY + halfHeight, extent.ymax - 0.0001)
 
-    val topIndex = min(((top - extent.ymin) / srcCellHeight).ceil.toInt, tile.rows - 1)
-    val bottomIndex = ((bottom - extent.ymin) / srcCellHeight).floor.toInt
-    (topIndex, bottomIndex)
+    val topIndex = ((top - extent.ymin) / srcCellHeight).ceil.toInt
+    val bottomIndex = min(((bottom - extent.ymin) / srcCellHeight).floor.toInt, tile.rows - 1)
+    val answer = (topIndex, bottomIndex)
+    println("y", y, "invY", invY,"bottom", bottom, "top", top, answer)
+    println((top - extent.ymin) / srcCellHeight, (bottom - extent.ymin) / srcCellHeight)
+    answer
   }
 
   def contributions(x: Double, y: Double): Seq[(Int, Int)] = {

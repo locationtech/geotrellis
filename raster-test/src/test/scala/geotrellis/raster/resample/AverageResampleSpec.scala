@@ -48,8 +48,10 @@ class AverageResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new AverageResample(tile, extent, cellsize)
-      resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resample(0.0, 0.0) should be (2)  // 10/4 is 2 when rounded to int
+      resamp.xIndices(0.0) should be ((0, 1))
+      resamp.yIndices(0.0) should be ((1, 1))
+      resamp.contributions(0.0, 0.0) should be (Vector((0,1), (1,1)))
+      resamp.resample(0.0, 0.0) should be (3)  // 10/4 is 2 when rounded to int
 
       resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
       resamp.resample(3.0, 1.0) should be (7)  // 28/4 is 7 when rounded to int
@@ -69,29 +71,16 @@ class AverageResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new AverageResample(tile, extent, cellsize) {}
-      resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resampleDouble(0.0, 0.0) should be (2.5)  // 10/4 is 2.5
+      resamp.xIndices(0.0) should be ((0, 1))
+      resamp.yIndices(1.0) should be ((0, 1))
+      resamp.contributions(0.0, 1.0) should be (Vector((0, 0), (0,1), (1, 0), (1,1)))
+      resamp.resampleDouble(0.0, 1.0) should be (2.5)  // 10/4 is 2.5
 
       resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
       resamp.resampleDouble(3.0, 1.0) should be (7)  // 28/4 is 7
 
       resamp.contributions(2.0, 1.0) should be (Vector((1,0), (1,1), (2,0), (2,1), (3,0), (3,1)))
       resamp.resampleDouble(2.0, 1.0) should be (5.83 +- 0.01)  // 35/6 is roughly 5.83
-    }
-
-    it("should return the same tile if not resized") {
-      val cols = 100
-      val rows = 100
-
-      val n = cols * rows
-      val arr = List.range(1, n + 1).toArray
-
-      val tile = ArrayTile(arr, cols, rows)
-      val extent = Extent(0, 0, cols, rows)
-      val cellsize = CellSize(extent, cols, rows)
-      val resamp = new AverageResample(tile, extent, cellsize)
-      for (i <- 0 until cols; j <- 0 until rows)
-        resamp.resample(i, j) should be (tile.get(i, j))
     }
   }
 }

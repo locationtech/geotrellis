@@ -25,7 +25,7 @@ class ModeResample(tile: Tile, extent: Extent, targetCS: CellSize)
       val v = tile.get(coords._1, coords._2)
       hash(v) = hash.getOrElseUpdate(v, 0) + 1
       hash
-    }.maxBy { case (key, value) => value }._1
+    }.toSeq.maxBy { case (key, value) => value }._1
   }
 
   private def calculateDoubleMode(indices: Seq[(Int, Int)]): Double = {
@@ -33,7 +33,7 @@ class ModeResample(tile: Tile, extent: Extent, targetCS: CellSize)
       val v = tile.getDouble(coords._1, coords._2)
       hash(v) = hash.getOrElseUpdate(v, 0) + 1
       hash
-    }.maxBy { case (key, value) => value }._1
+    }.toSeq.maxBy { case (key, value) => value }._1
   }
 
   override def resampleValid(x: Double, y: Double): Int =

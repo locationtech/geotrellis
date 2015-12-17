@@ -47,8 +47,8 @@ class MedianResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new MedianResample(tile, extent, cellsize)
-      resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resample(0.0, 0.0) should be (3)  // 3 is the avg between 3 and 3
+      resamp.contributions(0.5, 1.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
+      resamp.resample(0.5, 1.0) should be (3)  // 3 is the avg between 3 and 3
 
       resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
       resamp.resample(3.0, 1.0) should be (7)  // 7 is the avg between 6 and 8
@@ -68,8 +68,8 @@ class MedianResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, cols, rows)
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new MedianResample(tile, extent, cellsize)
-      resamp.contributions(0.0, 0.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resample(0.0, 0.0) should be (3.0)  // 3 is the avg between 3 and 3
+      resamp.contributions(0.5, 1.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
+      resamp.resample(0.5, 1.0) should be (3.0)  // 3 is the avg between 3 and 3
 
       resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
       resamp.resample(3.0, 1.0) should be (7.0)  // 7 is the avg between 6 and 8
@@ -78,19 +78,5 @@ class MedianResampleSpec extends FunSpec with Matchers {
       resamp.resample(2.0, 1.0) should be (6.0)  // 6 is the avg between 6 and 6
     }
 
-    it("should return the same tile if not resized") {
-      val cols = 100
-      val rows = 100
-
-      val n = cols * rows
-      val arr = List.range(1, n + 1).toArray
-
-      val tile = ArrayTile(arr, cols, rows)
-      val extent = Extent(0, 0, cols, rows)
-      val cellsize = CellSize(extent, cols, rows)
-      val resamp = new MedianResample(tile, extent, cellsize)
-      for (i <- 0 until cols; j <- 0 until rows)
-        resamp.resample(i, j) should be (tile.get(i, j))
-    }
   }
 }
