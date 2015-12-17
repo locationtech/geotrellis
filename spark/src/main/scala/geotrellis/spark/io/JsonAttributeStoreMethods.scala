@@ -69,6 +69,9 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
     (header, metadata, keyBounds, keyIndex, schema)
   }
 
+  def readLayerAttribute[T: JsonFormat](id: LayerId, attributeName: String): T =
+    attributeStore.cacheRead[JsObject](id, Fields.metaData).convertTo[T](fieldLens(attributeName))
+
   def writeLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
     id: LayerId, header: Header, metadata: MetaData, keyBounds: KeyBounds, keyIndex: KeyIndex, schema: Schema): Unit = {
 

@@ -17,6 +17,8 @@ abstract class HadoopSpaceTimeSpec
 
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterRDD](outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
+  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterRDD](outputLocal)
+  lazy val mover  = HadoopLayerMover[SpaceTimeKey, Tile, RasterRDD](outputLocal)
   lazy val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
   lazy val sample =  CoordinateSpaceTime
 }

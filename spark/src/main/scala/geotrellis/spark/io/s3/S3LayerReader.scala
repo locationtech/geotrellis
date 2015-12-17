@@ -26,9 +26,9 @@ import scala.reflect.ClassTag
  * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddReader: S3RDDReader[K, V],
-    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
+  val attributeStore: AttributeStore[JsonFormat],
+           rddReader: S3RDDReader[K, V],
+            getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
   (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
   extends FilteringLayerReader[LayerId, K, Container] with LazyLogging {
 

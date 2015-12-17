@@ -10,24 +10,31 @@ import org.scalatest._
 import spray.json.JsonFormat
 import scala.reflect._
 
-abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: TestSparkContext =>
+abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers {
+  self: TestSparkContext =>
   type Container <: RDD[(K, V)]
   type TestReader = FilteringLayerReader[LayerId, K, Container]
   type TestWriter = Writer[LayerId, Container]
   type TestUpdater = LayerUpdater[LayerId, K, V, Container]
   type TestDeleter = LayerDeleter[LayerId]
+  type TestCopier = LayerCopier[LayerId]
+  type TestMover = LayerMover[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: Container
   def reader: TestReader
   def writer: TestWriter
   def deleter: TestDeleter
+  def copier: TestCopier
+  def mover: TestMover
   def tiles: TestTileReader
 
   val layerId = LayerId("sample-" + this.getClass.getName, 1)
   val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
+  val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
+  val movedLayerId = LayerId("moveSample-" + this.getClass.getName, 1)
   lazy val query = reader.query(layerId)
-  
+
   it("should not find layer before write") {
     intercept[LayerNotFoundError] {
       reader.read(layerId)
@@ -70,5 +77,32 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     intercept[LayerNotFoundError] {
       reader.read(deleteLayerId)
     }
+  }
+
+  it("shouldn't copy a layer which already exists") {
+    intercept[LayerExistsError] {
+      copier.copy(layerId, layerId)
+    }
+  }
+
+  it("should copy a layer") {
+    copier.copy(layerId, copiedLayerId)
+    reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
+  }
+
+  it("shouldn't move a layer which already exists") {
+    intercept[LayerExistsError] {
+      mover.move(layerId, layerId)
+    }
+  }
+
+  it("should move a layer") {
+    val keysBeforeMove = reader.read(layerId).keys.collect()
+    mover.move(layerId, movedLayerId)
+    intercept[LayerNotFoundError] {
+      reader.read(layerId)
+    }
+    keysBeforeMove should contain theSameElementsAs reader.read(movedLayerId).keys.collect()
+    mover.move(movedLayerId, layerId)
   }
 }

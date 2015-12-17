@@ -10,9 +10,7 @@ import geotrellis.vector._
 import geotrellis.vector.io.json._
 import com.github.nscala_time.time.Imports._
 import org.apache.avro.Schema
-
 import spray.json._
-
 import scala.reflect.ClassTag
 
 package object json {

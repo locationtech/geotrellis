@@ -1,17 +1,11 @@
 package geotrellis.spark.io.s3
 
 import java.nio.charset.Charset
-
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-
 import spray.json._
 import DefaultJsonProtocol._
-
-import org.apache.spark._
-import java.io.PrintWriter
-import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
 import scala.io.Source
 import java.io.ByteArrayInputStream
@@ -98,7 +92,6 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
         }
       }
   }
-
 }
 
 object S3AttributeStore {

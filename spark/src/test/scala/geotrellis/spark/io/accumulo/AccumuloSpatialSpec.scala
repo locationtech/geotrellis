@@ -24,14 +24,20 @@ abstract class AccumuloSpatialSpec
 
 class AccumuloSpatialRowMajorSpec extends AccumuloSpatialSpec {
   lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterRDD](instance, "tiles", RowMajorKeyIndexMethod, SocketWriteStrategy())
+  lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterRDD](instance, reader, writer)
+  lazy val mover  = GenericLayerMover(copier, deleter)
 }
 
 class AccumuloSpatialZCurveSpec extends AccumuloSpatialSpec {
   lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterRDD](instance, "tiles", ZCurveKeyIndexMethod, SocketWriteStrategy())
+  lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterRDD](instance, reader, writer)
+  lazy val mover  = GenericLayerMover(copier, deleter)
 }
 
 class AccumuloSpatialHilbertSpec extends AccumuloSpatialSpec {
   lazy val writer = AccumuloLayerWriter[SpatialKey, Tile, RasterRDD](instance, "tiles", HilbertKeyIndexMethod, SocketWriteStrategy())
+  lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterRDD](instance, reader, writer)
+  lazy val mover  = GenericLayerMover(copier, deleter)
 }
 
 
