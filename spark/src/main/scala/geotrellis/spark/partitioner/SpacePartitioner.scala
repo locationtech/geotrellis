@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
-case class SpacePartitioner[K](bounds: Option[KeyBounds[K]], r: Int)
+case class SpacePartitioner[K: Boundable](bounds: Option[KeyBounds[K]], r: Int)
     (implicit gridKey: GridKey[K]) extends Partitioner {
 
   private val index: KeyIndex[K] = SpacePartitioner.gridKeyIndex(gridKey)
@@ -72,13 +72,13 @@ case class SpacePartitioner[K](bounds: Option[KeyBounds[K]], r: Int)
 }
 
 object SpacePartitioner {
-  def apply[K: GridKey](): SpacePartitioner[K] =
+  def apply[K: Boundable: GridKey](): SpacePartitioner[K] =
     SpacePartitioner(None, 8)
 
-  def apply[K: GridKey](bounds: KeyBounds[K], r: Int): SpacePartitioner[K] =
+  def apply[K: Boundable: GridKey](bounds: KeyBounds[K], r: Int): SpacePartitioner[K] =
     SpacePartitioner(Some(bounds), r)
 
-  def apply[K: GridKey](bounds: KeyBounds[K]): SpacePartitioner[K] =
+  def apply[K: Boundable: GridKey](bounds: KeyBounds[K]): SpacePartitioner[K] =
     SpacePartitioner(Some(bounds), 8)
 
   def getPartitioner[K: ClassTag](rdd: RDD[_ <: Product2[K, _]]): Option[SpacePartitioner[K]] = {

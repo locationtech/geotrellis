@@ -1,11 +1,11 @@
 package geotrellis.spark.partitioner
 
-import geotrellis.spark.{KeyBounds, SpatialKey, OnlyIfCanRunSpark}
+import geotrellis.spark.{TestSparkContext, KeyBounds, SpatialKey}
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._
 
-class SpaceRDDSpec extends FunSpec with Matchers with OnlyIfCanRunSpark {
+class SpaceRDDSpec extends FunSpec with Matchers with TestSparkContext {
   val rdd1: RDD[(SpatialKey, Int)] = sc.parallelize {
     for {
       col <- 0 to 10

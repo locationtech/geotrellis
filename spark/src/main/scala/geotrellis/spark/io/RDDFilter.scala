@@ -28,7 +28,7 @@ trait RDDFilter[K, F, T, M] {
 
     val keyBounds = flatten(metadata, kb, ast)
     keyBounds.combinations(2).foreach { case Seq(a, b) =>
-      if (boundable.intersects(a, b))
+      if (a intersects b)
         sys.error(s"Query expression produced intersecting bounds, only non-intersecting regions are supported. ($a, $b)")
     }
 
@@ -57,7 +57,7 @@ object Intersects {
   implicit def forKeyBounds[K: Boundable, M] =
     new RDDFilter[K, Intersects.type, KeyBounds[K], M] {
       def apply(metadata: M, kb1: KeyBounds[K], kb2: KeyBounds[K]) = {
-        implicitly[Boundable[K]].intersect(kb2, kb1).toSeq
+        (kb2 intersect kb1).toSeq
       }
     }
 
@@ -68,7 +68,7 @@ object Intersects {
         val queryBounds = KeyBounds(
           kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
           kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
-        implicitly[Boundable[K]].intersect(queryBounds, kb).toSeq
+        (queryBounds intersect kb).toSeq
       }
     }
 
@@ -81,7 +81,7 @@ object Intersects {
       val queryBounds = KeyBounds(
         kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
         kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
-      implicitly[Boundable[K]].intersect(queryBounds, kb).toSeq
+      (queryBounds intersect kb).toSeq
     }
   }
 }
@@ -96,7 +96,7 @@ object Between {
         val queryBounds = KeyBounds(
           kb.minKey updateTemporalComponent TemporalKey(range._1),
           kb.maxKey updateTemporalComponent TemporalKey(range._2))
-        implicitly[Boundable[K]].intersect(queryBounds, kb).toSeq
+        (queryBounds intersect kb).toSeq
       }
     }
 }
@@ -115,7 +115,7 @@ object Contains {
           kb.minKey updateSpatialComponent spatialKey,
           kb.maxKey updateSpatialComponent spatialKey
         )
-      implicitly[Boundable[K]].intersect(queryBounds, kb).toSeq
+      (queryBounds intersect kb).toSeq
     }
   }
 }

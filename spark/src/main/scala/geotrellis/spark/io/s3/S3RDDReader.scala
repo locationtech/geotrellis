@@ -15,7 +15,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class S3RDDReader[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
+class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
 (implicit sc: SparkContext) {
 
   def getS3Client: () => S3Client = () => S3Client.default
@@ -36,7 +36,8 @@ class S3RDDReader[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
 
     val bins = S3RDDReader.balancedBin(ranges, numPartitions)
 
-    val includeKey = (key: K) => queryKeyBounds includeKey key
+    val boundable = implicitly[Boundable[K]]
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
     val _getS3Client = getS3Client
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable

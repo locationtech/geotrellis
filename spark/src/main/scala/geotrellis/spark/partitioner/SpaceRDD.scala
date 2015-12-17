@@ -9,10 +9,10 @@ import scala.reflect._
 
 
 class SpaceRDD[K, V] private (val prev: RDD[(K, V)], val part: SpacePartitioner[K], val bounds: Option[KeyBounds[K]])
-    (implicit kt: ClassTag[K])
+    (implicit kt: ClassTag[K], b: Boundable[K])
   extends RDD[(K, V)](prev) with LazyLogging {
 
-  def this(rdd: RDD[(K, V)], part: SpacePartitioner[K])(implicit kt: ClassTag[K]) =
+  def this(rdd: RDD[(K, V)], part: SpacePartitioner[K])(implicit kt: ClassTag[K], b: Boundable[K]) =
     this(
       rdd match {
         case rdd: SpaceRDD[_, _] =>
@@ -29,7 +29,7 @@ class SpaceRDD[K, V] private (val prev: RDD[(K, V)], val part: SpacePartitioner[
       ,part,
       part.bounds)
 
-  def this(rdd: RDD[(K, V)], bounds: KeyBounds[K])(implicit kt: ClassTag[K], gk: GridKey[K]) = {
+  def this(rdd: RDD[(K, V)], bounds: KeyBounds[K])(implicit kt: ClassTag[K], gk: GridKey[K], b: Boundable[K]) = {
     this(rdd, SpacePartitioner(bounds))
   }
 

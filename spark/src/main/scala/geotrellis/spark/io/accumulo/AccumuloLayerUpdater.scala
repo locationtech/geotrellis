@@ -34,7 +34,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Cont
       case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
     }
 
-    if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
+    if (!(existingKeyBounds includes keyBounds.minKey ) || !(existingKeyBounds includes keyBounds.maxKey))
       throw new LayerOutOfKeyBoundsError(id)
 
     val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))

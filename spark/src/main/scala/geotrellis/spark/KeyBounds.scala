@@ -6,23 +6,21 @@ import spray.json.DefaultJsonProtocol._
 case class KeyBounds[K](
   minKey: K,
   maxKey: K
-)(implicit b: Boundable[K]) {
-  require(b.minBound(minKey, maxKey) == minKey, s"$minKey greater than $maxKey")
-
-  def includes(key: K): Boolean =
+) {
+  def includes(key: K)(implicit b: Boundable[K]): Boolean =
     minKey == b.minBound(minKey, key) && maxKey == b.maxBound(maxKey, key)
 
-  def include(key: K): KeyBounds[K] =
+  def include(key: K)(implicit b: Boundable[K]): KeyBounds[K] =
     KeyBounds(
       b.minBound(minKey, key),
       b.maxBound(maxKey, key))
 
-  def combine(other: KeyBounds[K]): KeyBounds[K] =
+  def combine(other: KeyBounds[K])(implicit b: Boundable[K]): KeyBounds[K] =
     KeyBounds(
       b.minBound(minKey, other.minKey),
       b.maxBound(maxKey, other.maxKey))
 
-  def intersect(other: KeyBounds[K]): Option[KeyBounds[K]] = {
+  def intersect(other: KeyBounds[K])(implicit b: Boundable[K]): Option[KeyBounds[K]] = {
     val newMin = b.maxBound(minKey, other.minKey)
     val newMax = b.minBound(maxKey, other.maxKey)
 
@@ -33,20 +31,20 @@ case class KeyBounds[K](
       None
   }
 
-  def intersects(other: KeyBounds[K]): Boolean = {
-    intersect(other).isEmpty
+  def intersects(other: KeyBounds[K])(implicit b: Boundable[K]): Boolean = {
+    intersect(other).nonEmpty
   }
 }
 
 object KeyBounds {
-  def includeKey[K](seq: Seq[KeyBounds[K]], key: K) = {
+  def includeKey[K: Boundable](seq: Seq[KeyBounds[K]], key: K) = {
     seq
       .map{ kb => kb.includes(key) }
       .foldLeft(false)(_ || _)
   }
 
-  implicit class KeyBoundsSeqMethods[K](seq: Seq[KeyBounds[K]]){
-    def includeKey(key: K): Boolean = {
+  implicit class KeyBoundsSeqMethods[K](seq: Seq[KeyBounds[K]]) {
+    def includeKey(key: K)(implicit b: Boundable[K]): Boolean = {
       seq
         .map{ kb => kb.includes(key) }
         .foldLeft(false)(_ || _)
