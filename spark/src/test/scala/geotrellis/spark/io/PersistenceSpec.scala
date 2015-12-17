@@ -1,21 +1,15 @@
 package geotrellis.spark.io
 
-import geotrellis.raster._
-import com.github.nscala_time.time.Imports._
 import geotrellis.spark._
-import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
 import org.scalatest._
-import spray.json.JsonFormat
 import scala.reflect._
 
-abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers {
-  self: TestSparkContext =>
+abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers { self: TestSparkContext =>
   type Container <: RDD[(K, V)]
-  type TestReader = FilteringLayerReader[LayerId, K, Container]
+  type TestReader = FilteringLayerReader[LayerId, K, M, Container]
   type TestWriter = Writer[LayerId, Container]
-  type TestUpdater = LayerUpdater[LayerId, K, V, Container]
+  type TestUpdater = LayerUpdater[LayerId, K, V, M, Container]
   type TestDeleter = LayerDeleter[LayerId]
   type TestCopier = LayerCopier[LayerId]
   type TestMover = LayerMover[LayerId]

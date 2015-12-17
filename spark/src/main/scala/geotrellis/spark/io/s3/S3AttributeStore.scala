@@ -14,9 +14,9 @@ import java.io.ByteArrayInputStream
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
  * 
  * @param bucket    S3 bucket to use for attribute store
- * @param rootPath  path in the bucket for given LayerId, not ending in "/"
+ * @param prefix  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[JsonFormat] {
+class S3AttributeStore(val bucket: String, val prefix: String) extends AttributeStore[JsonFormat] {
   val s3Client: S3Client = S3Client.default
 
   /** NOTE:
@@ -28,10 +28,10 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
   def path(parts: String*) = parts.filter(_.nonEmpty).mkString("/")
 
   def attributePath(id: LayerId, attributeName: String): String =
-    path(rootPath, "_attributes", s"${attributeName}__${id.name}__${id.zoom}.json")
+    path(prefix, "_attributes", s"${attributeName}__${id.name}__${id.zoom}.json")
 
   def attributePrefix(attributeName: String): String =
-    path(rootPath, "_attributes", s"${attributeName}__")
+    path(prefix, "_attributes", s"${attributeName}__")
 
   private def readKey[T: Format](key: String): (LayerId, T) = {
     val is = s3Client.getObject(bucket, key).getObjectContent
@@ -85,7 +85,7 @@ class S3AttributeStore(bucket: String, rootPath: String) extends AttributeStore[
   def delete(layerId: LayerId): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     s3Client
-      .listObjectsIterator(bucket, path(rootPath, "_attributes"))
+      .listObjectsIterator(bucket, path(prefix, "_attributes"))
       .foreach { os =>
         if(os.getKey.contains(s"__${layerId.name}__${layerId.zoom}.json")) {
           s3Client.deleteObject(bucket, os.getKey)

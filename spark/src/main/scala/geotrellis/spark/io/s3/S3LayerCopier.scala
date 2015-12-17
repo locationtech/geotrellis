@@ -1,19 +1,22 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.services.s3.model.ObjectListing
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
+
+import org.apache.spark.rdd.RDD
 import org.apache.avro.Schema
 import spray.json.JsonFormat
+import com.amazonaws.services.s3.model.ObjectListing
+
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
+class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
    val attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String)
-  (implicit cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C]) extends LayerCopier[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -30,9 +33,8 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    implicit val mdFormat = cons.metaDataFormat
     val (header, metadata, keyBounds, keyIndex, schema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](from)
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
@@ -52,18 +54,18 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
 }
 
 object S3LayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
   (attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String)
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerCopier[K, V, Container[K]] =
-    new S3LayerCopier[K, V, Container[K]](attributeStore, destBucket, destKeyPrefix)
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerCopier[K, V, M, C] =
+    new S3LayerCopier[K, V, M, C](attributeStore, destBucket, destKeyPrefix)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
   (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String)
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerCopier[K, V, Container[K]] =
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerCopier[K, V, M, C] =
     apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]]
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
   (bucket: String, keyPrefix: String)
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerCopier[K, V, Container[K]] =
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerCopier[K, V, M, C] =
     apply(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
 }

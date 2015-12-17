@@ -4,24 +4,28 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
+
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
+
 import scala.reflect.ClassTag
 
-class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
+class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
    rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container]) extends LayerCopier[LayerId] {
+  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]) extends LayerCopier[LayerId] {
 
   def copy(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
-    implicit val mdFormat = cons.metaDataFormat
+
     val (header, metadata, keyBounds, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Unit](from)
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
@@ -34,13 +38,13 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, Container](
 }
 
 object HadoopLayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerCopier[K, V, Container[K]] =
-    new HadoopLayerCopier[K, V, Container[K]](rootPath, attributeStore)
+  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): HadoopLayerCopier[K, V, M, C] =
+    new HadoopLayerCopier[K, V, M, C](rootPath, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     rootPath: Path)
-   (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerCopier[K, V, Container[K]] =
-    apply[K, V, Container](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
+   (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): HadoopLayerCopier[K, V, M, C] =
+    apply[K, V, M, C](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }
