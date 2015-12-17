@@ -78,4 +78,14 @@ object HadoopLayerReader {
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
     new HadoopLayerReader[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
       HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
+
+  def spaceTime(rootPath: Path)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
+    new HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
+      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpaceTimeKey, Tile](HadoopCatalogConfig.DEFAULT))
+
+  def spaceTimeMultiBand(rootPath: Path)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
+    new HadoopLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
+      HadoopAttributeStore(new Path(rootPath, "attributes")), new HadoopRDDReader[SpaceTimeKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
 }

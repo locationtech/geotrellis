@@ -80,4 +80,15 @@ object S3LayerReader {
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
     new S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
       new S3AttributeStore(bucket, prefix), new S3RDDReader[SpatialKey, MultiBandTile])
+
+  def spaceTime(bucket: String, prefix: String)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
+    new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
+      new S3AttributeStore(bucket, prefix), new S3RDDReader[SpaceTimeKey, Tile])
+
+
+  def spaceTimeMultiBand(bucket: String, prefix: String)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
+    new S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
+      new S3AttributeStore(bucket, prefix), new S3RDDReader[SpaceTimeKey, MultiBandTile])
 }

@@ -1,5 +1,6 @@
 package geotrellis.spark.io.hadoop
 
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
@@ -7,6 +8,7 @@ import geotrellis.spark.io._
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -47,6 +49,8 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 }
 
 object HadoopLayerWriter {
+  def defaultAttributeStore(rootPath: Path) =
+    HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration)
 
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     rootPath: Path,
@@ -82,4 +86,33 @@ object HadoopLayerWriter {
       rootPath = rootPath,
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),
       indexMethod = indexMethod)
+
+  def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
+    new HadoopLayerWriter[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
+      rootPath,
+      defaultAttributeStore(rootPath),
+      new HadoopRDDWriter[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+
+  def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
+    new HadoopLayerWriter[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
+      rootPath,
+      defaultAttributeStore(rootPath),
+      new HadoopRDDWriter[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+
+  def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
+    new HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
+      rootPath,
+      defaultAttributeStore(rootPath),
+      new HadoopRDDWriter[SpaceTimeKey, Tile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+
+  def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
+    new HadoopLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
+      rootPath,
+      defaultAttributeStore(rootPath),
+      new HadoopRDDWriter[SpaceTimeKey, MultiBandTile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+
 }
