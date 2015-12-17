@@ -1,7 +1,8 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{KeyBounds, LayerId}
+import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 

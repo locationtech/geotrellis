@@ -10,13 +10,11 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerReindexer {
-  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
-
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     instance: AccumuloInstance,
     table: String,
     keyIndexMethod: KeyIndexMethod[K],
-    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
    (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
     val layerReader = new AccumuloLayerReader[K, V, M, C](attributeStore, new AccumuloRDDReader[K, V](instance))

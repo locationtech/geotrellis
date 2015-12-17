@@ -13,8 +13,6 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerCopier {
-  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
-
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
    instance   : AccumuloInstance,
    layerReader: AccumuloLayerReader[K, V, M, C],
@@ -49,7 +47,7 @@ object AccumuloLayerCopier {
    instance: AccumuloInstance,
    table: String,
    indexMethod: KeyIndexMethod[K],
-   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+   strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
   (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): SparkLayerCopier[AccumuloLayerHeader, K, V, M, C] =
     apply[K, V, M, C](
       instance    = instance,
