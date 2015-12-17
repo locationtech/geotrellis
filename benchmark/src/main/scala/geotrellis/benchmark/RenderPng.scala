@@ -119,8 +119,8 @@ class RenderPngWeightedOverlayBenchmark extends OperationBenchmark {
 }
 
 
-object RendererBenchmark extends BenchmarkRunner(classOf[RendererBenchmark])
-class RendererBenchmark extends OperationBenchmark {
+object PngRendererBenchmark extends BenchmarkRunner(classOf[PngRendererBenchmark])
+class PngRendererBenchmark extends OperationBenchmark {
   val name = "SBN_farm_mkt"
   val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
   val weights = Array(2, 1, 5, 2)
@@ -159,11 +159,11 @@ class RendererBenchmark extends OperationBenchmark {
   def timeEncoder(reps: Int) = run(reps)(runEncoder)
   def runEncoder = {
     val r2 = renderer.render(raster)
-    val bytes = new Encoder(renderer.settings).writeByteArray(r2)
+    val bytes = new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
   }
 
   def timeJustEncoder(reps: Int) = run(reps)(runJustEncoder)
   def runJustEncoder = {
-    val bytes = new Encoder(renderer.settings).writeByteArray(rendered)
+    val bytes = new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(rendered)
   }
 }

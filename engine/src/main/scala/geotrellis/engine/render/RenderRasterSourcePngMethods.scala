@@ -20,19 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.engine._
 
-trait RenderRasterSourceMethods extends RasterSourceMethods {
-  def color(breaksToColors: Map[Int, Int]): RasterSource =
-    color(breaksToColors, ColorMapOptions.Default)
-
-  def color(breaksToColors: Map[Int, Int], options: ColorMapOptions): RasterSource =
-    rasterSource.mapTile(_.color(breaksToColors, options))
-
-  def color(breaksToColors: Map[Double, Int])(implicit d: DI): RasterSource =
-    color(breaksToColors, ColorMapOptions.Default)
-
-  def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): RasterSource =
-    rasterSource.mapTile(_.color(breaksToColors, options))
-
+trait RenderRasterSourcePngMethods extends RasterSourceMethods {
   /** Generate a PNG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already

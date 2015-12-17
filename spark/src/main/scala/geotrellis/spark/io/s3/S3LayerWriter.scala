@@ -22,40 +22,40 @@ import AttributeStore.Fields
  * @param clobber         flag to overwrite raster if already present on S3
  * @param attributeStore  AttributeStore to be used for storing raster metadata
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
- * @tparam Container      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
+ * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam M              Type of Metadata associated with the RDD[(K,V)]
+ * @tparam C              Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
-   val attributeStore: AttributeStore[JsonFormat],
-   rddWriter: S3RDDWriter[K, V],
-   keyIndexMethod: KeyIndexMethod[K],
-   bucket: String,
-   keyPrefix: String,
-   clobber: Boolean = true,
-   oneToOne: Boolean = false)
-  (implicit val cons: ContainerConstructor[K, V, Container])
-  extends Writer[LayerId, Container with RDD[(K, V)]] with LazyLogging {
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+    val attributeStore: AttributeStore[JsonFormat],
+    rddWriter: S3RDDWriter[K, V],
+    keyIndexMethod: KeyIndexMethod[K],
+    bucket: String,
+    keyPrefix: String,
+    clobber: Boolean = true,
+    oneToOne: Boolean = false)
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C])
+  extends Writer[LayerId, C] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def write(id: LayerId, rdd: Container with RDD[(K, V)]) = {
+  def write(id: LayerId, rdd: C) = {
     require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
-    val metadata = cons.getMetaData(rdd)
+    val (_, metadata) = bridge.unapply(rdd)
     val header = S3LayerHeader(
       keyClass = classTag[K].toString(),
       valueClass = classTag[K].toString(),
       bucket = bucket,
       key = prefix)
 
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
 
     try {
-      implicit val mdFormat = cons.metaDataFormat
       attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, rddWriter.schema)
 
       logger.info(s"Saving RDD ${id.name} to $bucket  $prefix")
@@ -67,15 +67,39 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
 }
 
 object S3LayerWriter {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
+  case class Options(clobber: Boolean, oneToOne: Boolean)
+  object Options {
+    def DEFAULT = Options(true, false)
+  }
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+    attributeStore: S3AttributeStore,
+    keyIndexMethod: KeyIndexMethod[K],
+    options: Options
+  )(implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerWriter[K, V, M, C] =
+    new S3LayerWriter[K, V, M, C](
+      attributeStore,
+      new S3RDDWriter[K, V],
+      keyIndexMethod, attributeStore.bucket, attributeStore.prefix, options.clobber, options.oneToOne)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+    attributeStore: S3AttributeStore,
+    keyIndexMethod: KeyIndexMethod[K]
+  )(implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerWriter[K, V, M, C] =
+    apply[K, V, M, C](attributeStore, keyIndexMethod, Options.DEFAULT)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
       bucket: String,
       prefix: String,
       keyIndexMethod: KeyIndexMethod[K],
-      clobber: Boolean = true,
-      oneToOne: Boolean = false)
-    (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerWriter[K, V, Container[K]] =
-    new S3LayerWriter(
-      S3AttributeStore(bucket, prefix),
-      new S3RDDWriter[K, V],
-      keyIndexMethod, bucket, prefix, clobber, oneToOne)
+      options: Options)
+    (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerWriter[K, V, M, C] =
+    apply[K, V, M, C](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+      bucket: String,
+      prefix: String,
+      keyIndexMethod: KeyIndexMethod[K])
+    (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerWriter[K, V, M, C] =
+    apply[K, V, M, C](bucket, prefix, keyIndexMethod, Options.DEFAULT)
 }

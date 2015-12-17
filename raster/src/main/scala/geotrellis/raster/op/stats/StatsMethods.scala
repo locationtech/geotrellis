@@ -68,7 +68,7 @@ trait StatsMethods extends TileMethods {
    *                Ints.
    */
   def standardDeviations(factor: Double = 1.0): Tile = {
-    val Statistics(mean, _, _, stddev, _, _) = statistics
+    val Statistics(_, mean, _, _, stddev, _, _) = statistics
 
     val indata = tile.toArray
     val len = indata.length

@@ -8,16 +8,14 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerMover {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
    instance: AccumuloInstance,
-   layerReader: AccumuloLayerReader[K, V, Container[K]],
-   layerWriter: AccumuloLayerWriter[K, V, Container[K]])
-  (implicit sc: SparkContext,
-          cons: ContainerConstructor[K, V, Container[K]],
-   containerEv: Container[K] => Container[K] with RDD[(K, V)]): LayerMover[LayerId] = {
+   layerReader: AccumuloLayerReader[K, V, M, C],
+   layerWriter: AccumuloLayerWriter[K, V, M, C])
+  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerMover[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
     new GenericLayerMover[LayerId](
-      layerCopier = AccumuloLayerCopier[K, V, Container](
+      layerCopier = AccumuloLayerCopier[K, V, M, C](
         attributeStore = attributeStore,
         layerReader    = layerReader,
         layerWriter    = layerWriter
