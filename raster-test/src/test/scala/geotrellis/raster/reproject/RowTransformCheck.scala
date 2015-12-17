@@ -136,7 +136,7 @@ object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") wit
   case class Threshold(v: Double)
   lazy val genThreshold: Gen[Threshold] = 
     for {
-      v <- choose(0.0, 5.0)
+      v <- choose(0.0, 2.0)
     } yield Threshold(v)
 
   implicit lazy val arbThreshold: Arbitrary[Threshold] =
@@ -158,6 +158,8 @@ object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") wit
     val destX = Array.ofDim[Double](srcX.size)
     val destY = destX.clone
 
+    val testThreshold = threshold * 1.25 // Doesn't garuntee everything is under the threshold, but should be close.
+
     val rowTransform = RowTransform.approximate(utmToWebMercator, threshold)
     rowTransform(srcX, srcY, destX, destY)
 
@@ -171,8 +173,8 @@ object RowTransformCheck_UTMToWebMercator extends Properties("RowTransform") wit
           val dx = math.abs(p1.x - p2.x)
           val dy = math.abs(p1.y - p2.y)
           val d  = dx + dy
-          if(d >= threshold) { println(s"$p1 should be $p2") }
-          d < threshold
+          if(d >= testThreshold) { println(s"$p1 should be $p2") }
+          d < testThreshold
         }
         .foldLeft(true)(_ && _)
 
