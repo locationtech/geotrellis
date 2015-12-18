@@ -34,7 +34,7 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
     val mover = HadoopLayerMover[K, V, M, C](header.path)
     mover.move(from, to)
   }
-  
+
   def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
   (id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = { }
 
