@@ -1,10 +1,13 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
@@ -54,4 +57,20 @@ object AccumuloLayerWriter {
       keyIndexMethod = indexMethod,
       table = table
     )
+
+  def spatial(instance: AccumuloInstance, table: String, keyIndexMethod: KeyIndexMethod[SpatialKey], strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
+    apply[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](instance, table, keyIndexMethod, strategy)
+
+  def spatialMultiBand(instance: AccumuloInstance, table: String, keyIndexMethod: KeyIndexMethod[SpatialKey], strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](instance, table, keyIndexMethod, strategy)
+
+  def spaceTime(instance: AccumuloInstance, table: String, keyIndexMethod: KeyIndexMethod[SpaceTimeKey], strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
+    apply[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](instance, table, keyIndexMethod, strategy)
+
+  def spaceTimeMultiBand(instance: AccumuloInstance, table: String, keyIndexMethod: KeyIndexMethod[SpaceTimeKey], strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](instance, table, keyIndexMethod, strategy)
 }
