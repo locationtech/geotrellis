@@ -1,11 +1,14 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import org.apache.avro.Schema
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -102,4 +105,24 @@ object S3LayerWriter {
       keyIndexMethod: KeyIndexMethod[K])
     (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerWriter[K, V, M, C] =
     apply[K, V, M, C](bucket, prefix, keyIndexMethod, Options.DEFAULT)
+
+  def spatial(bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[SpatialKey], clobber: Boolean = true, oneToOne: Boolean = false)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
+    new S3LayerWriter[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
+      new S3AttributeStore(bucket, prefix), new S3RDDWriter[SpatialKey, Tile], keyIndexMethod, bucket, prefix, clobber, oneToOne)
+
+  def spatialMultiBand(bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[SpatialKey], clobber: Boolean = true, oneToOne: Boolean = false)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
+    new S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
+      new S3AttributeStore(bucket, prefix), new S3RDDWriter[SpatialKey, MultiBandTile], keyIndexMethod, bucket, prefix, clobber, oneToOne)
+
+  def spaceTime(bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[SpaceTimeKey], clobber: Boolean = true, oneToOne: Boolean = false)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
+    new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
+      new S3AttributeStore(bucket, prefix), new S3RDDWriter[SpaceTimeKey, Tile], keyIndexMethod, bucket, prefix, clobber, oneToOne)
+
+  def spaceTimeMultiBand(bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[SpaceTimeKey], clobber: Boolean = true, oneToOne: Boolean = false)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
+    new S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
+      new S3AttributeStore(bucket, prefix), new S3RDDWriter[SpaceTimeKey, MultiBandTile], keyIndexMethod, bucket, prefix, clobber, oneToOne)
 }
