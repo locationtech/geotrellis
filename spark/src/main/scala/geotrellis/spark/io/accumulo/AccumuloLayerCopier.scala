@@ -1,6 +1,5 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.mosaic.MergeView
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.{Boundable, LayerId}
 import geotrellis.spark.io._
@@ -43,7 +42,7 @@ object AccumuloLayerCopier {
       layerWriter    = layerWriter
     )
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: MergeView: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
    instance: AccumuloInstance,
    table: String,
    indexMethod: KeyIndexMethod[K],
