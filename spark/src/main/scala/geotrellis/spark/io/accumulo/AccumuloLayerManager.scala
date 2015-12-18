@@ -1,11 +1,13 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.mosaic.MergeView
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.io.hadoop.HadoopFormat
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{Boundable, LayerId}
 import geotrellis.spark.io.{Bridge, LayerManager}
+import geotrellis.raster.mosaic.MergeView
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
@@ -19,37 +21,26 @@ class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: Acc
     deleter.delete(id)
   }
 
-  def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (from: LayerId, to: LayerId)(implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = { }
-
   def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: MergeView: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K], strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
+  (from: LayerId, to: LayerId, keyIndexMethod: Option[KeyIndexMethod[K]])
   (implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = {
     val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.header)
-    val copier = AccumuloLayerCopier[K, V, M, C](instance, header.tileTable, keyIndexMethod, strategy)
+    val copier = AccumuloLayerCopier[K, V, M, C](instance, header.tileTable, keyIndexMethod.get, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
     copier.copy(from, to)
   }
 
-  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (from: LayerId, to: LayerId)(implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = { }
-
   def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: MergeView: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K], strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
+  (from: LayerId, to: LayerId, keyIndexMethod: Option[KeyIndexMethod[K]])
   (implicit bridge: Bridge[(RDD[(K, V)], M), C]) = {
     val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.header)
-    val mover = AccumuloLayerMover[K, V, M, C](instance, header.tileTable, keyIndexMethod, strategy)
+    val mover = AccumuloLayerMover[K, V, M, C](instance, header.tileTable, keyIndexMethod.get, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
     mover.move(from, to)
   }
 
-  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = {
-
-  }
-
   def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: MergeView: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (id: LayerId, keyIndexMethod: KeyIndexMethod[K], strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)(implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = {
+  (id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit bridge: Bridge[(RDD[(K, V)], M), C], hadoopFormat: HadoopFormat[K,V] = null) = {
     val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](id, Fields.header)
-    val reindexer = AccumuloLayerReindexer[K, V, M, C](instance, header.tileTable, keyIndexMethod, strategy)
+    val reindexer = AccumuloLayerReindexer[K, V, M, C](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
     reindexer.reindex(id)
   }
 }
