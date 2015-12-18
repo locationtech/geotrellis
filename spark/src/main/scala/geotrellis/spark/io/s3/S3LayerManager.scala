@@ -33,7 +33,7 @@ class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext
   }
 
   def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-     (id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit bridge: Bridge[(RDD[(K, V)], M), C]) = {
+     (id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit bridge: Bridge[(RDD[(K, V)], M), C]): Unit = {
     val reindexer = S3LayerReindexer[K, V, M, C](attributeStore, keyIndexMethod)
     reindexer.reindex(id) // keyIndexMethod should be part of the LayerReindexer trait
   }
