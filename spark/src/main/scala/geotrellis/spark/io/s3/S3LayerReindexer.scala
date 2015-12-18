@@ -26,9 +26,9 @@ object S3LayerReindexer {
     keyIndexMethod: KeyIndexMethod[K],
     options: Options
   )(implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] = {
-    val layerReader    = S3LayerReader[K, V, M, C](attributeStore, options.getCache)
-    val layerDeleter   = S3LayerDeleter(attributeStore)
-    val layerWriter    = S3LayerWriter[K, V, M, C](attributeStore, keyIndexMethod, options)
+    val layerReader  = S3LayerReader[K, V, M, C](attributeStore, options.getCache)
+    val layerDeleter = S3LayerDeleter(attributeStore)
+    val layerWriter  = S3LayerWriter[K, V, M, C](attributeStore, keyIndexMethod, options)
 
     val (bucket, prefix) = (attributeStore.bucket, attributeStore.prefix)
     val layerCopier = new SparkLayerCopier[S3LayerHeader, K, V, M, C](

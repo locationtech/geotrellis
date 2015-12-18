@@ -27,7 +27,7 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <:
     val (header, metadata, keyBounds, keyIndex, _) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
     } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerMoveError(from, to).initCause(e)
     }
     val newPath = new Path(rootPath,  s"${to.name}/${to.zoom}")
     HdfsUtils.renamePath(header.path, newPath, sc.hadoopConfiguration)
