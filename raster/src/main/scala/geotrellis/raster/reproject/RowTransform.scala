@@ -17,9 +17,18 @@ object RowTransform {
       }
     }
 
-  /**
+  /** Computes an approximate transformation of a row.
+    * 
     * Based on GDALApproxTransform. Assumes that the number of elements in the row is greater than 5.
     * Should only be used when the line being transformed is roughly linear.
+    * 
+    * @param transform                   The transformation that we are approximating
+    * @param errorThreshold              maximum error measured in input pixels that is allowed
+    *                                    in approximating the transformation (0.0 for exact calculations).
+    * 
+    * @note This algorithm does not garuntee all values will be within the error threshold of the exactly transformed values.
+    *       In practice, as long as the line is roughly linear, it should be at least very close if over the error threshold away
+    *       from the actual values.
     */
   def approximate(transform: Transform, errorThreshold: Double): RowTransform =
     if(errorThreshold == 0.0) {

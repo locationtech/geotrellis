@@ -20,6 +20,7 @@ import geotrellis.raster.op.stats.Statistics
 import geotrellis.raster.NODATA
 import math.{abs, round, sqrt}
 
+import spire.syntax.cfor._
 /**
   * Data object representing a histogram of values.
   */
@@ -71,16 +72,14 @@ abstract trait Histogram extends Serializable {
     val values = getValues()
     var mode = values(0)
     var count = getItemCount(mode)
-    var i = 1
     val len = values.length
-    while (i < len) {
+    cfor(1)(_ < len, _ + 1) { i =>
       val z = values(i)
       val c = getItemCount(z)
       if (c > count) {
         count = c
         mode = z
       }
-      i += 1
     }
     mode
   }
@@ -88,8 +87,8 @@ abstract trait Histogram extends Serializable {
   def getMedian() = if (getTotalCount == 0) {
     NODATA
   } else {
-    val values = getValues
-    val middle = getTotalCount() / 2
+    val values = getValues()
+    val middle: Int = getTotalCount() / 2
     var total = 0
     var i = 0
     while (total <= middle) {
@@ -105,17 +104,14 @@ abstract trait Histogram extends Serializable {
     val values = rawValues()
     var mean = 0.0
     var total = 0.0
-    var i = 0
     val len = values.length
 
-    while (i < len) {
+    cfor(0)(_ < len, _ + 1) { i =>
       val value = values(i)
       val count = getItemCount(value)
       val delta = value - mean
       total += count
       mean += (count * delta) / total
-
-      i += 1
     }
     mean
   }
@@ -125,6 +121,8 @@ abstract trait Histogram extends Serializable {
     if (values.length == 0) {
       Statistics.EMPTY
     } else {
+
+      var dataCount: Long = 0
 
       var mode = 0
       var modeCount = 0
@@ -136,12 +134,12 @@ abstract trait Histogram extends Serializable {
       var needMedian = true
       val limit = getTotalCount() / 2
 
-      var i = 0
       val len = values.length
 
-      while (i < len) {
+      cfor(0)(_ < len, _ + 1) { i =>
         val value = values(i)
         val count = getItemCount(value)
+        dataCount = dataCount + count
         if (count != 0) {
           // update the mode
           if (count > modeCount) {
@@ -160,7 +158,6 @@ abstract trait Histogram extends Serializable {
             needMedian = false
           }
         }
-        i += 1
       }
 
       // find the min value
@@ -170,10 +167,9 @@ abstract trait Histogram extends Serializable {
       val zmax = values(len - 1)
 
       // find stddev
-      i = 0
       total = 0
       var mean2 = 0.0
-      while (i < len) {
+      cfor(0)(_ < len, _ + 1) { i =>
         val value = values(i)
         val count = getItemCount(value)
 
@@ -185,12 +181,10 @@ abstract trait Histogram extends Serializable {
           total += count
           mean2 += (count * delta) / total
         }
-
-        i += 1
       }
       val stddev = sqrt(mean2)
 
-      Statistics(mean, median, mode, stddev, zmin, zmax)
+      Statistics(dataCount, mean, median, mode, stddev, zmin, zmax)
     }
   }
 

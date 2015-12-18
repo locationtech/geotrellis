@@ -107,4 +107,7 @@ object HadoopAttributeStore {
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
     new HadoopAttributeStore(sc.hadoopConfiguration, rootPath)
+
+  def default(rootPath: Path) =
+    HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration)
 }

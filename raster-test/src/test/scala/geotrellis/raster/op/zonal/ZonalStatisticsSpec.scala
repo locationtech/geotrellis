@@ -16,50 +16,33 @@
 
 package geotrellis.raster.op.zonal
 
+import geotrellis.raster.op.stats._
 import geotrellis.raster._
+import geotrellis.testkit._
 
 import org.scalatest._
-
-import geotrellis.testkit._
+import spire.syntax.cfor._
 
 import scala.collection.mutable
 
-import spire.syntax.cfor._
-
-class ZonalHistogramSpec extends FunSpec
+class ZonalStatisticsSpec extends FunSpec
                             with Matchers
                             with TestEngine
                             with TileBuilders {
-  describe("ZonalHistogram") {
+  describe("ZonalStatistics") {
     val r = createTile(
-      Array(1, 2, 2, 2, 3, 1, 6, 5, 1,
-            1, 2, 2, 2, 3, 6, 6, 5, 5,
-            1, 3, 5, 3, 6, 6, 6, 5, 5,
-            3, 1, 5, 6, 6, 6, 6, 6, 2,
-            7, 7, 5, 6, 1, 3, 3, 3, 2,
-            7, 7, 5, 5, 5, 4, 3, 4, 2,
-            7, 7, 5, 5, 5, 4, 3, 4, 2,
-            7, 2, 2, 5, 4, 4, 3, 4, 4),
-      9,8)
+      Array(1, 1, 3, 3,
+            1, 1, 3, 3,
+            1, 1, 3, 3,
+            1, 1, 3, 3),
+      4, 4)
 
-    // 1 -
-    // 2 - 15
-    // 3 - 12
-    // 4 - 6
-    // 5 - 6
-    // 6 - 6
-    // 7 - 12
-    // 8 - 6
     val zones = createTile(
-      Array(1, 1, 1, 4, 4, 4, 5, 6, 6,
-            1, 1, 1, 4, 4, 5, 5, 6, 6,
-            1, 1, 2, 4, 5, 5, 5, 6, 6,
-            1, 2, 2, 3, 3, 3, 3, 3, 3,
-            2, 2, 2, 3, 3, 3, 3, 3, 3,
-            2, 2, 2, 7, 7, 7, 7, 8, 8,
-            2, 2, 2, 7, 7, 7, 7, 8, 8,
-            2, 2, 2, 7, 7, 7, 7, 8, 8),
-      9,8)
+      Array(1, 1, 3, 4,
+            1, 1, 3, 4,
+            2, 2, 3, 4,
+            2, 2, 3, 4),
+      4, 4)
 
     val (cols,rows) = (zones.cols,zones.rows)
 
@@ -80,17 +63,19 @@ class ZonalHistogramSpec extends FunSpec
             .toMap
       }
 
+    val stats = r.zonalStatistics(zones)
 
-    it("gives correct histogram map for example raster") {
-      val histograms = r.zonalHistogram(zones)
-      histograms.keys should be (expected.keys)
+    it("gives correct Statistics for example raster") {
+      stats.keys should be (expected.keys)
 
-      for(zone <- histograms.keys) {
-        val hist = histograms(zone)
-        for(v <- expected(zone).keys) {
-          hist.getItemCount(v) should be (expected(zone)(v))
-        }
-      }
+      stats(1) should be (stats(2))
+      stats(3) should be (stats(4))
+    }
+
+    it("gives correct Statistics values") {
+      stats(1).mean should be (1)
+      stats(3).mean should be (3)
+      stats(1) should be (Statistics(4, 1.0, 1, 1, 0.0, 1, 1))
     }
   }
 }
