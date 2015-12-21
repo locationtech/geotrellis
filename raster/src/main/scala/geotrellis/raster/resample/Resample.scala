@@ -17,7 +17,6 @@ case object Average extends AggregateResampleMethod
 case object Mode    extends AggregateResampleMethod
 case object Median    extends AggregateResampleMethod
 
-
 object ResampleMethod {
   val DEFAULT: PointResampleMethod = NearestNeighbor
 }

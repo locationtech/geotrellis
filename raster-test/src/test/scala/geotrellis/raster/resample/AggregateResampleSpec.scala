@@ -4,64 +4,84 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import org.scalatest._
+import spire.syntax.cfor._
 
 class AggregateResampleSpec extends FunSpec with Matchers {
 
-    val B = 5 // value returned when resampling
-
   class MockAggregateResample(tile: Tile, extent: Extent, targetCS: CellSize) extends AggregateResample(tile, extent, targetCS) {
-    protected def resampleValid(x: Double, y: Double): Int = B
-    protected def resampleDoubleValid(x: Double, y: Double): Double = B
+    def resampleValid(x: Double, y: Double): Int = contributions(x, y).size
+    def resampleDoubleValid(x: Double, y: Double): Double = contributions(x, y).size.toInt
   }
 
   describe("aggregate resampling requires assembling a list of contributing cells") {
 
-    it("should assemble contributing cell indexes correctly for a given cellsize") {
-      /* Given an initial tile of 2columns/2rows and resizing it to 1column/2rows
-       * we should expect that the contributing cells at (0, 0) include only (0, 0)
-       * we should expect that the contributing cells at (1.5, 1.25) include 0,0 and 1,0
-       * we should expect that the contributing cells at (1.5, 1.75) include 0,1 and 1,1
+    it("should assemble contributing cell indexes correctly when halving rows/cols") {
+      /* Given an initial tile of 10columns/10rows and resizing it to 5column/5rows
+       * we should expect that the non-edge, destination cells each have 9 contributing cells
        */
-      val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
-      val extent = Extent(0, 0, 2, 2)
-      val cellSize = CellSize(extent, 1, 2)
+      val tile = ArrayTile(Array.fill[Byte](100)(1.toByte), 10, 10)
+      val extent = Extent(0, 0, 100, 100)
+      val cellsize = CellSize(extent, 5, 5)
+      val resamp = new MockAggregateResample(tile, extent, cellsize)
+      resamp.yIndices(90) should be ((0, 1))
 
-      val resamp = new MockAggregateResample(tile, extent, cellSize)
-      resamp.contributions(0, 0) should be (Vector((0, 1), (1, 1)))
-      resamp.contributions(1.5, 1.25) should be (Vector((1, 0), (1, 1)))
-      resamp.contributions(1.5, 1.75) should be (Vector((1, 0), (1, 1)))
+      val cellCenters = 10 to 90 by 10
+      for {
+        xs <- cellCenters
+        ys <- cellCenters
+      } yield resamp.contributions(xs, ys).size should be (4)
+    }
+
+    it("should assemble contributing cell indexes correctly in one dimension") {
+      val tile = ArrayTile(Array.fill[Byte](100)(1.toByte), 10, 10)
+      val extent = Extent(0, 0, 100, 100)
+      val cellCenters = 5 to 95 by 10
+      val tileCenter = Seq(50)
+
+      val cellsize1 = CellSize(extent, 10, 1)
+      val resamp1 = new MockAggregateResample(tile, extent, cellsize1)
+      for {
+        xs <- cellCenters
+        ys <- tileCenter
+      } yield resamp1.contributions(xs, ys).size should be (10)
+
+      val cellsize2 = CellSize(extent, 1, 10)
+      val resamp2 = new MockAggregateResample(tile, extent, cellsize2)
+      for {
+        xs <- tileCenter
+        ys <- cellCenters
+      } yield resamp2.contributions(xs, ys).size should be (10)
     }
 
     it("should correctly return the xIndices for a given x coordinate") {
       val tile = IntArrayTile.fill(0, 10, 1)
       val extent = Extent(0, 0, 10, 10)
-      val cellSize = CellSize(extent, 1, 1)
-      val resamp = new MockAggregateResample(tile, extent, cellSize)
+      val cellsize = CellSize(extent, 1, 1)
+      val resamp = new MockAggregateResample(tile, extent, cellsize)
+
       resamp.xIndices(5) should be ((0, 9))
     }
 
     it("should correctly return the yIndices for a given y coordinate") {
       val tile = IntArrayTile.fill(0, 1, 10)
       val extent = Extent(0, 0, 10, 10)
-      val cellSize = CellSize(extent, 1, 1)
-      val resamp = new MockAggregateResample(tile, extent, cellSize)
+      val cellsize = CellSize(extent, 1, 1)
+      val resamp = new MockAggregateResample(tile, extent, cellsize)
+
       resamp.yIndices(5) should be ((0, 9))
     }
 
-    it("should correctly return the xIndices for complex cases") {
-      val tile1 = IntArrayTile.fill(0, 20, 1)
-      val extent1 = Extent(0, 0, 10, 10)
-      val cellSize1 = CellSize(extent1, 10, 1)
-      val resamp1 = new MockAggregateResample(tile1, extent1, cellSize1)
-      resamp1.xIndices(5) should be ((9, 11))
-      resamp1.yIndices(5) should be ((0, 0))
+    it("should only have one contributing cell if the tile is not resized") {
+      val tile = ArrayTile(Array.fill[Byte](10000)(1.toByte), 10, 100)
+      val extent = Extent(0, 0, 10, 100)
+      val cellsize = CellSize(extent, 10, 100)
+      val resamp = new MockAggregateResample(tile, extent, cellsize)
 
-      val tile2 = IntArrayTile.fill(0, 70, 70)
-      val extent2 = Extent(0, 0, 10, 10)
-      val cellSize2 = CellSize(extent2, 10, 10)
-      val resamp2 = new MockAggregateResample(tile2, extent2, cellSize2)
-      resamp2.xIndices(5) should be ((32, 38))
-      resamp2.yIndices(5) should be ((32, 38))
+      cfor(0.5)(_ < 10, _ + 1) { col =>
+        cfor(0.5)(_ < 100, _ + 1) { row =>
+          resamp.resampleValid(col, row) should be (1)
+        }
+      }
     }
   }
 }

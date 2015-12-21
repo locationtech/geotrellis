@@ -1,9 +1,13 @@
 #geotrellis.raster.resample
 
 ##Resampling
-Often, when working with raster data, it is useful to change the number
-of rows and/or columns. For everything there is a price, however, and
-changing the resolution of a tile is no exception: there will (almost)
+Often, when working with raster data, it is useful to change the resolution,
+crop the data, transform the data to a different projection, or to
+do all of that at once. This all relies on our ability
+to resample, which is the act of changing the spatial resolution
+and layout of the raster cells, and interpolating the values of the
+modified cells from the original cells. For everything there is a price, however,
+and changing the resolution of a tile is no exception: there will (almost)
 always be a loss of information (or representativeness) when conducting
 an operation which changes the number of cells on a tile.  
 

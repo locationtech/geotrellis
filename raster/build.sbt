@@ -13,3 +13,9 @@ scalacOptions ++= Seq("-optimize", "-language:experimental.macros")
 javaOptions in run += "-Xmx2G"
 parallelExecution := false
 fork in test := false
+initialCommands in console :=
+  """
+  import geotrellis.raster._
+  import geotrellis.raster.resample._
+  import geotrellis.vector._
+  """

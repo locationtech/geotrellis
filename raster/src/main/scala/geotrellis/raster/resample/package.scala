@@ -13,9 +13,10 @@ package object resample {
       resample(source, target, ResampleMethod.DEFAULT)
 
     def resample(extent: Extent, targetExtent: RasterExtent, method: ResampleMethod): Tile = {
-      val resampler = Resample(method, tile, extent, targetExtent.cellSize)
       val (cols, rows) = (targetExtent.cols, targetExtent.rows)
       val targetTile = ArrayTile.empty(tile.cellType, cols, rows)
+      val targetCS = CellSize(extent, cols, rows)
+      val resampler = Resample(method, tile, extent, targetCS)
 
       if(targetTile.cellType.isFloatingPoint) {
         val interpolate = resampler.resampleDouble _
@@ -33,7 +34,6 @@ package object resample {
           cfor(0)(_ < cols, _ + 1) { col =>
             val x = targetExtent.gridColToMap(col)
             val y = targetExtent.gridRowToMap(row)
-            println("interpolating with", x, y)
             val v = interpolate(x, y)
             targetTile.set(col, row, v)
           }

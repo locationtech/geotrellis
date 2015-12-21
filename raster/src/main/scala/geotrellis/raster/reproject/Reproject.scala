@@ -52,7 +52,8 @@ object Reproject {
       val srcX = Array.ofDim[Double](newCols)
       val srcY = Array.ofDim[Double](newCols)
 
-      val resampler = Resample(options.method, tile, extent, newRe.cellSize)
+      val targetCS = CellSize(extent, newRe.cols, newRe.rows)
+      val resampler = Resample(options.method, tile, extent, targetCS)
 
       if(tile.cellType.isFloatingPoint) {
         val resample = resampler.resampleDouble _

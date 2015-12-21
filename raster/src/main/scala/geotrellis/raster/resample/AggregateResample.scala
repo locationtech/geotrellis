@@ -9,30 +9,47 @@ abstract class AggregateResample(tile: Tile, extent: Extent, targetCS: CellSize)
 
   val srcCellWidth = extent.width / tile.cols
   val srcCellHeight = extent.height / tile.rows
+  val halfSrcCellWidth = srcCellWidth / 2
+  val halfSrcCellHeight = srcCellHeight / 2
 
-  val halfWidth = targetCS.width / 2
-  val halfHeight = targetCS.height / 2
+  val halfTargetWidth = targetCS.width / 2
+  val halfTargetHeight = targetCS.height / 2
 
   def xIndices(x: Double): (Int, Int) = {
-    val leftbound: Double = max(x - halfWidth, extent.xmin)
-    val rightbound: Double = min(x + halfWidth, extent.xmax - 0.0001)
+    // Distance from the left of tile
+    val dLeftX = x - extent.xmin - halfSrcCellWidth
 
-    val leftIndex = min(((leftbound - extent.xmin) / srcCellWidth).ceil.toInt, tile.cols - 1)
-    val rightIndex = ((rightbound - extent.xmin) / srcCellWidth).floor.toInt
+    // calc cell distance from left edge
+    val dLeftCellLeft: Double = dLeftX - halfTargetWidth
+    val dLeftCellRight: Double = dLeftX + halfTargetWidth
+
+    // Calculate indices
+    val leftIndex =
+      if (dLeftCellLeft > 0) (dLeftCellLeft / srcCellWidth).ceil.toInt
+      else 0
+    val rightIndex =
+      if(dLeftCellRight < extent.width) (dLeftCellRight / srcCellWidth).floor.toInt
+      else tile.cols - 1
+
     (leftIndex, rightIndex)
   }
   def yIndices(y: Double): (Int, Int) = {
-    // The Y Coordinate needs to be inverted
-    val invY = extent.ymax - y
-    val top: Double = max(invY - halfHeight, extent.ymin)
-    val bottom: Double = min(invY + halfHeight, extent.ymax - 0.0001)
+    // Distance from top of tile
+    val dTopY = extent.ymax - y - halfSrcCellHeight
 
-    val topIndex = ((top - extent.ymin) / srcCellHeight).ceil.toInt
-    val bottomIndex = min(((bottom - extent.ymin) / srcCellHeight).floor.toInt, tile.rows - 1)
-    val answer = (topIndex, bottomIndex)
-    println("y", y, "invY", invY,"bottom", bottom, "top", top, answer)
-    println((top - extent.ymin) / srcCellHeight, (bottom - extent.ymin) / srcCellHeight)
-    answer
+    // calc cell distance from top
+    val dTopCellTop: Double = dTopY - halfTargetHeight
+    val dTopCellBottom: Double = dTopY + halfTargetHeight
+
+    // Calculate indices
+    val topIndex =
+      if (dTopCellTop > 0) (dTopCellTop / srcCellHeight).ceil.toInt
+      else 0
+    val bottomIndex =
+      if (dTopCellBottom < extent.height) (dTopCellBottom / srcCellHeight).floor.toInt
+      else tile.rows - 1
+
+    (topIndex, bottomIndex)
   }
 
   def contributions(x: Double, y: Double): Seq[(Int, Int)] = {

@@ -21,25 +21,28 @@ class ModeResample(tile: Tile, extent: Extent, targetCS: CellSize)
     extends AggregateResample(tile, extent, targetCS) {
 
   private def calculateIntMode(indices: Seq[(Int, Int)]): Int = {
-    indices.foldLeft(mutable.Map[Int, Int]()) { (hash, coords) =>
+    val values = indices.foldLeft(mutable.Map[Int, Int]()) { (hash, coords) =>
       val v = tile.get(coords._1, coords._2)
       hash(v) = hash.getOrElseUpdate(v, 0) + 1
       hash
-    }.toSeq.maxBy { case (key, value) => value }._1
+    }.toSeq
+    if (values.size > 0) values.maxBy { case (key, value) => value }._1
+    else NODATA
   }
 
   private def calculateDoubleMode(indices: Seq[(Int, Int)]): Double = {
-    indices.foldLeft(mutable.Map[Double, Int]()) { (hash, coords) =>
+    val values = indices.foldLeft(mutable.Map[Double, Int]()) { (hash, coords) =>
       val v = tile.getDouble(coords._1, coords._2)
       hash(v) = hash.getOrElseUpdate(v, 0) + 1
       hash
-    }.toSeq.maxBy { case (key, value) => value }._1
+    }.toSeq
+    if (values.size > 0) values.maxBy { case (key, value) => value }._1
+    else Double.NaN
   }
 
-  override def resampleValid(x: Double, y: Double): Int =
+  def resampleValid(x: Double, y: Double): Int =
     calculateIntMode(contributions(x, y))
 
-  override def resampleDoubleValid(x: Double, y: Double): Double =
+  def resampleDoubleValid(x: Double, y: Double): Double =
     calculateDoubleMode(contributions(x, y))
-
 }

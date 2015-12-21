@@ -10,72 +10,27 @@ class MedianResampleSpec extends FunSpec with Matchers {
   describe("it should resample to nodata when only nodata in tile") {
 
     it("should for a integer tile compute nodata as most common value") {
-      val cols = 100
-      val rows = 100
-
-      val tile = ArrayTile(Array.fill(cols * rows)(NODATA), cols, rows)
-      val extent = Extent(0, 0, cols, rows)
-      val cellsize = CellSize(extent, cols, rows)
+      val tile = IntArrayTile(1 to 100 toArray, 10, 10)
+      val extent = Extent(0, 0, 10, 10)
+      val cellsize = CellSize(extent, 10, 10)
       val resamp = new MedianResample(tile, extent, cellsize)
-      for (i <- 0 until cols; j <- 0 until rows)
-        resamp.resample(i, j) should be (NODATA)
+      tile.resample(extent, 1, 1, Median).get(0, 0) should be (50)
     }
 
     it("should for a double tile compute nodata as most common value") {
-      val cols = 100
-      val rows = 100
-
-      val tile = ArrayTile(Array.fill(cols * rows)(Double.NaN), cols, rows)
-      val extent = Extent(0, 0, cols, rows)
-      val cellsize = CellSize(extent, cols, rows)
+      val tile = DoubleArrayTile(0.1 to 10 by 0.1 toArray, 10, 10)
+      val extent = Extent(0, 0, 10, 10)
+      val cellsize = CellSize(extent, 10, 10)
       val resamp = new MedianResample(tile, extent, cellsize)
-      for (i <- 0 until cols; j <- 0 until rows)
-        assert(resamp.resampleDouble(i, j).isNaN)
+      tile.resample(extent, 1, 1, Median).getDouble(0, 0) should be (5.05)
     }
 
-  }
-  describe("it should correctly resample to the median of a region determined by cellsize") {
-
-    it("should gather all and only relevant coordinates and correctly resample to their median for int based tiles") {
-      val cols = 4
-      val rows = 2
-      val tile = IntArrayTile(
-        Array(1, 3, 6, 8,
-              3, 4, 6, 8),
-        cols, rows)
-
-      val extent = Extent(0, 0, cols, rows)
+    it("should return the mean of the two median-most values for an even set of contributing cells") {
+      val tile = DoubleArrayTile(Array(10, 20), 2, 1)
+      val extent = Extent(0, 0, 2, 1)
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new MedianResample(tile, extent, cellsize)
-      resamp.contributions(0.5, 1.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resample(0.5, 1.0) should be (3)  // 3 is the avg between 3 and 3
-
-      resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
-      resamp.resample(3.0, 1.0) should be (7)  // 7 is the avg between 6 and 8
-
-      resamp.contributions(2.0, 1.0) should be (Vector((1,0), (1,1), (2,0), (2,1), (3,0), (3,1)))
-      resamp.resample(2.0, 1.0) should be (6)  // 6 is the avg between 6 and 6
-    }
-
-    it("should gather all and only relevant coordinates and correctly resample to their median for float based tiles") {
-      val cols = 4
-      val rows = 2
-      val tile = DoubleArrayTile(
-        Array(1.0, 3.0, 6.0, 8.0,
-              3.0, 4.0, 6.0, 8.0),
-        cols, rows)
-
-      val extent = Extent(0, 0, cols, rows)
-      val cellsize = CellSize(extent, 2, 1)
-      val resamp = new MedianResample(tile, extent, cellsize)
-      resamp.contributions(0.5, 1.0) should be (Vector((0,0), (0,1), (1,0), (1,1)))
-      resamp.resample(0.5, 1.0) should be (3.0)  // 3 is the avg between 3 and 3
-
-      resamp.contributions(3.0, 1.0) should be (Vector((2,0), (2,1), (3,0), (3,1)))
-      resamp.resample(3.0, 1.0) should be (7.0)  // 7 is the avg between 6 and 8
-
-      resamp.contributions(2.0, 1.0) should be (Vector((1,0), (1,1), (2,0), (2,1), (3,0), (3,1)))
-      resamp.resample(2.0, 1.0) should be (6.0)  // 6 is the avg between 6 and 6
+      tile.resample(extent, 1, 1, Median).get(0, 0) should be (15)
     }
 
   }
