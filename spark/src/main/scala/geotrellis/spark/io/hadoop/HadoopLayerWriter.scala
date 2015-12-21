@@ -86,30 +86,18 @@ object HadoopLayerWriter {
 
   def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
-    new HadoopLayerWriter[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
-      rootPath,
-      HadoopAttributeStore.default(rootPath),
-      new HadoopRDDWriter[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+    apply[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](rootPath, keyIndexMethod)
 
   def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
-    new HadoopLayerWriter[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
-      rootPath,
-      HadoopAttributeStore.default(rootPath),
-      new HadoopRDDWriter[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+    apply[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](rootPath, keyIndexMethod)
 
   def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
-    new HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
-      rootPath,
-      HadoopAttributeStore.default(rootPath),
-      new HadoopRDDWriter[SpaceTimeKey, Tile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+    apply[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](rootPath, keyIndexMethod)
 
   def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
-    new HadoopLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
-      rootPath,
-      HadoopAttributeStore.default(rootPath),
-      new HadoopRDDWriter[SpaceTimeKey, MultiBandTile](HadoopCatalogConfig.DEFAULT), keyIndexMethod)
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](rootPath, keyIndexMethod)
 
 }

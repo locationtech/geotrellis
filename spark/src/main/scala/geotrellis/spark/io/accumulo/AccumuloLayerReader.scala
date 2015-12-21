@@ -8,7 +8,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import org.apache.avro.Schema
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
@@ -46,29 +45,27 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 }
 
 object AccumuloLayerReader {
+
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](instance: AccumuloInstance)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): AccumuloLayerReader[K, V, M, C] =
     new AccumuloLayerReader[K, V, M, C] (
-      AccumuloAttributeStore(instance.connector),
-      new AccumuloRDDReader[K, V](instance))
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      rddReader = new AccumuloRDDReader[K, V](instance)
+    )
 
   def spatial(instance: AccumuloInstance)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
-    new AccumuloLayerReader[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
-      AccumuloAttributeStore(instance.connector), new AccumuloRDDReader[SpatialKey, Tile](instance))
+    apply[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](instance)
 
   def spatialMultiBand(instance: AccumuloInstance)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
-    new AccumuloLayerReader[SpatialKey, MultiBandTile, RasterMetaData,MultiBandRasterRDD[SpatialKey]](
-      AccumuloAttributeStore(instance.connector), new AccumuloRDDReader[SpatialKey, MultiBandTile](instance))
+    apply[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](instance)
 
   def spaceTime(instance: AccumuloInstance)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
-    new AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
-      AccumuloAttributeStore(instance.connector), new AccumuloRDDReader[SpaceTimeKey, Tile](instance))
+    apply[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](instance)
 
   def spaceTimeMultiBand(instance: AccumuloInstance)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
-    new AccumuloLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData,MultiBandRasterRDD[SpaceTimeKey]](
-      AccumuloAttributeStore(instance.connector), new AccumuloRDDReader[SpaceTimeKey, MultiBandTile](instance))
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](instance)
 }

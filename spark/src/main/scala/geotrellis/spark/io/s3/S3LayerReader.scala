@@ -62,33 +62,36 @@ class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
 
 object S3LayerReader {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,  V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+    attributeStore: AttributeStore[JsonFormat],
+    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
+  )(implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerReader[K, V, M, C] =
+    new S3LayerReader[K, V, M, C](
+      attributeStore,
+      new S3RDDReader[K, V],
+      getCache
+    )
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,  V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
       bucket: String,
       prefix: String,
       getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerReader[K, V, M, C] =
-    new S3LayerReader[K, V, M, C](
-      new S3AttributeStore(bucket, prefix),
-      new S3RDDReader[K, V],
-      getCache)
+    apply(new S3AttributeStore(bucket, prefix), getCache)
 
   def spatial(bucket: String, prefix: String)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
-    new S3LayerReader[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
-      new S3AttributeStore(bucket, prefix), new S3RDDReader[SpatialKey, Tile])
+    apply[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](bucket, prefix)
 
   def spatialMultiBand(bucket: String, prefix: String)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
-    new S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
-      new S3AttributeStore(bucket, prefix), new S3RDDReader[SpatialKey, MultiBandTile])
+    apply[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](bucket, prefix)
 
   def spaceTime(bucket: String, prefix: String)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
-    new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
-      new S3AttributeStore(bucket, prefix), new S3RDDReader[SpaceTimeKey, Tile])
+    apply[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](bucket, prefix)
 
 
   def spaceTimeMultiBand(bucket: String, prefix: String)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
-    new S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
-      new S3AttributeStore(bucket, prefix), new S3RDDReader[SpaceTimeKey, MultiBandTile])
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](bucket, prefix)
 }
