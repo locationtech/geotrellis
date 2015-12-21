@@ -20,33 +20,87 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
+import spire.syntax.cfor._
+
+import scala.collection.JavaConverters._
+import com.vividsolutions.jts.index.strtree.STRtree
+import com.vividsolutions.jts.geom.Envelope
+
 object PolygonRasterizer {
   import scala.collection.mutable
+  import math.{abs,min,max}
 
-  val limit : Int = 1000000
-  val epsilon : Double = 0.0000001
+  type Segment = (Double, Double, Double, Double)
 
   /**
-   * Given a polygon and a raster extent, return the list of
-   * non-horizontal segments -- in raster coordinates -- that
-   * comparise the boundary of the polygon.
+   * Given a Segment and a y-value (for a line parallel to the
+   * x-axis), return the point of intersection and whether it occurs
+   * at the top, middle, or bottom of the line segment.
    *
-   * @param poly A polygon
-   * @param poly A raster extent
+   * @param line  A line segment
+   * @param y     The y-value for a line parallel to the x-axis
    */
-  def polygonToEdges(poly : Polygon, re : RasterExtent) = {
-    (poly.exterior :: poly.holes.toList).flatMap({ line =>
-      line.points.sliding(2).map({ pointPair =>
-        /* Points in map coordinates */
-        val (x0, y0) = (pointPair(0).x, pointPair(0).y)
-        val (x1, y1) = (pointPair(1).x, pointPair(1).y)
-        /* Points in grid coordinates */
-        val point1 = Point(re.mapXToGridDouble(x0), re.mapYToGridDouble(y0))
-        val point2 = Point(re.mapXToGridDouble(x1), re.mapYToGridDouble(y1))
+  private def lineAxisIntersection(line : Segment, y : Double) = {
+    val (x1, y1, x2, y2) = line
 
-        if (point1.y < point2.y) Line(point1, point2); else Line(point2, point1)
-      })
-    })
+    if (y == y1) (x1,1) // Top endpoint
+    else if (y == y2) (x2,-1) // Bottom endpoint
+    else if ((min(y1,y2) <= y) && (y <= max(y1,y2))) { // Between endpoints
+      (((x1-x2)*y-(x1*y2-y1*x2))/(y1-y2),0)
+    }
+    else (Double.NegativeInfinity, 8) // No intersection
+  }
+
+  /**
+   * Given a polygon and a raster extent, return an R-Tree (being used
+   * as an Interval Tree) containing the Segments -- in raster
+   * coordinates -- that comprise the boundary of the polygon.
+   *
+   * @param poly  A polygon
+   * @param re    A raster extent
+   */
+  def polygonToEdges(poly: Polygon, re: RasterExtent): STRtree = {
+
+    val rtree = new STRtree
+
+    /* Find the outer ring's segments */
+    val coords = poly.jtsGeom.getExteriorRing.getCoordinates
+    cfor(1)(_ < coords.length, _ + 1) { ci =>
+      val coord1 = coords(ci - 1)
+      val coord2 = coords(ci)
+
+      val col1 = re.mapXToGridDouble(coord1.x)
+      val row1 = re.mapYToGridDouble(coord1.y)
+      val col2 = re.mapXToGridDouble(coord2.x)
+      val row2 = re.mapYToGridDouble(coord2.y)
+
+      val segment =
+        if (row1 < row2) (col1, row1, col2, row2)
+        else (col2, row2, col1, row1)
+
+      rtree.insert(new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4), segment)
+    }
+
+    /* Find the segments for the holes */
+    cfor(0)(_ < poly.numberOfHoles, _ + 1) { i =>
+      val coords = poly.jtsGeom.getInteriorRingN(i).getCoordinates
+      cfor(1)(_ < coords.length, _ + 1) { ci =>
+        val coord1 = coords(ci - 1)
+        val coord2 = coords(ci)
+
+        val col1 = re.mapXToGridDouble(coord1.x)
+        val row1 = re.mapYToGridDouble(coord1.y)
+        val col2 = re.mapXToGridDouble(coord2.x)
+        val row2 = re.mapYToGridDouble(coord2.y)
+
+        val segment =
+          if (row1 < row2) (col1, row1, col2, row2)
+          else (col2, row2, col1, row1)
+
+        rtree.insert(new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4), segment)
+      }
+    }
+    rtree
   }
 
   /**
@@ -57,129 +111,155 @@ object PolygonRasterizer {
    * polygon.  This implements part of the traditional scanline
    * algorithm.
    *
-   * @param edges A list of active edges
-   * @param y     The y-value of the vertical scanline
-   * @param maxX  The maximum-possible x-coordinate
+   * This routine ASSUMES that the polygon is closed, is of finite
+   * area, and that its boundary does not self-intersect.
+   *
+   * @param edges  A list of active edges
+   * @param y      The y-value of the vertical scanline
+   * @param maxX   The maximum-possible x-coordinate
    */
-  def runsInterior(edges : List[Line], y : Int, maxX : Int) = {
-    val row = Line(Point(-limit, y + 0.5), Point(maxX + limit, y + 0.5))
-    lazy val perturbedRow1 = Line(Point(-limit, y + 0.5 + epsilon), Point(maxX + limit, y + 0.5 + epsilon))
-    lazy val perturbedRow2 = Line(Point(-limit, y + 0.5 - epsilon), Point(maxX + limit, y + 0.5 - epsilon))
+  private def runsInterior(rtree : STRtree, y : Int, maxX : Int) = {
+    val row = y + 0.5
+    val xcoordsMap = mutable.Map[Double, Int]()
+    val xcoordsList = mutable.ListBuffer[Double]()
 
-    edges
-      .filter({ edge => edge.points(0).y != edge.points(1).y })
-      .filter({ edge => edge.intersects(row) })
-      .map({ edge =>
-        val xcoord = (edge & row).as[Point].get.x + 0.5
-        (xcoord, edge) })
-      /* Handle duplicate x-values by perturbing the scanline.  The variable
-       * pair is bound to a tuple of a double (the x-coordinate) and a
-       * list of double (x-coordinate), line (edge) tuples. */
-      .groupBy(_._1).flatMap({ pair : (Double, List[(Double, Line)]) =>
-        if (pair._2.length == 1) List(pair._1)
-        else {
-          val intersections1 = pair._2.filter(_._2.intersects(perturbedRow1)).length
-          val intersections2 = pair._2.filter(_._2.intersects(perturbedRow2)).length
-          List.fill(math.max(intersections1, intersections2).toInt)(pair._1)
-        } })
-      .toList.sortWith(_ < _)
-      .grouped(2)
+    rtree.query(new Envelope(Double.MinValue, Double.MaxValue, row, row)).asScala.foreach({ edgeObj =>
+      val edge = edgeObj.asInstanceOf[Segment]
+      if (edge._2 != edge._4) { // If edge is not horizontal, process it ...
+        val (xcoord, valence) = lineAxisIntersection(edge,row)
+        if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += valence
+        else xcoordsMap(xcoord) = valence
+      }
+    })
+
+    xcoordsMap.foreach({ case (xcoord, valence) =>
+      /* This is where the  ASSUMPTION is used.  Given the assumption,
+       * this intersection  should be used as  the open or close  of a
+       * run of  turned-on pixels  if and only  if the  sum associated
+       * with that intersection is -1, 0, or 1. */
+      if (valence == -1 || valence == 0 || valence == 1) xcoordsList += (xcoord + 0.5)
+    })
+
+    val xcoords = xcoordsList.toArray
+    java.util.Arrays.sort(xcoords)
+    xcoords
   }
 
   /**
    * This does much the same things as runsInterior, except that
    * instead of using a scanline, a "scan rectangle" is used.  When
    * this is run over all of the rows, the collective output is
-   * collection of pixels which completely cover the input polygon.
+   * collection of pixels which completely covers the input polygon.
    *
-   * @param edges A list of active edges
-   * @param y     The y-value of the vertical scanline
-   * @param maxX  The maximum-possible x-coordinate
+   * This routine ASSUMES that the polygon is closed, is of finite
+   * area, and that its boundary does not self-intersect.
+   *
+   * @param edges  A list of active edges
+   * @param y      The y-value of the bottom of the vertical scan rectangle
+   * @param maxX   The maximum-possible x-coordinate
    */
-  def runsExterior(edges : List[Line], y : Int, maxX : Int) = {
+  private def runsExterior(rtree : STRtree, y : Int, maxX : Int) = {
     val (top, bot) = (y + 1, y + 0)
-    val row = Polygon(
-      Point(-limit, bot),
-      Point(-limit, top),
-      Point(maxX + limit, top),
-      Point(maxX + limit, bot),
-      Point(-limit, bot))
+    val interactions = mutable.ListBuffer[Segment]()
+    val intervals = mutable.ListBuffer[(Double, Double)]()
 
-    val interactions = edges.filter({ edge => edge.intersects(row) })
-      .map({ edge => (edge & row) })
-      .filter({ _.as[Line] != None })
-      .map({ _.as[Line].get })
-      .sortWith({ (line1, line2) => {
-        val x1 = math.min(line1.points.head.x, line1.points.last.x)
-        val x2 = math.min(line2.points.head.x, line2.points.last.x)
-        x1 < x2
-      }})
+    var botInterval = false
+    var topInterval = false
+    var botIntervalStart = 0.0
+    var topIntervalStart = 0.0
 
-    val low = interactions.filter({ event => {
-      val points = event.points
-      ((points.head.y == bot) || (points.last.y == bot)) }})
-      .grouped(2)
+    rtree.query(new Envelope(Double.MinValue, Double.MaxValue, bot, top))
+      .asScala
+      .foreach({ edgeObj => interactions += edgeObj.asInstanceOf[Segment] })
 
-    val middle = interactions.filter({ event => {
-      val point = event.points
-      ((point.head.y != bot)
-        && (point.head.y != top)
-        && (point.last.y != bot)
-        && (point.last.y != top)) }})
+    interactions
+      .sortWith({ (edge0, edge1) => min(edge0._1, edge0._3) < min(edge1._1, edge1._3) })
+      .foreach({ edge =>
 
-    val high = interactions.filter({ event => {
-      val points = event.points
-      ((points.head.y == top) || (points.last.y == top)) }})
-      .grouped(2)
+        /* Create top intervals: Generate  the list of intervals which
+         * are due to  intersections of the polygon  boundary with the
+         * top  of  the  scan  rectangle.   The  correctness  of  this
+         * approach comes from the ASSUMPTION stated above. */
+        val touchesTop = (lineAxisIntersection(edge, top)._1 != Double.NegativeInfinity)
+        if (touchesTop) {
+          if (topInterval == false) { // Start new top interval
+            topInterval = true
+            topIntervalStart = math.floor(min(edge._1, edge._3))
+          }
+          else if (topInterval == true) { // Finish current top interval
+            topInterval = false
+            intervals += ((topIntervalStart, math.ceil(max(edge._1, edge._3))))
+          }
+        }
 
-    val intervals = (
-      (low ++ high)
-        .map({ case List(line1, line2) => {
-          val xs = line1.points.map(_.x) ++ line2.points.map(_.x)
-          val min = xs.reduce(math.min(_,_))
-          val max = xs.reduce(math.max(_,_))
-          List(math.floor(min), math.ceil(max))
-        }}) ++
-        middle.map({ line => {
-          val x0 = line.points.head.x
-          val x1 = line.points.last.x
-          List(math.floor(math.min(x0,x1)), math.ceil(math.max(x0,x1)))
-        }})
-    ).toList.sortWith(_.head < _.head)
+        /* Create bottom intervals */
+        val touchesBot = (lineAxisIntersection(edge, bot)._1 != Double.NegativeInfinity)
+        if (touchesBot) {
+          if (botInterval == false) { // Start new bottom interval
+            botInterval = true
+            botIntervalStart = math.floor(min(edge._1, edge._3))
+          }
+          else if (botInterval == true) { // Finish current bottom interval
+            botInterval = false
+            intervals += ((botIntervalStart, math.ceil(max(edge._1, edge._3))))
+          }
+        }
 
-    /* Merge and return intervals */
-    if (intervals.length > 0) {
-      val stack = mutable.Stack(intervals.head)
-      intervals.tail.foreach({ interval => {
-        val (l1,r1) = (stack.top.head, stack.top.last)
-        val (l2,r2) = (interval.head, interval.last)
+        /* Create middle intervals.  These result from boundary segments
+         * entirely contained in the scan rectangle. */
+        if (!touchesTop && !touchesBot) {
+          intervals += ((math.floor(min(edge._1, edge._3)), math.ceil(max(edge._1, edge._3))))
+        }
+      })
+
+    val sortedIntervals = intervals.sortWith({ (one, two) => one._1 < two._1 })
+
+    /* Merge intervals */
+    val mergedIntervals =
+    if (sortedIntervals.length > 0) {
+      val stack = mutable.Stack(sortedIntervals.head)
+      sortedIntervals.tail.foreach({ interval => {
+        val (l1,r1) = (stack.top._1, stack.top._2)
+        val (l2,r2) = (interval._1, interval._2)
         if (r1 < l2) stack.push(interval)
         else {
           stack.pop
-          stack.push(List(l1, math.max(r1,r2)))
+          stack.push((l1, max(r1,r2)))
         }
       }})
       stack.toList
     } else List.empty
+
+    mergedIntervals.flatMap({ i => List(i._1, i._2)}).toArray
   }
 
+  /**
+   * Take a polygon, a raster extent, and a flag (described below) and
+   * generate a rasterized polygon.
+   *
+   * @param poly             A polygon to rasterize
+   * @param re               A raster extent to rasterize the polygon into
+   * @param includeExterior  If false, use traditional scanline algorithm.  If true, make sure that the polygon is completely covered by pixels.
+   */
   def foreachCellByPolygon(poly: Polygon, re: RasterExtent, includeExterior: Boolean = false)(f: Callback): Unit = {
     val edges = polygonToEdges(poly, re)
 
     var y = 0
     while(y < re.rows) {
-      val activeEdges =
-        (if (includeExterior) runsExterior(edges, y, re.cols)
-        else runsInterior(edges, y, re.cols))
-          .foreach({ case List(startDouble, stopDouble) => {
-            var x = math.max(startDouble.toInt,0)
-            val stop = math.min(stopDouble.toInt,re.cols)
-            while(x < stop) {
-              f(x, y)
-              x += 1
-            }}})
+      val rowRuns = if (includeExterior) runsExterior(edges, y, re.cols); else runsInterior(edges, y, re.cols)
+
+      var i = 0
+      while (i < rowRuns.length) {
+        var x = max(rowRuns(i).toInt, 0)
+        val stop = min(rowRuns(i+1).toInt, re.cols)
+        while (x < stop) {
+          f(x, y)
+          x += 1
+        } // x loop
+        i += 2
+      } // i loop
       y += 1
-    }
+    } // y loop
   }
 
 }
