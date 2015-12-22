@@ -72,11 +72,22 @@ object S3LayerReader {
     )
 
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,  V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+    attributeStore: AttributeStore[JsonFormat]
+  )(implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerReader[K, V, M, C] =
+    apply(attributeStore, None)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,  V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
       bucket: String,
       prefix: String,
-      getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
+      getCache: Option[LayerId => Cache[Long, Array[Byte]]])
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerReader[K, V, M, C] =
     apply(new S3AttributeStore(bucket, prefix), getCache)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,  V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+      bucket: String,
+      prefix: String)
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerReader[K, V, M, C] =
+    apply(bucket, prefix, None)
 
   def spatial(bucket: String, prefix: String)
     (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
