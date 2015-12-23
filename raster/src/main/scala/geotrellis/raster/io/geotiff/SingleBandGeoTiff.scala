@@ -14,6 +14,7 @@ class SingleBandGeoTiff(
 ) extends GeoTiff {
   def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
   def raster: Raster = Raster(tile, extent)
+  def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
 
   def mapTile(f: Tile => Tile): SingleBandGeoTiff =
     SingleBandGeoTiff(f(tile), extent, crs, tags, options)
