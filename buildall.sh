@@ -17,3 +17,4 @@
 ./sbt -J-Xmx2G "project jetty" compile || { exit 1; } 
 ./sbt -J-Xmx2G "project admin" compile || { exit 1; } 
 ./sbt -J-Xmx2G "project vector-benchmark" compile || { exit 1; } 
+./sbt -J-Xmx2G "project testkit" compile || { exit 1; }
