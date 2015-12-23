@@ -22,12 +22,12 @@ object Reproject {
       val cellheight = re.cellheight
 
       val transform = Transform(src, dest)
+      val inverseTransform = Transform(dest, src)
+
       val newRe @ RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) =
         ReprojectRasterExtent(re, transform)
 
       val newTile = ArrayTile.empty(tile.cellType, newCols, newRows)
-
-      val inverseTransform = Transform(dest, src)
 
       val rowTransform: RowTransform =
         if (options.errorThreshold != 0.0)

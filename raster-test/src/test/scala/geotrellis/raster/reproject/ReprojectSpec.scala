@@ -2,6 +2,10 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
+import geotrellis.raster.mosaic._
+import geotrellis.vector._
+import geotrellis.vector.reproject._
+import geotrellis.vector.io.json._
 import geotrellis.engine._
 import geotrellis.testkit._
 import geotrellis.proj4._
@@ -13,20 +17,23 @@ import spire.syntax.cfor._
 
 class ReprojectSpec extends FunSpec
     with TileBuilders
+    with GeoTiffTestUtils
     with TestEngine {
   describe("reprojects in approximation to GDAL") {
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
       val ProjectedRaster(source, extent, crs) = SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
 
-      val Raster(expected, expectedExtent) = 
+      val ree @ Raster(expected, expectedExtent) =
         SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
  
-      val Raster(actual, actualExtent) =
+      val rea @ Raster(actual, actualExtent) =
         source.reproject(extent, crs, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 
-      actual.rows should be (expected.rows)
-      actual.cols should be (expected.cols)
+      // println(ree.rasterExtent)
+      // println(rea.rasterExtent)
+      // actual.rows should be (expected.rows)
+      // actual.cols should be (expected.cols)
 
       actualExtent.xmin should be (expectedExtent.xmin +- 0.00001)
       actualExtent.xmax should be (expectedExtent.xmax +- 0.00001)
@@ -94,6 +101,65 @@ class ReprojectSpec extends FunSpec
           }
         }
       }
+    }
+
+    // TODO: Fix this test. See Issue #1261
+    ignore("should reproject two landsat tiles into rasters that don't have nodata lines of NODATA") {
+      def detectNoDataLine(tile: Tile): Unit = {
+        val (cols, rows) = tile.dimensions
+        val noDataColCounts = Array.ofDim[Int](cols)
+        cfor(0)(_ < rows, _ + 1) { row =>
+          cfor(0)(_ < cols, _ + 1) { col =>
+            if(isNoData(tile.get(col, row))) {
+              noDataColCounts(col) += 1
+              if(noDataColCounts(col) > 50) {
+                sys.error(s"No data line detected at column $col")
+              }
+            } else {
+              noDataColCounts(col) = 0
+            }
+          }
+        }
+      }
+
+      val srcCRS = CRS.fromEpsgCode(32618)
+
+      val leftRasterExtent = RasterExtent(Extent(563760.000, 4428900.000, 579120.000, 4444260.000), 30.0, 30.0, 512, 512)
+      val rightRasterExtent = RasterExtent(Extent(579120.000, 4428900.000, 594480.000, 4444260.000), 30.0, 30.0, 512, 512)
+
+      val leftTile = IntArrayTile(Array.ofDim[Int](256 * 256).fill(1), 256, 256)
+
+      val rightTile = IntArrayTile(Array.ofDim[Int](256 * 256).fill(2), 256, 256)
+
+      // Sanity check - they don't have any missing pixels before reprojecting
+      def runSanity() = {
+        val RasterExtent(_, cellwidth, cellheight, _, _) = leftRasterExtent
+        val unionExtent = leftRasterExtent.extent.combine(rightRasterExtent.extent)
+        val re = RasterExtent(unionExtent, CellSize(cellwidth, cellheight))
+        val mergeTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+        mergeTile.merge(unionExtent, leftRasterExtent.extent, leftTile)
+        mergeTile.merge(unionExtent, rightRasterExtent.extent, rightTile)
+        detectNoDataLine(mergeTile)
+      }
+
+      // Now repreject; there should also be no lines.
+
+      val Raster(wmLeftTile, wmLeftExtent) = leftTile.reproject(leftRasterExtent.extent, srcCRS, WebMercator, ReprojectOptions(Bilinear))
+      val Raster(wmRightTile, wmRightExtent) = rightTile.reproject(rightRasterExtent.extent, srcCRS, WebMercator, ReprojectOptions(Bilinear))
+
+      val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
+      val RasterExtent(_, cellwidthRight, cellheightRight, _, _) = RasterExtent(wmRightExtent, wmRightTile.cols, wmRightTile.rows)
+
+      cellwidthLeft should be (cellwidthRight +- 0.01)
+      cellheightLeft should be (cellheightRight +- 0.01)
+
+      // Specifically fit it ito a web mercator zoom layout tile
+      val re = RasterExtent(Extent(-8247861.100, 4872401.931, -8238077.160, 4882185.871), 256, 256)
+
+      val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+      val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile).merge(re.extent, wmRightExtent, wmRightTile)
+
+      detectNoDataLine(mergeTile)
     }
   }
 }
