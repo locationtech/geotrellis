@@ -10,8 +10,8 @@ import geotrellis.vector.Extent
  * a tile.
  */
 case class Kernel(tile: Tile) extends Neighborhood {
-  if(tile.rows != tile.cols) sys.error("Kernel tile must be square")
-  if(tile.rows % 2 != 1) sys.error("Kernel tile must have odd dimension")
+  require(tile.rows == tile.cols, "Kernel tile must be square")
+  require(tile.rows % 2 == 1, "Kernel tile must have odd dimension")
   val extent = (tile.rows / 2).toInt
 
   // Not supporting masks, since masks are implemented as 0 values in the kernel weight

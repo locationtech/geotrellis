@@ -17,7 +17,6 @@ import scala.collection.mutable.ArrayBuffer
 
 object FocalOperation {
 
-  // TODO: Remove Neighborhood out of calc.
   def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, opBounds: Option[GridBounds] = None)
       (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
