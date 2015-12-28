@@ -47,9 +47,10 @@ trait TileMergeMethods extends MergeMethods[Tile] {
         val mutableTile = tile.mutable
         val re = RasterExtent(extent, tile.cols, tile.rows)
         val GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
+        val targetCS = CellSize(sharedExtent, colMax, rowMax)
 
         if (tile.cellType.isFloatingPoint) {
-          val interpolate = Resample(method, other, otherExtent).resampleDouble _
+          val interpolate = Resample(method, other, otherExtent, targetCS).resampleDouble _
           cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
             cfor(colMin)(_ <= colMax, _ + 1) { col =>
               if (isNoData(tile.getDouble(col, row))) {
@@ -59,7 +60,7 @@ trait TileMergeMethods extends MergeMethods[Tile] {
             }
           }
         } else {
-          val interpolate = Resample(method, other, otherExtent).resample _
+          val interpolate = Resample(method, other, otherExtent, targetCS).resample _
           tile.cellType match {
             case TypeUByte | TypeUShort =>
               cfor(rowMin)(_ <= rowMax, _ + 1) { row =>

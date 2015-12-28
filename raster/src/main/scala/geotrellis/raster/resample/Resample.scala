@@ -3,20 +3,23 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-abstract sealed class ResampleMethod
+sealed trait ResampleMethod
 
-case object NearestNeighbor extends ResampleMethod
-case object Bilinear extends ResampleMethod
-case object CubicConvolution extends ResampleMethod
-case object CubicSpline extends ResampleMethod
-case object Lanczos extends ResampleMethod
-case object Average extends ResampleMethod
-case object Mode extends ResampleMethod
+sealed trait PointResampleMethod extends ResampleMethod
+case object NearestNeighbor  extends PointResampleMethod
+case object Bilinear         extends PointResampleMethod
+case object CubicConvolution extends PointResampleMethod
+case object CubicSpline      extends PointResampleMethod
+case object Lanczos          extends PointResampleMethod
+
+sealed trait AggregateResampleMethod extends ResampleMethod
+case object Average extends AggregateResampleMethod
+case object Mode    extends AggregateResampleMethod
+case object Median    extends AggregateResampleMethod
 
 object ResampleMethod {
-  val DEFAULT = NearestNeighbor
+  val DEFAULT: PointResampleMethod = NearestNeighbor
 }
-
 
 abstract class Resample(tile: Tile, extent: Extent) {
   protected val re = RasterExtent(tile, extent)
@@ -49,14 +52,24 @@ abstract class Resample(tile: Tile, extent: Extent) {
 }
 
 object Resample {
-  def apply(method: ResampleMethod, tile: Tile, extent: Extent): Resample =
+  def apply(method: PointResampleMethod, tile: Tile, extent: Extent): Resample =
     method match {
       case NearestNeighbor => new NearestNeighborResample(tile, extent)
       case Bilinear => new BilinearResample(tile, extent)
       case CubicConvolution => new BicubicConvolutionResample(tile, extent)
       case CubicSpline => new BicubicSplineResample(tile, extent)
       case Lanczos => new LanczosResample(tile, extent)
-      case Average => new AverageResample(tile, extent)
-      case Mode => new ModeResample(tile, extent)
+    }
+
+  def apply(method: ResampleMethod, tile: Tile, extent: Extent, cs: CellSize): Resample =
+    method match {
+      case NearestNeighbor => new NearestNeighborResample(tile, extent)
+      case Bilinear => new BilinearResample(tile, extent)
+      case CubicConvolution => new BicubicConvolutionResample(tile, extent)
+      case CubicSpline => new BicubicSplineResample(tile, extent)
+      case Lanczos => new LanczosResample(tile, extent)
+      case Average => new AverageResample(tile, extent, cs)
+      case Mode => new ModeResample(tile, extent, cs)
+      case Median => new MedianResample(tile, extent, cs)
     }
 }
