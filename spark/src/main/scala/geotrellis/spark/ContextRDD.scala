@@ -9,6 +9,9 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object ContextRDD {
+  def apply[K, V, M](rdd: RDD[(K, V)], metadata: M): RDD[(K, V)] with Metadata[M] =
+    new ContextRDD(rdd, metadata)
+
   implicit def tupleToContextRDD[K, V, M](tup: (RDD[(K, V)], M)): ContextRDD[K, V, M] =
     new ContextRDD(tup._1, tup._2)
 }

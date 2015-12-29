@@ -4,7 +4,7 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.{CellType, Tile, CellGrid}
 import geotrellis.spark.reproject._
-import geotrellis.spark.{SpaceTimeKey, LayerId, RasterMetaData, RasterRDD}
+import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import org.apache.spark.SparkContext
@@ -21,7 +21,7 @@ abstract class IngestInputPlugin[I: IngestKey, K: ClassTag](implicit tiler: Tile
     crs: CRS, scheme: Either[LayoutScheme, LayoutDefinition],
     targetCellType: Option[CellType],
     props: Parameters)
-  (implicit sc: SparkContext): (Int, RasterRDD[K]) = {
+  (implicit sc: SparkContext): (Int, RDD[(K, Tile)] with Metadata[RasterMetaData]) = {
 
     val sourceTiles = source(props).reproject(crs).persist(lvl)
     val (zoom, rasterMetaData) = scheme match {
@@ -41,6 +41,6 @@ abstract class IngestInputPlugin[I: IngestKey, K: ClassTag](implicit tiler: Tile
         )
     }
     val tiles = sourceTiles.tile[K](rasterMetaData, NearestNeighbor)
-    zoom -> new RasterRDD[K](tiles, rasterMetaData)
+    zoom -> ContextRDD(tiles, rasterMetaData)
   }
 }

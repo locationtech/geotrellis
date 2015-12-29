@@ -82,6 +82,9 @@ package object spark {
       new ContextRDD(f(rdd), rdd.metadata)
   }
 
+  implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
+    ContextRDD(tup._1, tup._2)
+
   implicit class TileRDDWrapper[K](val rdd: RDD[(K, Tile)] with Metadata[RasterMetaData])(implicit val keyClassTag: ClassTag[K]) extends BaseRasterRDDMethods[K]
 
   implicit class SpatialTileRDDWrapper(val rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]) extends SpatialRasterRDDMethods
