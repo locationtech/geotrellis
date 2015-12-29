@@ -6,47 +6,29 @@ import geotrellis.vector.Extent
 import spire.syntax.cfor._
 
 /**
-  * Takes the average value of the tile and interpolates all points to that.
+  * Takes the average value for all cells within the index boundaries provided by
+  * inheritance from AggregateResample
   */
-class AverageResample(tile: Tile, extent: Extent)
-    extends Resample(tile, extent) {
+class AverageResample(tile: Tile, extent: Extent, targetCS: CellSize)
+    extends AggregateResample(tile, extent, targetCS) {
 
-  private val RoundingScale = 5
-
-  private lazy val average = calculateAverage(NODATA, tile.get).round.toInt
-
-  private lazy val averageDouble = calculateAverage(Double.NaN, tile.getDouble)
-
-  /**
-    * Calculates the mean/average of the tile.
-    * Uses this algorithm to avoid overflow:
-    * http://www.heikohoffmann.de/htmlthesis/node134.html
-    *
-    */
-  private def calculateAverage(nodata: Double, f: (Int, Int) => Double) = {
-    var avg = 0.0
-    var t = 1
-
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        val c = f(col, row)
-        if (nodata != c && !c.isNaN) {
-          avg += (c - avg) / t
-          t += 1
-        }
+  private def calculateAverage(indices: Seq[(Int, Int)]): Double = {
+    val (sum, count) =
+      indices.foldLeft((0.0, 0)) { case ((sum, count), coords) =>
+        val v = tile.getDouble(coords._1, coords._2)
+        if (isData(v)) (sum + v, count + 1)
+        else (sum, count)
       }
-    }
-
-    if (t != 1)
-      BigDecimal(avg)
-        .setScale(RoundingScale, BigDecimal.RoundingMode.HALF_UP)
-        .toDouble
-    else
-      nodata
+    if (count > 0) (sum / count) else Double.NaN
   }
 
-  override def resampleValid(x: Double, y: Double): Int = average
+  def resampleValid(x: Double, y: Double): Int = {
+    val doubleAvg = calculateAverage(contributions(x, y))
+    if (isData(doubleAvg)) doubleAvg.toInt else Int.MinValue
+  }
 
-  override def resampleDoubleValid(x: Double, y: Double): Double = averageDouble
+  def resampleDoubleValid(x: Double, y: Double): Double = {
+    calculateAverage(contributions(x, y))
+  }
 
 }

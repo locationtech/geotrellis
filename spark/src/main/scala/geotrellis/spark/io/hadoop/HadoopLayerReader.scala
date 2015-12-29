@@ -55,37 +55,29 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 }
 
 object HadoopLayerReader {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    attributeStore: HadoopAttributeStore,
-    rddReader: HadoopRDDReader[K, V])
-  (implicit sc: SparkContext) =
+  def apply[
+    K: Boundable: JsonFormat: ClassTag,
+    V: ClassTag,
+    M: JsonFormat
+  ](attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
     new HadoopLayerReader[K, V, M](attributeStore, rddReader)
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    rootPath: Path)
-  (implicit
-    sc: SparkContext,
-    format: HadoopFormat[K, V],
-    cons: Bridge[(RDD[(K, V)], M), C]): HadoopLayerReader[K, V, M, C] =
+  def apply[
+    K: Boundable: JsonFormat: ClassTag,
+    V: ClassTag,
+    M: JsonFormat
+  ](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M] =
     apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
-  def spatial(rootPath: Path)
-    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
-    new HadoopLayerReader[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](
-      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpatialKey, Tile](HadoopCatalogConfig.DEFAULT))
+  def spatial(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData](rootPath)
 
-  def spatialMultiBand(rootPath: Path)
-    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
-    new HadoopLayerReader[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](
-      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpatialKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
+  def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
 
-  def spaceTime(rootPath: Path)
-    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
-    new HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](
-      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpaceTimeKey, Tile](HadoopCatalogConfig.DEFAULT))
+  def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
 
-  def spaceTimeMultiBand(rootPath: Path)
-    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
-    new HadoopLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](
-      HadoopAttributeStore.default(rootPath), new HadoopRDDReader[SpaceTimeKey, MultiBandTile](HadoopCatalogConfig.DEFAULT))
+  def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
 }

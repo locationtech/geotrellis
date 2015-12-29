@@ -11,13 +11,11 @@ class ResampleSpec extends FunSpec with Matchers {
 
   val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
   val extent = Extent(1, 1, 2, 2)
+  val cellSize = CellSize(extent, 1, 2)
 
-  val resamp = new Resample(tile, extent) {
-
+  val resamp = new AggregateResample(tile, extent, cellSize) {
     protected def resampleValid(x: Double, y: Double): Int = B
-
     protected def resampleDoubleValid(x: Double, y: Double): Double = B
-
   }
 
   describe("when point outside extent it should return nodata") {
@@ -33,7 +31,6 @@ class ResampleSpec extends FunSpec with Matchers {
       assert(resamp.resampleDouble(2.01, 1.01).isNaN)
       assert(resamp.resampleDouble(1.01, 2.01).isNaN)
     }
-
   }
 
   describe("when point inside extent it should return interpolation value") {
@@ -51,7 +48,5 @@ class ResampleSpec extends FunSpec with Matchers {
       resamp.resample(1.99, 1.01) should be (B)
       resamp.resample(1.99, 1.99) should be (B)
     }
-
   }
-
 }

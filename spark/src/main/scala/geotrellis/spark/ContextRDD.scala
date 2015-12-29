@@ -1,7 +1,6 @@
 package geotrellis.spark
 
 import geotrellis.raster._
-import geotrellis.spark.io.Bridge
 import org.apache.spark.SparkContext._
 import org.apache.spark._
 import org.apache.spark.rdd._
