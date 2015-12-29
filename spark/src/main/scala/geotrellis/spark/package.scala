@@ -85,9 +85,21 @@ package object spark {
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
     ContextRDD(tup._1, tup._2)
 
-  implicit class TileRDDWrapper[K](val rdd: RDD[(K, Tile)] with Metadata[RasterMetaData])(implicit val keyClassTag: ClassTag[K]) extends BaseRasterRDDMethods[K]
+  implicit class withTileRDDMethods[K: ClassTag, M](rdd: RDD[(K, Tile)] with Metadata[M])
+    extends ContextRDDMethods[K, Tile, M](rdd)
 
-  implicit class SpatialTileRDDWrapper(val rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]) extends SpatialRasterRDDMethods
+  implicit class withRasterRDDMethods[K](rdd: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends ContextRDDMethods[K, Tile, RasterMetaData](rdd) with BaseRasterRDDMethods[K] {
+    val rasterRDD = rdd
+  }
+
+  implicit class withSpatialRasterRDDMethods(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
+
+  implicit class withMultiBandTileRDDMethods[K: ClassTag, M](rdd: RDD[(K, MultiBandTile)] with Metadata[M])
+    extends ContextRDDMethods[K, MultiBandTile, M](rdd)
+
+  implicit class withMultiBandRasterRDDMethods[K](rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends ContextRDDMethods[K, MultiBandTile, RasterMetaData](rdd) with BaseMultiBandRasterRDDMethods[K]
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {
@@ -95,8 +107,8 @@ package object spark {
     def tile: Tile = tup._2
   }
 
-  implicit class RDDTraversableExtensions[K: ClassTag, V, M](rs: Traversable[RDD[(K, Tile)] with Metadata[RasterMetaData]]) {
-    def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RDD[(K, Tile)] with Metadata[RasterMetaData] =
+  implicit class RDDTraversableExtensions[K: ClassTag, V, M](rs: Traversable[RDD[(K, Tile)] with Metadata[M]]) {
+    def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RDD[(K, Tile)] with Metadata[M] =
       rs.head.combinePairs(rs.tail)(f)
   }
 }
