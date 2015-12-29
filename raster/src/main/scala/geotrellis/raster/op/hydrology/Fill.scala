@@ -61,9 +61,9 @@ class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds],
       }
     }
     if(count == totalCount){
-      tile.setDouble(c.col, c.row, sum / totalCount)
+      resultTile.setDouble(c.col, c.row, sum / totalCount)
     } else {
-      tile.setDouble(c.col, c.row, cVal)
+      resultTile.setDouble(c.col, c.row, cVal)
     }
   }
 }
@@ -90,9 +90,9 @@ class CursorFillCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], thres
     }
 
     if(count == totalCount){
-      tile.set(c.col, c.row, sum / totalCount)
+      resultTile.set(c.col, c.row, sum / totalCount)
     } else {
-      tile.set(c.col, c.row, cVal)
+      resultTile.set(c.col, c.row, cVal)
     }
   }
 }

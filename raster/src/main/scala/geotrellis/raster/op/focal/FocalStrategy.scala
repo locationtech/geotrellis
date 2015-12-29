@@ -22,12 +22,13 @@ import geotrellis._
 import geotrellis.raster._
 
 sealed trait TraversalStrategy
+case object ZigZagTraversalStrategy extends TraversalStrategy
+case object ScanLineTraversalStrategy extends TraversalStrategy
+case object SpiralZagTraversalStrategy extends TraversalStrategy
+
 object TraversalStrategy {
-  val ZigZag = new TraversalStrategy { }
-  val ScanLine = new TraversalStrategy { }
-  val SpiralZag = new TraversalStrategy { }
+  def DEFAULT: TraversalStrategy = ZigZagTraversalStrategy
 }
-import TraversalStrategy._
 
 /**
  * Focal strategy which moves a Cursor across the raster,
@@ -37,33 +38,28 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(tile: Tile,
-              n: Neighborhood,
-              c: CursorCalculation[_],
-              tOpt: Option[TraversalStrategy],
-              analysisArea: GridBounds): Unit = {
-    val strat = tOpt match {
-      case None => ZigZag
-      case Some(tStrategy) => tStrategy
-    }
-
-    val cursor = Cursor(tile, n, analysisArea)
-    execute(tile, cursor, c, strat, analysisArea)
+  def execute[C <: Cursor](
+    cursor: Cursor,
+    calc: () => Unit,
+    analysisArea: GridBounds
+  ): Unit = {
+    execute(cursor, calc, analysisArea, TraversalStrategy.DEFAULT)
   }
 
-  def execute(r:Tile,
-              cursor:Cursor,
-              c:CursorCalculation[_],
-              t:TraversalStrategy,
-              analysisArea:GridBounds): Unit = {
-    t match {
-      case ScanLine => handleScanLine(r, analysisArea, cursor,c)
-      case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
-      case _ => handleZigZag(r,analysisArea,cursor,c)
+  def execute(
+    cursor: Cursor,
+    calc: () => Unit,
+    analysisArea: GridBounds,
+    traversalStrategy: TraversalStrategy
+  ): Unit = {
+    traversalStrategy match {
+      case ZigZagTraversalStrategy => handleZigZag(analysisArea, cursor, calc)
+      case ScanLineTraversalStrategy => handleScanLine(analysisArea, cursor, calc)
+      case SpiralZagTraversalStrategy => handleSpiralZag(analysisArea, cursor, calc)
     }
   }
   
-  private def handleSpiralZag(r:Tile,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleSpiralZag(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
     var colMax = analysisArea.colMax
     var rowMax = analysisArea.rowMax
     var colMin = analysisArea.colMin
@@ -77,7 +73,7 @@ object CursorStrategy {
     var done = false
     var zagTime = false
 
-    cursor.centerOn(col,row)
+    cursor.centerOn(col, row)
     
     // Spiral around the raster.
     // Once we get down with dealing with borders,
@@ -85,29 +81,29 @@ object CursorStrategy {
     while(!(done || zagTime)) {
       //Move right across top
       while(col < colMax) {
-        c.calc(r,cursor)
+        calc()
         cursor.move(Movement.Right)
         col += 1
       }
       // Move down along right edge
       while(row < rowMax) {
-        c.calc(r,cursor)
+        calc()
         cursor.move(Movement.Down)
         row += 1
       }
       //Move left across bottom
       while(col > colMin) {
-        c.calc(r,cursor)
+        calc()
         cursor.move(Movement.Left)
         col -= 1
       }
       // Move up along left edge
-      while(row > rowMin+1) {
-        c.calc(r,cursor)
+      while(row > rowMin + 1) {
+        calc()
         cursor.move(Movement.Up)
         row -= 1
       }
-      c.calc(r,cursor)
+      calc()
       rowMin += 1
       rowMax -= 1
       colMin += 1
@@ -128,7 +124,7 @@ object CursorStrategy {
 
     // Now zig zag across interior.
     while(row <= rowMax) {
-      c.calc(r,cursor)
+      calc()
       col += direction
       if(col < colMin || colMax < col) {
         direction *= -1
@@ -142,7 +138,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(r:Tile,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleZigZag(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -156,7 +152,7 @@ object CursorStrategy {
     cursor.centerOn(col, row)
 
     while(row <= rowMax) {
-      c.calc(r,cursor)
+      calc()
       col += direction
       if(col < colMin || colMax < col) {
         direction *= -1
@@ -170,7 +166,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(r:Tile,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleScanLine(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -182,12 +178,12 @@ object CursorStrategy {
     cursor.centerOn(col, row)
 
     while(row <= rowMax) {
-      c.calc(r,cursor)
+      calc()
       col += 1
       if(colMax < col) {
         row += 1
         col = colMin
-        cursor.centerOn(col,row)
+        cursor.centerOn(col, row)
       } else {
         cursor.move(Movement.Right)
       }
@@ -201,25 +197,10 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r:Tile, 
-              n:Square,
-              c:CellwiseCalculation[_], 
-              tOpt:Option[TraversalStrategy],
-              analysisArea: GridBounds):Unit = {
-    val strat = tOpt match {
-      case None => ScanLine
-      case Some(tStrategy) => tStrategy
-    }
-    execute(r, n ,c , strat, analysisArea)
-  }
+  def execute(r: Tile, n: Square, calc: CellwiseCalculation[_], analysisArea: GridBounds): Unit =
+    handleScanLine(r, n.extent, calc, analysisArea)
 
-  def execute(r:Tile,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
-    t match {
-      case _ => handleScanLine(r,n.extent,calc,analysisArea)
-    }
-  }
-
-  private def handleScanLine(r:Tile,n:Int, calc:CellwiseCalculation[_], analysisArea:GridBounds) = {
+  private def handleScanLine(r: Tile, n: Int, calc: CellwiseCalculation[_], analysisArea: GridBounds) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax

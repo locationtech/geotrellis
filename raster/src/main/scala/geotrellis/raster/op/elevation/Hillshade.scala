@@ -42,7 +42,7 @@ object Hillshade {
 
         val c = cosAz * s.cosAspect + sinAz * s.sinAspect // cos(azimuth - aspect)
         val v = (cosZ * s.cosSlope) + (sinZ * s.sinSlope * c)
-        tile.set(x, y, round(127.0 * max(0.0, v)).toInt)
+        resultTile.set(x, y, round(127.0 * max(0.0, v)).toInt)
       }
     }
   }.execute()

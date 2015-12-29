@@ -23,7 +23,7 @@ object Conway {
         }
       }
 
-      def setValue(x: Int, y: Int) = tile.set(x, y, if(count == 3 || count == 2) 1 else NODATA)
+      def setValue(x: Int, y: Int) = resultTile.set(x, y, if(count == 3 || count == 2) 1 else NODATA)
       def reset() = { count = 0 }
     }
   }

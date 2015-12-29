@@ -24,7 +24,7 @@ object Min {
               m = v
             }
           }
-          tile.setDouble(cursor.col, cursor.row, m)
+          resultTile.setDouble(cursor.col, cursor.row, m)
         }
       }
 
@@ -35,10 +35,11 @@ object Min {
         def calc(r: Tile, cursor: Cursor) = {
           var m = NODATA
           cursor.allCells.foreach { (col, row) =>
-              val v = r.get(col, row)
-              if(isData(v) && (v < m || isNoData(m))) { m = v }
+            val v = r.get(col, row)
+            if(isData(v) && (v < m || isNoData(m))) { m = v }
           }
-          tile.set(cursor.col, cursor.row, m)
+
+          resultTile.set(cursor.col, cursor.row, m)
         }
       }
   }

@@ -48,7 +48,7 @@ object TileMoransICalculation {
           }
         }
 
-        tile.setDouble(cursor.col, cursor.row, (base / `stddev^2` * z) / w)
+        resultTile.setDouble(cursor.col, cursor.row, (base / `stddev^2` * z) / w)
       }
     }
   }.execute()
