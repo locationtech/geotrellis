@@ -61,7 +61,8 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
 abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds]) 
     extends FocalCalculation[T](tile, kernel, analysisArea)
 {
-  def traversalStrategy = ScanLineTraversalStrategy//TraversalStrategy.DEFAULT
+  // Benchmarking has declared ScanLineTraversalStrategy the unclear winner as a default (based on Convolve).
+  def traversalStrategy = ScanLineTraversalStrategy
 
   def execute(): T = {
     val cursor = new KernelCursor(tile, kernel, bounds)

@@ -6,8 +6,9 @@ import spire.syntax.cfor._
 /**
  * Computes the convolution of a raster with a kernel.
  *
- * @param      r       Tile to convolve.
- * @param      k       Kernel that represents the convolution filter.
+ * @param      tile         Tile to convolve.
+ * @param      kernel       Kernel that represents the convolution filter.
+ * @param      bounds       Optionla bounds of the analysis area that we are convolving.
  */
 object Convolve {
   def calculation(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None): KernelCalculation[Tile] = {
