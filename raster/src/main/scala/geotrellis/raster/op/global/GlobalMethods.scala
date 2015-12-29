@@ -4,9 +4,6 @@ import geotrellis.raster._
 import geotrellis.vector._
 
 trait GlobalMethods extends TileMethods {
-  def convolve(kernel: Kernel): Tile =
-    Convolve(tile, kernel)
-
   def costDistance(points: Seq[(Int, Int)]): Tile =
     CostDistance(tile, points)
 

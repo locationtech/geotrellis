@@ -32,7 +32,7 @@ object Aspect {
     {
       //init(r)
       def setValue(x: Int, y: Int, s: SurfacePoint) {
-        tile.setDouble(x, y, degrees(s.aspect))
+        resultTile.setDouble(x, y, degrees(s.aspect))
       }
     }
   }.execute()

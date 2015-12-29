@@ -147,6 +147,23 @@ class MinSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
       assertEqual(input.focalMin(Circle(1)), createTile(expected, 9, 4))
     }
 
+    it("circle min with grid bounds"){
+      val tile = createTile(Array(
+        nd,     9,     6,     2,     2,
+        nd,     3,     8,     4,     3,
+        nd,     2,     9,     7,     4,
+        nd,    nd,    nd,    nd,    nd
+      ), 5, 4)
+
+      val expected = createTile(Array(
+        2, 3, 2,
+        2, 2, 4
+      ), 3, 2)
+
+
+      assertEqual(tile.focalMin(Circle(1), Some(GridBounds(1,1,3,2))), expected)
+    }
+
   }
 
 

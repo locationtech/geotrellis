@@ -38,23 +38,21 @@ class FocalStrategySpec extends FunSpec with Matchers {
       var lastY = 0
       var lastX = -1
 
-      val calc = new CursorCalculation[Int](r, Square(1), None) {
-        def result = 0
-        def calc(r: Tile, cursor: Cursor) = {
-          if(cursor.row != 0 || cursor.col != 0 ) { cursor.isReset should equal(false) }
-          if(lastY != cursor.row) {
-            cursor.row should be > lastY
-            cursor.col should equal(lastX)
-            lastY = cursor.row
-          } else {
-            if(cursor.row % 2 == 0) { (cursor.col - lastX) should equal (1) }
-            else { (cursor.col - lastX) should equal (-1) }
-          }
-          lastX = cursor.col
+
+      def calc(r: Tile, cursor: Cursor) = {
+        if(cursor.row != 0 || cursor.col != 0 ) { cursor.isReset should equal(false) }
+        if(lastY != cursor.row) {
+          cursor.row should be > lastY
+          cursor.col should equal(lastX)
+          lastY = cursor.row
+        } else {
+          if(cursor.row % 2 == 0) { (cursor.col - lastX) should equal (1) }
+          else { (cursor.col - lastX) should equal (-1) }
         }
+        lastX = cursor.col
       }
 
-      CursorStrategy.execute(r, cur, calc, TraversalStrategy.ZigZag, GridBounds(r))
+      CursorStrategy.execute(cur, { () => calc(r, cur) }, GridBounds(r), ZigZagTraversalStrategy)
     }
 
     it("should execute the ScanLine traversal strategy correctly") {
@@ -69,22 +67,19 @@ class FocalStrategySpec extends FunSpec with Matchers {
       var lastY = -1
       var lastX = 0
 
-      val calc = new CursorCalculation[Int](r, Square(1), None) {
-        def result = 0
-        def calc(r: Tile, cursor: Cursor) = {
-          if(lastY != cursor.row) {
-            cursor.isReset should equal(true)
-            cursor.row should be > lastY
-            cursor.col should equal(0)
-            lastY = cursor.row
-          } else {
-            cursor.col should be  > lastX
-          }
-          lastX = cursor.col
+      def calc(r: Tile, cursor: Cursor) = {
+        if(lastY != cursor.row) {
+          cursor.isReset should equal(true)
+          cursor.row should be > lastY
+          cursor.col should equal(0)
+          lastY = cursor.row
+        } else {
+          cursor.col should be  > lastX
         }
+        lastX = cursor.col
       }
 
-      CursorStrategy.execute(r, cur, calc, TraversalStrategy.ScanLine, GridBounds(r))
+      CursorStrategy.execute(cur, { () => calc(r, cur) }, GridBounds(r), ScanLineTraversalStrategy)
     }
   }
 }
