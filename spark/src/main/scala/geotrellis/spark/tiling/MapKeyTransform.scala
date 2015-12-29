@@ -7,6 +7,9 @@ import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 object MapKeyTransform {
+  def apply(crs: CRS, level: LayoutLevel): MapKeyTransform =
+    apply(crs.worldExtent, level.layout.layoutCols, level.layout.layoutRows)
+
   def apply(crs: CRS, layoutDimensions: (Int, Int)): MapKeyTransform =
     apply(crs.worldExtent, layoutDimensions)
 

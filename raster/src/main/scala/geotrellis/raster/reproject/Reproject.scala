@@ -22,12 +22,12 @@ object Reproject {
       val cellheight = re.cellheight
 
       val transform = Transform(src, dest)
+      val inverseTransform = Transform(dest, src)
+
       val newRe @ RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) =
         ReprojectRasterExtent(re, transform)
 
       val newTile = ArrayTile.empty(tile.cellType, newCols, newRows)
-
-      val inverseTransform = Transform(dest, src)
 
       val rowTransform: RowTransform =
         if (options.errorThreshold != 0.0)
@@ -46,13 +46,14 @@ object Reproject {
 
       val destY = Array.ofDim[Double](newCols).fill(topLeftY)
 
-      
+
       // The map coordinates of the source raster, transformed from the
       // destination map coordinates on each row iteration
       val srcX = Array.ofDim[Double](newCols)
       val srcY = Array.ofDim[Double](newCols)
 
-      val resampler = Resample(options.method, tile, extent)
+      val targetCS = CellSize(extent, newRe.cols, newRe.rows)
+      val resampler = Resample(options.method, tile, extent, targetCS)
 
       if(tile.cellType.isFloatingPoint) {
         val resample = resampler.resampleDouble _

@@ -4,13 +4,14 @@ import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
 import geotrellis.raster.Tile
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 
 abstract class S3SpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
           with TestSparkContext
           with TestEnvironment with TestFiles
           with AllOnesTestTileTests {
@@ -32,9 +33,26 @@ abstract class S3SpatialSpec
       client
     }
   }
-  lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore, rddReader, None)
-  lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore, rddWriter, true)
+  lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData, Container](attributeStore, rddReader, None)
+  lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData, Container](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
+  lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData, Container](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val reindexer = {
+    val copier = new SparkLayerCopier[S3LayerHeader, SpatialKey, Tile, RasterMetaData, Container](
+      attributeStore = attributeStore,
+      layerReader    = reader,
+      layerWriter    = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](
+        attributeStore, rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true
+      )
+    ) {
+      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
+        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
+    }
+
+    val mover = GenericLayerMover(copier, deleter)
+    GenericLayerReindexer(deleter, copier, mover)
+  }
+  lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles = new S3TileReader[SpatialKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client()
   }
@@ -42,13 +60,13 @@ abstract class S3SpatialSpec
 }
 
 class S3SpatialRowMajorSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialZCurveSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialHilbertSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterRDD[SpatialKey]](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, Container](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
 }

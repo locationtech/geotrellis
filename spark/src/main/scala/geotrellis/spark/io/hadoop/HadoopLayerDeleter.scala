@@ -7,8 +7,7 @@ import org.apache.hadoop.fs.Path
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
-class HadoopLayerDeleter
-  (attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[LayerId] {
+class HadoopLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, _, _, _, _) = try {

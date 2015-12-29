@@ -21,7 +21,7 @@ object FocalOperation {
       (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
     val bounds = opBounds.getOrElse(GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
-    val m: Int = neighborhood.extent // how many pixels we need for the margin        
+    val m: Int = neighborhood.extent // how many pixels we need for the margin
     
     rdd
       .flatMap { case record @ (key, tile) =>
@@ -36,10 +36,10 @@ object FocalOperation {
         // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
         def addSlice(spatialKey: SpatialKey, direction: => Direction, sliver: => Tile) {
           if (bounds.contains(spatialKey.col, spatialKey.row))
-            slivers += key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop                    
+            slivers += key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop
         }
 
-        // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window        
+        // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window
         addSlice(SpatialKey(col,row), Center, tile)
       
         addSlice(SpatialKey(col-1, row), Left, tile.crop(0, 0, mm, rows))

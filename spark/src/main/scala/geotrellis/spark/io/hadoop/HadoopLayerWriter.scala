@@ -1,5 +1,6 @@
 package geotrellis.spark.io.hadoop
 
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
@@ -7,20 +8,21 @@ import geotrellis.spark.io._
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
-class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
+class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
   rootPath: Path,
   val attributeStore: AttributeStore[JsonFormat],
   rddWriter: HadoopRDDWriter[K, V],
   keyIndexMethod: KeyIndexMethod[K])
-(implicit val cons: ContainerConstructor[K, V, Container])
-  extends Writer[LayerId, Container with RDD[(K, V)]] {
+(implicit bridge: Bridge[(RDD[(K, V)], M), C])
+  extends Writer[LayerId, C] {
 
-  def write(id: LayerId, rdd: Container with RDD[(K, V)]): Unit = {
+  def write(id: LayerId, rdd: C): Unit = {
     implicit val sc = rdd.sparkContext
 
     val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
@@ -31,12 +33,11 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
         valueClass = classTag[V].toString(),
         path = layerPath
       )
-    val metaData = cons.getMetaData(rdd)
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd.asInstanceOf[RDD[(K, V)]])
+    val (_, metaData) = bridge.unapply(rdd)
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     try {
-      implicit val mdFormat = cons.metaDataFormat
       attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
       // TODO: Writers need to handle Schema changes
 
@@ -48,39 +49,55 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Contain
 }
 
 object HadoopLayerWriter {
-
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     rootPath: Path,
     attributeStore: HadoopAttributeStore,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
-    new HadoopLayerWriter (
+  (implicit bridge: Bridge[(RDD[(K, V)], M), C]): HadoopLayerWriter[K, V, M, C] =
+    new HadoopLayerWriter[K, V, M, C](
       rootPath = rootPath,
       attributeStore = attributeStore,
       rddWriter = rddWriter,
       keyIndexMethod = indexMethod
     )
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     rootPath: Path,
     rddWriter: HadoopRDDWriter[K, V],
     indexMethod: KeyIndexMethod[K])
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
+  (implicit cons: Bridge[(RDD[(K, V)], M), C]): HadoopLayerWriter[K, V, M, C] =
     apply(
       rootPath = rootPath,
-      attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration),
+      attributeStore = HadoopAttributeStore.default(rootPath),
       rddWriter = rddWriter,
       indexMethod = indexMethod)
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container[_]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
     rootPath: Path,
     indexMethod: KeyIndexMethod[K])
   (implicit
     format: HadoopFormat[K, V],
-    cons: ContainerConstructor[K, V, Container[K]]): HadoopLayerWriter[K, V, Container[K]] =
+    cons: Bridge[(RDD[(K, V)], M), C]): HadoopLayerWriter[K, V, M, C] =
     apply(
       rootPath = rootPath,
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),
       indexMethod = indexMethod)
+
+  def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, Tile)], RasterMetaData), RasterRDD[SpatialKey]]) =
+    apply[SpatialKey, Tile, RasterMetaData, RasterRDD[SpatialKey]](rootPath, keyIndexMethod)
+
+  def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpatialKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpatialKey]]) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpatialKey]](rootPath, keyIndexMethod)
+
+  def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, Tile)], RasterMetaData), RasterRDD[SpaceTimeKey]]) =
+    apply[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](rootPath, keyIndexMethod)
+
+  def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])
+    (implicit sc: SparkContext, bridge: Bridge[(RDD[(SpaceTimeKey, MultiBandTile)], RasterMetaData), MultiBandRasterRDD[SpaceTimeKey]]) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, MultiBandRasterRDD[SpaceTimeKey]](rootPath, keyIndexMethod)
+
 }
