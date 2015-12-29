@@ -27,7 +27,7 @@ object Reproject {
   def apply[K: SpatialComponent: ClassTag](
       rdd: RasterRDD[K],
       destCRS: CRS,
-      options: ReprojectOptions): RasterRDD[K] = {
+      options: ReprojectOptions)(implicit d: DummyImplicit): RasterRDD[K] = {
 
     val crs = rdd.metaData.crs
     val mapTransform = rdd.metaData.layout.mapTransform
@@ -48,7 +48,7 @@ object Reproject {
       Tiler(getExtent, createKey)
     }
 
-    new RasterRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
+    new ContextRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
   }
 
   def apply[K: SpatialComponent: ClassTag](
@@ -56,8 +56,8 @@ object Reproject {
       destCRS: CRS,
       options: ReprojectOptions): MultiBandRasterRDD[K] = {
 
-    val crs = rdd.metaData.crs
-    val mapTransform = rdd.metaData.layout.mapTransform
+    val crs = rdd.metadata.crs
+    val mapTransform = rdd.metadata.layout.mapTransform
 
     val reprojectedTiles =
       rdd.map { case (key, tile) =>
@@ -67,7 +67,7 @@ object Reproject {
       }
 
     val metadata =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metaData.layout) { key => key._2 }
+      RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metadata.layout) { key => key._2 }
 
     val tiler: Tiler[(K, Extent), K, MultiBandTile] = {
       val getExtent = (inKey: (K, Extent)) => inKey._2
@@ -75,7 +75,7 @@ object Reproject {
       Tiler(getExtent, createKey) _
     }
 
-    new MultiBandRasterRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
+    new ContextRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
   }
 
   def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] =
@@ -84,6 +84,6 @@ object Reproject {
   def apply[T: IngestKey, TileType: ReprojectView](rdd: RDD[(T, TileType)], destCRS: CRS): RDD[(T, TileType)] =
     apply(rdd, destCRS, ReprojectOptions.DEFAULT)
 
-  def apply[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], destCRS: CRS): MultiBandRasterRDD[K] =
+  def apply[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], destCRS: CRS)(implicit d: DummyImplicit): MultiBandRasterRDD[K] =
     apply(rdd, destCRS, ReprojectOptions.DEFAULT)
 }

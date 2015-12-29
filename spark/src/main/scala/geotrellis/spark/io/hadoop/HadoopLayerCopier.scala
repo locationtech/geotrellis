@@ -16,9 +16,9 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
    rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]) extends LayerCopier[LayerId] {
+  (implicit sc: SparkContext) extends LayerCopier[LayerId] {
 
   def copy(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
@@ -38,13 +38,12 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <
 }
 
 object HadoopLayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): HadoopLayerCopier[K, V, M, C] =
-    new HadoopLayerCopier[K, V, M, C](rootPath, attributeStore)
+  (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
+    new HadoopLayerCopier[K, V, M](rootPath, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
-    rootPath: Path)
-   (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): HadoopLayerCopier[K, V, M, C] =
-    apply[K, V, M, C](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)
+    (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
+    apply[K, V, M](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }

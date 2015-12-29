@@ -10,13 +10,12 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V])
-  (implicit val cons: Bridge[(RDD[(K, V)], M), C])
-  extends LayerUpdater[LayerId, K, V, M, C] {
+  extends LayerUpdater[LayerId, K, V, M] {
 
-  def update(id: LayerId, rdd: C) = {
+  def update(id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
@@ -50,11 +49,10 @@ object AccumuloLayerUpdater {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
+  V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (instance: AccumuloInstance,
-   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-  (implicit cons: Bridge[(RDD[(K, V)], M), C]): AccumuloLayerUpdater[K, V, M, C] =
-    new AccumuloLayerUpdater[K, V, M, C](
+   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M] =
+    new AccumuloLayerUpdater[K, V, M](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
     )

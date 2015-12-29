@@ -58,9 +58,7 @@ trait RasterRDDBuilders {
       }
 
 
-    asRasterRDD(metaData) {
-      sc.parallelize(tmsTiles)
-    }
+    new ContextRDD(sc.parallelize(tmsTiles), metaData)
   }
 
   def createSpaceTimeRasterRDD(
@@ -109,8 +107,7 @@ trait RasterRDDBuilders {
           (SpaceTimeKey(col, row, time), subTile)
         }
     }
-    asRasterRDD(metaData) {
-      sc.parallelize(tmsTiles)
-    }
+
+    new ContextRDD(sc.parallelize(tmsTiles), metaData)
   }
 }

@@ -20,8 +20,8 @@ trait StatsRasterRDDMethods[K] extends RasterRDDMethods[K] {
       val (tile2, count2) = tup2
       tile1 + tile2 -> (count1 + count2)
     }
-    asRasterRDD(rasterRDD.metaData) {
-      rasterRDD
+    rasterRDD.withContext { rdd =>
+      rdd
         .combineByKey(createCombiner, mergeValue, mergeCombiners)
         .mapValues { case (tile, count) => tile / count}
     }

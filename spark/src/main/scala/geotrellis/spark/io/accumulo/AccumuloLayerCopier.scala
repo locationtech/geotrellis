@@ -12,14 +12,13 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerCopier {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
    instance   : AccumuloInstance,
-   layerReader: AccumuloLayerReader[K, V, M, C],
-   layerWriter: AccumuloLayerWriter[K, V, M, C])
-  (implicit sc: SparkContext,
-    bridge: Bridge[(RDD[(K, V)], M), C]): SparkLayerCopier[AccumuloLayerHeader, K, V, M, C] = {
+   layerReader: AccumuloLayerReader[K, V, M],
+   layerWriter: AccumuloLayerWriter[K, V, M]
+  )(implicit sc: SparkContext): SparkLayerCopier[AccumuloLayerHeader, K, V, M] = {
     val writerAttributeStore = layerWriter.attributeStore
-    new SparkLayerCopier[AccumuloLayerHeader, K, V, M, C](
+    new SparkLayerCopier[AccumuloLayerHeader, K, V, M](
       attributeStore = AccumuloAttributeStore(instance.connector),
       layerReader    = layerReader,
       layerWriter    = layerWriter
@@ -31,26 +30,26 @@ object AccumuloLayerCopier {
     }
   }
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]]
-  (attributeStore: AttributeStore[JsonFormat],
-   layerReader: AccumuloLayerReader[K, V, M, C],
-   layerWriter: AccumuloLayerWriter[K, V, M, C])
-  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): SparkLayerCopier[AccumuloLayerHeader, K, V, M, C] =
-    apply[K, V, M, C](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    attributeStore: AttributeStore[JsonFormat],
+    layerReader: AccumuloLayerReader[K, V, M],
+    layerWriter: AccumuloLayerWriter[K, V, M]
+  )(implicit sc: SparkContext): SparkLayerCopier[AccumuloLayerHeader, K, V, M] =
+    apply[K, V, M](
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
     )
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
    instance: AccumuloInstance,
    table: String,
    indexMethod: KeyIndexMethod[K],
-   strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-  (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): SparkLayerCopier[AccumuloLayerHeader, K, V, M, C] =
-    apply[K, V, M, C](
+   strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy
+  )(implicit sc: SparkContext): SparkLayerCopier[AccumuloLayerHeader, K, V, M] =
+    apply[K, V, M](
       instance    = instance,
-      layerReader = AccumuloLayerReader[K, V, M, C](instance),
-      layerWriter = AccumuloLayerWriter[K, V, M, C](instance, table, indexMethod, strategy)
+      layerReader = AccumuloLayerReader[K, V, M](instance),
+      layerWriter = AccumuloLayerWriter[K, V, M](instance, table, indexMethod, strategy)
     )
 }
