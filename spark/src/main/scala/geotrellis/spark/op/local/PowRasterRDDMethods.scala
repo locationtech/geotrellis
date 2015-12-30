@@ -5,27 +5,23 @@ import geotrellis.raster.op.local.Pow
 
 trait PowRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Pow each value of the raster by a constant value.*/
-  def localPow(i: Int): RasterRDD[K] = rasterRDD.mapPairs {
-    case (t, r) => (t, Pow(r, i))
-  }
+  def localPow(i: Int): RasterRDD[K] =
+    rasterRDD.mapValues { r => Pow(r, i) }
   /** Pow each value of the raster by a constant value.*/
   def **(i:Int): RasterRDD[K] = localPow(i)
   /** Pow a constant value by each cell value.*/
-  def localPowValue(i: Int): RasterRDD[K] = rasterRDD.mapPairs {
-    case (t, r) => (t, Pow(i, r))
-  }
+  def localPowValue(i: Int): RasterRDD[K] =
+    rasterRDD.mapValues { r => Pow(i, r) }
   /** Pow a constant value by each cell value.*/
   def **:(i:Int): RasterRDD[K] = localPowValue(i)
   /** Pow each value of a raster by a double constant value.*/
-  def localPow(d: Double): RasterRDD[K] = rasterRDD.mapPairs {
-    case (t, r) => (t, Pow(r, d))
-  }
+  def localPow(d: Double): RasterRDD[K] =
+    rasterRDD.mapValues { r => Pow(r, d) }
   /** Pow each value of a raster by a double constant value.*/
   def **(d:Double): RasterRDD[K] = localPow(d)
   /** Pow a double constant value by each cell value.*/
-  def localPowValue(d: Double): RasterRDD[K] = rasterRDD.mapPairs {
-    case (t, r) => (t, Pow(d, r))
-  }
+  def localPowValue(d: Double): RasterRDD[K] =
+    rasterRDD.mapValues { r => Pow(d, r) }
   /** Pow a double constant value by each cell value.*/
   def **:(d: Double): RasterRDD[K] = localPowValue(d)
   /** Pow the values of each cell in each raster. */

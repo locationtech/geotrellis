@@ -22,14 +22,14 @@ import geotrellis.raster.op.local.Multiply
 trait MultiplyRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Multiply a constant value from each cell.*/
   def localMultiply(i: Int): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Multiply(r, i)) }
+    rasterRDD.mapValues { r => Multiply(r, i) }
   /** Multiply a constant value from each cell.*/
   def *(i: Int): RasterRDD[K] = localMultiply(i)
   /** Multiply a constant value from each cell.*/
   def *:(i: Int): RasterRDD[K] = localMultiply(i)
   /** Multiply a double constant value from each cell.*/
   def localMultiply(d: Double): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Multiply(r, d)) }
+    rasterRDD.mapValues { r => Multiply(r, d) }
   /** Multiply a double constant value from each cell.*/
   def *(d: Double): RasterRDD[K] = localMultiply(d)
   /** Multiply a double constant value from each cell.*/

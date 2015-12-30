@@ -55,41 +55,41 @@ trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
 
   /** Maps an integer typed Tile to 1 if the cell value is not NODATA, otherwise 0. */
   def localDefined(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Defined(r)) }
+    rasterRDD.mapValues { r => Defined(r) }
 
   /** Maps an integer typed Tile to 1 if the cell value is NODATA, otherwise 0. */
   def localUndefined(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Undefined(r)) }
+    rasterRDD.mapValues { r => Undefined(r) }
 
   /** Take the square root each value in a raster. */
   def localSqrt(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Sqrt(r)) }
+    rasterRDD.mapValues { r => Sqrt(r) }
 
   /** Round the values of a Tile. */
   def localRound(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Round(r)) }
+    rasterRDD.mapValues { r => Round(r) }
 
   /** Computes the Log of Tile values. */
   def localLog(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Log(r)) }
+    rasterRDD.mapValues { r => Log(r) }
 
   /** Computes the Log base 10 of Tile values. */
   def localLog10(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Log10(r)) }
+    rasterRDD.mapValues { r => Log10(r) }
 
   /** Takes the Flooring of each raster cell value. */
   def localFloor(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Floor(r)) }
+    rasterRDD.mapValues { r => Floor(r) }
 
   /** Takes the Ceiling of each raster cell value. */
   def localCeil(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Ceil(r)) }
+    rasterRDD.mapValues { r => Ceil(r) }
 
   /**
     * Negate (multiply by -1) each value in a raster.
     */
   def localNegate(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Negate(r)) }
+    rasterRDD.mapValues { r => Negate(r) }
 
   /** Negate (multiply by -1) each value in a raster. */
   def unary_-(): RasterRDD[K] = localNegate()
@@ -101,25 +101,25 @@ trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
     *                     the data values will be rounded to integers.
     */
   def localNot(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Not(r)) }
+    rasterRDD.mapValues { r => Not(r) }
 
   /** Takes the Absolute value of each raster cell value. */
   def localAbs(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Abs(r)) }
+    rasterRDD.mapValues { r => Abs(r) }
 
   /**
     * Takes the arc cos of each raster cell value.
     * @info               Always return a double valued raster.
     */
   def localAcos(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Acos(r)) }
+    rasterRDD.mapValues { r => Acos(r) }
 
   /**
     * Takes the arc sine of each raster cell value.
     * @info               Always return a double valued raster.
     */
   def localAsin(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Asin(r)) }
+    rasterRDD.mapValues { r => Asin(r) }
 
   /** Takes the Arc Tangent2
     *  This raster holds the y - values, and the parameter
@@ -135,43 +135,43 @@ trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
     * @info               Always return a double valued raster.
     */
   def localAtan(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Atan(r)) }
+    rasterRDD.mapValues { r => Atan(r) }
 
   /** Takes the Cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localCos(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Cos(r)) }
+    rasterRDD.mapValues { r => Cos(r) }
 
   /** Takes the hyperbolic cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localCosh(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Cosh(r)) }
+    rasterRDD.mapValues { r => Cosh(r) }
 
   /**
     * Takes the sine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localSin(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Sin(r)) }
+    rasterRDD.mapValues { r => Sin(r) }
 
   /**
     * Takes the hyperbolic sine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localSinh(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Sinh(r)) }
+    rasterRDD.mapValues { r => Sinh(r) }
 
   /** Takes the Tangent of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localTan(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Tan(r)) }
+    rasterRDD.mapValues { r => Tan(r) }
 
   /** Takes the hyperboic cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localTanh(): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Tanh(r)) }
+    rasterRDD.mapValues { r => Tanh(r) }
 }

@@ -5,9 +5,8 @@ import geotrellis.raster.op.local.Xor
 
 trait XorRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Xor a constant Int value to each cell. */
-  def localXor(i: Int): RasterRDD[K] = rasterRDD.mapPairs {
-    case (t, r) => (t, Xor(r, i))
-  }
+  def localXor(i: Int): RasterRDD[K] =
+    rasterRDD.mapValues { r => Xor(r, i) }
   /** Xor a constant Int value to each cell. */
   def ^(i: Int): RasterRDD[K] = localXor(i)
   /** Xor a constant Int value to each cell. */

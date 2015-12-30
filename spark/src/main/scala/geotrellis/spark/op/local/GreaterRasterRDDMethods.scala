@@ -11,9 +11,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreater(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, Greater(r, i))
-      }
+      .mapValues { r => Greater(r, i) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -22,9 +20,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterRightAssociative(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, Greater(i, r))
-      }
+      .mapValues { r => Greater(i, r) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -49,9 +45,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreater(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, Greater(r, d))
-      }
+      .mapValues { r => Greater(r, d) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -60,9 +54,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterRightAssociative(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, Greater(d, r))
-      }
+      .mapValues { r => Greater(d, r) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if

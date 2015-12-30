@@ -5,9 +5,8 @@ import geotrellis.raster.op.local.Or
 
 trait OrRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Or a constant Int value to each cell. */
-  def localOr(i: Int): RasterRDD[K] = rasterRDD.mapPairs {
-    case (t, r) => (t, Or(r, i))
-  }
+  def localOr(i: Int): RasterRDD[K] =
+    rasterRDD.mapValues { case r => Or(r, i) }
   /** Or a constant Int value to each cell. */
   def |(i: Int): RasterRDD[K] = localOr(i)
   /** Or a constant Int value to each cell. */

@@ -7,7 +7,7 @@ import geotrellis.raster.op.local.Add
 trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Add a constant Int value to each cell. */
   def localAdd(i: Int): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Add(r, i)) }
+    rasterRDD.mapValues { r => Add(r, i) }
 
   /** Add a constant Int value to each cell. */
   def +(i: Int): RasterRDD[K] = localAdd(i)
@@ -17,7 +17,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   /** Add a constant Double value to each cell. */
   def localAdd(d: Double): RasterRDD[K] =
-    rasterRDD.mapPairs { case (t, r) => (t, Add(r, d)) }
+    rasterRDD.mapValues { r => Add(r, d) }
 
   /** Add a constant Double value to each cell. */
   def +(d: Double): RasterRDD[K] = localAdd(d)
