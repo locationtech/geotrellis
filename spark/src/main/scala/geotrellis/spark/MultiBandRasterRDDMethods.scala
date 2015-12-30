@@ -2,7 +2,8 @@ package geotrellis.spark
 
 import scala.reflect.ClassTag
 
-trait RasterRDDSeqMethods[K] {
+trait MultiBandRasterRDDMethods[K] {
   implicit val keyClassTag: ClassTag[K]
-  val rasterRDDs: Traversable[RasterRDD[K]] 
+
+  val rdd: MultiBandRasterRDD[K]
 }

@@ -60,8 +60,8 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
   ): RasterRDD[K] = {
     val sc = rasterRDD.sparkContext
 
-    asRasterRDD(rasterRDD.metaData) {
-      rasterRDD
+    rasterRDD.withContext { rdd =>
+      rdd
         .map { case (key, tile) =>
           val SpatialKey(col, row) = key.spatialComponent
           val TemporalKey(time) = key.temporalComponent

@@ -10,10 +10,7 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * integer, else 0.
     */
   def localEqual(i: Int): RasterRDD[K] = 
-    rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, Equal(r, i))
-      }
+    rasterRDD.mapValues { r => Equal(r, i) }
   
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if
@@ -21,10 +18,7 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * double, else 0.
     */
   def localEqual(d: Double): RasterRDD[K] = 
-    rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, Equal(r, d))
-      }
+    rasterRDD.mapValues { r => Equal(r, d) }
 
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if
@@ -32,5 +26,5 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * raster, else 0.
     */
   def localEqual(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => Equal(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => Equal(t1, t2) }
 }

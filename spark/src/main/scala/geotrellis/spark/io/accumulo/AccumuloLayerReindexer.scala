@@ -10,23 +10,23 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerReindexer {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
     table: String,
     keyIndexMethod: KeyIndexMethod[K],
     strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-   (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] = {
+   (implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    val layerReader = new AccumuloLayerReader[K, V, M, C](attributeStore, new AccumuloRDDReader[K, V](instance))
+    val layerReader = new AccumuloLayerReader[K, V, M](attributeStore, new AccumuloRDDReader[K, V](instance))
     val layerDeleter = AccumuloLayerDeleter(instance)
-    val layerWriter = new AccumuloLayerWriter[K, V, M, C](
+    val layerWriter = new AccumuloLayerWriter[K, V, M](
       attributeStore = attributeStore,
       rddWriter      = new AccumuloRDDWriter[K, V](instance, strategy),
       keyIndexMethod = keyIndexMethod,
       table          = table
     )
 
-    val layerCopier = new SparkLayerCopier[AccumuloLayerHeader, K, V, M, C](
+    val layerCopier = new SparkLayerCopier[AccumuloLayerHeader, K, V, M](
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter

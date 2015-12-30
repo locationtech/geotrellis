@@ -21,17 +21,21 @@ object S3LayerReindexer {
       S3LayerWriter.Options(opts.clobber, opts.oneToOne)
   }
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](
     attributeStore: S3AttributeStore,
     keyIndexMethod: KeyIndexMethod[K],
     options: Options
-  )(implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] = {
-    val layerReader  = S3LayerReader[K, V, M, C](attributeStore, options.getCache)
+  )(implicit sc: SparkContext): LayerReindexer[LayerId] = {
+    val layerReader  = S3LayerReader[K, V, M](attributeStore, options.getCache)
     val layerDeleter = S3LayerDeleter(attributeStore)
-    val layerWriter  = S3LayerWriter[K, V, M, C](attributeStore, keyIndexMethod, options)
+    val layerWriter  = S3LayerWriter[K, V, M](attributeStore, keyIndexMethod, options)
 
     val (bucket, prefix) = (attributeStore.bucket, attributeStore.prefix)
-    val layerCopier = new SparkLayerCopier[S3LayerHeader, K, V, M, C](
+    val layerCopier = new SparkLayerCopier[S3LayerHeader, K, V, M](
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
@@ -45,25 +49,29 @@ object S3LayerReindexer {
     GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
-    attributeStore: S3AttributeStore,
-    keyIndexMethod: KeyIndexMethod[K]
-  )(implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] =
-    apply[K, V, M, C](attributeStore, keyIndexMethod, Options.DEFAULT)
+  def apply[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K])(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](
     bucket: String,
     prefix: String,
     keyIndexMethod: KeyIndexMethod[K],
     options: Options
-  )
-   (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] =
-    apply[K, V, M, C](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
+  )(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
-    bucket: String,
-    prefix: String,
-    keyIndexMethod: KeyIndexMethod[K])
-   (implicit sc: SparkContext, bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] =
-    apply[K, V, M, C](S3AttributeStore(bucket, prefix), keyIndexMethod, Options.DEFAULT)
+  def apply[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K])(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, Options.DEFAULT)
 }

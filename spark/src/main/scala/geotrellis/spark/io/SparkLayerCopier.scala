@@ -8,11 +8,11 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
    val attributeStore: AttributeStore[JsonFormat],
-   layerReader: FilteringLayerReader[LayerId, K, M, C],
-   layerWriter: Writer[LayerId, C])
-  (implicit bridge: Bridge[(RDD[(K, V)], M), C]) extends LayerCopier[LayerId] {
+   layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
+   layerWriter: Writer[LayerId, RDD[(K, V)] with Metadata[M]]
+) extends LayerCopier[LayerId] {
 
   def headerUpdate(id: LayerId, header: Header): Header
 

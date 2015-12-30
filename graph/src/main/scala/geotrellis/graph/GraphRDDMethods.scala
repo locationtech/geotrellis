@@ -57,7 +57,7 @@ trait GraphRDDMethods[K] {
     (vertexId: VertexId) => (vertexId % totalCols, vertexId / totalCols)
   }
 
-  def toRaster: RasterRDD[K] = {
+  def toRaster: RDD[(K, Tile)] with Metadata[RasterMetaData] = {
     val metaData = graphRDD.metaData
 
     val tileLayout = metaData.tileLayout
@@ -94,7 +94,7 @@ trait GraphRDDMethods[K] {
         (key, tile)
     }
 
-    new RasterRDD(resRDD, metaData)
+    (resRDD, metaData)
   }
 
   def shortestPath(sources: Seq[(Long, Long)]): GraphRDD[K] =

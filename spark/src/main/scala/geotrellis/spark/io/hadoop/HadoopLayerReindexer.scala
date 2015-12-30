@@ -17,16 +17,16 @@ import scala.reflect.ClassTag
 import org.apache.hadoop.fs.Path
 
 object HadoopLayerReindexer {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     rootPath: Path, keyIndexMethod: KeyIndexMethod[K])
-   (implicit sc: SparkContext, format: HadoopFormat[K, V], bridge: Bridge[(RDD[(K, V)], M), C]): LayerReindexer[LayerId] = {
+   (implicit sc: SparkContext, format: HadoopFormat[K, V]): LayerReindexer[LayerId] = {
     val attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"))
-    val layerReader    = HadoopLayerReader[K, V, M, C](rootPath)
+    val layerReader    = HadoopLayerReader[K, V, M](rootPath)
     val layerDeleter   = HadoopLayerDeleter(rootPath)
-    val layerMover     = HadoopLayerMover[K, V, M, C](rootPath)
-    val layerWriter    = HadoopLayerWriter[K, V, M, C](rootPath, keyIndexMethod)
+    val layerMover     = HadoopLayerMover[K, V, M](rootPath)
+    val layerWriter    = HadoopLayerWriter[K, V, M](rootPath, keyIndexMethod)
 
-    val layerCopier = new SparkLayerCopier[HadoopLayerHeader, K, V, M, C](
+    val layerCopier = new SparkLayerCopier[HadoopLayerHeader, K, V, M](
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter

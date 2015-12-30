@@ -11,9 +11,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqual(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, GreaterOrEqual(r, i))
-      }
+      .mapValues { r => GreaterOrEqual(r, i) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -22,8 +20,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqualRightAssociative(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, GreaterOrEqual(i, r))
+      .mapValues { r => GreaterOrEqual(i, r)
       }
 
   /**
@@ -47,9 +44,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqual(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, GreaterOrEqual(r, d))
-      }
+      .mapValues { r => GreaterOrEqual(r, d) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -58,9 +53,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     */
   def localGreaterOrEqualRightAssociative(d: Double): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, GreaterOrEqual(d, r))
-      }
+      .mapValues { r => GreaterOrEqual(d, r) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -82,7 +75,7 @@ trait GreaterOrEqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * to the next raster, else 0.
     */
   def localGreaterOrEqual(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => GreaterOrEqual(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => GreaterOrEqual(t1, t2) }
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
     * the corresponding cell valued of the rasters are greater than or equal
