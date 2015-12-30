@@ -85,21 +85,16 @@ package object spark {
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
     ContextRDD(tup._1, tup._2)
 
-  implicit class withTileRDDMethods[K: ClassTag, M](rdd: RDD[(K, Tile)] with Metadata[M])
-    extends ContextRDDMethods[K, Tile, M](rdd)
+  implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
+    extends ContextRDDMethods[K, V, M](rdd)
 
-  implicit class withRasterRDDMethods[K](rdd: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends ContextRDDMethods[K, Tile, RasterMetaData](rdd) with BaseRasterRDDMethods[K] {
-    val rasterRDD = rdd
-  }
+  implicit class withRasterRDDMethods[K](val rasterRDD: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends BaseRasterRDDMethods[K]
 
   implicit class withSpatialRasterRDDMethods(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
 
-  implicit class withMultiBandTileRDDMethods[K: ClassTag, M](rdd: RDD[(K, MultiBandTile)] with Metadata[M])
-    extends ContextRDDMethods[K, MultiBandTile, M](rdd)
-
-  implicit class withMultiBandRasterRDDMethods[K](rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends ContextRDDMethods[K, MultiBandTile, RasterMetaData](rdd) with BaseMultiBandRasterRDDMethods[K]
+  implicit class withMultiBandRasterRDDMethods[K](val rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends BaseMultiBandRasterRDDMethods[K]
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {
