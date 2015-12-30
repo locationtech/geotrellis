@@ -86,7 +86,7 @@ trait GreaterRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * raster, else 0.
     */
   def localGreater(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => Greater(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => Greater(t1, t2) }
 
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if

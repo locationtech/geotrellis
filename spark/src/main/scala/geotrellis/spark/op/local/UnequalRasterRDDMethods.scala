@@ -48,7 +48,7 @@ trait UnequalRasterRDDMethods[K] extends RasterRDDMethods[K] {
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localUnequal(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineValues(other) {
     case (t1, t2) => Unequal(t1, t2)
   }
   /**

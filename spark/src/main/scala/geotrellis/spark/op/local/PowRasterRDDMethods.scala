@@ -29,7 +29,7 @@ trait PowRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Pow a double constant value by each cell value.*/
   def **:(d: Double): RasterRDD[K] = localPowValue(d)
   /** Pow the values of each cell in each raster. */
-  def localPow(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localPow(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineValues(other) {
     case (t1, t2) => Pow(t1, t2)
   }
   /** Pow the values of each cell in each raster. */

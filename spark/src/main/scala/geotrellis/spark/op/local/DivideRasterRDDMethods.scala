@@ -34,7 +34,7 @@ trait DivideRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   /** Divide the values of each cell in each raster. */
   def localDivide(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => Divide(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => Divide(t1, t2) }
 
   /** Divide the values of each cell in each raster. */
   def /(other: RasterRDD[K]): RasterRDD[K] = localDivide(other)

@@ -75,7 +75,7 @@ trait LessRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def localLess(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localLess(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineValues(other) {
     case (t1, t2) => Less(t1, t2)
   }
   /**

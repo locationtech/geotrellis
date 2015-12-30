@@ -5,7 +5,7 @@ import org.apache.spark.rdd._
 
 trait BaseRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def convert(cellType: CellType): RasterRDD[K] =
-    rasterRDD.mapTiles(_.convert(cellType), rasterRDD.metadata.copy(cellType = cellType))
+    rasterRDD.mapValues(_.convert(cellType), rasterRDD.metadata.copy(cellType = cellType))
 
   def asRasters()(implicit sc: SpatialComponent[K]): RDD[(K, Raster)] =
     rasterRDD.mapPartitions({ part =>

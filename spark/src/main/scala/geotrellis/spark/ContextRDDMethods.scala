@@ -13,16 +13,16 @@ class ContextRDDMethods[K: ClassTag, V: ClassTag, M](val rdd: RDD[(K, V)] with M
   def mapKeys[R: ClassTag](f: K => R): RDD[(R, V)] with Metadata[M] =
     rdd.withContext { rdd => rdd.map { case (key, tile) => f(key) -> tile } }
 
-  def mapTiles(f: V => V): RDD[(K, V)] with Metadata[M] =
+  def mapValues(f: V => V): RDD[(K, V)] with Metadata[M] =
     rdd.withContext { rdd => rdd.map { case (key, tile) => key -> f(tile) } }
 
-  def mapTiles(f: V => V, m: M): RDD[(K, V)] with Metadata[M] =
+  def mapValues(f: V => V, m: M): RDD[(K, V)] with Metadata[M] =
     ContextRDD(rdd.map { case (key, tile) => key -> f(tile) }, m)
 
   def mapPairs[R: ClassTag](f: ((K, V)) => (R, V)): RDD[(R, V)] with Metadata[M] =
     rdd.withContext { rdd => rdd map { row => f(row) } }
 
-  def combineTiles(other: RDD[(K, V)] with Metadata[M])(f: (V, V) => V): RDD[(K, V)] with Metadata[M] =
+  def combineValues(other: RDD[(K, V)] with Metadata[M])(f: (V, V) => V): RDD[(K, V)] with Metadata[M] =
     combinePairs(other) { case ((k1, t1), (k2, t2)) => (k1, f(t1, t2)) }
 
   def combinePairs[R: ClassTag](other: RDD[(K, V)])(f: ((K, V), (K, V)) => (R, V)): RDD[(R, V)] with Metadata[M] =

@@ -32,5 +32,5 @@ trait EqualRasterRDDMethods[K] extends RasterRDDMethods[K] {
     * raster, else 0.
     */
   def localEqual(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => Equal(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => Equal(t1, t2) }
 }

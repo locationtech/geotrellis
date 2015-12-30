@@ -27,7 +27,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   /** Add the values of each cell in each raster.  */
   def localAdd(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => Add(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => Add(t1, t2) }
 
   /** Add the values of each cell in each raster. */
   def +(other: RasterRDD[K]): RasterRDD[K] = localAdd(other)

@@ -13,7 +13,7 @@ trait OrRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Or a constant Int value to each cell. */
   def |:(i: Int): RasterRDD[K] = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localOr(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineValues(other) {
     case (t1, t2) => Or(t1, t2)
   }
   /** Or the values of each cell in each raster. */

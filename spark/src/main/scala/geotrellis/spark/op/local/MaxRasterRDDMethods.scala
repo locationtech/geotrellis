@@ -13,7 +13,7 @@ trait MaxRasterRDDMethods[K] extends RasterRDDMethods[K] {
     case (t, r) => (t, Max(r, d))
   }
   /** Max the values of each cell in each raster.  */
-  def localMax(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+  def localMax(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineValues(other) {
     case (t1, t2) => Max(t1, t2)
   }
   /** Max the values of each cell in each raster.  */
