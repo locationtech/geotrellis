@@ -34,9 +34,9 @@ trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
     * the output raster will be empty -- all values set to NODATA.
     */
   def localMask(other: RasterRDD[K], readMask: Int, writeMask: Int): RasterRDD[K] =
-    rasterRDD.combinePairs(other) {
-      case ((t1, r1), (t2, r2)) =>
-        (t1, Mask(r1, r2, readMask, writeMask))
+    rasterRDD.combineValues(other) {
+      case (r1, r2) =>
+        Mask(r1, r2, readMask, writeMask)
     }
 
   /**
@@ -48,9 +48,9 @@ trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
     * the output raster will be identical to the first raster.
     */
   def localInverseMask(other: RasterRDD[K], readMask: Int, writeMask: Int): RasterRDD[K] =
-    rasterRDD.combinePairs(other) {
-      case ((t1, r1), (t2, r2)) =>
-        (t1, InverseMask(r1, r2, readMask, writeMask))
+    rasterRDD.combineValues(other) {
+      case (r1, r2) =>
+        InverseMask(r1, r2, readMask, writeMask)
     }
 
   /** Maps an integer typed Tile to 1 if the cell value is not NODATA, otherwise 0. */
@@ -126,8 +126,8 @@ trait LocalRasterRDDMethods[K] extends RasterRDDMethods[K]
     *  holds the x values. The arctan is calculated from y / x.
     *  @info               A double raster is always returned.
     */
-  def localAtan2(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combinePairs(other) {
-    case ((t1, r1), (t2, r2)) => (t1, Atan2(r1, r2))
+  def localAtan2(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineValues(other) {
+    case (r1, r2) => Atan2(r1, r2)
   }
 
   /**
