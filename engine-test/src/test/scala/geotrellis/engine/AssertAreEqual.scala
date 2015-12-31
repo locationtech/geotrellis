@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.testkit
+package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.raster.op.local._
@@ -54,5 +54,3 @@ object AssertAreEqual {
     )
   }
 }
-  
-

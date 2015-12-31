@@ -70,7 +70,7 @@ trait TileBuilders {
   }
 
   def createTile(arr: Array[Short]) = {
-    val d = scala.math.sqrt(arr.length).toInt    
+    val d = scala.math.sqrt(arr.length).toInt
     ShortArrayTile(arr, d, d)
   }
 

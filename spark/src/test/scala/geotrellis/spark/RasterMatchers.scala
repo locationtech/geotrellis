@@ -40,7 +40,7 @@ trait RasterMatchers extends Matchers {
         val v1 = ta.getDouble(col, row)
         val v2 = tb.getDouble(col, row)
         if (v1.isNaN) withClue(s"Failed at col: $col and row: $row (v1=$v1, v2=$v2)") {
-          v2.isNaN should be (true)        
+          v2.isNaN should be (true)
         } else if (v2.isNaN) withClue(s"Failed at col: $col and row: $row (v1=$v1, v2=$v2)") {
           v1.isNaN should be (true)
         } else withClue(s"Failed at col: $col and row: $row, (v1=$v1 v2=$v2)") {

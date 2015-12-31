@@ -17,7 +17,7 @@
 package geotrellis.engine.op.local
 
 import geotrellis.raster._
-
+import geotrellis.engine._
 import org.scalatest._
 
 import geotrellis.testkit._

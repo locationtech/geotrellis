@@ -19,11 +19,9 @@ package geotrellis.engine
 import geotrellis.vector.Extent
 import geotrellis.raster._
 
-trait TileBuilders {
-  val nd = NODATA
-  val NaN = Double.NaN
-
-
+trait RasterSourceBuilders {
+  // val nd = NODATA
+  // val NaN = Double.NaN
 
   def createRasterSource(arr: Array[Int], pixelCols: Int, pixelRows: Int): RasterSource =
     createRasterSource(arr, 1, 1, pixelCols, pixelRows)
