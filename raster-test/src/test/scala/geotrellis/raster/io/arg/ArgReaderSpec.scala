@@ -28,18 +28,10 @@ class ArgReaderSpec extends FunSpec
                             with TestFiles
                             with Matchers {
   describe("ArgReader") {
-
-    it("should read from metadata and match a RasterSource") {
-      val fromGeoTiff = GeoTiffReader.readSingleBand("raster-test/data/SBN_inc_percap.tiff").tile
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json").tile
-
-      assertEqual(fromArgReader, fromGeoTiff)
-    }
-
     it("should read a constant tile") {
       val tile = ArgReader.read("raster-test/data/data/constant.json").tile
       tile match {
-        case ct: ConstantTile => 
+        case ct: ConstantTile =>
           tile.cellType should be (TypeInt)
           tile.get(0,0) should be (5)
         case _ => sys.error(s"Tile should be constant tile, is actually ${tile.getClass.getSimpleName}")
@@ -49,7 +41,7 @@ class ArgReaderSpec extends FunSpec
     it("should read a constant tile with a NaN value") {
       val tile = ArgReader.read("raster-test/data/data/constant-nan.json").tile
       tile match {
-        case ct: ConstantTile => 
+        case ct: ConstantTile =>
           tile.cellType should be (TypeDouble)
           isNoData(tile.getDouble(0,0)) should be (true)
         case _ => sys.error(s"Tile should be constant tile, is actually ${tile.getClass.getSimpleName}")
