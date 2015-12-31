@@ -79,7 +79,7 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
 
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
 
-  def copy = ArrayTile(array.clone, cols, rows)
+  def copy = BitArrayTile(array.clone, cols, rows)
 
   def toBytes: Array[Byte] = array.clone
 }

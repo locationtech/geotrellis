@@ -3,6 +3,7 @@ package geotrellis.spark.io
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster.GridBounds
 import geotrellis.spark._
+import geotrellis.spark.tiling.MapKeyTransform
 import geotrellis.vector._
 
 import scala.annotation.implicitNotFound
@@ -10,6 +11,7 @@ import scala.annotation.implicitNotFound
 @implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide RDDFilter[${K}, ${F}, ${T}, ${M}]")
 trait RDDFilter[K, F, T, M] {
   /** Should reduce one of the dimensions in KeyBounds using information from param
+    *
     * @param metadata  M of the layer being filtered
     * @param kb        KeyBounds within the layer, possibly already reduce for max
     * @param param     Parameter to the filter, contains information to restrict kb
@@ -73,11 +75,10 @@ object Intersects {
     }
 
   /** Define Intersects filter for Extent */
-  implicit def forExtent[K: SpatialComponent: Boundable, M] =
+  implicit def forExtent[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
     new RDDFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
-      // TODO: Stopgap. We can not ask for an implicit for PDT, so we do this cast. Safe while there is only one type of Metadata.
-      val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
+      val bounds = metadata.mapTransform(extent)
       val queryBounds = KeyBounds(
         kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
         kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
@@ -105,11 +106,10 @@ object Contains {
   def apply[T](value: T) = RDDFilter.Value[Contains.type, T](value)
 
   /** Define Intersects filter for Extent */
-  implicit def forPoint[K: SpatialComponent: Boundable, M] =
+  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
     new RDDFilter[K, Contains.type, Point, M] {
     def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
-      // TODO: Stopgap. We can not ask for an implicit for PDT, so we do this cast. Safe while there is only one type of Metadata.
-      val spatialKey = metadata.asInstanceOf[RasterMetaData].mapTransform(point)
+      val spatialKey = metadata.mapTransform(point)
       val queryBounds =
         KeyBounds(
           kb.minKey updateSpatialComponent spatialKey,

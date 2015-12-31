@@ -40,7 +40,7 @@ object StandardDeviation {
             }
           }
 
-          tile.setDouble(c.col, c.row, math.sqrt(squares / count.toDouble))
+          resultTile.setDouble(c.col, c.row, math.sqrt(squares / count.toDouble))
         }
       }
     } else {
@@ -74,7 +74,7 @@ object StandardDeviation {
               squares += math.pow(v - mean, 2)
             }
           }
-          tile.setDouble(c.col, c.row, math.sqrt(squares / count.toDouble))
+          resultTile.setDouble(c.col, c.row, math.sqrt(squares / count.toDouble))
         }
       }
     }

@@ -13,17 +13,17 @@ object VerticalFlip {
     val gridBounds = rasterRDD.metaData.gridBounds
     val rowHeight = gridBounds.height
 
-    asRasterRDD(rasterRDD.metaData) {
-      rasterRDD
-        .mapTiles { tile =>
-        VerticalTileFlip(tile)
-      }
+    rasterRDD.withContext { rdd =>
+      rdd
+        .mapValues { tile =>
+          VerticalTileFlip(tile)
+        }
         .groupBy { case (key, tile) =>
           val SpatialKey(col, row) = key
           val flippedRow = rowHeight - row - 1
           if (row > flippedRow) (col, flippedRow)
           else (col, row)
-      }
+        }
         .flatMap { case ((c, r), seq) =>
           seq match {
             case Seq(first) => seq
@@ -33,7 +33,7 @@ object VerticalFlip {
                 (secondKey, firstTile)
               )
           }
-      }
+        }
     }
   }
 }

@@ -53,7 +53,7 @@ object KeyBounds {
 
   implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
 
-  implicit def keyBoundsFormat[K: Boundable: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
+  implicit def keyBoundsFormat[K: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
     new RootJsonFormat[KeyBounds[K]] {
 
       def write(keyBounds: KeyBounds[K]) =

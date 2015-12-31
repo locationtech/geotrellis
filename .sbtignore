@@ -1,0 +1,28 @@
+# sbt ignore regexps
+Starting sbt with output filtering enabled
+^\[info\][ ]+(Resolving|Loading|Done|Attempting|Formatting|Updating)[ ]
+^\[info\] Main Scala API documentation
+^\[info\].*published[ ]+.*(sources\.jar|javadoc\.jar|\.pom)$
+^\[info\].*published ivy to
+^\[warn\] Credentials file
+^\[info\] Wrote.*[.]pom
+^Missing bintray credentials
+^SLF4J
+Unable to load native-hadoop library
+This usage is deprecated
+Attempting to overwrite
+delivering ivy file to
+warnings? found$
+re[-]run with [-](unchecked|deprecation|feature) for details
+model contains[ ]
+[ ]delivering[ ]
+^Graphviz dot encountered an error when generating the diagram for:
+^These are usually spurious errors, but if you notice a persistant error on
+^a diagram, please use the -diagrams-debug flag and report a bug with the output
+^Graphviz will be restarted...
+^Diagrams will be disabled for this run because the graphviz dot tool
+^has malfunctioned too many times. These scaladoc flags may help:
+^Please note that graphviz package
+^[*]+$
+^-diagrams-
+^$

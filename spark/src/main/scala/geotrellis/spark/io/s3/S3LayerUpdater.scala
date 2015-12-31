@@ -11,21 +11,20 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
+class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     clobber: Boolean = true)
-  (implicit val cons: ContainerConstructor[K, V, Container])
-  extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] with LazyLogging {
+  extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
+  type container = RDD[(K, V)] with Metadata[M]
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
+  def update(id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
-    implicit val mdFormat = cons.metaDataFormat
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
@@ -52,12 +51,11 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container]
 }
 
 object S3LayerUpdater {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
       bucket: String,
       prefix: String,
-      clobber: Boolean = true)
-    (implicit cons: ContainerConstructor[K, V, Container[K]]): S3LayerUpdater[K, V, Container[K]] =
-    new S3LayerUpdater(
+      clobber: Boolean = true): S3LayerUpdater[K, V, M] =
+    new S3LayerUpdater[K, V, M](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       clobber

@@ -21,7 +21,7 @@ object Max {
             val v = r.getDouble(x, y)
             if(v > m) { m = v }
           }
-          tile.setDouble(cursor.col, cursor.row, m)
+          resultTile.setDouble(cursor.col, cursor.row, m)
         }
       }
 
@@ -35,7 +35,7 @@ object Max {
             val v = r.get(x, y)
             if(v > m) { m = v }
           }
-          tile.set(cursor.col, cursor.row, m)
+          resultTile.set(cursor.col, cursor.row, m)
         }
       }
     }

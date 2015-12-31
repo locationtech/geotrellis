@@ -10,19 +10,17 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, Container](
+class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V])
-  (implicit val cons: ContainerConstructor[K, V, Container])
-  extends LayerUpdater[LayerId, K, V, Container with RDD[(K, V)]] {
+  extends LayerUpdater[LayerId, K, V, M] {
 
-  def update(id: LayerId, rdd: Container with RDD[(K, V)]) = {
+  def update(id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
-    implicit val mdFormat = cons.metaDataFormat
 
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, cons.MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
@@ -51,11 +49,10 @@ object AccumuloLayerUpdater {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag, Container[_]]
+  V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (instance: AccumuloInstance,
-   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy)
-  (implicit cons: ContainerConstructor[K, V, Container[K]]): AccumuloLayerUpdater[K, V, Container[K]] =
-    new AccumuloLayerUpdater(
+   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M] =
+    new AccumuloLayerUpdater[K, V, M](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
     )

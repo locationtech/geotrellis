@@ -1,33 +1,36 @@
 package geotrellis.spark.io
 
-import geotrellis.raster._
-import com.github.nscala_time.time.Imports._
 import geotrellis.spark._
-import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
 import org.scalatest._
-import spray.json.JsonFormat
 import scala.reflect._
 
-abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Matchers { self: TestSparkContext =>
-  type Container <: RDD[(K, V)]
-  type TestReader = FilteringLayerReader[LayerId, K, Container]
-  type TestWriter = Writer[LayerId, Container]
-  type TestUpdater = LayerUpdater[LayerId, K, V, Container]
+abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers { self: TestSparkContext =>
+  type TestReader = FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
+  type TestWriter = Writer[LayerId, RDD[(K, V)] with Metadata[M]]
+  type TestUpdater = LayerUpdater[LayerId, K, V, M]
   type TestDeleter = LayerDeleter[LayerId]
+  type TestCopier = LayerCopier[LayerId]
+  type TestMover = LayerMover[LayerId]
+  type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
-  def sample: Container
+  def sample: RDD[(K, V)] with Metadata[M]
   def reader: TestReader
   def writer: TestWriter
   def deleter: TestDeleter
+  def copier: TestCopier
+  def mover: TestMover
+  def reindexer: TestReindexer
   def tiles: TestTileReader
 
   val layerId = LayerId("sample-" + this.getClass.getName, 1)
   val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
+  val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
+  val movedLayerId = LayerId("moveSample-" + this.getClass.getName, 1)
+  val reindexedLayerId = LayerId("reindexedSample-" + this.getClass.getName, 1)
   lazy val query = reader.query(layerId)
-  
+
   it("should not find layer before write") {
     intercept[LayerNotFoundError] {
       reader.read(layerId)
@@ -70,5 +73,43 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag] extends FunSpec with Ma
     intercept[LayerNotFoundError] {
       reader.read(deleteLayerId)
     }
+  }
+
+  it("shouldn't copy a layer which already exists") {
+    intercept[LayerExistsError] {
+      copier.copy(layerId, layerId)
+    }
+  }
+
+  it("should copy a layer") {
+    copier.copy(layerId, copiedLayerId)
+    reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
+  }
+
+  it("shouldn't move a layer which already exists") {
+    intercept[LayerExistsError] {
+      mover.move(layerId, layerId)
+    }
+  }
+
+  it("should move a layer") {
+    val keysBeforeMove = reader.read(layerId).keys.collect()
+    mover.move(layerId, movedLayerId)
+    intercept[LayerNotFoundError] {
+      reader.read(layerId)
+    }
+    keysBeforeMove should contain theSameElementsAs reader.read(movedLayerId).keys.collect()
+    mover.move(movedLayerId, layerId)
+  }
+
+  it("should not reindex a layer which doesn't exists") {
+    intercept[LayerNotFoundError] {
+      reindexer.reindex(movedLayerId)
+    }
+  }
+
+  it("should reindex a layer") {
+    copier.copy(layerId, reindexedLayerId)
+    reindexer.reindex(reindexedLayerId)
   }
 }

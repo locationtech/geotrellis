@@ -4,6 +4,7 @@
 ./sbt -J-Xmx2G "project vector-test" test || { exit 1; }
 ./sbt -J-Xmx2G "project raster-test" test || { exit 1; } 
 ./sbt -J-Xmx2G "project spark" test  || { exit 1; }
+./sbt -J-Xmx2G "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G "project engine-test" test || { exit 1; } 
 ./sbt -J-Xmx2G "project index" test || { exit 1; }
 ./sbt -J-Xmx2G "project benchmark" compile || { exit 1; } 
@@ -16,3 +17,4 @@
 ./sbt -J-Xmx2G "project jetty" compile || { exit 1; } 
 ./sbt -J-Xmx2G "project admin" compile || { exit 1; } 
 ./sbt -J-Xmx2G "project vector-benchmark" compile || { exit 1; } 
+./sbt -J-Xmx2G "project testkit" compile || { exit 1; }

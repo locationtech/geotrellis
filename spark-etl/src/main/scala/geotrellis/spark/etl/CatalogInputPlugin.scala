@@ -12,7 +12,7 @@ import org.apache.spark.storage.StorageLevel
 abstract class CatalogInputPlugin[K: SpatialComponent: Boundable] extends InputPlugin[K] {
   def format = "catalog"
   def requiredKeys: Array[String] = Array("layer")
-  def reader(props: Parameters)(implicit sc: SparkContext): FilteringLayerReader[LayerId, K, RasterRDD[K]]
+  def reader(props: Parameters)(implicit sc: SparkContext): FilteringLayerReader[LayerId, K, RasterMetaData, RasterRDD[K]]
 
   def parse(props: Parameters): (LayerId, Option[Extent]) = {
     val bbox = props.get("bbox").map(Extent.fromString)

@@ -1,11 +1,24 @@
 package geotrellis.spark.io
 
-import geotrellis.raster.Tile
-import geotrellis.spark.{SpaceTimeKey, TestSparkContext, SpatialKey}
+import geotrellis.spark._
+import geotrellis.spark.tiling._
+import geotrellis.raster._
+import geotrellis.vector._
+import geotrellis.proj4.LatLng
 
-trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] with TestSparkContext =>
+import org.apache.spark.rdd._
+
+trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestSparkContext =>
 
   def updater: TestUpdater
+
+  def dummyRasterMetaData: RasterMetaData =
+    RasterMetaData(
+      TypeInt,
+      LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
+      Extent(0,0,1,1),
+      LatLng
+    )
 
   it("should update a layer") {
     updater.update(layerId, sample)
@@ -13,7 +26,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] 
 
   it("should not update a layer (empty set)") {
     intercept[LayerUpdateError] {
-      updater.update(layerId, sc.emptyRDD[(SpaceTimeKey, Tile)].asInstanceOf[Container])
+      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
     }
   }
 
@@ -21,10 +34,10 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile] 
     val (minKey, minTile) = sample.sortByKey().first()
     val (maxKey, maxTile) = sample.sortByKey(false).first()
 
-    val update = sc.parallelize(
+    val update = new ContextRDD(sc.parallelize(
       (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
         (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-    ).asInstanceOf[Container]
+    ), dummyRasterMetaData)
 
     intercept[LayerOutOfKeyBoundsError] {
       updater.update(layerId, update)

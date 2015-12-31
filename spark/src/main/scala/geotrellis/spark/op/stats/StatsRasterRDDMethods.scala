@@ -20,8 +20,8 @@ trait StatsRasterRDDMethods[K] extends RasterRDDMethods[K] {
       val (tile2, count2) = tup2
       tile1 + tile2 -> (count1 + count2)
     }
-    asRasterRDD(rasterRDD.metaData) {
-      rasterRDD
+    rasterRDD.withContext { rdd =>
+      rdd
         .combineByKey(createCombiner, mergeValue, mergeCombiners)
         .mapValues { case (tile, count) => tile / count}
     }
@@ -36,4 +36,43 @@ trait StatsRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def classBreaks(numBreaks: Int): Array[Int] =
     histogram.getQuantileBreaks(numBreaks)
 
+  def minMax: (Int, Int) =
+    rasterRDD.map(_.tile.findMinMax)
+      .reduce { (t1, t2) =>
+        val (min1, max1) = t1
+        val (min2, max2) = t2
+        val min =
+          if(isNoData(min1)) min2
+          else {
+            if(isNoData(min2)) min1
+            else math.min(min1, min2)
+          }
+        val max =
+          if(isNoData(max1)) max2
+          else {
+            if(isNoData(max2)) max1
+            else math.max(max1, max2)
+          }
+        (min, max)
+      }
+
+  def minMaxDouble: (Double, Double) =
+    rasterRDD.map(_.tile.findMinMaxDouble)
+      .reduce { (t1, t2) =>
+        val (min1, max1) = t1
+        val (min2, max2) = t2
+        val min =
+          if(isNoData(min1)) min2
+          else {
+            if(isNoData(min2)) min1
+            else math.min(min1, min2)
+          }
+        val max =
+          if(isNoData(max1)) max2
+          else {
+            if(isNoData(max2)) max1
+            else math.max(max1, max2)
+          }
+        (min, max)
+      }
 }

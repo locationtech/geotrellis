@@ -88,6 +88,12 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
   private var _rowmin = 0
   private var _rowmax = 0
 
+  protected def colmin = _colmin
+  protected def colmax = _colmax
+  protected def rowmin = _rowmin
+  protected def rowmax = _rowmax
+
+
   // Values to track added\removed values
   private var addedCol = 0
   private var removedCol = 0
@@ -101,6 +107,9 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
   private var _col = 0
   private var _row = 0
 
+  protected def focusCol = _col
+  protected def focusRow = _row
+
   /** Indicates whether or not this cursor has been moved and is tracking state between
    *  the previous position and the current position */
   def isReset = movement == NoMovement
@@ -111,7 +120,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
    *  For example, if the analysis area starts at col 2 and the focusX is currently 3,
    *  then the col should be 1. 
    */
-  def col = _col - analysisOffsetCols
+  def col = _col - analysisOffsetCols 
 
   /** Cursor row relative to the analysis area */
   def row = _row - analysisOffsetRows

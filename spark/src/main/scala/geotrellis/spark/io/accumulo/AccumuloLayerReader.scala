@@ -1,6 +1,8 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
@@ -9,25 +11,23 @@ import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import org.apache.spark.rdd.RDD
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
-class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container](
+class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
-    rddReader: BaseAccumuloRDDReader[K, V])
-  (implicit sc: SparkContext, val cons: ContainerConstructor[K, V, Container])
-  extends FilteringLayerReader[LayerId, K, Container] {
-
-  type MetaDataType = cons.MetaDataType
+    rddReader: BaseAccumuloRDDReader[K, V]
+)(implicit sc: SparkContext)
+  extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, MetaDataType], numPartitions: Int) = {
+  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    implicit val mdFormat = cons.metaDataFormat
+
     val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, MetaDataType, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -40,15 +40,29 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
       }
 
     val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
-    cons.makeContainer(rdd, keyBounds, metaData)
+    new ContextRDD(rdd, metaData)
   }
 }
 
 object AccumuloLayerReader {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, Container[_]](instance: AccumuloInstance)
-    (implicit sc: SparkContext, cons: ContainerConstructor[K, V, Container[K]]): AccumuloLayerReader[K, V, Container[K]] =
-    new AccumuloLayerReader (
+  def apply[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
+    V: AvroRecordCodec: ClassTag, 
+    M: JsonFormat
+  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M] =
+    new AccumuloLayerReader[K, V, M] (
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
 
+  def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData](instance)
+
+  def spatialMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](instance)
+
+  def spaceTime(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData](instance)
+
+  def spaceTimeMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance)
 }

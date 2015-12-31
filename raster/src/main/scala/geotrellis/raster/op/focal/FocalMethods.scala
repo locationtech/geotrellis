@@ -44,6 +44,11 @@ trait FocalMethods extends TileMethods {
     Conway(tile, Square(1), bounds)
   }
 
+  /** Computes the convolution of the raster for the given kernl */
+  def convolve(kernel: Kernel): Tile = {
+    Convolve(tile, kernel)
+  }
+
   /** Calculates spatial autocorrelation of cells based on the similarity to neighboring values.
    * @see [[TileMoransICalculation]]
    */
