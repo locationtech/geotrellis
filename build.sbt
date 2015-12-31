@@ -27,6 +27,8 @@ lazy val commonSettings = Seq(
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
   bintrayPackageLabels := Info.tags,
 
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary),
+
   pomExtra := (
     <scm>
       <url>git@github.com:geotrellis/geotrellis.git</url>

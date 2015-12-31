@@ -2,6 +2,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.spark.tiling._
+import geotrellis.spark.ingest._
 import geotrellis.vector.{ProjectedExtent, Extent}
 
 import geotrellis.proj4.CRS
@@ -86,5 +87,27 @@ object RasterMetaData {
     val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
     val LayoutLevel(zoom, layout) = scheme.levelFor(uncappedExtent, cellSize)
     (zoom, RasterMetaData(cellType, layout, uncappedExtent, crs))
+  }
+
+  def fromRdd[K: IngestKey, V <: CellGrid](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData) = {
+    val (extent, cellType, cellSize, crs) =
+      rdd
+        .map { case (key, grid) =>
+          val ProjectedExtent(extent, crs) = key.projectedExtent
+          (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), crs)
+        }
+        .reduce { (t1, t2) =>
+          val (e1, ct1, cs1, crs1) = t1
+          val (e2, ct2, cs2, crs2) = t2
+          (
+            e1.combine(e2),
+            ct1.union(ct2),
+            if (cs1.resolution < cs2.resolution) cs1 else cs2,
+            crs1
+          )
+        }
+
+    val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
+    (zoom, RasterMetaData(cellType, layout, extent, crs))
   }
 }

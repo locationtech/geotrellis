@@ -16,7 +16,6 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis.raster.reproject.ReprojectOptions
 import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -66,7 +65,7 @@ object Ingest {
     (implicit tiler: Tiler[T, K, Tile]): Unit =
   {
     sourceTiles.persist()
-    val reprojectedTiles = sourceTiles.reproject(destCRS, ReprojectOptions(resampleMethod)).cache()
+    val reprojectedTiles = sourceTiles.reproject(destCRS)(method = resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = tiler(reprojectedTiles, rasterMetaData, resampleMethod).cache()

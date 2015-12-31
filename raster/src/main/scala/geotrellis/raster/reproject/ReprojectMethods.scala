@@ -7,11 +7,5 @@ import geotrellis.vector.Extent
 trait ReprojectMethods[T] {
   type ReturnType <: Product2[T, Extent]
 
-  def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): ReturnType
-
-  def reproject(extent: Extent, src: CRS, dest: CRS): ReturnType =
-    reproject(extent, src, dest, ReprojectOptions.DEFAULT)
-
-  def reproject(method: ResampleMethod, extent: Extent, src: CRS, dest: CRS): ReturnType =
-    reproject(extent, src, dest, ReprojectOptions(method = method))
+  def reproject(extent: Extent, src: CRS, dest: CRS): Reproject.Apply[ReturnType]
 }

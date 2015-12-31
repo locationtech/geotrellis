@@ -28,7 +28,7 @@ class ReprojectSpec extends FunSpec
         SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
  
       val rea @ Raster(actual, actualExtent) =
-        source.reproject(extent, crs, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
+        source.reproject(extent, crs, WebMercator)(method = NearestNeighbor, errorThreshold = 0.0)
 
       // println(ree.rasterExtent)
       // println(rea.rasterExtent)
@@ -57,7 +57,7 @@ class ReprojectSpec extends FunSpec
         SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val Raster(actual, actualExtent) =
-        source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.0))
+        source.reproject(extent, WebMercator, LatLng)(method = NearestNeighbor, errorThreshold = 0.0)
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -84,7 +84,7 @@ class ReprojectSpec extends FunSpec
         SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
 
       val Raster(actual, actualExtent) =
-        source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.125))
+        source.reproject(extent, WebMercator, LatLng)(method = NearestNeighbor, errorThreshold = 0.124)
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -103,8 +103,7 @@ class ReprojectSpec extends FunSpec
       }
     }
 
-    // TODO: Fix this test. See Issue #1261
-    ignore("should reproject two landsat tiles into rasters that don't have nodata lines of NODATA") {
+    it("should reproject two landsat tiles into rasters that don't have nodata lines of NODATA") {
       def detectNoDataLine(tile: Tile): Unit = {
         val (cols, rows) = tile.dimensions
         val noDataColCounts = Array.ofDim[Int](cols)
@@ -132,7 +131,7 @@ class ReprojectSpec extends FunSpec
       val rightTile = IntArrayTile(Array.ofDim[Int](256 * 256).fill(2), 256, 256)
 
       // Sanity check - they don't have any missing pixels before reprojecting
-      def runSanity() = {
+      val mergedRaster = {
         val RasterExtent(_, cellwidth, cellheight, _, _) = leftRasterExtent
         val unionExtent = leftRasterExtent.extent.combine(rightRasterExtent.extent)
         val re = RasterExtent(unionExtent, CellSize(cellwidth, cellheight))
@@ -140,15 +139,25 @@ class ReprojectSpec extends FunSpec
         mergeTile.merge(unionExtent, leftRasterExtent.extent, leftTile)
         mergeTile.merge(unionExtent, rightRasterExtent.extent, rightTile)
         detectNoDataLine(mergeTile)
+        Raster(mergeTile, unionExtent)
       }
 
       // Now repreject; there should also be no lines.
 
-      val Raster(wmLeftTile, wmLeftExtent) = leftTile.reproject(leftRasterExtent.extent, srcCRS, WebMercator, ReprojectOptions(Bilinear))
-      val Raster(wmRightTile, wmRightExtent) = rightTile.reproject(rightRasterExtent.extent, srcCRS, WebMercator, ReprojectOptions(Bilinear))
+      val wmLeft @ Raster(wmLeftTile, wmLeftExtent) = 
+        mergedRaster.reproject(GridBounds(0, 0, 511, 1023), srcCRS, WebMercator)(method = Bilinear)
 
-      val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
-      val RasterExtent(_, cellwidthRight, cellheightRight, _, _) = RasterExtent(wmRightExtent, wmRightTile.cols, wmRightTile.rows)
+      val wmRight @ Raster(wmRightTile, wmRightExtent) = 
+        mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator)(method = Bilinear)
+
+      // TODO: Remove
+      // GeoTiff(mergedRaster, srcCRS).write("/Users/rob/tmp/reproject-bugs/merged-src-raster.tif")
+      // GeoTiff(mergedRaster.reproject(srcCRS, WebMercator)(method = Bilinear), WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-reprojected-raster.tif")
+      // GeoTiff(wmLeft, WebMercator).write("/Users/rob/tmp/reproject-bugs/reproject-left-nomerge.tif")
+      // GeoTiff(wmRight, WebMercator).write("/Users/rob/tmp/reproject-bugs/reproject-right-nomerge.tif")
+
+      val rel @ RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
+      val rer @ RasterExtent(_, cellwidthRight, cellheightRight, _, _) = RasterExtent(wmRightExtent, wmRightTile.cols, wmRightTile.rows)
 
       cellwidthLeft should be (cellwidthRight +- 0.01)
       cellheightLeft should be (cellheightRight +- 0.01)
@@ -159,7 +168,56 @@ class ReprojectSpec extends FunSpec
       val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
       val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile).merge(re.extent, wmRightExtent, wmRightTile)
 
+      def doAll() = {
+        val tile = IntArrayTile(Array.ofDim[Int](re.cols * re.rows).fill(3), re.cols, re.rows)
+        GeoTiff(tile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/target-wm-tile.tif")
+      }
+      doAll()
+
+      def doLeft() = {
+        val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+        val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile)
+        GeoTiff(mergeTile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-from-window-reproject-left.tif")
+      }
+      doLeft()
+
+      def doRight() = {
+        val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+        val mergeTile: Tile = emptyTile.merge(re.extent, wmRightExtent, wmRightTile)
+        GeoTiff(mergeTile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-from-window-reproject-right.tif")
+      }
+      doRight()
+
+
+
+      GeoTiff(mergeTile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-from-window-reproject.tif")
+
       detectNoDataLine(mergeTile)
+    }
+
+    it("should project to the same extent when from a window of a larger raster than when projecting that raster with no window") {
+      val srcCRS = CRS.fromEpsgCode(32618)
+      val destCRS = WebMercator
+
+      val rasterExtent = RasterExtent(Extent(563760.000, 4428900.000, 579120.000, 4444260.000), 30.0, 30.0, 512, 512)
+
+      val expandedGridBounds = GridBounds(-10, -10, rasterExtent.cols + 10 - 1, rasterExtent.rows + 10 - 1)
+      val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
+      val expandedRasterExtent = RasterExtent(expandedExtent, rasterExtent.cols + 20, rasterExtent.rows + 20)
+
+      val expandedTile = 
+        IntArrayTile(Array.ofDim[Int](expandedRasterExtent.size).fill(1), expandedRasterExtent.cols, expandedRasterExtent.rows)
+      val expandedRaster = Raster(expandedTile, expandedExtent)
+
+      val tile = IntArrayTile(Array.ofDim[Int](rasterExtent.size).fill(1), rasterExtent.cols, rasterExtent.rows)
+      val raster = Raster(tile, rasterExtent.extent)
+
+      val windowBounds = GridBounds(10, 10, 10 + rasterExtent.cols - 1, 10 + rasterExtent.rows - 1)
+
+      val regularReproject = raster.reproject(srcCRS, destCRS)
+      val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS)
+
+      windowedReproject.extent should be (regularReproject.extent)
     }
   }
 }

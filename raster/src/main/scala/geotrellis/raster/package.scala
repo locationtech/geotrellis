@@ -40,9 +40,6 @@ package object raster {
   @inline final val floatNODATA = Float.NaN
   @inline final val doubleNODATA = Double.NaN
 
-
-  // def isNoData(b: Byte): Boolean = macro NoDataMacros.isNoDataByte_impl
-  // def isNoData(s: Short): Boolean = macro NoDataMacros.isNoDataShort_impl
   def isNoData(i: Int): Boolean = macro NoDataMacros.isNoDataInt_impl
   def isNoData(f: Float): Boolean = macro NoDataMacros.isNoDataFloat_impl
   def isNoData(d: Double): Boolean = macro NoDataMacros.isNoDataDouble_impl
@@ -75,6 +72,10 @@ package object raster {
   def d2s(n: Double): Short = macro TypeConversionMacros.d2s_impl
   def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl
   def d2f(n: Double): Float = macro TypeConversionMacros.d2f_impl
+
+  implicit class TileMethodWrapper(val tile: Tile) extends crop.TileCropMethods
+
+  implicit class MultiBandTileMethodWrapper(val self: MultiBandTile) extends crop.MultiBandTileCropMethods
 
   // Use this implicit class to fill arrays ... much faster than Array.fill[Int](dim)(val), etc.
   implicit class ByteArrayFiller(val arr: Array[Byte]) extends AnyVal {

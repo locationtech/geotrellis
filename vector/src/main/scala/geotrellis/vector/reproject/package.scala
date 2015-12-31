@@ -38,25 +38,26 @@ package object reproject {
     def apply(p: Polygon, src: CRS, dest: CRS): Polygon = 
       apply(p, Transform(src, dest))
 
-    def apply(p: Polygon, transform: Transform): Polygon = {
+    def apply(p: Polygon, transform: Transform): Polygon =
       Polygon(
         apply(p.exterior, transform),
         p.holes.map{ apply(_, transform) }
       )
-    }
 
-    def apply(extent: Extent, src: CRS, dest: CRS): Extent = {
-      val f = Transform(src, dest)
-      val sw = f(extent.xmin, extent.ymin)
-      val ne = f(extent.xmax, extent.ymax)
-      Extent(sw._1, sw._2, ne._1, ne._2)
-    }
+    def apply(extent: Extent, src: CRS, dest: CRS): Extent =
+      apply(extent.toPolygon, src, dest).envelope
 
     def polygonFeature[D](pf: PolygonFeature[D], src: CRS, dest: CRS): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, src, dest), pf.data)
 
     def polygonFeature[D](pf: PolygonFeature[D], transform: Transform): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, transform), pf.data)
+
+    def extentFeature[D](ef: ExtentFeature[D], src: CRS, dest: CRS): ExtentFeature[D] =
+      ExtentFeature(apply(ef.geom, src, dest).envelope, ef.data)
+
+    def extentFeature[D](ef: ExtentFeature[D], transform: Transform): ExtentFeature[D] =
+      ExtentFeature(apply(ef.geom, transform).envelope, ef.data)
 
     def apply(mp: MultiPoint, src: CRS, dest: CRS): MultiPoint =
       apply(mp, Transform(src, dest))
@@ -131,12 +132,12 @@ package object reproject {
         case p: Point => apply(p, transform)
         case l: Line => apply(l, transform)
         case p: Polygon => apply(p, transform)
+        case e: Extent => apply(e, transform)
         case mp: MultiPoint => apply(mp, transform)
         case ml: MultiLine => apply(ml, transform)
         case mp: MultiPolygon => apply(mp, transform)
         case gc: GeometryCollection => apply(gc, transform)
       }
-
 
     def geometryFeature[D](f: Feature[Geometry, D], src: CRS, dest: CRS): Feature[Geometry, D] =
       geometryFeature(f, Transform(src, dest))
@@ -146,6 +147,7 @@ package object reproject {
         case p: Point => pointFeature(Feature(p, f.data), transform)
         case l: Line => lineFeature(Feature(l, f.data), transform)
         case p: Polygon => polygonFeature(Feature(p, f.data), transform)
+        case e: Extent => extentFeature(Feature(e, f.data), transform)
         case mp: MultiPoint => multiPointFeature(Feature(mp, f.data), transform)
         case ml: MultiLine => multiLineFeature(Feature(ml, f.data), transform)
         case mp: MultiPolygon => multiPolygonFeature(Feature(mp, f.data), transform)

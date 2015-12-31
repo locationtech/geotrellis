@@ -354,4 +354,76 @@ class RasterExtentSpec extends FunSpec with Matchers
       result.extent should be (Extent(0, -200, 1200, 1000))
     }
   }
+
+  def formatExtent(e: Extent) = {
+    f"Extent(${e.xmin}%1.5f, ${e.ymin}%1.5f, ${e.xmax}%1.5f, ${e.ymax}%1.5f)"
+  }
+
+  describe("RasterExtent.extentFor") {
+    it("should create correct extent for gridbounds larger than the raster extent") {
+      val EXPAND_CELLS = 10
+
+      val extent = Extent(563760.000, 4428900.000, 579120.000, 4444260.000)
+      val rasterExtent = RasterExtent(extent, 30.0, 30.0, 512, 512)
+
+      val expandedGridBounds = GridBounds(-EXPAND_CELLS, -EXPAND_CELLS, rasterExtent.cols + EXPAND_CELLS - 1, rasterExtent.rows + EXPAND_CELLS - 1)
+
+      val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
+
+      val expectedExtent =
+        Extent(
+          extent.xmin - (EXPAND_CELLS * rasterExtent.cellwidth),
+          extent.ymin - (EXPAND_CELLS * rasterExtent.cellheight),
+          extent.xmax + (EXPAND_CELLS * rasterExtent.cellwidth),
+          extent.ymax + (EXPAND_CELLS * rasterExtent.cellheight)
+        )
+
+      withClue(s"EXP: ${formatExtent(expandedExtent)}\nACT: ${formatExtent(expectedExtent)}\n") {
+        expandedExtent should be (expectedExtent)
+      }
+    }
+
+    it("should shrink an extent based on a contained grid bounds") {
+      val EXPAND_CELLS = 10
+
+      val extent = Extent(563460.00000, 4428600.00000, 579420.00000, 4444560.00000)
+      val rasterExtent = RasterExtent(extent, 532, 532)
+
+      val windowGridBounds = 
+        GridBounds(EXPAND_CELLS, EXPAND_CELLS, rasterExtent.cols - EXPAND_CELLS - 1, rasterExtent.rows - EXPAND_CELLS - 1)
+      val windowExtent = rasterExtent.extentFor(windowGridBounds)
+
+      val expectedExtent =
+        Extent(
+          extent.xmin + (EXPAND_CELLS * rasterExtent.cellwidth),
+          extent.ymin + (EXPAND_CELLS * rasterExtent.cellheight),
+          extent.xmax - (EXPAND_CELLS * rasterExtent.cellwidth),
+          extent.ymax - (EXPAND_CELLS * rasterExtent.cellheight)
+        )
+
+      withClue(s"EXP: ${formatExtent(rasterExtent.extent)}\nACT: ${formatExtent(windowExtent)}\n") { 
+        windowExtent should be (expectedExtent) 
+      }
+    }
+
+    it("should create correct extent for gridbounds larger than the raster extent, then shrink it back down") {
+      val EXPAND_CELLS = 10
+
+      val extent = Extent(563760.000, 4428900.000, 579120.000, 4444260.000)
+      val rasterExtent = RasterExtent(extent, 30.0, 30.0, 512, 512)
+
+      val expandedGridBounds = GridBounds(-EXPAND_CELLS, -EXPAND_CELLS, rasterExtent.cols + EXPAND_CELLS - 1, rasterExtent.rows + EXPAND_CELLS - 1)
+      val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
+      val expandedRasterExtent = RasterExtent(expandedExtent, rasterExtent.cols + (EXPAND_CELLS * 2), rasterExtent.rows + (EXPAND_CELLS * 2))
+
+      val windowGridBounds =
+        GridBounds(EXPAND_CELLS, EXPAND_CELLS, EXPAND_CELLS + rasterExtent.cols - 1, EXPAND_CELLS + rasterExtent.rows - 1)
+      val windowExtent = expandedRasterExtent.extentFor(windowGridBounds)
+
+      withClue(s"EXP: ${formatExtent(rasterExtent.extent)}\nACT: ${formatExtent(windowExtent)}\n") { 
+        windowExtent should be (rasterExtent.extent) 
+      }
+    }
+
+  }
 }

@@ -131,12 +131,17 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-   * Gets the tile GridBounds for this RasterExtent that is the smallest subgrid
-   * of tiles containing all points within the extent. The extent is considered inclusive
-   * on it's north and west borders, exclusive on it's east and south borders.
-   * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
-   */
-  def gridBoundsFor(subExtent: Extent): GridBounds = {
+    * Gets the GridBounds aligned with this RasterExtent that is the smallest subgrid
+    * of containing all points within the extent. The extent is considered inclusive
+    * on it's north and west borders, exclusive on it's east and south borders.
+    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
+    * 
+    * @param     subExtent      The extent to get the grid bounds for
+    * @param     clamp          Determines whether or not to clamp the GridBounds to the
+    *                           RasterExtent; defaults to true. If false, GridBounds can
+    *                           contain negative values, or values outside of this RasterExtent's boundaries.
+    */
+  def gridBoundsFor(subExtent: Extent, clamp: Boolean = true): GridBounds = {
     // West and North boundarys are a simple mapToGrid call.
     val (colMin, rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
 
@@ -156,10 +161,14 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
       else rowMaxDouble.toInt
     }
 
-    GridBounds(math.max(colMin, 0),
-               math.max(rowMin, 0),
-               math.min(colMax, cols - 1),
-               math.min(rowMax, rows - 1))
+    if(clamp) {
+      GridBounds(math.max(colMin, 0),
+                 math.max(rowMin, 0),
+                 math.min(colMax, cols - 1),
+                 math.min(rowMax, rows - 1))
+    } else {
+      GridBounds(colMin, rowMin, colMax, rowMax)
+    }
   }
 
   /**
@@ -215,12 +224,31 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     RasterExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight, targetCols, targetRows)
   }
 
-  def extentFor(gridBounds: GridBounds): Extent = {
-    val xmin = max(min(gridBounds.colMin * cellwidth + extent.xmin, extent.xmax) , extent.xmin)
-    val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
+  /**
+    * Gets the Extent that matches the grid bounds passed in, aligned with this RasterExtent.
+    * 
+    * @param     gridBounds      The extent to get the grid bounds for
+    * @param     clamp          Determines whether or not to clamp the Extent to the
+    *                           extent of this RasterExtent; defaults to true. If true, the
+    *                           returned extent will be contained by this RasterExtent's extent,
+    *                           if false, the Extent returned can be outside of this RasterExtent's extent.
+    */
+  def extentFor(gridBounds: GridBounds, clamp: Boolean = true): Extent = {
+    val xmin = gridBounds.colMin * cellwidth + extent.xmin
+    val ymax = extent.ymax - (gridBounds.rowMin * cellheight)
     val xmax = xmin + (gridBounds.width * cellwidth)
     val ymin = ymax - (gridBounds.height * cellheight)
-    Extent(xmin, ymin, xmax, ymax)
+
+    if(clamp) {
+      Extent(
+        max(min(xmin, extent.xmax), extent.xmin),
+        max(min(ymin, extent.ymax), extent.ymin),
+        max(min(xmax, extent.xmax), extent.xmin),
+        max(min(ymax, extent.ymax), extent.ymin)
+      )
+    } else {
+      Extent(xmin, ymin, xmax, ymax)
+    }
   }
 
   /** Adjusts a raster extent so that it can encompass the tile layout.
@@ -253,6 +281,9 @@ object RasterExtent {
     RasterExtent(extent, cellSize.width, cellSize.height, cols, rows)
   }
 
-  def apply(tile: Tile, extent: Extent): RasterExtent =
+  def apply(tile: CellGrid, extent: Extent): RasterExtent =
+    apply(extent, tile.cols, tile.rows)
+
+  def apply(extent: Extent, tile: CellGrid): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 }

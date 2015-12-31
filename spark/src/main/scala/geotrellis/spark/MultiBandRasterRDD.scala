@@ -14,6 +14,9 @@ class MultiBandRasterRDD[K: ClassTag](val tileRdd: RDD[(K, MultiBandTile)], val 
 }
 
 object MultiBandRasterRDD {
+  def apply[K: ClassTag](tileRdd: RDD[(K, MultiBandTile)], metaData: RasterMetaData): MultiBandRasterRDD[K] =
+    new MultiBandRasterRDD[K](tileRdd, metaData)
+
   implicit def implicitToRDD[K](rasterRdd: MultiBandRasterRDD[K]): RDD[(K, MultiBandTile)] = rasterRdd
 
   implicit def bridge[K: JsonFormat : ClassTag] =

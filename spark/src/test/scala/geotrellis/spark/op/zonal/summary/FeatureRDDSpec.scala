@@ -12,7 +12,7 @@ import org.scalatest._
 
 class FeatureRDDSpec extends FunSpec
     with Matchers
-    with TestSparkContext {
+    with TestEnvironment {
 
   describe("Zonal summary on an RDD of features") {
     it("should compute the area of features under a zone") {

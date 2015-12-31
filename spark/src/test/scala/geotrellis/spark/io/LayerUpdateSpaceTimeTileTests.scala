@@ -1,9 +1,9 @@
 package geotrellis.spark.io
 
 import geotrellis.raster.Tile
-import geotrellis.spark.{RasterMetaData, SpaceTimeKey, TestSparkContext, SpatialKey}
+import geotrellis.spark._
 
-trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestSparkContext =>
+trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
 
   def updater: TestUpdater
 

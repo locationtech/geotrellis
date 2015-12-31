@@ -1,6 +1,5 @@
 package geotrellis.spark.ingest
 
-import geotrellis.raster.reproject.ReprojectOptions
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -22,7 +21,7 @@ object MultiBandIngest{
     (sink: (MultiBandRasterRDD[K], Int) => Unit)
     (implicit tiler: Tiler[T, K, MultiBandTile]): Unit =
   {
-    val reprojectedTiles = sourceTiles.reproject(destCRS, ReprojectOptions(resampleMethod)).cache()
+    val reprojectedTiles = sourceTiles.reproject(destCRS)(method = resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = tiler(sourceTiles, rasterMetaData, resampleMethod).cache()

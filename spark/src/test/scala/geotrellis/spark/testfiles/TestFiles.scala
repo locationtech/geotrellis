@@ -83,7 +83,7 @@ object TestFiles extends Logging {
   }
 }
 
-trait TestFiles { self: TestSparkContext =>
+trait TestFiles { self: TestEnvironment =>
   def spatialTestFile(name: String) = TestFiles.generateSpatial(name, TestFiles.rasterMetaData)
 
   def spaceTimeTestFile(name: String) = TestFiles.generateSpaceTime(name, TestFiles.rasterMetaData)

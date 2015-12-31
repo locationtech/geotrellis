@@ -6,4 +6,7 @@ package geotrellis.raster
   * wraps Tile, that extends your Methods trait. See
   * [[geotrellis.raster.op.local.LocalMethods]]
   */
-trait TileMethods { val tile: Tile }
+trait TileMethods extends MethodExtensions[Tile] { 
+  val tile: Tile
+  val self = tile
+}

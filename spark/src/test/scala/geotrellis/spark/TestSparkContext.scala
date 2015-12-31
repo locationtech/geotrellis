@@ -37,5 +37,5 @@ object TestSparkContext {
 }
 
 trait TestSparkContext extends FunSpec with BeforeAndAfterAll {
-  implicit def sc: SparkContext = TestSparkContext._sc
+//  implicit def sc: SparkContext = TestSparkContext._sc
 }
