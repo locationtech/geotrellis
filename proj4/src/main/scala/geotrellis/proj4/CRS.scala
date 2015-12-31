@@ -96,6 +96,10 @@ object CRS {
     def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
   }
 
+  /** Creates a [[CoordinateReferenceSystem]] (CRS) from an EPSG code. */
+  def fromEpsgCode(epsgCode: Int) =
+    fromName(s"EPSG:$epsgCode")
+
   private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
     val stream = getClass.getResourceAsStream(s"${filePrefix}epsg")
     try {

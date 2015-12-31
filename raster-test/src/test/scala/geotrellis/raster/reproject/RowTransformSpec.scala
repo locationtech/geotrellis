@@ -143,11 +143,8 @@ class RowTransformSpec extends FunSpec
       val srcProjected = src.map(_.reproject(utmToWebMercator))
       val dest = destX.zip(destY).map { case (x, y) => Point(x, y) }
 
-      println(Seq(Extent(-78.0000, 0.0000, -72.0000, 84.0000), Line(src.map(_.reproject(utm, LatLng)))).toGeoJson)
-
       src.zip(srcProjected).zip(dest)
         .foreach { case ((sp1, p1), p2) =>
-          println(s"$sp1 $p1 $p2")
           val dx = math.abs(p1.x - p2.x)
           val dy = math.abs(p1.y - p2.y)
           val d  = dx + dy

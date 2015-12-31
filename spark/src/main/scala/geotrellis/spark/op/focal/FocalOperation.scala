@@ -18,10 +18,10 @@ import scala.collection.mutable.ArrayBuffer
 object FocalOperation {
 
   def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, opBounds: Option[GridBounds] = None)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
+      (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] = {
 
     val bounds = opBounds.getOrElse(GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
-    val m: Int = neighborhood.extent // how many pixels we need for the margin        
+    val m: Int = neighborhood.extent // how many pixels we need for the margin
     
     rdd
       .flatMap { case record @ (key, tile) =>
@@ -36,10 +36,10 @@ object FocalOperation {
         // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
         def addSlice(spatialKey: SpatialKey, direction: => Direction, sliver: => Tile) {
           if (bounds.contains(spatialKey.col, spatialKey.row))
-            slivers += key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop                    
+            slivers += key.updateSpatialComponent(spatialKey) -> (direction, sliver.toArrayTile) // force tile crop
         }
 
-        // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window        
+        // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window
         addSlice(SpatialKey(col,row), Center, tile)
       
         addSlice(SpatialKey(col-1, row), Left, tile.crop(0, 0, mm, rows))
@@ -66,31 +66,31 @@ object FocalOperation {
             val updateBounds = direction.toGridBounds(cols, rows, m)
             focalTile.update(updateBounds.colMin, updateBounds.rowMin, slice)
           }
-          val result = calc(focalTile, neighborhood, Some(GridBounds(m, m, m+cols-1, m+rows-1)))
+          val result = calc(focalTile, Some(GridBounds(m, m, m+cols-1, m+rows-1)))
           key -> result
         }                
       }
   }
 
   def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
-    new RasterRDD(
+      (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] = {
+    new ContextRDD(
       apply(rasterRDD, neighborhood, Some(rasterRDD.metaData.gridBounds))(calc),
-      rasterRDD.metaData)
+      rasterRDD.metadata)
   }
 }
 
 abstract class FocalOperation[K: SpatialComponent: ClassTag] extends RasterRDDMethods[K] {
 
   def focal(n: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] =
+      (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
     FocalOperation(rasterRDD, n)(calc)
 
   def focalWithExtent(n: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
+      (calc: (Tile, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
     val extent = rasterRDD.metaData.layout.rasterExtent
-    FocalOperation(rasterRDD, n){ (tile, n, bounds) =>
-      calc(tile, n, bounds, extent)
+    FocalOperation(rasterRDD, n){ (tile, bounds) =>
+      calc(tile, bounds, extent)
     }
   }
 }

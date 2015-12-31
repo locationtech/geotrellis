@@ -4,12 +4,9 @@ import com.typesafe.config.ConfigFactory
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-
 import spray.json._
 import DefaultJsonProtocol._
-
 import scala.collection.JavaConversions._
-
 import org.apache.spark.Logging
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
@@ -33,10 +30,10 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   }
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
-    val scanner  = connector.createScanner(attributeTable, new Authorizations())
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
     layerId.foreach { id =>
       scanner.setRange(new Range(new Text(id.toString)))
-    }    
+    }
     scanner.fetchColumnFamily(new Text(attributeName))
     scanner.iterator.map(_.getValue)
   }
@@ -68,7 +65,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
 
   def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
     fetch(None, attributeName)
-      .map{ _.toString.parseJson.convertTo[(LayerId, T)] }
+      .map { _.toString.parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 

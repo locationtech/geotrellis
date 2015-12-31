@@ -174,6 +174,17 @@ class MockS3Client() extends S3Client with LazyLogging {
       bucket.remove(keys.asScala.map(_.getKey))
     }
   }
+
+  def copyObject(r: CopyObjectRequest): CopyObjectResult = this.synchronized {
+    logger.debug(s"COPY ${r.getSourceKey}")
+
+    val destBucket = getBucket(r.getDestinationBucketName)
+    destBucket.synchronized {
+      val obj = getObject(r.getSourceBucketName, r.getSourceKey)
+      putObject(r.getDestinationBucketName, r.getDestinationKey, obj.getObjectContent, obj.getObjectMetadata)
+    }
+    new CopyObjectResult()
+  }
 }
 
 object MockS3Client{

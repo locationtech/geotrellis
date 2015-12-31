@@ -33,7 +33,7 @@ class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], ext
       val v = r.get(x, y)
       if(isData(v)) addValueOrdered(v)
     }
-    tile.set(cursor.col, cursor.row, median)
+    resultTile.set(cursor.col, cursor.row, median)
   }
 }
 
@@ -58,7 +58,7 @@ class CellwiseMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], e
     }
   }
 
-  def setValue(x: Int, y: Int) = { tile.setDouble(x, y, median) }
+  def setValue(x: Int, y: Int) = { resultTile.setDouble(x, y, median) }
 }
 
 

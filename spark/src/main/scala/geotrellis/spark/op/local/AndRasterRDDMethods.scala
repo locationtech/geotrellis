@@ -8,9 +8,7 @@ trait AndRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** And a constant Int value to each cell. */
   def localAnd(i: Int): RasterRDD[K] = 
     rasterRDD
-      .mapPairs { case (t, r) =>
-        (t, And(r, i))
-      }
+      .mapValues { r => And(r, i) }
 
   /** And a constant Int value to each cell. */
   def &(i: Int): RasterRDD[K] = localAnd(i)
@@ -20,7 +18,7 @@ trait AndRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   /** And the values of each cell in each raster.  */
   def localAnd(other: RasterRDD[K]): RasterRDD[K] =
-    rasterRDD.combineTiles(other) { case (t1, t2) => And(t1, t2) }
+    rasterRDD.combineValues(other) { case (t1, t2) => And(t1, t2) }
 
   /** And the values of each cell in each raster. */
   def &(rs: RasterRDD[K]): RasterRDD[K] = localAnd(rs)

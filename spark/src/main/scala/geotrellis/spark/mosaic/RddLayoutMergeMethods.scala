@@ -9,28 +9,30 @@ import geotrellis.spark._
 import geotrellis.spark.ingest.CellGridPrototypeView
 import geotrellis.spark.tiling.LayoutDefinition
 
-class RddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag](
- rdd: (RDD[(K, TileType)], LayoutDefinition))
-extends MergeMethods[(RDD[(K, TileType)], LayoutDefinition)] {
+class RddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag, M: (? => {def layout: LayoutDefinition})](
+ rdd: (RDD[(K, TileType)] with Metadata[M])
+) extends MergeMethods[RDD[(K, TileType)] with Metadata[M]] {
 
- def merge(other: (RDD[(K, TileType)], LayoutDefinition)) = {
-   val (thisRdd, thisLayout) = rdd
-   val (thatRdd, thatLayout) = other
+ def merge(other: RDD[(K, TileType)] with Metadata[M]) = {
+   val thisLayout = rdd.metadata.layout
+   val thatLayout = other.metadata.layout
 
-   val cutRdd = thatRdd
-     .flatMap { case(k, tile) =>
-       val extent = thatLayout.mapTransform(k)
-       thisLayout.mapTransform(extent)
-         .coords
-         .map { spatialComponent =>
-           val outKey = k.updateSpatialComponent(spatialComponent)
-           val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
-           newTile.merge(thisLayout.mapTransform(outKey), extent, tile)
-           (outKey, newTile)
-         }
+   val cutRdd = 
+       other
+         .flatMap { case (k: K, tile: TileType) =>
+           val extent = thatLayout.mapTransform(k)
+           thisLayout.mapTransform(extent)
+             .coords
+             .map { spatialComponent =>
+             val outKey = k.updateSpatialComponent(spatialComponent)
+             val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
+             val merged = newTile.merge(thisLayout.mapTransform(outKey), extent, tile)
+             (outKey, merged)
+           }
        }
 
-   (thisRdd.merge(cutRdd), thisLayout)
+
+   rdd.withContext { rdd => rdd.merge(cutRdd) }
  }
 
 }

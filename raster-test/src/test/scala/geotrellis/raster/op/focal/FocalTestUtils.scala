@@ -107,7 +107,7 @@ case class MockCursor(all: Seq[Int], added: Seq[Int], removed: Seq[Int]) extends
 trait FocalOpSpec extends TileBuilders with Matchers {
   def getSetup(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                r: Tile, n: Neighborhood) = {
-    val calc = getCalc(r, n).asInstanceOf[CursorCalculation[Tile] with Initialization]
+    val calc = getCalc(r, n).asInstanceOf[CursorCalculation[Tile]]
     val analysisArea = GridBounds(r)
     CursorSetup(r, calc, Cursor(r, n, analysisArea))
   }
@@ -115,7 +115,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
   def getCursorResult(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                       n: Neighborhood, cursor: MockCursor): Int = {
     val r = cursor.raster
-    val calc = getCalc(r, n).asInstanceOf[CursorCalculation[Tile] with Initialization]
+    val calc = getCalc(r, n).asInstanceOf[CursorCalculation[Tile]]
     calc.calc(r, cursor)
     calc.result.get(0, 0)
   }
@@ -123,14 +123,14 @@ trait FocalOpSpec extends TileBuilders with Matchers {
   def getDoubleCursorResult(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                             n: Neighborhood, cursor: MockCursor): Double = {
     val r = cursor.raster
-    val calc = getCalc(r, n).asInstanceOf[CursorCalculation[Tile] with Initialization]
+    val calc = getCalc(r, n).asInstanceOf[CursorCalculation[Tile]]
     calc.calc(r, cursor)
     calc.result.getDouble(0, 0)
   }
 
   def testCursorSequence(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                          n: Neighborhood, setups: Seq[SeqTestSetup[Int]]) = {
-    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CursorCalculation[Tile] with Initialization]
+    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CursorCalculation[Tile]]
 
     var init = true
     for(setup <- setups) {
@@ -144,7 +144,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
 
   def testCellwiseSequence(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                            n: Neighborhood, setups: Seq[SeqTestSetup[Int]]) = {
-    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CellwiseCalculation[Tile] with Initialization]
+    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CellwiseCalculation[Tile]]
 
     var init = true
     for(setup <- setups) {
@@ -167,7 +167,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
 
   def testDoubleCursorSequence(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                                n: Neighborhood, setups: Seq[SeqTestSetup[Double]]) = {
-    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CursorCalculation[Tile] with Initialization]
+    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CursorCalculation[Tile]]
 
     var init = true
     for(setup <- setups) {
@@ -180,7 +180,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
 
   def testDoubleCellwiseSequence(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                                  n: Neighborhood, setups: Seq[SeqTestSetup[Double]]) = {
-    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CellwiseCalculation[Tile] with Initialization]
+    val calc = getCalc(MockCursorHelper.raster, n).asInstanceOf[CellwiseCalculation[Tile]]
 
     var init = true
     for(setup <- setups) {
@@ -204,7 +204,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
                         n: Neighborhood, added: Seq[Int], removed: Seq[Int]) = {
 
     val r = MockCursor.fromAddRemove(added, removed).raster
-    val calc = getCalc(r, n).asInstanceOf[CellwiseCalculation[Tile] with Initialization]
+    val calc = getCalc(r, n).asInstanceOf[CellwiseCalculation[Tile]]
 
     var i = 0
     for(x <- added) {
@@ -224,7 +224,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
   def getDoubleCellwiseResult(getCalc: (Tile, Neighborhood)=>FocalCalculation[Tile],
                               n: Neighborhood, added: Seq[Int], removed: Seq[Int]): Double = {
     val r = MockCursor.fromAddRemove(added, removed).raster
-    val calc = getCalc(r, n).asInstanceOf[CellwiseCalculation[Tile] with Initialization]
+    val calc = getCalc(r, n).asInstanceOf[CellwiseCalculation[Tile]]
 
     var i = 0
     for(x <- added) {

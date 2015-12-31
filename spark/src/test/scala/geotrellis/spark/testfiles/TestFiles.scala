@@ -50,7 +50,7 @@ object TestFiles extends Logging {
         (key, tile)
       }
 
-    new RasterRDD(sc.parallelize(tiles, partitionCount), md)
+    new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 
   def generateSpaceTime(layerName: String, md: RasterMetaData)(implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
@@ -79,7 +79,7 @@ object TestFiles extends Logging {
 
       }
 
-    new RasterRDD(sc.parallelize(tiles, partitionCount), md)
+    new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 }
 

@@ -1,6 +1,6 @@
 #geotrellis.raster.render
 
-## Rendering Common Image Formats
+##Rendering Common Image Formats
 At some point, you'll want to output a visual representation of the
 tiles you're processing. Likely, that's why you're reading this bit of
 documentation. Luckily enough, geotrellis provides some methods which

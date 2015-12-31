@@ -16,9 +16,6 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom => jts}
-import spray.json._
-
 case class Feature[+G <: Geometry, D](geom: G, data: D) {
   def mapGeom[T <: Geometry](f: G => T): Feature[T, D] =
     Feature(f(geom), data)
