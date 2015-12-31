@@ -28,7 +28,7 @@ import spire.syntax.cfor._
 
 class ZonalPercentageSpec extends FunSpec
                              with Matchers
-                             with TestEngine
+                             with RasterMatchers
                              with TileBuilders {
   describe("ZonalPercentage") {
     it("gives correct percentage for example raster") {

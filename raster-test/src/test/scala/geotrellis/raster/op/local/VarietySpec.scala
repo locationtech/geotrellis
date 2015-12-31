@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class VarietySpec extends FunSpec 
                      with Matchers 
-                     with TestEngine 
+                     with RasterMatchers 
                      with TileBuilders {
   describe("Variety") {
     it("computes variety") { 

@@ -15,7 +15,7 @@ import spire.syntax.cfor._
 
 class RowTransformSpec extends FunSpec
     with TileBuilders
-    with TestEngine {
+    with RasterMatchers {
   val path = "raster-test/data/schoolgeo.json"
 
   val LLtoWM = Transform(LatLng, WebMercator)

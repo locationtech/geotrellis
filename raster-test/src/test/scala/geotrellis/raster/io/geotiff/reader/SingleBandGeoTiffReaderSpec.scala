@@ -8,7 +8,7 @@ import spire.syntax.cfor._
 import org.scalatest._
 
 class SingleBandGeoTiffReaderSpec extends FunSpec 
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   def geoTiff(storage: String, cellType: String): SingleBandGeoTiff =

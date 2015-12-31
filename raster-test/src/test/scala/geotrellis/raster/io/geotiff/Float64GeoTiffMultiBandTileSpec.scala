@@ -15,7 +15,7 @@ import org.scalatest._
 class Float64GeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils 
     with TileBuilders {
   def p(s: String, i: String): String = 

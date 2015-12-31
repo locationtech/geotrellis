@@ -26,7 +26,7 @@ import java.util.Locale
 
 import scala.language.implicitConversions
 
-class CostDistanceSpec extends FunSuite with TestEngine {
+class CostDistanceSpec extends FunSuite with RasterMatchers {
   implicit def array2Tile(a: Array[Int]): Tile = {
     val size = math.sqrt(a.length).toInt
 
@@ -58,7 +58,7 @@ class CostDistanceSpec extends FunSuite with TestEngine {
 
     val cd = CostDistance(costTile, points)
 
-    val d = get(cd).toArrayDouble
+    val d = cd.toArrayDouble()
 
     val expected = Array(
       2.0, 0.0, 0.0, 4.0, 6.7, 9.2,
@@ -91,7 +91,7 @@ class CostDistanceSpec extends FunSuite with TestEngine {
 
     val cd = CostDistance(costTile, points)
 
-    val d = get(cd).toArrayDouble
+    val d = cd.toArrayDouble()
     
     val expected = Array(
       22,21,21,20,17,15,14,

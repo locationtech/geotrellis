@@ -3,7 +3,7 @@ package geotrellis.raster.op.focal
 import org.scalatest._
 import geotrellis.testkit._
 
-class MedianSpec extends FunSpec with Matchers with TileBuilders with TestEngine {
+class MedianSpec extends FunSpec with Matchers with TileBuilders with RasterMatchers {
   describe("Tile focalMedian") {
     it("should match worked out results") {
       val r = createTile(Array(

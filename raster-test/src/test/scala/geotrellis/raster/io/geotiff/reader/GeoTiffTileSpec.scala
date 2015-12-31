@@ -9,7 +9,7 @@ import spire.syntax.cfor._
 import org.scalatest._
 
 class GeoTiffTileSpec extends FunSpec 
-    with TestEngine
+    with RasterMatchers
     with TileBuilders
     with GeoTiffTestUtils {
 

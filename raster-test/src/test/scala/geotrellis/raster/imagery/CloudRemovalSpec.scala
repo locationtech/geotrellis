@@ -2,12 +2,12 @@ package geotrellis.raster.imagery
 
 import geotrellis.raster.{ArrayMultiBandTile, MultiBandTile}
 import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SingleBandGeoTiff}
-import geotrellis.testkit.TestEngine
+import geotrellis.testkit.RasterMatchers
 import org.scalatest.FunSpec
 import spire.syntax.cfor._
 
 class CloudRemovalSpec extends FunSpec
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   describe("Checking cloud removal") {

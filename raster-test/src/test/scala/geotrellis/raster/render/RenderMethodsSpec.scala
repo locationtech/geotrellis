@@ -6,7 +6,6 @@ import geotrellis.testkit._
 import org.scalatest._
 
 class RenderMethodsSpec extends FunSpec with Matchers 
-                                        with TestEngine 
                                         with TileBuilders {
   describe("color") {
     it("should color an int tile") {

@@ -3,7 +3,6 @@ package geotrellis.raster.compression
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 
-import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -12,7 +11,6 @@ import spire.syntax.cfor._
 
 class ZipCompressedTileSpec extends FunSpec
     with TileBuilders
-    with TestEngine
     with RasterMatchers {
 
   describe("Zip Compressed Tiles") {

@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class Atan2Spec extends FunSpec
                    with Matchers
-                   with TestEngine
+                   with RasterMatchers
                    with TileBuilders {
   describe("ArcTan2") {
     it("finds arctan2 of a double raster") {

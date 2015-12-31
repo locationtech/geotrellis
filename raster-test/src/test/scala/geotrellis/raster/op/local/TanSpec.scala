@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class TanSpec extends FunSpec
                  with Matchers
-                 with TestEngine
+                 with RasterMatchers
                  with TileBuilders {
   describe("Tan") {
     it("finds the tan of a double raster") {

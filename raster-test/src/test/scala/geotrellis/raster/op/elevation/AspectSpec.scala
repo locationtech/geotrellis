@@ -19,25 +19,26 @@ package geotrellis.raster.op.elevation
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
 import geotrellis.vector.Extent
-import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
 
 import scala.math._
 
-class AspectSpec extends FunSpec with Matchers with TestEngine with TileBuilders {
+class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuilders with TestFiles {
   describe("Aspect") {
     it("should match gdal computed aspect raster") {
-      val rasterExtentElevation = RasterSource(LayerId("test:fs", "elevation")).rasterExtent.get
+      val elevation = loadTestArg("data/elevation")
+      val aspect = loadTestArg("data/aspect")
+      val rasterExtentElevation = elevation.rasterExtent
 
       //Use the testkit to resolve everything to bare Tiles
-      val r: Tile = get(getRaster("elevation"))
-      val rg: Tile = get(getRaster("aspect"))
+      val r: Tile = elevation.tile
+      val rg: Tile = aspect.tile
 
       val aspectComputed = r.aspect(rasterExtentElevation.cellSize)
 
-      val rasterExtent = RasterSource("aspect").rasterExtent.get
+      val rasterExtent = aspect.rasterExtent
 
       // Gdal actually computes the parimeter values differently.
       // So take out the edge results
@@ -47,10 +48,11 @@ class AspectSpec extends FunSpec with Matchers with TestEngine with TileBuilders
       val cropExtent = Extent(xmin, ymin, xmax, ymax)
 
       val rgc = rg.convert(TypeDouble).crop(rasterExtent.extent, cropExtent)
-      val rc = get(aspectComputed).crop(rasterExtentElevation.extent, cropExtent)
+      val rc = aspectComputed.crop(rasterExtentElevation.extent, cropExtent)
 
       assertEqual(rgc, rc, 0.1)
     }
+
 
     it("should calculate edge cases correctly") {
       val r = createTile(

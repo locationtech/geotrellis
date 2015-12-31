@@ -19,7 +19,6 @@ package geotrellis.raster.op.global
 import geotrellis.raster._
 import geotrellis.testkit._
 import geotrellis.vector._
-import geotrellis.engine._
 
 import scala.collection.mutable
 
@@ -28,7 +27,7 @@ import com.vividsolutions.jts.{geom => jts}
 import org.scalatest._
 
 class ToVectorSpec extends FunSpec
-                      with TestEngine
+                      with RasterMatchers with TestFiles
                       with TileBuilders {
   val cw = 1
   val ch = 10
@@ -391,25 +390,25 @@ class ToVectorSpec extends FunSpec
     }
 
     it("should vectorize a raster that was at one point not vectorizing properly") {
-      val rs = RasterSource("vectorbugger")
-      val r = rs.get
-      val extent = rs.rasterExtent.get.extent
+      val rs = loadTestArg("vectorbugger")
+      val r = rs.tile
+      val extent = rs.extent
       val vect = r.toVector(extent)
     }
 
     it("should vectorize another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger2...")
-      val rs = RasterSource("vectorbugger2")
-      val r = rs.get
-      val extent = rs.rasterExtent.get.extent
+      val rs = loadTestArg("vectorbugger2")
+      val r = rs.tile
+      val extent = rs.extent
       val vect = r.toVector(extent)
     }
 
     it("should vectorize yet another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger3...")
-      val rs = RasterSource("vectorbugger3")
-      val r = rs.get
-      val extent = rs.rasterExtent.get.extent
+      val rs = loadTestArg("vectorbugger3")
+      val r = rs.tile
+      val extent = rs.extent
       val vect = r.toVector(extent)
     }
 

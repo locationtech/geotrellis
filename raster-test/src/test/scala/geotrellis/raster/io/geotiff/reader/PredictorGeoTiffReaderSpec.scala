@@ -8,7 +8,7 @@ import spire.syntax.cfor._
 import org.scalatest._
 
 class PredictorGeoTiffReaderSpec extends FunSpec 
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
 

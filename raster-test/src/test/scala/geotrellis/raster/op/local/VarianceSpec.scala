@@ -9,7 +9,7 @@ import spire.syntax.cfor._
 
 class VarianceSpec extends FunSpec
     with Matchers
-    with TestEngine
+    with RasterMatchers
     with TileBuilders {
 
   describe("Variance") {

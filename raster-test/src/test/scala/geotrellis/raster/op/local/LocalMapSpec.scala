@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class LocalMapSpec extends FunSpec 
                       with Matchers 
-                      with TestEngine 
+                      with RasterMatchers 
                       with TileBuilders {
   describe("LocalMap") {
     it ("performs integer function") {

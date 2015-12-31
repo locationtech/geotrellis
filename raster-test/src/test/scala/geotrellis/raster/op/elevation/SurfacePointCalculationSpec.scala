@@ -25,7 +25,7 @@ import scala.math._
 
 class SlopeAspectTests extends FunSpec 
                           with Matchers 
-                          with TestEngine {
+                          with RasterMatchers {
   describe("SurfacePoint") {
     it("should calculate trig values correctly") {
       val tolerance = 0.0000000001

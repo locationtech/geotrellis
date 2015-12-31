@@ -9,8 +9,7 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class CostDistanceWithPathsSpec extends FunSpec
-    with TestEngine {
+class CostDistanceWithPathsSpec extends FunSpec with Matchers {
 
   val Eps = 1e-7
 

@@ -19,12 +19,11 @@ package geotrellis.raster.io.arg
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.testkit._
-import geotrellis.engine.io.LoadFile
 
 import org.scalatest._
 
 class ArgTest extends FunSuite
-                 with TestEngine {
+                 with RasterMatchers {
   val array =
     Array(NODATA, -1, 2, -3,
       4, -5, 6, -7,
@@ -35,7 +34,7 @@ class ArgTest extends FunSuite
   val tile = IntArrayTile(array, 4, 4)
   val extent = Extent(10.0, 11.0, 14.0, 15.0)
 
-  def loadRaster(path:String) = get(LoadFile(path))
+  def loadRaster(path:String) = ArgReader.read(path)
 
   test("test float compatibility") {
     assert(isNoData(tile.applyDouble(0)))
@@ -54,26 +53,26 @@ class ArgTest extends FunSuite
   }
 
   test("check int8") {
-    assert(loadRaster("/tmp/foo-int8.arg").toArray === array)
+    assert(loadRaster("/tmp/foo-int8.json").toArray === array)
   }
 
   test("check int16") {
-    assert(loadRaster("/tmp/foo-int16.arg").toArray === array)
+    assert(loadRaster("/tmp/foo-int16.json").toArray === array)
   }
 
   test("check int32") {
-    assert(loadRaster("/tmp/foo-int32.arg").toArray === array)
+    assert(loadRaster("/tmp/foo-int32.json").toArray === array)
   }
 
   test("check float32") {
-    val d = loadRaster("/tmp/foo-float32.arg").toArrayTile
+    val d = loadRaster("/tmp/foo-float32.json").toArrayTile
     assert(isNoData(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
   }
 
   test("check float64") {
-    val d = loadRaster("/tmp/foo-float64.arg").toArrayTile
+    val d = loadRaster("/tmp/foo-float64.json").toArrayTile
     assert(isNoData(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
@@ -107,7 +106,7 @@ class ArgTest extends FunSuite
 
     val tile = ByteArrayTile(byteArr, cols, rows)
     ArgWriter(TypeByte).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
-    val r2 = loadRaster("/tmp/fooc-int8.arg")
+    val r2 = loadRaster("/tmp/fooc-int8.json")
     assert(r2.toArrayTile === tile.toArrayTile)
   }
 

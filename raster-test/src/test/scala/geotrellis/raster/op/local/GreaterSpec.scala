@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class GreaterSpec extends FunSpec
   with Matchers
-  with TestEngine
+  with RasterMatchers
   with TileBuilders {
   describe("Greater") {
     it("checks int valued raster against int constant") {

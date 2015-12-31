@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class CeilSpec extends FunSpec 
                   with Matchers 
-                  with TestEngine 
+                  with RasterMatchers 
                   with TileBuilders {
   describe("Ceil") {
     it("takes ceil of int Raster") {

@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class SubtractSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Subtract") {
     it("subtracts a constant value to each cell of an int valued raster") {

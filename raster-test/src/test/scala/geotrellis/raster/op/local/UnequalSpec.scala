@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class UnequalSpec extends FunSpec 
                      with Matchers 
-                     with TestEngine 
+                     with RasterMatchers 
                      with TileBuilders {
   describe("Unequal") {
     it("checks int valued raster against int constant") {

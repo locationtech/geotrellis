@@ -1,14 +1,14 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.TypeInt
-import geotrellis.testkit.{TileBuilders, TestEngine}
+import geotrellis.testkit.{RasterMatchers, TileBuilders}
 import org.scalatest.{BeforeAndAfterAll, Matchers, FunSpec}
 
 
 class UInt16GeoTiffTileSpec extends FunSpec
 with Matchers
 with BeforeAndAfterAll
-with TestEngine
+with RasterMatchers
 with GeoTiffTestUtils
 with TileBuilders {
 

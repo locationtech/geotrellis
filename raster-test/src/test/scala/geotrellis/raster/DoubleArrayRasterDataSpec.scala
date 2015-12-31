@@ -25,7 +25,7 @@ import spire.syntax.cfor._
 
 class DoubleArrayTileSpec extends FunSpec
                                    with Matchers
-                                   with TestEngine
+                                   with RasterMatchers
                                    with TileBuilders {
   describe("DoubleArrayTile.toByteArray") {
     it("converts back and forth.") {

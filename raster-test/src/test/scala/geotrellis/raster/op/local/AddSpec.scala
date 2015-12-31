@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class AddSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Add") {
     it("adds a constant value to each cell of an int valued raster") {

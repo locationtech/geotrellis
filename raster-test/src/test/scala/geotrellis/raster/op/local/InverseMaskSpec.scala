@@ -26,7 +26,7 @@ import geotrellis.testkit._
 
 class InverseMaskSpec extends FunSpec 
                          with Matchers 
-                         with TestEngine 
+                         with RasterMatchers 
                          with TileBuilders {
   describe("Mask") {
     it("should work with integers") {

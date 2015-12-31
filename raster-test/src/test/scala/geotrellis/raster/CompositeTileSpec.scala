@@ -18,7 +18,6 @@ package geotrellis.raster
 
 import geotrellis.raster.resample._
 import geotrellis.vector.Extent
-import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -26,8 +25,9 @@ import org.scalatest._
 import spire.syntax.cfor._
 
 class CompositeTileSpec extends FunSpec
-                           with TileBuilders
-                           with TestEngine {
+                                with TileBuilders
+                                with RasterMatchers
+                                with TestFiles {
   describe("wrap") {
     it("wraps a literal raster") {
       val r =
@@ -59,27 +59,19 @@ class CompositeTileSpec extends FunSpec
     }
 
     it("splits up a loaded raster") {
-      val rOp = getRaster("elevation")
-      val tOp =
-        rOp.map { r =>
-          val (tcols, trows) = (11, 20)
-          val pcols = r.cols / tcols
-          val prows = r.rows / trows
-          val tl = TileLayout(tcols, trows, pcols, prows)
-          CompositeTile.wrap(r, tl)
-        }
-      val tiled = get(tOp)
-      val raster = get(rOp)
-
+      val raster = loadTestArg("data/elevation").tile
+      val (tcols, trows) = (11, 20)
+      val pcols = raster.cols / tcols
+      val prows = raster.rows / trows
+      val tl = TileLayout(tcols, trows, pcols, prows)
+      val tiled = CompositeTile.wrap(raster, tl)
       assertEqual(tiled, raster)
     }
 
+    val r = loadTestArg("sbn/SBN_inc_percap")
+    val rasterExtent = r.rasterExtent
+
     it("should wrap raster with cropped raster as tiles if cropped is true") {
-      val name = "SBN_inc_percap"
-
-      val rasterExtent = RasterSource(name).rasterExtent.get
-      val r = RasterSource(name).get
-
       val tileLayout =
         TileLayout(
           rasterExtent.cols / 256,
@@ -92,11 +84,6 @@ class CompositeTileSpec extends FunSpec
     }
 
     it("should wrap raster with array raster as tiles if cropped is false") {
-      val name = "SBN_inc_percap"
-
-      val rasterExtent = RasterSource(name).rasterExtent.get
-      val r = RasterSource(name).get
-
       val tileLayout =
         TileLayout(
           rasterExtent.cols / 256,
@@ -109,11 +96,6 @@ class CompositeTileSpec extends FunSpec
     }
 
     it("should wrap raster, and converge to same result resampleed to the tile layout") {
-      val name = "SBN_inc_percap"
-
-      val rasterExtent = RasterSource(name).rasterExtent.get
-      val r = RasterSource(name).get
-
       val tileLayout =
         TileLayout(
           rasterExtent.cols / 256,
@@ -151,8 +133,7 @@ class CompositeTileSpec extends FunSpec
         sys.error("This test requirest that the total col\rows be divisible by the tile col\rows")
 
       val (tile, extent) = {
-        val rs = RasterSource("SBN_inc_percap")
-        val (t, e) = (rs.get, rs.rasterExtent.get.extent)
+        val (t, e) = (r.tile, rasterExtent.extent)
         (t.resample(e, totalCols, totalRows), e)
       }
 

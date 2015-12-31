@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class MinSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Min") {    
     it("mins a constant value to each cell of an int valued raster") {

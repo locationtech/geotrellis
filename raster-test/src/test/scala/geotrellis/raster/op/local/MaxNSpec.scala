@@ -27,7 +27,7 @@ import geotrellis.testkit._
  */
 class MaxNSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
 
   describe("MaxN") {

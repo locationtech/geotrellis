@@ -26,7 +26,7 @@ import org.scalatest._
 import geotrellis.testkit._
 import scala.collection.mutable
 
-class RasterizeSpec extends FunSuite with TestEngine 
+class RasterizeSpec extends FunSuite with RasterMatchers 
                                      with Matchers {
    test("Point Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)

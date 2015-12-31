@@ -2,7 +2,6 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.engine._
 import geotrellis.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
@@ -13,7 +12,7 @@ import spire.syntax.cfor._
 
 class ReprojectSpec extends FunSpec
     with TileBuilders
-    with TestEngine {
+    with RasterMatchers {
   describe("reprojects in approximation to GDAL") {
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {

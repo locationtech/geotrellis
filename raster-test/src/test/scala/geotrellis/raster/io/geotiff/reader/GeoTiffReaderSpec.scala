@@ -42,7 +42,7 @@ import org.scalatest._
 class GeoTiffReaderSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   override def afterAll = purge
@@ -473,7 +473,7 @@ class GeoTiffReaderSpec extends FunSpec
 }
 
 class PackBitsGeoTiffReaderSpec extends FunSpec
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {

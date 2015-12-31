@@ -6,7 +6,7 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class SumSpec extends FunSpec with TestEngine with TileBuilders with FocalOpSpec {
+class SumSpec extends FunSpec with RasterMatchers with TileBuilders with FocalOpSpec {
   val sq1 = Square(1)
   val sq2 = Square(2)
   val sq3 = Square(3)
@@ -99,7 +99,8 @@ class SumSpec extends FunSpec with TestEngine with TileBuilders with FocalOpSpec
       assertEqual(rd.focalSum(Square(1)), Array(4.4, 6.6, 6.6, 4.4,
                                             6.6, 9.9, 9.9, 6.6,
                                             6.6, 9.9, 9.9, 6.6,
-                                            4.4, 6.6, 6.6, 4.4))
+                                            4.4, 6.6, 6.6, 4.4),
+                  threshold = 0.0000000001)
     }
 
     it("should square sum r=2") {

@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class OrSpec extends FunSpec 
                 with Matchers 
-                with TestEngine 
+                with RasterMatchers 
                 with TileBuilders {
   describe("Or") {
     it("ors an Int raster or a constant") {

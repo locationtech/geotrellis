@@ -3,16 +3,16 @@ package geotrellis.raster.mosaic
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.vector.Extent
-import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
 
 import spire.syntax.cfor._
 
-class MosaicSpec extends FunSpec 
-                           with TileBuilders
-                           with TestEngine {
+class MosaicSpec extends FunSpec
+                         with TileBuilders
+                         with RasterMatchers
+                         with TestFiles {
   describe("MosaicBuilder") {
     it("should mosaic a tile split by CompositeTile back into itself") {
       val totalCols = 1000
@@ -26,8 +26,8 @@ class MosaicSpec extends FunSpec
         sys.error("This test requirest that the total col\rows be divisible by the tile col\rows")
 
       val (tile: Tile, extent: Extent) = {
-        val rs = RasterSource("SBN_inc_percap")
-        val (t, e) = (get(rs), get(rs.rasterExtent).extent)
+        val rs = loadTestArg("sbn/SBN_inc_percap")
+        val (t, e) = (rs.tile, rs.extent)
         val resampled = t.resample(e, totalCols, totalRows)
         (resampled, e)
       }

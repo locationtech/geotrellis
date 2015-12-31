@@ -88,7 +88,7 @@ lazy val engineTest = Project("engine-test", file("engine-test")).
   settings(commonSettings: _*)
 
 lazy val testkit = Project("testkit", file("testkit")).
-  dependsOn(raster, engine).
+  dependsOn(raster, vector).
   settings(commonSettings: _*)
 
 lazy val services = Project("services", file("services")).

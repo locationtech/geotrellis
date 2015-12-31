@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class LessOrEqualSpec extends FunSpec 
                          with Matchers 
-                         with TestEngine 
+                         with RasterMatchers 
                          with TileBuilders {
   describe("LessOrEqual") {
     it("checks int valued raster against int constant") {

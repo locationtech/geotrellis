@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class AsinSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   describe("ArcSin") {
     it("finds arcsin of a double raster") {

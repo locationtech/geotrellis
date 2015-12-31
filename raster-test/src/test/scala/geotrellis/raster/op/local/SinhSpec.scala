@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class SinhSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   describe("Sinh") {
     it("finds the hyperbolic sine of a double raster") {

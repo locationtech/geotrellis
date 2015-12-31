@@ -1,13 +1,12 @@
 package geotrellis.raster.op.stats
 
 import geotrellis.raster._
-import geotrellis.engine._
 
 import geotrellis.testkit._
 import org.scalatest._
 
 class StatsMethodsSpec extends FunSpec
-                          with TestEngine
+                          with RasterMatchers with TestFiles
                           with Matchers {
   describe("StatsMethods") {
     it("gets expected class breaks from test raster.") {
@@ -24,7 +23,7 @@ class StatsMethodsSpec extends FunSpec
     }
 
     it("standard deviation should match known values from quad8 raster") {
-      val r = RasterSource.fromPath("raster-test/data/quad8.arg").get
+      val r =  loadTestArg("quad8").tile
       val std = r.standardDeviations(1000)
 
       val d = std.toArray
@@ -36,7 +35,7 @@ class StatsMethodsSpec extends FunSpec
     }
 
     it("get expected statistics from quad8") {
-      val stats = RasterSource.fromPath("raster-test/data/quad8.arg").get.statistics
+      val stats = loadTestArg("quad8").tile.statistics
 
       val dev = math.sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
       val expected = Statistics(400, 2.5, 3, 1, dev, 1, 4)

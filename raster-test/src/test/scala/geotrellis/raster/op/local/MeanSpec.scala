@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class MeanSpec extends FunSpec 
                   with Matchers 
-                  with TestEngine 
+                  with RasterMatchers 
                   with TileBuilders {
   describe("Mean") {
     it("takes mean on rasters of all one value") {

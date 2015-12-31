@@ -18,7 +18,6 @@ package geotrellis.raster
 
 import geotrellis.vector._
 import geotrellis.vector.io.json._
-import geotrellis.engine._
 import geotrellis.testkit._
 import spray.json.DefaultJsonProtocol._
 
@@ -28,13 +27,13 @@ import org.scalatest._
 
 class VectorToRasterSpec extends FunSpec 
                             with Matchers 
-                            with TestEngine 
+                            with RasterMatchers with TestFiles
                             with TileBuilders {
   describe("idwInterpolate") {
     it("matches a QGIS generated IDW raster") {
-      val rs = RasterSource("schoolidw")
-      val re = rs.rasterExtent.get
-      val r = rs.get
+      val rs = loadTestArg("data/schoolidw")
+      val re = rs.rasterExtent
+      val r = rs.tile
 
       val path = "raster-test/data/schoolgeo.json"
 

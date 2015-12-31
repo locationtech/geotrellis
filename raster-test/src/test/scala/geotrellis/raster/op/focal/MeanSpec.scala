@@ -4,7 +4,7 @@ import geotrellis.raster._
 import org.scalatest._
 import geotrellis.testkit._
 
-class MeanSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
+class MeanSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
 
   val getCursorMeanResult = (getDoubleCursorResult _).curried(
     (r,n) => Mean.calculation(r,n))(Circle(1))

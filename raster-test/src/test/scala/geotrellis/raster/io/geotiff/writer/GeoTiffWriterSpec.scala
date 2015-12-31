@@ -32,7 +32,7 @@ import org.scalatest._
 class GeoTiffWriterSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with TileBuilders
     with GeoTiffTestUtils {
 

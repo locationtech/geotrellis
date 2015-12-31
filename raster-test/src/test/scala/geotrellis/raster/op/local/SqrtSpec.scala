@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class SqrtSpec extends FunSpec 
                   with Matchers 
-                  with TestEngine 
+                  with RasterMatchers 
                   with TileBuilders {
   describe("Sqrt") {
     it("takes the square root of an integer raster") {

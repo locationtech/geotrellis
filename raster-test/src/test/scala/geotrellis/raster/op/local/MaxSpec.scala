@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class MaxSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Max") {
     it("maxs a constant value to each cell of an int valued raster") {

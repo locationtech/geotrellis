@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class RoundSpec extends FunSpec 
                    with Matchers 
-                   with TestEngine 
+                   with RasterMatchers 
                    with TileBuilders {
   describe("Round") {    
     it("correctly rounds a Int Raster") {

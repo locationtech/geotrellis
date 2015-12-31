@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class CosSpec extends FunSpec
                  with Matchers
-                 with TestEngine
+                 with RasterMatchers
                  with TileBuilders {
   describe("Cos") {
     it("finds the cosine of a double raster") {

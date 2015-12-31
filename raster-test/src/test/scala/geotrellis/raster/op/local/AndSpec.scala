@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class AndSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("And") {
     it("ands an Int raster and a constant") {

@@ -26,6 +26,47 @@ trait RasterMatchers extends Matchers {
 
   val Eps = 1e-3
 
+  def assertEqual(r: Tile, arr: Array[Int]): Unit = {
+    withClue(s"Sizes do not match.") {
+      (r.cols * r.rows) should be (arr.length)
+    }
+
+    r.foreach { (col, row, z) =>
+      withClue(s"Value at ($col, $row) are not the same") {
+        z should be (arr(row * r.cols + col))
+      }
+    }
+  }
+
+  def assertEqual(r: Tile, arr: Array[Double], threshold: Double = Eps): Unit = {
+    withClue(s"Sizes do not match.") {
+      (r.cols * r.rows) should be (arr.length)
+    }
+
+    r.foreachDouble { (col, row, v1) =>
+      val v2 = arr(row * r.cols + col)
+      if (isNoData(v1)) {
+        withClue(s"Value at ($col, $row) are not the same: v1 = NoData, v2 = $v2") {
+          isNoData(v2) should be(true)
+        }
+      } else {
+        if (isNoData(v2)) {
+          withClue(s"Value at ($col, $row) are not the same: v1 = $v1, v2 = NoData") {
+            isNoData(v1) should be(true)
+          }
+        } else {
+          withClue(s"Value at ($col, $row) are not the same: ") {
+            v1 should be(v2 +- threshold)
+          }
+        }
+      }
+    }
+  }
+
+  def assertEqual(ta: Tile, tb: Tile): Unit = tilesEqual(ta, tb)
+
+  def assertEqual(ta: Tile, tb: Tile, threshold: Double): Unit = tilesEqual(ta, tb, threshold)
+  
   def arraysEqual(a1: Array[Double], a2: Array[Double], eps: Double = Eps) =
     a1.zipWithIndex.foreach { case (v, i) => v should be (a2(i) +- eps) }
 

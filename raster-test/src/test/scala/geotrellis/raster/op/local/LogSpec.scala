@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class LogSpec extends FunSpec
     with Matchers
-    with TestEngine
+    with RasterMatchers
     with TileBuilders {
   describe("Log") {
     it("takes log of int Raster") {

@@ -28,7 +28,7 @@ import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.{geom => jts}
 
 class RasterizePolygonSpec extends FunSuite
-    with TestEngine
+    with RasterMatchers
     with TileBuilders {
 
   test("Polygon Rasterization") {

@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class NotSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Not") {
     it("negates an Int raster") {

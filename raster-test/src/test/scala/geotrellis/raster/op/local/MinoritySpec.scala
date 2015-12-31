@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class MinoritySpec extends FunSpec 
                       with Matchers 
-                      with TestEngine 
+                      with RasterMatchers 
                       with TileBuilders {
   describe("Minority") {
     it("takes manority on rasters of all one value") {

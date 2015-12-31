@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class AcosSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   describe("ArcCos") {
     it("finds arccos of a double raster") {

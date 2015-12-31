@@ -15,9 +15,8 @@ import org.scalatest._
 import java.util.Arrays
 
 class ByteGeoTiffMultiBandTileSpec extends FunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with TestEngine
+    with Matchers with RasterMatchers
+    with BeforeAndAfterAll    
     with GeoTiffTestUtils 
     with TileBuilders {
   def p(s: String, i: String): String = 

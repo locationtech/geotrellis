@@ -7,7 +7,7 @@ import geotrellis.testkit._
 import org.scalatest._
 
 class MultiBandGeoTiffReaderSpec extends FunSpec
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with INTERLEAVE=PIXEL") {

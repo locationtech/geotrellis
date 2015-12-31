@@ -17,7 +17,6 @@
 package geotrellis.raster.op.elevation
 
 import geotrellis.raster._
-import geotrellis.engine._
 import geotrellis.vector.Extent
 import geotrellis.raster.op._
 import geotrellis.raster.op.focal._
@@ -28,7 +27,7 @@ import org.scalatest._
 
 import spire.syntax.cfor._
 
-class HillshadeSpec extends FunSuite with TestEngine with TileBuilders {
+class HillshadeSpec extends FunSuite with RasterMatchers with TileBuilders {
 
   def grayscale(n: Int) = {
     val ns = (1 to 128).toArray

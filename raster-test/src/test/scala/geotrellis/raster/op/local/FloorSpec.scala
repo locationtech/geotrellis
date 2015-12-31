@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class FloorSpec extends FunSpec 
                    with Matchers 
-                   with TestEngine 
+                   with RasterMatchers 
                    with TileBuilders {
   describe("Floor") {    
     it("takes floor of int Raster") {

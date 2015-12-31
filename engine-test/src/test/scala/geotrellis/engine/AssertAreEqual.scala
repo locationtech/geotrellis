@@ -16,7 +16,6 @@
 
 package geotrellis.testkit
 
-import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op.local._
 

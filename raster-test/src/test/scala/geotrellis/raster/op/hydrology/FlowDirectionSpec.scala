@@ -21,7 +21,7 @@ import org.scalatest._
 import geotrellis.testkit._
 
 class FlowDirectionSpec extends FunSpec with Matchers 
-                                        with TestEngine 
+                                        with RasterMatchers 
                                         with TileBuilders {
   describe("FlowDirection") {
 

@@ -14,8 +14,8 @@ import org.scalatest._
 
 class BitGeoTiffTileSpec extends FunSpec
     with Matchers
+    with RasterMatchers
     with BeforeAndAfterAll
-    with TestEngine
     with GeoTiffTestUtils 
     with TileBuilders {
   describe("BitGeoTiffTile") {

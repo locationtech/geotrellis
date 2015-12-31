@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.testkit
+package geotrellis.engine
 
-import geotrellis.raster._
-import geotrellis.engine._
 import geotrellis.engine.io._
+import geotrellis.raster._
 import org.scalatest._
-
-import spire.syntax.cfor._
 
 object TestEngine {
   private var _init = false

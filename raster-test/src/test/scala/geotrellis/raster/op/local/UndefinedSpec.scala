@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class UndefinedSpec extends FunSpec 
                        with Matchers 
-                       with TestEngine 
+                       with RasterMatchers 
                        with TileBuilders {
   describe("Undefined") {
     it("returns correct result for an integer raster") {

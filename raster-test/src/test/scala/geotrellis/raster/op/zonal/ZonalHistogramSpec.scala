@@ -28,7 +28,7 @@ import spire.syntax.cfor._
 
 class ZonalHistogramSpec extends FunSpec
                             with Matchers
-                            with TestEngine
+                            with RasterMatchers
                             with TileBuilders {
   describe("ZonalHistogram") {
     val r = createTile(

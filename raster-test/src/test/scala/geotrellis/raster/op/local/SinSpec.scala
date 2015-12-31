@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class SinSpec extends FunSpec
                  with Matchers
-                 with TestEngine
+                 with RasterMatchers
                  with TileBuilders {
   describe("Sin") {
     it("finds the sine of a double raster") {

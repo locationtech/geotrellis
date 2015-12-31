@@ -26,7 +26,7 @@ import scala.collection.mutable
 import org.scalatest._
 
 class RegionGroupSpec extends FunSpec
-                         with TestEngine
+                         with RasterMatchers
                          with TileBuilders {
   describe("RegionGroup") {
     it("should group regions.") {
@@ -332,7 +332,7 @@ class RegionGroupSpec extends FunSpec
 
 
 class RegionPartitionSpec extends FunSpec
-                             with TestEngine
+                             with RasterMatchers
                              with TileBuilders {
   describe("RegionPartition") {
     it("should work in a once problematic case") {

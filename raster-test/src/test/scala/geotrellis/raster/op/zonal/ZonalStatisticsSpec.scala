@@ -27,7 +27,7 @@ import scala.collection.mutable
 
 class ZonalStatisticsSpec extends FunSpec
                             with Matchers
-                            with TestEngine
+                            with RasterMatchers
                             with TileBuilders {
   describe("ZonalStatistics") {
     val r = createTile(

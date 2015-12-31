@@ -28,7 +28,7 @@ import spire.syntax.cfor._
 
 class TileSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val g = RasterExtent(e, 1.0, 1.0, 10, 10)

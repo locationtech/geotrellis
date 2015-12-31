@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class TanhSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   describe("Tanh") {
     it("finds the tanh of a double raster") {

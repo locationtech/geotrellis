@@ -22,7 +22,6 @@ import org.scalatest._
 
 class SemivariogramSpec extends FunSpec
                            with Matchers 
-                           with TestEngine 
                            with TileBuilders {
   describe("Linear Semivariogram") {
     it("Semivariogram (Bucketed)") {

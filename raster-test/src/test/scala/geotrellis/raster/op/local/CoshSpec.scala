@@ -24,7 +24,7 @@ import geotrellis.testkit._
 
 class CoshSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   describe("Cosh") {
     it("finds the hyperbolic cosine of a double raster") {

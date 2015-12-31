@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.op.focal
+package geotrellis.engine.op.focal
 
 import geotrellis.raster._
-import geotrellis.engine.op.focal._
+import geotrellis.engine._
+import geotrellis.raster.op.focal.TileWithNeighbors
 import geotrellis.testkit._
-
 import org.scalatest._
 
 class TileWithNeighborsSpec extends FunSpec with TileBuilders
@@ -52,7 +52,7 @@ class TileWithNeighborsSpec extends FunSpec with TileBuilders
              }
             .collect
         )
-        .map { case (r,neighbors) => 
+        .map { case (r,neighbors) =>
             val twn = TileWithNeighbors(r,neighbors)
             (r,neighbors,twn._1,twn._2)
         }

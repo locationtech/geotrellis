@@ -18,13 +18,12 @@ package geotrellis.raster
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.engine._
 import geotrellis.vector.Extent
 import geotrellis.testkit._
 
 import org.scalatest._
 
-class ResampleTest extends FunSuite with TestEngine
+class ResampleTest extends FunSuite with RasterMatchers with TestFiles
                                     with TileBuilders {
   val (cols, rows) = (5, 5)
   val (cw, ch) = (20.0, 20.0)
@@ -94,11 +93,10 @@ class ResampleTest extends FunSuite with TestEngine
   test("resize quad8") {
     // double number of rows and cols
     val re = RasterExtent(Extent(-9.5, 3.8, 150.5, 163.8), 4.0, 4.0, 40, 40)
-    val src = RasterSource.fromPath("raster-test/data/quad8.arg").rasterExtent.get.extent
-    val r = RasterSource.fromPath("raster-test/data/quad8.arg").get
-    val resize1 = r.resample(src, re)
+    val r = loadTestArg("quad8")
+    val resize1 = r.tile.resample(r.extent, re)
     
-    val resize2 = r.resample(src, re.withDimensions(40, 40))
+    val resize2 = r.tile.resample(r.extent, re.withDimensions(40, 40))
     
     List(resize1, resize2).foreach { r =>
       r.cols should be (40)
@@ -112,8 +110,9 @@ class ResampleTest extends FunSuite with TestEngine
   }
 
   test("resize quad8 to 4x4") {
-    val re = RasterSource.fromPath("raster-test/data/quad8.arg").rasterExtent.get
-    val raster = RasterSource.fromPath("raster-test/data/quad8.arg").get.resample(re.extent, re.withDimensions(4, 4))
+    val r = loadTestArg("quad8")
+    val re = r.rasterExtent
+    val raster = r.tile.resample(re.extent, re.withDimensions(4, 4))
 
     raster.cols should be (4)
     raster.rows should be (4)

@@ -19,20 +19,19 @@ package geotrellis.raster.op.zonal.summary
 import geotrellis.raster._
 import geotrellis.raster.op.stats._
 import geotrellis.vector._
-import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
 
 class HistogramSpec extends FunSpec
                        with Matchers
-                       with TestEngine
+                       with RasterMatchers
                        with TileBuilders {
   describe("zonalHistogram") {
     it("computes Histogram") {
-      val rs = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val tile = rs.get
-      val extent = rs.rasterExtent.get.extent
+      val rs = createRaster(Array.fill(40*40)(1),40,40)
+      val tile = rs.tile
+      val extent = rs.extent
       val zone = Extent(10,-10,50,10).toPolygon
 
       val result = tile.zonalHistogram(extent, zone)

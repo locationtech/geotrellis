@@ -20,10 +20,10 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op.elevation._
 import geotrellis.testkit._
+import geotrellis.vector.Extent
 import org.scalatest._
 
-class SlopeSpec extends FunSpec with Matchers
-with TestEngine {
+class SlopeSpec extends FunSpec with Matchers with TestEngine {
   describe("Slope") {
     it("should get the same result for split raster") {
       val rasterExtent = RasterSource(LayerId("test:fs", "elevation")).rasterExtent.get
@@ -48,6 +48,28 @@ with TestEngine {
           println(failure)
           assert(false)
       }
+    }
+
+    it("should match gdal computed slope raster") {
+      val rasterExtent = RasterSource(LayerId("test:fs", "elevation")).rasterExtent.get
+      val r = get(getRaster("elevation"))
+      val rg = get(getRaster("slope"))
+      val slopeComputed = r.slope(rasterExtent.cellSize, 1.0)
+
+
+      val rasterExtentGdal = RasterSource("slope").rasterExtent.get
+
+      // Gdal actually computes the parimeter values differently.
+      // So take out the edge results, but don't throw the baby out
+      // with the bathwater. The inner results should match.
+      val (xmin, ymax) = rasterExtentGdal.gridToMap(1, 1)
+      val (xmax, ymin) = rasterExtentGdal.gridToMap(rg.cols - 2, rg.rows - 2)
+
+      val cropExtent = Extent(xmin, ymin, xmax, ymax)
+      val croppedGdal = rg.crop(rasterExtentGdal.extent, cropExtent).convert(TypeDouble)
+      val croppedComputed = get(slopeComputed).crop(rasterExtent.extent, cropExtent)
+
+      assertEqual(croppedGdal, croppedComputed, 1.0)
     }
   }
 }
