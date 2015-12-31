@@ -390,7 +390,7 @@ class ToVectorSpec extends FunSpec
     }
 
     it("should vectorize a raster that was at one point not vectorizing properly") {
-      val rs = loadTestArg("vectorbugger")
+      val rs = loadTestArg("data/vectorbugger")
       val r = rs.tile
       val extent = rs.extent
       val vect = r.toVector(extent)
@@ -398,7 +398,7 @@ class ToVectorSpec extends FunSpec
 
     it("should vectorize another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger2...")
-      val rs = loadTestArg("vectorbugger2")
+      val rs = loadTestArg("data/vectorbugger2")
       val r = rs.tile
       val extent = rs.extent
       val vect = r.toVector(extent)
@@ -406,7 +406,7 @@ class ToVectorSpec extends FunSpec
 
     it("should vectorize yet another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger3...")
-      val rs = loadTestArg("vectorbugger3")
+      val rs = loadTestArg("data/vectorbugger3")
       val r = rs.tile
       val extent = rs.extent
       val vect = r.toVector(extent)
