@@ -65,10 +65,10 @@ trait OpAsserter extends FunSpec
       else 
         TileLayout(layoutCols, layoutRows, cols / layoutCols, rows / layoutRows)
 
-    val tile = 
-      if(tileLayout.totalCols.toInt != cols || tileLayout.totalRows.toInt != rows)
+    val tile: Tile =
+      if(tileLayout.totalCols.toInt != cols || tileLayout.totalRows.toInt != rows) {
         input.crop(tileLayout.totalCols.toInt, tileLayout.totalRows.toInt)
-      else
+      } else
         input
 
     (createRasterRDD(sc, input, tileLayout), tile)

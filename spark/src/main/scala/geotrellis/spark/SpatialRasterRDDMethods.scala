@@ -17,7 +17,6 @@ trait SpatialRasterRDDMethods {
     val tileCols = rmd.tileLayout.tileCols
     val tileRows = rmd.tileLayout.tileRows
 
-
     // discover what I have here, in reality RasterMetaData should reflect this already
     val te = GridBounds.envelope(tileMap.keys)
     val tileExtent: Extent = rdd.metaData.mapTransform(te)

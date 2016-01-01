@@ -38,63 +38,60 @@ class MaxSpec extends FunSpec with TestEnvironment
         8, 8, 8,    7, 3, 8,    8, 8, 2
       )
 
-      println(IntArrayTile(res, 9, 4).asciiDraw)
-      println()
-      println(IntArrayTile(expected, 9, 4).asciiDraw)
       res should be (expected)
     }
 
-    // it("should square max with 5 x 5 neighborhood") {
-    //   val rasterRDD = createRasterRDD(
-    //     sc,
-    //     ArrayTile(Array(
-    //       nd,7, 1,   1, 1, 1,   1, 1, 1,
-    //       9, 1, 1,   2, 2, 2,   1, 3, 1,
+    it("should square max with 5 x 5 neighborhood") {
+      val rasterRDD = createRasterRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 1, 1,   1, 1, 1,
+          9, 1, 1,   2, 2, 2,   1, 3, 1,
 
-    //       3, 8, 1,   3, 3, 3,   1, 1, 2,
-    //       2, 1, 7,   1, nd,1,   8, 1, 1
-    //     ), 9, 4),
-    //     TileLayout(3, 2, 3, 2)
-    //   )
+          3, 8, 1,   3, 3, 3,   1, 1, 2,
+          2, 1, 7,   1, nd,1,   8, 1, 1
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
 
-    //   val res = rasterRDD.focalMax(Square(2)).stitch.tile.toArray
+      val res = rasterRDD.focalMax(Square(2)).stitch.tile.toArray
 
-    //   val expected = Array(
-    //     9, 9, 9,    8, 3, 3,    3, 3, 3,
-    //     9, 9, 9,    8, 8, 8,    8, 8, 8,
+      val expected = Array(
+        9, 9, 9,    8, 3, 3,    3, 3, 3,
+        9, 9, 9,    8, 8, 8,    8, 8, 8,
 
-    //     9, 9, 9,    8, 8, 8,    8, 8, 8,
-    //     9, 9, 9,    8, 8, 8,    8, 8, 8
-    //   )
+        9, 9, 9,    8, 8, 8,    8, 8, 8,
+        9, 9, 9,    8, 8, 8,    8, 8, 8
+      )
 
-    //   res should be(expected)
-    // }
+      res should be(expected)
+    }
 
-    // it("should circle max for raster rdd") {
-    //   val rasterRDD = createRasterRDD(
-    //     sc,
-    //     ArrayTile(Array(
-    //       nd,7, 1,   1, 1, 1,   1, 1, 1,
-    //       9, 1, 1,   2, 2, 2,   1, 3, 1,
+    it("should circle max for raster rdd") {
+      val rasterRDD = createRasterRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 1, 1,   1, 1, 1,
+          9, 1, 1,   2, 2, 2,   1, 3, 1,
 
-    //       3, 8, 1,   3, 3, 3,   1, 1, 2,
-    //       2, 1, 7,   1, nd,1,   8, 1, 1
-    //     ), 9, 4),
-    //     TileLayout(3, 2, 3, 2)
-    //   )
+          3, 8, 1,   3, 3, 3,   1, 1, 2,
+          2, 1, 7,   1, nd,1,   8, 1, 1
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
 
-    //   val res = rasterRDD.focalMax(Circle(1)).stitch.tile.toArray
+      val res = rasterRDD.focalMax(Circle(1)).stitch.tile.toArray
 
-    //   val expected = Array(
-    //     9, 7, 7,    2, 2, 2,    1, 3, 1,
-    //     9, 9, 2,    3, 3, 3,    3, 3, 3,
+      val expected = Array(
+        9, 7, 7,    2, 2, 2,    1, 3, 1,
+        9, 9, 2,    3, 3, 3,    3, 3, 3,
 
-    //     9, 8, 8,    3, 3, 3,    8, 3, 2,
-    //     3, 8, 7,    7, 3, 8,    8, 8, 2
-    //   )
+        9, 8, 8,    3, 3, 3,    8, 3, 2,
+        3, 8, 7,    7, 3, 8,    8, 8, 2
+      )
 
-    //   res should be (expected)
-    // }
+      res should be (expected)
+    }
 
   }
 }

@@ -15,7 +15,7 @@ trait CropMethods[T <: CellGrid] extends MethodExtensions[T] {
   def crop(gb: GridBounds, force: Boolean): T
 
   def crop(cols: Int, rows: Int): CropMethods.Apply[T] =
-    crop(GridBounds(0, 0, self.cols - 1, self.rows - 1))
+    crop(GridBounds(0, 0, cols - 1, rows - 1))
 
   def crop(srcExtent: Extent, extent: Extent): CropMethods.Apply[T] =
     crop(RasterExtent(srcExtent, self).gridBoundsFor(extent))

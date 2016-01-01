@@ -121,7 +121,7 @@ object BufferTiles {
               (slice, (updateColMin, updateRowMin))
           }
 
-          val focalTile = implicitly[Stitcher[V]].stitch(pieces, cols, rows)
+          val focalTile = implicitly[Stitcher[V]].stitch(pieces, cols + (2 * borderSize), rows + (2 * borderSize))
           BufferedTile(focalTile, GridBounds(borderSize, borderSize, borderSize+cols-1, borderSize+rows-1))
         }
     }
