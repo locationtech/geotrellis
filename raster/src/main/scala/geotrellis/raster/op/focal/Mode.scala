@@ -40,7 +40,7 @@ class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], exten
       val v = r.get(x, y)
       if(isData(v)) addValue(v)
     }
-    tile.set(cursor.col, cursor.row, mode)
+    resultTile.set(cursor.col, cursor.row, mode)
   }
 }
 
@@ -67,6 +67,6 @@ class CellwiseModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], ext
   }
 
   def setValue(x: Int, y: Int) = {
-    tile.setDouble(x, y, mode)
+    resultTile.setDouble(x, y, mode)
   }
 }

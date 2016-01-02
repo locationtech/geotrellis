@@ -35,7 +35,7 @@ class CursorSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
       if (isData(v)) total -= v
     }
 
-    tile.set(cursor.col, cursor.row, total)
+    resultTile.set(cursor.col, cursor.row, total)
   }
 }
 
@@ -56,7 +56,7 @@ class CellwiseSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
 
   def reset() = total = 0
 
-  def setValue(x: Int, y: Int) = tile.set(x, y, total)
+  def setValue(x: Int, y: Int) = resultTile.set(x, y, total)
 }
 
 class CursorDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
@@ -75,7 +75,7 @@ class CursorDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
       if (isData(v)) total -= v
     }
 
-    tile.setDouble(cursor.col, cursor.row, total)
+    resultTile.setDouble(cursor.col, cursor.row, total)
   }
 }
 
@@ -96,5 +96,5 @@ class CellwiseDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds]
 
   def reset() = total = 0.0
 
-  def setValue(x: Int, y: Int) = tile.setDouble(x, y, total)
+  def setValue(x: Int, y: Int) = resultTile.setDouble(x, y, total)
 }

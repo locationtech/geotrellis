@@ -6,17 +6,16 @@ import org.scalatest._
 import scala.reflect._
 
 abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers { self: TestSparkContext =>
-  type Container <: RDD[(K, V)]
-  type TestReader = FilteringLayerReader[LayerId, K, M, Container]
-  type TestWriter = Writer[LayerId, Container]
-  type TestUpdater = LayerUpdater[LayerId, K, V, M, Container]
+  type TestReader = FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
+  type TestWriter = Writer[LayerId, RDD[(K, V)] with Metadata[M]]
+  type TestUpdater = LayerUpdater[LayerId, K, V, M]
   type TestDeleter = LayerDeleter[LayerId]
   type TestCopier = LayerCopier[LayerId]
   type TestMover = LayerMover[LayerId]
   type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
-  def sample: Container
+  def sample: RDD[(K, V)] with Metadata[M]
   def reader: TestReader
   def writer: TestWriter
   def deleter: TestDeleter

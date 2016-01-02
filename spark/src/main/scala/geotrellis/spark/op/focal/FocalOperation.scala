@@ -18,38 +18,36 @@ import scala.collection.mutable.ArrayBuffer
 
 object FocalOperation {
   private def mapOverBufferedTiles[K: SpatialComponent: ClassTag](bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
+      (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
     bufferedTiles
-      .mapValues { case BufferedTile(tile, gridBounds) => calc(tile, neighborhood, Some(gridBounds)) }
+      .mapValues { case BufferedTile(tile, gridBounds) => calc(tile, Some(gridBounds)) }
 
   def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
+      (calc: (Tile, Option[GridBounds]) => Tile)(implicit d: DummyImplicit): RDD[(K, Tile)] =
     mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent), neighborhood)(calc)
 
   def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, layerBounds: GridBounds)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
+      (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
     mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
 
   def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] = {
-    new RasterRDD(
-      apply(rasterRDD, neighborhood, rasterRDD.metaData.gridBounds)(calc), 
-      rasterRDD.metaData
-    )
-  }
+      (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
+    rasterRDD.withContext { rdd =>
+      apply(rdd, neighborhood, rasterRDD.metaData.gridBounds)(calc)
+    }
 }
 
 abstract class FocalOperation[K: SpatialComponent: ClassTag] extends RasterRDDMethods[K] {
 
   def focal(n: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile): RasterRDD[K] =
+      (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
     FocalOperation(rasterRDD, n)(calc)
 
   def focalWithExtent(n: Neighborhood)
-      (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
+      (calc: (Tile, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
     val extent = rasterRDD.metaData.layout.rasterExtent
-    FocalOperation(rasterRDD, n){ (tile, n, bounds) =>
-      calc(tile, n, bounds, extent)
+    FocalOperation(rasterRDD, n){ (tile, bounds) =>
+      calc(tile, bounds, extent)
     }
   }
 }

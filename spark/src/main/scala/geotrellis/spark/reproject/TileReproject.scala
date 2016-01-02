@@ -91,7 +91,7 @@ object TileReproject {
           Tiler(getExtent, createKey)
         }
 
-        new RasterRDD(tiler(reprojectedTiles, metadata, method), metadata)
+        RasterRDD(tiler(reprojectedTiles, metadata, method), metadata)
       }
 
       // def apply(method: ResampleMethod = NearestNeighbor, errorThreshold: Double = 0.125): RasterRDD[K] = {

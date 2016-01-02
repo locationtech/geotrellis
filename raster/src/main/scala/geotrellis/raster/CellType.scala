@@ -70,6 +70,7 @@ object CellType {
   }
 
   def fromString(name: String): CellType = name match {
+    case "bool"     => TypeBit
     case "int8"     => TypeByte
     case "uint8"    => TypeUByte
     case "int16"    => TypeShort

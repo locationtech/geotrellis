@@ -33,7 +33,7 @@ object Slope {
       val zFactor = z
 
       def setValue(x: Int, y: Int, s: SurfacePoint) {
-        tile.setDouble(x, y, degrees(s.slope(zFactor)))
+        resultTile.setDouble(x, y, degrees(s.slope(zFactor)))
       }
     }
   }.execute()

@@ -9,5 +9,5 @@ import geotrellis.spark.io.json._
 
 class SpaceTimeAccumuloInput extends AccumuloInput[SpaceTimeKey] {
   def reader(props: Parameters)(implicit sc: SparkContext) =
-    AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData, RasterRDD[SpaceTimeKey]](getInstance(props))
+    AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData](getInstance(props))
 }

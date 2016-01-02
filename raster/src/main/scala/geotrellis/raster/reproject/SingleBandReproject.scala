@@ -45,7 +45,7 @@ object SingleBandReproject {
       val srcX = Array.ofDim[Double](newCols)
       val srcY = Array.ofDim[Double](newCols)
 
-      val resampler = Resample(method, tile, extent)
+      val resampler = Resample(method, tile, extent, CellSize(newCellWidth, newCellHeight))
 
       if(tile.cellType.isFloatingPoint) {
         val resample = resampler.resampleDouble _

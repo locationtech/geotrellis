@@ -11,12 +11,10 @@ package object mosaic {
   implicit class withRddMergeMethods[K: ClassTag, TileType: MergeView: ClassTag](rdd: RDD[(K, TileType)])
     extends RddMergeMethods[K, TileType](rdd)
 
-  implicit class withRddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag](rdd: (RDD[(K, TileType)], LayoutDefinition))
-    extends RddLayoutMergeMethods[K, TileType](rdd)
+  implicit class withRddLayoutMergeMethods[
+    K: SpatialComponent: ClassTag, 
+    TileType: MergeView: CellGridPrototypeView: ClassTag,
+    M: (? => {def layout: LayoutDefinition})
+  ](rdd: RDD[(K, TileType)] with Metadata[M]) extends RddLayoutMergeMethods[K, TileType, M](rdd)
 
-  implicit class withRasterRddMergeMethods[K: SpatialComponent: ClassTag](rdd: RasterRDD[K])
-    extends RasterRddMergeMethods[K](rdd)
-
-  implicit class withMultiBandRasterRddMergeMethods[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K])
-    extends MultiBandRasterRddMergeMethods[K](rdd)
 }

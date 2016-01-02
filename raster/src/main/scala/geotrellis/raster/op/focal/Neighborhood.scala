@@ -33,7 +33,7 @@ import Angles._
  * A definition of the shape and size
  * of the neighborhood (or kernel) to be used in a focal operation.
  */
-trait Neighborhood { 
+trait Neighborhood extends Serializable {
   /** How many cells past the focus the bounding box goes. (e.g., 1 for 3x3 square) */
   val extent:Int 
 

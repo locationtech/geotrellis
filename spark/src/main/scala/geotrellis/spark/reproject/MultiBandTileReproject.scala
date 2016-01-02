@@ -88,7 +88,7 @@ object MultiBandTileReproject {
       Tiler(getExtent, createKey)
     }
 
-    (zoom, new MultiBandRasterRDD(tiler(reprojectedTiles, metadata, method), metadata))
+    (zoom, MultiBandRasterRDD(tiler(reprojectedTiles, metadata, method), metadata))
   }
 
   def apply[K: SpatialComponent: ClassTag](

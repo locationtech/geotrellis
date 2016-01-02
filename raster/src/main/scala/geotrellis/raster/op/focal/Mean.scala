@@ -44,7 +44,7 @@ class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
     }
   }
 
-  def setValue(x: Int, y: Int) = { tile.setDouble(x, y, sum / count.toDouble) }
+  def setValue(x: Int, y: Int) = { resultTile.setDouble(x, y, sum / count.toDouble) }
   def reset() = { count = 0 ; sum = 0 }
 }
 
@@ -64,7 +64,7 @@ class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
       val v = r.get(x, y)
       if(isData(v)) { count += 1; sum += v }
     }
-    tile.setDouble(c.col, c.row, sum / count.toDouble)
+    resultTile.setDouble(c.col, c.row, sum / count.toDouble)
   }
 }
 
@@ -84,7 +84,7 @@ class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
       val v = r.getDouble(x, y)
       if(isData(v)) { count += 1; sum += v }
     }
-    tile.setDouble(c.col, c.row, sum / count)
+    resultTile.setDouble(c.col, c.row, sum / count)
   }
 }
 
@@ -111,6 +111,6 @@ class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds
     }
   }
 
-  def setValue(x: Int, y: Int) = { tile.setDouble(x, y, sum / count) }
+  def setValue(x: Int, y: Int) = { resultTile.setDouble(x, y, sum / count) }
   def reset() = { count = 0 ; sum = 0.0 }
 }

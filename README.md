@@ -78,6 +78,7 @@ Throughout this repo, you'll find readme documents specific to particular the mo
   3. [`geotrellis.raster.io`](./raster/src/main/scala/geotrellis/raster/io)
   4. [`geotrellis.raster.op`](./raster/src/main/scala/geotrellis/raster/op) - Map Algebra operations
   5. [`geotrellis.raster.render`](./raster/src/main/scala/geotrellis/raster/render) - rendering results as PNGs
+  6. [`geotrellis.raster.resample`](./raster/src/main/scala/geotrellis/raster/resample) - changing a tile's resolution
 5. [`geotrellis.vector`](./vector/src/main/scala/geotrellis/vector) - creating and using vector data
   1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation) - Kriging interpoloation from vector point data
   2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/) - parsing vector data as GeoJSON

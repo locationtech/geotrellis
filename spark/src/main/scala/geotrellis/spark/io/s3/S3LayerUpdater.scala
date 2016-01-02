@@ -11,16 +11,16 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     clobber: Boolean = true)
-  (implicit bridge: Bridge[(RDD[(K, V)], M), C])
-  extends LayerUpdater[LayerId, K, V, M, C] with LazyLogging {
+  extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
+  type container = RDD[(K, V)] with Metadata[M]
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update(id: LayerId, rdd: C) = {
+  def update(id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
@@ -51,12 +51,11 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
 }
 
 object S3LayerUpdater {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, C <: RDD[(K, V)]](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
       bucket: String,
       prefix: String,
-      clobber: Boolean = true)
-    (implicit bridge: Bridge[(RDD[(K, V)], M), C]): S3LayerUpdater[K, V, M, C] =
-    new S3LayerUpdater[K, V, M, C](
+      clobber: Boolean = true): S3LayerUpdater[K, V, M] =
+    new S3LayerUpdater[K, V, M](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       clobber
