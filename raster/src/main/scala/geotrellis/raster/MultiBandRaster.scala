@@ -30,18 +30,6 @@ case class MultiBandRaster(tile: MultiBandTile, extent: Extent) extends Product2
   // def resample(targetCols: Int, targetRows: Int): MultiBandRaster =
   //   MultiBandRaster(tile.resample(extent, targetCols, targetRows), extent)
 
-  // def crop(target: Extent): MultiBandRaster =
-  //   MultiBandRaster(tile.crop(extent, target), target)
-
-  // def reproject(src: CRS, dest: CRS): MultiBandRaster =
-  //   tile.reproject(extent, src, dest)
-
-  // def reproject(method: InterpolationMethod, src: CRS, dest: CRS): MultiBandRaster =
-  //   tile.reproject(extent, src, dest, ReprojectOptions(method = method))
-
-  // def reproject(src: CRS, dest: CRS, options: ReprojectOptions): MultiBandRaster =
-  //   tile.reproject(extent, src, dest, options)
-
   def _1 = tile
 
   def _2 = extent

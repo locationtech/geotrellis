@@ -60,12 +60,6 @@ case class Raster(tile: Tile, extent: Extent) extends Product2[Tile, Extent] {
   def resample(targetCols: Int, targetRows: Int): Raster =
     Raster(tile.resample(extent, targetCols, targetRows), extent)
 
-  def crop(target: Extent): Raster =
-    Raster(tile.crop(extent, target), target)
-
-  def reproject(src: CRS, dest: CRS): SingleBandReproject.Apply =
-    tile.reproject(extent, src, dest)
-
   def _1 = tile
 
   def _2 = extent

@@ -12,7 +12,7 @@ class SingleBandGeoTiff(
   val tags: Tags,
   val options: GeoTiffOptions
 ) extends GeoTiff {
-  def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
+  def projectedRaster: ProjectedRaster = ProjectedRaster(Raster(tile, extent), crs)
   def raster: Raster = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
 

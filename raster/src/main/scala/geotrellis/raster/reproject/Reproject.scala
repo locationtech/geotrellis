@@ -4,12 +4,15 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 
 object Reproject {
-  trait Apply[T] extends Serializable {
-    def apply(method: ResampleMethod = NearestNeighbor, errorThreshold: Double = 0.125): T
-  }
-  implicit def applyToCall[T](a: Apply[T]): T = a()
+  case class Options(
+    method: ResampleMethod = NearestNeighbor,
+    errorThreshold: Double = 0.125
+  )
 
-  class NoOpApply[T](v: T) extends Apply[T] { 
-    def apply(method: ResampleMethod = NearestNeighbor, errorThreshold: Double = 0.125): T = v
+  object Options {
+    def DEFAULT = Options()
+
+    implicit def methodToOptions(method: ResampleMethod): Options =
+      apply(method = method)
   }
 }

@@ -73,9 +73,18 @@ package object raster {
   def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl
   def d2f(n: Double): Float = macro TypeConversionMacros.d2f_impl
 
+  // Implicit method extension for core types
+
   implicit class TileMethodWrapper(val tile: Tile) extends crop.TileCropMethods
 
   implicit class MultiBandTileMethodWrapper(val self: MultiBandTile) extends crop.MultiBandTileCropMethods
+
+  implicit class RasterMethodExtensions(val self: Raster) extends MethodExtensions[Raster]
+      with reproject.RasterReprojectMethods
+
+  implicit class MultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
+      with reproject.MultiBandRasterReprojectMethods
+      with crop.ExtentCropMethods[MultiBandTile, MultiBandRaster]
 
   // Use this implicit class to fill arrays ... much faster than Array.fill[Int](dim)(val), etc.
   implicit class ByteArrayFiller(val arr: Array[Byte]) extends AnyVal {
