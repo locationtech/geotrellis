@@ -54,7 +54,7 @@ class TemporalGeoTiffS3InputFormat extends S3InputFormat[SpaceTimeInputKey,Tile]
         val dateTime = DateTime.parse(dateTimeString, dateFormatter)
 
         //WARNING: Assuming this is a single band GeoTiff
-        val ProjectedRaster(tile, extent, crs) = geoTiff.projectedRaster
+        val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
         (SpaceTimeInputKey(extent, crs, dateTime), tile)        
       }
     }     

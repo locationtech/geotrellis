@@ -37,7 +37,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   val rasterDefinition = rasterDef
 
   def tiles = elements
-  def rasters: Op[Seq[Op[Raster]]] =
+  def rasters: Op[Seq[Op[Raster[Tile]]]] =
     (rasterDefinition, tiles).map { (rd, seq) =>
       val tileExtents = rd.tileExtents
       seq.zipWithIndex.map { case (tileOp, tileIndex) =>
@@ -104,19 +104,19 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapRaster(f: Raster => Tile): RasterSource =
+  def mapRaster(f: Raster[Tile] => Tile): RasterSource =
     mapRasterOp { op => op.map(f(_)) }
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapRaster(f: Raster => Tile, name: String): RasterSource =
+  def mapRaster(f: Raster[Tile] => Tile, name: String): RasterSource =
     mapRasterOp({ op => op.map(f(_)) }, name)
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapRasterOp(f: Op[Raster] => Op[Tile]): RasterSource =
+  def mapRasterOp(f: Op[Raster[Tile]] => Op[Tile]): RasterSource =
     mapRasterOp(f, s"${getClass.getSimpleName} map")
 
   /** apply a function to element operations, and return the appropriate datasource **/
-  def mapRasterOp(f: Op[Raster] => Op[Tile], name: String): RasterSource = {
+  def mapRasterOp(f: Op[Raster[Tile]] => Op[Tile], name: String): RasterSource = {
     val newOp = rasters.map(_.map(f)).withName(name)
     RasterSource(rasterDefinition, newOp)
   }
@@ -249,7 +249,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
           val targetExtent = target.extent
           val tileExtents = TileExtents(re.extent, tileLayout)
 
-          val resampled = mutable.ListBuffer[Op[Raster]]()
+          val resampled = mutable.ListBuffer[Op[Raster[Tile]]]()
           val tCols = tileLayout.layoutCols
           val tRows = tileLayout.layoutRows
           cfor(0)(_ < tRows, _ + 1) { tRow =>

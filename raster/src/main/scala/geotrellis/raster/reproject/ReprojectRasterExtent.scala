@@ -21,7 +21,7 @@ object ReprojectRasterExtent {
    * edge) transforming into output coordinates in order to get an extents box.
    */
   def reprojectExtent(re: RasterExtent, transform: Transform): Extent = {
-    val PIXEL_STEP = 50
+    val PIXEL_STEP = math.min(50, math.min(re.cols, re.rows))
     
     // Find the threshold to densify the extent at.
     val xThreshold = (re.cols / PIXEL_STEP) * re.cellwidth

@@ -7,7 +7,7 @@ import geotrellis.raster.op.focal._
 
 trait FocalOperation extends RasterSourceMethods {
 
-  def zipWithNeighbors: Op[Seq[(Op[Raster], TileNeighbors)]] =
+  def zipWithNeighbors: Op[Seq[(Op[Raster[Tile]], TileNeighbors)]] =
     (rasterSource.tiles, rasterSource.rasterDefinition).map { (seq, rd) =>
       val tileLayout = rd.tileLayout
       val tileExtents = rd.tileExtents
@@ -55,7 +55,7 @@ trait FocalOperation extends RasterSourceMethods {
   {
     val tileOps: Op[Seq[Op[Tile]]] =
       zipWithNeighbors.map{ //map into the Op
-        _.map { case (t: Op[Raster], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
+        _.map { case (t: Op[Raster[Tile]], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
 
           //Now we're mapping into tile and it's neighbors, in parallel
           (t, ns.getNeighbors).map { case (Raster(center: Tile, _), neighbors: Seq[Option[Tile]]) =>
@@ -74,7 +74,7 @@ trait FocalOperation extends RasterSourceMethods {
   {
     val tileOps: Op[Seq[Op[Tile]]] =
       (rasterSource.rasterDefinition, zipWithNeighbors).map{ case (rd, rastersWithNeighbors) =>
-        rastersWithNeighbors.map { case (r: Op[Raster], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
+        rastersWithNeighbors.map { case (r: Op[Raster[Tile]], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
           //Now we're mapping into tile and it's neighbors, in parallel
           (r, ns.getNeighbors).map { case (Raster(center: Tile, extent: Extent), neighbors: Seq[Option[Tile]]) =>
             val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)

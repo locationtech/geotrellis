@@ -49,7 +49,7 @@ class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[SpaceTimeInputKe
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = DateTime.parse(dateTimeString, dateFormatter)
 
-    val ProjectedRaster(tile, extent, crs) = geoTiff.projectedRaster
+    val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
     (SpaceTimeInputKey(extent, crs, dateTime), tile)
   }
 }

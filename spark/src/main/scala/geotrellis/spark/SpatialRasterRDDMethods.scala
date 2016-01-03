@@ -10,7 +10,7 @@ trait SpatialRasterRDDMethods {
    * Collects and stitches all the tiles in the RasterRDD into one CompositeTile.
    * If a tile is missing from the RDD it will be represented with EmptyTile.
    */
-  def stitch: Raster = {
+  def stitch: Raster[Tile] = {
     val tileMap = rdd.collect().toMap
 
     val rmd = rdd.metaData

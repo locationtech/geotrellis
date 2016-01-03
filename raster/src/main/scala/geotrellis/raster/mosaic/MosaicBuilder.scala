@@ -6,7 +6,7 @@ import geotrellis.vector.Extent
 class MosaicBuilder(cellType: CellType, extent: Extent, cols: Int, rows: Int) {
   val tile = ArrayTile.empty(cellType, cols, rows)
 
-  def +=(raster: Raster): Unit = {
+  def +=(raster: Raster[Tile]): Unit = {
     if(extent == raster.extent && cols == raster.cols && rows == raster.rows) {
       tile.merge(raster.tile)
     } else {

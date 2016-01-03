@@ -28,15 +28,15 @@ import java.nio.ByteBuffer
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */
-  final def read(path: String): Raster =
+  final def read(path: String): SingleBandRaster =
     read(path, None)
 
   /** Reads an arg from the json metadata file. */
-  final def read(path: String, targetRasterExtent: RasterExtent): Raster =
+  final def read(path: String, targetRasterExtent: RasterExtent): SingleBandRaster =
     read(path, Some(targetRasterExtent))
 
   /** Reads an arg from the json metadata file. */
-  private final def read(path: String, targetRasterExtent: Option[RasterExtent]): Raster = {
+  private final def read(path: String, targetRasterExtent: Option[RasterExtent]): SingleBandRaster = {
     val json = ConfigFactory.parseString(Filesystem.readText(path))
 
     val cellType =

@@ -21,6 +21,7 @@ import geotrellis.vector._
 import geotrellis.proj4._
 
 import geotrellis.spark.tiling._
+import geotrellis.spark.ingest._
 
 import org.apache.spark.rdd._
 
@@ -31,7 +32,8 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 
-package object spark {
+package object spark extends buffer.Implicits 
+    with reproject.Implicits {
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
   object RasterRDD {
@@ -104,6 +106,15 @@ package object spark {
 
   implicit class withMultiBandRasterRDDMethods[K](val rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends BaseMultiBandRasterRDDMethods[K]
+
+  implicit class withIngestKeyRDDMethods[K: IngestKey, V <: CellGrid](val rdd: RDD[(K, V)]) {
+    def toRasters: RDD[(K, Raster[V])] =
+      rdd.mapPartitions({ partition =>
+        partition.map { case (key, value) =>
+          (key, Raster(value, key.projectedExtent.extent))
+        }
+      }, preservesPartitioning = true)
+  }
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {

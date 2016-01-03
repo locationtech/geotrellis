@@ -15,10 +15,57 @@ trait RasterRDDBuilders {
 
   lazy val defaultCRS = LatLng
 
+  /** Cuts the tile according to the layoutCols and layoutRows given.
+    * Returns th tile that was used to fit inside the tile layout, which might
+    * be smaller than the input tile
+    */
+  def createRasterRDD(
+    input: Tile,
+    layoutCols: Int,
+    layoutRows: Int
+  )(implicit sc: SparkContext): (Tile, RasterRDD[SpatialKey]) =
+    createRasterRDD(input, layoutCols, layoutRows, defaultCRS)
+
+  /** Cuts the tile according to the layoutCols and layoutRows given.
+    * Returns th tile that was used to fit inside the tile layout, which might
+    * be smaller than the input tile
+    */
+  def createRasterRDD(
+    input: Tile,
+    layoutCols: Int,
+    layoutRows: Int,
+    crs: CRS
+  )(implicit sc: SparkContext): (Tile, RasterRDD[SpatialKey]) = {
+    val (cols, rows) = (input.cols, input.rows)
+
+    val tileLayout = 
+      if (layoutCols >= cols || layoutRows >= rows)
+        sys.error(s"Invalid for tile of dimensions ${(cols, rows)}: ${(layoutCols, layoutRows)}")
+      else 
+        TileLayout(layoutCols, layoutRows, cols / layoutCols, rows / layoutRows)
+
+    val tile: Tile =
+      if(tileLayout.totalCols.toInt != cols || tileLayout.totalRows.toInt != rows) {
+        input.crop(tileLayout.totalCols.toInt, tileLayout.totalRows.toInt)
+      } else
+        input
+
+    (tile, createRasterRDD(sc, input, tileLayout, crs))
+  }
+
   def createRasterRDD(
     sc: SparkContext,
     tile: Tile,
-    tileLayout: TileLayout): RasterRDD[SpatialKey] = {
+    tileLayout: TileLayout
+  ): RasterRDD[SpatialKey] =
+    createRasterRDD(sc, tile, tileLayout, defaultCRS)
+
+  def createRasterRDD(
+    sc: SparkContext,
+    tile: Tile,
+    tileLayout: TileLayout,
+    crs: CRS
+  ): RasterRDD[SpatialKey] = {
 
     val extent = defaultCRS.worldExtent
 
@@ -26,7 +73,7 @@ trait RasterRDDBuilders {
       tile.cellType,
       LayoutDefinition(extent, tileLayout),
       extent,
-      defaultCRS
+      crs
     )
 
     val re = RasterExtent(

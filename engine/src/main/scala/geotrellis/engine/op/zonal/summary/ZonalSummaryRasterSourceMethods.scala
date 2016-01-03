@@ -42,7 +42,7 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
 
   private
   def _mapIntersecting[B, That](p: Polygon, fullTileResults: Option[DataSource[B, _]])
-                                (handleFullTile: Tile => B)(handlePartialTile: (Raster, Polygon) => B): DataSource[B, _] = {
+                                (handleFullTile: Tile => B)(handlePartialTile: (Raster[Tile], Polygon) => B): DataSource[B, _] = {
     val newOp =
       (rasterSource.rasterDefinition, rasterSource.tiles).map { (rd, tiles) =>
         val tileExtents = TileExtents(rd.rasterExtent.extent, rd.tileLayout)

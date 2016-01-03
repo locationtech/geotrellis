@@ -65,7 +65,8 @@ object Ingest {
     (implicit tiler: Tiler[T, K, Tile]): Unit =
   {
     sourceTiles.persist()
-    val reprojectedTiles = sourceTiles.reproject(destCRS)(method = resampleMethod).cache()
+    val reprojectedTiles =
+      sourceTiles.reproject(destCRS, resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = tiler(reprojectedTiles, rasterMetaData, resampleMethod).cache()

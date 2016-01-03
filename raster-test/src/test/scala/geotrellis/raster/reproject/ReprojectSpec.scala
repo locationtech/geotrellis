@@ -20,15 +20,16 @@ class ReprojectSpec extends FunSpec
     with GeoTiffTestUtils
     with TestEngine {
   describe("reprojects in approximation to GDAL") {
+    import Reproject.Options
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val ProjectedRaster(source, extent, crs) = SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
+      val ProjectedRaster(raster, crs) = SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
 
       val ree @ Raster(expected, expectedExtent) =
         SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
  
       val rea @ Raster(actual, actualExtent) =
-        source.reproject(extent, crs, WebMercator)(method = NearestNeighbor, errorThreshold = 0.0)
+        raster.reproject(crs, WebMercator, Options(method = NearestNeighbor, errorThreshold = 0.0))
 
       // println(ree.rasterExtent)
       // println(rea.rasterExtent)
@@ -50,14 +51,14 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {
-      val Raster(source, extent) = 
+      val raster =
         SingleBandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
       val Raster(expected, expectedExtent) = 
         SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val Raster(actual, actualExtent) =
-        source.reproject(extent, WebMercator, LatLng)(method = NearestNeighbor, errorThreshold = 0.0)
+        raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.0))
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -77,14 +78,14 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif and an error threshold of 0.125") {
-      val Raster(source, extent) = 
+      val raster =
         SingleBandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
       val Raster(expected, expectedExtent) = 
         SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
 
       val Raster(actual, actualExtent) =
-        source.reproject(extent, WebMercator, LatLng)(method = NearestNeighbor, errorThreshold = 0.124)
+        raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.124))
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -145,10 +146,10 @@ class ReprojectSpec extends FunSpec
       // Now repreject; there should also be no lines.
 
       val wmLeft @ Raster(wmLeftTile, wmLeftExtent) = 
-        mergedRaster.reproject(GridBounds(0, 0, 511, 1023), srcCRS, WebMercator)(method = Bilinear)
+        mergedRaster.reproject(GridBounds(0, 0, 511, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
       val wmRight @ Raster(wmRightTile, wmRightExtent) = 
-        mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator)(method = Bilinear)
+        mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
       // TODO: Remove
       // GeoTiff(mergedRaster, srcCRS).write("/Users/rob/tmp/reproject-bugs/merged-src-raster.tif")

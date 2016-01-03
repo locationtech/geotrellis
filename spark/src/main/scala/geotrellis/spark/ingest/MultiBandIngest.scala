@@ -21,7 +21,7 @@ object MultiBandIngest{
     (sink: (MultiBandRasterRDD[K], Int) => Unit)
     (implicit tiler: Tiler[T, K, MultiBandTile]): Unit =
   {
-    val reprojectedTiles = sourceTiles.reproject(destCRS)(method = resampleMethod).cache()
+    val reprojectedTiles = sourceTiles.reproject(destCRS, resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = tiler(sourceTiles, rasterMetaData, resampleMethod).cache()

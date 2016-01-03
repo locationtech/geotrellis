@@ -19,12 +19,12 @@ trait OpAsserter extends FunSpec
   def testGeoTiff(sc: SparkContext,
     path: String,
     layoutCols: Int = 4,
-    layoutRows: Int = 3)
-    (
-      rasterOp: (Tile, RasterExtent) => Tile,
-      sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
-      asserter: (Tile, Tile) => Unit = tilesEqual
-    ) = {
+    layoutRows: Int = 3
+  )(
+    rasterOp: (Tile, RasterExtent) => Tile,
+    sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+    asserter: (Tile, Tile) => Unit = tilesEqual
+  ) = {
     val tile = SingleBandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
@@ -38,39 +38,16 @@ trait OpAsserter extends FunSpec
       sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
       asserter: (Tile, Tile) => Unit = tilesEqual
     ) = {
-    val (rasterRDD, tile) = 
-      createInputs(
-        sc,
+    val (tile, rasterRDD) = 
+      createRasterRDD(
         input,
         layoutCols,
         layoutRows
-      )
+      )(sc)
 
     val rasterResult = rasterOp(tile, rasterRDD.metaData.layout.rasterExtent)
     val sparkResult = sparkOp(rasterRDD).stitch.tile
 
     asserter(rasterResult, sparkResult)
-  }
-
-  private def createInputs(
-    sc: SparkContext,
-    input: Tile,
-    layoutCols: Int,
-    layoutRows: Int): (RasterRDD[SpatialKey], Tile) = {
-    val (cols, rows) = (input.cols, input.rows)
-
-    val tileLayout = 
-      if (layoutCols >= cols || layoutRows >= rows)
-        sys.error(s"Invalid for tile of dimensions ${(cols, rows)}: ${(layoutCols, layoutRows)}")
-      else 
-        TileLayout(layoutCols, layoutRows, cols / layoutCols, rows / layoutRows)
-
-    val tile: Tile =
-      if(tileLayout.totalCols.toInt != cols || tileLayout.totalRows.toInt != rows) {
-        input.crop(tileLayout.totalCols.toInt, tileLayout.totalRows.toInt)
-      } else
-        input
-
-    (createRasterRDD(sc, input, tileLayout), tile)
   }
 }

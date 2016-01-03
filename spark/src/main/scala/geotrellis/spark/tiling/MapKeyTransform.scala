@@ -26,7 +26,7 @@ object MapKeyTransform {
 /**
   * Transforms between geographic map coordinates and spatial keys.
   * Since geographic point can only be mapped to a grid tile that contains that point,
-  * transformation from [[Extent]] to [[GridBounds]] to [[Extent]] will likely not
+  * transformation from Extent to GridBounds to Extent will likely not
   * produce the original geographic extent, but a larger one.
   */
 class MapKeyTransform(extent: Extent, layoutCols: Int, layoutRows: Int) extends Serializable {

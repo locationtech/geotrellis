@@ -1,46 +1,26 @@
 package geotrellis.raster
 
 import geotrellis.raster.reproject._
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.proj4.CRS
 
 object ProjectedRaster {
-  implicit def tup3ToRaster(tup: (Tile, Extent, CRS)): ProjectedRaster =
-    ProjectedRaster(Raster(tup._1, tup._2), tup._3)
-
-  implicit def tup3SwapToRaster(tup: (Extent, Tile, CRS)): ProjectedRaster =
-    ProjectedRaster(Raster(tup._2, tup._1), tup._3)
-
-  implicit def tup3Swap2ToRaster(tup: (Tile, CRS, Extent)): ProjectedRaster =
-    ProjectedRaster(Raster(tup._1, tup._3), tup._2)
-
-  implicit def tup3Swap3ToRaster(tup: (Extent, CRS, Tile)): ProjectedRaster =
-    ProjectedRaster(Raster(tup._3, tup._1), tup._2)
-
-  implicit def tup3Swap4ToRaster(tup: (CRS, Tile, Extent)): ProjectedRaster =
-    ProjectedRaster(Raster(tup._2, tup._3), tup._1)
-
-  implicit def tup3Swap5ToRaster(tup: (CRS, Extent, Tile)): ProjectedRaster =
-    ProjectedRaster(Raster(tup._3, tup._2), tup._1)
-
-  implicit def tupToRaster(tup: (Raster, CRS)): ProjectedRaster =
+  implicit def tupToRaster[T <: CellGrid](tup: (Raster[T], CRS)): ProjectedRaster[T] =
     ProjectedRaster(tup._1, tup._2)
 
-  implicit def tupSwapToRaster(tup: (CRS, Raster)): ProjectedRaster =
-    ProjectedRaster(tup._2, tup._1)
-
-  implicit def projectedToRaster(p: ProjectedRaster): Raster =
+  implicit def projectedToRaster[T <: CellGrid](p: ProjectedRaster[T]): Raster[T] =
     p.raster
 
-  implicit def projectedToTile(p: ProjectedRaster): Tile =
+  implicit def projectedToTile[T <: CellGrid](p: ProjectedRaster[T]): T =
     p.raster.tile
+
+  def apply[T <: CellGrid](tile: T, extent: Extent, crs: CRS): ProjectedRaster[T] =
+    ProjectedRaster(Raster(tile, extent), crs)
 
 }
 
-case class ProjectedRaster(raster: Raster, crs: CRS) {
+case class ProjectedRaster[T <: CellGrid](raster: Raster[T], crs: CRS) {
   def tile = raster.tile
   def extent = raster.extent
-
-  def reproject(dest: CRS): ProjectedRaster = 
-    ProjectedRaster(raster.reproject(crs, dest), dest)
+  def projectedExtent = ProjectedExtent(extent, crs)
 }
