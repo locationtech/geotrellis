@@ -23,8 +23,7 @@ import spire.syntax.cfor._
 import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
-class KrigingVectorSpec extends FunSpec
-                           with TestEngine {
+class KrigingVectorSpec extends FunSpec with Matchers {
   def generateLogPoints(pointsData: Array[PointFeature[Double]]): Array[PointFeature[Double]] = {
     (1 to pointsData.length)
       .map { i => PointFeature(pointsData(i - 1).geom, math.log(pointsData(i - 1).data)) }
