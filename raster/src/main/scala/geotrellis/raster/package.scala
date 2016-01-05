@@ -18,6 +18,8 @@ package geotrellis
 
 import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
+import geotrellis.vector.Geometry
+import geotrellis.raster.rasterize._
 
 package object raster
     extends reproject.Implicits
@@ -26,6 +28,18 @@ package object raster
   type MultiBandRaster = Raster[MultiBandTile]
 
   // Implicit method extension for core types
+
+  implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
+      with RasterExtentRasterizeMethods[RasterExtent]
+
+  implicit class withTileRasterizeMethods(val self: Tile) extends MethodExtensions[Tile]
+      with TileRasterizeMethods[Tile]
+
+  implicit class withRasterRasterizeMethods(val self: Raster) extends MethodExtensions[Raster]
+      with RasterRasterizeMethods[Raster]
+
+  implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
+      with GeometryRasterizeMethods[Geometry]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
