@@ -399,7 +399,7 @@ class RasterExtentSpec extends FunSpec with Matchers
       val extent = Extent(563460.00000, 4428600.00000, 579420.00000, 4444560.00000)
       val rasterExtent = RasterExtent(extent, 532, 532)
 
-      val windowGridBounds = 
+      val windowGridBounds =
         GridBounds(EXPAND_CELLS, EXPAND_CELLS, rasterExtent.cols - EXPAND_CELLS - 1, rasterExtent.rows - EXPAND_CELLS - 1)
       val windowExtent = rasterExtent.extentFor(windowGridBounds)
 
@@ -411,8 +411,8 @@ class RasterExtentSpec extends FunSpec with Matchers
           extent.ymax - (EXPAND_CELLS * rasterExtent.cellheight)
         )
 
-      withClue(s"EXP: ${formatExtent(rasterExtent.extent)}\nACT: ${formatExtent(windowExtent)}\n") { 
-        windowExtent should be (expectedExtent) 
+      withClue(s"EXP: ${formatExtent(rasterExtent.extent)}\nACT: ${formatExtent(windowExtent)}\n") {
+        windowExtent should be (expectedExtent)
       }
     }
 
@@ -430,8 +430,8 @@ class RasterExtentSpec extends FunSpec with Matchers
         GridBounds(EXPAND_CELLS, EXPAND_CELLS, EXPAND_CELLS + rasterExtent.cols - 1, EXPAND_CELLS + rasterExtent.rows - 1)
       val windowExtent = expandedRasterExtent.extentFor(windowGridBounds)
 
-      withClue(s"EXP: ${formatExtent(rasterExtent.extent)}\nACT: ${formatExtent(windowExtent)}\n") { 
-        windowExtent should be (rasterExtent.extent) 
+      withClue(s"EXP: ${formatExtent(rasterExtent.extent)}\nACT: ${formatExtent(windowExtent)}\n") {
+        windowExtent should be (rasterExtent.extent)
       }
     }
 

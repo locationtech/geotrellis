@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ object Rasterizer {
    * @param geom       Geometry to rasterize
    * @param rasterExtent  Definition of raster to create
    * @param value         Single value to burn
-   */ 
+   */
   def rasterizeWithValue(geom: Geometry, rasterExtent: RasterExtent, value: Int): Tile = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
@@ -42,14 +42,14 @@ object Rasterizer {
           array(row * cols + col) = value
     foreachCellByGeometry(geom, rasterExtent)(f2)
     ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
-  } 
+  }
 
   /**
    * Create a raster from a geometry feature.
    * @param feature       Feature to rasterize
    * @param rasterExtent  Definition of raster to create
    * @param f             Function that takes col, row, feature and returns value to burn
-   */ 
+   */
   def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: Transformer[Int]) = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
@@ -61,16 +61,16 @@ object Rasterizer {
 
   def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
     foreachCellByGeometry(geom, re, false)(f)
-   
+
   /**
    * Perform a zonal summary by invoking a function on each cell under provided features.
    *
    * This function is a closure that returns Unit; all results are a side effect of this function.
-   * 
-   * Note: the function f should modify a mutable variable as a side effect.  
-   * While not ideal, this avoids the unavoidable boxing that occurs when a 
+   *
+   * Note: the function f should modify a mutable variable as a side effect.
+   * While not ideal, this avoids the unavoidable boxing that occurs when a
    * Function3 returns a primitive value.
-   * 
+   *
    * @param geom                  Feature for calculation
    * @param re                    RasterExtent to use for iterating through cells
    * @param includeExterior       If this geometry is a polygon or multipolygon, include the exterior in the rasterization
@@ -88,12 +88,12 @@ object Rasterizer {
       case geom: Extent        => ExtentRasterizer.foreachCellByExtent(geom, re, includeExterior)(f)
     }
   }
-    
+
   /**
    * Invoke a function on raster cells under a point feature.
-   * 
+   *
    * The function f is a closure that should alter a mutable variable by side
-   * effect (to avoid boxing).  
+   * effect (to avoid boxing).
    */
   def foreachCellByPoint(geom: Point, re: RasterExtent)(f: (Int, Int) => Unit) {
     val col = re.mapXToGrid(geom.x)
@@ -111,7 +111,7 @@ object Rasterizer {
   def foreachCellByPointSeq(pSet: Seq[Point], re: RasterExtent)(f: (Int, Int) => Unit) {
     pSet.foreach(foreachCellByPoint(_, re)(f))
   }
-  
+
   /**
    * Apply function f to every cell contained within MultiLineString.
    * @param g   MultiLineString used to define zone
@@ -156,14 +156,14 @@ object Rasterizer {
    * The iteration happens in the direction from the first point to the last point.
    */
   def foreachCellByLineString(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
-    val cells = (for(coord <- line.jtsGeom.getCoordinates()) yield { 
-      (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y)) 
+    val cells = (for(coord <- line.jtsGeom.getCoordinates()) yield {
+      (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y))
     }).toList
 
     for(i <- 1 until cells.size) {
-      foreachCellInGridLine(cells(i - 1)._1, 
-                            cells(i - 1)._2, 
-                            cells(i)._1, 
+      foreachCellInGridLine(cells(i - 1)._1,
+                            cells(i - 1)._2,
+                            cells(i)._1,
                             cells(i)._2, line, re, i != cells.size - 1)(f)
     }
   }
@@ -185,7 +185,7 @@ object Rasterizer {
     val sx=if (x0 < x1) 1 else -1
     val dy=math.abs(y1 - y0)
     val sy=if (y0 < y1) 1 else -1
-    
+
     var x = x0
     var y = y0
     var err = (if (dx>dy) dx else -dy) / 2
