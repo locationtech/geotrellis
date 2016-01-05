@@ -96,9 +96,9 @@ package object raster
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
-  @inline final val ubyteNODATA = Byte.MinValue & 0xFF
+  @inline final val ubyteNODATA = (Byte.MinValue & 0xFF).toByte
   @inline final val shortNODATA = Short.MinValue
-  @inline final val ushortNODATA = Short.MinValue & 0xFFFF
+  @inline final val ushortNODATA = (Short.MinValue & 0xFFFF).toShort
   @inline final val NODATA = Int.MinValue
   @inline final val floatNODATA = Float.NaN
   @inline final val doubleNODATA = Double.NaN
