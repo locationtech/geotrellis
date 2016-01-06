@@ -33,18 +33,26 @@ object GeoTiffMultiBandTile {
   ): GeoTiffMultiBandTile =
     bandType match {
       case BitBandType =>
-        new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UByteBandType    =>
-        new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case ByteBandType    =>
-        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UInt16BandType  =>
-        new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case Int16BandType   =>
-        new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+      case UByteBandType => noDataValue match {
+        case Some(nd) => new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, nd)
+        case None => new RawUByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+      }
+      case ByteBandType => noDataValue match {
+        case Some(nd) => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, nd)
+        case None => new RawByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+      }
+      case UInt16BandType => noDataValue match {
+        case Some(nd) => new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, nd)
+        case None => new RawUInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+      }
+      case Int16BandType => noDataValue match {
+        case Some(nd) => new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, nd)
+        case None => new RawInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+      }
       case UInt32BandType  =>
         new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case Int32BandType   =>
+      case Int32BandType =>
         new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Float32BandType =>
         new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
@@ -120,8 +128,7 @@ abstract class GeoTiffMultiBandTile(
   val segmentLayout: GeoTiffSegmentLayout,
   val compression: Compression,
   val bandCount: Int,
-  val hasPixelInterleave: Boolean,
-  val noDataValue: Option[Double]
+  val hasPixelInterleave: Boolean
 ) extends MultiBandTile with GeoTiffImageData {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
