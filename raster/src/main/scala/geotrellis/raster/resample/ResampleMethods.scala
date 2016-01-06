@@ -15,7 +15,7 @@ trait ResampleMethods[T <: CellGrid] extends MethodExtensions[T] {
     resample(source, target, ResampleMethod.DEFAULT)
 
   def resample(extent: Extent, targetExtent: Extent, method: ResampleMethod): T =
-    resample(extent, RasterExtent(extent, self.cols, self.rows).createAligned(targetExtent), method)
+    resample(extent, RasterExtent(extent, self.cols, self.rows).createAlignedRasterExtent(targetExtent), method)
 
   def resample(extent: Extent, targetCols: Int, targetRows: Int): T =
     resample(extent, targetCols, targetRows, ResampleMethod.DEFAULT)

@@ -3,7 +3,7 @@ package geotrellis.raster.crop
 import geotrellis.vector._
 import geotrellis.raster._
 
-trait MultiBandTileCropMethods extends CropMethods[MultiBandTile] {
+trait MultiBandTileCropMethods extends CellGridCropMethods[MultiBandTile] {
   def crop(gb: GridBounds, force: Boolean): MultiBandTile = {
     val croppedBands = Array.ofDim[Tile](self.bandCount)
 

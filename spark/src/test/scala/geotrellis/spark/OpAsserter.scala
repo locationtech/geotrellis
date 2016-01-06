@@ -45,7 +45,7 @@ trait OpAsserter extends FunSpec
         layoutRows
       )(sc)
 
-    val rasterResult = rasterOp(tile, rasterRDD.metaData.layout.rasterExtent)
+    val rasterResult = rasterOp(tile, rasterRDD.metaData.layout.toRasterExtent)
     val sparkResult = sparkOp(rasterRDD).stitch.tile
 
     asserter(rasterResult, sparkResult)

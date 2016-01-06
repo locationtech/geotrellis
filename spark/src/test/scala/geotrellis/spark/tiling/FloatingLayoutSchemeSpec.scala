@@ -16,7 +16,7 @@ class FloatingLayoutSchemeSpec extends FunSpec with Matchers {
     }
 
     it("should expand the extent to cover padded pixels"){
-      assert(level.layout.extent === Extent(0,0,40,30))
+      assert(level.layout.extent === Extent(0,-3,40,27))
     }
 
     it("should have enough tiles to cover the source extent"){

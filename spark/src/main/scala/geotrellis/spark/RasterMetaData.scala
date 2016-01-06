@@ -23,8 +23,6 @@ case class RasterMetaData(
 ) {
   /** Transformations between tiling scheme and map references */
   def mapTransform = layout.mapTransform
-  /** Layout raster extent */
-  def rasterExtent = layout.rasterExtent
   /** TileLayout of the layout */
   def tileLayout = layout.tileLayout
   /** Full extent of the layout */

@@ -3,10 +3,21 @@ package geotrellis.raster.crop
 import geotrellis.vector._
 import geotrellis.raster._
 
-trait ExtentCropMethods[T <: CellGrid, R <: Product2[T, Extent]] extends MethodExtensions[R] {
-  def crop(extent: Extent, force: Boolean)(implicit ev: T => CropMethods[T], ev2: ((T, Extent)) => R): R =
-    (self._1.crop(RasterExtent(self._2, self._1).gridBoundsFor(extent), force), extent)
+class ExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](val self: Raster[T]) extends CropMethods[Raster[T]] {
+  def crop(extent: Extent, force: Boolean): Raster[T] = {
+    val re = RasterExtent(self._2, self._1)
+    val gridBounds = re.gridBoundsFor(extent)
+    val croppedExtent = re.extentFor(gridBounds)
+    val croppedTile = self._1.crop(gridBounds, force)
+    Raster(croppedTile, croppedExtent)
+  }
 
-  def crop(extent: Extent)(implicit ev: T => CropMethods[T], ev2: ((T, Extent)) => R): R =
+  def crop(extent: Extent): Raster[T] =
     crop(extent, false)
+
+  def crop(gb: GridBounds, force: Boolean): Raster[T] = {
+    val re = RasterExtent(self._2, self._1)
+    val croppedExtent = re.extentFor(gb)
+    Raster(self._1.crop(gb, force), croppedExtent)
+  }
 }

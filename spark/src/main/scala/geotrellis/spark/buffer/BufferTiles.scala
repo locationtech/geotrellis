@@ -24,7 +24,7 @@ object BufferTiles {
   case object Left extends Direction
   case object TopLeft extends Direction
 
-  def collectWithBuffers[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
+  def collectWithNeighbors[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
     key: K, 
     tile: V, 
     includeKey: SpatialKey => Boolean,
@@ -74,6 +74,54 @@ object BufferTiles {
     parts
   }
 
+  def bufferWithNeighbors[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: Stitcher: ClassTag
+  ](rdd: RDD[(K, Iterable[(Direction, V)])]): RDD[(K, BufferedTile[V])] = {
+    rdd
+      .flatMapValues { neighbors =>
+        neighbors.find( _._1 == Center) map { case (_, centerTile) =>
+
+            val bufferSizes =
+              neighbors.foldLeft(BufferSizes(0, 0, 0, 0)) { (acc, tup) =>
+                val (direction, slice) = tup
+                direction match {
+                  case Left        => acc.copy(left = slice.cols)
+                  case Right       => acc.copy(right = slice.cols)
+                  case Top         => acc.copy(top = slice.rows)
+                  case Bottom      => acc.copy(bottom = slice.rows)
+                  case _           => acc
+                }
+              }
+
+          val pieces =
+            neighbors.map { case (direction, slice) =>
+              val (updateColMin, updateRowMin) =
+                direction match {
+                  case Center      => (bufferSizes.left, bufferSizes.top)
+                  case Left        => (0, bufferSizes.top)
+                  case Right       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
+                  case Top         => (bufferSizes.left, 0)
+                  case Bottom      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
+                  case TopLeft     => (0, 0)
+                  case TopRight    => (bufferSizes.left + centerTile.cols, 0)
+                  case BottomLeft  => (0, bufferSizes.top + centerTile.rows)
+                  case BottomRight => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
+                }
+
+              (slice, (updateColMin, updateRowMin))
+          }
+
+          val cols = centerTile.cols + bufferSizes.left + bufferSizes.right
+          val rows = centerTile.rows + bufferSizes.top + bufferSizes.bottom
+
+          val stitched = implicitly[Stitcher[V]].stitch(pieces, cols, rows)
+
+          BufferedTile(stitched, GridBounds(bufferSizes.left, bufferSizes.top, cols - bufferSizes.right - 1, rows - bufferSizes.bottom - 1))
+        }
+    }
+  }
+
   def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
@@ -88,7 +136,7 @@ object BufferTiles {
     val tilesAndSlivers =
       rdd
         .flatMap { case (key, tile) => 
-          collectWithBuffers(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
+          collectWithNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
         }
 
     val grouped =
@@ -97,34 +145,7 @@ object BufferTiles {
         case None => tilesAndSlivers.groupByKey
       }
 
-    grouped
-      .flatMapValues { neighbors =>
-        neighbors.find( _._1 == Center) map { case (_, tile) =>
-          val cols = tile.cols
-          val rows = tile.rows
-
-          val pieces =
-            neighbors.map { case (direction, slice) =>
-              val (updateColMin, updateRowMin) =
-                direction match {
-                  case Center      => (bufferSize, bufferSize)
-                  case Left       => (0, bufferSize)
-                  case Right        => (bufferSize + cols, bufferSize)
-                  case Top      => (bufferSize, 0)
-                  case Bottom         => (bufferSize, bufferSize + rows)
-                  case TopLeft => (0, 0)
-                  case TopRight  => (bufferSize + cols, 0)
-                  case BottomLeft    => (0, bufferSize + rows)
-                  case BottomRight     => (bufferSize + cols, bufferSize + rows)
-                }
-
-              (slice, (updateColMin, updateRowMin))
-          }
-
-          val focalTile = implicitly[Stitcher[V]].stitch(pieces, cols + (2 * bufferSize), rows + (2 * bufferSize))
-          BufferedTile(focalTile, GridBounds(bufferSize, bufferSize, bufferSize+cols-1, bufferSize+rows-1))
-        }
-    }
+    bufferWithNeighbors(grouped)
   }
 
   def apply[
@@ -182,7 +203,7 @@ object BufferTiles {
       rdd
         .join(surroundingBufferSizes)
         .flatMap { case (key, (tile, bufferSizesMap)) => 
-          collectWithBuffers(key, tile, bufferSizesMap.contains _, bufferSizesMap)
+          collectWithNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
         }
 
     val grouped =
@@ -191,35 +212,6 @@ object BufferTiles {
         case None => tilesAndSlivers.groupByKey
       }
 
-    grouped.join(bufferSizesPerKey)
-      .mapPartitions({ partition =>
-        partition.flatMap { case (key, (neighbors, bufferSizes)) =>
-          neighbors.find( _._1 == Center) map { case (_, centerTile) =>
-            val pieces =
-              neighbors.map { case (direction, slice) =>
-                val (updateColMin, updateRowMin) =
-                  direction match {
-                    case Center      => (bufferSizes.top, bufferSizes.left)
-                    case Left        => (0, bufferSizes.top)
-                    case Right       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
-                    case Top         => (bufferSizes.left, 0)
-                    case Bottom      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
-                    case TopLeft     => (0, 0)
-                    case TopRight    => (bufferSizes.left + centerTile.cols, 0)
-                    case BottomLeft  => (0, bufferSizes.top + centerTile.rows)
-                    case BottomRight => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
-                  }
-
-                (slice, (updateColMin, updateRowMin))
-              }
-            val cols = centerTile.cols + bufferSizes.left + bufferSizes.right
-            val rows = centerTile.rows + bufferSizes.top + bufferSizes.bottom
-
-            val stitched = implicitly[Stitcher[V]].stitch(pieces, cols, rows)
-
-            (key, BufferedTile(stitched, GridBounds(bufferSizes.left, bufferSizes.top, cols - bufferSizes.right - 1, rows - bufferSizes.bottom - 1)))
-          }
-        }
-      }, preservesPartitioning = true)
+    bufferWithNeighbors(grouped)
   }
 }

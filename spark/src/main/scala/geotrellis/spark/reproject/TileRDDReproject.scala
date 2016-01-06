@@ -34,8 +34,19 @@ object TileRDDReproject {
     options: Options
   ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
     val crs: CRS = metadata.crs
-    val mapTransform: MapKeyTransform = metadata.layout.mapTransform
-    val tileLayout: TileLayout = metadata.layout.tileLayout
+    val layout = metadata.layout
+    val mapTransform: MapKeyTransform = layout.mapTransform
+    val tileLayout: TileLayout = layout.tileLayout
+
+    val updatedOptions =
+      options.parentGridExtent match {
+        case Some(_) =>
+          // Assume caller knows what she/he is doing
+          options
+        case None =>
+          val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options)
+          options.copy(parentGridExtent = Some(parentGridExtent))
+      }
 
     val reprojectedTiles =
       bufferedTiles
@@ -44,15 +55,20 @@ object TileRDDReproject {
           val inverseTransform = Transform(destCrs, crs)
 
           partition.map { case (key, BufferedTile(tile, gridBounds)) =>
-            val extent = mapTransform(key)
-
             val innerExtent = mapTransform(key)
             val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
-            val outerGridBounds = GridBounds(-gridBounds.colMin, -gridBounds.rowMin, tile.cols - gridBounds.colMin - 1, tile.rows - gridBounds.rowMin - 1)
+            val outerGridBounds =
+              GridBounds(
+                -gridBounds.colMin,
+                -gridBounds.rowMin,
+                tile.cols - gridBounds.colMin - 1,
+                tile.rows - gridBounds.rowMin - 1
+              )
             val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
 
             val Product2(newTile, newExtent) =
-              tile.reproject(outerExtent, gridBounds, transform, inverseTransform, options)
+              tile.reproject(outerExtent, gridBounds, transform, inverseTransform, updatedOptions)
+
             ((key, newExtent), newTile)
           }
         }
@@ -99,13 +115,14 @@ object TileRDDReproject {
         .mapValues { case (re1, re2) =>
           // Reproject the extent back into the original CRS,
           // to determine how many border pixels we need.
+          // Pad by one extra pixel.
           val e = re2.extent.reproject(destCrs, crs)
           val gb = re1.gridBoundsFor(e, clamp = false)
           BufferSizes(
-            left = if(gb.colMin < 0) -gb.colMin else 0,
-            right = if(gb.colMax >= re1.cols) gb.colMax - (re1.cols - 1) else 0,
-            top = if(gb.rowMin < 0) -gb.rowMin else 0,
-            bottom = if(gb.rowMax >= re1.rows) gb.rowMax - (re1.rows - 1) else 0
+            left = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
+            right = 1 + (if(gb.colMax >= re1.cols) gb.colMax - (re1.cols - 1) else 0),
+            top = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
+            bottom = 1 + (if(gb.rowMax >= re1.rows) gb.rowMax - (re1.rows - 1) else 0)
           )
         }
 
@@ -125,5 +142,9 @@ object TileRDDReproject {
     bufferSize: Int,
     options: Options
   ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
-    apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, layoutScheme, options)
+    if(bufferSize == 0) {
+      val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
+      apply(fakeBuffers, rdd.metadata, destCrs, layoutScheme, options)
+    } else
+      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, layoutScheme, options)
 }

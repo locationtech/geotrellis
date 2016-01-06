@@ -13,7 +13,7 @@ trait RasterResampleMethods[+T <: Raster[_]] extends MethodExtensions[T] {
     resample(target, ResampleMethod.DEFAULT)
 
   def resample(target: Extent, method: ResampleMethod): T =
-    resample(RasterExtent(self.extent, self.cols, self.rows).createAligned(target), method)
+    resample(RasterExtent(self.extent, self.cols, self.rows).createAlignedRasterExtent(target), method)
 
   def resample(targetCols: Int, targetRows: Int): T =
     resample(targetCols, targetRows, ResampleMethod.DEFAULT)

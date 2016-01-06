@@ -29,7 +29,7 @@ object MapKeyTransform {
   * transformation from Extent to GridBounds to Extent will likely not
   * produce the original geographic extent, but a larger one.
   */
-class MapKeyTransform(extent: Extent, layoutCols: Int, layoutRows: Int) extends Serializable {
+class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: Int) extends Serializable {
   lazy val tileWidth: Double = extent.width / layoutCols
   lazy val tileHeight: Double = extent.height / layoutRows
 

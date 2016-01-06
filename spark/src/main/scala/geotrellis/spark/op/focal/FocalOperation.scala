@@ -43,11 +43,11 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends RasterRDDMe
       (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
     FocalOperation(rasterRDD, n)(calc)
 
-  def focalWithExtent(n: Neighborhood)
-      (calc: (Tile, Option[GridBounds], RasterExtent) => Tile): RasterRDD[K] = {
-    val extent = rasterRDD.metaData.layout.rasterExtent
+  def focalWithCellSize(n: Neighborhood)
+      (calc: (Tile, Option[GridBounds], CellSize) => Tile): RasterRDD[K] = {
+    val cellSize = rasterRDD.metaData.layout.cellSize
     FocalOperation(rasterRDD, n){ (tile, bounds) =>
-      calc(tile, bounds, extent)
+      calc(tile, bounds, cellSize)
     }
   }
 }

@@ -64,7 +64,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
     it("should convert map coordinates to grid") {
       g.mapToGrid(10.0, 15.0) should be (0, 40)
-      g.mapToGrid(89.9, 95.1) should be (39, 0)
+      g.mapToGrid(89.9, 94.999) should be (39, 0)
       g.mapToGrid(33.1, 61.6) should be (11, 16)
     }
 
@@ -153,7 +153,7 @@ class RasterExtentSpec extends FunSpec with Matchers
     }
 
     it("should get bounds for extents that do not fall on grid lines") {
-      // Map of subExtends to expected Grid Bounds
+      // Map of subExtents to expected Grid Bounds
       val testData = Map( 
         (Extent(25, -92, 29, -81), GridBounds(7, 4, 9, 4)),
         (Extent(12.01, -42, 24.5, -20.1), GridBounds(1, 1, 7, 2))
@@ -163,8 +163,9 @@ class RasterExtentSpec extends FunSpec with Matchers
         RasterExtent(baseExtent, 2, 20, 10, 5)
       }
 
-      for((subExtent, expected) <- testData)
+      for((subExtent, expected) <- testData) {
         rasterExtent.gridBoundsFor(subExtent) should be (expected)
+      }
     }
 
     it("should handle subExtents that are out of bounds") {
@@ -190,6 +191,15 @@ class RasterExtentSpec extends FunSpec with Matchers
       actualLeft should be (expectedLeft)
       actualRight should be (actualRight)
     }
+
+    it("should get gridbounds of extent outside of raster extent if clamp is false") {
+      val re = RasterExtent(Extent(0.0, 0.0, 100.0, 60.0), 10.0, 5.0, 10, 12)
+      val extent = Extent(-6, -0.1, 101.0, 64.9)
+
+      val gb = re.gridBoundsFor(extent, clamp = false)
+
+      gb should be (GridBounds(-1, -1, 10, 12))
+    }
   }
 
   describe("Creating aligned RasterExtent based on an extent") {
@@ -214,7 +224,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
       val extent = Extent(xmin2, ymin2, xmax2, ymax2)
 
-      val result = rasterExtent.createAligned(extent)
+      val result = rasterExtent.createAlignedRasterExtent(extent)
 
       val xmin_expected = 2.0
       val xmax_expected = 11.5
@@ -252,7 +262,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
       val extent = Extent(xmin2, ymin2, xmax2, ymax2)
 
-      val result = rasterExtent.createAligned(extent)
+      val result = rasterExtent.createAlignedRasterExtent(extent)
 
       val xmin_expected = 2.0
       val xmax_expected = 15.5
@@ -290,7 +300,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
       val extent = Extent(xmin2, ymin2, xmax2, ymax2)
 
-      val result = rasterExtent.createAligned(extent)
+      val result = rasterExtent.createAlignedRasterExtent(extent)
 
       val xmin_expected = -4.5
       val xmax_expected = 11.5

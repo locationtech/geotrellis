@@ -151,14 +151,8 @@ class ReprojectSpec extends FunSpec
       val wmRight @ Raster(wmRightTile, wmRightExtent) = 
         mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
-      // TODO: Remove
-      // GeoTiff(mergedRaster, srcCRS).write("/Users/rob/tmp/reproject-bugs/merged-src-raster.tif")
-      // GeoTiff(mergedRaster.reproject(srcCRS, WebMercator)(method = Bilinear), WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-reprojected-raster.tif")
-      // GeoTiff(wmLeft, WebMercator).write("/Users/rob/tmp/reproject-bugs/reproject-left-nomerge.tif")
-      // GeoTiff(wmRight, WebMercator).write("/Users/rob/tmp/reproject-bugs/reproject-right-nomerge.tif")
-
-      val rel @ RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
-      val rer @ RasterExtent(_, cellwidthRight, cellheightRight, _, _) = RasterExtent(wmRightExtent, wmRightTile.cols, wmRightTile.rows)
+      val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
+      val RasterExtent(_, cellwidthRight, cellheightRight, _, _) = RasterExtent(wmRightExtent, wmRightTile.cols, wmRightTile.rows)
 
       cellwidthLeft should be (cellwidthRight +- 0.01)
       cellheightLeft should be (cellheightRight +- 0.01)
@@ -168,30 +162,6 @@ class ReprojectSpec extends FunSpec
 
       val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
       val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile).merge(re.extent, wmRightExtent, wmRightTile)
-
-      def doAll() = {
-        val tile = IntArrayTile(Array.ofDim[Int](re.cols * re.rows).fill(3), re.cols, re.rows)
-        GeoTiff(tile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/target-wm-tile.tif")
-      }
-      doAll()
-
-      def doLeft() = {
-        val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
-        val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile)
-        GeoTiff(mergeTile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-from-window-reproject-left.tif")
-      }
-      doLeft()
-
-      def doRight() = {
-        val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
-        val mergeTile: Tile = emptyTile.merge(re.extent, wmRightExtent, wmRightTile)
-        GeoTiff(mergeTile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-from-window-reproject-right.tif")
-      }
-      doRight()
-
-
-
-      GeoTiff(mergeTile, re.extent, WebMercator).write("/Users/rob/tmp/reproject-bugs/merged-from-window-reproject.tif")
 
       detectNoDataLine(mergeTile)
     }

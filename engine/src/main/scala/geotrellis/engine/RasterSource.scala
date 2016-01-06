@@ -329,7 +329,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     resample(Literal(target))
 
   def resample(target: Extent): RasterSource =
-    resample(rasterDefinition.map(_.rasterExtent.createAligned(target)))
+    resample(rasterDefinition.map(_.rasterExtent.createAlignedRasterExtent(target)))
 
   def resample(targetCols: Int, targetRows: Int): RasterSource =
     resample(rasterDefinition.map(_.rasterExtent.withDimensions(targetCols, targetRows)))

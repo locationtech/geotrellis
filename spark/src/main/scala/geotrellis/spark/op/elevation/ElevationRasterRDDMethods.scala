@@ -9,22 +9,22 @@ trait ElevationRasterRDDMethods[K] extends FocalOperation[K] {
 
   def aspect() = {
     val n = Square(1)
-    focalWithExtent(n) { (tile, bounds, re) =>
-      Aspect(tile, n, bounds, re.cellSize)
+    focalWithCellSize(n) { (tile, bounds, cellSize) =>
+      Aspect(tile, n, bounds, cellSize)
     }
   }
 
   def slope(zFactor: Double = 1.0) = {
     val n = Square(1)
-    focalWithExtent(n) { (tile, bounds, re) =>
-      Slope(tile, n, bounds, re.cellSize, zFactor)
+    focalWithCellSize(n) { (tile, bounds, cellSize) =>
+      Slope(tile, n, bounds, cellSize, zFactor)
     }
   }
 
   def hillshade(azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1) = {
     val n = Square(1)
-    focalWithExtent(n) { (tile, bounds, re) =>
-      Hillshade(tile, n, bounds, re.cellSize, azimuth, altitude, zFactor)
+    focalWithCellSize(n) { (tile, bounds, cellSize) =>
+      Hillshade(tile, n, bounds, cellSize, azimuth, altitude, zFactor)
     }
   }
 
