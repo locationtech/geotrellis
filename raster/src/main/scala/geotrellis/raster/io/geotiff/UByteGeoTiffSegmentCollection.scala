@@ -9,8 +9,18 @@ trait UByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val bandType = UByteBandType
   val cellType = TypeUByte
 
-  val noDataValue: Option[Double]
+  val noDataValue: Double
 
   val createSegment: Int => UByteGeoTiffSegment =
-    { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) }
+    { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i), noDataValue.toByte) }
+}
+
+trait RawUByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
+  type T = RawUByteGeoTiffSegment
+
+  val bandType = UByteBandType
+  val cellType = TypeRawUByte
+
+  val createSegment: Int => RawUByteGeoTiffSegment =
+    { i: Int => new RawUByteGeoTiffSegment(getDecompressedBytes(i)) }
 }

@@ -6,16 +6,24 @@ import geotrellis.raster.io.geotiff.compression._
 trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = ByteGeoTiffSegment
 
-  val bandType = ByteBandType
   val cellType = TypeByte
+  val bandType = ByteBandType
 
-  val noDataValue: Option[Double]
+  val noDataValue: Double
 
   val createSegment: Int => ByteGeoTiffSegment =
-    noDataValue match {
-      case Some(nd) if isData(nd) && Byte.MinValue.toDouble <= nd && nd <= Byte.MaxValue.toDouble =>        
-        { i: Int => new NoDataByteGeoTiffSegment(getDecompressedBytes(i), nd.toByte) }
-      case _ =>
-        { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) }
-    }
+    if (isData(noDataValue) && Byte.MinValue.toDouble <= noDataValue && noDataValue <= Byte.MaxValue.toDouble)
+      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i), noDataValue.toByte) }
+    else
+      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i), byteNODATA) }
+}
+
+trait RawByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
+  type T = RawByteGeoTiffSegment
+
+  val cellType = TypeRawByte
+  val bandType = ByteBandType
+
+  val createSegment: Int => RawByteGeoTiffSegment =
+    { i: Int => new RawByteGeoTiffSegment(getDecompressedBytes(i)) }
 }

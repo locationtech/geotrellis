@@ -65,6 +65,7 @@ object GeoTiffReader {
   def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
 
+    println("The info on read", info.noDataValue)
     val geoTiffTile =
       if(info.bandCount == 1) {
         GeoTiffTile(
@@ -232,9 +233,9 @@ object GeoTiffReader {
     val rows = tiffTags.rows
     val bandType = tiffTags.bandType
     val bandCount = tiffTags.bandCount
-    
+
     val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, bandType)
-    val noDataValue = 
+    val noDataValue =
       (tiffTags
         &|-> TiffTags._geoTiffTags
         ^|-> GeoTiffTags._gdalInternalNoData get)

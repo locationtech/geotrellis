@@ -42,11 +42,15 @@ object TiffTagFieldValue {
     cellType match {
       case TypeBit => None
       case TypeByte => Some(byteNODATA.toString)
+      case TypeRawByte => None
       case TypeUByte => Some(ubyteNODATA.toString)
+      case TypeRawUByte => None
       case TypeShort => Some(shortNODATA.toString)
+      case TypeRawShort => None
       case TypeUShort => Some(ushortNODATA.toString)
+      case TypeRawUShort => None
       case TypeInt => Some(NODATA.toString)
-      case (TypeFloat | TypeDouble) => Some("nan")
+      case TypeFloat | TypeDouble => Some("nan")
     }
 
   def collect(geoTiff: GeoTiff): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
@@ -73,7 +77,7 @@ object TiffTagFieldValue {
     createNoDataString(imageData.bandType.cellType) match {
       case Some(noDataString) =>
         fieldValues += TiffTagFieldValue(GDALInternalNoDataTag, AsciisFieldType, noDataString.length + 1, toBytes(noDataString))
-      case _ =>
+      case _ => ()
     }
 
     val re = RasterExtent(extent, imageData.cols, imageData.rows)

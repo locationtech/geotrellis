@@ -3,7 +3,7 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.codes.SampleFormat._
 
-sealed abstract trait BandType { 
+sealed abstract trait BandType {
   def bytesPerSample: Int = (bitsPerSample + 7) / 8
   def bitsPerSample: Int
 
@@ -17,7 +17,7 @@ sealed abstract trait BandType {
 }
 
 object BandType {
-  def apply(bitsPerSample: Int, sampleFormat: Int): BandType = 
+  def apply(bitsPerSample: Int, sampleFormat: Int): BandType =
     (bitsPerSample, sampleFormat) match {
       case (1, _) => BitBandType
       case (8, UnsignedInt) => UByteBandType
@@ -28,18 +28,17 @@ object BandType {
       case (32, SignedInt) => Int32BandType
       case (32, FloatingPoint) => Float32BandType
       case (64, FloatingPoint) => Float64BandType
-      case _ => 
+      case _ =>
         throw new UnsupportedOperationException(s"Unsupported band type ($bitsPerSample, $sampleFormat)")
-
     }
 
-  def forCellType(cellType: CellType): BandType = 
+  def forCellType(cellType: CellType): BandType =
     cellType match {
       case TypeBit => BitBandType
-      case TypeUByte => UByteBandType
-      case TypeByte => ByteBandType
-      case TypeUShort => UInt16BandType
-      case TypeShort => Int16BandType
+      case TypeUByte | TypeRawUByte => UByteBandType
+      case TypeByte | TypeRawByte => ByteBandType
+      case TypeUShort | TypeRawUShort => UInt16BandType
+      case TypeShort | TypeRawShort => Int16BandType
       case TypeInt => Int32BandType
       case TypeFloat => Float32BandType
       case TypeDouble => Float64BandType

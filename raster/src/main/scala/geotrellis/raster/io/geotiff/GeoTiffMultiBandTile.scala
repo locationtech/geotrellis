@@ -30,15 +30,15 @@ object GeoTiffMultiBandTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
-  ): GeoTiffMultiBandTile =    
+  ): GeoTiffMultiBandTile =
     bandType match {
-      case BitBandType => 
+      case BitBandType =>
         new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UByteBandType    => 
+      case UByteBandType    =>
         new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case ByteBandType    => 
+      case ByteBandType    =>
         new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UInt16BandType  => 
+      case UInt16BandType  =>
         new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Int16BandType   =>
         new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)

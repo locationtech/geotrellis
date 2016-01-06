@@ -26,18 +26,36 @@ object GeoTiffTile {
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
     noDataValue: Option[Double]
-  ): GeoTiffTile =
+  ): GeoTiffTile = {
+    println("in apply for geotifftile", noDataValue)
     bandType match {
-      case BitBandType     => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case UByteBandType   => new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case ByteBandType    => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case UInt16BandType  => new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case Int16BandType   => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
+      case BitBandType => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+      case UByteBandType =>
+        noDataValue match {
+          case Some(nd) => new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, nd)
+          case None => new RawUByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+        }
+      case ByteBandType =>
+        noDataValue match {
+          case Some(nd) => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, nd)
+          case None => new RawByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+        }
+      case UInt16BandType =>
+        noDataValue match {
+          case Some(nd) => new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, nd)
+          case None => new RawUInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+        }
+      case Int16BandType =>
+        noDataValue match {
+          case Some(nd) => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, nd)
+          case None => new RawInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+        }
       case UInt32BandType  => new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case Int32BandType   => new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case Float32BandType => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
       case Float64BandType => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
     }
+  }
 
   /** Convert a tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. */
   def apply(tile: Tile): GeoTiffTile =

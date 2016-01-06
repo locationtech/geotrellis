@@ -8,7 +8,7 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-class Int16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
+class RawInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asShortBuffer
 
   val size: Int = bytes.size / 2
@@ -89,7 +89,7 @@ class Int16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   }
 }
 
-class NoDataInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends Int16GeoTiffSegment(bytes) {
+class Int16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends RawInt16GeoTiffSegment(bytes) {
   override
   def get(i: Int): Short = {
     val v = super.get(i)

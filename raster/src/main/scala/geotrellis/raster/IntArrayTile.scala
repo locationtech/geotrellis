@@ -45,15 +45,15 @@ final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
 }
 
 object IntArrayTile {
-  def ofDim(cols: Int, rows: Int): IntArrayTile = 
+  def ofDim(cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
 
-  def empty(cols: Int, rows: Int): IntArrayTile = 
+  def empty(cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
 
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
- 
+
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): IntArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val intBuffer = byteBuffer.asIntBuffer()
@@ -63,7 +63,7 @@ object IntArrayTile {
     IntArrayTile(intArray, cols, rows)
   }
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): IntArrayTile = 
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): IntArrayTile =
     if(isNoData(replaceNoData))
       fromBytes(bytes, cols, rows)
     else {
