@@ -28,8 +28,7 @@ class LocalSpatialSpec extends FunSpec
                                with TestEnvironment
                                with TestFiles
                                with RasterRDDMatchers
-                               with RasterRDDBuilders
-                               with TestSparkContext {
+                               with RasterRDDBuilders {
 
   describe("Local Operations") {
     val rdd = AllOnesTestFile

@@ -12,7 +12,6 @@ import org.scalatest._
 class SumSpec extends FunSpec
     with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Sum Focal Spec") {

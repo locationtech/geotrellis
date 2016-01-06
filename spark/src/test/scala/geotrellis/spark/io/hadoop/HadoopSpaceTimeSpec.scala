@@ -12,9 +12,8 @@ import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests {
+    with TestEnvironment with TestFiles
+    with CoordinateSpaceTimeTests {
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
   lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterMetaData](outputLocal)

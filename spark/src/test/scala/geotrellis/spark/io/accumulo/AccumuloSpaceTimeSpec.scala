@@ -12,10 +12,9 @@ import org.joda.time.DateTime
 
 abstract class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+    with TestEnvironment with TestFiles
+    with CoordinateSpaceTimeTests
+    with LayerUpdateSpaceTimeTileTests {
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 

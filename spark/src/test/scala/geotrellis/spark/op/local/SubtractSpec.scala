@@ -24,8 +24,7 @@ import org.scalatest.FunSpec
 class SubtractSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Subtract Operation") {
     val ones = AllOnesTestFile

@@ -27,8 +27,7 @@ import org.scalatest.FunSpec
 class MajoritySpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Majority Operation") {
     val ones = AllOnesTestFile

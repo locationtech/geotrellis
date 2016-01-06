@@ -25,8 +25,7 @@ import org.scalatest.FunSpec
 class UnequalSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("UnEqual Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

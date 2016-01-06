@@ -18,7 +18,6 @@ import org.scalatest._
 class PyramidSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with TestSparkContext
   with RasterRDDBuilders
 {
 

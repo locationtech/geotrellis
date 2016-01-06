@@ -25,8 +25,7 @@ import org.scalatest.FunSpec
 class PowSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Pow Operation") {
     val hundreds = AllHundredsTestFile
     val twos = AllTwosTestFile

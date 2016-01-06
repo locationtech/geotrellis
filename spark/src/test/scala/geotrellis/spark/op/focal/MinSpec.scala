@@ -8,7 +8,6 @@ import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Min Focal Spec") {

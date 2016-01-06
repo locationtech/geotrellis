@@ -24,8 +24,7 @@ import org.scalatest.FunSpec
 class MultiplySpec extends FunSpec
                       with TestEnvironment
                       with TestFiles
-                      with RasterRDDMatchers
-                      with TestSparkContext {
+                      with RasterRDDMatchers {
 
   describe("Multiply Operation") {
     val twos = AllTwosTestFile

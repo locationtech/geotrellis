@@ -12,8 +12,7 @@ import org.scalatest.FunSpec
 class MeanSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Mean Zonal Summary Operation") {
     val inc = IncreasingTestFile

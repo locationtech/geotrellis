@@ -8,7 +8,6 @@ import org.scalatest.FunSpec
 
 class MaxSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Max Focal Spec") {

@@ -25,8 +25,7 @@ import org.scalatest.FunSpec
 class LessOrEqualSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Less Or Equal Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

@@ -16,7 +16,6 @@ class StatsRasterRDDMethodsSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("RDD Stats Method Operations") {

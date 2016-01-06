@@ -16,7 +16,6 @@ import org.apache.spark.SparkContext._
 class TilerSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with TestSparkContext
 {
 
   describe("Tiler") {

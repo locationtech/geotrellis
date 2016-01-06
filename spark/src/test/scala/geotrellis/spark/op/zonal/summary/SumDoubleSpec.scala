@@ -12,8 +12,7 @@ import org.scalatest.FunSpec
 class SumDoubleSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Sum Double Zonal Summary Operation") {
     val ones = AllOnesTestFile

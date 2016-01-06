@@ -26,8 +26,7 @@ import org.scalatest.FunSpec
 class MinSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Min Operation") {
     val inc = IncreasingTestFile
     val dec = DecreasingTestFile

@@ -26,8 +26,7 @@ import org.scalatest.FunSpec
 class IfCellSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("IfCell Operation") {
     val inc = IncreasingTestFile
     val dec = DecreasingTestFile

@@ -12,8 +12,7 @@ import org.scalatest.FunSpec
 class MinSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Min Zonal Summary Operation") {
     val inc = IncreasingTestFile

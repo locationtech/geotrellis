@@ -17,7 +17,6 @@ class HistogramSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Histogram Zonal Operation") {

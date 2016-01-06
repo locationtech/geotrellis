@@ -19,7 +19,6 @@ import org.scalatest.FunSpec
 
 class TileRDDReprojectSpec extends FunSpec
     with TestEnvironment
-    with TestSparkContext
     with RasterRDDBuilders 
     with RasterMatchers {
 

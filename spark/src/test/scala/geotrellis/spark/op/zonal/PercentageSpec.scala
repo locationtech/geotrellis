@@ -19,7 +19,6 @@ class PercentageSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Percentage Zonal Operation") {

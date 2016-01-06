@@ -12,8 +12,7 @@ import org.scalatest.FunSpec
 class MaxDoubleSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Max Double Zonal Summary Operation") {
     val inc = IncreasingTestFile

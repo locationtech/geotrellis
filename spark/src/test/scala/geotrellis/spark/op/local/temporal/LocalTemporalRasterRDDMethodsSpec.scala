@@ -13,8 +13,7 @@ import org.scalatest.FunSpec
 
 class LocalTemporalSpec extends FunSpec with TestEnvironment
     with RasterRDDBuilders
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Local Temporal Operations") {
 

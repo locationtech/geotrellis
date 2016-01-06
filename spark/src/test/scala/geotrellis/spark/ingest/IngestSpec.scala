@@ -23,7 +23,6 @@ import org.scalatest._
 class IngestSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with TestSparkContext
   with OnlyIfGdalInstalled
 {
 

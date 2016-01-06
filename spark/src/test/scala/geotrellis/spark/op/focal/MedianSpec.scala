@@ -9,7 +9,6 @@ import org.scalatest.FunSpec
 
 class MedianSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Median Focal Spec") {

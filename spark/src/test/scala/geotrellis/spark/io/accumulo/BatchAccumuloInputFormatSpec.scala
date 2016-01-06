@@ -46,9 +46,7 @@ case class Row(id: String, colFam: String, colQual: String){
  */
 class BatchAccumuloInputFormatSpec extends FunSpec 
   with Matchers
-  with TestEnvironment
-  with TestSparkContext 
-{
+  with TestEnvironment {
   val data = List[Row] (
     Row("1", "col", "a"), Row("1", "col", "b"), Row("1", "col", "c"),
     Row("2", "col", "a"), Row("2", "col", "b"), Row("2", "col", "c"),
