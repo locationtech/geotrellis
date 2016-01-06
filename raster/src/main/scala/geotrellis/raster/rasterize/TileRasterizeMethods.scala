@@ -26,16 +26,4 @@ trait TileRasterizeMethods[T <: Tile] extends MethodExtensions[T] {
 
   def foreachCellDouble(geom : Geometry, extent : Extent, ie : Boolean = false)(fn : Double => Double) : Tile =
     Raster(self, extent).foreachCellDouble(geom, ie)(fn)
-
-  def foreachCellCovering(geom : Geometry, extent : Extent)(fn : Int => Int) : Tile =
-    foreachCell(geom, extent, true)(fn)
-
-  def foreachCellContainedBy(geom : Geometry, extent : Extent)(fn : Int => Int) : Tile =
-    foreachCell(geom, extent, false)(fn)
-
-  def foreachCellCoveringDouble(geom : Geometry, extent : Extent)(fn : Double => Double) : Tile =
-    foreachCellDouble(geom, extent, true)(fn)
-
-  def foreachCellContainedByDouble(geom : Geometry, extent : Extent)(fn : Double => Double) : Tile =
-    foreachCellDouble(geom, extent, false)(fn)
 }

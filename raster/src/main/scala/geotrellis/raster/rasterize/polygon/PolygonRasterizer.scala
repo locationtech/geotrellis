@@ -17,6 +17,7 @@
 package geotrellis.raster.rasterize.polygon
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
@@ -31,6 +32,28 @@ object PolygonRasterizer {
   import math.{abs,min,max}
 
   type Segment = (Double, Double, Double, Double)
+  type Interval = (Double, Double)
+
+  private def intervalIntersection(ab: (Interval,Interval)) : Option[Interval] = {
+    val (a,b) = ab
+    val left = max(a._1, b._1)
+    val right = min(a._2, b._2)
+    if (left <= right) Option((left, right))
+    else None
+  }
+
+  private def intervalCmp(a : Interval, b : Interval) = a._1 < b._1
+
+  private def intervalDifference(a : Option[Interval], b: Interval) : Option[Interval] = {
+    if (a != None) {
+      val (aLeft, aRight) = a.get
+      val (bLeft, bRight) = b
+      if ((aRight < bLeft) || (bRight < aLeft)) None
+      else if (aLeft <= bLeft) Some((aLeft, bLeft))
+      else Some((bRight, aRight))
+    }
+    else None
+  }
 
   /**
    * Given a Segment and a y-value (for a line parallel to the
@@ -40,7 +63,7 @@ object PolygonRasterizer {
    * @param line  A line segment
    * @param y     The y-value for a line parallel to the x-axis
    */
-  private def lineAxisIntersection(line : Segment, y : Double) = {
+  private def lineAxisIntersection(line: Segment, y: Double) = {
     val (x1, y1, x2, y2) = line
 
     if (y == y1) (x1,1) // Top endpoint
@@ -118,7 +141,7 @@ object PolygonRasterizer {
    * @param y      The y-value of the vertical scanline
    * @param maxX   The maximum-possible x-coordinate
    */
-  private def runsInterior(rtree : STRtree, y : Int, maxX : Int) = {
+  private def runsPoint(rtree: STRtree, y: Int, maxX: Int) = {
     val row = y + 0.5
     val xcoordsMap = mutable.Map[Double, Int]()
     val xcoordsList = mutable.ListBuffer[Double]()
@@ -146,22 +169,28 @@ object PolygonRasterizer {
   }
 
   /**
-   * This does much the same things as runsInterior, except that
-   * instead of using a scanline, a "scan rectangle" is used.  When
-   * this is run over all of the rows, the collective output is
-   * collection of pixels which completely covers the input polygon.
+   * This does much the same things as runsPoint, except that instead
+   * of using a scanline, a "scan rectangle" is used.  When this is
+   * run over all of the rows, the collective output is collection of
+   * pixels which completely covers the input polygon (when partial is
+   * true) or the collection of pixels which are completely inside of
+   * the polygon (when partial = false).
    *
    * This routine ASSUMES that the polygon is closed, is of finite
    * area, and that its boundary does not self-intersect.
    *
-   * @param edges  A list of active edges
-   * @param y      The y-value of the bottom of the vertical scan rectangle
-   * @param maxX   The maximum-possible x-coordinate
+   * @param edges    A list of active edges
+   * @param y        The y-value of the bottom of the vertical scan rectangle
+   * @param maxX     The maximum-possible x-coordinate
+   * @param partial  True if all intersected cells are to be reported, otherwise only those on the interior of the polygon
    */
-  private def runsExterior(rtree : STRtree, y : Int, maxX : Int) = {
+  private def runsArea(rtree: STRtree, y: Int, maxX: Int, partial: Boolean) = {
     val (top, bot) = (y + 1, y + 0)
     val interactions = mutable.ListBuffer[Segment]()
-    val intervals = mutable.ListBuffer[(Double, Double)]()
+    val intervals = mutable.ListBuffer[Interval]()
+    val botIntervals = mutable.ListBuffer[Interval]()
+    val topIntervals = mutable.ListBuffer[Interval]()
+    val midIntervals = mutable.ListBuffer[Interval]()
 
     var botInterval = false
     var topInterval = false
@@ -184,12 +213,15 @@ object PolygonRasterizer {
         if (touchesTop) {
           if (topInterval == false) { // Start new top interval
             topInterval = true
-            topIntervalStart = math.floor(min(edge._1, edge._3))
+            topIntervalStart =
+              if (partial) math.floor(min(edge._1, edge._3))
+              else math.ceil(min(edge._1, edge._3))
           }
           else if (topInterval == true) { // Finish current top interval
             topInterval = false
-            intervals += ((topIntervalStart, math.ceil(max(edge._1, edge._3))))
-          }
+            if (partial) intervals += ((topIntervalStart, math.ceil(max(edge._1, edge._3))))
+            else topIntervals += ((topIntervalStart, math.floor(max(edge._1, edge._3))))
+      }
         }
 
         /* Create bottom intervals */
@@ -197,22 +229,45 @@ object PolygonRasterizer {
         if (touchesBot) {
           if (botInterval == false) { // Start new bottom interval
             botInterval = true
-            botIntervalStart = math.floor(min(edge._1, edge._3))
+            botIntervalStart =
+              if (partial) math.floor(min(edge._1, edge._3))
+              else math.ceil(min(edge._1, edge._3))
           }
           else if (botInterval == true) { // Finish current bottom interval
             botInterval = false
-            intervals += ((botIntervalStart, math.ceil(max(edge._1, edge._3))))
+            if (partial) intervals += ((botIntervalStart, math.ceil(max(edge._1, edge._3))))
+            else botIntervals += ((botIntervalStart, math.floor(max(edge._1, edge._3))))
           }
         }
 
         /* Create middle intervals.  These result from boundary segments
          * entirely contained in the scan rectangle. */
         if (!touchesTop && !touchesBot) {
-          intervals += ((math.floor(min(edge._1, edge._3)), math.ceil(max(edge._1, edge._3))))
+          if (partial)
+            intervals += ((math.floor(min(edge._1, edge._3)), math.ceil(max(edge._1, edge._3))))
+          else
+            midIntervals += ((math.floor(min(edge._1, edge._3)), math.ceil(max(edge._1, edge._3))))
         }
       })
 
-    val sortedIntervals = intervals.sortWith({ (one, two) => one._1 < two._1 })
+    val sortedIntervals =
+      if (partial) intervals.sortWith(intervalCmp)
+      else {
+        /* When partial pixels are not being reported, intervals from
+         * intersections with the top and bottom of the scan-rectangle
+         * must ratify one-another.
+         *
+         * TODO: Optimize this
+         */
+        val sortedTopIntervals = topIntervals.sortWith(intervalCmp)
+        val sortedBotIntervals = botIntervals.sortWith(intervalCmp)
+
+        sortedTopIntervals.zip(sortedBotIntervals)
+          .map(intervalIntersection)
+          .map(midIntervals.foldLeft(_)(intervalDifference))
+          .filter(_ != None)
+          .map(_.get)
+      }
 
     /* Merge intervals */
     val mergedIntervals =
@@ -234,19 +289,25 @@ object PolygonRasterizer {
   }
 
   /**
-   * Take a polygon, a raster extent, and a flag (described below) and
-   * generate a rasterized polygon.
+   * This function causes the function f to be called on each pixel
+   * that interacts with the polygon.  The definition of the word
+   * "interacts" is controlled by the options parameter.
    *
-   * @param poly             A polygon to rasterize
-   * @param re               A raster extent to rasterize the polygon into
-   * @param includeExterior  If false, use traditional scanline algorithm.  If true, make sure that the polygon is completely covered by pixels.
+   * @param poly     A polygon to rasterize
+   * @param re       A raster extent to rasterize the polygon into
+   * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
    */
-  def foreachCellByPolygon(poly: Polygon, re: RasterExtent, includeExterior: Boolean = false)(f: Callback): Unit = {
+  def foreachCellByPolygon(poly: Polygon, re: RasterExtent, options: Options = Options.DEFAULT)(f: Callback): Unit = {
+    val sampleType = options.sampleType
+    val partial = options.includePartial
+
     val edges = polygonToEdges(poly, re)
 
     var y = 0
     while(y < re.rows) {
-      val rowRuns = if (includeExterior) runsExterior(edges, y, re.cols); else runsInterior(edges, y, re.cols)
+      val rowRuns =
+        if (sampleType == PixelIsPoint) runsPoint(edges, y, re.cols)
+        else runsArea(edges, y, re.cols, partial)
 
       var i = 0
       while (i < rowRuns.length) {

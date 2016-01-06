@@ -17,6 +17,7 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.rasterize.extent.ExtentRasterizer
@@ -60,7 +61,7 @@ object Rasterizer {
   }
 
   def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
-    foreachCellByGeometry(geom, re, false)(f)
+    foreachCellByGeometry(geom, re, Options.DEFAULT)(f)
 
   /**
    * Perform a zonal summary by invoking a function on each cell under provided features.
@@ -76,16 +77,16 @@ object Rasterizer {
    * @param includeExterior       If this geometry is a polygon or multipolygon, include the exterior in the rasterization
    * @param f                     A function that takes (col: Int, row: Int) and produces nothing
    */
-  def foreachCellByGeometry(geom: Geometry, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit): Unit = {
+  def foreachCellByGeometry(geom: Geometry, re: RasterExtent, options : Options)(f: (Int, Int) => Unit): Unit = {
     geom match {
       case geom: Point         => foreachCellByPoint(geom, re)(f)
       case geom: MultiPoint    => foreachCellByMultiPoint(geom, re)(f)
       case geom: MultiLine     => foreachCellByMultiLineString(geom, re)(f)
       case geom: Line          => foreachCellByLineString(geom, re)(f)
-      case geom: Polygon       => PolygonRasterizer.foreachCellByPolygon(geom, re, includeExterior)(f)
-      case geom: MultiPolygon  => foreachCellByMultiPolygon(geom, re, includeExterior)(f)
-      case geom: GeometryCollection => geom.geometries.foreach(foreachCellByGeometry(_, re)(f))
-      case geom: Extent        => ExtentRasterizer.foreachCellByExtent(geom, re, includeExterior)(f)
+      case geom: Polygon       => PolygonRasterizer.foreachCellByPolygon(geom, re, options)(f)
+      case geom: MultiPolygon  => foreachCellByMultiPolygon(geom, re, options)(f)
+      case geom: GeometryCollection => geom.geometries.foreach(foreachCellByGeometry(_, re, options)(f))
+      case geom: Extent        => ExtentRasterizer.foreachCellByExtent(geom, re, options)(f)
     }
   }
 
@@ -123,7 +124,7 @@ object Rasterizer {
   }
 
   def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
-    foreachCellByPolygon(p, re, false)(f)
+    foreachCellByPolygon(p, re, Options.DEFAULT)(f)
 
   /**
    * Apply function f(col, row, feature) to every cell contained within polygon.
@@ -132,12 +133,12 @@ object Rasterizer {
    * @param includeExterior       Include the exterior in the rasterization
    * @param f                     Function to apply: f(cols, row, feature)
    */
-  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit) {
-     PolygonRasterizer.foreachCellByPolygon(p, re, includeExterior)(f)
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent, options: Options)(f: (Int, Int) => Unit) {
+     PolygonRasterizer.foreachCellByPolygon(p, re, options)(f)
   }
 
   def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
-    foreachCellByMultiPolygon(p, re, false)(f)
+    foreachCellByMultiPolygon(p, re, Options.DEFAULT)(f)
 
   /**
    * Apply function f to every cell contained with MultiPolygon.
@@ -147,8 +148,8 @@ object Rasterizer {
    * @param includeExterior       Include the exterior in the rasterization
    * @param f                     Function to apply: f(cols, row, feature)
    */
-  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent, includeExterior: Boolean)(f: (Int, Int) => Unit) {
-    p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re, includeExterior)(f))
+  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent, options: Options)(f: (Int, Int) => Unit) {
+    p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re, options)(f))
   }
 
   /**
