@@ -22,7 +22,9 @@ import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
+import geotrellis.raster.PixelSampleType
 import geotrellis.raster.rasterize.polygon._
+import geotrellis.raster.rasterize.Rasterize.Options
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -94,7 +96,8 @@ class RasterizerBenchmark extends OperationBenchmark {
   def timeRasterizeTransitPoly(reps: Int) = run(reps)(rasterizeTransitPoly)
   def rasterizeTransitPoly = {
     var x = 0
-    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, true) { (col: Int, row: Int) =>
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
+    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, options) { (col: Int, row: Int) =>
       x += (col + row)
     }
   }
@@ -102,7 +105,8 @@ class RasterizerBenchmark extends OperationBenchmark {
   def timeRasterizeTransitPolyNoHoles(reps: Int) = run(reps)(rasterizeTransitPolyNoHoles)
   def rasterizeTransitPolyNoHoles = {
     var x = 0
-    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, true) { (col: Int, row: Int) =>
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
+    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, options) { (col: Int, row: Int) =>
       x += (col + row)
     }
   }

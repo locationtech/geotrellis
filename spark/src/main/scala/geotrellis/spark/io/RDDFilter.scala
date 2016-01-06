@@ -1,7 +1,8 @@
 package geotrellis.spark.io
 
 import com.github.nscala_time.time.Imports._
-import geotrellis.raster.{GridBounds, RasterExtent}
+import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
 import geotrellis.vector.{Extent, Point, MultiPolygon}
@@ -119,7 +120,7 @@ object Intersects {
          */
         val tiles = new ConcurrentHashMap[(Int,Int), Unit]
 
-        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, true)( new Callback {
+        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, Options(true,PixelIsArea))( new Callback {
           def apply(col : Int, row : Int): Unit = {
             val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
             tiles.put(tile, Unit)

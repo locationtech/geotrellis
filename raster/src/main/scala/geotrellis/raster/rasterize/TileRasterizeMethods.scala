@@ -17,13 +17,22 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.{Geometry,Extent}
 
 
 trait TileRasterizeMethods[T <: Tile] extends MethodExtensions[T] {
-  def foreachCell(geom : Geometry, extent : Extent, ie : Boolean = false)(fn : Int => Int) : Tile =
-    Raster(self, extent).foreachCell(geom, ie)(fn)
+  def foreachCell(
+    geom : Geometry,
+    extent : Extent,
+    options: Options = Options.DEFAULT
+  )(fn : Int => Int) : Tile =
+    Raster(self, extent).foreachCell(geom, options)(fn)
 
-  def foreachCellDouble(geom : Geometry, extent : Extent, ie : Boolean = false)(fn : Double => Double) : Tile =
-    Raster(self, extent).foreachCellDouble(geom, ie)(fn)
+  def foreachCellDouble(
+    geom : Geometry,
+    extent : Extent,
+    options: Options = Options.DEFAULT
+  )(fn : Double => Double) : Tile =
+    Raster(self, extent).foreachCellDouble(geom, options)(fn)
 }

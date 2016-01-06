@@ -19,6 +19,7 @@ package geotrellis.raster.rasterize.extent
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.testkit._
 
 import math.{max,min,round}
@@ -29,44 +30,44 @@ class ExtentRasterizerSpec extends FunSuite
     with TestEngine
     with TileBuilders {
 
-  test("Rasterization of Covering Extent") {
+  test("Rasterization of a covering Extent") {
     val e = Extent(0.0, 0.0, 10.0, 10.0)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 1.0, 1.0, 10, 10)
     var sum = 0
     ExtentRasterizer.foreachCellByExtent(e, re) { (x : Int, y : Int) => sum = sum + 1 }
-    assert( sum == 100)
+    assert(sum == 100)
   }
 
-  test("Rasterization of Partially-Covering Extent w/ includeExterior") {
+  test("Partially-covering extent w/ non-point pixels, w/ partial cells") {
     val e = Extent(0.51, 0.51, 9.49, 9.49)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 1.0, 1.0, 10, 10)
     var sum = 0
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = true) { (x : Int, y : Int) => sum = sum + 1 }
-    assert( sum == 100)
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => sum = sum + 1 }
+    assert(sum == 100)
   }
 
-  test("Rasterization of Partially-Covering Extent w/o includeExterior") {
+  test("Partially-covering extent w/ point pixels, w/o partial cells") {
     val e = Extent(0.51, 0.51, 9.49, 9.49)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 1.0, 1.0, 10, 10)
     var sum = 0
     ExtentRasterizer.foreachCellByExtent(e, re) { (x : Int, y : Int) => sum = sum + 1 }
-    assert( sum == 64)
+    assert(sum == 64)
   }
 
-  test("Rasterization of Non-Square Pixels w/ includeExterior") {
+  test("Rasterization of non-square pixels w/ partial cells") {
     val e = Extent(1.01, 1.01, 8.99, 8.89)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 2.0, 2.0, 10, 10)
     var sum = 0
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = true) { (x : Int, y : Int) => sum = sum + 1 }
-    assert( sum == 25)
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => sum = sum + 1 }
+    assert(sum == 25)
   }
 
-  test("Rasterization of Non-Square Pixels w/o includeExterior") {
+  test("Rasterization of non-square pixels w/o partial cells") {
     val e = Extent(1.01, 1.01, 8.99, 8.89)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 2.0, 2.0, 10, 10)
     var sum = 0
     ExtentRasterizer.foreachCellByExtent(e, re) { (x : Int, y : Int) => sum = sum + 1 }
-    assert( sum == 9)
+    assert(sum == 9)
   }
 }
 
@@ -80,12 +81,12 @@ class ExtentPolygonXCheckSpec extends FunSuite
     var extentSum = 0
     var polySum = 0
 
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = false) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, includeExterior = false) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
 
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = true) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, includeExterior = true) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
   }
 
@@ -95,12 +96,12 @@ class ExtentPolygonXCheckSpec extends FunSuite
     var extentSum = 0
     var polySum = 0
 
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = false) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, includeExterior = false) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
 
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = true) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, includeExterior = true) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
   }
 
@@ -110,12 +111,12 @@ class ExtentPolygonXCheckSpec extends FunSuite
     var extentSum = 0
     var polySum = 0
 
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = false) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, includeExterior = false) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
 
-    ExtentRasterizer.foreachCellByExtent(e, re, includeExterior = true) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, includeExterior = true) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
   }
 }

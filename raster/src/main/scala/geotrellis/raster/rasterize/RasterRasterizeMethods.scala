@@ -17,12 +17,16 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.Geometry
 
 
 trait RasterRasterizeMethods[T <: Raster] extends MethodExtensions[T] {
 
-  def foreachCell(geom : Geometry, ie : Boolean = false)(fn : Int => Int) : Tile = {
+  def foreachCell(
+    geom : Geometry,
+    options: Options = Options.DEFAULT
+  )(fn : Int => Int) : Tile = {
     val extent = self.extent
     val re = RasterExtent(extent, self.cols, self.rows)
     val tile = self.tile
@@ -31,7 +35,7 @@ trait RasterRasterizeMethods[T <: Raster] extends MethodExtensions[T] {
       if (!ct.isFloatingPoint) ArrayTile.empty(tile.cellType, re.cols, re.rows)
       else IntArrayTile.empty(re.cols, re.rows)
 
-    Rasterizer.foreachCellByGeometry(geom, re, ie)(new Callback {
+    Rasterizer.foreachCellByGeometry(geom, re, options)(new Callback {
       def apply(col : Int, row : Int): Unit = {
         val z = tile.get(col, row)
         mutableTile.set(col, row, fn(z))
@@ -40,7 +44,10 @@ trait RasterRasterizeMethods[T <: Raster] extends MethodExtensions[T] {
     mutableTile
   }
 
-  def foreachCellDouble(geom : Geometry, ie : Boolean = false)(fn : Double => Double) : Tile = {
+  def foreachCellDouble(
+    geom : Geometry,
+    options: Options = Options.DEFAULT
+  )(fn : Double => Double) : Tile = {
     val extent = self.extent
     val re = RasterExtent(extent, self.cols, self.rows)
     val tile = self.tile
@@ -49,7 +56,7 @@ trait RasterRasterizeMethods[T <: Raster] extends MethodExtensions[T] {
       if (ct.isFloatingPoint) ArrayTile.empty(tile.cellType, re.cols, re.rows)
       else DoubleArrayTile.empty(re.cols, re.rows)
 
-    Rasterizer.foreachCellByGeometry(geom, re, ie)(new Callback {
+    Rasterizer.foreachCellByGeometry(geom, re, options)(new Callback {
       def apply(col : Int, row : Int): Unit = {
         val z = tile.get(col, row)
         mutableTile.setDouble(col, row, fn(z))
