@@ -26,11 +26,11 @@ class RawUInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte | TypeUByte => 
+      case TypeByte | TypeUByte | TypeRawByte | TypeRawUByte =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2b(get(i)) }
         arr
-      case TypeShort | TypeUShort  =>
+      case TypeShort | TypeUShort | TypeRawShort | TypeRawUShort =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
         arr.toArrayByte()

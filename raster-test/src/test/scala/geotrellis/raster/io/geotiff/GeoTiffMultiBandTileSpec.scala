@@ -71,9 +71,9 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     it("should create GeoTiffMultiBandTile from large Short ArrayMultiBandTile for Tiled") {
       val original = 
         ArrayMultiBandTile(
-          ArrayTile(Array.ofDim[Short](150*140).fill(1.toShort), 150, 140),
-          ArrayTile(Array.ofDim[Short](150*140).fill(2.toShort), 150, 140),
-          ArrayTile(Array.ofDim[Short](150*140).fill(3.toShort), 150, 140)
+          RawArrayTile(Array.ofDim[Short](150*140).fill(1.toShort), 150, 140),
+          RawArrayTile(Array.ofDim[Short](150*140).fill(2.toShort), 150, 140),
+          RawArrayTile(Array.ofDim[Short](150*140).fill(3.toShort), 150, 140)
         )
 
       val gtm = GeoTiffMultiBandTile(original, GeoTiffOptions(Tiled(32, 32)))

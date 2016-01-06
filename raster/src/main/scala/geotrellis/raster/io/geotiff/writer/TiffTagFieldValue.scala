@@ -74,7 +74,7 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
-    createNoDataString(imageData.bandType.cellType) match {
+    createNoDataString(geoTiff.cellType) match {
       case Some(noDataString) =>
         fieldValues += TiffTagFieldValue(GDALInternalNoDataTag, AsciisFieldType, noDataString.length + 1, toBytes(noDataString))
       case _ => ()

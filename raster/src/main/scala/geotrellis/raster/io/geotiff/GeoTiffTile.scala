@@ -27,7 +27,6 @@ object GeoTiffTile {
     compression: Compression,
     noDataValue: Option[Double]
   ): GeoTiffTile = {
-    println("in apply for geotifftile", noDataValue)
     bandType match {
       case BitBandType => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
       case UByteBandType =>

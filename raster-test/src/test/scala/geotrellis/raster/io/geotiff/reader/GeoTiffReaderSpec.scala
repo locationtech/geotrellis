@@ -259,7 +259,7 @@ class GeoTiffReaderSpec extends FunSpec
       val maxX = extent.xmax should equal (645000.0)
       val maxY = extent.ymax should equal (228500.0)
 
-      tiffTags.bandType.cellType should equal (TypeFloat)
+      tiffTags.bandType should equal (Float32BandType)
     }
 
   }

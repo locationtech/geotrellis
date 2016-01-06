@@ -12,6 +12,8 @@ class SingleBandGeoTiff(
   val tags: Tags,
   val options: GeoTiffOptions
 ) extends GeoTiff {
+  val cellType = tile.cellType
+
   def projectedRaster: ProjectedRaster[Tile] = ProjectedRaster(Raster(tile, extent), crs)
   def raster: SingleBandRaster = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)

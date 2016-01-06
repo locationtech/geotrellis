@@ -65,7 +65,6 @@ object GeoTiffReader {
   def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
 
-    println("The info on read", info.noDataValue)
     val geoTiffTile =
       if(info.bandCount == 1) {
         GeoTiffTile(

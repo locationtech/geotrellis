@@ -12,8 +12,6 @@ sealed abstract trait BandType {
 
   /** SampleFormat code as defined by the TIFF spec */
   def sampleFormat: Int
-
-  def cellType: CellType
 }
 
 object BandType {
@@ -49,63 +47,54 @@ object BitBandType extends BandType {
   val bitsPerSample = 1
   val unsigned = false
   val sampleFormat = SignedInt
-  def cellType = TypeBit
 }
 
 object UByteBandType extends BandType {
   val bitsPerSample = 8
   val unsigned = true
   val sampleFormat = UnsignedInt
-  def cellType = TypeUByte
 }
 
 object ByteBandType extends BandType {
   val bitsPerSample = 8
   val unsigned = false
   val sampleFormat = SignedInt
-  def cellType = TypeByte
 }
 
 object UInt16BandType extends BandType {
   val bitsPerSample = 16
   val unsigned = true
   val sampleFormat = UnsignedInt
-  def cellType = TypeUShort
 }
 
 object Int16BandType extends BandType {
   val bitsPerSample = 16
   val unsigned = false
   val sampleFormat = SignedInt
-  def cellType = TypeShort
 }
 
 object UInt32BandType extends BandType {
   val bitsPerSample = 32
   val unsigned = true
   val sampleFormat = UnsignedInt
-  def cellType = TypeFloat // Because unsigned, need to account for values greater than Int.MaxValue
 }
 
 object Int32BandType extends BandType {
   val bitsPerSample = 32
   val unsigned = false
   val sampleFormat = SignedInt
-  def cellType = TypeInt
 }
 
 object Float32BandType extends BandType {
   val bitsPerSample = 32
   val unsigned = false
   val sampleFormat = FloatingPoint
-  def cellType = TypeFloat
 }
 
 object Float64BandType extends BandType {
   val bitsPerSample = 64
   val unsigned = false
   val sampleFormat = FloatingPoint
-  def cellType = TypeDouble
 }
 
 // Complex types are not supported

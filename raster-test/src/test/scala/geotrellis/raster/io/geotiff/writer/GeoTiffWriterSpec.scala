@@ -109,13 +109,11 @@ class GeoTiffWriterSpec extends FunSpec
 
     it ("should read write raster correctly") {
       val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
-      println("fst", geoTiff.tile.cellType)
       val projectedRaster = geoTiff.projectedRaster
       println("snd", projectedRaster.tile.cellType)
       val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng)
-      println("thrd", tile.cellType)/*
+      println("thrd", tile.cellType)
       val reprojGeoTiff = SingleBandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
-      println(geoTiff.tags, tile, projectedRaster.tile.mutable.cellType)
 
       val path = "/tmp/geotiff-writer.tif"
 
@@ -124,11 +122,10 @@ class GeoTiffWriterSpec extends FunSpec
       addToPurge(path)
 
       val SingleBandGeoTiff(actualTile, actualExtent, actualCrs, _) = SingleBandGeoTiff(path)
-      println("frth", actualTile.cellType)
 
       actualExtent should equal (extent)
       crs should equal (LatLng)
-      assertEqual(actualTile, tile)*/
+      assertEqual(actualTile, tile)
     }
 
     it ("should read write multibandraster correctly") {

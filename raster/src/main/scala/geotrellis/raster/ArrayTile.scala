@@ -92,6 +92,11 @@ object ArrayTile {
   def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayTile(arr, cols, rows)
 }
 
+object RawArrayTile {
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = RawByteArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = RawShortArrayTile(arr, cols, rows)
+}
+
 /**
  * ArrayTile provides access and update to the grid data of a raster.
  *

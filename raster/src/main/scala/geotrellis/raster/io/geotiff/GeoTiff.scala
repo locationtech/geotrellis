@@ -7,6 +7,8 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
 trait GeoTiff {
+  val cellType: CellType
+
   def imageData: GeoTiffImageData
   def extent: Extent
   def crs: CRS

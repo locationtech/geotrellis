@@ -46,21 +46,22 @@ sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPo
 
   override def toString: String = name
 }
+sealed abstract class NoDataCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends CellType(bits, name, isFloatingPoint)
 
-case object TypeBit extends CellType(1, "bool", false) {
+case object TypeBit extends NoDataCellType(1, "bool", false) {
   override final def numBytes(size: Int) = (size + 7) / 8
 }
-case object TypeByte extends CellType(8, "int8", false)
+case object TypeByte extends NoDataCellType(8, "int8", false)
 case object TypeRawByte extends CellType(8, "int8raw", false)
-case object TypeUByte extends CellType(8, "uint8", false)
+case object TypeUByte extends NoDataCellType(8, "uint8", false)
 case object TypeRawUByte extends CellType(8, "uint8raw", false)
-case object TypeShort extends CellType(16, "int16", false)
+case object TypeShort extends NoDataCellType(16, "int16", false)
 case object TypeRawShort extends CellType(16, "int16raw", false)
-case object TypeUShort extends CellType(16, "uint16", false)
+case object TypeUShort extends NoDataCellType(16, "uint16", false)
 case object TypeRawUShort extends CellType(16, "uint16raw", false)
-case object TypeInt extends CellType(32, "int32", false)
-case object TypeFloat extends CellType(32, "float32", true)
-case object TypeDouble extends CellType(64, "float64", true)
+case object TypeInt extends NoDataCellType(32, "int32", false)
+case object TypeFloat extends NoDataCellType(32, "float32", true)
+case object TypeDouble extends NoDataCellType(64, "float64", true)
 
 object CellType {
   def fromAwtType(awtType: Int): CellType = awtType match {
