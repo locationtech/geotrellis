@@ -13,7 +13,7 @@ class ContextRDDMethods[K: ClassTag, V: ClassTag, M](val rdd: RDD[(K, V)] with M
   def mapKeys[R: ClassTag](f: K => R): RDD[(R, V)] with Metadata[M] =
     rdd.withContext { rdd => rdd.map { case (key, tile) => f(key) -> tile } }
 
-  def mapValues(f: V => V): RDD[(K, V)] with Metadata[M] =
+  def mapValues[W](f: V => W): RDD[(K, W)] with Metadata[M] =
     rdd.withContext { rdd => rdd.map { case (key, tile) => key -> f(tile) } }
 
   def mapValues(f: V => V, m: M): RDD[(K, V)] with Metadata[M] =
