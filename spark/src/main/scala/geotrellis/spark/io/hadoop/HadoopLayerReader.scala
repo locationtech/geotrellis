@@ -1,17 +1,17 @@
 package geotrellis.spark.io.hadoop
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import geotrellis.spark._
 import geotrellis.spark.io.json._
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.reflect.ClassTag
-
 
 /**
  * Handles reading raster RDDs and their metadata from S3.
@@ -20,12 +20,11 @@ import scala.reflect.ClassTag
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
- * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-  val attributeStore: AttributeStore[JsonFormat],
-  rddReader: HadoopRDDReader[K, V])
-  (implicit sc: SparkContext)
+class HadoopLayerReader[
+  K: Boundable: JsonFormat: ClassTag, V: ClassTag,
+  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+  val attributeStore: AttributeStore[JsonFormat], rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -34,7 +33,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
       import spray.json.DefaultJsonProtocol._
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](id)
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], I, Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -56,28 +55,25 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 
 object HadoopLayerReader {
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
-    M: JsonFormat
-  ](attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
-    new HadoopLayerReader[K, V, M](attributeStore, rddReader)
+    K: Boundable: JsonFormat: ClassTag, V: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+    attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
+    new HadoopLayerReader[K, V, M, I](attributeStore, rddReader)
 
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
-    M: JsonFormat
-  ](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M] =
+    K: Boundable: JsonFormat: ClassTag, V: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M, I] =
     apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
-  def spatial(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath)
+  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData, I](rootPath)
 
-  def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
+  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData, I](rootPath)
 
-  def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
+  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData, I](rootPath)
 
-  def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
+  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](rootPath)
 }

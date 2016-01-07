@@ -7,14 +7,11 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
-import org.apache.avro.Schema
-import org.apache.spark.SparkContext
+
 import org.apache.spark.rdd.RDD
 import spray.json._
-import spray.json.DefaultJsonProtocol._
-import scala.reflect._
 import com.typesafe.scalalogging.slf4j._
-import AttributeStore.Fields
+import scala.reflect._
 
 /**
  * Handles writing Raster RDDs and their metadata to S3.
@@ -27,12 +24,11 @@ import AttributeStore.Fields
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
- * @tparam C              Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
-    keyIndexMethod: KeyIndexMethod[K],
+    keyIndexMethod: KeyIndexMethod[K, I],
     bucket: String,
     keyPrefix: String,
     clobber: Boolean = true,
@@ -75,11 +71,10 @@ object S3LayerWriter {
   }
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K], options: Options): S3LayerWriter[K, V, M] =
-    new S3LayerWriter[K, V, M](
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat
+  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K, I], options: Options): S3LayerWriter[K, V, M, I] =
+    new S3LayerWriter[K, V, M, I](
       attributeStore,
       new S3RDDWriter[K, V],
       keyIndexMethod,
@@ -90,59 +85,56 @@ object S3LayerWriter {
     )
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, C <: RDD[(K, V)]
-  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
-    apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
+    M: JsonFormat, C <: RDD[(K, V)], I <: KeyIndex[K]: JsonFormat
+  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K, I]): S3LayerWriter[K, V, M, I] =
+    apply[K, V, M, I](attributeStore, keyIndexMethod, Options.DEFAULT)
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K], options: Options): S3LayerWriter[K, V, M] =
-    apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat
+  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K, I], options: Options): S3LayerWriter[K, V, M, I] =
+    apply[K, V, M, I](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
-    apply[K, V, M](bucket, prefix, keyIndexMethod, Options.DEFAULT)
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat
+  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K, I]): S3LayerWriter[K, V, M, I] =
+    apply[K, V, M, I](bucket, prefix, keyIndexMethod, Options.DEFAULT)
 
-  def spatial(
+  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](
     bucket: String,
     prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey],
+    keyIndexMethod: KeyIndexMethod[SpatialKey, I],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData, I] =
+    apply[SpatialKey, Tile, RasterMetaData, I](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
-  def spatialMultiBand(
+  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](
     bucket: String,
     prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey],
+    keyIndexMethod: KeyIndexMethod[SpatialKey, I],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData, I] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData, I](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
-  def spaceTime(
+  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](
     bucket: String,
     prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
+    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, I],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, I] =
+    apply[SpaceTimeKey, Tile, RasterMetaData, I](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
-  def spaceTimeMultiBand(
+  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](
     bucket: String,
     prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
+    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, I],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData, I] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 }

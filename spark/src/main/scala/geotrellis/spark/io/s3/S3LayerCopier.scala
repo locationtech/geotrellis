@@ -1,12 +1,10 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
+import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 
-import org.apache.spark.rdd.RDD
 import org.apache.avro.Schema
 import spray.json.JsonFormat
 import com.amazonaws.services.s3.model.ObjectListing
@@ -15,8 +13,10 @@ import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-   val attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String) extends LayerCopier[LayerId] {
+class S3LayerCopier[
+  K: JsonFormat: ClassTag, V: ClassTag,
+  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+  val attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String) extends LayerCopier[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -34,7 +34,7 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     val (header, metadata, keyBounds, keyIndex, schema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], I, Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
@@ -54,15 +54,21 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
 }
 
 object S3LayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-  (attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M] =
-    new S3LayerCopier[K, V, M](attributeStore, destBucket, destKeyPrefix)
+  def apply[
+    K: JsonFormat: ClassTag, V: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
+  (attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M, I] =
+    new S3LayerCopier[K, V, M, I](attributeStore, destBucket, destKeyPrefix)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-  (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M] =
+  def apply[
+    K: JsonFormat: ClassTag, V: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
+   (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M, I] =
     apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-  (bucket: String, keyPrefix: String): S3LayerCopier[K, V, M] =
+  def apply[
+    K: JsonFormat: ClassTag, V: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
+   (bucket: String, keyPrefix: String): S3LayerCopier[K, V, M, I] =
     apply(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
 }

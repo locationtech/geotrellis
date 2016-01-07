@@ -7,6 +7,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
+
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
@@ -15,7 +16,9 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+class AccumuloLayerReader[
+  K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
+  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddReader: BaseAccumuloRDDReader[K, V]
 )(implicit sc: SparkContext)
@@ -27,7 +30,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], I, Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -48,21 +51,22 @@ object AccumuloLayerReader {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
     V: AvroRecordCodec: ClassTag, 
-    M: JsonFormat
-  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M] =
-    new AccumuloLayerReader[K, V, M] (
+    M: JsonFormat,
+    I <: KeyIndex[K]: JsonFormat
+  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M, I] =
+    new AccumuloLayerReader[K, V, M, I] (
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
 
-  def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](instance)
+  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData, I](instance)
 
-  def spatialMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](instance)
+  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData, I](instance)
 
-  def spaceTime(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](instance)
+  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData, I](instance)
 
-  def spaceTimeMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance)
+  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](instance)
 }

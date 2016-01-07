@@ -8,7 +8,9 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+abstract class SparkLayerCopier[
+  Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag,
+  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
    val attributeStore: AttributeStore[JsonFormat],
    layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
    layerWriter: Writer[LayerId, RDD[(K, V)] with Metadata[M]]
@@ -21,7 +23,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](from)
+      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], I, Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }

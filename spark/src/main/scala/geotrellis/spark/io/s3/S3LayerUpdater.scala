@@ -1,20 +1,23 @@
 package geotrellis.spark.io.s3
 
-import com.typesafe.scalalogging.slf4j._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
+import com.typesafe.scalalogging.slf4j._
 import scala.reflect._
 
-class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: S3RDDWriter[K, V],
-    clobber: Boolean = true)
+class S3LayerUpdater[
+  K: Boundable: JsonFormat: ClassTag, V: ClassTag,
+  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+  val attributeStore: AttributeStore[JsonFormat],
+  rddWriter: S3RDDWriter[K, V],
+  clobber: Boolean = true)
   extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
   type container = RDD[(K, V)] with Metadata[M]
 
@@ -24,7 +27,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], I, Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
@@ -51,11 +54,13 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
 }
 
 object S3LayerUpdater {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
+    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
       bucket: String,
       prefix: String,
-      clobber: Boolean = true): S3LayerUpdater[K, V, M] =
-    new S3LayerUpdater[K, V, M](
+      clobber: Boolean = true): S3LayerUpdater[K, V, M, I] =
+    new S3LayerUpdater[K, V, M, I](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       clobber

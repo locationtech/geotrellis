@@ -7,20 +7,21 @@ import geotrellis.spark.io.index.zcurve._
 import com.github.nscala_time.time.Imports._
 
 object ZSpaceTimeKeyIndex {
-  def apply(timeToGrid: DateTime => Int): KeyIndex[SpaceTimeKey] =
-    new ZSpaceTimeKeyIndex(timeToGrid)
-
   def byYear(): ZSpaceTimeKeyIndex = 
-    new ZSpaceTimeKeyIndex({ dt => dt.getYear })
+    new ZSpaceTimeKeyIndex("Y")
+
+  def byMonth(): ZSpaceTimeKeyIndex =
+    new ZSpaceTimeKeyIndex("YMM")
+
+  def byDay(): ZSpaceTimeKeyIndex =
+    new ZSpaceTimeKeyIndex("YDDD")
 
   def byPattern(pattern: String): ZSpaceTimeKeyIndex =
-    new ZSpaceTimeKeyIndex({ dt =>
-      DateTimeFormat.forPattern(pattern).print(dt).toInt
-    })
+    new ZSpaceTimeKeyIndex(pattern)
 }
 
-class ZSpaceTimeKeyIndex(timeToGrid: DateTime => Int) extends KeyIndex[SpaceTimeKey] {
-  private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, timeToGrid(key.time))
+class ZSpaceTimeKeyIndex(val pattern: String) extends KeyIndex[SpaceTimeKey] {
+  private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, DateTimeFormat.forPattern(pattern).print(key.time).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z
 

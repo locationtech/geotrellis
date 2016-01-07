@@ -6,7 +6,7 @@ import geotrellis.spark.io.index.KeyIndex
 import spire.syntax.cfor._
 
 /** Represents a row major ordering for SpatialKey */
-class RowMajorSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
+class RowMajorSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
   val minCol = keyBounds.minKey.col
   val minRow = keyBounds.minKey.row
   val layoutCols = keyBounds.maxKey.col - keyBounds.minKey.col + 1

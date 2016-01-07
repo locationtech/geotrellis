@@ -8,9 +8,9 @@ import com.github.nscala_time.time.Imports._
 private[index] trait RowMajorKeyIndexMethod
 
 object RowMajorKeyIndexMethod extends RowMajorKeyIndexMethod {
-  implicit def spatialKeyIndexMethod(m: RowMajorKeyIndexMethod): KeyIndexMethod[SpatialKey] =
-    new KeyIndexMethod[SpatialKey] {
-      def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] = 
+  implicit def spatialKeyIndexMethod(m: RowMajorKeyIndexMethod): KeyIndexMethod[SpatialKey, RowMajorSpatialKeyIndex] =
+    new KeyIndexMethod[SpatialKey, RowMajorSpatialKeyIndex] {
+      def createIndex(keyBounds: KeyBounds[SpatialKey]) =
         new RowMajorSpatialKeyIndex(keyBounds)
     }
 }

@@ -1,21 +1,194 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.hilbert.{HilbertSpaceTimeKeyIndex, HilbertSpatialKeyIndex}
+import geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex
+import geotrellis.spark.io.index.KeyIndexIds
+import geotrellis.spark.io.index.zcurve.{ZSpatialKeyIndex, ZSpaceTimeKeyIndex}
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.spark.utils._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
+
 import com.github.nscala_time.time.Imports._
 import org.apache.avro.Schema
 import spray.json._
-import scala.reflect.ClassTag
+import spray.json.DefaultJsonProtocol._
 
 package object json {
-  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
-    new JavaSerializationJsonFormat[index.KeyIndex[K]]
+  // implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
+  //   new JavaSerializationJsonFormat[index.KeyIndex[K]]
+
+  /*implicit def keyIndexFormat[K: ClassTag] = new RootJsonFormat[index.KeyIndex[K]] {
+    def write(obj: KeyIndex[K]): JsValue = {
+
+      JsObject(
+        "keyBounds" -> obj.keyBounds.toJson,
+        "xResolution" -> obj.xResolution.toJson,
+        "yResolution" -> obj.yResolution.toJson,
+        "temporalResolution" -> obj.temporalResolution.toJson,
+        "pattern" -> obj.pattern.toJson
+      )
+    }
+
+    def read(value: JsValue): KeyIndex[K] = {
+      value.asJsObject.getFields("keyBounds", "xResolution", "yResolution", "temporalResolution", "pattern") match {
+        case Seq(keyBounds, xResolution, yResolution, temporalResolution, pattern) => {
+          (keyBounds.convertTo[KeyBounds[K]],
+           xResolution.convertTo[Int],
+           yResolution.convertTo[Int],
+           temporalResolution.convertTo[Int],
+           pattern.convertTo[String]) match {
+            case (kb, null, null, null, null) => RowMajorKeyIndexMethod.createIndex(kb.asInstanceOf[KeyBounds[SpatialKey]]).asInstanceOf[KeyIndex[K]]
+            case (kb, xr, yr, null, null) => HilbertSpatialKeyIndex(kb.asInstanceOf[KeyBounds[SpatialKey]], xr, yr).asInstanceOf[KeyIndex[K]]
+            case (kb, xr, yr, tr, null) => HilbertSpaceTimeKeyIndex(kb.asInstanceOf[KeyBounds[SpaceTimeKey]], xr, yr, tr).asInstanceOf[KeyIndex[K]]
+            case (null, null, null, null, pattern) => ZCurveKeyIndexMethod.byPattern(pattern).createIndex(null.asInstanceOf[KeyBounds[SpaceTimeKey]]).asInstanceOf[KeyIndex[K]]
+            case (null, null, null, null, null) => ZCurveKeyIndexMethod.createIndex(null.asInstanceOf[KeyBounds[SpatialKey]]).asInstanceOf[KeyIndex[K]]
+          }
+        }
+        case _ =>
+          throw new DeserializationException("err")
+      }
+    }
+  }*/
+
+  implicit object HilbertSpatialKeyIndexFormat extends RootJsonFormat[HilbertSpatialKeyIndex] {
+    def write(obj: HilbertSpatialKeyIndex): JsValue = {
+      JsObject(
+        "id"   -> KeyIndexIds.hilbertSpatialKeyIndex.toJson,
+        "args" -> JsObject(
+          "keyBounds"          -> obj.keyBounds.toJson,
+          "xResolution"        -> obj.xResolution.toJson,
+          "yResolution"        -> obj.yResolution.toJson
+        )
+      )
+    }
+
+    def read(value: JsValue): HilbertSpatialKeyIndex = {
+      value.asJsObject.getFields("id", "args") match {
+        case Seq(JsString(id), args) => {
+          if (id != KeyIndexIds.hilbertSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          args.convertTo[JsObject].getFields("keyBounds", "xResolution", "yResolution") match {
+            case Seq(kb, xr, yr) =>
+              HilbertSpatialKeyIndex(
+                kb.convertTo[KeyBounds[SpatialKey]],
+                xr.convertTo[Int],
+                yr.convertTo[Int]
+              )
+            case _ =>
+              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+          }
+        }
+        case _ =>
+          throw new DeserializationException("Wrong KeyIndex type.")
+      }
+    }
+  }
+
+  implicit object HilbertSpaceTimeKeyIndexFormat extends RootJsonFormat[HilbertSpaceTimeKeyIndex] {
+    def write(obj: HilbertSpaceTimeKeyIndex): JsValue = {
+      JsObject(
+        "id"   -> KeyIndexIds.hilbertSpaceTimeKeyIndex.toJson,
+        "args" -> JsObject(
+          "keyBounds"          -> obj.keyBounds.toJson,
+          "xResolution"        -> obj.xResolution.toJson,
+          "yResolution"        -> obj.yResolution.toJson,
+          "temporalResolution" -> obj.temporalResolution.toJson
+        )
+      )
+    }
+
+    def read(value: JsValue): HilbertSpaceTimeKeyIndex = {
+      value.asJsObject.getFields("id", "args") match {
+        case Seq(JsString(id), args) => {
+          if (id != KeyIndexIds.hilbertSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          args.convertTo[JsObject].getFields("keyBounds", "xResolution", "yResolution", "temporalResolution") match {
+            case Seq(kb, xr, yr, tr) =>
+              HilbertSpaceTimeKeyIndex(
+                kb.convertTo[KeyBounds[SpaceTimeKey]],
+                xr.convertTo[Int],
+                yr.convertTo[Int],
+                tr.convertTo[Int]
+              )
+            case _ =>
+              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+          }
+        }
+        case _ =>
+          throw new DeserializationException("Wrong KeyIndex type.")
+      }
+    }
+  }
+
+  implicit object RowMajorSpatialKeyIndexFormat extends RootJsonFormat[RowMajorSpatialKeyIndex] {
+    def write(obj: RowMajorSpatialKeyIndex): JsValue = {
+      JsObject(
+        "id"   -> KeyIndexIds.rowMajorSpatialKeyIndex.toJson,
+        "args" -> JsObject("keyBounds" -> obj.keyBounds.toJson)
+      )
+    }
+
+    def read(value: JsValue): RowMajorSpatialKeyIndex = {
+      value.asJsObject.getFields("id", "args") match {
+        case Seq(JsString(id), args) => {
+          if (id != KeyIndexIds.rowMajorSpatialKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          args.convertTo[JsObject].getFields("keyBounds") match {
+            case Seq(kb) => new RowMajorSpatialKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
+            case _ =>
+              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+          }
+        }
+        case _ =>
+          throw new DeserializationException("Wrong KeyIndex type.")
+      }
+    }
+  }
+
+  implicit object ZSpaceTimeKeyIndexFormat extends RootJsonFormat[ZSpaceTimeKeyIndex] {
+    def write(obj: ZSpaceTimeKeyIndex): JsValue = {
+      JsObject(
+        "id"   -> KeyIndexIds.zSpaceTimeKeyIndex.toJson,
+        "args" -> JsObject("pattern" -> obj.pattern.toJson)
+      )
+    }
+
+    def read(value: JsValue): ZSpaceTimeKeyIndex = {
+      value.asJsObject.getFields("id", "args") match {
+        case Seq(JsString(id), args) => {
+          if (id != KeyIndexIds.zSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          args.convertTo[JsObject].getFields("pattern") match {
+            case Seq(JsString(p)) => ZSpaceTimeKeyIndex.byPattern(p)
+            case _ =>
+              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+          }
+        }
+        case _ =>
+          throw new DeserializationException("Wrong KeyIndex type.")
+      }
+    }
+  }
+
+  implicit object ZSpatialKeyIndexFormat extends RootJsonFormat[ZSpatialKeyIndex] {
+    def write(obj: ZSpatialKeyIndex): JsValue = {
+      JsObject(
+        "id"   -> KeyIndexIds.zSpatialKeyIndex.toJson,
+        "args" -> JsObject()
+      )
+    }
+
+    def read(value: JsValue): ZSpatialKeyIndex = {
+      value.asJsObject.getFields("id", "args") match {
+        case Seq(JsString(id), args) => {
+          if (id != KeyIndexIds.zSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          new ZSpatialKeyIndex()
+        }
+        case _ =>
+          throw new DeserializationException("Wrong KeyIndex type.")
+      }
+    }
+  }
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
