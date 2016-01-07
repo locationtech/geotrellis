@@ -12,6 +12,13 @@ import org.scalatest._
 class RDDQuerySpec extends FunSpec
   with TestEnvironment with TestFiles  with Matchers with TestSparkContext {
 
+  def spatialKeyBoundsKeys(kb: KeyBounds[SpatialKey]) = {
+    for {
+      row <- kb.minKey.row to kb.maxKey.row
+      col <- kb.minKey.col to kb.maxKey.col
+    } yield SpatialKey(col, row)
+  }
+
   describe("RasterQuerySpec") {
     val md = RasterMetaData(
       TypeFloat,
@@ -39,15 +46,74 @@ class RDDQuerySpec extends FunSpec
 
   }
 
-  describe("RDDQuery KeyBounds generation") {
-    def spatialKeyBoundsKeys(kb: KeyBounds[SpatialKey]) = {
-      for {
-        row <- kb.minKey.row to kb.maxKey.row
-        col <- kb.minKey.col to kb.maxKey.col
-      } yield SpatialKey(col, row)
+  describe("RDDFilter Polygon Intersection") {
+    import geotrellis.vector.{Point, Polygon, MultiPolygon}
+
+    val md = AllOnesTestFile.metaData
+    val mt = md.mapTransform
+    val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
+    val bounds = GridBounds(1, 1, 3, 2)
+    val horizontal = Polygon(List(
+      Point(-130.0, 60.0),
+      Point(-130.0, 30.0),
+      Point(-100.0, 30.0),
+      Point(-100.0, 60.0),
+      Point(-130.0, 60.0)))
+    val vertical = Polygon(List(
+      Point(-130.0, 40.0),
+      Point(-130.0, 30.0),
+      Point(-10.0, 30.0),
+      Point(-10.0, 40.0),
+      Point(-130.0, 40.0)))
+    val diagonal = Polygon(List(
+      Point(-125.0, 60.0),
+      Point(-130.0, 55.0),
+      Point(-15.0, 30.0),
+      Point(-10.0, 35.0),
+      Point(-125.0, 60.0)))
+
+    def naiveKeys(polygon : MultiPolygon) = {
+      (for ((x, y) <- bounds.coords
+        if (polygon.intersects(md.mapTransform(SpatialKey(x, y))))) yield SpatialKey(x, y))
+        .toList
     }
 
+    it("should find all keys that intersect appreciably with a horizontal rectangle") {
+      val polygon = MultiPolygon(horizontal)
+      val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(polygon))
+      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      (expected diff actual) should be ('empty)
+    }
 
+    it("should find all keys that intersect appreciably with a vertical rectangle") {
+      val polygon = MultiPolygon(vertical)
+      val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(polygon))
+      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      (expected diff actual) should be ('empty)
+    }
+
+    it("should find all keys that intersect appreciably with an L-shaped polygon") {
+      val polygon = MultiPolygon(List(horizontal, vertical))
+      val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(polygon))
+      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      (expected diff actual) should be ('empty)
+    }
+
+    it("should find all keys that intersect appreciably with a diagonal rectangle") {
+      val polygon = MultiPolygon(diagonal)
+      val query = new RDDQuery[SpatialKey, RasterMetaData].where(Intersects(polygon))
+      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      println(expected)
+      println(actual)
+      (expected diff actual) should be ('empty)
+    }
+  }
+
+  describe("RDDQuery KeyBounds generation") {
     val md = AllOnesTestFile.metaData
     val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
 

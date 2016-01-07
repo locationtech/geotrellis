@@ -19,7 +19,7 @@ trait TileMergeMethods extends MergeMethods[Tile] {
       }
     } else {
       tile.cellType match {
-        case TypeUByte | TypeUShort => 
+        case TypeBit | TypeUByte | TypeUShort =>
           cfor(0)(_ < tile.rows, _ + 1) { row =>
             cfor(0)(_ < tile.cols, _ + 1) { col =>
               if (tile.get(col, row) == 0) {
@@ -62,7 +62,7 @@ trait TileMergeMethods extends MergeMethods[Tile] {
         } else {
           val interpolate = Resample(method, other, otherExtent, targetCS).resample _
           tile.cellType match {
-            case TypeUByte | TypeUShort =>
+            case TypeBit | TypeUByte | TypeUShort =>
               cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
                 cfor(colMin)(_ <= colMax, _ + 1) { col =>
                   if (tile.get(col, row) == 0) {
