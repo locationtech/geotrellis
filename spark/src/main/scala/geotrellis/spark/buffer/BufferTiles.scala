@@ -122,12 +122,37 @@ object BufferTiles {
     }
   }
 
+  /** Buffer the tiles of type V by a constant buffer size.
+    * 
+    * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
+    * 
+    * @tparam         K                 The key of this tile set RDD, requiring a spatial component.
+    * @tparam         V                 The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
+    * 
+    * @param          rdd               The keyed tile rdd.
+    * @param          bufferSize        Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
+    *                                   any side if there is an adjacent, abutting tile to contribute the border pixels.
+    */
   def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](rdd: RDD[(K, V)], bufferSize: Int): RDD[(K, BufferedTile[V])] =
     apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
 
+  /** Buffer the tiles of type V by a constant buffer size.
+    * 
+    * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
+    * 
+    * @tparam         K                 The key of this tile set RDD, requiring a spatial component.
+    * @tparam         V                 The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
+    * 
+    * @param          rdd               The keyed tile rdd.
+    * @param          bufferSize        Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
+    *                                   any side if there is an adjacent, abutting tile to contribute the border pixels.
+    * @param          layerBounds       The boundries of the layer to consider for border pixel contribution. This avoids creating
+    *                                   border cells from valid tiles that would be used by keys outside of the bounds (and therefore
+    *                                   unused).
+    */
   def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
@@ -148,6 +173,16 @@ object BufferTiles {
     bufferWithNeighbors(grouped)
   }
 
+  /** Buffer the tiles of type V by a dynamic buffer size.
+    * 
+    * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
+    * 
+    * @tparam         K                 The key of this tile set RDD, requiring a spatial component.
+    * @tparam         V                 The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
+    * 
+    * @param          rdd               The keyed tile rdd.
+    * @param          getBufferSize     A function which returns the BufferSizes that should be used for a tile at this Key.
+    */
   def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
@@ -164,6 +199,16 @@ object BufferTiles {
     result
   }
 
+  /** Buffer the tiles of type V by a dynamic buffer size.
+    * 
+    * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
+    * 
+    * @tparam         K                        The key of this tile set RDD, requiring a spatial component.
+    * @tparam         V                        The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
+    * 
+    * @param          rdd                      The keyed tile rdd.
+    * @param          bufferSizesPerKey        An RDD that holds the BufferSizes to use for each key.
+    */
   def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])

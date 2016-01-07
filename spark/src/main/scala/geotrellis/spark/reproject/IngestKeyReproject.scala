@@ -14,6 +14,9 @@ import scala.reflect.ClassTag
 object IngestKeyReproject {
   import Reproject.Options
 
+
+  /** Reproject the given RDD and modify the key with the new CRS and extent
+    */
   def apply[K: IngestKey, V <: CellGrid: (? => TileReprojectMethods[V])](
     rdd: RDD[(K, V)],
     destCrs: CRS,
