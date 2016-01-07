@@ -19,17 +19,16 @@ package geotrellis
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
-
+import geotrellis.spark.partitioner._
 import geotrellis.spark.tiling._
 
 import org.apache.spark.rdd._
-
-import spire.syntax.cfor._
 
 import monocle.{Lens, PLens}
 import monocle.syntax._
 
 import scala.reflect.ClassTag
+
 
 package object spark {
 
@@ -95,6 +94,8 @@ package object spark {
 
   implicit class withMultiBandRasterRDDMethods[K](val rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends BaseMultiBandRasterRDDMethods[K]
+
+  implicit class withSpatialJoinMethods[K: Boundable: PartitionerIndex: ClassTag, V: ClassTag, M: ? => KeyBounds[K]](left: RDD[(K, V)] with Metadata[M]) extends SpatialJoinMethods[K, V, M](left)
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {

@@ -14,20 +14,25 @@ class ReorderedDependency[T](rdd: RDD[T], f: Int => Option[Int]) extends NarrowD
   def getParents(partitionId: Int): List[Int] = f(partitionId).toList
 }
 
-class ReorderedSpaceRDD[K, V](rdd: SpaceRDD[K, V], part: SpacePartitioner[K]) extends RDD[(K, V)](rdd.context, Nil) {
+class ReorderedSpaceRDD[K, V](rdd: RDD[(K, V)], part: SpacePartitioner[K]) extends RDD[(K, V)](rdd.context, Nil) {
+  val sourcePart = {
+    val msg =  s"ReorderedSpaceRDD requires that $rdd has a SpacePartitioner[K]"
+    require(rdd.partitioner.isDefined, msg)
+    require(rdd.partitioner.get.isInstanceOf[SpacePartitioner[_]], msg)
+    rdd.partitioner.get.asInstanceOf[SpacePartitioner[K]]
+  }
+
   override val partitioner = Some(part)
 
   override def getDependencies: Seq[Dependency[_]] = {
-    List(new ReorderedDependency(rdd, { i => rdd.part.regionIndex(part.regions(i)) }))
+    List(new ReorderedDependency(rdd, { i => sourcePart.regionIndex(part.regions(i)) }))
   }
 
   override def getPartitions = {
     for (index <- 0 until part.numPartitions) yield {
       val targetRegion = part.regions(index)
-      val sourceRegion = rdd.part.regionIndex(targetRegion)
-      new ReorderedPartition(index, sourceRegion map {
-        rdd.getPartitions(_)
-      })
+      val sourceRegion = sourcePart.regionIndex(targetRegion)
+      new ReorderedPartition(index, for (i <- sourceRegion) yield rdd.partitions(i))
     }
   }.toArray
 
