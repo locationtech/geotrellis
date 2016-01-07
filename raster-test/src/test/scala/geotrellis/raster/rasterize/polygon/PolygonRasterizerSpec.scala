@@ -251,6 +251,45 @@ class PolygonRasterizerSpec extends FunSuite
     s.size should be (100)
   }
 
+  test("Polygon w/ non-point pixels and w/ partial cells") {
+    val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
+    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
+    val s = mutable.Set.empty[(Int, Int)]
+
+    PolygonRasterizer.foreachCellByPolygon(p, rasterExtent, options) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (9)
+  }
+
+  test("Polygon w/ non-point pixels and w/o partial cells") {
+    val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
+    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val options = Options(includePartial = false, sampleType = PixelIsArea)
+    val s = mutable.Set[(Int, Int)]()
+
+    PolygonRasterizer.foreachCellByPolygon(p, rasterExtent, options) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (8)
+  }
+
+  test("Smaller polygon w/ non-point pixels and w/o partial cells") {
+    val p = Polygon(Line((0.01,0.01), (0.01,1.0), (0.5,1.5), (0.01,2.0), (0.01,2.99), (2.99,2.99), (2.99,0.01), (0.01,0.01)))
+    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val options = Options(includePartial = false, sampleType = PixelIsArea)
+    val s = mutable.Set[(Int, Int)]()
+
+    PolygonRasterizer.foreachCellByPolygon(p, rasterExtent, options) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (1)
+  }
+
   test("Rasterization of a polygon with a hole in it") {
     val p = Polygon(
       Line( (0,0), (4, 0), (4, 4), (0, 4), (0, 0) ),

@@ -153,7 +153,7 @@ class RasterExtentSpec extends FunSpec with Matchers
     }
 
     it("should get bounds for extents that do not fall on grid lines") {
-      // Map of subExtends to expected Grid Bounds
+      // Map of subExtents to expected Grid Bounds
       val testData = Map(
         (Extent(25, -92, 29, -81), GridBounds(7, 4, 9, 4)),
         (Extent(12.01, -42, 24.5, -20.1), GridBounds(1, 1, 7, 2))

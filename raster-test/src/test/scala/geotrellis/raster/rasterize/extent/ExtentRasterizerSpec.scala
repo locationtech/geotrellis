@@ -41,8 +41,10 @@ class ExtentRasterizerSpec extends FunSuite
   test("Partially-covering extent w/ non-point pixels, w/ partial cells") {
     val e = Extent(0.51, 0.51, 9.49, 9.49)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 1.0, 1.0, 10, 10)
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
+
     var sum = 0
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => sum = sum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options) { (x : Int, y : Int) => sum = sum + 1 }
     assert(sum == 100)
   }
 
@@ -57,8 +59,10 @@ class ExtentRasterizerSpec extends FunSuite
   test("Rasterization of non-square pixels w/ partial cells") {
     val e = Extent(1.01, 1.01, 8.99, 8.89)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 2.0, 2.0, 10, 10)
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
+
     var sum = 0
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => sum = sum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options) { (x : Int, y : Int) => sum = sum + 1 }
     assert(sum == 25)
   }
 
@@ -78,45 +82,51 @@ class ExtentPolygonXCheckSpec extends FunSuite
   test("Cross-Check with Polygon Rasterizer and 1x1 Pixels") {
     val e = Extent(0.51, 0.51, 9.49, 9.49)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 1.0, 1.0, 10, 10)
+    val options1 = Options(includePartial = false, sampleType = PixelIsArea)
+    val options2 = Options(includePartial = true, sampleType = PixelIsArea)
     var extentSum = 0
     var polySum = 0
 
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options1) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, options1) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
 
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options2) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, options2) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
   }
 
   test("Cross-Check with Polygon Rasterizer and 2x2 Pixels") {
     val e = Extent(1.01, 1.01, 8.99, 8.89)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 2.0, 2.0, 10, 10)
+    val options1 = Options(includePartial = false, sampleType = PixelIsArea)
+    val options2 = Options(includePartial = true, sampleType = PixelIsArea)
     var extentSum = 0
     var polySum = 0
 
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options1) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, options1) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
 
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options2) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, options2) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
   }
 
   test("Cross-Check with Polygon Rasterizer and 3x2 Pixels") {
     val e = Extent(1.01, 1.01, 8.99, 8.89)
     val re = RasterExtent(Extent(0.0, 0.0, 10.0, 10.0), 3.0, 2.0, 10, 10)
+    val options1 = Options(includePartial = false, sampleType = PixelIsArea)
+    val options2 = Options(includePartial = true, sampleType = PixelIsArea)
     var extentSum = 0
     var polySum = 0
 
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, Options(false, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options1) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, options1) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
 
-    ExtentRasterizer.foreachCellByExtent(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => extentSum = extentSum + 1 }
-    PolygonRasterizer.foreachCellByPolygon(e, re, Options(true, PixelIsArea)) { (x : Int, y : Int) => polySum = polySum + 1 }
+    ExtentRasterizer.foreachCellByExtent(e, re, options2) { (x : Int, y : Int) => extentSum = extentSum + 1 }
+    PolygonRasterizer.foreachCellByPolygon(e, re, options2) { (x : Int, y : Int) => polySum = polySum + 1 }
     assert( extentSum == polySum )
   }
 }
