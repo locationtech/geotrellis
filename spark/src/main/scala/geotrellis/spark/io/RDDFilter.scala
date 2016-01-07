@@ -59,7 +59,10 @@ object Intersects {
   implicit def forKeyBounds[K: Boundable, M] =
     new RDDFilter[K, Intersects.type, KeyBounds[K], M] {
       def apply(metadata: M, kb1: KeyBounds[K], kb2: KeyBounds[K]) = {
-        (kb2 intersect kb1).toSeq
+        (kb2 intersect kb1) match {
+          case kb: KeyBounds[K] => List(kb)
+          case EmptyBounds => Nil
+        }
       }
     }
 
@@ -70,7 +73,10 @@ object Intersects {
         val queryBounds = KeyBounds(
           kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
           kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
-        (queryBounds intersect kb).toSeq
+        (queryBounds intersect kb) match {
+          case kb: KeyBounds[K] => List(kb)
+          case EmptyBounds => Nil
+        }
       }
     }
 
@@ -82,7 +88,10 @@ object Intersects {
       val queryBounds = KeyBounds(
         kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
         kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
-      (queryBounds intersect kb).toSeq
+      (queryBounds intersect kb) match {
+        case kb: KeyBounds[K] => List(kb)
+        case EmptyBounds => Nil
+      }
     }
   }
 }
@@ -97,7 +106,10 @@ object Between {
         val queryBounds = KeyBounds(
           kb.minKey updateTemporalComponent TemporalKey(range._1),
           kb.maxKey updateTemporalComponent TemporalKey(range._2))
-        (queryBounds intersect kb).toSeq
+        (queryBounds intersect kb) match {
+          case kb: KeyBounds[K] => List(kb)
+          case EmptyBounds => Nil
+        }
       }
     }
 }
@@ -115,7 +127,10 @@ object Contains {
           kb.minKey updateSpatialComponent spatialKey,
           kb.maxKey updateSpatialComponent spatialKey
         )
-      (queryBounds intersect kb).toSeq
+      (queryBounds intersect kb) match {
+        case kb: KeyBounds[K] => List(kb)
+        case EmptyBounds => Nil
+      }
     }
   }
 }

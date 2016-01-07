@@ -3,37 +3,79 @@ package geotrellis.spark
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+sealed trait Bounds[+A] extends Product with Serializable {
+  def isEmpty: Boolean
+
+  def nonEmpty: Boolean = ! isEmpty
+
+  def include[B >: A](key: B)(implicit b: Boundable[B]): KeyBounds[B]
+
+  def includes[B >: A](key: B)(implicit b: Boundable[B]): Boolean
+
+  def combine[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B]
+
+  def intersect[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B]
+
+  def intersects[B >: A](other: KeyBounds[B])(implicit b: Boundable[B]): Boolean =
+    intersect(other).nonEmpty
+}
+
+case object EmptyBounds extends Bounds[Nothing] {
+  def isEmpty = true
+
+  def include[B](key: B)(implicit b: Boundable[B]): KeyBounds[B] =
+    KeyBounds(key, key)
+
+  def includes[B](key: B)(implicit b: Boundable[B]): Boolean =
+    false
+
+  def combine[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
+    other
+
+  def intersect[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
+    EmptyBounds
+}
+
 case class KeyBounds[K](
   minKey: K,
   maxKey: K
-) {
-  def includes(key: K)(implicit b: Boundable[K]): Boolean =
+) extends Bounds[K] {
+  def isEmpty = false
+
+  def include[B >: K](key: B)(implicit b: Boundable[B]): KeyBounds[B] =
+    KeyBounds(b.minBound(minKey, key), b.maxBound(maxKey, key))
+
+  def includes[B >: K](key: B)(implicit b: Boundable[B]): Boolean =
     minKey == b.minBound(minKey, key) && maxKey == b.maxBound(maxKey, key)
 
-  def include(key: K)(implicit b: Boundable[K]): KeyBounds[K] =
-    KeyBounds(
-      b.minBound(minKey, key),
-      b.maxBound(maxKey, key))
+  def combine[B >: K](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
+    other match {
+      case KeyBounds(otherMin, otherMax) =>
+        val newMin = b.minBound(minKey, otherMin)
+        val newMax = b.maxBound(maxKey, otherMax)
+        KeyBounds(newMin, newMax)
 
-  def combine(other: KeyBounds[K])(implicit b: Boundable[K]): KeyBounds[K] =
-    KeyBounds(
-      b.minBound(minKey, other.minKey),
-      b.maxBound(maxKey, other.maxKey))
+      case EmptyBounds =>
+        this
+    }
 
-  def intersect(other: KeyBounds[K])(implicit b: Boundable[K]): Option[KeyBounds[K]] = {
-    val newMin = b.maxBound(minKey, other.minKey)
-    val newMax = b.minBound(maxKey, other.maxKey)
+  def combine(other: Bounds[K])(implicit b: Boundable[K]): KeyBounds[K] =
+    combine[K](other).asInstanceOf[KeyBounds[K]]
 
-    // Intersection may not exist
-    if (b.minBound(newMin, newMax) == newMin)
-      Some(KeyBounds(newMin, newMax))
-    else
-      None
-  }
+  def intersect[B >: K](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
+    other match {
+      case KeyBounds(otherMin, otherMax) =>
+        val newMin = b.maxBound(minKey, otherMin)
+        val newMax = b.minBound(maxKey, otherMax)
 
-  def intersects(other: KeyBounds[K])(implicit b: Boundable[K]): Boolean = {
-    intersect(other).nonEmpty
-  }
+        if (b.minBound(newMin, newMax) == newMin)
+          KeyBounds(newMin, newMax)
+        else
+          EmptyBounds
+
+      case EmptyBounds =>
+        EmptyBounds
+    }
 }
 
 object KeyBounds {
