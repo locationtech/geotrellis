@@ -140,7 +140,11 @@ object Intersects {
             val qb = KeyBounds(
               kb.minKey updateSpatialComponent SpatialKey(tile._1, tile._2),
               kb.maxKey updateSpatialComponent SpatialKey(tile._1, tile._2))
-            implicitly[Boundable[K]].intersect(qb, kb).toSeq })
+            qb intersect kb match {
+              case kb: KeyBounds[K] => List(kb)
+              case EmptyBounds => Nil
+            }
+          })
           .reduce({ (x,y) => x ++ y })
       }
     }

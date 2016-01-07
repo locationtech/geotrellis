@@ -1,6 +1,6 @@
 package geotrellis.spark.partitioner
 
-import geotrellis.spark.{TestSparkContext, KeyBounds, SpatialKey, ContextRDD}
+import geotrellis.spark._
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._
@@ -41,7 +41,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestSparkContext {
   val pr3 = ContextRDD(rdd3, bounds3)
 
    val rddEmpty = sc.emptyRDD[(SpatialKey, Int)]
-   val prEmpty = ContextRDD(rddEmpty, SpacePartitioner[EmptyBound])
+   val prEmpty = ContextRDD(rddEmpty, SpacePartitioner[SpatialKey](EmptyBounds))
 
   def maxPartitionSize(rdd: RDD[_]): Int = {
     rdd.mapPartitions(it => Iterator(it.size)).collect().max
