@@ -87,6 +87,7 @@ object GeoTiffReader {
           info.noDataValue
         ).band(0)
       }
+      println("gttile", geoTiffTile)
 
     SingleBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
   }

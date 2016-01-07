@@ -9,8 +9,8 @@ class Float32GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val noDataValue: Option[Double]
-) extends GeoTiffTile(segmentLayout, compression) with Float32GeoTiffSegmentCollection {
+  noDataValue: Option[Double]
+) extends GeoTiffTile(segmentLayout, compression, noDataValue) with Float32GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * TypeFloat.bytes)
 

@@ -93,6 +93,7 @@ class Int16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends RawInt
   override
   def get(i: Int): Short = {
     val v = super.get(i)
+    println("raw v", v, "nd", noDataValue)
     if(v == noDataValue) { shortNODATA }
     else { v }
   }

@@ -9,8 +9,8 @@ class UInt32GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val noDataValue: Option[Double]
-) extends GeoTiffTile(segmentLayout, compression) with UInt32GeoTiffSegmentCollection {
+  noDataValue: Option[Double]
+) extends GeoTiffTile(segmentLayout, compression, noDataValue) with UInt32GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Float](cols * rows)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>

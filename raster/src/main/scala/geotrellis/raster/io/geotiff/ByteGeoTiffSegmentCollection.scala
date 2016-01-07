@@ -9,13 +9,14 @@ trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val cellType = TypeByte
   val bandType = ByteBandType
 
-  val noDataValue: Double
+  val noDataValue: Option[Double]
 
-  val createSegment: Int => ByteGeoTiffSegment =
-    if (isData(noDataValue) && Byte.MinValue.toDouble <= noDataValue && noDataValue <= Byte.MaxValue.toDouble)
-      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i), noDataValue.toByte) }
-    else
+  val createSegment: Int => ByteGeoTiffSegment = noDataValue match {
+    case Some(nd) if (isData(nd) && Byte.MinValue.toDouble <= nd && nd <= Byte.MaxValue.toDouble) =>
+      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i), nd.toByte) }
+    case None =>
       { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i), byteNODATA) }
+  }
 }
 
 trait RawByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
