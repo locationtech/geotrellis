@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{KeyIndexIds, KeyIndex}
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
@@ -37,6 +37,7 @@ class HilbertSpaceTimeKeyIndex(
   val yResolution: Int,
   val temporalResolution: Int
 ) extends KeyIndex[SpaceTimeKey] {
+  val id = KeyIndexIds.hilbertSpaceTimeKeyIndex
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
@@ -56,7 +57,7 @@ class HilbertSpaceTimeKeyIndex(
 
   def binTime(key: SpaceTimeKey): Long = {
     // index requires right bound to be exclusive but KeyBounds do not, fake that.      
-    val bin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
+    val bin = ((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth
     (if (bin == temporalBinCount) bin - 1  else bin).toLong
   }
 
@@ -98,7 +99,7 @@ class HilbertSpaceTimeKeyIndex(
       )
 
     val combiner = 
-      new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1));
+      new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1))
 
     val queryBuilder = 
       BacktrackingQueryBuilder.create(

@@ -54,8 +54,16 @@ object AccumuloLayerUpdater {
     K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     instance: AccumuloInstance,
-     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M, I] =
+     strategy: AccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M, I] =
     new AccumuloLayerUpdater[K, V, M, I](
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
+    )
+
+  def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    instance: AccumuloInstance,
+    strategy: AccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M, KeyIndex[K]] =
+    new AccumuloLayerUpdater[K, V, M, KeyIndex[K]](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
     )

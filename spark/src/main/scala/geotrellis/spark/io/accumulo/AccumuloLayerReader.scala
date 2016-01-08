@@ -58,15 +58,24 @@ object AccumuloLayerReader {
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
 
-  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData, I](instance)
+  def apply[
+  K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+  V: AvroRecordCodec: ClassTag,
+  M: JsonFormat
+  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M, KeyIndex[K]] =
+    new AccumuloLayerReader[K, V, M, KeyIndex[K]] (
+      AccumuloAttributeStore(instance.connector),
+      new AccumuloRDDReader[K, V](instance))
 
-  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData, I](instance)
+  def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData](instance)
 
-  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData, I](instance)
+  def spatialMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](instance)
 
-  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](instance)
+  def spaceTime(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData](instance)
+
+  def spaceTimeMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance)
 }

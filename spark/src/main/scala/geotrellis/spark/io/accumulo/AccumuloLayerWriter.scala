@@ -51,7 +51,7 @@ object AccumuloLayerWriter {
     instance: AccumuloInstance,
     table: String,
     indexMethod: KeyIndexMethod[K, I],
-    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
+    strategy: AccumuloWriteStrategy
   ): AccumuloLayerWriter[K, V, M, I] =
     new AccumuloLayerWriter[K, V, M, I](
       attributeStore = AccumuloAttributeStore(instance.connector),
@@ -60,35 +60,45 @@ object AccumuloLayerWriter {
       table = table
     )
 
-  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
     table: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey, I],
-    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
-  )(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData, I](instance, table, keyIndexMethod, strategy)
+    indexMethod: KeyIndexMethod[K, KeyIndex[K]],
+    strategy: AccumuloWriteStrategy
+  ): AccumuloLayerWriter[K, V, M, KeyIndex[K]] =
+    new AccumuloLayerWriter[K, V, M, KeyIndex[K]](
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),
+      keyIndexMethod = indexMethod,
+      table = table
+    )
 
-  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](
-    instance: AccumuloInstance,
-    table: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey, I],
+  def spatial(
+    instance: AccumuloInstance, table: String,
+    keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData, I](instance, table, keyIndexMethod, strategy)
+    apply[SpatialKey, Tile, RasterMetaData](instance, table, keyIndexMethod, strategy)
 
-  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](
-    instance: AccumuloInstance,
-    table: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, I],
+  def spatialMultiBand(
+    instance: AccumuloInstance, table: String,
+    keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData, I](instance, table, keyIndexMethod, strategy)
+    apply[SpatialKey, MultiBandTile, RasterMetaData](instance, table, keyIndexMethod, strategy)
 
-  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](
-    instance: AccumuloInstance,
-    table: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, I],
+  def spaceTime(
+    instance: AccumuloInstance, table: String,
+    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](instance, table, keyIndexMethod, strategy)
+    apply[SpaceTimeKey, Tile, RasterMetaData](instance, table, keyIndexMethod, strategy)
+
+  def spaceTimeMultiBand(
+    instance: AccumuloInstance,
+    table: String,
+    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]],
+    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
+  )(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance, table, keyIndexMethod, strategy)
 }

@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{KeyIndexIds, KeyIndex}
 import geotrellis.spark.io.index.zcurve._
 
 import com.github.nscala_time.time.Imports._
@@ -21,6 +21,7 @@ object ZSpaceTimeKeyIndex {
 }
 
 class ZSpaceTimeKeyIndex(val pattern: String) extends KeyIndex[SpaceTimeKey] {
+  val id = KeyIndexIds.zSpaceTimeKeyIndex
   private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, DateTimeFormat.forPattern(pattern).print(key.time).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z

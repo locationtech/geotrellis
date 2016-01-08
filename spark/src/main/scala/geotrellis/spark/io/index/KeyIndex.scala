@@ -8,9 +8,13 @@ object KeyIndexIds {
   val rowMajorSpatialKeyIndex  = "RowMajorSpatialKeyIndex"
   val zSpaceTimeKeyIndex       = "ZSpaceTimeKeyIndex"
   val zSpatialKeyIndex         = "ZSpatialKeyIndex"
+
+  val list = hilbertSpaceTimeKeyIndex :: hilbertSpatialKeyIndex ::
+    rowMajorSpatialKeyIndex :: zSpaceTimeKeyIndex :: zSpatialKeyIndex :: Nil
 }
 
 trait KeyIndex[K] extends Serializable {
+  val id: String
   def toIndex(key: K): Long
   def indexRanges(keyRange: (K, K)): Seq[(Long, Long)]
 }
