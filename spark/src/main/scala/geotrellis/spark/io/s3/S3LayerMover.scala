@@ -35,8 +35,8 @@ object S3LayerMover {
     (bucket: String, keyPrefix: String): LayerMover[LayerId] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
     new GenericLayerMover[LayerId](
-      layerCopier    = S3LayerCopier[K, V, M, I](attributeStore, bucket, keyPrefix),
-      layerDeleter   = S3LayerDeleter(attributeStore)
+      layerCopier  = S3LayerCopier[K, V, M, I](attributeStore, bucket, keyPrefix),
+      layerDeleter = S3LayerDeleter(attributeStore)
     )
   }
 }

@@ -40,7 +40,6 @@ class HadoopLayerWriter[
 
     try {
       attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
-      println(s"keyIndex: ${keyIndex}")
       // TODO: Writers need to handle Schema changes
 
       rddWriter.write(rdd, layerPath, keyIndex)

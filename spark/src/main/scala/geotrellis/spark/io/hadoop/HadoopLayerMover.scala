@@ -1,7 +1,5 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.io.accumulo.AccumuloLayerHeader
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
@@ -12,7 +10,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
-import spray.json.{JsObject, JsonFormat}
+import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
@@ -26,9 +24,6 @@ class HadoopLayerMover[
   override def move(from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
-
-    println(s"attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.metaData): ${attributeStore.readLayerAttribute[JsObject](from, "keyIndex")}")
-    println(s"implicitly[JsonFormat[I]]: ${implicitly[JsonFormat[I]]}")
 
     val (header, metadata, keyBounds, keyIndex, _) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], I, Unit](from)

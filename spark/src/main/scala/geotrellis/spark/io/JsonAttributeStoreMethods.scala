@@ -58,8 +58,6 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
       attributeStore.cacheRead[KeyIndex](id, Fields.keyIndex)
     }
 
-    println(s"sssssssskeyIndex: ${keyIndex}")
-
     val schema = Try {
       attributeStore.cacheRead[JsObject](id, Fields.metaData)(fieldLens(Fields.schema))
         .convertTo[Schema](fieldLens(Fields.schema))

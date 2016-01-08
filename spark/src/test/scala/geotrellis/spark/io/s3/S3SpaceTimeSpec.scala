@@ -33,61 +33,40 @@ abstract class S3SpaceTimeSpec
   }
 
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }
-  lazy val mover  = GenericLayerMover(copier, deleter)
-  lazy val sample = CoordinateSpaceTime
+  lazy val sample  = CoordinateSpaceTime
 }
 
 class S3SpaceTimeZCurveByYearSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
 
-  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddReader, None)
+  lazy val reader  = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddWriter, true)
-
   lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod.byPattern("YMM"), bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
-  lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile, ZSpaceTimeKeyIndex](attributeStore) {
+  lazy val mover   = GenericLayerMover(copier, deleter)
+  lazy val reindexer = S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex, ZSpaceTimeKeyIndex](
+    attributeStore,
+    ZCurveKeyIndexMethod.byPattern("YMM"),
+    S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+  )
+  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile, ZSpaceTimeKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client
   }
-
   lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddWriter, ZCurveKeyIndexMethod.byYear, bucket, prefix, true)
 }
 
 class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
 
-  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddReader, None)
+  lazy val reader  = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, rddWriter, true)
   lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod.byPattern("YMM"), bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
-  lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile, ZSpaceTimeKeyIndex](attributeStore) {
+  lazy val mover   = GenericLayerMover(copier, deleter)
+  lazy val reindexer = S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex, ZSpaceTimeKeyIndex](
+    attributeStore,
+    ZCurveKeyIndexMethod.byPattern("YMM"),
+    S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+  )
+  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile, ZSpaceTimeKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client
   }
 
@@ -97,25 +76,17 @@ class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
 class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
 
-  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, rddReader, None)
+  lazy val reader  = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, rddWriter, true)
   lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod.byPattern("YMM"), bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
-  lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile, HilbertSpaceTimeKeyIndex](attributeStore) {
+  lazy val mover   = GenericLayerMover(copier, deleter)
+  lazy val reindexer =
+    S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex, ZSpaceTimeKeyIndex](
+      attributeStore,
+      ZCurveKeyIndexMethod.byPattern("YMM"),
+      S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+    )
+  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile, HilbertSpaceTimeKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client
   }
 
@@ -125,25 +96,17 @@ class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
 class S3SpaceTimeHilbertWithResolutionSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
 
-  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, rddReader, None)
+  lazy val reader  = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, rddWriter, true)
   lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod.byPattern("YMM"), bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
-  lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile, HilbertSpaceTimeKeyIndex](attributeStore) {
+  lazy val mover   = GenericLayerMover(copier, deleter)
+  lazy val reindexer =
+    S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData, HilbertSpaceTimeKeyIndex, ZSpaceTimeKeyIndex](
+      attributeStore,
+      ZCurveKeyIndexMethod.byPattern("YMM"),
+      S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+    )
+  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile, HilbertSpaceTimeKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client
   }
 

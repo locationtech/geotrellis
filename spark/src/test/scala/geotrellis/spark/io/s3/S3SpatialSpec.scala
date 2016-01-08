@@ -46,21 +46,12 @@ class S3SpatialRowMajorSpec extends S3SpatialSpec {
   lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData, RowMajorSpatialKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData, RowMajorSpatialKeyIndex](attributeStore, rddWriter, true)
   lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData, RowMajorSpatialKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
+  lazy val reindexer =
+    S3LayerReindexer[SpatialKey, Tile, RasterMetaData, RowMajorSpatialKeyIndex, ZSpatialKeyIndex](
+      attributeStore,
+      ZCurveKeyIndexMethod,
+      S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+    )
   lazy val tiles = new S3TileReader[SpatialKey, Tile, RowMajorSpatialKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client()
   }
@@ -72,21 +63,12 @@ class S3SpatialZCurveSpec extends S3SpatialSpec {
   lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](attributeStore, rddWriter, true)
   lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
+  lazy val reindexer =
+    S3LayerReindexer[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex, ZSpatialKeyIndex](
+      attributeStore,
+      ZCurveKeyIndexMethod,
+      S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+    )
   lazy val tiles = new S3TileReader[SpatialKey, Tile, ZSpatialKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client()
   }
@@ -98,21 +80,12 @@ class S3SpatialHilbertSpec extends S3SpatialSpec {
   lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](attributeStore, rddWriter, true)
   lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true
-      )
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
+  lazy val reindexer =
+    S3LayerReindexer[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex, ZSpatialKeyIndex](
+      attributeStore,
+      ZCurveKeyIndexMethod,
+      S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
+    )
   lazy val tiles = new S3TileReader[SpatialKey, Tile, HilbertSpatialKeyIndex](attributeStore) {
     override val s3Client = new MockS3Client()
   }

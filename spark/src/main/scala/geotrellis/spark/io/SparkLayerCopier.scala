@@ -22,14 +22,19 @@ abstract class SparkLayerCopier[
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
+    try {
+      layerWriter.write(to, layerReader.read(from))
+    } catch {
+      case e: Exception => new LayerCopyError(from, to).initCause(e)
+    }
+
     val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], I, Schema](from)
+      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], I, Schema](to)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }
 
     try {
-      layerWriter.write(to, layerReader.read(from))
       attributeStore.writeLayerAttributes(
         to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
       )

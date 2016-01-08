@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.AttributeStore.Fields
+import geotrellis.spark.io.s3.S3RDDWriter
 import geotrellis.spark.{KeyBounds, LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
@@ -10,7 +10,7 @@ import geotrellis.spark.io.json._
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 
-import spray.json.{JsObject, JsonFormat}
+import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
@@ -47,16 +47,18 @@ object HadoopLayerReindexer {
         }
 
         val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, _) = try {
-          println(s"attributeStore.readLayerAttribute[JsObject](to, Fields.keyIndex): ${attributeStore.readLayerAttribute[JsObject](to, Fields.keyIndex)}")
-          println(s"attributeStore.readLayerAttribute[JsObject](from, Fields.keyIndex): ${attributeStore.readLayerAttribute[JsObject](from, Fields.keyIndex)}")
           attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], TI, Unit](to)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
         }
 
-        attributeStore.writeLayerAttributes(
-          to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, Option.empty[Schema]
-        )
+        try {
+          attributeStore.writeLayerAttributes(
+            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, Option.empty[Schema]
+          )
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
       }
     }
 

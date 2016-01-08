@@ -69,7 +69,7 @@ package object json {
     def read(value: JsValue): HilbertSpatialKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.hilbertSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.hilbertSpatialKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
           args.convertTo[JsObject].getFields("keyBounds", "xResolution", "yResolution") match {
             case Seq(kb, xr, yr) =>
               HilbertSpatialKeyIndex(
@@ -181,7 +181,7 @@ package object json {
     def read(value: JsValue): ZSpatialKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.zSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.zSpatialKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
           new ZSpatialKeyIndex()
         }
         case _ =>

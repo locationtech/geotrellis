@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{MergeQueue, KeyIndex}
+import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import geotrellis.spark.utils.cache.Cache
