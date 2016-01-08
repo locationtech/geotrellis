@@ -16,6 +16,7 @@
 
 package geotrellis.vector.io.wkb
 
+import scala.reflect.ClassTag
 import com.vividsolutions.jts.io.{WKBReader}
 import com.vividsolutions.jts.{geom => jts}
 import geotrellis.vector._
@@ -27,12 +28,12 @@ object WKB {
   private val readerBox = new ThreadLocal[WKBReader]
   private val writerBox = new ThreadLocal[WKBWriter]
 
-  def read[G <: Geometry](value: Array[Byte]): G = {
+  def read[G <: Geometry : ClassTag](value: Array[Byte]): G = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
     Geometry[G](readerBox.get.read(value))
   }
 
-  def read[G <: Geometry](hex: String): G = {
+  def read[G <: Geometry : ClassTag](hex: String): G = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
     Geometry[G](readerBox.get.read(WKBReader.hexToBytes(hex)))
   }

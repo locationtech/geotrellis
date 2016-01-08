@@ -22,7 +22,7 @@ trait AffineTransformation {
   def transform(geom: MultiLine): MultiLine = MultiLine(transform(geom.jtsGeom))
   def transform(geom: MultiPolygon): MultiPolygon = MultiPolygon(transform(geom.jtsGeom))
   def transform(geom: GeometryCollection): GeometryCollection = GeometryCollection(transform(geom.jtsGeom))
-  def transform(geom: Geometry): Geometry = Geometry(transform(geom.jtsGeom))
+  def transform(geom: Geometry): Geometry = Geometry[Geometry](transform(geom.jtsGeom))
 
   private def transform[D <: jts.Geometry](g: D): D = trans.transform(g).asInstanceOf[D]
 

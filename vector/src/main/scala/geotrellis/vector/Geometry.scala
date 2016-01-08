@@ -76,21 +76,24 @@ trait Geometry {
 }
 
 object Geometry {
+  import scala.reflect.{ ClassTag, classTag }
   /**
    * Wraps JTS Geometry in correct container and attempts to cast.
    * Useful when sourcing objects from JTS interface.
    */
-  def apply[G <: Geometry](obj: jts.Geometry): G = {
-    obj match {
-      case obj: jts.Point => Point(obj)
-      case obj: jts.LineString => Line(obj)
-      case obj: jts.Polygon => Polygon(obj)
-      case obj: jts.MultiPoint => MultiPoint(obj)
-      case obj: jts.MultiLineString => MultiLine(obj)
-      case obj: jts.MultiPolygon => MultiPolygon(obj)
-      case obj: jts.GeometryCollection => GeometryCollection(obj)
-    }
-  }.asInstanceOf[G]
+  def apply[G <: Geometry : ClassTag](obj: jts.Geometry): G = {
+    val result =
+      obj match {
+        case obj: jts.Point => Point(obj)
+        case obj: jts.LineString => Line(obj)
+        case obj: jts.Polygon => Polygon(obj)
+        case obj: jts.MultiPoint => MultiPoint(obj)
+        case obj: jts.MultiLineString => MultiLine(obj)
+        case obj: jts.MultiPolygon => MultiPolygon(obj)
+        case obj: jts.GeometryCollection => GeometryCollection(obj)
+      }
+    classTag[G].runtimeClass.cast(result).asInstanceOf[G]
+  }
 }
 
 trait Relatable { self: Geometry =>
