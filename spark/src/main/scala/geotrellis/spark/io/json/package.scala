@@ -69,7 +69,7 @@ package object json {
     def read(value: JsValue): HilbertSpatialKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.hilbertSpatialKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.hilbertSpatialKeyIndex) throw new DeserializationException("0: Wrong KeyIndex type.")
           args.convertTo[JsObject].getFields("keyBounds", "xResolution", "yResolution") match {
             case Seq(kb, xr, yr) =>
               HilbertSpatialKeyIndex(
@@ -78,11 +78,11 @@ package object json {
                 yr.convertTo[Int]
               )
             case _ =>
-              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+              throw new DeserializationException("1: Wrong KeyIndex constructor arguments.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type.")
+          throw new DeserializationException("2: Wrong KeyIndex type.")
       }
     }
   }
@@ -103,7 +103,7 @@ package object json {
     def read(value: JsValue): HilbertSpaceTimeKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.hilbertSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.hilbertSpaceTimeKeyIndex) throw new DeserializationException("3: Wrong KeyIndex type.")
           args.convertTo[JsObject].getFields("keyBounds", "xResolution", "yResolution", "temporalResolution") match {
             case Seq(kb, xr, yr, tr) =>
               HilbertSpaceTimeKeyIndex(
@@ -113,11 +113,11 @@ package object json {
                 tr.convertTo[Int]
               )
             case _ =>
-              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+              throw new DeserializationException("4: Wrong KeyIndex constructor arguments.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type.")
+          throw new DeserializationException("5: Wrong KeyIndex type.")
       }
     }
   }
@@ -133,15 +133,15 @@ package object json {
     def read(value: JsValue): RowMajorSpatialKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.rowMajorSpatialKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.rowMajorSpatialKeyIndex) throw new DeserializationException("6: Wrong KeyIndex type.")
           args.convertTo[JsObject].getFields("keyBounds") match {
             case Seq(kb) => new RowMajorSpatialKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
             case _ =>
-              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+              throw new DeserializationException("7: Wrong KeyIndex constructor arguments.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type.")
+          throw new DeserializationException("8: Wrong KeyIndex type.")
       }
     }
   }
@@ -157,15 +157,15 @@ package object json {
     def read(value: JsValue): ZSpaceTimeKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.zSpaceTimeKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.zSpaceTimeKeyIndex) throw new DeserializationException("9: Wrong KeyIndex type.")
           args.convertTo[JsObject].getFields("pattern") match {
             case Seq(JsString(p)) => ZSpaceTimeKeyIndex.byPattern(p)
             case _ =>
-              throw new DeserializationException("Wrong KeyIndex constructor arguments.")
+              throw new DeserializationException("10: Wrong KeyIndex constructor arguments.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type.")
+          throw new DeserializationException("11: Wrong KeyIndex type.")
       }
     }
   }
@@ -181,11 +181,11 @@ package object json {
     def read(value: JsValue): ZSpatialKeyIndex = {
       value.asJsObject.getFields("id", "args") match {
         case Seq(JsString(id), args) => {
-          if (id != KeyIndexIds.zSpatialKeyIndex) throw new DeserializationException("Wrong KeyIndex type.")
+          if (id != KeyIndexIds.zSpatialKeyIndex) throw new DeserializationException("12: Wrong KeyIndex type.")
           new ZSpatialKeyIndex()
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type.")
+          throw new DeserializationException("13: Wrong KeyIndex type.")
       }
     }
   }

@@ -34,7 +34,7 @@ class HadoopSpatialZCurveSpec extends HadoopSpatialSpec {
   lazy val reader    = HadoopLayerReader[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](outputLocal)
   lazy val copier    = HadoopLayerCopier[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](outputLocal)
   lazy val mover     = HadoopLayerMover[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData, RowMajorSpatialKeyIndex, ZSpatialKeyIndex](outputLocal, ZCurveKeyIndexMethod)
+  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex, ZSpatialKeyIndex](outputLocal, ZCurveKeyIndexMethod)
   lazy val tiles     = HadoopTileReader[SpatialKey, Tile, ZSpatialKeyIndex](outputLocal)
   lazy val writer    = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData, ZSpatialKeyIndex](outputLocal, ZCurveKeyIndexMethod)
 }
@@ -43,8 +43,8 @@ class HadoopSpatialHilbertSpec extends HadoopSpatialSpec {
   lazy val reader    = HadoopLayerReader[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](outputLocal)
   lazy val copier    = HadoopLayerCopier[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](outputLocal)
   lazy val mover     = HadoopLayerMover[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData, RowMajorSpatialKeyIndex, ZSpatialKeyIndex](outputLocal, ZCurveKeyIndexMethod)
-  lazy val tiles     = HadoopTileReader[SpatialKey, Tile, ZSpatialKeyIndex](outputLocal)
+  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex, ZSpatialKeyIndex](outputLocal, ZCurveKeyIndexMethod)
+  lazy val tiles     = HadoopTileReader[SpatialKey, Tile, HilbertSpatialKeyIndex](outputLocal)
   lazy val writer    = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData, HilbertSpatialKeyIndex](outputLocal, HilbertKeyIndexMethod)
 }
 

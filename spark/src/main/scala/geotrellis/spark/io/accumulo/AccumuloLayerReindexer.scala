@@ -19,7 +19,8 @@ object AccumuloLayerReindexer {
     strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
    (implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    val layerReader = new AccumuloLayerReader[K, V, M, FI](attributeStore, new AccumuloRDDReader[K, V](instance))
+    val layerReaderFrom = new AccumuloLayerReader[K, V, M, FI](attributeStore, new AccumuloRDDReader[K, V](instance))
+    val layerReaderTo = new AccumuloLayerReader[K, V, M, TI](attributeStore, new AccumuloRDDReader[K, V](instance))
     val layerDeleter = AccumuloLayerDeleter(instance)
     val layerWriter = new AccumuloLayerWriter[K, V, M, TI](
       attributeStore = attributeStore,
@@ -28,17 +29,25 @@ object AccumuloLayerReindexer {
       table          = table
     )
 
-    val layerCopier = new SparkLayerCopier[AccumuloLayerHeader, K, V, M, FI](
+    val layerCopierFrom = new SparkLayerCopier[AccumuloLayerHeader, K, V, M, TI](
       attributeStore = attributeStore,
-      layerReader    = layerReader,
+      layerReader    = layerReaderFrom,
       layerWriter    = layerWriter
     ) {
       def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
     }
 
-    val layerMover = GenericLayerMover(layerCopier, layerDeleter)
+    val layerCopierTo = new SparkLayerCopier[AccumuloLayerHeader, K, V, M, TI](
+      attributeStore = attributeStore,
+      layerReader    = layerReaderTo,
+      layerWriter    = layerWriter
+    ) {
+      def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
+    }
 
-    GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
+    val layerMover = GenericLayerMover(layerCopierTo, layerDeleter)
+
+    GenericLayerReindexer(layerDeleter, layerCopierFrom, layerMover)
   }
 
   def apply[
