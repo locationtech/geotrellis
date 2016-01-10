@@ -26,6 +26,7 @@ import geotrellis.testkit._
 import geotrellis.raster.op._
 import geotrellis.raster.op.stats._
 import geotrellis.raster.histogram._
+import geotrellis.raster.io.arg._
 
 import org.scalatest._
 
@@ -74,6 +75,26 @@ class RasterSourceSpec extends FunSpec
           }
         }
       }
+    }
+
+    it("should read from metadata and match a arg reader") {
+      val fromRasterSource = RasterSource("SBN_inc_percap").get
+      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json").tile
+
+      assertEqual(fromArgReader, fromRasterSource)
+    }
+
+    it("should read from metadata and match an arg reader with a target RasterExtent") {
+      val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, cols, rows) = 
+        RasterSource("SBN_inc_percap").rasterExtent.get
+      val qw = (xmax - xmin) / 4
+      val qh = (ymax - ymin) / 4
+      val target = RasterExtent(Extent(xmin + qw, ymin + qh, xmax - qw, ymax - qh), cols / 3, rows / 3)
+
+      val fromRasterSource = RasterSource("SBN_inc_percap", target).get
+      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json", target).tile
+
+      assertEqual(fromArgReader, fromRasterSource)
     }
 
     it("should mapRaster to a sequence of ints") {

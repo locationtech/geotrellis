@@ -44,14 +44,14 @@ object BufferTiles {
         val part: V =
           direction match {
             case Center => tile
-            case Right => tile.crop(0, 0, bufferSizes.right - 1, rows - 1, force = true)
-            case Left => tile.crop(cols - bufferSizes.left, 0, cols - 1, rows - 1, force = true)
-            case Top => tile.crop(0, rows - bufferSizes.top, cols - 1, rows - 1, force = true)
-            case Bottom => tile.crop(0, 0, cols - 1, bufferSizes.bottom - 1, force = true)
-            case TopLeft => tile.crop(cols - bufferSizes.left, rows - bufferSizes.top, cols - 1, rows - 1, force = true)
-            case TopRight => tile.crop(0, rows - bufferSizes.top, bufferSizes.right - 1, rows - 1, force = true)
-            case BottomLeft => tile.crop(cols - bufferSizes.left, 0, cols - 1, bufferSizes.bottom - 1, force = true)
-            case BottomRight => tile.crop(0, 0, bufferSizes.right - 1, bufferSizes.bottom - 1, force = true)
+            case Right => tile.crop(0, 0, bufferSizes.right - 1, rows - 1, Crop.Options(force = true))
+            case Left => tile.crop(cols - bufferSizes.left, 0, cols - 1, rows - 1, Crop.Options(force = true))
+            case Top => tile.crop(0, rows - bufferSizes.top, cols - 1, rows - 1, Crop.Options(force = true))
+            case Bottom => tile.crop(0, 0, cols - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
+            case TopLeft => tile.crop(cols - bufferSizes.left, rows - bufferSizes.top, cols - 1, rows - 1, Crop.Options(force = true))
+            case TopRight => tile.crop(0, rows - bufferSizes.top, bufferSizes.right - 1, rows - 1, Crop.Options(force = true))
+            case BottomLeft => tile.crop(cols - bufferSizes.left, 0, cols - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
+            case BottomRight => tile.crop(0, 0, bufferSizes.right - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
           }
 
         parts += ( (key.updateSpatialComponent(spatialKey), (direction, part)) )

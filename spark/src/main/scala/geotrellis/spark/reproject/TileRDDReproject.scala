@@ -78,7 +78,7 @@ object TileRDDReproject {
               )
             val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
 
-            val Product2(newTile, newExtent) =
+            val Raster(newTile, newExtent) =
               tile.reproject(outerExtent, gridBounds, transform, inverseTransform, updatedOptions)
 
             ((key, newExtent), newTile)

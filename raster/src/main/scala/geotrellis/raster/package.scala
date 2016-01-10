@@ -28,7 +28,7 @@ package object raster
   // Implicit method extension for core types
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
-      with crop.TileCropMethods
+      with crop.SingleBandTileCropMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 

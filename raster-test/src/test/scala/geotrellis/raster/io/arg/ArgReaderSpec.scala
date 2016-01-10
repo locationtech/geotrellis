@@ -27,28 +27,6 @@ class ArgReaderSpec extends FunSpec
                        with TestEngine 
                        with Matchers {
   describe("ArgReader") {
-    TestEngine.init
-
-    it("should read from metadata and match a RasterSource") {
-      val fromRasterSource = RasterSource("SBN_inc_percap").get
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json").tile
-
-      assertEqual(fromArgReader, fromRasterSource)
-    }
-
-    it("should read from metadata and match a RasterSource with a target RasterExtent") {
-      val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, cols, rows) = 
-        RasterSource("SBN_inc_percap").rasterExtent.get
-      val qw = (xmax - xmin) / 4
-      val qh = (ymax - ymin) / 4
-      val target = RasterExtent(Extent(xmin + qw, ymin + qh, xmax - qw, ymax - qh), cols / 3, rows / 3)
-
-      val fromRasterSource = RasterSource("SBN_inc_percap", target).get
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json", target).tile
-
-      assertEqual(fromArgReader, fromRasterSource)
-    }
-
     it("should read a constant tile") {
       val tile = ArgReader.read("raster-test/data/data/constant.json").tile
       tile match {
