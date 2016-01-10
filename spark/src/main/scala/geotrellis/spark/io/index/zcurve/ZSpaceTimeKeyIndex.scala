@@ -21,7 +21,6 @@ object ZSpaceTimeKeyIndex {
 }
 
 class ZSpaceTimeKeyIndex(val pattern: String) extends KeyIndex[SpaceTimeKey] {
-  val id = KeyIndexIds.zSpaceTimeKeyIndex
   private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, DateTimeFormat.forPattern(pattern).print(key.time).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z

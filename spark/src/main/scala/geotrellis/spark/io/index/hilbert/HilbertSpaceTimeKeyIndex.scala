@@ -37,7 +37,6 @@ class HilbertSpaceTimeKeyIndex(
   val yResolution: Int,
   val temporalResolution: Int
 ) extends KeyIndex[SpaceTimeKey] {
-  val id = KeyIndexIds.hilbertSpaceTimeKeyIndex
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)

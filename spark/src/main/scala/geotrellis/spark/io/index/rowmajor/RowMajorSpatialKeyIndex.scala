@@ -7,7 +7,6 @@ import spire.syntax.cfor._
 
 /** Represents a row major ordering for SpatialKey */
 class RowMajorSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
-  val id = KeyIndexIds.rowMajorSpatialKeyIndex
   val minCol = keyBounds.minKey.col
   val minRow = keyBounds.minKey.row
   val layoutCols = keyBounds.maxKey.col - keyBounds.minKey.col + 1

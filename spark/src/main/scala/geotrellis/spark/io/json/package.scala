@@ -192,19 +192,17 @@ package object json {
     }
   }
 
-  implicit def keyIndexFormat[K: ClassTag] = new RootJsonFormat[index.KeyIndex[K]] {
-    def write(obj: KeyIndex[K]): JsValue =
-      KeyIndexIds.list.find(_ == obj.id) match {
-        case Some(string) => string match {
-          case KeyIndexIds.hilbertSpaceTimeKeyIndex => obj.asInstanceOf[HilbertSpaceTimeKeyIndex].toJson
-          case KeyIndexIds.hilbertSpatialKeyIndex => obj.asInstanceOf[HilbertSpatialKeyIndex].toJson
-          case KeyIndexIds.rowMajorSpatialKeyIndex => obj.asInstanceOf[RowMajorSpatialKeyIndex].toJson
-          case KeyIndexIds.zSpaceTimeKeyIndex => obj.asInstanceOf[ZSpaceTimeKeyIndex].toJson
-          case KeyIndexIds.zSpatialKeyIndex => obj.asInstanceOf[ZSpatialKeyIndex].toJson
-          case _ => throw new SerializationException("Not a built-in KeyIndex type, provide your own Reader and Writer.")
-        }
+  implicit def keyIndexFormat[K] = new RootJsonFormat[index.KeyIndex[K]] {
+    def write(obj: KeyIndex[K]): JsValue = {
+      obj match {
+        case index: HilbertSpaceTimeKeyIndex => index.toJson
+        case index: HilbertSpatialKeyIndex   => index.toJson
+        case index: RowMajorSpatialKeyIndex  => index.toJson
+        case index: ZSpatialKeyIndex         => index.toJson
+        case index: ZSpaceTimeKeyIndex       => index.toJson
         case _ => throw new SerializationException("Not a built-in KeyIndex type, provide your own Reader and Writer.")
       }
+    }
 
     def read(value: JsValue): KeyIndex[K] = {
       val obj = value.asJsObject
