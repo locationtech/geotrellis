@@ -10,7 +10,6 @@ import geotrellis.spark.io.avro.codecs._
 
 abstract class FileSpatialSpec
     extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-    with TestSparkContext
     with TestEnvironment with TestFiles
     with AllOnesTestTileTests {
   val catalogPath = outputLocalPath

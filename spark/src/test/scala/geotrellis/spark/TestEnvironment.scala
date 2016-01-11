@@ -17,6 +17,7 @@
 package geotrellis.spark
 import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
+import org.apache.spark.{SparkConf, SparkContext}
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
@@ -42,6 +43,20 @@ object TestEnvironment {
  * It uses commons-io in at least one case (recursive directory deletion)
  */
 trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
+  var _sc: SparkContext = {
+    System.setProperty("spark.driver.port", "0")
+    System.setProperty("spark.hostPort", "0")
+
+    val sparkContext = SparkUtils.createLocalSparkContext("local", s"Test Context for $name", new SparkConf())
+
+    System.clearProperty("spark.driver.port")
+    System.clearProperty("spark.hostPort")
+
+    sparkContext
+  }
+
+  implicit def sc: SparkContext = _sc
+
   // get the name of the class which mixes in this trait
   val name = this.getClass.getName
 
@@ -93,7 +108,10 @@ trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
 
   // clean up the test directory after the test
   // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are
-  override def afterAll() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
+  override def afterAll() = {
+    FileUtil.fullyDelete(new File(outputLocal.toUri()))
+    sc.stop()
+  }
  
   // root directory name on both local file system and hdfs for all tests
   private final val outputHome = "testFiles"

@@ -11,7 +11,6 @@ import com.github.nscala_time.time.Imports._
 
 abstract class FileSpaceTimeSpec
     extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with TestSparkContext
     with TestEnvironment with TestFiles
     with CoordinateSpaceTimeTests {
   val catalogPath = outputLocalPath

@@ -27,8 +27,7 @@ import org.scalatest.FunSpec
 class MaxSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Max Operation") {
     val inc = IncreasingTestFile
     val dec = DecreasingTestFile

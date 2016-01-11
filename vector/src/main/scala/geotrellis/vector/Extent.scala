@@ -138,7 +138,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) extend
     x > xmin && x < xmax && y > ymin && y < ymax
 
   def covers(other: Extent): Boolean =
-    intersects(other)
+    contains(other)
 
   def covers(p: Point): Boolean =
     covers(p.x, p.y)

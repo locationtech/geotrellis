@@ -10,9 +10,8 @@ import geotrellis.spark.io.avro.codecs._
 
 abstract class HadoopSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with AllOnesTestTileTests {
+    with TestEnvironment with TestFiles
+    with AllOnesTestTileTests {
 
   lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterMetaData](outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)

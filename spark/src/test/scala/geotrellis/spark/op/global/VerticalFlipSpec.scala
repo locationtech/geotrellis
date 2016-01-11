@@ -9,7 +9,6 @@ import org.scalatest.FunSpec
 
 class VerticalFlipSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders
     with OpAsserter {
 

@@ -26,8 +26,7 @@ import org.scalatest.FunSpec
 class XorSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Xor Operation") {
     val ones = AllOnesTestFile
     val twos = AllTwosTestFile

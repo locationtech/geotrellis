@@ -9,7 +9,6 @@ import org.scalatest.FunSpec
 
 class ModeSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Mode Focal Spec") {

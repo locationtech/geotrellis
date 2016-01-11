@@ -10,9 +10,9 @@ import geotrellis.spark._
 
 abstract class AccumuloSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with AllOnesTestTileTests {
+    with TestEnvironment
+    with TestFiles
+    with AllOnesTestTileTests {
 
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()

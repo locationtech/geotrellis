@@ -21,13 +21,13 @@ object IndexRanges {
     var sum = 0l
     var i = 0
     while (stack.nonEmpty) {
-      if (len(stack.head) + sum <= binWidth){
-        val take = stack.head
-        arr(i) = take :: arr(i)
-        sum += len(take)
+      val head = stack.head
+      if (len(stack.head) + sum <= binWidth) {
+        arr(i) = head :: arr(i)
+        sum += len(head)
         stack = stack.tail
       } else {
-        val (take, left) = splitRange(stack.head, binWidth - sum)
+        val (take, left) = splitRange(head, binWidth - sum)
         stack = left :: stack.tail
         arr(i) = take :: arr(i)
         sum += len(take)

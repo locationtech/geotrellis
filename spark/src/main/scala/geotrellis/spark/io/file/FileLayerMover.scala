@@ -31,20 +31,22 @@ object FileLayerMover {
           case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
         }
 
-        // Delete the metadata file in the source
-        sourceMetadataFile.delete()
-
         // Move over any other attributes
         for((attributeName, file) <- sourceAttributeStore.attributeFiles(to)) {
-          val source = file.getAbsolutePath
-          val target = targetAttributeStore.attributeFile(to, attributeName).getAbsolutePath
-          Filesystem.move(source, target)
+          if(file.getAbsolutePath != sourceMetadataFile.getAbsolutePath) {
+            val source = file.getAbsolutePath
+            val target = targetAttributeStore.attributeFile(to, attributeName).getAbsolutePath
+            Filesystem.move(source, target)
+          }
         }
 
         val sourceLayerPath = new File(sourceAttributeStore.catalogPath, header.path)
         val targetHeader = header.copy(path = LayerPath(to))
 
         targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyBounds, keyIndex, writerSchema)
+
+        // Delete the metadata file in the source
+        sourceMetadataFile.delete()
 
         // Move all the elements
         val targetLayerPath = Filesystem.ensureDirectory(LayerPath(targetAttributeStore.catalogPath, to))

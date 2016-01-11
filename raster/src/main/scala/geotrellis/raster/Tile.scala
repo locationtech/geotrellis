@@ -126,18 +126,6 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     normalize(min, max, newMin, newMax)
   }
 
-  def crop(cols: Int, rows: Int): Tile =
-    CroppedTile(this, GridBounds(0, 0, cols - 1, rows - 1))
-
-  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): Tile =
-    CroppedTile(this, GridBounds(colMin, rowMin, colMax, rowMax))
-
-  def crop(gb: GridBounds): Tile =
-    CroppedTile(this, gb)
-
-  def crop(srcExtent: Extent, extent: Extent): Tile =
-    CroppedTile(this, RasterExtent(srcExtent, cols, rows).gridBoundsFor(extent))
-
   def downsample(newCols: Int, newRows: Int)(f: CellSet => Int): Tile = {
     val colsPerBlock = math.ceil(cols / newCols.toDouble).toInt
     val rowsPerBlock = math.ceil(rows / newRows.toDouble).toInt

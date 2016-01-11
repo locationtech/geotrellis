@@ -11,8 +11,7 @@ import geotrellis.spark.io.avro.codecs._
 import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
-    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with TestSparkContext
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
     with TestEnvironment with TestFiles
     with CoordinateSpaceTimeTests {
   lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocal)

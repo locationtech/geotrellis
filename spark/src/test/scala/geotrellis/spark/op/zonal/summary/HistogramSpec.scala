@@ -15,8 +15,7 @@ import collection.immutable.HashMap
 class HistogramSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
 
   describe("Histogram Zonal Summary Operation") {
     val modHundred = Mod10000TestFile
