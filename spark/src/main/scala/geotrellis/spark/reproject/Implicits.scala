@@ -16,10 +16,10 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withIngestKeyReprojectMethods[K: IngestKey, V <: CellGrid: (? => TileReprojectMethods[V])](self: RDD[(K, V)])
-      extends IngestKeyReprojectMethods(self)
+      extends IngestKeyReprojectMethods[K, V](self) { }
 
   implicit class withTileRDDReprojectMethods[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
-  ](self: RDD[(K, V)] with Metadata[RasterMetaData]) extends TileRDDReprojectMethods(self)
+  ](self: RDD[(K, V)] with Metadata[RasterMetaData]) extends TileRDDReprojectMethods[K, V](self)
 }

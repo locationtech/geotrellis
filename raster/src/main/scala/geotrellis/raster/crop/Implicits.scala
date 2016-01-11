@@ -7,5 +7,5 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](self: Raster[T])
-      extends RasterCropMethods(self)
+      extends RasterCropMethods[T](self)
 }
