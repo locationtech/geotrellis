@@ -40,28 +40,28 @@ class HilbertSpaceTimeKeyIndex(
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
- 
+
   @transient lazy val chc = {
     val dimensionSpec =
-      new MultiDimensionalSpec( 
+      new MultiDimensionalSpec(
         List(
           math.pow(2, xResolution).toInt,
           math.pow(2, yResolution).toInt,
           math.pow(2, temporalResolution).toInt
-        ).map(new java.lang.Integer(_)) 
+        ).map(new java.lang.Integer(_))
       )
 
     new CompactHilbertCurve(dimensionSpec)
   }
 
   def binTime(key: SpaceTimeKey): Long = {
-    // index requires right bound to be exclusive but KeyBounds do not, fake that.      
-    val bin = ((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth
+    // index requires right bound to be exclusive but KeyBounds do not, fake that.
+    val bin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
     (if (bin == temporalBinCount) bin - 1  else bin).toLong
   }
 
   def toIndex(key: SpaceTimeKey): Long = {
-    val bitVectors = 
+    val bitVectors =
       Array(
         BitVectorFactories.OPTIMAL.apply(xResolution),
         BitVectorFactories.OPTIMAL.apply(yResolution),
@@ -88,7 +88,7 @@ class HilbertSpaceTimeKeyIndex(
         LongRange.of(binTime(keyRange._1), binTime(keyRange._2) + 1)
       )
 
-    val  regionInspector: RegionInspector[LongRange, LongContent] = 
+    val  regionInspector: RegionInspector[LongRange, LongContent] =
       SimpleRegionInspector.create(
         List(ranges),
         new LongContent(1),
@@ -97,10 +97,10 @@ class HilbertSpaceTimeKeyIndex(
         new LongContent(0L)
       )
 
-    val combiner = 
+    val combiner =
       new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1))
 
-    val queryBuilder = 
+    val queryBuilder =
       BacktrackingQueryBuilder.create(
         regionInspector,
         combiner,
