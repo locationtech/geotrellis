@@ -52,13 +52,13 @@ object PolygonFeature {
     Some(feature.geom -> feature.data)
 }
 
-object ExtentFeature {
-  def apply[D](geom: Extent, data: D): Feature[Extent, D] =
-    Feature(geom, data)
-
-  def unapply[D](feature: Feature[Extent, D]) =
-    Some(feature.geom -> feature.data)
-}
+// object ExtentFeature {
+//   def apply[D](geom: Extent, data: D): Feature[Extent, D] =
+//     Feature(geom, data)
+// 
+//   def unapply[D](feature: Feature[Extent, D]) =
+//     Some(feature.geom -> feature.data)
+// }
 
 object MultiPointFeature {
   def apply[D](geom: MultiPoint, data: D): Feature[MultiPoint, D] =
