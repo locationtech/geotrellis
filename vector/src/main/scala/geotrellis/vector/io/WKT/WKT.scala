@@ -28,9 +28,9 @@ object WKT {
   private val readerBox = new ThreadLocal[WKTReader]
   private val writerBox = new ThreadLocal[WKTWriter]
 
-  def read[G <: Geometry : ClassTag](value: String): G = {
+  def read[G <: Geometry](value: String): G = {
     if (readerBox.get == null) readerBox.set(new WKTReader(GeomFactory.factory))
-    Geometry[G](readerBox.get.read(value))
+    Geometry(readerBox.get.read(value)).asInstanceOf[G]
   }
 
   def write(geom: Geometry): String = {
