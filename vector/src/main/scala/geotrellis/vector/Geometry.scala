@@ -20,6 +20,7 @@ import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.TopologyException
 import GeomFactory._
 import geotrellis.proj4.CRS
+import scala.reflect.{ ClassTag, classTag }
 
 trait Geometry {
 
@@ -61,6 +62,13 @@ trait Geometry {
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
+
+  def as[G <: Geometry : ClassTag]: Option[G] = {
+    if (classTag[G].runtimeClass.isInstance(this)) 
+      Some(this.asInstanceOf[G])
+    else
+      None
+  }
 
   override
   def equals(other: Any): Boolean =
