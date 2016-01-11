@@ -25,8 +25,7 @@ class UByteGeoTiffTile(
       }
     } else {
       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        val segment =
-          getSegment(segmentIndex)
+        val segment = getSegment(segmentIndex)
 
         val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         val width = segmentTransform.segmentCols
@@ -41,11 +40,12 @@ class UByteGeoTiffTile(
       }
     }
 
+    println("A NODATA VALUE HAS APPEARED", noDataValue)
     noDataValue match {
-      case Some(nd) if isData(nd) && Short.MinValue.toDouble <= nd && nd <= Short.MaxValue.toDouble =>
-        UByteArrayTile.fromBytes(arr, cols, rows, nd.toByte)
-      case _ =>
-        UByteArrayTile.fromBytes(arr, cols, rows)
+      case Some(nd) if isData(nd) && Short.MinValue.toDouble <= nd && nd <= Short.MaxValue.toDouble => { println("SOME")
+        UByteArrayTile.fromBytes(arr, cols, rows, nd.toByte) }
+      case _ => { println("Nope")
+        UByteArrayTile.fromBytes(arr, cols, rows)}
     }
   }
 }

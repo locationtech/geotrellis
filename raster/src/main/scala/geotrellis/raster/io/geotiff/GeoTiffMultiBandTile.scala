@@ -179,7 +179,7 @@ abstract class GeoTiffMultiBandTile(
             compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)
           }
 
-          GeoTiffTile(bandType, compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression)
+          GeoTiffTile(bandType, compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression, noDataValue)
         case _ =>
           val compressedBandBytes = Array.ofDim[Array[Byte]](segmentCount)
           val compressor = compression.createCompressor(segmentCount)
@@ -202,7 +202,7 @@ abstract class GeoTiffMultiBandTile(
             compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)
           }
 
-          GeoTiffTile(bandType, compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression)
+          GeoTiffTile(bandType, compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression, noDataValue)
       }
     } else {
       val bandSegmentCount = segmentCount / bandCount
@@ -213,7 +213,7 @@ abstract class GeoTiffMultiBandTile(
         compressedBandBytes(i) = compressedBytes(i + start).clone
       }
 
-      GeoTiffTile(bandType, compressedBandBytes, decompressor, segmentLayout, compression)
+      GeoTiffTile(bandType, compressedBandBytes, decompressor, segmentLayout, compression, noDataValue)
     }
   }
 
@@ -237,7 +237,7 @@ abstract class GeoTiffMultiBandTile(
       compression,
       bandCount,
       hasPixelInterleave,
-      None
+      noDataValue
     )
   }
 
@@ -257,7 +257,7 @@ abstract class GeoTiffMultiBandTile(
       compression,
       bandCount,
       hasPixelInterleave,
-      None
+      noDataValue
     )
   }
 
@@ -537,7 +537,7 @@ abstract class GeoTiffMultiBandTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      noDataValue
     )
   }
 
@@ -610,7 +610,7 @@ abstract class GeoTiffMultiBandTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      noDataValue
     )
   }
 
@@ -690,7 +690,7 @@ abstract class GeoTiffMultiBandTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      noDataValue
     )
   }
 
@@ -772,7 +772,7 @@ abstract class GeoTiffMultiBandTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      noDataValue
     )
   }
 

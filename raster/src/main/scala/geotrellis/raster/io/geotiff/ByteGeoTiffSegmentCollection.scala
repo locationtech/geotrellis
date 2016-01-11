@@ -6,7 +6,7 @@ import geotrellis.raster.io.geotiff.compression._
 trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = ByteGeoTiffSegment
 
-  val cellType = TypeByte
+  val cellType = TypeDynamicByte
   val bandType = ByteBandType
 
   val noDataValue: Option[Double]

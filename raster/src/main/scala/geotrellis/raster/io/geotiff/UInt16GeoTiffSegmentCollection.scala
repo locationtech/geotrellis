@@ -15,8 +15,7 @@ trait UInt16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
       { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i), nd.toShort) }
     case None =>
       { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i), shortNODATA) }
-    }
-
+  }
 }
 
 trait RawUInt16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {

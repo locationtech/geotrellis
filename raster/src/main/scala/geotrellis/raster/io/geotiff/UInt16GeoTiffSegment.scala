@@ -9,13 +9,21 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 
+class UInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends RawUInt16GeoTiffSegment(bytes) {
+  override
+  def get(i: Int): Int = {
+    val v = super.get(i)
+    if(v == noDataValue.toInt) 0 else v
+  }
+}
+
 class RawUInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asShortBuffer
 
   val size: Int = bytes.size / 2
 
-  def getRaw(i: Int): Short = buffer.get(i) // Gets the signed short
   def get(i: Int): Int = buffer.get(i) & 0xFFFF
+  def getRaw(i: Int): Short = buffer.get(i) // Gets the signed short
 
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = i2d(get(i))
@@ -52,7 +60,7 @@ class RawUInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   def map(f: Int => Int): Array[Byte] = {
     val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = (f(getInt(i)) & 0xFFFF).toShort
+      arr(i) = i2s(f(get(i)))
     }
     val result = new Array[Byte](size * TypeShort.bytes)
     val bytebuff = ByteBuffer.wrap(result)
@@ -60,14 +68,17 @@ class RawUInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     result
   }
 
-  def mapDouble(f: Double => Double): Array[Byte] = {
-    val arr = Array.ofDim[Short](size)
+  def mapDouble(f: Double => Double): Array[Byte] =
+    map(z => d2i(f(i2d(z))))
+
+  def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
+    val arr = Array.ofDim[Int](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = (d2i(f(getDouble(i))) & 0xFFFF).toShort
+      arr(i) = d2i(f(i, getDouble(i)))
     }
-    val result = new Array[Byte](size * TypeShort.bytes)
+    val result = new Array[Byte](size * TypeInt.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asShortBuffer.put(arr)
+    bytebuff.asIntBuffer.put(arr)
     result
   }
 
@@ -80,25 +91,5 @@ class RawUInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     val bytebuff = ByteBuffer.wrap(result)
     bytebuff.asIntBuffer.put(arr)
     result
-  }
-
-  def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2i(f(i, getDouble(i)))
-    }
-    val result = new Array[Byte](size * TypeInt.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
-    result
-  }
-}
-
-class UInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends RawUInt16GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Int = {
-    val v = super.get(i)
-    if(v == noDataValue) { shortNODATA }
-    else { v }
   }
 }

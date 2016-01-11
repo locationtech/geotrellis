@@ -47,7 +47,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
   val storage = List("striped", "tiled")
   val cellTypes = List("bit", "byte", "uint16", "int16", "uint32", "int32", "float32", "float64")
 
-  describe("Reading a single band geotiff") {
+  /*describe("Reading a single band geotiff") {
     it("must read Striped Bit aspect and match tiled byte converted to bitfile") {
       val actual = SingleBandGeoTiff.compressed(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile
       val expected =
@@ -305,9 +305,9 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
         }
       }
     }
-  }
+  }*/
 
-  describe("Uncompressed SingleBandGeoTiffs over all storage and cell types") {
+  describe("Uncompressed SingleBandGeoTiffs over all storage and cell types") {/*
     it("should match the ArrayTile it builds from itself") {
       println(s"Testing toArrayTile:")
       for(
@@ -336,7 +336,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
           assertEqual(m1, m2)
         }
       }
-    }
+    }*/
 
     it("should mapDouble") {
       println(s"Testing mapDouble:")
@@ -349,6 +349,11 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
           val tile = geoTiff(s, t).tile
           val m1 = tile.mapDouble { z => z + 1.0 }
           val m2 = tile.toArrayTile.mapDouble { z => z + 1.0 }
+          println(m1.get(0,  0), m2.get(0, 0))
+          println(m1.get(0,  1), m2.get(0, 1))
+          println(m1.get(0,  2), m2.get(0, 2))
+          println(m1.get(0,  3), m2.get(0, 3))
+          println("MAKE SENSE PLZ", m1.get(0, 1), tile.toArrayTile.get(0, 1))
           println(geoTiff(s,t), tile, m1, m2)
           println(geoTiff(s,t).cellType, tile.cellType, m1.cellType, m2.cellType)
           assertEqual(m1, m2)
