@@ -19,6 +19,16 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byYear()
     }
 
+  def byMonth =
+    new KeyIndexMethod[SpaceTimeKey, ZSpaceTimeKeyIndex] {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMonth()
+    }
+
+  def byDay =
+    new KeyIndexMethod[SpaceTimeKey, ZSpaceTimeKeyIndex] {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byDay()
+    }
+
   def byPattern(pattern: String) =
     new KeyIndexMethod[SpaceTimeKey, ZSpaceTimeKeyIndex] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)

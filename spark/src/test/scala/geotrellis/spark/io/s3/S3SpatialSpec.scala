@@ -25,28 +25,19 @@ abstract class S3SpatialSpec
     override  val getS3Client = () => new MockS3Client()
   }
   lazy val rddWriter = new S3RDDWriter[SpatialKey, Tile](){
-    override val getS3Client = () => {
-      val client = new MockS3Client()
-
-      client
-    }
+    override val getS3Client = () => new MockS3Client()
   }
 
   lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData, KeyIndex[SpatialKey]](attributeStore, rddReader, None)
   lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData, KeyIndex[SpatialKey]](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
   lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData, KeyIndex[SpatialKey]](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer =
-    S3LayerReindexer[SpatialKey, Tile, RasterMetaData](
-      attributeStore,
-      ZCurveKeyIndexMethod,
-      S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client)
-    )
-  lazy val tiles = new S3TileReader[SpatialKey, Tile, KeyIndex[SpatialKey]](attributeStore) {
+  lazy val reindexer = S3LayerReindexer[SpatialKey, Tile, RasterMetaData](attributeStore, ZCurveKeyIndexMethod, S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
+  lazy val tiles     = new S3TileReader[SpatialKey, Tile, KeyIndex[SpatialKey]](attributeStore) {
     override val s3Client = new MockS3Client()
   }
-  lazy val mover   = GenericLayerMover(copier, deleter)
-  lazy val sample   = AllOnesTestFile
+  lazy val mover  = GenericLayerMover(copier, deleter)
+  lazy val sample = AllOnesTestFile
 }
 
 class S3SpatialRowMajorSpec extends S3SpatialSpec {

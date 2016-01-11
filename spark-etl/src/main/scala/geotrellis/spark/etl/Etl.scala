@@ -3,7 +3,7 @@ package geotrellis.spark.etl
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.RasterExtent
 import geotrellis.spark.ingest._
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.spark._
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.spark.op.stats._
@@ -62,7 +62,7 @@ class Etl[K: TypeTag: SpatialComponent](args: Seq[String], modules: Seq[TypedMod
     LayerId(conf.layerName(), zoom) -> rdd
   }
 
-  def save(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K]): Unit = {
+  def save(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K, KeyIndex[K]]): Unit = {
     val attributes = outputPlugin.attributes(conf.outputProps)
     def savePyramid(zoom: Int, rdd: RasterRDD[K]): Unit = {
       val currentId = id.copy( zoom = zoom)

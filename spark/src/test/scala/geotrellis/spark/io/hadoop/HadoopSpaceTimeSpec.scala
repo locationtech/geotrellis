@@ -30,9 +30,9 @@ class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.byYear)
 }
 
-class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
+/*class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.by { x =>  if (x < DateTime.now) 1 else 0 })
-}
+}*/
 
 class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))

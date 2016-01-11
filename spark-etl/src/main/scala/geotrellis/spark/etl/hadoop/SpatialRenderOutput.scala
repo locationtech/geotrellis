@@ -4,7 +4,7 @@ import java.math.BigInteger
 
 import geotrellis.raster.render.ColorBreaks
 import geotrellis.spark.etl.OutputPlugin
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.spark.{SpatialKey, RasterRDD, LayerId}
 import geotrellis.spark.render._
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
@@ -37,7 +37,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
     }
   }
   
-  override def apply(id: LayerId, rdd: RasterRDD[SpatialKey], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
+  override def apply(id: LayerId, rdd: RasterRDD[SpatialKey], method: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]], props: Map[String, String]) =
     props("format").toLowerCase match {
       case "png" =>
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderPng(id, props("path"), parseBreaks(props.get("breaks")))
@@ -45,6 +45,6 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderGeoTiff(id, props("path"))
     }
 
-  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) = ???
+  def writer(method: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]], props: Parameters) = ???
 }
 

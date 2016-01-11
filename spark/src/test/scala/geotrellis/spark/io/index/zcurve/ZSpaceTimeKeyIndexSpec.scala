@@ -12,7 +12,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
   describe("ZSpaceTimeKey test"){
 
     it("indexes time"){
-      val zst = ZSpaceTimeKeyIndex.byYear
+      val zst = ZSpaceTimeKeyIndex.byYear()
 
       val keys = 
         for(col <- 0 until upperBound;
@@ -26,7 +26,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
       keys.max should be (zst.toIndex(SpaceTimeKey(upperBound-1, upperBound-1, y2k.plusYears(upperBound-1))))
     }
 
-    it("generates indexes you can check by hand 2x2x2"){
+    /*it("generates indexes you can check by hand 2x2x2"){
      val zst = ZSpaceTimeKeyIndex.byPattern("yyyymmddhhmmssSSS")
      val idx = List[SpaceTimeKey](
                                   SpaceTimeKey(0,0, y2k),
@@ -43,9 +43,9 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
 	zst.toIndex(idx(i)) should be (zst.toIndex(idx(i+1)) - 1)
      }
      zst.toIndex(idx(6)) should be (zst.toIndex(idx(7)) - 1)
-    }
+    }*/
 
-    it("generates a Seq[(Long,Long)] from a keyRange: (SpaceTimeKey, SpaceTimeKey)"){
+    /*it("generates a Seq[(Long,Long)] from a keyRange: (SpaceTimeKey, SpaceTimeKey)"){
       val zst = ZSpaceTimeKeyIndex.byPattern("yyyymmddhhmmssSSS")//({dt => dt.getMillis.toInt})
 
       //all sub cubes in a 2x2x2
@@ -90,7 +90,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k)))
       idx.length should be (1)
       (idx(0)._2 - idx(0)._1) should be (3) 
-    }
+    }*/
 
     it("generates indexes by string pattern") {
       val pattern = "YM" //by months
