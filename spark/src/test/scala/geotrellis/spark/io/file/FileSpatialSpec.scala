@@ -9,10 +9,10 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 
 abstract class FileSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with AllOnesTestTileTests {
+    extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+    with TestSparkContext
+    with TestEnvironment with TestFiles
+    with AllOnesTestTileTests {
   val catalogPath = outputLocalPath
 
   lazy val reader = FileLayerReader[SpatialKey, Tile, RasterMetaData](catalogPath)
@@ -28,10 +28,10 @@ class FileSpatialRowMajorSpec extends FileSpatialSpec {
   lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, RowMajorKeyIndexMethod)
 }
 
-// class FileSpatialZCurveSpec extends FileSpatialSpec {
-//   lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod)
-// }
+class FileSpatialZCurveSpec extends FileSpatialSpec {
+  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod)
+}
 
-// class FileSpatialHilbertSpec extends FileSpatialSpec {
-//   lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, HilbertKeyIndexMethod)
-// }
+class FileSpatialHilbertSpec extends FileSpatialSpec {
+  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, HilbertKeyIndexMethod)
+}

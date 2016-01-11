@@ -16,6 +16,7 @@ import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
 import scala.collection.mutable
 import scala.reflect.ClassTag
+import java.io.File
 
 class FileRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](implicit sc: SparkContext) {
 
@@ -43,23 +44,51 @@ class FileRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec:
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val resultPartition = mutable.ListBuffer[(K, V)]()
 
-        for(
-          rangeList <- partition;
-          range <- rangeList
-        ) {
-          val (start, end) = range
-          cfor(start)(_ <= end, _ + 1) { index =>
-            val path = keyPath(index)
-            val bytes: Array[Byte] =
-              cache match {
-                case Some(cache) =>
-                  cache.getOrInsert(index, Filesystem.slurp(path))
-                case None =>
-                  Filesystem.slurp(path)
+        cache match {
+          case Some(cache) =>
+              for(
+                rangeList <- partition;
+                range <- rangeList
+              ) {
+                val (start, end) = range
+                cfor(start)(_ <= end, _ + 1) { index =>
+                  val maybeBytes =
+                    cache.lookup(index) match {
+                      case s @ Some(_) => s
+                      case None =>
+                        val path = keyPath(index)
+                        if(new File(path).exists) {
+                          val bytes: Array[Byte] = Filesystem.slurp(path)
+                          cache.insert(index, bytes)
+                          Some(bytes)
+                        } else {
+                          None
+                        }
+                    }
+
+                  maybeBytes match {
+                    case Some(bytes) =>
+                      val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                      resultPartition ++= recs.filter { row => includeKey(row._1) }
+                    case None =>
+                  }
+                }
               }
-            val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-            resultPartition ++= recs.filter { row => includeKey(row._1) }
-          }
+          case None =>
+            for(
+              rangeList <- partition;
+              range <- rangeList
+            ) {
+              val (start, end) = range
+              cfor(start)(_ <= end, _ + 1) { index =>
+                val path = keyPath(index)
+                if(new File(path).exists) {
+                  val bytes: Array[Byte] = Filesystem.slurp(path)
+                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                  resultPartition ++= recs.filter { row => includeKey(row._1) }
+                }
+              }
+            }
         }
 
         resultPartition.iterator

@@ -24,16 +24,10 @@ class FileRDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]
         rdd.groupBy { case (key, _) => keyPath(key) }
       }
 
-    val f = new File(rootPath)
-    if(f.exists) {
-      require(f.isDirectory, s"$rootPath exists but is not a directory.")
-    } else {
-      f.mkdirs()
-    }
+    Filesystem.ensureDirectory(rootPath)
 
     pathsToTiles.foreach { case (path, rows) =>
       val bytes = AvroEncoder.toBinary(rows.toVector)(_codec)
-      if(!new File(path).getParentFile.exists) { sys.error("WAAAAA") }
       Filesystem.writeBytes(path, bytes)
     }
   }
