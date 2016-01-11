@@ -20,8 +20,7 @@ import org.apache.accumulo.core.client.security.tokens.PasswordToken
 class AccumuloAttributeStoreSpec extends FunSpec
   with Matchers
   with TestFiles
-  with TestEnvironment
-  with TestSparkContext {
+  with TestEnvironment {
 
   describe("Accumulo Attribute Store") {
     val accumulo = AccumuloInstance(

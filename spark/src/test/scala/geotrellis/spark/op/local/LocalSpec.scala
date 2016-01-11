@@ -24,8 +24,7 @@ import org.scalatest.FunSpec
 class LocalSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Local Operations") {
     val ones = AllOnesTestFile
     val inc = IncreasingTestFile

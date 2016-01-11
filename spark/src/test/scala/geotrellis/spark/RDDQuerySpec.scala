@@ -10,7 +10,7 @@ import geotrellis.spark.testfiles._
 import org.scalatest._
 
 class RDDQuerySpec extends FunSpec
-  with TestEnvironment with TestFiles  with Matchers with TestSparkContext {
+  with TestEnvironment with TestFiles with Matchers {
 
   def spatialKeyBoundsKeys(kb: KeyBounds[SpatialKey]) = {
     for {

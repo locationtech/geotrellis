@@ -25,8 +25,7 @@ import org.scalatest.FunSpec
 class GreaterSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Greater Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

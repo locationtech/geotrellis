@@ -89,7 +89,7 @@ abstract class RasterLayer(val info: RasterLayerInfo) {
   def getRaster(targetExtent: Option[RasterExtent]): Tile
 
   def getRaster(extent: Extent): Tile = 
-    getRaster(Some(info.rasterExtent.createAligned(extent)))
+    getRaster(Some(info.rasterExtent.createAlignedRasterExtent(extent)))
 
   def getTile(tileCol: Int, tileRow: Int): Tile = getTile(tileCol, tileRow,None)
   def getTile(tileCol: Int, tileRow: Int, targetExtent: Option[RasterExtent]): Tile

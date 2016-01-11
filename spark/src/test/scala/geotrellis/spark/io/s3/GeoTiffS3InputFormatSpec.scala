@@ -9,7 +9,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import org.scalatest._
 
-class GeoTiffS3InputFormatSpec extends FunSpec with TestSparkContext with Matchers {
+class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
   
   describe("GeoTiff S3 InputFormat") {      
     val url = "s3n://geotrellis-test/nlcd-geotiff"      

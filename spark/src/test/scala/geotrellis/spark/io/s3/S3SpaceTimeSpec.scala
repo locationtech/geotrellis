@@ -12,10 +12,10 @@ import org.joda.time.DateTime
 
 abstract class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+    with TestEnvironment
+    with TestFiles
+    with CoordinateSpaceTimeTests
+    with LayerUpdateSpaceTimeTileTests {
 
   val bucket = "mock-bucket"
   val prefix = "catalog"

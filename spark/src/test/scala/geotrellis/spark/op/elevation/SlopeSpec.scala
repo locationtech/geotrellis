@@ -9,7 +9,6 @@ import org.scalatest.FunSpec
 
 class SlopeSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders
     with OpAsserter {
 
