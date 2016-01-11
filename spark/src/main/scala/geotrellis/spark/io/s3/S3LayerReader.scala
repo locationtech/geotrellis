@@ -62,7 +62,7 @@ class S3LayerReader[
 }
 
 object S3LayerReader {
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat
   ](
@@ -75,33 +75,51 @@ object S3LayerReader {
       getCache
     )
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat
   ](attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): S3LayerReader[K, V, M, I] =
-    apply[K, V, M, I](attributeStore, None)
+    custom[K, V, M, I](attributeStore, None)
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat
   ](bucket: String, prefix: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): S3LayerReader[K, V, M, I] =
-    apply[K, V, M, I](new S3AttributeStore(bucket, prefix), getCache)
+    custom[K, V, M, I](new S3AttributeStore(bucket, prefix), getCache)
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat
   ](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[K, V, M, I] =
-    apply[K, V, M, I](bucket, prefix, None)
+    custom[K, V, M, I](bucket, prefix, None)
 
-  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, Tile, RasterMetaData, I] =
-    apply[SpatialKey, Tile, RasterMetaData, I](bucket, prefix)
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+     attributeStore: AttributeStore[JsonFormat],
+     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
+   )(implicit sc: SparkContext): S3LayerReader[K, V, M, KeyIndex[K]] =
+    custom[K, V, M, KeyIndex[K]](attributeStore, getCache)
 
-  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData, I] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData, I](bucket, prefix)
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): S3LayerReader[K, V, M, KeyIndex[K]] =
+    apply[K, V, M](attributeStore, None)
 
-  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, I] =
-    apply[SpaceTimeKey, Tile, RasterMetaData, I](bucket, prefix)
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    bucket: String, prefix: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): S3LayerReader[K, V, M, KeyIndex[K]] =
+    apply[K, V, M](new S3AttributeStore(bucket, prefix), getCache)
 
-  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, I] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](bucket, prefix)
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[K, V, M, KeyIndex[K]] =
+    apply[K, V, M](bucket, prefix, None)
+
+  def spatial(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, Tile, RasterMetaData, KeyIndex[SpatialKey]] =
+    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix)
+
+  def spatialMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData, KeyIndex[SpatialKey]] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix)
+
+  def spaceTime(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]] =
+    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix)
+
+  def spaceTimeMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, KeyIndex[SpaceTimeKey]] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix)
 }

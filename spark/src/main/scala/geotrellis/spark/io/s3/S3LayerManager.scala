@@ -18,29 +18,20 @@ class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext
     deleter.delete(id)
   }
 
-  def copy[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
-    (from: LayerId, to: LayerId): Unit = {
+  def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
-    val copier = S3LayerCopier[K, V, M, I](attributeStore, header.bucket, header.key)
+    val copier = S3LayerCopier[K, V, M](attributeStore, header.bucket, header.key)
     copier.copy(from, to)
   }
 
-  def move[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
-    (from: LayerId, to: LayerId): Unit = {
+  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
-    val mover = S3LayerMover[K, V, M, I](attributeStore, header.bucket, header.key)
+    val mover = S3LayerMover[K, V, M](attributeStore, header.bucket, header.key)
     mover.move(from, to)
   }
 
-  def reindex[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat]
-    (id: LayerId, keyIndexMethod: KeyIndexMethod[K, TI]): Unit = {
-    val reindexer = S3LayerReindexer[K, V, M, FI, TI](attributeStore, keyIndexMethod)
+  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](id: LayerId, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]]): Unit = {
+    val reindexer = S3LayerReindexer[K, V, M](attributeStore, keyIndexMethod)
     reindexer.reindex(id) // keyIndexMethod should be part of the LayerReindexer trait
   }
 }

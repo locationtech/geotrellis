@@ -1,8 +1,7 @@
 package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexIds, KeyIndex}
-import geotrellis.spark.io.index.zcurve._
+import geotrellis.spark.io.index.KeyIndex
 
 class ZSpatialKeyIndex() extends KeyIndex[SpatialKey] {
   private def toZ(key: SpatialKey): Z2 = Z2(key.col, key.row)

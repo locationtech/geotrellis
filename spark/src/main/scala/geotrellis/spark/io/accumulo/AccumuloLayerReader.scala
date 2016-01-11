@@ -48,7 +48,7 @@ class AccumuloLayerReader[
 }
 
 object AccumuloLayerReader {
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
     V: AvroRecordCodec: ClassTag, 
     M: JsonFormat,
@@ -59,13 +59,11 @@ object AccumuloLayerReader {
       new AccumuloRDDReader[K, V](instance))
 
   def apply[
-  K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag,
-  M: JsonFormat
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
   ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M, KeyIndex[K]] =
-    new AccumuloLayerReader[K, V, M, KeyIndex[K]] (
-      AccumuloAttributeStore(instance.connector),
-      new AccumuloRDDReader[K, V](instance))
+    custom[K, V, M, KeyIndex[K]](instance)
 
   def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
     apply[SpatialKey, Tile, RasterMetaData](instance)

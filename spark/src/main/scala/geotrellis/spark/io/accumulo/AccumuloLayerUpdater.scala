@@ -48,13 +48,12 @@ class AccumuloLayerUpdater[
 }
 
 object AccumuloLayerUpdater {
-  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
-
-  def apply[
+  def custom[
     K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     instance: AccumuloInstance,
-     strategy: AccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M, I] =
+    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy
+  ): AccumuloLayerUpdater[K, V, M, I] =
     new AccumuloLayerUpdater[K, V, M, I](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
@@ -62,9 +61,6 @@ object AccumuloLayerUpdater {
 
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
-    strategy: AccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M, KeyIndex[K]] =
-    new AccumuloLayerUpdater[K, V, M, KeyIndex[K]](
-      attributeStore = AccumuloAttributeStore(instance.connector),
-      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
-    )
+    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy
+  ): AccumuloLayerUpdater[K, V, M, KeyIndex[K]] = custom[K, V, M, KeyIndex[K]](instance, strategy)
 }

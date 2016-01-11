@@ -54,21 +54,32 @@ class S3LayerCopier[
 }
 
 object S3LayerCopier {
-  def apply[
+  def custom[
     K: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
   (attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M, I] =
     new S3LayerCopier[K, V, M, I](attributeStore, destBucket, destKeyPrefix)
 
-  def apply[
+  def custom[
     K: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
    (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M, I] =
-    apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
+    custom(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
 
-  def apply[
+  def custom[
     K: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
    (bucket: String, keyPrefix: String): S3LayerCopier[K, V, M, I] =
+    custom(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
+
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M, KeyIndex[K]] =
+    custom(attributeStore, destBucket, destKeyPrefix)
+
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M, KeyIndex[K]] =
+    apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
+
+  def custom[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](bucket: String, keyPrefix: String): S3LayerCopier[K, V, M, KeyIndex[K]] =
     apply(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
 }

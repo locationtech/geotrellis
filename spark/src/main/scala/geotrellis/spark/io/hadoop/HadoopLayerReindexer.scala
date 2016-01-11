@@ -1,6 +1,5 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.s3.S3RDDWriter
 import geotrellis.spark.{KeyBounds, LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
@@ -17,16 +16,16 @@ import scala.reflect.ClassTag
 import org.apache.hadoop.fs.Path
 
 object HadoopLayerReindexer {
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](
     rootPath: Path, keyIndexMethod: KeyIndexMethod[K, TI])
    (implicit sc: SparkContext, format: HadoopFormat[K, V]): LayerReindexer[LayerId] = {
     val attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"))
-    val layerReader    = HadoopLayerReader[K, V, M, FI](rootPath)
+    val layerReader    = HadoopLayerReader.custom[K, V, M, FI](rootPath)
     val layerDeleter   = HadoopLayerDeleter(rootPath)
-    val layerMover     = HadoopLayerMover[K, V, M, TI](rootPath)
-    val layerWriter    = HadoopLayerWriter[K, V, M, TI](rootPath, keyIndexMethod)
+    val layerMover     = HadoopLayerMover.custom[K, V, M, TI](rootPath)
+    val layerWriter    = HadoopLayerWriter.custom[K, V, M, TI](rootPath, keyIndexMethod)
 
     val layerCopier = new SparkLayerCopier[HadoopLayerHeader, K, V, M, FI](
       attributeStore = attributeStore,
@@ -65,10 +64,8 @@ object HadoopLayerReindexer {
     GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }
 
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    rootPath: Path, keyIndexMethod: KeyIndexMethod[K, I])
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    rootPath: Path, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]])
     (implicit sc: SparkContext, format: HadoopFormat[K, V]): LayerReindexer[LayerId] =
-    apply[K, V, M, I, I](rootPath, keyIndexMethod)
+    custom[K, V, M, KeyIndex[K], KeyIndex[K]](rootPath, keyIndexMethod)
 }

@@ -54,26 +54,29 @@ class HadoopLayerReader[
 }
 
 object HadoopLayerReader {
-  def apply[
+  def custom[
     K: Boundable: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
     new HadoopLayerReader[K, V, M, I](attributeStore, rddReader)
 
-  def apply[
+  def custom[
     K: Boundable: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M, I] =
-    apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
+    custom(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
-  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData, I](rootPath)
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M, KeyIndex[K]] =
+    custom(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
-  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData, I](rootPath)
+  def spatial(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData](rootPath)
 
-  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData, I](rootPath)
+  def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
 
-  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](rootPath)
+  def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
+
+  def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
 }

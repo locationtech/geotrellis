@@ -50,7 +50,7 @@ class HadoopLayerWriter[
 }
 
 object HadoopLayerWriter {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+  def custom[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     rootPath: Path, attributeStore: HadoopAttributeStore,
     rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K, I]): HadoopLayerWriter[K, V, M, I] =
     new HadoopLayerWriter[K, V, M, I](
@@ -60,8 +60,36 @@ object HadoopLayerWriter {
       keyIndexMethod = indexMethod
     )
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
-    (rootPath: Path, rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K, I]): HadoopLayerWriter[K, V, M, I] =
+  def custom[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+    rootPath: Path, rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K, I]): HadoopLayerWriter[K, V, M, I] =
+    custom(
+      rootPath = rootPath,
+      attributeStore = HadoopAttributeStore.default(rootPath),
+      rddWriter = rddWriter,
+      indexMethod = indexMethod
+    )
+
+  def custom[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+    rootPath: Path, indexMethod: KeyIndexMethod[K, I])(implicit format: HadoopFormat[K, V]): HadoopLayerWriter[K, V, M, I] =
+    custom(
+      rootPath = rootPath,
+      rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),
+      indexMethod = indexMethod
+    )
+
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    rootPath: Path, attributeStore: HadoopAttributeStore,
+    rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K, KeyIndex[K]]): HadoopLayerWriter[K, V, M, KeyIndex[K]] =
+    new HadoopLayerWriter[K, V, M, KeyIndex[K]](
+      rootPath = rootPath,
+      attributeStore = attributeStore,
+      rddWriter = rddWriter,
+      keyIndexMethod = indexMethod
+    )
+
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    rootPath: Path, rddWriter: HadoopRDDWriter[K, V],
+    indexMethod: KeyIndexMethod[K, KeyIndex[K]]): HadoopLayerWriter[K, V, M, KeyIndex[K]] =
     apply(
       rootPath = rootPath,
       attributeStore = HadoopAttributeStore.default(rootPath),
@@ -69,24 +97,25 @@ object HadoopLayerWriter {
       indexMethod = indexMethod
     )
 
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
-    (rootPath: Path, indexMethod: KeyIndexMethod[K, I])(implicit format: HadoopFormat[K, V]): HadoopLayerWriter[K, V, M, I] =
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    rootPath: Path, indexMethod: KeyIndexMethod[K, KeyIndex[K]])
+   (implicit format: HadoopFormat[K, V]): HadoopLayerWriter[K, V, M, KeyIndex[K]] =
     apply(
       rootPath = rootPath,
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),
       indexMethod = indexMethod
     )
 
-  def spatial[I <: KeyIndex[SpatialKey]: JsonFormat](rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey, I])(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData, I](rootPath, keyIndexMethod)
+  def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]])(implicit sc: SparkContext) =
+    apply[SpatialKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
 
-  def spatialMultiBand[I <: KeyIndex[SpatialKey]: JsonFormat](rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey, I])(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData, I](rootPath, keyIndexMethod)
+  def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]])(implicit sc: SparkContext) =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
 
-  def spaceTime[I <: KeyIndex[SpaceTimeKey]: JsonFormat](rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey, I])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData, I](rootPath, keyIndexMethod)
+  def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]])(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
 
-  def spaceTimeMultiBand[I <: KeyIndex[SpaceTimeKey]: JsonFormat](rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey, I])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData, I](rootPath, keyIndexMethod)
+  def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]])(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
 
 }

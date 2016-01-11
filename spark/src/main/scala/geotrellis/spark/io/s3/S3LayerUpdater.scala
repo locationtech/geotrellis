@@ -54,15 +54,21 @@ class S3LayerUpdater[
 }
 
 object S3LayerUpdater {
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-      bucket: String,
-      prefix: String,
-      clobber: Boolean = true): S3LayerUpdater[K, V, M, I] =
+  def custom[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat,
+    I <: KeyIndex[K]: JsonFormat](
+    bucket: String,
+    prefix: String,
+    clobber: Boolean = true): S3LayerUpdater[K, V, M, I] =
     new S3LayerUpdater[K, V, M, I](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       clobber
     )
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    bucket: String, prefix: String, clobber: Boolean = true): S3LayerUpdater[K, V, M, KeyIndex[K]] =
+    custom[K, V, M, KeyIndex[K]](bucket, prefix, clobber)
 }

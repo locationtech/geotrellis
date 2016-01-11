@@ -1,8 +1,7 @@
 package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexIds, KeyIndex}
-import geotrellis.spark.io.index.zcurve._
+import geotrellis.spark.io.index.KeyIndex
 
 import com.github.nscala_time.time.Imports._
 

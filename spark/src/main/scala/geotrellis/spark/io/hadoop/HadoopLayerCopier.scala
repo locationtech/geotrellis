@@ -39,16 +39,23 @@ class HadoopLayerCopier[
 }
 
 object HadoopLayerCopier {
-  def apply[
+  def custom[
     K: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     rootPath: Path, attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext): HadoopLayerCopier[K, V, M, I] =
     new HadoopLayerCopier[K, V, M, I](rootPath, attributeStore)
 
-  def apply[
+  def custom[
     K: JsonFormat: ClassTag, V: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat](rootPath: Path)
     (implicit sc: SparkContext): HadoopLayerCopier[K, V, M, I] =
-    apply[K, V, M, I](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
+    custom[K, V, M, I](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
+
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    rootPath: Path, attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): HadoopLayerCopier[K, V, M, KeyIndex[K]] =
+    custom[K, V, M, KeyIndex[K]](rootPath, attributeStore)
+
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)(implicit sc: SparkContext): HadoopLayerCopier[K, V, M, KeyIndex[K]] =
+    apply[K, V, M](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }

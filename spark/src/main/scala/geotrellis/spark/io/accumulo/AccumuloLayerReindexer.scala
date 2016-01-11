@@ -4,13 +4,14 @@ import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
+
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerReindexer {
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](
     instance: AccumuloInstance,
@@ -52,11 +53,11 @@ object AccumuloLayerReindexer {
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+    M: JsonFormat](
     instance: AccumuloInstance,
     table: String,
-    keyIndexMethod: KeyIndexMethod[K, I],
-    strategy: AccumuloWriteStrategy)
-    (implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply[K, V, M, I, I](instance, table, keyIndexMethod, strategy)
+    keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]],
+    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
+   (implicit sc: SparkContext): LayerReindexer[LayerId] =
+    custom[K, V, M, KeyIndex[K], KeyIndex[K]](instance, table, keyIndexMethod, strategy)
 }

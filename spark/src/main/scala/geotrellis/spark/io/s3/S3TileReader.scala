@@ -49,9 +49,15 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec,
 }
 
 object S3TileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](bucket: String, root: String): S3TileReader[K, V, I] =
+  def custom[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](bucket: String, root: String): S3TileReader[K, V, I] =
     new S3TileReader[K, V, I](new S3AttributeStore(bucket, root))
   
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](bucket: String): S3TileReader[K, V, I] =
+  def custom[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](bucket: String): S3TileReader[K, V, I] =
+    custom(bucket, "")
+
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String, root: String): S3TileReader[K, V, KeyIndex[K]] =
+    custom[K, V, KeyIndex[K]](bucket, root)
+
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String): S3TileReader[K, V, KeyIndex[K]] =
     apply(bucket, "")
 }

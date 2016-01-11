@@ -22,29 +22,32 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
   }
 
   def copy[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
   ](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](from, Fields.header)
-    val copier = HadoopLayerCopier[K, V, M, I](header.path)
+    val copier = HadoopLayerCopier[K, V, M](header.path)
     copier.copy(from, to)
   }
 
   def move[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
   ](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](from, Fields.header)
-    val mover = HadoopLayerMover[K, V, M, I](header.path)
+    val mover = HadoopLayerMover[K, V, M](header.path)
     mover.move(from, to)
   }
 
   def reindex[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat
-  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K, TI])(implicit hadoopFormat: HadoopFormat[K,V]): Unit = {
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]])(implicit hadoopFormat: HadoopFormat[K,V]): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](id, Fields.header)
-    val reindexer = HadoopLayerReindexer[K, V, M, FI, TI](header.path, keyIndexMethod)
+    val reindexer = HadoopLayerReindexer[K, V, M](header.path, keyIndexMethod)
     reindexer.reindex(id)
   }
 }

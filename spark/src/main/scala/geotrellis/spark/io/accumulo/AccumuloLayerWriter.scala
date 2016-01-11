@@ -45,13 +45,13 @@ class AccumuloLayerWriter[
 object AccumuloLayerWriter {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
     instance: AccumuloInstance,
     table: String,
     indexMethod: KeyIndexMethod[K, I],
-    strategy: AccumuloWriteStrategy
+    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   ): AccumuloLayerWriter[K, V, M, I] =
     new AccumuloLayerWriter[K, V, M, I](
       attributeStore = AccumuloAttributeStore(instance.connector),
@@ -64,7 +64,7 @@ object AccumuloLayerWriter {
     instance: AccumuloInstance,
     table: String,
     indexMethod: KeyIndexMethod[K, KeyIndex[K]],
-    strategy: AccumuloWriteStrategy
+    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   ): AccumuloLayerWriter[K, V, M, KeyIndex[K]] =
     new AccumuloLayerWriter[K, V, M, KeyIndex[K]](
       attributeStore = AccumuloAttributeStore(instance.connector),

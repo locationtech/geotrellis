@@ -2,9 +2,10 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark.utils.cache.Cache
 import geotrellis.spark.{LayerId, Boundable}
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.spark.io._
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.json._
 
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
@@ -22,7 +23,7 @@ object S3LayerReindexer {
       S3LayerWriter.Options(opts.clobber, opts.oneToOne)
   }
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat
   ](attributeStore: S3AttributeStore,
@@ -69,13 +70,13 @@ object S3LayerReindexer {
     GenericLayerReindexer(layerDeleter, layerCopierFrom, layerMover)
   }
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat
   ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K, TI])(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply[K, V, M, FI, TI](attributeStore, keyIndexMethod, Options.DEFAULT)
+    custom[K, V, M, FI, TI](attributeStore, keyIndexMethod, Options.DEFAULT)
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat
   ](
@@ -84,11 +85,31 @@ object S3LayerReindexer {
     keyIndexMethod: KeyIndexMethod[K, TI],
     options: Options
   )(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply[K, V, M, FI, TI](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
+    custom[K, V, M, FI, TI](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
 
-  def apply[
+  def custom[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
     M: JsonFormat, FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat
   ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K, TI])(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply[K, V, M, FI, TI](S3AttributeStore(bucket, prefix), keyIndexMethod, Options.DEFAULT)
+    custom[K, V, M, FI, TI](S3AttributeStore(bucket, prefix), keyIndexMethod, Options.DEFAULT)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]], options: Options)(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    custom[K, V, M, KeyIndex[K], KeyIndex[K]](attributeStore, keyIndexMethod, options)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]])(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    bucket: String,
+    prefix: String,
+    keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]],
+    options: Options
+  )(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
+
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+    bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]])(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, Options.DEFAULT)
 }

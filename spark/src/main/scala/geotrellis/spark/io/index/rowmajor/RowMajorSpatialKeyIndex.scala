@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.rowmajor
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexIds, KeyIndex}
+import geotrellis.spark.io.index.KeyIndex
 
 import spire.syntax.cfor._
 

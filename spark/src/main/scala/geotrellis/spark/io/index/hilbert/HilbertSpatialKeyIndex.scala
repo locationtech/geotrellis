@@ -1,11 +1,10 @@
 package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexIds, KeyIndex}
+import geotrellis.spark.io.index.KeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
-import com.google.uzaygezen.core.BitVector
 import com.google.uzaygezen.core.BitVectorFactories
 import com.google.uzaygezen.core.BacktrackingQueryBuilder
 import com.google.uzaygezen.core.RegionInspector
@@ -15,9 +14,7 @@ import com.google.uzaygezen.core.PlainFilterCombiner
 import com.google.uzaygezen.core.ZoomingSpaceVisitorAdapter
 import com.google.uzaygezen.core.ranges.LongRange
 import com.google.uzaygezen.core.ranges.LongRangeHome
-
 import com.google.common.base.Functions
-import com.google.common.collect.ImmutableList
 
 import scala.collection.JavaConversions._
 import spire.syntax.cfor._
@@ -81,7 +78,7 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
       )
 
     val combiner = 
-      new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1));
+      new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1))
 
     val queryBuilder = 
       BacktrackingQueryBuilder.create(

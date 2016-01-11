@@ -2,7 +2,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.Tile
 import geotrellis.spark.io.accumulo.spacetime.{SpaceTimeAccumuloRDDReader, SpaceTimeAccumuloRDDWriter}
-import geotrellis.spark.io.index.{KeyIndexMethod, ZCurveKeyIndexMethod}
+import geotrellis.spark.io.index.{KeyIndex, ZCurveKeyIndexMethod}
 import geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
@@ -20,12 +20,12 @@ class AccumuloSpaceTimeAlternativeSpec
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 
-  lazy val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex] (
+  lazy val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]] (
     AccumuloAttributeStore(instance.connector),
     new SpaceTimeAccumuloRDDReader[Tile](instance))
 
   lazy val writer =
-    new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](
+    new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()),
       keyIndexMethod = ZCurveKeyIndexMethod.byYear,
@@ -36,10 +36,10 @@ class AccumuloSpaceTimeAlternativeSpec
     new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
 
   lazy val deleter   = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
-  lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](instance, reader, writer)
+  lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetaData](instance, reader, writer)
   lazy val mover     = GenericLayerMover(copier, deleter)
-  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex](instance, "tiles", ZCurveKeyIndexMethod.byPattern("YMM"), SocketWriteStrategy())
+  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", ZCurveKeyIndexMethod.byPattern("YMM"), SocketWriteStrategy())
 
-  lazy val tiles  = AccumuloTileReader[SpaceTimeKey, Tile, ZSpaceTimeKeyIndex](instance)
+  lazy val tiles  = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample = CoordinateSpaceTime
 }

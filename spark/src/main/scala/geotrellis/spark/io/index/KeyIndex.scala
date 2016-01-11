@@ -1,17 +1,11 @@
 package geotrellis.spark.io.index
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.hilbert.{HilbertSpatialKeyIndex, HilbertSpaceTimeKeyIndex}
+import geotrellis.spark.io.index.zcurve.{ZSpatialKeyIndex, ZSpaceTimeKeyIndex}
+import geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex
 
-object KeyIndexIds {
-  val hilbertSpaceTimeKeyIndex = "geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex"
-  val hilbertSpatialKeyIndex   = "geotrellis.spark.io.index.hilbert.HilbertSpatialKeyIndex"
-  val rowMajorSpatialKeyIndex  = "geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex"
-  val zSpaceTimeKeyIndex       = "geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex"
-  val zSpatialKeyIndex         = "geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex"
-
-  val list = hilbertSpaceTimeKeyIndex :: hilbertSpatialKeyIndex ::
-    rowMajorSpatialKeyIndex :: zSpaceTimeKeyIndex :: zSpatialKeyIndex :: Nil
-}
+import scala.reflect.{ClassTag, classTag}
 
 trait KeyIndex[K] extends Serializable {
   val id: String = this.getClass.getName
@@ -19,7 +13,20 @@ trait KeyIndex[K] extends Serializable {
   def indexRanges(keyRange: (K, K)): Seq[(Long, Long)]
 }
 
-trait KeyIndexMethod[K, I <: KeyIndex[K]] extends Serializable {
+object KeyIndex {
+  private def getName[T: ClassTag] = classTag[T].toString
+
+  val hilbertSpaceTimeKeyIndex = getName[HilbertSpaceTimeKeyIndex]
+  val hilbertSpatialKeyIndex   = getName[HilbertSpatialKeyIndex]
+  val rowMajorSpatialKeyIndex  = getName[RowMajorSpatialKeyIndex]
+  val zSpaceTimeKeyIndex       = getName[ZSpaceTimeKeyIndex]
+  val zSpatialKeyIndex         = getName[ZSpatialKeyIndex]
+
+  val list = hilbertSpaceTimeKeyIndex :: hilbertSpatialKeyIndex ::
+    rowMajorSpatialKeyIndex :: zSpaceTimeKeyIndex :: zSpatialKeyIndex :: Nil
+}
+
+trait KeyIndexMethod[K, +I <: KeyIndex[K]] extends Serializable {
   /** Helper method to get the resolution of a dimension. Takes the ceiling. */
   def resolution(length: Double): Int = math.ceil(scala.math.log(length) / scala.math.log(2)).toInt
 
