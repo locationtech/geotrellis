@@ -68,23 +68,21 @@ object GeoTiffReader {
     val geoTiffTile =
       if(info.bandCount == 1) {
         GeoTiffTile(
-          info.bandType,
           info.compressedBytes,
           info.decompressor,
           info.segmentLayout,
           info.compression,
-          info.noDataValue
+          info.cellType
         )
       } else {
         GeoTiffMultiBandTile(
-          info.bandType,
           info.compressedBytes,
           info.decompressor,
           info.segmentLayout,
           info.compression,
           info.bandCount,
           info.hasPixelInterleave,
-          info.noDataValue
+          info.cellType
         ).band(0)
       }
       println("gttile", geoTiffTile)
@@ -111,14 +109,13 @@ object GeoTiffReader {
     val info = readGeoTiffInfo(bytes, decompress)
     val geoTiffTile =
       GeoTiffMultiBandTile(
-        info.bandType,
         info.compressedBytes,
         info.decompressor,
         info.segmentLayout,
         info.compression,
         info.bandCount,
         info.hasPixelInterleave,
-        info.noDataValue
+        info.cellType
       )
 
     new MultiBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
@@ -137,7 +134,24 @@ object GeoTiffReader {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
-  )
+  ) {
+    def cellType: CellType = (bandType, noDataValue) match {
+      case (BitBandType, Some(nd)) => TypeBit
+      case (ByteBandType, Some(nd)) if (nd >= Byte.MinValue.toDouble && nd <= Byte.MaxValue.toDouble) => TypeDynamicByte(nd)
+      case (ByteBandType, _) => TypeRawByte
+      case (UByteBandType, Some(nd)) if (nd >= 0.0 && nd <= 255.0) => TypeDynamicUByte(nd)
+      case (UByteBandType, _) => TypeRawByte
+      case (Int16BandType, Some(nd)) if (nd >= Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) => TypeDynamicShort(nd)
+      case (Int16BandType, _) => TypeRawShort
+      case (UInt16BandType, Some(nd)) if (nd >= 0.0 && nd <= 65535.0) => TypeDynamicUShort(nd)
+      case (UInt16BandType, _) => TypeRawUShort
+      case (Int32BandType, _) => TypeInt
+      case (UInt32BandType, _) => TypeUInt
+      case (Float32BandType, _) => TypeFloat
+      case (Float64BandType, _) => TypeDouble
+    }
+  }
+
 
   private def readGeoTiffInfo(bytes: Array[Byte], decompress: Boolean): GeoTiffInfo = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)

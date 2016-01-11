@@ -9,11 +9,14 @@ class UInt16GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  noDataValue: Option[Double]
-) extends GeoTiffTile(segmentLayout, compression, noDataValue) with UInt16GeoTiffSegmentCollection {
+  cellType: DynamicCellType
+) extends GeoTiffTile(segmentLayout, compression, cellType) with UInt16GeoTiffSegmentCollection {
+
+  val noDataValue = cellType.noDataValue
+
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Short](cols * rows)
-    val ndShort = noDataValue.getOrElse(0.0).toShort
+    val ndShort = cellType.noDataValue
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = 
         getSegment(segmentIndex)
@@ -38,9 +41,8 @@ class RawUInt16GeoTiffTile(
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression,
-  noDataValue: Option[Double]
-) extends GeoTiffTile(segmentLayout, compression, noDataValue) with RawUInt16GeoTiffSegmentCollection {
+  compression: Compression
+) extends GeoTiffTile(segmentLayout, compression, TypeRawUShort) with RawUInt16GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Short](cols * rows)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>

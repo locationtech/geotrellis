@@ -8,9 +8,8 @@ class Int32GeoTiffTile(
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression,
-  noDataValue: Option[Double]
-) extends GeoTiffTile(segmentLayout, compression, noDataValue) with Int32GeoTiffSegmentCollection {
+  compression: Compression
+) extends GeoTiffTile(segmentLayout, compression, TypeInt) with Int32GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * TypeInt.bytes)
     if(segmentLayout.isStriped) {
@@ -40,11 +39,6 @@ class Int32GeoTiffTile(
       }
     }
 
-    noDataValue match {
-      case Some(nd) if isData(nd) && Int.MinValue.toDouble <= nd && nd <= Int.MaxValue.toDouble =>
-        IntArrayTile.fromBytes(arr, cols, rows, nd.toInt)
-      case _ =>
-        IntArrayTile.fromBytes(arr, cols, rows)
-    }
+    IntArrayTile.fromBytes(arr, cols, rows)
   }
 }

@@ -9,11 +9,11 @@ import spire.syntax.cfor._
 
 import java.util.BitSet
 
-class NoDataInt32GeoTiffSegment(bytes: Array[Byte], noDataValue: Int) extends Int32GeoTiffSegment(bytes) {
+class NoDataInt32GeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends Int32GeoTiffSegment(bytes) {
   override
   def get(i: Int): Int = {
     val v = super.get(i)
-    if(v == noDataValue) { NODATA }
+    if(v == noDataValue.toInt) { NODATA }
     else { v }
   }
 }

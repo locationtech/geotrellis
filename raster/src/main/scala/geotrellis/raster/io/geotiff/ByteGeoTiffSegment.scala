@@ -9,10 +9,10 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 
-class ByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Byte) extends RawByteGeoTiffSegment(bytes) {
+class ByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends RawByteGeoTiffSegment(bytes) {
   override
   def get(i: Int): Byte =
-    if (bytes(i) == noDataValue)
+    if (bytes(i) == noDataValue.toByte)
       byteNODATA
     else
       bytes(i)

@@ -9,7 +9,7 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 
-class UInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends RawUInt16GeoTiffSegment(bytes) {
+class UInt16GeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends RawUInt16GeoTiffSegment(bytes) {
   override
   def get(i: Int): Int = {
     val v = super.get(i)

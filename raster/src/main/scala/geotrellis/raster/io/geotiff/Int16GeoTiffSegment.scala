@@ -89,11 +89,11 @@ class RawInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   }
 }
 
-class Int16GeoTiffSegment(bytes: Array[Byte], noDataValue: Short) extends RawInt16GeoTiffSegment(bytes) {
+class Int16GeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends RawInt16GeoTiffSegment(bytes) {
   override
   def get(i: Int): Short = {
     val v = super.get(i)
-    if(v == noDataValue) { shortNODATA }
+    if(v == noDataValue.toInt) { shortNODATA }
     else { v }
   }
 }

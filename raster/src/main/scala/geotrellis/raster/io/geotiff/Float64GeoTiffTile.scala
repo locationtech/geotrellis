@@ -8,9 +8,8 @@ class Float64GeoTiffTile(
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression,
-  noDataValue: Option[Double]
-) extends GeoTiffTile(segmentLayout, compression, noDataValue) with Float64GeoTiffSegmentCollection {
+  compression: Compression
+) extends GeoTiffTile(segmentLayout, compression, TypeDouble) with Float64GeoTiffSegmentCollection {
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * TypeDouble.bytes)
 
@@ -40,11 +39,6 @@ class Float64GeoTiffTile(
         }
       }
     }
-    noDataValue match {
-      case Some(nd) if isData(nd) =>
-        DoubleArrayTile.fromBytes(arr, cols, rows, nd)
-      case _ =>
-        DoubleArrayTile.fromBytes(arr, cols, rows)
-    }
+    DoubleArrayTile.fromBytes(arr, cols, rows)
   }
 }
