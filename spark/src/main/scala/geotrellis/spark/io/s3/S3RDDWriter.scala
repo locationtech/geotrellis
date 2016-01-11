@@ -22,7 +22,7 @@ import com.typesafe.scalalogging.slf4j._
 
 class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]() {
 
-  def getS3Client: ()=>S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.default
   val codec  = KeyValueRecordCodec[K, V]
   val schema = codec.schema
 
@@ -79,4 +79,3 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
     }
   }
 }
-
