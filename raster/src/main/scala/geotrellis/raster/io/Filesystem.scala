@@ -16,10 +16,11 @@
 
 package geotrellis.raster.io
 
-import java.io.{File, FileInputStream}
+import java.nio.file._
+import java.nio.charset.StandardCharsets
+import java.io._
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
-import scala.math.min
 
 object Filesystem {
   def slurp(path: String, bs: Int = 262144): Array[Byte] = {
@@ -35,7 +36,7 @@ object Filesystem {
     var i = 0
     val data = Array.ofDim[Byte](size)
     while(buffer.hasRemaining()) {
-      val n = min(buffer.remaining(), bs)
+      val n = math.min(buffer.remaining(), bs)
       buffer.get(data, i, n)
       i += n
     }
@@ -72,11 +73,48 @@ object Filesystem {
   def join(parts: String*) = parts.mkString(File.separator)
 
   def readText(path: String): String = {
-    val src = scala.io.Source.fromFile(path)
+    val src = scala.io.Source.fromFile(path, "UTF-8")
     try {
       src.mkString
     } finally {
       src.close()
     }
+  }
+
+  def readText(file: File): String =
+    readText(file.getAbsolutePath)
+
+  def writeBytes(path: String, bytes: Array[Byte]): Unit = {
+    val bos = new BufferedOutputStream(new FileOutputStream(path))
+    bos.write(bytes)
+    bos.close
+  }
+
+  def writeText(path: String, text: String): Unit =
+    Files.write(Paths.get(path), text.getBytes(StandardCharsets.UTF_8))
+
+  def writeText(file: File, text: String): Unit =
+    writeText(file.getAbsolutePath, text)
+
+  def move(source: String, target: String): Unit =
+    Files.move(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING)
+
+  def move(source: File, target: File): Unit =
+    move(source.getAbsolutePath, target.getAbsolutePath)
+
+  def copy(source: String, target: String): Unit =
+    Files.copy(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING)
+
+  def copy(source: File, target: File): Unit =
+    copy(source.getAbsolutePath, target.getAbsolutePath)
+
+  def ensureDirectory(path: String): String = {
+    val f = new File(path)
+    if(f.exists) {
+      require(f.isDirectory, s"$f exists and is not a directory")
+    } else {
+      f.mkdirs()
+    }
+    path
   }
 }

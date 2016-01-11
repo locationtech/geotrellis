@@ -1,10 +1,8 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{MergeQueue, KeyIndex}
+import geotrellis.spark.io.index.{MergeQueue, KeyIndex, IndexRanges}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import geotrellis.spark.utils.cache.Cache
@@ -12,11 +10,12 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
 
-class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
-(implicit sc: SparkContext) {
+class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](implicit sc: SparkContext) {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -34,7 +33,7 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = S3RDDReader.balancedBin(ranges, numPartitions)
+    val bins = IndexRanges.bin(ranges, numPartitions)
 
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
@@ -75,47 +74,5 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
         }
 
     rdd
-  }
-}
-
-object S3RDDReader extends LazyLogging {
-  /**
-   * Will attempt to bin ranges into buckets, each containing at least the average number of elements.
-   * Trailing bins may be empty if the count is too high for number of ranges.
-   */
-  def balancedBin(ranges: Seq[(Long, Long)], count: Int ): Seq[Seq[(Long, Long)]] = {
-    var stack = ranges.toList
-
-    def len(r: (Long, Long)) = r._2 - r._1 + 1l
-    val total = ranges.foldLeft(0l){ (s,r) => s + len(r) }
-    val binWidth = total / count + 1
-
-    def splitRange(range: (Long, Long), take: Long): ((Long, Long), (Long, Long)) = {
-      assert(len(range) > take)
-      (range._1, range._1 + take - 1) -> (range._1 + take, range._2)
-    }
-
-    val arr = Array.fill(count)(Nil: List[(Long, Long)])
-    var sum = 0l
-    var i = 0
-    while (stack.nonEmpty) {
-      if (len(stack.head) + sum <= binWidth){
-        val take = stack.head
-        arr(i) = take :: arr(i)
-        sum += len(take)
-        stack = stack.tail
-      }else{
-        val (take, left) = splitRange(stack.head, binWidth - sum)
-        stack = left :: stack.tail
-        arr(i) = take :: arr(i)
-        sum += len(take)
-      }
-
-      if (sum >= binWidth) {
-        sum = 0l
-        i += 1
-      }
-    }
-    arr
   }
 }

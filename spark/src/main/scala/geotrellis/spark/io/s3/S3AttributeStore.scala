@@ -77,9 +77,9 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
   def layerExists(layerId: LayerId): Boolean =
     s3Client.listObjectsIterator(bucket, attributePath(layerId, AttributeStore.Fields.metaData), 1).nonEmpty
 
-  def delete(layerId: LayerId, path: String): Unit = {
+  def delete(layerId: LayerId, attributeName: String): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-    s3Client.deleteObject(bucket, path)
+    s3Client.deleteObject(bucket, attributePath(layerId, attributeName))
   }
 
   def delete(layerId: LayerId): Unit = {

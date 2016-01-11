@@ -74,7 +74,7 @@ trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
     val outputLocalHandle = new File(outputHomeLocalHandle.toString(), name)
     if (!outputLocalHandle.exists)
       outputLocalHandle.mkdirs()
-    (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()), outputLocalHandle)
+    (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()), outputLocalHandle.getAbsolutePath)
   }
 
 
