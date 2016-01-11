@@ -33,9 +33,8 @@ object S3LayerHeader {
             classOf[Tile].getCanonicalName,
             bucket, key)
 
-        case stuff =>
-          println(stuff)
-          throw new DeserializationException(s"S3LayerHeader expected, got: $value")
+        case other =>
+          throw new DeserializationException(s"S3LayerHeader expected, got: $other")
       }
   }
 }

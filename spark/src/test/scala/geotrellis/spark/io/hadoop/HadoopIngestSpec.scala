@@ -13,8 +13,7 @@ class HadoopIngestSpec
   extends FunSpec
     with Matchers
     with RasterRDDMatchers
-    with TestEnvironment with TestFiles
-    with TestSparkContext{
+    with TestEnvironment with TestFiles {
 
   val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 

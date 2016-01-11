@@ -8,7 +8,7 @@ import geotrellis.proj4.LatLng
 
 import org.apache.spark.rdd._
 
-trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestSparkContext =>
+trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
 
   def updater: TestUpdater
 

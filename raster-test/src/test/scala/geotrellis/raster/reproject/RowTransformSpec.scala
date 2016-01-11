@@ -29,6 +29,8 @@ class RowTransformSpec extends FunSpec
   def getDestX = Array.ofDim[Double](srcX.size)
   def getDestY = Array.ofDim[Double](srcX.size)
 
+  val defaultThreshold = 0.125
+
   describe("RowTransform.approximate") {
     it("should remain within 1.0 threshold for points in an WSG84 -> WebMercator") {
       val (destX, destY) = (getDestX, getDestY)
@@ -67,7 +69,7 @@ class RowTransformSpec extends FunSpec
 
       val re = RasterExtent(expected, expectedExtent)
 
-      val threshold = ReprojectOptions.DEFAULT.errorThreshold
+      val threshold = defaultThreshold
 
       val rowTransform = RowTransform.approximate(WMtoLL, threshold)
 
@@ -97,7 +99,7 @@ class RowTransformSpec extends FunSpec
 
       val re = RasterExtent(expected, expectedExtent)
 
-      val threshold = ReprojectOptions.DEFAULT.errorThreshold
+      val threshold = defaultThreshold
 
       val transform = Transform(CRS.fromName("EPSG:32618"), WebMercator)
       val rowTransform = RowTransform.approximate(transform, threshold)

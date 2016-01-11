@@ -27,8 +27,7 @@ import org.scalatest.FunSpec
 class AddSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Add Operation") {
     val ones = AllOnesTestFile
 

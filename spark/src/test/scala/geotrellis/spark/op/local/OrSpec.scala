@@ -26,8 +26,7 @@ import org.scalatest.FunSpec
 class OrSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Or Operation") {
     val ones = AllOnesTestFile
     val twos = AllTwosTestFile

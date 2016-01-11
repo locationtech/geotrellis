@@ -12,9 +12,8 @@ import geotrellis.spark._
 
 abstract class S3SpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with AllOnesTestTileTests {
+    with TestEnvironment with TestFiles
+    with AllOnesTestTileTests {
 
   val bucket = "mock-bucket"
   val prefix = "catalog"

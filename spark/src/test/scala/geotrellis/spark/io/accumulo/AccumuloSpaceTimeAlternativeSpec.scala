@@ -9,12 +9,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro.codecs._
 
-class AccumuloSpaceTimeAlternativeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-          with TestSparkContext
-          with TestEnvironment with TestFiles
-          with CoordinateSpaceTimeTests
-          with LayerUpdateSpaceTimeTileTests {
+class AccumuloSpaceTimeAlternativeSpec 
+    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+    with TestEnvironment with TestFiles
+    with CoordinateSpaceTimeTests
+    with LayerUpdateSpaceTimeTileTests {
 
   override val layerId = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()

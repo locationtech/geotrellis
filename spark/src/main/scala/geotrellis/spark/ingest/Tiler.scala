@@ -56,7 +56,7 @@ object Tiler {
         tile1.merge(tile2)
       }
 
-  def apply[T, K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag]
+  def apply[T, K: SpatialComponent: ClassTag, TileType: (? => MergeMethods[TileType]): (? => CellGridPrototype[TileType]): ClassTag]
     (getExtent: T=> Extent, createKey: (T, SpatialKey) => K)
     (rdd: RDD[(T, TileType)], metaData: RasterMetaData, resampleMethod: ResampleMethod): RDD[(K, TileType)] = {
     apply(getExtent, createKey, rdd, metaData.mapTransform, metaData.cellType, metaData.tileLayout, resampleMethod)

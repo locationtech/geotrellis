@@ -30,7 +30,7 @@ object MeanResult {
 }
 
 object Mean extends TileIntersectionHandler[MeanResult] {
-  def handlePartialTile(raster: Raster, polygon: Polygon): MeanResult = {
+  def handlePartialTile(raster: Raster[Tile], polygon: Polygon): MeanResult = {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var sum = 0.0

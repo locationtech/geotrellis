@@ -26,8 +26,7 @@ import org.scalatest.FunSpec
 class LocalSeqSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("Local Seq Operations") {
     val ones = AllOnesTestFile
     val twos = AllTwosTestFile

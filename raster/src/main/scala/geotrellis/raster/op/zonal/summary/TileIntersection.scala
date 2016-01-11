@@ -8,8 +8,8 @@ trait TileIntersectionHandler[T] extends ZonalSummaryHandler[Extent, Tile, T] {
   def handleContains(feature: Feature[Extent, Tile]): T = handleFullTile(feature.data)
   def handleIntersection(polygon: Polygon, feature: Feature[Extent, Tile]) = handlePartialTile(feature, polygon)
 
-  def handlePartialTile(raster: Raster, intersection: Polygon): T
-  def handleFullTile(raster: Tile): T
+  def handlePartialTile(raster: Raster[Tile], intersection: Polygon): T
+  def handleFullTile(tile: Tile): T
 
   def combineResults(values: Seq[T]): T
 

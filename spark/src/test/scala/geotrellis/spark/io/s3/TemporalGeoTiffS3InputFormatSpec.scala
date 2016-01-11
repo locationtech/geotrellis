@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
 import org.scalatest._
 
-class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment with TestSparkContext {
+class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
   describe("Temporal GeoTiff S3 InputFormat"){

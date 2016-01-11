@@ -4,6 +4,7 @@ import spray.json._
 
 import geotrellis.vector._
 import scala.util.{Try, Success, Failure}
+import scala.collection.mutable
 import FeatureFormats._
 import DefaultJsonProtocol._
 
@@ -23,15 +24,15 @@ import DefaultJsonProtocol._
  * It aggregates feature objects with data member still encoded in json
  */
 class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
-  private var buffer = features
+  private val buffer = mutable.ListBuffer(features:_*)
 
   //-- Used for Serialization
   def add[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) =
-    buffer = writeFeatureJsonWithID(featureMap) :: buffer
+    buffer += writeFeatureJsonWithID(featureMap)
   def +=[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) = add(featureMap)
 
   def addAll[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) =
-    featureMaps.foreach{ f => buffer = writeFeatureJsonWithID(f) :: buffer }
+    featureMaps.foreach{ f => buffer += writeFeatureJsonWithID(f) }
   def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
   def toJson: JsValue =

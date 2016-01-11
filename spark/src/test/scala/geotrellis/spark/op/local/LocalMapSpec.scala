@@ -13,8 +13,7 @@ class LocalMapSpec extends FunSpec
     with TestEnvironment
     with TestFiles
     with RasterRDDMatchers
-    with RasterRDDBuilders
-    with TestSparkContext {
+    with RasterRDDBuilders {
   describe("Local Map Operations") {
     it("should map an integer function over an integer raster rdd") {
       val arr: Array[Int] =

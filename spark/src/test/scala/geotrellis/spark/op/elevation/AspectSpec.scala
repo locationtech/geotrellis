@@ -9,7 +9,6 @@ import org.scalatest.FunSpec
 
 class AspectSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders
     with OpAsserter {
 
