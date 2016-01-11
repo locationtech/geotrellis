@@ -46,8 +46,9 @@ sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPo
 
   override def toString: String = name
 }
-sealed abstract class DynamicCellType(bits: Int, name: String, isFloatingPoint: Boolean, val noDataValue: Double) extends CellType(bits, name, isFloatingPoint)
-
+sealed abstract class DynamicCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends CellType(bits, name, isFloatingPoint) {
+  val noDataValue: Double
+}
 object DynamicCellType {
   def unapply(dct: DynamicCellType): Option[(Int, String, Boolean, Double)] = Option(dct) map { dct =>
     (dct.bits, dct.name, dct.isFloatingPoint, dct.noDataValue)
@@ -55,8 +56,23 @@ object DynamicCellType {
 }
 
 sealed abstract class OptimizedCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends CellType(bits, name, isFloatingPoint)
+object OptimizedCellType {
+  def unapply(oct: OptimizedCellType): Option[(Int, String, Boolean)] = Option(oct) map { oct =>
+    (oct.bits, oct.name, oct.isFloatingPoint)
+  }
+}
 sealed abstract class RawCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends OptimizedCellType(bits, name, isFloatingPoint)
+object RawCellType {
+  def unapply(rct: RawCellType): Option[(Int, String, Boolean)] = Option(rct) map { rct =>
+    (rct.bits, rct.name, rct.isFloatingPoint)
+  }
+}
 sealed abstract class NoDataCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends OptimizedCellType(bits, name, isFloatingPoint)
+object NoDataCellType {
+  def unapply(ndct: NoDataCellType): Option[(Int, String, Boolean)] = Option(ndct) map { ndct =>
+    (ndct.bits, ndct.name, ndct.isFloatingPoint)
+  }
+}
 
 case object TypeRawByte   extends RawCellType(8, "int8raw", false)
 case object TypeRawUByte  extends RawCellType(8, "uint8raw", false)
@@ -75,10 +91,10 @@ case object TypeUInt    extends NoDataCellType(32, "uint32", true) // We cast to
 case object TypeFloat  extends NoDataCellType(32, "float32", true)
 case object TypeDouble extends NoDataCellType(64, "float64", true)
 
-case class TypeDynamicByte(nd: Double)   extends DynamicCellType(8, "int8dynamic", false, nd)
-case class TypeDynamicUByte(nd: Double)  extends DynamicCellType(8, "uint8dynamic", false, nd)
-case class TypeDynamicShort(nd: Double)  extends DynamicCellType(16, "int16dynamic", false, nd)
-case class TypeDynamicUShort(nd: Double) extends DynamicCellType(16, "uint16dynamic", false, nd)
+case class TypeDynamicByte(noDataValue: Double)   extends DynamicCellType(8, "int8dynamic", false)
+case class TypeDynamicUByte(noDataValue: Double)  extends DynamicCellType(8, "uint8dynamic", false)
+case class TypeDynamicShort(noDataValue: Double)  extends DynamicCellType(16, "int16dynamic", false)
+case class TypeDynamicUShort(noDataValue: Double) extends DynamicCellType(16, "uint16dynamic", false)
 
 object CellType {
   def fromAwtType(awtType: Int): CellType = awtType match {

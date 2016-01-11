@@ -20,15 +20,25 @@ object GeoTiffMultiBandTile {
     cellType: CellType
   ): GeoTiffMultiBandTile =
     cellType match {
-      case TypeBit => new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeRawByte => new RawByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeRawUByte => new RawUByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeRawShort => new RawInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeRawUShort => new RawUInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeInt => new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeUInt => new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeFloat => new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-      case TypeDouble => new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+      case oct@OptimizedCellType(_, _, _) => oct match {
+        case ndct@NoDataCellType(_, _, _) => ndct match {
+          case TypeBit => new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeByte => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicByte(Byte.MinValue.toDouble))
+          case TypeUByte => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicByte(0.0))
+          case TypeShort => new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicShort(Short.MinValue.toDouble))
+          case TypeUShort => new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicUShort(0.0))
+          case TypeInt => new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeUInt => new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeFloat => new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeDouble => new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+        }
+        case rct@RawCellType(_, _, _) => rct match {
+          case TypeRawByte => new RawByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeRawUByte => new RawUByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeRawShort => new RawInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+          case TypeRawUShort => new RawUInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+        }
+      }
       case dct@DynamicCellType(_, _, _, _) => dct match {
         case TypeDynamicByte(_) => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dct)
         case TypeDynamicUByte(_) => new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dct)

@@ -18,15 +18,25 @@ object GeoTiffTile {
     cellType: CellType
   ): GeoTiffTile = {
     cellType match {
-      case TypeBit => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeRawByte => new RawByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeRawUByte => new RawUByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeRawShort => new RawInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeRawUShort => new RawUInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeInt =>  new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeUInt => new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeFloat => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case TypeDouble => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+      case oct@OptimizedCellType(_, _, _) => oct match {
+        case ndct@NoDataCellType(_, _, _) => ndct match {
+          case TypeBit => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeByte => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, TypeDynamicByte(Byte.MinValue.toDouble))
+          case TypeUByte => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, TypeDynamicByte(0.0))
+          case TypeShort => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, TypeDynamicShort(Short.MinValue.toDouble))
+          case TypeUShort => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, TypeDynamicUShort(0.0))
+          case TypeInt =>  new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeUInt => new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeFloat => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeDouble => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+        }
+        case rct@RawCellType(_, _, _) => rct match {
+          case TypeRawByte => new RawByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeRawUByte => new RawUByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeRawShort => new RawInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+          case TypeRawUShort => new RawUInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
+        }
+      }
       case dct@DynamicCellType(_, _, _, _) => dct match {
         case TypeDynamicByte(_) => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, dct)
         case TypeDynamicUByte(_) => new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, dct)
