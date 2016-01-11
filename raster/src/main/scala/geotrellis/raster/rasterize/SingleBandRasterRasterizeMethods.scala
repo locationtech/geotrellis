@@ -20,9 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.Geometry
 
-
-trait RasterRasterizeMethods[T <: Raster] extends MethodExtensions[T] {
-
+trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends MethodExtensions[Raster[T]] {
   def foreachCell(
     geom : Geometry,
     options: Options = Options.DEFAULT

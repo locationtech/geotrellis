@@ -35,8 +35,8 @@ package object raster
   implicit class withTileRasterizeMethods(val self: Tile) extends MethodExtensions[Tile]
       with TileRasterizeMethods[Tile]
 
-  implicit class withRasterRasterizeMethods(val self: Raster) extends MethodExtensions[Raster]
-      with RasterRasterizeMethods[Raster]
+  implicit class withSingleBandRasterRasterizeMethods(val self: SingleBandRaster) extends MethodExtensions[Raster[Tile]]
+      with SingleBandRasterRasterizeMethods[Tile, Raster[Tile]]
 
   implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
       with GeometryRasterizeMethods[Geometry]
