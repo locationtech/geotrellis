@@ -51,7 +51,7 @@ object Rasterizer {
    * @param rasterExtent  Definition of raster to create
    * @param f             Function that takes col, row, feature and returns value to burn
    */
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: Transformer[Int]) = {
+  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: (Int, Int) => Int) = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
     val f2 = (col: Int, row: Int) =>

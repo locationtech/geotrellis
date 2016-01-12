@@ -147,7 +147,7 @@ object VectorToRaster {
     }
   }
 
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: Transformer[Int]): Tile =
+  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: (Int, Int) => Int): Tile =
     Rasterizer.rasterize(feature, rasterExtent)(f)
 
   def rasterize(feature: Geometry, rasterExtent: RasterExtent, value:Int): Tile =

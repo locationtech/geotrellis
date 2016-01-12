@@ -43,6 +43,6 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
     tile
   }
 
-  def rasterize(re : RasterExtent)(fn : Transformer[Int]) =
+  def rasterize(re : RasterExtent)(fn : (Int, Int) => Int) =
     Rasterizer.rasterize(self, re)(fn)
 }
