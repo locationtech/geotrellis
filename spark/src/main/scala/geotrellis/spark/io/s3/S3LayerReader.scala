@@ -6,7 +6,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index._
 import geotrellis.spark.utils.cache._
 
 import org.apache.spark.SparkContext
@@ -51,8 +51,8 @@ class S3LayerReader[
     val prefix = header.key
 
     val queryKeyBounds = rasterQuery(metadata, keyBounds)
-    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, encodeIndex(index, maxWidth))
+    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val cache = getCache.map(f => f(id))
     val rdd = rddReader.read(bucket, keyPath, queryKeyBounds, decompose, Some(writerSchema), cache, numPartitions)

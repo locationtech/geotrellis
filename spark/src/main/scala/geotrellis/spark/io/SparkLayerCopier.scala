@@ -13,8 +13,7 @@ abstract class SparkLayerCopier[
   M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
    val attributeStore: AttributeStore[JsonFormat],
    layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
-   layerWriter: Writer[LayerId, RDD[(K, V)] with Metadata[M]]
-) extends LayerCopier[LayerId] {
+   layerWriter: Writer[LayerId, RDD[(K, V)] with Metadata[M]]) extends LayerCopier[LayerId] {
 
   def headerUpdate(id: LayerId, header: Header): Header
 

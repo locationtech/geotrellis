@@ -3,7 +3,7 @@ package geotrellis.spark.io.s3
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
 
 import org.apache.avro.Schema
@@ -45,8 +45,8 @@ class S3LayerUpdater[
     val prefix = existingHeader.key
     val bucket = existingHeader.bucket
 
-    val maxWidth = maxIndexWidth(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, encodeIndex(existingKeyIndex.toIndex(key), maxWidth))
+    val maxWidth = Index.digits(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
+    val keyPath = (key: K) => makePath(prefix, Index.encode(existingKeyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
     rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
