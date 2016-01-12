@@ -158,7 +158,7 @@ Here's what you can expect to find in `geotrellis.raster`:
 - [`geotrellis.raster.histogram`](./histogram) defines the classes used for analyzing the cell-value distributions of tiles (of special interest is `geotrellis.raster.histogram.FastMapHistogram`, though actual usage is typically done through the methods exposed in [`geotrellis.raster.op.stats`](./op/stats)
 - [`geotrellis.raster.interpolation`](./interpolation) - TODO
 - [`geotrellis.raster.io`](./io) follows the package naming conventions elsewhere in GeoTrellis - `io` handles serialization for transmission and storage of rasters
-- [`geotrellis.raster.mosaic`](./mosaic) defines `MosaicBuilder`, which facilitates the merging of rasters
+- [`geotrellis.raster.merge`](./merge) defines methods for merging tiles.
 - [`geotrellis.raster.op`](./op) provides a slew of options, categorized by the type of relationship computed over (is it an operation which looks only at local relationships of cells or one which looks at all the cells of a raster together to compute its result?)
 - [`geotrellis.raster.rasterize`](./rasterize) allows for conversion from raster to vector data
 - [`geotrellis.raster.render`](./render) allows for conversion from raster to the web-friendly png format

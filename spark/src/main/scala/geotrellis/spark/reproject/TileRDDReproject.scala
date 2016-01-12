@@ -8,7 +8,7 @@ import geotrellis.spark.buffer._
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.crop._
-import geotrellis.raster.mosaic._
+import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
@@ -38,7 +38,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: RasterMetaData,
@@ -89,8 +89,8 @@ object TileRDDReproject {
     val (zoom, newMetadata) =
       RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
 
-    val cutTiles = reprojectedTiles.cutTiles(newMetadata, options.method)
-    (zoom, ContextRDD(cutTiles, newMetadata))
+    val tiled = reprojectedTiles.tileToLayout(newMetadata, options.method)
+    (zoom, ContextRDD(tiled, newMetadata))
   }
 
   /** Reproject a keyed tile RDD. 
@@ -107,7 +107,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetaData],
     destCrs: CRS,
@@ -171,7 +171,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetaData],
     destCrs: CRS,

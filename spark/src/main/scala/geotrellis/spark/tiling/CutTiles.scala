@@ -2,10 +2,12 @@ package geotrellis.spark.tiling
 
 import geotrellis.vector.Extent
 import geotrellis.raster._
-import geotrellis.raster.mosaic._
+import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
 import geotrellis.spark._
+
+import org.apache.spark._
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
@@ -14,7 +16,7 @@ object CutTiles {
   def apply[
     K1: ? => TilerKeyMethods[K1, K2],
     K2: SpatialComponent: ClassTag,
-    V <: CellGrid: MergeView: ClassTag: ? => TilePrototypeMethods[V]
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ] (
     rdd: RDD[(K1, V)],
     cellType: CellType,
@@ -34,8 +36,5 @@ object CutTiles {
             val newTile = tile.prototype(tileCols, tileRows)
             (outKey, newTile.merge(mapTransform(outKey), extent, tile))
           }
-      }
-      .reduceByKey { case (tile1, tile2) =>
-        tile1.merge(tile2)
       }
 }

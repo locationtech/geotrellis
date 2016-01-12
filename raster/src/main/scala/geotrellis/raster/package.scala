@@ -29,12 +29,14 @@ package object raster
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
+      with merge.SingleBandTileMergeMethods
       with prototype.SingleBandTilePrototypeMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 
   implicit class withMultiBandTileMethods(val self: MultiBandTile) extends MethodExtensions[MultiBandTile]
       with crop.MultiBandTileCropMethods
+      with merge.MultiBandTileMergeMethods
       with prototype.MultiBandTilePrototypeMethods
       with reproject.MultiBandTileReprojectMethods
       with resample.MultiBandTileResampleMethods

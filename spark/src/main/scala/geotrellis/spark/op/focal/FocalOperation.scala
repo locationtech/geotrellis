@@ -4,7 +4,6 @@ import geotrellis.spark._
 import geotrellis.spark.buffer._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
-import geotrellis.raster.mosaic._
 import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD

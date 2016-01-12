@@ -34,6 +34,7 @@ import scala.reflect.ClassTag
 
 package object spark 
     extends buffer.Implicits
+    with merge.Implicits
     with reproject.Implicits 
     with tiling.Implicits {
 

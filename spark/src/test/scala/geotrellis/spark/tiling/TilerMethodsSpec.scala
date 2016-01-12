@@ -1,8 +1,6 @@
 package geotrellis.spark.tiling
 
 import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.mosaic._
 import geotrellis.vector._
 import geotrellis.proj4._
 

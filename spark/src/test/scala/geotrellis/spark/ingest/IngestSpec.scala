@@ -1,8 +1,6 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.mosaic._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.vector._
 import geotrellis.proj4._
