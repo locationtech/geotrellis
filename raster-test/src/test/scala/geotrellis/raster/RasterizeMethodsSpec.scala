@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, Feature}
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -46,6 +46,44 @@ class RasterizeMethodsSpec extends FunSpec
 
   val tile = re.foreachCell(e)({ (x,y) => 0 })
   val raster = Raster(tile, e)
+
+  /*
+   * Feature
+   */
+  describe("foreachCell methods on the Feature class") {
+    it("should agree with Rasterizer.rasterizeWithValue for a point") {
+      val actual1 = Feature[Point, Int](point, magicNumber).foreachCell(re).toArray.filter(_ == magicNumber).length
+      val actual2 = Feature[Point, Int](point, magicNumber).foreachCellDouble(re).toArray.filter(_ == magicNumber).length
+      val actual3 = Feature[Point, Double](point, magicNumber).foreachCell(re).toArray.filter(_ == magicNumber).length
+      val actual4 = Feature[Point, Double](point, magicNumber).foreachCellDouble(re).toArray.filter(_ == magicNumber).length
+      assert(actual1 == pointExpected)
+      assert(actual2 == pointExpected)
+      assert(actual3 == pointExpected)
+      assert(actual4 == pointExpected)
+    }
+
+    it("should agree with Rasterizer.rasterizeWithValue for a line") {
+      val actual1 = Feature[Line, Int](line, magicNumber).foreachCell(re).toArray.filter(_ == magicNumber).length
+      val actual2 = Feature[Line, Int](line, magicNumber).foreachCellDouble(re).toArray.filter(_ == magicNumber).length
+      val actual3 = Feature[Line, Double](line, magicNumber).foreachCell(re).toArray.filter(_ == magicNumber).length
+      val actual4 = Feature[Line, Double](line, magicNumber).foreachCellDouble(re).toArray.filter(_ == magicNumber).length
+      assert(actual1 == lineExpected)
+      assert(actual2 == lineExpected)
+      assert(actual3 == lineExpected)
+      assert(actual4 == lineExpected)
+    }
+
+    it("should agree with Rasterizer.rasterizeWithValue for a polygon") {
+      val actual1 = Feature[Polygon, Int](square, magicNumber).foreachCell(re).toArray.filter(_ == magicNumber).length
+      val actual2 = Feature[Polygon, Int](square, magicNumber).foreachCellDouble(re).toArray.filter(_ == magicNumber).length
+      val actual3 = Feature[Polygon, Double](square, magicNumber).foreachCell(re).toArray.filter(_ == magicNumber).length
+      val actual4 = Feature[Polygon, Double](square, magicNumber).foreachCellDouble(re).toArray.filter(_ == magicNumber).length
+      assert(actual1 == squareExpected)
+      assert(actual2 == squareExpected)
+      assert(actual3 == squareExpected)
+      assert(actual4 == squareExpected)
+    }
+  }
 
   /*
    * Geometry
