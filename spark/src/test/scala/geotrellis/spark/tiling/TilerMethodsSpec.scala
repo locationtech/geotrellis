@@ -8,15 +8,14 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 
 import org.scalatest._
+import org.apache.spark._
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext._
 
 // Defined here because of serialization
 class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyMethods[Int, SpatialKey] {
   def extent = extents(self - 1)
   def translate(k: SpatialKey): SpatialKey = k
 }
-
 
 class TilerMethodsSpec extends FunSpec
   with Matchers

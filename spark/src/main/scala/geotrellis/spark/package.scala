@@ -23,6 +23,7 @@ import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
@@ -75,21 +76,11 @@ package object spark
 
   type TileBounds = GridBounds
 
-  implicit class toPipe[A](x : A) {
-    def |> [T](f : A => T) = f(x)
-  }
-
-  implicit class toPipe2[A, B](tup : (A, B)) {
-    def |> [T](f : (A, B) => T) = f(tup._1, tup._2)
-  }
-
-  implicit class toPipe3[A, B, C](tup : (A, B, C)) {
-    def |> [T](f : (A, B, C) => T) = f(tup._1, tup._2, tup._3)
-  }
-
-  implicit class toPipe4[A, B, C, D](tup : (A, B, C, D)) {
-    def |> [T](f : (A, B, C, D) => T) = f(tup._1, tup._2, tup._3, tup._4)
-  }
+  /** Auto wrap a partitioner when something is requestion an Option[Partitioner];
+    * useful for Options that take an Option[Partitioner]
+    */
+  implicit def partitionerToOption(partitioner: Partitioner): Option[Partitioner] =
+    Some(partitioner)
 
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
