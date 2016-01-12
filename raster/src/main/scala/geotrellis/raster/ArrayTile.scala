@@ -20,83 +20,6 @@ import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
-object ArrayTile {
-  def alloc(t: CellType, cols: Int, rows: Int): MutableArrayTile =
-    t match {
-      case TypeBit    => BitArrayTile.ofDim(cols, rows)
-      case TypeByte   => ByteArrayTile.ofDim(cols, rows)
-      case TypeRawByte   => RawByteArrayTile.ofDim(cols, rows)
-      case TypeUByte  => UByteArrayTile.ofDim(cols, rows)
-      case TypeRawUByte  => RawUByteArrayTile.ofDim(cols, rows)
-      case TypeShort  => ShortArrayTile.ofDim(cols, rows)
-      case TypeRawShort  => RawShortArrayTile.ofDim(cols, rows)
-      case TypeUShort  => UShortArrayTile.ofDim(cols, rows)
-      case TypeRawUShort  => RawUShortArrayTile.ofDim(cols, rows)
-      case TypeInt    => IntArrayTile.ofDim(cols, rows)
-      case TypeFloat  => FloatArrayTile.ofDim(cols, rows)
-      case TypeDouble => DoubleArrayTile.ofDim(cols, rows)
-    }
-
-  def empty(t: CellType, cols: Int, rows: Int): MutableArrayTile =
-    t match {
-      case TypeBit    => BitArrayTile.empty(cols, rows)
-      case TypeByte   => ByteArrayTile.empty(cols, rows)
-      case TypeRawByte   => RawByteArrayTile.empty(cols, rows)
-      case TypeUByte  => UByteArrayTile.empty(cols, rows)
-      case TypeRawUByte  => RawUByteArrayTile.empty(cols, rows)
-      case TypeShort  => ShortArrayTile.empty(cols, rows)
-      case TypeRawShort  => RawShortArrayTile.empty(cols, rows)
-      case TypeUShort  => UShortArrayTile.empty(cols, rows)
-      case TypeRawUShort  => RawUShortArrayTile.empty(cols, rows)
-      case TypeInt    => IntArrayTile.empty(cols, rows)
-      case TypeFloat  => FloatArrayTile.empty(cols, rows)
-      case TypeDouble => DoubleArrayTile.empty(cols, rows)
-    }
-
-  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile =
-    t match {
-      case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows)
-      case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows)
-      case TypeRawByte   => RawByteArrayTile.fromBytes(bytes, cols, rows)
-      case TypeUByte  => UByteArrayTile.fromBytes(bytes, cols, rows)
-      case TypeRawUByte  => RawUByteArrayTile.fromBytes(bytes, cols, rows)
-      case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows)
-      case TypeRawShort  => RawShortArrayTile.fromBytes(bytes, cols, rows)
-      case TypeUShort  => UShortArrayTile.fromBytes(bytes, cols, rows)
-      case TypeRawUShort  => RawUShortArrayTile.fromBytes(bytes, cols, rows)
-      case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows)
-      case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows)
-      case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows)
-    }
-
-  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile =
-    t match {
-      case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
-      case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case TypeRawByte   => RawByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case TypeUByte  => UByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case TypeRawUByte  => RawUByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case TypeRawShort  => RawShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case TypeUShort  => UShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case TypeRawUShort  => RawUShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
-      case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
-      case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
-    }
-
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayTile(arr, cols, rows)
-  def apply(arr: Array[Int], cols: Int, rows: Int) = IntArrayTile(arr, cols, rows)
-  def apply(arr: Array[Float], cols: Int, rows: Int) = FloatArrayTile(arr, cols, rows)
-  def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayTile(arr, cols, rows)
-}
-
-object RawArrayTile {
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = RawByteArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = RawShortArrayTile(arr, cols, rows)
-}
-
 /**
  * ArrayTile provides access and update to the grid data of a raster.
  *
@@ -297,4 +220,81 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   def toBytes: Array[Byte]
+}
+
+object ArrayTile {
+  def alloc(t: CellType, cols: Int, rows: Int): MutableArrayTile =
+    t match {
+      case TypeBit    => BitArrayTile.ofDim(cols, rows)
+      case TypeByte   => ByteArrayTile.ofDim(cols, rows)
+      case TypeRawByte   => RawByteArrayTile.ofDim(cols, rows)
+      case TypeUByte  => UByteArrayTile.ofDim(cols, rows)
+      case TypeRawUByte  => RawUByteArrayTile.ofDim(cols, rows)
+      case TypeShort  => ShortArrayTile.ofDim(cols, rows)
+      case TypeRawShort  => RawShortArrayTile.ofDim(cols, rows)
+      case TypeUShort  => UShortArrayTile.ofDim(cols, rows)
+      case TypeRawUShort  => RawUShortArrayTile.ofDim(cols, rows)
+      case TypeInt    => IntArrayTile.ofDim(cols, rows)
+      case TypeFloat  => FloatArrayTile.ofDim(cols, rows)
+      case TypeDouble => DoubleArrayTile.ofDim(cols, rows)
+    }
+
+  def empty(t: CellType, cols: Int, rows: Int): MutableArrayTile =
+    t match {
+      case TypeBit    => BitArrayTile.empty(cols, rows)
+      case TypeByte   => ByteArrayTile.empty(cols, rows)
+      case TypeRawByte   => RawByteArrayTile.empty(cols, rows)
+      case TypeUByte  => UByteArrayTile.empty(cols, rows)
+      case TypeRawUByte  => RawUByteArrayTile.empty(cols, rows)
+      case TypeShort  => ShortArrayTile.empty(cols, rows)
+      case TypeRawShort  => RawShortArrayTile.empty(cols, rows)
+      case TypeUShort  => UShortArrayTile.empty(cols, rows)
+      case TypeRawUShort  => RawUShortArrayTile.empty(cols, rows)
+      case TypeInt    => IntArrayTile.empty(cols, rows)
+      case TypeFloat  => FloatArrayTile.empty(cols, rows)
+      case TypeDouble => DoubleArrayTile.empty(cols, rows)
+    }
+
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile =
+    t match {
+      case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows)
+      case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows)
+      case TypeRawByte   => RawByteArrayTile.fromBytes(bytes, cols, rows)
+      case TypeUByte  => UByteArrayTile.fromBytes(bytes, cols, rows)
+      case TypeRawUByte  => RawUByteArrayTile.fromBytes(bytes, cols, rows)
+      case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows)
+      case TypeRawShort  => RawShortArrayTile.fromBytes(bytes, cols, rows)
+      case TypeUShort  => UShortArrayTile.fromBytes(bytes, cols, rows)
+      case TypeRawUShort  => RawUShortArrayTile.fromBytes(bytes, cols, rows)
+      case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows)
+      case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows)
+      case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows)
+    }
+
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile =
+    t match {
+      case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
+      case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case TypeRawByte   => RawByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case TypeUByte  => UByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case TypeRawUByte  => RawUByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case TypeRawShort  => RawShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case TypeUShort  => UShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case TypeRawUShort  => RawUShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
+      case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
+      case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
+    }
+
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayTile(arr, cols, rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int) = IntArrayTile(arr, cols, rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int) = FloatArrayTile(arr, cols, rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayTile(arr, cols, rows)
+}
+
+object RawArrayTile {
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = RawByteArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = RawShortArrayTile(arr, cols, rows)
 }

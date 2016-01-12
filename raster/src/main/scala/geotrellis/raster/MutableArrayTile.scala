@@ -42,13 +42,13 @@ trait MutableArrayTile extends ArrayTile {
         cfor(0)(_ < update.cols, _ + 1) { c =>
           setDouble(c + colOffset, r + rowOffset, update.getDouble(c, r))
         }
-      }      
+      }
     } else {
       cfor(0)(_ < update.rows, _ + 1) { r =>
         cfor(0)(_ < update.cols, _ + 1) { c =>
           set(c + colOffset, r + rowOffset, update.get(c, r))
         }
-      }      
+      }
     }
   }
 }

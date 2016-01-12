@@ -14,7 +14,7 @@ final case class RawUShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   val cellType = TypeRawUShort
 
   def apply(i: Int) = array(i) & 0xFFFF
-  def update(i: Int, z: Int) { array(i) = if(isNoData(z)) 0.toShort else z.toShort }
+  def update(i: Int, z: Int) { array(i) = z.toShort }
 
   def toBytes: Array[Byte] = {
     val pixels = new Array[Byte](array.length * cellType.bytes)

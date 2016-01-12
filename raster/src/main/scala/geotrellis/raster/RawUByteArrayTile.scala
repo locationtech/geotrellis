@@ -14,7 +14,7 @@ final case class RawUByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   val cellType = TypeRawUByte
 
   def apply(i: Int) = array(i) & 0xFF
-  def update(i: Int, z: Int) { array(i) = if(isNoData(z)) 0.toByte else z.toByte }
+  def update(i: Int, z: Int) { array(i) = z.toByte }
 
   def toBytes: Array[Byte] = array.clone
 
