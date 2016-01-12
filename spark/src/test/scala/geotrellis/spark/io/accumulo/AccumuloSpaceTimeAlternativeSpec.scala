@@ -3,7 +3,6 @@ package geotrellis.spark.io.accumulo
 import geotrellis.raster.Tile
 import geotrellis.spark.io.accumulo.spacetime.{SpaceTimeAccumuloRDDReader, SpaceTimeAccumuloRDDWriter}
 import geotrellis.spark.io.index.{KeyIndex, ZCurveKeyIndexMethod}
-import geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -30,7 +29,7 @@ class AccumuloSpaceTimeAlternativeSpec
       keyIndexMethod = ZCurveKeyIndexMethod.byYear,
       table = "tiles")
 
-  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData, ZSpaceTimeKeyIndex] (
+  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]] (
     AccumuloAttributeStore(instance.connector),
     new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
 

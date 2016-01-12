@@ -18,41 +18,8 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 package object json {
-  // implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
-  //   new JavaSerializationJsonFormat[index.KeyIndex[K]]
-
-  /*implicit def keyIndexFormat[K: ClassTag] = new RootJsonFormat[index.KeyIndex[K]] {
-    def write(obj: KeyIndex[K]): JsValue = {
-
-      JsObject(
-        "keyBounds" -> obj.keyBounds.toJson,
-        "xResolution" -> obj.xResolution.toJson,
-        "yResolution" -> obj.yResolution.toJson,
-        "temporalResolution" -> obj.temporalResolution.toJson,
-        "pattern" -> obj.pattern.toJson
-      )
-    }
-
-    def read(value: JsValue): KeyIndex[K] = {
-      value.asJsObject.getFields("keyBounds", "xResolution", "yResolution", "temporalResolution", "pattern") match {
-        case Seq(keyBounds, xResolution, yResolution, temporalResolution, pattern) => {
-          (keyBounds.convertTo[KeyBounds[K]],
-           xResolution.convertTo[Int],
-           yResolution.convertTo[Int],
-           temporalResolution.convertTo[Int],
-           pattern.convertTo[String]) match {
-            case (kb, null, null, null, null) => RowMajorKeyIndexMethod.createIndex(kb.asInstanceOf[KeyBounds[SpatialKey]]).asInstanceOf[KeyIndex[K]]
-            case (kb, xr, yr, null, null) => HilbertSpatialKeyIndex(kb.asInstanceOf[KeyBounds[SpatialKey]], xr, yr).asInstanceOf[KeyIndex[K]]
-            case (kb, xr, yr, tr, null) => HilbertSpaceTimeKeyIndex(kb.asInstanceOf[KeyBounds[SpaceTimeKey]], xr, yr, tr).asInstanceOf[KeyIndex[K]]
-            case (null, null, null, null, pattern) => ZCurveKeyIndexMethod.byPattern(pattern).createIndex(null.asInstanceOf[KeyBounds[SpaceTimeKey]]).asInstanceOf[KeyIndex[K]]
-            case (null, null, null, null, null) => ZCurveKeyIndexMethod.createIndex(null.asInstanceOf[KeyBounds[SpatialKey]]).asInstanceOf[KeyIndex[K]]
-          }
-        }
-        case _ =>
-          throw new DeserializationException("err")
-      }
-    }
-  }*/
+  /*implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
+    new JavaSerializationJsonFormat[index.KeyIndex[K]]*/
 
   implicit object HilbertSpatialKeyIndexFormat extends RootJsonFormat[HilbertSpatialKeyIndex] {
     def write(obj: HilbertSpatialKeyIndex): JsValue =
@@ -149,11 +116,28 @@ package object json {
       }
   }
 
+  implicit object ZSpaceTimeKeyIndexOptionsFormat extends RootJsonFormat[ZSpaceTimeKeyIndex.Options] {
+    def write(obj: ZSpaceTimeKeyIndex.Options): JsValue =
+      JsObject(
+        "ftype"   -> obj.ftype.toJson,
+        "pattern" -> obj.pattern.toJson
+      )
+
+    def read(value: JsValue): ZSpaceTimeKeyIndex.Options =
+      value.asJsObject.getFields("ftype", "pattern") match {
+        case Seq(JsString(ftype), JsString(pattern)) => {
+          ZSpaceTimeKeyIndex.Options(ftype, pattern)
+        }
+        case _ =>
+          throw new DeserializationException("Wrong Options type: ZSpaceTimeKeyIndex.Options expected.")
+      }
+  }
+
   implicit object ZSpaceTimeKeyIndexFormat extends RootJsonFormat[ZSpaceTimeKeyIndex] {
     def write(obj: ZSpaceTimeKeyIndex): JsValue =
       JsObject(
         "id"   -> obj.id.toJson,
-        "args" -> JsObject("pattern" -> obj.pattern.toJson)
+        "args" -> obj.persistentOptions.toJson
       )
 
     def read(value: JsValue): ZSpaceTimeKeyIndex =
@@ -161,12 +145,7 @@ package object json {
         case Seq(JsString(id), args) => {
           if (id != KeyIndex.zSpaceTimeKeyIndex)
             throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")
-          args.convertTo[JsObject].getFields("pattern") match {
-            case Seq(JsString(p)) => ZSpaceTimeKeyIndex.byPattern(p)
-            case _ =>
-              throw new DeserializationException(
-                "Wrong KeyIndex constructor arguments: ZSpaceTimeKeyIndex constructor arguments expected.")
-          }
+          ZSpaceTimeKeyIndex.Options.toIndex(args.convertTo[ZSpaceTimeKeyIndex.Options])
         }
         case _ =>
           throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")

@@ -34,7 +34,7 @@ abstract class S3SpaceTimeSpec
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
   lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData](attributeStore, ZCurveKeyIndexMethod.byPattern("Y"), S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
+  lazy val reindexer = S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData](attributeStore, ZCurveKeyIndexMethod.byPattern("YMM"), S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
   lazy val tiles     = new S3TileReader[SpaceTimeKey, Tile, KeyIndex[SpaceTimeKey]](attributeStore) {
     override val s3Client = new MockS3Client()
   }
