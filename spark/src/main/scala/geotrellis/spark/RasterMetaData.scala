@@ -51,6 +51,9 @@ case class RasterMetaData(
 }
 
 object RasterMetaData {
+  implicit def toLayoutDefinition(md: RasterMetaData): LayoutDefinition =
+    md.layout
+
   def envelopeExtent[K, V <: CellGrid](rdd: RDD[(K, V)])(getExtent: K => Extent): (Extent, CellType, CellSize) = {
     rdd
       .map { case (key, grid) =>

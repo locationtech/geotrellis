@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 import spray.json._
 

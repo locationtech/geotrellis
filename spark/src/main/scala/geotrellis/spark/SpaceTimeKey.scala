@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark._
 import geotrellis.spark.io.json._
 import monocle._
 import org.apache.spark.rdd.RDD
@@ -10,7 +11,6 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import com.github.nscala_time.time.Imports._
 
-// TODO: Change this to be col, row, time, and have the compenent keys derived.
 case class SpaceTimeKey(col: Int, row: Int, time: DateTime) {
   def spatialKey: SpatialKey = SpatialKey(col, row)
   def temporalKey: TemporalKey = TemporalKey(time)
@@ -18,7 +18,7 @@ case class SpaceTimeKey(col: Int, row: Int, time: DateTime) {
 
 object SpaceTimeKey {
   implicit object SpatialComponent extends SpatialComponent[SpaceTimeKey] {
-    def lens =  createLens(k => k.spatialKey, sk => k => SpaceTimeKey(sk.col, sk.row, k.time))
+    def lens = createLens(k => k.spatialKey, sk => k => SpaceTimeKey(sk.col, sk.row, k.time))
   }
 
   implicit object TemporalComponent extends TemporalComponent[SpaceTimeKey] {

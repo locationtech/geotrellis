@@ -32,8 +32,10 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 
-package object spark extends buffer.Implicits 
-    with reproject.Implicits {
+package object spark 
+    extends buffer.Implicits
+    with reproject.Implicits 
+    with tiling.Implicits {
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
   object RasterRDD {

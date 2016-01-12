@@ -5,8 +5,9 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
 import geotrellis.raster.crop._
 import geotrellis.raster.mosaic._
+import geotrellis.raster.prototype._
 import geotrellis.spark._
-import geotrellis.spark.ingest._
+import geotrellis.spark.ingest.IngestKey
 
 import org.apache.spark.rdd._
 
@@ -20,6 +21,6 @@ trait Implicits {
 
   implicit class withTileRDDReprojectMethods[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
   ](self: RDD[(K, V)] with Metadata[RasterMetaData]) extends TileRDDReprojectMethods[K, V](self)
 }

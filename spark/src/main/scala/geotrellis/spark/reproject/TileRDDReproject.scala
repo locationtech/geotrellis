@@ -1,17 +1,18 @@
 package geotrellis.spark.reproject
 
-import geotrellis.spark.buffer._
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
-import geotrellis.raster.crop._
-import geotrellis.raster.mosaic._
-import geotrellis.raster.stitch._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.spark.ingest._
 import geotrellis.spark.tiling._
+import geotrellis.spark.buffer._
+import geotrellis.proj4._
+import geotrellis.raster._
+import geotrellis.raster.crop._
+import geotrellis.raster.mosaic._
+import geotrellis.raster.prototype._
+import geotrellis.raster.reproject._
+import geotrellis.raster.resample._
+import geotrellis.raster.stitch._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 
@@ -37,7 +38,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: RasterMetaData,
@@ -88,13 +89,8 @@ object TileRDDReproject {
     val (zoom, newMetadata) =
       RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
 
-    val tiler: Tiler[(K, Extent), K, V] = {
-      val getExtent = (inKey: (K, Extent)) => inKey._2
-      val createKey = (inKey: (K, Extent), spatialComponent: SpatialKey) => inKey._1.updateSpatialComponent(spatialComponent)
-      Tiler(getExtent, createKey)
-    }
-
-    (zoom, ContextRDD(tiler(reprojectedTiles, newMetadata, options.method), newMetadata))
+    val cutTiles = reprojectedTiles.cutTiles(newMetadata, options.method)
+    (zoom, ContextRDD(cutTiles, newMetadata))
   }
 
   /** Reproject a keyed tile RDD. 
@@ -111,7 +107,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetaData],
     destCrs: CRS,
@@ -175,7 +171,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetaData],
     destCrs: CRS,

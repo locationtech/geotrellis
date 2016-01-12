@@ -1,4 +1,4 @@
-package geotrellis.spark.ingest
+package geotrellis.spark.tiling
 
 import geotrellis.raster._
 import geotrellis.raster.reproject._
@@ -13,7 +13,14 @@ import org.scalatest._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
 
-class TilerSpec extends FunSpec
+// Defined here because of serialization
+class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyMethods[Int, SpatialKey] {
+  def extent = extents(self - 1)
+  def translate(k: SpatialKey): SpatialKey = k
+}
+
+
+class TilerMethodsSpec extends FunSpec
   with Matchers
   with TestEnvironment
 {
@@ -36,11 +43,14 @@ class TilerSpec extends FunSpec
 
       val tileLayout = TileLayout(4, 4, 4, 5)
 
+      val layoutDefinition = LayoutDefinition(totalExtent, tileLayout)
+
       val mapTransform = MapKeyTransform(totalExtent, tileLayout.layoutCols, tileLayout.layoutRows)
 
+      implicit val tm: Int => TilerKeyMethods[Int, SpatialKey] = i => new IntTilerKeyMethods(i, extents)
       val rdd: RDD[(Int, Tile)] = sc.parallelize(Array( (1, tile1), (2, tile2) ))
       val tiled =
-        Tiler.cutTiles[Int, SpatialKey, Tile]( {i: Int => extents(i - 1)}, {(i: Int, key: SpatialKey) => key}, rdd, mapTransform, tile1.cellType, tileLayout)
+        rdd.cutTiles(TypeInt, layoutDefinition)
           .reduceByKey { case (tile1, tile2) => if(tile1.get(0,0) > tile2.get(0,0)) tile2.merge(tile1) else tile1.merge(tile2) }
           .collect
           .toMap

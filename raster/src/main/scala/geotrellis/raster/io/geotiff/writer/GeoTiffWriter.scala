@@ -34,7 +34,7 @@ import java.nio.ByteOrder
 import spire.syntax.cfor._
 
 object GeoTiffWriter {
-  def write(geoTiff: GeoTiff, path: String): Unit = {
+  def write(geoTiff: GeoTiffData, path: String): Unit = {
     val fos = new FileOutputStream(new File(path))
     try {
       val dos = new DataOutputStream(fos)
@@ -48,7 +48,7 @@ object GeoTiffWriter {
     }
   }
 
-  def write(geoTiff: GeoTiff): Array[Byte] = {
+  def write(geoTiff: GeoTiffData): Array[Byte] = {
     val bos = new ByteArrayOutputStream()
     try {
       val dos = new DataOutputStream(bos)
@@ -64,7 +64,7 @@ object GeoTiffWriter {
   }
 }
 
-class GeoTiffWriter(geoTiff: GeoTiff, dos: DataOutputStream) {
+class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   implicit val toBytes: ToBytes =
     if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN)
       BigEndianToBytes

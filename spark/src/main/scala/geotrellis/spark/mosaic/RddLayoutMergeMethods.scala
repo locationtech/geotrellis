@@ -4,22 +4,25 @@ import scala.reflect.ClassTag
 
 import org.apache.spark.rdd.RDD
 
-import geotrellis.raster.mosaic.MergeView
+import geotrellis.raster._
+import geotrellis.raster.mosaic._
+import geotrellis.raster.prototype._
 import geotrellis.spark._
-import geotrellis.spark.ingest.CellGridPrototypeView
 import geotrellis.spark.tiling.LayoutDefinition
 
-class RddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag, M: (? => {def layout: LayoutDefinition})](
- rdd: (RDD[(K, TileType)] with Metadata[M])
-) extends MergeMethods[RDD[(K, TileType)] with Metadata[M]] {
+class RddLayoutMergeMethods[
+  K: SpatialComponent: ClassTag,
+  V <: CellGrid: MergeView: ClassTag: (? => TilePrototypeMethods[V]),
+  M: (? => {def layout: LayoutDefinition})
+](rdd: RDD[(K, V)] with Metadata[M]) extends MergeMethods[RDD[(K, V)] with Metadata[M]] {
 
- def merge(other: RDD[(K, TileType)] with Metadata[M]) = {
+ def merge(other: RDD[(K, V)] with Metadata[M]) = {
    val thisLayout = rdd.metadata.layout
    val thatLayout = other.metadata.layout
 
    val cutRdd = 
        other
-         .flatMap { case (k: K, tile: TileType) =>
+         .flatMap { case (k: K, tile: V) =>
            val extent = thatLayout.mapTransform(k)
            thisLayout.mapTransform(extent)
              .coords

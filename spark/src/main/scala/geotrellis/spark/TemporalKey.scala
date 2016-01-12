@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark._
 import geotrellis.spark.io.json._
 import com.github.nscala_time.time.Imports._
 

@@ -53,7 +53,7 @@ object Ingest {
    * @tparam K            type of output tile key, must have SpatialComponent
    * @return
    */
-  def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag](
+  def apply[T: IngestKey: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: ClassTag](
       sourceTiles: RDD[(T, Tile)],
       destCRS: CRS,
       layoutScheme: LayoutScheme,
@@ -61,15 +61,14 @@ object Ingest {
       cacheLevel: StorageLevel = StorageLevel.NONE,
       resampleMethod: ResampleMethod = NearestNeighbor
     )
-    (sink: (RasterRDD[K], Int) => Unit)
-    (implicit tiler: Tiler[T, K, Tile]): Unit =
+    (sink: (RasterRDD[K], Int) => Unit): Unit =
   {
     sourceTiles.persist()
     val reprojectedTiles =
       sourceTiles.reproject(destCRS, resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = tiler(reprojectedTiles, rasterMetaData, resampleMethod).cache()
+    val tiledRdd = reprojectedTiles.cutTiles(rasterMetaData, resampleMethod).cache()
     val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {
