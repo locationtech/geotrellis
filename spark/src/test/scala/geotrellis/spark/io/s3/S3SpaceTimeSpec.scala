@@ -47,10 +47,10 @@ class S3SpaceTimeZCurveByYearSpec extends S3SpaceTimeSpec {
   lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]](attributeStore, rddWriter, ZCurveKeyIndexMethod.byYear, bucket, prefix, true) { }
 }
 
-/*class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
+class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]](attributeStore, rddWriter, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, bucket, prefix, true)
-}*/
+  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]](attributeStore, rddWriter, ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "S3SpaceTimeZCurveByFuncSpec"), bucket, prefix, true)
+}
 
 class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions

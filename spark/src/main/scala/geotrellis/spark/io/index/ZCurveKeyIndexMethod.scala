@@ -2,6 +2,7 @@ package geotrellis.spark.io.index
 
 import geotrellis.spark._
 import geotrellis.spark.io.index.zcurve._
+import ZSpaceTimeKeyIndex._
 
 import com.github.nscala_time.time.Imports._
 
@@ -34,9 +35,10 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)
     }
 
-  /** Note: the function timeToGrid has to be in a project scope. */
-  def by(timeToGrid: DateTime => Int) = 
+  def by(timeToGrid: DateTime => Int, fname: String = "function") = {
+    addCustomFunction(fname, timeToGrid)
     new KeyIndexMethod[SpaceTimeKey, ZSpaceTimeKeyIndex] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = new ZSpaceTimeKeyIndex(timeToGrid)
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = new ZSpaceTimeKeyIndex(timeToGrid, Options(fname))
     }
+  }
 }

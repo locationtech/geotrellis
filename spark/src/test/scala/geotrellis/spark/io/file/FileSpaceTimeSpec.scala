@@ -28,9 +28,9 @@ class FileSpaceTimeZCurveByYearSpec extends FileSpaceTimeSpec {
   lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod.byYear)
 }
 
-/*class FileSpaceTimeZCurveByFuncSpec extends FileSpaceTimeSpec {
-  lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 })
-}*/
+class FileSpaceTimeZCurveByFuncSpec extends FileSpaceTimeSpec {
+  lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "FileSpaceTimeZCurveByFuncSpec"))
+}
 
 class FileSpaceTimeHilbertSpec extends FileSpaceTimeSpec {
   lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))

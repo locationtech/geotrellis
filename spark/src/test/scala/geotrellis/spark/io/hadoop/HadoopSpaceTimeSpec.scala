@@ -3,8 +3,6 @@ package geotrellis.spark.io.hadoop
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster.Tile
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex
-import geotrellis.spark.io.index.zcurve.{ZSpaceTimeKeyIndex, ZSpatialKeyIndex}
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
@@ -29,9 +27,9 @@ class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.byYear)
 }
 
-/*class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
-  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.by { x =>  if (x < DateTime.now) 1 else 0 })
-}*/
+class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
+  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "HadoopSpaceTimeZCurveByFuncSpec"))
+}
 
 class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
   lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))

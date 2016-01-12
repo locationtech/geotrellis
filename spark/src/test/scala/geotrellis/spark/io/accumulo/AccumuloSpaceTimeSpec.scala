@@ -32,11 +32,11 @@ class AccumuloSpaceTimeZCurveByYearSpec extends AccumuloSpaceTimeSpec {
   lazy val mover  = GenericLayerMover(copier, deleter)
 }
 
-/*class AccumuloSpaceTimeZCurveByFuncSpec extends AccumuloSpaceTimeSpec {
-  lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, SocketWriteStrategy())
+class AccumuloSpaceTimeZCurveByFuncSpec extends AccumuloSpaceTimeSpec {
+  lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "AccumuloSpaceTimeZCurveByFuncSpec"), SocketWriteStrategy())
   lazy val copier = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetaData](instance, reader, writer)
   lazy val mover  = GenericLayerMover(copier, deleter)
-}*/
+}
 
 class AccumuloSpaceTimeHilbertSpec extends AccumuloSpaceTimeSpec {
   lazy val writer = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), SocketWriteStrategy())

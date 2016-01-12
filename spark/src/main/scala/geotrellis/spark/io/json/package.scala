@@ -119,12 +119,12 @@ package object json {
   implicit object ZSpaceTimeKeyIndexOptionsFormat extends RootJsonFormat[ZSpaceTimeKeyIndex.Options] {
     def write(obj: ZSpaceTimeKeyIndex.Options): JsValue =
       JsObject(
-        "ftype"   -> obj.ftype.toJson,
+        "fname"   -> obj.fname.toJson,
         "pattern" -> obj.pattern.toJson
       )
 
     def read(value: JsValue): ZSpaceTimeKeyIndex.Options =
-      value.asJsObject.getFields("ftype", "pattern") match {
+      value.asJsObject.getFields("fname", "pattern") match {
         case Seq(JsString(ftype), JsString(pattern)) => {
           ZSpaceTimeKeyIndex.Options(ftype, pattern)
         }

@@ -4,28 +4,36 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 
 import com.github.nscala_time.time.Imports._
-import scala.collection.immutable.Map
+
+import scala.collection._
+import scala.collection.JavaConversions._
+import java.util.concurrent.ConcurrentHashMap
 
 object ZSpaceTimeKeyIndex {
-  val functions: Map[String, (String, DateTime) => Int] = Map(
-    "pattern" -> { (p, dt) => DateTimeFormat.forPattern(p).print(dt).toInt },
-    "year"    -> { (_, dt) => f"${dt.getYear}%04d".toInt },
-    "month"   -> { (_, dt) => f"${dt.getYear}%04d${dt.getMonthOfYear}%02d".toInt },
-    "day"     -> { (_, dt) => f"${dt.getYear}%04d${dt.getDayOfYear}%03d".toInt },
-    "hour"    -> { (_, dt) => f"${dt.getYear}%04d${dt.getDayOfYear}%03d${dt.getHourOfDay}%02d".toInt },
-    "minute"  -> { (_, dt) => f"${dt.getYear}%04d${dt.getDayOfYear}%03d${dt.getHourOfDay}%02d${dt.getMinuteOfHour}%02d".toInt },
-    "second"  -> { (_, dt) => f"${dt.getYear}%04d${dt.getDayOfYear}%03d${dt.getHourOfDay}%02d${dt.getMinuteOfHour}%02d${dt.getSecondOfMinute}%02d".toInt },
-    "millis"  -> { (_, dt) => dt.getMillis.toInt }
-  )
+  private val functions: concurrent.Map[String, (String, DateTime) => Int] = new ConcurrentHashMap[String, (String, DateTime) => Int]
 
-  case class Options(ftype: String, pattern: String) {
-    def timeToGrid: DateTime => Int = functions(ftype) curried pattern
+  List[(String, (String, DateTime) => Int)](
+    "pattern" -> { (p, dt) => DateTimeFormat.forPattern(p).print(dt).toInt },
+    "year"    -> { (_, dt) => dt.getYear },
+    "month"   -> { (_, dt) => f"${dt.getYear}${dt.getMonthOfYear}%02d".toInt },
+    "day"     -> { (_, dt) => f"${dt.getYear}${dt.getDayOfYear}%03d".toInt },
+    "hour"    -> { (_, dt) => f"${dt.getYear}${dt.getDayOfYear}%03d${dt.getHourOfDay}%02d".toInt },
+    "minute"  -> { (_, dt) => f"${dt.getYear}${dt.getDayOfYear}%03d${dt.getHourOfDay}%02d${dt.getMinuteOfHour}%02d".toInt },
+    "second"  -> { (_, dt) => f"${dt.getYear}${dt.getDayOfYear}%03d${dt.getHourOfDay}%02d${dt.getMinuteOfHour}%02d${dt.getSecondOfMinute}%02d".toInt },
+    "millis"  -> { (_, dt) => dt.getMillis.toInt }
+  ).map(functions += _)
+
+  def addCustomFunction(fname: String, function: DateTime => Int) =
+    functions.update(fname, Function.uncurried({ (str: String) => function(_) }))
+
+  case class Options(fname: String, pattern: String) {
+    def timeToGrid: DateTime => Int = functions(fname) curried pattern
   }
 
   object Options {
     val DEFAULT = Options("function")
 
-    def apply(ftype: String): Options = Options(ftype, "")
+    def apply(fname: String): Options = Options(fname, "")
 
     def toIndex(opts: Options): ZSpaceTimeKeyIndex = new ZSpaceTimeKeyIndex(opts.timeToGrid, opts)
   }
