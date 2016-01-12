@@ -34,7 +34,12 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def write[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: I): Unit = {
+  def write[I <: KeyIndex[K]: JsonFormat](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyIndex: I,
+    kb: Option[KeyBounds[K]]
+  ): Unit = {
     require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
@@ -45,7 +50,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
       bucket = bucket,
       key = prefix)
 
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
+    val keyBounds = kb.getOrElse(implicitly[Boundable[K]].getKeyBounds(rdd))
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 

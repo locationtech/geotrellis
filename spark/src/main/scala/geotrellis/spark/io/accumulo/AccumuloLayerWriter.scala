@@ -18,7 +18,12 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Js
   rddWriter: BaseAccumuloRDDWriter[K, V],
   table: String) extends Writer[LayerId, K, RDD[(K, V)] with Metadata[M]] {
 
-  def write[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: I): Unit = {
+  def write[I <: KeyIndex[K]: JsonFormat](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyIndex: I,
+    kb: Option[KeyBounds[K]]
+  ): Unit = {
     val header =
       AccumuloLayerHeader(
         keyClass = classTag[K].toString(),
@@ -26,7 +31,7 @@ class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Js
         tileTable = table
       )
     val metaData = rdd.metadata
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
+    val keyBounds = kb.getOrElse(implicitly[Boundable[K]].getKeyBounds(rdd))
     val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
 
     try {
