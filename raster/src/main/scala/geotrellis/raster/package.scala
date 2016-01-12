@@ -18,7 +18,7 @@ package geotrellis
 
 import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
-import geotrellis.vector.Geometry
+import geotrellis.vector.{Geometry, Feature}
 import geotrellis.raster.rasterize._
 
 package object raster
@@ -40,6 +40,14 @@ package object raster
 
   implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
       with GeometryRasterizeMethods[Geometry]
+
+  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int])
+      extends MethodExtensions[Feature[Geometry, Int]]
+      with FeatureIntRasterizeMethods[Geometry, Feature[Geometry, Int]]
+
+  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double])
+      extends MethodExtensions[Feature[Geometry, Double]]
+      with FeatureDoubleRasterizeMethods[Geometry, Feature[Geometry, Double]]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
