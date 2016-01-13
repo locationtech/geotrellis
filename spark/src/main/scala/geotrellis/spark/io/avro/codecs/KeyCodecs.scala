@@ -15,9 +15,9 @@ trait KeyCodecs {
       .name("row").`type`().intType().noDefault()
       .endRecord()
 
-    def encode(thing: SpatialKey, rec: GenericRecord) = {
-      rec.put("row", thing.row)
-      rec.put("col", thing.col)
+    def encode(key: SpatialKey, rec: GenericRecord) = {
+      rec.put("row", key.row)
+      rec.put("col", key.col)
     }
 
     def decode(rec: GenericRecord): SpatialKey =
@@ -33,27 +33,20 @@ trait KeyCodecs {
       .fields()
       .name("col").`type`().intType().noDefault()
       .name("row").`type`().intType().noDefault()
-      .name("millis").`type`().longType().noDefault()
-      .name("offset").`type`().intType().noDefault()
+      .name("instant").aliases("millis").`type`().longType().noDefault()
       .endRecord()
 
-    def encode(thing: SpaceTimeKey, rec: GenericRecord) = {
-      rec.put("row", thing.row)
-      rec.put("col", thing.col)
-      val millis = thing.time.toInstant.getMillis
-      val offset = thing.time.getZone.getOffset(millis)
-      rec.put("millis", millis)
-      rec.put("offset", offset)
+    def encode(key: SpaceTimeKey, rec: GenericRecord) = {
+      rec.put("row", key.row)
+      rec.put("col", key.col)
+      rec.put("instant", key.instant)
     }
 
     def decode(rec: GenericRecord) = {
-      val millis = rec[Long]("millis")
-      val offset = rec[Int]("offset")
-      val zone = DateTimeZone.forOffsetMillis(offset)
       SpaceTimeKey(
         rec[Int]("col"),
         rec[Int]("row"),
-        new DateTime(millis, zone)
+        rec[Long]("instant")
       )
     }
   }

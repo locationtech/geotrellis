@@ -36,11 +36,17 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCode
         throw new TileNotFoundError(key, layerId)
 
       val bytes = Filesystem.slurp(path)
-      val recs = AvroEncoder.fromBinary(bytes)(KeyValueRecordCodec[K, V])
+      val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
 
+      println(s"HERE ARE THE RECS")
+      recs.foreach { row => println(s" ${row._1}") }
+      println(s"HERE'S WHAT I'M LOOKIN FOR")
+      println(s" $key")
+      println(s"ARE THEY EQUAL?")
+      println(s"${recs.head._1} == $key ? ${recs.head._1 == key}")
       recs
-        .find { row => row._1 == key }
-        .map { row => row._2 }
+        .find { case (recordKey, _) => recordKey == key }
+        .map { case (_, recordValue) => recordValue }
         .getOrElse(throw new TileNotFoundError(key, layerId))
     }
   }

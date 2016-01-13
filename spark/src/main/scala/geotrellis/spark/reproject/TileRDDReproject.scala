@@ -89,7 +89,8 @@ object TileRDDReproject {
     val (zoom, newMetadata) =
       RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
 
-    val tiled = reprojectedTiles.tileToLayout(newMetadata, options.method)
+    val tiled = reprojectedTiles
+      .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.method, partitioner = bufferedTiles.partitioner))
     (zoom, ContextRDD(tiled, newMetadata))
   }
 

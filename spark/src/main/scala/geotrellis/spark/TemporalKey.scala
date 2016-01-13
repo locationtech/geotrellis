@@ -8,6 +8,9 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 object TemporalKey {
+  def apply(dateTime: DateTime): TemporalKey =
+    TemporalKey(dateTime.getMillis)
+
   implicit object TemporalComponent extends IdentityComponent[TemporalKey]
 
   implicit def dateTimeToKey(time: DateTime): TemporalKey =
@@ -17,7 +20,7 @@ object TemporalKey {
     key.time
 
   implicit def ordering[A <: TemporalKey]: Ordering[A] =
-    Ordering.by(tk => tk.time)
+    Ordering.by(tk => tk.instant)
 
   implicit object TemporalKeyFormat extends RootJsonFormat[TemporalKey] {
     def write(key: TemporalKey) =
@@ -36,4 +39,6 @@ object TemporalKey {
 }
 
 /** A TemporalKey designates the temporal positioning of a layer's tile. */
-case class TemporalKey(time: DateTime)
+case class TemporalKey(instant: Long) {
+  def time: DateTime = new DateTime(instant, DateTimeZone.UTC)
+}
