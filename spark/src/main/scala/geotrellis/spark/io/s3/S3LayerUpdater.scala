@@ -12,18 +12,15 @@ import spray.json._
 import com.typesafe.scalalogging.slf4j._
 import scala.reflect._
 
-class S3LayerUpdater[
-  K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
   rddWriter: S3RDDWriter[K, V],
-  clobber: Boolean = true)
-  extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
+  clobber: Boolean = true) extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
   type container = RDD[(K, V)] with Metadata[M]
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update(id: LayerId, rdd: Container) = {
+  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
@@ -51,24 +48,18 @@ class S3LayerUpdater[
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
     rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
   }
+
+  def update(id: LayerId, rdd: Container) = update[KeyIndex[K]](id, rdd)
 }
 
 object S3LayerUpdater {
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat](
+  def custom[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     bucket: String,
     prefix: String,
-    clobber: Boolean = true): S3LayerUpdater[K, V, M, I] =
-    new S3LayerUpdater[K, V, M, I](
+    clobber: Boolean = true): S3LayerUpdater[K, V, M] =
+    new S3LayerUpdater[K, V, M](
       S3AttributeStore(bucket, prefix),
       new S3RDDWriter[K, V],
       clobber
     )
-
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
-    bucket: String, prefix: String, clobber: Boolean = true): S3LayerUpdater[K, V, M, KeyIndex[K]] =
-    custom[K, V, M, KeyIndex[K]](bucket, prefix, clobber)
 }

@@ -13,12 +13,12 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
-class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](
+class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
   val attributeStore: AttributeStore[JsonFormat])  extends Reader[LayerId, Reader[K, V]] {
 
   val s3Client: S3Client = S3Client.default
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def read[I <: KeyIndex[K]: JsonFormat](layerId: LayerId) = new Reader[K, V] {
 
     val (layerMetaData, _, keyBounds, keyIndex, writerSchema) =
       attributeStore.readLayerAttributes[S3LayerHeader, Unit, KeyBounds[K], I, Schema](layerId)
@@ -44,18 +44,14 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec,
         .getOrElse(throw new TileNotFoundError(key, layerId))
     }
   }
+
+  def read(layerId: LayerId): Reader[K, V] = read[KeyIndex[K]](layerId)
 }
 
 object S3TileReader {
-  def custom[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](bucket: String, root: String): S3TileReader[K, V, I] =
-    new S3TileReader[K, V, I](new S3AttributeStore(bucket, root))
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String, root: String): S3TileReader[K, V] =
+    new S3TileReader[K, V](new S3AttributeStore(bucket, root))
   
-  def custom[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](bucket: String): S3TileReader[K, V, I] =
-    custom(bucket, "")
-
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String, root: String): S3TileReader[K, V, KeyIndex[K]] =
-    custom[K, V, KeyIndex[K]](bucket, root)
-
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String): S3TileReader[K, V, KeyIndex[K]] =
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String): S3TileReader[K, V] =
     apply(bucket, "")
 }

@@ -10,14 +10,12 @@ import org.apache.avro.Schema
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerUpdater[
-  K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
   rddWriter: BaseAccumuloRDDWriter[K, V])
   extends LayerUpdater[LayerId, K, V, M] {
 
-  def update(id: LayerId, rdd: Container) = {
+  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
@@ -45,22 +43,17 @@ class AccumuloLayerUpdater[
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
   }
+
+  def update(id: LayerId, rdd: Container) = update[KeyIndex[K]](id, rdd)
 }
 
 object AccumuloLayerUpdater {
-  def custom[
-    K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    instance: AccumuloInstance,
-    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy
-  ): AccumuloLayerUpdater[K, V, M, I] =
-    new AccumuloLayerUpdater[K, V, M, I](
-      attributeStore = AccumuloAttributeStore(instance.connector),
-      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
-    )
-
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
     strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy
-  ): AccumuloLayerUpdater[K, V, M, KeyIndex[K]] = custom[K, V, M, KeyIndex[K]](instance, strategy)
+  ): AccumuloLayerUpdater[K, V, M] =
+    new AccumuloLayerUpdater[K, V, M](
+      attributeStore = AccumuloAttributeStore(instance.connector),
+      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
+    )
 }

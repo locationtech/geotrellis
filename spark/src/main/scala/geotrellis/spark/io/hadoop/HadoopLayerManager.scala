@@ -3,6 +3,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.io.json._
 import geotrellis.spark.{Boundable, LayerId}
 
 import org.apache.spark.SparkContext
@@ -28,7 +29,7 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
   ](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](from, Fields.header)
     val copier = HadoopLayerCopier[K, V, M](header.path)
-    copier.copy(from, to)
+    copier.copy[KeyIndex[K]](from, to)
   }
 
   def move[
@@ -38,16 +39,16 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
   ](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](from, Fields.header)
     val mover = HadoopLayerMover[K, V, M](header.path)
-    mover.move(from, to)
+    mover.move[KeyIndex[K]](from, to)
   }
 
   def reindex[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]])(implicit hadoopFormat: HadoopFormat[K,V]): Unit = {
+  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit hadoopFormat: HadoopFormat[K,V]): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](id, Fields.header)
-    val reindexer = HadoopLayerReindexer[K, V, M](header.path, keyIndexMethod)
-    reindexer.reindex(id)
+    val reindexer = HadoopLayerReindexer[K, V, M](header.path)
+    reindexer.reindex(id, keyIndexMethod)
   }
 }

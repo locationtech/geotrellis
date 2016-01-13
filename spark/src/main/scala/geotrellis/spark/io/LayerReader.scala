@@ -1,10 +1,16 @@
 package geotrellis.spark.io
 
-trait LayerReader[ID, ReturnType] extends Reader[ID, ReturnType] {
+import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.json._
+import spray.json.JsonFormat
+
+trait LayerReader[ID, K, ReturnType] extends Reader[ID, ReturnType] {
   val defaultNumPartitions: Int
 
   def read(id: ID, numPartitions: Int): ReturnType
 
+  def read[I <: KeyIndex[K]: JsonFormat](id: ID, numPartitions: Int): ReturnType
+
   def read(id: ID): ReturnType =
-    read(id, defaultNumPartitions)
+    read[KeyIndex[K]](id, defaultNumPartitions)
 }

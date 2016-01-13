@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -15,13 +15,11 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class HadoopLayerMover[
-  K: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
+class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
   (rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext) extends LayerMover[LayerId] {
+  (implicit sc: SparkContext) extends LayerMover[LayerId, K] {
 
-  override def move(from: LayerId, to: LayerId): Unit = {
+  def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -38,28 +36,22 @@ class HadoopLayerMover[
     attributeStore.delete(from)
     attributeStore.clearCache()
   }
+
+  // not supported operations actually
+  def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
+    move[I](from, to)
+
+  def move(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
+    move[KeyIndex[K]](from, to)
 }
 
 object HadoopLayerMover {
-  def custom[
-    K: JsonFormat: ClassTag, V: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
-    (rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-    (implicit sc: SparkContext): HadoopLayerMover[K, V, M, I] =
-      new HadoopLayerMover[K, V, M, I](rootPath, attributeStore)
-
-  def custom[
-    K: JsonFormat: ClassTag, V: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat]
-    (rootPath: Path)(implicit sc: SparkContext): HadoopLayerMover[K, V, M, I] =
-    custom[K, V, M, I](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
-
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
     (rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-    (implicit sc: SparkContext): HadoopLayerMover[K, V, M, KeyIndex[K]] =
-    custom[K, V, M, KeyIndex[K]](rootPath, attributeStore)
+    (implicit sc: SparkContext): HadoopLayerMover[K, V, M] =
+      new HadoopLayerMover[K, V, M](rootPath, attributeStore)
 
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-    (rootPath: Path)(implicit sc: SparkContext): HadoopLayerMover[K, V, M, KeyIndex[K]] =
+    (rootPath: Path)(implicit sc: SparkContext): HadoopLayerMover[K, V, M] =
     apply[K, V, M](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }

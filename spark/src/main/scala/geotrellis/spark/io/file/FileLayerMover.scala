@@ -15,9 +15,9 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerMover {
-  def custom[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
-    new LayerMover[LayerId] {
-      def move(from: LayerId, to: LayerId): Unit = {
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId, K] =
+    new LayerMover[LayerId, K] {
+      def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
@@ -61,26 +61,20 @@ object FileLayerMover {
         sourceAttributeStore.clearCache()
         targetAttributeStore.clearCache()
       }
+
+      def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
+        move[I](from, to)
+
+      def move(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
+        move[KeyIndex[K]](from, to)
     }
 
-  def custom[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](catalogPath: String): LayerMover[LayerId] =
-    custom[K, V, M, I](FileAttributeStore(catalogPath))
-
-  def custom[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](attributeStore: FileAttributeStore): LayerMover[LayerId] =
-    custom[K, V, M, I](attributeStore, attributeStore)
-
-  def custom[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId] =
-    custom[K, V, M, I](FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
-
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
-    custom[K, V, M, KeyIndex[K]](sourceAttributeStore, targetAttributeStore)
-
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerMover[LayerId] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerMover[LayerId, K] =
     apply[K, V, M](FileAttributeStore(catalogPath))
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerMover[LayerId] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerMover[LayerId, K] =
     apply[K, V, M](attributeStore, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId, K] =
     apply[K, V, M](FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
 }

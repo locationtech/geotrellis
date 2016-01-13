@@ -15,13 +15,12 @@ import scala.reflect._
 
 class AccumuloLayerWriter[
   K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat
+  M: JsonFormat
 ](val attributeStore: AttributeStore[JsonFormat],
   rddWriter: BaseAccumuloRDDWriter[K, V],
-  keyIndexMethod: KeyIndexMethod[K, I],
-  table: String) extends Writer[LayerId, RDD[(K, V)] with Metadata[M]] {
+  table: String) extends Writer[LayerId, RDD[(K, V)] with Metadata[M], K] {
 
-  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+  def write[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: I): Unit = {
     val header =
       AccumuloLayerHeader(
         keyClass = classTag[K].toString(),
@@ -30,7 +29,6 @@ class AccumuloLayerWriter[
       )
     val metaData = rdd.metadata
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val getRowId = (key: K) => index2RowId(keyIndex.toIndex(key))
 
     try {
@@ -40,65 +38,49 @@ class AccumuloLayerWriter[
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
   }
+
+  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit = {
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
+    write(id, rdd, keyIndexMethod.createIndex(keyBounds))
+  }
 }
 
 object AccumuloLayerWriter {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    instance: AccumuloInstance,
-    table: String,
-    indexMethod: KeyIndexMethod[K, I],
-    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
-  ): AccumuloLayerWriter[K, V, M, I] =
-    new AccumuloLayerWriter[K, V, M, I](
-      attributeStore = AccumuloAttributeStore(instance.connector),
-      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),
-      keyIndexMethod = indexMethod,
-      table = table
-    )
-
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
     table: String,
-    indexMethod: KeyIndexMethod[K, KeyIndex[K]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
-  ): AccumuloLayerWriter[K, V, M, KeyIndex[K]] =
-    new AccumuloLayerWriter[K, V, M, KeyIndex[K]](
+  ): AccumuloLayerWriter[K, V, M] =
+    new AccumuloLayerWriter[K, V, M](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new AccumuloRDDWriter[K, V](instance, strategy),
-      keyIndexMethod = indexMethod,
       table = table
     )
 
   def spatial(
     instance: AccumuloInstance, table: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](instance, table, keyIndexMethod, strategy)
+    apply[SpatialKey, Tile, RasterMetaData](instance, table, strategy)
 
   def spatialMultiBand(
     instance: AccumuloInstance, table: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](instance, table, keyIndexMethod, strategy)
+    apply[SpatialKey, MultiBandTile, RasterMetaData](instance, table, strategy)
 
   def spaceTime(
     instance: AccumuloInstance, table: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](instance, table, keyIndexMethod, strategy)
+    apply[SpaceTimeKey, Tile, RasterMetaData](instance, table, strategy)
 
   def spaceTimeMultiBand(
     instance: AccumuloInstance,
     table: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]],
     strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy
   )(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance, table, keyIndexMethod, strategy)
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance, table, strategy)
 }

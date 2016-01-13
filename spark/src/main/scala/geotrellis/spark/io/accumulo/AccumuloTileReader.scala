@@ -18,14 +18,14 @@ import scala.collection.JavaConversions._
 
 import scala.reflect.ClassTag
 
-class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec, I <: KeyIndex[K]: JsonFormat](
+class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
   instance: AccumuloInstance, val attributeStore: AccumuloAttributeStore)
   extends Reader[LayerId, Reader[K, V]] {
 
   val codec = KeyValueRecordCodec[K, V]
   val rowId = (index: Long) => new Text(long2Bytes(index))
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def read[I <: KeyIndex[K]: JsonFormat](layerId: LayerId) = new Reader[K, V] {
     val (layerMetaData, _, _, keyIndex, writerSchema) =
       attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, I, Schema](layerId)
 
@@ -52,16 +52,15 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
       }
     }
   }
+
+  def read(layerId: LayerId): Reader[K, V] = read[KeyIndex[K]](layerId)
 }
 
 object AccumuloTileReader {
-  def custom[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, I <: KeyIndex[K]: JsonFormat](
-    instance: AccumuloInstance): AccumuloTileReader[K, V, I] =
-    new AccumuloTileReader[K, V, I](
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag](
+    instance: AccumuloInstance): AccumuloTileReader[K, V] =
+    new AccumuloTileReader[K, V](
       instance = instance,
       attributeStore = AccumuloAttributeStore(instance.connector)
     )
-
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag](
-    instance: AccumuloInstance): AccumuloTileReader[K, V, KeyIndex[K]] = custom[K, V, KeyIndex[K]](instance)
 }

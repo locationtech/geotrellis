@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
   catalogPath: String,
   rddReader: FileRDDReader[K, V],
@@ -37,7 +37,7 @@ class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
@@ -60,103 +60,59 @@ class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
 }
 
 object FileLayerReader {
-  def custom[
+  def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
+    M: JsonFormat
   ](
     attributeStore: AttributeStore[JsonFormat],
     catalogPath: String,
     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
-  )(implicit sc: SparkContext): FileLayerReader[K, V, M, I] =
-    new FileLayerReader[K, V, M, I](
+  )(implicit sc: SparkContext): FileLayerReader[K, V, M] =
+    new FileLayerReader[K, V, M](
       attributeStore,
       catalogPath,
       new FileRDDReader[K, V],
       getCache
     )
 
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](attributeStore: AttributeStore[JsonFormat], catalogPath: String)(implicit sc: SparkContext): FileLayerReader[K, V, M, I] =
-    custom[K, V, M, I](attributeStore, catalogPath, None)
-
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](catalogPath: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): FileLayerReader[K, V, M, I] =
-    custom[K, V, M, I](new FileAttributeStore(catalogPath), catalogPath, getCache)
-
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](catalogPath: String)(implicit sc: SparkContext): FileLayerReader[K, V, M, I] =
-    custom[K, V, M, I](catalogPath, None)
-
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileLayerReader[K, V, M, I] =
-    custom[K, V, M, I](attributeStore, attributeStore.catalogPath, None)
-
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](
-     attributeStore: AttributeStore[JsonFormat],
-     catalogPath: String,
-     getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
-   )(implicit sc: SparkContext): FileLayerReader[K, V, M, KeyIndex[K]] =
-    custom[K, V, M, KeyIndex[K]](attributeStore, catalogPath, getCache)
-
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](attributeStore: AttributeStore[JsonFormat], catalogPath: String)(implicit sc: SparkContext): FileLayerReader[K, V, M, KeyIndex[K]] =
+  ](attributeStore: AttributeStore[JsonFormat], catalogPath: String)(implicit sc: SparkContext): FileLayerReader[K, V, M] =
     apply[K, V, M](attributeStore, catalogPath, None)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](catalogPath: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): FileLayerReader[K, V, M, KeyIndex[K]] =
+  ](catalogPath: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): FileLayerReader[K, V, M] =
     apply[K, V, M](new FileAttributeStore(catalogPath), catalogPath, getCache)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](catalogPath: String)(implicit sc: SparkContext): FileLayerReader[K, V, M, KeyIndex[K]] =
+  ](catalogPath: String)(implicit sc: SparkContext): FileLayerReader[K, V, M] =
     apply[K, V, M](catalogPath, None)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileLayerReader[K, V, M, KeyIndex[K]] =
+  ](attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileLayerReader[K, V, M] =
     apply[K, V, M](attributeStore, attributeStore.catalogPath, None)
 
-  def spatial(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, Tile, RasterMetaData, KeyIndex[SpatialKey]] =
+  def spatial(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, Tile, RasterMetaData] =
     apply[SpatialKey, Tile, RasterMetaData](catalogPath)
 
-  def spatialMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, MultiBandTile, RasterMetaData, KeyIndex[SpatialKey]] =
+  def spatialMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, MultiBandTile, RasterMetaData] =
     apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath)
 
-  def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]] =
+  def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetaData] =
     apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
 
-  def spaceTimeMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData, KeyIndex[SpaceTimeKey]] =
+  def spaceTimeMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
     apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath)
 }

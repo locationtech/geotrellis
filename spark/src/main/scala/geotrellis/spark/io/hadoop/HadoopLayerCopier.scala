@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -15,13 +15,11 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class HadoopLayerCopier[
-  K: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext) extends LayerCopier[LayerId] {
+  (implicit sc: SparkContext) extends LayerCopier[LayerId, K] {
 
-  def copy(from: LayerId, to: LayerId): Unit = {
+  def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -36,26 +34,21 @@ class HadoopLayerCopier[
       to, header.copy(path = newPath), metadata, keyBounds, keyIndex, Option.empty[Schema]
     )
   }
+
+  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: TI): Unit =
+    copy[FI](from, to)
+
+  def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
+    copy[KeyIndex[K]](from, to)
 }
 
 object HadoopLayerCopier {
-  def custom[
-    K: JsonFormat: ClassTag, V: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext): HadoopLayerCopier[K, V, M, I] =
-    new HadoopLayerCopier[K, V, M, I](rootPath, attributeStore)
-
-  def custom[
-    K: JsonFormat: ClassTag, V: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](rootPath: Path)
-    (implicit sc: SparkContext): HadoopLayerCopier[K, V, M, I] =
-    custom[K, V, M, I](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
-
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    rootPath: Path, attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): HadoopLayerCopier[K, V, M, KeyIndex[K]] =
-    custom[K, V, M, KeyIndex[K]](rootPath, attributeStore)
+    rootPath: Path, attributeStore: AttributeStore[JsonFormat])
+  (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
+    new HadoopLayerCopier[K, V, M](rootPath, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)(implicit sc: SparkContext): HadoopLayerCopier[K, V, M, KeyIndex[K]] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)
+    (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
     apply[K, V, M](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }

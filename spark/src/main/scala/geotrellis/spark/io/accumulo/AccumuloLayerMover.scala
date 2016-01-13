@@ -10,29 +10,13 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerMover {
-  def custom[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    instance: AccumuloInstance,
-    layerReader: AccumuloLayerReader[K, V, M, I],
-    layerWriter: AccumuloLayerWriter[K, V, M, I])
-  (implicit sc: SparkContext): LayerMover[LayerId] = {
-    val attributeStore = AccumuloAttributeStore(instance.connector)
-    new GenericLayerMover[LayerId](
-      layerCopier = AccumuloLayerCopier.custom[K, V, M, I](
-        attributeStore = attributeStore,
-        layerReader    = layerReader,
-        layerWriter    = layerWriter
-      ),
-      layerDeleter = AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
-    )
-  }
-
   def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
-    layerReader: AccumuloLayerReader[K, V, M, KeyIndex[K]],
-    layerWriter: AccumuloLayerWriter[K, V, M, KeyIndex[K]])
-   (implicit sc: SparkContext): LayerMover[LayerId] = {
+    layerReader: AccumuloLayerReader[K, V, M],
+    layerWriter: AccumuloLayerWriter[K, V, M])
+   (implicit sc: SparkContext): LayerMover[LayerId, K] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    new GenericLayerMover[LayerId](
+    new GenericLayerMover[LayerId, K](
       layerCopier = AccumuloLayerCopier[K, V, M](
         attributeStore = attributeStore,
         layerReader    = layerReader,
@@ -42,29 +26,14 @@ object AccumuloLayerMover {
     )
   }
 
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    instance: AccumuloInstance,
-    table: String,
-    indexMethod: KeyIndexMethod[K, I],
-    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-   (implicit sc: SparkContext): LayerMover[LayerId] =
-    custom[K, V, M, I](
-      instance    = instance,
-      layerReader = AccumuloLayerReader.custom[K, V, M, I](instance),
-      layerWriter = AccumuloLayerWriter.custom[K, V, M, I](instance, table, indexMethod, strategy)
-    )
-
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     instance: AccumuloInstance,
     table: String,
-    indexMethod: KeyIndexMethod[K, KeyIndex[K]],
     strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-   (implicit sc: SparkContext): LayerMover[LayerId] =
+   (implicit sc: SparkContext): LayerMover[LayerId, K] =
     apply[K, V, M](
       instance    = instance,
       layerReader = AccumuloLayerReader[K, V, M](instance),
-      layerWriter = AccumuloLayerWriter[K, V, M](instance, table, indexMethod, strategy)
+      layerWriter = AccumuloLayerWriter[K, V, M](instance, table, strategy)
     )
 }

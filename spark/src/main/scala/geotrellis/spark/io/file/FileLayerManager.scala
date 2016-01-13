@@ -2,6 +2,7 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 
 import org.apache.spark.SparkContext
@@ -15,21 +16,18 @@ class FileLayerManager(attributeStore: FileAttributeStore)(implicit sc: SparkCon
     deleter.delete(id)
   }
 
-  def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-     (from: LayerId, to: LayerId): Unit = {
+  def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val copier = FileLayerCopier[K, V, M](attributeStore)
-    copier.copy(from, to)
+    copier.copy[KeyIndex[K]](from, to)
   }
 
-  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-     (from: LayerId, to: LayerId): Unit = {
+  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val mover = FileLayerMover[K, V, M](attributeStore)
-    mover.move(from, to)
+    mover.move[KeyIndex[K]](from, to)
   }
 
-  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-     (id: LayerId, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]]): Unit = {
-    val reindexer = FileLayerReindexer[K, V, M](attributeStore, keyIndexMethod)
-    reindexer.reindex(id)
+  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
+    val reindexer = FileLayerReindexer[K, V, M](attributeStore)
+    reindexer.reindex(id, keyIndexMethod)
   }
 }

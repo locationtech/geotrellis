@@ -16,71 +16,37 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerReindexer {
-  def custom[
+  def apply[
     K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    FI <: KeyIndex[K]: JsonFormat,
-    TI <: KeyIndex[K]: JsonFormat
+    M: JsonFormat
   ](
-    attributeStore: FileAttributeStore,
-    keyIndexMethod: KeyIndexMethod[K, TI]
-  )(implicit sc: SparkContext): LayerReindexer[LayerId] = {
-    val layerReaderFrom = FileLayerReader.custom[K, V, M, FI](attributeStore)
-    val layerReaderTo = FileLayerReader.custom[K, V, M, TI](attributeStore)
+    attributeStore: FileAttributeStore
+  )(implicit sc: SparkContext): LayerReindexer[LayerId, K] = {
+    val layerReader  = FileLayerReader[K, V, M](attributeStore)
     val layerDeleter = FileLayerDeleter(attributeStore)
-    val layerWriter = FileLayerWriter.custom[K, V, M, TI](attributeStore, keyIndexMethod)
+    val layerWriter  = FileLayerWriter[K, V, M](attributeStore)
 
-    val layerCopierFrom = new SparkLayerCopier[FileLayerHeader, K, V, M, TI](
+    val layerCopier  = new SparkLayerCopier[FileLayerHeader, K, V, M](
       attributeStore = attributeStore,
-      layerReader    = layerReaderFrom,
+      layerReader    = layerReader,
       layerWriter    = layerWriter
     ) {
       def headerUpdate(layerId: LayerId, header: FileLayerHeader): FileLayerHeader =
         header.copy(path = LayerPath(layerId))
     }
 
-    val layerCopierTo = new SparkLayerCopier[FileLayerHeader, K, V, M, TI](
-      attributeStore = attributeStore,
-      layerReader    = layerReaderTo,
-      layerWriter    = layerWriter
-    ) {
-      def headerUpdate(layerId: LayerId, header: FileLayerHeader): FileLayerHeader =
-        header.copy(path = LayerPath(layerId))
-    }
+    val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 
-    val layerMover = GenericLayerMover(layerCopierTo, layerDeleter)
-
-    GenericLayerReindexer(layerDeleter, layerCopierFrom, layerMover)
-  }
-
-  def custom[
-    K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    FI <: KeyIndex[K]: JsonFormat,
-    TI <: KeyIndex[K]: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K, TI])(implicit sc: SparkContext): LayerReindexer[LayerId] = {
-    val attributeStore = FileAttributeStore(catalogPath)
-    custom[K, V, M, FI, TI](attributeStore, keyIndexMethod)
+    GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }
 
   def apply[
     K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](
-     attributeStore: FileAttributeStore,
-     keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]]
-   )(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    custom[K, V, M, KeyIndex[K], KeyIndex[K]](attributeStore, keyIndexMethod)
-
-  def apply[
-    K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]])(implicit sc: SparkContext): LayerReindexer[LayerId] = {
+  ](catalogPath: String)(implicit sc: SparkContext): LayerReindexer[LayerId, K] = {
     val attributeStore = FileAttributeStore(catalogPath)
-    custom[K, V, M, KeyIndex[K], KeyIndex[K]](attributeStore, keyIndexMethod)
+    apply[K, V, M](attributeStore)
   }
 }

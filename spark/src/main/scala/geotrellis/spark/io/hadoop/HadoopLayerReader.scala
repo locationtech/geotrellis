@@ -21,18 +21,16 @@ import scala.reflect.ClassTag
  * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class HadoopLayerReader[
-  K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat], rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      import spray.json.DefaultJsonProtocol._
+      import spray.json.DefaultJsonProtocol.UnitJsonFormat
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], I, Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
@@ -54,19 +52,12 @@ class HadoopLayerReader[
 }
 
 object HadoopLayerReader {
-  def custom[
-    K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
-    new HadoopLayerReader[K, V, M, I](attributeStore, rddReader)
+    new HadoopLayerReader[K, V, M](attributeStore, rddReader)
 
-  def custom[
-    K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-    M: JsonFormat, I <: KeyIndex[K]: JsonFormat](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M, I] =
-    custom(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
-
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M, KeyIndex[K]] =
-    custom(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
+  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M] =
+    apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)(implicit sc: SparkContext) =
     apply[SpatialKey, Tile, RasterMetaData](rootPath)

@@ -11,13 +11,13 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
-class HadoopTileReader[K: JsonFormat: ClassTag, V, I <: KeyIndex[K]: JsonFormat](val attributeStore: HadoopAttributeStore)
+class HadoopTileReader[K: JsonFormat: ClassTag, V](val attributeStore: HadoopAttributeStore)
     (implicit format: HadoopFormat[K, V], sc: SparkContext) extends Reader[LayerId, Reader[K, V]] {
 
   val catalogConfig = HadoopCatalogConfig.DEFAULT
   val conf = attributeStore.hadoopConfiguration
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def read[I <: KeyIndex[K]: JsonFormat](layerId: LayerId) = new Reader[K, V] {
 
     val (layerMetaData, _, _, keyIndex, _) =
       attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, I, Unit](layerId)
@@ -39,18 +39,14 @@ class HadoopTileReader[K: JsonFormat: ClassTag, V, I <: KeyIndex[K]: JsonFormat]
       ).first()._2.get()
     }
   }
+
+  def read(layerId: LayerId): Reader[K, V] = read[KeyIndex[K]](layerId)
 }
 
 object HadoopTileReader {
-  def custom[K: JsonFormat: ClassTag, V, I <: KeyIndex[K]: JsonFormat](attributeStore: HadoopAttributeStore)(implicit format: HadoopFormat[K, V], sc: SparkContext): HadoopTileReader[K, V, I] =
-    new HadoopTileReader[K, V, I](attributeStore)
+  def apply[K: JsonFormat: ClassTag, V](attributeStore: HadoopAttributeStore)(implicit format: HadoopFormat[K, V], sc: SparkContext): HadoopTileReader[K, V] =
+    new HadoopTileReader[K, V](attributeStore)
 
-  def custom[K: JsonFormat: ClassTag, V, I <: KeyIndex[K]: JsonFormat](rootPath: Path)(implicit format: HadoopFormat[K, V], sc: SparkContext): HadoopTileReader[K, V, I] =
-    custom(HadoopAttributeStore(new Path(rootPath, "attributes")))
-
-  def apply[K: JsonFormat: ClassTag, V](attributeStore: HadoopAttributeStore)(implicit format: HadoopFormat[K, V], sc: SparkContext): HadoopTileReader[K, V, KeyIndex[K]] =
-    new HadoopTileReader[K, V, KeyIndex[K]](attributeStore)
-
-  def apply[K: JsonFormat: ClassTag, V](rootPath: Path)(implicit format: HadoopFormat[K, V], sc: SparkContext): HadoopTileReader[K, V, KeyIndex[K]] =
+  def apply[K: JsonFormat: ClassTag, V](rootPath: Path)(implicit format: HadoopFormat[K, V], sc: SparkContext): HadoopTileReader[K, V] =
     apply(HadoopAttributeStore(new Path(rootPath, "attributes")))
 }

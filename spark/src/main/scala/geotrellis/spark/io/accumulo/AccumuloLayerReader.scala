@@ -17,16 +17,15 @@ import spray.json._
 import scala.reflect._
 
 class AccumuloLayerReader[
-  K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag,
-  M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddReader: BaseAccumuloRDDReader[K, V]
-)(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] {
+  K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+  V: AvroRecordCodec: ClassTag,
+  M: JsonFormat
+](val attributeStore: AttributeStore[JsonFormat], rddReader: BaseAccumuloRDDReader[K, V])
+ (implicit sc: SparkContext) extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
@@ -48,22 +47,14 @@ class AccumuloLayerReader[
 }
 
 object AccumuloLayerReader {
-  def custom[
+  def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
     V: AvroRecordCodec: ClassTag, 
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M, I] =
-    new AccumuloLayerReader[K, V, M, I] (
+    M: JsonFormat
+  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M] =
+    new AccumuloLayerReader[K, V, M] (
       AccumuloAttributeStore(instance.connector),
       new AccumuloRDDReader[K, V](instance))
-
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M, KeyIndex[K]] =
-    custom[K, V, M, KeyIndex[K]](instance)
 
   def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
     apply[SpatialKey, Tile, RasterMetaData](instance)

@@ -29,20 +29,18 @@ import java.io.File
   * @tparam M                Type of Metadata associated with the RDD[(K,V)]
   * 
   * @param catalogPath  The root directory of this catalog.
-  * @param keyIndexMethod    Method used to convert RDD keys to SFC indexes
   * @param clobber           flag to overwrite raster if already present on File
   * @param attributeStore    AttributeStore to be used for storing raster metadata
   */
-class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](
+class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: FileRDDWriter[K, V],
-    keyIndexMethod: KeyIndexMethod[K, I],
     catalogPath: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-) extends Writer[LayerId, RDD[(K, V)] with Metadata[M]] with LazyLogging {
+) extends Writer[LayerId, RDD[(K, V)] with Metadata[M], K] with LazyLogging {
 
-  def write(layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {
+  def write[I <: KeyIndex[K]: JsonFormat](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: I): Unit = {
     val catalogPathFile = new File(catalogPath)
 
     require(!attributeStore.layerExists(layerId) || clobber, s"$layerId already exists")
@@ -57,7 +55,6 @@ class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
       )
 
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
     val layerPath = new File(catalogPath, path).getAbsolutePath
@@ -71,6 +68,11 @@ class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
       case e: Exception => throw new LayerWriteError(layerId).initCause(e)
     }
   }
+
+  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit = {
+    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
+    write(id, rdd, keyIndexMethod.createIndex(keyBounds))
+  }
 }
 
 object FileLayerWriter {
@@ -83,102 +85,65 @@ object FileLayerWriter {
     def DEFAULT = Options()
   }
 
-  def custom[
+  def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](attributeStore: FileAttributeStore, keyIndexMethod: KeyIndexMethod[K, I], options: Options): FileLayerWriter[K, V, M, I] =
-    new FileLayerWriter[K, V, M, I](
+    M: JsonFormat
+  ](attributeStore: FileAttributeStore, options: Options): FileLayerWriter[K, V, M] =
+    new FileLayerWriter[K, V, M](
       attributeStore,
       new FileRDDWriter[K, V],
-      keyIndexMethod,
       attributeStore.catalogPath,
       options.clobber,
       options.oneToOne
     )
 
-  def custom[
+  def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](attributeStore: FileAttributeStore, keyIndexMethod: KeyIndexMethod[K, I]): FileLayerWriter[K, V, M, I] =
-    custom[K, V, M, I](attributeStore, keyIndexMethod, Options.DEFAULT)
-
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K, I], options: Options): FileLayerWriter[K, V, M, I] =
-    custom[K, V, M, I](FileAttributeStore(catalogPath), keyIndexMethod, options)
-
-  def custom[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat,
-    I <: KeyIndex[K]: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K, I]): FileLayerWriter[K, V, M, I] =
-    custom[K, V, M, I](catalogPath, keyIndexMethod, Options.DEFAULT)
+    M: JsonFormat
+  ](attributeStore: FileAttributeStore): FileLayerWriter[K, V, M] =
+    apply[K, V, M](attributeStore, Options.DEFAULT)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](attributeStore: FileAttributeStore, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]], options: Options): FileLayerWriter[K, V, M, KeyIndex[K]] =
-    custom[K, V, M, KeyIndex[K]](attributeStore, keyIndexMethod, options)
+  ](catalogPath: String, options: Options): FileLayerWriter[K, V, M] =
+    apply[K, V, M](FileAttributeStore(catalogPath), options)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](attributeStore: FileAttributeStore, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]]): FileLayerWriter[K, V, M, KeyIndex[K]] =
-    apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
-
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]], options: Options): FileLayerWriter[K, V, M, KeyIndex[K]] =
-    apply[K, V, M](FileAttributeStore(catalogPath), keyIndexMethod, options)
-
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K, KeyIndex[K]]): FileLayerWriter[K, V, M, KeyIndex[K]] =
-    apply[K, V, M](catalogPath, keyIndexMethod, Options.DEFAULT)
+  ](catalogPath: String): FileLayerWriter[K, V, M] =
+    apply[K, V, M](catalogPath, Options.DEFAULT)
 
   def spatial(
     catalogPath: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpatialKey, Tile, RasterMetaData, KeyIndex[SpatialKey]] =
-    apply[SpatialKey, Tile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpatialKey, Tile, RasterMetaData] =
+    apply[SpatialKey, Tile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
 
   def spatialMultiBand(
     catalogPath: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpatialKey, MultiBandTile, RasterMetaData, KeyIndex[SpatialKey]] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
 
   def spaceTime(
     catalogPath: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData, KeyIndex[SpaceTimeKey]] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
+    apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
 
   def spaceTimeMultiBand(
     catalogPath: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey, KeyIndex[SpaceTimeKey]],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData, KeyIndex[SpaceTimeKey]] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
 }
