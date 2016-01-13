@@ -43,4 +43,23 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       updater.update(layerId, update)
     }
   }
+
+  it("should write and update a layer with preallocated key space") {
+    val (minKey, minTile) = sample.sortByKey().first()
+    val (maxKey, maxTile) = sample.sortByKey(false).first()
+    val minSpatialKey = minKey.spatialKey
+    val maxSpatialKey = maxKey.spatialKey
+
+    val kb = KeyBounds[SpaceTimeKey](
+      minKey = SpaceTimeKey(-64, -64, minKey.instant),
+      maxKey = SpaceTimeKey(+64, +64, maxKey.instant)
+    )
+    writer.write(preallocLayerId, sample, Some(kb))
+
+    val updateList = (for(i <- -64 to 64; j <- -64 to 64) yield
+      (minKey.updateSpatialComponent(SpatialKey(i, j)), minTile))
+    val update = new ContextRDD(sc.parallelize(updateList), dummyRasterMetaData)
+    updater.update(preallocLayerId, update)
+  }
+
 }
