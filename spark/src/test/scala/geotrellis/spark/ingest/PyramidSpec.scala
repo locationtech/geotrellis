@@ -79,7 +79,7 @@ class PyramidSpec extends FunSpec
 
       for((key, tile) <- results) {
         val multi =
-          if(key.temporalKey.time == dt1) 1
+          if(key.temporalKey.instant == dt1.getMillis) 1
           else 10
         key.spatialKey match {
           case SpatialKey(0, 0) =>

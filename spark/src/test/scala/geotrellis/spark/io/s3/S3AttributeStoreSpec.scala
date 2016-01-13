@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 
 class S3AttributeStoreSpec extends AttributeStoreSpec {
-  val bucket = "mock-bucket"
+  val bucket = "attribute-store-test-mock-bucket"
   val prefix = "catalog"
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
