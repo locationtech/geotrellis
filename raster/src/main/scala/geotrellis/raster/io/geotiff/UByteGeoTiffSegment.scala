@@ -8,23 +8,14 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-
-class UByteGeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends RawUByteGeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Int = {
-    val v = super.get(i)
-    if(v == noDataValue.toInt) 0 else v
-  }
-}
-
-class RawUByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
+abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   val size: Int = bytes.size
 
   def get(i: Int): Int = bytes(i) & 0xFF
   def getRaw(i: Int): Byte = bytes(i)
 
-  def getInt(i: Int): Int = get(i)
-  def getDouble(i: Int): Double = i2d(get(i))
+  def getInt(i: Int): Int
+  def getDouble(i: Int): Double
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -79,5 +70,31 @@ class RawUByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
       arr(i) = d2b(f(i, getDouble(i)))
     }
     arr
+  }
+}
+
+trait UByteRawSegment {
+  def get(i: Int): Int
+  def getInt(i: Int): Int = get(i)
+  def getDouble(i: Int): Double = get(i).toDouble
+}
+
+trait UByteConstantNoDataSegment {
+  def getRaw(i: Int): Byte
+  def getInt(i: Int): Int = ub2i(getRaw(i))
+  def getDouble(i: Int): Double = ub2i(getRaw(i))
+}
+
+trait UByteUserDefinedNoDataSegment {
+  val noDataValue: Int
+
+  def get(i: Int): Int
+  def getInt(i: Int): Int = {
+    val n = get(i);
+    if (n == noDataValue) Int.MinValue else n
+  }
+  def getDouble(i: Int): Double = {
+    val n = get(i);
+    if (n == noDataValue) Double.NaN else n.toDouble
   }
 }

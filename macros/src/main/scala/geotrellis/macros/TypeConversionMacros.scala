@@ -25,6 +25,26 @@ object TypeConversionMacros {
   }
 
 
+  def ub2s_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Short.MinValue } else { (n & 0xFF).toShort } }""")
+  }
+
+  def ub2i_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Int] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Int.MinValue } else { n & 0xFF } }""")
+  }
+
+  def ub2f_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Float] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Float.NaN } else { (n & 0xFF).toFloat } }""")
+  }
+
+  def ub2d_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Double] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Double.NaN } else { (n & 0xFF).toDouble } }""")
+  }
+
 
   def s2b_impl(c: Context)(n: c.Expr[Short]): c.Expr[Byte] = {
     import c.universe._
@@ -47,9 +67,35 @@ object TypeConversionMacros {
   }
 
 
+  def us2b_impl(c: Context)(n: c.Expr[Short]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toShort) { Byte.MinValue } else { n.toByte } }""")
+  }
+
+  def us2i_impl(c: Context)(n: c.Expr[Short]): c.Expr[Int] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toShort) { Int.MinValue } else { n.toInt } }""")
+  }
+
+  def us2f_impl(c: Context)(n: c.Expr[Short]): c.Expr[Float] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toShort) { Float.NaN } else { n.toFloat } }""")
+  }
+
+  def us2d_impl(c: Context)(n: c.Expr[Short]): c.Expr[Double] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toShort) { Double.NaN } else { n.toDouble } }""")
+  }
+
+
   def i2b_impl(c: Context)(n: c.Expr[Int]): c.Expr[Byte] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(n == Int.MinValue) { Byte.MinValue } else { n.toByte } }""")
+  }
+
+  def i2ub_impl(c: Context)(n: c.Expr[Int]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == Int.MinValue) { 0.toByte } else { n.toByte } }""")
   }
 
   def i2s_impl(c: Context)(n: c.Expr[Int]): c.Expr[Short] = {

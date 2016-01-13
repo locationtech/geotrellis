@@ -16,10 +16,10 @@ class UInt16GeoTiffMultiBandTile(
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with UInt16GeoTiffSegmentCollection {
 
-  val noDataValue = cellType match {
+  val noDataValue: Option[Int] = cellType match {
     case _: RawCellType => None
-    case _: ConstantNoDataCellType => Some(Int.MinValue)
-    case UserDefinedNoDataCellType(nd) => Some(nd)
+    case _: ConstantNoDataCellType => Some(0)
+    case UShortUserDefinedNoDataCellType(nd) => Some(nd.toInt)
   }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =

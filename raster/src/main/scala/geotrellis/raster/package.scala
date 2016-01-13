@@ -116,12 +116,23 @@ package object raster
   def b2f(n: Byte): Float = macro TypeConversionMacros.b2f_impl
   def b2d(n: Byte): Double = macro TypeConversionMacros.b2d_impl
 
+  def ub2i(n: Byte): Int = macro TypeConversionMacros.ub2i_impl
+  def ub2s(n: Byte): Short = macro TypeConversionMacros.ub2s_impl
+  def ub2f(n: Byte): Float = macro TypeConversionMacros.ub2f_impl
+  def ub2d(n: Byte): Double = macro TypeConversionMacros.ub2d_impl
+
   def s2b(n: Short): Byte = macro TypeConversionMacros.s2b_impl
   def s2i(n: Short): Int = macro TypeConversionMacros.s2i_impl
   def s2f(n: Short): Float = macro TypeConversionMacros.s2f_impl
   def s2d(n: Short): Double = macro TypeConversionMacros.s2d_impl
 
+  def us2b(n: Short): Byte = macro TypeConversionMacros.us2b_impl
+  def us2i(n: Short): Int = macro TypeConversionMacros.us2i_impl
+  def us2f(n: Short): Float = macro TypeConversionMacros.us2f_impl
+  def us2d(n: Short): Double = macro TypeConversionMacros.us2d_impl
+
   def i2b(n: Int): Byte = macro TypeConversionMacros.i2b_impl
+  def i2ub(n: Int): Byte = macro TypeConversionMacros.i2ub_impl
   def i2s(n: Int): Short = macro TypeConversionMacros.i2s_impl
   def i2f(n: Int): Float = macro TypeConversionMacros.i2f_impl
   def i2d(n: Int): Double = macro TypeConversionMacros.i2d_impl

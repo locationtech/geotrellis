@@ -5,32 +5,30 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class UInt16GeoTiffTile(
-  compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
+  val compressedBytes: Array[Array[Byte]],
+  val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: CellType
 ) extends GeoTiffTile(segmentLayout, compression) with UInt16GeoTiffSegmentCollection {
 
-  val noDataValue = cellType match {
+  val noDataValue: Option[Int] = cellType match {
     case _: RawCellType => None
-    case _: ConstantNoDataCellType => Some(0.toInt)
-    case UShortUserDefinedNoDataCellType(nd) => Some(nd)
+    case _: ConstantNoDataCellType => Some(0)
+    case UShortUserDefinedNoDataCellType(nd) => Some(nd.toInt)
   }
 
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Short](cols * rows)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = 
+      val segment =
         getSegment(segmentIndex)
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       cfor(0)(_ < segment.size, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
         if(col < cols && row < rows) {
-          val data =
-            if (segment.get(i) != noDataValue) segment.getRaw(i)
-            else shortNODATA
+          val data = segment.getRaw(i)
           arr(row * cols + col) = data
         }
       }

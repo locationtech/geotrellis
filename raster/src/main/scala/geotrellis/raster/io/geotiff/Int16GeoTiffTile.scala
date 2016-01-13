@@ -9,7 +9,7 @@ class Int16GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  cellType: CellType
+  val cellType: CellType
 ) extends GeoTiffTile(segmentLayout, compression) with Int16GeoTiffSegmentCollection {
 
   val noDataValue = cellType match {

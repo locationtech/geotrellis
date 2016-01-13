@@ -7,17 +7,14 @@ trait UByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = UByteGeoTiffSegment
 
   val bandType = UByteBandType
-  val noDataValue: Double
+  val noDataValue: Option[Short]
 
-  val createSegment: Int => UByteGeoTiffSegment =
-    { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i), noDataValue) }
-}
-
-trait RawUByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
-  type T = RawUByteGeoTiffSegment
-
-  val bandType = UByteBandType
-
-  val createSegment: Int => RawUByteGeoTiffSegment =
-    { i: Int => new RawUByteGeoTiffSegment(getDecompressedBytes(i)) }
+  val createSegment: Int => UByteGeoTiffSegment = noDataValue match {
+    case None =>
+      { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) with UByteRawSegment }
+    case Some(nd) if (nd == 0.toShort) =>
+      { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) with UByteConstantNoDataSegment }
+    case Some(nd) => // Cast nodata to int in this case so that we can properly compare it to the upcast unsigned byte
+      { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) with UByteUserDefinedNoDataSegment { val noDataValue = nd.toInt } }
+    }
 }

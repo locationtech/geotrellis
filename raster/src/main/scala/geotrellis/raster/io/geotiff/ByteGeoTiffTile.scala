@@ -5,17 +5,17 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class ByteGeoTiffTile(
-  compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
+  val compressedBytes: Array[Array[Byte]],
+  val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: CellType
 ) extends GeoTiffTile(segmentLayout, compression) with ByteGeoTiffSegmentCollection {
 
-  val noDataValue = cellType match {
-    case _: RawCellType => ByteCellType
-    case _: ConstantNoDataCellType => byteNODATA
-    case ByteUserDefinedNoDataCellType(nd) => nd
+  val noDataValue: Option[Byte] = cellType match {
+    case _: RawCellType => None
+    case _: ConstantNoDataCellType => Some(byteNODATA)
+    case ByteUserDefinedNoDataCellType(nd) => Some(nd)
   }
 
   def mutable: MutableArrayTile = {

@@ -7,17 +7,14 @@ trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = ByteGeoTiffSegment
 
   val bandType = ByteBandType
-  val noDataValue: Double
+  val noDataValue: Option[Byte]
 
-  val createSegment: Int => ByteGeoTiffSegment =
-    { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i), noDataValue) }
-}
-
-trait RawByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
-  type T = RawByteGeoTiffSegment
-
-  val bandType = ByteBandType
-
-  val createSegment: Int => RawByteGeoTiffSegment =
-    { i: Int => new RawByteGeoTiffSegment(getDecompressedBytes(i)) }
+  val createSegment: Int => ByteGeoTiffSegment = noDataValue match {
+    case None =>
+      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) with ByteRawSegment }
+    case Some(nd) if (nd == Short.MinValue) =>
+      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) with ByteConstantNoDataSegment }
+    case Some(nd) =>
+      { i: Int => new ByteGeoTiffSegment(getDecompressedBytes(i)) with ByteUserDefinedNoDataSegment { val noDataValue = nd } }
+    }
 }

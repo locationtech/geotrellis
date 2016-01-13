@@ -16,6 +16,6 @@ trait Int16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
     case Some(nd) if (nd == Short.MinValue) =>
       { i: Int => new Int16GeoTiffSegment(getDecompressedBytes(i)) with Int16ConstantNoDataSegment }
     case Some(nd) =>
-      { i: Int => new Int16UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
+      { i: Int => new Int16GeoTiffSegment(getDecompressedBytes(i)) with Int16UserDefinedNoDataSegment { val noDataValue = nd } }
   }
 }

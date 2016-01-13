@@ -5,8 +5,8 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class BitGeoTiffTile(
-  compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
+  val compressedBytes: Array[Array[Byte]],
+  val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: CellType

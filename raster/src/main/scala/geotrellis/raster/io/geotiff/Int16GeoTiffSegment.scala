@@ -16,23 +16,7 @@ abstract class Int16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   def get(i: Int): Short = buffer.get(i)
 
   def getInt(i: Int): Int
- /* = noDataValue match {
-    case Some(nd) if (nd == Short.MinValue) => s2i(get(i))
-    case Some(nd) => {
-      val n = get(i);
-      if (n == nd) Int.MinValue else n
-    }
-    case None => get(i).toInt
-  }*/
   def getDouble(i: Int): Double
-  /*= noDataValue match {
-    case Some(nd) if (nd == Short.MinValue) => s2d(get(i))
-    case Some(nd) => {
-      val n = get(i);
-      if (n == nd) Double.NaN else n
-    }
-    case None => get(i).toDouble
-  }*/
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -115,8 +99,9 @@ trait Int16ConstantNoDataSegment {
   def getInt(i: Int): Int = s2i(get(i))
   def getDouble(i: Int): Double = s2d(get(i))
 }
-class Int16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], noDataValue: Short)
-    extends Int16GeoTiffSegment(bytes) {
+trait Int16UserDefinedNoDataSegment {
+  val noDataValue: Short
+
   def get(i: Int): Short
   def getInt(i: Int): Int = {
     val n = get(i);
