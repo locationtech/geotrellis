@@ -57,8 +57,9 @@ object TileRDDReproject {
           // Assume caller knows what she/he is doing
           options
         case None =>
-          val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options)
-          options.copy(parentGridExtent = Some(parentGridExtent))
+          // val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options)
+          // options.copy(parentGridExtent = Some(parentGridExtent))
+          options
       }
 
     val reprojectedTiles =
