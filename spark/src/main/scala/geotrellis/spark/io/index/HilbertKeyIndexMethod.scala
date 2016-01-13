@@ -12,8 +12,8 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
   implicit def spatialKeyIndexIndex(m: HilbertKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
       def createIndex(keyBounds: KeyBounds[SpatialKey]) = {
-        val xResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
-        val yResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
+        val xResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
+        val yResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
         HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
       }
     }
@@ -21,9 +21,8 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
   def apply(temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = {
-        val xResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
-        val yResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
-
+        val xResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
+        val yResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
         HilbertSpaceTimeKeyIndex(keyBounds, xResolution, yResolution, temporalResolution)
       }
     }
@@ -36,8 +35,8 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
           val maxKey = keyBounds.maxKey
           KeyBounds[SpaceTimeKey](SpaceTimeKey(minKey.col, minKey.row, minDate), SpaceTimeKey(maxKey.col, maxKey.row, maxDate))
         }
-        val xResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
-        val yResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
+        val xResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
+        val yResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
         HilbertSpaceTimeKeyIndex(adjustedKeyBounds, xResolution, yResolution, temporalResolution)
       }
     }

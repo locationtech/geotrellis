@@ -40,14 +40,15 @@ class HilbertSpaceTimeKeyIndex(
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
+  val minKey = keyBounds.minKey.spatialKey
 
   @transient lazy val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec(
         List(
-          math.pow(2, xResolution).toInt,
-          math.pow(2, yResolution).toInt,
-          math.pow(2, temporalResolution).toInt
+          xResolution,
+          yResolution,
+          temporalResolution
         ).map(new java.lang.Integer(_))
       )
 
@@ -68,8 +69,10 @@ class HilbertSpaceTimeKeyIndex(
         BitVectorFactories.OPTIMAL.apply(temporalResolution)
       )
 
-    bitVectors(0).copyFrom(key.spatialKey.col.toLong)
-    bitVectors(1).copyFrom(key.spatialKey.row.toLong)
+    val col = key.spatialKey.col - minKey.col
+    val row = key.spatialKey.row - minKey.row
+    bitVectors(0).copyFrom(col.toLong)
+    bitVectors(1).copyFrom(row.toLong)
     bitVectors(2).copyFrom(binTime(key))
 
     val hilbertBitVector = BitVectorFactories.OPTIMAL.apply(chc.getSpec.sumBitsPerDimension)
@@ -79,12 +82,12 @@ class HilbertSpaceTimeKeyIndex(
     hilbertBitVector.toExactLong
   }
 
-  // Note: this function will happilly index outside of the index keyBounds
+  // Note: this function will happily index outside of the index keyBounds
   def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] = {
     val ranges: java.util.List[LongRange] =
       List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
-        LongRange.of(keyRange._1.spatialKey.col, keyRange._2.spatialKey.col + 1),
-        LongRange.of(keyRange._1.spatialKey.row, keyRange._2.spatialKey.row + 1),
+        LongRange.of(keyRange._1.spatialKey.col - minKey.col, keyRange._2.spatialKey.col - minKey.col + 1),
+        LongRange.of(keyRange._1.spatialKey.row - minKey.row, keyRange._2.spatialKey.row - minKey.row + 1),
         LongRange.of(binTime(keyRange._1), binTime(keyRange._2) + 1)
       )
 
