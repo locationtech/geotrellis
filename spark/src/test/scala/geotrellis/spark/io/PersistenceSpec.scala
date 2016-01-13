@@ -3,9 +3,11 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 import org.scalatest._
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
-abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers { self: FunSpec =>
+abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers {
   type TestReader = FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
   type TestWriter = Writer[LayerId, RDD[(K, V)] with Metadata[M]]
   type TestUpdater = LayerUpdater[LayerId, K, V, M]
@@ -46,7 +48,6 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
   it("should write a layer") {
     writer.write(layerId, sample)
     writer.write(deleteLayerId, sample)
-//    println(new java.io.File("/var/folders/sv/zr8j0t4j1f726nhlt3vb8c300000gn/T/testFiles/geotrellis.spark.io.file.FileSpaceTimeHilbertWithResolutionSpec/sample-geotrellis.spark.io.file.FileSpaceTimeHilbertWithResolutionSpec/1").listFiles().map { f => s"${f.getName}\n" }.toSeq)
   }
 
   it("should read a layer back") {

@@ -38,12 +38,6 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCode
       val bytes = Filesystem.slurp(path)
       val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
 
-      println(s"HERE ARE THE RECS")
-      recs.foreach { row => println(s" ${row._1}") }
-      println(s"HERE'S WHAT I'M LOOKIN FOR")
-      println(s" $key")
-      println(s"ARE THEY EQUAL?")
-      println(s"${recs.head._1} == $key ? ${recs.head._1 == key}")
       recs
         .find { case (recordKey, _) => recordKey == key }
         .map { case (_, recordValue) => recordValue }

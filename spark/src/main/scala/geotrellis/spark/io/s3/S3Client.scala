@@ -76,7 +76,7 @@ trait S3Client extends LazyLogging {
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
 
-  def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =          
+  def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
