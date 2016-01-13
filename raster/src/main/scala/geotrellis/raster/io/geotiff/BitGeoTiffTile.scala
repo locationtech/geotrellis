@@ -5,11 +5,12 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class BitGeoTiffTile(
-  val compressedBytes: Array[Array[Byte]],
-  val decompressor: Decompressor,
+  compressedBytes: Array[Array[Byte]],
+  decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression
-) extends GeoTiffTile(segmentLayout, compression, TypeBit) with BitGeoTiffSegmentCollection {
+  compression: Compression,
+  val cellType: CellType
+) extends GeoTiffTile(segmentLayout, compression) with BitGeoTiffSegmentCollection {
   // We need multiband information because BitGeoTiffSegments are unique
   val hasPixelInterleave = false
 

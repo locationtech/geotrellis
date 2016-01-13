@@ -11,7 +11,7 @@ object RLECompressor extends Compressor {
 
   override def compress(tile: Tile): Array[Byte] = {
     val in =
-      if (tile.cellType == TypeBit) tile.toBytes
+      if (tile.cellType == BitCellType) tile.toBytes
       else {
         val bb = ArrayBuffer[Byte]()
         val tileSize = tile.cols * tile.rows
@@ -34,7 +34,7 @@ object RLECompressor extends Compressor {
 
             putCount(canCountWithChar, count, bb)
 
-            if (tile.cellType == TypeDouble) putDouble(c, bb)
+            if (tile.cellType == DoubleConstantNoDataCellType) putDouble(c, bb)
             else putFloat(c.toFloat, bb)
           }
         } else {
@@ -49,8 +49,8 @@ object RLECompressor extends Compressor {
 
             putCount(canCountWithChar, count, bb)
 
-            if (tile.cellType == TypeInt) putInt(c, bb)
-            else if (tile.cellType == TypeShort) putShort(c.toShort, bb)
+            if (tile.cellType == IntConstantNoDataCellType) putInt(c, bb)
+            else if (tile.cellType == ShortConstantNoDataCellType) putShort(c.toShort, bb)
             else bb += c.toByte
           }
         }

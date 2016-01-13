@@ -46,7 +46,7 @@ class IOBenchmark extends OperationBenchmark {
 
   var path: String = ""
   var rasterExtent: RasterExtent = null
-  var typ: CellType = TypeFloat
+  var typ: CellType = FloatConstantNoDataCellType
 
   var targetExtent: RasterExtent = null
 
@@ -106,7 +106,7 @@ class ReadAndResampleBenchmark extends OperationBenchmark {
 
   var path: String = ""
   var extent: RasterExtent = null
-  var typ: CellType = TypeFloat
+  var typ: CellType = FloatConstantNoDataCellType
 
   var targetExtent: RasterExtent = null
 
@@ -150,7 +150,7 @@ class SmallTileReadAndResampleBenchmark extends OperationBenchmark {
 
   var path: String = ""
   var extent: RasterExtent = null
-  var typ: CellType = TypeFloat
+  var typ: CellType = FloatConstantNoDataCellType
 
   var rasterExtent: RasterExtent = null
   var targetExtent: RasterExtent = null

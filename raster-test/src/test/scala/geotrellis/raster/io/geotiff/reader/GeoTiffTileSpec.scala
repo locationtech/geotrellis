@@ -69,7 +69,7 @@ class GeoTiffTileSpec extends FunSpec
   }
 
   describe("GeoTiffTile") {
-    it("should convert from TypeInt to TypeDouble") {
+    it("should convert from IntConstantNoDataCellType to DoubleConstantNoDataCellType") {
       val arrInt = 
         Array(1, 2, 1, 1, 2,
               1, 2, 2, 1, 2,
@@ -80,7 +80,7 @@ class GeoTiffTileSpec extends FunSpec
 
       val t = createTile(arrInt, 5, 3)
 
-      val actual = t.toGeoTiffTile().convert(TypeDouble)
+      val actual = t.toGeoTiffTile().convert(DoubleConstantNoDataCellType)
       val expected = createTile(arrDouble, 5, 3)
 
       assertEqual(actual, expected)

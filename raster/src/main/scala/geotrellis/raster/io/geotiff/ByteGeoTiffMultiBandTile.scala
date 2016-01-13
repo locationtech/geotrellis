@@ -12,37 +12,15 @@ class ByteGeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  cellType: DynamicCellType
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+  val cellType: CellType
+) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with ByteGeoTiffSegmentCollection {
 
-  val noDataValue = cellType.noDataValue
-
-  protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
-    new SegmentCombiner {
-      private val arr = Array.ofDim[Byte](targetSize)
-
-      def set(targetIndex: Int, v: Int): Unit = {
-        arr(targetIndex) = i2b(v)
-      }
-
-      def setDouble(targetIndex: Int, v: Double): Unit = {
-        arr(targetIndex) = d2b(v)
-      }
-
-      def getBytes(): Array[Byte] = arr
-    }
-}
-
-class RawByteGeoTiffMultiBandTile(
-  compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
-  segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression,
-  bandCount: Int,
-  hasPixelInterleave: Boolean
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeRawByte)
-    with RawByteGeoTiffSegmentCollection {
+  val noDataValue = cellType match {
+    case _: RawCellType => None
+    case _: ConstantNoDataCellType => Some(Byte.MinValue)
+    case UserDefinedNoDataCellType(nd) => Some(nd)
+  }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
     new SegmentCombiner {

@@ -40,17 +40,17 @@ object TiffTagFieldValue {
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
-      case TypeBit => None
-      case TypeByte => Some(byteNODATA.toString)
-      case TypeRawByte => None
-      case TypeUByte => Some(ubyteNODATA.toString)
-      case TypeRawUByte => None
-      case TypeShort => Some(shortNODATA.toString)
-      case TypeRawShort => None
-      case TypeUShort => Some(ushortNODATA.toString)
-      case TypeRawUShort => None
-      case TypeInt => Some(NODATA.toString)
-      case TypeFloat | TypeDouble => Some("nan")
+      case BitCellType => None
+      case ByteConstantNoDataCellType => Some(byteNODATA.toString)
+      case ByteCellType => None
+      case UByteConstantNoDataCellType => Some(ubyteNODATA.toString)
+      case UByteCellType => None
+      case ShortConstantNoDataCellType => Some(shortNODATA.toString)
+      case ShortCellType => None
+      case UShortConstantNoDataCellType => Some(ushortNODATA.toString)
+      case UShortCellType => None
+      case IntConstantNoDataCellType => Some(NODATA.toString)
+      case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
     }
 
   def collect(geoTiff: GeoTiff): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {

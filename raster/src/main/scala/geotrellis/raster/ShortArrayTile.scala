@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
 
-  val cellType = TypeShort
+  val cellType = ShortConstantNoDataCellType
 
   def apply(i: Int) = s2i(array(i))
   def update(i: Int, z: Int) { array(i) = i2s(z) }
@@ -39,7 +39,7 @@ object ShortArrayTile {
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
     val shortBuffer = byteBuffer.asShortBuffer()
-    val shortArray = new Array[Short](bytes.length / TypeShort.bytes)
+    val shortArray = new Array[Short](bytes.length / ShortConstantNoDataCellType.bytes)
     shortBuffer.get(shortArray)
 
     ShortArrayTile(shortArray, cols, rows)
@@ -51,7 +51,7 @@ object ShortArrayTile {
     else {
       val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
       val shortBuffer = byteBuffer.asShortBuffer()
-      val len = bytes.length / TypeShort.bytes
+      val len = bytes.length / ShortConstantNoDataCellType.bytes
       val shortArray = new Array[Short](len)
       cfor(0)(_ < len, _ + 1) { i =>
         val v = shortBuffer.get(i)

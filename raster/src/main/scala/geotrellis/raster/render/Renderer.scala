@@ -67,9 +67,9 @@ object Renderer {
       val colorMap = colorBreaks.replaceColors(indices).toColorMap(ColorMapOptions(LessThan, 255))
       h match {
         case Some(hist) =>
-          Renderer(colorMap.cache(hist), TypeByte, colorType)
+          Renderer(colorMap.cache(hist), ByteConstantNoDataCellType, colorType)
         case None =>
-          Renderer(colorMap, TypeByte, colorType)
+          Renderer(colorMap, ByteConstantNoDataCellType, colorType)
       }
     } else {
 
@@ -87,33 +87,33 @@ object Renderer {
         val colorMap = colorBreaks.mapColors { z => (z >> 8) & 0xff }.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
-            Renderer(colorMap.cache(hist), TypeByte, Grey(nodata))
+            Renderer(colorMap.cache(hist), ByteConstantNoDataCellType, Grey(nodata))
           case None =>
-            Renderer(colorMap, TypeByte, Grey(nodata))
+            Renderer(colorMap, ByteConstantNoDataCellType, Grey(nodata))
         }
       } else if (opaque) {
         val colorMap = colorBreaks.mapColors { z => z >> 8 }.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
-            Renderer(colorMap.cache(hist), TypeInt, Rgb(nodata))
+            Renderer(colorMap.cache(hist), IntConstantNoDataCellType, Rgb(nodata))
           case None =>
-            Renderer(colorMap, TypeInt, Rgb(nodata))
+            Renderer(colorMap, IntConstantNoDataCellType, Rgb(nodata))
         }
       } else if (grey) {
         val colorMap = colorBreaks.mapColors { z => z & 0xffff }.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
-            Renderer(colorMap.cache(hist), TypeShort, Greya)
+            Renderer(colorMap.cache(hist), ShortConstantNoDataCellType, Greya)
           case None =>
-            Renderer(colorMap, TypeShort, Greya)
+            Renderer(colorMap, ShortConstantNoDataCellType, Greya)
         }
       } else {
         val colorMap = colorBreaks.toColorMap(ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
-            Renderer(colorMap.cache(hist), TypeInt, Rgba)
+            Renderer(colorMap.cache(hist), IntConstantNoDataCellType, Rgba)
           case None =>
-            Renderer(colorMap, TypeInt, Rgba)
+            Renderer(colorMap, IntConstantNoDataCellType, Rgba)
         }
       }
     }

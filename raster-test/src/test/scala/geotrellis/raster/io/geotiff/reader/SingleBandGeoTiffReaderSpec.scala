@@ -55,14 +55,14 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
           .tile
           .toArrayTile
           .map { b => if(b == 0) 0 else 1 }
-          .convert(TypeBit)
+          .convert(BitCellType)
           .toArrayTile
 
       assertEqual(actual, expected)
     }
 
     it("must read Striped Bit aspect, convert to byte, and match gdal converted byte file") {
-      val actual = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile.convert(TypeUByte)
+      val actual = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile.convert(UByteConstantNoDataCellType)
       val expected = GeoTiffReader.readSingleBand(geoTiffPath("1band/aspect_bit-to-byte_uncompressed_striped.tif")).tile
 
       assertEqual(actual, expected)
@@ -104,7 +104,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       (col * row) % 2
     }
 
-    val expected = expectedTile(TypeBit, testTiffBitValue _)
+    val expected = expectedTile(BitCellType, testTiffBitValue _)
     val t = "bit"
 
     it("should read each variation of compression and striped/tiled") {
@@ -128,8 +128,8 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       (col * 1000.0 + row) % 128
     }
 
-    val expected = expectedTile(TypeUByte, testTiffByteValue _)
-    val expectedRaw = expectedTile(TypeRawUByte, testTiffByteValue _)
+    val expected = expectedTile(UByteConstantNoDataCellType, testTiffByteValue _)
+    val expectedRaw = expectedTile(UByteCellType, testTiffByteValue _)
     val t = "byte"
 
     it("should read each variation of compression and striped/tiled") {
@@ -153,7 +153,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       col + row
     }
 
-    val expected = expectedTile(TypeUShort, testTiffShortValue _)
+    val expected = expectedTile(UShortConstantNoDataCellType, testTiffShortValue _)
     val t = "uint16"
 
 //    writeExpectedTile(expected, t)
@@ -184,7 +184,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       math.pow(-1, (col + row) % 2) * (col + row)
     }
 
-    val expected = expectedTile(TypeShort, testTiffShortValue _)
+    val expected = expectedTile(ShortConstantNoDataCellType, testTiffShortValue _)
     val t = "int16"
 
 //    writeExpectedTile(expected, t)
@@ -210,7 +210,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       col * 1000.0 + row
     }
 
-    val expected = expectedTile(TypeFloat, testTiffIntValue _)
+    val expected = expectedTile(FloatConstantNoDataCellType, testTiffIntValue _)
     val t = "uint32"
 
 //    writeExpectedTile(expected, t)
@@ -236,7 +236,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       math.pow(-1, (col + row) % 2) * (col * 1000.0 + row)
     }
 
-    val expected = expectedTile(TypeInt, testTiffIntValue _)
+    val expected = expectedTile(IntConstantNoDataCellType, testTiffIntValue _)
     val t = "int32"
 
 //    writeExpectedTile(expected, t)
@@ -262,7 +262,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       math.pow(-1, (col + row) % 2) * (col * 1000.0 + row + (col / 1000.0))
     }
 
-    val expected = expectedTile(TypeFloat, testTiffFloatValue _)
+    val expected = expectedTile(FloatConstantNoDataCellType, testTiffFloatValue _)
     val t = "float32"
 
 //    writeExpectedTile(expected, t)
@@ -288,7 +288,7 @@ class SingleBandGeoTiffReaderSpec extends FunSpec
       math.pow(-1, (col + row) % 2) * (col * 1000.0 + row + (col / 1000.0))
     }
 
-    val expected = expectedTile(TypeDouble, testTiffDoubleValue _)
+    val expected = expectedTile(DoubleConstantNoDataCellType, testTiffDoubleValue _)
     val t = "float64"
 
     it("should read each varition of compression and striped/tiled") {

@@ -41,14 +41,14 @@ object ArgReader {
 
     val cellType =
       json.getString("datatype") match {
-        case "bool" => TypeBit
-        case "int8" => TypeByte
-        case "uint8" => TypeUByte
-        case "int16" => TypeShort
-        case "uint16" => TypeUShort
-        case "int32" => TypeInt
-        case "float32" => TypeFloat
-        case "float64" => TypeDouble
+        case "bool" => BitCellType
+        case "int8" => ByteConstantNoDataCellType
+        case "uint8" => UByteConstantNoDataCellType
+        case "int16" => IntConstantNoDataCellType
+        case "uint16" => UShortConstantNoDataCellType
+        case "int32" => IntConstantNoDataCellType
+        case "float32" => FloatConstantNoDataCellType
+        case "float64" => DoubleConstantNoDataCellType
         case s => sys.error("unsupported datatype '%s'" format s)
       }
 
@@ -65,14 +65,14 @@ object ArgReader {
     if(layerType == "constant") {
       val v = json.getDouble("constant")
       cellType match {
-        case TypeBit => Raster(BitConstantTile(d2i(v), cols, rows), extent)
-        case TypeByte => Raster(ByteConstantTile(d2b(v), cols, rows), extent)
-        case TypeUByte => Raster(UByteConstantTile(d2b(v), cols, rows), extent)
-        case TypeShort => Raster(ShortConstantTile(d2s(v), cols, rows), extent)
-        case TypeUShort => Raster(UShortConstantTile(d2s(v), cols, rows), extent)
-        case TypeInt => Raster(IntConstantTile(d2i(v), cols, rows), extent)
-        case TypeFloat => Raster(FloatConstantTile(d2f(v), cols, rows), extent)
-        case TypeDouble => Raster(DoubleConstantTile(v, cols, rows), extent)
+        case BitCellType => Raster(BitConstantTile(d2i(v), cols, rows), extent)
+        case ByteConstantNoDataCellType => Raster(ByteConstantTile(d2b(v), cols, rows), extent)
+        case UByteConstantNoDataCellType => Raster(UByteConstantTile(d2b(v), cols, rows), extent)
+        case ShortConstantNoDataCellType => Raster(ShortConstantTile(d2s(v), cols, rows), extent)
+        case UShortConstantNoDataCellType => Raster(UShortConstantTile(d2s(v), cols, rows), extent)
+        case IntConstantNoDataCellType => Raster(IntConstantTile(d2i(v), cols, rows), extent)
+        case FloatConstantNoDataCellType => Raster(FloatConstantTile(d2f(v), cols, rows), extent)
+        case DoubleConstantNoDataCellType => Raster(DoubleConstantTile(v, cols, rows), extent)
       }
     } else {
 
@@ -92,18 +92,6 @@ object ArgReader {
           new File(new File(path).getParent, layerName + ".arg")
         }).getAbsolutePath
 
-
-      val cellType =
-        json.getString("datatype") match {
-          case "bool" => TypeBit
-          case "int8" => TypeByte
-          case "int16" => TypeShort
-          case "int32" => TypeInt
-          case "float32" => TypeFloat
-          case "float64" => TypeDouble
-          case s => sys.error("unsupported datatype '%s'" format s)
-        }
-    
       targetRasterExtent match {
         case Some(te) =>
           Raster(read(argPath, cellType, RasterExtent(extent, cols, rows), te), te.extent)
@@ -113,72 +101,73 @@ object ArgReader {
     }
   }
 
-  final def read(path: String, typ: CellType, cols: Int, rows: Int): Tile = {
-    ArrayTile.fromBytes(Filesystem.slurp(path), typ, cols, rows)
+  final def read(path: String, cellType: CellType, cols: Int, rows: Int): Tile = {
+    ArrayTile.fromBytes(Filesystem.slurp(path), cellType, cols, rows)
   }
 
-  final def read(path: String, typ: CellType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
-    val size = typ.numBytes(rasterExtent.size)
+  final def read(path: String, cellType: CellType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
+    val size = cellType.numBytes(rasterExtent.size)
 
     val cols = rasterExtent.cols
     // Find the top-left most and bottom-right cell coordinates
     val GridBounds(colMin, rowMin, colMax, rowMax) = rasterExtent.gridBoundsFor(targetExtent.extent)
 
     // Get the indices, buffer one col and row on each side
-    val startIndex = math.max(typ.numBytes((rowMin-1) * cols + colMin - 1), 0)
-    val length = math.min(size-startIndex, typ.numBytes((rowMax+1) * cols + colMax+1) - startIndex)
+    val startIndex = math.max(cellType.numBytes((rowMin-1) * cols + colMin - 1), 0)
+    val length = math.min(size-startIndex, cellType.numBytes((rowMax+1) * cols + colMax+1) - startIndex)
 
     if(length > 0) {
       val bytes = Array.ofDim[Byte](size)
       Filesystem.mapToByteArray(path, bytes, startIndex, length)
 
-      resampleBytes(bytes, typ, rasterExtent, targetExtent)
+      resampleBytes(bytes, cellType, rasterExtent, targetExtent)
     } else {
-      ArrayTile.empty(typ, targetExtent.cols, targetExtent.rows)
+      ArrayTile.empty(cellType, targetExtent.cols, targetExtent.rows)
     }
   }
 
-  final def resampleBytes(bytes: Array[Byte], typ: CellType, re: RasterExtent, targetRe: RasterExtent): Tile = {
+  final def resampleBytes(bytes: Array[Byte], cellType: CellType, re: RasterExtent, targetRe: RasterExtent): Tile = {
     val cols = targetRe.cols
     val rows = targetRe.rows
 
-    typ match {
-      case TypeBit =>
+    // TODO: Add stuff for other celltypes
+    cellType match {
+      case BitCellType =>
         val resampled = Array.ofDim[Byte]((cols*rows + 7)/8)
         ResampleAssign(re, targetRe, new BitResampleAssign(bytes, resampled))
         BitArrayTile(resampled, cols, rows)
-      case TypeByte =>
+      case ByteConstantNoDataCellType =>
         // ByteBuffer assign benchmarked faster than just using Array[Byte] for source.
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
         ResampleAssign(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
         ByteArrayTile(resampled, cols, rows)
-      case TypeUByte =>
+      case UByteConstantNoDataCellType =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
         ResampleAssign(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
         UByteArrayTile(resampled, cols, rows)
-      case TypeShort =>
+      case ShortConstantNoDataCellType =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
         ResampleAssign(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
         ShortArrayTile(resampled, cols, rows)
-      case TypeUShort =>
+      case UShortConstantNoDataCellType =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
         ResampleAssign(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
         UShortArrayTile(resampled, cols, rows)
-      case TypeInt =>
+      case IntConstantNoDataCellType =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Int](cols*rows).fill(NODATA)
         ResampleAssign(re, targetRe, new IntBufferResampleAssign(buffer, resampled))
         IntArrayTile(resampled, cols, rows)
-      case TypeFloat =>
+      case FloatConstantNoDataCellType =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Float](cols*rows).fill(Float.NaN)
         ResampleAssign(re, targetRe, new FloatBufferResampleAssign(buffer, resampled))
         FloatArrayTile(resampled, cols, rows)
-      case TypeDouble =>
+      case DoubleConstantNoDataCellType =>
         val buffer = ByteBuffer.wrap(bytes)
         val resampled = Array.ofDim[Double](cols*rows).fill(Double.NaN)
         ResampleAssign(re, targetRe, new DoubleBufferResampleAssign(buffer, resampled))

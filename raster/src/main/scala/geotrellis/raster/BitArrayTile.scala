@@ -44,7 +44,7 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
     sys.error(s"BitArrayTile array length must be ${(size + 7) / 8}, was ${array.size}")
   }
 
-  val cellType = TypeBit
+  val cellType = BitCellType
 
   def apply(i: Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
 

@@ -20,31 +20,24 @@ object GeoTiffMultiBandTile {
     cellType: CellType
   ): GeoTiffMultiBandTile =
     cellType match {
-      case oct@OptimizedCellType(_, _, _) => oct match {
-        case ndct@NoDataCellType(_, _, _) => ndct match {
-          case TypeBit => new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeByte => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicByte(Byte.MinValue.toDouble))
-          case TypeUByte => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicByte(0.0))
-          case TypeShort => new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicShort(Short.MinValue.toDouble))
-          case TypeUShort => new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeDynamicUShort(0.0))
-          case TypeInt => new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeUInt => new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeFloat => new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeDouble => new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-        }
-        case rct@RawCellType(_, _, _) => rct match {
-          case TypeRawByte => new RawByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeRawUByte => new RawUByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeRawShort => new RawInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-          case TypeRawUShort => new RawUInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
-        }
-      }
-      case dct@DynamicCellType(_, _, _, _) => dct match {
-        case TypeDynamicByte(_) => new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dct)
-        case TypeDynamicUByte(_) => new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dct)
-        case TypeDynamicShort(_) =>  new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dct)
-        case TypeDynamicUShort(_) => new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dct)
-      }
+      case BitCellType =>
+        new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case ByteCellType | ByteConstantNoDataCellType | ByteUserDefinedNoDataCellType(_) =>
+        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case UByteCellType | UByteConstantNoDataCellType | UByteUserDefinedNoDataCellType(_) =>
+        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case ShortCellType | ShortConstantNoDataCellType | ShortUserDefinedNoDataCellType(_) =>
+        new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case UShortCellType | UShortCellType | UShortUserDefinedNoDataCellType(_) =>
+        new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case IntConstantNoDataCellType =>
+        new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      //case TypeUInt =>
+      //  new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case FloatConstantNoDataCellType =>
+        new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      case DoubleConstantNoDataCellType =>
+        new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
     }
 
   /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
@@ -115,9 +108,9 @@ abstract class GeoTiffMultiBandTile(
   val segmentLayout: GeoTiffSegmentLayout,
   val compression: Compression,
   val bandCount: Int,
-  val hasPixelInterleave: Boolean,
-  val cellType: CellType
+  val hasPixelInterleave: Boolean
 ) extends MultiBandTile with GeoTiffImageData {
+  val cellType: CellType
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 
@@ -223,7 +216,7 @@ abstract class GeoTiffMultiBandTile(
       compression,
       bandCount,
       hasPixelInterleave,
-      newCellType
+      cellType
     )
   }
 

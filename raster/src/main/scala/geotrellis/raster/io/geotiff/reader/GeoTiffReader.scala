@@ -136,19 +136,19 @@ object GeoTiffReader {
     noDataValue: Option[Double]
   ) {
     def cellType: CellType = (bandType, noDataValue) match {
-      case (BitBandType, Some(nd)) => TypeBit
-      case (ByteBandType, Some(nd)) if (nd >= Byte.MinValue.toDouble && nd <= Byte.MaxValue.toDouble) => TypeDynamicByte(nd)
-      case (ByteBandType, _) => TypeRawByte
-      case (UByteBandType, Some(nd)) if (nd >= 0.0 && nd <= 255.0) => TypeDynamicUByte(nd)
-      case (UByteBandType, _) => TypeRawByte
-      case (Int16BandType, Some(nd)) if (nd >= Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) => TypeDynamicShort(nd)
-      case (Int16BandType, _) => TypeRawShort
-      case (UInt16BandType, Some(nd)) if (nd >= 0.0 && nd <= 65535.0) => TypeDynamicUShort(nd)
-      case (UInt16BandType, _) => TypeRawUShort
-      case (Int32BandType, _) => TypeInt
-      case (UInt32BandType, _) => TypeUInt
-      case (Float32BandType, _) => TypeFloat
-      case (Float64BandType, _) => TypeDouble
+      case (BitBandType, Some(nd)) => BitCellType
+      case (ByteBandType, Some(nd)) if (nd >= Byte.MinValue.toDouble && nd <= Byte.MaxValue.toDouble) => ByteUserDefinedNoDataCellType(nd.toByte)
+      case (ByteBandType, _) => ByteCellType
+      case (UByteBandType, Some(nd)) if (nd >= 0.0 && nd <= 255.0) => UByteUserDefinedNoDataCellType(nd.toShort)
+      case (UByteBandType, _) => ByteCellType
+      case (Int16BandType, Some(nd)) if (nd >= Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) => ShortUserDefinedNoDataCellType(nd.toShort)
+      case (Int16BandType, _) => ShortCellType
+      case (UInt16BandType, Some(nd)) if (nd >= 0.0 && nd <= 65535.0) => UShortUserDefinedNoDataCellType(nd.toInt)
+      case (UInt16BandType, _) => UShortCellType
+      case (Int32BandType, _) => IntConstantNoDataCellType
+      case (UInt32BandType, _) => ???
+      case (Float32BandType, _) => FloatConstantNoDataCellType
+      case (Float64BandType, _) => DoubleConstantNoDataCellType
     }
   }
 

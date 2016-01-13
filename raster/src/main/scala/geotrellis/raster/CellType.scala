@@ -46,90 +46,109 @@ sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPo
 
   override def toString: String = name
 }
-sealed abstract class DynamicCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends CellType(bits, name, isFloatingPoint) {
-  val noDataValue: Double
-}
-object DynamicCellType {
-  def unapply(dct: DynamicCellType): Option[(Int, String, Boolean, Double)] = Option(dct) map { dct =>
-    (dct.bits, dct.name, dct.isFloatingPoint, dct.noDataValue)
-  }
-}
-
-sealed abstract class OptimizedCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends CellType(bits, name, isFloatingPoint)
-object OptimizedCellType {
-  def unapply(oct: OptimizedCellType): Option[(Int, String, Boolean)] = Option(oct) map { oct =>
-    (oct.bits, oct.name, oct.isFloatingPoint)
-  }
-}
-sealed abstract class RawCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends OptimizedCellType(bits, name, isFloatingPoint)
+sealed abstract class RawCellType(bits: Int, name: String, isFloatingPoint: Boolean)
+    extends CellType(bits, name, isFloatingPoint)
 object RawCellType {
-  def unapply(rct: RawCellType): Option[(Int, String, Boolean)] = Option(rct) map { rct =>
-    (rct.bits, rct.name, rct.isFloatingPoint)
-  }
-}
-sealed abstract class NoDataCellType(bits: Int, name: String, isFloatingPoint: Boolean) extends OptimizedCellType(bits, name, isFloatingPoint)
-object NoDataCellType {
-  def unapply(ndct: NoDataCellType): Option[(Int, String, Boolean)] = Option(ndct) map { ndct =>
-    (ndct.bits, ndct.name, ndct.isFloatingPoint)
-  }
+  def unapply(rct: RawCellType): Option[(Int, String, Boolean)] =
+    Option(rct) map { rct =>
+      (rct.bits, rct.name, rct.isFloatingPoint)
+    }
 }
 
-case object TypeRawByte   extends RawCellType(8, "int8raw", false)
-case object TypeRawUByte  extends RawCellType(8, "uint8raw", false)
-case object TypeRawShort  extends RawCellType(16, "int16raw", false)
-case object TypeRawUShort extends RawCellType(16, "uint16raw", false)
+sealed abstract class ConstantNoDataCellType(bits: Int, name: String, isFloatingPoint: Boolean)
+    extends CellType(bits, name, isFloatingPoint)
+object ConstantNoDataCellType {
+  def unapply(cct: ConstantNoDataCellType): Option[(Int, String, Boolean)] =
+    Option(cct) map { ndct =>
+      (cct.bits, cct.name, cct.isFloatingPoint)
+    }
+}
 
-case object TypeBit    extends NoDataCellType(1, "bool", false) {
+sealed abstract class UserDefinedNoDataCellType[@specialized(Byte, Short, Int) T](bits: Int, name: String, isFloatingPoint: Boolean)
+    extends CellType(bits, name, isFloatingPoint) {
+  val noDataValue: T
+}
+object UserDefinedNoDataCellType {
+  def unapply[@specialized(Byte, Short, Int) T](udct: UserDefinedNoDataCellType[T]): Option[(Int, String, Boolean, T)] =
+    Option(udct) map { dct =>
+      (udct.bits, udct.name, udct.isFloatingPoint, udct.noDataValue)
+    }
+}
+
+// No NoData
+case object BitCellType    extends RawCellType(1, "bool", false) {
   override final def numBytes(size: Int) = (size + 7) / 8
 }
-case object TypeByte   extends NoDataCellType(8, "int8", false)
-case object TypeUByte  extends NoDataCellType(8, "uint8", false)
-case object TypeShort  extends NoDataCellType(16, "int16", false)
-case object TypeUShort extends NoDataCellType(16, "uint16", false)
-case object TypeInt    extends NoDataCellType(32, "int32", false)
-case object TypeUInt    extends NoDataCellType(32, "uint32", true) // We cast to float for its greater range at the cost of some accuracy
-case object TypeFloat  extends NoDataCellType(32, "float32", true)
-case object TypeDouble extends NoDataCellType(64, "float64", true)
+case object ByteCellType   extends RawCellType(8, "int8raw", false)
+case object UByteCellType  extends RawCellType(8, "uint8raw", false)
+case object ShortCellType  extends RawCellType(16, "int16raw", false)
+case object UShortCellType extends RawCellType(16, "uint16raw", false)
 
-case class TypeDynamicByte(noDataValue: Double)   extends DynamicCellType(8, "int8dynamic", false)
-case class TypeDynamicUByte(noDataValue: Double)  extends DynamicCellType(8, "uint8dynamic", false)
-case class TypeDynamicShort(noDataValue: Double)  extends DynamicCellType(16, "int16dynamic", false)
-case class TypeDynamicUShort(noDataValue: Double) extends DynamicCellType(16, "uint16dynamic", false)
+// Constant NoData values (the preferred, standard case in GeoTrellis)
+case object ByteConstantNoDataCellType
+    extends ConstantNoDataCellType(8, "int8", false)
+case object UByteConstantNoDataCellType
+    extends ConstantNoDataCellType(8, "uint8", false)
+case object ShortConstantNoDataCellType
+    extends ConstantNoDataCellType(16, "int16", false)
+case object UShortConstantNoDataCellType
+    extends ConstantNoDataCellType(16, "uint16", false)
+case object IntConstantNoDataCellType
+    extends ConstantNoDataCellType(32, "int32", false)
+//case object UIntConstantNoDataCellType
+//    extends ConstantNoDataCellType(32, "uint32", true) // We cast to float for its greater range at the cost of some accuracy
+case object FloatConstantNoDataCellType
+    extends ConstantNoDataCellType(32, "float32", true)
+case object DoubleConstantNoDataCellType
+    extends ConstantNoDataCellType(64, "float64", true)
+
+
+// User Defined
+case class ByteUserDefinedNoDataCellType(noDataValue: Byte)
+    extends UserDefinedNoDataCellType[Byte](8, s"int8ud${noDataValue}", false)
+// Upcast the nodatavalue to handle higher values on unsigned types
+case class UByteUserDefinedNoDataCellType(noDataValue: Short)
+    extends UserDefinedNoDataCellType[Short](8, s"uint8ud${noDataValue}", false)
+case class ShortUserDefinedNoDataCellType(noDataValue: Short)
+    extends UserDefinedNoDataCellType[Short](16, s"int16ud${noDataValue}", false)
+// Upcast the nodatavalue to handle higher values on unsigned types
+case class UShortUserDefinedNoDataCellType(noDataValue: Int)
+    extends UserDefinedNoDataCellType[Int](16, s"uint16ud${noDataValue}", false)
 
 object CellType {
   def fromAwtType(awtType: Int): CellType = awtType match {
-    case DataBuffer.TYPE_BYTE   => TypeByte
-    case DataBuffer.TYPE_DOUBLE => TypeDouble
-    case DataBuffer.TYPE_FLOAT  => TypeFloat
-    case DataBuffer.TYPE_INT    => TypeInt
-    case DataBuffer.TYPE_SHORT  => TypeShort
-    case _                      => sys.error(s"Cell type with AWT type $awtType is not supported")
+    case DataBuffer.TYPE_BYTE => ByteConstantNoDataCellType
+    case DataBuffer.TYPE_SHORT => ShortConstantNoDataCellType
+    case DataBuffer.TYPE_INT => IntConstantNoDataCellType
+    case DataBuffer.TYPE_FLOAT => FloatConstantNoDataCellType
+    case DataBuffer.TYPE_DOUBLE => DoubleConstantNoDataCellType
+    case _ => sys.error(s"Cell type with AWT type $awtType is not supported")
   }
 
   def fromString(name: String): CellType = name match {
-    case "bool"       => TypeBit
-    case "int8"       => TypeByte
-    case "int8raw"    => TypeRawByte
-    case "uint8"      => TypeUByte
-    case "uint8raw"   => TypeRawUByte
-    case "int16"      => TypeShort
-    case "int16raw"   => TypeRawShort
-    case "uint16"     => TypeUShort
-    case "uint16raw"  => TypeRawUShort
-    case "int32"      => TypeInt
-    case "float32"    => TypeFloat
-    case "float64"    => TypeDouble
+    case "bool" => BitCellType  // No NoData values
+    case "int8" => ByteCellType
+    case "uint8" => UByteCellType
+    case "int16" => ShortCellType
+    case "uint16" => UShortCellType
+    case "int8const" => ByteConstantNoDataCellType  // Constant NoData values
+    case "uint8const" => UByteConstantNoDataCellType
+    case "int16const" => UByteConstantNoDataCellType
+    case "uint16const" => ShortConstantNoDataCellType
+    case "int32const" => UShortConstantNoDataCellType
+    case "float32const" => FloatConstantNoDataCellType
+    case "float64const" => DoubleConstantNoDataCellType
     case _ => sys.error(s"Cell type $name is not supported")
   }
 
   def toAwtType(cellType: CellType): Int = cellType match {
-    case TypeBit                                           => DataBuffer.TYPE_BYTE
-    case TypeByte | TypeRawByte | TypeDynamicByte(_)       => DataBuffer.TYPE_BYTE
-    case TypeUByte | TypeRawUByte | TypeDynamicUByte(_)    => DataBuffer.TYPE_SHORT
-    case TypeShort | TypeRawShort | TypeDynamicShort(_)    => DataBuffer.TYPE_SHORT
-    case TypeUShort | TypeRawUShort | TypeDynamicUShort(_) => DataBuffer.TYPE_INT
-    case TypeInt                                           => DataBuffer.TYPE_INT
-    case TypeFloat                                         => DataBuffer.TYPE_FLOAT
-    case TypeDouble                                        => DataBuffer.TYPE_DOUBLE
+    case BitCellType => DataBuffer.TYPE_BYTE
+    case ByteConstantNoDataCellType | ByteCellType | ByteUserDefinedNoDataCellType(_) => DataBuffer.TYPE_BYTE
+    case UByteConstantNoDataCellType | UByteCellType | UByteUserDefinedNoDataCellType(_) => DataBuffer.TYPE_SHORT
+    case ShortConstantNoDataCellType | ShortCellType | ShortUserDefinedNoDataCellType(_) => DataBuffer.TYPE_SHORT
+    case UShortConstantNoDataCellType | UShortCellType | UShortUserDefinedNoDataCellType(_) => DataBuffer.TYPE_INT
+    case IntConstantNoDataCellType => DataBuffer.TYPE_INT
+    case FloatConstantNoDataCellType => DataBuffer.TYPE_FLOAT
+    case DoubleConstantNoDataCellType => DataBuffer.TYPE_DOUBLE
   }
 }

@@ -48,7 +48,7 @@ class RasterSourceSpec extends FunSpec
                3,30,300,3000,2,2,2,2,2,
                4,40,400,4000,2,2,2,2,2),
         9,4)
-      rs.convert(TypeDouble).get.cellType should be (TypeDouble)
+      rs.convert(DoubleConstantNoDataCellType).get.cellType should be (DoubleConstantNoDataCellType)
     }
   }
 

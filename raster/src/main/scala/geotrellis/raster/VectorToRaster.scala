@@ -41,14 +41,14 @@ object VectorToRaster {
     * @param      rasterExtent     Raster extent of the resulting raster.
     *
     * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
     *                              the data values will be rounded to integers.
     */
   def kernelDensity[D](points: Seq[PointFeature[D]],
                        transform: D => Int, 
                        kernel: Kernel, 
                        rasterExtent: RasterExtent): Tile = {
-    val stamper = KernelStamper(TypeInt, rasterExtent.cols, rasterExtent.rows, kernel)
+    val stamper = KernelStamper(IntConstantNoDataCellType, rasterExtent.cols, rasterExtent.rows, kernel)
     
     for(point <- points) {
       val col = rasterExtent.mapXToGrid(point.geom.x)
@@ -68,7 +68,7 @@ object VectorToRaster {
   def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int]): Tile = {
     val cols = re.cols
     val rows = re.rows
-    val tile = ArrayTile.empty(TypeInt, cols, rows)
+    val tile = ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
     if(points.isEmpty) {
       tile
     } else {

@@ -25,6 +25,6 @@ import geotrellis.raster._
 object Cos extends Serializable {
   def apply(r: Tile): Tile =
     (if(r.cellType.isFloatingPoint) r
-     else r.convert(TypeDouble))
+     else r.convert(DoubleConstantNoDataCellType))
      .mapDouble(z => math.cos(z))
 }

@@ -12,11 +12,15 @@ class UInt16GeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  cellType: DynamicCellType
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+  val cellType: CellType
+) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with UInt16GeoTiffSegmentCollection {
 
-  val noDataValue = cellType.noDataValue
+  val noDataValue = cellType match {
+    case _: RawCellType => None
+    case _: ConstantNoDataCellType => Some(Int.MinValue)
+    case UserDefinedNoDataCellType(nd) => Some(nd)
+  }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
     new SegmentCombiner {
@@ -31,38 +35,7 @@ class UInt16GeoTiffMultiBandTile(
       }
 
       def getBytes(): Array[Byte] = {
-        val result = new Array[Byte](targetSize * TypeInt.bytes)
-        val bytebuff = ByteBuffer.wrap(result)
-        bytebuff.asIntBuffer.put(arr)
-        result
-      }
-    }
-}
-
-class RawUInt16GeoTiffMultiBandTile(
-  compressedBytes: Array[Array[Byte]],
-  decompressor: Decompressor,
-  segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression,
-  bandCount: Int,
-  hasPixelInterleave: Boolean
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, TypeRawUShort)
-    with RawUInt16GeoTiffSegmentCollection {
-
-  protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
-    new SegmentCombiner {
-      private val arr = Array.ofDim[Int](targetSize)
-
-      def set(targetIndex: Int, v: Int): Unit = {
-        arr(targetIndex) = v
-      }
-
-      def setDouble(targetIndex: Int, v: Double): Unit = {
-        arr(targetIndex) = d2i(v)
-      }
-
-      def getBytes(): Array[Byte] = {
-        val result = new Array[Byte](targetSize * TypeInt.bytes)
+        val result = new Array[Byte](targetSize * IntConstantNoDataCellType.bytes)
         val bytebuff = ByteBuffer.wrap(result)
         bytebuff.asIntBuffer.put(arr)
         result

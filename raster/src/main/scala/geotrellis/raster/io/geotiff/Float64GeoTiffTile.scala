@@ -8,10 +8,12 @@ class Float64GeoTiffTile(
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
-  compression: Compression
-) extends GeoTiffTile(segmentLayout, compression, TypeDouble) with Float64GeoTiffSegmentCollection {
+  compression: Compression,
+  val cellType: CellType
+) extends GeoTiffTile(segmentLayout, compression) with Float64GeoTiffSegmentCollection {
+
   def mutable: MutableArrayTile = {
-    val arr = Array.ofDim[Byte](cols * rows * TypeDouble.bytes)
+    val arr = Array.ofDim[Byte](cols * rows * DoubleConstantNoDataCellType.bytes)
 
     if(segmentLayout.isStriped) {
       var i = 0
@@ -28,13 +30,13 @@ class Float64GeoTiffTile(
           getSegment(segmentIndex)
 
         val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-        val width = segmentTransform.segmentCols * TypeDouble.bytes
-        val tileWidth = segmentLayout.tileLayout.tileCols * TypeDouble.bytes
+        val width = segmentTransform.segmentCols * DoubleConstantNoDataCellType.bytes
+        val tileWidth = segmentLayout.tileLayout.tileCols * DoubleConstantNoDataCellType.bytes
 
         cfor(0)(_ < tileWidth * segmentTransform.segmentRows, _ + tileWidth) { i =>
-          val col = segmentTransform.indexToCol(i / TypeDouble.bytes)
-          val row = segmentTransform.indexToRow(i / TypeDouble.bytes)
-          val j = ((row * cols) + col) * TypeDouble.bytes
+          val col = segmentTransform.indexToCol(i / DoubleConstantNoDataCellType.bytes)
+          val row = segmentTransform.indexToRow(i / DoubleConstantNoDataCellType.bytes)
+          val j = ((row * cols) + col) * DoubleConstantNoDataCellType.bytes
           System.arraycopy(segment.bytes, i, arr, j, width)
         }
       }

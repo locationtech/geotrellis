@@ -25,5 +25,5 @@ object Undefined extends Serializable {
   /** Maps an integer typed Tile to 1 if the cell value is NODATA, otherwise 0. */
   def apply(r: Tile): Tile = 
     r.map { z: Int => if(isNoData(z)) 1 else 0 }
-     .convert(TypeBit)
+     .convert(BitCellType)
 }

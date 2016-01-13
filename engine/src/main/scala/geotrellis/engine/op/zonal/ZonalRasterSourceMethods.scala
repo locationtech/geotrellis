@@ -30,7 +30,7 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
    * Given a raster, return a histogram summary of the cells within each zone.
    *
    * @note    zonalHistogram does not currently support Double raster data.
-   *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+   *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
    *          the data values will be rounded to integers.
    */
   def zonalHistogram(zonesSource: RasterSource): ValueSource[Map[Int, Histogram]] =
@@ -49,7 +49,7 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
    * Percentages are integer values from 0 - 100.
    *
    * @note    ZonalPercentage does not currently support Double raster data.
-   *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+   *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
    *          the data values will be rounded to integers.
    */
   def zonalPercentage(zonesSource: RasterSource): RasterSource =

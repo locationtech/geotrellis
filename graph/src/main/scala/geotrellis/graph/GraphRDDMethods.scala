@@ -82,7 +82,7 @@ trait GraphRDDMethods[K] {
       .join(verticesGroupedByTile)
       .map { case(_, (key, iter)) =>
         val in = iter.toArray
-        val tile = ArrayTile.empty(TypeDouble, tileCols, tileRows)
+        val tile = ArrayTile.empty(DoubleConstantNoDataCellType, tileCols, tileRows)
         cfor(0)(_  < in.size, _ + 1) { i =>
           val ((c, r), v) = in(i)
           val (tileCol, tileRow) = ((c % tileCols).toInt, (r % tileRows).toInt)

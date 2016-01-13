@@ -175,7 +175,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     it("should mapDouble a single band, striped, pixel interleave") {
 
       val tile =
-        MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.convert(TypeDouble).mapDouble(1)(_ + 3.3)
+        MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.convert(DoubleConstantNoDataCellType).mapDouble(1)(_ + 3.3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -185,7 +185,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     it("should mapDouble a single band, tiled, band interleave") {
 
       val tile =
-        MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.convert(TypeDouble).mapDouble(1)(_ + 3.3)
+        MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.convert(DoubleConstantNoDataCellType).mapDouble(1)(_ + 3.3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }

@@ -38,25 +38,25 @@ object Less extends LocalTileComparatorOp {
 
 trait LessMethods extends TileMethods {
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * integer, else 0.
    */
   def localLess(i: Int): Tile = Less(tile, i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * integer, else 0.
    */
   def <(i: Int): Tile = localLess(i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * integer, else 0.
    */
   def localLessRightAssociative(i: Int): Tile = Less(i, tile)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * integer, else 0.
    *
@@ -64,25 +64,25 @@ trait LessMethods extends TileMethods {
    */
   def <<:(i: Int): Tile = localLessRightAssociative(i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * double, else 0.
    */
   def localLess(d: Double): Tile = Less(tile, d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * double, else 0.
    */
   def localLessRightAssociative(d: Double): Tile = Less(d, tile)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * double, else 0.
    */
   def <(d: Double): Tile = localLess(d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * double, else 0.
    *
@@ -90,12 +90,12 @@ trait LessMethods extends TileMethods {
    */
   def <<:(d: Double): Tile = localLessRightAssociative(d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than the next raster, else 0.
    */
   def localLess(r: Tile): Tile = Less(tile, r)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than the next raster, else 0.
    */
   def <(r: Tile): Tile = localLess(r)

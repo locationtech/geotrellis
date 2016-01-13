@@ -162,7 +162,7 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("should match bit and byte-converted rasters") {
       val actual = SingleBandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
-      val expected = SingleBandGeoTiff(geoTiffPath("bilevel.tif")).tile.convert(TypeBit)
+      val expected = SingleBandGeoTiff(geoTiffPath("bilevel.tif")).tile.convert(BitCellType)
 
       assertEqual(actual, expected)
     }
@@ -424,7 +424,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       cfor(0)(_ < 4, _ + 1) { i =>
         val tile = mbTile.band(i)
-        tile.cellType should be (TypeRawUByte)
+        tile.cellType should be (UByteCellType)
         tile.dimensions should be ((500, 500))
       }
     }
@@ -466,7 +466,7 @@ class GeoTiffReaderSpec extends FunSpec
     it("should read clipped GeoTiff with byte NODATA value") {
       val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).tile
       val geoTiff2 = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).tile
-      assertEqual(geoTiff.toArrayTile.convert(TypeFloat), geoTiff2)
+      assertEqual(geoTiff.toArrayTile.convert(FloatConstantNoDataCellType), geoTiff2)
     }
 
   }

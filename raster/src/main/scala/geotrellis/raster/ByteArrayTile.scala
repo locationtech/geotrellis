@@ -12,7 +12,7 @@ import java.nio.ByteBuffer
 final case class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   extends MutableArrayTile with IntBasedArrayTile {
 
-  val cellType = TypeByte
+  val cellType = ByteConstantNoDataCellType
 
   def apply(i: Int) = b2i(array(i))
   def update(i: Int, z: Int) { array(i) = i2b(z) }

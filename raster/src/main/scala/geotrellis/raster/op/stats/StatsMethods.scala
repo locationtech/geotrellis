@@ -7,7 +7,7 @@ trait StatsMethods extends TileMethods {
   /**
     * Contains several different operations for building a histograms of a raster.
     *
-    * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
+    * @note     Tiles with a double type (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) will have their values
     *           rounded to integers when making the Histogram.
     */
   def histogram: Histogram =
@@ -18,7 +18,7 @@ trait StatsMethods extends TileMethods {
     * The size provided must be less than or equal to the number of distinct
     * values in the Tile.
     *
-    * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
+    * @note     Tiles with a double type (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) will have their values
     *           rounded to integers when making the Histogram.
     */
   def arrayHistogram(size: Int): ArrayHistogram =
@@ -61,10 +61,10 @@ trait StatsMethods extends TileMethods {
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.
    *
-   * @return        Tile of TypeInt data
+   * @return        Tile of IntConstantNoDataCellType data
    *
    * @note          Currently only supports working with integer types. If you pass in a Tile
-   *                with double type data (TypeFloat, TypeDouble) the values will be rounded to
+   *                with double type data (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) the values will be rounded to
    *                Ints.
    */
   def standardDeviations(factor: Double = 1.0): Tile = {

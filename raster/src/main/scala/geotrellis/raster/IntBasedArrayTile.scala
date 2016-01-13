@@ -28,24 +28,3 @@ trait IntBasedArrayTile {
   def applyDouble(i:Int):Double = i2d(apply(i))
   def updateDouble(i:Int, z:Double):Unit = update(i, d2i(z))
 }
-
-trait RawIntBasedArrayTile {
-  def apply(i:Int):Int
-  def update(i:Int, z:Int):Unit
-
-  def applyDouble(i:Int):Double = apply(i).toDouble
-  def updateDouble(i:Int, z:Double):Unit = update(i, z.toInt)
-}
-
-trait DynamicIntBasedArrayTile {
-  val cellType: DynamicCellType
-
-  def apply(i:Int):Int
-  def update(i:Int, z:Int):Unit
-
-  def applyDouble(i:Int):Double = {
-    val n = apply(i)
-    if (n == cellType.noDataValue.toInt) NODATA else n
-  }
-  def updateDouble(i:Int, z:Double):Unit = update(i, if (z == cellType.noDataValue) NODATA else z.toInt)
-}

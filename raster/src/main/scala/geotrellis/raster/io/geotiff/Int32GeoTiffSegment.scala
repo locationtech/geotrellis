@@ -30,25 +30,25 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
 
   def convert(newCellType: CellType): Array[Byte] =
     newCellType match {
-      case TypeBit =>
+      case BitCellType =>
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case TypeByte | TypeUByte | TypeRawByte | TypeRawUByte =>
+      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2b(get(i)) }
         arr
-      case TypeShort | TypeUShort | TypeRawShort | TypeRawUShort =>
+      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
         arr.toArrayByte()
-      case TypeInt =>
+      case IntConstantNoDataCellType =>
         bytes
-      case TypeFloat =>
+      case FloatConstantNoDataCellType =>
         val arr = Array.ofDim[Float](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2f(get(i)) }
         arr.toArrayByte()
-      case TypeDouble =>
+      case DoubleConstantNoDataCellType =>
         val arr = Array.ofDim[Double](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
         arr.toArrayByte()
@@ -59,7 +59,7 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     cfor(0)(_ < size, _ + 1) { i =>
       arr(i) = f(getInt(i))
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
     bytebuff.asIntBuffer.put(arr)
     result
@@ -70,7 +70,7 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     cfor(0)(_ < size, _ + 1) { i =>
       arr(i) = d2i(f(getDouble(i)))
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
     bytebuff.asIntBuffer.put(arr)
     result
@@ -81,7 +81,7 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     cfor(0)(_ < size, _ + 1) { i =>
       arr(i) = f(i, getInt(i))
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
     bytebuff.asIntBuffer.put(arr)
     result
@@ -92,7 +92,7 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
     cfor(0)(_ < size, _ + 1) { i =>
       arr(i) = d2i(f(i, getDouble(i)))
     }
-    val result = new Array[Byte](size * TypeInt.bytes)
+    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
     bytebuff.asIntBuffer.put(arr)
     result

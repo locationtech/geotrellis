@@ -32,14 +32,14 @@ object BandType {
 
   def forCellType(cellType: CellType): BandType =
     cellType match {
-      case TypeBit => BitBandType
-      case TypeUByte | TypeRawUByte => UByteBandType
-      case TypeByte | TypeRawByte => ByteBandType
-      case TypeUShort | TypeRawUShort => UInt16BandType
-      case TypeShort | TypeRawShort => Int16BandType
-      case TypeInt => Int32BandType
-      case TypeFloat => Float32BandType
-      case TypeDouble => Float64BandType
+      case BitCellType => BitBandType
+      case ByteConstantNoDataCellType | ByteCellType | ByteUserDefinedNoDataCellType(_) => ByteBandType
+      case UByteConstantNoDataCellType | UByteCellType | UByteUserDefinedNoDataCellType(_) => UByteBandType
+      case ShortConstantNoDataCellType | ShortCellType | ShortUserDefinedNoDataCellType(_) => Int16BandType
+      case UShortConstantNoDataCellType | UShortCellType | UShortUserDefinedNoDataCellType(_) => UInt16BandType
+      case IntConstantNoDataCellType => Int32BandType
+      case FloatConstantNoDataCellType => Float32BandType
+      case DoubleConstantNoDataCellType => Float64BandType
     }
 }
 

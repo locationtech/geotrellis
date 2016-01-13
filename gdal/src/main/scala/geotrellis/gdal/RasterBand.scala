@@ -90,38 +90,38 @@ class RasterBand(band: Band, cols: Int, rows: Int) {
 
   def dataShort(): Array[Short] = {
     val arr = Array.ofDim[Short](cols*rows)
-    band.ReadRaster(0,0,cols,rows,TypeInt16,arr)
+    band.ReadRaster(0,0,cols,rows,IntConstantNoDataCellType16,arr)
     arr
   }
 
   def dataInt(): Array[Int] = {
     val arr = Array.ofDim[Int](cols*rows)
-    band.ReadRaster(0,0,cols,rows,TypeInt32,arr)
+    band.ReadRaster(0,0,cols,rows,IntConstantNoDataCellType32,arr)
     arr
   }
 
   def dataFloat(): Array[Float] = {
     val arr = Array.ofDim[Float](cols*rows)
-    band.ReadRaster(0,0,cols,rows,TypeFloat32,arr)
+    band.ReadRaster(0,0,cols,rows,FloatConstantNoDataCellType32,arr)
     arr
   }
 
   def dataDouble(): Array[Double] = {
     val arr = Array.ofDim[Double](cols*rows)
-    band.ReadRaster(0,0,cols,rows,TypeFloat64,arr)
+    band.ReadRaster(0,0,cols,rows,FloatConstantNoDataCellType64,arr)
     arr
   }
 
   def toTile(): Tile = {
     val cellType = rasterType match {
-      case TypeUnknown => geotrellis.raster.TypeDouble
-      case TypeByte => geotrellis.raster.TypeShort // accounts for unsigned
-      case TypeUInt16 => geotrellis.raster.TypeInt // accounts for unsigned
-      case TypeInt16 => geotrellis.raster.TypeShort
-      case TypeUInt32 => geotrellis.raster.TypeFloat // accounts for unsigned
-      case TypeInt32 => geotrellis.raster.TypeInt
-      case TypeFloat32 => geotrellis.raster.TypeFloat
-      case TypeFloat64 => geotrellis.raster.TypeDouble
+      case TypeUnknown => geotrellis.raster.DoubleConstantNoDataCellType
+      case ByteConstantNoDataCellType => geotrellis.raster.ShortConstantNoDataCellType // accounts for unsigned
+      case TypeUInt16 => geotrellis.raster.IntConstantNoDataCellType // accounts for unsigned
+      case IntConstantNoDataCellType16 => geotrellis.raster.ShortConstantNoDataCellType
+      case TypeUInt32 => geotrellis.raster.FloatConstantNoDataCellType // accounts for unsigned
+      case IntConstantNoDataCellType32 => geotrellis.raster.IntConstantNoDataCellType
+      case FloatConstantNoDataCellType32 => geotrellis.raster.FloatConstantNoDataCellType
+      case FloatConstantNoDataCellType64 => geotrellis.raster.DoubleConstantNoDataCellType
       case TypeCInt16 => ???
       case TypeCInt32 => ???
       case TypeCFloat32 => ???
@@ -130,13 +130,13 @@ class RasterBand(band: Band, cols: Int, rows: Int) {
 
     val tile = 
       (cellType match {
-        case geotrellis.raster.TypeShort =>
+        case geotrellis.raster.ShortConstantNoDataCellType =>
           ShortArrayTile(dataShort, cols, rows)
-        case geotrellis.raster.TypeInt => 
+        case geotrellis.raster.IntConstantNoDataCellType => 
           IntArrayTile(dataInt, cols, rows)
-        case geotrellis.raster.TypeFloat =>
+        case geotrellis.raster.FloatConstantNoDataCellType =>
           FloatArrayTile(dataFloat, cols, rows)
-        case geotrellis.raster.TypeDouble =>
+        case geotrellis.raster.DoubleConstantNoDataCellType =>
           DoubleArrayTile(dataDouble, cols, rows)
       }).mutable
 

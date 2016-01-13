@@ -26,6 +26,6 @@ object Atan extends Serializable {
   /** Takes the Arc Tangent of each raster cell value. */
   def apply(r: Tile): Tile = 
     (if(r.cellType.isFloatingPoint) r
-     else r.convert(TypeDouble))
+     else r.convert(DoubleConstantNoDataCellType))
      .mapDouble(z => math.atan(z))
 }

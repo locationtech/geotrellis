@@ -59,7 +59,7 @@ class MosaicSpec extends FunSpec
       )
 
       val extent = Extent(2,2,6,6)
-      val mergeTile = ArrayTile.empty(TypeInt, 4,4)
+      val mergeTile = ArrayTile.empty(IntConstantNoDataCellType, 4,4)
 
       for ( (ex, tile) <- tiles) {
         mergeTile.merge(extent, ex, tile)

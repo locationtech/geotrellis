@@ -30,7 +30,7 @@ import spire.syntax.cfor._
  * Percentages are integer values from 0 - 100.
  * 
  * @note    ZonalPercentage does not currently support Double raster data.
- *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+ *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
  *          the data values will be rounded to integers.
  */
 object ZonalPercentage {

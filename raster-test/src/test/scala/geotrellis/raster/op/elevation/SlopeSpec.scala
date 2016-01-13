@@ -42,7 +42,7 @@ class SlopeSpec extends FunSpec with Matchers
       val (xmax, ymin) = rasterExtentGdal.gridToMap(rg.cols - 2, rg.rows - 2)
 
       val cropExtent = Extent(xmin, ymin, xmax, ymax)
-      val croppedGdal = rg.crop(rasterExtentGdal.extent, cropExtent).convert(TypeDouble)
+      val croppedGdal = rg.crop(rasterExtentGdal.extent, cropExtent).convert(DoubleConstantNoDataCellType)
       val croppedComputed = get(slopeComputed).crop(rasterExtent.extent, cropExtent)
 
       assertEqual(croppedGdal, croppedComputed, 1.0)

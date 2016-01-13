@@ -89,7 +89,7 @@ trait TileBuilders {
     ArrayTile(arr, cols, rows)
   }
 
-  def createNoData(cols: Int, rows: Int, t: CellType = TypeInt) =
+  def createNoData(cols: Int, rows: Int, t: CellType = IntConstantNoDataCellType) =
     ArrayTile.empty(t, cols, rows)
 
   def replaceValues(r: Tile, valueMap: Map[(Int, Int), Int]) = {
@@ -143,7 +143,7 @@ trait TileBuilders {
     val re = RasterExtent(Extent(xmin, ymin, xmax, ymax), tileCols * pixelCols, tileRows * pixelRows)
     val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
 
-    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, TypeInt), ops)
+    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, IntConstantNoDataCellType), ops)
   }
 
   def createRasterSource(arr: Array[Double], tileCols: Int, tileRows: Int, pixelCols: Int, pixelRows: Int): RasterSource =
@@ -191,7 +191,7 @@ trait TileBuilders {
 
     val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
 
-    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, TypeDouble), ops)
+    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, DoubleConstantNoDataCellType), ops)
   }
 
   def createCompositeTile(arr: Array[Int], layout: TileLayout): Tile = {
@@ -268,7 +268,7 @@ trait TileBuilders {
   }
 
   /**
-   * 9x10 TypeDouble raster with values between 0 and 1, exclusive.
+   * 9x10 DoubleConstantNoDataCellType raster with values between 0 and 1, exclusive.
    */
   def probabilityRaster = {
     val arr = Array(0.69, 0.06, 0.72, 0.45, 0.64, 0.17, 0.32, 0.07, 0.04,
@@ -304,7 +304,7 @@ trait TileBuilders {
   }
 
   /**
-   * 9x10 TypeDouble raster with values between 0 and 1, exclusive,
+   * 9x10 DoubleConstantNoDataCellType raster with values between 0 and 1, exclusive,
    * with Double.NaN values in every even column.
    */
   def probabilityNoDataRaster = {

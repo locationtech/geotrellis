@@ -21,25 +21,25 @@ import geotrellis.raster.op.local._
 
 trait GreaterRasterSourceMethods extends RasterSourceMethods {
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
   def localGreater(i: Int): RasterSource = rasterSource.mapTile(Greater(_, i))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
   def localGreaterRightAssociative(i: Int): RasterSource = rasterSource.mapTile(Greater(i, _))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
   def >(i:Int): RasterSource = localGreater(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    * 
@@ -47,25 +47,25 @@ trait GreaterRasterSourceMethods extends RasterSourceMethods {
    */
   def >>:(i:Int): RasterSource = localGreaterRightAssociative(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
   def localGreater(d: Double): RasterSource = rasterSource.mapTile(Greater(_, d))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
   def localGreaterRightAssociative(d: Double): RasterSource = rasterSource.mapTile(Greater(d, _))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
   def >(d:Double): RasterSource = localGreater(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    * 
@@ -73,12 +73,12 @@ trait GreaterRasterSourceMethods extends RasterSourceMethods {
    */
   def >>:(d:Double): RasterSource = localGreaterRightAssociative(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
    */
   def localGreater(rs:RasterSource): RasterSource = rasterSource.combineTile(rs)(Greater(_,_))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
    */
   def >(rs:RasterSource): RasterSource = localGreater(rs)

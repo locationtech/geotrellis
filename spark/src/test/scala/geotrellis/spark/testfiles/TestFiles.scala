@@ -2,7 +2,7 @@ package geotrellis.spark.testfiles
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.spark.tiling._
-import geotrellis.raster.{GridBounds, TileLayout, TypeFloat}
+import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
 import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
 import org.apache.spark._
 import geotrellis.spark._
@@ -14,7 +14,7 @@ object TestFiles extends Logging {
   val partitionCount = 4
 
   val rasterMetaData: RasterMetaData = {
-    val cellType = TypeFloat
+    val cellType = FloatConstantNoDataCellType
     val crs = LatLng
     val tileLayout = TileLayout(8, 8, 3, 4)
     val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)

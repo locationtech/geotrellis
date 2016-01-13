@@ -37,7 +37,7 @@ class LocalMapSpec extends FunSpec
       }
     }
 
-    it ("performs integer function against TypeDouble raster") {
+    it ("performs integer function against DoubleConstantNoDataCellType raster") {
       val r = probabilityNoDataRaster
       val result = r.map { (x:Int) => if(isNoData(x)) NODATA else x * 10 }
       for(col <- 0 until r.cols) {
@@ -58,7 +58,7 @@ class LocalMapSpec extends FunSpec
       }
     }
 
-    it ("performs double function against TypeInt raster") {
+    it ("performs double function against IntConstantNoDataCellType raster") {
       val r = positiveIntegerNoDataRaster
       val result = r.mapDouble { (x:Double) => x * 10.0 }
       for(col <- 0 until r.cols) {
@@ -79,7 +79,7 @@ class LocalMapSpec extends FunSpec
       }
     }
 
-    it ("performs binary integer function against TypeDouble raster") {
+    it ("performs binary integer function against DoubleConstantNoDataCellType raster") {
       val r = probabilityNoDataRaster
       val result = r.combine(r) { (z1:Int,z2:Int) => if(isNoData(z1)) { NODATA} else { z1 + z2 } }
       for(col <- 0 until r.cols) {
@@ -100,7 +100,7 @@ class LocalMapSpec extends FunSpec
       }
     }
 
-    it ("performs binary double function against TypeInt raster") {
+    it ("performs binary double function against IntConstantNoDataCellType raster") {
       val r = positiveIntegerNoDataRaster
       val result = r.combineDouble(r) { (z1:Double,z2:Double) => if(isNoData(z1)) {NODATA} else {z1 + z2} }
       for(col <- 0 until r.cols) {

@@ -27,7 +27,7 @@ import java.nio.ByteBuffer
 final case class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
   extends MutableArrayTile with DoubleBasedArray {
 
-  val cellType = TypeFloat
+  val cellType = FloatConstantNoDataCellType
 
   def applyDouble(i: Int) = array(i).toDouble
   def updateDouble(i: Int, z: Double) = array(i) = z.toFloat
@@ -55,7 +55,7 @@ object FloatArrayTile {
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): FloatArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val floatBuffer = byteBuffer.asFloatBuffer()
-    val floatArray = new Array[Float](bytes.size / TypeFloat.bytes)
+    val floatArray = new Array[Float](bytes.size / FloatConstantNoDataCellType.bytes)
     floatBuffer.get(floatArray)
 
     FloatArrayTile(floatArray, cols, rows)
@@ -67,7 +67,7 @@ object FloatArrayTile {
     } else {
       val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
       val floatBuffer = byteBuffer.asFloatBuffer()
-      val len = bytes.size / TypeFloat.bytes
+      val len = bytes.size / FloatConstantNoDataCellType.bytes
       val floatArray = new Array[Float](len)
 
       cfor(0)(_ < len, _ + 1) { i =>

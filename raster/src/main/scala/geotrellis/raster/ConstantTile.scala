@@ -35,14 +35,14 @@ trait ConstantTile extends Tile {
 
   def convert(newType: CellType): Tile = 
     newType match {
-      case TypeBit => BitConstantTile(if(iVal == 0) false else true, cols, rows)
-      case TypeByte => ByteConstantTile(iVal.toByte, cols, rows)
-      case TypeUByte => UByteConstantTile(iVal.toByte, cols, rows)
-      case TypeShort => ShortConstantTile(iVal.toShort, cols, rows)
-      case TypeUShort => UShortConstantTile(iVal.toShort, cols, rows)
-      case TypeInt => IntConstantTile(iVal, cols, rows)
-      case TypeFloat => FloatConstantTile(dVal.toFloat, cols, rows)
-      case TypeDouble => DoubleConstantTile(dVal, cols, rows)
+      case BitCellType => BitConstantTile(if(iVal == 0) false else true, cols, rows)
+      case ByteConstantNoDataCellType => ByteConstantTile(iVal.toByte, cols, rows)
+      case UByteConstantNoDataCellType => UByteConstantTile(iVal.toByte, cols, rows)
+      case ShortConstantNoDataCellType => ShortConstantTile(iVal.toShort, cols, rows)
+      case UShortConstantNoDataCellType => UShortConstantTile(iVal.toShort, cols, rows)
+      case IntConstantNoDataCellType => IntConstantTile(iVal, cols, rows)
+      case FloatConstantNoDataCellType => FloatConstantTile(dVal.toFloat, cols, rows)
+      case DoubleConstantNoDataCellType => DoubleConstantTile(dVal, cols, rows)
     }
 
   def foreach(f: Int => Unit) {
@@ -105,7 +105,7 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   protected val iVal = if(v) 1 else 0
   protected val dVal = if(v) 1.0 else 0.0
 
-  val cellType = TypeBit
+  val cellType = BitCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -118,7 +118,7 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile 
   protected val iVal = b2i(v)
   protected val dVal = b2d(v)
 
-  val cellType = TypeByte
+  val cellType = ByteConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -131,7 +131,7 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile
   protected val iVal = b2i(v)
   protected val dVal = b2d(v)
 
-  val cellType = TypeByte
+  val cellType = ByteConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -147,7 +147,7 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTil
   protected val iVal = s2i(v)
   protected val dVal = s2d(v)
 
-  val cellType = TypeShort
+  val cellType = ShortConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -164,7 +164,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTi
   protected val iVal = v & 0xFFFF
   protected val dVal = iVal.toDouble
 
-  val cellType = TypeShort
+  val cellType = ShortConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -185,7 +185,7 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
   protected val iVal = v
   protected val dVal = i2d(v)
 
-  val cellType = TypeInt
+  val cellType = IntConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -202,7 +202,7 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTil
   protected val iVal = f2i(v)
   protected val dVal = f2d(v)
 
-  val cellType = TypeFloat
+  val cellType = FloatConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
@@ -219,7 +219,7 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
   protected val iVal = d2i(v)
   protected val dVal = v
 
-  val cellType = TypeDouble
+  val cellType = DoubleConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
