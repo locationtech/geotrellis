@@ -33,6 +33,12 @@ class TileRDDReprojectMethods[
   def reproject(zoomedLayoutScheme: ZoomedLayoutScheme): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
     reproject(zoomedLayoutScheme, Options.DEFAULT)
 
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, bufferSize, options)
+
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+    reproject(zoomedLayoutScheme, bufferSize, Options.DEFAULT)
+
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
     TileRDDReproject(self, destCrs, layoutScheme, bufferSize, options)
 
