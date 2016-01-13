@@ -20,6 +20,10 @@ abstract class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegme
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
+  protected def intToShort(v: Int): Short
+  protected def intToDouble(v: Int): Double
+  protected def doubleToInt(v: Double): Int
+
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case BitCellType =>
@@ -49,16 +53,35 @@ abstract class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegme
     }
 
   // NOTE: Maps to Int32 bytes.
-  def map(f: Int => Int): Array[Byte]
+  def map(f: Int => Int): Array[Byte] = {
+    val arr = Array.ofDim[Short](size)
+    cfor(0)(_ < size, _ + 1) { i =>
+      arr(i) = intToShort(f(getInt(i)))
+    }
+    val result = new Array[Byte](size * ShortConstantNoDataCellType.bytes)
+    val bytebuff = ByteBuffer.wrap(result)
+    bytebuff.asShortBuffer.put(arr)
+    result
+  }
 
-  def mapDouble(f: Double => Double): Array[Byte]
-
-  def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte]
+  def mapDouble(f: Double => Double): Array[Byte] =
+    map(z => doubleToInt(f(intToDouble(z))))
 
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
     val arr = Array.ofDim[Int](size)
     cfor(0)(_ < size, _ + 1) { i =>
       arr(i) = f(i, getInt(i))
+    }
+    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
+    val bytebuff = ByteBuffer.wrap(result)
+    bytebuff.asIntBuffer.put(arr)
+    result
+  }
+
+  def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
+    val arr = Array.ofDim[Int](size)
+    cfor(0)(_ < size, _ + 1) { i =>
+      arr(i) = doubleToInt(f(i, getDouble(i)))
     }
     val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
@@ -74,95 +97,32 @@ trait UInt16RawSegment {
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = get(i).toDouble
 
-  def map(f: Int => Int): Array[Byte] = {
-    val arr = Array.ofDim[Short](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = f(get(i)).toByte
-    }
-    val result = new Array[Byte](size * ShortConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asShortBuffer.put(arr)
-    result
-  }
+  protected def intToShort(v: Int): Short = v.toShort
+  protected def intToDouble(v: Int): Double = v.toDouble
+  protected def doubleToInt(v: Double): Int = v.toInt
 }
 
 trait UInt16ConstantNoDataSegment {
   val size: Int
-  def get(i: Int): Int
   def getRaw(i: Int): Short
 
   def getInt(i: Int): Int = us2i(getRaw(i))
-  def getDouble(i: Int): Double = us2i(getRaw(i))
+  def getDouble(i: Int): Double = us2d(getRaw(i))
 
-  // NOTE: Maps to Int32 bytes.
-  def map(f: Int => Int): Array[Byte] = {
-    val arr = Array.ofDim[Short](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = i2ub(f(get(i)))
-    }
-    val result = new Array[Byte](size * ShortConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asShortBuffer.put(arr)
-    result
-  }
-
-  def mapDouble(f: Double => Double): Array[Byte] =
-    map(z => d2i(f(i2d(z))))
-
-  def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2i(f(i, getDouble(i)))
-    }
-    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
-    result
-  }
-
+  protected def intToShort(v: Int): Short = i2us(v)
+  protected def intToDouble(v: Int): Double = i2d(v)
+  protected def doubleToInt(v: Double): Int = d2i(v)
 }
 
-trait UInt16UserDefinedNoDataSegment extends UserDefinedNoDataConversions {
+trait UInt16UserDefinedNoDataSegment extends UserDefinedIntNoDataConversions {
   val size: Int
 
   def get(i: Int): Int
 
-  def getInt(i: Int): Int = get(i)
+  def getInt(i: Int): Int = udi2i(get(i))
   def getDouble(i: Int): Double = udi2d(get(i))
 
-  def map(f: Int => Int): Array[Byte] = {
-    val arr = Array.ofDim[Short](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = i2uds(f(getInt(i)))
-    }
-    val result = new Array[Byte](size * ShortConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asShortBuffer.put(arr)
-    result
-  }
-
-  def mapDouble(f: Double => Double): Array[Byte] =
-    map(z => d2udi(f(udi2d(z))))
-
-  def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = f(i, getInt(i))
-    }
-    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
-    result
-  }
-
-  def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2uds(f(i, getDouble(i)))
-    }
-    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
-    result
-  }
+  protected def intToShort(v: Int): Short = i2uds(v)
+  protected def intToDouble(v: Int): Double = udi2d(v)
+  protected def doubleToInt(v: Double): Int = udd2i(v)
 }

@@ -14,6 +14,6 @@ trait UInt16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
     case Some(nd) if (nd == 0) =>
       { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) with UInt16ConstantNoDataSegment }
     case Some(nd) => // Cast nodata to int in this case so that we can properly compare it to the upcast unsigned byte
-      { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) with UInt16UserDefinedNoDataSegment { val noDataValue = nd } }
+      { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) with UInt16UserDefinedNoDataSegment { val userDefinedIntNoDataValue = nd } }
     }
 }

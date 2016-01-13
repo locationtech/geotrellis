@@ -85,16 +85,10 @@ trait UByteConstantNoDataSegment {
   def getDouble(i: Int): Double = ub2i(getRaw(i))
 }
 
-trait UByteUserDefinedNoDataSegment {
-  val noDataValue: Int
+trait UByteUserDefinedNoDataSegment extends UserDefinedIntNoDataConversions {
 
   def get(i: Int): Int
-  def getInt(i: Int): Int = {
-    val n = get(i);
-    if (n == noDataValue) Int.MinValue else n
-  }
-  def getDouble(i: Int): Double = {
-    val n = get(i);
-    if (n == noDataValue) Double.NaN else n.toDouble
-  }
+  def getInt(i: Int): Int = udi2i(get(i))
+  def getDouble(i: Int): Double = udi2d(get(i))
+
 }

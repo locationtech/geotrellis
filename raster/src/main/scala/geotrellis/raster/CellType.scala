@@ -107,8 +107,8 @@ case object DoubleConstantNoDataCellType
 case class ByteUserDefinedNoDataCellType(noDataValue: Byte)
     extends UserDefinedNoDataCellType[Byte](8, s"int8ud${noDataValue}", false)
 // Upcast the nodatavalue to handle higher values on unsigned types
-case class UByteUserDefinedNoDataCellType(noDataValue: Short)
-    extends UserDefinedNoDataCellType[Short](8, s"uint8ud${noDataValue}", false)
+case class UByteUserDefinedNoDataCellType(noDataValue: Int)
+    extends UserDefinedNoDataCellType[Int](8, s"uint8ud${noDataValue}", false)
 case class ShortUserDefinedNoDataCellType(noDataValue: Short)
     extends UserDefinedNoDataCellType[Short](16, s"int16ud${noDataValue}", false)
 // Upcast the nodatavalue to handle higher values on unsigned types

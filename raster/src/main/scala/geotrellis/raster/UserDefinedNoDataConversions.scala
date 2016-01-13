@@ -2,13 +2,36 @@ package geotrellis.raster
 
 import scala.math.ScalaNumericAnyConversions
 
+trait UserDefinedByteNoDataConversions extends UserDefinedNoDataConversions {
+  val userDefinedByteNoDataValue = userDefinedIntNoDataValue.toByte
+  val userDefinedShortNoDataValue = userDefinedIntNoDataValue.toShort
+  val userDefinedIntNoDataValue: Int
+  val userDefinedFloatNoDataValue = userDefinedIntNoDataValue.toFloat
+  val userDefinedDoubleNoDataValue = userDefinedIntNoDataValue.toDouble
+}
+
+trait UserDefinedShortNoDataConversions extends UserDefinedNoDataConversions {
+  val userDefinedByteNoDataValue = userDefinedShortNoDataValue.toByte
+  val userDefinedShortNoDataValue: Short
+  val userDefinedIntNoDataValue = userDefinedShortNoDataValue.toInt
+  val userDefinedFloatNoDataValue = userDefinedShortNoDataValue.toFloat
+  val userDefinedDoubleNoDataValue = userDefinedShortNoDataValue.toDouble
+}
+
+trait UserDefinedIntNoDataConversions extends UserDefinedNoDataConversions {
+  val userDefinedByteNoDataValue = userDefinedIntNoDataValue.toByte
+  val userDefinedShortNoDataValue = userDefinedIntNoDataValue.toShort
+  val userDefinedIntNoDataValue: Int
+  val userDefinedFloatNoDataValue = userDefinedIntNoDataValue.toFloat
+  val userDefinedDoubleNoDataValue = userDefinedIntNoDataValue.toDouble
+}
+
 trait UserDefinedNoDataConversions {
-  val noDataValue: ScalaNumericAnyConversions
-  val userDefinedByteNoDataValue = noDataValue.toByte
-  val userDefinedShortNoDataValue = noDataValue.toShort
-  val userDefinedIntNoDataValue = noDataValue.toInt
-  val userDefinedFloatNoDataValue = noDataValue.toFloat
-  val userDefinedDoubleNoDataValue = noDataValue.toDouble
+  val userDefinedByteNoDataValue: Byte
+  val userDefinedShortNoDataValue: Short
+  val userDefinedIntNoDataValue: Int
+  val userDefinedFloatNoDataValue: Float
+  val userDefinedDoubleNoDataValue: Double
 
   // user-defined to standardized space
   def udb2ub(n: Byte): Byte = if (n == userDefinedByteNoDataValue) 0.toByte else n.toByte
@@ -29,6 +52,7 @@ trait UserDefinedNoDataConversions {
   def udi2ub(n: Int): Byte = if (n == userDefinedIntNoDataValue) 0.toByte else n.toByte
   def udi2s(n: Int): Short = if (n == userDefinedIntNoDataValue) Short.MinValue else n.toShort
   def udi2us(n: Int): Short = if (n == userDefinedIntNoDataValue) 0.toShort else n.toShort
+  def udi2i(n: Int): Int = if (n == userDefinedIntNoDataValue) Int.MinValue else n
   def udi2f(n: Int): Float = if (n == userDefinedIntNoDataValue) Float.NaN else n.toFloat
   def udi2d(n: Int): Double = if (n == userDefinedIntNoDataValue) Double.NaN else n.toDouble
 
