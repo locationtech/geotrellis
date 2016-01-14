@@ -18,10 +18,14 @@ class MinResample(tile: Tile, extent: Extent, targetCS: CellSize)
       math.min(currentMin, tile.get(coords._1, coords._2))
     }
 
-  private def calculateMinDouble(indices: Seq[(Int, Int)]): Double =
-    indices.foldLeft(Double.MaxValue) { case (currentMin, coords) =>
-      math.min(currentMin, tile.getDouble(coords._1, coords._2))
+  private def calculateMinDouble(indices: Seq[(Int, Int)]): Double = {
+    val doubleMin = indices.foldLeft(Double.MaxValue) { case (currentMin, coords) =>
+      val v = tile.getDouble(coords._1, coords._2)
+      // Double.NaN would *always* be max
+      if (isData(v)) math.min(currentMin, v) else currentMin
     }
+    if (doubleMin == Double.MaxValue) NODATA else doubleMin
+  }
 
   def resampleValid(x: Double, y: Double): Int = calculateMin(contributions(x, y))
 
