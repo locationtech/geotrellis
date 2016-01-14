@@ -33,6 +33,88 @@ object HadoopLayerReindexer {
     ) {
       def headerUpdate(id: LayerId, header: HadoopLayerHeader): HadoopLayerHeader =
         header.copy(path = new Path(rootPath, s"${id.name}/${id.zoom}"))
+
+      // We have to override functions due to Unit schema type for Hadoop backend
+      override def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: TI): Unit = {
+        if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
+        if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
+
+        try {
+          layerWriter.write[TI](to, layerReader.read[FI](from), keyIndex)
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
+
+        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], TI, Unit](to)
+        } catch {
+          case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
+        }
+
+        try {
+          attributeStore.writeLayerAttributes(
+            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+          )
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
+      }
+
+      override def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
+        if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
+        if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
+
+        try {
+          layerWriter.write(to, layerReader.read[KeyIndex[K]](from), keyIndexMethod)
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
+
+        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](to)
+        } catch {
+          case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
+        }
+
+        try {
+          attributeStore.writeLayerAttributes(
+            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+          )
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
+      }
+
+      override def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+        if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
+        if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
+
+        val (_, _, _, keyIndex, _) = try {
+          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], I, Unit](from)
+        } catch {
+          case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
+        }
+
+        try {
+          layerWriter.write(to, layerReader.read[KeyIndex[K]](from), keyIndex)
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
+
+        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](to)
+        } catch {
+          case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
+        }
+
+        try {
+          attributeStore.writeLayerAttributes(
+            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+          )
+        } catch {
+          case e: Exception => new LayerCopyError(from, to).initCause(e)
+        }
+      }
     }
 
     GenericLayerReindexer(layerDeleter, layerCopier, layerMover)

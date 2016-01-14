@@ -70,7 +70,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     val (_, _, _, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], I, Schema](to)
+      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], I, Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }

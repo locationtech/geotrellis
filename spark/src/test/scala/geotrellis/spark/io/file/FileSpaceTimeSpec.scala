@@ -13,29 +13,30 @@ abstract class FileSpaceTimeSpec
     extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
     with TestEnvironment with TestFiles
     with CoordinateSpaceTimeTests {
-  val catalogPath = outputLocalPath
+  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byPattern("YMM")
 
-  lazy val reader = FileLayerReader[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
-  lazy val deleter = FileLayerDeleter[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
-  lazy val copier = FileLayerCopier[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
-  lazy val mover  = FileLayerMover[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
-  lazy val reindexer = FileLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod.byPattern("YMM"))
-  lazy val tiles = FileTileReader[SpaceTimeKey, Tile](catalogPath)
-  lazy val sample =  CoordinateSpaceTime
+  lazy val reader    = FileLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val deleter   = FileLayerDeleter[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val copier    = FileLayerCopier[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val mover     = FileLayerMover[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val reindexer = FileLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val tiles     = FileTileReader[SpaceTimeKey, Tile](outputLocalPath)
+  lazy val writer    = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val sample    = CoordinateSpaceTime
 }
 
 class FileSpaceTimeZCurveByYearSpec extends FileSpaceTimeSpec {
-  lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod.byYear)
+  lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.byYear
 }
 
 class FileSpaceTimeZCurveByFuncSpec extends FileSpaceTimeSpec {
-  lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "FileSpaceTimeZCurveByFuncSpec"))
+  lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "FileSpaceTimeZCurveByFuncSpec")
 }
 
 class FileSpaceTimeHilbertSpec extends FileSpaceTimeSpec {
-  lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))
+  lazy val writerKeyIndexMethod = HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4)
 }
 
 class FileSpaceTimeHilbertWithResolutionSpec extends FileSpaceTimeSpec {
-  lazy val writer = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](catalogPath,  HilbertKeyIndexMethod(2))
+  lazy val writerKeyIndexMethod = HilbertKeyIndexMethod(2)
 }
