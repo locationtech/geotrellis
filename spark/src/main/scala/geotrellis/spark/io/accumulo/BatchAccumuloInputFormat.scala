@@ -1,7 +1,5 @@
 package geotrellis.spark.io.accumulo
 
-import java.nio.ByteBuffer
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import java.net.InetAddress
 import org.apache.accumulo.core.client.impl.{Credentials, Tables, ClientContext}
@@ -9,12 +7,10 @@ import org.apache.accumulo.core.client.mapreduce.lib.impl.{ConfiguratorBase => C
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.{ClientConfiguration, ZooKeeperInstance, TableOfflineException, TableDeletedException}
-import org.apache.accumulo.core.conf.AccumuloConfiguration
 import org.apache.accumulo.core.data.{Range => ARange, Value, Key}
 import org.apache.accumulo.core.data.impl.KeyExtent
 import org.apache.accumulo.core.master.state.tables.TableState
 
-import org.apache.accumulo.core.util.UtilWaitThread
 import org.apache.hadoop.mapreduce.{RecordReader, TaskAttemptContext, InputSplit, JobContext}
 import scala.collection.JavaConverters._
 
@@ -69,8 +65,8 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
       val credentials = new Credentials(principal, token)
       val clientConfiguration = new ClientConfiguration()
       val clientContext = new ClientContext(instance, credentials, clientConfiguration)
-      var ranges = ARange.mergeOverlapping(tableConfig.getRanges())
-      if (ranges.isEmpty()) {
+      var ranges = ARange.mergeOverlapping(tableConfig.getRanges)
+      if (ranges.isEmpty) {
         ranges = new java.util.ArrayList[ARange](1)
         ranges.add(new ARange())
       }
@@ -78,11 +74,11 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
       /** Ranges binned by tablets */
       val binnedRanges = new java.util.HashMap[String, java.util.Map[KeyExtent, java.util.List[ARange]]]()
       val tabletLocator = IC.getTabletLocator(CLASS, conf, tableId)
-      tabletLocator.invalidateCache
+      tabletLocator.invalidateCache()
 
       // loop until list of tablet lookup failures is empty
       while (! tabletLocator.binRanges(clientContext, ranges, binnedRanges).isEmpty ) {
-        if (!(instance.isInstanceOf[MockInstance])) {
+        if (!instance.isInstanceOf[MockInstance]) {
           if (!Tables.exists(instance, tableId))
             throw new TableDeletedException(tableId)
           if (Tables.getTableState(instance, tableId) == TableState.OFFLINE)
@@ -108,7 +104,7 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
             else 
               exr map { tabletRange.clip }
           split.iterators = IC.getIterators(CLASS, conf).asScala.toList
-          split.location = InetAddress.getByName(ip).getCanonicalHostName()
+          split.location = InetAddress.getByName(ip).getCanonicalHostName
           split.table = tableName
           split.instanceName = instance.getInstanceName
           split.zooKeepers = instance.getZooKeepers
