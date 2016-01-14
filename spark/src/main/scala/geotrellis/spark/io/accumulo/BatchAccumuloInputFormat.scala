@@ -4,15 +4,16 @@ import java.nio.ByteBuffer
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import java.net.InetAddress
-import org.apache.accumulo.core.client.impl.Tables
+import org.apache.accumulo.core.client.impl.{Credentials, Tables, ClientContext}
 import org.apache.accumulo.core.client.mapreduce.lib.impl.{ConfiguratorBase => CB, InputConfigurator => IC}
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
-import org.apache.accumulo.core.client.ZooKeeperInstance
-import org.apache.accumulo.core.client.{TableOfflineException, TableDeletedException}
-import org.apache.accumulo.core.data.{Range => ARange, Value, Key, KeyExtent}
+import org.apache.accumulo.core.client.{ClientConfiguration, ZooKeeperInstance, TableOfflineException, TableDeletedException}
+import org.apache.accumulo.core.conf.AccumuloConfiguration
+import org.apache.accumulo.core.data.{Range => ARange, Value, Key}
+import org.apache.accumulo.core.data.impl.KeyExtent
 import org.apache.accumulo.core.master.state.tables.TableState
-import org.apache.accumulo.core.security.Credentials
+
 import org.apache.accumulo.core.util.UtilWaitThread
 import org.apache.hadoop.mapreduce.{RecordReader, TaskAttemptContext, InputSplit, JobContext}
 import scala.collection.JavaConverters._
@@ -65,7 +66,9 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
       val auths = IC.getScanAuthorizations(CLASS, conf)
       val principal = CB.getPrincipal(CLASS, conf)
       val token = CB.getAuthenticationToken(CLASS, conf)
-      val credentials = new Credentials(principal, token);
+      val credentials = new Credentials(principal, token)
+      val clientConfiguration = new ClientConfiguration()
+      val clientContext = new ClientContext(instance, credentials, clientConfiguration)
       var ranges = ARange.mergeOverlapping(tableConfig.getRanges())
       if (ranges.isEmpty()) {
         ranges = new java.util.ArrayList[ARange](1)
@@ -78,7 +81,7 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
       tabletLocator.invalidateCache
 
       // loop until list of tablet lookup failures is empty
-      while (! tabletLocator.binRanges(credentials, ranges, binnedRanges).isEmpty ) {
+      while (! tabletLocator.binRanges(clientContext, ranges, binnedRanges).isEmpty ) {
         if (!(instance.isInstanceOf[MockInstance])) {
           if (!Tables.exists(instance, tableId))
             throw new TableDeletedException(tableId)
