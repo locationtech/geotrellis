@@ -4,6 +4,8 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.spark.io._
 import geotrellis.spark._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.vector.Extent
 import org.apache.spark.SparkContext
@@ -33,7 +35,7 @@ abstract class CatalogInputPlugin[K: SpatialComponent: Boundable] extends InputP
       case Some(extent) =>
         reader(props).query(id).where(Intersects(extent)).toRDD
       case None =>
-        reader(props).read(id)
+        reader(props).read[KeyIndex[K]](id)
     }
 
     id.zoom -> rdd

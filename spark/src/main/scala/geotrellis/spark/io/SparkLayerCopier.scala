@@ -11,7 +11,7 @@ import scala.reflect._
 abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
    val attributeStore: AttributeStore[JsonFormat],
    layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
-   layerWriter: Writer[LayerId, RDD[(K, V)] with Metadata[M], K]) extends LayerCopier[LayerId, K] {
+   layerWriter: Writer[LayerId, K, RDD[(K, V)] with Metadata[M]]) extends LayerCopier[LayerId, K] {
 
   def headerUpdate(id: LayerId, header: Header): Header
 

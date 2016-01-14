@@ -37,7 +37,7 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
     attributeStore.clearCache()
   }
 
-  // not supported operations actually
+  // not supported operations
   def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
     move[I](from, to)
 

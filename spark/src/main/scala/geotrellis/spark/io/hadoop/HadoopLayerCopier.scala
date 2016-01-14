@@ -35,6 +35,7 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     )
   }
 
+  // unsupported operations
   def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: TI): Unit =
     copy[FI](from, to)
 
@@ -44,11 +45,10 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
 
 object HadoopLayerCopier {
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
+    rootPath: Path, attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
     new HadoopLayerCopier[K, V, M](rootPath, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)
-    (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+    rootPath: Path)(implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
     apply[K, V, M](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
 }

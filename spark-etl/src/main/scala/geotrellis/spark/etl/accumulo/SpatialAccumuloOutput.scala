@@ -8,6 +8,6 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 
 class SpatialAccumuloOutput extends AccumuloOutput[SpatialKey] {
-  def writer(method: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]], props: Parameters) =
-    AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData](getInstance(props),  props("table"), method)
+  def writer(props: Parameters) =
+    AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData](getInstance(props),  props("table"))
 }

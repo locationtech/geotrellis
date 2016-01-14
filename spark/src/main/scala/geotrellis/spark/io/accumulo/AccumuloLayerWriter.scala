@@ -13,12 +13,10 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerWriter[
-  K: Boundable: JsonFormat: ClassTag, V: ClassTag,
-  M: JsonFormat
-](val attributeStore: AttributeStore[JsonFormat],
+class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+  val attributeStore: AttributeStore[JsonFormat],
   rddWriter: BaseAccumuloRDDWriter[K, V],
-  table: String) extends Writer[LayerId, RDD[(K, V)] with Metadata[M], K] {
+  table: String) extends Writer[LayerId, K, RDD[(K, V)] with Metadata[M]] {
 
   def write[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: I): Unit = {
     val header =

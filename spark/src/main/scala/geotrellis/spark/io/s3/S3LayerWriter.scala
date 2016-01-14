@@ -30,7 +30,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
     keyPrefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false)
-  extends Writer[LayerId, RDD[(K, V)] with Metadata[M], K] with LazyLogging {
+  extends Writer[LayerId, K, RDD[(K, V)] with Metadata[M]] with LazyLogging {
 
   def getS3Client: () => S3Client = () => S3Client.default
 

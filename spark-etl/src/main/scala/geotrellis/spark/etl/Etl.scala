@@ -62,7 +62,7 @@ class Etl[K: TypeTag: SpatialComponent](args: Seq[String], modules: Seq[TypedMod
     LayerId(conf.layerName(), zoom) -> rdd
   }
 
-  def save(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K, KeyIndex[K]]): Unit = {
+  def save(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K]): Unit = {
     val attributes = outputPlugin.attributes(conf.outputProps)
     def savePyramid(zoom: Int, rdd: RasterRDD[K]): Unit = {
       val currentId = id.copy( zoom = zoom)

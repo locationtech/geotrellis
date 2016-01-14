@@ -18,7 +18,7 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
   rootPath: Path,
   val attributeStore: AttributeStore[JsonFormat],
   rddWriter: HadoopRDDWriter[K, V])
-  extends Writer[LayerId, RDD[(K, V)] with Metadata[M], K] {
+  extends Writer[LayerId, K, RDD[(K, V)] with Metadata[M]] {
 
   def write[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: I): Unit = {
     implicit val sc = rdd.sparkContext

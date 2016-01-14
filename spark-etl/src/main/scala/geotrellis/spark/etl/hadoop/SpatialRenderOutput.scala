@@ -37,7 +37,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
     }
   }
   
-  override def apply(id: LayerId, rdd: RasterRDD[SpatialKey], method: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]], props: Map[String, String]) =
+  override def apply(id: LayerId, rdd: RasterRDD[SpatialKey], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
     props("format").toLowerCase match {
       case "png" =>
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderPng(id, props("path"), parseBreaks(props.get("breaks")))
@@ -45,6 +45,6 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderGeoTiff(id, props("path"))
     }
 
-  def writer(method: KeyIndexMethod[SpatialKey, KeyIndex[SpatialKey]], props: Parameters) = ???
+  def writer(props: Parameters) = ???
 }
 
