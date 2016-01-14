@@ -3,7 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark.LayerId
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import AttributeStore.Fields
 
 
