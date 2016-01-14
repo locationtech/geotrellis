@@ -1,12 +1,12 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4.LatLng
-
-import org.apache.spark.rdd._
 
 trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
 
@@ -21,12 +21,12 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
     )
 
   it("should update a layer") {
-    updater.update(layerId, sample)
+    updater.update[KeyIndex[SpaceTimeKey]](layerId, sample)
   }
 
   it("should not update a layer (empty set)") {
     intercept[LayerUpdateError] {
-      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+      updater.update[KeyIndex[SpaceTimeKey]](layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
     }
   }
 
@@ -40,7 +40,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
     ), dummyRasterMetaData)
 
     intercept[LayerOutOfKeyBoundsError] {
-      updater.update(layerId, update)
+      updater.update[KeyIndex[SpaceTimeKey]](layerId, update)
     }
   }
 }

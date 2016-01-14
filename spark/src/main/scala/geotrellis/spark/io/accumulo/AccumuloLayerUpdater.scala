@@ -15,7 +15,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: J
   rddWriter: BaseAccumuloRDDWriter[K, V])
   extends LayerUpdater[LayerId, K, V, M] {
 
-  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container) = {
+  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
@@ -44,7 +44,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: J
     }
   }
 
-  def update(id: LayerId, rdd: Container) = update[KeyIndex[K]](id, rdd)
+  def update(id: LayerId, rdd: Container): Unit = update[KeyIndex[K]](id, rdd)
 }
 
 object AccumuloLayerUpdater {

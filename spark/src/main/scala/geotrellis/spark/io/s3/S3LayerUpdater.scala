@@ -20,7 +20,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container) = {
+  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
     val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
@@ -49,7 +49,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
     rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
   }
 
-  def update(id: LayerId, rdd: Container) = update[KeyIndex[K]](id, rdd)
+  def update(id: LayerId, rdd: Container): Unit = update[KeyIndex[K]](id, rdd)
 }
 
 object S3LayerUpdater {
