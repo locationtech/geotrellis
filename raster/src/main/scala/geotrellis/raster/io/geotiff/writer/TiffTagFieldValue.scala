@@ -40,15 +40,15 @@ object TiffTagFieldValue {
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
-      case BitCellType => None
+      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType => None
       case ByteConstantNoDataCellType => Some(byteNODATA.toString)
-      case ByteCellType => None
+      case ByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UByteConstantNoDataCellType => Some(ubyteNODATA.toString)
-      case UByteCellType => None
+      case UByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case ShortConstantNoDataCellType => Some(shortNODATA.toString)
-      case ShortCellType => None
+      case ShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UShortConstantNoDataCellType => Some(ushortNODATA.toString)
-      case UShortCellType => None
+      case UShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case IntConstantNoDataCellType => Some(NODATA.toString)
       case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
     }

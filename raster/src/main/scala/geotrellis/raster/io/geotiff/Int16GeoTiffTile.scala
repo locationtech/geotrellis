@@ -48,9 +48,12 @@ class Int16GeoTiffTile(
       }
     }
     noDataValue match {
-      case None => ShortArrayTile.fromRawBytes(arr, cols, rows)
-      case Some(nd) if (nd != Short.MinValue) => ???
-      case Some(nd) => ShortArrayTile.fromBytes(arr, cols, rows)
+      case None =>
+        ShortArrayTile.fromBytesRaw(arr, cols, rows)
+      case Some(nd) if (nd != Short.MinValue) =>
+        ShortArrayTile.fromBytesUserDefined(arr, cols, rows, nd)
+      case Some(nd) =>
+        ShortArrayTile.fromBytes(arr, cols, rows)
     }
   }
 }

@@ -146,7 +146,7 @@ object GeoTiffReader {
         ByteCellType
       // UByte
       case (UByteBandType, Some(nd)) if (nd >= 0.0 && nd <= 255.0) =>
-        UByteUserDefinedNoDataCellType(nd.toShort)
+        UByteUserDefinedNoDataCellType(nd.toByte)
       case (UByteBandType, Some(nd)) if (nd == 0.0) =>
         UByteConstantNoDataCellType
       case (UByteBandType, _) =>
@@ -160,7 +160,7 @@ object GeoTiffReader {
         ShortCellType
       // UInt16/UShort
       case (UInt16BandType, Some(nd)) if (nd >= 0.0 && nd <= 65535.0) =>
-        UShortUserDefinedNoDataCellType(nd.toInt)
+        UShortUserDefinedNoDataCellType(nd.toShort)
       case (UInt16BandType, Some(nd)) if (nd == 0.0) =>
         UShortConstantNoDataCellType
       case (UInt16BandType, _) =>

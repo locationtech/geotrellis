@@ -34,13 +34,57 @@ class UInt32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType =>
+      case ByteCellType | UByteCellType =>
+        val arr = Array.ofDim[Byte](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toByte }
+        arr
+      case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = f2b(get(i)) }
         arr
-      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType =>
+      case ByteUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Byte](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == floatNODATA) nd else v.toByte
+        }
+        arr
+      case UByteConstantNoDataCellType =>
+        val arr = Array.ofDim[Byte](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = f2ub(get(i)) }
+        arr
+      case UByteUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Byte](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == floatNODATA) nd else v.toByte
+        }
+        arr
+      case ShortCellType | UShortCellType=>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = f2s(get(i)) }
+        arr.toArrayByte()
+      case ShortConstantNoDataCellType =>
+        val arr = Array.ofDim[Short](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = f2s(get(i)) }
+        arr.toArrayByte()
+      case ShortUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Short](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == floatNODATA) nd else v.toShort
+        }
+        arr.toArrayByte()
+      case UShortConstantNoDataCellType =>
+        val arr = Array.ofDim[Short](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = f2s(get(i)) }
+        arr.toArrayByte()
+      case UShortUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Short](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == floatNODATA) nd else v.toShort
+        }
         arr.toArrayByte()
       case IntConstantNoDataCellType =>
         val arr = Array.ofDim[Int](size)

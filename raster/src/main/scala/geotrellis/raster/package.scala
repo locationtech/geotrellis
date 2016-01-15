@@ -111,22 +111,29 @@ package object raster
   def isData(f: Float): Boolean = macro NoDataMacros.isDataFloat_impl
   def isData(d: Double): Boolean = macro NoDataMacros.isDataDouble_impl
 
-  def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl
+  def b2ub(n: Byte): Byte = macro TypeConversionMacros.b2ub_impl
   def b2s(n: Byte): Short = macro TypeConversionMacros.b2s_impl
+  def b2us(n: Byte): Short = macro TypeConversionMacros.b2us_impl
+  def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl
   def b2f(n: Byte): Float = macro TypeConversionMacros.b2f_impl
   def b2d(n: Byte): Double = macro TypeConversionMacros.b2d_impl
 
+  def ub2b(n: Byte): Byte = macro TypeConversionMacros.ub2b_impl
   def ub2s(n: Byte): Short = macro TypeConversionMacros.ub2s_impl
+  def ub2us(n: Byte): Short = macro TypeConversionMacros.ub2us_impl
   def ub2i(n: Byte): Int = macro TypeConversionMacros.ub2i_impl
   def ub2f(n: Byte): Float = macro TypeConversionMacros.ub2f_impl
   def ub2d(n: Byte): Double = macro TypeConversionMacros.ub2d_impl
 
   def s2b(n: Short): Byte = macro TypeConversionMacros.s2b_impl
+  def s2ub(n: Short): Byte = macro TypeConversionMacros.s2ub_impl
   def s2i(n: Short): Int = macro TypeConversionMacros.s2i_impl
   def s2f(n: Short): Float = macro TypeConversionMacros.s2f_impl
   def s2d(n: Short): Double = macro TypeConversionMacros.s2d_impl
 
   def us2b(n: Short): Byte = macro TypeConversionMacros.us2b_impl
+  def us2ub(n: Short): Byte = macro TypeConversionMacros.us2ub_impl
+  def us2s(n: Short): Short = macro TypeConversionMacros.us2s_impl
   def us2i(n: Short): Int = macro TypeConversionMacros.us2i_impl
   def us2f(n: Short): Float = macro TypeConversionMacros.us2f_impl
   def us2d(n: Short): Double = macro TypeConversionMacros.us2d_impl
@@ -139,7 +146,9 @@ package object raster
   def i2d(n: Int): Double = macro TypeConversionMacros.i2d_impl
 
   def f2b(n: Float): Byte = macro TypeConversionMacros.f2b_impl
+  def f2ub(n: Float): Byte = macro TypeConversionMacros.f2ub_impl
   def f2s(n: Float): Short = macro TypeConversionMacros.f2s_impl
+  def f2us(n: Float): Short = macro TypeConversionMacros.f2us_impl
   def f2i(n: Float): Int = macro TypeConversionMacros.f2i_impl
   def f2d(n: Float): Double = macro TypeConversionMacros.f2d_impl
 

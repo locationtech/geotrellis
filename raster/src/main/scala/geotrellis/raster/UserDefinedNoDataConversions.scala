@@ -7,12 +7,16 @@ trait UserDefinedByteNoDataConversions {
   val userDefinedByteNoDataValue: Byte
 
   // from user defined
-  def udb2ub(n: Byte): Byte = if (n == userDefinedByteNoDataValue) 0.toByte else n.toByte
+  def udb2b(n: Byte): Byte = if (n == userDefinedByteNoDataValue) Byte.MinValue else n
+  def udb2ub(n: Byte): Byte = if (n == userDefinedByteNoDataValue) 0.toByte else n
   def udb2s(n: Byte): Short = if (n == userDefinedByteNoDataValue) Short.MinValue else n.toShort
   def udb2us(n: Byte): Short = if (n == userDefinedByteNoDataValue) 0.toShort else n.toShort
   def udb2i(n: Byte): Int = if (n == userDefinedByteNoDataValue) Int.MinValue else n.toInt
+  def udub2i(n: Byte): Int = if (n == userDefinedByteNoDataValue) Int.MinValue else n & 0xFF
   def udb2f(n: Byte): Float = if (n == userDefinedByteNoDataValue) Float.NaN else n.toFloat
+  def udub2f(n: Byte): Float = if (n == userDefinedByteNoDataValue) Int.MinValue else (n & 0xFF).toFloat
   def udb2d(n: Byte): Double = if (n == userDefinedByteNoDataValue) Double.NaN else n.toDouble
+  def udub2d(n: Byte): Double = if (n == userDefinedByteNoDataValue) Int.MinValue else (n & 0xFF).toDouble
 
   // to user defined
   def b2udb(n: Byte): Byte = if (n == Byte.MinValue) userDefinedByteNoDataValue else n
@@ -30,10 +34,14 @@ trait UserDefinedShortNoDataConversions {
   // from user defined
   def uds2b(n: Short): Byte = if (n == userDefinedShortNoDataValue) Byte.MinValue else n.toByte
   def uds2ub(n: Short): Byte = if (n == userDefinedShortNoDataValue) 0.toByte else n.toByte
-  def uds2us(n: Short): Short = if (n == userDefinedShortNoDataValue) 0.toShort else n.toShort
-  def uds2i(n: Short): Int = if (n == userDefinedShortNoDataValue) Int.MinValue else n
+  def uds2s(n: Short): Short = if (n == userDefinedShortNoDataValue) Short.MinValue else n
+  def uds2us(n: Short): Short = if (n == userDefinedShortNoDataValue) 0.toShort else n
+  def uds2i(n: Short): Int = if (n == userDefinedShortNoDataValue) Int.MinValue else n.toInt
+  def udus2i(n: Short): Int = if (n == userDefinedShortNoDataValue) Int.MinValue else n & 0xFFFF
   def uds2f(n: Short): Float = if (n == userDefinedShortNoDataValue) Float.NaN else n.toFloat
+  def udus2f(n: Short): Float = if (n == userDefinedShortNoDataValue) Int.MinValue else (n & 0xFFFF).toFloat
   def uds2d(n: Short): Double = if (n == userDefinedShortNoDataValue) Double.NaN else n.toDouble
+  def udus2d(n: Short): Double = if (n == userDefinedShortNoDataValue) Int.MinValue else (n & 0xFFFF).toDouble
   // to user defined
   def b2uds(n: Byte): Short = if (n == Byte.MinValue) userDefinedShortNoDataValue else n.toShort
   def ub2uds(n: Byte): Short = if (n == 0.toByte) userDefinedShortNoDataValue else n.toShort

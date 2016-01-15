@@ -4,9 +4,19 @@ import scala.reflect.macros.Context
 
 object TypeConversionMacros {
 
+  def b2ub_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == Byte.MinValue) { 0.toByte } else { n } }""")
+  }
+
   def b2s_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Short] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(n == Byte.MinValue) { Short.MinValue } else { n.toShort } }""")
+  }
+
+  def b2us_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == Byte.MinValue) { 0.toShort } else { n.toShort } }""")
   }
 
   def b2i_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Int] = {
@@ -25,9 +35,19 @@ object TypeConversionMacros {
   }
 
 
+  def ub2b_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Byte.MinValue } else { n } }""")
+  }
+
   def ub2s_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Short] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Short.MinValue } else { (n & 0xFF).toShort } }""")
+  }
+
+  def ub2us_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ ($n & 0xFF).toShort }""")
   }
 
   def ub2i_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Int] = {
@@ -51,6 +71,11 @@ object TypeConversionMacros {
     c.Expr(q"""{ val n = $n ; if(n == Short.MinValue) { Byte.MinValue } else { n.toByte } }""")
   }
 
+  def s2ub_impl(c: Context)(n: c.Expr[Short]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == Short.MinValue) { 0.toByte } else { n.toByte } }""")
+  }
+
   def s2i_impl(c: Context)(n: c.Expr[Short]): c.Expr[Int] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(n == Short.MinValue) { Int.MinValue } else { n.toInt } }""")
@@ -69,7 +94,17 @@ object TypeConversionMacros {
 
   def us2b_impl(c: Context)(n: c.Expr[Short]): c.Expr[Byte] = {
     import c.universe._
-    c.Expr(q"""{ val n = $n ; if(n == 0.toShort) { Byte.MinValue } else { (n & 0xFFFF).toByte } }""")
+    c.Expr(q"""{ val n = $n ; if(n == 0.toByte) { Byte.MinValue } else { n.toByte } }""")
+  }
+
+  def us2ub_impl(c: Context)(n: c.Expr[Short]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ $n.toByte }""")
+  }
+
+  def us2s_impl(c: Context)(n: c.Expr[Short]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == 0.toShort) { Short.MinValue } else { n } }""")
   }
 
   def us2i_impl(c: Context)(n: c.Expr[Short]): c.Expr[Int] = {
@@ -124,9 +159,19 @@ object TypeConversionMacros {
     c.Expr(q"""{ val n = $n ; if(java.lang.Float.isNaN(n)) { Byte.MinValue } else { n.toByte } }""")
   }
 
+  def f2ub_impl(c: Context)(n: c.Expr[Float]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(java.lang.Float.isNaN(n)) { 0.toByte } else { n.toByte } }""")
+  }
+
   def f2s_impl(c: Context)(n: c.Expr[Float]): c.Expr[Short] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(java.lang.Float.isNaN(n)) { Short.MinValue } else { n.toShort } }""")
+  }
+
+  def f2us_impl(c: Context)(n: c.Expr[Float]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(java.lang.Float.isNaN(n)) { 0.toShort} else { n.toShort } }""")
   }
 
   def f2i_impl(c: Context)(n: c.Expr[Float]): c.Expr[Int] = {

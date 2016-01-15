@@ -65,23 +65,22 @@ object ShortArrayTile {
   def empty(cols: Int, rows: Int): ShortArrayTile =
     new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
 
-  def fromRawBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortRawArrayTile = {
+  private def constructShortArray(bytes: Array[Byte]): Array[Short] = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
     val shortBuffer = byteBuffer.asShortBuffer()
     val shortArray = new Array[Short](bytes.length / ShortCellType.bytes)
     shortBuffer.get(shortArray)
-
-    new ShortRawArrayTile(shortArray, cols, rows)
+    shortArray
   }
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
-    val shortBuffer = byteBuffer.asShortBuffer()
-    val shortArray = new Array[Short](bytes.length / ShortConstantNoDataCellType.bytes)
-    shortBuffer.get(shortArray)
+  def fromBytesRaw(bytes: Array[Byte], cols: Int, rows: Int): ShortRawArrayTile =
+    new ShortRawArrayTile(constructShortArray(bytes), cols, rows)
 
-    new ShortConstantNoDataArrayTile(shortArray, cols, rows)
-  }
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile =
+    new ShortConstantNoDataArrayTile(constructShortArray(bytes), cols, rows)
+
+  def fromBytesUserDefined(bytes: Array[Byte], cols: Int, rows: Int, noDataValue: Short): ShortArrayTile =
+    new ShortUserDefinedNoDataArrayTile(constructShortArray(bytes), cols, rows, ShortUserDefinedNoDataCellType(noDataValue))
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): ShortArrayTile =
     if (isNoData(replaceNoData))

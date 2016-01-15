@@ -20,12 +20,27 @@ abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   protected def intToUByteOut(v: Int): Byte
   protected def doubleToUByteOut(v: Double): Byte
 
+  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte]
+  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte]
+
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
-      case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
+      case rct: RawCellType => rct match {
+        case BitCellType =>
+          val bs = new BitSet(size)
+          cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
+          bs.toByteArray()
+        case ByteCellType | UByteCellType =>
+          bytes
+        case ShortCellType | UShortCellType =>
+          val arr = Array.ofDim[Short](size)
+          cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
+          arr.toArrayByte()
+      }
+      case cct: ConstantNoDataCellType => convertToConstantNoData(cct)
+      case udct: UserDefinedNoDataCellType[_] => convertToUserDefinedNoData(udct)
+    }
+/*
       case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType =>
         bytes
       case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType =>
@@ -44,7 +59,7 @@ abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
         val arr = Array.ofDim[Double](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
         arr.toArrayByte()
-    }
+    }*/
 
   def map(f: Int => Int): Array[Byte] = {
     val arr = bytes.clone
@@ -74,33 +89,4 @@ abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
     }
     arr
   }
-}
-
-class UByteRawGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiffSegment(bytes) {
-  def getInt(i: Int): Int = get(i)
-  def getDouble(i: Int): Double = get(i).toDouble
-  override def mapDouble(f: Double => Double): Array[Byte] =
-    map(z => f(z.toDouble).toInt)
-
-  protected def intToUByteOut(v: Int): Byte = v.toByte
-  protected def doubleToUByteOut(v: Double): Byte = v.toByte
-}
-
-class UByteConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiffSegment(bytes) {
-  def getInt(i: Int): Int = ub2i(getRaw(i))
-  def getDouble(i: Int): Double = ub2i(getRaw(i))
-
-  protected def intToUByteOut(v: Int): Byte = i2ub(v)
-  protected def doubleToUByteOut(v: Double): Byte = d2ub(v)
-}
-
-class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIntNoDataValue: Byte)
-    extends UByteGeoTiffSegment(bytes)
-    with UserDefinedByteNoDataConversions {
-  val userDefinedByteNoDataValue = userDefinedIntNoDataValue.toByte
-  def getInt(i: Int): Int = udb2i(getRaw(i))
-  def getDouble(i: Int): Double = udb2d(getRaw(i))
-
-  protected def intToUByteOut(v: Int): Byte = i2udb(v)
-  protected def doubleToUByteOut(v: Double): Byte = d2udb(v)
 }
