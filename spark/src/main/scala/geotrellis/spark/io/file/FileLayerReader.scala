@@ -37,7 +37,7 @@ class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, format: JsonFormat[I]): RDD[(K, V)] with Metadata[M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {

@@ -21,12 +21,12 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
     )
 
   it("should update a layer") {
-    updater.update[KeyIndex[SpaceTimeKey]](layerId, sample)
+    updater.update(layerId, sample)
   }
 
   it("should not update a layer (empty set)") {
     intercept[LayerUpdateError] {
-      updater.update[KeyIndex[SpaceTimeKey]](layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
     }
   }
 
@@ -40,7 +40,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
     ), dummyRasterMetaData)
 
     intercept[LayerOutOfKeyBoundsError] {
-      updater.update[KeyIndex[SpaceTimeKey]](layerId, update)
+      updater.update(layerId, update)
     }
   }
 }

@@ -19,7 +19,7 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext) extends LayerCopier[LayerId, K] {
 
-  def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+  def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -35,12 +35,11 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     )
   }
 
-  // unsupported operations
-  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: TI): Unit =
-    copy[FI](from, to)
+  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[FI], keyIndex: TI): Unit =
+    copy(from, to, format)
 
   def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-    copy[KeyIndex[K]](from, to)
+    copy(from ,to)
 }
 
 object HadoopLayerCopier {

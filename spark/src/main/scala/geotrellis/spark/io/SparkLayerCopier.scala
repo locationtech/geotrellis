@@ -15,12 +15,12 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
 
   def headerUpdate(id: LayerId, header: Header): Header
 
-  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: TI): Unit = {
+  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[FI], keyIndex: TI): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     try {
-      layerWriter.write[TI](to, layerReader.read[FI](from), keyIndex)
+      layerWriter.write[TI](to, layerReader.read(from, implicitly[JsonFormat[FI]]), keyIndex)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }
@@ -45,7 +45,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     try {
-      layerWriter.write(to, layerReader.read[KeyIndex[K]](from), keyIndexMethod)
+      layerWriter.write(to, layerReader.read(from), keyIndexMethod)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }
@@ -65,7 +65,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     }
   }
 
-  def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+  def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -76,7 +76,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     }
 
     try {
-      layerWriter.write(to, layerReader.read[KeyIndex[K]](from), keyIndex)
+      layerWriter.write(to, layerReader.read(from, implicitly[JsonFormat[I]]), keyIndex)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }

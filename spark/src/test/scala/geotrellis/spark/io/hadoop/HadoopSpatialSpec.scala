@@ -2,9 +2,6 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.Tile
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.hilbert.HilbertSpatialKeyIndex
-import geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex
-import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles

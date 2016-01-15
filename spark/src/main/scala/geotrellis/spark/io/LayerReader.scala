@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.json._
 import spray.json.JsonFormat
 
 trait LayerReader[ID, K, ReturnType] extends Reader[ID, ReturnType] {

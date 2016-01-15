@@ -21,13 +21,13 @@ class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext
   def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
     val copier = S3LayerCopier[K, V, M](attributeStore, header.bucket, header.key)
-    copier.copy[KeyIndex[K]](from, to)
+    copier.copy(from, to)
   }
 
   def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
     val mover = S3LayerMover[K, V, M](attributeStore, header.bucket, header.key)
-    mover.move[KeyIndex[K]](from, to)
+    mover.move(from, to)
   }
 
   def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {

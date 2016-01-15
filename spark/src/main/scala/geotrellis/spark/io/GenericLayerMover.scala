@@ -9,13 +9,13 @@ class GenericLayerMover[ID, K](layerCopier: LayerCopier[ID, K], layerDeleter: La
     layerDeleter.delete(from)
   }
 
-  def move(from: ID, to: ID, keyIndexMethod: KeyIndexMethod[K]): Unit = {
-    layerCopier.copy(from, to, keyIndexMethod)
+  def move[I <: KeyIndex[K]: JsonFormat](from: ID, to: ID, format: JsonFormat[I]): Unit = {
+    layerCopier.copy(from, to, implicitly[JsonFormat[I]])
     layerDeleter.delete(from)
   }
 
-  def move[I <: KeyIndex[K]: JsonFormat](from: ID, to: ID): Unit = {
-    layerCopier.copy[I](from, to)
+  def move(from: ID, to: ID, keyIndexMethod: KeyIndexMethod[K]): Unit = {
+    layerCopier.copy(from, to, keyIndexMethod)
     layerDeleter.delete(from)
   }
 }

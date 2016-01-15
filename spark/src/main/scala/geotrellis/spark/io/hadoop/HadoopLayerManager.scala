@@ -29,7 +29,7 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
   ](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](from, Fields.header)
     val copier = HadoopLayerCopier[K, V, M](header.path)
-    copier.copy[KeyIndex[K]](from, to)
+    copier.copy(from, to)
   }
 
   def move[
@@ -39,7 +39,7 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
   ](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](from, Fields.header)
     val mover = HadoopLayerMover[K, V, M](header.path)
-    mover.move[KeyIndex[K]](from, to)
+    mover.move(from, to)
   }
 
   def reindex[

@@ -37,7 +37,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
 
   it("should not find layer before write") {
     intercept[LayerNotFoundError] {
-      reader.read[KeyIndex[K]](layerId)
+      reader.read(layerId)
     }
   }
 
@@ -53,7 +53,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
   }
 
   it("should read a layer back") {
-    val actual = reader.read[KeyIndex[K]](layerId).keys.collect()
+    val actual = reader.read(layerId).keys.collect()
     val expected = sample.keys.collect()
 
     if (expected.diff(actual).nonEmpty)
@@ -75,35 +75,35 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
   it("should delete a layer") {
     deleter.delete(deleteLayerId)
     intercept[LayerNotFoundError] {
-      reader.read[KeyIndex[K]](deleteLayerId)
+      reader.read(deleteLayerId)
     }
   }
 
   it("shouldn't copy a layer which already exists") {
     intercept[LayerExistsError] {
-      copier.copy[KeyIndex[K]](layerId, layerId)
+      copier.copy(layerId, layerId)
     }
   }
 
   it("should copy a layer") {
-    copier.copy[KeyIndex[K]](layerId, copiedLayerId)
-    reader.read[KeyIndex[K]](copiedLayerId).keys.collect() should contain theSameElementsAs reader.read[KeyIndex[K]](layerId).keys.collect()
+    copier.copy(layerId, copiedLayerId)
+    reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
   }
 
   it("shouldn't move a layer which already exists") {
     intercept[LayerExistsError] {
-      mover.move[KeyIndex[K]](layerId, layerId)
+      mover.move(layerId, layerId)
     }
   }
 
   it("should move a layer") {
-    val keysBeforeMove = reader.read[KeyIndex[K]](layerId).keys.collect()
-    mover.move[KeyIndex[K]](layerId, movedLayerId)
+    val keysBeforeMove = reader.read(layerId).keys.collect()
+    mover.move(layerId, movedLayerId)
     intercept[LayerNotFoundError] {
-      reader.read[KeyIndex[K]](layerId)
+      reader.read(layerId)
     }
-    keysBeforeMove should contain theSameElementsAs reader.read[KeyIndex[K]](movedLayerId).keys.collect()
-    mover.move[KeyIndex[K]](movedLayerId, layerId)
+    keysBeforeMove should contain theSameElementsAs reader.read(movedLayerId).keys.collect()
+    mover.move(movedLayerId, layerId)
   }
 
   it("should not reindex a layer which doesn't exists") {
@@ -113,7 +113,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
   }
 
   it("should reindex a layer") {
-    copier.copy[KeyIndex[K]](layerId, reindexedLayerId)
+    copier.copy(layerId, reindexedLayerId)
     reindexer.reindex(reindexedLayerId, reindexerKeyIndexMethod)
   }
 }

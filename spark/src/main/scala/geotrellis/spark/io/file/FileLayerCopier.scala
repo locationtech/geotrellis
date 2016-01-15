@@ -19,7 +19,7 @@ object FileLayerCopier {
     (sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId, K] =
     new LayerCopier[LayerId, K] {
 
-      def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+      def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
@@ -59,12 +59,12 @@ object FileLayerCopier {
         targetAttributeStore.clearCache()
       }
 
-      // unsupported operations
-      def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: TI): Unit =
-        copy[FI](from, to)
+      def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[FI], keyIndex: TI): Unit =
+        copy(from, to, format)
 
       def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-        copy[KeyIndex[K]](from, to)
+        copy(from, to)
+
     }
 
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerCopier[LayerId, K] =

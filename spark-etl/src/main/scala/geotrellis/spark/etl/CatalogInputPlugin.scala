@@ -35,7 +35,7 @@ abstract class CatalogInputPlugin[K: SpatialComponent: Boundable] extends InputP
       case Some(extent) =>
         reader(props).query(id).where(Intersects(extent)).toRDD
       case None =>
-        reader(props).read[KeyIndex[K]](id)
+        reader(props).read(id)
     }
 
     id.zoom -> rdd

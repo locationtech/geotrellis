@@ -19,7 +19,7 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
   (rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext) extends LayerMover[LayerId, K] {
 
-  def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+  def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -37,12 +37,11 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
     attributeStore.clearCache()
   }
 
-  // not supported operations
   def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
-    move[I](from, to)
+    move(from, to)
 
   def move(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-    move[KeyIndex[K]](from, to)
+    move(from, to)
 }
 
 object HadoopLayerMover {

@@ -17,7 +17,7 @@ import java.io.File
 object FileLayerMover {
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId, K] =
     new LayerMover[LayerId, K] {
-      def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+      def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
@@ -63,10 +63,10 @@ object FileLayerMover {
       }
 
       def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
-        move[I](from, to)
+        move(from, to, implicitly[JsonFormat[I]])
 
       def move(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-        move[KeyIndex[K]](from, to)
+        move(from, to)
     }
 
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerMover[LayerId, K] =

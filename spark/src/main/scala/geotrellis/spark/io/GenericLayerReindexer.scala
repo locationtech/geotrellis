@@ -14,9 +14,16 @@ abstract class GenericLayerReindexer[ID, K](
 
   def reindex[I <: KeyIndex[K]: JsonFormat](id: ID, keyIndex: I): Unit = {
     val tmpId = getTmpId(id)
-    layerCopier.copy[I, I](id, tmpId, keyIndex)
+    layerCopier.copy(id, tmpId, keyIndex)
     layerDeleter.delete(id)
     layerMover.move(tmpId, id, keyIndex)
+  }
+
+  def reindex[I <: KeyIndex[K]: JsonFormat](id: ID, format: JsonFormat[I]): Unit = {
+    val tmpId = getTmpId(id)
+    layerCopier.copy(id, tmpId, format)
+    layerDeleter.delete(id)
+    layerMover.move(tmpId, id, format)
   }
 
   def reindex(id: ID, keyIndexMethod: KeyIndexMethod[K]): Unit = {

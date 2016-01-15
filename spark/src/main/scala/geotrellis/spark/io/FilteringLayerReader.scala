@@ -12,6 +12,9 @@ abstract class FilteringLayerReader[ID, K: Boundable, M, ReturnType] extends Lay
   def read[I <: KeyIndex[K]: JsonFormat](id: ID, numPartitions: Int, format: JsonFormat[I]): ReturnType =
     read[I](id, new RDDQuery[K, M], numPartitions, format)
 
+  def read[I <: KeyIndex[K]: JsonFormat](id: ID, format: JsonFormat[I]): ReturnType =
+    read[I](id, new RDDQuery[K, M], defaultNumPartitions, format)
+
   def read(id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int): ReturnType =
     read(id, rasterQuery, numPartitions, implicitly[JsonFormat[KeyIndex[K]]])
 

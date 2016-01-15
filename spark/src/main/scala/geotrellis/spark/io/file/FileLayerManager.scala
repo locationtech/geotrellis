@@ -18,12 +18,12 @@ class FileLayerManager(attributeStore: FileAttributeStore)(implicit sc: SparkCon
 
   def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val copier = FileLayerCopier[K, V, M](attributeStore)
-    copier.copy[KeyIndex[K]](from, to)
+    copier.copy(from, to)
   }
 
   def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val mover = FileLayerMover[K, V, M](attributeStore)
-    mover.move[KeyIndex[K]](from, to)
+    mover.move(from, to)
   }
 
   def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
