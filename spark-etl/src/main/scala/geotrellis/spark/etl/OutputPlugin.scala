@@ -1,7 +1,7 @@
 package geotrellis.spark.etl
 
 import geotrellis.spark.io.{Writer, AttributeStore}
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{LayerId, RasterRDD}
 import spray.json.JsonFormat
 

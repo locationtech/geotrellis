@@ -4,8 +4,6 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.spark.io._
 import geotrellis.spark._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.vector.Extent
 import org.apache.spark.SparkContext

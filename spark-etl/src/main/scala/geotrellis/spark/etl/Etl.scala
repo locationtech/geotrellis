@@ -3,7 +3,7 @@ package geotrellis.spark.etl
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.RasterExtent
 import geotrellis.spark.ingest._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.spark.op.stats._

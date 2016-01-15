@@ -4,12 +4,11 @@ import java.math.BigInteger
 
 import geotrellis.raster.render.ColorBreaks
 import geotrellis.spark.etl.OutputPlugin
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.{SpatialKey, RasterRDD, LayerId}
 import geotrellis.spark.render._
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
 import scala.reflect._
-
 
 class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
   def name = "render"
