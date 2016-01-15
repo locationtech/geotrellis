@@ -71,7 +71,7 @@ object HadoopLayerReindexer {
         }
 
         val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
-          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](to)
+          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](to)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
         }
