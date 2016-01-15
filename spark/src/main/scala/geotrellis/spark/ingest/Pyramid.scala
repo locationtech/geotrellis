@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.merge._
+import geotrellis.raster.resample._
 import geotrellis.raster.prototype._
 import org.apache.spark.Logging
 import org.apache.spark.rdd._
@@ -15,7 +16,7 @@ object Pyramid extends Logging {
   def up[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, zoom: Int): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, zoom: Int, resampleMethod: ResampleMethod): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
     val LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(LayoutLevel(zoom, rdd.metaData.layout))
     val nextMetaData = RasterMetaData(
       rdd.metadata.cellType,
@@ -44,7 +45,7 @@ object Pyramid extends Logging {
 
           for( (oldKey, tile) <- seq) {
             val oldExtent = sourceLayout.mapTransform(oldKey)
-            newTile.merge(newExtent, oldExtent, tile)
+            newTile.merge(newExtent, oldExtent, tile, resampleMethod)
           }
           (newKey, newTile: V)
         }
@@ -52,17 +53,16 @@ object Pyramid extends Logging {
     nextZoom -> new ContextRDD(nextRdd, nextMetaData)
   }
 
-  def upLevels[
+  def up[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, startZoom: Int)
-   (f: (RDD[(K, V)] with Metadata[RasterMetaData], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetaData] =
-    upLevels(rdd, layoutScheme, startZoom, 0)(f)
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, zoom: Int): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+    up[K, V](rdd, layoutScheme, zoom, NearestNeighbor)
 
   def upLevels[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int)
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int, resampleMethod: ResampleMethod)
    (f: (RDD[(K, V)] with Metadata[RasterMetaData], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetaData] = {
     def runLevel(thisRdd: RDD[(K, V)] with Metadata[RasterMetaData], thisZoom: Int): (RDD[(K, V)] with Metadata[RasterMetaData], Int) =
       if (thisZoom > endZoom) {
@@ -76,4 +76,25 @@ object Pyramid extends Logging {
 
     runLevel(rdd, startZoom)._1
   }
+
+  def upLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int)
+   (f: (RDD[(K, V)] with Metadata[RasterMetaData], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetaData] =
+    upLevels[K, V](rdd, layoutScheme, startZoom, endZoom, NearestNeighbor)(f)
+
+  def upLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, startZoom: Int, resampleMethod: ResampleMethod)
+   (f: (RDD[(K, V)] with Metadata[RasterMetaData], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetaData] =
+    upLevels[K, V](rdd, layoutScheme, startZoom, 0, resampleMethod)(f)
+
+  def upLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData], layoutScheme: LayoutScheme, startZoom: Int)
+   (f: (RDD[(K, V)] with Metadata[RasterMetaData], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetaData] =
+    upLevels(rdd, layoutScheme, startZoom, NearestNeighbor)(f)
 }

@@ -24,16 +24,16 @@ import scala.reflect.ClassTag
 object TileRDDReproject {
   import geotrellis.raster.reproject.Reproject.Options
 
-  /** Reproject a set of buffered 
+  /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    * 
+    *
     * @param            rdd                An RDD of buffered tiles, created using the BufferTiles operation.
     * @param            metadata           The raster metadata for this keyed tile set.
     * @param            destCrs            The CRS to reproject to.
     * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
     * @param            options            Reprojection options.
-    * 
+    *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
@@ -80,8 +80,19 @@ object TileRDDReproject {
               )
             val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
 
+            // Reproject extra cells that are half the buffer size, as to avoid
+            // any missed cells between tiles.
+            val window =
+              GridBounds(
+                gridBounds.colMin / 2,
+                gridBounds.rowMin / 2,
+                (tile.cols + gridBounds.colMax - 1) / 2,
+                (tile.rows + gridBounds.rowMax - 1) / 2
+              )
+
             val Raster(newTile, newExtent) =
-              tile.reproject(outerExtent, gridBounds, transform, inverseTransform, updatedOptions)
+//              tile.reproject(outerExtent, gridBounds, transform, inverseTransform, updatedOptions)
+              tile.reproject(outerExtent, window, transform, inverseTransform, updatedOptions)
 
             ((key, newExtent), newTile)
           }
@@ -95,16 +106,16 @@ object TileRDDReproject {
     (zoom, ContextRDD(tiled, newMetadata))
   }
 
-  /** Reproject a keyed tile RDD. 
-    * 
+  /** Reproject a keyed tile RDD.
+    *
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    * 
+    *
     * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
     * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
     * @param            options            Reprojection options.
-    * 
+    *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
@@ -157,16 +168,16 @@ object TileRDDReproject {
   /** Reproject this keyed tile RDD, using a constant border size for the operation.
     * @tparam           K                  Key type; requires spatial component.
     * @tparam           V                  Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    * 
+    *
     * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
     * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
     * @param            bufferSize         Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
     *                                      any side if there is an adjacent, abutting tile to contribute the border pixels.
     * @param            options            Reprojection options.
-    * 
+    *
     * @return           The new zoom level and the reprojected keyed tile RDD.
-    * 
+    *
     * @note             This is faster than computing the correct border size per key, so if you know that a specific border size will be sufficient
     *                   to be accurate, e.g. if the CRS's are not very different and so the rasters will not skew heavily, then this method can be used
     *                   for performance benefit.
