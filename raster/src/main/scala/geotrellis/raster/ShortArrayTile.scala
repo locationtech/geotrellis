@@ -8,13 +8,11 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Short] (each cell as a Short).
  */
-final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
+abstract class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
 
-  val cellType = ShortConstantNoDataCellType
-
-  def apply(i: Int) = s2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2s(z) }
+  def apply(i: Int): Int
+  def update(i: Int, z: Int): Unit
 
   def toBytes: Array[Byte] = {
     val pixels = new Array[Byte](array.length * cellType.bytes)
@@ -26,15 +24,55 @@ final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 }
 
+class ShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
+    extends ShortArrayTile(array, cols, rows) {
+  val cellType = ShortCellType
+  def apply(i: Int): Int = array(i).toInt
+  def update(i: Int, z: Int) { array(i) = z.toShort }
+}
+
+class ShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)
+    extends ShortArrayTile(array, cols, rows) {
+  val cellType = ShortConstantNoDataCellType
+
+  def apply(i: Int): Int = s2i(array(i))
+  def update(i: Int, z: Int) { array(i) = i2s(z) }
+}
+
+class ShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
+    extends ShortArrayTile(array, cols, rows)
+       with UserDefinedShortNoDataConversions {
+  val userDefinedShortNoDataValue = cellType.noDataValue
+
+  def apply(i: Int): Int = uds2i(array(i))
+  def update(i: Int, z: Int) { array(i) = i2uds(z) }
+}
+
+
 object ShortArrayTile {
+  def apply(arr: Array[Short], cols: Int, rows: Int) =
+    new ShortConstantNoDataArrayTile(arr, cols, rows)
+
+  def apply(arr: Array[Short], cols: Int, rows: Int, cellType: ShortUserDefinedNoDataCellType) =
+    new ShortUserDefinedNoDataArrayTile(arr, cols, rows, cellType)
+
   def fill(v: Short, cols: Int, rows: Int): ShortArrayTile =
-    new ShortArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+    new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
 
   def ofDim(cols: Int, rows: Int): ShortArrayTile =
-    new ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+    new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
 
   def empty(cols: Int, rows: Int): ShortArrayTile =
-    new ShortArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
+    new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
+
+  def fromRawBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortRawArrayTile = {
+    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
+    val shortBuffer = byteBuffer.asShortBuffer()
+    val shortArray = new Array[Short](bytes.length / ShortCellType.bytes)
+    shortBuffer.get(shortArray)
+
+    new ShortRawArrayTile(shortArray, cols, rows)
+  }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
@@ -42,7 +80,7 @@ object ShortArrayTile {
     val shortArray = new Array[Short](bytes.length / ShortConstantNoDataCellType.bytes)
     shortBuffer.get(shortArray)
 
-    ShortArrayTile(shortArray, cols, rows)
+    new ShortConstantNoDataArrayTile(shortArray, cols, rows)
   }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): ShortArrayTile =
@@ -60,7 +98,6 @@ object ShortArrayTile {
         else
           shortArray(i) = v
       }
-      ShortArrayTile(shortArray, cols, rows)
+      new ShortConstantNoDataArrayTile(shortArray, cols, rows)
     }
 }
-

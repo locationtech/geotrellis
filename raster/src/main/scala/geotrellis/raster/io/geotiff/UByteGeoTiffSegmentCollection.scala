@@ -6,15 +6,15 @@ import geotrellis.raster.io.geotiff.compression._
 trait UByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = UByteGeoTiffSegment
 
+  def noDataValue: Option[Int]
   val bandType = UByteBandType
-  val noDataValue: Option[Int]
 
-  val createSegment: Int => UByteGeoTiffSegment = noDataValue match {
+  lazy val createSegment: Int => UByteGeoTiffSegment = noDataValue match {
     case None =>
-      { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) with UByteRawSegment }
+      { i: Int => new UByteRawGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) if (nd == 0.toShort) =>
-      { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) with UByteConstantNoDataSegment }
+      { i: Int => new UByteConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) => // Cast nodata to int in this case so that we can properly compare it to the upcast unsigned byte
-      { i: Int => new UByteGeoTiffSegment(getDecompressedBytes(i)) with UByteUserDefinedNoDataSegment { val userDefinedIntNoDataValue = nd.toInt } }
+      { i: Int => new UByteUserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd.toByte) }
     }
 }

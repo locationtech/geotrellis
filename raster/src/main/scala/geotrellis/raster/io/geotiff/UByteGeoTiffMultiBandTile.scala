@@ -17,9 +17,9 @@ class UByteGeoTiffMultiBandTile(
     with UByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
-    case _: RawCellType => None
-    case _: ConstantNoDataCellType => Some(0)
     case UByteUserDefinedNoDataCellType(nd) => Some(nd)
+    case _: ConstantNoDataCellType => Some(0)
+    case _ => None
   }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =

@@ -10,12 +10,12 @@ trait Int16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val bandType = Int16BandType
   val noDataValue: Option[Short]
 
-  val createSegment: Int => Int16GeoTiffSegment = noDataValue match {
+  lazy val createSegment: Int => Int16GeoTiffSegment = noDataValue match {
     case None =>
-      { i: Int => new Int16GeoTiffSegment(getDecompressedBytes(i)) with Int16RawSegment }
+      { i: Int => new Int16RawGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) if (nd == Short.MinValue) =>
-      { i: Int => new Int16GeoTiffSegment(getDecompressedBytes(i)) with Int16ConstantNoDataSegment }
+      { i: Int => new Int16ConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) =>
-      { i: Int => new Int16GeoTiffSegment(getDecompressedBytes(i)) with Int16UserDefinedNoDataSegment { val noDataValue = nd } }
+      { i: Int => new Int16UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
   }
 }

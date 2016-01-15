@@ -13,9 +13,9 @@ class Int16GeoTiffTile(
 ) extends GeoTiffTile(segmentLayout, compression) with Int16GeoTiffSegmentCollection {
 
   val noDataValue = cellType match {
-    case _: RawCellType => None
-    case _: ConstantNoDataCellType => Some(shortNODATA)
     case ShortUserDefinedNoDataCellType(nd) => Some(nd)
+    case _: ConstantNoDataCellType => Some(shortNODATA)
+    case _ => None
   }
 
   def mutable: MutableArrayTile = {
@@ -48,7 +48,7 @@ class Int16GeoTiffTile(
       }
     }
     noDataValue match {
-      case None => RawShortArrayTile.fromBytes(arr, cols, rows)
+      case None => ShortArrayTile.fromRawBytes(arr, cols, rows)
       case Some(nd) if (nd != Short.MinValue) => ???
       case Some(nd) => ShortArrayTile.fromBytes(arr, cols, rows)
     }

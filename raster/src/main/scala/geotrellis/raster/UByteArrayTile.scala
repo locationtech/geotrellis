@@ -13,7 +13,7 @@ final case class UByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
 
   val cellType = UByteConstantNoDataCellType
 
-  def apply(i: Int) = array(i) & 0xFF
+  def apply(i: Int) = ub2i(array(i))
   def update(i: Int, z: Int) { array(i) = if(isNoData(z)) 0.toByte else z.toByte }
 
   def toBytes: Array[Byte] = array.clone

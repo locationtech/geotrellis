@@ -8,12 +8,12 @@ trait UInt16GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val bandType = UInt16BandType
   val noDataValue: Option[Int]
 
-  val createSegment: Int => UInt16GeoTiffSegment = noDataValue match {
+  lazy val createSegment: Int => UInt16GeoTiffSegment = noDataValue match {
     case None =>
-      { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) with UInt16RawSegment }
+      { i: Int => new UInt16RawGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) if (nd == 0) =>
-      { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) with UInt16ConstantNoDataSegment }
+      { i: Int => new UInt16ConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) => // Cast nodata to int in this case so that we can properly compare it to the upcast unsigned byte
-      { i: Int => new UInt16GeoTiffSegment(getDecompressedBytes(i)) with UInt16UserDefinedNoDataSegment { val userDefinedIntNoDataValue = nd } }
+      { i: Int => new UInt16UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd.toShort) }
     }
 }

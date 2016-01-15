@@ -13,9 +13,9 @@ class ByteGeoTiffTile(
 ) extends GeoTiffTile(segmentLayout, compression) with ByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Byte] = cellType match {
-    case _: RawCellType => None
-    case _: ConstantNoDataCellType => Some(byteNODATA)
     case ByteUserDefinedNoDataCellType(nd) => Some(nd)
+    case _: ConstantNoDataCellType => Some(byteNODATA)
+    case _ => None
   }
 
   def mutable: MutableArrayTile = {

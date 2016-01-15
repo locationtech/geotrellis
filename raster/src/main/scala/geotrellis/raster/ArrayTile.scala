@@ -231,7 +231,7 @@ object ArrayTile {
       case UByteConstantNoDataCellType  => UByteArrayTile.ofDim(cols, rows)
       case UByteCellType  => RawUByteArrayTile.ofDim(cols, rows)
       case ShortConstantNoDataCellType  => ShortArrayTile.ofDim(cols, rows)
-      case ShortCellType  => RawShortArrayTile.ofDim(cols, rows)
+      case ShortCellType  => ShortArrayTile.ofDim(cols, rows)
       case UShortConstantNoDataCellType  => UShortArrayTile.ofDim(cols, rows)
       case UShortCellType  => RawUShortArrayTile.ofDim(cols, rows)
       case IntConstantNoDataCellType    => IntArrayTile.ofDim(cols, rows)
@@ -247,7 +247,7 @@ object ArrayTile {
       case UByteConstantNoDataCellType  => UByteArrayTile.empty(cols, rows)
       case UByteCellType  => RawUByteArrayTile.empty(cols, rows)
       case ShortConstantNoDataCellType  => ShortArrayTile.empty(cols, rows)
-      case ShortCellType  => RawShortArrayTile.empty(cols, rows)
+      case ShortCellType  => new ShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(0.toShort), cols, rows)
       case UShortConstantNoDataCellType  => UShortArrayTile.empty(cols, rows)
       case UShortCellType  => RawUShortArrayTile.empty(cols, rows)
       case IntConstantNoDataCellType    => IntArrayTile.empty(cols, rows)
@@ -263,7 +263,7 @@ object ArrayTile {
       case UByteConstantNoDataCellType  => UByteArrayTile.fromBytes(bytes, cols, rows)
       case UByteCellType  => RawUByteArrayTile.fromBytes(bytes, cols, rows)
       case ShortConstantNoDataCellType  => ShortArrayTile.fromBytes(bytes, cols, rows)
-      case ShortCellType  => RawShortArrayTile.fromBytes(bytes, cols, rows)
+      case ShortCellType  => ShortArrayTile.fromRawBytes(bytes, cols, rows)
       case UShortConstantNoDataCellType  => UShortArrayTile.fromBytes(bytes, cols, rows)
       case UShortCellType  => RawUShortArrayTile.fromBytes(bytes, cols, rows)
       case IntConstantNoDataCellType    => IntArrayTile.fromBytes(bytes, cols, rows)
@@ -279,7 +279,7 @@ object ArrayTile {
       case UByteConstantNoDataCellType  => UByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
       case UByteCellType  => RawUByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
       case ShortConstantNoDataCellType  => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case ShortCellType  => RawShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case ShortCellType  => ShortArrayTile.fromRawBytes(bytes, cols, rows)
       case UShortConstantNoDataCellType  => UShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
       case UShortCellType  => RawUShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
       case IntConstantNoDataCellType    => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
@@ -296,5 +296,5 @@ object ArrayTile {
 
 object RawArrayTile {
   def apply(arr: Array[Byte], cols: Int, rows: Int) = RawByteArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = RawShortArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = new ShortRawArrayTile(arr, cols, rows)
 }

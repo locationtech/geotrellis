@@ -56,14 +56,7 @@ abstract class Int16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   }
 
   def mapDouble(f: Double => Double): Array[Byte] = {
-    val arr = Array.ofDim[Short](size)
-    cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2s(f(getDouble(i)))
-    }
-    val result = new Array[Byte](size * ShortConstantNoDataCellType.bytes)
-    val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asShortBuffer.put(arr)
-    result
+    map(z => d2i(f(i2d(z))))
   }
 
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
@@ -89,26 +82,30 @@ abstract class Int16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   }
 }
 
-trait Int16RawSegment {
-  def get(i: Int): Short
+class Int16RawGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiffSegment(bytes) {
   def getInt(i: Int): Int = get(i).toInt
   def getDouble(i: Int): Double = get(i).toDouble
+  override def mapDouble(f: Double => Double): Array[Byte] =
+    map(z => f(z.toDouble).toInt)
+
+  protected def intToUShortOut(v: Int): Short = v.toShort
+  protected def doubleToUShortOut(v: Double): Short = v.toShort
 }
-trait Int16ConstantNoDataSegment {
-  def get(i: Int): Short
+
+class Int16ConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiffSegment(bytes) {
   def getInt(i: Int): Int = s2i(get(i))
   def getDouble(i: Int): Double = s2d(get(i))
-}
-trait Int16UserDefinedNoDataSegment {
-  val noDataValue: Short
 
-  def get(i: Int): Short
-  def getInt(i: Int): Int = {
-    val n = get(i);
-    if (n == noDataValue) Int.MinValue else n
-  }
-  def getDouble(i: Int): Double = {
-    val n = get(i);
-    if (n == noDataValue) Int.MinValue else n
-  }
+  protected def intToUShortOut(v: Int): Short = i2s(v)
+  protected def doubleToUShortOut(v: Double): Short = d2s(v)
+}
+
+class Int16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedShortNoDataValue: Short)
+    extends Int16GeoTiffSegment(bytes)
+       with UserDefinedShortNoDataConversions {
+  def getInt(i: Int): Int = uds2i(get(i))
+  def getDouble(i: Int): Double = uds2d(get(i))
+
+  protected def intToUShortOut(v: Int): Short = i2uds(v)
+  protected def doubleToUShortOut(v: Double): Short = d2uds(v)
 }

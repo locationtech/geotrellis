@@ -145,9 +145,19 @@ object TypeConversionMacros {
     c.Expr(q"""{ val n = $n ; if(java.lang.Double.isNaN(n)) { Byte.MinValue } else { n.toByte } }""")
   }
 
+  def d2ub_impl(c: Context)(n: c.Expr[Double]): c.Expr[Byte] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(java.lang.Double.isNaN(n)) { 0.toByte } else { n.toByte } }""")
+  }
+
   def d2s_impl(c: Context)(n: c.Expr[Double]): c.Expr[Short] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(java.lang.Double.isNaN(n)) { Short.MinValue } else { n.toShort } }""")
+  }
+
+  def d2us_impl(c: Context)(n: c.Expr[Double]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(java.lang.Double.isNaN(n)) { 0.toShort } else { n.toShort } }""")
   }
 
   def d2i_impl(c: Context)(n: c.Expr[Double]): c.Expr[Int] = {

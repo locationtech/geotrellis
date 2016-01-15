@@ -75,18 +75,28 @@ object UserDefinedNoDataCellType {
     }
 }
 
+sealed trait TypeBit extends CellType
+sealed trait TypeByte extends CellType
+sealed trait TypeUByte extends CellType
+sealed trait TypeShort extends CellType
+sealed trait TypeUShort extends CellType
+sealed trait TypeInt extends CellType
+sealed trait TypeFloat extends CellType
+sealed trait TypeDouble extends CellType
+
+
 // No NoData
 case object BitCellType    extends RawCellType(1, "bool", false) {
   override final def numBytes(size: Int) = (size + 7) / 8
 }
-case object ByteCellType   extends RawCellType(8, "int8raw", false)
+case object ByteCellType   extends RawCellType(8, "int8raw", false) with TypeByte
 case object UByteCellType  extends RawCellType(8, "uint8raw", false)
 case object ShortCellType  extends RawCellType(16, "int16raw", false)
 case object UShortCellType extends RawCellType(16, "uint16raw", false)
 
 // Constant NoData values (the preferred, standard case in GeoTrellis)
 case object ByteConstantNoDataCellType
-    extends ConstantNoDataCellType(8, "int8", false)
+    extends ConstantNoDataCellType(8, "int8", false) with TypeByte
 case object UByteConstantNoDataCellType
     extends ConstantNoDataCellType(8, "uint8", false)
 case object ShortConstantNoDataCellType
@@ -105,7 +115,7 @@ case object DoubleConstantNoDataCellType
 
 // User Defined
 case class ByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends UserDefinedNoDataCellType[Byte](8, s"int8ud${noDataValue}", false)
+    extends UserDefinedNoDataCellType[Byte](8, s"int8ud${noDataValue}", false) with TypeByte
 // Upcast the nodatavalue to handle higher values on unsigned types
 case class UByteUserDefinedNoDataCellType(noDataValue: Int)
     extends UserDefinedNoDataCellType[Int](8, s"uint8ud${noDataValue}", false)

@@ -17,6 +17,9 @@ abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
+  protected def intToUByteOut(v: Int): Byte
+  protected def doubleToUByteOut(v: Double): Byte
+
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case BitCellType =>
@@ -73,22 +76,31 @@ abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   }
 }
 
-trait UByteRawSegment {
-  def get(i: Int): Int
+class UByteRawGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiffSegment(bytes) {
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = get(i).toDouble
+  override def mapDouble(f: Double => Double): Array[Byte] =
+    map(z => f(z.toDouble).toInt)
+
+  protected def intToUByteOut(v: Int): Byte = v.toByte
+  protected def doubleToUByteOut(v: Double): Byte = v.toByte
 }
 
-trait UByteConstantNoDataSegment {
-  def getRaw(i: Int): Byte
+class UByteConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiffSegment(bytes) {
   def getInt(i: Int): Int = ub2i(getRaw(i))
   def getDouble(i: Int): Double = ub2i(getRaw(i))
+
+  protected def intToUByteOut(v: Int): Byte = i2ub(v)
+  protected def doubleToUByteOut(v: Double): Byte = d2ub(v)
 }
 
-trait UByteUserDefinedNoDataSegment extends UserDefinedIntNoDataConversions {
+class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIntNoDataValue: Byte)
+    extends UByteGeoTiffSegment(bytes)
+    with UserDefinedByteNoDataConversions {
+  val userDefinedByteNoDataValue = userDefinedIntNoDataValue.toByte
+  def getInt(i: Int): Int = udb2i(getRaw(i))
+  def getDouble(i: Int): Double = udb2d(getRaw(i))
 
-  def get(i: Int): Int
-  def getInt(i: Int): Int = udi2i(get(i))
-  def getDouble(i: Int): Double = udi2d(get(i))
-
+  protected def intToUByteOut(v: Int): Byte = i2udb(v)
+  protected def doubleToUByteOut(v: Double): Byte = d2udb(v)
 }

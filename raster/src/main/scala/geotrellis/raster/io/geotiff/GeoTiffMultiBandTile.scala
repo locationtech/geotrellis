@@ -22,13 +22,14 @@ object GeoTiffMultiBandTile {
     cellType match {
       case BitCellType =>
         new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
-      case ByteCellType | ByteConstantNoDataCellType | ByteUserDefinedNoDataCellType(_) =>
+      case ByteCellType | ByteConstantNoDataCellType | ByteUserDefinedNoDataCellType(_) => {
         new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+      }
       case UByteCellType | UByteConstantNoDataCellType | UByteUserDefinedNoDataCellType(_) =>
-        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
+        new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
       case ShortCellType | ShortConstantNoDataCellType | ShortUserDefinedNoDataCellType(_) =>
         new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
-      case UShortCellType | UShortCellType | UShortUserDefinedNoDataCellType(_) =>
+      case UShortCellType | UShortConstantNoDataCellType | UShortUserDefinedNoDataCellType(_) =>
         new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)
       case IntConstantNoDataCellType =>
         new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType)

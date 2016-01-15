@@ -23,7 +23,7 @@ object GeoTiffTile {
       case ByteCellType | ByteConstantNoDataCellType | ByteUserDefinedNoDataCellType(_) =>
         new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, cellType)
       case UByteCellType | UByteConstantNoDataCellType | UByteUserDefinedNoDataCellType(_) =>
-        new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, cellType)
+        new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, cellType)
       case ShortCellType | ShortConstantNoDataCellType | ShortUserDefinedNoDataCellType(_) =>
         new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, cellType)
       case UShortCellType | UShortConstantNoDataCellType | UShortUserDefinedNoDataCellType(_) =>

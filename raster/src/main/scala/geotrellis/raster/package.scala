@@ -144,7 +144,9 @@ package object raster
   def f2d(n: Float): Double = macro TypeConversionMacros.f2d_impl
 
   def d2b(n: Double): Byte = macro TypeConversionMacros.d2b_impl
+  def d2ub(n: Double): Byte = macro TypeConversionMacros.d2b_impl
   def d2s(n: Double): Short = macro TypeConversionMacros.d2s_impl
+  def d2us(n: Double): Short = macro TypeConversionMacros.d2us_impl
   def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl
   def d2f(n: Double): Float = macro TypeConversionMacros.d2f_impl
 

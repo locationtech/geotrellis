@@ -20,9 +20,8 @@ abstract class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegme
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
-  protected def intToShort(v: Int): Short
-  protected def intToDouble(v: Int): Double
-  protected def doubleToInt(v: Double): Int
+  protected def intToUShortOut(v: Int): Short
+  protected def doubleToUShortOut(v: Double): Short
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -52,77 +51,69 @@ abstract class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegme
         arr.toArrayByte()
     }
 
-  // NOTE: Maps to Int32 bytes.
   def map(f: Int => Int): Array[Byte] = {
     val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = intToShort(f(getInt(i)))
+      arr(i) = intToUShortOut(f(getInt(i)))
     }
-    val result = new Array[Byte](size * ShortConstantNoDataCellType.bytes)
+    val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
     bytebuff.asShortBuffer.put(arr)
     result
   }
 
   def mapDouble(f: Double => Double): Array[Byte] =
-    map(z => doubleToInt(f(intToDouble(z))))
+    map(z => d2i(f(i2d(z))))
 
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
+    val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = f(i, getInt(i))
+      arr(i) = intToUShortOut(f(i, getInt(i)))
     }
     val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
+    bytebuff.asShortBuffer.put(arr)
     result
   }
 
   def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
-    val arr = Array.ofDim[Int](size)
+    val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = doubleToInt(f(i, getDouble(i)))
+      arr(i) = doubleToUShortOut(f(i, getDouble(i)))
     }
     val result = new Array[Byte](size * IntConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
-    bytebuff.asIntBuffer.put(arr)
+    bytebuff.asShortBuffer.put(arr)
     result
   }
 }
 
-trait UInt16RawSegment {
-  val size: Int
-  def get(i: Int): Int
-
+class UInt16RawGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(bytes) {
   def getInt(i: Int): Int = get(i)
   def getDouble(i: Int): Double = get(i).toDouble
+  // we want to preserve Int.MinValue results and this yields a slight performance boost
+  override def mapDouble(f: Double => Double): Array[Byte] =
+    map(z => f(z.toDouble).toInt)
 
-  protected def intToShort(v: Int): Short = v.toShort
-  protected def intToDouble(v: Int): Double = v.toDouble
-  protected def doubleToInt(v: Double): Int = v.toInt
+  protected def intToUShortOut(v: Int): Short = v.toShort
+  protected def doubleToUShortOut(v: Double): Short = v.toShort
 }
 
-trait UInt16ConstantNoDataSegment {
-  val size: Int
-  def getRaw(i: Int): Short
-
+class UInt16ConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(bytes) {
   def getInt(i: Int): Int = us2i(getRaw(i))
   def getDouble(i: Int): Double = us2d(getRaw(i))
 
-  protected def intToShort(v: Int): Short = i2us(v)
-  protected def intToDouble(v: Int): Double = i2d(v)
-  protected def doubleToInt(v: Double): Int = d2i(v)
+  protected def intToUShortOut(v: Int): Short = i2us(v)
+  protected def doubleToUShortOut(v: Double): Short = d2us(v)
 }
 
-trait UInt16UserDefinedNoDataSegment extends UserDefinedIntNoDataConversions {
-  val size: Int
+class UInt16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedShortNoDataValue: Short)
+    extends UInt16GeoTiffSegment(bytes)
+       with UserDefinedShortNoDataConversions {
 
-  def get(i: Int): Int
+  def getInt(i: Int): Int = uds2i(getRaw(i))
+  def getDouble(i: Int): Double = uds2d(getRaw(i))
 
-  def getInt(i: Int): Int = udi2i(get(i))
-  def getDouble(i: Int): Double = udi2d(get(i))
-
-  protected def intToShort(v: Int): Short = i2uds(v)
-  protected def intToDouble(v: Int): Double = udi2d(v)
-  protected def doubleToInt(v: Double): Int = udd2i(v)
+  protected def intToUShortOut(v: Int): Short = i2uds(v)
+  protected def doubleToUShortOut(v: Double): Short = d2uds(v)
 }

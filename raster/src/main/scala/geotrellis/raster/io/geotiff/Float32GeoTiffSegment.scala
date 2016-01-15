@@ -9,15 +9,6 @@ import spire.syntax.cfor._
 
 import java.util.BitSet
 
-class NoDataFloat32GeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends Float32GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Float = {
-    val v = super.get(i)
-    if(v == noDataValue.toInt) { Float.NaN }
-    else { v }
-  }
-}
-
 class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asFloatBuffer
 
