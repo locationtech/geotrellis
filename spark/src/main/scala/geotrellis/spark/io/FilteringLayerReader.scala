@@ -7,23 +7,20 @@ import spray.json.JsonFormat
 
 abstract class FilteringLayerReader[ID, K: Boundable, M, ReturnType] extends LayerReader[ID, K, ReturnType] {
 
-  def read[I <: KeyIndex[K]: JsonFormat](id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int): ReturnType
+  def read[I <: KeyIndex[K]: JsonFormat](id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int, format: JsonFormat[I]): ReturnType
 
-  def read[I <: KeyIndex[K]: JsonFormat](id: ID, numPartitions: Int): ReturnType =
-    read[I](id, new RDDQuery[K, M], numPartitions)
+  def read[I <: KeyIndex[K]: JsonFormat](id: ID, numPartitions: Int, format: JsonFormat[I]): ReturnType =
+    read[I](id, new RDDQuery[K, M], numPartitions, format)
 
-  def read[I <: KeyIndex[K]: JsonFormat](id: ID): ReturnType =
-    read[I](id, defaultNumPartitions)
+  def read(id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int): ReturnType =
+    read(id, rasterQuery, numPartitions, implicitly[JsonFormat[KeyIndex[K]]])
 
-  def read[I <: KeyIndex[K]: JsonFormat](id: ID, rasterQuery: RDDQuery[K, M]): ReturnType =
-    read[I](id, rasterQuery, defaultNumPartitions)
-
-  def read(id: ID, numPartitions: Int): ReturnType =
-    read[KeyIndex[K]](id, new RDDQuery[K, M], numPartitions)
+  def read(id: ID, rasterQuery: RDDQuery[K, M]): ReturnType =
+    read(id, rasterQuery, defaultNumPartitions)
 
   def query(layerId: ID): BoundRDDQuery[K, M, ReturnType] =
-    new BoundRDDQuery(new RDDQuery, read[KeyIndex[K]](layerId, _))
+    new BoundRDDQuery(new RDDQuery, read(layerId, _))
 
   def query(layerId: ID, numPartitions: Int): BoundRDDQuery[K, M, ReturnType] =
-    new BoundRDDQuery(new RDDQuery, read[KeyIndex[K]](layerId, _, numPartitions))
+    new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
 }
