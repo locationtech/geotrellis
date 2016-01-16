@@ -7,7 +7,7 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
-abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers {
+abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers { self: FunSpec =>
   type TestReader = FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
   type TestWriter = Writer[LayerId, RDD[(K, V)] with Metadata[M]]
   type TestUpdater = LayerUpdater[LayerId, K, V, M]

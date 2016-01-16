@@ -19,7 +19,7 @@ class TileRDDReprojectMethods[
   K: SpatialComponent: ClassTag,
   V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
 ](val self: RDD[(K, V)] with Metadata[RasterMetaData]) extends MethodExtensions[RDD[(K, V)] with Metadata[RasterMetaData]] {
-  import geotrellis.raster.reproject.Reproject.Options
+  import Reproject.Options
 
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
     TileRDDReproject(self, destCrs, layoutScheme, options)

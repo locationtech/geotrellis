@@ -22,7 +22,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object TileRDDReproject {
-  import geotrellis.raster.reproject.Reproject.Options
+  import Reproject.Options
 
   /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.
@@ -51,15 +51,18 @@ object TileRDDReproject {
     val mapTransform: MapKeyTransform = layout.mapTransform
     val tileLayout: TileLayout = layout.tileLayout
 
-    val updatedOptions =
-      options.parentGridExtent match {
+    val rasterReprojectOptions =
+      options.rasterReprojectOptions.parentGridExtent match {
         case Some(_) =>
           // Assume caller knows what she/he is doing
-          options
+          options.rasterReprojectOptions
         case None =>
-          // val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options)
-          // options.copy(parentGridExtent = Some(parentGridExtent))
-          options
+          if(options.matchLayerExtent) {
+            val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options.rasterReprojectOptions)
+            options.rasterReprojectOptions.copy(parentGridExtent = Some(parentGridExtent))
+          } else {
+            options.rasterReprojectOptions
+          }
       }
 
     val reprojectedTiles =
@@ -80,19 +83,23 @@ object TileRDDReproject {
               )
             val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
 
-            // Reproject extra cells that are half the buffer size, as to avoid
-            // any missed cells between tiles.
             val window =
-              GridBounds(
-                gridBounds.colMin / 2,
-                gridBounds.rowMin / 2,
-                (tile.cols + gridBounds.colMax - 1) / 2,
-                (tile.rows + gridBounds.rowMax - 1) / 2
-              )
+              if(options.matchLayerExtent) {
+                gridBounds
+              } else {
+                // Reproject extra cells that are half the buffer size, as to avoid
+                // any missed cells between tiles.
+
+                GridBounds(
+                  gridBounds.colMin / 2,
+                  gridBounds.rowMin / 2,
+                  (tile.cols + gridBounds.colMax - 1) / 2,
+                  (tile.rows + gridBounds.rowMax - 1) / 2
+                )
+              }
 
             val Raster(newTile, newExtent) =
-//              tile.reproject(outerExtent, gridBounds, transform, inverseTransform, updatedOptions)
-              tile.reproject(outerExtent, window, transform, inverseTransform, updatedOptions)
+              tile.reproject(outerExtent, window, transform, inverseTransform, rasterReprojectOptions)
 
             ((key, newExtent), newTile)
           }
@@ -102,7 +109,7 @@ object TileRDDReproject {
       RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
 
     val tiled = reprojectedTiles
-      .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.method, partitioner = bufferedTiles.partitioner))
+      .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.rasterReprojectOptions.method, partitioner = bufferedTiles.partitioner))
     (zoom, ContextRDD(tiled, newMetadata))
   }
 

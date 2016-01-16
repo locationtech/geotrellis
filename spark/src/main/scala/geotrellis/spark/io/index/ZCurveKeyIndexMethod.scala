@@ -24,7 +24,7 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)
     }
 
-  def byMillisecondResolution(millis: Int) =
+  def byMillisecondResolution(millis: Long) =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMillisecondResolution(millis)
     }

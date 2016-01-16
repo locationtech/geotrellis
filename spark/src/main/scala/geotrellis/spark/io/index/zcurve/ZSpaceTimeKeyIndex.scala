@@ -18,7 +18,7 @@ object ZSpaceTimeKeyIndex {
       DateTimeFormat.forPattern(pattern).print(key.time).toInt
     })
 
-  def byMillisecondResolution(millis: Int): ZSpaceTimeKeyIndex =
+  def byMillisecondResolution(millis: Long): ZSpaceTimeKeyIndex =
     new ZSpaceTimeKeyIndex({ key =>
       (key.instant / millis).toInt
     })
