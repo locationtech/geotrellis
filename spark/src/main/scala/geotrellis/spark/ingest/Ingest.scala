@@ -68,7 +68,7 @@ object Ingest {
       sourceTiles.reproject(destCRS, resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = reprojectedTiles.cutTiles(rasterMetaData, resampleMethod).cache()
+    val tiledRdd = reprojectedTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
     val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {

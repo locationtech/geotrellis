@@ -1,6 +1,7 @@
 package geotrellis.spark.reproject
 
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.raster.resample._
 
 object Reproject {
   case class Options(
@@ -19,5 +20,8 @@ object Reproject {
 
     implicit def rasterReprojectOptionsToOptions(rro: RasterReprojectOptions): Options =
       Options(rasterReprojectOptions = rro)
+
+   implicit def resampleMethodToOptions(method: ResampleMethod): Options =
+      Options(rasterReprojectOptions = RasterReprojectOptions(method = method))
   }
 }
