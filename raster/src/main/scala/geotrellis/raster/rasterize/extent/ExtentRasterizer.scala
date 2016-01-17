@@ -17,6 +17,7 @@
 package geotrellis.raster.rasterize.extent
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
@@ -26,31 +27,40 @@ object ExtentRasterizer {
 
   /**
    * This function causes the function f to be called on each pixel
-   * "inside" of the given extent.  The definition of the word
-   * "inside" depends on the includeExterior.
+   * that interacts with the extent.  The definition of the word
+   * "interacts" is controlled by the options parameter.
    *
-   * @param e                An extent to render
-   * @param re               A raster extent to render into
-   * @param includeExterior  If true, report pixels that intersect the extent, otherwise report pixels whose centers are in the extent
+   * @param e        An extent to render
+   * @param re       A raster extent to render into
+   * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
    */
-  def foreachCellByExtent(e: Extent, re: RasterExtent, includeExterior: Boolean = false)(f: (Int, Int) => Unit): Unit = {
+  def foreachCellByExtent(e: Extent, re: RasterExtent, options: Options = Options.DEFAULT)(f: (Int, Int) => Unit): Unit = {
     val xmin = re.mapXToGridDouble(e.xmin)
     val ymin = re.mapYToGridDouble(e.ymax)
     val xmax = re.mapXToGridDouble(e.xmax)
     val ymax = re.mapYToGridDouble(e.ymin)
 
+    val sampleType = options.sampleType
+    val partial = options.includePartial
+
     val (rowMin, rowMax, colMin, colMax) =
-      if (!includeExterior) {(
+      if (sampleType == PixelIsPoint) {(
         max(round(xmin), 0).toInt,
         min(round(xmax), re.cols).toInt,
         max(round(ymin), 0).toInt,
         min(round(ymax), re.rows).toInt
       )}
-      else {(
+      else if (partial) {(
         max(floor(xmin), 0).toInt,
         min(ceil(xmax), re.cols).toInt,
         max(floor(ymin), 0).toInt,
         min(ceil(ymax), re.rows).toInt
+      )}
+      else {(
+        max(ceil(xmin), 0).toInt,
+        min(floor(xmax), re.cols).toInt,
+        max(ceil(ymin), 0).toInt,
+        min(floor(ymax), re.rows).toInt
       )}
 
     var x = rowMin

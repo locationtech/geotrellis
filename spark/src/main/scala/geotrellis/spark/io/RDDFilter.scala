@@ -1,7 +1,8 @@
 package geotrellis.spark.io
 
 import com.github.nscala_time.time.Imports._
-import geotrellis.raster.{GridBounds, RasterExtent}
+import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
 import geotrellis.vector.{Extent, Point, MultiPolygon}
@@ -99,7 +100,7 @@ object Intersects {
         val extent = polygon.envelope
         val keyext = metadata.asInstanceOf[RasterMetaData].mapTransform(kb.minKey)
         val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
-
+        val options = Options(includePartial=true, sampleType=PixelIsArea)
         /*
          * Construct a rasterExtent that fits tightly around the
          * candidate tiles (the candidate keys).  IT IS ASSUMED THAT
@@ -119,7 +120,7 @@ object Intersects {
          */
         val tiles = new ConcurrentHashMap[(Int,Int), Unit]
 
-        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, true)( new Callback {
+        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, options)( new Callback {
           def apply(col : Int, row : Int): Unit = {
             val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
             tiles.put(tile, Unit)

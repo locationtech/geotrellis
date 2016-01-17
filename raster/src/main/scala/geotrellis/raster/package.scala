@@ -18,6 +18,8 @@ package geotrellis
 
 import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
+import geotrellis.vector.{Geometry, Feature}
+import geotrellis.raster.rasterize._
 
 package object raster
     extends crop.Implicits
@@ -27,6 +29,26 @@ package object raster
   type MultiBandRaster = Raster[MultiBandTile]
 
   // Implicit method extension for core types
+
+  implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
+      with RasterExtentRasterizeMethods[RasterExtent]
+
+  implicit class withTileRasterizeMethods(val self: Tile) extends MethodExtensions[Tile]
+      with TileRasterizeMethods[Tile]
+
+  implicit class withSingleBandRasterRasterizeMethods(val self: SingleBandRaster) extends MethodExtensions[Raster[Tile]]
+      with SingleBandRasterRasterizeMethods[Tile, Raster[Tile]]
+
+  implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
+      with GeometryRasterizeMethods[Geometry]
+
+  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int])
+      extends MethodExtensions[Feature[Geometry, Int]]
+      with FeatureIntRasterizeMethods[Geometry, Feature[Geometry, Int]]
+
+  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double])
+      extends MethodExtensions[Feature[Geometry, Double]]
+      with FeatureDoubleRasterizeMethods[Geometry, Feature[Geometry, Double]]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
@@ -101,9 +123,9 @@ package object raster
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
-  @inline final val ubyteNODATA = Byte.MinValue & 0xFF
+  @inline final val ubyteNODATA = (Byte.MinValue & 0xFF).toByte
   @inline final val shortNODATA = Short.MinValue
-  @inline final val ushortNODATA = Short.MinValue & 0xFFFF
+  @inline final val ushortNODATA = (Short.MinValue & 0xFFFF).toShort
   @inline final val NODATA = Int.MinValue
   @inline final val floatNODATA = Float.NaN
   @inline final val doubleNODATA = Double.NaN
