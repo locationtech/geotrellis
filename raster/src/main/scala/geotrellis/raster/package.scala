@@ -20,8 +20,9 @@ import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 
 package object raster
-    extends reproject.Implicits
-    with crop.Implicits {
+    extends crop.Implicits
+    with merge.Implicits
+    with reproject.Implicits {
   type SingleBandRaster = Raster[Tile]
   type MultiBandRaster = Raster[MultiBandTile]
 
@@ -29,17 +30,25 @@ package object raster
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
+      with merge.SingleBandTileMergeMethods
+      with prototype.SingleBandTilePrototypeMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 
   implicit class withMultiBandTileMethods(val self: MultiBandTile) extends MethodExtensions[MultiBandTile]
       with crop.MultiBandTileCropMethods
+      with merge.MultiBandTileMergeMethods
+      with prototype.MultiBandTilePrototypeMethods
       with reproject.MultiBandTileReprojectMethods
       with resample.MultiBandTileResampleMethods
 
   implicit class withSingleBandRasterMethods(val self: SingleBandRaster) extends MethodExtensions[SingleBandRaster]
       with reproject.SingleBandRasterReprojectMethods
       with resample.SingleBandRasterResampleMethods
+
+  implicit class withMultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
+      with reproject.MultiBandRasterReprojectMethods
+      with resample.MultiBandRasterResampleMethods
 
   implicit class SingleBandRasterAnyRefMethods(val self: SingleBandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
@@ -60,10 +69,6 @@ package object raster
         self.rasterExtent.mapYToGrid(y)
       )
   }
-
-  implicit class withMultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
-      with reproject.MultiBandRasterReprojectMethods
-      with resample.MultiBandRasterResampleMethods
 
   implicit class TraversableTileExtensions(rs: Traversable[Tile]) {
     def assertEqualDimensions(): Unit =

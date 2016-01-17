@@ -25,6 +25,6 @@ trait SpatialRasterRDDMethods {
       tileMap.getOrElse(col -> row, EmptyTile(rmd.cellType, tileCols, tileRows))
     }
 
-    Raster(CompositeTile(tiles, TileLayout(te.width, te.height, tileCols, tileRows)), tileExtent)
+    Raster(CompositeTile(tiles, TileLayout(te.width, te.height, tileCols, tileRows)).toArrayTile, tileExtent)
   }
 }

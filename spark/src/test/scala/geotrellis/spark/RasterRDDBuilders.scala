@@ -137,7 +137,7 @@ trait RasterRDDBuilders {
     val (_, metadata) =
       RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)(_.extent)
 
-    val tiled: RDD[(SpatialKey, Tile)] = Tiler(inputRdd, metadata)
+    val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
 
     new ContextRDD(tiled, metadata)
   }

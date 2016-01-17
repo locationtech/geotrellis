@@ -1,13 +1,14 @@
 package geotrellis.spark.reproject
 
 import geotrellis.spark._
+import geotrellis.spark.reproject.Reproject.Options
 import geotrellis.spark.tiling._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
-import geotrellis.raster.reproject.Reproject.Options
+import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import geotrellis.vector.reproject._
@@ -19,7 +20,7 @@ import org.scalatest.FunSpec
 
 class TileRDDReprojectSpec extends FunSpec
     with TestEnvironment
-    with RasterRDDBuilders 
+    with RasterRDDBuilders
     with RasterMatchers {
 
   describe("TileRDDReproject") {
@@ -33,12 +34,32 @@ class TileRDDReprojectSpec extends FunSpec
     }
 
     def testReproject(method: ResampleMethod, constantBuffer: Boolean): Unit = {
-      val expected = ProjectedRaster(raster, gt.crs).reproject(LatLng, Options(method = method, errorThreshold = 0))
+      val expected =
+        ProjectedRaster(raster, gt.crs).reproject(
+          LatLng,
+          RasterReprojectOptions(method = method, errorThreshold = 0)
+        )
+
       val (_, actualRdd) =
         if(constantBuffer) {
-          rdd.reproject(LatLng, FloatingLayoutScheme(25), bufferSize = 2, Options(method = method, errorThreshold = 0))
+          rdd.reproject(
+            LatLng,
+            FloatingLayoutScheme(25),
+            bufferSize = 2,
+            Options(
+              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
+              matchLayerExtent = true
+            )
+          )
         } else {
-          rdd.reproject(LatLng, FloatingLayoutScheme(25), Options(method = method, errorThreshold = 0))
+          rdd.reproject(
+            LatLng,
+            FloatingLayoutScheme(25),
+            Options(
+              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
+              matchLayerExtent = true
+            )
+          )
         }
 
       val actual =

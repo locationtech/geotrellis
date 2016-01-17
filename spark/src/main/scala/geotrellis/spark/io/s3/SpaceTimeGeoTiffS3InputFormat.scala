@@ -6,26 +6,29 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.vector.Extent
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.joda.time._
 import org.joda.time.format._
 
-
-object TemporalGeoTiffS3InputFormat {
+object SpaceTimeGeoTiffS3InputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
 
-  def setTimeTag(job: JobContext, timeTag: String) ={
-    job.getConfiguration.set(GEOTIFF_TIME_TAG, timeTag)
-  }
+  def setTimeTag(job: JobContext, timeTag: String): Unit =
+    setTimeTag(job.getConfiguration, timeTag)
 
-  def setTimeFormat(job: JobContext, timeFormat: String) ={
-    job.getConfiguration.set(GEOTIFF_TIME_FORMAT, timeFormat)
-  }
+  def setTimeTag(conf: Configuration, timeTag: String): Unit =
+    conf.set(GEOTIFF_TIME_TAG, timeTag)
 
-  def getTimeTag(job: JobContext) ={
+  def setTimeFormat(job: JobContext, timeFormat: String): Unit =
+    setTimeFormat(job.getConfiguration, timeFormat)
+
+  def setTimeFormat(conf: Configuration, timeFormat: String): Unit =
+    conf.set(GEOTIFF_TIME_FORMAT, timeFormat)
+
+  def getTimeTag(job: JobContext) =
     job.getConfiguration.get(GEOTIFF_TIME_TAG, "TIFFTAG_DATETIME")
-  }
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
@@ -34,28 +37,27 @@ object TemporalGeoTiffS3InputFormat {
   }
 }
 
-/** Read single band GeoTiff from S3 
-  * Input GeoTiffs should have 'ISO_TIME' tag with ISO 8601 DateTime formated timestamp.
-  * 
+/** Read single band GeoTiff from S3
+  *
   * This can be configured with the hadoop configuration by providing:
-  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * SpaceTimeGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
+  * SpaceTimeGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class TemporalGeoTiffS3InputFormat extends S3InputFormat[SpaceTimeInputKey,Tile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) = 
+class SpaceTimeGeoTiffS3InputFormat extends S3InputFormat[SpaceTimeInputKey,Tile] {
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[SpaceTimeInputKey,Tile] {
-      def read(key: String, bytes: Array[Byte]) = {        
+      def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = SingleBandGeoTiff(bytes)
 
-        val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
-        val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
+        val timeTag = SpaceTimeGeoTiffS3InputFormat.getTimeTag(context)
+        val dateFormatter = SpaceTimeGeoTiffS3InputFormat.getTimeFormatter(context)
 
         val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
         val dateTime = DateTime.parse(dateTimeString, dateFormatter)
 
         //WARNING: Assuming this is a single band GeoTiff
         val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-        (SpaceTimeInputKey(extent, crs, dateTime), tile)        
+        (SpaceTimeInputKey(extent, crs, dateTime), tile)
       }
-    }     
+    }
 }

@@ -52,8 +52,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
 
       rasterRDD
         .groupBy { case (key, tile) =>
-          val SpaceTimeKey(_, _, time) = key
-          time
+          key.time
          }
         .collect
         .sortWith { (x, y) => x._1.isBefore(y._1) }

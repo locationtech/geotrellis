@@ -47,7 +47,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
     val metadata = rdd.metadata
     val header = S3LayerHeader(
       keyClass = classTag[K].toString(),
-      valueClass = classTag[K].toString(),
+      valueClass = classTag[V].toString(),
       bucket = bucket,
       key = prefix)
 

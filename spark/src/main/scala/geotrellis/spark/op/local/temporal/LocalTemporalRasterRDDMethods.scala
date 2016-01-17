@@ -64,7 +64,7 @@ trait LocalTemporalRasterRDDMethods[K] extends RasterRDDMethods[K] with Serializ
       rdd
         .map { case (key, tile) =>
           val SpatialKey(col, row) = key.spatialComponent
-          val TemporalKey(time) = key.temporalComponent
+          val time = key.temporalComponent.time
           val startDiff = getDifferenceByUnit(unit, start, time)
           val endDiff = getDifferenceByUnit(unit, time, end)
 

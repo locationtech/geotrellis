@@ -12,9 +12,9 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
   describe("ZSpaceTimeKey test"){
 
     it("indexes time"){
-      val zst = new ZSpaceTimeKeyIndex({ dt => dt.getYear })
+      val zst = ZSpaceTimeKeyIndex({ dt => dt.getYear })
 
-      val keys = 
+      val keys =
         for(col <- 0 until upperBound;
              row <- 0 until upperBound;
                 t <- 0 until upperBound) yield {
@@ -51,45 +51,45 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
       //all sub cubes in a 2x2x2
       var idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k.plusMillis(1))))
       idx.length should be (1)
-      (idx(0)._2 - idx(0)._1) should be (7) 
-    
+      (idx(0)._2 - idx(0)._1) should be (7)
+
       //sub cubes along x
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,0,y2k.plusMillis(1))))
       idx.length should be (2)
-      (idx(0)._2 - idx(0)._1) should be (1) 
-      (idx(1)._2 - idx(1)._1) should be (1) 
-    
+      (idx(0)._2 - idx(0)._1) should be (1)
+      (idx(1)._2 - idx(1)._1) should be (1)
+
       //next sub cubes along x
       idx = zst.indexRanges((SpaceTimeKey(0,1,y2k), SpaceTimeKey(1,1,y2k.plusMillis(1))))
       idx.length should be (2)
-      (idx(0)._2 - idx(0)._1) should be (1) 
-      (idx(1)._2 - idx(1)._1) should be (1) 
-    
+      (idx(0)._2 - idx(0)._1) should be (1)
+      (idx(1)._2 - idx(1)._1) should be (1)
+
       //sub cubes along y
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(0,1,y2k.plusMillis(1))))
       idx.length should be (4)
-      (idx(0)._2 - idx(0)._1) should be (0) 
-      (idx(1)._2 - idx(1)._1) should be (0) 
-      (idx(2)._2 - idx(2)._1) should be (0) 
-      (idx(3)._2 - idx(3)._1) should be (0) 
-    
+      (idx(0)._2 - idx(0)._1) should be (0)
+      (idx(1)._2 - idx(1)._1) should be (0)
+      (idx(2)._2 - idx(2)._1) should be (0)
+      (idx(3)._2 - idx(3)._1) should be (0)
+
       //next sub cubes along y
       idx = zst.indexRanges((SpaceTimeKey(1,0,y2k), SpaceTimeKey(1,1,y2k.plusMillis(1))))
       idx.length should be (4)
-      (idx(0)._2 - idx(0)._1) should be (0) 
-      (idx(1)._2 - idx(1)._1) should be (0) 
-      (idx(2)._2 - idx(2)._1) should be (0) 
-      (idx(3)._2 - idx(3)._1) should be (0) 
-    
+      (idx(0)._2 - idx(0)._1) should be (0)
+      (idx(1)._2 - idx(1)._1) should be (0)
+      (idx(2)._2 - idx(2)._1) should be (0)
+      (idx(3)._2 - idx(3)._1) should be (0)
+
       //sub cubes along z
       idx = zst.indexRanges( (SpaceTimeKey(0,0,y2k.plusMillis(1)), SpaceTimeKey(1,1,y2k.plusMillis(1))))
       idx.length should be (1)
-      (idx(0)._2 - idx(0)._1) should be (3) 
-    
+      (idx(0)._2 - idx(0)._1) should be (3)
+
       //sub cubes along z
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k)))
       idx.length should be (1)
-      (idx(0)._2 - idx(0)._1) should be (3) 
+      (idx(0)._2 - idx(0)._1) should be (3)
     }
 
     it("generates indexes by string pattern") {

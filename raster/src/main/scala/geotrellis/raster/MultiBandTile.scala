@@ -104,24 +104,4 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
   def combineDouble(b0: Int, b1: Int, b2: Int, b3: Int)(f: (Double, Double, Double, Double) => Double): Tile =
     macro MultiBandTileMacros.doubleCombine4_impl[Tile, MultiBandTile]
 
-  // def resample(source: Extent, target: RasterExtent): MultiBandTile =
-  //   resample(source, target, InterpolationMethod.DEFAULT)
-
-  // def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): MultiBandTile
-
-  // def resample(source: Extent, target: Extent): MultiBandTile =
-  //   resample(source, target, InterpolationMethod.DEFAULT)
-
-  // def resample(source: Extent, target: Extent, method: InterpolationMethod): MultiBandTile =
-  //   resample(source, RasterExtent(source, cols, rows).createAligned(target), method)
-
-  // def resample(source: Extent, targetCols: Int, targetRows: Int): MultiBandTile =
-  //   resample(source, targetCols, targetRows, InterpolationMethod.DEFAULT)
-
-  // def resample(source: Extent, targetCols: Int, targetRows: Int, method: InterpolationMethod): MultiBandTile =
-  //   resample(source, RasterExtent(source, targetCols, targetRows), method)
-
-  // /** Only changes the resolution */
-  // def resample(targetCols: Int, targetRows: Int): MultiBandTile =
-  //   resample(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
 }

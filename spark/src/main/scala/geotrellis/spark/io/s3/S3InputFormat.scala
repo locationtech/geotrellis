@@ -1,10 +1,10 @@
 package geotrellis.spark.io.s3
 
-import org.apache.hadoop.mapreduce.{InputFormat, JobContext}
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
 import com.amazonaws.regions._
-import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
 import com.typesafe.scalalogging.slf4j._
 
 import scala.util.matching.Regex
@@ -40,43 +40,43 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       if (max != null)  max.toInt  else  null
     }
 
-    val credentials = 
+    val credentials =
       if (anon != null)
         new AnonymousAWSCredentials()
       else if (id != null && key != null)
         new BasicAWSCredentials(id, key)
-      else      
+      else
         new DefaultAWSCredentialsProviderChain().getCredentials
-    
+
     val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
 
     region match {
-      case Some(r) => 
+      case Some(r) =>
         s3client.setRegion(r)
       case None =>
     }
-    
+
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
     logger.debug(s"Authenticationg with ID=${credentials.getAWSAccessKeyId}")
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
       .withPrefix(prefix)
       .withMaxKeys(maxKeys)
-    
+
     var listing: ObjectListing = null
     var splits: List[S3InputSplit] = Nil
     do {
-      listing = s3client.listObjects(request)     
+      listing = s3client.listObjects(request)
       val split = new S3InputSplit()
       split.setCredentials(credentials)
       split.bucket = bucket
       // avoid including "directories" in the input split, can cause 403 errors on GET
       split.keys = listing.getObjectSummaries.map(_.getKey).filterNot(_ endsWith "/")
-    
+
       splits = split :: splits
       request.setMarker(listing.getNextMarker)
     } while (listing.isTruncated)
-  
+
     splits
   }
 }
@@ -96,40 +96,50 @@ object S3InputFormat {
   val S3UrlRx = new Regex(s"""s3n://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
 
   /** Set S3N url to use, may include AWS Id and Key */
-  def setUrl(job: Job, url: String) = {
-    val conf = job.getConfiguration
+  def setUrl(job: Job, url: String): Unit =
+    setUrl(job.getConfiguration, url)
+
+  def setUrl(conf: Configuration, url: String): Unit = {
     val S3UrlRx(id, key, bucket, prefix) = url
 
     if (id != null && key != null) {
-      conf.set(AWS_ID, id)  
-      conf.set(AWS_KEY, key)  
+      conf.set(AWS_ID, id)
+      conf.set(AWS_KEY, key)
     }
     conf.set(BUCKET, bucket)
-    conf.set(PREFIX, prefix)        
+    conf.set(PREFIX, prefix)
   }
 
-  def setBucket(job: Job, bucket: String) ={
-    job.getConfiguration.set(BUCKET, bucket)
-  }
+  def setBucket(job: Job, bucket: String): Unit =
+    setBucket(job.getConfiguration, bucket)
 
-  def setPrefix(job: Job, prefix: String) ={
-    job.getConfiguration.set(PREFIX, prefix)
-  }
+  def setBucket(conf: Configuration, bucket: String): Unit =
+    conf.set(BUCKET, bucket)
+
+  def setPrefix(job: Job, prefix: String): Unit =
+    setPrefix(job.getConfiguration, prefix)
+
+  def setPrefix(conf: Configuration, prefix: String): Unit =
+    conf.set(PREFIX, prefix)
 
   /** Set maximum number of keys per split, less may be returned */
-  def setMaxKeys(job: Job, limit: Int) = {
-    val conf = job.getConfiguration
-    conf.set(MAX_KEYS, limit.toString)
-  }
+  def setMaxKeys(job: Job, limit: Int): Unit =
+    setMaxKeys(job.getConfiguration, limit)
 
-  def setRegion(job: Job, region: String) = {
-    val conf = job.getConfiguration
+  def setMaxKeys(conf: Configuration, limit: Int): Unit =
+    conf.set(MAX_KEYS, limit.toString)
+
+  def setRegion(job: Job, region: String): Unit =
+    setRegion(job.getConfiguration, region)
+
+  def setRegion(conf: Configuration, region: String): Unit =
     conf.set(REGION, region)
-  }
 
   /** Force anonymous access, bypass all key discovery */
-  def setAnonymous(job: Job) = {
-    val conf = job.getConfiguration
+  def setAnonymous(job: Job): Unit =
+    setAnonymous(job.getConfiguration)
+
+  /** Force anonymous access, bypass all key discovery */
+  def setAnonymous(conf: Configuration): Unit =
     conf.set(ANONYMOUS, "true")
-  }
 }

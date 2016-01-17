@@ -1,8 +1,10 @@
 package geotrellis.spark.etl.s3
 
 import geotrellis.raster.Tile
+import geotrellis.spark._
 import geotrellis.spark.etl._
-import geotrellis.spark.ingest.{Tiler, IngestKey}
+import geotrellis.spark.ingest._
+import geotrellis.spark.tiling._
 import geotrellis.spark.io.s3.S3InputFormat
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.Job
@@ -10,7 +12,7 @@ import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
 
-abstract class S3Input[I: IngestKey, K: ClassTag](implicit tiler: Tiler[I, K, Tile]) extends IngestInputPlugin[I, K] {
+abstract class S3Input[I: IngestKey: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends IngestInputPlugin[I, K] {
   val name = "s3"
   val requiredKeys = Array("bucket", "key")
 

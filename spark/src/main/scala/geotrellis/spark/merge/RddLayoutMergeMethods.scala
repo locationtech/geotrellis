@@ -1,25 +1,29 @@
-package geotrellis.spark.mosaic
+package geotrellis.spark.merge
 
 import scala.reflect.ClassTag
 
 import org.apache.spark.rdd.RDD
 
-import geotrellis.raster.mosaic.MergeView
+import geotrellis.raster._
+import geotrellis.raster.merge._
+import geotrellis.raster.prototype._
 import geotrellis.spark._
-import geotrellis.spark.ingest.CellGridPrototypeView
 import geotrellis.spark.tiling.LayoutDefinition
 
-class RddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: CellGridPrototypeView: ClassTag, M: (? => {def layout: LayoutDefinition})](
- rdd: (RDD[(K, TileType)] with Metadata[M])
-) extends MergeMethods[RDD[(K, TileType)] with Metadata[M]] {
+// TODO: Handle metadata lens abstraction for layout definition.
+class RDDLayoutMergeMethods[
+  K: SpatialComponent: ClassTag,
+  V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+  M: (? => {def layout: LayoutDefinition})
+](val self: RDD[(K, V)] with Metadata[M]) extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
 
- def merge(other: RDD[(K, TileType)] with Metadata[M]) = {
-   val thisLayout = rdd.metadata.layout
+ def merge(other: RDD[(K, V)] with Metadata[M]) = {
+   val thisLayout = self.metadata.layout
    val thatLayout = other.metadata.layout
 
    val cutRdd = 
        other
-         .flatMap { case (k: K, tile: TileType) =>
+         .flatMap { case (k: K, tile: V) =>
            val extent = thatLayout.mapTransform(k)
            thisLayout.mapTransform(extent)
              .coords
@@ -32,7 +36,7 @@ class RddLayoutMergeMethods[K: SpatialComponent: ClassTag, TileType: MergeView: 
        }
 
 
-   rdd.withContext { rdd => rdd.merge(cutRdd) }
+   self.withContext { rdd => rdd.merge(cutRdd) }
  }
 
 }
