@@ -37,7 +37,7 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
 
   def byMinute =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byHour()
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMinute()
     }
 
   def bySecond =

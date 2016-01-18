@@ -36,5 +36,3 @@ class HadoopSpatialZCurveSpec extends HadoopSpatialSpec {
 class HadoopSpatialHilbertSpec extends HadoopSpatialSpec {
   lazy val writerKeyIndexMethod: KeyIndexMethod[SpatialKey] = HilbertKeyIndexMethod
 }
-
-
