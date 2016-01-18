@@ -33,18 +33,18 @@ object HilbertSpatialKeyIndex {
 class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResolution: Int, val yResolution: Int) extends BoundedKeyIndex[SpatialKey] {
   @transient lazy val chc = {
     val dimensionSpec =
-      new MultiDimensionalSpec( 
+      new MultiDimensionalSpec(
         List(
           math.pow(2, xResolution).toInt,
           math.pow(2, yResolution).toInt
-        ).map(new java.lang.Integer(_)) 
+        ).map(new java.lang.Integer(_))
       )
 
     new CompactHilbertCurve(dimensionSpec)
   }
 
   def toIndex(key: SpatialKey): Long = {
-    val bitVectors = 
+    val bitVectors =
       Array(
         BitVectorFactories.OPTIMAL.apply(xResolution),
         BitVectorFactories.OPTIMAL.apply(yResolution)
@@ -62,13 +62,13 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
 
   def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
 
-    val ranges: java.util.List[LongRange] = 
+    val ranges: java.util.List[LongRange] =
       List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
         LongRange.of(keyRange._1.col, keyRange._2.col + 1),
         LongRange.of(keyRange._1.row, keyRange._2.row + 1)
       )
 
-    val  regionInspector: RegionInspector[LongRange, LongContent] = 
+    val  regionInspector: RegionInspector[LongRange, LongContent] =
       SimpleRegionInspector.create(
         List(ranges),
         new LongContent(1),
@@ -77,10 +77,10 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
         new LongContent(0L)
       )
 
-    val combiner = 
+    val combiner =
       new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1))
 
-    val queryBuilder = 
+    val queryBuilder =
       BacktrackingQueryBuilder.create(
         regionInspector,
         combiner,

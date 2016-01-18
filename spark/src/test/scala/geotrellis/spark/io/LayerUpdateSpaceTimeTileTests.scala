@@ -54,7 +54,9 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       minKey = SpaceTimeKey(-64, -64, minKey.instant),
       maxKey = SpaceTimeKey(+64, +64, maxKey.instant)
     )
-    writer.write(preallocLayerId, sample, Some(kb))
+    val ki = writerKeyIndexMethod.createIndex(kb)
+
+    writer.write(preallocLayerId, sample, ki, Some(kb))
 
     val updateList = (for(i <- -64 to 64; j <- -64 to 64) yield
       (minKey.updateSpatialComponent(SpatialKey(i, j)), minTile))

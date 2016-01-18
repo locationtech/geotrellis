@@ -22,7 +22,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     try {
-      layerWriter.write[TI](to, layerReader.read(from, implicitly[JsonFormat[FI]]), keyIndex)
+      layerWriter.write[TI](to, layerReader.read(from, implicitly[JsonFormat[FI]]), keyIndex, None)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }

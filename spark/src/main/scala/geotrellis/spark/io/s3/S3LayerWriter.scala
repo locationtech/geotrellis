@@ -66,7 +66,7 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
 
   def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
-    write(id, rdd, keyIndexMethod.createIndex(keyBounds))
+    write(id, rdd, keyIndexMethod.createIndex(keyBounds), None)
   }
 }
 
@@ -77,7 +77,7 @@ object S3LayerWriter {
   }
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](attributeStore: S3AttributeStore, options: Options): S3LayerWriter[K, V, M] =
@@ -91,21 +91,21 @@ object S3LayerWriter {
     )
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](attributeStore: S3AttributeStore): S3LayerWriter[K, V, M] =
     apply[K, V, M](attributeStore, Options.DEFAULT)
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](bucket: String, prefix: String, options: Options): S3LayerWriter[K, V, M] =
     apply[K, V, M](S3AttributeStore(bucket, prefix), options)
 
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](bucket: String, prefix: String): S3LayerWriter[K, V, M] =

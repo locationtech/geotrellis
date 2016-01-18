@@ -51,7 +51,7 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 
   def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
-    write(id, rdd, keyIndexMethod.createIndex(keyBounds))
+    write(id, rdd, keyIndexMethod.createIndex(keyBounds), None)
   }
 }
 
