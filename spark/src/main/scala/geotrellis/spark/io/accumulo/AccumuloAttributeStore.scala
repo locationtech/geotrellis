@@ -29,10 +29,15 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
       ops.create(attributeTable)
   }
 
+  val SEP = "__.__"
+
+  def layerIdText(layerId: LayerId): Text =
+    s"${layerId.name}${SEP}${layerId.zoom}"
+
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
     layerId.foreach { id =>
-      scanner.setRange(new Range(new Text(id.toString)))
+      scanner.setRange(new Range(layerIdText(id)))
     }
     scanner.fetchColumnFamily(new Text(attributeName))
     scanner.iterator.map(_.getValue)
@@ -44,7 +49,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     val config = new BatchWriterConfig()
     config.setMaxWriteThreads(numThreads)
     val deleter = connector.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
-    deleter.setRanges(List(new Range(new Text(layerId.toString))))
+    deleter.setRanges(List(new Range(layerIdText(layerId))))
     attributeName.foreach { name =>
       deleter.fetchColumnFamily(new Text(name))
     }
@@ -70,7 +75,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   }
 
   def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
-    val mutation = new Mutation(layerId.toString)
+    val mutation = new Mutation(layerIdText(layerId))
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),
       new Value((layerId, value).toJson.compactPrint.getBytes)
@@ -80,10 +85,26 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
   }
 
   def layerExists(layerId: LayerId): Boolean = {
-    fetch(Some(layerId), AttributeStore.Fields.metaData).nonEmpty
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    scanner.iterator
+      .exists { kv =>
+        val List(name, zoomStr) = kv.getKey.getRow.toString.split(SEP).toList
+        layerId == LayerId(name, zoomStr.toInt)
+      }
   }
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 
   def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
+
+  def layerIds: Seq[LayerId] = {
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    scanner.iterator
+      .map { kv =>
+        val List(name, zoomStr) = kv.getKey.getRow.toString.split(SEP).toList
+        LayerId(name, zoomStr.toInt)
+      }
+      .toList
+      .distinct
+  }
 }

@@ -15,7 +15,7 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
         new ZSpatialKeyIndex()
     }
 
-  def byYear = 
+  def byYear =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byYear()
     }
@@ -30,15 +30,24 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byDay()
     }
 
-  def byPattern(pattern: String) =
+  def byHour =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byHour()
     }
 
-  def by(timeToGrid: DateTime => Int, fname: String = "function") = {
-    addCustomFunction(fname, timeToGrid)
+  def byMinute =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = new ZSpaceTimeKeyIndex(timeToGrid, Options(fname))
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byHour()
     }
-  }
+
+  def bySecond =
+    new KeyIndexMethod[SpaceTimeKey] {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.bySecond()
+    }
+
+  def byMillisecondResolution(millis: Long) =
+    new KeyIndexMethod[SpaceTimeKey] {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMillisecondResolution(millis)
+    }
+
 }

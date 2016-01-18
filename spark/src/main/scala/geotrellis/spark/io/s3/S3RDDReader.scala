@@ -47,7 +47,7 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
           val s3client = _getS3Client()
 
           val tileSeq: Iterator[Seq[(K, V)]] =
-            for{
+            for {
               rangeList <- partition // Unpack the one element of this partition, the rangeList.
               range <- rangeList
               index <- range._1 to range._2

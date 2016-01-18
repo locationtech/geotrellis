@@ -26,14 +26,16 @@ object Raster {
 }
 
 case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, Extent] {
-  lazy val rasterExtent = RasterExtent(extent, tile.cols, tile.rows)
+  def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
+  def cellSize: CellSize = rasterExtent.cellSize
 
   def cols: Int = tile.cols
   def rows: Int = tile.rows
+  def dimensions: (Int, Int) = tile.dimensions
 
   def asFeature(): Feature[Extent, T] = ExtentFeature(extent, tile: T)
 
-  def _1 = tile
+  def _1: T = tile
 
-  def _2 = extent
+  def _2: Extent = extent
 }

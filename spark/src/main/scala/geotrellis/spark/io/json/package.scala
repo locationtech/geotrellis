@@ -116,28 +116,11 @@ package object json {
       }
   }
 
-  implicit object ZSpaceTimeKeyIndexOptionsFormat extends RootJsonFormat[ZSpaceTimeKeyIndex.Options] {
-    def write(obj: ZSpaceTimeKeyIndex.Options): JsValue =
-      JsObject(
-        "fname"   -> obj.fname.toJson,
-        "pattern" -> obj.pattern.toJson
-      )
-
-    def read(value: JsValue): ZSpaceTimeKeyIndex.Options =
-      value.asJsObject.getFields("fname", "pattern") match {
-        case Seq(JsString(ftype), JsString(pattern)) => {
-          ZSpaceTimeKeyIndex.Options(ftype, pattern)
-        }
-        case _ =>
-          throw new DeserializationException("Wrong Options type: ZSpaceTimeKeyIndex.Options expected.")
-      }
-  }
-
   implicit object ZSpaceTimeKeyIndexFormat extends RootJsonFormat[ZSpaceTimeKeyIndex] {
     def write(obj: ZSpaceTimeKeyIndex): JsValue =
       JsObject(
         "id"   -> obj.id.toJson,
-        "args" -> obj.persistentOptions.toJson
+        "args" -> JsObject("resolution" -> obj.resolution.toJson)
       )
 
     def read(value: JsValue): ZSpaceTimeKeyIndex =
@@ -145,7 +128,13 @@ package object json {
         case Seq(JsString(id), args) => {
           if (id != KeyIndex.zSpaceTimeKeyIndex)
             throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")
-          ZSpaceTimeKeyIndex.Options.toIndex(args.convertTo[ZSpaceTimeKeyIndex.Options])
+          args.convertTo[JsObject].getFields("resolution") match {
+            case Seq(resolution) =>
+              ZSpaceTimeKeyIndex.byMillisecondResolution(resolution.convertTo[Long])
+            case _ =>
+              throw new DeserializationException(
+                "Wrong KeyIndex constructor arguments: ZSpaceTimeKeyIndex constructor arguments expected.")
+          }
         }
         case _ =>
           throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")

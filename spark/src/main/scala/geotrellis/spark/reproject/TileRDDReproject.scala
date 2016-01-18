@@ -1,17 +1,18 @@
 package geotrellis.spark.reproject
 
-import geotrellis.spark.buffer._
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
-import geotrellis.raster.crop._
-import geotrellis.raster.mosaic._
-import geotrellis.raster.stitch._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.spark.ingest._
 import geotrellis.spark.tiling._
+import geotrellis.spark.buffer._
+import geotrellis.proj4._
+import geotrellis.raster._
+import geotrellis.raster.crop._
+import geotrellis.raster.merge._
+import geotrellis.raster.prototype._
+import geotrellis.raster.reproject._
+import geotrellis.raster.resample._
+import geotrellis.raster.stitch._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 
@@ -21,23 +22,23 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object TileRDDReproject {
-  import geotrellis.raster.reproject.Reproject.Options
+  import Reproject.Options
 
-  /** Reproject a set of buffered 
+  /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    * 
+    *
     * @param            rdd                An RDD of buffered tiles, created using the BufferTiles operation.
     * @param            metadata           The raster metadata for this keyed tile set.
     * @param            destCrs            The CRS to reproject to.
     * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
     * @param            options            Reprojection options.
-    * 
+    *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: RasterMetaData,
@@ -50,14 +51,18 @@ object TileRDDReproject {
     val mapTransform: MapKeyTransform = layout.mapTransform
     val tileLayout: TileLayout = layout.tileLayout
 
-    val updatedOptions =
-      options.parentGridExtent match {
+    val rasterReprojectOptions =
+      options.rasterReprojectOptions.parentGridExtent match {
         case Some(_) =>
           // Assume caller knows what she/he is doing
-          options
+          options.rasterReprojectOptions
         case None =>
-          val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options)
-          options.copy(parentGridExtent = Some(parentGridExtent))
+          if(options.matchLayerExtent) {
+            val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options.rasterReprojectOptions)
+            options.rasterReprojectOptions.copy(parentGridExtent = Some(parentGridExtent))
+          } else {
+            options.rasterReprojectOptions
+          }
       }
 
     val reprojectedTiles =
@@ -78,8 +83,23 @@ object TileRDDReproject {
               )
             val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
 
+            val window =
+              if(options.matchLayerExtent) {
+                gridBounds
+              } else {
+                // Reproject extra cells that are half the buffer size, as to avoid
+                // any missed cells between tiles.
+
+                GridBounds(
+                  gridBounds.colMin / 2,
+                  gridBounds.rowMin / 2,
+                  (tile.cols + gridBounds.colMax - 1) / 2,
+                  (tile.rows + gridBounds.rowMax - 1) / 2
+                )
+              }
+
             val Raster(newTile, newExtent) =
-              tile.reproject(outerExtent, gridBounds, transform, inverseTransform, updatedOptions)
+              tile.reproject(outerExtent, window, transform, inverseTransform, rasterReprojectOptions)
 
             ((key, newExtent), newTile)
           }
@@ -88,30 +108,26 @@ object TileRDDReproject {
     val (zoom, newMetadata) =
       RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
 
-    val tiler: Tiler[(K, Extent), K, V] = {
-      val getExtent = (inKey: (K, Extent)) => inKey._2
-      val createKey = (inKey: (K, Extent), spatialComponent: SpatialKey) => inKey._1.updateSpatialComponent(spatialComponent)
-      Tiler(getExtent, createKey)
-    }
-
-    (zoom, ContextRDD(tiler(reprojectedTiles, newMetadata, options.method), newMetadata))
+    val tiled = reprojectedTiles
+      .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.rasterReprojectOptions.method, partitioner = bufferedTiles.partitioner))
+    (zoom, ContextRDD(tiled, newMetadata))
   }
 
-  /** Reproject a keyed tile RDD. 
-    * 
+  /** Reproject a keyed tile RDD.
+    *
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    * 
+    *
     * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
     * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
     * @param            options            Reprojection options.
-    * 
+    *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetaData],
     destCrs: CRS,
@@ -159,23 +175,23 @@ object TileRDDReproject {
   /** Reproject this keyed tile RDD, using a constant border size for the operation.
     * @tparam           K                  Key type; requires spatial component.
     * @tparam           V                  Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    * 
+    *
     * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
     * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
     * @param            bufferSize         Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
     *                                      any side if there is an adjacent, abutting tile to contribute the border pixels.
     * @param            options            Reprojection options.
-    * 
+    *
     * @return           The new zoom level and the reprojected keyed tile RDD.
-    * 
+    *
     * @note             This is faster than computing the correct border size per key, so if you know that a specific border size will be sufficient
     *                   to be accurate, e.g. if the CRS's are not very different and so the rasters will not skew heavily, then this method can be used
     *                   for performance benefit.
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => MergeMethods[V]): (? => CellGridPrototype[V])
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetaData],
     destCrs: CRS,

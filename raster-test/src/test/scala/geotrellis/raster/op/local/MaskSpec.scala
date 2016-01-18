@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 
@@ -58,6 +59,7 @@ class MaskSpec extends FunSpec
           }
         }
     }
+
     it("should work with doubles") {
       val r1 = createTile(
         Array( Double.NaN,1.0,1.0, 1.0,1.0,1.0, 1.0,1.0,1.0,
@@ -91,7 +93,7 @@ class MaskSpec extends FunSpec
       val re = RasterExtent(tile, extent)
 
       val mask = Polygon(Line( (0.5, 0.5), (0.5, 3.5), (3.5, 3.5), (3.5, 0.5), (0.5, 0.5)))
-      val masked = tile.mask(extent, mask, includeExterior = true)
+      val masked = tile.mask(extent, mask, Options(true, PixelIsArea))
 
       masked.foreach { (x, y, v) =>
         val expected =

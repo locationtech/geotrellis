@@ -16,8 +16,8 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.{SpatialKey, SpaceTimeKey, KeyComponent}
-import geotrellis.spark.ingest._
+import geotrellis.spark._
+import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
@@ -73,10 +73,9 @@ object NetCdfBand {
     )
   }
 
-  implicit def tiler: Tiler[NetCdfBand, SpaceTimeKey, Tile] = {
-    val getExtent = (inKey: NetCdfBand) => inKey.extent
-    val createKey = (inKey: NetCdfBand, spatialComponent: SpatialKey) => SpaceTimeKey(spatialComponent, inKey.time)
-    Tiler(getExtent, createKey)
+  implicit class withTilerKeyMethods(val self: NetCdfBand) extends TilerKeyMethods[NetCdfBand, SpaceTimeKey] {
+    def extent = self.extent
+    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.time)
   }
 }
 

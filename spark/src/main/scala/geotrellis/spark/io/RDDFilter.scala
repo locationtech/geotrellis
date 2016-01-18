@@ -1,7 +1,8 @@
 package geotrellis.spark.io
 
 import com.github.nscala_time.time.Imports._
-import geotrellis.raster.{GridBounds, RasterExtent}
+import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
 import geotrellis.vector.{Extent, Point, MultiPolygon}
@@ -56,7 +57,8 @@ object RDDFilter {
 
 object Intersects {
   import geotrellis.raster.rasterize.{Rasterizer, Callback}
-  import scala.collection.mutable.ListBuffer
+  import collection.JavaConverters._
+  import java.util.concurrent.ConcurrentHashMap
 
   def apply[T](value: T) = RDDFilter.Value[Intersects.type, T](value)
 
@@ -98,7 +100,7 @@ object Intersects {
         val extent = polygon.envelope
         val keyext = metadata.asInstanceOf[RasterMetaData].mapTransform(kb.minKey)
         val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
-
+        val options = Options(includePartial=true, sampleType=PixelIsArea)
         /*
          * Construct a rasterExtent that fits tightly around the
          * candidate tiles (the candidate keys).  IT IS ASSUMED THAT
@@ -111,22 +113,21 @@ object Intersects {
         val rasterExtent = RasterExtent(Extent(xmin, ymin, xmax, ymax), bounds.width, bounds.height)
 
         /*
-         * Use the Rasterizer to construct a list of tiles which meet
-         * the query polygon.  That list of tiles is stored as an
-         * array of tuples which is then mapped-over to produce an
-         * array of KeyBounds (where the keys and KeyBounds are of the
-         * correct type).
+         * Use the Rasterizer to construct  a list of tiles which meet
+         * the  query polygon.   That list  of tiles  is stored  as an
+         * array of  tuples which  is then  mapped-over to  produce an
+         * array of KeyBounds.
          */
-        val tiles = new mutable.HashSet[(Int, Int)] with mutable.SynchronizedSet[(Int, Int)]
+        val tiles = new ConcurrentHashMap[(Int,Int), Unit]
 
-        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, true)( new Callback {
+        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, options)( new Callback {
           def apply(col : Int, row : Int): Unit = {
             val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
-            tiles += tile
+            tiles.put(tile, Unit)
           }
         })
 
-        tiles
+        tiles.keys.asScala
           .map({ tile =>
             val qb = KeyBounds(
               kb.minKey updateSpatialComponent SpatialKey(tile._1, tile._2),

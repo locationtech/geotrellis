@@ -12,13 +12,14 @@ import org.joda.time.DateTime
 
 abstract class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with TestEnvironment with TestFiles
+    with TestEnvironment
+    with TestFiles
     with CoordinateSpaceTimeTests
     with LayerUpdateSpaceTimeTileTests {
   override val layerId  = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 
-  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byPattern("YMM")
+  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
   lazy val reader    = AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData](instance)
   lazy val updater   = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData](instance, SocketWriteStrategy())
@@ -35,9 +36,9 @@ class AccumuloSpaceTimeZCurveByYearSpec extends AccumuloSpaceTimeSpec {
   lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.byYear
 }
 
-class AccumuloSpaceTimeZCurveByFuncSpec extends AccumuloSpaceTimeSpec {
+/*class AccumuloSpaceTimeZCurveByFuncSpec extends AccumuloSpaceTimeSpec {
   lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "AccumuloSpaceTimeZCurveByFuncSpec")
-}
+}*/
 
 class AccumuloSpaceTimeHilbertSpec extends AccumuloSpaceTimeSpec {
   lazy val writerKeyIndexMethod = HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4)

@@ -20,7 +20,7 @@ abstract class S3SpaceTimeSpec
   val bucket = "mock-bucket"
   val prefix = "catalog"
 
-  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byPattern("YMM")
+  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override val s3Client = new MockS3Client()
@@ -50,10 +50,10 @@ class S3SpaceTimeZCurveByYearSpec extends S3SpaceTimeSpec {
   lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.byYear
 }
 
-class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
+/*class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
   lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "S3SpaceTimeZCurveByFuncSpec")
-}
+}*/
 
 class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
   override val layerId = LayerId("sample-" + name, 1) // avoid test collisions

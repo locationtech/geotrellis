@@ -9,7 +9,11 @@ trait SingleBandTileCropMethods extends TileCropMethods[Tile] {
   def crop(gb: GridBounds, options: Options): Tile = {
     val cropBounds =
       if(options.clamp)
-        gb.clampTo(self)
+        gb.intersection(self) match {
+          case Some(intersection) => intersection
+          case None =>
+            throw new GeoAttrsError(s"Grid bounds do not intersect: $self crop $gb")
+        }
       else
         gb
 

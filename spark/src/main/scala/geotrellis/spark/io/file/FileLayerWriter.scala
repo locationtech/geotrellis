@@ -27,7 +27,7 @@ import java.io.File
   * @tparam K                Type of RDD Key (ex: SpatialKey)
   * @tparam V                Type of RDD Value (ex: Tile or MultiBandTile )
   * @tparam M                Type of Metadata associated with the RDD[(K,V)]
-  * 
+  *
   * @param catalogPath  The root directory of this catalog.
   * @param clobber           flag to overwrite raster if already present on File
   * @param attributeStore    AttributeStore to be used for storing raster metadata
@@ -47,10 +47,10 @@ class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
 
     val path = LayerPath(layerId)
     val metadata = rdd.metadata
-    val header = 
+    val header =
       FileLayerHeader(
         keyClass = classTag[K].toString(),
-        valueClass = classTag[K].toString(),
+        valueClass = classTag[V].toString(),
         path = path
       )
 

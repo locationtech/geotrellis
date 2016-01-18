@@ -85,6 +85,15 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
     if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
     layerFiles.foreach { f => f.delete() }
   }
+
+  def layerIds: Seq[LayerId] =
+    attributeDirectory
+      .listFiles(new WildcardFileFilter(s"*.json"): FileFilter)
+      .map { f =>
+        val List(name, zoomStr) = f.getName.split(SEP).take(2).toList
+        LayerId(name, zoomStr.toInt)
+      }
+      .distinct
 }
 
 object FileAttributeStore {

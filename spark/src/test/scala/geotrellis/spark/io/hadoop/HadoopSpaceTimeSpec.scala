@@ -12,9 +12,10 @@ import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with TestEnvironment with TestFiles
+    with TestEnvironment
+    with TestFiles
     with CoordinateSpaceTimeTests {
-  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byPattern("YMM")
+  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
   lazy val reader    = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
   lazy val deleter   = HadoopLayerDeleter(outputLocal)
@@ -30,9 +31,9 @@ class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
   lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.byYear
 }
 
-class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
+/*class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
   lazy val writerKeyIndexMethod = ZCurveKeyIndexMethod.by({ x =>  if (x < DateTime.now) 1 else 0 }, "HadoopSpaceTimeZCurveByFuncSpec")
-}
+}*/
 
 class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
   lazy val writerKeyIndexMethod = HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4)

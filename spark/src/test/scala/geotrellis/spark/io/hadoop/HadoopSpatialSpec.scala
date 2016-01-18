@@ -10,7 +10,8 @@ import geotrellis.spark.io.avro.codecs._
 
 abstract class HadoopSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-    with TestEnvironment with TestFiles
+    with TestEnvironment
+    with TestFiles
     with AllOnesTestTileTests {
   lazy val reindexerKeyIndexMethod: KeyIndexMethod[SpatialKey] = ZCurveKeyIndexMethod
 

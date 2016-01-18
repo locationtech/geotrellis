@@ -107,19 +107,20 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     arr
   }
 
-  def clampTo(cellGrid: CellGrid): GridBounds =
-    clampTo(GridBounds(cellGrid))
+  def intersection(cellGrid: CellGrid): Option[GridBounds] =
+    intersection(GridBounds(cellGrid))
 
-  def clampTo(other: GridBounds): GridBounds =
+  def intersection(other: GridBounds): Option[GridBounds] =
     if(!intersects(other)) {
-      // TODO: Return empty grid bounds
-      GridBounds(0, 0, -1, -1)
+      None
     } else {
-      GridBounds(
-        math.max(colMin, other.colMin),
-        math.max(rowMin, other.rowMin),
-        math.min(colMax, other.colMax),
-        math.min(rowMax, other.rowMax)
+      Some(
+        GridBounds(
+          math.max(colMin, other.colMin),
+          math.max(rowMin, other.rowMin),
+          math.min(colMax, other.colMax),
+          math.min(rowMax, other.rowMax)
+        )
       )
     }
 }

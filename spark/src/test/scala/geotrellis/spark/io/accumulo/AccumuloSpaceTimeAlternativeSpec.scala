@@ -11,14 +11,15 @@ import geotrellis.spark.io.avro.codecs._
 
 class AccumuloSpaceTimeAlternativeSpec 
     extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with TestEnvironment with TestFiles
+    with TestEnvironment
+    with TestFiles
     with CoordinateSpaceTimeTests
     with LayerUpdateSpaceTimeTileTests {
   override val layerId  = LayerId(name, 1)
   implicit val instance = MockAccumuloInstance()
 
   lazy val writerKeyIndexMethod    = ZCurveKeyIndexMethod.byYear
-  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byPattern("YMM")
+  lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
   lazy val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData](
     AccumuloAttributeStore(instance.connector),

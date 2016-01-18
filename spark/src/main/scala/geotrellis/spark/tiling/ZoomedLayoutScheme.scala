@@ -30,7 +30,7 @@ object ZoomedLayoutScheme {
   *                                  if the difference is resolution is less than or equal to 10% the difference
   *                                  between the resolutions of zoom level Z and zoom level Z+1.
   * */
-class ZoomedLayoutScheme(crs: CRS, tileSize: Int, resolutionThreshold: Double) extends LayoutScheme {
+class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: Double) extends LayoutScheme {
   import ZoomedLayoutScheme.EARTH_CIRCUMFERENCE
 
   /** This will calcluate the closest zoom level based on the resolution in web mercator.

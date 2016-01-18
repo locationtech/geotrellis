@@ -1,8 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.rdd.RDD
 import org.scalatest._
 import scala.reflect._
