@@ -17,8 +17,7 @@ class HadoopSlippyTileWriterSpec
     with Matchers 
     with TestEnvironment 
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("HadoopSlippyTileWriter") {
     val testPath = new File(outputLocalPath, "slippy-write-test").getPath
 

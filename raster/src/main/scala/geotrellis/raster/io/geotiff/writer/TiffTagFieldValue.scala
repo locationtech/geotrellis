@@ -49,7 +49,7 @@ object TiffTagFieldValue {
       case (TypeFloat | TypeDouble) => Some("nan")
     }
 
-  def collect(geoTiff: GeoTiff): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
+  def collect(geoTiff: GeoTiffData): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
     implicit val toBytes: ToBytes =
       if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN)
         BigEndianToBytes

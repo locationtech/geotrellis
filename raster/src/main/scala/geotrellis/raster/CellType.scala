@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,8 @@ import java.awt.image.DataBuffer
 
 sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPoint: Boolean) extends Serializable {
   def bytes = bits / 8
-  def union(other: CellType) = 
-    if (bits < other.bits) 
+  def union(other: CellType) =
+    if (bits < other.bits)
       other
     else if (bits < other.bits)
       this
@@ -30,7 +30,7 @@ sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPo
     else
       other
 
-  def intersect(other: CellType) = 
+  def intersect(other: CellType) =
     if (bits < other.bits)
       this
     else if (bits < other.bits)

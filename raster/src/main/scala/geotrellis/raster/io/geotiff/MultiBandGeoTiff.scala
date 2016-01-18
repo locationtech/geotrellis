@@ -11,9 +11,7 @@ class MultiBandGeoTiff(
   val crs: CRS,
   val tags: Tags,
   options: GeoTiffOptions
-) extends GeoTiff {
-  def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
-
+) extends GeoTiff[MultiBandTile] {
   def mapTile(f: MultiBandTile => MultiBandTile): MultiBandGeoTiff =
     MultiBandGeoTiff(f(tile), extent, crs, tags, options)
 

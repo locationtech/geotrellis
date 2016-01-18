@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,12 +48,12 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
 
   def apply(i: Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
 
-  def update(i: Int, z: Int): Unit = 
+  def update(i: Int, z: Int): Unit =
     BitArrayTile.update(array, i, z)
 
   def applyDouble(i: Int): Double = i2d(apply(i))
 
-  def updateDouble(i: Int, z: Double): Unit = 
+  def updateDouble(i: Int, z: Double): Unit =
     BitArrayTile.updateDouble(array, i, z)
 
   override def map(f: Int => Int) = {
@@ -102,24 +102,24 @@ object BitArrayTile {
   def ofDim(cols: Int, rows: Int): BitArrayTile =
     new BitArrayTile(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
 
-  def empty(cols: Int, rows: Int): BitArrayTile = 
+  def empty(cols: Int, rows: Int): BitArrayTile =
     ofDim(cols, rows)
 
-  def fill(v: Int, cols: Int, rows: Int): BitArrayTile = 
-    if(v == 0) 
+  def fill(v: Int, cols: Int, rows: Int): BitArrayTile =
+    if(v == 0)
       ofDim(cols, rows)
-    else 
+    else
       new BitArrayTile(Array.ofDim[Byte](((cols * rows) + 7) / 8).fill(1), cols, rows)
 
-  def fill(v: Boolean, cols: Int, rows: Int): BitArrayTile = 
+  def fill(v: Boolean, cols: Int, rows: Int): BitArrayTile =
     fill(if(v) 1 else 0, cols, rows)
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile = 
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile =
     BitArrayTile(bytes, cols, rows)
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): BitArrayTile = 
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): BitArrayTile =
     if(replaceNoData == 0)
       fromBytes(bytes, cols, rows)
-    else 
+    else
       ofDim(cols, rows)
 }

@@ -6,7 +6,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index._
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -27,7 +27,6 @@ import AttributeStore.Fields
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
- * @tparam C              Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
@@ -48,14 +47,14 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
     val metadata = rdd.metadata
     val header = S3LayerHeader(
       keyClass = classTag[K].toString(),
-      valueClass = classTag[K].toString(),
+      valueClass = classTag[V].toString(),
       bucket = bucket,
       key = prefix)
 
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
-    val maxWidth = maxIndexWidth(keyIndex.toIndex(keyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, encodeIndex(keyIndex.toIndex(key), maxWidth))
+    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, rddWriter.schema)
@@ -92,7 +91,7 @@ object S3LayerWriter {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat, C <: RDD[(K, V)]
+    M: JsonFormat
   ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
     apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
 

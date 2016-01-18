@@ -16,9 +16,99 @@
 
 package geotrellis
 
+import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
+import geotrellis.vector.{Geometry, Feature}
+import geotrellis.raster.rasterize._
 
-package object raster {
+package object raster
+    extends crop.Implicits
+    with merge.Implicits
+    with reproject.Implicits {
+  type SingleBandRaster = Raster[Tile]
+  type MultiBandRaster = Raster[MultiBandTile]
+
+  // Implicit method extension for core types
+
+  implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
+      with RasterExtentRasterizeMethods[RasterExtent]
+
+  implicit class withTileRasterizeMethods(val self: Tile) extends MethodExtensions[Tile]
+      with TileRasterizeMethods[Tile]
+
+  implicit class withSingleBandRasterRasterizeMethods(val self: SingleBandRaster) extends MethodExtensions[Raster[Tile]]
+      with SingleBandRasterRasterizeMethods[Tile, Raster[Tile]]
+
+  implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
+      with GeometryRasterizeMethods[Geometry]
+
+  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int])
+      extends MethodExtensions[Feature[Geometry, Int]]
+      with FeatureIntRasterizeMethods[Geometry, Feature[Geometry, Int]]
+
+  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double])
+      extends MethodExtensions[Feature[Geometry, Double]]
+      with FeatureDoubleRasterizeMethods[Geometry, Feature[Geometry, Double]]
+
+  implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
+      with crop.SingleBandTileCropMethods
+      with merge.SingleBandTileMergeMethods
+      with prototype.SingleBandTilePrototypeMethods
+      with reproject.SingleBandTileReprojectMethods
+      with resample.SingleBandTileResampleMethods
+
+  implicit class withMultiBandTileMethods(val self: MultiBandTile) extends MethodExtensions[MultiBandTile]
+      with crop.MultiBandTileCropMethods
+      with merge.MultiBandTileMergeMethods
+      with prototype.MultiBandTilePrototypeMethods
+      with reproject.MultiBandTileReprojectMethods
+      with resample.MultiBandTileResampleMethods
+
+  implicit class withSingleBandRasterMethods(val self: SingleBandRaster) extends MethodExtensions[SingleBandRaster]
+      with reproject.SingleBandRasterReprojectMethods
+      with resample.SingleBandRasterResampleMethods
+
+  implicit class withMultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
+      with reproject.MultiBandRasterReprojectMethods
+      with resample.MultiBandRasterResampleMethods
+
+  implicit class SingleBandRasterAnyRefMethods(val self: SingleBandRaster) extends AnyRef {
+    def getValueAtPoint(point: Point): Int =
+      getValueAtPoint(point.x, point.y)
+
+    def getValueAtPoint(x: Double, y: Double): Int =
+      self.tile.get(
+        self.rasterExtent.mapXToGrid(x),
+        self.rasterExtent.mapYToGrid(y)
+      )
+
+    def getDoubleValueAtPoint(point: Point): Double =
+      getDoubleValueAtPoint(point.x, point.y)
+
+    def getDoubleValueAtPoint(x: Double, y: Double): Double =
+      self.tile.getDouble(
+        self.rasterExtent.mapXToGrid(x),
+        self.rasterExtent.mapYToGrid(y)
+      )
+  }
+
+  implicit class TraversableTileExtensions(rs: Traversable[Tile]) {
+    def assertEqualDimensions(): Unit =
+      if(Set(rs.map(_.dimensions)).size != 1) {
+        val dimensions = rs.map(_.dimensions).toSeq
+        throw new GeoAttrsError("Cannot combine tiles with different dimensions." +
+          s"$dimensions are not all equal")
+      }
+  }
+
+  implicit class TileTupleExtensions(t: (Tile, Tile)) {
+    def assertEqualDimensions(): Unit =
+      if(t._1.dimensions != t._2.dimensions) {
+        throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
+          s"${t._1.dimensions} does not match ${t._2.dimensions}")
+      }
+  }
+
   type DI = DummyImplicit
 
   type IntTileMapper = macros.IntTileMapper
@@ -33,16 +123,13 @@ package object raster {
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
-  @inline final val ubyteNODATA = Byte.MinValue & 0xFF
+  @inline final val ubyteNODATA = (Byte.MinValue & 0xFF).toByte
   @inline final val shortNODATA = Short.MinValue
-  @inline final val ushortNODATA = Short.MinValue & 0xFFFF
+  @inline final val ushortNODATA = (Short.MinValue & 0xFFFF).toShort
   @inline final val NODATA = Int.MinValue
   @inline final val floatNODATA = Float.NaN
   @inline final val doubleNODATA = Double.NaN
 
-
-  // def isNoData(b: Byte): Boolean = macro NoDataMacros.isNoDataByte_impl
-  // def isNoData(s: Short): Boolean = macro NoDataMacros.isNoDataShort_impl
   def isNoData(i: Int): Boolean = macro NoDataMacros.isNoDataInt_impl
   def isNoData(f: Float): Boolean = macro NoDataMacros.isNoDataFloat_impl
   def isNoData(d: Double): Boolean = macro NoDataMacros.isNoDataDouble_impl
@@ -91,22 +178,5 @@ package object raster {
   }
   implicit class DoubleArrayFiller(val arr: Array[Double]) extends AnyVal {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
-  }
-
-  implicit class TraversableTileExtensions(rs: Traversable[Tile]) {
-    def assertEqualDimensions(): Unit =
-      if(Set(rs.map(_.dimensions)).size != 1) {
-        val dimensions = rs.map(_.dimensions).toSeq
-        throw new GeoAttrsError("Cannot combine tiles with different dimensions." +
-          s"$dimensions are not all equal")
-      }
-  }
-
-  implicit class TileTupleExtensions(t: (Tile, Tile)) {
-    def assertEqualDimensions(): Unit =
-      if(t._1.dimensions != t._2.dimensions) {
-        throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
-          s"${t._1.dimensions} does not match ${t._2.dimensions}")
-      }
   }
 }

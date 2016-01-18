@@ -36,11 +36,11 @@ trait ResampleBenchmark extends OperationBenchmark {
   def timeResample(reps: Int) = run(reps)(resample)
 
   def resample =
-    tile.reproject(extent, LatLng, WebMercator, ReprojectOptions(resamp, 0.0))
+    tile.reproject(extent, LatLng, WebMercator, Reproject.Options(resamp, 0.0))
 
   def timeResampleDouble(reps: Int) = run(reps)(resampleDouble)
 
   def resampleDouble =
-    tileDouble.reproject(extent, LatLng, WebMercator, ReprojectOptions(resamp, 0.0))
+    tileDouble.reproject(extent, LatLng, WebMercator, Reproject.Options(resamp, 0.0))
 
 }

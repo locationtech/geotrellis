@@ -26,8 +26,7 @@ import org.scalatest.FunSpec
 class AndSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers
-    with TestSparkContext {
+    with RasterRDDMatchers {
   describe("And Operation") {
     val ones = AllOnesTestFile
     val twos = AllTwosTestFile

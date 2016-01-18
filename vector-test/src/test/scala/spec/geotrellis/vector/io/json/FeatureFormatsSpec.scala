@@ -64,17 +64,17 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
          |  "features": [{
          |    "type": "Feature",
          |    "geometry": {
-         |      "type": "Point",
-         |      "coordinates": [6.0, 1.2]
-         |    },
-         |    "properties": 123
-         |  }, {
-         |    "type": "Feature",
-         |    "geometry": {
          |      "type": "LineString",
          |      "coordinates": [[1.0, 2.0], [1.0, 3.0]]
          |    },
          |    "properties": 321
+         |  }, {
+         |    "type": "Feature",
+         |    "geometry": {
+         |      "type": "Point",
+         |      "coordinates": [6.0, 1.2]
+         |    },
+         |    "properties": 123
          |  }]
          |}""".stripMargin
      )

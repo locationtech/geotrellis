@@ -6,14 +6,14 @@ import geotrellis.raster.{CellType, Tile, CellGrid}
 import geotrellis.spark.reproject._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
-import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
+import geotrellis.spark.tiling._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag
 
-abstract class IngestInputPlugin[I: IngestKey, K: ClassTag](implicit tiler: Tiler[I, K, Tile]) extends InputPlugin[K] {
+abstract class IngestInputPlugin[I: IngestKey: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends InputPlugin[K] {
   def source(props: Parameters)(implicit sc: SparkContext): RDD[(I, V)]
 
   def apply(
@@ -40,7 +40,7 @@ abstract class IngestInputPlugin[I: IngestKey, K: ClassTag](implicit tiler: Tile
           layout = layoutDefinition
         )
     }
-    val tiles = sourceTiles.tile[K](rasterMetaData, NearestNeighbor)
+    val tiles = sourceTiles.cutTiles[K](rasterMetaData, NearestNeighbor)
     zoom -> ContextRDD(tiles, rasterMetaData)
   }
 }

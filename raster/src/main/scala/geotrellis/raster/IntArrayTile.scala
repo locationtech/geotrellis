@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,14 +24,14 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Int] (each cell as an Int).
  */
-final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int) 
+final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
 
   val cellType = TypeInt
 
   def apply(i: Int) = array(i)
   def update(i: Int, z: Int) { array(i) = z }
-  
+
   override def toArray = array.clone
 
   def toBytes: Array[Byte] = {
@@ -45,15 +45,15 @@ final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
 }
 
 object IntArrayTile {
-  def ofDim(cols: Int, rows: Int): IntArrayTile = 
+  def ofDim(cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
 
-  def empty(cols: Int, rows: Int): IntArrayTile = 
+  def empty(cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
 
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
- 
+
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): IntArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val intBuffer = byteBuffer.asIntBuffer()
