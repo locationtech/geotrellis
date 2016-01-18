@@ -30,15 +30,15 @@ object GeoTiffMultiBandTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
-  ): GeoTiffMultiBandTile =    
+  ): GeoTiffMultiBandTile =
     bandType match {
-      case BitBandType => 
+      case BitBandType =>
         new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UByteBandType    => 
+      case UByteBandType    =>
         new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case ByteBandType    => 
+      case ByteBandType    =>
         new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UInt16BandType  => 
+      case UInt16BandType  =>
         new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Int16BandType   =>
         new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
@@ -467,8 +467,8 @@ abstract class GeoTiffMultiBandTile(
     })
 
   override
-  def combineDouble(f: Array[Double] => Double): Tile = 
-    _combine(_.initValueHolderDouble)({ segmentCombiner => segmentCombiner.placeValueDouble _ })({ segmentCombiner => 
+  def combineDouble(f: Array[Double] => Double): Tile =
+    _combine(_.initValueHolderDouble)({ segmentCombiner => segmentCombiner.placeValueDouble _ })({ segmentCombiner =>
       { i => segmentCombiner.setFromValuesDouble(i, f) }
     })
 
@@ -536,14 +536,14 @@ abstract class GeoTiffMultiBandTile(
   def combine(b0: Int,b1: Int)(f: (Int, Int) => Int): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
-        segmentCombiner.set(targetIndex, s1, i1, s2, i2)(f) 
+        segmentCombiner.set(targetIndex, s1, i1, s2, i2)(f)
       }
     }
 
   def combineDouble(b0: Int,b1: Int)(f: (Double, Double) => Double): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
-        segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2)(f) 
+        segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2)(f)
       }
     }
 

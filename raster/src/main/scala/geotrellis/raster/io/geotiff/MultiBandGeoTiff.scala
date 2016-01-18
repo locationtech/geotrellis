@@ -26,25 +26,25 @@ object MultiBandGeoTiff {
   /** Read a multi-band GeoTIFF file from a byte array.
     * GeoTIFF will be fully uncompressed and held in memory.
     */
-  def apply(bytes: Array[Byte]): MultiBandGeoTiff = 
+  def apply(bytes: Array[Byte]): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(bytes)
 
   /** Read a multi-band GeoTIFF file from a byte array.
     * If decompress = true, the GeoTIFF will be fully uncompressed and held in memory.
     */
-  def apply(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff = 
+  def apply(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(bytes, decompress)
 
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String): MultiBandGeoTiff = 
+  def apply(path: String): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(path)
 
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean): MultiBandGeoTiff = 
+  def apply(path: String, decompress: Boolean): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(path, decompress)
 
 

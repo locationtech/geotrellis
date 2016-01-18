@@ -24,7 +24,7 @@ trait GeoTiffSegmentCollection {
   def getSegment(i: Int): T = {
     if(i != _lastSegmentIndex) {
       _lastSegment = createSegment(i)
-      _lastSegmentIndex = i 
+      _lastSegmentIndex = i
     }
     _lastSegment
   }
