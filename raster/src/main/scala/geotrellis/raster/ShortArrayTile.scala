@@ -24,14 +24,14 @@ abstract class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 }
 
-class ShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
+final case class ShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
     extends ShortArrayTile(array, cols, rows) {
   val cellType = ShortCellType
   def apply(i: Int): Int = array(i).toInt
   def update(i: Int, z: Int) { array(i) = z.toShort }
 }
 
-class ShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)
+final case class ShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)
     extends ShortArrayTile(array, cols, rows) {
   val cellType = ShortConstantNoDataCellType
 
@@ -39,7 +39,7 @@ class ShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows:
   def update(i: Int, z: Int) { array(i) = i2s(z) }
 }
 
-class ShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
+final case class ShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
     extends ShortArrayTile(array, cols, rows)
        with UserDefinedShortNoDataConversions {
   val userDefinedShortNoDataValue = cellType.noDataValue
@@ -50,11 +50,15 @@ class ShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val ro
 
 
 object ShortArrayTile {
-  def apply(arr: Array[Short], cols: Int, rows: Int) =
-    new ShortConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int): ShortArrayTile =
+    apply(arr, cols, rows, ShortConstantNoDataCellType)
 
-  def apply(arr: Array[Short], cols: Int, rows: Int, cellType: ShortUserDefinedNoDataCellType) =
-    new ShortUserDefinedNoDataArrayTile(arr, cols, rows, cellType)
+  def apply(arr: Array[Short], cols: Int, rows: Int, cellType: CellType with ShortCells): ShortArrayTile =
+    cellType match {
+      case ShortCellType => new ShortRawArrayTile(arr, cols, rows)
+      case ShortConstantNoDataCellType => new ShortConstantNoDataArrayTile(arr, cols, rows)
+      case udct @ ShortUserDefinedNoDataCellType(_) => new ShortUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+    }
 
   def fill(v: Short, cols: Int, rows: Int): ShortArrayTile =
     new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)

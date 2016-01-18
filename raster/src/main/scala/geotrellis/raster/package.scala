@@ -22,6 +22,7 @@ import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 package object raster
     extends reproject.Implicits
     with crop.Implicits {
+  type CellSpec = CellType with NoDataHandling
   type SingleBandRaster = Raster[Tile]
   type MultiBandRaster = Raster[MultiBandTile]
 

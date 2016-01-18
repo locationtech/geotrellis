@@ -16,12 +16,18 @@
 
 package geotrellis.raster
 
+
 import java.awt.image.DataBuffer
 
-sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPoint: Boolean) extends Serializable {
+// CellType ADT
+sealed abstract class CellType extends Serializable {
+  val bits: Int
+  val isFloatingPoint: Boolean
+  val name: String
+
   def bytes = bits / 8
-  def union(other: CellType) = 
-    if (bits < other.bits) 
+  def union(other: CellType) =
+    if (bits < other.bits)
       other
     else if (bits < other.bits)
       this
@@ -46,73 +52,101 @@ sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPo
 
   override def toString: String = name
 }
-sealed abstract class RawCellType(bits: Int, name: String, isFloatingPoint: Boolean)
-    extends CellType(bits, name, isFloatingPoint)
-object RawCellType {
-  def unapply(rct: RawCellType): Option[(Int, String, Boolean)] =
-    Option(rct) map { rct =>
-      (rct.bits, rct.name, rct.isFloatingPoint)
-    }
+
+sealed trait BitCells extends CellType {
+  val bits: Int = 1
+  val isFloatingPoint: Boolean = false
+  val name = "bool"
+}
+sealed trait ByteCells extends CellType {
+  val bits: Int = 8
+  val isFloatingPoint: Boolean = false
+  val name = "int8"
+}
+sealed trait UByteCells extends ByteCells
+sealed trait ShortCells extends CellType {
+  val bits: Int = 16
+  val isFloatingPoint: Boolean = false
+  val name = "int16"
+}
+sealed trait UShortCells extends CellType {
+  val bits: Int = 16
+  val isFloatingPoint: Boolean = false
+  val name = "uint16"
+}
+sealed trait IntCells extends CellType {
+  val bits: Int = 32
+  val isFloatingPoint: Boolean = false
+  val name = "int32"
+}
+sealed trait FloatCells extends CellType {
+  val bits: Int = 32
+  val isFloatingPoint: Boolean = true
+  val name = "float32"
+}
+sealed trait DoubleCells extends CellType {
+  val bits: Int = 64
+  val isFloatingPoint: Boolean = true
+  val name = "float64"
 }
 
-sealed abstract class ConstantNoDataCellType(bits: Int, name: String, isFloatingPoint: Boolean)
-    extends CellType(bits, name, isFloatingPoint)
-object ConstantNoDataCellType {
-  def unapply(cct: ConstantNoDataCellType): Option[(Int, String, Boolean)] =
-    Option(cct) map { ndct =>
-      (cct.bits, cct.name, cct.isFloatingPoint)
-    }
+// NoData ADT
+sealed trait NoDataHandling {
+  val name: String
+  val postfix: String
 }
-
-sealed abstract class UserDefinedNoDataCellType[@specialized(Byte, Short, Int) T](bits: Int, name: String, isFloatingPoint: Boolean)
-    extends CellType(bits, name, isFloatingPoint) {
+sealed trait NoNoData extends NoDataHandling {
+  override val name = super.name + "raw"
+}
+sealed trait ConstantNoData extends NoDataHandling
+sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling {
   val noDataValue: T
-}
-object UserDefinedNoDataCellType {
-  def unapply[@specialized(Byte, Short, Int) T](udct: UserDefinedNoDataCellType[T]): Option[(Int, String, Boolean, T)] =
-    Option(udct) map { dct =>
-      (udct.bits, udct.name, udct.isFloatingPoint, udct.noDataValue)
-    }
+  override val name = super.name + "ud" + noDataValue.toString
 }
 
-// No NoData
-case object BitCellType    extends RawCellType(1, "bool", false) {
+case object BitCellType extends BitCells with NoNoData {
   override final def numBytes(size: Int) = (size + 7) / 8
 }
-case object ByteCellType   extends RawCellType(8, "int8raw", false)
-case object UByteCellType  extends RawCellType(8, "uint8raw", false)
-case object ShortCellType  extends RawCellType(16, "int16raw", false)
-case object UShortCellType extends RawCellType(16, "uint16raw", false)
 
-// Constant NoData values (the preferred, standard case in GeoTrellis)
+case object ByteCellType
+    extends ByteCells with NoNoData
 case object ByteConstantNoDataCellType
-    extends ConstantNoDataCellType(8, "int8", false)
-case object UByteConstantNoDataCellType
-    extends ConstantNoDataCellType(8, "uint8", false)
-case object ShortConstantNoDataCellType
-    extends ConstantNoDataCellType(16, "int16", false)
-case object UShortConstantNoDataCellType
-    extends ConstantNoDataCellType(16, "uint16", false)
-case object IntConstantNoDataCellType
-    extends ConstantNoDataCellType(32, "int32", false)
-//case object UIntConstantNoDataCellType
-//    extends ConstantNoDataCellType(32, "uint32", true) // We cast to float for its greater range at the cost of some accuracy
-case object FloatConstantNoDataCellType
-    extends ConstantNoDataCellType(32, "float32", true)
-case object DoubleConstantNoDataCellType
-    extends ConstantNoDataCellType(64, "float64", true)
-
-
-// User Defined
+    extends ByteCells with ConstantNoData
 case class ByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends UserDefinedNoDataCellType[Byte](8, s"int8ud${noDataValue}", false)
-case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends UserDefinedNoDataCellType[Byte](8, s"uint8ud${noDataValue}", false)
-case class ShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends UserDefinedNoDataCellType[Short](16, s"int16ud${noDataValue}", false)
-case class UShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends UserDefinedNoDataCellType[Short](16, s"uint16ud${noDataValue}", false)
+    extends ByteCells with UserDefinedNoData[Byte]
 
+case object UByteCellType
+    extends UByteCells with NoNoData
+case object UByteConstantNoDataCellType
+    extends UByteCells with ConstantNoData
+case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
+    extends UByteCells with UserDefinedNoData[Byte]
+
+case object ShortCellType
+    extends ShortCells with NoNoData
+case object ShortConstantNoDataCellType
+    extends ShortCells with ConstantNoData
+case class ShortUserDefinedNoDataCellType(noDataValue: Short)
+    extends ShortCells with UserDefinedNoData[Short]
+
+case object UShortCellType
+    extends UShortCells with NoNoData
+case object UShortConstantNoDataCellType
+    extends ShortCells with ConstantNoData
+case class UShortUserDefinedNoDataCellType(noDataValue: Short)
+    extends ShortCells with UserDefinedNoData[Short]
+
+case object IntConstantNoDataCellType
+    extends IntCells with ConstantNoData
+
+case object FloatConstantNoDataCellType
+    extends FloatCells with ConstantNoData
+
+case object DoubleConstantNoDataCellType
+    extends DoubleCells with ConstantNoData
+
+
+// No NoData
 object CellType {
   def fromAwtType(awtType: Int): CellType = awtType match {
     case DataBuffer.TYPE_BYTE => ByteConstantNoDataCellType
@@ -140,13 +174,13 @@ object CellType {
   }
 
   def toAwtType(cellType: CellType): Int = cellType match {
-    case BitCellType => DataBuffer.TYPE_BYTE
-    case ByteConstantNoDataCellType | ByteCellType | ByteUserDefinedNoDataCellType(_) => DataBuffer.TYPE_BYTE
-    case UByteConstantNoDataCellType | UByteCellType | UByteUserDefinedNoDataCellType(_) => DataBuffer.TYPE_SHORT
-    case ShortConstantNoDataCellType | ShortCellType | ShortUserDefinedNoDataCellType(_) => DataBuffer.TYPE_SHORT
-    case UShortConstantNoDataCellType | UShortCellType | UShortUserDefinedNoDataCellType(_) => DataBuffer.TYPE_INT
-    case IntConstantNoDataCellType => DataBuffer.TYPE_INT
-    case FloatConstantNoDataCellType => DataBuffer.TYPE_FLOAT
-    case DoubleConstantNoDataCellType => DataBuffer.TYPE_DOUBLE
+    case _: BitCells => DataBuffer.TYPE_BYTE
+    case _: ByteCells => DataBuffer.TYPE_BYTE
+    case _: UByteCells => DataBuffer.TYPE_BYTE
+    case _: ShortCells => DataBuffer.TYPE_SHORT
+    case _: UShortCells => DataBuffer.TYPE_SHORT
+    case _: IntCells => DataBuffer.TYPE_INT
+    case _: FloatCells => DataBuffer.TYPE_FLOAT
+    case _: DoubleCells => DataBuffer.TYPE_DOUBLE
   }
 }

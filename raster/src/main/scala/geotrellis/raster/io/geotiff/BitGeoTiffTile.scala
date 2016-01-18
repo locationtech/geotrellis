@@ -9,7 +9,7 @@ class BitGeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: CellType
+  val cellType: CellType with BitCells
 ) extends GeoTiffTile(segmentLayout, compression) with BitGeoTiffSegmentCollection {
   // We need multiband information because BitGeoTiffSegments are unique
   val hasPixelInterleave = false

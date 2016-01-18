@@ -9,31 +9,64 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Byte] (each cell as a Byte).
  */
-final case class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
+abstract class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   extends MutableArrayTile with IntBasedArrayTile {
 
-  val cellType = ByteConstantNoDataCellType
+  val cellType: CellType with ByteCells
 
-  def apply(i: Int) = b2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2b(z) }
+  def apply(i: Int): Int
+  def update(i: Int, z: Int)
 
   def toBytes: Array[Byte] = array.clone
 
-  def copy = ArrayTile(array.clone, cols, rows)
+  def copy: ByteArrayTile = ArrayTile(array.clone, cols, rows)
+}
+
+final case class ByteRawArrayTile(array: Array[Byte], val cols: Int, val rows: Int)
+    extends ByteArrayTile(array, cols, rows) {
+  val cellType = ByteCellType
+  def apply(i: Int): Int = array(i).toInt
+  def update(i: Int, z: Int) { array(i) = z.toByte }
+}
+
+final case class ByteConstantNoDataArrayTile(array: Array[Byte], val cols: Int, val rows: Int)
+    extends ByteArrayTile(array, cols, rows) {
+  val cellType = ByteConstantNoDataCellType
+  def apply(i: Int): Int = b2i(array(i))
+  def update(i: Int, z: Int) { array(i) = i2b(z) }
+}
+
+final case class ByteUserDefinedNoDataArrayTile(array: Array[Byte], val cols: Int, val rows: Int, val cellType: ByteUserDefinedNoDataCellType)
+    extends ByteArrayTile(array, cols, rows)
+       with UserDefinedByteNoDataConversions {
+  val userDefinedByteNoDataValue = cellType.noDataValue
+
+  def apply(i: Int): Int = udb2i(array(i))
+  def update(i: Int, z: Int) { array(i) = i2udb(z) }
 }
 
 object ByteArrayTile {
+  def apply(arr: Array[Byte], cols: Int, rows: Int): ByteArrayTile =
+    new ByteConstantNoDataArrayTile(arr, cols, rows)
+
+  def apply(arr: Array[Byte], cols: Int, rows: Int, cellType: CellType with ByteCells): ByteArrayTile =
+    cellType match {
+      case ByteCellType => new ByteRawArrayTile(arr, cols, rows)
+      case ByteConstantNoDataCellType => new ByteConstantNoDataArrayTile(arr, cols, rows)
+      case udct @ ByteUserDefinedNoDataCellType(_) => new ByteUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+    }
+
   def ofDim(cols: Int, rows: Int): ByteArrayTile =
-    new ByteArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
+    new ByteRawArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
 
   def empty(cols: Int, rows: Int): ByteArrayTile =
-    new ByteArrayTile(Array.ofDim[Byte](cols * rows).fill(byteNODATA), cols, rows)
+    new ByteRawArrayTile(Array.ofDim[Byte](cols * rows).fill(byteNODATA), cols, rows)
 
   def fill(v: Byte, cols: Int, rows: Int): ByteArrayTile =
-    new ByteArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
+    new ByteRawArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ByteArrayTile =
-    ByteArrayTile(bytes.clone, cols, rows)
+    new ByteRawArrayTile(bytes.clone, cols, rows)
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): ByteArrayTile =
     if(isNoData(replaceNoData))
@@ -47,6 +80,6 @@ object ByteArrayTile {
         else
           arr(i) = v
       }
-      ByteArrayTile(arr, cols, rows)
+      ByteRawArrayTile(arr, cols, rows)
     }
 }

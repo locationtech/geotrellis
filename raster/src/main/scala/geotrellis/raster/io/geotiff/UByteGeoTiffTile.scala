@@ -9,13 +9,13 @@ class UByteGeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: CellType
+  val cellSpec: CellType with UByteCells
 ) extends GeoTiffTile(segmentLayout, compression) with UByteGeoTiffSegmentCollection {
 
-  val noDataValue: Option[Int] = cellType match {
+  val noDataValue: Option[Int] = cellSpec match {
+    case UByteCellType => None
+    case UByteConstantNoDataCellType => Some(0)
     case UByteUserDefinedNoDataCellType(nd) => Some(nd)
-    case _: ConstantNoDataCellType => Some(0)
-    case _ => None
   }
 
   def mutable: MutableArrayTile = {

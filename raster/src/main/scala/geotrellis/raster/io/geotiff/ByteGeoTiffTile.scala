@@ -9,7 +9,7 @@ class ByteGeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: CellType
+  val cellType: CellType with ByteCells
 ) extends GeoTiffTile(segmentLayout, compression) with ByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Byte] = cellType match {
