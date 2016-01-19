@@ -19,7 +19,7 @@ class UInt16RawGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(b
   protected def intToUShortOut(v: Int): Short = v.toShort
   protected def doubleToUShortOut(v: Double): Short = v.toShort
 
-  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte] =
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {
       case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
@@ -51,7 +51,7 @@ class UInt16RawGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(b
         arr.toArrayByte()
     }
 
-  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte] =
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte] =
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)

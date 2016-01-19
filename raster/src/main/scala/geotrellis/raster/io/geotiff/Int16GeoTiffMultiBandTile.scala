@@ -12,14 +12,14 @@ class Int16GeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  val cellType: CellType
+  val cellType: ShortCells with NoDataHandling
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with Int16GeoTiffSegmentCollection {
 
   val noDataValue: Option[Short] = cellType match {
+    case ShortCellType => None
+    case ShortConstantNoDataCellType => Some(0)
     case ShortUserDefinedNoDataCellType(nd) => Some(nd)
-    case _: ConstantNoDataCellType => Some(shortNODATA)
-    case _ => None
   }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =

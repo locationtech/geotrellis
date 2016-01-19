@@ -18,7 +18,7 @@ class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIn
   protected def intToUByteOut(v: Int): Byte = i2udb(v)
   protected def doubleToUByteOut(v: Double): Byte = d2udb(v)
 
-  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte] =
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {
       case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
@@ -50,7 +50,7 @@ class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIn
         arr.toArrayByte()
     }
 
-  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte] =
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte] =
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)

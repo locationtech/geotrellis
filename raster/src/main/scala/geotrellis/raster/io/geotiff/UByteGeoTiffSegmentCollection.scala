@@ -13,7 +13,7 @@ trait UByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
     case None =>
       { i: Int => new UByteRawGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) if (nd == 0.toShort) =>
-      { i: Int => new UByteConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
+      { i: Int => new UByteConstantNoDataCellTypeGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) => // Cast nodata to int in this case so that we can properly compare it to the upcast unsigned byte
       { i: Int => new UByteUserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd.toByte) }
     }

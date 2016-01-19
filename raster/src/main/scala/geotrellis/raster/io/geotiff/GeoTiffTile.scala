@@ -15,35 +15,31 @@ object GeoTiffTile {
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
-    cellType: CellSpec
+    cellType: CellType
   ): GeoTiffTile = {
     cellType match {
       case ct: BitCells =>
-        new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, bct)
+        new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       // Bytes
-      case bct: ByteCells =>
-        new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, bct)
+      case ct: ByteCells =>
+        new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       // UBytes
-      case ubct: UByteCells =>
-        new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ubct)
+      case ct: UByteCells =>
+        new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       // Shorts
-      case sct: ShortCells =>
-        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, sct)
+      case ct: ShortCells =>
+        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       // UShorts
-      case usct: UShortCells =>
-        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, usct)
-      case usct @ UShortConstantNoDataCellType =>
-        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, usct)
-      case usct @ UShortUserDefinedNoDataCellType(_) =>
-        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, usct)
-      case ict @ IntConstantNoDataCellType =>
-        new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ict)
+      case ct: UShortCells =>
+        new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: IntCells =>
+        new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       //case UIntConstantNoDataCellType =>
-      //  new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, uict)
-      case fct @ FloatConstantNoDataCellType =>
-        new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, fct)
-      case dct @ DoubleConstantNoDataCellType =>
-        new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, dct)
+      //  new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: FloatCells =>
+        new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: DoubleCells =>
+        new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
     }
   }
 

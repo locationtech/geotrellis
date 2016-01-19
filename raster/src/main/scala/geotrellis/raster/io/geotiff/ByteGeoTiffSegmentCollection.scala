@@ -13,7 +13,7 @@ trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
     case None =>
       { i: Int => new ByteRawGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) if (nd == Short.MinValue) =>
-      { i: Int => new ByteConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
+      { i: Int => new ByteConstantNoDataCellTypeGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) =>
       { i: Int => new ByteUserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
     }

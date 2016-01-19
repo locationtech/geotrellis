@@ -9,7 +9,7 @@ class Float32GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: CellType with FloatCells
+  val cellType: FloatCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with Float32GeoTiffSegmentCollection {
 
   def mutable: MutableArrayTile = {

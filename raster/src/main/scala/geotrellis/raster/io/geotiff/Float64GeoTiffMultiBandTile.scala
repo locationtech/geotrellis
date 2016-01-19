@@ -12,7 +12,7 @@ class Float64GeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  val cellType: CellType
+  val cellType: DoubleCells with NoDataHandling
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with Float64GeoTiffSegmentCollection {
 

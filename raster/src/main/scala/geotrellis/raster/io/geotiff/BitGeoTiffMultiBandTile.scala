@@ -12,7 +12,7 @@ class BitGeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  val cellType: CellType
+  val cellType: BitCells with NoDataHandling
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with BitGeoTiffSegmentCollection {
 

@@ -17,7 +17,7 @@ class Int16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedSh
   protected def intToUShortOut(v: Int): Short = i2uds(v)
   protected def doubleToUShortOut(v: Double): Short = d2uds(v)
 
-  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte] =
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {
       case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
@@ -49,7 +49,7 @@ class Int16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedSh
         arr.toArrayByte()
     }
 
-  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte] =
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte] =
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)

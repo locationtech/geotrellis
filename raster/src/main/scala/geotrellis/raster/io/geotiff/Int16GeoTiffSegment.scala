@@ -18,25 +18,23 @@ abstract class Int16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
-  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte]
-  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte]
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte]
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte]
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
-      case rct: RawCellType => rct match {
-        case BitCellType =>
-          val bs = new BitSet(size)
-          cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
-          bs.toByteArray()
-        case ByteCellType | UByteCellType =>
-          val arr = Array.ofDim[Byte](size)
-          cfor(0)(_ < size, _ + 1) { i => arr(i) = s2b(get(i)) }
-          arr
-        case ShortCellType | UShortCellType =>
-          bytes
-      }
-      case cct: ConstantNoDataCellType => convertToConstantNoData(cct)
-      case udct: UserDefinedNoDataCellType[_] => convertToUserDefinedNoData(udct)
+      case BitCellType =>
+        val bs = new BitSet(size)
+        cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
+        bs.toByteArray()
+      case ByteCellType | UByteCellType =>
+        val arr = Array.ofDim[Byte](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = s2b(get(i)) }
+        arr
+      case ShortCellType | UShortCellType =>
+        bytes
+      case cct: ConstantNoData => convertToConstantNoData(cct)
+      case udct: UserDefinedNoData[_] => convertToUserDefinedNoData(udct)
     }
 
   def map(f: Int => Int): Array[Byte] = {

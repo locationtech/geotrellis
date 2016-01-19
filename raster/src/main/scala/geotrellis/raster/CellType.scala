@@ -19,14 +19,14 @@ package geotrellis.raster
 
 import java.awt.image.DataBuffer
 
-// CellType ADT
-sealed abstract class CellType extends Serializable {
+// DataType ADT
+sealed abstract class DataType extends Serializable {
   val bits: Int
   val isFloatingPoint: Boolean
   val name: String
 
   def bytes = bits / 8
-  def union(other: CellType) =
+  def union(other: DataType) =
     if (bits < other.bits)
       other
     else if (bits < other.bits)
@@ -36,7 +36,7 @@ sealed abstract class CellType extends Serializable {
     else
       other
 
-  def intersect(other: CellType) = 
+  def intersect(other: DataType) =
     if (bits < other.bits)
       this
     else if (bits < other.bits)
@@ -46,45 +46,49 @@ sealed abstract class CellType extends Serializable {
     else
       this
 
-  def contains(other: CellType) = bits >= other.bits
+  def contains(other: DataType) = bits >= other.bits
 
   def numBytes(size: Int) = bytes * size
 
   override def toString: String = name
 }
 
-sealed trait BitCells extends CellType {
+sealed trait BitCells extends DataType {
   val bits: Int = 1
   val isFloatingPoint: Boolean = false
   val name = "bool"
 }
-sealed trait ByteCells extends CellType {
+sealed trait ByteCells extends DataType {
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "int8"
 }
-sealed trait UByteCells extends ByteCells
-sealed trait ShortCells extends CellType {
+sealed trait UByteCells extends DataType {
+  val bits: Int = 8
+  val isFloatingPoint: Boolean = false
+  val name = "int8"
+}
+sealed trait ShortCells extends DataType {
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "int16"
 }
-sealed trait UShortCells extends CellType {
+sealed trait UShortCells extends DataType {
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "uint16"
 }
-sealed trait IntCells extends CellType {
+sealed trait IntCells extends DataType {
   val bits: Int = 32
   val isFloatingPoint: Boolean = false
   val name = "int32"
 }
-sealed trait FloatCells extends CellType {
+sealed trait FloatCells extends DataType {
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
   val name = "float32"
 }
-sealed trait DoubleCells extends CellType {
+sealed trait DoubleCells extends DataType {
   val bits: Int = 64
   val isFloatingPoint: Boolean = true
   val name = "float64"
@@ -93,15 +97,14 @@ sealed trait DoubleCells extends CellType {
 // NoData ADT
 sealed trait NoDataHandling {
   val name: String
-  val postfix: String
 }
-sealed trait NoNoData extends NoDataHandling {
-  override val name = super.name + "raw"
+sealed trait ConstantNoData extends NoDataHandling { dataType: DataType => }
+sealed trait NoNoData extends NoDataHandling { dataType: DataType =>
+  abstract override val name: String = dataType.name + "raw"
 }
-sealed trait ConstantNoData extends NoDataHandling
-sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling {
+sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { dataType: DataType =>
   val noDataValue: T
-  override val name = super.name + "ud" + noDataValue.toString
+  abstract override val name: String = dataType.name + "ud" + noDataValue.toString
 }
 
 case object BitCellType extends BitCells with NoNoData {
@@ -132,9 +135,9 @@ case class ShortUserDefinedNoDataCellType(noDataValue: Short)
 case object UShortCellType
     extends UShortCells with NoNoData
 case object UShortConstantNoDataCellType
-    extends ShortCells with ConstantNoData
+    extends UShortCells with ConstantNoData
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends ShortCells with UserDefinedNoData[Short]
+    extends UShortCells with UserDefinedNoData[Short]
 
 case object IntConstantNoDataCellType
     extends IntCells with ConstantNoData

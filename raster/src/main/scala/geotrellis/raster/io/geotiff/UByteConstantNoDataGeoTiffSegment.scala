@@ -8,14 +8,14 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-class UByteConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiffSegment(bytes) {
+class UByteConstantNoDataCellTypeGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiffSegment(bytes) {
   def getInt(i: Int): Int = ub2i(getRaw(i))
   def getDouble(i: Int): Double = ub2i(getRaw(i))
 
   protected def intToUByteOut(v: Int): Byte = i2ub(v)
   protected def doubleToUByteOut(v: Double): Byte = d2ub(v)
 
-  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte] =
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {
       case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
@@ -47,7 +47,7 @@ class UByteConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UByteGeoTiff
         arr.toArrayByte()
     }
 
-  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte] =
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte] =
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)

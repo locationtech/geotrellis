@@ -18,7 +18,7 @@ class UInt16GeoTiffMultiBandTile(
 
   val noDataValue: Option[Int] = cellType match {
     case UShortUserDefinedNoDataCellType(nd) => Some(nd.toInt)
-    case _: ConstantNoDataCellType => Some(0)
+    case _: ConstantNoData => Some(0)
     case _ => None
   }
 

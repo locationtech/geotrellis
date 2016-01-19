@@ -17,7 +17,7 @@ class ByteRawGeoTiffSegment(bytes: Array[Byte]) extends ByteGeoTiffSegment(bytes
   protected def intToByteOut(v: Int): Byte = v.toByte
   protected def doubleToByteOut(v: Double): Byte = v.toByte
 
-  protected def convertToConstantNoData(cellType: ConstantNoDataCellType): Array[Byte] =
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {
       case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
@@ -49,7 +49,7 @@ class ByteRawGeoTiffSegment(bytes: Array[Byte]) extends ByteGeoTiffSegment(bytes
         arr.toArrayByte()
     }
 
-  protected def convertToUserDefinedNoData(cellType: UserDefinedNoDataCellType[_]): Array[Byte] =
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte] =
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)

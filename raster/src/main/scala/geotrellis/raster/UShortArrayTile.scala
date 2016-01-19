@@ -10,6 +10,7 @@ import java.nio.ByteBuffer
  */
 abstract class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
+  val cellType: UShortCells with NoDataHandling
 
   def apply(i: Int): Int
   def update(i: Int, z: Int)
@@ -31,7 +32,7 @@ class UShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
   def update(i: Int, z: Int) { array(i) = (z & 0xFF).toShort }
 }
 
-class UShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)
+class UShortConstantNoDataCellTypeArrayTile(array: Array[Short], val cols: Int, val rows: Int)
     extends UShortArrayTile(array, cols, rows) {
   val cellType = UShortConstantNoDataCellType
 
@@ -50,16 +51,16 @@ class UShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val r
 
 object UShortArrayTile {
   def apply(arr: Array[Short], cols: Int, rows: Int) =
-    new UShortConstantNoDataArrayTile(arr, cols, rows)
+    new UShortConstantNoDataCellTypeArrayTile(arr, cols, rows)
 
   def ofDim(cols: Int, rows: Int): UShortArrayTile =
-    new UShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+    new UShortConstantNoDataCellTypeArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
 
   def empty(cols: Int, rows: Int): UShortArrayTile =
-    new UShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+    new UShortConstantNoDataCellTypeArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
 
   def fill(v: Short, cols: Int, rows: Int): UShortArrayTile =
-    new UShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+    new UShortConstantNoDataCellTypeArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
 
   private def constructShortArray(bytes: Array[Byte]): Array[Short] = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
@@ -70,7 +71,7 @@ object UShortArrayTile {
   }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): UShortArrayTile =
-    new UShortConstantNoDataArrayTile(constructShortArray(bytes), cols, rows)
+    new UShortConstantNoDataCellTypeArrayTile(constructShortArray(bytes), cols, rows)
 
   def fromBytesRaw(bytes: Array[Byte], cols: Int, rows: Int): UShortArrayTile =
     new UShortRawArrayTile(constructShortArray(bytes), cols, rows)
@@ -94,6 +95,6 @@ object UShortArrayTile {
           shortArray(i) = v
       }
 
-      new UShortConstantNoDataArrayTile(shortArray, cols, rows)
+      new UShortConstantNoDataCellTypeArrayTile(shortArray, cols, rows)
     }
 }
