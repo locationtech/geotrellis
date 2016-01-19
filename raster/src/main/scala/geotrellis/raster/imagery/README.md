@@ -22,17 +22,17 @@ Here's an example of it's usage:
     
         assert(numImages == fileListBlue.length && numImages == fileListGreen.length)
     
-        val multiBands = Array.ofDim[MultibandTile](numImages)
+        val multibands = Array.ofDim[MultibandTile](numImages)
     
         cfor(0)(_ < numImages, _ + 1) { i =>
           val red = SingleBandGeoTiff(fileListRed(i).toString).tile
           val green = SingleBandGeoTiff(fileListGreen(i).toString).tile
           val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile
     
-          multiBands(i) = ArrayMultibandTile(Array(red, green, blue))
+          multibands(i) = ArrayMultibandTile(Array(red, green, blue))
         }
     
-        val cloudless = cloudRemovalMultiband(multiBands)
+        val cloudless = cloudRemovalMultiband(multibands)
         cloudless.renderPng().write("/tmp/cloudless.png")
       }
 

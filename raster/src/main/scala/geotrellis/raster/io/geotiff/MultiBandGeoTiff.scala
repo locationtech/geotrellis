@@ -88,6 +88,6 @@ object MultibandGeoTiff {
   def unapply(mbg: MultibandGeoTiff): Option[(MultibandTile, Extent, CRS, Tags)] =
     Some((mbg.tile, mbg.extent, mbg.crs, mbg.tags))
 
-  implicit def multiBandGeoTiffToTile(mbg: MultibandGeoTiff): MultibandTile =
+  implicit def multibandGeoTiffToTile(mbg: MultibandGeoTiff): MultibandTile =
     mbg.tile
 }
