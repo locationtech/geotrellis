@@ -1,6 +1,6 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @param getCache        Optional cache function to be used when reading S3 objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
@@ -94,15 +94,15 @@ object S3LayerReader {
   ](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[K, V, M] =
     apply[K, V, M](bucket, prefix, None)
 
-  def spatial(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix)
+  def spatial(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, Tile, RasterMetadata] =
+    apply[SpatialKey, Tile, RasterMetadata](bucket, prefix)
 
-  def spatialMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix)
+  def spatialMultiband(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, MultibandTile, RasterMetadata] =
+    apply[SpatialKey, MultibandTile, RasterMetadata](bucket, prefix)
 
-  def spaceTime(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix)
+  def spaceTime(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetadata] =
+    apply[SpaceTimeKey, Tile, RasterMetadata](bucket, prefix)
 
-  def spaceTimeMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix)
+  def spaceTimeMultiband(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultibandTile, RasterMetadata] =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](bucket, prefix)
 }

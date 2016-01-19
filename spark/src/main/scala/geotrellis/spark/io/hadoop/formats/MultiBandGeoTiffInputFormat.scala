@@ -7,9 +7,9 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 
-class MultiBandGeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, MultiBandTile] {
-  def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, MultiBandTile) = {
-    val gt = MultiBandGeoTiff(bytes)
+class MultibandGeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, MultibandTile] {
+  def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, MultibandTile) = {
+    val gt = MultibandGeoTiff(bytes)
     (ProjectedExtent(gt.extent, gt.crs), gt.tile)
   }
 }

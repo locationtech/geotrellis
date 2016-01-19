@@ -3,9 +3,9 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import spire.syntax.cfor._
 
-trait MultiBandPngRenderMethods {
+trait MultibandPngRenderMethods {
 
-  val tile: MultiBandTile
+  val tile: MultibandTile
 
   /**
     * Generate a PNG image from a multiband raster.

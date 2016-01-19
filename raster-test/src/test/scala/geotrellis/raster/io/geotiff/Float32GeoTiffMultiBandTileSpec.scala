@@ -12,7 +12,7 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class Float32GeoTiffMultiBandTileSpec extends FunSpec
+class Float32GeoTiffMultibandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with TestEngine
@@ -21,13 +21,13 @@ class Float32GeoTiffMultiBandTileSpec extends FunSpec
   def p(s: String, i: String): String = 
     geoTiffPath(s"3bands/float32/3bands-${s}-${i}.tif")
 
-  describe("Float32GeoTiffMultiBandTile") {
+  describe("Float32GeoTiffMultibandTile") {
 
     // Combine all bands, int
 
     it("should combine all bands with pixel interleave, striped") {
       val tile =
-        MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
+        MultibandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combine(_.sum)
       val expected = FloatArrayTile(Array.ofDim[Float](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -37,7 +37,7 @@ class Float32GeoTiffMultiBandTileSpec extends FunSpec
 
     it("should combine all bands with pixel interleave, tiled") {
       val tile =
-        MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
+        MultibandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combine(_.sum)
       val expected = FloatArrayTile(Array.ofDim[Float](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -47,7 +47,7 @@ class Float32GeoTiffMultiBandTileSpec extends FunSpec
 
     it("should combine all bands with band interleave, striped") {
       val tile =
-        MultiBandGeoTiff.compressed(p("striped", "band")).tile
+        MultibandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combine(_.sum)
       val expected = FloatArrayTile(Array.ofDim[Float](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -57,7 +57,7 @@ class Float32GeoTiffMultiBandTileSpec extends FunSpec
 
     it("should combine all bands with band interleave, tiled") {
       val tile =
-        MultiBandGeoTiff.compressed(p("tiled", "band")).tile
+        MultibandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combine(_.sum)
       val expected = FloatArrayTile(Array.ofDim[Float](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)

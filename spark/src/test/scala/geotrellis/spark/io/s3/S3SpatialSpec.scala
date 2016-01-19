@@ -9,7 +9,7 @@ import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 
 abstract class S3SpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetadata]
     with TestEnvironment with TestFiles
     with AllOnesTestTileTests {
 
@@ -30,16 +30,16 @@ abstract class S3SpatialSpec
     override val getS3Client = () => new MockS3Client()
   }
 
-  lazy val reader    = new S3LayerReader[SpatialKey, Tile, RasterMetaData](attributeStore, rddReader, None)
-  lazy val updater   = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData](attributeStore, rddWriter, true)
+  lazy val reader    = new S3LayerReader[SpatialKey, Tile, RasterMetadata](attributeStore, rddReader, None)
+  lazy val updater   = new S3LayerUpdater[SpatialKey, Tile, RasterMetadata](attributeStore, rddWriter, true)
   lazy val deleter   = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
-  lazy val copier    = new S3LayerCopier[SpatialKey, Tile, RasterMetaData](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = S3LayerReindexer[SpatialKey, Tile, RasterMetaData](attributeStore, S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
+  lazy val copier    = new S3LayerCopier[SpatialKey, Tile, RasterMetadata](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val reindexer = S3LayerReindexer[SpatialKey, Tile, RasterMetadata](attributeStore, S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
   lazy val tiles     = new S3TileReader[SpatialKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client()
   }
   lazy val mover  = GenericLayerMover(copier, deleter)
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore, rddWriter, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetadata](attributeStore, rddWriter, bucket, prefix, true)
   lazy val sample = AllOnesTestFile
 }
 

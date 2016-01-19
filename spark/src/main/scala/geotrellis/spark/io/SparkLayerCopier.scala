@@ -27,7 +27,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+    val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
       attributeStore.readLayerAttributes[Header, M, KeyBounds[K], TI, Schema](to)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -35,7 +35,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
 
     try {
       attributeStore.writeLayerAttributes(
-        to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+        to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema
       )
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
@@ -52,7 +52,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+    val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
       attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](to)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -60,7 +60,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
 
     try {
       attributeStore.writeLayerAttributes(
-        to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+        to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema
       )
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)

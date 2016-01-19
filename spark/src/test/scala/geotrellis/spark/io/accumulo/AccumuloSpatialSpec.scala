@@ -9,7 +9,7 @@ import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 
 abstract class AccumuloSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetadata]
     with TestEnvironment
     with TestFiles
     with AllOnesTestTileTests {
@@ -18,12 +18,12 @@ abstract class AccumuloSpatialSpec
 
   lazy val reindexerKeyIndexMethod: KeyIndexMethod[SpatialKey] = ZCurveKeyIndexMethod
 
-  lazy val reader    = AccumuloLayerReader[SpatialKey, Tile, RasterMetaData](instance)
+  lazy val reader    = AccumuloLayerReader[SpatialKey, Tile, RasterMetadata](instance)
   lazy val deleter   = AccumuloLayerDeleter(instance)
-  lazy val reindexer = AccumuloLayerReindexer[SpatialKey, Tile, RasterMetaData](instance, "tiles", SocketWriteStrategy())
+  lazy val reindexer = AccumuloLayerReindexer[SpatialKey, Tile, RasterMetadata](instance, "tiles", SocketWriteStrategy())
   lazy val tiles     = AccumuloTileReader[SpatialKey, Tile](instance)
-  lazy val writer    = AccumuloLayerWriter[SpatialKey, Tile, RasterMetaData](instance, "tiles", SocketWriteStrategy())
-  lazy val copier    = AccumuloLayerCopier[SpatialKey, Tile, RasterMetaData](instance, reader, writer)
+  lazy val writer    = AccumuloLayerWriter[SpatialKey, Tile, RasterMetadata](instance, "tiles", SocketWriteStrategy())
+  lazy val copier    = AccumuloLayerCopier[SpatialKey, Tile, RasterMetadata](instance, reader, writer)
   lazy val mover     = GenericLayerMover(copier, deleter)
   lazy val sample    = AllOnesTestFile
 }

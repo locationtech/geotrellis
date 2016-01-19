@@ -9,7 +9,7 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-object GeoTiffMultiBandTile {
+object GeoTiffMultibandTile {
   def apply(
     bandType: BandType,
     compressedBytes: Array[Array[Byte]],
@@ -18,7 +18,7 @@ object GeoTiffMultiBandTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     compression: Compression
-  ): GeoTiffMultiBandTile =
+  ): GeoTiffMultibandTile =
     apply(bandType, compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, None)
 
   def apply(
@@ -30,33 +30,33 @@ object GeoTiffMultiBandTile {
     bandCount: Int,
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
-  ): GeoTiffMultiBandTile =    
+  ): GeoTiffMultibandTile =
     bandType match {
       case BitBandType => 
-        new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new BitGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case UByteBandType    => 
-        new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new UByteGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case ByteBandType    => 
-        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new ByteGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case UInt16BandType  => 
-        new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new UInt16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Int16BandType   =>
-        new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new Int16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case UInt32BandType  =>
-        new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Int32BandType   =>
-        new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new Int32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Float32BandType =>
-        new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new Float32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
       case Float64BandType =>
-        new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+        new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
     }
 
   /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
-  def apply(tile: MultiBandTile): GeoTiffMultiBandTile =
+  def apply(tile: MultibandTile): GeoTiffMultibandTile =
     apply(tile, GeoTiffOptions.DEFAULT)
 
-  def apply(tile: MultiBandTile, options: GeoTiffOptions): GeoTiffMultiBandTile = {
+  def apply(tile: MultibandTile, options: GeoTiffOptions): GeoTiffMultibandTile = {
     val bandType = BandType.forCellType(tile.cellType)
     val bandCount = tile.bandCount
 
@@ -114,7 +114,7 @@ object GeoTiffMultiBandTile {
 
 }
 
-abstract class GeoTiffMultiBandTile(
+abstract class GeoTiffMultibandTile(
   val compressedBytes: Array[Array[Byte]],
   val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
@@ -122,7 +122,7 @@ abstract class GeoTiffMultiBandTile(
   val bandCount: Int,
   val hasPixelInterleave: Boolean,
   val noDataValue: Option[Double]
-) extends MultiBandTile with GeoTiffImageData {
+) extends MultibandTile with GeoTiffImageData {
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 
@@ -209,10 +209,10 @@ abstract class GeoTiffMultiBandTile(
     }
   }
 
-  def toArrayTile(): ArrayMultiBandTile =
-    ArrayMultiBandTile((0 until bandCount map { band(_).toArrayTile }):_*)
+  def toArrayTile(): ArrayMultibandTile =
+    ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile }):_*)
 
-  def convert(newCellType: CellType): MultiBandTile = {
+  def convert(newCellType: CellType): MultibandTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
@@ -221,7 +221,7 @@ abstract class GeoTiffMultiBandTile(
       arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
     }
 
-    GeoTiffMultiBandTile(
+    GeoTiffMultibandTile(
       BandType.forCellType(newCellType),
       arr,
       compressor.createDecompressor(),
@@ -233,7 +233,7 @@ abstract class GeoTiffMultiBandTile(
     )
   }
 
-  def mapSegments(f: (GeoTiffSegment, Int) => Array[Byte]): MultiBandTile = {
+  def mapSegments(f: (GeoTiffSegment, Int) => Array[Byte]): MultibandTile = {
     val compressor = compression.createCompressor(segmentCount)
     val arr = Array.ofDim[Array[Byte]](segmentCount)
 
@@ -241,7 +241,7 @@ abstract class GeoTiffMultiBandTile(
       arr(segmentIndex) = compressor.compress(f(getSegment(segmentIndex), segmentIndex), segmentIndex)
     }
 
-    GeoTiffMultiBandTile(
+    GeoTiffMultibandTile(
       BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
@@ -253,7 +253,7 @@ abstract class GeoTiffMultiBandTile(
     )
   }
 
-  def map(b0: Int)(f: Int => Int): MultiBandTile =
+  def map(b0: Int)(f: Int => Int): MultibandTile =
     if(hasPixelInterleave) {
       mapSegments { (segment, _) =>
         segment.mapWithIndex { (i, z) =>
@@ -276,7 +276,7 @@ abstract class GeoTiffMultiBandTile(
       }
     }
 
-  def mapDouble(b0: Int)(f: Double => Double): MultiBandTile =
+  def mapDouble(b0: Int)(f: Double => Double): MultibandTile =
     if(hasPixelInterleave) {
       mapSegments { (segment, _) =>
         segment.mapDoubleWithIndex { (i, z) =>
@@ -299,7 +299,7 @@ abstract class GeoTiffMultiBandTile(
       }
     }
 
-  def map(f: (Int, Int) => Int): MultiBandTile = {
+  def map(f: (Int, Int) => Int): MultibandTile = {
     if(hasPixelInterleave) {
       mapSegments { (segment, semgentIndex) =>
         segment.mapWithIndex { (i, z) =>
@@ -315,7 +315,7 @@ abstract class GeoTiffMultiBandTile(
     }
   }
 
-  def mapDouble(f: (Int, Double) => Double): MultiBandTile = {
+  def mapDouble(f: (Int, Double) => Double): MultibandTile = {
     if(hasPixelInterleave) {
       mapSegments { (segment, semgentIndex) =>
         segment.mapDoubleWithIndex { (i, z) =>

@@ -135,7 +135,7 @@ trait RasterRDDBuilders {
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
     val (_, metadata) =
-      RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)(_.extent)
+      RasterMetadata.fromRdd(inputRdd, crs, layoutScheme)(_.extent)
 
     val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
 
@@ -150,7 +150,7 @@ trait RasterRDDBuilders {
 
     val extent = defaultCRS.worldExtent
 
-    val metaData = RasterMetaData(
+    val metadata = RasterMetadata(
       cellType,
       LayoutDefinition(extent, tileLayout),
       extent,
@@ -189,6 +189,6 @@ trait RasterRDDBuilders {
         }
     }
 
-    new ContextRDD(sc.parallelize(tmsTiles), metaData)
+    new ContextRDD(sc.parallelize(tmsTiles), metadata)
   }
 }

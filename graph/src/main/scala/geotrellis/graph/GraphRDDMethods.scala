@@ -28,9 +28,9 @@ trait GraphRDDMethods[K] {
   implicit val _sc: SpatialComponent[K]
 
   private lazy val getVertexIdByColAndRow: (Long, Long) => VertexId = {
-    val metaData = graphRDD.metaData
-    val gridBounds = metaData.gridBounds
-    val tileLayout = metaData.tileLayout
+    val metadata = graphRDD.metadata
+    val gridBounds = metadata.gridBounds
+    val tileLayout = metadata.tileLayout
 
     val (layoutCols, layoutRows) = (gridBounds.width - 1, gridBounds.height - 1)
     val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
@@ -48,19 +48,19 @@ trait GraphRDDMethods[K] {
   }
 
   private lazy val getColAndRowFromVertexId: (VertexId) => (Long, Long) = {
-    val metaData = graphRDD.metaData
-    val gridBounds = metaData.gridBounds
-    val tileLayout = metaData.tileLayout
+    val metadata = graphRDD.metadata
+    val gridBounds = metadata.gridBounds
+    val tileLayout = metadata.tileLayout
 
     val totalCols = tileLayout.tileCols * (gridBounds.width - 1)
 
     (vertexId: VertexId) => (vertexId % totalCols, vertexId / totalCols)
   }
 
-  def toRaster: RDD[(K, Tile)] with Metadata[RasterMetaData] = {
-    val metaData = graphRDD.metaData
+  def toRaster: RDD[(K, Tile)] with Metadata[RasterMetadata] = {
+    val metadata = graphRDD.metadata
 
-    val tileLayout = metaData.tileLayout
+    val tileLayout = metadata.tileLayout
 
     val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
     val tileSize = tileCols * tileRows
@@ -94,7 +94,7 @@ trait GraphRDDMethods[K] {
         (key, tile)
     }
 
-    (resRDD, metaData)
+    (resRDD, metadata)
   }
 
   def shortestPath(sources: Seq[(Long, Long)]): GraphRDD[K] =

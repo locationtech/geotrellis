@@ -9,5 +9,5 @@ import org.apache.hadoop.fs.Path
 
 class SpatialHadoopOutput extends HadoopOutput[SpatialKey] {
   def writer(props: Parameters) =
-    HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](new Path(props("path")))
+    HadoopLayerWriter[SpatialKey, Tile, RasterMetadata](new Path(props("path")))
 }

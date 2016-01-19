@@ -8,5 +8,5 @@ import geotrellis.spark.io.json._
 
 class SpaceTimeS3Output extends S3Output[SpaceTimeKey] {
   def writer(props: Parameters) =
-    S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](props("bucket"), props("key"))
+    S3LayerWriter[SpaceTimeKey, Tile, RasterMetadata](props("bucket"), props("key"))
 }

@@ -11,7 +11,7 @@ import geotrellis.spark._
 import org.joda.time.DateTime
 
 abstract class S3SpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata]
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests
@@ -32,16 +32,16 @@ abstract class S3SpaceTimeSpec
     override val getS3Client = () => new MockS3Client()
   }
 
-  lazy val reader    = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddReader, None)
-  lazy val updater   = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, true)
+  lazy val reader    = new S3LayerReader[SpaceTimeKey, Tile, RasterMetadata](attributeStore, rddReader, None)
+  lazy val updater   = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetadata](attributeStore, rddWriter, true)
   lazy val deleter   = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
-  lazy val copier    = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = S3LayerReindexer[SpaceTimeKey, Tile, RasterMetaData](attributeStore, S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
+  lazy val copier    = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetadata](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val reindexer = S3LayerReindexer[SpaceTimeKey, Tile, RasterMetadata](attributeStore, S3LayerReindexer.Options.DEFAULT.copy(getS3Client = () => new MockS3Client))
   lazy val tiles     = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client()
   }
   lazy val mover  = GenericLayerMover(copier, deleter)
-  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, bucket, prefix, true) { }
+  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetadata](attributeStore, rddWriter, bucket, prefix, true) { }
   lazy val sample = CoordinateSpaceTime
 }
 

@@ -10,5 +10,5 @@ import org.apache.hadoop.fs.Path
 
 class SpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey] {
   def writer(props: Parameters) =
-    HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](new Path(props("path")))
+    HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetadata](new Path(props("path")))
 }

@@ -8,5 +8,5 @@ import geotrellis.spark.io.json._
 
 class SpaceTimeAccumuloOutput extends AccumuloOutput[SpaceTimeKey] {
   def writer(props: Parameters) =
-    AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](getInstance(props), props("table"))
+    AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetadata](getInstance(props), props("table"))
 }

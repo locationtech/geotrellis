@@ -25,7 +25,7 @@ import java.io.File
   * Handles writing Raster RDDs and their metadata to a filesystem.
   *
   * @tparam K                Type of RDD Key (ex: SpatialKey)
-  * @tparam V                Type of RDD Value (ex: Tile or MultiBandTile )
+  * @tparam V                Type of RDD Value (ex: Tile or MultibandTile )
   * @tparam M                Type of Metadata associated with the RDD[(K,V)]
   *
   * @param catalogPath  The root directory of this catalog.
@@ -123,27 +123,27 @@ object FileLayerWriter {
     catalogPath: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpatialKey, Tile, RasterMetadata] =
+    apply[SpatialKey, Tile, RasterMetadata](catalogPath, Options(clobber, oneToOne))
 
-  def spatialMultiBand(
+  def spatialMultiband(
     catalogPath: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpatialKey, MultibandTile, RasterMetadata] =
+    apply[SpatialKey, MultibandTile, RasterMetadata](catalogPath, Options(clobber, oneToOne))
 
   def spaceTime(
     catalogPath: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpaceTimeKey, Tile, RasterMetadata] =
+    apply[SpaceTimeKey, Tile, RasterMetadata](catalogPath, Options(clobber, oneToOne))
 
-  def spaceTimeMultiBand(
+  def spaceTimeMultiband(
     catalogPath: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpaceTimeKey, MultibandTile, RasterMetadata] =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](catalogPath, Options(clobber, oneToOne))
 }

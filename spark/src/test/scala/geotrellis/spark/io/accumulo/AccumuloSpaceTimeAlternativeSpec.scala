@@ -10,7 +10,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro.codecs._
 
 class AccumuloSpaceTimeAlternativeSpec 
-    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata]
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests
@@ -21,24 +21,24 @@ class AccumuloSpaceTimeAlternativeSpec
   lazy val writerKeyIndexMethod    = ZCurveKeyIndexMethod.byYear
   lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
-  lazy val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData](
+  lazy val reader = new AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetadata](
     AccumuloAttributeStore(instance.connector),
     new SpaceTimeAccumuloRDDReader[Tile](instance))
 
   lazy val writer =
-    new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](
+    new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetadata](
       attributeStore = AccumuloAttributeStore(instance.connector),
       rddWriter = new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()),
       table = "tiles")
 
-  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData](
+  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetadata](
     AccumuloAttributeStore(instance.connector),
     new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
 
   lazy val deleter   = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
-  lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetaData](instance, reader, writer)
+  lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetadata](instance, reader, writer)
   lazy val mover     = GenericLayerMover(copier, deleter)
-  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", SocketWriteStrategy())
+  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetadata](instance, "tiles", SocketWriteStrategy())
 
   lazy val tiles  = AccumuloTileReader[SpaceTimeKey, Tile](instance)
   lazy val sample = CoordinateSpaceTime

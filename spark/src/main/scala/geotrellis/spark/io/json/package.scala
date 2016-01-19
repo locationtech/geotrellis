@@ -234,26 +234,26 @@ package object json {
       }
   }
   
-  implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
-    def write(metaData: RasterMetaData) = 
+  implicit object RasterMetadataFormat extends RootJsonFormat[RasterMetadata] {
+    def write(metadata: RasterMetadata) =
       JsObject(
-        "cellType" -> metaData.cellType.toJson,
-        "extent" -> metaData.extent.toJson,
-        "layoutDefinition" -> metaData.layout.toJson,
-        "crs" -> metaData.crs.toJson
+        "cellType" -> metadata.cellType.toJson,
+        "extent" -> metadata.extent.toJson,
+        "layoutDefinition" -> metadata.layout.toJson,
+        "crs" -> metadata.crs.toJson
       )
 
-    def read(value: JsValue): RasterMetaData =
+    def read(value: JsValue): RasterMetadata =
       value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs") match {
         case Seq(cellType, extent, layoutDefinition, crs) =>
-          RasterMetaData(
+          RasterMetadata(
             cellType.convertTo[CellType],
             layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
             crs.convertTo[CRS]
           )
         case _ =>
-          throw new DeserializationException("RasterMetaData expected")
+          throw new DeserializationException("RasterMetadata expected")
       }
   }
 

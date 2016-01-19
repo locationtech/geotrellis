@@ -11,7 +11,7 @@ import geotrellis.spark._
 import org.joda.time.DateTime
 
 abstract class AccumuloSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata]
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests
@@ -21,13 +21,13 @@ abstract class AccumuloSpaceTimeSpec
 
   lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
-  lazy val reader    = AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData](instance)
-  lazy val updater   = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData](instance, SocketWriteStrategy())
+  lazy val reader    = AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetadata](instance)
+  lazy val updater   = AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetadata](instance, SocketWriteStrategy())
   lazy val deleter   = AccumuloLayerDeleter(instance)
-  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", SocketWriteStrategy())
+  lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetadata](instance, "tiles", SocketWriteStrategy())
   lazy val tiles     = AccumuloTileReader[SpaceTimeKey, Tile](instance)
-  lazy val writer    = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles",SocketWriteStrategy())
-  lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetaData](instance, reader, writer)
+  lazy val writer    = AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetadata](instance, "tiles",SocketWriteStrategy())
+  lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetadata](instance, reader, writer)
   lazy val mover     = GenericLayerMover(copier, deleter)
   lazy val sample    = CoordinateSpaceTime
 }

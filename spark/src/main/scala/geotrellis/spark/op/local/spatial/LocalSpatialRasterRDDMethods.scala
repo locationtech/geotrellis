@@ -77,7 +77,7 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterR
   }
 
   private def _mask(masker: (Extent, Tile) => Tile): RasterRDD[K] = {
-    val mapTransform = rasterRDD.metaData.mapTransform
+    val mapTransform = rasterRDD.metadata.mapTransform
     rasterRDD.mapPairs { case (k, tile) =>
       val key = k.spatialComponent
       val tileExtent = mapTransform(key)

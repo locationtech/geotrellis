@@ -76,7 +76,7 @@ object GeoTiffReader {
           info.noDataValue
         )
       } else {
-        GeoTiffMultiBandTile(
+        GeoTiffMultibandTile(
           info.bandType,
           info.compressedBytes,
           info.decompressor,
@@ -93,23 +93,23 @@ object GeoTiffReader {
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(path: String): MultiBandGeoTiff =
-    readMultiBand(path, true)
+  def readMultiband(path: String): MultibandGeoTiff =
+    readMultiband(path, true)
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(path: String, decompress: Boolean): MultiBandGeoTiff = 
-    readMultiBand(Filesystem.slurp(path), decompress)
+  def readMultiband(path: String, decompress: Boolean): MultibandGeoTiff =
+    readMultiband(Filesystem.slurp(path), decompress)
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(bytes: Array[Byte]): MultiBandGeoTiff =
-    readMultiBand(bytes, true)
+  def readMultiband(bytes: Array[Byte]): MultibandGeoTiff =
+    readMultiband(bytes, true)
 
-  def readMultiBand(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff = {
+  def readMultiband(bytes: Array[Byte], decompress: Boolean): MultibandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
     val geoTiffTile =
-      GeoTiffMultiBandTile(
+      GeoTiffMultibandTile(
         info.bandType,
         info.compressedBytes,
         info.decompressor,
@@ -120,7 +120,7 @@ object GeoTiffReader {
         info.noDataValue
       )
 
-    new MultiBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
+    new MultibandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
   }
 
   case class GeoTiffInfo(

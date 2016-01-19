@@ -34,7 +34,7 @@ object ShortestPath {
     val res = g.pregel(initialMsg = init, activeDirection = EdgeDirection.Out)(
       vertexProgram, sendMessage, mergeMsg)
 
-    new GraphRDD(res, graphRDD.keysRDD, graphRDD.metaData)
+    new GraphRDD(res, graphRDD.keysRDD, graphRDD.metadata)
   }
 
   def apply[K](graphRDD: GraphRDD[K], source: VertexId, dest: VertexId)

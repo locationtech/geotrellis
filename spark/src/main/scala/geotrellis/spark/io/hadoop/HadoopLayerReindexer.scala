@@ -45,7 +45,7 @@ object HadoopLayerReindexer {
           case e: Exception => new LayerCopyError(from, to).initCause(e)
         }
 
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+        val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
           attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], TI, Unit](to)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -53,7 +53,7 @@ object HadoopLayerReindexer {
 
         try {
           attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+            to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema
           )
         } catch {
           case e: Exception => new LayerCopyError(from, to).initCause(e)
@@ -70,7 +70,7 @@ object HadoopLayerReindexer {
           case e: Exception => new LayerCopyError(from, to).initCause(e)
         }
 
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+        val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
           attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](to)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -78,7 +78,7 @@ object HadoopLayerReindexer {
 
         try {
           attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+            to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema
           )
         } catch {
           case e: Exception => new LayerCopyError(from, to).initCause(e)
@@ -101,7 +101,7 @@ object HadoopLayerReindexer {
           case e: Exception => new LayerCopyError(from, to).initCause(e)
         }
 
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+        val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
           attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](to)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -109,7 +109,7 @@ object HadoopLayerReindexer {
 
         try {
           attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+            to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema
           )
         } catch {
           case e: Exception => new LayerCopyError(from, to).initCause(e)

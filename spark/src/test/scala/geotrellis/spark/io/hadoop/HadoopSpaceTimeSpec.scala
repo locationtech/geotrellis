@@ -11,19 +11,19 @@ import geotrellis.spark.io.avro.codecs._
 import org.joda.time.DateTime
 
 abstract class HadoopSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata]
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests {
   lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
-  lazy val reader    = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
+  lazy val reader    = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetadata](outputLocal)
   lazy val deleter   = HadoopLayerDeleter(outputLocal)
-  lazy val copier    = HadoopLayerCopier[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
-  lazy val mover     = HadoopLayerMover[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
+  lazy val copier    = HadoopLayerCopier[SpaceTimeKey, Tile, RasterMetadata](outputLocal)
+  lazy val mover     = HadoopLayerMover[SpaceTimeKey, Tile, RasterMetadata](outputLocal)
+  lazy val reindexer = HadoopLayerReindexer[SpaceTimeKey, Tile, RasterMetadata](outputLocal)
   lazy val tiles     = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
-  lazy val writer    = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
+  lazy val writer    = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetadata](outputLocal)
   lazy val sample    = CoordinateSpaceTime
 }
 

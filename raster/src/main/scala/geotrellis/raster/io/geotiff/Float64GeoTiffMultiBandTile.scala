@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.compression._
 
 import java.nio.ByteBuffer
 
-class Float64GeoTiffMultiBandTile(
+class Float64GeoTiffMultibandTile(
   compressedBytes: Array[Array[Byte]],
   decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
@@ -13,7 +13,7 @@ class Float64GeoTiffMultiBandTile(
   bandCount: Int,
   hasPixelInterleave: Boolean,
   noDataValue: Option[Double]
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
     with Float64GeoTiffSegmentCollection {
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =

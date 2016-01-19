@@ -1,6 +1,6 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -20,7 +20,7 @@ import scala.reflect._
  * @param clobber         flag to overwrite raster if already present on S3
  * @param attributeStore  AttributeStore to be used for storing raster metadata
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
@@ -111,30 +111,30 @@ object S3LayerWriter {
     prefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, Tile, RasterMetadata] =
+    apply[SpatialKey, Tile, RasterMetadata](bucket, prefix, Options(clobber, oneToOne))
 
-  def spatialMultiBand(
+  def spatialMultiband(
     bucket: String,
     prefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, MultibandTile, RasterMetadata] =
+    apply[SpatialKey, MultibandTile, RasterMetadata](bucket, prefix, Options(clobber, oneToOne))
 
   def spaceTime(
     bucket: String,
     prefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetadata] =
+    apply[SpaceTimeKey, Tile, RasterMetadata](bucket, prefix, Options(clobber, oneToOne))
 
-  def spaceTimeMultiBand(
+  def spaceTimeMultiband(
     bucket: String,
     prefix: String,
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, MultibandTile, RasterMetadata] =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](bucket, prefix, Options(clobber, oneToOne))
 }

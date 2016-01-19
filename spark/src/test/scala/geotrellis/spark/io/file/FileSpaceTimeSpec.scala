@@ -10,19 +10,19 @@ import geotrellis.spark.io.avro.codecs._
 import com.github.nscala_time.time.Imports._
 
 abstract class FileSpaceTimeSpec
-    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata]
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests {
   lazy val reindexerKeyIndexMethod = ZCurveKeyIndexMethod.byMonth
 
-  lazy val reader    = FileLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val deleter   = FileLayerDeleter[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val copier    = FileLayerCopier[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val mover     = FileLayerMover[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val reindexer = FileLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val reader    = FileLayerReader[SpaceTimeKey, Tile, RasterMetadata](outputLocalPath)
+  lazy val deleter   = FileLayerDeleter[SpaceTimeKey, Tile, RasterMetadata](outputLocalPath)
+  lazy val copier    = FileLayerCopier[SpaceTimeKey, Tile, RasterMetadata](outputLocalPath)
+  lazy val mover     = FileLayerMover[SpaceTimeKey, Tile, RasterMetadata](outputLocalPath)
+  lazy val reindexer = FileLayerReindexer[SpaceTimeKey, Tile, RasterMetadata](outputLocalPath)
   lazy val tiles     = FileTileReader[SpaceTimeKey, Tile](outputLocalPath)
-  lazy val writer    = FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val writer    = FileLayerWriter[SpaceTimeKey, Tile, RasterMetadata](outputLocalPath)
   lazy val sample    = CoordinateSpaceTime
 }
 

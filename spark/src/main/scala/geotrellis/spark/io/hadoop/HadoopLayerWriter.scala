@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
@@ -31,11 +31,11 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
         valueClass = classTag[V].toString(),
         path = layerPath
       )
-    val metaData = rdd.metadata
+    val metadata = rdd.metadata
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
+      attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, Option.empty[Schema])
       // TODO: Writers need to handle Schema changes
 
       rddWriter.write(rdd, layerPath, keyIndex)
@@ -69,15 +69,15 @@ object HadoopLayerWriter {
     apply(rootPath, new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath)
+    apply[SpatialKey, Tile, RasterMetadata](rootPath)
 
-  def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
+  def spatialMultiband(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultibandTile, RasterMetadata](rootPath)
 
   def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
+    apply[SpaceTimeKey, Tile, RasterMetadata](rootPath)
 
-  def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
+  def spaceTimeMultiband(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](rootPath)
 
 }

@@ -13,7 +13,7 @@ case class AccumuloLayerHeader(
 )
 
 object AccumuloLayerHeader {
-  implicit object AccumuloLayerMetaDataFormat extends RootJsonFormat[AccumuloLayerHeader] {
+  implicit object AccumuloLayerMetadataFormat extends RootJsonFormat[AccumuloLayerHeader] {
     def write(md: AccumuloLayerHeader) =
       JsObject(
         "keyClass" -> JsString(md.keyClass),
