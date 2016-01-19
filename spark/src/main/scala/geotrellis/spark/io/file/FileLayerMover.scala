@@ -61,12 +61,6 @@ object FileLayerMover {
         sourceAttributeStore.clearCache()
         targetAttributeStore.clearCache()
       }
-
-      def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
-        move(from, to, implicitly[JsonFormat[I]])
-
-      def move(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-        move(from, to)
     }
 
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerMover[LayerId, K] =

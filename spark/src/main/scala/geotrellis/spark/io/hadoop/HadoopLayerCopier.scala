@@ -34,12 +34,6 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
       to, header.copy(path = newPath), metadata, keyBounds, keyIndex, Option.empty[Schema]
     )
   }
-
-  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[FI], keyIndex: TI): Unit =
-    copy(from, to, format)
-
-  def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-    copy(from ,to)
 }
 
 object HadoopLayerCopier {

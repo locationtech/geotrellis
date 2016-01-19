@@ -1,17 +1,19 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.io.json._
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.json._
+
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
+
 import scala.reflect._
 
 abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
    val attributeStore: AttributeStore[JsonFormat],
    layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
-   layerWriter: Writer[LayerId, K, RDD[(K, V)] with Metadata[M]]) extends LayerCopier[LayerId, K] {
+   layerWriter: Writer[LayerId, K, RDD[(K, V)] with Metadata[M]]) extends GenericLayerCopier[LayerId, K] {
 
   def headerUpdate(id: LayerId, header: Header): Header
 
@@ -75,24 +77,6 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }
 
-    try {
-      layerWriter.write(to, layerReader.read(from, implicitly[JsonFormat[I]]), keyIndex)
-    } catch {
-      case e: Exception => new LayerCopyError(from, to).initCause(e)
-    }
-
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](to)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
-    }
-
-    try {
-      attributeStore.writeLayerAttributes(
-        to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
-      )
-    } catch {
-      case e: Exception => new LayerCopyError(from, to).initCause(e)
-    }
+    copy[I, I](from, to, format, keyIndex)
   }
 }

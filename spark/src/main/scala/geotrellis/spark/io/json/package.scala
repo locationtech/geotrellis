@@ -18,9 +18,6 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 package object json {
-  /*implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
-    new JavaSerializationJsonFormat[index.KeyIndex[K]]*/
-
   implicit object HilbertSpatialKeyIndexFormat extends RootJsonFormat[HilbertSpatialKeyIndex] {
     def write(obj: HilbertSpatialKeyIndex): JsValue =
       JsObject(

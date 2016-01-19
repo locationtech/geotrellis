@@ -36,12 +36,6 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
     attributeStore.delete(from)
     attributeStore.clearCache()
   }
-
-  def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, keyIndex: I): Unit =
-    move(from, to)
-
-  def move(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-    move(from, to)
 }
 
 object HadoopLayerMover {

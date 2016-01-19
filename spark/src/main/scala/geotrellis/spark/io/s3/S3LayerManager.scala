@@ -24,7 +24,7 @@ class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext
     copier.copy(from, to)
   }
 
-  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat, I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId): Unit = {
+  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](from: LayerId, to: LayerId): Unit = {
     val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
     val mover = S3LayerMover[K, V, M](attributeStore, header.bucket, header.key)
     mover.move(from, to)

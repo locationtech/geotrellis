@@ -8,7 +8,7 @@ import spray.json.JsonFormat
 abstract class GenericLayerReindexer[ID, K](
   layerDeleter: LayerDeleter[ID],
   layerMover  : LayerMover[ID, K],
-  layerCopier : LayerCopier[ID, K]) extends LayerReindexer[ID, K] {
+  layerCopier : GenericLayerCopier[ID, K]) extends LayerReindexer[ID, K] {
 
   def getTmpId(id: ID): ID
 
@@ -16,7 +16,7 @@ abstract class GenericLayerReindexer[ID, K](
     val tmpId = getTmpId(id)
     layerCopier.copy(id, tmpId, keyIndex)
     layerDeleter.delete(id)
-    layerMover.move(tmpId, id, keyIndex)
+    layerMover.move(tmpId, id, implicitly[JsonFormat[I]])
   }
 
   def reindex[I <: KeyIndex[K]: JsonFormat](id: ID, format: JsonFormat[I]): Unit = {
@@ -30,13 +30,13 @@ abstract class GenericLayerReindexer[ID, K](
     val tmpId = getTmpId(id)
     layerCopier.copy(id, tmpId, keyIndexMethod)
     layerDeleter.delete(id)
-    layerMover.move(tmpId, id, keyIndexMethod)
+    layerMover.move(tmpId, id)
   }
 }
 
 object GenericLayerReindexer {
   def apply[K](layerDeleter: LayerDeleter[LayerId],
-            layerCopier : LayerCopier[LayerId, K],
+            layerCopier : GenericLayerCopier[LayerId, K],
             layerMover  : LayerMover[LayerId, K]): LayerReindexer[LayerId, K] =
     new GenericLayerReindexer[LayerId, K](layerDeleter, layerMover, layerCopier) {
       def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-${DateTime.now.getMillis}")

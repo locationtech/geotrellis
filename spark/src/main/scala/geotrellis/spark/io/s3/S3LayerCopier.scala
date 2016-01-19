@@ -49,12 +49,6 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
       ), metadata, keyBounds, keyIndex, schema
     )
   }
-
-  def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[FI], keyIndex: TI): Unit =
-    copy(from, to, format)
-
-  def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-    copy(from, to)
 }
 
 object S3LayerCopier {

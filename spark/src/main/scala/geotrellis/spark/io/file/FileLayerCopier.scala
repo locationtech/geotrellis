@@ -58,13 +58,6 @@ object FileLayerCopier {
         // Clear the target cache
         targetAttributeStore.clearCache()
       }
-
-      def copy[FI <: KeyIndex[K]: JsonFormat, TI <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[FI], keyIndex: TI): Unit =
-        copy(from, to, format)
-
-      def copy(from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
-        copy(from, to)
-
     }
 
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerCopier[LayerId, K] =
