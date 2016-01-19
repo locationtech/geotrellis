@@ -94,12 +94,12 @@ package object spark
     extends ContextRDDMethods[K, V, M](rdd)
 
   implicit class withRasterRDDMethods[K](val self: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends BaseRasterRDDMethods[K]
+    extends RasterRDDMethods[K]
 
   implicit class withSpatialRasterRDDMethods(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
 
   implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends BaseMultiBandRasterRDDMethods[K]
+    extends MultiBandRasterRDDMethods[K]
 
   implicit class withIngestKeyRDDMethods[K: IngestKey, V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =

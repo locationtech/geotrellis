@@ -4,7 +4,7 @@ import geotrellis.raster._
 import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
-abstract class BaseRasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+abstract class RasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
   def convert(cellType: CellType) =
     ContextRDD(
       self.mapValues(_.convert(cellType)),
