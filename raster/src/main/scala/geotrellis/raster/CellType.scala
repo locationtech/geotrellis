@@ -20,75 +20,75 @@ package geotrellis.raster
 import java.awt.image.DataBuffer
 
 // DataType ADT
-sealed abstract class DataType extends Serializable {
+sealed abstract class DataType extends Serializable { self: CellType =>
   val bits: Int
   val isFloatingPoint: Boolean
   val name: String
 
   def bytes = bits / 8
-  def union(other: DataType) =
+  def union(other: CellType) =
     if (bits < other.bits)
       other
     else if (bits < other.bits)
-      this
+      self
     else if (isFloatingPoint && !other.isFloatingPoint)
-      this
+      self
     else
       other
 
-  def intersect(other: DataType) =
+  def intersect(other: CellType) =
     if (bits < other.bits)
-      this
+      self
     else if (bits < other.bits)
       other
     else if (isFloatingPoint && !other.isFloatingPoint)
       other
     else
-      this
+      self
 
-  def contains(other: DataType) = bits >= other.bits
+  def contains(other: CellType) = bits >= other.bits
 
   def numBytes(size: Int) = bytes * size
 
   override def toString: String = name
 }
 
-sealed trait BitCells extends DataType {
+sealed trait BitCells extends DataType { self: CellType =>
   val bits: Int = 1
   val isFloatingPoint: Boolean = false
   val name = "bool"
 }
-sealed trait ByteCells extends DataType {
+sealed trait ByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "int8"
 }
-sealed trait UByteCells extends DataType {
+sealed trait UByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "int8"
 }
-sealed trait ShortCells extends DataType {
+sealed trait ShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "int16"
 }
-sealed trait UShortCells extends DataType {
+sealed trait UShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "uint16"
 }
-sealed trait IntCells extends DataType {
+sealed trait IntCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = false
   val name = "int32"
 }
-sealed trait FloatCells extends DataType {
+sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
   val name = "float32"
 }
-sealed trait DoubleCells extends DataType {
+sealed trait DoubleCells extends DataType { self: CellType =>
   val bits: Int = 64
   val isFloatingPoint: Boolean = true
   val name = "float64"

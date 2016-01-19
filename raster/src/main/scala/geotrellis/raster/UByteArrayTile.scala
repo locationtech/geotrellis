@@ -42,13 +42,16 @@ final case class UByteUserDefinedNoDataArrayTile(array: Array[Byte], val cols: I
 
 object UByteArrayTile {
   def apply(arr: Array[Byte], cols: Int, rows: Int): UByteArrayTile =
-    UByteArrayTile(arr, cols, rows, UByteConstantNoDataCellType)
+    new UByteConstantNoDataArrayTile(arr, cols, rows)
 
   def apply(arr: Array[Byte], cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): UByteArrayTile =
     cellType match {
-      case UByteCellType => new UByteRawArrayTile(arr, cols, rows)
-      case UByteConstantNoDataCellType => new UByteConstantNoDataArrayTile(arr, cols, rows)
-      case udct @ UByteUserDefinedNoDataCellType(_) => new UByteUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+      case UByteCellType =>
+        new UByteRawArrayTile(arr, cols, rows)
+      case UByteConstantNoDataCellType =>
+        new UByteConstantNoDataArrayTile(arr, cols, rows)
+      case udct @ UByteUserDefinedNoDataCellType(_) =>
+        new UByteUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
   def ofDim(cols: Int, rows: Int): UByteArrayTile =
@@ -60,22 +63,18 @@ object UByteArrayTile {
   def fill(v: Byte, cols: Int, rows: Int): UByteArrayTile =
     new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
 
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): UByteArrayTile =
+    fromBytes(bytes, cols, rows, UByteConstantNoDataCellType)
+
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): UByteArrayTile =
     cellType match {
-      case UByteCellType => new UByteRawArrayTile(bytes.clone, cols, rows)
-      case UByteConstantNoDataCellType => new UByteConstantNoDataArrayTile(bytes.clone, cols, rows)
-      case udct @ UByteUserDefinedNoDataCellType(_) => new UByteUserDefinedNoDataArrayTile(bytes.clone, cols, rows, udct)
+      case UByteCellType =>
+        new UByteRawArrayTile(bytes.clone, cols, rows)
+      case UByteConstantNoDataCellType =>
+        new UByteConstantNoDataArrayTile(bytes.clone, cols, rows)
+      case udct @ UByteUserDefinedNoDataCellType(_) =>
+        new UByteUserDefinedNoDataArrayTile(bytes.clone, cols, rows, udct)
     }
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): ByteArrayTile =
-    cellType match {
-      case UByteCellType => new UByteRawArrayTile(bytes.clone, cols, rows)
-      case UByteConstantNoDataCellType => fromBytes(bytes, cols, rows)
-      case udct @ UByteUserDefinedNoDataCellType(_) => new UByteUserDefinedNoDataArrayTile(bytes.clone, cols, rows, udct)
-    }
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): UByteArrayTile =
-    UByteArrayTile(bytes.clone, cols, rows)
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): UByteArrayTile = {
     if(isNoData(replaceNoData))
