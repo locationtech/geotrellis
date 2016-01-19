@@ -33,10 +33,10 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 
-package object spark 
+package object spark
     extends buffer.Implicits
     with merge.Implicits
-    with reproject.Implicits 
+    with reproject.Implicits
     with tiling.Implicits {
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
@@ -93,12 +93,12 @@ package object spark
   implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
     extends ContextRDDMethods[K, V, M](rdd)
 
-  implicit class withRasterRDDMethods[K](val rasterRDD: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+  implicit class withRasterRDDMethods[K](val self: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends BaseRasterRDDMethods[K]
 
   implicit class withSpatialRasterRDDMethods(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
 
-  implicit class withMultiBandRasterRDDMethods[K](val rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+  implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends BaseMultiBandRasterRDDMethods[K]
 
   implicit class withIngestKeyRDDMethods[K: IngestKey, V <: CellGrid](val rdd: RDD[(K, V)]) {
@@ -114,10 +114,5 @@ package object spark
   implicit class TileTuple[K](tup: (K, Tile)) {
     def id: K = tup._1
     def tile: Tile = tup._2
-  }
-
-  implicit class RDDTraversableExtensions[K: ClassTag, V, M](rs: Traversable[RDD[(K, Tile)] with Metadata[M]]) {
-    def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RDD[(K, Tile)] with Metadata[M] =
-      rs.head.combinePairs(rs.tail)(f)
   }
 }

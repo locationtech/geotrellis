@@ -1,10 +1,11 @@
 package geotrellis.spark.op.local.temporal
 
+import geotrellis.raster._
 import geotrellis.spark._
-
+import org.apache.spark.rdd.RDD
 import org.joda.time.{DateTimeZone, DateTime}
-
 import reflect.ClassTag
+
 
 object TemporalWindowHelper {
 
@@ -37,7 +38,7 @@ object TemporalWindowHelper {
 }
 
 case class TemporalWindowState[K](
-  rasterRDD: RasterRDD[K],
+  rdd: RDD[(K, Tile)],
   method: Int,
   windowSize: Option[Int] = None,
   unit: Option[Int] = None,
@@ -48,6 +49,7 @@ case class TemporalWindowState[K](
     _tc: TemporalComponent[K]) {
 
   import TemporalWindowHelper._
+  import Implicits._
 
   private lazy val state =
     if (windowSize.isEmpty && unit.isEmpty) 0
@@ -65,13 +67,13 @@ case class TemporalWindowState[K](
     if (state != 1) badState
     else copy(start = Some(s))
 
-  def to(to: DateTime): RasterRDD[K] =
+  def to(to: DateTime) =
     if (state != 2) badState
     else method match {
-      case Average => rasterRDD.temporalMean(windowSize.get, unit.get, start.get, to)
-      case Minimum => rasterRDD.temporalMin(windowSize.get, unit.get, start.get, to)
-      case Maximum => rasterRDD.temporalMax(windowSize.get, unit.get, start.get, to)
-      case Variance => rasterRDD.temporalVariance(windowSize.get, unit.get, start.get, to)
+      case Average => rdd.temporalMean(windowSize.get, unit.get, start.get, to)
+      case Minimum => rdd.temporalMin(windowSize.get, unit.get, start.get, to)
+      case Maximum => rdd.temporalMax(windowSize.get, unit.get, start.get, to)
+      case Variance => rdd.temporalVariance(windowSize.get, unit.get, start.get, to)
       case _ => throw new IllegalStateException("Bad method $method.")
     }
 
