@@ -37,7 +37,17 @@ package object spark
     extends buffer.Implicits
     with merge.Implicits
     with reproject.Implicits
-    with tiling.Implicits {
+    with tiling.Implicits
+    with op.Implicits
+    with op.local.Implicits
+    with op.local.spatial.Implicits
+    with op.local.temporal.Implicits
+    with op.stats.Implicits
+    with op.zonal.Implicits
+    with op.zonal.summary.Implicits
+    with op.elevation.Implicits
+    with op.focal.Implicits
+{
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
   object RasterRDD {

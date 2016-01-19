@@ -1,6 +1,7 @@
 package geotrellis.spark.op.local
 
 import geotrellis.raster._
+import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Min
 
