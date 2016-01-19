@@ -117,7 +117,7 @@ package object json {
     def write(obj: ZSpaceTimeKeyIndex): JsValue =
       JsObject(
         "id"   -> obj.id.toJson,
-        "args" -> JsObject("resolution" -> obj.resolution.toJson)
+        "args" -> JsObject("temporalResolution" -> obj.temporalResolution.toJson)
       )
 
     def read(value: JsValue): ZSpaceTimeKeyIndex =
@@ -125,9 +125,9 @@ package object json {
         case Seq(JsString(id), args) => {
           if (id != KeyIndex.zSpaceTimeKeyIndex)
             throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")
-          args.convertTo[JsObject].getFields("resolution") match {
-            case Seq(resolution) =>
-              ZSpaceTimeKeyIndex.byMillisecondResolution(resolution.convertTo[Long])
+          args.convertTo[JsObject].getFields("temporalResolution") match {
+            case Seq(temporalResolution) =>
+              ZSpaceTimeKeyIndex.byMillisecondResolution(temporalResolution.convertTo[Long])
             case _ =>
               throw new DeserializationException(
                 "Wrong KeyIndex constructor arguments: ZSpaceTimeKeyIndex constructor arguments expected.")

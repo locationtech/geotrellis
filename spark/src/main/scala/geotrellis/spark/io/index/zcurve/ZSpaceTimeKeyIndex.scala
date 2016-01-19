@@ -3,8 +3,6 @@ package geotrellis.spark.io.index.zcurve
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 
-import com.github.nscala_time.time.Imports._
-
 object ZSpaceTimeKeyIndex {
   val MILLIS_PER_SECOND = 1000l
   val MILLIS_PER_MINUTE = MILLIS_PER_SECOND * 60
@@ -12,9 +10,6 @@ object ZSpaceTimeKeyIndex {
   val MILLIS_PER_DAY    = MILLIS_PER_HOUR * 24
   val MILLIS_PER_MONTH  = MILLIS_PER_DAY * 30
   val MILLIS_PER_YEAR   = MILLIS_PER_DAY * 365
-
-  def apply(timeToGrid: DateTime => Int): KeyIndex[SpaceTimeKey] =
-    new ZSpaceTimeKeyIndex({ key => timeToGrid(key.time) }, 0)
 
   def byYear(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_YEAR)
 
@@ -34,7 +29,7 @@ object ZSpaceTimeKeyIndex {
     new ZSpaceTimeKeyIndex({ key => (key.instant / millis).toInt }, millis)
 }
 
-class ZSpaceTimeKeyIndex(toGrid: SpaceTimeKey => Int, val resolution: Long) extends KeyIndex[SpaceTimeKey] {
+class ZSpaceTimeKeyIndex(toGrid: SpaceTimeKey => Int, val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
   private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, toGrid(key))
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z
