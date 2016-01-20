@@ -42,7 +42,7 @@ final case class UByteUserDefinedNoDataArrayTile(array: Array[Byte], val cols: I
 
 object UByteArrayTile {
   def apply(arr: Array[Byte], cols: Int, rows: Int): UByteArrayTile =
-    new UByteConstantNoDataArrayTile(arr, cols, rows)
+    apply(arr, cols, rows, UByteConstantNoDataCellType)
 
   def apply(arr: Array[Byte], cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): UByteArrayTile =
     cellType match {
@@ -55,13 +55,40 @@ object UByteArrayTile {
     }
 
   def ofDim(cols: Int, rows: Int): UByteArrayTile =
-    new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
+    ofDim(cols, rows, UByteConstantNoDataCellType)
+
+  def ofDim(cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): UByteArrayTile =  cellType match {
+    case UByteCellType =>
+      new UByteRawArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
+    case UByteConstantNoDataCellType =>
+      new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
+    case udct @ UByteUserDefinedNoDataCellType(_) =>
+      new UByteUserDefinedNoDataArrayTile(Array.ofDim[Byte](cols * rows), cols, rows, udct)
+  }
 
   def empty(cols: Int, rows: Int): UByteArrayTile =
-    new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
+    empty(cols, rows, UByteConstantNoDataCellType)
+
+  def empty(cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): UByteArrayTile = cellType match {
+    case UByteCellType =>
+      new UByteRawArrayTile(Array.ofDim[Byte](cols * rows).fill(ubyteNODATA), cols, rows)
+    case UByteConstantNoDataCellType =>
+      new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows).fill(ubyteNODATA), cols, rows)
+    case udct @ UByteUserDefinedNoDataCellType(nd) =>
+      new UByteUserDefinedNoDataArrayTile(Array.ofDim[Byte](cols * rows).fill(nd), cols, rows, udct)
+  }
 
   def fill(v: Byte, cols: Int, rows: Int): UByteArrayTile =
-    new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
+    fill(v, cols, rows, UByteConstantNoDataCellType)
+
+  def fill(v: Byte, cols: Int, rows: Int, cellType: UByteCells with NoDataHandling): UByteArrayTile = cellType match {
+    case UByteCellType =>
+      new UByteRawArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
+    case UByteConstantNoDataCellType =>
+      new UByteConstantNoDataArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
+    case udct @ UByteUserDefinedNoDataCellType(_) =>
+      new UByteUserDefinedNoDataArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows, udct)
+  }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): UByteArrayTile =
     fromBytes(bytes, cols, rows, UByteConstantNoDataCellType)

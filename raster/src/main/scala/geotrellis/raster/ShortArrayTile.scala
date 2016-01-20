@@ -53,21 +53,50 @@ object ShortArrayTile {
   def apply(arr: Array[Short], cols: Int, rows: Int): ShortArrayTile =
     apply(arr, cols, rows, ShortConstantNoDataCellType)
 
-  def apply(arr: Array[Short], cols: Int, rows: Int, cellType: CellType with ShortCells): ShortArrayTile =
-    cellType match {
-      case ShortCellType => new ShortRawArrayTile(arr, cols, rows)
-      case ShortConstantNoDataCellType => new ShortConstantNoDataArrayTile(arr, cols, rows)
-      case udct @ ShortUserDefinedNoDataCellType(_) => new ShortUserDefinedNoDataArrayTile(arr, cols, rows, udct)
-    }
-
-  def fill(v: Short, cols: Int, rows: Int): ShortArrayTile =
-    new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile = cellType match {
+    case ShortCellType =>
+      new ShortRawArrayTile(arr, cols, rows)
+    case ShortConstantNoDataCellType =>
+      new ShortConstantNoDataArrayTile(arr, cols, rows)
+    case udct @ ShortUserDefinedNoDataCellType(_) =>
+      new ShortUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+  }
 
   def ofDim(cols: Int, rows: Int): ShortArrayTile =
-    new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+    ofDim(cols, rows, ShortConstantNoDataCellType)
+
+  def ofDim(cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile = cellType match {
+    case ShortCellType =>
+      new ShortRawArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+    case ShortConstantNoDataCellType =>
+      new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+    case udct @ ShortUserDefinedNoDataCellType(_) =>
+      new ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows, udct)
+  }
+
+  def fill(v: Short, cols: Int, rows: Int): ShortArrayTile =
+    fill(v, cols, rows, ShortConstantNoDataCellType)
+
+  def fill(v: Short, cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile = cellType match {
+    case ShortCellType =>
+      new ShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+    case ShortConstantNoDataCellType =>
+      new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+    case udct @ ShortUserDefinedNoDataCellType(_) =>
+      new ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows, udct)
+  }
 
   def empty(cols: Int, rows: Int): ShortArrayTile =
-    new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
+    empty(cols, rows, ShortConstantNoDataCellType)
+
+  def empty(cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile = cellType match {
+    case ShortCellType =>
+      new ShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
+    case ShortConstantNoDataCellType =>
+      new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
+    case udct @ ShortUserDefinedNoDataCellType(_) =>
+      new ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows, udct)
+  }
 
   private def constructShortArray(bytes: Array[Byte]): Array[Short] = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
@@ -83,11 +112,11 @@ object ShortArrayTile {
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile =
     cellType match {
       case ShortCellType =>
-        ShortRawArrayTile(constructShortArray(bytes.clone), cols, rows)
+        new ShortRawArrayTile(constructShortArray(bytes.clone), cols, rows)
       case ShortConstantNoDataCellType =>
-        ShortConstantNoDataArrayTile(constructShortArray(bytes.clone), cols, rows)
+        new ShortConstantNoDataArrayTile(constructShortArray(bytes.clone), cols, rows)
       case udct @ ShortUserDefinedNoDataCellType(_) =>
-        ShortUserDefinedNoDataArrayTile(constructShortArray(bytes.clone), cols, rows, udct)
+        new ShortUserDefinedNoDataArrayTile(constructShortArray(bytes.clone), cols, rows, udct)
     }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): ShortArrayTile =

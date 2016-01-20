@@ -47,10 +47,9 @@ class GeoTiffReaderSpec extends FunSpec
 
   override def afterAll = purge
 
-/*
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val tile = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).tile
+      val tile = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(geoTiffPath("us_ext_clip_esri.json")).tile
@@ -59,15 +58,14 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
   }
-*/
+
   describe("reading slope.tif") {
 
     it("should match the ARG version") {
       val path = "slope.tif"
       val argPath = s"$baseDataPath/data/slope.json"
 
-      val tile = SingleBandGeoTiff.compressed(s"$baseDataPath/$path").tile
-      println("tile", tile)
+      val tile = SingleBandGeoTiff.compressed(s"$baseDataPath/$path").convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -75,7 +73,7 @@ class GeoTiffReaderSpec extends FunSpec
       assertEqual(tile, expectedTile)
     }
 
-  }/*
+  }
 
   describe("reading modelTransformation.tiff") {
     val path = "modelTransformation.tiff"
@@ -465,13 +463,14 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read clipped GeoTiff with byte NODATA value") {
-      val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).tile
-      val geoTiff2 = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).tile
-      assertEqual(geoTiff.toArrayTile.convert(FloatConstantNoDataCellType), geoTiff2)
+      // Conversions carried out for both of these; first for byte -> float, second for user defined no data to constant
+      val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).convert(FloatConstantNoDataCellType)
+      val geoTiff2 = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).convert(FloatConstantNoDataCellType)
+      assertEqual(geoTiff.toArrayTile, geoTiff2)
     }
 
   }
-  */
+
 }
 
 class PackBitsGeoTiffReaderSpec extends FunSpec

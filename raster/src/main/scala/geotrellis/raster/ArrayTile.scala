@@ -225,76 +225,60 @@ trait ArrayTile extends Tile with Serializable {
 object ArrayTile {
   def alloc(t: CellType, cols: Int, rows: Int): MutableArrayTile =
     t match {
-      case BitCellType    => BitArrayTile.ofDim(cols, rows)
-      case ByteConstantNoDataCellType   => ByteArrayTile.ofDim(cols, rows)
-      case ByteCellType   => ByteArrayTile.ofDim(cols, rows)
-      case UByteConstantNoDataCellType  => UByteArrayTile.ofDim(cols, rows)
-      case UByteCellType  => UByteArrayTile.ofDim(cols, rows)
-      case ShortConstantNoDataCellType  => ShortArrayTile.ofDim(cols, rows)
-      case ShortCellType  => ShortArrayTile.ofDim(cols, rows)
-      case UShortConstantNoDataCellType  => UShortArrayTile.ofDim(cols, rows)
-      case UShortCellType  => UShortArrayTile.ofDim(cols, rows)
-      case IntConstantNoDataCellType    => IntArrayTile.ofDim(cols, rows)
-      case FloatConstantNoDataCellType  => FloatArrayTile.ofDim(cols, rows)
-      case DoubleConstantNoDataCellType => DoubleArrayTile.ofDim(cols, rows)
+      case _: BitCells => BitArrayTile.ofDim(cols, rows)
+      case ct: ByteCells => ByteArrayTile.ofDim(cols, rows, ct)
+      case ct: UByteCells => UByteArrayTile.ofDim(cols, rows, ct)
+      case ct: ShortCells => ShortArrayTile.ofDim(cols, rows, ct)
+      case ct: UShortCells => UShortArrayTile.ofDim(cols, rows, ct)
+      case _: IntCells => IntArrayTile.ofDim(cols, rows)
+      case _: FloatCells => FloatArrayTile.ofDim(cols, rows)
+      case _: DoubleCells => DoubleArrayTile.ofDim(cols, rows)
     }
 
   def empty(t: CellType, cols: Int, rows: Int): MutableArrayTile =
     t match {
-      case BitCellType    => BitArrayTile.empty(cols, rows)
-      case ByteConstantNoDataCellType   => ByteArrayTile.empty(cols, rows)
-      case ByteCellType  => new ByteRawArrayTile(Array.ofDim[Byte](cols * rows).fill(byteNODATA), cols, rows)
-      case UByteConstantNoDataCellType  => UByteArrayTile.empty(cols, rows)
-      case UByteCellType  => new UByteRawArrayTile(Array.ofDim[Byte](cols * rows).fill(0.toByte), cols, rows)
-      case ShortConstantNoDataCellType  => ShortArrayTile.empty(cols, rows)
-      case ShortCellType  => new ShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
-      case UShortConstantNoDataCellType  => UShortArrayTile.empty(cols, rows)
-      case UShortCellType  => new UShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(0.toShort), cols, rows)
-      case IntConstantNoDataCellType    => IntArrayTile.empty(cols, rows)
-      case FloatConstantNoDataCellType  => FloatArrayTile.empty(cols, rows)
-      case DoubleConstantNoDataCellType => DoubleArrayTile.empty(cols, rows)
+      case _: BitCells => BitArrayTile.empty(cols, rows)
+      case ct: ByteCells => ByteArrayTile.empty(cols, rows, ct)
+      case ct: UByteCells => UByteArrayTile.empty(cols, rows, ct)
+      case ct: ShortCells => ShortArrayTile.empty(cols, rows, ct)
+      case ct: UShortCells => UShortArrayTile.empty(cols, rows, ct)
+      case _: IntCells => IntArrayTile.empty(cols, rows)
+      case _: FloatCells => FloatArrayTile.empty(cols, rows)
+      case _: DoubleCells => DoubleArrayTile.empty(cols, rows)
     }
 
   def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile =
     t match {
-      case BitCellType    => BitArrayTile.fromBytes(bytes, cols, rows)
-      case ByteConstantNoDataCellType   => ByteArrayTile.fromBytes(bytes, cols, rows)
-      case ByteCellType   => ByteArrayTile.fromBytes(bytes, cols, rows, ByteCellType)
-      case UByteConstantNoDataCellType  => UByteArrayTile.fromBytes(bytes, cols, rows)
-      case UByteCellType  => UByteArrayTile.fromBytes(bytes, cols, rows, UByteCellType)
-      case ShortConstantNoDataCellType  => ShortArrayTile.fromBytes(bytes, cols, rows)
-      case ShortCellType  => ShortArrayTile.fromBytes(bytes, cols, rows, ShortCellType)
-      case UShortConstantNoDataCellType  => UShortArrayTile.fromBytes(bytes, cols, rows)
-      case UShortCellType  => UShortArrayTile.fromBytes(bytes, cols, rows, UShortCellType)
-      case IntConstantNoDataCellType    => IntArrayTile.fromBytes(bytes, cols, rows)
-      case FloatConstantNoDataCellType  => FloatArrayTile.fromBytes(bytes, cols, rows)
-      case DoubleConstantNoDataCellType => DoubleArrayTile.fromBytes(bytes, cols, rows)
+      case _: BitCells => BitArrayTile.fromBytes(bytes, cols, rows)
+      case ct: ByteCells => ByteArrayTile.fromBytes(bytes, cols, rows, ct)
+      case ct: UByteCells => UByteArrayTile.fromBytes(bytes, cols, rows, ct)
+      case ct: ShortCells => ShortArrayTile.fromBytes(bytes, cols, rows, ct)
+      case ct: UShortCells => UShortArrayTile.fromBytes(bytes, cols, rows, ct)
+      case _: IntCells => IntArrayTile.fromBytes(bytes, cols, rows)
+      case _: FloatCells => FloatArrayTile.fromBytes(bytes, cols, rows)
+      case _: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows)
     }
 
   def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile =
     t match {
-      case BitCellType    => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
-      case ByteConstantNoDataCellType   => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case ByteCellType   => ByteArrayTile.fromBytes(bytes, cols, rows, ByteConstantNoDataCellType)
-      case UByteConstantNoDataCellType  => UByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case UByteCellType  => UByteArrayTile.fromBytes(bytes, cols, rows, UByteConstantNoDataCellType)
-      case ShortConstantNoDataCellType  => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case ShortCellType  => ShortArrayTile.fromBytes(bytes, cols, rows, ShortConstantNoDataCellType)
-      case UShortConstantNoDataCellType  => UShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case UShortCellType  => UShortArrayTile.fromBytes(bytes, cols, rows, UShortConstantNoDataCellType)
-      case IntConstantNoDataCellType    => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
-      case FloatConstantNoDataCellType  => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
-      case DoubleConstantNoDataCellType => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
+      case _: BitCells => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
+      case _: ByteCells => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case _: UByteCells => UByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case _: ShortCells => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case _: UShortCells => UShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case _: IntCells => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
+      case _: FloatCells => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
+      case _: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
     }
 
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayTile(arr, cols, rows)
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortConstantNoDataArrayTile(arr, cols, rows)
   def apply(arr: Array[Int], cols: Int, rows: Int) = IntArrayTile(arr, cols, rows)
   def apply(arr: Array[Float], cols: Int, rows: Int) = FloatArrayTile(arr, cols, rows)
   def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayTile(arr, cols, rows)
 }
 
 object RawArrayTile {
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows, ByteConstantNoDataCellType)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayTile(arr, cols, rows, ShortConstantNoDataCellType)
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows, ByteCellType)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayTile(arr, cols, rows, ShortCellType)
 }

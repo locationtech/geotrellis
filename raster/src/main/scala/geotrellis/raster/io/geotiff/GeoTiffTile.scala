@@ -98,7 +98,7 @@ abstract class GeoTiffTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      cellType
+      newCellType
     )
   }
 
