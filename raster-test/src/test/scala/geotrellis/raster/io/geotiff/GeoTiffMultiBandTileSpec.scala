@@ -110,6 +110,44 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
   }
 
+  describe("ArrayMultiBandTile subset") {
+
+    it("should be inexpensive") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile1 = tile0.subset(Map(0 -> 1, 1 -> 2, 2 -> 0))
+
+      tile0.band(0) should be (tile1.band(2))
+      tile0.band(1) should be (tile1.band(0))
+      tile0.band(2) should be (tile1.band(1))
+    }
+
+    it("should have the correct bandCount") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile1 = tile0.subset(Map(0 -> 1, 1 -> 2, 2 -> 0))
+      val tile2 = tile0.subset(Map(0 -> 1, 1 -> 2))
+
+      tile1.bandCount should be (3)
+      tile2.bandCount should be (2)
+    }
+
+    it("should work properly with foreach") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile1 = tile0.subset(Map(0 -> 1, 1 -> 2, 2 -> 0))
+      val tile2 = tile1.subset(Map(1 -> 0, 2 -> 1, 0 -> 2))
+
+      tile0.band(0).foreach { z => z should be (1) }
+      tile0.band(1).foreach { z => z should be (2) }
+      tile0.band(2).foreach { z => z should be (3) }
+      tile1.band(2).foreach { z => z should be (1) }
+      tile1.band(0).foreach { z => z should be (2) }
+      tile1.band(1).foreach { z => z should be (3) }
+      tile2.band(0).foreach { z => z should be (1) }
+      tile2.band(1).foreach { z => z should be (2) }
+      tile2.band(2).foreach { z => z should be (3) }
+    }
+
+  }
+
   describe("GeoTiffMultiBandTile map") {
 
     it("should map a single band, striped, pixel interleave") {
@@ -327,5 +365,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       counts(1)  should be (cellCount)
       counts(2)  should be (cellCount)
     }
+
   }
+
 }
