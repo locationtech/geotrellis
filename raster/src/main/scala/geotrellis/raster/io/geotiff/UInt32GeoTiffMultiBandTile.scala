@@ -12,7 +12,7 @@ class UInt32GeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  val cellType: CellType
+  val cellType: UIntCells with NoDataHandling
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with UInt32GeoTiffSegmentCollection {
 

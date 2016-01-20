@@ -34,8 +34,8 @@ object GeoTiffTile {
         new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       case ct: IntCells =>
         new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      //case UIntConstantNoDataCellType =>
-      //  new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: UIntCells =>
+        new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       case ct: FloatCells =>
         new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
       case ct: DoubleCells =>

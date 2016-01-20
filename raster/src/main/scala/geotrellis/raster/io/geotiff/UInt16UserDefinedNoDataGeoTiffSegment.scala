@@ -81,5 +81,26 @@ class UInt16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedS
           arr(i) = if (v == userDefinedShortNoDataValue) nd else v
         }
         arr.toArrayByte()
+      case IntUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Int](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == userDefinedShortNoDataValue) nd else v
+        }
+        arr.toArrayByte()
+      case FloatUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Float](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == userDefinedShortNoDataValue) nd else v.toFloat
+        }
+        arr.toArrayByte()
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Double](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == userDefinedShortNoDataValue) nd else v.toDouble
+        }
+        arr.toArrayByte()
     }
 }

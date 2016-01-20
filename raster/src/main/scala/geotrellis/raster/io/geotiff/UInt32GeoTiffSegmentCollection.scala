@@ -9,6 +9,6 @@ trait UInt32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
 
   val bandType = UInt32BandType
 
-  val createSegment: Int => UInt32GeoTiffSegment =
+  lazy val createSegment: Int => UInt32GeoTiffSegment =
     { i: Int => new UInt32GeoTiffSegment(getDecompressedBytes(i)) }
 }

@@ -9,16 +9,7 @@ import spire.syntax.cfor._
 
 import java.util.BitSet
 
-class NoDataFloat64GeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends Float64GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Double = {
-    val v = super.get(i)
-    if(v == noDataValue) { Float.NaN }
-    else { v }
-  }
-}
-
-class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
+abstract class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asDoubleBuffer
 
   val size: Int = bytes.size / 8
@@ -26,8 +17,11 @@ class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   def get(i: Int): Double =
     buffer.get(i)
 
-  def getInt(i: Int): Int = d2i(get(i))
-  def getDouble(i: Int): Double = get(i)
+  def getInt(i: Int): Int
+  def getDouble(i: Int): Double
+
+  protected def intToDoubleOut(v: Int): Double
+  protected def doubleToDoubleOut(v: Double): Double
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {

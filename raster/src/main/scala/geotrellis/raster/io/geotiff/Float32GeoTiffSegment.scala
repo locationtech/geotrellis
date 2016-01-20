@@ -9,15 +9,21 @@ import spire.syntax.cfor._
 
 import java.util.BitSet
 
-class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
+abstract class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asFloatBuffer
 
   val size: Int = bytes.size / 4
 
   def get(i: Int): Float = buffer.get(i)
 
-  def getInt(i: Int): Int = f2i(get(i))
-  def getDouble(i: Int): Double = f2d(get(i))
+  def getInt(i: Int): Int
+  def getDouble(i: Int): Double
+
+  protected def intToFloatOut(v: Int): Float
+  protected def doubleToFloatOut(v: Double): Float
+
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte]
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte]
 
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
@@ -25,30 +31,32 @@ class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType =>
+      case ByteCellType | UByteCellType =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = f2b(get(i)) }
         arr
-      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType =>
+      case ShortCellType | UShortCellType =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = f2s(get(i)) }
         arr.toArrayByte()
-      case IntConstantNoDataCellType =>
+      case IntCellType =>
         val arr = Array.ofDim[Int](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
         arr.toArrayByte()
-      case FloatConstantNoDataCellType =>
+      case FloatCellType | UIntCellType =>
         bytes
-      case DoubleConstantNoDataCellType =>
+      case DoubleCellType =>
         val arr = Array.ofDim[Double](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
         arr.toArrayByte()
+      case cct: ConstantNoData => convertToConstantNoData(cct)
+      case udct: UserDefinedNoData[_] => convertToUserDefinedNoData(udct)
     }
 
   def map(f: Int => Int): Array[Byte] = {
     val arr = Array.ofDim[Float](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = i2f(f(getInt(i)))
+      arr(i) = intToFloatOut(f(getInt(i)))
     }
     val result = new Array[Byte](size * FloatConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
@@ -70,7 +78,7 @@ class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte] = {
     val arr = Array.ofDim[Float](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = i2f(f(i, getInt(i)))
+      arr(i) = intToFloatOut(f(i, getInt(i)))
     }
     val result = new Array[Byte](size * FloatConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)
@@ -81,7 +89,7 @@ class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte] = {
     val arr = Array.ofDim[Float](size)
     cfor(0)(_ < size, _ + 1) { i =>
-      arr(i) = d2f(f(i, getDouble(i)))
+      arr(i) = doubleToFloatOut(f(i, getDouble(i)))
     }
     val result = new Array[Byte](size * FloatConstantNoDataCellType.bytes)
     val bytebuff = ByteBuffer.wrap(result)

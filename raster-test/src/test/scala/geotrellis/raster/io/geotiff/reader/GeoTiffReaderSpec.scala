@@ -47,8 +47,8 @@ class GeoTiffReaderSpec extends FunSpec
 
   override def afterAll = purge
 
+/*
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
-
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
       val tile = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).tile
 
@@ -59,7 +59,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
   }
-
+*/
   describe("reading slope.tif") {
 
     it("should match the ARG version") {
@@ -67,6 +67,7 @@ class GeoTiffReaderSpec extends FunSpec
       val argPath = s"$baseDataPath/data/slope.json"
 
       val tile = SingleBandGeoTiff.compressed(s"$baseDataPath/$path").tile
+      println("tile", tile)
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -74,7 +75,7 @@ class GeoTiffReaderSpec extends FunSpec
       assertEqual(tile, expectedTile)
     }
 
-  }
+  }/*
 
   describe("reading modelTransformation.tiff") {
     val path = "modelTransformation.tiff"
@@ -470,6 +471,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
   }
+  */
 }
 
 class PackBitsGeoTiffReaderSpec extends FunSpec

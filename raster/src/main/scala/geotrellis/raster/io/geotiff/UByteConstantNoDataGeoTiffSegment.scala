@@ -77,5 +77,26 @@ class UByteConstantNoDataCellTypeGeoTiffSegment(bytes: Array[Byte]) extends UByt
           arr(i) = if (v == 0.toByte) nd else (v & 0xFF).toShort
         }
         arr.toArrayByte()
+      case IntUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Int](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == 0.toByte) nd else v & 0xFF
+        }
+        arr.toArrayByte()
+      case FloatUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Float](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == 0.toByte) nd else (v & 0xFF).toFloat
+        }
+        arr.toArrayByte()
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Double](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == 0.toByte) nd else (v & 0xFF).toDouble
+        }
+        arr.toArrayByte()
     }
 }

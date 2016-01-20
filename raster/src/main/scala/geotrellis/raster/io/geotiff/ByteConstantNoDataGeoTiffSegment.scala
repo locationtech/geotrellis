@@ -77,5 +77,26 @@ class ByteConstantNoDataCellTypeGeoTiffSegment(bytes: Array[Byte]) extends ByteG
           arr(i) = if (v == Byte.MinValue) nd else v.toShort
         }
         arr.toArrayByte()
+      case IntUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Int](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == Byte.MinValue) nd else v.toInt
+        }
+        arr.toArrayByte()
+      case FloatUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Float](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == Byte.MinValue) nd else v.toFloat
+        }
+        arr.toArrayByte()
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Double](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == Byte.MinValue) nd else v.toDouble
+        }
+        arr.toArrayByte()
     }
 }

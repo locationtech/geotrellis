@@ -67,5 +67,17 @@ class Int16RawGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiffSegment(byt
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i) }
         arr.toArrayByte()
+      case IntUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Int](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
+        arr.toArrayByte()
+      case FloatUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Float](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toFloat }
+        arr.toArrayByte()
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Double](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toDouble }
+        arr.toArrayByte()
     }
 }

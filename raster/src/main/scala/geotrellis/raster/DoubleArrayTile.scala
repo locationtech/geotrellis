@@ -25,7 +25,7 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Double] (each cell as a Double).
  */
 final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
-  extends MutableArrayTile with DoubleBasedArray {
+  extends MutableArrayTile with DoubleBasedArrayTile {
   val cellType = DoubleConstantNoDataCellType
 
   def applyDouble(i: Int) = array(i)

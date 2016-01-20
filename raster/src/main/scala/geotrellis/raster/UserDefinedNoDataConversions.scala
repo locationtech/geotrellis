@@ -74,7 +74,7 @@ trait UserDefinedIntNoDataConversions {
 }
 
 trait UserDefinedFloatNoDataConversions {
-  val userDefinedFloatNoDataValue: Byte
+  val userDefinedFloatNoDataValue: Float
 
   // from user defined
   def udf2b(n: Float): Byte = if (n == userDefinedFloatNoDataValue) Byte.MinValue else n.toByte
@@ -82,6 +82,7 @@ trait UserDefinedFloatNoDataConversions {
   def udf2s(n: Float): Short = if (n == userDefinedFloatNoDataValue) Short.MinValue else n.toShort
   def udf2us(n: Float): Short = if (n == userDefinedFloatNoDataValue) 0.toShort else n.toShort
   def udf2i(n: Float): Int = if (n == userDefinedFloatNoDataValue) Int.MinValue else n.toInt
+  def udf2f(n: Float): Float = if (n == userDefinedFloatNoDataValue) Float.NaN else n.toFloat
   def udf2d(n: Float): Double = if (n == userDefinedFloatNoDataValue) Double.NaN else n.toDouble
   // to user defined
   def b2udf(n: Byte): Float = if (n == Byte.MinValue) userDefinedFloatNoDataValue else n.toFloat
@@ -103,6 +104,7 @@ trait UserDefinedDoubleNoDataConversions {
   def udd2us(n: Double): Short = if (n == userDefinedDoubleNoDataValue) 0.toShort else n.toShort
   def udd2i(n: Double): Int = if (n == userDefinedDoubleNoDataValue) Int.MinValue else n.toInt
   def udd2f(n: Double): Float = if (n == userDefinedDoubleNoDataValue) Float.NaN else n.toFloat
+  def udd2d(n: Double): Double = if (n == userDefinedDoubleNoDataValue) Double.NaN else n.toDouble
   // to user defined
   def b2udd(n: Byte): Double = if (n == Byte.MinValue) userDefinedDoubleNoDataValue else n.toDouble
   def ub2udd(n: Byte): Double = if (n == 0.toByte) userDefinedDoubleNoDataValue else n.toDouble

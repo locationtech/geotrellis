@@ -64,6 +64,7 @@ object GeoTiffReader {
    */
   def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
+    println("ct", info.cellType, info.noDataValue)
 
     val geoTiffTile =
       if(info.bandCount == 1) {
@@ -138,16 +139,16 @@ object GeoTiffReader {
       case (BitBandType, _) =>
         BitCellType
       // Byte
-      case (ByteBandType, Some(nd)) if (nd >= Byte.MinValue.toDouble && nd <= Byte.MaxValue.toDouble) =>
+      case (ByteBandType, Some(nd)) if (nd.toInt >= Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt) =>
         ByteUserDefinedNoDataCellType(nd.toByte)
-      case (ByteBandType, Some(nd)) if (nd == Byte.MinValue.toDouble) =>
+      case (ByteBandType, Some(nd)) if (nd.toInt == Byte.MinValue.toInt) =>
         ByteConstantNoDataCellType
       case (ByteBandType, _) =>
         ByteCellType
       // UByte
-      case (UByteBandType, Some(nd)) if (nd >= 0.0 && nd <= 255.0) =>
+      case (UByteBandType, Some(nd)) if (nd.toInt >= 0 && nd <= 255) =>
         UByteUserDefinedNoDataCellType(nd.toByte)
-      case (UByteBandType, Some(nd)) if (nd == 0.0) =>
+      case (UByteBandType, Some(nd)) if (nd.toInt == 0) =>
         UByteConstantNoDataCellType
       case (UByteBandType, _) =>
         UByteCellType
@@ -159,23 +160,40 @@ object GeoTiffReader {
       case (Int16BandType, _) =>
         ShortCellType
       // UInt16/UShort
-      case (UInt16BandType, Some(nd)) if (nd >= 0.0 && nd <= 65535.0) =>
+      case (UInt16BandType, Some(nd)) if (nd.toInt >= 0 && nd <= 65535) =>
         UShortUserDefinedNoDataCellType(nd.toShort)
-      case (UInt16BandType, Some(nd)) if (nd == 0.0) =>
+      case (UInt16BandType, Some(nd)) if (nd.toInt == 0) =>
         UShortConstantNoDataCellType
       case (UInt16BandType, _) =>
         UShortCellType
       // Int32
-      case (Int32BandType, _) =>
+      case (Int32BandType, Some(nd)) if (nd.toInt > Int.MinValue && nd.toInt <= Int.MaxValue) =>
+        IntUserDefinedNoDataCellType(nd.toInt)
+      case (Int32BandType, Some(nd)) if (nd.toInt == Int.MinValue) =>
         IntConstantNoDataCellType
-      // UInt32 (currently not supported)
-      case (UInt32BandType, _) => ???
+      case (Int32BandType, _) =>
+        IntCellType
+      // UInt32
+      case (UInt32BandType, Some(nd)) if (nd.toLong > 0L && nd.toLong <= 4294967295L) =>
+        UIntUserDefinedNoDataCellType(nd.toInt)
+      case (UInt32BandType, Some(nd)) if (nd.toLong == 0L) =>
+        IntConstantNoDataCellType
+      case (UInt32BandType, _) =>
+        UIntCellType
       // Float32
-      case (Float32BandType, _) =>
+      case (Float32BandType, Some(nd)) if (isData(nd) & Float.MinValue.toDouble <= nd & Float.MaxValue.toDouble >= nd) =>
+        FloatUserDefinedNoDataCellType(nd.toFloat)
+      case (Float32BandType, Some(nd)) =>
         FloatConstantNoDataCellType
+      case (Float32BandType, _) =>
+        FloatCellType
       // Float64/Double
-      case (Float64BandType, _) =>
+      case (Float64BandType, Some(nd)) if (isData(nd)) =>
+        DoubleUserDefinedNoDataCellType(nd)
+      case (Float64BandType, Some(nd)) =>
         DoubleConstantNoDataCellType
+      case (Float64BandType, _) =>
+        DoubleCellType
     }
   }
 

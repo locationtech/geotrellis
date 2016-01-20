@@ -12,6 +12,12 @@ class Float32GeoTiffTile(
   val cellType: FloatCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with Float32GeoTiffSegmentCollection {
 
+  val noDataValue: Option[Float] = cellType match {
+    case FloatCellType => None
+    case FloatConstantNoDataCellType => Some(Float.NaN)
+    case FloatUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * FloatConstantNoDataCellType.bytes)
 
@@ -41,6 +47,13 @@ class Float32GeoTiffTile(
         }
       }
     }
-    FloatArrayTile.fromBytes(arr, cols, rows)
+    cellType match {
+      case FloatCellType =>
+        FloatArrayTile.fromBytes(arr, cols, rows)
+      case FloatConstantNoDataCellType =>
+        FloatArrayTile.fromBytes(arr, cols, rows)
+      case FloatUserDefinedNoDataCellType(nd) =>
+        FloatArrayTile.fromBytes(arr, cols, rows, nd)
+    }
   }
 }

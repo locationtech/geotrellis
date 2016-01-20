@@ -13,8 +13,8 @@ class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends Ge
     bytesWidth * 8
   }
 
-  def getInt(i: Int): Int = b2i(get(i))
-  def getDouble(i: Int): Double = b2d(get(i))
+  def getInt(i: Int): Int = get(i).toInt
+  def getDouble(i: Int): Double = get(i).toDouble
 
   /** Creates a corrected index into the byte array that accounts for byte padding on rows */
   private def index(i: Int): Int = {
@@ -32,23 +32,23 @@ class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends Ge
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case BitCellType => bytes
-      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType =>
+      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType | ByteUserDefinedNoDataCellType(_) | UByteUserDefinedNoDataCellType(_) =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i) }
         arr
-      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType =>
+      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType | ShortUserDefinedNoDataCellType(_) | UShortUserDefinedNoDataCellType(_) =>
         val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = b2s(get(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toShort }
         arr.toArrayByte()
-      case IntConstantNoDataCellType =>
+      case IntConstantNoDataCellType | IntCellType | IntUserDefinedNoDataCellType(_) =>
         val arr = Array.ofDim[Int](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
         arr.toArrayByte()
-      case FloatConstantNoDataCellType =>
+      case FloatConstantNoDataCellType | FloatCellType | FloatUserDefinedNoDataCellType(_) =>
         val arr = Array.ofDim[Float](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = b2f(get(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toFloat }
         arr.toArrayByte()
-      case DoubleConstantNoDataCellType =>
+      case DoubleConstantNoDataCellType | DoubleCellType | DoubleUserDefinedNoDataCellType(_) =>
         val arr = Array.ofDim[Double](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
         arr.toArrayByte()

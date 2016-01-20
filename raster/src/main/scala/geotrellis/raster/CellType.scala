@@ -83,6 +83,11 @@ sealed trait IntCells extends DataType { self: CellType =>
   val isFloatingPoint: Boolean = false
   val name = "int32"
 }
+sealed trait UIntCells extends DataType { self: CellType =>
+  val bits: Int = 32
+  val isFloatingPoint: Boolean = true
+  val name = "uint32"
+}
 sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
@@ -95,16 +100,15 @@ sealed trait DoubleCells extends DataType { self: CellType =>
 }
 
 // NoData ADT
-sealed trait NoDataHandling {
-  val name: String
+sealed trait NoDataHandling { cellType: CellType => }
+sealed trait ConstantNoData extends NoDataHandling { cellType: CellType => }
+sealed trait NoNoData extends NoDataHandling { cellType: CellType =>
+  abstract override def toString: String = cellType.name + "raw"
+  //abstract override val name: String = cellType.name + "raw"
 }
-sealed trait ConstantNoData extends NoDataHandling { dataType: DataType => }
-sealed trait NoNoData extends NoDataHandling { dataType: DataType =>
-  abstract override val name: String = dataType.name + "raw"
-}
-sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { dataType: DataType =>
+sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { cellType: CellType =>
   val noDataValue: T
-  abstract override val name: String = dataType.name + "ud" + noDataValue.toString
+  abstract override def toString: String = cellType.name + "ud" + noDataValue.toString
 }
 
 case object BitCellType extends BitCells with NoNoData {
@@ -139,14 +143,33 @@ case object UShortConstantNoDataCellType
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
     extends UShortCells with UserDefinedNoData[Short]
 
+case object IntCellType
+    extends IntCells with NoNoData
 case object IntConstantNoDataCellType
     extends IntCells with ConstantNoData
+case class IntUserDefinedNoDataCellType(noDataValue: Int)
+    extends IntCells with UserDefinedNoData[Int]
 
+case object UIntCellType
+    extends UIntCells with NoNoData
+case object UIntConstantNoDataCellType
+    extends UIntCells with ConstantNoData
+case class UIntUserDefinedNoDataCellType(noDataValue: Int)
+    extends UIntCells with UserDefinedNoData[Int]
+
+case object FloatCellType
+    extends FloatCells with NoNoData
 case object FloatConstantNoDataCellType
     extends FloatCells with ConstantNoData
+case class FloatUserDefinedNoDataCellType(noDataValue: Float)
+    extends FloatCells with UserDefinedNoData[Float]
 
+case object DoubleCellType
+    extends DoubleCells with NoNoData
 case object DoubleConstantNoDataCellType
     extends DoubleCells with ConstantNoData
+case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
+    extends DoubleCells with UserDefinedNoData[Double]
 
 
 // No NoData

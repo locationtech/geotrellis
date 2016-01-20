@@ -11,6 +11,13 @@ class Int32GeoTiffTile(
   compression: Compression,
   val cellType: IntCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with Int32GeoTiffSegmentCollection {
+
+  val noDataValue: Option[Int] = cellType match {
+    case IntCellType => None
+    case IntConstantNoDataCellType => Some(Int.MinValue)
+    case IntUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * IntConstantNoDataCellType.bytes)
     if(segmentLayout.isStriped) {

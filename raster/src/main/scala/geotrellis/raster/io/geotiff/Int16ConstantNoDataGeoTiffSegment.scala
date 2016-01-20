@@ -77,5 +77,26 @@ class Int16ConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiff
           arr(i) = if (v == Short.MinValue) nd else v
         }
         arr.toArrayByte()
+      case IntUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Int](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == Short.MinValue) nd else v
+        }
+        arr.toArrayByte()
+      case FloatUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Float](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == Short.MinValue) nd else v
+        }
+        arr.toArrayByte()
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Double](size)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val v = get(i)
+          arr(i) = if (v == Short.MinValue) nd else v
+        }
+        arr.toArrayByte()
     }
 }

@@ -47,7 +47,7 @@ class UInt16RawGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(b
         arr.toArrayByte()
       case DoubleConstantNoDataCellType =>
         val arr = Array.ofDim[Double](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getRaw(i).toDouble }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toDouble }
         arr.toArrayByte()
     }
 
@@ -68,6 +68,18 @@ class UInt16RawGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(b
       case UShortUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getRaw(i) }
+        arr.toArrayByte()
+      case IntUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Int](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i) }
+        arr.toArrayByte()
+      case FloatUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Float](size)
+        cfor(0)(_ < size, _ + 1) { i => get(i).toFloat }
+        arr.toArrayByte()
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        val arr = Array.ofDim[Double](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toDouble }
         arr.toArrayByte()
     }
 }

@@ -8,7 +8,14 @@ trait Int32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = Int32GeoTiffSegment
 
   val bandType = Int32BandType
+  val noDataValue: Option[Int]
 
-  val createSegment: Int => Int32GeoTiffSegment =
-    { i: Int => new Int32GeoTiffSegment(getDecompressedBytes(i)) }
+  lazy val createSegment: Int => Int32GeoTiffSegment = noDataValue match {
+    case None =>
+      { i: Int => new Int32RawGeoTiffSegment(getDecompressedBytes(i)) }
+    case Some(nd) if (nd == Int.MinValue) =>
+      { i: Int => new Int32ConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
+    case Some(nd) =>
+      { i: Int => new Int32UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
+  }
 }

@@ -25,7 +25,7 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Float] (each cell as a Float).
  */
 final case class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
-  extends MutableArrayTile with DoubleBasedArray {
+  extends MutableArrayTile with DoubleBasedArrayTile {
 
   val cellType = FloatConstantNoDataCellType
 

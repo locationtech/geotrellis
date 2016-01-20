@@ -8,21 +8,12 @@ import java.util.BitSet
 
 import spire.syntax.cfor._
 
-class NoDataUInt32GeoTiffSegment(bytes: Array[Byte], noDataValue: Float) extends UInt32GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Float = {
-    val v = super.get(i)
-    if(v == noDataValue) { Float.NaN }
-    else { v }
-  }
-}
-
 class UInt32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asIntBuffer
 
   val size: Int = bytes.size / 4
 
-  def get(i: Int): Float = 
+  def get(i: Int): Float =
     (buffer.get(i) & 0xFFFFFFFFL).toFloat
 
   def getInt(i: Int): Int = f2i(get(i))

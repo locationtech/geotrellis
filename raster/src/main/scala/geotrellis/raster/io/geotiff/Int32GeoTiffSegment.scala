@@ -9,24 +9,18 @@ import spire.syntax.cfor._
 
 import java.util.BitSet
 
-class NoDataInt32GeoTiffSegment(bytes: Array[Byte], noDataValue: Double) extends Int32GeoTiffSegment(bytes) {
-  override
-  def get(i: Int): Int = {
-    val v = super.get(i)
-    if(v == noDataValue.toInt) { NODATA }
-    else { v }
-  }
-}
-
-class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
+abstract class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asIntBuffer
 
   val size: Int = bytes.size / 4
 
   def get(i: Int): Int = buffer.get(i)
 
-  def getInt(i: Int): Int = get(i)
-  def getDouble(i: Int): Double = i2d(get(i))
+  def getInt(i: Int): Int
+  def getDouble(i: Int): Double
+
+  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte]
+  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte]
 
   def convert(newCellType: CellType): Array[Byte] =
     newCellType match {
@@ -52,6 +46,8 @@ class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
         val arr = Array.ofDim[Double](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
         arr.toArrayByte()
+      case cct: ConstantNoData => convertToConstantNoData(cct)
+      case udct: UserDefinedNoData[_] => convertToUserDefinedNoData(udct)
     }
 
   def map(f: Int => Int): Array[Byte] = {

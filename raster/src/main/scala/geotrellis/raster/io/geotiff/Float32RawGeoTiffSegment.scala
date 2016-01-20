@@ -1,49 +1,50 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.utils._
 
 import java.nio.ByteBuffer
-import java.util.BitSet
-
 import spire.syntax.cfor._
 
-class UInt16ConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTiffSegment(bytes) {
-  def getInt(i: Int): Int = us2i(getRaw(i))
-  def getDouble(i: Int): Double = us2d(getRaw(i))
+import java.util.BitSet
 
-  protected def intToUShortOut(v: Int): Short = i2us(v)
-  protected def doubleToUShortOut(v: Double): Short = d2us(v)
+class Float32RawGeoTiffSegment(bytes: Array[Byte]) extends Float32GeoTiffSegment(bytes) {
+  def getInt(i: Int): Int = get(i).toInt
+  def getDouble(i: Int): Double = get(i).toDouble
+
+  protected def intToFloatOut(v: Int): Float = v.toFloat
+  protected def doubleToFloatOut(v: Double): Float = v.toFloat
 
   protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {
       case ByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = us2b(getRaw(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toByte }
         arr
       case UByteConstantNoDataCellType =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = us2ub(getRaw(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toByte }
         arr
       case ShortConstantNoDataCellType =>
         val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = us2s(getRaw(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toShort }
         arr.toArrayByte()
       case UShortConstantNoDataCellType =>
         val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getRaw(i) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toShort }
         arr.toArrayByte()
       case IntConstantNoDataCellType =>
         val arr = Array.ofDim[Int](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = us2i(getRaw(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
         arr.toArrayByte()
       case FloatConstantNoDataCellType =>
         val arr = Array.ofDim[Float](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = us2f(getRaw(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i) }
         arr.toArrayByte()
       case DoubleConstantNoDataCellType =>
         val arr = Array.ofDim[Double](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = us2d(getRaw(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
         arr.toArrayByte()
     }
 
@@ -51,52 +52,31 @@ class UInt16ConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends UInt16GeoTi
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else v.toByte
-        }
+        cfor(0)(_ < size, _ + 1) { i => get(i).toByte }
         arr
       case UByteUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else v.toByte
-        }
+        cfor(0)(_ < size, _ + 1) { i => get(i).toByte }
         arr
       case ShortUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else v
-        }
+        cfor(0)(_ < size, _ + 1) { i => get(i).toShort }
         arr.toArrayByte()
       case UShortUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else v
-        }
+        cfor(0)(_ < size, _ + 1) { i => get(i).toShort }
         arr.toArrayByte()
       case IntUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Int](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else v & 0xFFFF
-        }
+        cfor(0)(_ < size, _ + 1) { i => getInt(i) }
         arr.toArrayByte()
       case FloatUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Float](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else (v & 0xFFFF).toFloat
-        }
+        cfor(0)(_ < size, _ + 1) { i => get(i) }
         arr.toArrayByte()
       case DoubleUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Double](size)
-        cfor(0)(_ < size, _ + 1) { i =>
-          val v = getRaw(i)
-          arr(i) = if (v == 0.toShort) nd else (v & 0xFFFF).toDouble
-        }
+        cfor(0)(_ < size, _ + 1) { i => getDouble(i) }
         arr.toArrayByte()
     }
 }

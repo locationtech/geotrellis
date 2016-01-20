@@ -36,8 +36,8 @@ object GeoTiffMultiBandTile {
         new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
       case ct: IntCells =>
         new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
-      //case TypeUInt =>
-      //  new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: UIntCells =>
+        new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
       case ct: FloatCells =>
         new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
       case ct: DoubleCells =>

@@ -16,6 +16,12 @@ class Float32GeoTiffMultiBandTile(
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with Float32GeoTiffSegmentCollection {
 
+  val noDataValue: Option[Float] = cellType match {
+    case FloatCellType => None
+    case FloatConstantNoDataCellType => Some(Float.NaN)
+    case FloatUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
     new SegmentCombiner {
       private val arr = Array.ofDim[Float](targetSize)

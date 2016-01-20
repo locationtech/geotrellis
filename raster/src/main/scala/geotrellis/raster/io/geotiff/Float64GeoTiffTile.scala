@@ -12,6 +12,12 @@ class Float64GeoTiffTile(
   val cellType: DoubleCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with Float64GeoTiffSegmentCollection {
 
+  val noDataValue: Option[Double] = cellType match {
+    case DoubleCellType => None
+    case DoubleConstantNoDataCellType => Some(Double.NaN)
+    case DoubleUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * DoubleConstantNoDataCellType.bytes)
 
@@ -41,6 +47,13 @@ class Float64GeoTiffTile(
         }
       }
     }
-    DoubleArrayTile.fromBytes(arr, cols, rows)
+    cellType match {
+      case DoubleCellType =>
+        DoubleArrayTile.fromBytes(arr, cols, rows)
+      case DoubleConstantNoDataCellType =>
+        DoubleArrayTile.fromBytes(arr, cols, rows)
+      case DoubleUserDefinedNoDataCellType(nd) =>
+        DoubleArrayTile.fromBytes(arr, cols, rows, nd)
+      }
   }
 }

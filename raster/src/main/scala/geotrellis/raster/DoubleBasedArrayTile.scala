@@ -21,7 +21,7 @@ import geotrellis._
 /**
  * This trait defines apply/update in terms of applyDouble/updateDouble.
  */
-trait DoubleBasedArray {
+trait DoubleBasedArrayTile {
   def apply(i:Int):Int = d2i(applyDouble(i))
   def update(i:Int, z:Int):Unit = updateDouble(i, i2d(z))
 
