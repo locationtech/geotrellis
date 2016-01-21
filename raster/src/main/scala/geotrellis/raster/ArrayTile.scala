@@ -230,9 +230,9 @@ object ArrayTile {
       case ct: UByteCells => UByteArrayTile.ofDim(cols, rows, ct)
       case ct: ShortCells => ShortArrayTile.ofDim(cols, rows, ct)
       case ct: UShortCells => UShortArrayTile.ofDim(cols, rows, ct)
-      case _: IntCells => IntArrayTile.ofDim(cols, rows)
-      case _: FloatCells => FloatArrayTile.ofDim(cols, rows)
-      case _: DoubleCells => DoubleArrayTile.ofDim(cols, rows)
+      case ct: IntCells => IntArrayTile.ofDim(cols, rows, ct)
+      case ct: FloatCells => FloatArrayTile.ofDim(cols, rows, ct)
+      case ct: DoubleCells => DoubleArrayTile.ofDim(cols, rows, ct)
     }
 
   def empty(t: CellType, cols: Int, rows: Int): MutableArrayTile =
@@ -242,9 +242,9 @@ object ArrayTile {
       case ct: UByteCells => UByteArrayTile.empty(cols, rows, ct)
       case ct: ShortCells => ShortArrayTile.empty(cols, rows, ct)
       case ct: UShortCells => UShortArrayTile.empty(cols, rows, ct)
-      case _: IntCells => IntArrayTile.empty(cols, rows)
-      case _: FloatCells => FloatArrayTile.empty(cols, rows)
-      case _: DoubleCells => DoubleArrayTile.empty(cols, rows)
+      case ct: IntCells => IntArrayTile.empty(cols, rows, ct)
+      case ct: FloatCells => FloatArrayTile.empty(cols, rows, ct)
+      case ct: DoubleCells => DoubleArrayTile.empty(cols, rows, ct)
     }
 
   def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile =
@@ -254,9 +254,9 @@ object ArrayTile {
       case ct: UByteCells => UByteArrayTile.fromBytes(bytes, cols, rows, ct)
       case ct: ShortCells => ShortArrayTile.fromBytes(bytes, cols, rows, ct)
       case ct: UShortCells => UShortArrayTile.fromBytes(bytes, cols, rows, ct)
-      case _: IntCells => IntArrayTile.fromBytes(bytes, cols, rows)
-      case _: FloatCells => FloatArrayTile.fromBytes(bytes, cols, rows)
-      case _: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows)
+      case ct: IntCells => IntArrayTile.fromBytes(bytes, cols, rows, ct)
+      case ct: FloatCells => FloatArrayTile.fromBytes(bytes, cols, rows, ct)
+      case ct: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows, ct)
     }
 
   def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile =

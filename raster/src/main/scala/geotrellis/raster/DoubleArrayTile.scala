@@ -24,12 +24,13 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Double] (each cell as a Double).
  */
-final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
-  extends MutableArrayTile with DoubleBasedArrayTile {
-  val cellType = DoubleConstantNoDataCellType
+abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
+    extends MutableArrayTile
+       with DoubleBasedArrayTile {
+  val cellType: DoubleCells with NoDataHandling
 
-  def applyDouble(i: Int) = array(i)
-  def updateDouble(i: Int, z: Double) = array(i) = z
+  def applyDouble(i: Int): Double
+  def updateDouble(i: Int, z: Double)
 
   override def toArrayDouble = array.clone
 
@@ -39,27 +40,100 @@ final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
     bytebuff.asDoubleBuffer.put(array)
     pixels
   }
-
   def copy = ArrayTile(array.clone, cols, rows)
 }
 
-object DoubleArrayTile {
-  def ofDim(cols: Int, rows: Int): DoubleArrayTile = 
-    new DoubleArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
+final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
+    extends DoubleArrayTile(arr, cols, rows) {
+  val cellType = DoubleCellType
+  def applyDouble(i: Int): Double = arr(i)
+  def updateDouble(i: Int, z: Double) { arr(i) = z.toDouble }
+}
 
-  def empty(cols: Int, rows: Int): DoubleArrayTile = 
-    new DoubleArrayTile(Array.ofDim[Double](cols * rows).fill(Double.NaN), cols, rows)
+final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
+    extends DoubleArrayTile(arr, cols, rows) {
+  val cellType = DoubleConstantNoDataCellType
+  def applyDouble(i: Int): Double = arr(i)
+  def updateDouble(i: Int, z: Double) { arr(i) = z }
+}
+
+final case class DoubleUserDefinedNoDataArrayTile(arr: Array[Double], val cols: Int, val rows: Int, val cellType: DoubleUserDefinedNoDataCellType)
+    extends DoubleArrayTile(arr, cols, rows)
+       with UserDefinedDoubleNoDataConversions {
+  val userDefinedDoubleNoDataValue = cellType.noDataValue
+  def applyDouble(i: Int): Double = udd2d(arr(i))
+  def updateDouble(i: Int, z: Double) { arr(i) = d2udd(z) }
+}
+
+object DoubleArrayTile {
+  def apply(arr: Array[Double], cols: Int, rows: Int): DoubleArrayTile =
+    apply(arr, cols, rows, DoubleConstantNoDataCellType)
+
+  def apply(arr: Array[Double], cols: Int, rows: Int, cellType: CellType with DoubleCells): DoubleArrayTile =
+    cellType match {
+      case DoubleCellType =>
+        new DoubleRawArrayTile(arr, cols, rows)
+      case DoubleConstantNoDataCellType =>
+        new DoubleConstantNoDataArrayTile(arr, cols, rows)
+      case udct @ DoubleUserDefinedNoDataCellType(_) =>
+        new DoubleUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+    }
+
+  def ofDim(cols: Int, rows: Int): DoubleArrayTile =
+    ofDim(cols, rows, DoubleConstantNoDataCellType)
+
+  def ofDim(cols: Int, rows: Int, cellType: DoubleCells with NoDataHandling): DoubleArrayTile =
+    cellType match {
+      case DoubleCellType =>
+        new DoubleRawArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
+      case DoubleConstantNoDataCellType =>
+        new DoubleConstantNoDataArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
+      case udct @ DoubleUserDefinedNoDataCellType(_) =>
+        new DoubleUserDefinedNoDataArrayTile(Array.ofDim[Double](cols * rows), cols, rows, udct)
+    }
+
+  def empty(cols: Int, rows: Int): DoubleArrayTile =
+    empty(cols, rows, DoubleConstantNoDataCellType)
+
+  def empty(cols: Int, rows: Int, cellType: DoubleCells with NoDataHandling): DoubleArrayTile = cellType match {
+    case DoubleCellType =>
+      new DoubleRawArrayTile(Array.ofDim[Double](cols * rows).fill(doubleNODATA), cols, rows)
+    case DoubleConstantNoDataCellType =>
+      new DoubleConstantNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(doubleNODATA), cols, rows)
+    case udct @ DoubleUserDefinedNoDataCellType(_) =>
+      new DoubleUserDefinedNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(doubleNODATA), cols, rows, udct)
+  }
 
   def fill(v: Double, cols: Int, rows: Int): DoubleArrayTile =
-    new DoubleArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
+    fill(v, cols, rows, DoubleConstantNoDataCellType)
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): DoubleArrayTile = {
+  def fill(v: Double, cols: Int, rows: Int, cellType: DoubleCells with NoDataHandling): DoubleArrayTile = cellType match {
+    case DoubleCellType =>
+      new DoubleRawArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
+    case DoubleConstantNoDataCellType =>
+      new DoubleConstantNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
+    case udct @ DoubleUserDefinedNoDataCellType(_) =>
+      new DoubleUserDefinedNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows, udct)
+  }
+
+  private def constructDoubleArray(bytes: Array[Byte]): Array[Double] = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val doubleBuffer = byteBuffer.asDoubleBuffer()
     val doubleArray = new Array[Double](bytes.size / DoubleConstantNoDataCellType.bytes)
     doubleBuffer.get(doubleArray)
+    doubleArray
+  }
 
-    DoubleArrayTile(doubleArray, cols, rows)
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): DoubleArrayTile =
+    fromBytes(bytes, cols, rows, DoubleConstantNoDataCellType)
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: DoubleCells with NoDataHandling): DoubleArrayTile = cellType match {
+    case DoubleCellType =>
+      new DoubleRawArrayTile(constructDoubleArray(bytes), cols, rows)
+    case DoubleConstantNoDataCellType =>
+      new DoubleConstantNoDataArrayTile(constructDoubleArray(bytes), cols, rows)
+    case udct @ DoubleUserDefinedNoDataCellType(_) =>
+      new DoubleUserDefinedNoDataArrayTile(constructDoubleArray(bytes), cols, rows, udct)
   }
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Double): DoubleArrayTile = 

@@ -28,25 +28,3 @@ trait DoubleBasedArrayTile {
   def applyDouble(i:Int):Double
   def updateDouble(i:Int, z:Double):Unit
 }
-
-trait RawDoubleBasedArray {
-  def apply(i:Int):Int = applyDouble(i).toInt
-  def update(i:Int, z:Int):Unit = updateDouble(i, z.toInt)
-
-  def applyDouble(i:Int):Double
-  def updateDouble(i:Int, z:Double):Unit
-}
-
-trait DynamicDoubleBasedArray {
-  val noDataValue: Double
-
-  def apply(i:Int):Int = {
-    val n = applyDouble(i)
-    if (n == noDataValue.toDouble) NODATA else n.toInt
-  }
-
-  def update(i:Int, z:Int):Unit = updateDouble(i, if (z == noDataValue.toInt) NODATA else z)
-
-  def applyDouble(i:Int):Double
-  def updateDouble(i:Int, z:Double):Unit
-}
