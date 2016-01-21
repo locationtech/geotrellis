@@ -1,16 +1,17 @@
 package geotrellis.spark.partitioner
 
+import geotrellis.raster._
 import geotrellis.spark._
 import org.apache.spark.rdd._
 
 import scala.reflect._
 
-class SpatialJoinMethods[
+abstract class SpatialJoinMethods[
   K: Boundable: PartitionerIndex: ClassTag,
   V: ClassTag,
   M: ? => Bounds[K]
-](val left: RDD[(K, V)] with Metadata[M]) extends Serializable {
-
+] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
+  def left = self
   def spatialLeftOuterJoin[W, M1: ? => Bounds[K]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, Option[W]))] with Metadata[Bounds[K]] = {
     val kb: Bounds[K] = left.metadata
     val part = SpacePartitioner(kb)
