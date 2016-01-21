@@ -80,10 +80,10 @@ abstract class ZonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtension
       .map { case (key, raster) => (fKey(key), raster.asFeature) }
       .zonalSummaryByKey(multiPolygon, zeroValue)(handler)
 
-  def zonalHistogram(polygon: Polygon): Histogram =
+  def regionHistogram(polygon: Polygon): Histogram =
     zonalSummary(polygon, FastMapHistogram(), Histogram)
 
-  def zonalHistogram(multiPolygon: MultiPolygon): Histogram =
+  def regionHistogram(multiPolygon: MultiPolygon): Histogram =
     zonalSummary(multiPolygon, FastMapHistogram(), Histogram)
 
   def zonalMax(polygon: Polygon): Int =
