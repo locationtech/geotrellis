@@ -26,11 +26,11 @@ object ZSpaceTimeKeyIndex {
   def byMillisecond(): ZSpaceTimeKeyIndex = byMillisecondResolution()
 
   def byMillisecondResolution(millis: Long = 1): ZSpaceTimeKeyIndex =
-    new ZSpaceTimeKeyIndex({ key => (key.instant / millis).toInt }, millis)
+    new ZSpaceTimeKeyIndex(millis)
 }
 
-class ZSpaceTimeKeyIndex(toGrid: SpaceTimeKey => Int, val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
-  private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, toGrid(key))
+class ZSpaceTimeKeyIndex(val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
+  private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, (key.instant / temporalResolution).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z
 
