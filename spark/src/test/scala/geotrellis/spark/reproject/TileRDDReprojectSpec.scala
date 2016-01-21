@@ -25,7 +25,7 @@ class TileRDDReprojectSpec extends FunSpec
 
   describe("TileRDDReproject") {
     val path = "raster-test/data/aspect.tif"
-    val gt = SingleBandGeoTiff(path)
+    val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
 
     val (raster, rdd) = {

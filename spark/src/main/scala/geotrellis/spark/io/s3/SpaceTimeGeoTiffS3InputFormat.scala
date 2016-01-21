@@ -47,7 +47,7 @@ class SpaceTimeGeoTiffS3InputFormat extends S3InputFormat[SpaceTimeInputKey,Tile
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[SpaceTimeInputKey,Tile] {
       def read(key: String, bytes: Array[Byte]) = {
-        val geoTiff = SingleBandGeoTiff(bytes)
+        val geoTiff = SinglebandGeoTiff(bytes)
 
         val timeTag = SpaceTimeGeoTiffS3InputFormat.getTimeTag(context)
         val dateFormatter = SpaceTimeGeoTiffS3InputFormat.getTimeFormatter(context)

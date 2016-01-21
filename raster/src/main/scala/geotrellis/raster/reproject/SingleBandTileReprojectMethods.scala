@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.vector.Extent
 
-trait SingleBandTileReprojectMethods extends TileReprojectMethods[Tile] {
+trait SinglebandTileReprojectMethods extends TileReprojectMethods[Tile] {
   import Reproject.Options
 
   def reproject(srcExtent: Extent, targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform, options: Options): Raster[Tile] =

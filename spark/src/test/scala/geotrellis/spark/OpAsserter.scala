@@ -25,7 +25,7 @@ trait OpAsserter extends FunSpec
     sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
     asserter: (Tile, Tile) => Unit = tilesEqual
   ) = {
-    val tile = SingleBandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile
+    val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 

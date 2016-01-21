@@ -1,7 +1,7 @@
 package geotrellis.raster.imagery
 
 import geotrellis.raster.{ArrayMultibandTile, MultibandTile}
-import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SingleBandGeoTiff}
+import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SinglebandGeoTiff}
 import geotrellis.testkit.TestEngine
 import org.scalatest.FunSpec
 import spire.syntax.cfor._
@@ -17,9 +17,9 @@ class CloudRemovalSpec extends FunSpec
       val multibands = Array.ofDim[MultibandTile](numImages)
 
       cfor(0)(_ < numImages, _ + 1) { i =>
-        val red = SingleBandGeoTiff(geoTiffPath("cloud_images/red/" + (i+1) + ".TIF")).tile
-        val green = SingleBandGeoTiff(geoTiffPath("cloud_images/green/" + (i+1) + ".TIF")).tile
-        val blue = SingleBandGeoTiff(geoTiffPath("cloud_images/blue/" + (i+1) + ".TIF")).tile
+        val red = SinglebandGeoTiff(geoTiffPath("cloud_images/red/" + (i+1) + ".TIF")).tile
+        val green = SinglebandGeoTiff(geoTiffPath("cloud_images/green/" + (i+1) + ".TIF")).tile
+        val blue = SinglebandGeoTiff(geoTiffPath("cloud_images/blue/" + (i+1) + ".TIF")).tile
 
         multibands(i) = ArrayMultibandTile(Array(red, green, blue))
       }
@@ -42,9 +42,9 @@ class CloudRemovalSpec extends FunSpec
       val multibands = Array.ofDim[MultibandTile](numImages)
 
       cfor(0)(_ < numImages, _ + 1) { i =>
-        val red = SingleBandGeoTiff(geoTiffPath("cloud_images/red/" + (i+1) + ".TIF")).tile
-        val green = SingleBandGeoTiff(geoTiffPath("cloud_images/green/" + (i+1) + ".TIF")).tile
-        val blue = SingleBandGeoTiff(geoTiffPath("cloud_images/blue/" + (i+1) + ".TIF")).tile
+        val red = SinglebandGeoTiff(geoTiffPath("cloud_images/red/" + (i+1) + ".TIF")).tile
+        val green = SinglebandGeoTiff(geoTiffPath("cloud_images/green/" + (i+1) + ".TIF")).tile
+        val blue = SinglebandGeoTiff(geoTiffPath("cloud_images/blue/" + (i+1) + ".TIF")).tile
 
         multibands(i) = ArrayMultibandTile(Array(red, green, blue))
       }
@@ -64,9 +64,9 @@ class CloudRemovalSpec extends FunSpec
       val multibands = Array.ofDim[MultibandTile](numImages)
 
       cfor(0)(_ < numImages, _ + 1) { i =>
-        val red = SingleBandGeoTiff(geoTiffPath("cloud_images/red/" + (i+1) + ".TIF")).tile
-        val green = SingleBandGeoTiff(geoTiffPath("cloud_images/green/" + (i+1) + ".TIF")).tile
-        val blue = SingleBandGeoTiff(geoTiffPath("cloud_images/blue/" + (i+1) + ".TIF")).tile
+        val red = SinglebandGeoTiff(geoTiffPath("cloud_images/red/" + (i+1) + ".TIF")).tile
+        val green = SinglebandGeoTiff(geoTiffPath("cloud_images/green/" + (i+1) + ".TIF")).tile
+        val blue = SinglebandGeoTiff(geoTiffPath("cloud_images/blue/" + (i+1) + ".TIF")).tile
 
         multibands(i) = ArrayMultibandTile(Array(red, green, blue))
       }
