@@ -38,6 +38,7 @@ package object spark
     with merge.Implicits
     with reproject.Implicits
     with tiling.Implicits
+    with stitch.Implicits
     with op.Implicits
     with op.local.Implicits
     with op.local.spatial.Implicits
@@ -47,6 +48,8 @@ package object spark
     with op.zonal.summary.Implicits
     with op.elevation.Implicits
     with op.focal.Implicits
+    with partitioner.Implicits
+    with Serializable // required for java serialization, even though it's mixed in
 {
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
@@ -105,8 +108,6 @@ package object spark
 
   implicit class withRasterRDDMethods[K](val self: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends RasterRDDMethods[K]
-
-  implicit class withSpatialRasterRDDMethods(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
 
   implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends MultiBandRasterRDDMethods[K]
