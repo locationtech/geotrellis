@@ -8,11 +8,8 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext._
 
 import spire.syntax.cfor._
-
-import collection.immutable.HashMap
 
 trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
 

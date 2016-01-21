@@ -19,7 +19,7 @@ object Implicits {
   }
 }
 
-class ReorderedRDDSpec extends FunSpec with Matchers with TestSparkContext {
+class ReorderedRDDSpec extends FunSpec with Matchers with TestEnvironment {
   import Implicits._
 
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))

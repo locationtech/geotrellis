@@ -1,17 +1,17 @@
 package geotrellis.spark.op.zonal
 
+import Implicits._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 
 import geotrellis.raster._
+import geotrellis.raster.stitch._
 import geotrellis.raster.op.zonal._
 
 import geotrellis.vector._
 
 import org.scalatest.FunSpec
-
-import collection.immutable.HashMap
 
 import spire.syntax.cfor._
 
@@ -57,7 +57,7 @@ class PercentageSpec extends FunSpec
         TileLayout(3, 4, 3, 2)
       )
 
-      val actual = rdd.zonalPercentage(zonesRDD).stitch.tile
+      val actual = rdd.zonalPercentage(zonesRDD).stitch
       val expected = rdd.stitch.tile.zonalPercentage(zonesRDD.stitch.tile)
 
       (actual.cols, actual.rows) should be (expected.cols, expected.rows)

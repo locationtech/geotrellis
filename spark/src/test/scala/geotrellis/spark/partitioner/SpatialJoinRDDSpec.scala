@@ -6,7 +6,7 @@ import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._
 import spire.math.interval.EmptyBound
 
-class SpatialJoinRDDSpec extends FunSpec with Matchers with TestSparkContext {
+class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
   import Implicits._
 
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))

@@ -1,6 +1,7 @@
 package geotrellis.spark
 
 import geotrellis.raster._
+import geotrellis.raster.stitch._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff._
 
@@ -44,9 +45,9 @@ trait OpAsserter extends FunSpec
         layoutCols,
         layoutRows
       )(sc)
-
+      val s = implicitly[StitcherR[Tile, _]]
     val rasterResult = rasterOp(tile, rasterRDD.metaData.layout.toRasterExtent)
-    val sparkResult = sparkOp(rasterRDD).stitch.tile
+    val sparkResult = sparkOp(rasterRDD).stitch
 
     asserter(rasterResult, sparkResult)
   }
