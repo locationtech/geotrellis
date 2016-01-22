@@ -41,7 +41,7 @@ object ProjectedExtent {
  * An Extent represents a rectangular region of geographic space (with a
  * particular projection). It is expressed in map coordinates.
  */
-case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) extends Geometry {
+case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
   // Validation: Do not accept extents min values greater than max values.
   if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)")  }
@@ -60,11 +60,6 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) extend
       ),
       null
     )
-
-  override def isValid: Boolean = true
-  override def centroid: PointOrNoResult = PointResult(center)
-  override def envelope: Extent = this
-  override def interiorPoint: PointOrNoResult = PointResult(center)
 
   val width = xmax - xmin
   val height = ymax - ymin
