@@ -49,7 +49,6 @@ case class TemporalWindowState[K](
     _tc: TemporalComponent[K]) {
 
   import TemporalWindowHelper._
-  import Implicits._
 
   private lazy val state =
     if (windowSize.isEmpty && unit.isEmpty) 0
