@@ -20,15 +20,16 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
 
   def getS3Client: () => S3Client = () => S3Client.default
 
-  def update[I <: KeyIndex[K]: JsonFormat](id: LayerId, rdd: Container, format: JsonFormat[I]): Unit = {
+  def update[I <: BoundedKeyIndex[K]: JsonFormat](id: LayerId, rdd: Container, format: JsonFormat[I]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
-    val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
+    val (existingHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
       attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], I, Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
+    val keyIndexSpace = existingKeyIndex.keyBounds
     val boundable = implicitly[Boundable[K]]
     val keyBounds = try {
       boundable.getKeyBounds(rdd)
@@ -36,7 +37,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
       case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
     }
 
-    if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
+    if (!boundable.includes(keyBounds.minKey, keyIndexSpace) || !boundable.includes(keyBounds.maxKey, keyIndexSpace))
       throw new LayerOutOfKeyBoundsError(id)
 
     val prefix = existingHeader.key
@@ -45,8 +46,15 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
     val maxWidth = Index.digits(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(existingKeyIndex.toIndex(key), maxWidth))
 
-    logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-    rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    try {
+      logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
+      attributeStore.writeLayerAttributes(
+        id, existingHeader, existingMetadata, boundable.combine(existingKeyBounds, keyBounds), existingKeyIndex, rddWriter.schema
+      )
+      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    } catch {
+      case e: Exception => throw new LayerUpdateError(id).initCause(e)
+    }
   }
 }
 

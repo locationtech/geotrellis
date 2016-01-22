@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.BoundedKeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
@@ -30,7 +30,7 @@ object HilbertSpatialKeyIndex {
     new HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
 }
 
-class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResolution: Int, val yResolution: Int) extends KeyIndex[SpatialKey] {
+class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResolution: Int, val yResolution: Int) extends BoundedKeyIndex[SpatialKey] {
   @transient lazy val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 

@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.zcurve
 
 import org.scalatest._
-import geotrellis.spark.SpaceTimeKey
+import geotrellis.spark.{KeyBounds, SpaceTimeKey}
 import org.joda.time.DateTime
 import scala.collection.immutable.TreeSet
 
@@ -9,9 +9,12 @@ class ZSpaceTimeKeyIndexSpec extends FunSpec with Matchers {
   val y2k = new DateTime(2000, 1, 1, 0, 0)
   val upperBound = 8
 
+  // Defined in order to have possibility to create instances of ZCurve when it is not necessary to persist KeyBounds.
+  val emptyBounds = new KeyBounds(SpaceTimeKey(0, 0, 0), SpaceTimeKey(0, 0, 0))
+
   describe("ZSpaceTimeKeyIndex test") {
     it("indexes time"){
-      val zst = ZSpaceTimeKeyIndex.byYear()
+      val zst = ZSpaceTimeKeyIndex.byYear(emptyBounds)
 
       val keys =
         for(col <- 0 until upperBound;
@@ -26,7 +29,7 @@ class ZSpaceTimeKeyIndexSpec extends FunSpec with Matchers {
     }
 
     it("generates indexes you can check by hand 2x2x2"){
-      val zst = ZSpaceTimeKeyIndex.byMillisecond()
+      val zst = ZSpaceTimeKeyIndex.byMillisecond(emptyBounds)
       val idx = List[SpaceTimeKey](SpaceTimeKey(0, 0, y2k),
                                    SpaceTimeKey(1, 0, y2k),
                                    SpaceTimeKey(0, 1, y2k),
@@ -42,7 +45,7 @@ class ZSpaceTimeKeyIndexSpec extends FunSpec with Matchers {
     }
 
     it("generates a Seq[(Long,Long)] from a keyRange: (SpaceTimeKey, SpaceTimeKey)"){
-      val zst = ZSpaceTimeKeyIndex.byMillisecond()
+      val zst = ZSpaceTimeKeyIndex.byMillisecond(emptyBounds)
 
       //all sub cubes in a 2x2x2
       var idx = zst.indexRanges((SpaceTimeKey(0, 0, y2k), SpaceTimeKey(1, 1, y2k.plusMillis(1))))
@@ -89,7 +92,7 @@ class ZSpaceTimeKeyIndexSpec extends FunSpec with Matchers {
     }
 
     it("generates indexes by resolution") {
-      val zst = ZSpaceTimeKeyIndex.byMonth()
+      val zst = ZSpaceTimeKeyIndex.byMonth(emptyBounds)
 
       val keys =
         for(col <- 0 until upperBound;

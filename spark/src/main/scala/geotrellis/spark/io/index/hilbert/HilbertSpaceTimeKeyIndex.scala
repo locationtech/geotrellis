@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.BoundedKeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
@@ -36,7 +36,7 @@ class HilbertSpaceTimeKeyIndex(
   val xResolution: Int,
   val yResolution: Int,
   val temporalResolution: Int
-) extends KeyIndex[SpaceTimeKey] {
+) extends BoundedKeyIndex[SpaceTimeKey] {
   val startMillis = keyBounds.minKey.temporalKey.time.getMillis
   val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
