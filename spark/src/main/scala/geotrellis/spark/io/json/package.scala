@@ -3,7 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import geotrellis.spark.io.index.hilbert.{HilbertSpaceTimeKeyIndex, HilbertSpatialKeyIndex}
 import geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{BoundedKeyIndex, KeyIndex}
 import geotrellis.spark.io.index.zcurve.{ZSpatialKeyIndex, ZSpaceTimeKeyIndex}
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.proj4.CRS
@@ -117,7 +117,10 @@ package object json {
     def write(obj: ZSpaceTimeKeyIndex): JsValue =
       JsObject(
         "id"   -> obj.id.toJson,
-        "args" -> JsObject("temporalResolution" -> obj.temporalResolution.toJson)
+        "args" -> JsObject(
+          "keyBounds"          -> obj.keyBounds.toJson,
+          "temporalResolution" -> obj.temporalResolution.toJson
+        )
       )
 
     def read(value: JsValue): ZSpaceTimeKeyIndex =
@@ -125,9 +128,12 @@ package object json {
         case Seq(JsString(id), args) => {
           if (id != KeyIndex.zSpaceTimeKeyIndex)
             throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")
-          args.convertTo[JsObject].getFields("temporalResolution") match {
-            case Seq(temporalResolution) =>
-              ZSpaceTimeKeyIndex.byMillisecondResolution(temporalResolution.convertTo[Long])
+          args.convertTo[JsObject].getFields("keyBounds", "temporalResolution") match {
+            case Seq(keyBounds, temporalResolution) =>
+              ZSpaceTimeKeyIndex.byMillisecondResolution(
+                keyBounds.convertTo[KeyBounds[SpaceTimeKey]],
+                temporalResolution.convertTo[Long]
+              )
             case _ =>
               throw new DeserializationException(
                 "Wrong KeyIndex constructor arguments: ZSpaceTimeKeyIndex constructor arguments expected.")
@@ -142,7 +148,7 @@ package object json {
     def write(obj: ZSpatialKeyIndex): JsValue =
       JsObject(
         "id"   -> obj.id.toJson,
-        "args" -> JsObject()
+        "args" -> JsObject("keyBounds" -> obj.keyBounds.toJson)
       )
 
     def read(value: JsValue): ZSpatialKeyIndex =
@@ -151,7 +157,13 @@ package object json {
           if (id != KeyIndex.zSpatialKeyIndex)
             throw new DeserializationException(
               "Wrong KeyIndex type: ZSpatialKeyIndex expected.")
-          new ZSpatialKeyIndex()
+          args.convertTo[JsObject].getFields("keyBounds") match {
+            case Seq(kb) =>
+              new ZSpatialKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
+            case _ =>
+              throw new DeserializationException(
+                "Wrong KeyIndex constructor arguments: ZSpatialKeyIndex constructor arguments expected.")
+          }
         }
         case _ =>
           throw new DeserializationException("Wrong KeyIndex type: ZSpatialKeyIndex expected.")
@@ -188,6 +200,14 @@ package object json {
           throw new DeserializationException("Not a built-in KeyIndex type, provide your own JsonFormat.")
       }
     }
+  }
+
+  implicit def boundedKeyIndexFormat[K] = new RootJsonFormat[index.BoundedKeyIndex[K]] {
+    def write(obj: BoundedKeyIndex[K]): JsValue = {obj: KeyIndex[K]}.toJson
+
+    /** Type cast is correct until all inner keyIndex types implement BoundedKeyIndex trait */
+    def read(value: JsValue): BoundedKeyIndex[K] =
+      value.asJsObject.convertTo[KeyIndex[K]].asInstanceOf[BoundedKeyIndex[K]]
   }
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {

@@ -1,7 +1,7 @@
 package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{BoundedKeyIndex, KeyIndex}
 
 object ZSpaceTimeKeyIndex {
   val MILLIS_PER_SECOND = 1000l
@@ -11,25 +11,25 @@ object ZSpaceTimeKeyIndex {
   val MILLIS_PER_MONTH  = MILLIS_PER_DAY * 30
   val MILLIS_PER_YEAR   = MILLIS_PER_DAY * 365
 
-  def byYear(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_YEAR)
+  def byYear(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds, MILLIS_PER_YEAR)
 
-  def byMonth(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_MONTH)
+  def byMonth(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds, MILLIS_PER_MONTH)
 
-  def byDay(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_DAY)
+  def byDay(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds, MILLIS_PER_DAY)
 
-  def byHour(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_HOUR)
+  def byHour(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds, MILLIS_PER_HOUR)
 
-  def byMinute(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_MINUTE)
+  def byMinute(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds, MILLIS_PER_MINUTE)
 
-  def bySecond(): ZSpaceTimeKeyIndex = byMillisecondResolution(MILLIS_PER_SECOND)
+  def bySecond(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds, MILLIS_PER_SECOND)
 
-  def byMillisecond(): ZSpaceTimeKeyIndex = byMillisecondResolution()
+  def byMillisecond(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = byMillisecondResolution(keyBounds)
 
-  def byMillisecondResolution(millis: Long = 1): ZSpaceTimeKeyIndex =
-    new ZSpaceTimeKeyIndex(millis)
+  def byMillisecondResolution(keyBounds: KeyBounds[SpaceTimeKey], millis: Long = 1): ZSpaceTimeKeyIndex =
+    new ZSpaceTimeKeyIndex(keyBounds, millis)
 }
 
-class ZSpaceTimeKeyIndex(val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
+class ZSpaceTimeKeyIndex(val keyBounds: KeyBounds[SpaceTimeKey], val temporalResolution: Long) extends BoundedKeyIndex[SpaceTimeKey] {
   private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, (key.instant / temporalResolution).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z
