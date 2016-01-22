@@ -27,14 +27,14 @@ object WKB {
   private val readerBox = new ThreadLocal[WKBReader]
   private val writerBox = new ThreadLocal[WKBWriter]
 
-  def read[G <: Geometry](value: Array[Byte]): G = {
+  def read(value: Array[Byte]): Geometry = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
-    Geometry[G](readerBox.get.read(value))
+    Geometry(readerBox.get.read(value))
   }
 
-  def read[G <: Geometry](hex: String): G = {
+  def read(hex: String): Geometry = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
-    Geometry[G](readerBox.get.read(WKBReader.hexToBytes(hex)))
+    Geometry(readerBox.get.read(WKBReader.hexToBytes(hex)))
   }
 
   def write(geom: Geometry, srid: Int = 0): Array[Byte] = {

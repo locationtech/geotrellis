@@ -4,12 +4,12 @@ import geotrellis.vector._
 
 package object wkt {
   implicit class WktWrapper(val g: Geometry) {
-    def toWKT(): String =
+    def toWKT: String =
       WKT.write(g)
   }
 
   implicit class WktStringWrapper(val s: String) {
-    def parseWKT[G <: Geometry](): G =
+    def parseWKT(): Geometry =
       WKT.read(s)
   }
 }
