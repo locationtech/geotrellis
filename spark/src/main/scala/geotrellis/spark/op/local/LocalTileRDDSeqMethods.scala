@@ -9,9 +9,10 @@ import scala.reflect._
 
 abstract class LocalRasterRDDSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
   private def r(f: Traversable[Tile] => (Tile)) =
-    self.headOption match {
-      case Some(head) => head.combineValues(self.tail)(f)
-      case None => sys.error("raster rdd operations can't be applied to empty seq!")
+    self match {
+      case Seq() => sys.error("raster rdd operations can't be applied to empty seq!")
+      case Seq(rdd) => rdd
+      case _ => self.head.combineValues(self.tail)(f)
     }
 
   def localAdd = r { Add.apply }
