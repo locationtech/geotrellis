@@ -16,6 +16,8 @@ sealed trait AggregateResampleMethod extends ResampleMethod
 case object Average extends AggregateResampleMethod
 case object Mode    extends AggregateResampleMethod
 case object Median    extends AggregateResampleMethod
+case object Max    extends AggregateResampleMethod
+case object Min    extends AggregateResampleMethod
 
 object ResampleMethod {
   val DEFAULT: PointResampleMethod = NearestNeighbor
@@ -90,5 +92,7 @@ object Resample {
       case Average => new AverageResample(tile, extent, cs)
       case Mode => new ModeResample(tile, extent, cs)
       case Median => new MedianResample(tile, extent, cs)
+      case Max => new MaxResample(tile, extent, cs)
+      case Min => new MinResample(tile, extent, cs)
     }
 }
