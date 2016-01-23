@@ -2,16 +2,16 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{MergeQueue, KeyIndex, IndexRanges}
+import geotrellis.spark.io.index.{MergeQueue, IndexRanges}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import geotrellis.spark.utils.cache.Cache
+
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
 

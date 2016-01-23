@@ -1,36 +1,46 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
+import geotrellis.spark.io.json._
 import geotrellis.spark.LayerId
+import geotrellis.spark.io.index.KeyIndex
 
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object S3LayerMover {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-    (attributeStore: AttributeStore[JsonFormat], bucket: String, keyPrefix: String): LayerMover[LayerId] = {
-    new GenericLayerMover[LayerId](
+  def apply[
+    K: JsonFormat: ClassTag,
+    V: ClassTag,
+    M: JsonFormat
+  ](attributeStore: AttributeStore[JsonFormat], bucket: String, keyPrefix: String): LayerMover[LayerId, K] = {
+    new GenericLayerMover[LayerId, K](
       layerCopier  = S3LayerCopier[K, V, M](attributeStore, bucket, keyPrefix),
       layerDeleter = S3LayerDeleter(attributeStore)
     )
   }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-    (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): LayerMover[LayerId] = {
+  def apply[
+    K: JsonFormat: ClassTag,
+    V: ClassTag,
+    M: JsonFormat
+  ](bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): LayerMover[LayerId, K] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
-    new GenericLayerMover[LayerId](
+    new GenericLayerMover[LayerId, K](
       layerCopier  = S3LayerCopier[K, V, M](attributeStore, destBucket, destKeyPrefix),
       layerDeleter = S3LayerDeleter(attributeStore)
     )
   }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-    (bucket: String, keyPrefix: String): LayerMover[LayerId] = {
+  def apply[
+    K: JsonFormat: ClassTag,
+    V: ClassTag,
+    M: JsonFormat
+  ](bucket: String, keyPrefix: String): LayerMover[LayerId, K] = {
     val attributeStore = S3AttributeStore(bucket, keyPrefix)
-    new GenericLayerMover[LayerId](
-      layerCopier    = S3LayerCopier[K, V, M](attributeStore, bucket, keyPrefix),
-      layerDeleter   = S3LayerDeleter(attributeStore)
+    new GenericLayerMover[LayerId, K](
+      layerCopier  = S3LayerCopier[K, V, M](attributeStore, bucket, keyPrefix),
+      layerDeleter = S3LayerDeleter(attributeStore)
     )
   }
 }

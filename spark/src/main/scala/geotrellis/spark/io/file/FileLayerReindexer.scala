@@ -21,14 +21,13 @@ object FileLayerReindexer {
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](
-    attributeStore: FileAttributeStore,
-    keyIndexMethod: KeyIndexMethod[K]
-  )(implicit sc: SparkContext): LayerReindexer[LayerId] = {
-    val layerReader = FileLayerReader[K, V, M](attributeStore)
-    val layerDeleter = FileLayerDeleter[K, V, M](attributeStore)
-    val layerWriter = FileLayerWriter[K, V, M](attributeStore, keyIndexMethod)
+    attributeStore: FileAttributeStore
+  )(implicit sc: SparkContext): LayerReindexer[LayerId, K] = {
+    val layerReader  = FileLayerReader[K, V, M](attributeStore)
+    val layerDeleter = FileLayerDeleter(attributeStore)
+    val layerWriter  = FileLayerWriter[K, V, M](attributeStore)
 
-    val layerCopier = new SparkLayerCopier[FileLayerHeader, K, V, M](
+    val layerCopier  = new SparkLayerCopier[FileLayerHeader, K, V, M](
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
@@ -46,8 +45,8 @@ object FileLayerReindexer {
     K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K])(implicit sc: SparkContext): LayerReindexer[LayerId] = {
+  ](catalogPath: String)(implicit sc: SparkContext): LayerReindexer[LayerId, K] = {
     val attributeStore = FileAttributeStore(catalogPath)
-    apply[K, V, M](attributeStore, keyIndexMethod)
+    apply[K, V, M](attributeStore)
   }
 }

@@ -1,12 +1,12 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4.LatLng
-
-import org.apache.spark.rdd._
 
 trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
 

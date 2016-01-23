@@ -1,13 +1,16 @@
 package geotrellis.spark.io
 
-class GenericLayerMover[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDeleter[ID]) extends LayerMover[ID] {
-  def move(from: ID, to: ID): Unit = {
-    layerCopier.copy(from, to)
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import spray.json.JsonFormat
+
+class GenericLayerMover[ID, K](layerCopier: LayerCopier[ID, K], layerDeleter: LayerDeleter[ID]) extends LayerMover[ID, K] {
+  def move[I <: KeyIndex[K]: JsonFormat](from: ID, to: ID, format: JsonFormat[I]): Unit = {
+    layerCopier.copy(from, to, implicitly[JsonFormat[I]])
     layerDeleter.delete(from)
   }
 }
 
 object GenericLayerMover {
-  def apply[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDeleter[ID]) =
+  def apply[ID, K](layerCopier: LayerCopier[ID, K], layerDeleter: LayerDeleter[ID]) =
     new GenericLayerMover(layerCopier, layerDeleter)
 }

@@ -37,11 +37,11 @@ class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, format: JsonFormat[I]): RDD[(K, V)] with Metadata[M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], I, Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -112,7 +112,6 @@ object FileLayerReader {
 
   def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetaData] =
     apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
-
 
   def spaceTimeMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
     apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath)

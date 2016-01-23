@@ -21,10 +21,10 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCode
   catalogPath: String
 )  extends Reader[LayerId, Reader[K, V]] {
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def read[I <: KeyIndex[K]: JsonFormat](layerId: LayerId) = new Reader[K, V] {
 
     val (layerMetaData, _, keyBounds, keyIndex, writerSchema) =
-      attributeStore.readLayerAttributes[FileLayerHeader, Unit, KeyBounds[K], KeyIndex[K], Schema](layerId)
+      attributeStore.readLayerAttributes[FileLayerHeader, Unit, KeyBounds[K], I, Schema](layerId)
 
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, layerMetaData.path, keyIndex, maxWidth)
@@ -44,6 +44,8 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCode
         .getOrElse(throw new TileNotFoundError(key, layerId))
     }
   }
+
+  def read(layerId: LayerId): Reader[K, V] = read[KeyIndex[K]](layerId)
 }
 
 object FileTileReader {
