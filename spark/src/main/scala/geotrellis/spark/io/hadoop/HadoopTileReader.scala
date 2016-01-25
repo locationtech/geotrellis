@@ -19,10 +19,10 @@ class HadoopTileReader[K: JsonFormat: ClassTag, V](val attributeStore: HadoopAtt
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
-    val (layerMetaData, _, _, keyIndex, _) =
+    val (layerMetadata, _, _, keyIndex, _) =
       attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, KeyIndex[K], Unit](layerId)
 
-    val dataPath = layerMetaData.path.suffix(catalogConfig.SEQFILE_GLOB)
+    val dataPath = layerMetadata.path.suffix(catalogConfig.SEQFILE_GLOB)
     val inputConf = conf.withInputPath(dataPath)
     
     def read(key: K): V = {

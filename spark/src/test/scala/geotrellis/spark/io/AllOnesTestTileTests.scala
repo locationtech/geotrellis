@@ -4,7 +4,7 @@ import geotrellis.raster.{GridBounds, Tile}
 import geotrellis.spark._
 import geotrellis.vector.Extent
 
-trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, RasterMetaData] =>
+trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, RasterMetadata] =>
 
   val bounds1 = GridBounds(1,1,3,3)
   val bounds2 = GridBounds(4,5,6,6)

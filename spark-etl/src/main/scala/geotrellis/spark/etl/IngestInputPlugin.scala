@@ -21,26 +21,26 @@ abstract class IngestInputPlugin[I: IngestKey: ? => TilerKeyMethods[I, K], K: Sp
     crs: CRS, scheme: Either[LayoutScheme, LayoutDefinition],
     targetCellType: Option[CellType],
     props: Parameters)
-  (implicit sc: SparkContext): (Int, RDD[(K, Tile)] with Metadata[RasterMetaData]) = {
+  (implicit sc: SparkContext): (Int, RDD[(K, Tile)] with Metadata[RasterMetadata]) = {
 
     val sourceTiles = source(props).reproject(crs).persist(lvl)
-    val (zoom, rasterMetaData) = scheme match {
+    val (zoom, rasterMetadata) = scheme match {
       case Left(layoutScheme) =>
-        val (zoom, rmd) = RasterMetaData.fromRdd(sourceTiles, crs, layoutScheme) { key => key.projectedExtent.extent }
+        val (zoom, rmd) = RasterMetadata.fromRdd(sourceTiles, crs, layoutScheme) { key => key.projectedExtent.extent }
         targetCellType match {
           case None => zoom -> rmd
           case Some(ct) => zoom -> rmd.copy(cellType = ct)
         }
 
       case Right(layoutDefinition) =>
-        0 -> RasterMetaData(
+        0 -> RasterMetadata(
           crs = crs,
           cellType = targetCellType.get,
           extent = layoutDefinition.extent,
           layout = layoutDefinition
         )
     }
-    val tiles = sourceTiles.cutTiles[K](rasterMetaData, NearestNeighbor)
-    zoom -> ContextRDD(tiles, rasterMetaData)
+    val tiles = sourceTiles.cutTiles[K](rasterMetadata, NearestNeighbor)
+    zoom -> ContextRDD(tiles, rasterMetadata)
   }
 }

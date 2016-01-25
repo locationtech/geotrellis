@@ -20,7 +20,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
+    val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema) = try {
       attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -29,7 +29,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     try {
       layerWriter.write(to, layerReader.read(from))
       attributeStore.writeLayerAttributes(
-        to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
+        to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, existingSchema
       )
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)

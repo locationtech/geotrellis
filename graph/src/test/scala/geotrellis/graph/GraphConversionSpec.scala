@@ -20,7 +20,7 @@ class GraphConversionSpec extends FunSpec with TestEnvironment
 
       resultArray should be (correctArray)
 
-      resultRDD.metaData should be (rasterRDD.metaData)
+      resultRDD.metadata should be (rasterRDD.metadata)
     }
 
     ifCanRunSpark {

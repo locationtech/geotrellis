@@ -19,7 +19,7 @@ object AttributeStore {
     val header = "header"
     val keyBounds = "keyBounds"
     val keyIndex = "keyIndex"
-    val metaData = "metadata"
+    val metadata = "metadata"
     val schema = "schema"
   }
 }

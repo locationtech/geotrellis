@@ -10,6 +10,6 @@ import geotrellis.spark.io.json._
 
 class SpatialS3Output extends S3Output[SpatialKey] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) =
-    S3LayerWriter[SpatialKey, Tile, RasterMetaData](props("bucket"), props("key"), method)
+    S3LayerWriter[SpatialKey, Tile, RasterMetadata](props("bucket"), props("key"), method)
 }
 

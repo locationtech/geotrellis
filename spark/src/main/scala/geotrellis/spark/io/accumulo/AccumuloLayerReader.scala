@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
@@ -26,13 +26,13 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
   def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
+    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val queryKeyBounds = rasterQuery(metaData, keyBounds)
+    val queryKeyBounds = rasterQuery(metadata, keyBounds)
 
     val decompose = (bounds: KeyBounds[K]) =>
       keyIndex.indexRanges(bounds).map { case (min, max) =>
@@ -40,7 +40,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
       }
 
     val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
-    new ContextRDD(rdd, metaData)
+    new ContextRDD(rdd, metadata)
   }
 }
 
@@ -55,14 +55,14 @@ object AccumuloLayerReader {
       new AccumuloRDDReader[K, V](instance))
 
   def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](instance)
+    apply[SpatialKey, Tile, RasterMetadata](instance)
 
-  def spatialMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](instance)
+  def spatialMultiband(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultibandTile, RasterMetadata](instance)
 
   def spaceTime(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](instance)
+    apply[SpaceTimeKey, Tile, RasterMetadata](instance)
 
-  def spaceTimeMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance)
+  def spaceTimeMultiband(instance: AccumuloInstance)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](instance)
 }

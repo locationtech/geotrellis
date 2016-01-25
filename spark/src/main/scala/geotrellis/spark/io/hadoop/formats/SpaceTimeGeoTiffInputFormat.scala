@@ -44,7 +44,7 @@ object SpaceTimeGeoTiffInputFormat {
   */
 class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[SpaceTimeInputKey, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (SpaceTimeInputKey, Tile) = {
-    val geoTiff = SingleBandGeoTiff(bytes)
+    val geoTiff = SinglebandGeoTiff(bytes)
 
     val timeTag = SpaceTimeGeoTiffInputFormat.getTimeTag(context)
     val dateFormatter = SpaceTimeGeoTiffInputFormat.getTimeFormatter(context)

@@ -11,7 +11,7 @@ case class HadoopLayerHeader(
 )
 
 object HadoopLayerHeader {
-  implicit object HadoopLayerMetaDataFormat extends RootJsonFormat[HadoopLayerHeader] {
+  implicit object HadoopLayerMetadataFormat extends RootJsonFormat[HadoopLayerHeader] {
     def write(md: HadoopLayerHeader) =
       JsObject(
         "keyClass" -> JsString(md.keyClass),
@@ -27,7 +27,7 @@ object HadoopLayerHeader {
             valueClass,
             new Path(path))
         case _ =>
-          throw new DeserializationException(s"HadoopLayerMetaData expected, got: $value")
+          throw new DeserializationException(s"HadoopLayerMetadata expected, got: $value")
       }
   }
 }

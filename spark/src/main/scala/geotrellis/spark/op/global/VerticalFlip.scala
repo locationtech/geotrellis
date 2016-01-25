@@ -10,7 +10,7 @@ object VerticalFlip {
 
   def apply[K](rasterRDD: RasterRDD[K])
     (implicit keyClassTag: ClassTag[K]): RasterRDD[K] = {
-    val gridBounds = rasterRDD.metaData.gridBounds
+    val gridBounds = rasterRDD.metadata.gridBounds
     val rowHeight = gridBounds.height
 
     rasterRDD.withContext { rdd =>

@@ -17,7 +17,7 @@ package object io {
   class CatalogError(val message: String) extends Exception(message)
 
   class LayerReadError(layerId: LayerId)
-    extends CatalogError(s"LayerMetaData not found for layer $layerId")
+    extends CatalogError(s"LayerMetadata not found for layer $layerId")
 
   class LayerExistsError(layerId: LayerId)
     extends CatalogError(s"Layer $layerId already exists in the catalog")

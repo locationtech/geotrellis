@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
@@ -32,12 +32,12 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
         valueClass = classTag[V].toString(),
         path = layerPath
       )
-    val metaData = rdd.metadata
+    val metadata = rdd.metadata
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
+      attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, Option.empty[Schema])
       // TODO: Writers need to handle Schema changes
 
       rddWriter.write(rdd, layerPath, keyIndex)
@@ -84,15 +84,15 @@ object HadoopLayerWriter {
     )
 
   def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
+    apply[SpatialKey, Tile, RasterMetadata](rootPath, keyIndexMethod)
 
-  def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
+  def spatialMultiband(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
+    apply[SpatialKey, MultibandTile, RasterMetadata](rootPath, keyIndexMethod)
 
   def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
+    apply[SpaceTimeKey, Tile, RasterMetadata](rootPath, keyIndexMethod)
 
-  def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
+  def spaceTimeMultiband(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](rootPath, keyIndexMethod)
 
 }

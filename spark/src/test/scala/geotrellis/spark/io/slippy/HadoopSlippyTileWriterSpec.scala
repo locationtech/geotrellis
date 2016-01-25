@@ -26,14 +26,14 @@ class HadoopSlippyTileWriterSpec
 
       val writer =
         new HadoopSlippyTileWriter[Tile](testPath, "tif")({ (key, tile) =>
-          SingleBandGeoTiff(tile, mapTransform(key), WebMercator).toByteArray
+          SinglebandGeoTiff(tile, mapTransform(key), WebMercator).toByteArray
         })
 
       writer.write(TestFiles.ZOOM_LEVEL, AllOnesTestFile)
 
       val reader =
         new FileSlippyTileReader[Tile](testPath)({ (key, bytes) =>
-          SingleBandGeoTiff(bytes).tile
+          SinglebandGeoTiff(bytes).tile
         })
 
       rastersEqual(reader.read(TestFiles.ZOOM_LEVEL), AllOnesTestFile)

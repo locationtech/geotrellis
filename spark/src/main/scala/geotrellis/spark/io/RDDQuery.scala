@@ -14,7 +14,7 @@ class RDDQuery[K: Boundable, M](
   filterChain: ( (M, List[KeyBounds[K]]) ) => (M, List[KeyBounds[K]]) = { x: (M, List[KeyBounds[K]]) => x }) {
 
   /**
-   * @param metadata RasterMetaData of the layer being queried
+   * @param metadata RasterMetadata of the layer being queried
    * @param keyBounds Maximum [[KeyBounds]] of the layer
    * @return A sequence of [[KeyBounds]] that cover the queried region
    */
