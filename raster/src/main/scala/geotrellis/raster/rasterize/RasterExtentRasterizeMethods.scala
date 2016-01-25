@@ -27,7 +27,7 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
     options: Options = Options.DEFAULT,
     ct : CellType = TypeInt
   )(fn : (Int, Int) => Int) : Tile =
-    geom.foreachCell(self, options, ct)(fn)
+    geom.foreachCell(self, ct, options)(fn)
 
   def foreachCellDouble(
     geom : Geometry,

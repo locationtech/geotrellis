@@ -24,14 +24,42 @@ import geotrellis.vector.Geometry
 trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
 
   def foreachCell(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT,
-    ct : CellType = TypeInt
-  )(fn : (Int, Int) => Int) : Tile = {
+    re: RasterExtent,
+    ct : CellType,
+    options: Options
+  ) (fn: (Int, Int) => Int): Tile = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.set(x,y,fn(x,y)) })
     tile
   }
+
+  def foreachCell(
+    re: RasterExtent,
+    ct : CellType
+  ) (fn: (Int, Int) => Int): Tile =
+    foreachCell(re, ct, Options.DEFAULT)(fn)
+
+  def foreachCell(
+    re: RasterExtent,
+    options: Options
+  ) (fn: (Int, Int) => Int): Tile =
+    foreachCell(re, TypeInt, options)(fn)
+
+  def foreachCell(
+    re: RasterExtent
+  ) (fn: (Int, Int) => Int): Tile =
+    foreachCell(re, TypeInt)(fn)
+
+  def foreachCell[T <: CellGrid](
+    r: Raster[T],
+    options: Options
+  )(fn: (Int, Int) => Unit): Unit =
+    Rasterizer.foreachCellByGeometry(self, r.rasterExtent, options)(fn)
+
+  def foreachCell[T <: CellGrid](
+    r: Raster[T]
+  )(fn: (Int, Int) => Unit): Unit =
+    foreachCell(r, Options.DEFAULT)(fn)
 
   def foreachCellDouble(
     re : RasterExtent,

@@ -19,14 +19,14 @@ import scala.collection.JavaConverters._
 
 /** This input format will use Accumulo [TabletLocator] to create InputSplits for each tablet that contains
  * records from specified ranges. This is unlike AccumuloInputFormat which creates a single split per Range.
- * The MultiRangeInputSplits are intended to be read using a BatchScanner. This drastically reduces the number of 
+ * The MultiRangeInputSplits are intended to be read using a BatchScanner. This drastically reduces the number of
  * splits and consequnetly spark tasks that are produced by this InputFormat. Locality is preserved because tablets
  * may only be hosted by a single tablet server at a given time.
  *
  * Because RecordReader uses BatchScanner a number of modes are not supported: Offline, Isolated and Local Iterators.
  * These modes are backed by specalized scanners that only support scanning through a single range.
  *
- * We borrow some Accumulo machinery to set and read configurations so classOf AccumuloInputFormat should be used 
+ * We borrow some Accumulo machinery to set and read configurations so classOf AccumuloInputFormat should be used
  * for modifying Configuration, as if AccumuloInputFormat will be used.
  *
  * This class uses the internal Accumulo API and will likely not work across versions.
@@ -94,15 +94,15 @@ class BatchAccumuloInputFormat extends InputFormatBase[Key, Value] with LazyLogg
       // tserver: String = server:ip for the tablet server
       // tserverBin: Map[KeyExtent, List[ARange]]
       binnedRanges.asScala map { case (tserver, tserverBin) =>
-        tserverBin.asScala.map { case (keyExtent, extentRanges) =>        
+        tserverBin.asScala.map { case (keyExtent, extentRanges) =>
           val ip = tserver.split(":").head
-          val tabletRange = keyExtent.toDataRange        
+          val tabletRange = keyExtent.toDataRange
           val split = new MultiRangeInputSplit()
           val exr = extentRanges.asScala
-          split.ranges = 
+          split.ranges =
             if (exr.isEmpty)
               List(new ARange())
-            else 
+            else
               exr map { tabletRange.clip }
           split.iterators = IC.getIterators(CLASS, conf).asScala.toList
           split.location = InetAddress.getByName(ip).getCanonicalHostName()

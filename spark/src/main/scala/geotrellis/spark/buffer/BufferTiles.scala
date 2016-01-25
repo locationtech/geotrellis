@@ -25,8 +25,8 @@ object BufferTiles {
   case object TopLeft extends Direction
 
   def collectWithNeighbors[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
-    key: K, 
-    tile: V, 
+    key: K,
+    tile: V,
     includeKey: SpatialKey => Boolean,
     getBufferSizes: SpatialKey => BufferSizes
   ): Seq[(K, (Direction, V))] = {
@@ -95,21 +95,22 @@ object BufferTiles {
               }
 
           val pieces =
-            neighbors.map { case (direction, slice) =>
-              val (updateColMin, updateRowMin) =
+            neighbors.flatMap { case (direction, slice) =>
+              val updateOpt =
                 direction match {
-                  case Center      => (bufferSizes.left, bufferSizes.top)
-                  case Left        => (0, bufferSizes.top)
-                  case Right       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
-                  case Top         => (bufferSizes.left, 0)
-                  case Bottom      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
-                  case TopLeft     => (0, 0)
-                  case TopRight    => (bufferSizes.left + centerTile.cols, 0)
-                  case BottomLeft  => (0, bufferSizes.top + centerTile.rows)
-                  case BottomRight => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
+                  case Center      => Some((bufferSizes.left, bufferSizes.top))
+                  case Left        => Some((0, bufferSizes.top))
+                  case Right       => Some((bufferSizes.left + centerTile.cols, bufferSizes.top))
+                  case Top         => Some((bufferSizes.left, 0))
+                  case Bottom      => Some((bufferSizes.left, bufferSizes.top + centerTile.rows))
+                  case TopLeft if(bufferSizes.left > 0 && bufferSizes.top > 0) => Some((0, 0))
+                  case TopRight if(bufferSizes.right > 0 && bufferSizes.top > 0) => Some((bufferSizes.left + centerTile.cols, 0))
+                  case BottomLeft if(bufferSizes.left > 0 && bufferSizes.bottom > 0) => Some((0, bufferSizes.top + centerTile.rows))
+                  case BottomRight if(bufferSizes.right > 0 && bufferSizes.bottom > 0) => Some((bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows))
+                  case _ => None
                 }
 
-              (slice, (updateColMin, updateRowMin))
+              updateOpt.map { case (updateColMin, updateRowMin) => (slice, (updateColMin, updateRowMin)) }
           }
 
           val cols = centerTile.cols + bufferSizes.left + bufferSizes.right
@@ -123,12 +124,12 @@ object BufferTiles {
   }
 
   /** Buffer the tiles of type V by a constant buffer size.
-    * 
+    *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
-    * 
+    *
     * @tparam         K                 The key of this tile set RDD, requiring a spatial component.
     * @tparam         V                 The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
-    * 
+    *
     * @param          rdd               The keyed tile rdd.
     * @param          bufferSize        Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
     *                                   any side if there is an adjacent, abutting tile to contribute the border pixels.
@@ -140,12 +141,12 @@ object BufferTiles {
     apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
 
   /** Buffer the tiles of type V by a constant buffer size.
-    * 
+    *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
-    * 
+    *
     * @tparam         K                 The key of this tile set RDD, requiring a spatial component.
     * @tparam         V                 The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
-    * 
+    *
     * @param          rdd               The keyed tile rdd.
     * @param          bufferSize        Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
     *                                   any side if there is an adjacent, abutting tile to contribute the border pixels.
@@ -160,7 +161,7 @@ object BufferTiles {
     val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
     val tilesAndSlivers =
       rdd
-        .flatMap { case (key, tile) => 
+        .flatMap { case (key, tile) =>
           collectWithNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
         }
 
@@ -174,12 +175,12 @@ object BufferTiles {
   }
 
   /** Buffer the tiles of type V by a dynamic buffer size.
-    * 
+    *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
-    * 
+    *
     * @tparam         K                 The key of this tile set RDD, requiring a spatial component.
     * @tparam         V                 The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
-    * 
+    *
     * @param          rdd               The keyed tile rdd.
     * @param          getBufferSize     A function which returns the BufferSizes that should be used for a tile at this Key.
     */
@@ -193,19 +194,19 @@ object BufferTiles {
           partition.map { case (key, _) => (key, getBufferSizes(key)) }
         }, preservesPartitioning = true)
         .persist(StorageLevel.MEMORY_ONLY)
- 
+
     val result = apply(rdd, bufferSizesPerKey)
     bufferSizesPerKey.unpersist(blocking = false)
     result
   }
 
   /** Buffer the tiles of type V by a dynamic buffer size.
-    * 
+    *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
-    * 
+    *
     * @tparam         K                        The key of this tile set RDD, requiring a spatial component.
     * @tparam         V                        The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
-    * 
+    *
     * @param          rdd                      The keyed tile rdd.
     * @param          bufferSizesPerKey        An RDD that holds the BufferSizes to use for each key.
     */
@@ -234,7 +235,7 @@ object BufferTiles {
 
           }
 
-      val grouped = 
+      val grouped =
         rdd.partitioner match {
           case Some(partitioner) => contributingKeys.groupByKey(partitioner)
           case None => contributingKeys.groupByKey
@@ -247,7 +248,7 @@ object BufferTiles {
     val tilesAndSlivers =
       rdd
         .join(surroundingBufferSizes)
-        .flatMap { case (key, (tile, bufferSizesMap)) => 
+        .flatMap { case (key, (tile, bufferSizesMap)) =>
           collectWithNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
         }
 

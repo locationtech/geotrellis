@@ -19,7 +19,7 @@ object ZoomedLayoutScheme {
 
 /** Layout for zoom levels based off of a power-of-2 scheme,
   * used in Leaflet et al.
-  * 
+  *
   * @param  crs                      The CRS this zoomed layout scheme will be using
   * @param  tileSize                 The size of each tile in this layout scheme
   * @param  resolutionThreshold      The percentage difference between a cell size and a zoom level
@@ -64,7 +64,6 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
     val worldExtent = crs.worldExtent
     val l =
       zoom(extent.xmin, extent.ymin, cellSize)
-
 
     levelForZoom(worldExtent, l)
   }
