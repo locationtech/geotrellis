@@ -36,7 +36,7 @@ final case class UByteUserDefinedNoDataArrayTile(array: Array[Byte], val cols: I
     extends UByteArrayTile(array, cols, rows)
        with UserDefinedByteNoDataConversions {
   val userDefinedByteNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = udb2i(array(i))
+  def apply(i: Int): Int = udub2i(array(i))
   def update(i: Int, z: Int) { array(i) = i2udb(z) }
 }
 

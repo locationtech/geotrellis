@@ -18,7 +18,7 @@ class Int16GeoTiffMultiBandTile(
 
   val noDataValue: Option[Short] = cellType match {
     case ShortCellType => None
-    case ShortConstantNoDataCellType => Some(0)
+    case ShortConstantNoDataCellType => Some(Short.MinValue)
     case ShortUserDefinedNoDataCellType(nd) => Some(nd)
   }
 

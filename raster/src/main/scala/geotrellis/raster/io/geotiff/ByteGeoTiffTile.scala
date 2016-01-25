@@ -14,7 +14,7 @@ class ByteGeoTiffTile(
 
   val noDataValue: Option[Byte] = cellType match {
     case ByteCellType => None
-    case ByteConstantNoDataCellType => Some(0)
+    case ByteConstantNoDataCellType => Some(Byte.MinValue)
     case ByteUserDefinedNoDataCellType(nd) => Some(nd)
   }
 

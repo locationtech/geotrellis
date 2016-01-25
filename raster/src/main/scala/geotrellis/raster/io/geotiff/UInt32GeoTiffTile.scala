@@ -25,6 +25,6 @@ class UInt32GeoTiffTile(
         }
       }
     }
-    FloatArrayTile(arr, cols, rows)
+    FloatArrayTile(arr, cols, rows, cellType)
   }
 }

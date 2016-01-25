@@ -34,6 +34,6 @@ class UInt16GeoTiffTile(
       }
     }
 
-    UShortArrayTile(arr, cols, rows)
+    UShortArrayTile(arr, cols, rows, cellType)
   }
 }

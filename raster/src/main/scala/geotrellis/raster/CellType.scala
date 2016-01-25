@@ -66,7 +66,7 @@ sealed trait ByteCells extends DataType { self: CellType =>
 sealed trait UByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
-  val name = "int8"
+  val name = "uint8"
 }
 sealed trait ShortCells extends DataType { self: CellType =>
   val bits: Int = 16

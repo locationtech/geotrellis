@@ -64,7 +64,6 @@ object GeoTiffReader {
    */
   def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
-    println("ct", info.cellType, info.noDataValue)
 
     val geoTiffTile =
       if(info.bandCount == 1) {
@@ -139,28 +138,28 @@ object GeoTiffReader {
       case (BitBandType, _) =>
         BitCellType
       // Byte
-      case (ByteBandType, Some(nd)) if (nd.toInt >= Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt) =>
+      case (ByteBandType, Some(nd)) if (nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt) =>
         ByteUserDefinedNoDataCellType(nd.toByte)
       case (ByteBandType, Some(nd)) if (nd.toInt == Byte.MinValue.toInt) =>
         ByteConstantNoDataCellType
       case (ByteBandType, _) =>
         ByteCellType
       // UByte
-      case (UByteBandType, Some(nd)) if (nd.toInt >= 0 && nd <= 255) =>
+      case (UByteBandType, Some(nd)) if (nd.toInt > 0 && nd <= 255) =>
         UByteUserDefinedNoDataCellType(nd.toByte)
       case (UByteBandType, Some(nd)) if (nd.toInt == 0) =>
         UByteConstantNoDataCellType
       case (UByteBandType, _) =>
         UByteCellType
       // Int16/Short
-      case (Int16BandType, Some(nd)) if (nd >= Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) =>
+      case (Int16BandType, Some(nd)) if (nd > Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) =>
         ShortUserDefinedNoDataCellType(nd.toShort)
       case (Int16BandType, Some(nd)) if (nd == Short.MinValue.toDouble) =>
         ShortConstantNoDataCellType
       case (Int16BandType, _) =>
         ShortCellType
       // UInt16/UShort
-      case (UInt16BandType, Some(nd)) if (nd.toInt >= 0 && nd <= 65535) =>
+      case (UInt16BandType, Some(nd)) if (nd.toInt > 0 && nd <= 65535) =>
         UShortUserDefinedNoDataCellType(nd.toShort)
       case (UInt16BandType, Some(nd)) if (nd.toInt == 0) =>
         UShortConstantNoDataCellType

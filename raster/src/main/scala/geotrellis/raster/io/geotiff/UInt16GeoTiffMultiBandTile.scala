@@ -17,9 +17,9 @@ class UInt16GeoTiffMultiBandTile(
     with UInt16GeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
-    case UShortUserDefinedNoDataCellType(nd) => Some(nd.toInt)
-    case _: ConstantNoData => Some(0)
-    case _ => None
+    case UShortCellType => None
+    case UShortConstantNoDataCellType => Some(0)
+    case UShortUserDefinedNoDataCellType(nd) => Some(nd)
   }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =

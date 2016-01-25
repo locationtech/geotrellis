@@ -47,13 +47,6 @@ class Float64GeoTiffTile(
         }
       }
     }
-    cellType match {
-      case DoubleCellType =>
-        DoubleArrayTile.fromBytes(arr, cols, rows)
-      case DoubleConstantNoDataCellType =>
-        DoubleArrayTile.fromBytes(arr, cols, rows)
-      case DoubleUserDefinedNoDataCellType(nd) =>
-        DoubleArrayTile.fromBytes(arr, cols, rows, nd)
-      }
+    DoubleArrayTile.fromBytes(arr, cols, rows, cellType)
   }
 }

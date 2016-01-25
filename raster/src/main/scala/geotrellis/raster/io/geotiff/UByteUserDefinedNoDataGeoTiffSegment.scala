@@ -12,8 +12,8 @@ class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIn
     extends UByteGeoTiffSegment(bytes)
     with UserDefinedByteNoDataConversions {
   val userDefinedByteNoDataValue = userDefinedIntNoDataValue.toByte
-  def getInt(i: Int): Int = udb2i(getRaw(i))
-  def getDouble(i: Int): Double = udb2d(getRaw(i))
+  def getInt(i: Int): Int = udub2i(getRaw(i))
+  def getDouble(i: Int): Double = udub2d(getRaw(i))
 
   protected def intToUByteOut(v: Int): Byte = i2udb(v)
   protected def doubleToUByteOut(v: Double): Byte = d2udb(v)
@@ -83,22 +83,22 @@ class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIn
       case IntUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Int](size)
         cfor(0)(_ < size, _ + 1) { i =>
-          val v = get(i)
-          arr(i) = if (v == userDefinedByteNoDataValue) nd else v
+          val v = getRaw(i)
+          arr(i) = if (v == userDefinedByteNoDataValue) nd else v & 0xFF
         }
         arr.toArrayByte()
       case FloatUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Float](size)
         cfor(0)(_ < size, _ + 1) { i =>
-          val v = get(i)
-          arr(i) = if (v == userDefinedByteNoDataValue) nd else v.toFloat
+          val v = getRaw(i)
+          arr(i) = if (v == userDefinedByteNoDataValue) nd else (v & 0xFF).toFloat
         }
         arr.toArrayByte()
       case DoubleUserDefinedNoDataCellType(nd) =>
         val arr = Array.ofDim[Double](size)
         cfor(0)(_ < size, _ + 1) { i =>
-          val v = get(i)
-          arr(i) = if (v == userDefinedByteNoDataValue) nd else v.toDouble
+          val v = getRaw(i)
+          arr(i) = if (v == userDefinedByteNoDataValue) nd else (v & 0xFF).toDouble
         }
         arr.toArrayByte()
     }

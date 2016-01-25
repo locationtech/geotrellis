@@ -30,7 +30,7 @@ class Float64GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = DoubleArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, DoubleCellType)
+      val expected = RawArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
@@ -40,7 +40,7 @@ class Float64GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = DoubleArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = RawArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
@@ -50,7 +50,7 @@ class Float64GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = DoubleArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = RawArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
@@ -60,7 +60,7 @@ class Float64GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = DoubleArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = RawArrayTile(Array.ofDim[Double](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }

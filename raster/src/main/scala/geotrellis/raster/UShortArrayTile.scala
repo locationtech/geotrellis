@@ -28,8 +28,8 @@ abstract class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
 class UShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
     extends UShortArrayTile(array, cols, rows) {
   val cellType = UShortCellType
-  def apply(i: Int): Int = array(i) & 0xFF
-  def update(i: Int, z: Int) { array(i) = (z & 0xFF).toShort }
+  def apply(i: Int): Int = array(i) & 0xFFFF
+  def update(i: Int, z: Int) { array(i) = (z & 0xFFFF).toShort }
 }
 
 class UShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)

@@ -14,8 +14,8 @@ class Int16UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedSh
   def getInt(i: Int): Int = uds2i(get(i))
   def getDouble(i: Int): Double = uds2d(get(i))
 
-  protected def intToUShortOut(v: Int): Short = i2uds(v)
-  protected def doubleToUShortOut(v: Double): Short = d2uds(v)
+  protected def intToShortOut(v: Int): Short = i2uds(v)
+  protected def doubleToShortOut(v: Double): Short = d2uds(v)
 
   protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {

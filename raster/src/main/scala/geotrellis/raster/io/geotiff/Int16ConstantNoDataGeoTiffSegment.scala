@@ -12,8 +12,8 @@ class Int16ConstantNoDataGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiff
   def getInt(i: Int): Int = s2i(get(i))
   def getDouble(i: Int): Double = s2d(get(i))
 
-  protected def intToUShortOut(v: Int): Short = i2s(v)
-  protected def doubleToUShortOut(v: Double): Short = d2s(v)
+  protected def intToShortOut(v: Int): Short = i2s(v)
+  protected def doubleToShortOut(v: Double): Short = d2s(v)
 
   protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {

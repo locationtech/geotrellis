@@ -271,14 +271,17 @@ object ArrayTile {
       case _: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
     }
 
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteConstantNoDataArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortConstantNoDataArrayTile(arr, cols, rows)
-  def apply(arr: Array[Int], cols: Int, rows: Int) = IntArrayTile(arr, cols, rows)
-  def apply(arr: Array[Float], cols: Int, rows: Int) = FloatArrayTile(arr, cols, rows)
-  def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayTile(arr, cols, rows)
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = new ByteConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = new ShortConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int) = new IntConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int) = new FloatConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int) = new DoubleConstantNoDataArrayTile(arr, cols, rows)
 }
 
 object RawArrayTile {
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows, ByteCellType)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayTile(arr, cols, rows, ShortCellType)
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = new ByteRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = new ShortRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int) = new IntRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int) = new FloatRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int) = new DoubleRawArrayTile(arr, cols, rows)
 }

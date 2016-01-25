@@ -11,11 +11,9 @@ import spire.syntax.cfor._
 class Int16RawGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiffSegment(bytes) {
   def getInt(i: Int): Int = get(i).toInt
   def getDouble(i: Int): Double = get(i).toDouble
-  override def mapDouble(f: Double => Double): Array[Byte] =
-    map(z => f(z.toDouble).toInt)
 
-  protected def intToUShortOut(v: Int): Short = v.toShort
-  protected def doubleToUShortOut(v: Double): Short = v.toShort
+  protected def intToShortOut(v: Int): Short = v.toShort
+  protected def doubleToShortOut(v: Double): Short = v.toShort
 
   protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte] =
     cellType match {

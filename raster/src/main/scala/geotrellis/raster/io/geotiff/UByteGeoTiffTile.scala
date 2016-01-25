@@ -13,8 +13,8 @@ class UByteGeoTiffTile(
 ) extends GeoTiffTile(segmentLayout, compression) with UByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
-    case _: NoNoData => None
-    case _: ConstantNoData => Some(0)
+    case UByteCellType => None
+    case UByteConstantNoDataCellType => Some(0)
     case UByteUserDefinedNoDataCellType(nd) => Some(nd)
   }
 
