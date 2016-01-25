@@ -14,7 +14,7 @@ class GeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) = 
     new S3RecordReader[ProjectedExtent, Tile] {
       def read(key: String, bytes: Array[Byte]) = {
-        val geoTiff = SingleBandGeoTiff(bytes)        
+        val geoTiff = SinglebandGeoTiff(bytes)
         val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
         (ProjectedExtent(extent, crs), tile)        
       }

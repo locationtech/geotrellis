@@ -21,21 +21,21 @@ package object hadoop {
   class SpatialKeyWritable() extends AvroKeyWritable[SpatialKey, SpatialKeyWritable]
   class SpaceTimeKeyWritable() extends AvroKeyWritable[SpaceTimeKey, SpaceTimeKeyWritable]
   class TileWritable() extends AvroWritable[Tile]
-  class MultiBandTileWritable() extends AvroWritable[MultiBandTile]
+  class MultibandTileWritable() extends AvroWritable[MultibandTile]
 
   class SpatialFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, TileWritable]
   class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable]
-  class SpatialMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, MultiBandTileWritable]
-  class SpaceTimeMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, MultiBandTileWritable]
+  class SpatialMultibandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, MultibandTileWritable]
+  class SpaceTimeMultibandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, MultibandTileWritable]
 
   implicit def spatialHadoopFormat =
     HadoopFormat.Aux[SpatialKey, Tile, SpatialKeyWritable, TileWritable, SpatialFilterMapFileInputFormat]
   implicit def spaceTimeHadoopFormat =
     HadoopFormat.Aux[SpaceTimeKey, Tile, SpaceTimeKeyWritable, TileWritable, SpaceTimeFilterMapFileInputFormat]
-  implicit def spatialMultiBandHadoopFormat =
-    HadoopFormat.Aux[SpatialKey, MultiBandTile, SpatialKeyWritable, MultiBandTileWritable, SpatialMultiBandFilterMapFileInputFormat]
-  implicit def spaceTimeMultiBandHadoopFormat =
-    HadoopFormat.Aux[SpaceTimeKey, MultiBandTile, SpaceTimeKeyWritable, MultiBandTileWritable, SpaceTimeMultiBandFilterMapFileInputFormat]
+  implicit def spatialMultibandHadoopFormat =
+    HadoopFormat.Aux[SpatialKey, MultibandTile, SpatialKeyWritable, MultibandTileWritable, SpatialMultibandFilterMapFileInputFormat]
+  implicit def spaceTimeMultibandHadoopFormat =
+    HadoopFormat.Aux[SpaceTimeKey, MultibandTile, SpaceTimeKeyWritable, MultibandTileWritable, SpaceTimeMultibandFilterMapFileInputFormat]
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 

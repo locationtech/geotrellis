@@ -6,7 +6,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 
 import org.apache.avro.Schema
 import geotrellis.spark.utils.cache._
@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @param getCache        Optional cache function to be used when reading File objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
@@ -37,11 +37,11 @@ class FileLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, format: JsonFormat[I]): RDD[(K, V)] with Metadata[M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], I, Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -104,16 +104,15 @@ object FileLayerReader {
   ](attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileLayerReader[K, V, M] =
     apply[K, V, M](attributeStore, attributeStore.catalogPath, None)
 
-  def spatial(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](catalogPath)
+  def spatial(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, Tile, RasterMetadata] =
+    apply[SpatialKey, Tile, RasterMetadata](catalogPath)
 
-  def spatialMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath)
+  def spatialMultiband(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, MultibandTile, RasterMetadata] =
+    apply[SpatialKey, MultibandTile, RasterMetadata](catalogPath)
 
-  def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
+  def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetadata] =
+    apply[SpaceTimeKey, Tile, RasterMetadata](catalogPath)
 
-
-  def spaceTimeMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath)
+  def spaceTimeMultiband(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultibandTile, RasterMetadata] =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](catalogPath)
 }

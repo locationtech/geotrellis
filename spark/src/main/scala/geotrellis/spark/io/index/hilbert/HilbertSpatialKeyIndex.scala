@@ -1,11 +1,10 @@
 package geotrellis.spark.io.index.hilbert
 
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.BoundedKeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
 import com.google.uzaygezen.core.MultiDimensionalSpec
-import com.google.uzaygezen.core.BitVector
 import com.google.uzaygezen.core.BitVectorFactories
 import com.google.uzaygezen.core.BacktrackingQueryBuilder
 import com.google.uzaygezen.core.RegionInspector
@@ -15,9 +14,7 @@ import com.google.uzaygezen.core.PlainFilterCombiner
 import com.google.uzaygezen.core.ZoomingSpaceVisitorAdapter
 import com.google.uzaygezen.core.ranges.LongRange
 import com.google.uzaygezen.core.ranges.LongRangeHome
-
 import com.google.common.base.Functions
-import com.google.common.collect.ImmutableList
 
 import scala.collection.JavaConversions._
 import spire.syntax.cfor._
@@ -33,7 +30,7 @@ object HilbertSpatialKeyIndex {
     new HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
 }
 
-class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int, yResolution: Int) extends KeyIndex[SpatialKey] {
+class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResolution: Int, val yResolution: Int) extends BoundedKeyIndex[SpatialKey] {
   @transient lazy val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec( 
@@ -81,7 +78,7 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
       )
 
     val combiner = 
-      new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1));
+      new PlainFilterCombiner[LongRange, java.lang.Long, LongContent, LongRange](LongRange.of(0, 1))
 
     val queryBuilder = 
       BacktrackingQueryBuilder.create(

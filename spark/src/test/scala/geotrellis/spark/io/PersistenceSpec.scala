@@ -1,20 +1,19 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.rdd.RDD
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 import scala.reflect._
 
 abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with Matchers { self: FunSpec =>
   type TestReader = FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
-  type TestWriter = Writer[LayerId, RDD[(K, V)] with Metadata[M]]
+  type TestWriter = Writer[LayerId, K, RDD[(K, V)] with Metadata[M]]
   type TestUpdater = LayerUpdater[LayerId, K, V, M]
   type TestDeleter = LayerDeleter[LayerId]
-  type TestCopier = LayerCopier[LayerId]
-  type TestMover = LayerMover[LayerId]
-  type TestReindexer = LayerReindexer[LayerId]
+  type TestCopier = LayerCopier[LayerId, K]
+  type TestMover = LayerMover[LayerId, K]
+  type TestReindexer = LayerReindexer[LayerId, K]
   type TestTileReader = Reader[LayerId, Reader[K, V]]
 
   def sample: RDD[(K, V)] with Metadata[M]
@@ -26,6 +25,8 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
   def reindexer: TestReindexer
   def tiles: TestTileReader
 
+  val writerKeyIndexMethod: KeyIndexMethod[K]
+  val reindexerKeyIndexMethod: KeyIndexMethod[K]
   val layerId = LayerId("sample-" + this.getClass.getName, 1)
   val deleteLayerId = LayerId("deleteSample-" + this.getClass.getName, 1) // second layer to avoid data race
   val copiedLayerId = LayerId("copySample-" + this.getClass.getName, 1)
@@ -46,8 +47,8 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
   }
 
   it("should write a layer") {
-    writer.write(layerId, sample)
-    writer.write(deleteLayerId, sample)
+    writer.write(layerId, sample, writerKeyIndexMethod)
+    writer.write(deleteLayerId, sample, writerKeyIndexMethod)
   }
 
   it("should read a layer back") {
@@ -106,12 +107,12 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
 
   it("should not reindex a layer which doesn't exists") {
     intercept[LayerNotFoundError] {
-      reindexer.reindex(movedLayerId)
+      reindexer.reindex(movedLayerId, reindexerKeyIndexMethod)
     }
   }
 
   it("should reindex a layer") {
     copier.copy(layerId, reindexedLayerId)
-    reindexer.reindex(reindexedLayerId)
+    reindexer.reindex(reindexedLayerId, reindexerKeyIndexMethod)
   }
 }

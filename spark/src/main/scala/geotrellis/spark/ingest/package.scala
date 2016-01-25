@@ -24,12 +24,12 @@ package object ingest {
   implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
 
   implicit class withCollectMetadataMethods[K: IngestKey, V <: CellGrid](rdd: RDD[(K, V)]) extends Serializable {
-    def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData) = {
-      RasterMetaData.fromRdd(rdd, crs, layoutScheme)(_.projectedExtent.extent)
+    def collectMetadata(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetadata) = {
+      RasterMetadata.fromRdd(rdd, crs, layoutScheme)(_.projectedExtent.extent)
     }
 
-    def collectMetaData(crs: CRS, layout: LayoutDefinition): RasterMetaData = {
-      RasterMetaData.fromRdd(rdd, crs, layout)(_.projectedExtent.extent)
+    def collectMetadata(crs: CRS, layout: LayoutDefinition): RasterMetadata = {
+      RasterMetadata.fromRdd(rdd, crs, layout)(_.projectedExtent.extent)
     }
   }
 }

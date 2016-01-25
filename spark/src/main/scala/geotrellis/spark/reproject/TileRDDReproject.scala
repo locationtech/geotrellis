@@ -41,11 +41,11 @@ object TileRDDReproject {
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
-    metadata: RasterMetaData,
+    metadata: RasterMetadata,
     destCrs: CRS,
     layoutScheme: LayoutScheme,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetadata]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val mapTransform: MapKeyTransform = layout.mapTransform
@@ -106,7 +106,7 @@ object TileRDDReproject {
         }
 
     val (zoom, newMetadata) =
-      RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
+      RasterMetadata.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
 
     val tiled = reprojectedTiles
       .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.rasterReprojectOptions.method, partitioner = bufferedTiles.partitioner))
@@ -129,14 +129,14 @@ object TileRDDReproject {
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    rdd: RDD[(K, V)] with Metadata[RasterMetaData],
+    rdd: RDD[(K, V)] with Metadata[RasterMetadata],
     destCrs: CRS,
     layoutScheme: LayoutScheme,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
-    val crs = rdd.metaData.crs
-    val mapTransform = rdd.metaData.layout.mapTransform
-    val tileLayout = rdd.metaData.layout.tileLayout
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetadata]) = {
+    val crs = rdd.metadata.crs
+    val mapTransform = rdd.metadata.layout.mapTransform
+    val tileLayout = rdd.metadata.layout.tileLayout
 
     val rasterExtents: RDD[(K, (RasterExtent, RasterExtent))] =
       rdd
@@ -193,12 +193,12 @@ object TileRDDReproject {
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    rdd: RDD[(K, V)] with Metadata[RasterMetaData],
+    rdd: RDD[(K, V)] with Metadata[RasterMetadata],
     destCrs: CRS,
     layoutScheme: LayoutScheme,
     bufferSize: Int,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetadata]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
       apply(fakeBuffers, rdd.metadata, destCrs, layoutScheme, options)

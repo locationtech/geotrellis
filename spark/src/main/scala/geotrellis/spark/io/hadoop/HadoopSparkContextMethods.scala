@@ -61,21 +61,21 @@ trait HadoopSparkContextMethods {
       classOf[Tile]
     )
 
-  def hadoopMultiBandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultiBandTile)] =
-    hadoopMultiBandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+  def hadoopMultibandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultibandTile)] =
+    hadoopMultibandGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
-  def hadoopMultiBandGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, MultiBandTile)] =
-    hadoopMultiBandGeoTiffRDD(new Path(path), Seq(tiffExtension))
+  def hadoopMultibandGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, MultibandTile)] =
+    hadoopMultibandGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopMultiBandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultiBandTile)] =
-    hadoopMultiBandGeoTiffRDD(new Path(path), tiffExtensions)
+  def hadoopMultibandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultibandTile)] =
+    hadoopMultibandGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultiBandTile)] =
+  def hadoopMultibandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultibandTile)] =
     sc.newAPIHadoopRDD(
       sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
-      classOf[MultiBandGeoTiffInputFormat],
+      classOf[MultibandGeoTiffInputFormat],
       classOf[ProjectedExtent],
-      classOf[MultiBandTile]
+      classOf[MultibandTile]
     )
 
   def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
@@ -94,7 +94,7 @@ trait HadoopSparkContextMethods {
     inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(NetCdfBand, Tile)] = {
     val makeTime = (info: GdalRasterInfo) =>
     info.file.meta.find {
-      case(key, value) => key.toLowerCase == inputFormat.baseDateMetaDataKey.toLowerCase
+      case(key, value) => key.toLowerCase == inputFormat.baseDateMetadataKey.toLowerCase
     }.map(_._2) match {
       case Some(baseString) => {
 

@@ -11,4 +11,4 @@ import reflect.ClassTag
 class GraphRDD[K: ClassTag](
   val graph: Graph[Double, Double],
   val keysRDD: RDD[K],
-  val metaData: RasterMetaData) extends Serializable
+  val metadata: RasterMetadata) extends Serializable

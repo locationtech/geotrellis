@@ -11,7 +11,7 @@ private[index] trait HilbertKeyIndexMethod
 object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
   implicit def spatialKeyIndexIndex(m: HilbertKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
-      def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] = {
+      def createIndex(keyBounds: KeyBounds[SpatialKey]) = {
         val xResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
         val yResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
         HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
@@ -20,7 +20,7 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
 
   def apply(temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] = {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = {
         val xResolution = resolution(keyBounds.maxKey.row - keyBounds.minKey.row)
         val yResolution = resolution(keyBounds.maxKey.col - keyBounds.minKey.col)
 
@@ -30,7 +30,7 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
 
   def apply(minDate: DateTime, maxDate: DateTime, temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] = {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = {
         val adjustedKeyBounds = {
           val minKey = keyBounds.minKey
           val maxKey = keyBounds.maxKey

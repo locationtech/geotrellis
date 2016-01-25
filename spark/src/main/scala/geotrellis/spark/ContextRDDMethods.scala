@@ -5,7 +5,7 @@ import org.apache.spark.rdd._
 import scala.reflect._
 
 class ContextRDDMethods[K: ClassTag, V: ClassTag, M](val rdd: RDD[(K, V)] with Metadata[M]) extends Serializable {
-  def metaData = rdd.metadata
+  def metadata = rdd.metadata
 
   def reduceByKey(f: (V, V) => V): RDD[(K, V)] with Metadata[M] =
     rdd.withContext { rdd => rdd.reduceByKey(f) }

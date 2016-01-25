@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -9,7 +9,6 @@ import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
@@ -18,14 +17,14 @@ import scala.reflect.ClassTag
 
 class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
   (rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext) extends LayerMover[LayerId] {
+  (implicit sc: SparkContext) extends LayerMover[LayerId, K] {
 
-  override def move(from: LayerId, to: LayerId): Unit = {
+  def move[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
     val (header, metadata, keyBounds, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], I, Unit](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerMoveError(from, to).initCause(e)
     }

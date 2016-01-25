@@ -10,7 +10,6 @@ import geotrellis.spark.render._
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
 import scala.reflect._
 
-
 class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
   def name = "render"
   def key = classTag[SpatialKey]
@@ -45,6 +44,6 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
         rdd.asInstanceOf[RasterRDD[SpatialKey]].renderGeoTiff(id, props("path"))
     }
 
-  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) = ???
+  def writer(props: Parameters) = ???
 }
 

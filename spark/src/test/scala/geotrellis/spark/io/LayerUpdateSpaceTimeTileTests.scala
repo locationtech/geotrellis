@@ -1,19 +1,19 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4.LatLng
 
-import org.apache.spark.rdd._
-
-trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
+trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata] with TestEnvironment =>
 
   def updater: TestUpdater
 
-  def dummyRasterMetaData: RasterMetaData =
-    RasterMetaData(
+  def dummyRasterMetadata: RasterMetadata =
+    RasterMetadata(
       TypeInt,
       LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
       Extent(0,0,1,1),
@@ -26,7 +26,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
 
   it("should not update a layer (empty set)") {
     intercept[LayerUpdateError] {
-      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetadata](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetadata))
     }
   }
 
@@ -37,7 +37,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
     val update = new ContextRDD(sc.parallelize(
       (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
         (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-    ), dummyRasterMetaData)
+    ), dummyRasterMetadata)
 
     intercept[LayerOutOfKeyBoundsError] {
       updater.update(layerId, update)

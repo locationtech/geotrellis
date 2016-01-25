@@ -15,18 +15,20 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId] =
-    new LayerCopier[LayerId] {
-      def copy(from: LayerId, to: LayerId): Unit = {
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
+    (sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId, K] =
+    new LayerCopier[LayerId, K] {
+
+      def copy[I <: KeyIndex[K]: JsonFormat](from: LayerId, to: LayerId, format: JsonFormat[I]): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
-        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metaData)
+        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metadata)
         if(!sourceMetadataFile.exists) throw new LayerNotFoundError(from)
 
         // Read the metadata file out.
         val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], I, Schema](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
         }
@@ -58,12 +60,12 @@ object FileLayerCopier {
       }
     }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerCopier[LayerId] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerCopier[LayerId, K] =
     apply[K, V, M](FileAttributeStore(catalogPath))
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerCopier[LayerId] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerCopier[LayerId, K] =
     apply[K, V, M](attributeStore, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerCopier[LayerId] =
+  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerCopier[LayerId, K] =
     apply[K, V, M](FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
 }
