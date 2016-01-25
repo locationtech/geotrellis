@@ -56,7 +56,7 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
         }
       }
 
-      res
+      res: Tile
     }
   }
 

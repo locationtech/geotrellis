@@ -2,7 +2,6 @@ package geotrellis.spark.stitch
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.stitch.StitcherR
 import geotrellis.spark.tiling.MapKeyTransform
 import geotrellis.spark._
 import org.apache.spark.rdd.RDD

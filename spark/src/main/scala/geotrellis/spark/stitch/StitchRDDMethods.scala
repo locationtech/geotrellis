@@ -1,7 +1,7 @@
 package geotrellis.spark.stitch
 
 import geotrellis.raster._
-import geotrellis.raster.stitch.{Stitcher, StitcherR}
+import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
@@ -13,8 +13,8 @@ object TileLayoutStitcher {
    * Makes the assumption that all tiles are of equal size such that they can be placed in a grid layout.
    * @return An option of stitched tile and the GridBounds of keys used to construct it.
    */
-  def stitch[V <: CellGrid, R <: CellGrid](tiles: Iterable[(Product2[Int, Int], V)])
-  (implicit stitcher: StitcherR[V, R]): (R, GridBounds) = {
+  def stitch[V <: CellGrid](tiles: Iterable[(Product2[Int, Int], V)])
+  (implicit stitcher: Stitcher[V]): (V, GridBounds) = {
     require(tiles.nonEmpty, "nonEmpty input")
     val sample = tiles.head._2
     val te = GridBounds.envelope(tiles.map(_._1))
@@ -27,7 +27,7 @@ object TileLayoutStitcher {
         val updateRow = (row - te.rowMin) * tileRows
         (v, (updateCol, updateRow))
       }
-    val tile: R = stitcher.stitch(pieces, te.width * tileCols, te.height * tileRows)
+    val tile: V = stitcher.stitch(pieces, te.width * tileCols, te.height * tileRows)
     (tile, te)
   }
 }
@@ -35,7 +35,7 @@ object TileLayoutStitcher {
 abstract class SpatialTileLayoutRDDMethods[V <: CellGrid, M: ? => MapKeyTransform]
   extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
-  def stitch[R <: CellGrid](implicit stitcher: StitcherR[V, R]): Raster[R] = {
+  def stitch(implicit stitcher: Stitcher[V]): Raster[V] = {
     val (tile, bounds) = TileLayoutStitcher.stitch(self.collect())
     val mkt: MapKeyTransform = self.metadata
     Raster(tile, mkt(bounds))
@@ -45,7 +45,7 @@ abstract class SpatialTileLayoutRDDMethods[V <: CellGrid, M: ? => MapKeyTransfor
 abstract class SpatialTileRDDMethods[V <: CellGrid]
   extends MethodExtensions[RDD[(SpatialKey, V)]] {
 
-  def stitch[R <: CellGrid](implicit stitcher: StitcherR[V, R]): R = {
+  def stitch(implicit stitcher: Stitcher[V]): V = {
     TileLayoutStitcher.stitch(self.collect())._1
   }
 }

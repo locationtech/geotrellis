@@ -33,37 +33,3 @@ object Stitcher {
   }
 
 }
-
-
-trait StitcherR[T <: CellGrid, R <: CellGrid] extends Serializable {
-  def stitch(pieces: Iterable[(T, (Int, Int))], cols: Int, rows: Int): R
-}
-
-object StitcherR {
-  implicit def tileStitcher[T <: Tile] = new StitcherR[T, Tile] {
-    def stitch(pieces: Iterable[(T, (Int, Int))], cols: Int, rows: Int): Tile = {
-      val result = ArrayTile.empty(pieces.head._1.cellType, cols, rows)
-      for((tile, (updateColMin, updateRowMin)) <- pieces) {
-        result.update(updateColMin, updateRowMin, tile)
-      }
-      result
-    }
-  }
-
-  implicit def multiBandTileStitcher[T <: MultiBandTile] = new StitcherR[T, MultiBandTile] {
-    def stitch(pieces: Iterable[(T, (Int, Int))], cols: Int, rows: Int): MultiBandTile = {
-      val headTile = pieces.head._1
-      val bands = Array.fill[MutableArrayTile](headTile.bandCount)(ArrayTile.empty(headTile.cellType, cols, rows))
-
-      for ((tile, (updateColMin, updateRowMin)) <- pieces) {
-        for(b <- 0 until headTile.bandCount) {
-          bands(b).update(updateColMin, updateRowMin, tile.band(b))
-        }
-      }
-
-      ArrayMultiBandTile(bands)
-    }
-  }
-
-}
-

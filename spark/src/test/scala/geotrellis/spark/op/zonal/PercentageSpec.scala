@@ -12,7 +12,7 @@ import geotrellis.raster.op.zonal._
 import geotrellis.vector._
 
 import org.scalatest.FunSpec
-
+import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
 
 class PercentageSpec extends FunSpec
@@ -23,7 +23,7 @@ class PercentageSpec extends FunSpec
 
   describe("Percentage Zonal Operation") {
     it("gives correct percentage for example raster rdds") {
-      val rdd = createRasterRDD(
+      val rdd: RDD[(SpatialKey, Tile)] = createRasterRDD(
         sc,
         ArrayTile(Array(
           1, 2, 2,  2, 3, 1,  6, 5, 1,
@@ -40,7 +40,7 @@ class PercentageSpec extends FunSpec
         TileLayout(3, 4, 3, 2)
       )
 
-      val zonesRDD = createRasterRDD(
+      val zonesRDD: RDD[(SpatialKey, Tile)] = createRasterRDD(
         sc,
         ArrayTile(Array(
           1, 1, 1,  4, 4, 4,  5, 6, 6,
