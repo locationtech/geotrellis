@@ -10,33 +10,33 @@ import java.util.Locale
 
 import math.BigDecimal
 
-trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
+trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] {
   def bandCount: Int
 
   def band(bandIndex: Int): Tile
 
-  def convert(newCellType: CellType): MultiBandTile
+  def convert(newCellType: CellType): MultibandTile
 
   /** Map each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def map(f: (Int, Int) => Int): MultiBandTile
+  def map(f: (Int, Int) => Int): MultibandTile
 
   /** Map each band's double value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def mapDouble(f: (Int, Double) => Double): MultiBandTile
+  def mapDouble(f: (Int, Double) => Double): MultibandTile
 
   /** Map a single band's int value.
     * @param    bandIndex  Band index to map over.
     * @param    f          Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def map(b0: Int)(f: Int => Int): MultiBandTile
+  def map(b0: Int)(f: Int => Int): MultibandTile
 
   /** Map each band's double value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def mapDouble(b0: Int)(f: Double => Double): MultiBandTile
+  def mapDouble(b0: Int)(f: Double => Double): MultibandTile
 
   /** Iterate over each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the foreachped value for that cell value.
@@ -74,13 +74,13 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
     * Note: this method uses macros to side step the inefficiency of Function3 not being specialized.
     */
   def combine(b0: Int, b1: Int, b2: Int)(f: (Int, Int, Int) => Int): Tile =
-    macro MultiBandTileMacros.intCombine3_impl[Tile, MultiBandTile]
+    macro MultibandTileMacros.intCombine3_impl[Tile, MultibandTile]
 
   /** Combine four int band value for each cell.
     * Note: this method uses macros to side step the inefficiency of Function4 not being specialized.
     */
   def combine(b0: Int, b1: Int, b2: Int, b3: Int)(f: (Int, Int, Int, Int) => Int): Tile =
-    macro MultiBandTileMacros.intCombine4_impl[Tile, MultiBandTile]
+    macro MultibandTileMacros.intCombine4_impl[Tile, MultibandTile]
 
   /** Combine each double band value for each cell.
     * This method will be inherently slower than calling a method with explicitly stated bands,
@@ -96,12 +96,12 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
     * Note: this method uses macros to side step the inefficiency of Function3 not being specialized.
     */
   def combineDouble(b0: Int, b1: Int, b2: Int)(f: (Double, Double, Double) => Double): Tile =
-    macro MultiBandTileMacros.doubleCombine3_impl[Tile, MultiBandTile]
+    macro MultibandTileMacros.doubleCombine3_impl[Tile, MultibandTile]
 
   /** Combine four double band value for each cell.
     * Note: this method uses macros to side step the inefficiency of Function4 not being specialized.
     */
   def combineDouble(b0: Int, b1: Int, b2: Int, b3: Int)(f: (Double, Double, Double, Double) => Double): Tile =
-    macro MultiBandTileMacros.doubleCombine4_impl[Tile, MultiBandTile]
+    macro MultibandTileMacros.doubleCombine4_impl[Tile, MultibandTile]
 
 }

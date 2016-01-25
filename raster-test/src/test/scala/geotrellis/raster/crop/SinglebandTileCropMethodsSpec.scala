@@ -6,7 +6,7 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class SingleBandTileCropMethodsSpec 
+class SinglebandTileCropMethodsSpec
     extends FunSpec
     with Matchers
     with TestEngine

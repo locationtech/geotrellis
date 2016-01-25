@@ -38,7 +38,7 @@ object HadoopLayerReindexer {
         if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
         if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, _) = try {
+        val (existingLayerHeader, existingMetadata, existingKeyBounds, existingKeyIndex, _) = try {
           attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
@@ -47,7 +47,7 @@ object HadoopLayerReindexer {
         try {
           layerWriter.write(to, layerReader.read(from))
           attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, Option.empty[Schema]
+            to, headerUpdate(to, existingLayerHeader), existingMetadata, existingKeyBounds, existingKeyIndex, Option.empty[Schema]
           )
         } catch {
           case e: Exception => new LayerCopyError(from, to).initCause(e)

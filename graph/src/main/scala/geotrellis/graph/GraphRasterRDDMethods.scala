@@ -100,9 +100,9 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   // TODO: Update or remove
   // def toGraph: GraphRDD[K] = {
-  //   val metaData = rasterRDD.metadata
-  //   val gridBounds = metaData.gridBounds
-  //   val tileLayout = metaData.tileLayout
+  //   val metadata = rasterRDD.metadata
+  //   val gridBounds = metadata.gridBounds
+  //   val tileLayout = metadata.tileLayout
 
   //   val (layoutCols, layoutRows) = (gridBounds.width - 1, gridBounds.height - 1)
   //   val (tileCols, tileRows) = (tileLayout.tileCols, tileLayout.tileRows)
@@ -256,7 +256,7 @@ trait GraphRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   //   val graph = Graph(verticesRDD, edgesRDD)
   //   val keysRDD = rasterRDD.map { case(key, tile) => key }
-  //   new GraphRDD(graph, keysRDD, rasterRDD.metaData)
+  //   new GraphRDD(graph, keysRDD, rasterRDD.metadata)
   // }
 
 }

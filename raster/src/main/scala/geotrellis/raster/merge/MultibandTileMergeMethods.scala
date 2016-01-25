@@ -1,11 +1,11 @@
 package geotrellis.raster.merge
 
 import geotrellis.raster.resample.ResampleMethod
-import geotrellis.raster.{ArrayMultiBandTile, Tile, MultiBandTile}
+import geotrellis.raster.{ArrayMultibandTile, Tile, MultibandTile}
 import geotrellis.vector.Extent
 
-trait MultiBandTileMergeMethods extends TileMergeMethods[MultiBandTile] {
-  def merge(other: MultiBandTile): MultiBandTile = {
+trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
+  def merge(other: MultibandTile): MultibandTile = {
     val bands: Seq[Tile] =
       for {
         bandIndex <- 0 until self.bandCount
@@ -15,10 +15,10 @@ trait MultiBandTileMergeMethods extends TileMergeMethods[MultiBandTile] {
         thisBand.merge(thatBand)
       }
 
-    ArrayMultiBandTile(bands)
+    ArrayMultibandTile(bands)
   }
 
-  def merge(extent: Extent, otherExtent: Extent, other: MultiBandTile, method: ResampleMethod): MultiBandTile = {
+  def merge(extent: Extent, otherExtent: Extent, other: MultibandTile, method: ResampleMethod): MultibandTile = {
     val bands: Seq[Tile] =
       for {
         bandIndex <- 0 until self.bandCount
@@ -28,6 +28,6 @@ trait MultiBandTileMergeMethods extends TileMergeMethods[MultiBandTile] {
         thisBand.merge(extent, otherExtent, thatBand, method)
       }
 
-    ArrayMultiBandTile(bands)
+    ArrayMultibandTile(bands)
   }
 }

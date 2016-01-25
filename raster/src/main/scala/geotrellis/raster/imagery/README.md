@@ -5,7 +5,7 @@ This code can be used to generate cloud-free satellite imagery from a set of ima
 *Input* - An array of multiband RGB rasters.  
 *Output* - A relatively cloud-free PNG of the given extent.
 
-*cloudRemovalMultiBand* is the important function here. It takes in an array of *MultiBandTile*, which are the GeoTIFF tiles we need to operate on and an optional *threshold* parameter, which specifies the pixel intensity value below which the resultant cloudless-pixels' intensities would lie. The function returns a processed *MultiBandTile* that can be rendered as a PNG.
+*cloudRemovalMultiband* is the important function here. It takes in an array of *MultibandTile*, which are the GeoTIFF tiles we need to operate on and an optional *threshold* parameter, which specifies the pixel intensity value below which the resultant cloudless-pixels' intensities would lie. The function returns a processed *MultibandTile* that can be rendered as a PNG.
 
 Here's an example of it's usage:
 
@@ -22,17 +22,17 @@ Here's an example of it's usage:
     
         assert(numImages == fileListBlue.length && numImages == fileListGreen.length)
     
-        val multiBands = Array.ofDim[MultiBandTile](numImages)
+        val multibands = Array.ofDim[MultibandTile](numImages)
     
         cfor(0)(_ < numImages, _ + 1) { i =>
-          val red = SingleBandGeoTiff(fileListRed(i).toString).tile
-          val green = SingleBandGeoTiff(fileListGreen(i).toString).tile
-          val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile
+          val red = SinglebandGeoTiff(fileListRed(i).toString).tile
+          val green = SinglebandGeoTiff(fileListGreen(i).toString).tile
+          val blue = SinglebandGeoTiff(fileListBlue(i).toString).tile
     
-          multiBands(i) = ArrayMultiBandTile(Array(red, green, blue))
+          multibands(i) = ArrayMultibandTile(Array(red, green, blue))
         }
     
-        val cloudless = cloudRemovalMultiBand(multiBands)
+        val cloudless = cloudRemovalMultiband(multibands)
         cloudless.renderPng().write("/tmp/cloudless.png")
       }
 

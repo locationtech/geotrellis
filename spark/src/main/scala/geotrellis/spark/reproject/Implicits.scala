@@ -22,5 +22,5 @@ trait Implicits {
   implicit class withTileRDDReprojectMethods[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-  ](self: RDD[(K, V)] with Metadata[RasterMetaData]) extends TileRDDReprojectMethods[K, V](self)
+  ](self: RDD[(K, V)] with Metadata[RasterMetadata]) extends TileRDDReprojectMethods[K, V](self)
 }

@@ -34,7 +34,7 @@ class GeoTiffTileSpec extends FunSpec
 
     it("should work against econic.tif Striped NoCompression") {
       val options = GeoTiffOptions(Striped, NoCompression)
-      val expected = SingleBandGeoTiff(s"$baseDataPath/econic.tif").tile
+      val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options).toArrayTile
 
       assertEqual(expected, actual)
@@ -43,7 +43,7 @@ class GeoTiffTileSpec extends FunSpec
     it("should work against econic.tif Striped with Deflate compression") {
       val options = GeoTiffOptions(Striped, DeflateCompression)
 
-      val expected = SingleBandGeoTiff(s"$baseDataPath/econic.tif").tile
+      val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
 
       assertEqual(actual, expected)
@@ -52,7 +52,7 @@ class GeoTiffTileSpec extends FunSpec
     it("should work against econic.tif Tiled with no compression") {
       val options = GeoTiffOptions(Tiled, NoCompression)
 
-      val expected = SingleBandGeoTiff(s"$baseDataPath/econic.tif").tile
+      val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
 
       assertEqual(actual, expected)
@@ -61,7 +61,7 @@ class GeoTiffTileSpec extends FunSpec
     it("should work against econic.tif Tiled with Deflate compression") {
       val options = GeoTiffOptions(Tiled, Deflate)
 
-      val expected = SingleBandGeoTiff(s"$baseDataPath/econic.tif").tile
+      val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
 
       assertEqual(actual, expected)

@@ -3,7 +3,7 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector._
 
-trait SingleBandTileResampleMethods extends TileResampleMethods[Tile] {
+trait SinglebandTileResampleMethods extends TileResampleMethods[Tile] {
   def resample(extent: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     Raster(self, extent).resample(target, method).tile
 

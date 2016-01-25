@@ -70,8 +70,8 @@ package object render {
       val uri = new URI(parseFriendlyTemplate)
 
 
-      val transform = rdd.metaData.mapTransform
-      val crs = rdd.metaData.crs
+      val transform = rdd.metadata.mapTransform
+      val crs = rdd.metadata.crs
       val paintTile = (k: SpatialKey, t: Tile) => GeoTiff(t, transform(k), crs).toByteArray
 
       // Hadoop appears to have  poor support for S3, requiring  specialized handling

@@ -13,13 +13,13 @@ trait SpatialRasterRDDMethods {
   def stitch: Raster[Tile] = {
     val tileMap = rdd.collect().toMap
 
-    val rmd = rdd.metaData
+    val rmd = rdd.metadata
     val tileCols = rmd.tileLayout.tileCols
     val tileRows = rmd.tileLayout.tileRows
 
-    // discover what I have here, in reality RasterMetaData should reflect this already
+    // discover what I have here, in reality RasterMetadata should reflect this already
     val te = GridBounds.envelope(tileMap.keys)
-    val tileExtent: Extent = rdd.metaData.mapTransform(te)
+    val tileExtent: Extent = rdd.metadata.mapTransform(te)
 
     val tiles = te.coords map { case (col, row) =>
       tileMap.getOrElse(col -> row, EmptyTile(rmd.cellType, tileCols, tileRows))

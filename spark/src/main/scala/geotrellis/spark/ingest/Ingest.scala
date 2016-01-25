@@ -34,7 +34,7 @@ object Ingest {
    * The ingest process has the following steps:
    *
    *  - Reproject tiles to the desired CRS:  (CRS, RDD[(Extent, CRS), Tile)]) -> RDD[(Extent, Tile)]
-   *  - Determine the appropriate layer meta data for the layer. (CRS, LayoutScheme, RDD[(Extent, Tile)]) -> LayerMetaData)
+   *  - Determine the appropriate layer meta data for the layer. (CRS, LayoutScheme, RDD[(Extent, Tile)]) -> LayerMetadata)
    *  - Resample the rasters into the desired tile format. RDD[(Extent, Tile)] => RasterRDD[K]
    *  - Optionally pyramid to top zoom level, calling sink at each level
    *
@@ -66,10 +66,10 @@ object Ingest {
     sourceTiles.persist()
     val reprojectedTiles =
       sourceTiles.reproject(destCRS, resampleMethod).cache()
-    val (zoom, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = reprojectedTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
-    val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
+    val (zoom, rasterMetadata) =
+      RasterMetadata.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
+    val tiledRdd = reprojectedTiles.tileToLayout(rasterMetadata, resampleMethod).cache()
+    val rasterRdd = new ContextRDD(tiledRdd, rasterMetadata)
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {
       if (zoom >= 1) {

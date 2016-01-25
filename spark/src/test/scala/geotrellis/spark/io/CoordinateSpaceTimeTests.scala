@@ -5,7 +5,7 @@ import geotrellis.raster.{GridBounds, Tile}
 import geotrellis.spark._
 import org.joda.time.DateTime
 
-trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] =>
+trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata] =>
   val dates = Vector( // all the dates in the layer
     new DateTime(2010,1,1,0,0,0, DateTimeZone.UTC),
     new DateTime(2011,1,1,0,0,0, DateTimeZone.UTC),

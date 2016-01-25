@@ -14,8 +14,8 @@ class PredictorGeoTiffReaderSpec extends FunSpec
 
   describe("Reading a geotiff with compression and predictor=2") {
     def read(compressionType: String, bandType: String): (Tile, Tile) = {
-      val actual = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/predictor2/$compressionType-${bandType}.tif")).tile;
-      val expected = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/uncompressed-${bandType}.tif")).tile;
+      val actual = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/predictor2/$compressionType-${bandType}.tif")).tile;
+      val expected = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/uncompressed-${bandType}.tif")).tile;
       (actual, expected)
     }
 
@@ -30,8 +30,8 @@ class PredictorGeoTiffReaderSpec extends FunSpec
     }
 
     it("should read deflate byte tiled with predictor=2 and match uncompressed") {
-      val expected = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/predictor2/deflate-byte-tiled.tif")).tile;
-      val actual = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/uncompressed-byte.tif")).tile;
+      val expected = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/predictor2/deflate-byte-tiled.tif")).tile;
+      val actual = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/uncompressed-byte.tif")).tile;
       assertEqual(actual, expected);
     }
 
@@ -86,16 +86,16 @@ class PredictorGeoTiffReaderSpec extends FunSpec
     }
 
     it("should read lzw float32 with negative values with predictor=2 and match uncompressed") {
-      val expected = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/predictor2/lzw-float32-neg.tif")).tile;
-      val actual = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/uncompressed-float32-neg.tif")).tile;
+      val expected = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/predictor2/lzw-float32-neg.tif")).tile;
+      val actual = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/uncompressed-float32-neg.tif")).tile;
       assertEqual(actual, expected);
     }
   }
 
   describe("Reading a geotiff with compression and predictor=3") {
     def read(compressionType: String, bandType: String): (Tile, Tile) = {
-      val actual = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/predictor3/$compressionType-${bandType}.tif")).tile;
-      val expected = GeoTiffReader.readSingleBand(geoTiffPath(s"predictor/uncompressed-${bandType}.tif")).tile;
+      val actual = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/predictor3/$compressionType-${bandType}.tif")).tile;
+      val expected = GeoTiffReader.readSingleband(geoTiffPath(s"predictor/uncompressed-${bandType}.tif")).tile;
       (actual, expected)
     }
 

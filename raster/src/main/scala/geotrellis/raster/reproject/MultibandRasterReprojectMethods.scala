@@ -7,7 +7,7 @@ import geotrellis.proj4._
 
 import spire.syntax.cfor._
 
-trait MultiBandRasterReprojectMethods extends RasterReprojectMethods[MultiBandRaster] {
+trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRaster] {
   import Reproject.Options
 
   def reproject(
@@ -15,7 +15,7 @@ trait MultiBandRasterReprojectMethods extends RasterReprojectMethods[MultiBandRa
     transform: Transform,
     inverseTransform: Transform,
     options: Options
-  ): MultiBandRaster = {
+  ): MultibandRaster = {
     val Raster(tile, extent) = self
     val bands =
       for(bandIndex <- 0 until tile.bandCount ) yield {
@@ -23,6 +23,6 @@ trait MultiBandRasterReprojectMethods extends RasterReprojectMethods[MultiBandRa
           .reproject(targetRasterExtent, transform, inverseTransform, options)
       }
 
-    Raster(ArrayMultiBandTile(bands.map(_.tile)), bands.head.extent)
+    Raster(ArrayMultibandTile(bands.map(_.tile)), bands.head.extent)
   }
 }

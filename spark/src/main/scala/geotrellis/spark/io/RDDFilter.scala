@@ -98,8 +98,8 @@ object Intersects {
     new RDDFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val extent = polygon.envelope
-        val keyext = metadata.asInstanceOf[RasterMetaData].mapTransform(kb.minKey)
-        val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
+        val keyext = metadata.asInstanceOf[RasterMetadata].mapTransform(kb.minKey)
+        val bounds = metadata.asInstanceOf[RasterMetadata].mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
         /*
          * Construct a rasterExtent that fits tightly around the

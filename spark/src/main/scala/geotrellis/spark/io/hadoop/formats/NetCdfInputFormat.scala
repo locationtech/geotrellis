@@ -131,7 +131,7 @@ object NetCdfInputFormat {
 }
 
 class NetCdfInputFormat(
-  val baseDateMetaDataKey: String,
+  val baseDateMetadataKey: String,
   val dateTimeFormat: String,
   val yearOffset: Int = 0,
   val monthOffset: Int = 0,

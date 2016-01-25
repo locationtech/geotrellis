@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
 import geotrellis.spark._
@@ -18,9 +18,9 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V       Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
- * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
+ * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultibandRasterRDD)
  */
 class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
@@ -70,14 +70,14 @@ object HadoopLayerReader {
     apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath)
+    apply[SpatialKey, Tile, RasterMetadata](rootPath)
 
-  def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
+  def spatialMultiband(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpatialKey, MultibandTile, RasterMetadata](rootPath)
 
   def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
+    apply[SpaceTimeKey, Tile, RasterMetadata](rootPath)
 
-  def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
+  def spaceTimeMultiband(rootPath: Path)(implicit sc: SparkContext) =
+    apply[SpaceTimeKey, MultibandTile, RasterMetadata](rootPath)
 }

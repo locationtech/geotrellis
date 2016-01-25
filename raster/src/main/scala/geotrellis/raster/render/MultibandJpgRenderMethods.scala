@@ -3,12 +3,12 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import spire.syntax.cfor._
 
-trait MultiBandPngRenderMethods {
+trait MultibandJpgRenderMethods {
 
-  val tile: MultiBandTile
+  val tile: MultibandTile
 
   /**
-    * Generate a PNG image from a multiband raster.
+    * Generate a JPG image from a multiband raster.
     *
     * Use this operation when you have a multiband raster of data that you want to
     * visualize with an image.
@@ -16,7 +16,7 @@ trait MultiBandPngRenderMethods {
     * To render with this method, you must first ensure that your tile is encoded
     * with integer data whose values range from 0 to 255.
     */
-  def renderPng(): Png = {
+  def renderJpg(): Jpg = {
     assert(tile.bandCount == 3)
     val rgb =
       tile.convert(TypeInt).combine(0, 1, 2) { (rBand, gBand, bBand) =>
@@ -30,6 +30,6 @@ trait MultiBandPngRenderMethods {
         }
       }
 
-    rgb.renderPng
+    rgb.renderJpg
   }
 }

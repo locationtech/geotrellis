@@ -5,8 +5,8 @@ import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
-trait MultiBandRasterResampleMethods extends RasterResampleMethods[MultiBandRaster] {
-  def resample(target: RasterExtent, method: ResampleMethod): MultiBandRaster = {
+trait MultibandRasterResampleMethods extends RasterResampleMethods[MultibandRaster] {
+  def resample(target: RasterExtent, method: ResampleMethod): MultibandRaster = {
     val tile = self.tile
     val extent = self.extent
     val bandCount = tile.bandCount
@@ -16,6 +16,6 @@ trait MultiBandRasterResampleMethods extends RasterResampleMethods[MultiBandRast
       resampledBands(b) = Raster(tile.band(b), extent).resample(target, method).tile
     }
 
-    Raster(ArrayMultiBandTile(resampledBands), target.extent)
+    Raster(ArrayMultibandTile(resampledBands), target.extent)
   }
 }

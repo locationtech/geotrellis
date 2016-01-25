@@ -5,15 +5,15 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-class SingleBandGeoTiff(
+class SinglebandGeoTiff(
   val tile: Tile,
   val extent: Extent,
   val crs: CRS,
   val tags: Tags,
   val options: GeoTiffOptions
 ) extends GeoTiff[Tile] {
-  def mapTile(f: Tile => Tile): SingleBandGeoTiff =
-    SingleBandGeoTiff(f(tile), extent, crs, tags, options)
+  def mapTile(f: Tile => Tile): SinglebandGeoTiff =
+    SinglebandGeoTiff(f(tile), extent, crs, tags, options)
 
   def imageData: GeoTiffImageData =
     tile match {
@@ -22,17 +22,17 @@ class SingleBandGeoTiff(
     }
 }
 
-object SingleBandGeoTiff {
+object SinglebandGeoTiff {
 
-  def unapply(sbg: SingleBandGeoTiff): Option[(Tile, Extent, CRS, Tags)] =
+  def unapply(sbg: SinglebandGeoTiff): Option[(Tile, Extent, CRS, Tags)] =
     Some((sbg.tile, sbg.extent, sbg.crs, sbg.tags))
 
   def apply(
     tile: Tile,
     extent: Extent,
     crs: CRS
-  ): SingleBandGeoTiff =
-    new SingleBandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
+  ): SinglebandGeoTiff =
+    new SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
 
   def apply(
     tile: Tile,
@@ -40,52 +40,52 @@ object SingleBandGeoTiff {
     crs: CRS,
     tags: Tags,
     options: GeoTiffOptions
-  ): SingleBandGeoTiff =
-    new SingleBandGeoTiff(tile, extent, crs, tags, options)
+  ): SinglebandGeoTiff =
+    new SinglebandGeoTiff(tile, extent, crs, tags, options)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * The GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(bytes: Array[Byte]): SingleBandGeoTiff = 
-    GeoTiffReader.readSingleBand(bytes)
+  def apply(bytes: Array[Byte]): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(bytes)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = 
-    GeoTiffReader.readSingleBand(bytes, decompress)
+  def apply(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(bytes, decompress)
   
   /** Read a single-band GeoTIFF file from the file at the given path.
     * The GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String): SingleBandGeoTiff = 
-    GeoTiffReader.readSingleBand(path)
+  def apply(path: String): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path)
 
   /** Read a single-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean): SingleBandGeoTiff = 
-    GeoTiffReader.readSingleBand(path, decompress)
+  def apply(path: String, decompress: Boolean): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path, decompress)
 
 
   /** Read a single-band GeoTIFF file from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
-  def compressed(path: String): SingleBandGeoTiff =
-    GeoTiffReader.readSingleBand(path, false)
+  def compressed(path: String): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path, false)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
-  def compressed(bytes: Array[Byte]): SingleBandGeoTiff =
-    GeoTiffReader.readSingleBand(bytes, false)
+  def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(bytes, false)
 
-  implicit def singleBandGeoTiffToTile(sbg: SingleBandGeoTiff): Tile =
+  implicit def singlebandGeoTiffToTile(sbg: SinglebandGeoTiff): Tile =
     sbg.tile
 
-  implicit def singleBandGeoTiffToRaster(sbg: SingleBandGeoTiff): SingleBandRaster =
+  implicit def singlebandGeoTiffToRaster(sbg: SinglebandGeoTiff): SinglebandRaster =
     sbg.raster
 
-  implicit def singleBandGeoTiffToProjectedRaster(sbg: SingleBandGeoTiff): ProjectedRaster[Tile] =
+  implicit def singlebandGeoTiffToProjectedRaster(sbg: SinglebandGeoTiff): ProjectedRaster[Tile] =
     sbg.projectedRaster
 }

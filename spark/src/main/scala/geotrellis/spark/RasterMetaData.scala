@@ -15,7 +15,7 @@ import org.apache.spark.rdd._
  * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
-case class RasterMetaData(
+case class RasterMetadata(
   cellType: CellType,
   layout: LayoutDefinition,
   extent: Extent,
@@ -33,7 +33,7 @@ case class RasterMetaData(
   def tileTransform(tileScheme: TileScheme): TileKeyTransform =
     tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
 
-  def combine(other: RasterMetaData) = {
+  def combine(other: RasterMetadata) = {
     val combinedExtent       = extent combine other.extent
     val combinedLayoutExtent = layout.extent combine other.layout.extent
     val combinedTileLayout   = layout.tileLayout combine other.layout.tileLayout
@@ -50,8 +50,8 @@ case class RasterMetaData(
   }
 }
 
-object RasterMetaData {
-  implicit def toLayoutDefinition(md: RasterMetaData): LayoutDefinition =
+object RasterMetadata {
+  implicit def toLayoutDefinition(md: RasterMetadata): LayoutDefinition =
     md.layout
 
   def envelopeExtent[K, V <: CellGrid](rdd: RDD[(K, V)])(getExtent: K => Extent): (Extent, CellType, CellSize) = {
@@ -75,22 +75,22 @@ object RasterMetaData {
    * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
    */
   def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition)
-                (getExtent: K => Extent): RasterMetaData = {
+                (getExtent: K => Extent): RasterMetadata = {
     val (uncappedExtent, cellType, _) = envelopeExtent(rdd)(getExtent)
-    RasterMetaData(cellType, layout, uncappedExtent, crs)
+    RasterMetadata(cellType, layout, uncappedExtent, crs)
   }
 
   /**
    * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
    */
   def fromRdd[K, V <: CellGrid](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme)
-                (getExtent: K => Extent): (Int, RasterMetaData) = {
+                (getExtent: K => Extent): (Int, RasterMetadata) = {
     val (uncappedExtent, cellType, cellSize) = envelopeExtent(rdd)(getExtent)
     val LayoutLevel(zoom, layout) = scheme.levelFor(uncappedExtent, cellSize)
-    (zoom, RasterMetaData(cellType, layout, uncappedExtent, crs))
+    (zoom, RasterMetadata(cellType, layout, uncappedExtent, crs))
   }
 
-  def fromRdd[K: IngestKey, V <: CellGrid](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData) = {
+  def fromRdd[K: IngestKey, V <: CellGrid](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetadata) = {
     val (extent, cellType, cellSize, crs) =
       rdd
         .map { case (key, grid) =>
@@ -109,6 +109,6 @@ object RasterMetaData {
         }
 
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
-    (zoom, RasterMetaData(cellType, layout, extent, crs))
+    (zoom, RasterMetadata(cellType, layout, extent, crs))
   }
 }

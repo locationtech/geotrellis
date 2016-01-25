@@ -22,28 +22,28 @@ import AttributeStore.Fields
  */
 class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
 
-  def readLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat]
-    (id: LayerId):(Header, MetaData, KeyBounds, KeyIndex, Schema) = {
+  def readLayerAttributes[Header: JsonFormat, Metadata: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat]
+    (id: LayerId):(Header, Metadata, KeyBounds, KeyIndex, Schema) = {
     val header = Try {
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)
         .convertTo[Header](fieldLens(Fields.header))
     }.getOrElse {
       // Back in my day we stored header fields directly in the body
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)
         .convertTo[Header]
     }
 
     val metadata = Try {
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
-        .convertTo[MetaData](fieldLens(Fields.metaData))
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)
+        .convertTo[Metadata](fieldLens(Fields.metadata))
     }.getOrElse {
-      // Back in my day we used rasterMetaData tag because it was the only possible type of metadata
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
-        .convertTo[MetaData](fieldLens("rasterMetaData"))
+      // Back in my day we used rasterMetadata tag because it was the only possible type of metadata
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)
+        .convertTo[Metadata](fieldLens("rasterMetadata"))
     }
 
     val keyBounds = Try {
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)
         .convertTo[KeyBounds](fieldLens(Fields.keyBounds))
     }.getOrElse {
       // Back in my day we stored keyBounds in it's own attribute
@@ -51,7 +51,7 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
     }
 
     val keyIndex = Try {
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)
         .convertTo[KeyIndex](fieldLens(Fields.keyIndex))
     }.getOrElse {
       // Back in my day we stored keyIndex in it's own attribute
@@ -59,7 +59,7 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
     }
 
     val schema = Try {
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)(fieldLens(Fields.schema))
+      attributeStore.cacheRead[JsObject](id, Fields.metadata)(fieldLens(Fields.schema))
         .convertTo[Schema](fieldLens(Fields.schema))
     }.getOrElse {
       // Back in my day we stored schema in it's own attribute
@@ -70,21 +70,21 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
   }
 
   def readLayerAttribute[T: JsonFormat](id: LayerId, attributeName: String): T =
-    attributeStore.cacheRead[JsObject](id, Fields.metaData).convertTo[T](fieldLens(attributeName))
+    attributeStore.cacheRead[JsObject](id, Fields.metadata).convertTo[T](fieldLens(attributeName))
 
-  def writeLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
-    id: LayerId, header: Header, metadata: MetaData, keyBounds: KeyBounds, keyIndex: KeyIndex, schema: Schema): Unit = {
+  def writeLayerAttributes[Header: JsonFormat, Metadata: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
+    id: LayerId, header: Header, metadata: Metadata, keyBounds: KeyBounds, keyIndex: KeyIndex, schema: Schema): Unit = {
 
     val obj = JsObject(
       Fields.header -> header.toJson,
-      Fields.metaData -> metadata.toJson,
+      Fields.metadata -> metadata.toJson,
       Fields.keyBounds -> keyBounds.toJson,
       Fields.keyIndex -> keyIndex.toJson,
       Fields.schema -> schema.toJson
     )
 
     import DefaultJsonProtocol._
-    attributeStore.cacheWrite[JsObject](id, Fields.metaData, obj)
+    attributeStore.cacheWrite[JsObject](id, Fields.metadata, obj)
   }
 
   private def fieldLens[T: JsonFormat](fieldName: String): JsonFormat[T] = new JsonFormat[T] {
