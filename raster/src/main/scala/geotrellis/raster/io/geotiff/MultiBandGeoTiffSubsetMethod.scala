@@ -22,7 +22,7 @@ import geotrellis.raster.io.geotiff._
 
 trait MultiBandGeoTiffSubsetMethod[T <: MultiBandGeoTiff] extends MethodExtensions[T] {
 
-  def subset(m: Map[Int, Int]): ArrayMultiBandTile = {
+  def permutation(m: Map[Int, Int]): ArrayMultiBandTile = {
     val mbTile = self.tile
     val oldBandCount = mbTile.bandCount
     val newBandCount = m.size
@@ -39,4 +39,9 @@ trait MultiBandGeoTiffSubsetMethod[T <: MultiBandGeoTiff] extends MethodExtensio
     new ArrayMultiBandTile(bands)
   }
 
+  def subset(bands: Seq[Int]): ArrayMultiBandTile =
+    permutation(List.range(0, bands.length).zip(bands).toMap)
+
+  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    permutation(List.range(0, bands.length).zip(bands).toMap)
 }
