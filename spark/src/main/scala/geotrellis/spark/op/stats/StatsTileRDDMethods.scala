@@ -5,12 +5,15 @@ import geotrellis.raster.op.local._
 import geotrellis.raster.histogram._
 import geotrellis.spark._
 import geotrellis.spark.op._
+import org.apache.spark.Partitioner
 import org.apache.spark.SparkContext._
 import geotrellis.raster.op.stats._
+import org.apache.spark.rdd.RDD
 
 trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
 
-  def averageByKey = {
+  def averageByKey: RDD[(K, Tile)] = averageByKey(None)
+  def averageByKey(partitioner: Option[Partitioner]): RDD[(K, Tile)] = {
     val createCombiner = (tile: Tile) => tile -> 1
     val mergeValue = (tup: (Tile, Int), tile2: Tile) => {
       val (tile1, count) = tup
@@ -21,14 +24,14 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       val (tile2, count2) = tup2
       tile1 + tile2 -> (count1 + count2)
     }
-    self
-      .combineByKey(createCombiner, mergeValue, mergeCombiners)
+    partitioner
+      .fold(self.combineByKey(createCombiner, mergeValue, mergeCombiners))(self.combineByKey(createCombiner, mergeValue, mergeCombiners, _))
       .mapValues { case (tile, count) => tile / count}
   }
 
   def histogram: Histogram = {
     self
-      .map{ case (key, tile) => tile.histogram }
+      .map { case (key, tile) => tile.histogram }
       .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1,h2)) }
   }
 

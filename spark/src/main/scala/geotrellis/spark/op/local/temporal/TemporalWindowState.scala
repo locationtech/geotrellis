@@ -2,6 +2,7 @@ package geotrellis.spark.op.local.temporal
 
 import geotrellis.raster._
 import geotrellis.spark._
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import org.joda.time.{DateTimeZone, DateTime}
 import reflect.ClassTag
@@ -42,7 +43,8 @@ case class TemporalWindowState[K](
   method: Int,
   windowSize: Option[Int] = None,
   unit: Option[Int] = None,
-  start: Option[DateTime] = None
+  start: Option[DateTime] = None,
+  partitioner: Option[Partitioner] = None
 )(
   implicit val keyClassTag: ClassTag[K],
     _sc: SpatialComponent[K],
@@ -69,10 +71,10 @@ case class TemporalWindowState[K](
   def to(to: DateTime) =
     if (state != 2) badState
     else method match {
-      case Average => rdd.temporalMean(windowSize.get, unit.get, start.get, to)
-      case Minimum => rdd.temporalMin(windowSize.get, unit.get, start.get, to)
-      case Maximum => rdd.temporalMax(windowSize.get, unit.get, start.get, to)
-      case Variance => rdd.temporalVariance(windowSize.get, unit.get, start.get, to)
+      case Average => rdd.temporalMean(windowSize.get, unit.get, start.get, to, partitioner)
+      case Minimum => rdd.temporalMin(windowSize.get, unit.get, start.get, to, partitioner)
+      case Maximum => rdd.temporalMax(windowSize.get, unit.get, start.get, to, partitioner)
+      case Variance => rdd.temporalVariance(windowSize.get, unit.get, start.get, to, partitioner)
       case _ => throw new IllegalStateException("Bad method $method.")
     }
 

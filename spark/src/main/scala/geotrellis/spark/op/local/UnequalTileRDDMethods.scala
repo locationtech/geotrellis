@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Unequal
+import org.apache.spark.Partitioner
 
 trait UnequalTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -54,12 +55,14 @@ trait UnequalTileRDDMethods[K] extends TileRDDMethods[K] {
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(other: Self) =
-    self.combineValues(other)(Unequal.apply)
+  def localUnequal(other: Self): Self = localUnequal(other, None)
+  def localUnequal(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Unequal.apply)
 
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the raster are not equal, else 0.
    */
-  def !==(other: Self) = localUnequal(other)
+  def !==(other: Self): Self = !==(other, None)
+  def !==(other: Self, partitioner: Option[Partitioner]): Self = localUnequal(other, partitioner)
 }

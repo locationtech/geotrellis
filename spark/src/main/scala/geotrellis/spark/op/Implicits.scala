@@ -1,5 +1,6 @@
 package geotrellis.spark.op
 
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
@@ -10,7 +11,8 @@ trait Implicits {
     extends CombineMethods[K, V]
 
   implicit class withCombineTraversableMethods[K: ClassTag, V: ClassTag](rs: Traversable[RDD[(K, V)]]) {
-    def combineValues[R: ClassTag](f: Traversable[V] => R): RDD[(K, R)] =
-      rs.head.combineValues(rs.tail)(f)
+    /*def combineValues[R: ClassTag](f: Traversable[V] => R): RDD[(K, R)] = combineValues(f, None)*/
+    def combineValues[R: ClassTag](f: Traversable[V] => R, partitioner: Option[Partitioner]): RDD[(K, R)] =
+      rs.head.combineValues(rs.tail, partitioner)(f)
   }
 }

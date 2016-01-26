@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Subtract
+import org.apache.spark.Partitioner
 
 trait SubtractTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Subtract a constant value from each cell.*/
@@ -51,16 +52,20 @@ trait SubtractTileRDDMethods[K] extends TileRDDMethods[K] {
   def -:(d: Double) = localSubtractFrom(d)
 
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(other: Self) =
-    self.combineValues(other)(Subtract.apply)
+  def localSubtract(other: Self): Self = localSubtract(other, None)
+  def localSubtract(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Subtract.apply)
 
   /** Subtract the values of each cell in each raster. */
-  def -(other: Self) = localSubtract(other)
+  def -(other: Self): Self = localSubtract(other, None)
+  def -(other: Self, partitioner: Option[Partitioner]): Self = localSubtract(other, partitioner)
 
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(others: Traversable[Self]) =
-    self.combineValues(others)(Subtract.apply)
+  def localSubtract(others: Traversable[Self]): Self = localSubtract(others, None)
+  def localSubtract(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
+    self.combineValues(others, partitioner)(Subtract.apply)
 
   /** Subtract the values of each cell in each raster. */
-  def -(others: Traversable[Self]) = localSubtract(others)
+  def -(others: Traversable[Self]): Self = localSubtract(others, None)
+  def -(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localSubtract(others, partitioner)
 }

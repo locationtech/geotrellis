@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Xor
+import org.apache.spark.Partitioner
 
 trait XorTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Xor a constant Int value to each cell. */
@@ -17,16 +18,20 @@ trait XorTileRDDMethods[K] extends TileRDDMethods[K] {
   def ^:(i: Int) = localXor(i)
 
   /** Xor the values of each cell in each raster.  */
-  def localXor(other: Self) =
-    self.combineValues(other)(Xor.apply)
+  def localXor(other: Self): Self = localXor(other, None)
+  def localXor(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Xor.apply)
 
   /** Xor the values of each cell in each raster. */
-  def ^(r: RasterRDD[K]) = localXor(r)
+  def ^(r: RasterRDD[K]): Self = ^(r, None)
+  def ^(r: RasterRDD[K], partitioner: Option[Partitioner]): Self = localXor(r, partitioner)
 
   /** Xor the values of each cell in each raster. */
-  def localXor(others: Traversable[Self]) =
-    self.combineValues(others)(Xor.apply)
+  def localXor(others: Traversable[Self]): Self = localXor(others, None)
+  def localXor(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
+    self.combineValues(others, partitioner)(Xor.apply)
 
   /** Xor the values of each cell in each raster. */
-  def ^(others: Traversable[Self]) = localXor(others)
+  def ^(others: Traversable[Self]): Self = ^(others, None)
+  def ^(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localXor(others, partitioner)
 }

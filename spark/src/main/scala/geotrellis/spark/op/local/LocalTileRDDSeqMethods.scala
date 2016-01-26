@@ -4,34 +4,42 @@ import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster._
 import geotrellis.raster.op.local._
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 abstract class LocalRasterRDDSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
-  private def r(f: Traversable[Tile] => (Tile)) =
+  private def r(f: Traversable[Tile] => (Tile), partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self match {
       case Seq() => sys.error("raster rdd operations can't be applied to empty seq!")
       case Seq(rdd) => rdd
-      case _ => self.head.combineValues(self.tail)(f)
+      case _ => self.head.combineValues(self.tail, partitioner)(f)
     }
 
-  def localAdd = r { Add.apply }
+  def localAdd: RDD[(K, Tile)] = localAdd(None)
+  def localAdd(partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ Add.apply }, partitioner)
 
   /** Gives the count of unique values at each location in a set of Tiles.*/
-  def localVariety = r { Variety.apply }
+  def localVariety: RDD[(K, Tile)] = localVariety(None)
+  def localVariety(partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ Variety.apply }, partitioner)
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean = r { Mean.apply }
+  def localMean: RDD[(K, Tile)] = localMean(None)
+  def localMean(partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ Mean.apply }, partitioner)
 
-  def localMin = r { Min.apply }
+  def localMin: RDD[(K, Tile)] = localMin(None)
+  def localMin(partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ Min.apply }, partitioner)
 
-  def localMinN(n: Int) = r { MinN(n, _) }
+  def localMinN(n: Int): RDD[(K, Tile)] = localMinN(n, None)
+  def localMinN(n: Int, partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ MinN(n, _) }, partitioner)
 
-  def localMax = r { Max.apply }
+  def localMax: RDD[(K, Tile)] = localMax(None)
+  def localMax(partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ Max.apply }, partitioner)
 
-  def localMaxN(n: Int) = r { MaxN(n, _) }
+  def localMaxN(n: Int): RDD[(K, Tile)] = localMaxN(n, None)
+  def localMaxN(n: Int, partitioner: Option[Partitioner]): RDD[(K, Tile)] = r ({ MaxN(n, _) }, partitioner)
 
-  def localMinority(n: Int = 0) = r { Minority(n, _) }
+  def localMinority(n: Int = 0, partitioner: Option[Partitioner] = None) = r ({ Minority(n, _) }, partitioner)
 
-  def localMajority(n: Int = 0) = r { Majority(n, _) }
+  def localMajority(n: Int = 0, partitioner: Option[Partitioner] = None) = r ({ Majority(n, _) }, partitioner)
 }

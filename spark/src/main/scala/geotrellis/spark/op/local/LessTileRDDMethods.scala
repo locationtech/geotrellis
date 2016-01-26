@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Less
+import org.apache.spark.Partitioner
 
 trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -72,13 +73,15 @@ trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def localLess(other: Self) =
-    self.combineValues(other)(Less.apply)
+  def localLess(other: Self): Self = localLess(other, None)
+  def localLess(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Less.apply)
 
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def <(other: Self) = localLess(other)
+  def <(other: Self): Self = localLess(other, None)
+  def <(other: Self, partitioner: Option[Partitioner]): Self = localLess(other, partitioner)
 }

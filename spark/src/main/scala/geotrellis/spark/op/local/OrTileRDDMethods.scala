@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Or
+import org.apache.spark.Partitioner
 
 trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Or a constant Int value to each cell. */
@@ -17,16 +18,20 @@ trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
   def |:(i: Int) = localOr(i)
 
   /** Or the values of each cell in each raster.  */
-  def localOr(other: Self) =
-    self.combineValues(other)(Or.apply)
+  def localOr(other: Self): Self = localOr(other, None)
+  def localOr(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(r: Self) = localOr(r)
+  def |(r: Self): Self = |(r, None)
+  def |(r: Self, partitioner: Option[Partitioner]): Self = localOr(r, partitioner)
 
   /** Or the values of each cell in each raster.  */
-  def localOr(others: Traversable[Self]) =
-    self.combineValues(others)(Or.apply)
+  def localOr(others: Traversable[Self]): Self = localOr(others, None)
+  def localOr(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
+    self.combineValues(others, partitioner)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(others: Traversable[Self]) = localOr(others)
+  def |(others: Traversable[Self]): Self = |(others, None)
+  def |(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localOr(others, partitioner)
 }

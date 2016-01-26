@@ -6,6 +6,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.vector.op._
+import org.apache.spark.Partitioner
 
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
@@ -30,8 +31,20 @@ trait ZonalSummaryKeyedFeatureRDDMethods[K, G <: Geometry, D] {
   def zonalSummaryByKey[T: ClassTag](polygon: Polygon, zeroValue: T)(handler: ZonalSummaryHandler[G, D, T]): RDD[(K, T)] =
     featureRdd.aggregateByKey(zeroValue)(handler.mergeOp(polygon, zeroValue), handler.combineOp)
 
+  def zonalSummaryByKey[T: ClassTag](polygon: Polygon, zeroValue: T, partitioner: Option[Partitioner])(handler: ZonalSummaryHandler[G, D, T]): RDD[(K, T)] =
+    partitioner
+      .fold(featureRdd.aggregateByKey(zeroValue) _)(featureRdd.aggregateByKey(zeroValue, _)) (
+        handler.mergeOp(polygon, zeroValue), handler.combineOp
+      )
+
   def zonalSummaryByKey[T: ClassTag](multiPolygon: MultiPolygon, zeroValue: T)(handler: ZonalSummaryHandler[G, D, T]): RDD[(K, T)] =
     featureRdd.aggregateByKey(zeroValue)(handler.mergeOp(multiPolygon, zeroValue), handler.combineOp)
+
+  def zonalSummaryByKey[T: ClassTag](multiPolygon: MultiPolygon, zeroValue: T, partitioner: Option[Partitioner])(handler: ZonalSummaryHandler[G, D, T]): RDD[(K, T)] =
+    partitioner
+      .fold(featureRdd.aggregateByKey(zeroValue) _)(featureRdd.aggregateByKey(zeroValue, _)) (
+        handler.mergeOp(multiPolygon, zeroValue), handler.combineOp
+      )
 }
 
 abstract class ZonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
@@ -62,23 +75,37 @@ abstract class ZonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtension
     polygon: Polygon,
     zeroValue: T,
     handler: TileIntersectionHandler[T],
-    fKey: K => L
+    fKey: K => L): RDD[(L, T)] = zonalSummaryByKey(polygon, zeroValue, handler, fKey, None)
+
+  def zonalSummaryByKey[T: ClassTag, L: ClassTag](
+    polygon: Polygon,
+    zeroValue: T,
+    handler: TileIntersectionHandler[T],
+    fKey: K => L,
+    partitioner: Option[Partitioner]
   ): RDD[(L, T)] =
     self
       .asRasters
       .map { case (key, raster) => (fKey(key), raster.asFeature) }
-      .zonalSummaryByKey(polygon, zeroValue)(handler)
+      .zonalSummaryByKey(polygon, zeroValue, partitioner)(handler)
 
   def zonalSummaryByKey[T: ClassTag, L: ClassTag](
     multiPolygon: MultiPolygon,
     zeroValue: T,
     handler: TileIntersectionHandler[T],
-    fKey: K => L
+    fKey: K => L): RDD[(L, T)] = zonalSummaryByKey(multiPolygon, zeroValue, handler, fKey, None)
+
+  def zonalSummaryByKey[T: ClassTag, L: ClassTag](
+    multiPolygon: MultiPolygon,
+    zeroValue: T,
+    handler: TileIntersectionHandler[T],
+    fKey: K => L,
+    partitioner: Option[Partitioner]
   ): RDD[(L, T)] =
     self
       .asRasters
       .map { case (key, raster) => (fKey(key), raster.asFeature) }
-      .zonalSummaryByKey(multiPolygon, zeroValue)(handler)
+      .zonalSummaryByKey(multiPolygon, zeroValue, partitioner)(handler)
 
   def regionHistogram(polygon: Polygon): Histogram =
     zonalSummary(polygon, FastMapHistogram(), Histogram)

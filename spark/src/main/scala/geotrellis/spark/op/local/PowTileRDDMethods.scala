@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Pow
+import org.apache.spark.Partitioner
 
 trait PowTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Pow each value of the raster by a constant value.*/
@@ -34,16 +35,19 @@ trait PowTileRDDMethods[K] extends TileRDDMethods[K] {
   def **:(d: Double) = localPowValue(d)
 
   /** Pow the values of each cell in each raster. */
-  def localPow(other: Self) =
-    self.combineValues(other)(Pow.apply)
+  def localPow(other: Self): Self = localPow(other, None)
+  def localPow(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Pow.apply)
 
   /** Pow the values of each cell in each raster. */
-  def **(other: Self) = localPow(other)
+  def **(other: Self): Self = **(other, None)
+  def **(other: Self, partitioner: Option[Partitioner]): Self = localPow(other, partitioner)
 
   /** Pow the values of each cell in each raster. */
-  def localPow(others: Traversable[Self]) =
-    self.combineValues(others)(Pow.apply)
+  def localPow(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
+    self.combineValues(others, partitioner)(Pow.apply)
 
   /** Pow the values of each cell in each raster. */
-  def **(others: Traversable[Self]) = localPow(others)
+  def **(others: Traversable[Self]): Self = **(others, None)
+  def **(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localPow(others, partitioner)
 }

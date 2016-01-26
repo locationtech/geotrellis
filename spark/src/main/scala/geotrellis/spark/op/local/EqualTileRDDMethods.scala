@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Equal
+import org.apache.spark.Partitioner
 
 trait EqualTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -27,6 +28,7 @@ trait EqualTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell value of the input raster is equal to the provided
     * raster, else 0.
     */
-  def localEqual(other: Self) =
-    self.combineValues(other)(Equal.apply)
+  def localEqual(other: Self): Self = localEqual(other, None)
+  def localEqual(other: Self, partitioner: Option[Partitioner]): Self =
+    self.combineValues(other, partitioner)(Equal.apply)
 }

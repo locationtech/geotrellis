@@ -7,6 +7,7 @@ import geotrellis.raster._
 
 import geotrellis.spark._
 import geotrellis.spark.op._
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
@@ -26,19 +27,22 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
     res
   }
 
-  def zonalHistogram(zonesRasterRDD: Self): Map[Int, Histogram] =
-    self.join(zonesRasterRDD)
+  def zonalHistogram(zonesRasterRDD: Self): Map[Int, Histogram] = zonalHistogram(zonesRasterRDD, None)
+  def zonalHistogram(zonesRasterRDD: Self, partitioner: Option[Partitioner]): Map[Int, Histogram] =
+    partitioner
+      .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
       .map((t: (K, (Tile, Tile))) => ZonalHistogram(t._2._1, t._2._2))
       .fold(Map[Int, Histogram]())(mergeMaps)
 
-  def zonalPercentage(zonesRasterRDD: Self) = {
+  def zonalPercentage(zonesRasterRDD: Self): RDD[(K, Tile)] = zonalPercentage(zonesRasterRDD, None)
+  def zonalPercentage(zonesRasterRDD: Self, partitioner: Option[Partitioner]): RDD[(K, Tile)] = {
     val sc = self.sparkContext
-    val zoneHistogramMap = zonalHistogram(zonesRasterRDD)
+    val zoneHistogramMap = zonalHistogram(zonesRasterRDD, partitioner)
     val zoneSumMap = zoneHistogramMap.map { case (k, v) => k -> v.getTotalCount }
     val bcZoneHistogramMap = sc.broadcast(zoneHistogramMap)
     val bcZoneSumMap = sc.broadcast(zoneSumMap)
 
-    self.combineValues(zonesRasterRDD) { case (tile, zone) =>
+    self.combineValues(zonesRasterRDD, partitioner) { case (tile, zone) =>
       val zhm = bcZoneHistogramMap.value
       val zsm = bcZoneSumMap.value
 
