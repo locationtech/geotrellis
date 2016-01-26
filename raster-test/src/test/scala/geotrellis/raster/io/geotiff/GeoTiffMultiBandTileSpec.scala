@@ -110,30 +110,30 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
   }
 
-  describe("MutliBand permutation and subset methods") {
+  describe("MutliBand subset methods") {
 
-    it("permutation should be inexpensive") {
+    it("subset should be inexpensive") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.permutation(Map(0 -> 1, 1 -> 2, 2 -> 0))
+      val tile1 = tile0.subset(List(1, 2, 0))
 
       tile0.band(0) should be (tile1.band(2))
       tile0.band(1) should be (tile1.band(0))
       tile0.band(2) should be (tile1.band(1))
     }
 
-    it("permuted result should have correct bandCount") {
+    it("subset result should have correct bandCount") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.permutation(Map(0 -> 1, 1 -> 2, 2 -> 0))
-      val tile2 = tile0.permutation(Map(0 -> 1, 1 -> 2))
+      val tile1 = tile0.subset(List(1, 2, 0))
+      val tile2 = tile0.subset(List(1, 2))
 
       tile1.bandCount should be (3)
       tile2.bandCount should be (2)
     }
 
-    it("permuted result should work properly with foreach") {
+    it("subset result should work properly with foreach") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.permutation(Map(0 -> 1, 1 -> 2, 2 -> 0))
-      val tile2 = tile1.permutation(Map(1 -> 0, 2 -> 1, 0 -> 2))
+      val tile1 = tile0.subset(List(1, 2, 0))
+      val tile2 = tile1.subset(List(1, 2, 0))
 
       tile0.band(0).foreach { z => z should be (1) }
       tile0.band(1).foreach { z => z should be (2) }
@@ -141,36 +141,9 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       tile1.band(2).foreach { z => z should be (1) }
       tile1.band(0).foreach { z => z should be (2) }
       tile1.band(1).foreach { z => z should be (3) }
-      tile2.band(0).foreach { z => z should be (1) }
-      tile2.band(1).foreach { z => z should be (2) }
-      tile2.band(2).foreach { z => z should be (3) }
-    }
-
-    it("subset should generate correct permutation") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.permutation(Map(0 -> 1, 1 -> 2))
-      val tile2 = tile0.subset(List(1, 2))
-      val tile3 = tile0.subset(1, 2)
-      val tile4 = tile3.subset(1, 0)
-
-      tile1.band(0) should be (tile0.band(1))
-      tile1.band(1) should be (tile0.band(2))
-
-      // Subset should be equivalent to permutation
-      tile2.band(0) should be (tile1.band(0))
-      tile2.band(1) should be (tile1.band(1))
-      tile3.band(0) should be (tile1.band(0))
-      tile3.band(1) should be (tile1.band(1))
-
-      tile4.band(0) should be (tile0.band(2))
-      tile4.band(1) should be (tile0.band(1))
-    }
-
-    it("should disallow \"invalid\" permutations") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      an [AssertionError] should be thrownBy {
-        tile0.permutation(Map(1 -> 2, 2 -> 1)) // domain must be contiguous starting at 0
-      }
+      tile2.band(0).foreach { z => z should be (3) }
+      tile2.band(1).foreach { z => z should be (1) }
+      tile2.band(2).foreach { z => z should be (2) }
     }
 
     it("should disallow \"invalid\" subsets") {

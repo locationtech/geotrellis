@@ -20,7 +20,6 @@ import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
 import geotrellis.raster.rasterize._
-import geotrellis.raster.io.geotiff.{MultiBandGeoTiff, MultiBandGeoTiffSubsetMethod}
 
 package object raster
     extends crop.Implicits
@@ -30,14 +29,6 @@ package object raster
   type MultiBandRaster = Raster[MultiBandTile]
 
   // Implicit method extension for core types
-
-  implicit class withArrayMultiBandTileSubsetMethod(val self : ArrayMultiBandTile)
-      extends MethodExtensions[ArrayMultiBandTile]
-      with ArrayMultiBandTileSubsetMethod[ArrayMultiBandTile]
-
-  implicit class withMultiBandGeoTiffSubsetMethod(val self : MultiBandGeoTiff)
-      extends MethodExtensions[MultiBandGeoTiff]
-      with MultiBandGeoTiffSubsetMethod[MultiBandGeoTiff]
 
   implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
       with RasterExtentRasterizeMethods[RasterExtent]
