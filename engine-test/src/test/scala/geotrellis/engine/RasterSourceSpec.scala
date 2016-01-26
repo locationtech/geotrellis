@@ -171,8 +171,8 @@ class RasterSourceSpec extends FunSpec
       val d = getRasterSource
 
       val hist = d.tileHistograms
-      val hist2:DataSource[Histogram,Histogram] = d.tileHistograms
-      case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
+      val hist2:DataSource[Histogram[Int], Histogram[Int]] = d.tileHistograms
+      case class MinFromHistogram(h:Op[Histogram[Int]]) extends Op1(h)({
         (h) => Result(h.getMinValue)
       })
 

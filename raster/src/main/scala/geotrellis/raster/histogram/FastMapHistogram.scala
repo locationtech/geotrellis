@@ -37,7 +37,7 @@ object FastMapHistogram {
     h
   }
 
-  def fromHistograms(hs: TraversableOnce[Histogram]): FastMapHistogram = {
+  def fromHistograms(hs: TraversableOnce[Histogram[Int]]): FastMapHistogram = {
     val total = FastMapHistogram()
     hs.foreach(h => total.update(h))
     total

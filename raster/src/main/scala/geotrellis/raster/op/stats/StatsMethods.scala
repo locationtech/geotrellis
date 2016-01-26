@@ -10,8 +10,8 @@ trait StatsMethods extends MethodExtensions[Tile] {
     * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
     *           rounded to integers when making the Histogram.
     */
-  def histogram: Histogram =
-    FastMapHistogram.fromTile(self)
+  def histogram: Histogram[Int] =
+    FastMapHistogram.fromTile(tile)
 
   /**
     * Implements a histogram in terms of an array of the given size.
@@ -41,8 +41,8 @@ trait StatsMethods extends MethodExtensions[Tile] {
     *
     * @param significantDigits   Number of significant digits to preserve by multiplying
     */
-  def doubleHistogram(significantDigits: Int): Histogram =
-    FastMapHistogram.fromTileDouble(self, significantDigits)
+  def doubleHistogram(significantDigits: Int): Histogram[Int] =
+    FastMapHistogram.fromTileDouble(tile, significantDigits)
 
   /**
   * Generate quantile class breaks for a given raster.

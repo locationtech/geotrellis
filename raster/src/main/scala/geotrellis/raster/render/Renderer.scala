@@ -40,14 +40,14 @@ object Renderer {
   // def apply(limits: Array[Double], colors: Array[Int], nodata: Int): Renderer =
   //   apply(ColorBreaks(limits, colors), nodata, None)
 
-  def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Histogram): Renderer =
+  def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Histogram[Int]): Renderer =
     apply(ColorBreaks(limits, colors), nodata, Some(h))
 
-  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Histogram): Renderer =
+  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Histogram[Int]): Renderer =
     apply(colorBreaks, nodata, Some(h))
 
   /** Include a precomputed histogram to cache the color map and speed up the rendering. */
-  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Option[Histogram]): Renderer = {
+  def apply(colorBreaks: ColorBreaks, nodata: Int, h: Option[Histogram[Int]]): Renderer = {
     val len = colorBreaks.length
     if(len <= 256) {
       val indices = (0 until len).toArray

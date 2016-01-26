@@ -14,7 +14,7 @@ import spire.syntax.cfor._
 
 trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
 
-  private def mergeMaps(a: Map[Int, Histogram], b: Map[Int, Histogram]) = {
+  private def mergeMaps(a: Map[Int, Histogram[Int]], b: Map[Int, Histogram[Int]]) = {
     var res = a
     for ((k, v) <- b)
       res = res + (k ->
@@ -31,7 +31,7 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
     partitioner
       .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
       .map((t: (K, (Tile, Tile))) => ZonalHistogram(t._2._1, t._2._2))
-      .fold(Map[Int, Histogram]())(mergeMaps)
+      .fold(Map[Int, Histogram[Int]]())(mergeMaps)
 
   def zonalPercentage(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val sc = self.sparkContext

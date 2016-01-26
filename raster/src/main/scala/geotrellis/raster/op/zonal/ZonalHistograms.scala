@@ -32,7 +32,7 @@ import scala.collection.mutable
  */
 object ZonalHistogram {
 
-  def apply(tile: Tile, zones: Tile): Map[Int, Histogram] = {
+  def apply(tile: Tile, zones: Tile): Map[Int, Histogram[Int]] = {
     val histMap = mutable.Map[Int, FastMapHistogram]()
 
     val rows  = tile.rows

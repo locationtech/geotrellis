@@ -30,7 +30,7 @@ object ArrayHistogram {
     h
   }
 
-  def fromHistograms(hs: List[Histogram], n: Int): ArrayHistogram = {
+  def fromHistograms(hs: List[Histogram[Int]], n: Int): ArrayHistogram = {
     val total = ArrayHistogram(n)
     hs.foreach(h => total.update(h))
     total

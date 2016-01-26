@@ -24,11 +24,11 @@ import spire.syntax.cfor._
 /**
   * Data object representing a histogram of values.
   */
-abstract trait Histogram extends Serializable {
+abstract trait Histogram[T] extends Serializable {
   /**
    * Return the number of occurances for 'item'.
    */
-  def getItemCount(item: Int): Int
+  def getItemCount(item: T): Int
 
   /**
    * Return the total number of occurances for all items.
@@ -38,35 +38,62 @@ abstract trait Histogram extends Serializable {
   /**
    * Return the smallest item seen.
    */
-  def getMinValue(): Int
+  def getMinValue(): T
 
   /**
    * Return the largest item seen.
    */
-  def getMaxValue(): Int
+  def getMaxValue(): T
 
   /**
    * Return the smallest and largest items seen as a tuple.
    */
-  def getMinMaxValues(): (Int, Int) = (getMinValue, getMaxValue)
+  def getMinMaxValues(): (T, T) = (getMinValue, getMaxValue)
 
   /**
    * Return a mutable copy of this histogram.
    */
   def mutable(): MutableHistogram
 
-  def getValues(): Array[Int]
+  def getValues(): Array[T]
 
-  def rawValues(): Array[Int]
+  def rawValues(): Array[T]
 
-  def foreach(f: (Int, Int) => Unit) {
+  def foreach(f: (T, Int) => Unit) {
     getValues.foreach(z => f(z, getItemCount(z)))
   }
 
-  def foreachValue(f: Int => Unit): Unit
+  def foreachValue(f: T => Unit): Unit
 
-  def getQuantileBreaks(num: Int): Array[Int]
+  def getQuantileBreaks(num: Int): Array[T]
 
+  def getMode(): T
+
+  def getMedian() = if (getTotalCount == 0) {
+    NODATA
+  } else {
+    val values = getValues()
+    val middle: Int = getTotalCount() / 2
+    var total = 0
+    var i = 0
+    while (total <= middle) {
+      total += getItemCount(values(i))
+      i += 1
+    }
+    values(i-1)
+  }
+
+  def getMean(): Double
+
+  def generateStatistics(): Statistics
+
+  def toJSON = {
+    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
+    s"[$counts]"
+  }
+}
+
+abstract trait HistogramInt extends Histogram[Int] {
   def getMode(): Int = {
     if(getTotalCount == 0) { return NODATA }
     val values = getValues()
@@ -82,20 +109,6 @@ abstract trait Histogram extends Serializable {
       }
     }
     mode
-  }
-
-  def getMedian() = if (getTotalCount == 0) {
-    NODATA
-  } else {
-    val values = getValues()
-    val middle: Int = getTotalCount() / 2
-    var total = 0
-    var i = 0
-    while (total <= middle) {
-      total += getItemCount(values(i))
-      i += 1
-    }
-    values(i-1)
   }
 
   def getMean(): Double = {
@@ -186,10 +199,5 @@ abstract trait Histogram extends Serializable {
 
       Statistics(dataCount, mean, median, mode, stddev, zmin, zmax)
     }
-  }
-
-  def toJSON = {
-    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
-    s"[$counts]"
   }
 }

@@ -57,11 +57,11 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Jpg =
+  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram[Int]): Jpg =
     renderJpg(colorBreaks, noDataColor, Some(histogram))
 
   private
-  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Jpg = {
+  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram[Int]]): Jpg = {
     val renderer =
       histogram match {
         case Some(h) => Renderer(colorBreaks, noDataColor, h)

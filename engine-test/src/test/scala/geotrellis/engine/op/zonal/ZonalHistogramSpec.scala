@@ -84,7 +84,7 @@ class ZonalHistogramSpec extends FunSpec
               .toMap
         }
 
-      val result: Map[Int, Histogram] = rs.zonalHistogram(zonesSource).get
+      val result: Map[Int, Histogram[Int]] = rs.zonalHistogram(zonesSource).get
 
       result.keys should be (expected.keys)
 

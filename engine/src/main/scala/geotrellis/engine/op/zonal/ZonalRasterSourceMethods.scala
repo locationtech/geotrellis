@@ -33,7 +33,7 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
    *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
    *          the data values will be rounded to integers.
    */
-  def zonalHistogram(zonesSource: RasterSource): ValueSource[Map[Int, Histogram]] =
+  def zonalHistogram(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Int]]] =
     ValueSource(
       (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
         ZonalHistogram(tile, zones)

@@ -18,7 +18,7 @@ package geotrellis.raster.histogram
 
 import math.{abs, round, sqrt}
 
-abstract class MutableHistogram extends Histogram {
+abstract class MutableHistogram extends HistogramInt {
   /**
    * Note the occurance of 'item'.
    *
@@ -33,7 +33,7 @@ abstract class MutableHistogram extends Histogram {
    */
   def uncountItem(item: Int): Unit
 
-  def update(other: Histogram) {
+  def update(other: Histogram[Int]) {
     other.foreach((z, count) => countItem(z, count))
   }
 
@@ -60,7 +60,7 @@ abstract class MutableHistogram extends Histogram {
     // remove extreme values. an extreme value is one that would automatically
     // overflow any bucket it is in (even alone). if size=100, and there are
     // 200 cells with the value "1" then 1 would be an extreme value.
-    val h: Histogram = normalizeExtremeValues(num, size)
+    val h: Histogram[Int] = normalizeExtremeValues(num, size)
 
     // now we'll store some data about the histogram, our quantiles, etc, for
     // future use and fast access.
@@ -129,7 +129,7 @@ abstract class MutableHistogram extends Histogram {
    * This is a heuristic used by getQuantileBreaks, which mutates the
    * histogram.
    */
-  private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram = {
+  private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram[Int] = {
     val (zmin, zmax) = getMinMaxValues()
 
     // see how many (if any) extreme values we have, and store their indices

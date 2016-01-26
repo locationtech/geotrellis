@@ -16,7 +16,7 @@
 
 package geotrellis.raster.histogram
 
-case class ConstantHistogram(value:Int,size:Int) extends Histogram {
+case class ConstantHistogram(value:Int,size:Int) extends HistogramInt {
   def copy = ConstantHistogram(value,size)
 
   def foreachValue(f:Int=>Unit) = f(value)
