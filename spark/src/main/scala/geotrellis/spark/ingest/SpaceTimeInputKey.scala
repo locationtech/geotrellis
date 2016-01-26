@@ -19,7 +19,7 @@ object SpaceTimeInputKey {
     )
   }
 
-  implicit class withTilerKeyMethods(val self: SpaceTimeInputKey) extends TilerKeyMethods[SpaceTimeInputKey, SpaceTimeKey] {
+  implicit class withSpaceTimeInputTilerKeyMethods(val self: SpaceTimeInputKey) extends TilerKeyMethods[SpaceTimeInputKey, SpaceTimeKey] {
     def extent = self.extent
     def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.time)
   }

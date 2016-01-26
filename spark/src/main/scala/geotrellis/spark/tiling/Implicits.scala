@@ -20,9 +20,4 @@ trait Implicits {
     def extent = self._2
     def translate(spatialKey: SpatialKey): K = self._1.updateSpatialComponent(spatialKey)
   }
-
-  implicit class withProjectedExtentTilerKeyMethods(val self: ProjectedExtent) extends TilerKeyMethods[ProjectedExtent, SpatialKey] {
-    def extent = self.extent
-    def translate(spatialKey: SpatialKey): SpatialKey = spatialKey
-  }
 }

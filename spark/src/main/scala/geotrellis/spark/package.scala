@@ -120,4 +120,14 @@ package object spark
     def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RDD[(K, Tile)] with Metadata[M] =
       rs.head.combinePairs(rs.tail)(f)
   }
+
+  implicit class withProjectedExtentTemporalTilerKeyMethods[K: ProjectedExtentComponent: TemporalComponent](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
+    def extent = self.projectedExtent.extent
+    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.temporalComponent)
+  }
+
+  implicit class withProjectedExtentTilerKeyMethods[K: ProjectedExtentComponent](val self: K) extends TilerKeyMethods[K, SpatialKey] {
+    def extent = self.projectedExtent.extent
+    def translate(spatialKey: SpatialKey) = spatialKey
+  }
 }
