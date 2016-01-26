@@ -9,12 +9,12 @@ import geotrellis.proj4._
 
 import org.apache.spark.rdd._
 
-class IngestKeyReprojectMethods[K: IngestKey, V <: CellGrid: (? => TileReprojectMethods[V])](val self: RDD[(K, V)])
+class ProjectedExtentComponentReprojectMethods[K: ProjectedExtentComponent, V <: CellGrid: (? => TileReprojectMethods[V])](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {
   import geotrellis.raster.reproject.Reproject.Options
 
   def reproject(destCrs: CRS, options: Options): RDD[(K, V)] = {
-    IngestKeyReproject(self, destCrs, options)
+    ProjectedExtentComponentReproject(self, destCrs, options)
   }
 
   def reproject(destCrs: CRS): RDD[(K, V)] =

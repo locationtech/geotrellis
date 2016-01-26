@@ -90,7 +90,7 @@ object RasterMetaData {
     (zoom, RasterMetaData(cellType, layout, uncappedExtent, crs))
   }
 
-  def fromRdd[K: IngestKey, V <: CellGrid](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData) = {
+  def fromRdd[K: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData) = {
     val (extent, cellType, cellSize, crs) =
       rdd
         .map { case (key, grid) =>

@@ -66,7 +66,7 @@ case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
 
 case class NetCdfBand(extent: Extent, crs: CRS, time: DateTime)
 object NetCdfBand {
-  implicit object IngestKey extends KeyComponent[NetCdfBand, ProjectedExtent] {
+  implicit object ProjectedExtentComponent extends KeyComponent[NetCdfBand, ProjectedExtent] {
     def lens = createLens(
       band => ProjectedExtent(band.extent, band.crs),
       pe => band => NetCdfBand(pe.extent, pe.crs, band.time)

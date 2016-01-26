@@ -101,7 +101,7 @@ package object spark
   implicit class withMultiBandRasterRDDMethods[K](val rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends BaseMultiBandRasterRDDMethods[K]
 
-  implicit class withIngestKeyRDDMethods[K: IngestKey, V <: CellGrid](val rdd: RDD[(K, V)]) {
+  implicit class withProjectedExtentRDDMethods[K: ProjectedExtentComponent, V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
       rdd.mapPartitions({ partition =>
         partition.map { case (key, value) =>
