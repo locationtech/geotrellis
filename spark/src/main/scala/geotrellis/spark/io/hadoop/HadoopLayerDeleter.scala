@@ -2,6 +2,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import spray.json.JsonFormat

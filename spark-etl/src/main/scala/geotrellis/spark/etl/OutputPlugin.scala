@@ -12,10 +12,10 @@ trait OutputPlugin[K] {
 
   def attributes(props: Parameters): AttributeStore[JsonFormat]
 
-  def writer(method: KeyIndexMethod[K], props: Parameters): Writer[LayerId, RasterRDD[K]]
+  def writer(props: Parameters): Writer[LayerId, K, RasterRDD[K]]
 
   def apply(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]): Unit =
-    writer(method, props).write(id, rdd)
+    writer(props).write(id, rdd, method)
 
   def validate(props: Map[String, String]) =
     requireKeys(name, props, requiredKeys)

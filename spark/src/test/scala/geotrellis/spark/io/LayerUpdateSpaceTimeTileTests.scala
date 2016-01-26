@@ -1,12 +1,12 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.json._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4.LatLng
-
-import org.apache.spark.rdd._
 
 trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
 
@@ -43,4 +43,25 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       updater.update(layerId, update)
     }
   }
+
+  it("should write and update a layer with preallocated key space") {
+    val (minKey, minTile) = sample.sortByKey().first()
+    val (maxKey, maxTile) = sample.sortByKey(false).first()
+    val minSpatialKey = minKey.spatialKey
+    val maxSpatialKey = maxKey.spatialKey
+
+    val kb = KeyBounds[SpaceTimeKey](
+      minKey = SpaceTimeKey(-64, -64, minKey.instant),
+      maxKey = SpaceTimeKey(+64, +64, maxKey.instant)
+    )
+    val ki = writerKeyIndexMethod.createIndex(kb)
+
+    writer.write(preallocLayerId, sample, ki, Some(kb))
+
+    val updateList = (for(i <- -64 to 64; j <- -64 to 64) yield
+      (minKey.updateSpatialComponent(SpatialKey(i, j)), minTile))
+    val update = new ContextRDD(sc.parallelize(updateList), dummyRasterMetaData)
+    updater.update(preallocLayerId, update)
+  }
+
 }

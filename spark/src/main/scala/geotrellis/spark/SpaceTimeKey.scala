@@ -1,12 +1,9 @@
 package geotrellis.spark
 
-import geotrellis.spark._
 import geotrellis.spark.io.json._
-import monocle._
+
 import org.apache.spark.rdd.RDD
-
 import org.joda.time.DateTime
-
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import com.github.nscala_time.time.Imports._

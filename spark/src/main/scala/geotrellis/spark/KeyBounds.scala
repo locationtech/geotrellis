@@ -22,7 +22,7 @@ object KeyBounds {
       val boundable = implicitly[Boundable[K]]
       seq
         .map{ kb => boundable.includes(key, kb) }
-        .foldLeft(false)(_ || _)    
+        .foldLeft(false)(_ || _)
     }
   }
 

@@ -7,12 +7,12 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
-import org.apache.avro.Schema
 import geotrellis.spark.utils.cache._
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json.{JsObject, JsonFormat}
-import AttributeStore.Fields
+import org.apache.avro.Schema
+import spray.json.JsonFormat
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
@@ -28,19 +28,18 @@ import scala.reflect.ClassTag
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddReader: S3RDDReader[K, V],
-    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] with LazyLogging {
+  val attributeStore: AttributeStore[JsonFormat],
+  rddReader: S3RDDReader[K, V],
+  getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
+ (implicit sc: SparkContext) extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  def read[I <: KeyIndex[K]: JsonFormat](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, format: JsonFormat[I]): RDD[(K, V)] with Metadata[M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], I, Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -103,7 +102,6 @@ object S3LayerReader {
 
   def spaceTime(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetaData] =
     apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix)
-
 
   def spaceTimeMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
     apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix)
