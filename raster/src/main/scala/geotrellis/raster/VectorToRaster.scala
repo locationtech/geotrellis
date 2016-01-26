@@ -45,11 +45,11 @@ object VectorToRaster {
     *                              the data values will be rounded to integers.
     */
   def kernelDensity[D](points: Seq[PointFeature[D]],
-                       transform: D => Int, 
-                       kernel: Kernel, 
+                       transform: D => Int,
+                       kernel: Kernel,
                        rasterExtent: RasterExtent): Tile = {
     val stamper = KernelStamper(IntConstantNoDataCellType, rasterExtent.cols, rasterExtent.rows, kernel)
-    
+
     for(point <- points) {
       val col = rasterExtent.mapXToGrid(point.geom.x)
       val row = rasterExtent.mapYToGrid(point.geom.y)

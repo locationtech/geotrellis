@@ -35,7 +35,7 @@ abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegmen
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = i2s(get(i)) }
         arr.toArrayByte()
-      case cct: ConstantNoData=> convertToConstantNoData(cct)
+      case cct: ConstantNoData => convertToConstantNoData(cct)
       case udct: UserDefinedNoData[_] => convertToUserDefinedNoData(udct)
     }
 

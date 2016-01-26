@@ -47,6 +47,6 @@ class Int32GeoTiffTile(
       }
     }
 
-    IntArrayTile.fromBytes(arr, cols, rows)
+    IntArrayTile.fromBytes(arr, cols, rows, cellType)
   }
 }

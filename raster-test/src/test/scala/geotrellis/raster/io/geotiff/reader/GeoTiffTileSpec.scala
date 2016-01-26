@@ -85,6 +85,5 @@ class GeoTiffTileSpec extends FunSpec
 
       assertEqual(actual, expected)
     }
-
   }
 }

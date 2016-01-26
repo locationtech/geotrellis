@@ -14,7 +14,7 @@ import org.scalatest._
 
 import java.util.Arrays
 
-class ByteGeoTiffMultiBandTileSpec extends FunSpec
+class UByteGeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with TestEngine
@@ -23,7 +23,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
   def p(s: String, i: String): String = 
     geoTiffPath(s"3bands/byte/3bands-${s}-${i}.tif")
 
-  describe("ByteGeoTiffMultiBandTile") {
+  describe("UByteGeoTiffMultiBandTile") {
 
     // Combine all bands, int
 
