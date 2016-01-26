@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -125,11 +125,10 @@ case class HelloWorldOp[String](s:Op[String]) extends Op1(s)({
   }
 })
 
+case class MinFromHistogram(h:Op[Histogram[Int]]) extends Op1(h)({
+  (h) => Result(h.getMinValue)
+})
 
-  case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
-    (h) => Result(h.getMinValue)
-  })
-
-  case class FindMin(ints:Op[Seq[Int]]) extends Op1(ints)({
-    (ints) => Result(ints.reduce(math.min(_,_)))
-  })
+case class FindMin(ints:Op[Seq[Int]]) extends Op1(ints)({
+  (ints) => Result(ints.reduce(math.min(_,_)))
+})
