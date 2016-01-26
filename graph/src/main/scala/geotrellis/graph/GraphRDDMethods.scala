@@ -58,7 +58,7 @@ trait GraphRDDMethods[K] {
     (vertexId: VertexId) => (vertexId % totalCols, vertexId / totalCols)
   }
 
-  // def toRaster: RDD[(K, Tile)] with Metadata[RasterMetaData] = toRaster(None)
+  def toRaster: RDD[(K, Tile)] with Metadata[RasterMetaData] = toRaster(None)
 
   def toRaster(partitioner: Option[Partitioner]): RDD[(K, Tile)] with Metadata[RasterMetaData] = {
     val metaData = graphRDD.metaData
