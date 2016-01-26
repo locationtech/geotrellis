@@ -4,9 +4,9 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.op._
 
-trait TileIntersectionHandler[T] extends ZonalSummaryHandler[Extent, Tile, T] {
-  def handleContains(feature: Feature[Extent, Tile]): T = handleFullTile(feature.data)
-  def handleIntersection(polygon: Polygon, feature: Feature[Extent, Tile]) = handlePartialTile(feature, polygon)
+trait TileIntersectionHandler[T] extends ZonalSummaryHandler[Polygon, Tile, T] {
+  def handleContains(feature: PolygonFeature[Tile]): T = handleFullTile(feature.data)
+  def handleIntersection(polygon: Polygon, feature: PolygonFeature[Tile]) = handlePartialTile(feature, polygon)
 
   def handlePartialTile(raster: Raster[Tile], intersection: Polygon): T
   def handleFullTile(tile: Tile): T

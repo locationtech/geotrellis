@@ -53,12 +53,6 @@ package object reproject {
     def polygonFeature[D](pf: PolygonFeature[D], transform: Transform): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, transform), pf.data)
 
-    def extentFeature[D](ef: ExtentFeature[D], src: CRS, dest: CRS): ExtentFeature[D] =
-      ExtentFeature(apply(ef.geom, src, dest).envelope, ef.data)
-
-    def extentFeature[D](ef: ExtentFeature[D], transform: Transform): ExtentFeature[D] =
-      ExtentFeature(apply(ef.geom, transform).envelope, ef.data)
-
     def apply(mp: MultiPoint, src: CRS, dest: CRS): MultiPoint =
       apply(mp, Transform(src, dest))
 
@@ -147,7 +141,6 @@ package object reproject {
         case p: Point => pointFeature(Feature(p, f.data), transform)
         case l: Line => lineFeature(Feature(l, f.data), transform)
         case p: Polygon => polygonFeature(Feature(p, f.data), transform)
-        case e: Extent => extentFeature(Feature(e, f.data), transform)
         case mp: MultiPoint => multiPointFeature(Feature(mp, f.data), transform)
         case ml: MultiLine => multiLineFeature(Feature(ml, f.data), transform)
         case mp: MultiPolygon => multiPolygonFeature(Feature(mp, f.data), transform)

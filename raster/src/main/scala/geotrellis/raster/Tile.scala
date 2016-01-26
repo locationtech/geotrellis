@@ -57,7 +57,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
   /** Create a mutable copy of this tile */
-  def mutable: MutableArrayTile 
+  def mutable: MutableArrayTile
 
   def convert(cellType: CellType): Tile
 
@@ -78,7 +78,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
 
   def foreach(f: Int=>Unit): Unit
 
-  def foreachDouble(f: Double=>Unit): Unit 
+  def foreachDouble(f: Double=>Unit): Unit
 
   def map(f: Int => Int): Tile
   def combine(r2: Tile)(f: (Int, Int) => Int): Tile

@@ -22,9 +22,9 @@ class FeatureRDDSpec extends FunSpec
 
       val polygon = Polygon( (2, 2), (4, 6), (6, 2), (2, 2) )
 
-      val featureRdd = sc.parallelize(Array(lowerExtent, middleExtent, upperExtent).map { e => Feature(e, e.area) })
+      val featureRdd = sc.parallelize(Array(lowerExtent, middleExtent, upperExtent).map { e => Feature(e.toPolygon, e.area) })
       val result = featureRdd.zonalSummary(polygon, 0.0)(
-        ZonalSummaryHandler({ feature: Feature[Extent, Double] => feature.data })
+        ZonalSummaryHandler({ feature: Feature[Polygon, Double] => feature.data })
                            ({ (polygon, feature) => polygon.intersection(feature.geom).asMultiPolygon.map(_.area).getOrElse(0.0) })
                            ({ (v1, v2) => v1 + v2 })
       )

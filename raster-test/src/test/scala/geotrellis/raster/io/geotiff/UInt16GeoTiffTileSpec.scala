@@ -1,6 +1,6 @@
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster.IntConstantNoDataCellType
+import geotrellis.raster.IntCellType
 import geotrellis.testkit.{TileBuilders, TestEngine}
 import org.scalatest.{BeforeAndAfterAll, Matchers, FunSpec}
 
@@ -14,7 +14,7 @@ with TileBuilders {
 
   describe("UInt16GeoTiffTile") {
    it("should read landsat 8 data correctly") {
-     val actualImage = SingleBandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).convert(IntConstantNoDataCellType)
+     val actualImage = SingleBandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).convert(IntCellType)
      val expectedImage = SingleBandGeoTiff(geoTiffPath(s"ls8_int32.tif"))
 
      assertEqual(actualImage.tile, expectedImage.tile)

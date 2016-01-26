@@ -5,6 +5,7 @@ import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.joda.time._
 import org.joda.time.format._
@@ -13,17 +14,20 @@ object SpaceTimeGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
 
-  def setTimeTag(job: JobContext, timeTag: String) ={
-    job.getConfiguration.set(GEOTIFF_TIME_TAG, timeTag)
-  }
+  def setTimeTag(job: JobContext, timeTag: String): Unit =
+    setTimeTag(job.getConfiguration, timeTag)
 
-  def setTimeFormat(job: JobContext, timeFormat: String) ={
-    job.getConfiguration.set(GEOTIFF_TIME_FORMAT, timeFormat)
-  }
+  def setTimeTag(conf: Configuration, timeTag: String): Unit =
+    conf.set(GEOTIFF_TIME_TAG, timeTag)
 
-  def getTimeTag(job: JobContext) ={
+  def setTimeFormat(job: JobContext, timeFormat: String): Unit =
+    setTimeFormat(job.getConfiguration, timeFormat)
+
+  def setTimeFormat(conf: Configuration, timeFormat: String): Unit =
+    conf.set(GEOTIFF_TIME_FORMAT, timeFormat)
+
+  def getTimeTag(job: JobContext) =
     job.getConfiguration.get(GEOTIFF_TIME_TAG, "TIFFTAG_DATETIME")
-  }
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
@@ -33,8 +37,7 @@ object SpaceTimeGeoTiffInputFormat {
 }
 
 /** Read single band GeoTiff with a timestamp
-  * Input GeoTiffs should have 'ISO_TIME' tag with ISO 8601 DateTime formated timestamp.
-  * 
+  *
   * This can be configured with the hadoop configuration by providing:
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""

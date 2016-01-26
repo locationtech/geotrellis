@@ -12,7 +12,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 object IngestKeyReproject {
-  import Reproject.Options
+  import geotrellis.raster.reproject.Reproject.Options
 
 
   /** Reproject the given RDD and modify the key with the new CRS and extent
@@ -24,10 +24,9 @@ object IngestKeyReproject {
   ): RDD[(K, V)] =
     rdd.map { case (key, tile) =>
       val ProjectedExtent(extent, crs) = key.projectedExtent
-      val Product2(newTile , newExtent) =
+      val Raster(newTile , newExtent) =
         tile.reproject(extent, crs, destCrs, options)
       val newKey = key.updateProjectedExtent(ProjectedExtent(newExtent, destCrs))
       (newKey, newTile)
     }
 }
-

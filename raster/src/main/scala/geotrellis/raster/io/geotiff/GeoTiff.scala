@@ -6,13 +6,23 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-trait GeoTiff {
+trait GeoTiffData {
   val cellType: CellType
 
   def imageData: GeoTiffImageData
   def extent: Extent
   def crs: CRS
   def tags: Tags
+}
+
+trait GeoTiff[T <: CellGrid] extends GeoTiffData {
+  def tile: T
+
+  def projectedRaster: ProjectedRaster[T] = ProjectedRaster(tile, extent, crs)
+  def raster: Raster[T] = Raster(tile, extent)
+  def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
+
+  def mapTile(f: T => T): GeoTiff[T]
 
   def write(path: String): Unit =
     GeoTiffWriter.write(this, path)

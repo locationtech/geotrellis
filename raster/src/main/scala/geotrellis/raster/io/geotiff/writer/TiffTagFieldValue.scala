@@ -40,7 +40,7 @@ object TiffTagFieldValue {
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
-      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType => None
+      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType | FloatCellType | DoubleCellType => None
       case ByteConstantNoDataCellType => Some(byteNODATA.toString)
       case ByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UByteConstantNoDataCellType => Some(ubyteNODATA.toString)
@@ -50,10 +50,13 @@ object TiffTagFieldValue {
       case UShortConstantNoDataCellType => Some(ushortNODATA.toString)
       case UShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case IntConstantNoDataCellType => Some(NODATA.toString)
+      case IntUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
+      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case DoubleUserDefinedNoDataCellType(nd) => Some(nd.toString)
     }
 
-  def collect(geoTiff: GeoTiff): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
+  def collect(geoTiff: GeoTiffData): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
     implicit val toBytes: ToBytes =
       if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN)
         BigEndianToBytes

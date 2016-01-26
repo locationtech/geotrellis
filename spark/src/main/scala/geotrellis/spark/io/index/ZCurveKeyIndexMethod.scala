@@ -10,11 +10,11 @@ private[index] trait ZCurveKeyIndexMethod
 object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
   implicit def spatialKeyIndexMethod(m: ZCurveKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
-      def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] = 
+      def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
         new ZSpatialKeyIndex()
     }
 
-  def byYear = 
+  def byYear =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byYear()
     }
@@ -24,8 +24,13 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)
     }
 
-  /** Note: the function timeToGrid have to be in a project scope. */
-  def by(timeToGrid: DateTime => Int) = 
+  def byMillisecondResolution(millis: Long) =
+    new KeyIndexMethod[SpaceTimeKey] {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMillisecondResolution(millis)
+    }
+
+  /** Note: the function timeToGrid has to be in a project scope. */
+  def by(timeToGrid: DateTime => Int) =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex(timeToGrid)
     }

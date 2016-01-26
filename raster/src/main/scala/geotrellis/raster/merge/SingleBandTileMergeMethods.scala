@@ -1,36 +1,36 @@
-package geotrellis.raster.mosaic
+package geotrellis.raster.merge
 
 import geotrellis.raster._
 import geotrellis.raster.resample.{Resample, ResampleMethod}
 import geotrellis.vector.Extent
 import spire.syntax.cfor._
 
-trait TileMergeMethods extends MergeMethods[Tile] {
+trait SingleBandTileMergeMethods extends TileMergeMethods[Tile] {
   def merge(other: Tile): Tile = {
-    val mutableTile = tile.mutable
-    Seq(tile, other).assertEqualDimensions()
-    if (tile.cellType.isFloatingPoint) {
-      cfor(0)(_ < tile.rows, _ + 1) { row =>
-        cfor(0)(_ < tile.cols, _ + 1) { col =>
-          if (isNoData(tile.getDouble(col, row))) {
+    val mutableTile = self.mutable
+    Seq(self, other).assertEqualDimensions()
+    if (self.cellType.isFloatingPoint) {
+      cfor(0)(_ < self.rows, _ + 1) { row =>
+        cfor(0)(_ < self.cols, _ + 1) { col =>
+          if (isNoData(self.getDouble(col, row))) {
             mutableTile.setDouble(col, row, other.getDouble(col, row))
           }
         }
       }
     } else {
-      tile.cellType match {
+      self.cellType match {
         case BitCellType | UByteConstantNoDataCellType | UShortConstantNoDataCellType =>
-          cfor(0)(_ < tile.rows, _ + 1) { row =>
-            cfor(0)(_ < tile.cols, _ + 1) { col =>
-              if (tile.get(col, row) == 0) {
+          cfor(0)(_ < self.rows, _ + 1) { row =>
+            cfor(0)(_ < self.cols, _ + 1) { col =>
+              if (self.get(col, row) == 0) {
                 mutableTile.setDouble(col, row, other.get(col, row))
               }
             }
           }
         case _ =>
-          cfor(0)(_ < tile.rows, _ + 1) { row =>
-            cfor(0)(_ < tile.cols, _ + 1) { col =>
-              if (isNoData(tile.get(col, row))) {
+          cfor(0)(_ < self.rows, _ + 1) { row =>
+            cfor(0)(_ < self.cols, _ + 1) { col =>
+              if (isNoData(self.get(col, row))) {
                 mutableTile.setDouble(col, row, other.get(col, row))
               }
             }
@@ -44,16 +44,16 @@ trait TileMergeMethods extends MergeMethods[Tile] {
   def merge(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod): Tile =
     otherExtent & extent match {
       case Some(sharedExtent) =>
-        val mutableTile = tile.mutable
-        val re = RasterExtent(extent, tile.cols, tile.rows)
+        val mutableTile = self.mutable
+        val re = RasterExtent(extent, self.cols, self.rows)
         val GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
         val targetCS = CellSize(sharedExtent, colMax, rowMax)
 
-        if (tile.cellType.isFloatingPoint) {
+        if (self.cellType.isFloatingPoint) {
           val interpolate = Resample(method, other, otherExtent, targetCS).resampleDouble _
           cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
             cfor(colMin)(_ <= colMax, _ + 1) { col =>
-              if (isNoData(tile.getDouble(col, row))) {
+              if (isNoData(self.getDouble(col, row))) {
                 val (x, y) = re.gridToMap(col, row)
                 mutableTile.setDouble(col, row, interpolate(x, y))
               }
@@ -61,11 +61,11 @@ trait TileMergeMethods extends MergeMethods[Tile] {
           }
         } else {
           val interpolate = Resample(method, other, otherExtent, targetCS).resample _
-          tile.cellType match {
+          self.cellType match {
             case BitCellType | UByteConstantNoDataCellType | UShortConstantNoDataCellType =>
               cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
                 cfor(colMin)(_ <= colMax, _ + 1) { col =>
-                  if (tile.get(col, row) == 0) {
+                  if (self.get(col, row) == 0) {
                     val (x, y) = re.gridToMap(col, row)
                     mutableTile.set(col, row, interpolate(x, y))
                   }
@@ -74,7 +74,7 @@ trait TileMergeMethods extends MergeMethods[Tile] {
             case _ =>
               cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
                 cfor(colMin)(_ <= colMax, _ + 1) { col =>
-                  if (isNoData(tile.get(col, row))) {
+                  if (isNoData(self.get(col, row))) {
                     val (x, y) = re.gridToMap(col, row)
                     mutableTile.set(col, row, interpolate(x, y))
                   }
@@ -85,6 +85,6 @@ trait TileMergeMethods extends MergeMethods[Tile] {
 
         mutableTile
       case _ =>
-        tile
+        self
     }
 }

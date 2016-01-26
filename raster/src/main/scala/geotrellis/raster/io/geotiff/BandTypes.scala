@@ -37,9 +37,9 @@ object BandType {
       case UByteConstantNoDataCellType | UByteCellType | UByteUserDefinedNoDataCellType(_) => UByteBandType
       case ShortConstantNoDataCellType | ShortCellType | ShortUserDefinedNoDataCellType(_) => Int16BandType
       case UShortConstantNoDataCellType | UShortCellType | UShortUserDefinedNoDataCellType(_) => UInt16BandType
-      case IntConstantNoDataCellType => Int32BandType
-      case FloatConstantNoDataCellType => Float32BandType
-      case DoubleConstantNoDataCellType => Float64BandType
+      case IntConstantNoDataCellType | IntCellType | IntUserDefinedNoDataCellType(_) => Int32BandType
+      case FloatConstantNoDataCellType | FloatCellType | FloatUserDefinedNoDataCellType(_) => Float32BandType
+      case DoubleConstantNoDataCellType | DoubleCellType | DoubleUserDefinedNoDataCellType(_) => Float64BandType
     }
 }
 

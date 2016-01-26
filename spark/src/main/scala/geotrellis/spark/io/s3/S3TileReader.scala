@@ -38,7 +38,7 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec]
         }
 
       val bytes = IOUtils.toByteArray(is)
-      val recs = AvroEncoder.fromBinary(bytes)(KeyValueRecordCodec[K, V])
+      val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
 
       recs
         .find { row => row._1 == key }

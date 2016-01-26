@@ -10,27 +10,26 @@ import geotrellis.spark.io.avro.codecs._
 
 abstract class FileSpatialSpec
     extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-    with TestEnvironment with TestFiles
+    with TestEnvironment
+    with TestFiles
     with AllOnesTestTileTests {
-  val catalogPath = outputLocalPath
-
-  lazy val reader = FileLayerReader[SpatialKey, Tile, RasterMetaData](catalogPath)
-  lazy val deleter = FileLayerDeleter[SpatialKey, Tile, RasterMetaData](catalogPath)
-  lazy val copier = FileLayerCopier[SpatialKey, Tile, RasterMetaData](catalogPath)
-  lazy val mover  = FileLayerMover[SpatialKey, Tile, RasterMetaData](catalogPath)
-  lazy val reindexer = FileLayerReindexer[SpatialKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod)
-  lazy val tiles = FileTileReader[SpatialKey, Tile](catalogPath)
+  lazy val reader = FileLayerReader[SpatialKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val deleter = FileLayerDeleter[SpatialKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val copier = FileLayerCopier[SpatialKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val mover  = FileLayerMover[SpatialKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val reindexer = FileLayerReindexer[SpatialKey, Tile, RasterMetaData](outputLocalPath, ZCurveKeyIndexMethod)
+  lazy val tiles = FileTileReader[SpatialKey, Tile](outputLocalPath)
   lazy val sample = AllOnesTestFile
 }
 
 class FileSpatialRowMajorSpec extends FileSpatialSpec {
-  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, RowMajorKeyIndexMethod)
+  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocalPath, RowMajorKeyIndexMethod)
 }
 
 class FileSpatialZCurveSpec extends FileSpatialSpec {
-  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, ZCurveKeyIndexMethod)
+  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocalPath, ZCurveKeyIndexMethod)
 }
 
 class FileSpatialHilbertSpec extends FileSpatialSpec {
-  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](catalogPath, HilbertKeyIndexMethod)
+  lazy val writer = FileLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocalPath, HilbertKeyIndexMethod)
 }
