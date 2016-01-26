@@ -53,7 +53,7 @@ abstract trait Histogram[T] extends Serializable {
   /**
    * Return a mutable copy of this histogram.
    */
-  def mutable(): MutableHistogram
+  def mutable(): MutableHistogram[T]
 
   def getValues(): Array[T]
 

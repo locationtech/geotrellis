@@ -43,7 +43,7 @@ object ArrayHistogram {
   * Data object representing a histogram that uses an array for internal storage.
   */
 class ArrayHistogram(val counts: Array[Int], var total: Int)
-    extends MutableHistogram {
+    extends MutableHistogramInt {
   def size = counts.length
 
   def getTotalCount = total
