@@ -46,7 +46,7 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit hadoopFormat: HadoopFormat[K,V]): Unit = {
+  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](id, Fields.header)
     val reindexer = HadoopLayerReindexer[K, V, M](header.path, keyIndexMethod)
     reindexer.reindex(id)

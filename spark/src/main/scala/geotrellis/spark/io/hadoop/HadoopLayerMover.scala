@@ -24,15 +24,15 @@ class HadoopLayerMover[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (header, metadata, keyBounds, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
+    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerMoveError(from, to).initCause(e)
     }
     val newPath = new Path(rootPath,  s"${to.name}/${to.zoom}")
     HdfsUtils.renamePath(header.path, newPath, sc.hadoopConfiguration)
     attributeStore.writeLayerAttributes(
-      to, header.copy(path = newPath), metadata, keyBounds, keyIndex, Option.empty[Schema]
+      to, header.copy(path = newPath), metadata, keyBounds, keyIndex, writerSchema
     )
     attributeStore.delete(from)
     attributeStore.clearCache()

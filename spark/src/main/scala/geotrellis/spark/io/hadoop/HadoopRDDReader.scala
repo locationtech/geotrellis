@@ -1,16 +1,22 @@
 package geotrellis.spark.io.hadoop
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats._
-import org.apache.hadoop.fs.Path
+import geotrellis.spark.utils.KryoWrapper
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import org.apache.avro.Schema
+import org.apache.hadoop.io._
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-class HadoopRDDReader[K, V](catalogConfig: HadoopCatalogConfig)(implicit format: HadoopFormat[K, V]) extends LazyLogging {
+class HadoopRDDReader[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](catalogConfig: HadoopCatalogConfig) extends LazyLogging {
 
-  def readFully(path: Path)(implicit sc: SparkContext): RDD[(K, V)] = {
+  def readFully(path: Path, writerSchema: Option[Schema] = None)(implicit sc: SparkContext): RDD[(K, V)] = {
     val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
     logger.debug(s"Loading from $dataPath")
@@ -18,20 +24,25 @@ class HadoopRDDReader[K, V](catalogConfig: HadoopCatalogConfig)(implicit format:
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
+    val codec = KeyValueRecordCodec[K, V]
+    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
+
     sc.newAPIHadoopRDD(
-        inputConf,
-        format.fullInputFormatClass,
-        format.kClass,
-        format.vClass)
-      .map { case (keyWritable, valueWritable) =>
-        (keyWritable.get()._2, valueWritable.get())
+      inputConf,
+      classOf[SequenceFileInputFormat[LongWritable, BytesWritable]],
+      classOf[LongWritable],
+      classOf[BytesWritable]
+     )
+      .flatMap { case (keyWritable, valueWritable) =>
+        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), valueWritable.getBytes)(codec)
       }
   }
 
   def readFiltered(
     path: Path,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)])
+    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    writerSchema: Option[Schema] = None)
   (implicit sc: SparkContext): RDD[(K, V)] = {
     val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
 
@@ -40,16 +51,23 @@ class HadoopRDDReader[K, V](catalogConfig: HadoopCatalogConfig)(implicit format:
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    inputConf.setSerialized (FilterMapFileInputFormat.FILTER_INFO_KEY,
-      (queryKeyBounds, queryKeyBounds.flatMap(decomposeBounds).toArray))
+    val boundable = implicitly[Boundable[K]]
+    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val indexRanges = queryKeyBounds.flatMap(decomposeBounds).toArray
+    inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, indexRanges)
+
+    val codec = KeyValueRecordCodec[K, V]
+    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.newAPIHadoopRDD(
-        inputConf,
-        format.filteredInputFormatClass,
-        format.kClass,
-        format.vClass)
-      .map  { case (keyWritable, tileWritable) =>
-        (keyWritable.get()._2, tileWritable.get())
+      inputConf,
+      classOf[FilterMapFileInputFormat],
+      classOf[LongWritable],
+      classOf[BytesWritable]
+    )
+      .flatMap { case (keyWritable, valueWritable) =>
+        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), valueWritable.getBytes)(codec)
+          .filter { row => includeKey(row._1) }
       }
   }
 }

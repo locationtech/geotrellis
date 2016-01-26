@@ -19,7 +19,7 @@ import org.apache.hadoop.fs.Path
 object HadoopLayerReindexer {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     rootPath: Path, keyIndexMethod: KeyIndexMethod[K])
-   (implicit sc: SparkContext, format: HadoopFormat[K, V]): LayerReindexer[LayerId] = {
+   (implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"))
     val layerReader    = HadoopLayerReader[K, V, M](rootPath)
     val layerDeleter   = HadoopLayerDeleter(rootPath)
@@ -38,8 +38,8 @@ object HadoopLayerReindexer {
         if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
         if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, _) = try {
-          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
+        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, writerSchema) = try {
+          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
         }
@@ -47,7 +47,7 @@ object HadoopLayerReindexer {
         try {
           layerWriter.write(to, layerReader.read(from))
           attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, Option.empty[Schema]
+            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, writerSchema
           )
         } catch {
           case e: Exception => new LayerCopyError(from, to).initCause(e)

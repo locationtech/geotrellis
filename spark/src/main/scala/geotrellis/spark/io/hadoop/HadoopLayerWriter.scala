@@ -3,8 +3,11 @@ package geotrellis.spark.io.hadoop
 import geotrellis.raster.{MultiBandTile, Tile}
 import geotrellis.spark.io.json._
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -37,9 +40,7 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
-      // TODO: Writers need to handle Schema changes
-
+      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, rddWriter.schema)
       rddWriter.write(rdd, layerPath, keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
@@ -49,8 +50,8 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 
 object HadoopLayerWriter {
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](rootPath: Path, attributeStore: HadoopAttributeStore, rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K]): HadoopLayerWriter[K, V, M] =
     new HadoopLayerWriter[K, V, M](
@@ -61,8 +62,8 @@ object HadoopLayerWriter {
     )
 
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](rootPath: Path, rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K]): HadoopLayerWriter[K, V, M] =
     apply(
@@ -73,10 +74,10 @@ object HadoopLayerWriter {
     )
 
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](rootPath: Path, indexMethod: KeyIndexMethod[K])(implicit format: HadoopFormat[K, V]): HadoopLayerWriter[K, V, M] =
+  ](rootPath: Path, indexMethod: KeyIndexMethod[K]): HadoopLayerWriter[K, V, M] =
     apply(
       rootPath = rootPath,
       rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),

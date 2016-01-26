@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,9 +25,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
     kryo.register(classOf[(_,_)])
     kryo.register(classOf[::[_]])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.SpatialKeyWritable])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.SpaceTimeKeyWritable])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.TileWritable])
     kryo.register(classOf[geotrellis.raster.BitArrayTile])
     kryo.register(classOf[geotrellis.raster.ByteArrayFiller])
     kryo.register(classOf[geotrellis.raster.FloatArrayTile])

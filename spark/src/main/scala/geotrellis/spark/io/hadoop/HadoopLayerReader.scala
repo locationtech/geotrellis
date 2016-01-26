@@ -1,11 +1,16 @@
 package geotrellis.spark.io.hadoop
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.raster.{MultiBandTile, Tile}
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io._
 import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+
+
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -22,7 +27,7 @@ import scala.reflect.ClassTag
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class HadoopLayerReader[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
   rddReader: HadoopRDDReader[K, V])
   (implicit sc: SparkContext)
@@ -34,7 +39,7 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
       import spray.json.DefaultJsonProtocol._
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](id)
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -44,10 +49,10 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 
     val rdd: RDD[(K, V)] =
       if (queryKeyBounds == Seq(keyBounds)) {
-        rddReader.readFully(layerPath)
+        rddReader.readFully(layerPath, Some(writerSchema))
       } else {
         val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-        rddReader.readFiltered(layerPath, queryKeyBounds, decompose)
+        rddReader.readFiltered(layerPath, queryKeyBounds, decompose, Some(writerSchema))
       }
 
     new ContextRDD[K, V, M](rdd, metadata)
@@ -56,17 +61,17 @@ class HadoopLayerReader[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 
 object HadoopLayerReader {
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
     new HadoopLayerReader[K, V, M](attributeStore, rddReader)
 
   def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](rootPath: Path)(implicit sc: SparkContext, format: HadoopFormat[K, V]): HadoopLayerReader[K, V, M] =
+  ](rootPath: Path)(implicit sc: SparkContext): HadoopLayerReader[K, V, M] =
     apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)(implicit sc: SparkContext) =

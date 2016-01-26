@@ -4,16 +4,21 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.SequenceFile
+import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFileOutputFormat}
 import org.apache.hadoop.mapreduce.Job
 import scala.reflect._
 
 
-class HadoopRDDWriter[K, V](catalogConfig: HadoopCatalogConfig)(implicit format: HadoopFormat[K, V]) extends LazyLogging {
+class HadoopRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](catalogConfig: HadoopCatalogConfig) extends LazyLogging {
+
+  val codec  = KeyValueRecordCodec[K, V]
+  val schema = codec.schema
 
   def write(
     rdd: RDD[(K, V)],
@@ -54,28 +59,22 @@ class HadoopRDDWriter[K, V](catalogConfig: HadoopCatalogConfig)(implicit format:
 
     // Sort the writables, and cache as we'll be computing this RDD twice.
     val closureKeyIndex = keyIndex
-    val fmt = format
-    implicit val ctk: ClassTag[fmt.KW] = ClassTag(fmt.kClass)
-    implicit val ctv: ClassTag[fmt.VW] = ClassTag(fmt.vClass)
+    val codec  = KeyValueRecordCodec[K, V]
 
     rdd
-      .map { case (key, value) =>
-        val kw = fmt.kClass.newInstance()
-        kw.set(closureKeyIndex.toIndex(key), key)
-        val kv = fmt.vClass.newInstance()
-        kv.set(value)
-        (kw, kv)
+      .groupBy { case (key, _) => closureKeyIndex.toIndex(key) }
+      .map { case (index, pairs) =>
+        (new LongWritable(index), new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
       }
       .sortByKey(numPartitions = partitions)
       .saveAsNewAPIHadoopFile(
         path.toUri.toString,
-        fmt.kClass,
-        fmt.vClass,
-        fmt.fullOutputFormatClass,
+        classOf[LongWritable],
+        classOf[BytesWritable],
+        classOf[MapFileOutputFormat],
         job.getConfiguration
       )
 
     logger.info(s"Finished saving tiles to ${path}")
   }
 }
-
