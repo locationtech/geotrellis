@@ -24,7 +24,7 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Float] (each cell as a Float).
  */
-abstract class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
+abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
     extends MutableArrayTile
        with DoubleBasedArrayTile {
   val cellType: FloatCells with NoDataHandling
@@ -42,26 +42,26 @@ abstract class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 }
 
-final case class FloatRawArrayTile(array: Array[Float], val cols: Int, val rows: Int)
-    extends FloatArrayTile(array, cols, rows) {
+final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
+    extends FloatArrayTile(arr, cols, rows) {
   val cellType = FloatCellType
-  def applyDouble(i: Int): Double = array(i).toDouble
-  def updateDouble(i: Int, z: Double) { array(i) = z.toFloat }
+  def applyDouble(i: Int): Double = arr(i).toDouble
+  def updateDouble(i: Int, z: Double) { arr(i) = z.toFloat }
 }
 
-final case class FloatConstantNoDataArrayTile(array: Array[Float], val cols: Int, val rows: Int)
-    extends FloatArrayTile(array, cols, rows) {
+final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
+    extends FloatArrayTile(arr, cols, rows) {
   val cellType = FloatConstantNoDataCellType
-  def applyDouble(i: Int): Double = array(i).toDouble
-  def updateDouble(i: Int, z: Double) { array(i) = z.toFloat }
+  def applyDouble(i: Int): Double = arr(i).toDouble
+  def updateDouble(i: Int, z: Double) { arr(i) = z.toFloat }
 }
 
-final case class FloatUserDefinedNoDataArrayTile(array: Array[Float], val cols: Int, val rows: Int, val cellType: FloatUserDefinedNoDataCellType)
-    extends FloatArrayTile(array, cols, rows)
+final case class FloatUserDefinedNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int, val cellType: FloatUserDefinedNoDataCellType)
+    extends FloatArrayTile(arr, cols, rows)
        with UserDefinedFloatNoDataConversions {
   val userDefinedFloatNoDataValue = cellType.noDataValue
-  def applyDouble(i: Int): Double = udf2d(array(i))
-  def updateDouble(i: Int, z: Double) { array(i) = d2udf(z) }
+  def applyDouble(i: Int): Double = udf2d(arr(i))
+  def updateDouble(i: Int, z: Double) { arr(i) = d2udf(z) }
 }
 
 object FloatArrayTile {

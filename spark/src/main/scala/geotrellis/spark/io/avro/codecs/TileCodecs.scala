@@ -32,7 +32,7 @@ trait TileCodecs {
         .asScala // notice that Avro does not have native support for Short primitive
         .map(_.toShort)
         .toArray
-      new ShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      ShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -58,7 +58,7 @@ trait TileCodecs {
         .asScala // notice that Avro does not have native support for Short primitive
         .map(_.toShort)
         .toArray
-      new UShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      UShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -79,7 +79,7 @@ trait TileCodecs {
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[java.util.Collection[Int]].asScala.toArray[Int]
-      new IntArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      IntArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -100,7 +100,7 @@ trait TileCodecs {
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[java.util.Collection[Float]].asScala.toArray[Float]
-      new FloatArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      FloatArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -121,7 +121,7 @@ trait TileCodecs {
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[java.util.Collection[Double]].asScala.toArray[Double]
-      new DoubleArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      DoubleArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -142,7 +142,7 @@ trait TileCodecs {
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
-      new ByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      ByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -163,7 +163,7 @@ trait TileCodecs {
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
-      new UByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      UByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -184,7 +184,7 @@ trait TileCodecs {
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
-      new BitArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      BitArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
     }
   }
 
@@ -207,7 +207,7 @@ trait TileCodecs {
         .map(tileUnionCodec.decode)
         .toArray
 
-      new ArrayMultiBandTile(bands)
+      ArrayMultiBandTile(bands)
     }
   }
 }

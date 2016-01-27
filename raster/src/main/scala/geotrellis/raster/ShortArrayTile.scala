@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Short] (each cell as a Short).
  */
-abstract class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
+abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
 
   def apply(i: Int): Int
@@ -24,26 +24,26 @@ abstract class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 }
 
-final case class ShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
-    extends ShortArrayTile(array, cols, rows) {
+final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
+    extends ShortArrayTile(arr, cols, rows) {
   val cellType = ShortCellType
-  def apply(i: Int): Int = array(i).toInt
-  def update(i: Int, z: Int) { array(i) = z.toShort }
+  def apply(i: Int): Int = arr(i).toInt
+  def update(i: Int, z: Int) { arr(i) = z.toShort }
 }
 
-final case class ShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)
-    extends ShortArrayTile(array, cols, rows) {
+final case class ShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
+    extends ShortArrayTile(arr, cols, rows) {
   val cellType = ShortConstantNoDataCellType
-  def apply(i: Int): Int = s2i(array(i))
-  def update(i: Int, z: Int) = array(i) = i2s(z)
+  def apply(i: Int): Int = s2i(arr(i))
+  def update(i: Int, z: Int) = arr(i) = i2s(z)
 }
 
-final case class ShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
-    extends ShortArrayTile(array, cols, rows)
+final case class ShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
+    extends ShortArrayTile(arr, cols, rows)
        with UserDefinedShortNoDataConversions {
   val userDefinedShortNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = uds2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2uds(z) }
+  def apply(i: Int): Int = uds2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2uds(z) }
 }
 
 

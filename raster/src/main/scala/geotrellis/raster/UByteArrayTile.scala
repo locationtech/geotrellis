@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Byte] (each cell as a Byte).
  */
-abstract class UByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
+abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
   val cellType: UByteCells with NoDataHandling
   def apply(i: Int): Int
@@ -18,26 +18,26 @@ abstract class UByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   def copy = UByteArrayTile(array.clone, cols, rows, cellType)
 }
 
-final case class UByteRawArrayTile(array: Array[Byte], val cols: Int, val rows: Int)
-    extends UByteArrayTile(array, cols, rows) {
+final case class UByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
+    extends UByteArrayTile(arr, cols, rows) {
   val cellType = UByteCellType
-  def apply(i: Int): Int = array(i) & 0xFF
-  def update(i: Int, z: Int) { array(i) = z.toByte }
+  def apply(i: Int): Int = arr(i) & 0xFF
+  def update(i: Int, z: Int) { arr(i) = z.toByte }
 }
 
-final case class UByteConstantNoDataArrayTile(array: Array[Byte], val cols: Int, val rows: Int)
-    extends UByteArrayTile(array, cols, rows) {
+final case class UByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
+    extends UByteArrayTile(arr, cols, rows) {
   val cellType = UByteConstantNoDataCellType
-  def apply(i: Int): Int = ub2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2ub(z) }
+  def apply(i: Int): Int = ub2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2ub(z) }
 }
 
-final case class UByteUserDefinedNoDataArrayTile(array: Array[Byte], val cols: Int, val rows: Int, val cellType: UByteUserDefinedNoDataCellType)
-    extends UByteArrayTile(array, cols, rows)
+final case class UByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int, val cellType: UByteUserDefinedNoDataCellType)
+    extends UByteArrayTile(arr, cols, rows)
        with UserDefinedByteNoDataConversions {
   val userDefinedByteNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = udub2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2udb(z) }
+  def apply(i: Int): Int = udub2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2udb(z) }
 }
 
 object UByteArrayTile {

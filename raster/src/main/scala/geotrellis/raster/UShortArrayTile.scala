@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Short] (each cell as a Short).
  */
-abstract class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
+abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
   val cellType: UShortCells with NoDataHandling
 
@@ -25,28 +25,28 @@ abstract class UShortArrayTile(array: Array[Short], cols: Int, rows: Int)
   def copy = UShortArrayTile(array.clone, cols, rows)
 }
 
-class UShortRawArrayTile(array: Array[Short], val cols: Int, val rows: Int)
-    extends UShortArrayTile(array, cols, rows) {
+class UShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
+    extends UShortArrayTile(arr, cols, rows) {
   val cellType = UShortCellType
-  def apply(i: Int): Int = array(i) & 0xFFFF
-  def update(i: Int, z: Int) { array(i) = (z & 0xFFFF).toShort }
+  def apply(i: Int): Int = arr(i) & 0xFFFF
+  def update(i: Int, z: Int) { arr(i) = (z & 0xFFFF).toShort }
 }
 
-class UShortConstantNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int)
-    extends UShortArrayTile(array, cols, rows) {
+class UShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
+    extends UShortArrayTile(arr, cols, rows) {
   val cellType = UShortConstantNoDataCellType
 
-  def apply(i: Int): Int = us2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2us(z) }
+  def apply(i: Int): Int = us2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2us(z) }
 }
 
-class UShortUserDefinedNoDataArrayTile(array: Array[Short], val cols: Int, val rows: Int, val cellType: UShortUserDefinedNoDataCellType)
-    extends UShortArrayTile(array, cols, rows)
+class UShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int, val cellType: UShortUserDefinedNoDataCellType)
+    extends UShortArrayTile(arr, cols, rows)
        with UserDefinedShortNoDataConversions {
   val userDefinedShortNoDataValue = cellType.noDataValue.toShort
 
-  def apply(i: Int): Int = uds2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2uds(z) }
+  def apply(i: Int): Int = uds2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2uds(z) }
 }
 
 object UShortArrayTile {

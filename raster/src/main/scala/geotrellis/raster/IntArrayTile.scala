@@ -24,7 +24,7 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Int] (each cell as an Int).
  */
-abstract class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
+abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     extends MutableArrayTile
        with IntBasedArrayTile {
   val cellType: IntCells with NoDataHandling
@@ -44,26 +44,26 @@ abstract class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
   def copy = ArrayTile(array.clone, cols, rows)
 }
 
-final case class IntRawArrayTile(val array: Array[Int], val cols: Int, val rows: Int)
-    extends IntArrayTile(array, cols, rows) {
+final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
+    extends IntArrayTile(arr, cols, rows) {
   val cellType = IntCellType
-  def apply(i: Int): Int = array(i)
-  def update(i: Int, z: Int) { array(i) = z }
+  def apply(i: Int): Int = arr(i)
+  def update(i: Int, z: Int) { arr(i) = z }
 }
 
-final case class IntConstantNoDataArrayTile(val array: Array[Int], val cols: Int, val rows: Int)
-    extends IntArrayTile(array, cols, rows) {
+final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
+    extends IntArrayTile(arr, cols, rows) {
   val cellType = IntConstantNoDataCellType
-  def apply(i: Int): Int = array(i)
-  def update(i: Int, z: Int) { array(i) = z }
+  def apply(i: Int): Int = arr(i)
+  def update(i: Int, z: Int) { arr(i) = z }
 }
 
-final case class IntUserDefinedNoDataArrayTile(val array: Array[Int], val cols: Int, val rows: Int, val cellType: IntUserDefinedNoDataCellType)
-    extends IntArrayTile(array, cols, rows)
+final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int, val cellType: IntUserDefinedNoDataCellType)
+    extends IntArrayTile(arr, cols, rows)
        with UserDefinedIntNoDataConversions {
   val userDefinedIntNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = i2udi(array(i))
-  def update(i: Int, z: Int) { array(i) = udi2i(z) }
+  def apply(i: Int): Int = i2udi(arr(i))
+  def update(i: Int, z: Int) { arr(i) = udi2i(z) }
 }
 
 object IntArrayTile {

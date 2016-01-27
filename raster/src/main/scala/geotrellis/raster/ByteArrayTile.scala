@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Byte] (each cell as a Byte).
  */
-abstract class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
+abstract class ByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile {
   val cellType: ByteCells with NoDataHandling
   def apply(i: Int): Int
@@ -19,26 +19,26 @@ abstract class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
   def copy: ByteArrayTile = ArrayTile(array.clone, cols, rows)
 }
 
-final case class ByteRawArrayTile(array: Array[Byte], val cols: Int, val rows: Int)
-    extends ByteArrayTile(array, cols, rows) {
+final case class ByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
+    extends ByteArrayTile(arr, cols, rows) {
   val cellType = ByteCellType
-  def apply(i: Int): Int = array(i).toInt
-  def update(i: Int, z: Int) { array(i) = z.toByte }
+  def apply(i: Int): Int = arr(i).toInt
+  def update(i: Int, z: Int) { arr(i) = z.toByte }
 }
 
-final case class ByteConstantNoDataArrayTile(array: Array[Byte], val cols: Int, val rows: Int)
-    extends ByteArrayTile(array, cols, rows) {
+final case class ByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
+    extends ByteArrayTile(arr, cols, rows) {
   val cellType = ByteConstantNoDataCellType
-  def apply(i: Int): Int = b2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2b(z) }
+  def apply(i: Int): Int = b2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2b(z) }
 }
 
-final case class ByteUserDefinedNoDataArrayTile(array: Array[Byte], val cols: Int, val rows: Int, val cellType: ByteUserDefinedNoDataCellType)
-    extends ByteArrayTile(array, cols, rows)
+final case class ByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int, val cellType: ByteUserDefinedNoDataCellType)
+    extends ByteArrayTile(arr, cols, rows)
        with UserDefinedByteNoDataConversions {
   val userDefinedByteNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = udb2i(array(i))
-  def update(i: Int, z: Int) { array(i) = i2udb(z) }
+  def apply(i: Int): Int = udb2i(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2udb(z) }
 }
 
 object ByteArrayTile {
