@@ -6,6 +6,7 @@ import geotrellis.raster._
 import geotrellis.spark.io.avro._
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic._
+import org.apache.avro.util.Utf8
 
 import scala.collection.JavaConverters._
 
@@ -16,12 +17,14 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
       .endRecord()
 
     def encode(tile: ShortArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
     }
@@ -32,7 +35,9 @@ trait TileCodecs {
         .asScala // notice that Avro does not have native support for Short primitive
         .map(_.toShort)
         .toArray
-      ShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[ShortCells with NoDataHandling]
+      ShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
@@ -42,12 +47,14 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
       .endRecord()
 
     def encode(tile: UShortArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
     }
@@ -58,7 +65,9 @@ trait TileCodecs {
         .asScala // notice that Avro does not have native support for Short primitive
         .map(_.toShort)
         .toArray
-      UShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[UShortCells with NoDataHandling]
+      UShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
@@ -69,17 +78,24 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: IntArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
     }
 
     def decode(rec: GenericRecord) = {
-      val array  = rec.get("cells").asInstanceOf[java.util.Collection[Int]].asScala.toArray[Int]
-      IntArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val array  = rec.get("cells")
+        .asInstanceOf[java.util.Collection[Int]]
+        .asScala
+        .toArray[Int]
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[IntCells with NoDataHandling]
+      IntArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
@@ -90,17 +106,24 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().floatType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: FloatArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
     }
 
     def decode(rec: GenericRecord) = {
-      val array  = rec.get("cells").asInstanceOf[java.util.Collection[Float]].asScala.toArray[Float]
-      FloatArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val array  = rec.get("cells")
+        .asInstanceOf[java.util.Collection[Float]]
+        .asScala
+        .toArray[Float]
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[FloatCells with NoDataHandling]
+      FloatArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
@@ -110,18 +133,25 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().array().items().doubleType().noDefault()
       .endRecord()
 
     def encode(tile: DoubleArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
     }
 
     def decode(rec: GenericRecord) = {
-      val array  = rec.get("cells").asInstanceOf[java.util.Collection[Double]].asScala.toArray[Double]
-      DoubleArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val array  = rec.get("cells")
+        .asInstanceOf[java.util.Collection[Double]]
+        .asScala
+        .toArray[Double]
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[DoubleCells with NoDataHandling]
+      DoubleArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
@@ -131,18 +161,24 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
       .endRecord()
 
     def encode(tile: ByteArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", ByteBuffer.wrap(tile.array))
     }
 
     def decode(rec: GenericRecord) = {
-      val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
-      ByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val array  = rec.get("cells")
+        .asInstanceOf[ByteBuffer]
+        .array()
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[ByteCells with NoDataHandling]
+      ByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
@@ -152,18 +188,24 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
       .endRecord()
 
     def encode(tile: UByteArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
+      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", ByteBuffer.wrap(tile.array))
     }
 
     def decode(rec: GenericRecord) = {
-      val array  = rec.get("cells").asInstanceOf[ByteBuffer].array()
-      UByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"))
+      val array  = rec.get("cells")
+        .asInstanceOf[ByteBuffer]
+        .array()
+      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
+        .asInstanceOf[UByteCells with NoDataHandling]
+      UByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 

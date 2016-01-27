@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-
+import scala.util.matching.Regex
 import java.awt.image.DataBuffer
 
 // DataType ADT
@@ -185,17 +185,41 @@ object CellType {
 
   def fromString(name: String): CellType = name match {
     case "bool" => BitCellType  // No NoData values
-    case "int8" => ByteCellType
-    case "uint8" => UByteCellType
-    case "int16" => ShortCellType
-    case "uint16" => UShortCellType
-    case "int8const" => ByteConstantNoDataCellType  // Constant NoData values
-    case "uint8const" => UByteConstantNoDataCellType
-    case "int16const" => UByteConstantNoDataCellType
-    case "uint16const" => ShortConstantNoDataCellType
-    case "int32const" => UShortConstantNoDataCellType
-    case "float32const" => FloatConstantNoDataCellType
-    case "float64const" => DoubleConstantNoDataCellType
+    case "int8raw" => ByteCellType
+    case "uint8raw" => UByteCellType
+    case "int16raw" => ShortCellType
+    case "uint16raw" => UShortCellType
+    case "int8" => ByteConstantNoDataCellType  // Constant NoData values
+    case "uint8" => UByteConstantNoDataCellType
+    case "int16" => ShortConstantNoDataCellType
+    case "uint16" => UShortConstantNoDataCellType
+    case "int32" => IntConstantNoDataCellType
+    case "float32" => FloatConstantNoDataCellType
+    case "float64" => DoubleConstantNoDataCellType
+    case ct if ct.startsWith("int8ud") =>
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toByte
+      ByteUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("uint8ud") =>
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toByte
+      UByteUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("int16ud") =>
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toShort
+      ShortUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("uint16ud") =>
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toShort
+      UShortUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("int32ud") =>
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toInt
+      IntUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("uint32ud") =>
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toInt
+      UIntUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("float32ud") =>
+      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).get.toFloat
+      FloatUserDefinedNoDataCellType(ndVal)
+    case ct if ct.startsWith("float64ud") =>
+      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).get.toDouble
+      DoubleUserDefinedNoDataCellType(ndVal)
     case _ => sys.error(s"Cell type $name is not supported")
   }
 
