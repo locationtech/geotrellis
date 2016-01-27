@@ -1,9 +1,7 @@
-package geotrellis.spark.ingest
+package geotrellis.spark
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.proj4._
-import geotrellis.raster.Tile
-import geotrellis.spark._
 import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.vector._
 
@@ -19,9 +17,16 @@ object SpaceTimeInputKey {
     )
   }
 
-  implicit class withSpaceTimeInputTilerKeyMethods(val self: SpaceTimeInputKey) extends TilerKeyMethods[SpaceTimeInputKey, SpaceTimeKey] {
+  implicit def ingestTemporalKey = new KeyComponent[SpaceTimeInputKey, TemporalKey] {
+    def lens = createLens(
+      key => TemporalKey(key.time),
+      pe => key => null: SpaceTimeInputKey
+    )
+  }
+
+  /*implicit class withSpaceTimeInputTilerKeyMethods(val self: SpaceTimeInputKey) extends TilerKeyMethods[SpaceTimeInputKey, SpaceTimeKey] {
     def extent = self.extent
     def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.time)
-  }
+  }*/
 
 }

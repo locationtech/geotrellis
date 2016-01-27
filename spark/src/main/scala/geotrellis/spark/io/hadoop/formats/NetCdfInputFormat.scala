@@ -43,7 +43,7 @@ object NetCdfInputFormat {
     *
     * @param yearOffset The year offset for the date time.
     *
-    * @param monthffset The month offset for the date time.
+    * @param monthOffset The month offset for the date time.
     *
     * @param dayOffset The day offset for the date time.
     *

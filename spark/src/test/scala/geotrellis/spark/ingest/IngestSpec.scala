@@ -57,7 +57,7 @@ class IngestSpec extends FunSpec
 
       it("should ingest time-band NetCDF") {
         val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
-        Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, FloatingLayoutScheme(256)){ (rdd, level) =>
+        Ingest[SpaceTimeInputKey, SpaceTimeKey](source, LatLng, FloatingLayoutScheme(256)){ (rdd, level) =>
           val ingestKeys = rdd.keys.collect()
           info(ingestKeys.toList.toString)
           ingestKeys should contain theSameElementsAs expectedKeys

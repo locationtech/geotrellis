@@ -1,5 +1,6 @@
 package geotrellis.spark.io.hadoop.formats
 
+import geotrellis.spark.SpaceTimeInputKey
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.raster._

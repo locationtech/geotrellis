@@ -1,9 +1,9 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
+import geotrellis.spark.SpaceTimeInputKey
 import geotrellis.vector._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.ingest.SpaceTimeInputKey
 
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -91,7 +91,7 @@ trait HadoopSparkContextMethods {
 
   def netCdfRDD(
     path: Path,
-    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(NetCdfBand, Tile)] = {
+    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(SpaceTimeInputKey, Tile)] = {
     val makeTime = (info: GdalRasterInfo) =>
     info.file.meta.find {
       case(key, value) => key.toLowerCase == inputFormat.baseDateMetaDataKey.toLowerCase
@@ -118,7 +118,7 @@ trait HadoopSparkContextMethods {
 
     gdalRDD(path)
       .map { case (info, tile) =>
-        val band = NetCdfBand(
+        val band = SpaceTimeInputKey(
           extent = info.file.rasterExtent.extent,
           crs = info.file.crs,
           time = makeTime(info)

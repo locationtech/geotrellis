@@ -15,21 +15,12 @@
  */
 
 package geotrellis.spark.io.hadoop.formats
-
-import geotrellis.spark._
-import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.gdal.{RasterBand, RasterDataSet, Gdal}
 
-import monocle._
-
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.FSDataInputStream
-
 import org.apache.hadoop.mapreduce.InputSplit
 import org.apache.hadoop.mapreduce.JobContext
 import org.apache.hadoop.mapreduce.RecordReader
@@ -38,8 +29,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.conf.Configuration
 import GdalInputFormat._
-import org.joda.time.DateTime
-
 import HdfsUtils.LocalPath
 
 /**
@@ -63,21 +52,6 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
 
 case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
 case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
-
-case class NetCdfBand(extent: Extent, crs: CRS, time: DateTime)
-object NetCdfBand {
-  implicit object ProjectedExtentComponent extends KeyComponent[NetCdfBand, ProjectedExtent] {
-    def lens = createLens(
-      band => ProjectedExtent(band.extent, band.crs),
-      pe => band => NetCdfBand(pe.extent, pe.crs, band.time)
-    )
-  }
-
-  implicit class withTilerKeyMethods(val self: NetCdfBand) extends TilerKeyMethods[NetCdfBand, SpaceTimeKey] {
-    def extent = self.extent
-    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.time)
-  }
-}
 
 object GdalInputFormat {
   def parseMeta(meta: List[String]): Map[String, String] =
@@ -105,7 +79,7 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
     conf            = context.getConfiguration
     file            = HdfsUtils.localCopy(conf, path)
     rasterDataSet   = Gdal.open(file.path.toUri.getPath)
-    bandCount         = rasterDataSet.bandCount
+    bandCount       = rasterDataSet.bandCount
 
     fileInfo =
       GdalFileInfo(
@@ -120,7 +94,7 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
     case LocalPath.Original(_) => // leave it well alone
   }
 
-  def getProgress = bandIndex / bandCount
+  def getProgress  = bandIndex / bandCount
   def nextKeyValue = {
     val hasNext = bandIndex < bandCount  // bands are indexed from 1 to bandCount
     if (hasNext) {
@@ -134,6 +108,6 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
     }
     hasNext
   }
-  def getCurrentKey = GdalRasterInfo(fileInfo, bandMeta)
+  def getCurrentKey   = GdalRasterInfo(fileInfo, bandMeta)
   def getCurrentValue = band.toTile()
 }
