@@ -5,7 +5,6 @@ import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
-import geotrellis.raster.resample._
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
@@ -20,9 +19,4 @@ trait Implicits {
     def extent = self._2
     def translate(spatialKey: SpatialKey): K = self._1.updateSpatialComponent(spatialKey)
   }
-
-  /*implicit class withProjectedExtentTilerKeyMethods(val self: ProjectedExtent) extends TilerKeyMethods[ProjectedExtent, SpatialKey] {
-    def extent = self.extent
-    def translate(spatialKey: SpatialKey): SpatialKey = spatialKey
-  }*/
 }

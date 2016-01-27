@@ -2,14 +2,12 @@ package geotrellis.spark
 
 import com.github.nscala_time.time.Imports._
 import geotrellis.proj4._
-import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.vector._
 
 /** A key for a Tile with temporal as well as spatial dimension */
 case class SpaceTimeInputKey(extent: Extent, crs: CRS, time: DateTime)
 
 object SpaceTimeInputKey {
-  // Allows us to view and modify only the spatial component of this key
   implicit def ingestKey = new KeyComponent[SpaceTimeInputKey, ProjectedExtent] {
     def lens = createLens(
       key => ProjectedExtent(key.extent, key.crs),
@@ -20,13 +18,7 @@ object SpaceTimeInputKey {
   implicit def ingestTemporalKey = new KeyComponent[SpaceTimeInputKey, TemporalKey] {
     def lens = createLens(
       key => TemporalKey(key.time),
-      pe => key => null: SpaceTimeInputKey
+      pe => key => key
     )
   }
-
-  /*implicit class withSpaceTimeInputTilerKeyMethods(val self: SpaceTimeInputKey) extends TilerKeyMethods[SpaceTimeInputKey, SpaceTimeKey] {
-    def extent = self.extent
-    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.time)
-  }*/
-
 }
