@@ -25,6 +25,10 @@ sealed trait Bounds[+A] extends Product with Serializable {
     if (isEmpty) default else this.get
 }
 
+object Bounds{
+  def apply[A](min: A, max: A): Bounds[A] = KeyBounds(min, max)
+}
+
 case object EmptyBounds extends Bounds[Nothing] {
   def isEmpty = true
 
