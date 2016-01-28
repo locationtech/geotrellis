@@ -23,8 +23,7 @@ trait AndTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner){ And.apply }
 
   /** And the values of each cell in each raster. */
-  def &(rs: RasterRDD[K]): Self = &(rs, None)
-  def &(rs: RasterRDD[K], partitioner: Option[Partitioner]): Self = localAnd(rs, partitioner)
+  def &(rs: RasterRDD[K]): Self = localAnd(rs, None)
 
   /** And the values of each cell in each raster.  */
   def localAnd(others: Traversable[Self]): Self = localAnd(others, None)
@@ -32,7 +31,5 @@ trait AndTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(others, partitioner){ And.apply }
 
   /** And the values of each cell in each raster. */
-  def &(others: Traversable[Self]): Self = &(others, None)
-  def &(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
-    localAnd(others, partitioner)
+  def &(others: Traversable[Self]): Self = localAnd(others, None)
 }

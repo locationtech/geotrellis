@@ -73,8 +73,7 @@ trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def localLess(other: Self): Self = localLess(other, None)
-  def localLess(other: Self, partitioner: Option[Partitioner]): Self =
+  def localLess(other: Self, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner)(Less.apply)
 
   /**
@@ -82,6 +81,5 @@ trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def <(other: Self): Self = localLess(other, None)
-  def <(other: Self, partitioner: Option[Partitioner]): Self = localLess(other, partitioner)
+  def <(other: Self, partitioner: Option[Partitioner] = None): Self = localLess(other, partitioner)
 }

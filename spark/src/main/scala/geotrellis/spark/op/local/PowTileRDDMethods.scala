@@ -40,14 +40,12 @@ trait PowTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner)(Pow.apply)
 
   /** Pow the values of each cell in each raster. */
-  def **(other: Self): Self = **(other, None)
-  def **(other: Self, partitioner: Option[Partitioner]): Self = localPow(other, partitioner)
+  def **(other: Self): Self = localPow(other, None)
 
   /** Pow the values of each cell in each raster. */
   def localPow(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
     self.combineValues(others, partitioner)(Pow.apply)
 
   /** Pow the values of each cell in each raster. */
-  def **(others: Traversable[Self]): Self = **(others, None)
-  def **(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localPow(others, partitioner)
+  def **(others: Traversable[Self]): Self = localPow(others, None)
 }

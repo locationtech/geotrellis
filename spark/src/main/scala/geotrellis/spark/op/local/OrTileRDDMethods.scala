@@ -23,8 +23,7 @@ trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(r: Self): Self = |(r, None)
-  def |(r: Self, partitioner: Option[Partitioner]): Self = localOr(r, partitioner)
+  def |(r: Self): Self = localOr(r, None)
 
   /** Or the values of each cell in each raster.  */
   def localOr(others: Traversable[Self]): Self = localOr(others, None)
@@ -32,6 +31,5 @@ trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(others, partitioner)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(others: Traversable[Self]): Self = |(others, None)
-  def |(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localOr(others, partitioner)
+  def |(others: Traversable[Self]): Self = localOr(others, None)
 }

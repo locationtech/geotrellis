@@ -55,14 +55,12 @@ trait UnequalTileRDDMethods[K] extends TileRDDMethods[K] {
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(other: Self): Self = localUnequal(other, None)
-  def localUnequal(other: Self, partitioner: Option[Partitioner]): Self =
+  def localUnequal(other: Self, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner)(Unequal.apply)
 
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the raster are not equal, else 0.
    */
-  def !==(other: Self): Self = !==(other, None)
-  def !==(other: Self, partitioner: Option[Partitioner]): Self = localUnequal(other, partitioner)
+  def !==(other: Self): Self = localUnequal(other)
 }

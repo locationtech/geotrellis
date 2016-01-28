@@ -36,8 +36,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be empty -- all values set to NODATA.
     */
-  def localMask(other: Self, readMask: Int, writeMask: Int): Self = localMask(other, readMask, writeMask, None)
-  def localMask(other: Self, readMask: Int, writeMask: Int, partitioner: Option[Partitioner]): Self =
+  def localMask(other: Self, readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner) {
       case (r1, r2) => Mask(r1, r2, readMask, writeMask)
     }
@@ -50,9 +49,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be identical to the first raster.
     */
-  def localInverseMask(other: Self, readMask: Int, writeMask: Int): Self =
-    localInverseMask(other, readMask, writeMask, None)
-  def localInverseMask(other: Self, readMask: Int, writeMask: Int, partitioner: Option[Partitioner]): Self =
+  def localInverseMask(other: Self, readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner) {
       case (r1, r2) => InverseMask(r1, r2, readMask, writeMask)
     }
@@ -134,8 +131,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     *
     *  @info               A double raster is always returned.
     */
-  def localAtan2(other: Self): Self = localAtan2(other, None)
-  def localAtan2(other: Self, partitioner: Option[Partitioner]): Self =
+  def localAtan2(other: Self, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner)(Atan2.apply)
 
   /**

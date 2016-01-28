@@ -28,56 +28,32 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): Self = temporalMin(windowSize, unit, start, end, None)
-
-  def temporalMin(
-    windowSize: Int,
-    unit: Int,
-    start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner]): Self =
+    partitioner: Option[Partitioner] = None): Self =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(minReduceOp)
 
   def temporalMax(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): Self = temporalMax(windowSize, unit, start, end, None)
-
-  def temporalMax(
-    windowSize: Int,
-    unit: Int,
-    start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner]): Self =
+    partitioner: Option[Partitioner] = None): Self =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(maxReduceOp)
 
   def temporalMean(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): Self = temporalMean(windowSize, unit, start, end, None)
-
-  def temporalMean(
-    windowSize: Int,
-    unit: Int,
-    start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner]): Self =
+    partitioner: Option[Partitioner] = None): Self =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(meanReduceOp)
 
   def temporalVariance(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime): Self = temporalVariance(windowSize, unit, start, end, None)
-
-  def temporalVariance(
-    windowSize: Int,
-    unit: Int,
-    start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner]): Self =
+    partitioner: Option[Partitioner] = None): Self =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(varianceReduceOp)
 
   private def aggregateWithTemporalWindow(
@@ -85,7 +61,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     unit: Int,
     start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner])(
+    partitioner: Option[Partitioner] = None)(
     reduceOp: Traversable[Tile] => Tile
   ): Self = {
     val rdd =

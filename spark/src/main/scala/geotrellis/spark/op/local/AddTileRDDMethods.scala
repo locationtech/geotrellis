@@ -35,13 +35,10 @@ trait AddTileRDDMethods[K] extends TileRDDMethods[K] {
 
   /** Add the values of each cell in each raster. */
   def +(other: Self): Self = localAdd(other, None)
-  def +(other: Self, partitioner: Option[Partitioner]): Self = localAdd(other, partitioner)
 
   def localAdd(others: Traversable[Self]): Self = localAdd(others, None)
   def localAdd(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
     self.combineValues(others, partitioner) { Add.apply }
 
   def +(others: Traversable[Self]): Self = localAdd(others, None)
-  def +(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
-    localAdd(others, partitioner)
 }

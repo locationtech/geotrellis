@@ -41,15 +41,11 @@ trait DivideTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner)(Divide.apply)
 
   /** Divide the values of each cell in each raster. */
-  def /(other: Self): Self = /(other, None)
-  def /(other: Self, partitioner: Option[Partitioner]): Self =
-    localDivide(other, partitioner)
+  def /(other: Self): Self = localDivide(other, None)
 
   def localDivide(others: Traversable[Self]): Self = localDivide(others, None)
   def localDivide(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
     self.combineValues(others, partitioner)(Divide.apply)
 
-  def /(others: Traversable[Self]): Self = /(others, None)
-  def /(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
-    localDivide(others, partitioner)
+  def /(others: Traversable[Self]): Self = localDivide(others, None)
 }

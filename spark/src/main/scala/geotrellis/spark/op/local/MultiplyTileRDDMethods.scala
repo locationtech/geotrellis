@@ -49,8 +49,7 @@ trait MultiplyTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner)(Multiply.apply)
 
   /** Multiply the values of each cell in each raster. */
-  def *(other: Self): Self = *(other, None)
-  def *(other: Self, partitioner: Option[Partitioner]): Self = localMultiply(other, partitioner)
+  def *(other: Self): Self = localMultiply(other, None)
 
   /** Multiply the values of each cell in each raster. */
   def localMultiply(others: Traversable[Self]): Self = localMultiply(others, None)
@@ -58,6 +57,5 @@ trait MultiplyTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(others, partitioner)(Multiply.apply)
 
   /** Multiply the values of each cell in each raster. */
-  def *(others: Traversable[Self]): Self = *(others, None)
-  def *(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localMultiply(others, partitioner)
+  def *(others: Traversable[Self]): Self = localMultiply(others, None)
 }

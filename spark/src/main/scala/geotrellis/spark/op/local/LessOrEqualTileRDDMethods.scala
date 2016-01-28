@@ -64,8 +64,7 @@ trait LessOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than or equal to the
     * next raster, else 0.
     */
-  def localLessOrEqual(other: Self): Self = localLessOrEqual(other, None)
-  def localLessOrEqual(other: Self, partitioner: Option[Partitioner]): Self =
+  def localLessOrEqual(other: Self, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner)(LessOrEqual.apply)
 
   /**
@@ -73,6 +72,5 @@ trait LessOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than or equal to the
     * next raster, else 0.
     */
-  def <=(other: Self): Self = <=(other, None)
-  def <=(other: Self, partitioner: Option[Partitioner]): Self = localLessOrEqual(other, partitioner)
+  def <=(other: Self): Self = localLessOrEqual(other)
 }

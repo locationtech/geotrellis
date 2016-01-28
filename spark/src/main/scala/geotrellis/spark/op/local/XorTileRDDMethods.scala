@@ -23,15 +23,13 @@ trait XorTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner)(Xor.apply)
 
   /** Xor the values of each cell in each raster. */
-  def ^(r: RasterRDD[K]): Self = ^(r, None)
-  def ^(r: RasterRDD[K], partitioner: Option[Partitioner]): Self = localXor(r, partitioner)
-
+  def ^(r: RasterRDD[K]): Self = localXor(r, None)
+  
   /** Xor the values of each cell in each raster. */
   def localXor(others: Traversable[Self]): Self = localXor(others, None)
   def localXor(others: Traversable[Self], partitioner: Option[Partitioner]): Self =
     self.combineValues(others, partitioner)(Xor.apply)
 
   /** Xor the values of each cell in each raster. */
-  def ^(others: Traversable[Self]): Self = ^(others, None)
-  def ^(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localXor(others, partitioner)
+  def ^(others: Traversable[Self]): Self = localXor(others, None)
 }
