@@ -21,6 +21,8 @@ sealed trait Bounds[+A] extends Product with Serializable {
 
   def get: KeyBounds[A] 
 
+  def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] = 
+    if (isEmpty) default else this.get
 }
 
 case object EmptyBounds extends Bounds[Nothing] {
