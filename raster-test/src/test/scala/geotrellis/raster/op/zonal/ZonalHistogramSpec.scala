@@ -82,7 +82,7 @@ class ZonalHistogramSpec extends FunSpec
 
 
     it("gives correct histogram map for example raster") {
-      val histograms = r.zonalHistogram(zones)
+      val histograms = r.zonalHistogramInt(zones)
       histograms.keys should be (expected.keys)
 
       for(zone <- histograms.keys) {

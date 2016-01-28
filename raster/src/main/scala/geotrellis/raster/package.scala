@@ -30,10 +30,13 @@ package object raster
   type MultiBandRaster = Raster[MultiBandTile]
 
   implicit class Nodata[T](x: T) {
-    def get() = {
+    def getNodata() = {
       x match {
-        case _: Int => NODATA
+        case _: Byte => byteNODATA
         case _: Double => doubleNODATA
+        case _: Float => floatNODATA
+        case _: Int => NODATA
+        case _: Short => shortNODATA
         case _ => throw new Exception
       }
     }

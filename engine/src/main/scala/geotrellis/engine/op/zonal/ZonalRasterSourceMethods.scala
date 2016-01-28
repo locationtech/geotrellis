@@ -29,17 +29,28 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
   /**
    * Given a raster, return a histogram summary of the cells within each zone.
    *
-   * @note    zonalHistogram does not currently support Double raster data.
+   * @note    zonalHistogramInt does not support Double raster data.
    *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
    *          the data values will be rounded to integers.
    */
-  def zonalHistogram(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Int]]] =
+  def zonalHistogramInt(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Int]]] = {
     ValueSource(
       (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
-        ZonalHistogram(tile, zones)
+        ZonalHistogramInt(tile, zones)
       }
     )
+  }
 
+  /**
+   * Given a raster, return a histogram summary of the cells within each zone.
+   */
+  def zonalHistogramDouble(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Double]]] = {
+    ValueSource(
+      (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
+        ZonalHistogramDouble(tile, zones)
+      }
+    )
+  }
 
   /**
    * Given a raster and a raster representing it's zones, sets all pixels

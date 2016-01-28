@@ -27,11 +27,11 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
     res
   }
 
-  def zonalHistogram(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram] =
-    partitioner
-      .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
-      .map((t: (K, (Tile, Tile))) => ZonalHistogram(t._2._1, t._2._2))
+  def zonalHistogram(zonesRasterRDD: RDD[(K, Tile)]): Map[Int, Histogram[Int]] = {
+    self.join(zonesRasterRDD)
+      .map((t: (K, (Tile, Tile))) => ZonalHistogramInt(t._2._1, t._2._2))
       .fold(Map[Int, Histogram[Int]]())(mergeMaps)
+  }
 
   def zonalPercentage(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val sc = self.sparkContext

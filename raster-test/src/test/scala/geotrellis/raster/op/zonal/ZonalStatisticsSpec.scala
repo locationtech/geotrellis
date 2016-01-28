@@ -63,7 +63,7 @@ class ZonalStatisticsSpec extends FunSpec
             .toMap
       }
 
-    val stats = r.zonalStatistics(zones)
+    val stats = r.zonalStatisticsInt(zones)
 
     it("gives correct Statistics for example raster") {
       stats.keys should be (expected.keys)
