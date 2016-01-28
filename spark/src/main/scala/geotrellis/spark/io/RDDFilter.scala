@@ -73,6 +73,17 @@ object Intersects {
       }
     }
 
+  /** Define Intersects filter for Bounds */
+  implicit def forBounds[K: Boundable, M] =
+    new RDDFilter[K, Intersects.type, Bounds[K], M] {
+      def apply(metadata: M, kb: KeyBounds[K], bounds: Bounds[K]) = {
+        (bounds intersect kb) match {
+          case kb: KeyBounds[K] => List(kb)
+          case EmptyBounds => Nil
+        }
+      }
+    }
+
   /** Define Intersects filter for GridBounds */
   implicit def forGridBounds[K: SpatialComponent: Boundable, M] =
     new RDDFilter[K, Intersects.type, GridBounds, M] {
