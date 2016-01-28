@@ -8,7 +8,7 @@ trait ZonalMethods extends TileMethods {
   def zonalHistogram(zones: Tile): Map[Int, Histogram[Int]] =
     ZonalHistogram(tile, zones)
 
-  def zonalStatistics(zones: Tile): Map[Int, Statistics] =
+  def zonalStatistics(zones: Tile): Map[Int, Statistics[Int]] =
     ZonalHistogram(tile, zones)
       .map { case (zone: Int, hist: Histogram[Int]) => (zone -> hist.generateStatistics) }
       .toMap

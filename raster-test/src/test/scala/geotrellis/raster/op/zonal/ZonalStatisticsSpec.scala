@@ -75,7 +75,7 @@ class ZonalStatisticsSpec extends FunSpec
     it("gives correct Statistics values") {
       stats(1).mean should be (1)
       stats(3).mean should be (3)
-      stats(1) should be (Statistics(4, 1.0, 1, 1, 0.0, 1, 1))
+      stats(1) should be (Statistics[Int](4, 1.0, 1, 1, 0.0, 1, 1))
     }
   }
 }

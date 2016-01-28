@@ -33,9 +33,7 @@ abstract class MutableHistogram[T] extends Histogram[T] {
    */
   def uncountItem(item: T): Unit
 
-  def update(other: Histogram[T]) {
-    other.foreach((z, count) => countItem(z, count))
-  }
+  def update(other: Histogram[T]): Unit
 
   /**
    * Sets the item to the given count.
@@ -49,6 +47,11 @@ abstract class MutableHistogram[T] extends Histogram[T] {
 }
 
 abstract class MutableHistogramInt extends MutableHistogram[Int] with HistogramInt {
+
+  def update(other: Histogram[Int]): Unit = {
+    other.foreach((z, count) => countItem(z, count))
+  }
+
   /**
    * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
    */

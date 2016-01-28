@@ -21,6 +21,7 @@ import geotrellis.raster.NODATA
 import math.{abs, round, sqrt}
 
 import spire.syntax.cfor._
+
 /**
   * Data object representing a histogram of values.
   */
@@ -59,9 +60,7 @@ abstract trait Histogram[T] extends Serializable {
 
   def rawValues(): Array[T]
 
-  def foreach(f: (T, Int) => Unit) {
-    getValues.foreach(z => f(z, getItemCount(z)))
-  }
+  def foreach(f: (T, Int) => Unit): Unit
 
   def foreachValue(f: T => Unit): Unit
 
@@ -69,23 +68,11 @@ abstract trait Histogram[T] extends Serializable {
 
   def getMode(): T
 
-  def getMedian() = if (getTotalCount == 0) {
-    NODATA
-  } else {
-    val values = getValues()
-    val middle: Int = getTotalCount() / 2
-    var total = 0
-    var i = 0
-    while (total <= middle) {
-      total += getItemCount(values(i))
-      i += 1
-    }
-    values(i-1)
-  }
+  def getMedian(): T
 
   def getMean(): Double
 
-  def generateStatistics(): Statistics
+  def generateStatistics(): Statistics[T]
 
   def toJSON = {
     val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
@@ -94,6 +81,10 @@ abstract trait Histogram[T] extends Serializable {
 }
 
 abstract trait HistogramInt extends Histogram[Int] {
+  def foreach(f: (Int, Int) => Unit): Unit = {
+    getValues.foreach(z => f(z, getItemCount(z)))
+  }
+
   def getMode(): Int = {
     if(getTotalCount == 0) { return NODATA }
     val values = getValues()
@@ -109,6 +100,20 @@ abstract trait HistogramInt extends Histogram[Int] {
       }
     }
     mode
+  }
+
+  def getMedian() = if (getTotalCount == 0) {
+    NODATA
+  } else {
+    val values = getValues()
+    val middle: Int = getTotalCount() / 2
+    var total = 0
+    var i = 0
+    while (total <= middle) {
+      total += getItemCount(values(i))
+      i += 1
+    }
+    values(i-1)
   }
 
   def getMean(): Double = {
@@ -132,7 +137,7 @@ abstract trait HistogramInt extends Histogram[Int] {
   def generateStatistics() = {
     val values = getValues()
     if (values.length == 0) {
-      Statistics.EMPTY
+      Statistics.EMPTYInt
     } else {
 
       var dataCount: Long = 0
@@ -197,7 +202,7 @@ abstract trait HistogramInt extends Histogram[Int] {
       }
       val stddev = sqrt(mean2)
 
-      Statistics(dataCount, mean, median, mode, stddev, zmin, zmax)
+      Statistics[Int](dataCount, mean, median, mode, stddev, zmin, zmax)
     }
   }
 }

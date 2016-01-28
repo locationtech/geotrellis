@@ -16,16 +16,44 @@
 
 package geotrellis.raster.op.stats
 
-import geotrellis.raster.NODATA
+import geotrellis.raster.{Nodata, doubleNODATA, NODATA}
 
 /**
   * Data object for sharing the basic statistics about a raster or region.
   */
-case class Statistics(dataCells: Long = 0, mean: Double = Double.NaN,
-                      median: Int = NODATA, mode: Int = NODATA,
-                      stddev: Double = Double.NaN,zmin: Int = NODATA,
-                      zmax: Int = NODATA)
+case class Statistics[@specialized (Int, Double) T]
+(
+  dataCells: Long = 0,
+  mean: Double = Double.NaN,
+  median: T,
+  mode: T,
+  stddev: Double = Double.NaN,
+  zmin: T,
+  zmax: T
+)
 
 object Statistics {
-  val EMPTY = Statistics()
+  def EMPTYInt() = {
+    Statistics[Int](
+      dataCells = 0,
+      mean = Double.NaN,
+      median = NODATA,
+      mode = NODATA,
+      stddev = Double.NaN,
+      zmin = NODATA,
+      zmax = NODATA
+    )
+  }
+
+  def EMPTYDouble() = {
+    Statistics[Double](
+      dataCells = 0,
+      mean = Double.NaN,
+      median = doubleNODATA,
+      mode = doubleNODATA,
+      stddev = Double.NaN,
+      zmin = doubleNODATA,
+      zmax = doubleNODATA
+    )
+  }
 }

@@ -55,7 +55,7 @@ trait StatsMethods extends MethodExtensions[Tile] {
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Statistics =
+  def statistics: Statistics[Int] =
     histogram.generateStatistics
 
   /**
