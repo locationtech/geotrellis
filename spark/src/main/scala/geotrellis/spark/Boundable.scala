@@ -14,5 +14,5 @@ trait Boundable[K] extends Serializable {
   
   def maxBound(p1: K, p2: K): K
 
-  def getKeyBounds(rdd: RDD[(K, V)] forSome {type V}): KeyBounds[K]
+  def collectBounds[V](rdd: RDD[(K, V)]): Bounds[K]
 }
