@@ -12,8 +12,7 @@ import org.apache.spark.rdd.RDD
 
 trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
 
-  def averageByKey: RDD[(K, Tile)] = averageByKey(None)
-  def averageByKey(partitioner: Option[Partitioner]): RDD[(K, Tile)] = {
+  def averageByKey(partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val createCombiner = (tile: Tile) => tile -> 1
     val mergeValue = (tup: (Tile, Int), tile2: Tile) => {
       val (tile1, count) = tup

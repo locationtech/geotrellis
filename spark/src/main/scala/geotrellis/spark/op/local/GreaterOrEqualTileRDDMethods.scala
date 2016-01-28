@@ -72,14 +72,12 @@ trait GreaterOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are greater than or equal
     * to the next raster, else 0.
     */
-  def localGreaterOrEqual(other: Self): Self = localGreaterOrEqual(other, None)
-  def localGreaterOrEqual(other: Self, partitioner: Option[Partitioner]): Self =
+  def localGreaterOrEqual(other: Self, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner)(GreaterOrEqual.apply)
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
     * the corresponding cell valued of the rasters are greater than or equal
     * to the next raster, else 0.
     */
-  def >=(other: Self): Self = >=(other, None)
-  def >=(other: Self, partitioner: Option[Partitioner]): Self = localGreaterOrEqual(other, partitioner)
+  def >=(other: Self): Self = localGreaterOrEqual(other)
 }

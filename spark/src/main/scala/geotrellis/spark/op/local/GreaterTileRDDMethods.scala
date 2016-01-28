@@ -76,8 +76,7 @@ trait GreaterTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are greater than the next
     * raster, else 0.
     */
-  def localGreater(other: Self): Self = localGreater(other, None)
-  def localGreater(other: Self, partitioner: Option[Partitioner]): Self =
+  def localGreater(other: Self, partitioner: Option[Partitioner] = None): Self =
     self.combineValues(other, partitioner)(Greater.apply)
 
   /**
@@ -85,6 +84,5 @@ trait GreaterTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the raster are greater than the next
     * raster, else 0.
     */
-  def >(other: Self): Self = localGreater(other, None)
-  def >(other: Self, partitioner: Option[Partitioner]): Self = localGreater(other, partitioner)
+  def >(other: Self): Self = localGreater(other)
 }

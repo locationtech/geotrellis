@@ -58,7 +58,6 @@ trait SubtractTileRDDMethods[K] extends TileRDDMethods[K] {
 
   /** Subtract the values of each cell in each raster. */
   def -(other: Self): Self = localSubtract(other, None)
-  def -(other: Self, partitioner: Option[Partitioner]): Self = localSubtract(other, partitioner)
 
   /** Subtract the values of each cell in each raster. */
   def localSubtract(others: Traversable[Self]): Self = localSubtract(others, None)
@@ -67,5 +66,4 @@ trait SubtractTileRDDMethods[K] extends TileRDDMethods[K] {
 
   /** Subtract the values of each cell in each raster. */
   def -(others: Traversable[Self]): Self = localSubtract(others, None)
-  def -(others: Traversable[Self], partitioner: Option[Partitioner]): Self = localSubtract(others, partitioner)
 }
