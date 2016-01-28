@@ -16,7 +16,6 @@ trait Implicits {
   }
 
   implicit class withMapValuesTupleMethods[K: ClassTag, V: ClassTag](val self: RDD[(K, (V, V))]) extends MethodExtensions[RDD[(K, (V, V))]] {
-    // TODO these needs names
     def combineValues[R: ClassTag](f: (V, V) => R): RDD[(K, R)] =
       self.mapValues { case (v1, v2) => f(v1, v2) }
   }
@@ -28,7 +27,6 @@ trait Implicits {
           case Some(v2) => f(v1, v2)
           case None => v1
         }
-      //ov2.fold(v1)(f(v1, _)) }
     }
   }
 }
