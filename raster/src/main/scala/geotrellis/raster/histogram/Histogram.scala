@@ -25,7 +25,7 @@ import spire.syntax.cfor._
 /**
   * Data object representing a histogram of values.
   */
-abstract trait Histogram[T] extends Serializable {
+abstract trait Histogram[@specialized (Int, Double) T] extends Serializable {
   /**
    * Return the number of occurances for 'item'.
    */

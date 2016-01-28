@@ -18,7 +18,7 @@ package geotrellis.raster.histogram
 
 import math.{abs, round, sqrt}
 
-abstract class MutableHistogram[T] extends Histogram[T] {
+abstract class MutableHistogram[@specialized (Int, Double) T] extends Histogram[T] {
   /**
    * Note the occurance of 'item'.
    *
@@ -27,6 +27,8 @@ abstract class MutableHistogram[T] extends Histogram[T] {
    * of occurances of 'item'.
    */
   def countItem(item: T, count: Int = 1): Unit
+
+  def countItemInt(item: Int, count: Int = 1): Unit
 
   /**
    * Forget all occurances of 'item'.
@@ -47,6 +49,7 @@ abstract class MutableHistogram[T] extends Histogram[T] {
 }
 
 abstract class MutableHistogramInt extends MutableHistogram[Int] with HistogramInt {
+  def countItemInt(item: Int, count: Int = 1): Unit = countItem(item, count)
 
   def update(other: Histogram[Int]): Unit = {
     other.foreach((z, count) => countItem(z, count))
