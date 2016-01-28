@@ -18,6 +18,9 @@ sealed trait Bounds[+A] extends Product with Serializable {
 
   def intersects[B >: A](other: KeyBounds[B])(implicit b: Boundable[B]): Boolean =
     intersect(other).nonEmpty
+
+  def get: KeyBounds[A] 
+
 }
 
 case object EmptyBounds extends Bounds[Nothing] {
@@ -34,6 +37,8 @@ case object EmptyBounds extends Bounds[Nothing] {
 
   def intersect[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     EmptyBounds
+
+  def get = throw new NoSuchElementException("EmptyBounds.get")
 }
 
 case class KeyBounds[K](
@@ -76,6 +81,8 @@ case class KeyBounds[K](
       case EmptyBounds =>
         EmptyBounds
     }
+
+  def get = this
 }
 
 object KeyBounds {
