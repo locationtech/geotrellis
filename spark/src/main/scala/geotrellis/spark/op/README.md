@@ -1,10 +1,10 @@
 # GeoTrellis Spark Raster Operations
 
-In `geotrellis.spark` we represent raster layers as a distributed collection of non-intersecting raster tiles indexed by keys from a given layout. For instance a spatial raster is represented as `RDD[(SpatialKey, Tile)]` where `SpatialKey(col: Int, row: Int)` from a `TileLayout`. In this setup we represent operations between raster layers as a join.
+In `geotrellis.spark` we represent a raster layer as a distributed collection of non-overlapping tiles indexed by keys according to some `TileLayout`. For instance a spatial raster is represented as `RDD[(SpatialKey, Tile)]` where `SpatialKey(col: Int, row: Int)` from a `TileLayout`. In this setup we represent operations between raster layers as a join.
 
 ## Metadata
 
-If we read a previously tiled and saved GeoTrellis raster RDD from layer reader see that in fact we also get some metadata mixed in with a `Metadata[RasterMetaData]` trait. This metadata describes the `TileLayout` used by the layer, what extent it covers and what `CRS` of its projection, and what the `CellType` of each tile is. This metadata allows you to verify that you are working with compatible layers.
+A previously tiled and saved GeoTrellis Raster RDD read in through an instance of geotrellis.spark.io.LayerReader will be mixed in with the Metadata[RasterMetaData] trait. This metadata describes the TileLayout used by the layer, the extent it covers, the CRS of its projection, and what the CellType of each tile is. This metadata allows you to verify that you are working with compatible layers.
 
 ```scala
 import org.apache.spark._
