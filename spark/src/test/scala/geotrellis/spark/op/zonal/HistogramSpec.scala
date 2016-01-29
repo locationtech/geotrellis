@@ -13,11 +13,7 @@ import org.scalatest.FunSpec
 
 import collection._
 
-class HistogramSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Histogram Zonal Operation") {
     it("gives correct histogram for example raster rdds") {

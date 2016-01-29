@@ -11,10 +11,7 @@ import org.scalatest._
 
 import spire.syntax.cfor._
 
-class HillshadeSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders
-    with OpAsserter {
+class HillshadeSpec extends FunSpec with TestEnvironment {
 
   describe("Hillshade Elevation Spec") {
 

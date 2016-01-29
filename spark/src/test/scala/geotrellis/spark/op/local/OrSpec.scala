@@ -23,10 +23,8 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class OrSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class OrSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Or Operation") {
     val ones = AllOnesTestFile
     val twos = AllTwosTestFile

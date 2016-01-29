@@ -24,10 +24,7 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class MajoritySpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MajoritySpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Majority Operation") {
     val ones = AllOnesTestFile

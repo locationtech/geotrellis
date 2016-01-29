@@ -49,7 +49,7 @@ lazy val commonSettings = Seq(
 ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val root = Project("geotrellis", file(".")).
-  dependsOn(raster, vector, proj4).
+  dependsOn(raster, vector, proj4, spark).
   settings(
     initialCommands in console :=
       """
@@ -114,6 +114,10 @@ lazy val admin = Project("admin", file("admin")).
 
 lazy val spark = Project("spark", file("spark")).
   dependsOn(raster, gdal).
+  settings(commonSettings: _*)
+
+lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
+  dependsOn(testkit, spark % "provided").
   settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).

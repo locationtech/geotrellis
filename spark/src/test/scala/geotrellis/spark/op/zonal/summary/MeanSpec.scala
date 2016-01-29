@@ -9,10 +9,7 @@ import geotrellis.vector._
 
 import org.scalatest.FunSpec
 
-class MeanSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Mean Zonal Summary Operation") {
     val inc = IncreasingTestFile

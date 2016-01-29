@@ -21,10 +21,8 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class LocalSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class LocalSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Local Operations") {
     val ones = AllOnesTestFile
     val inc = IncreasingTestFile

@@ -7,10 +7,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class VerticalFlipSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders
-    with OpAsserter {
+class VerticalFlipSpec extends FunSpec with TestEnvironment {
 
   describe("VerticalFlip Global Spec") {
     it("should perform as the non-distributed raster operation") {

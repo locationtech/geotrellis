@@ -79,13 +79,29 @@ trait RasterMatchers extends Matchers {
 
     cfor(0)(_ < cols, _ + 1) { col =>
       cfor(0)(_ < rows, _ + 1) { row =>
-        withClue(s"Wasn't equal on col: $col, row: $row") {
-          val v1 = ta.getDouble(col, row)
-          val v2 = tb.getDouble(col, row)
+        val v1 = ta.getDouble(col, row)
+        val v2 = tb.getDouble(col, row)
+        withClue(s"Wasn't equal on col: $col, row: $row (v1=$v1, v2=$v2)") {
           if (v1.isNaN) v2.isNaN should be (true)
           else if (v2.isNaN) v1.isNaN should be (true)
           else v1 should be (v2 +- eps)
         }
+      }
+    }
+  }
+
+  /*
+   * Takes a function and checks if each f(x, y) == tile.get(x, y)
+   *  - Specialized for int so the function can check if an
+   *    (x, y) pair are NODATA. Prior to this, the tile's value
+   *    would be converted to a double, and NODATA would become NaN.
+   */
+  def rasterShouldBeInt(tile: Tile, f: (Int, Int) => Int): Unit = {
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val exp = f(col, row)
+        val v = tile.get(col, row)
+        withClue(s"(col=$col, row=$row)") { v should be(exp) }
       }
     }
   }

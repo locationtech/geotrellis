@@ -6,15 +6,13 @@ import geotrellis.raster.io.geotiff._
 
 import java.io.File
 
-import org.apache.spark._
+import geotrellis.spark.testkit._
 
+import org.apache.spark._
 import org.scalatest._
 import spire.syntax.cfor._
 
-trait OpAsserter extends FunSpec
-    with RasterRDDBuilders
-    with TestEnvironment
-    with RasterMatchers  {
+trait OpAsserter {self: TestEnvironment => 
 
   def testGeoTiff(sc: SparkContext,
     path: String,
@@ -32,12 +30,12 @@ trait OpAsserter extends FunSpec
   def testTile(sc: SparkContext,
     input: Tile,
     layoutCols: Int = 4,
-    layoutRows: Int = 3)
-    (
-      rasterOp: (Tile, RasterExtent) => Tile,
-      sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
-      asserter: (Tile, Tile) => Unit = tilesEqual
-    ) = {
+    layoutRows: Int = 3
+  )(
+    rasterOp: (Tile, RasterExtent) => Tile,
+    sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+    asserter: (Tile, Tile) => Unit = tilesEqual
+  ) = {
     val (tile, rasterRDD) = 
       createRasterRDD(
         input,

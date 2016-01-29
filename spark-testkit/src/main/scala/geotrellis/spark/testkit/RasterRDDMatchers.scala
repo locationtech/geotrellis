@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.spark.testkit
 
 import org.scalatest._
 import geotrellis.raster._
+import geotrellis.testkit._
+import geotrellis.spark._
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

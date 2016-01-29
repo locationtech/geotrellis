@@ -15,11 +15,7 @@ import collection.immutable.HashMap
 
 import spire.syntax.cfor._
 
-class PercentageSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class PercentageSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Percentage Zonal Operation") {
     it("gives correct percentage for example raster rdds") {

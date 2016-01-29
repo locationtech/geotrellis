@@ -7,11 +7,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class MeanSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterMatchers
-    with OpAsserter
-    with RasterRDDBuilders {
+class MeanSpec extends FunSpec with TestEnvironment {
 
   describe("Mean Focal Spec") {
     val nd = NODATA

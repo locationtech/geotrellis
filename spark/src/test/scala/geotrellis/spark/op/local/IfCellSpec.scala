@@ -23,10 +23,8 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class IfCellSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class IfCellSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("IfCell Operation") {
     val inc = IncreasingTestFile
     val dec = DecreasingTestFile

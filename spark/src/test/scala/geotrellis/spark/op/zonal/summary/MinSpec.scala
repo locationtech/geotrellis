@@ -9,10 +9,7 @@ import geotrellis.vector._
 
 import org.scalatest.FunSpec
 
-class MinSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MinSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Min Zonal Summary Operation") {
     val inc = IncreasingTestFile
