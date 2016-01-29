@@ -4,7 +4,7 @@ import scala.collection.mutable
 import spire.syntax.cfor._
 
 object GridBounds {
-  def apply(r: Tile): GridBounds = 
+  def apply(r: CellGrid): GridBounds = 
     GridBounds(0, 0, r.cols-1, r.rows-1)
 
   def envelope(keys: Iterable[Product2[Int, Int]]): GridBounds = {
@@ -42,6 +42,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
   def size = width * height
+  def isEmpty = size == 0
 
   def contains(col: Int, row: Int): Boolean =
     (colMin <= col && col <= colMax) &&
@@ -105,4 +106,21 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     }
     arr
   }
+
+  def intersection(cellGrid: CellGrid): Option[GridBounds] =
+    intersection(GridBounds(cellGrid))
+
+  def intersection(other: GridBounds): Option[GridBounds] =
+    if(!intersects(other)) {
+      None
+    } else {
+      Some(
+        GridBounds(
+          math.max(colMin, other.colMin),
+          math.max(rowMin, other.rowMin),
+          math.min(colMax, other.colMax),
+          math.min(rowMax, other.rowMax)
+        )
+      )
+    }
 }

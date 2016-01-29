@@ -16,29 +16,10 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, Point}
 import scala.math.{min, max, ceil}
 
 case class GeoAttrsError(msg: String) extends Exception(msg)
-
-case class CellSize(width: Double, height: Double) {
-  lazy val resolution: Double = math.sqrt(width*height)
-}
-
-object CellSize {
-  def apply(extent: Extent, cols: Int, rows: Int): CellSize =
-    CellSize(extent.width / cols, extent.height / rows)
-
-  def apply(extent: Extent, dims: (Int, Int)): CellSize = {
-    val (cols, rows) = dims
-    apply(extent, cols, rows)
-  }
-
-  def fromString(s:String) = {
-    val Array(width, height) = s.split(",").map(_.toDouble)
-    CellSize(width, height)
-  }
-}
 
 /**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
@@ -69,10 +50,9 @@ object CellSize {
  * Note that based on these rules, the eastern and southern borders of an Extent are not actually
  * considered to be part of the RasterExtent.
  */
-case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, cols: Int, rows: Int) {
+case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, cols: Int, rows: Int)
+    extends GridDefinition {
 
-  if (cellwidth  <= 0.0) throw GeoAttrsError(s"invalid cell-width: $cellwidth")
-  if (cellheight <= 0.0) throw GeoAttrsError(s"invalid cell-height: $cellheight")
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
@@ -82,28 +62,26 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   def size = cols * rows
   def dimensions = (cols, rows)
 
-  lazy val cellSize = CellSize(cellwidth, cellheight)
-
   /**
    * Convert map coordinates (x, y) to grid coordinates (col, row).
    */
-  final def mapToGrid(x: Double, y: Double) = {
-    val col = ((x - extent.xmin) / cellwidth).toInt
-    val row = ((extent.ymax - y) / cellheight).toInt
+  final def mapToGrid(x: Double, y: Double): (Int, Int) = {
+    val col = math.floor((x - extent.xmin) / cellwidth).toInt
+    val row = math.floor((extent.ymax - y) / cellheight).toInt
     (col, row)
   }
 
   /**
    * Convert map coordinate x to grid coordinate column.
    */
-  final def mapXToGrid(x: Double) = mapXToGridDouble(x).toInt
-  final def mapXToGridDouble(x: Double) = (x - extent.xmin) / cellwidth
+  final def mapXToGrid(x: Double): Int = math.floor(mapXToGridDouble(x)).toInt
+  final def mapXToGridDouble(x: Double): Double = (x - extent.xmin) / cellwidth
 
   /**
    * Convert map coordinate y to grid coordinate row.
    */
-  final def mapYToGrid(y: Double) = mapYToGridDouble(y).toInt
-  final def mapYToGridDouble(y: Double) = (extent.ymax - y ) / cellheight
+  final def mapYToGrid(y: Double): Int = math.floor(mapYToGridDouble(y)).toInt
+  final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
 
   /**
    * Convert map coordinate tuple (x, y) to grid coordinates (col, row).
@@ -114,29 +92,40 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
+   * Convert a point to grid coordinates (col, row).
+   */
+  final def mapToGrid(p: Point): (Int, Int) =
+    mapToGrid(p.x, p.y)
+
+  /**
     * The map coordinate of a grid cell is the center point.
     */
-  final def gridToMap(col: Int, row: Int) = {
+  final def gridToMap(col: Int, row: Int): (Double, Double) = {
     val x = max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
     val y = min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
     (x, y)
   }
 
-  final def gridColToMap(col: Int) = {
+  final def gridColToMap(col: Int): Double = {
     max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
   }
 
-  final def gridRowToMap(row: Int) = {
+  final def gridRowToMap(row: Int): Double = {
     min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
   }
 
   /**
-   * Gets the tile GridBounds for this RasterExtent that is the smallest subgrid
-   * of tiles containing all points within the extent. The extent is considered inclusive
-   * on it's north and west borders, exclusive on it's east and south borders.
-   * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
-   */
-  def gridBoundsFor(subExtent: Extent): GridBounds = {
+    * Gets the GridBounds aligned with this RasterExtent that is the smallest subgrid
+    * of containing all points within the extent. The extent is considered inclusive
+    * on it's north and west borders, exclusive on it's east and south borders.
+    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
+    * 
+    * @param     subExtent      The extent to get the grid bounds for
+    * @param     clamp          Determines whether or not to clamp the GridBounds to the
+    *                           RasterExtent; defaults to true. If false, GridBounds can
+    *                           contain negative values, or values outside of this RasterExtent's boundaries.
+    */
+  def gridBoundsFor(subExtent: Extent, clamp: Boolean = true): GridBounds = {
     // West and North boundarys are a simple mapToGrid call.
     val (colMin, rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
 
@@ -156,10 +145,14 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
       else rowMaxDouble.toInt
     }
 
-    GridBounds(math.max(colMin, 0),
-               math.max(rowMin, 0),
-               math.min(colMax, cols - 1),
-               math.min(rowMax, rows - 1))
+    if(clamp) {
+      GridBounds(math.max(colMin, 0),
+                 math.max(rowMin, 0),
+                 math.min(colMax, cols - 1),
+                 math.min(rowMax, rows - 1))
+    } else {
+      GridBounds(colMin, rowMin, colMax, rowMax)
+    }
   }
 
   /**
@@ -191,43 +184,25 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
+   * Returns a RasterExtent with the same extent,
+   * but a modified number of columns and rows based
+   * on the given cell height and width.
+   */
+  def withResolution(cellSize: CellSize): RasterExtent =
+    withResolution(cellSize.width, cellSize.height)
+
+  /**
    * Returns a RasterExtent with the same extent and the
    * given number of columns and rows.
    */
   def withDimensions(targetCols: Int, targetRows: Int): RasterExtent =
     RasterExtent(extent, targetCols, targetRows)
 
-  /**
-   * Returns a RasterExtent that lines up with this RasterExtent's resolution,
-   * and grid layout.
-   * i.e., the resulting RasterExtent will not have the given extent,
-   * but will have the smallest extent such that the whole of
-   * the given extent is covered, that lines up with the grid.
-   */
-  def createAligned(targetExtent: Extent): RasterExtent = {
-    val xmin = extent.xmin + (math.floor((targetExtent.xmin - extent.xmin) / cellwidth) * cellwidth)
-    val xmax = extent.xmax - (math.floor((extent.xmax - targetExtent.xmax) / cellwidth) * cellwidth)
-    val ymin = extent.ymin + (math.floor((targetExtent.ymin - extent.ymin) / cellheight) * cellheight)
-    val ymax = extent.ymax - (math.floor((extent.ymax - targetExtent.ymax) / cellheight) * cellheight)
-
-    val targetCols = math.round((xmax - xmin) / cellwidth).toInt
-    val targetRows = math.round((ymax - ymin) / cellheight).toInt
-    RasterExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight, targetCols, targetRows)
-  }
-
-  def extentFor(gridBounds: GridBounds): Extent = {
-    val xmin = max(min(gridBounds.colMin * cellwidth + extent.xmin, extent.xmax) , extent.xmin)
-    val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
-    val xmax = xmin + (gridBounds.width * cellwidth)
-    val ymin = ymax - (gridBounds.height * cellheight)
-    Extent(xmin, ymin, xmax, ymax)
-  }
-
   /** Adjusts a raster extent so that it can encompass the tile layout.
     * Will resample the extent, but keep the resolution, and preserve north and
     * west borders
     */
-  def adjustTo(tileLayout: TileLayout) = {
+  def adjustTo(tileLayout: TileLayout): RasterExtent = {
     val totalCols = tileLayout.tileCols * tileLayout.layoutCols
     val totalRows = tileLayout.tileRows * tileLayout.layoutRows
 
@@ -253,6 +228,9 @@ object RasterExtent {
     RasterExtent(extent, cellSize.width, cellSize.height, cols, rows)
   }
 
-  def apply(tile: Tile, extent: Extent): RasterExtent =
+  def apply(tile: CellGrid, extent: Extent): RasterExtent =
+    apply(extent, tile.cols, tile.rows)
+
+  def apply(extent: Extent, tile: CellGrid): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 }

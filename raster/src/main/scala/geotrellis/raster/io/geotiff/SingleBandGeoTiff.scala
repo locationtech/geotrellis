@@ -11,11 +11,7 @@ class SingleBandGeoTiff(
   val crs: CRS,
   val tags: Tags,
   val options: GeoTiffOptions
-) extends GeoTiff {
-  def projectedRaster: ProjectedRaster = ProjectedRaster(tile, extent, crs)
-  def raster: Raster = Raster(tile, extent)
-  def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
-
+) extends GeoTiff[Tile] {
   def mapTile(f: Tile => Tile): SingleBandGeoTiff =
     SingleBandGeoTiff(f(tile), extent, crs, tags, options)
 
@@ -87,9 +83,9 @@ object SingleBandGeoTiff {
   implicit def singleBandGeoTiffToTile(sbg: SingleBandGeoTiff): Tile =
     sbg.tile
 
-  implicit def singleBandGeoTiffToRaster(sbg: SingleBandGeoTiff): Raster =
+  implicit def singleBandGeoTiffToRaster(sbg: SingleBandGeoTiff): SingleBandRaster =
     sbg.raster
 
-  implicit def singleBandGeoTiffToProjectedRaster(sbg: SingleBandGeoTiff): ProjectedRaster =
+  implicit def singleBandGeoTiffToProjectedRaster(sbg: SingleBandGeoTiff): ProjectedRaster[Tile] =
     sbg.projectedRaster
 }

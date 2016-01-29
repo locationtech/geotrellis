@@ -1,89 +1,27 @@
 package geotrellis.spark.reproject
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.spark._
-import geotrellis.spark.ingest._
-import geotrellis.vector._
-import org.apache.spark.rdd._
-
-import scala.reflect.ClassTag
+import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.raster.resample._
 
 object Reproject {
-  def apply[T: IngestKey, TileType: ReprojectView](
-      rdd: RDD[(T, TileType)],
-      destCRS: CRS,
-      options: ReprojectOptions): RDD[(T, TileType)] = {
+  case class Options(
+    rasterReprojectOptions: RasterReprojectOptions = RasterReprojectOptions.DEFAULT,
+    /** Attempts to match the total layer extent.
+      * Warning: This should only be used on layers with smaller extents, and only
+      * if you really need it to match what a reprojection would be on the parent
+      * layer as one raster. Seams can happen on layers that use this that cover
+      * too wide of an area.
+      */
+    matchLayerExtent: Boolean = false
+  )
 
-    rdd.map { case (key, tile) =>
-      val ProjectedExtent(extent, crs) = key.projectedExtent
-      val Product2(newTile , newExtent) = tile.reproject(extent, crs, destCRS)
-      val newKey = key.updateProjectedExtent(ProjectedExtent(newExtent, destCRS))
-      (newKey, newTile)
-    }
+  object Options {
+    def DEFAULT = Options()
+
+    implicit def rasterReprojectOptionsToOptions(rro: RasterReprojectOptions): Options =
+      Options(rasterReprojectOptions = rro)
+
+   implicit def resampleMethodToOptions(method: ResampleMethod): Options =
+      Options(rasterReprojectOptions = RasterReprojectOptions(method = method))
   }
-
-  def apply[K: SpatialComponent: ClassTag](
-      rdd: RasterRDD[K],
-      destCRS: CRS,
-      options: ReprojectOptions)(implicit d: DummyImplicit): RasterRDD[K] = {
-
-    val crs = rdd.metaData.crs
-    val mapTransform = rdd.metaData.layout.mapTransform
-
-    val reprojectedTiles =
-      rdd.map { case (key, tile) =>
-        val extent = mapTransform(key)
-        val Raster(newTile, newExtent) = tile.reproject(extent, crs, destCRS)
-        ((key, newExtent), newTile)
-      }
-
-    val metadata =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metaData.layout) { key => key._2 }
-
-    val tiler: Tiler[(K, Extent), K, Tile] = {
-      val getExtent = (inKey: (K, Extent)) => inKey._2
-      val createKey = (inKey: (K, Extent), spatialComponent: SpatialKey) => inKey._1.updateSpatialComponent(spatialComponent)
-      Tiler(getExtent, createKey)
-    }
-
-    new ContextRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
-  }
-
-  def apply[K: SpatialComponent: ClassTag](
-      rdd: MultiBandRasterRDD[K],
-      destCRS: CRS,
-      options: ReprojectOptions): MultiBandRasterRDD[K] = {
-
-    val crs = rdd.metadata.crs
-    val mapTransform = rdd.metadata.layout.mapTransform
-
-    val reprojectedTiles =
-      rdd.map { case (key, tile) =>
-        val extent = mapTransform(key)
-        val MultiBandRaster(newTile, newExtent) = tile.reproject(extent, crs, destCRS)
-        ((key, newExtent), newTile)
-      }
-
-    val metadata =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metadata.layout) { key => key._2 }
-
-    val tiler: Tiler[(K, Extent), K, MultiBandTile] = {
-      val getExtent = (inKey: (K, Extent)) => inKey._2
-      val createKey = (inKey: (K, Extent), spatialComponent: SpatialKey) => inKey._1.updateSpatialComponent(spatialComponent)
-      Tiler(getExtent, createKey) _
-    }
-
-    new ContextRDD(tiler(reprojectedTiles, metadata, options.method), metadata)
-  }
-
-  def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] =
-    apply(rdd, destCRS, ReprojectOptions.DEFAULT)
-
-  def apply[T: IngestKey, TileType: ReprojectView](rdd: RDD[(T, TileType)], destCRS: CRS): RDD[(T, TileType)] =
-    apply(rdd, destCRS, ReprojectOptions.DEFAULT)
-
-  def apply[K: SpatialComponent: ClassTag](rdd: MultiBandRasterRDD[K], destCRS: CRS)(implicit d: DummyImplicit): MultiBandRasterRDD[K] =
-    apply(rdd, destCRS, ReprojectOptions.DEFAULT)
 }

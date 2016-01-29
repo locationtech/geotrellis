@@ -10,7 +10,6 @@ import org.scalatest.FunSpec
 class MeanSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
     with RasterMatchers
-    with TestSparkContext
     with OpAsserter
     with RasterRDDBuilders {
 

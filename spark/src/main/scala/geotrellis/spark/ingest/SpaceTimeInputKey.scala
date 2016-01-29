@@ -4,6 +4,7 @@ import com.github.nscala_time.time.Imports._
 import geotrellis.proj4._
 import geotrellis.raster.Tile
 import geotrellis.spark._
+import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.vector._
 
 /** A key for a Tile with temporal as well as spatial dimension */
@@ -18,12 +19,9 @@ object SpaceTimeInputKey {
     )
   }
 
-  // This tiler will be found to produce RDD[(SpaceTimeKey, Tile)]
-  implicit def tiler: Tiler[SpaceTimeInputKey, SpaceTimeKey, Tile] = {
-    val getExtent = (inKey: SpaceTimeInputKey) => inKey.extent
-    val createKey = (inKey: SpaceTimeInputKey, spatialComponent: SpatialKey) =>
-      SpaceTimeKey(spatialComponent, inKey.time)
-
-    Tiler(getExtent, createKey)
+  implicit class withTilerKeyMethods(val self: SpaceTimeInputKey) extends TilerKeyMethods[SpaceTimeInputKey, SpaceTimeKey] {
+    def extent = self.extent
+    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.time)
   }
+
 }

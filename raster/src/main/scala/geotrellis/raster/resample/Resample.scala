@@ -1,7 +1,7 @@
 package geotrellis.raster.resample
 
 import geotrellis.raster._
-import geotrellis.vector.Extent
+import geotrellis.vector.{Point, Extent}
 
 sealed trait ResampleMethod
 
@@ -16,6 +16,8 @@ sealed trait AggregateResampleMethod extends ResampleMethod
 case object Average extends AggregateResampleMethod
 case object Mode    extends AggregateResampleMethod
 case object Median    extends AggregateResampleMethod
+case object Max    extends AggregateResampleMethod
+case object Min    extends AggregateResampleMethod
 
 object ResampleMethod {
   val DEFAULT: PointResampleMethod = NearestNeighbor
@@ -38,9 +40,15 @@ abstract class Resample(tile: Tile, extent: Extent) {
   private def isValid(x: Double, y: Double) =
     x >= westBound && x <= eastBound && y >= southBound && y <= northBound
 
+  final def resample(p: Point): Int =
+    resample(p.x, p.y)
+
   final def resample(x: Double, y: Double): Int =
     if (!isValid(x, y)) NODATA
     else resampleValid(x, y)
+
+  final def resampleDouble(p: Point): Double =
+    resampleDouble(p.x, p.y)
 
   final def resampleDouble(x: Double, y: Double): Double =
     if (!isValid(x, y)) Double.NaN
@@ -52,6 +60,12 @@ abstract class Resample(tile: Tile, extent: Extent) {
 }
 
 object Resample {
+  /** Create a resampler.
+    * 
+    * @param      method         The method [[ResampleMethod]] to use.
+    * @param      tile           The tile that is the source of the resample
+    * @param      extent         The extent of source tile.
+    */
   def apply(method: PointResampleMethod, tile: Tile, extent: Extent): Resample =
     method match {
       case NearestNeighbor => new NearestNeighborResample(tile, extent)
@@ -61,6 +75,13 @@ object Resample {
       case Lanczos => new LanczosResample(tile, extent)
     }
 
+  /** Create a resampler.
+    * 
+    * @param      method         The method [[ResampleMethod]] to use.
+    * @param      tile           The tile that is the source of the resample
+    * @param      extent         The extent of source tile.
+    * @param      cs             The cell size of the target, for usage with Aggregate resample methods.
+    */
   def apply(method: ResampleMethod, tile: Tile, extent: Extent, cs: CellSize): Resample =
     method match {
       case NearestNeighbor => new NearestNeighborResample(tile, extent)
@@ -71,5 +92,7 @@ object Resample {
       case Average => new AverageResample(tile, extent, cs)
       case Mode => new ModeResample(tile, extent, cs)
       case Median => new MedianResample(tile, extent, cs)
+      case Max => new MaxResample(tile, extent, cs)
+      case Min => new MinResample(tile, extent, cs)
     }
 }

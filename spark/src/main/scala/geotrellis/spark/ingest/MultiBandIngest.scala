@@ -1,6 +1,5 @@
 package geotrellis.spark.ingest
 
-import geotrellis.raster.reproject.ReprojectOptions
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -12,20 +11,19 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object MultiBandIngest{
-  def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag](
+  def apply[T: IngestKey: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: ClassTag](
     sourceTiles: RDD[(T, MultiBandTile)],
     destCRS: CRS,
     layoutScheme: LayoutScheme,
     pyramid: Boolean = false,
     cacheLevel: StorageLevel = StorageLevel.NONE,
     resampleMethod: ResampleMethod = NearestNeighbor)
-    (sink: (MultiBandRasterRDD[K], Int) => Unit)
-    (implicit tiler: Tiler[T, K, MultiBandTile]): Unit =
+    (sink: (MultiBandRasterRDD[K], Int) => Unit): Unit =
   {
-    val reprojectedTiles = sourceTiles.reproject(destCRS, ReprojectOptions(resampleMethod)).cache()
+    val reprojectedTiles = sourceTiles.reproject(destCRS, resampleMethod).cache()
     val (zoom, rasterMetaData) =
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = tiler(sourceTiles, rasterMetaData, resampleMethod).cache()
+    val tiledRdd = sourceTiles.cutTiles(rasterMetaData, resampleMethod).cache()
     val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
 
     def buildPyramid(zoom: Int, rdd: MultiBandRasterRDD[K]): List[(Int, MultiBandRasterRDD[K])] = {

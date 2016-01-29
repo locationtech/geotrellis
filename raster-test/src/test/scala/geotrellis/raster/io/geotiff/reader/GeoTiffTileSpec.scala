@@ -35,7 +35,7 @@ class GeoTiffTileSpec extends FunSpec
     it("should work against econic.tif Striped NoCompression") {
       val options = GeoTiffOptions(Striped, NoCompression)
       val expected = SingleBandGeoTiff(s"$baseDataPath/econic.tif").tile
-      val actual = expected.toGeoTiffTile(options).tile
+      val actual = expected.toGeoTiffTile(options).toArrayTile
 
       assertEqual(expected, actual)
     }

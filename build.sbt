@@ -11,7 +11,6 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
-    "-Yinline-warnings",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
     "-language:higherKinds",
@@ -26,6 +25,8 @@ lazy val commonSettings = Seq(
   bintrayRepository := "geotrellis",
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
   bintrayPackageLabels := Info.tags,
+
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary),
 
   pomExtra := (
     <scm>

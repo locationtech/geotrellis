@@ -8,8 +8,4 @@ trait TestFiles {
   def loadTestArg(name: String) = {
     ArgReader.read(s"raster-test/data/$name.json")
   }
-
-  def loadGeoTiff(name: String): Raster = {
-    GeoTiffReader.readSingleBand(s"data/nn/$name.tiff").raster
-  }
 }

@@ -18,6 +18,7 @@ package geotrellis.raster.rasterize.polygon
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
+import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
 import geotrellis.testkit._
 
@@ -197,7 +198,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
   }
 
-  test("Rasterization of polygon with scanline through corner 1") {
+  test("Diamond polygon w/ point pixels, scanline through corner") {
     val extent = Extent(0.0, 0.0, 11, 11)
     val rasterExtent = RasterExtent(extent, 11, 11)
     val diamond = Polygon(List( Point(0,5.5), Point(5.5,11), Point(11,5.5), Point(0,5.5) ))
@@ -210,7 +211,7 @@ class PolygonRasterizerSpec extends FunSuite
     s.size should be (36)
   }
 
-  test("Rasterization of polygon with scanline through corner 2") {
+  test("Flipped-diamond polygon w/ point pixels, scanline through corner") {
     val extent = Extent(0.0, 0.0, 11, 11)
     val rasterExtent = RasterExtent(extent, 11, 11)
     val diamond = Polygon(List( Point(5.5,0), Point(11,5.5), Point(5.5,11), Point(5.5,0) ))
@@ -223,7 +224,7 @@ class PolygonRasterizerSpec extends FunSuite
     s.size should be (25)
   }
 
-  test("Rasterization of polygon without includeExterior and not contianing border center cells") {
+  test("Polygon w/ non-point pixels, w/o partial cells, not contianing border center cells") {
     val extent = Extent(0.0, 0.0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
@@ -236,17 +237,57 @@ class PolygonRasterizerSpec extends FunSuite
     assert(s.size < 100)
   }
 
-  test("Rasterization of polygon with includeExterior and not contianing border center cells") {
+  test("Polygon w/ non-point pixels and partial cells, not contianing border center cells") {
     val extent = Extent(0.0, 0.0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
 
     val s = mutable.Set[(Int, Int)]()
-    PolygonRasterizer.foreachCellByPolygon(extent2, rasterExtent, includeExterior = true) { (col, row) =>
+    PolygonRasterizer.foreachCellByPolygon(extent2, rasterExtent, options) { (col, row) =>
       s += ((col, row))
     }
 
     s.size should be (100)
+  }
+
+  test("Polygon w/ non-point pixels and w/ partial cells") {
+    val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
+    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val options = Options(includePartial = true, sampleType = PixelIsArea)
+    val s = mutable.Set.empty[(Int, Int)]
+
+    PolygonRasterizer.foreachCellByPolygon(p, rasterExtent, options) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (9)
+  }
+
+  test("Polygon w/ non-point pixels and w/o partial cells") {
+    val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
+    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val options = Options(includePartial = false, sampleType = PixelIsArea)
+    val s = mutable.Set[(Int, Int)]()
+
+    PolygonRasterizer.foreachCellByPolygon(p, rasterExtent, options) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (8)
+  }
+
+  test("Smaller polygon w/ non-point pixels and w/o partial cells") {
+    val p = Polygon(Line((0.01,0.01), (0.01,1.0), (0.5,1.5), (0.01,2.0), (0.01,2.99), (2.99,2.99), (2.99,0.01), (0.01,0.01)))
+    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val options = Options(includePartial = false, sampleType = PixelIsArea)
+    val s = mutable.Set[(Int, Int)]()
+
+    PolygonRasterizer.foreachCellByPolygon(p, rasterExtent, options) { (col, row) =>
+      s += ((col, row))
+    }
+
+    s.size should be (1)
   }
 
   test("Rasterization of a polygon with a hole in it") {

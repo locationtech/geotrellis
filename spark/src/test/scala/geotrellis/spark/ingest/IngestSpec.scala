@@ -1,8 +1,6 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.mosaic._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.vector._
 import geotrellis.proj4._
@@ -23,7 +21,6 @@ import org.scalatest._
 class IngestSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with TestSparkContext
   with OnlyIfGdalInstalled
 {
 
@@ -70,7 +67,7 @@ class IngestSpec extends FunSpec
       it("should ingest time-band NetCDF in stages"){
         val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
         val (zoom, rmd) = source.collectMetaData(LatLng, FloatingLayoutScheme(256))
-        val tiled = source.tile[SpaceTimeKey](rmd)
+        val tiled = source.cutTiles[SpaceTimeKey](rmd)
         val ingestKeys = tiled.keys.collect()
         ingestKeys should contain theSameElementsAs expectedKeys
       }

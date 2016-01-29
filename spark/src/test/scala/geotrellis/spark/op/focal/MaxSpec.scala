@@ -8,7 +8,6 @@ import org.scalatest.FunSpec
 
 class MaxSpec extends FunSpec with TestEnvironment
     with RasterRDDMatchers
-    with TestSparkContext
     with RasterRDDBuilders {
 
   describe("Max Focal Spec") {
@@ -38,7 +37,7 @@ class MaxSpec extends FunSpec with TestEnvironment
         8, 8, 8,    7, 3, 8,    8, 8, 2
       )
 
-      res should be(expected)
+      res should be (expected)
     }
 
     it("should square max with 5 x 5 neighborhood") {
