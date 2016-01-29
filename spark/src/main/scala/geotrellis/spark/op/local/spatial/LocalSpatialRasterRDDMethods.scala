@@ -11,14 +11,14 @@ import scala.reflect.ClassTag
 abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
 
   /** Masks this raster by the given Polygon. */
-  def mask(geom: Polygon): Self = mask(Seq(geom), Options.DEFAULT)
+  def mask(geom: Polygon): RasterRDD[K] = mask(Seq(geom), Options.DEFAULT)
 
-  def mask(geom: Polygon, options: Options): Self = mask(Seq(geom), options)
+  def mask(geom: Polygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
 
   /** Masks this raster by the given Polygons. */
-  def mask(geoms: Traversable[Polygon]): Self = mask(geoms, Options.DEFAULT)
+  def mask(geoms: Traversable[Polygon]): RasterRDD[K] = mask(geoms, Options.DEFAULT)
 
-  def mask(geoms: Traversable[Polygon], options: Options): Self =
+  def mask(geoms: Traversable[Polygon], options: Options): RasterRDD[K] =
     _mask { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.safeIntersection(tileExtent).toGeometry()
@@ -28,9 +28,9 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent: ClassTag] exten
     }
 
   /** Masks this raster by the given MultiPolygon. */
-  def mask(geom: MultiPolygon): Self = mask(geom, Options.DEFAULT)
+  def mask(geom: MultiPolygon): RasterRDD[K] = mask(geom, Options.DEFAULT)
 
-  def mask(geom: MultiPolygon, options: Options): Self = mask(Seq(geom), options)
+  def mask(geom: MultiPolygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
 
   /** Masks this raster by the given MultiPolygons. */
   def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit) =

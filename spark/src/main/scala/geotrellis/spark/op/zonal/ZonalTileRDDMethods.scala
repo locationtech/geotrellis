@@ -26,12 +26,12 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
     res
   }
 
-  def zonalHistogram(zonesRasterRDD: Self): Map[Int, Histogram] =
+  def zonalHistogram(zonesRasterRDD: RDD[(K, Tile)]): Map[Int, Histogram] =
     self.join(zonesRasterRDD)
       .map((t: (K, (Tile, Tile))) => ZonalHistogram(t._2._1, t._2._2))
       .fold(Map[Int, Histogram]())(mergeMaps)
 
-  def zonalPercentage(zonesRasterRDD: Self) = {
+  def zonalPercentage(zonesRasterRDD: RDD[(K, Tile)]) = {
     val sc = self.sparkContext
     val zoneHistogramMap = zonalHistogram(zonesRasterRDD)
     val zoneSumMap = zoneHistogramMap.map { case (k, v) => k -> v.getTotalCount }
