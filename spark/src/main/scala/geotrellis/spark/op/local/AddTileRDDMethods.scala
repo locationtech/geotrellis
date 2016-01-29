@@ -28,15 +28,15 @@ trait AddTileRDDMethods[K] extends TileRDDMethods[K] {
   def +:(d: Double) = localAdd(d)
 
   /** Add the values of each cell in each raster.  */
-  def localAdd(other: Self) =
+  def localAdd(other: RDD[(K, Tile)]) =
     self.combineValues(other) { Add.apply }
 
   /** Add the values of each cell in each raster. */
-  def +(other: Self) = localAdd(other)
+  def +(other: RDD[(K, Tile)]) = localAdd(other)
 
-  def localAdd(others: Traversable[Self]) =
+  def localAdd(others: Traversable[RDD[(K, Tile)]]) =
     self.combineValues(others) { Add.apply }
 
-  def +(others: Traversable[Self]) =
+  def +(others: Traversable[RDD[(K, Tile)]]) =
     localAdd(others)
 }

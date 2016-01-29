@@ -6,6 +6,7 @@ import geotrellis.raster._
 import geotrellis.raster.op.local._
 import org.apache.spark.rdd.RDD
 import scala.reflect._
+import org.apache.spark.rdd.RDD
 
 abstract class LocalRasterRDDSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
   private def r(f: Traversable[Tile] => (Tile)) =

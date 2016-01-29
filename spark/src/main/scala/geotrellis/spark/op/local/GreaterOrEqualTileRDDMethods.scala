@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.GreaterOrEqual
+import org.apache.spark.rdd.RDD
 
 trait GreaterOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -71,12 +72,12 @@ trait GreaterOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are greater than or equal
     * to the next raster, else 0.
     */
-  def localGreaterOrEqual(other: Self) =
+  def localGreaterOrEqual(other: RDD[(K, Tile)]) =
     self.combineValues(other)(GreaterOrEqual.apply)
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
     * the corresponding cell valued of the rasters are greater than or equal
     * to the next raster, else 0.
     */
-  def >=(other: Self) = localGreaterOrEqual(other)
+  def >=(other: RDD[(K, Tile)]) = localGreaterOrEqual(other)
 }

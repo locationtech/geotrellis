@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Divide
+import org.apache.spark.rdd.RDD
 
 trait DivideTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Divide each value of the raster by a constant value.*/
@@ -35,15 +36,15 @@ trait DivideTileRDDMethods[K] extends TileRDDMethods[K] {
   def /:(d: Double) = localDivideValue(d)
 
   /** Divide the values of each cell in each raster. */
-  def localDivide(other: Self) =
+  def localDivide(other: RDD[(K, Tile)]) =
     self.combineValues(other)(Divide.apply)
 
   /** Divide the values of each cell in each raster. */
-  def /(other: Self) = localDivide(other)
+  def /(other: RDD[(K, Tile)]) = localDivide(other)
 
-  def localDivide(others: Traversable[Self]) =
+  def localDivide(others: Traversable[RDD[(K, Tile)]]) =
     self.combineValues(others)(Divide.apply)
 
-  def /(others: Traversable[Self]) =
+  def /(others: Traversable[RDD[(K, Tile)]]) =
     localDivide(others)
 }

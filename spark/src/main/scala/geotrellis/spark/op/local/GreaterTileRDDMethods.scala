@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Greater
+import org.apache.spark.rdd.RDD
 
 trait GreaterTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -75,7 +76,7 @@ trait GreaterTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are greater than the next
     * raster, else 0.
     */
-  def localGreater(other: Self) =
+  def localGreater(other: RDD[(K, Tile)]) =
     self.combineValues(other)(Greater.apply)
 
   /**
@@ -83,5 +84,5 @@ trait GreaterTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the raster are greater than the next
     * raster, else 0.
     */
-  def >(other: Self) = localGreater(other)
+  def >(other: RDD[(K, Tile)]) = localGreater(other)
 }

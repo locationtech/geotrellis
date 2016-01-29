@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Unequal
+import org.apache.spark.rdd.RDD
 
 trait UnequalTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -54,12 +55,12 @@ trait UnequalTileRDDMethods[K] extends TileRDDMethods[K] {
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(other: Self) =
+  def localUnequal(other: RDD[(K, Tile)]) =
     self.combineValues(other)(Unequal.apply)
 
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the raster are not equal, else 0.
    */
-  def !==(other: Self) = localUnequal(other)
+  def !==(other: RDD[(K, Tile)]) = localUnequal(other)
 }

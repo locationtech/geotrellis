@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.IfCell
+import org.apache.spark.rdd.RDD
 
 trait IfCellTileRDDMethods[K] extends TileRDDMethods[K] {
 
@@ -32,7 +33,7 @@ trait IfCellTileRDDMethods[K] extends TileRDDMethods[K] {
   }
 
   def localIf(
-    other: Self,
+    other: RDD[(K, Tile)],
     cond: (Int, Int) => Boolean,
     trueValue: Int
   ) = self.combineValues(other) {
@@ -40,7 +41,7 @@ trait IfCellTileRDDMethods[K] extends TileRDDMethods[K] {
   }
 
   def localIf(
-    other: Self,
+    other: RDD[(K, Tile)],
     cond: (Double, Double) => Boolean,
     trueValue: Double
   ) = self.combineValues(other) {
@@ -48,7 +49,7 @@ trait IfCellTileRDDMethods[K] extends TileRDDMethods[K] {
   }
 
   def localIf(
-    other: Self,
+    other: RDD[(K, Tile)],
     cond: (Int, Int) => Boolean,
     trueValue: Int,
     falseValue: Int
@@ -57,7 +58,7 @@ trait IfCellTileRDDMethods[K] extends TileRDDMethods[K] {
   }
 
   def localIf(
-    other: Self,
+    other: RDD[(K, Tile)],
     cond: (Double, Double) => Boolean,
     trueValue: Double,
     falseValue: Double
