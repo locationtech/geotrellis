@@ -34,8 +34,8 @@ trait ZonalSummaryKeyedFeatureRDDMethods[K, G <: Geometry, D] {
     featureRdd.aggregateByKey(zeroValue)(handler.mergeOp(multiPolygon, zeroValue), handler.combineOp)
 }
 
-trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
-
+abstract class ZonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+  import Implicits._
   protected implicit val _sc: SpatialComponent[K]
 
   def zonalSummary[T: ClassTag](
@@ -43,7 +43,7 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
     zeroValue: T,
     handler: TileIntersectionHandler[T]
   ): T =
-    rasterRDD
+    self
       .asRasters
       .map(_._2.asFeature)
       .zonalSummary(polygon, zeroValue)(handler)
@@ -53,7 +53,7 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
     zeroValue: T,
     handler: TileIntersectionHandler[T]
   ): T =
-    rasterRDD
+    self
       .asRasters
       .map(_._2.asFeature)
       .zonalSummary(multiPolygon, zeroValue)(handler)
@@ -63,8 +63,8 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
     zeroValue: T,
     handler: TileIntersectionHandler[T],
     fKey: K => L
-  ): RDD[(L, T)] =    
-    rasterRDD
+  ): RDD[(L, T)] =
+    self
       .asRasters
       .map { case (key, raster) => (fKey(key), raster.asFeature) }
       .zonalSummaryByKey(polygon, zeroValue)(handler)
@@ -74,16 +74,16 @@ trait ZonalSummaryRasterRDDMethods[K] extends RasterRDDMethods[K] {
     zeroValue: T,
     handler: TileIntersectionHandler[T],
     fKey: K => L
-  ): RDD[(L, T)] =    
-    rasterRDD
+  ): RDD[(L, T)] =
+    self
       .asRasters
       .map { case (key, raster) => (fKey(key), raster.asFeature) }
       .zonalSummaryByKey(multiPolygon, zeroValue)(handler)
 
-  def zonalHistogram(polygon: Polygon): Histogram =
+  def regionHistogram(polygon: Polygon): Histogram =
     zonalSummary(polygon, FastMapHistogram(), Histogram)
 
-  def zonalHistogram(multiPolygon: MultiPolygon): Histogram =
+  def regionHistogram(multiPolygon: MultiPolygon): Histogram =
     zonalSummary(multiPolygon, FastMapHistogram(), Histogram)
 
   def zonalMax(polygon: Polygon): Int =

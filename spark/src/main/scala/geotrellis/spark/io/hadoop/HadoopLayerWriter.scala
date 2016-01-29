@@ -33,7 +33,8 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
         path = layerPath
       )
     val metaData = rdd.metadata
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
+    val keyBounds = implicitly[Boundable[K]].collectBounds(rdd)
+      .getOrElse(throw new LayerWriteError(id, "empty rdd write"))
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
     try {

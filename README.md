@@ -83,6 +83,7 @@ Throughout this repo, you'll find readme documents specific to particular the mo
   1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation) - Kriging interpoloation from vector point data
   2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/) - parsing vector data as GeoJSON
 6. [spark-etl](./spark-etl) - ingesting raster data and storing as Raster RDDs using Spark
+7. [spark](./spark/op) - performing raster operations on Raster RDDs using Spark
 
 
 

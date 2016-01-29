@@ -38,7 +38,7 @@ class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCo
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
     val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)

@@ -51,7 +51,8 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
       bucket = bucket,
       key = prefix)
 
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
+    val keyBounds = implicitly[Boundable[K]].collectBounds(rdd)
+      .getOrElse(throw new LayerWriteError(id, "empty rdd write"))
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
