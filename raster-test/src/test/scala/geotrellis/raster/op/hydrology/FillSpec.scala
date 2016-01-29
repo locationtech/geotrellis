@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class FillSpec extends FunSpec 
                   with Matchers 

@@ -6,7 +6,7 @@ import geotrellis.raster.mosaic._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._

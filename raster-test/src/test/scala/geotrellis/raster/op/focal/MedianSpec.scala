@@ -1,7 +1,7 @@
 package geotrellis.raster.op.focal
 
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class MedianSpec extends FunSpec with Matchers with TileBuilders with RasterMatchers {
   describe("Tile focalMedian") {

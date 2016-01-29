@@ -25,7 +25,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

@@ -18,7 +18,7 @@ package geotrellis.raster.op.zonal
 
 import geotrellis.raster.op.stats._
 import geotrellis.raster._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 import spire.syntax.cfor._

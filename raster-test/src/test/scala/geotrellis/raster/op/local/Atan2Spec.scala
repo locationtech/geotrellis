@@ -20,7 +20,7 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class Atan2Spec extends FunSpec
                    with Matchers

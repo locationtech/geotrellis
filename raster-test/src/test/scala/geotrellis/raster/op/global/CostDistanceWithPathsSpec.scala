@@ -5,7 +5,7 @@ import geotrellis.raster.op.global._
 
 import geotrellis.vector.Line
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

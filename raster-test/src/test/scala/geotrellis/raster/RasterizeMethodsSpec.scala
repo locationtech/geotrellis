@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.vector.{Extent, Feature}
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

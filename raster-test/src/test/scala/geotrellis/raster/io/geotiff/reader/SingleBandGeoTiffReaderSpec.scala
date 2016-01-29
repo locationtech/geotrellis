@@ -2,7 +2,7 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
 import org.scalatest._

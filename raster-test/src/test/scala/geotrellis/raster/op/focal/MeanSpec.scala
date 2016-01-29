@@ -2,7 +2,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class MeanSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
 

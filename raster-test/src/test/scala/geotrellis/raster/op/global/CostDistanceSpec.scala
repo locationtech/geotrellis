@@ -18,7 +18,7 @@ package geotrellis.raster.op.global
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

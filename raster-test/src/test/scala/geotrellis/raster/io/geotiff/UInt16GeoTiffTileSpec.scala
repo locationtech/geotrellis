@@ -1,7 +1,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.TypeInt
-import geotrellis.testkit.{RasterMatchers, TileBuilders}
+import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
 import org.scalatest.{BeforeAndAfterAll, Matchers, FunSpec}
 
 

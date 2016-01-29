@@ -2,7 +2,7 @@ package geotrellis.raster.op.stats
 
 import geotrellis.raster._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import org.scalatest._
 
 class StatsMethodsSpec extends FunSpec

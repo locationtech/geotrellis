@@ -77,7 +77,7 @@ lazy val raster = Project("raster", file("raster")).
   settings(commonSettings: _*)
 
 lazy val rasterTest = Project("raster-test", file("raster-test")).
-  dependsOn(raster, rasterTestkit).
+  dependsOn(raster, rasterTestkit, vectorTestkit).
   settings(commonSettings: _*)
 
 lazy val engine = Project("engine", file("engine")).

@@ -5,7 +5,7 @@ import geotrellis.raster.op.local._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 /**
  * Created by jchien on 5/1/14.

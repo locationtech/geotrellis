@@ -24,7 +24,7 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector.{Point, Extent}
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4.{CRS, LatLng}
 
 import monocle.syntax._

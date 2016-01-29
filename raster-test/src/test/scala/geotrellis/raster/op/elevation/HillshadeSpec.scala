@@ -21,7 +21,7 @@ import geotrellis.vector.Extent
 import geotrellis.raster.op._
 import geotrellis.raster.op.focal._
 import geotrellis.raster.render._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

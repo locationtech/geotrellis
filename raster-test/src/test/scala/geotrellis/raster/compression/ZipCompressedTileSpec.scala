@@ -3,7 +3,7 @@ package geotrellis.raster.compression
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

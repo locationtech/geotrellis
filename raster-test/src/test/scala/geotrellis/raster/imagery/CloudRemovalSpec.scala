@@ -2,7 +2,7 @@ package geotrellis.raster.imagery
 
 import geotrellis.raster.{ArrayMultiBandTile, MultiBandTile}
 import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SingleBandGeoTiff}
-import geotrellis.testkit.RasterMatchers
+import geotrellis.raster.testkit.RasterMatchers
 import org.scalatest.FunSpec
 import spire.syntax.cfor._
 

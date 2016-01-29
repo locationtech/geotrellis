@@ -22,7 +22,7 @@ import org.scalatest._
 
 import scala.math.min
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class InverseMaskSpec extends FunSpec 
                          with Matchers 

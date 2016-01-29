@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import math.{max,min,round}
 
