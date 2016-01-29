@@ -22,7 +22,6 @@ import geotrellis.engine.render._
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.vector.Extent
-import geotrellis.testkit._
 
 import geotrellis.raster.op._
 import geotrellis.raster.op.stats._
@@ -31,10 +30,7 @@ import geotrellis.raster.io.arg._
 
 import org.scalatest._
 
-class RasterSourceSpec extends FunSpec 
-                          with Matchers 
-                          with TestEngine 
-                          with TileBuilders {
+class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
   def getRasterSource = 
     RasterSource("mtsthelens_tiled_cached")
 

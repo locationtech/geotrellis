@@ -19,7 +19,6 @@ package geotrellis.engine.op.elevation
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op.elevation._
-import geotrellis.testkit._
 import geotrellis.vector.Extent
 import org.scalatest._
 

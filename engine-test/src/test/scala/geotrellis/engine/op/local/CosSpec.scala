@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class CosSpec extends FunSpec
-                 with Matchers
-                 with TestEngine
-                 with TileBuilders {
+class CosSpec extends FunSpec with Matchers with TestEngine {
   describe("Cos") {
     it("finds the cosine of a double raster") {
       val rasterData = Array (

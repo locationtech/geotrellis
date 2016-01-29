@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class LogSpec extends FunSpec 
-                 with Matchers 
-                 with TestEngine 
-                 with TileBuilders {
+class LogSpec extends FunSpec with Matchers with TestEngine {
   describe("Log") {    
     it("takes log of int tiled RasterSource") {
       val rs = createRasterSource(

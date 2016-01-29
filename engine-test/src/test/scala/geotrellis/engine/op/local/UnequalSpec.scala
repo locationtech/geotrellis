@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class UnequalSpec extends FunSpec 
-                     with Matchers 
-                     with TestEngine 
-                     with TileBuilders {
+class UnequalSpec extends FunSpec with Matchers with TestEngine {
   describe("Unequal") {
     it("adds two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

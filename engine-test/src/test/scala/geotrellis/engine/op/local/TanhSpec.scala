@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class TanhSpec extends FunSpec
-                  with Matchers
-                  with TestEngine
-                  with TileBuilders {
+class TanhSpec extends FunSpec with Matchers with TestEngine {
   describe("Tanh") {
     it("finds the tanh of a double raster") {
       val rasterData = Array (

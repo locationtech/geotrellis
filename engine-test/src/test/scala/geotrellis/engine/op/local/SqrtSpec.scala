@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class SqrtSpec extends FunSpec 
-                  with Matchers 
-                  with TestEngine 
-                  with TileBuilders {
+class SqrtSpec extends FunSpec with Matchers with TestEngine {
   describe("Sqrt") {
     it("takes the square root of a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")

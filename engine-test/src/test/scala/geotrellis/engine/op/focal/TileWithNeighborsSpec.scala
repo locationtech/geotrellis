@@ -19,11 +19,10 @@ package geotrellis.engine.op.focal
 import geotrellis.raster._
 import geotrellis.engine._
 import geotrellis.raster.op.focal.TileWithNeighbors
-import geotrellis.testkit._
 import org.scalatest._
 
-class TileWithNeighborsSpec extends FunSpec with TileBuilders
-                                            with TestEngine {
+class TileWithNeighborsSpec extends FunSpec with TestEngine {
+
   describe("TileWithNeighbors") {
     it("should tile correctly for 3x2 columns") {
       val rs1 = createRasterSource(

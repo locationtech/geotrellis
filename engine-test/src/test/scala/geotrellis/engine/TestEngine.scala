@@ -17,7 +17,7 @@
 package geotrellis.engine
 
 import geotrellis.engine.io._
-import geotrellis.testkit.{RasterMatchers, TileBuilders}
+import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
 import geotrellis.raster._
 import org.scalatest._
 
