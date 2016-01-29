@@ -33,10 +33,10 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 
-package object spark 
+package object spark
     extends buffer.Implicits
     with merge.Implicits
-    with reproject.Implicits 
+    with reproject.Implicits
     with tiling.Implicits {
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
@@ -51,7 +51,24 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type ComponentLens[K, C] = PLens[K, K, C, C]
+  type Component[T, C] = PLens[T, T, C, C]
+
+  object Component {
+    def apply[T, C](get: T => C, set: (T, C) => T): Component[T, C] =
+      PLens[T, T, C, C](get)(c => t => set(t, c))
+  }
+
+  /** Describes a getter and setter for an object that has
+    * an implicitly defined lens into a component of that object
+    * with a specific type.
+    */
+  implicit class ComponentMethods[T](val self: T) extends MethodExtensions[T] {
+    def get[C]()(implicit component: Component[T, C]): C =
+      self &|-> component get
+
+    def set[C](value: C)(implicit component: Component[T, C]): T =
+      self &|-> component set(value)
+  }
 
   type SpatialComponent[K] = KeyComponent[K, SpatialKey]
   type TemporalComponent[K] = KeyComponent[K, TemporalKey]

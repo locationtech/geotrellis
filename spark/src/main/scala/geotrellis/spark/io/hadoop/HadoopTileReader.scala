@@ -20,7 +20,6 @@ import scala.reflect.ClassTag
 class HadoopTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](val attributeStore: HadoopAttributeStore)
     (implicit sc: SparkContext) extends Reader[LayerId, Reader[K, V]] {
 
-  val catalogConfig = HadoopCatalogConfig.DEFAULT
   val conf = attributeStore.hadoopConfiguration
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
@@ -28,7 +27,7 @@ class HadoopTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCo
     val (layerMetaData, _, _, keyIndex, schema) =
       attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, KeyIndex[K], Schema](layerId)
 
-    val dataPath = layerMetaData.path.suffix(catalogConfig.SEQFILE_GLOB)
+    val dataPath = layerMetaData.path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
     val inputConf = conf.withInputPath(dataPath)
 
     val codec = KeyValueRecordCodec[K, V]

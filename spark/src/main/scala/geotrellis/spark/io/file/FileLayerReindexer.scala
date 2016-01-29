@@ -26,7 +26,7 @@ object FileLayerReindexer {
   )(implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val layerReader = FileLayerReader[K, V, M](attributeStore)
     val layerDeleter = FileLayerDeleter[K, V, M](attributeStore)
-    val layerWriter = FileLayerWriter[K, V, M](attributeStore, keyIndexMethod)
+    val layerWriter = FileLayerWriter(attributeStore)
 
     val layerCopier = new SparkLayerCopier[FileLayerHeader, K, V, M](
       attributeStore = attributeStore,

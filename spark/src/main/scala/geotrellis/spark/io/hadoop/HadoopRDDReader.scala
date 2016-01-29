@@ -14,10 +14,13 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-class HadoopRDDReader[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](catalogConfig: HadoopCatalogConfig) extends LazyLogging {
+object HadoopRDDReader extends LazyLogging {
 
-  def readFully(path: Path, writerSchema: Option[Schema] = None)(implicit sc: SparkContext): RDD[(K, V)] = {
-    val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
+  def readFully[
+    K: AvroRecordCodec: Boundable,
+    V: AvroRecordCodec
+  ](path: Path, writerSchema: Option[Schema] = None)(implicit sc: SparkContext): RDD[(K, V)] = {
+    val dataPath = path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
 
     logger.debug(s"Loading from $dataPath")
 
@@ -38,13 +41,16 @@ class HadoopRDDReader[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](catalog
       }
   }
 
-  def readFiltered(
+  def readFiltered[
+    K: AvroRecordCodec: Boundable,
+    V: AvroRecordCodec
+  ](
     path: Path,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     writerSchema: Option[Schema] = None)
   (implicit sc: SparkContext): RDD[(K, V)] = {
-    val dataPath = path.suffix(catalogConfig.SEQFILE_GLOB)
+    val dataPath = path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
 
     logger.debug(s"Loading from $dataPath")
 

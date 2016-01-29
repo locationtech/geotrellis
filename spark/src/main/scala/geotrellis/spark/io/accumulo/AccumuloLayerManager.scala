@@ -20,21 +20,21 @@ class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: Acc
   def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.header)
-    val copier = AccumuloLayerCopier[K, V, M](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
+    val copier = AccumuloLayerCopier[K, V, M](instance, header.tileTable)
     copier.copy(from, to)
   }
 
   def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.header)
-    val mover = AccumuloLayerMover[K, V, M](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
+    val mover = AccumuloLayerMover[K, V, M](instance, header.tileTable)
     mover.move(from, to)
   }
 
   def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](id, Fields.header)
-    val reindexer = AccumuloLayerReindexer[K, V, M](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
+    val reindexer = AccumuloLayerReindexer[K, V, M](instance, header.tileTable, keyIndexMethod)
     reindexer.reindex(id)
   }
 }

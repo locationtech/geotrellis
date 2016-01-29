@@ -9,25 +9,23 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 import java.io.File
 
-class FileRDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]() {
+object FileRDDWriter {
+  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
+    rdd: RDD[(K, V)],
+    rootPath: String,
+    keyPath: K => String
+  ): Unit = {
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
 
-  val codec  = KeyValueRecordCodec[K, V]
-  val schema = codec.schema
-
-  def write(rdd: RDD[(K, V)], rootPath: String, keyPath: K => String, oneToOne: Boolean): Unit = {
-    val _codec = codec
-
+    // TODO: Is there a way to reduce the shuffle?
     val pathsToTiles =
-      if (oneToOne) {
-        rdd.map { case row @ (key, value) => (keyPath(key), Vector(row)) }
-      } else {
-        rdd.groupBy { case (key, _) => keyPath(key) }
-      }
+      rdd.groupBy { case (key, _) => keyPath(key) }
 
     Filesystem.ensureDirectory(rootPath)
 
     pathsToTiles.foreach { case (path, rows) =>
-      val bytes = AvroEncoder.toBinary(rows.toVector)(_codec)
+      val bytes = AvroEncoder.toBinary(rows.toVector)(codec)
       Filesystem.writeBytes(path, bytes)
     }
   }

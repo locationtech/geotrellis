@@ -24,36 +24,32 @@ object HadoopLayerReindexer {
     val layerReader    = HadoopLayerReader[K, V, M](rootPath)
     val layerDeleter   = HadoopLayerDeleter(rootPath)
     val layerMover     = HadoopLayerMover[K, V, M](rootPath)
-    val layerWriter    = HadoopLayerWriter[K, V, M](rootPath, keyIndexMethod)
+    val layerWriter    = HadoopLayerWriter(rootPath)
 
-    val layerCopier = new SparkLayerCopier[HadoopLayerHeader, K, V, M](
-      attributeStore = attributeStore,
-      layerReader    = layerReader,
-      layerWriter    = layerWriter
-    ) {
-      def headerUpdate(id: LayerId, header: HadoopLayerHeader): HadoopLayerHeader =
-        header.copy(path = new Path(rootPath, s"${id.name}/${id.zoom}"))
+    val layerCopier =
+      new LayerCopier[LayerId] {
+        def copy(from: LayerId, to: LayerId): Unit = {
+          if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
+          if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-      override def copy(from: LayerId, to: LayerId): Unit = {
-        if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
-        if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
+          val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, writerSchema) = try {
+            attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+          } catch {
+            case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
+          }
 
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, writerSchema) = try {
-          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
-        } catch {
-          case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
-        }
+          val newHeader = existingLayerHeader.copy(path = new Path(rootPath, s"${to.name}/${to.zoom}"))
 
-        try {
-          layerWriter.write(to, layerReader.read(from))
-          attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, writerSchema
-          )
-        } catch {
-          case e: Exception => new LayerCopyError(from, to).initCause(e)
+          try {
+            layerWriter.write(to, layerReader.read(from), keyIndexMethod, existingKeyBounds)
+            attributeStore.writeLayerAttributes(
+              to, newHeader, existingMetaData, existingKeyBounds, existingKeyIndex, writerSchema
+            )
+          } catch {
+            case e: Exception => new LayerCopyError(from, to).initCause(e)
+          }
         }
       }
-    }
 
     GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }

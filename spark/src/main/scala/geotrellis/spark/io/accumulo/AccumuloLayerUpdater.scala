@@ -10,20 +10,27 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: BaseAccumuloRDDWriter[K, V])
-  extends LayerUpdater[LayerId, K, V, M] {
+import AccumuloLayerWriter.Options
 
+// TODO: What happens if the schema changes between initial write and update?
+class AccumuloLayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  val instance: AccumuloInstance,
+  val attributeStore: AttributeStore[JsonFormat],
+  options: Options
+) extends LayerUpdater[LayerId, K, V, M] {
+
+  // TODO: fix
   def update(id: LayerId, rdd: Container) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
-    val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
+    val (header, metaData, existingKeyBounds, keyIndex, _) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
+
+    val table = header.tileTable
 
     val boundable = implicitly[Boundable[K]]
     val keyBounds = try {
@@ -35,10 +42,12 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: J
     if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
       throw new LayerOutOfKeyBoundsError(id)
 
-    val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
+    val keyEncoder = options.keyEncoderStrategy.encoderFor[K]
+    val encodeKey = (key: K) => keyEncoder.encode(id, key, keyIndex.toIndex(key))
+
 
     try {
-      rddWriter.write(rdd, existingHeader.tileTable, columnFamily(id), getRowId, oneToOne = false)
+      AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table, oneToOne = false)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -46,14 +55,13 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: J
 }
 
 object AccumuloLayerUpdater {
-  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
-
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
   V: AvroRecordCodec: ClassTag, M: JsonFormat]
   (instance: AccumuloInstance,
-   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M] =
+   options: Options = Options.DEFAULT): AccumuloLayerUpdater[K, V, M] =
     new AccumuloLayerUpdater[K, V, M](
+      instance = instance,
       attributeStore = AccumuloAttributeStore(instance.connector),
-      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
+      options = options
     )
 }

@@ -15,18 +15,17 @@ import org.apache.hadoop.mapreduce.Job
 import scala.reflect._
 
 
-class HadoopRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](catalogConfig: HadoopCatalogConfig) extends LazyLogging {
+object HadoopRDDWriter extends LazyLogging {
 
-  val codec  = KeyValueRecordCodec[K, V]
-  val schema = codec.schema
-
-  def write(
+  def write[K: AvroRecordCodec, V: AvroRecordCodec](
     rdd: RDD[(K, V)],
     path: Path,
     keyIndex: KeyIndex[K],
     clobber: Boolean = true,
-    tileSize: Int = 256*256*8)
-  (implicit sc: SparkContext): Unit = {
+    tileSize: Int = 256*256*8,
+    compressionFactor: Double = 1.3
+  )(implicit sc: SparkContext): Unit = {
+
     val conf = sc.hadoopConfiguration
 
     val fs = path.getFileSystem(sc.hadoopConfiguration)
@@ -48,7 +47,7 @@ class HadoopRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](catalogConfig: Had
       val blockSize = fs.getDefaultBlockSize(path)
       val tileCount = rdd.count()
       val tilesPerBlock = {
-        val tpb = (blockSize / tileSize) * catalogConfig.compressionFactor
+        val tpb = (blockSize / tileSize) * compressionFactor
         if(tpb == 0) {
           logger.warn(s"Tile size is too large for this filesystem (tile size: $tileSize, block size: $blockSize)")
           1
@@ -59,7 +58,7 @@ class HadoopRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](catalogConfig: Had
 
     // Sort the writables, and cache as we'll be computing this RDD twice.
     val closureKeyIndex = keyIndex
-    val codec  = KeyValueRecordCodec[K, V]
+    val codec = KeyValueRecordCodec[K, V]
 
     rdd
       .groupBy { case (key, _) => closureKeyIndex.toIndex(key) }

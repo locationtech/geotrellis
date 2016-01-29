@@ -32,7 +32,7 @@ object S3LayerReindexer {
   )(implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val layerReader  = S3LayerReader[K, V, M](attributeStore, options.getCache)
     val layerDeleter = S3LayerDeleter(attributeStore)
-    val layerWriter  = S3LayerWriter[K, V, M](attributeStore, keyIndexMethod, options)
+    val layerWriter  = S3LayerWriter(attributeStore, options)
 
     val (bucket, prefix) = (attributeStore.bucket, attributeStore.prefix)
     val layerCopier = new SparkLayerCopier[S3LayerHeader, K, V, M](

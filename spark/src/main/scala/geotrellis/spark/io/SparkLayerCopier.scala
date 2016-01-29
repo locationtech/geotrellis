@@ -1,17 +1,19 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.io.json._
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index._
+import geotrellis.spark.io.json._
+
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+abstract class SparkLayerCopier[Header: JsonFormat, K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
   layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
-  layerWriter: Writer[LayerId, RDD[(K, V)] with Metadata[M]]
+  layerWriter: LayerWriter[LayerId]
 ) extends LayerCopier[LayerId] {
 
   def headerUpdate(id: LayerId, header: Header): Header
@@ -27,7 +29,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: Cl
     }
 
     try {
-      layerWriter.write(to, layerReader.read(from))
+      layerWriter.write(to, layerReader.read(from), existingKeyIndex, existingKeyBounds)
       attributeStore.writeLayerAttributes(
         to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
       )

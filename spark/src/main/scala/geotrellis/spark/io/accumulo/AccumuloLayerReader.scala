@@ -16,10 +16,9 @@ import spray.json._
 import scala.reflect._
 
 class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddReader: BaseAccumuloRDDReader[K, V]
-)(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] {
+  val attributeStore: AttributeStore[JsonFormat],
+  rddReader: BaseAccumuloRDDReader[K, V]
+)(implicit sc: SparkContext) extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
@@ -46,8 +45,8 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 
 object AccumuloLayerReader {
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
-    V: AvroRecordCodec: ClassTag, 
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M] =
     new AccumuloLayerReader[K, V, M] (

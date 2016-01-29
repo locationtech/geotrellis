@@ -8,7 +8,6 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
@@ -28,9 +27,8 @@ import scala.reflect.ClassTag
  * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class HadoopLayerReader[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
-  val attributeStore: AttributeStore[JsonFormat],
-  rddReader: HadoopRDDReader[K, V])
-  (implicit sc: SparkContext)
+  val attributeStore: AttributeStore[JsonFormat]
+)(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -49,10 +47,10 @@ class HadoopLayerReader[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: 
 
     val rdd: RDD[(K, V)] =
       if (queryKeyBounds == Seq(keyBounds)) {
-        rddReader.readFully(layerPath, Some(writerSchema))
+        HadoopRDDReader.readFully(layerPath, Some(writerSchema))
       } else {
         val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-        rddReader.readFiltered(layerPath, queryKeyBounds, decompose, Some(writerSchema))
+        HadoopRDDReader.readFiltered(layerPath, queryKeyBounds, decompose, Some(writerSchema))
       }
 
     new ContextRDD[K, V, M](rdd, metadata)
@@ -64,15 +62,15 @@ object HadoopLayerReader {
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
-  ](attributeStore: HadoopAttributeStore, rddReader: HadoopRDDReader[K, V])(implicit sc: SparkContext) =
-    new HadoopLayerReader[K, V, M](attributeStore, rddReader)
+  ](attributeStore: HadoopAttributeStore)(implicit sc: SparkContext) =
+    new HadoopLayerReader[K, V, M](attributeStore)
 
   def apply[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](rootPath: Path)(implicit sc: SparkContext): HadoopLayerReader[K, V, M] =
-    apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
+    apply(HadoopAttributeStore.default(rootPath))
 
   def spatial(rootPath: Path)(implicit sc: SparkContext) =
     apply[SpatialKey, Tile, RasterMetaData](rootPath)

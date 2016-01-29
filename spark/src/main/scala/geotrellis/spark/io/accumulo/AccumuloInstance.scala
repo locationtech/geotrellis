@@ -1,17 +1,31 @@
 package geotrellis.spark.io.accumulo
 
 import org.apache.accumulo.core.client._
+import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
-import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
+import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
-import org.apache.accumulo.core.client.ClientConfiguration
 
+import scala.collection.JavaConversions._
 
 trait AccumuloInstance  extends Serializable {
   def connector: Connector
   def instanceName: String
   def setAccumuloConfig(job: Job): Unit
+
+  def ensureTableExists(tableName: String): Unit = {
+    val ops = connector.tableOperations()
+    if (!ops.exists(tableName))
+      ops.create(tableName)
+  }
+
+  def makeLocalityGroup(tableName: String, columnFamily: String): Unit = {
+    val ops = connector.tableOperations()
+    val groups = ops.getLocalityGroups(tableName)
+    val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
+    ops.setLocalityGroups(tableName, groups.updated(tableName, newGroup))
+  }
 }
 
 object AccumuloInstance {
@@ -40,7 +54,7 @@ case class BaseAccumuloInstance(
       .withZkHosts(zookeeper)
       .withInstance(instanceName)
 
-    
+
     if (instanceName == "fake") {
       AIF.setMockInstance(job, instanceName)
       AOF.setMockInstance(job, instanceName)

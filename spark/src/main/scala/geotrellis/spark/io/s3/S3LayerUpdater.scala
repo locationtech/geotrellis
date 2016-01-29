@@ -11,9 +11,8 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class S3LayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: S3RDDWriter[K, V],
     clobber: Boolean = true)
   extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
   type container = RDD[(K, V)] with Metadata[M]
@@ -46,18 +45,17 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
     val keyPath = (key: K) => makePath(prefix, Index.encode(existingKeyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-    rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    S3RDDWriter.write(rdd, bucket, keyPath, oneToOne = false)
   }
 }
 
 object S3LayerUpdater {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
       bucket: String,
       prefix: String,
       clobber: Boolean = true): S3LayerUpdater[K, V, M] =
     new S3LayerUpdater[K, V, M](
       S3AttributeStore(bucket, prefix),
-      new S3RDDWriter[K, V],
       clobber
     )
 }

@@ -20,13 +20,15 @@ import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
 import com.typesafe.scalalogging.slf4j._
 
-class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]() {
+trait S3RDDWriter {
 
-  def getS3Client: () => S3Client = () => S3Client.default
-  val codec  = KeyValueRecordCodec[K, V]
-  val schema = codec.schema
+  def getS3Client: () => S3Client
 
-  def write(rdd: RDD[(K, V)], bucket: String, keyPath: K => String, oneToOne: Boolean): Unit = {
+  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](rdd: RDD[(K, V)], bucket: String, keyPath: K => String, oneToOne: Boolean): Unit = {
+
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+
     implicit val sc = rdd.sparkContext
 
     val _getS3Client = getS3Client
@@ -78,4 +80,8 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
       pool.shutdown()
     }
   }
+}
+
+object S3RDDWriter extends S3RDDWriter {
+   def getS3Client: () => S3Client = () => S3Client.default
 }
