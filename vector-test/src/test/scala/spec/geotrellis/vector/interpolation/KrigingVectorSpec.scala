@@ -17,7 +17,7 @@
 package geotrellis.vector.interpolation
 
 import geotrellis.vector.io.json._
-import geotrellis.testkit._
+import geotrellis.vector.testkit._
 import geotrellis.vector._
 import spire.syntax.cfor._
 import spray.json.DefaultJsonProtocol._
