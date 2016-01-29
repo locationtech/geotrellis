@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
 
 // must use this method of import to avoid cyclic dependency errors
 internalDependencyClasspath in Test <++= 
-  exportedProducts in Compile in LocalProject("testkit")
+  exportedProducts in Compile in LocalProject("raster-testkit")
 
 internalDependencyClasspath in Test <++= 
   exportedProducts in Compile in LocalProject("spark-testkit")

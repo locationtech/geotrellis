@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.testkit
+package geotrellis.raster.testkit
 
 import geotrellis.vector.Extent
 import geotrellis.raster._
