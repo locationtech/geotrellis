@@ -7,10 +7,16 @@ trait Stitcher[T <: CellGrid] extends Serializable {
 }
 
 object Stitcher {
-  implicit object TileStitcher extends Stitcher[Tile] {
-    def stitch(pieces: Iterable[(Tile, (Int, Int))], cols: Int, rows: Int): Tile = {
+  implicit def stitcher[T <: Tile]: Stitcher[T] =
+    TileStitcher
+
+  implicit object TileStitcher[T <: Tile] extends Stitcher[T] {
+    def stitch(pieces: Iterable[(T, (Int, Int))], cols: Int, rows: Int): Tile = {
       val result = ArrayTile.empty(pieces.head._1.cellType, cols, rows)
       for((tile, (updateColMin, updateRowMin)) <- pieces) {
+        if(updateColMin + tile.cols > cols || updateRowMin + tile.rows > rows) {
+          sys.error(s"Invalid stitch call. Target cols, rows: ${(cols, rows)}. Piece cols, rows: ${tile.dimensions}. Update ${(updateColMin, updateRowMin)} Pieces: ${pieces.size}")
+        }
         result.update(updateColMin, updateRowMin, tile)
       }
       result

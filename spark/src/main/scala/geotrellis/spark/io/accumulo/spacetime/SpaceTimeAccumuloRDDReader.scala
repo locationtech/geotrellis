@@ -33,38 +33,39 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
     val includeKey = (key: SpaceTimeKey) => queryKeyBounds includeKey key
     val kwWriterSchema = KryoWrapper(writerSchema)
 
-    queryKeyBounds
-      .map { bound =>
-        val job = Job.getInstance(sc.hadoopConfiguration)
-        instance.setAccumuloConfig(job)
-        InputFormatBase.setInputTableName(job, table)
+    val queryBoundsRdds =
+      queryKeyBounds
+        .map { bound =>
+          val job = Job.getInstance(sc.hadoopConfiguration)
+          instance.setAccumuloConfig(job)
+          InputFormatBase.setInputTableName(job, table)
 
-        val ranges = decomposeBounds(bound).asJava
-        InputFormatBase.setRanges(job, ranges)
-        InputFormatBase.fetchColumns(job, List(new APair(columnFamily, null: Text)).asJava)
-        InputFormatBase.addIterator(job,
-          new IteratorSetting(2,
-            "TimeColumnFilter",
-            "org.apache.accumulo.core.iterators.user.ColumnSliceFilter",
-            Map("startBound" -> bound.minKey.time.toString,
-              "endBound" -> bound.maxKey.time.toString,
-              "startInclusive" -> "true",
-              "endInclusive" -> "true").asJava))
+          val ranges = decomposeBounds(bound).asJava
+          InputFormatBase.setRanges(job, ranges)
+          InputFormatBase.fetchColumns(job, List(new APair(columnFamily, null: Text)).asJava)
+          InputFormatBase.addIterator(job,
+            new IteratorSetting(2,
+              "TimeColumnFilter",
+              "org.apache.accumulo.core.iterators.user.ColumnSliceFilter",
+              Map("startBound" -> bound.minKey.time.toString,
+                "endBound" -> bound.maxKey.time.toString,
+                "startInclusive" -> "true",
+                "endInclusive" -> "true").asJava))
 
-        sc.newAPIHadoopRDD(
-          job.getConfiguration,
-          classOf[BatchAccumuloInputFormat],
-          classOf[Key],
-          classOf[Value])
-      }
-      .map { rdd =>
-        rdd.map { case (_, value) =>
-          AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
+          sc.newAPIHadoopRDD(
+            job.getConfiguration,
+            classOf[BatchAccumuloInputFormat],
+            classOf[Key],
+            classOf[Value])
         }
-        .flatMap { pairs =>
-          pairs.filter{ pair => includeKey(pair._1) }
+        .map { rdd =>
+          rdd.map { case (_, value) =>
+            AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
+          }
+          .flatMap { pairs =>
+            pairs.filter{ pair => includeKey(pair._1) }
+          }
         }
-      }
-      .fold(sc.emptyRDD[(SpaceTimeKey, V)])(_ union _)
+    sc.union(queryBoundsRdds)
   }
 }

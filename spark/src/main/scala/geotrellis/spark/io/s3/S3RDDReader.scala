@@ -52,7 +52,7 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
               range <- rangeList
               index <- range._1 to range._2
             } yield {
-              val path = keyPath(index)
+              val path = keyPath(index) + tag
               val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
 
               try {

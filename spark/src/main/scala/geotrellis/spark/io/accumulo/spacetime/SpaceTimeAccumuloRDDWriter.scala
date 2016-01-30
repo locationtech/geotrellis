@@ -44,4 +44,3 @@ class SpaceTimeAccumuloRDDWriter[V: AvroRecordCodec](
     strategy.write(kvPairs, instance, table)
   }
 }
-
