@@ -274,7 +274,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     val newBands = Array.ofDim[Tile](bands.size)
     var i = 0
 
-    assert(bands.size <= this.bandCount)
+    require(bands.size <= this.bandCount)
     bands.foreach({ j =>
       newBands(i) = this.band(j)
       i += 1

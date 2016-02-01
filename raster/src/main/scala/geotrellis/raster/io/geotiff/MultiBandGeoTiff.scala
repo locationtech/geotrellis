@@ -26,7 +26,7 @@ class MultiBandGeoTiff(
     val newBands = Array.ofDim[Tile](bands.size)
     var i = 0
 
-    assert(bands.size <= mbTile.bandCount)
+    require(bands.size <= mbTile.bandCount)
     bands.foreach({ j =>
       newBands(i) = mbTile.band(j)
       i += 1

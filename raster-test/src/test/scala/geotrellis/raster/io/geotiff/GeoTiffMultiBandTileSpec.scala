@@ -148,7 +148,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
 
     it("should disallow \"invalid\" subsets") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      an [AssertionError] should be thrownBy {
+      an [IllegalArgumentException] should be thrownBy {
         tile0.subset(0,1,2,3) // There are only 3 bands
       }
     }
