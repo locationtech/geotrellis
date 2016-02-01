@@ -9,11 +9,7 @@ import org.apache.spark.Partitioner
 import reflect.ClassTag
 
 object VerticalFlip {
-
-  def apply[K](rasterRDD: RasterRDD[K])
-              (implicit keyClassTag: ClassTag[K]): RasterRDD[K] = apply(rasterRDD, None)
-
-  def apply[K](rasterRDD: RasterRDD[K], partitioner: Option[Partitioner])
+  def apply[K](rasterRDD: RasterRDD[K], partitioner: Option[Partitioner] = None)
               (implicit keyClassTag: ClassTag[K]): RasterRDD[K] = {
     val gridBounds = rasterRDD.metaData.gridBounds
     val rowHeight = gridBounds.height

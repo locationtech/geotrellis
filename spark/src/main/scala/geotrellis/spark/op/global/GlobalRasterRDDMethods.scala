@@ -9,7 +9,6 @@ abstract class GlobalRasterRDDMethods[K: ClassTag] extends MethodExtensions[Rast
 
   implicit val _sc: SpatialComponent[K]
 
-  def verticalFlip: RasterRDD[K] = verticalFlip(None)
-  def verticalFlip(partitioner: Option[Partitioner]): RasterRDD[K] = VerticalFlip(self, partitioner)
+  def verticalFlip(partitioner: Option[Partitioner] = None): RasterRDD[K] = VerticalFlip(self, partitioner)
 
 }
