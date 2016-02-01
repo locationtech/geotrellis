@@ -116,9 +116,9 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
       val tile1 = tile0.subset(List(1, 2, 0))
 
-      tile0.band(0) should be (tile1.band(2))
-      tile0.band(1) should be (tile1.band(0))
-      tile0.band(2) should be (tile1.band(1))
+      tile0.band(0) should be theSameInstanceAs tile1.band(2)
+      tile0.band(1) should be theSameInstanceAs tile1.band(0)
+      tile0.band(2) should be theSameInstanceAs tile1.band(1)
     }
 
     it("subset result should have correct bandCount") {
