@@ -104,7 +104,7 @@ abstract class PersistenceSpec[K: ClassTag, V: ClassTag, M] extends FunSpec with
     mover.move(movedLayerId, layerId)
   }
 
-  it("should not reindex a layer which doesn't exists") {
+  it("should not reindex a layer which doesn't exist") {
     intercept[LayerNotFoundError] {
       reindexer.reindex(movedLayerId)
     }

@@ -10,7 +10,7 @@ private[index] trait RowMajorKeyIndexMethod
 object RowMajorKeyIndexMethod extends RowMajorKeyIndexMethod {
   implicit def spatialKeyIndexMethod(m: RowMajorKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
-      def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] = 
+      def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
         new RowMajorSpatialKeyIndex(keyBounds)
     }
 }
