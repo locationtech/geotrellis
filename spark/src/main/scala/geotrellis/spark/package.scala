@@ -98,6 +98,9 @@ package object spark
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
       new ContextRDD(f(rdd), rdd.metadata)
+
+    def mapContext[M2](f: M => M2) =
+      new ContextRDD(rdd, f(rdd.metadata))
   }
 
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =

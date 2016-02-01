@@ -5,6 +5,7 @@ import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Max
 import org.apache.spark.Partitioner
+import org.apache.spark.rdd.RDD
 
 trait MaxTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Max a constant Int value to each cell. */
@@ -16,12 +17,12 @@ trait MaxTileRDDMethods[K] extends TileRDDMethods[K] {
     self.mapValues { r => Max(r, d) }
 
   /** Max the values of each cell in each raster.  */
-  def localMax(other: Self): Self = localMax(other, None)
-  def localMax(other: Self, partitioner: Option[Partitioner]): Self =
+  def localMax(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localMax(other, None)
+  def localMax(other: RDD[(K, Tile)], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(other, partitioner)(Max.apply)
 
   /** Max the values of each cell in each raster.  */
-  def localMax(others: Seq[Self]): Self = localMax(others, None)
-  def localMax(others: Seq[Self], partitioner: Option[Partitioner]): Self =
+  def localMax(others: Seq[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMax(others, None)
+  def localMax(others: Seq[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Max.apply)
 }

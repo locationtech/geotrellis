@@ -26,11 +26,7 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: J
     }
 
     val boundable = implicitly[Boundable[K]]
-    val keyBounds = try {
-      boundable.getKeyBounds(rdd)
-    } catch {
-      case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
-    }
+    val keyBounds = boundable.collectBounds(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
 
     if (!(existingKeyBounds includes keyBounds.minKey ) || !(existingKeyBounds includes keyBounds.maxKey))
       throw new LayerOutOfKeyBoundsError(id)

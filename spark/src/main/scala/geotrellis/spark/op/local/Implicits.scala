@@ -11,6 +11,6 @@ trait Implicits {
   implicit class withLocalTileRDDMethods[K](val self: RDD[(K, Tile)])
     (implicit val keyClassTag: ClassTag[K]) extends LocalTileRDDMethods[K]
 
-  implicit class withLocalRasterRDDSeqMethods[K](val self: Traversable[RDD[(K, Tile)]])
-    (implicit val keyClassTag: ClassTag[K]) extends LocalRasterRDDSeqMethods[K]
+  implicit class withLocalTileRDDSeqMethods[K](val self: Traversable[RDD[(K, Tile)]])
+    (implicit val keyClassTag: ClassTag[K]) extends LocalTileRDDSeqMethods[K]
 }

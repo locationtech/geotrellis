@@ -29,7 +29,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     unit: Int,
     start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner] = None): Self =
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(minReduceOp)
 
   def temporalMax(
@@ -37,7 +37,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     unit: Int,
     start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner] = None): Self =
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(maxReduceOp)
 
   def temporalMean(
@@ -45,7 +45,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     unit: Int,
     start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner] = None): Self =
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(meanReduceOp)
 
   def temporalVariance(
@@ -53,7 +53,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     unit: Int,
     start: DateTime,
     end: DateTime,
-    partitioner: Option[Partitioner] = None): Self =
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(varianceReduceOp)
 
   private def aggregateWithTemporalWindow(
@@ -63,7 +63,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     end: DateTime,
     partitioner: Option[Partitioner] = None)(
     reduceOp: Traversable[Tile] => Tile
-  ): Self = {
+  ): RDD[(K, Tile)] = {
     val rdd =
       self
         .map { case (key, tile) =>

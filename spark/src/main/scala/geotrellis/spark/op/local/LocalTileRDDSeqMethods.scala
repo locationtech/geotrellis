@@ -7,8 +7,9 @@ import geotrellis.raster.op.local._
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import scala.reflect._
+import org.apache.spark.rdd.RDD
 
-abstract class LocalRasterRDDSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
+abstract class LocalTileRDDSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
   private def r(f: Traversable[Tile] => (Tile), partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self match {
       case Seq() => sys.error("raster rdd operations can't be applied to empty seq!")

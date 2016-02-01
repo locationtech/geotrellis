@@ -18,6 +18,15 @@ sealed trait Bounds[+A] extends Product with Serializable {
 
   def intersects[B >: A](other: KeyBounds[B])(implicit b: Boundable[B]): Boolean =
     intersect(other).nonEmpty
+
+  def get: KeyBounds[A] 
+
+  def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] = 
+    if (isEmpty) default else this.get
+}
+
+object Bounds{
+  def apply[A](min: A, max: A): Bounds[A] = KeyBounds(min, max)
 }
 
 case object EmptyBounds extends Bounds[Nothing] {
@@ -34,9 +43,11 @@ case object EmptyBounds extends Bounds[Nothing] {
 
   def intersect[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     EmptyBounds
+
+  def get = throw new NoSuchElementException("EmptyBounds.get")
 }
 
-case class KeyBounds[K](
+case class KeyBounds[+K](
   minKey: K,
   maxKey: K
 ) extends Bounds[K] {
@@ -48,7 +59,7 @@ case class KeyBounds[K](
   def includes[B >: K](key: B)(implicit b: Boundable[B]): Boolean =
     minKey == b.minBound(minKey, key) && maxKey == b.maxBound(maxKey, key)
 
-  def combine[B >: K](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
+  def combine[B >: K](other: Bounds[B])(implicit b: Boundable[B]): KeyBounds[B] =
     other match {
       case KeyBounds(otherMin, otherMax) =>
         val newMin = b.minBound(minKey, otherMin)
@@ -58,9 +69,6 @@ case class KeyBounds[K](
       case EmptyBounds =>
         this
     }
-
-  def combine(other: Bounds[K])(implicit b: Boundable[K]): KeyBounds[K] =
-    combine[K](other).asInstanceOf[KeyBounds[K]]
 
   def intersect[B >: K](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     other match {
@@ -76,6 +84,8 @@ case class KeyBounds[K](
       case EmptyBounds =>
         EmptyBounds
     }
+
+  def get = this
 }
 
 object KeyBounds {

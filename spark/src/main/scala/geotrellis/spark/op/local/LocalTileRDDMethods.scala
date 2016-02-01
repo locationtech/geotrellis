@@ -5,6 +5,7 @@ import geotrellis.spark.op._
 import geotrellis.raster._
 import geotrellis.spark._
 import org.apache.spark.Partitioner
+import org.apache.spark.rdd.RDD
 
 trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     with AddTileRDDMethods[K]
@@ -36,7 +37,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be empty -- all values set to NODATA.
     */
-  def localMask(other: Self, readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): Self =
+  def localMask(other: RDD[(K, Tile)], readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     self.combineValues(other, partitioner) {
       case (r1, r2) => Mask(r1, r2, readMask, writeMask)
     }
@@ -49,7 +50,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be identical to the first raster.
     */
-  def localInverseMask(other: Self, readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): Self =
+  def localInverseMask(other: RDD[(K, Tile)], readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     self.combineValues(other, partitioner) {
       case (r1, r2) => InverseMask(r1, r2, readMask, writeMask)
     }
@@ -131,7 +132,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     *
     *  @info               A double raster is always returned.
     */
-  def localAtan2(other: Self, partitioner: Option[Partitioner] = None): Self =
+  def localAtan2(other: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     self.combineValues(other, partitioner)(Atan2.apply)
 
   /**

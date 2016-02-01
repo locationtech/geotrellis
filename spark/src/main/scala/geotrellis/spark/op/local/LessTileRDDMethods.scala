@@ -5,6 +5,7 @@ import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Less
 import org.apache.spark.Partitioner
+import org.apache.spark.rdd.RDD
 
 trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
   /**
@@ -73,7 +74,7 @@ trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def localLess(other: Self, partitioner: Option[Partitioner] = None): Self =
+  def localLess(other: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     self.combineValues(other, partitioner)(Less.apply)
 
   /**
@@ -81,5 +82,5 @@ trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def <(other: Self, partitioner: Option[Partitioner] = None): Self = localLess(other, partitioner)
+  def <(other: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = localLess(other, partitioner)
 }
