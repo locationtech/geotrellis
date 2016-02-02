@@ -129,12 +129,6 @@ package object spark
     def id: K = tup._1
     def tile: Tile = tup._2
   }
-<<<<<<< HEAD
-
-  implicit class RDDTraversableExtensions[K: ClassTag, V, M](rs: Traversable[RDD[(K, Tile)] with Metadata[M]]) {
-    def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RDD[(K, Tile)] with Metadata[M] =
-      rs.head.combinePairs(rs.tail)(f)
-  }
 
   implicit class withProjectedExtentTemporalTilerKeyMethods[K: ProjectedExtentComponent: TemporalComponent](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
     def extent = self.projectedExtent.extent
@@ -145,6 +139,4 @@ package object spark
     def extent = self.projectedExtent.extent
     def translate(spatialKey: SpatialKey) = spatialKey
   }
-=======
->>>>>>> 6c260e68311c29fa1208568ef2d0219b837faa06
 }
