@@ -30,7 +30,7 @@ import scala.collection.mutable
  *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
  *          the data values will be rounded to integers.
  */
-trait ZonalHistogram[@specialized (Int, Double) T] {
+trait ZonalHistogram[@specialized (Int, Double) T <: AnyVal] {
   def apply(tile: Tile, zones: Tile): Map[Int, Histogram[T]]
 }
 

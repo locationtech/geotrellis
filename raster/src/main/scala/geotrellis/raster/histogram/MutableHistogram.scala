@@ -18,7 +18,7 @@ package geotrellis.raster.histogram
 
 import math.{abs, round, sqrt}
 
-abstract class MutableHistogram[@specialized (Int, Double) T] extends Histogram[T] {
+abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends Histogram[T] {
   /**
    * Note the occurance of 'item'.
    *
