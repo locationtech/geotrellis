@@ -5,17 +5,17 @@ import geotrellis.proj4._
 import geotrellis.vector._
 
 /** A key for a Tile with temporal as well as spatial dimension */
-case class SpaceTimeInputKey(extent: Extent, crs: CRS, time: DateTime)
+case class TemporalProjectedExtent(extent: Extent, crs: CRS, time: DateTime)
 
-object SpaceTimeInputKey {
-  implicit def ingestKey = new KeyComponent[SpaceTimeInputKey, ProjectedExtent] {
+object TemporalProjectedExtent {
+  implicit def ingestKey = new KeyComponent[TemporalProjectedExtent, ProjectedExtent] {
     def lens = createLens(
       key => ProjectedExtent(key.extent, key.crs),
-      pe => key => SpaceTimeInputKey(pe.extent, pe.crs, key.time)
+      pe => key => TemporalProjectedExtent(pe.extent, pe.crs, key.time)
     )
   }
 
-  implicit def ingestTemporalKey = new KeyComponent[SpaceTimeInputKey, TemporalKey] {
+  implicit def ingestTemporalKey = new KeyComponent[TemporalProjectedExtent, TemporalKey] {
     def lens = createLens(
       key => TemporalKey(key.time),
       pe => key => key

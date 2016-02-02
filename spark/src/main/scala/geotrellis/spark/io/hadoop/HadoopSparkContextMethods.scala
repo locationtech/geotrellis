@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
-import geotrellis.spark.SpaceTimeInputKey
+import geotrellis.spark.TemporalProjectedExtent
 import geotrellis.vector._
 import geotrellis.spark.io.hadoop.formats._
 
@@ -38,26 +38,26 @@ trait HadoopSparkContextMethods {
       classOf[Tile]
     )
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopSpaceTimeGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopSpaceTimeGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtension: String): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopSpaceTimeGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopSpaceTimeGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopSpaceTimeGeoTiffRDD(path: Path): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopSpaceTimeGeoTiffRDD(path, defaultTiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtension: String): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopSpaceTimeGeoTiffRDD(path, Seq(tiffExtension))
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, Tile)] =
     sc.newAPIHadoopRDD(
       sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
       classOf[SpaceTimeGeoTiffInputFormat],
-      classOf[SpaceTimeInputKey],
+      classOf[TemporalProjectedExtent],
       classOf[Tile]
     )
 
@@ -91,7 +91,7 @@ trait HadoopSparkContextMethods {
 
   def netCdfRDD(
     path: Path,
-    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(SpaceTimeInputKey, Tile)] = {
+    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(TemporalProjectedExtent, Tile)] = {
     val makeTime = (info: GdalRasterInfo) =>
     info.file.meta.find {
       case(key, value) => key.toLowerCase == inputFormat.baseDateMetaDataKey.toLowerCase
@@ -118,7 +118,7 @@ trait HadoopSparkContextMethods {
 
     gdalRDD(path)
       .map { case (info, tile) =>
-        val band = SpaceTimeInputKey(
+        val band = TemporalProjectedExtent(
           extent = info.file.rasterExtent.extent,
           crs = info.file.crs,
           time = makeTime(info)

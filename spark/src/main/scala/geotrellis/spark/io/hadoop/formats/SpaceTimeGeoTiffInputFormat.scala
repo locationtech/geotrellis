@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.SpaceTimeInputKey
+import geotrellis.spark.TemporalProjectedExtent
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.raster._
@@ -43,8 +43,8 @@ object SpaceTimeGeoTiffInputFormat {
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[SpaceTimeInputKey, Tile] {
-  def read(bytes: Array[Byte], context: TaskAttemptContext): (SpaceTimeInputKey, Tile) = {
+class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, Tile] {
+  def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, Tile) = {
     val geoTiff = SingleBandGeoTiff(bytes)
 
     val timeTag = SpaceTimeGeoTiffInputFormat.getTimeTag(context)
@@ -54,6 +54,6 @@ class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[SpaceTimeInputKe
     val dateTime = DateTime.parse(dateTimeString, dateFormatter)
 
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-    (SpaceTimeInputKey(extent, crs, dateTime), tile)
+    (TemporalProjectedExtent(extent, crs, dateTime), tile)
   }
 }
