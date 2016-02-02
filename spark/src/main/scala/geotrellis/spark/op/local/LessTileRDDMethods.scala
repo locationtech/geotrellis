@@ -82,5 +82,5 @@ trait LessTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than the next
     * raster, else 0.
     */
-  def <(other: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = localLess(other, partitioner)
+  def <(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localLess(other)
 }
