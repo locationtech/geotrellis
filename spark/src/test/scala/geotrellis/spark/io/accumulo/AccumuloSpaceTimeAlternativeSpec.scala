@@ -9,7 +9,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro.codecs._
 
-class AccumuloSpaceTimeAlternativeSpec 
+class AccumuloSpaceTimeAlternativeSpec
     extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
     with TestEnvironment
     with TestFiles

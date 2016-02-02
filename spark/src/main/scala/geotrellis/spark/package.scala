@@ -33,11 +33,24 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 
-package object spark 
+package object spark
     extends buffer.Implicits
     with merge.Implicits
-    with reproject.Implicits 
-    with tiling.Implicits {
+    with reproject.Implicits
+    with tiling.Implicits
+    with stitch.Implicits
+    with op.Implicits
+    with op.local.Implicits
+    with op.local.spatial.Implicits
+    with op.local.temporal.Implicits
+    with op.stats.Implicits
+    with op.zonal.Implicits
+    with op.zonal.summary.Implicits
+    with op.elevation.Implicits
+    with op.focal.Implicits
+    with partitioner.Implicits
+    with Serializable // required for java serialization, even though it's mixed in
+{
 
   type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
   object RasterRDD {
@@ -85,6 +98,9 @@ package object spark
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
       new ContextRDD(f(rdd), rdd.metadata)
+
+    def mapContext[M2](f: M => M2) =
+      new ContextRDD(rdd, f(rdd.metadata))
   }
 
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
@@ -93,13 +109,11 @@ package object spark
   implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
     extends ContextRDDMethods[K, V, M](rdd)
 
-  implicit class withRasterRDDMethods[K](val rasterRDD: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends BaseRasterRDDMethods[K]
+  implicit class withRasterRDDMethods[K](val self: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends RasterRDDMethods[K]
 
-  implicit class withSpatialRasterRDDMethods(val rdd: RasterRDD[SpatialKey]) extends SpatialRasterRDDMethods
-
-  implicit class withMultiBandRasterRDDMethods[K](val rdd: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends BaseMultiBandRasterRDDMethods[K]
+  implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends MultiBandRasterRDDMethods[K]
 
   implicit class withProjectedExtentRDDMethods[K: ProjectedExtentComponent, V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
@@ -115,6 +129,7 @@ package object spark
     def id: K = tup._1
     def tile: Tile = tup._2
   }
+<<<<<<< HEAD
 
   implicit class RDDTraversableExtensions[K: ClassTag, V, M](rs: Traversable[RDD[(K, Tile)] with Metadata[M]]) {
     def combinePairs(f: (Traversable[(K, Tile)] => (K, Tile))): RDD[(K, Tile)] with Metadata[M] =
@@ -130,4 +145,6 @@ package object spark
     def extent = self.projectedExtent.extent
     def translate(spatialKey: SpatialKey) = spatialKey
   }
+=======
+>>>>>>> 6c260e68311c29fa1208568ef2d0219b837faa06
 }

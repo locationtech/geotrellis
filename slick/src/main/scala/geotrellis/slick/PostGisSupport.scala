@@ -111,13 +111,13 @@ class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions 
 object PostGisSupportUtils {  
   def toLiteral(geom: Geometry): String = WKT.write(geom)
 
-  def fromLiteral[T <: Geometry](value: String): T = {
+  def fromLiteral[T <: Geometry : ClassTag](value: String): T = {
     splitRSIDAndWKT(value) match {
       case (srid, wkt) => { //TODO - SRID is ignored
         if (wkt.startsWith("00") || wkt.startsWith("01"))
-          WKB.read[T](wkt)
+          WKB.read(wkt).as[T].get
         else 
-          WKT.read[T](wkt)
+          WKT.read(wkt).as[T].get
       }
     }
   }

@@ -55,11 +55,16 @@ object util {
   .map(str => (str.substring(7,12), str.substring(15,20), str.substring(22)))
   .map(_ match {
     case (lat,lng,city) =>
-      (city, WKT.read[Point](s"POINT(${lng.toDouble} ${lat.toDouble})"))
+      (city, Point(lng.toDouble, lat.toDouble))
   })
 
   def bboxBuffer(x: Double, y: Double, d: Double) =
-    WKT.read[Polygon](s"POLYGON((${x - d} ${y - d}, ${x - d} ${y + d}, ${x + d} ${y + d}, ${x + d} ${y - d}, ${x - d} ${y - d}))")
+    Polygon(Line(
+      (x - d, y - d),
+      (x - d, y + d),
+      (x + d, y + d),
+      (x + d, y - d),
+      (x - d, y - d)))
 
   def pt(x: Double, y: Double) = Point(x, y)
 }

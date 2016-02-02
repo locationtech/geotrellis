@@ -269,4 +269,20 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     }
     result
   }
+
+  def subset(bands: Seq[Int]): ArrayMultiBandTile = {
+    val newBands = Array.ofDim[Tile](bands.size)
+    var i = 0
+
+    require(bands.size <= this.bandCount)
+    bands.foreach({ j =>
+      newBands(i) = this.band(j)
+      i += 1
+    })
+
+    new ArrayMultiBandTile(newBands)
+  }
+
+  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    subset(bands)
 }

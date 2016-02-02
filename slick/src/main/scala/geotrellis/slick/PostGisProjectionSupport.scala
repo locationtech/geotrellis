@@ -115,9 +115,9 @@ object PostGisProjectionSupportUtils {
       case (srid, wkt) =>
         val geom =
           if (wkt.startsWith("00") || wkt.startsWith("01"))
-            WKB.read[Geometry](wkt)
-          else 
-            WKT.read[Geometry](wkt)
+            WKB.read(wkt)
+          else
+            WKT.read(wkt)
 
         if (srid != -1)
           Projected(geom, srid).asInstanceOf[T]

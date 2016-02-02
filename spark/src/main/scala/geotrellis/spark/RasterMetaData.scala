@@ -54,6 +54,13 @@ object RasterMetaData {
   implicit def toLayoutDefinition(md: RasterMetaData): LayoutDefinition =
     md.layout
 
+  implicit def toMapKeyTransform(md: RasterMetaData): MapKeyTransform =
+    md.layout.mapTransform
+
+  implicit def toSpatialKeyBounds(md: RasterMetaData): KeyBounds[SpatialKey] =
+    KeyBounds(SpatialKey(md.gridBounds.colMin, md.gridBounds.rowMin),
+              SpatialKey(md.gridBounds.colMax, md.gridBounds.rowMax))
+
   def envelopeExtent[K, V <: CellGrid](rdd: RDD[(K, V)])(getExtent: K => Extent): (Extent, CellType, CellSize) = {
     rdd
       .map { case (key, grid) =>
