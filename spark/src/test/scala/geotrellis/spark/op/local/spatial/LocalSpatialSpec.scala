@@ -57,7 +57,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
     // TODO: Un-ignore this after rasterization fixes.
     ignore ("should be masked by random polygons") {
       randomPolygons()(width, height) foreach { poly =>
-        val masked = rdd.mask(poly).stitch.tile
+        val masked = rdd.mask(poly).stitch
         val expected = tile.mask(worldExt, poly)
         masked.toArray() shouldEqual expected.toArray()
       }
@@ -70,7 +70,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
         Polygon(Line((-7, 0), (28, 0), (28, 35), (-7, 0)), Line((10, 11), (21, 11), (21, 22), (10, 11)))
       )
       cases foreach { poly =>
-        val masked = rdd.mask(poly).stitch.tile
+        val masked = rdd.mask(poly).stitch
         val expected = tile.mask(worldExt, poly)
         masked.toArray() shouldEqual expected.toArray()
       }
@@ -83,7 +83,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
         MultiPolygon(a, b)
       }
       multipolygons foreach { multipoly =>
-        val masked = rdd.mask(multipoly).stitch.tile
+        val masked = rdd.mask(multipoly).stitch
         val expected = tile.mask(worldExt, multipoly)
         masked.toArray() shouldEqual expected.toArray()
       }
@@ -97,7 +97,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
           Polygon(Line((-83, -76), (-13, -76), (-13, -6), (-83, -76)), Line((-48, -53), (-25, -53), (-25, -30), (-48, -53))))
       )
       cases foreach { multipoly =>
-        val masked = rdd.mask(multipoly).stitch.tile
+        val masked = rdd.mask(multipoly).stitch
         val expected = tile.mask(worldExt, multipoly)
         masked.toArray() shouldEqual expected.toArray()
       }
@@ -107,7 +107,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
     ignore ("should be masked by random extents") {
       val extents = randomPolygons()(width, height).map(_.envelope)
       extents foreach { extent =>
-        val masked = rdd.mask(extent).stitch.tile
+        val masked = rdd.mask(extent).stitch
         val expected = tile.mask(worldExt, extent)
         masked.toArray() shouldEqual expected.toArray()
       }

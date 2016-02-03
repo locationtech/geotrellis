@@ -33,7 +33,7 @@ class LocalSeqSpec extends FunSpec with TestEnvironment with TestFiles {
     val dec = DecreasingTestFile
 
     val (cols: Int, rows: Int) = {
-      val tile = ones.stitch.tile
+      val tile = ones.stitch
       (tile.cols, tile.rows)
     }
 

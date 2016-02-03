@@ -23,7 +23,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
     val totalExtent = modHundred.metaData.extent
 
     it("should get correct histogram over whole raster extent") {
-      val histogram = modHundred.zonalHistogram(totalExtent.toPolygon)
+      val histogram = modHundred.regionHistogram(totalExtent.toPolygon)
 
       var map = HashMap[Int, Int]()
 
@@ -47,7 +47,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val histogram = ones.zonalHistogram(quarterExtent.toPolygon)
+      val histogram = ones.regionHistogram(quarterExtent.toPolygon)
       val expected = ones.stitch.tile.zonalHistogram(totalExtent, quarterExtent.toPolygon)
 
       histogram.getMinMaxValues should be (expected.getMinMaxValues)
@@ -66,7 +66,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
 
       val poly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
 
-      val histogram = ones.zonalHistogram(poly)
+      val histogram = ones.regionHistogram(poly)
       val expected = ones.stitch.tile.zonalHistogram(totalExtent, poly)
 
       histogram.getMinMaxValues should be (expected.getMinMaxValues)
@@ -95,7 +95,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val interior = Line(Array(pi1, pi2, pi3, pi4, pi1))
       val poly = Polygon(exterior, interior)
 
-      val histogram = ones.zonalHistogram(poly)
+      val histogram = ones.regionHistogram(poly)
       val expected = ones.stitch.tile.zonalHistogram(totalExtent, poly)
 
       histogram.getMinMaxValues should be (expected.getMinMaxValues)

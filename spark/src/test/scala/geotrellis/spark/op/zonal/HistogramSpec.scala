@@ -1,10 +1,10 @@
 package geotrellis.spark.op.zonal
 
+import Implicits._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
-
-import geotrellis.raster._
+import geotrellis.raster.{ArrayTile, TileLayout}
 import geotrellis.raster.histogram.Histogram
 
 import geotrellis.vector._
@@ -51,8 +51,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
         TileLayout(3, 4, 3, 2)
       )
 
-      val r = rdd.stitch.tile
-      val zones = zonesRDD.stitch.tile
+      val r = rdd.stitch
+      val zones = zonesRDD.stitch
       val (cols, rows) = (r.cols, r.rows)
 
       val zoneValues = mutable.Map[Int, mutable.ListBuffer[Int]]()
@@ -73,7 +73,6 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
         }
 
       val result: Map[Int, Histogram] = rdd.zonalHistogram(zonesRDD)
-
       result.keys should be (expected.keys)
 
       for(zone <- result.keys) {

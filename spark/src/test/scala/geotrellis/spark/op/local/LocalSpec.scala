@@ -32,7 +32,7 @@ class LocalSpec extends FunSpec with TestEnvironment with TestFiles {
     val evo1Minus1 = EveryOther1ElseMinus1TestFile
 
     val (cols: Int, rows: Int) = {
-      val tile = ones.stitch.tile
+      val tile = ones.stitch
       (tile.cols, tile.rows)
     }
 
