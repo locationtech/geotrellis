@@ -18,6 +18,7 @@ package geotrellis.raster.histogram
 
 import geotrellis.raster._
 import geotrellis.raster.op.stats.Statistics
+import geotrellis.raster.doubleNODATA
 
 import java.util.TreeMap
 import java.util.Comparator
@@ -30,7 +31,9 @@ object StreamingHistogram {
   private type BucketType = (Double, Int)
   private type DeltaType = (Double, BucketType, BucketType)
 
-  def apply(m: Int) = new StreamingHistogram(m, None, None)
+  private val defaultSize = 80
+
+  def apply(m: Int = defaultSize) = new StreamingHistogram(m, None, None)
 
   def apply(m: Int, buckets: TreeMap[Double, Int], deltas: TreeMap[DeltaType, Unit]) =
     new StreamingHistogram(m, Some(buckets), Some(deltas))
@@ -62,7 +65,7 @@ class StreamingHistogram(
   private val deltas = startingDeltas.getOrElse(new TreeMap[DeltaType, Unit](new DeltaCompare))
 
   /* The number of samples represented by this histogram */
-  var n = buckets.asScala.map(_._2).sum
+  var n = getBuckets.map(_._2).sum
 
   /**
     * Compute the area of the curve between the two buckets.
@@ -150,6 +153,8 @@ class StreamingHistogram(
     * one, or it can be used to incrementally merge two histograms.
     */
   private def countItem(b: BucketType): Unit = {
+    n += b._2
+
     /* First entry */
     if (buckets.size == 0)
       buckets.put(b._1, b._2)
@@ -192,7 +197,6 @@ class StreamingHistogram(
       }
     }
 
-    n += b._2
     buckets.put(b._1, b._2)
     if (buckets.size > m) merge
   }
@@ -276,10 +280,11 @@ class StreamingHistogram(
     val median = getMedian
     val mode = getMode
     val ex2 = getBuckets.map({ case(item, count) => item*item*count }).sum / getTotalCount
+    val stddev = sqrt(ex2 - mean*mean)
     val zmin = getMinValue
     val zmax = getMaxValue
 
-    Statistics[Double](dataCount, mean, median, mode, sqrt(ex2 - mean*mean), zmin, zmax)
+    Statistics[Double](dataCount, mean, median, mode, stddev, zmin, zmax)
   }
 
   /**
@@ -309,9 +314,11 @@ class StreamingHistogram(
     * could be really bad).
     */
   def getMode(): Double = {
-    buckets.asScala.reduce({ (l,r) =>
-      if (l._2 > r._2) l; else r
-    })._1
+    if (n <= 0) doubleNODATA
+    else
+      getBuckets.reduce({ (l,r) =>
+        if (l._2 > r._2) l; else r
+      })._1
   }
 
   /**
@@ -324,8 +331,7 @@ class StreamingHistogram(
     */
   def getMean(): Double = {
     val weightedSum =
-      buckets
-        .asScala.foldLeft(0.0)({ (acc,bucket) =>
+      getBuckets.foldLeft(0.0)({ (acc,bucket) =>
           acc + (bucket._1 * bucket._2)
         })
     weightedSum / getTotalCount
@@ -368,11 +374,13 @@ class StreamingHistogram(
     * bucket label and its percentile.
     */
   private def getCdfIntervals(): Iterator[((Double, Double), (Double, Double))] = {
-    val scalaBuckets = buckets.asScala
-    val ds = scalaBuckets.map(_._1)
-    val pdf = scalaBuckets.map(_._2.toDouble / n)
+    val bs = getBuckets
+    val n = getTotalCount
+    val ds = bs.map(_._1)
+    val pdf = bs.map(_._2.toDouble / n)
     val cdf = pdf.scanLeft(0.0)(_ + _).drop(1)
     val data = ds.zip(cdf).sliding(2)
+
     data.map({ ab => (ab.head, ab.tail.head) })
   }
 
@@ -384,8 +392,9 @@ class StreamingHistogram(
     val tt = data.dropWhile(_._2._1 <= item).next
     val (d1, pct1) = tt._1
     val (d2, pct2) = tt._2
-    val x = (item - d1) / (item - d2)
-    ((x*pct2) + (1-x)*pct1)
+    val x = (item - d1) / (d2 - d1)
+
+    (1-x)*pct1 + x*pct2
   }
 
   /**
