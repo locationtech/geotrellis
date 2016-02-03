@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster._
 import geotrellis.raster.op.local.Add
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 trait AddTileRDDMethods[K] extends TileRDDMethods[K] {
@@ -28,15 +29,16 @@ trait AddTileRDDMethods[K] extends TileRDDMethods[K] {
   def +:(d: Double) = localAdd(d)
 
   /** Add the values of each cell in each raster.  */
-  def localAdd(other: RDD[(K, Tile)]) =
-    self.combineValues(other) { Add.apply }
+  def localAdd(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localAdd(other, None)
+  def localAdd(other: RDD[(K, Tile)], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner) { Add.apply }
 
   /** Add the values of each cell in each raster. */
-  def +(other: RDD[(K, Tile)]) = localAdd(other)
+  def +(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localAdd(other, None)
 
-  def localAdd(others: Traversable[RDD[(K, Tile)]]) =
-    self.combineValues(others) { Add.apply }
+  def localAdd(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAdd(others, None)
+  def localAdd(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(others, partitioner) { Add.apply }
 
-  def +(others: Traversable[RDD[(K, Tile)]]) =
-    localAdd(others)
+  def +(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAdd(others, None)
 }

@@ -5,6 +5,7 @@ import geotrellis.raster.op.local._
 
 import geotrellis.spark._
 import geotrellis.spark.op._
+import org.apache.spark.Partitioner
 
 import org.joda.time._
 import com.github.nscala_time.time.Imports._
@@ -27,57 +28,65 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime) =
-    aggregateWithTemporalWindow(windowSize, unit, start, end)(minReduceOp)
+    end: DateTime,
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(minReduceOp)
 
   def temporalMax(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime) =
-    aggregateWithTemporalWindow(windowSize, unit, start, end)(maxReduceOp)
+    end: DateTime,
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(maxReduceOp)
 
   def temporalMean(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime) =
-    aggregateWithTemporalWindow(windowSize, unit, start, end)(meanReduceOp)
+    end: DateTime,
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(meanReduceOp)
 
   def temporalVariance(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime) =
-    aggregateWithTemporalWindow(windowSize, unit, start, end)(varianceReduceOp)
+    end: DateTime,
+    partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    aggregateWithTemporalWindow(windowSize, unit, start, end, partitioner)(varianceReduceOp)
 
   private def aggregateWithTemporalWindow(
     windowSize: Int,
     unit: Int,
     start: DateTime,
-    end: DateTime)(
+    end: DateTime,
+    partitioner: Option[Partitioner] = None)(
     reduceOp: Traversable[Tile] => Tile
-  ) = {
-    self
-      .map { case (key, tile) =>
-        val SpatialKey(col, row) = key.spatialComponent
-        val time = key.temporalComponent.time
-        val startDiff = getDifferenceByUnit(unit, start, time)
-        val endDiff = getDifferenceByUnit(unit, time, end)
+  ): RDD[(K, Tile)] = {
+    val rdd =
+      self
+        .map { case (key, tile) =>
+          val SpatialKey(col, row) = key.spatialComponent
+          val time = key.temporalComponent.time
+          val startDiff = getDifferenceByUnit(unit, start, time)
+          val endDiff = getDifferenceByUnit(unit, time, end)
 
-        val newKey =
-          if(startDiff < 0 && endDiff < 0) {
-            (-1, col, row)
-          }
-          else {
-            val timeDelimiter = startDiff / windowSize
-            (timeDelimiter, col, row)
-          }
+          val newKey =
+            if (startDiff < 0 && endDiff < 0) {
+              (-1, col, row)
+            }
+            else {
+              val timeDelimiter = startDiff / windowSize
+              (timeDelimiter, col, row)
+            }
 
-        (newKey, (key, tile))
-       }
-      .filter { case ((i, col, row), _) => i >= 0 }
-      .groupByKey
+          (newKey, (key, tile))
+        }
+        .filter { case ((i, col, row), _) => i >= 0 }
+
+    partitioner
+      .fold(rdd.groupByKey())(rdd.groupByKey(_))
       .map { case (_, iter) =>
         val (keys, tiles) = iter.unzip
 
@@ -104,12 +113,12 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
   // If the raster local operations doesn't have the operation you need as
   // a operation on tile sequences, just create it through a reduce.
 
-  private def minReduceOp(tiles: Traversable[Tile]) = tiles.localMin
+  private def minReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMin
 
-  private def maxReduceOp(tiles: Traversable[Tile]) = tiles.localMax
+  private def maxReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMax
 
-  private def meanReduceOp(tiles: Traversable[Tile]) = tiles.localMean
+  private def meanReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMean
 
-  private def varianceReduceOp(tiles: Traversable[Tile]) = tiles.localVariance
+  private def varianceReduceOp(tiles: Traversable[Tile]): Tile = tiles.localVariance
 
 }

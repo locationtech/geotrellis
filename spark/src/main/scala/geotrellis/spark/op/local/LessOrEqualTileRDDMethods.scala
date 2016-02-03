@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.LessOrEqual
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 trait LessOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
@@ -64,8 +65,8 @@ trait LessOrEqualTileRDDMethods[K] extends TileRDDMethods[K] {
     * the corresponding cell valued of the rasters are less than or equal to the
     * next raster, else 0.
     */
-  def localLessOrEqual(other: RDD[(K, Tile)]) =
-    self.combineValues(other)(LessOrEqual.apply)
+  def localLessOrEqual(other: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner)(LessOrEqual.apply)
 
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if

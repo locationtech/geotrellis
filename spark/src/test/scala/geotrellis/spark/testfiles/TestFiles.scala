@@ -125,7 +125,7 @@ trait TestFiles { self: TestEnvironment =>
     spaceTimeTestFile("spacetime-all-hundreds")
 
   /** Coordinates are CCC,RRR.TTT where C = column, R = row, T = time (year in 2010 + T).
-    * So 34,025.004 would represent col 34, row 25, year 2014
+    * So 34,025,004 would represent col 34, row 25, year 2014
     */
   lazy val CoordinateSpaceTime =
     spaceTimeTestFile("spacetime-coordinates")

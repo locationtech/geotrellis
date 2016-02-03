@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Min
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 trait MinTileRDDMethods[K] extends TileRDDMethods[K] {
@@ -16,10 +17,12 @@ trait MinTileRDDMethods[K] extends TileRDDMethods[K] {
     self.mapValues { r => Min(r, d) }
 
   /** Min the values of each cell in each raster.  */
-  def localMin(other: RDD[(K, Tile)]) =
-    self.combineValues(other)(Min.apply)
+  def localMin(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localMin(other, None)
+  def localMin(other: RDD[(K, Tile)], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner)(Min.apply)
 
   /** Min the values of each cell in each raster.  */
-  def localMin(others: Seq[RDD[(K, Tile)]]) =
-    self.combineValues(others)(Min.apply)
+  def localMin(others: Seq[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMin(others, None)
+  def localMin(others: Seq[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(others, partitioner)(Min.apply)
 }

@@ -1,5 +1,7 @@
 package geotrellis.spark.op.local
 
+import org.apache.spark.Partitioner
+
 import scala.collection.immutable.Map
 
 import geotrellis.raster._
@@ -15,8 +17,9 @@ trait MajorityTileRDDMethods[K] extends TileRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the
     * most numerous.
     */
-  def localMajority(others: Traversable[RDD[(K, Tile)]]) =
-    self.combineValues(others)(Majority.apply)
+  def localMajority(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMajority(others, None)
+  def localMajority(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(others, partitioner)(Majority.apply)
 
   /**
     * Assigns to each cell the value within the given rasters that is the
@@ -29,10 +32,9 @@ trait MajorityTileRDDMethods[K] extends TileRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the
     * nth most numerous.
     */
-  def localMajority(n: Int, others: Traversable[RDD[(K, Tile)]]) =
-    self.combineValues(others) {
-      tiles => Majority(n, tiles)
-    }
+  def localMajority(n: Int, others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMajority(n, others, None)
+  def localMajority(n: Int, others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(others, partitioner) { tiles => Majority(n, tiles) }
 
   /**
     * Assigns to each cell the value within the given rasters that is the

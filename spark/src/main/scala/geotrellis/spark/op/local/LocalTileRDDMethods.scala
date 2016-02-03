@@ -4,6 +4,7 @@ import geotrellis.raster.op.local._
 import geotrellis.spark.op._
 import geotrellis.raster._
 import geotrellis.spark._
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
@@ -36,8 +37,8 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be empty -- all values set to NODATA.
     */
-  def localMask(other: RDD[(K, Tile)], readMask: Int, writeMask: Int) =
-    self.combineValues(other) {
+  def localMask(other: RDD[(K, Tile)], readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner) {
       case (r1, r2) => Mask(r1, r2, readMask, writeMask)
     }
 
@@ -49,8 +50,8 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be identical to the first raster.
     */
-  def localInverseMask(other: RDD[(K, Tile)], readMask: Int, writeMask: Int) =
-    self.combineValues(other) {
+  def localInverseMask(other: RDD[(K, Tile)], readMask: Int, writeMask: Int, partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner) {
       case (r1, r2) => InverseMask(r1, r2, readMask, writeMask)
     }
 
@@ -97,6 +98,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
 
   /**
     * Bitwise negation of Tile.
+    *
     * @note               NotRaster does not currently support Double raster data.
     *                     If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
     *                     the data values will be rounded to integers.
@@ -110,6 +112,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
 
   /**
     * Takes the arc cos of each raster cell value.
+    *
     * @info               Always return a double valued raster.
     */
   def localAcos() =
@@ -117,6 +120,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
 
   /**
     * Takes the arc sine of each raster cell value.
+    *
     * @info               Always return a double valued raster.
     */
   def localAsin() =
@@ -125,25 +129,29 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
   /** Takes the Arc Tangent2
     *  This raster holds the y - values, and the parameter
     *  holds the x values. The arctan is calculated from y / x.
+    *
     *  @info               A double raster is always returned.
     */
-  def localAtan2(other: RDD[(K, Tile)]) =
-    self.combineValues(other)(Atan2.apply)
+  def localAtan2(other: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner)(Atan2.apply)
 
   /**
     * Takes the arc tan of each raster cell value.
+    *
     * @info               Always return a double valued raster.
     */
   def localAtan() =
     self.mapValues { r => Atan(r) }
 
   /** Takes the Cosine of each raster cell value.
+    *
     * @info               Always returns a double raster.
     */
   def localCos() =
     self.mapValues { r => Cos(r) }
 
   /** Takes the hyperbolic cosine of each raster cell value.
+    *
     * @info               Always returns a double raster.
     */
   def localCosh() =
@@ -151,6 +159,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
 
   /**
     * Takes the sine of each raster cell value.
+    *
     * @info               Always returns a double raster.
     */
   def localSin() =
@@ -158,18 +167,21 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
 
   /**
     * Takes the hyperbolic sine of each raster cell value.
+    *
     * @info               Always returns a double raster.
     */
   def localSinh() =
     self.mapValues { r => Sinh(r) }
 
   /** Takes the Tangent of each raster cell value.
+    *
     * @info               Always returns a double raster.
     */
   def localTan() =
     self.mapValues { r => Tan(r) }
 
   /** Takes the hyperboic cosine of each raster cell value.
+    *
     * @info               Always returns a double raster.
     */
   def localTanh() =
