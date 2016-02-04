@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 object KryoSerializer {
 
   @transient lazy val ser: SparkKryoSerializer = {
-    val sparkConf = 
+    val sparkConf =
       Option(SparkEnv.get)
         .map(_.conf)
         .getOrElse(

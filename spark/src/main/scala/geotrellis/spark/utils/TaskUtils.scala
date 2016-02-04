@@ -17,7 +17,7 @@ object TaskUtils extends App {
      * @param  p  returns true for exceptions that trigger a backoff and retry
      */
     def retryEBO(p: (Throwable => Boolean) ): Task[A] = {
-      def help(count: Int): Future[Throwable \/ A] = {        
+      def help(count: Int): Future[Throwable \/ A] = {
         val base: Duration = 52.milliseconds
         val timeout = base * Random.nextInt(math.pow(2,count).toInt) // .extInt is [), implying -1
         task.get flatMap {
