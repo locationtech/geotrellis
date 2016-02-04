@@ -17,13 +17,55 @@
 package geotrellis.raster.render
 
 import scala.util.Try
+import scala.collection.mutable
 
 import geotrellis.raster.histogram.Histogram
 import java.util.Locale
 
+
+class ColorSpec[A] extends Serializable {
+  private val classifications = mutable.Map[A, Int]()
+  private var noDataColor: Option[Int] = None
+
+  def classify(classBoundary: A, classColor: Color): ColorSpec[A] = {
+    classifications(classBoundary) = classColor.get
+    this  // For chaining multiple classifications together
+  }
+
+  def setNoDataColor(color: Color): ColorSpec[A] = {
+    noDataColor = Some(color.get)
+    this
+  }
+
+  lazy val length = classifications.keys.size
+
+  def mapColors(f: Int => Int): ColorSpec[A] =
+    ColorSpec(classifications.mapValues(f).toMap, noDataColor.map(f))
+
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
+    ColorMap(classifications.keys, classifications.values, options)
+
+  def getNoDataColor = noDataColor
+
+  def breaks: Array[A] = classifications.keys.toArray
+
+  def colors: Array[Int] = classifications.values.toArray
+}
+
+
+object ColorSpec {
+  def apply[A](m: Map[A, Int], noDataColor: Option[Int] = None): ColorSpec[A] = {
+    val cspec = new ColorSpec[A]
+    m.toArray.map { case classification: (A, Int) =>
+      cspec.classify(classification._1, classification._2)
+    }
+    cspec
+  }
+}
+
+
 /**
   * ColorBreaks describes a way to render a raster into a colored image.
-  */
 trait ColorBreaks extends Serializable {
   def colors: Array[Int]
   def length: Int
@@ -32,6 +74,7 @@ trait ColorBreaks extends Serializable {
   def toColorMap(): ColorMap = toColorMap(ColorMapOptions.Default)
   def toColorMap(options: ColorMapOptions): ColorMap
 }
+  */
 
 /**
   * IntColorBreaks describes a way to render a raster into a colored image.
@@ -41,7 +84,6 @@ trait ColorBreaks extends Serializable {
   *
   * @param limits  An array with the maximum value of each range
   * @param colors  An array with the color assigned to each range
-  */
 class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends ColorBreaks {
   assert(limits.length == colors.length)
   assert(colors.length > 0)
@@ -66,6 +108,7 @@ class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends Col
     s"IntColorBreaks($limitsStr, $colorsStr)"
   }
 }
+  */
 
 /**
   * DoubleColorBreaks describes a way to render a raster into a colored image.
@@ -75,7 +118,6 @@ class IntColorBreaks(val limits: Array[Int], val colors: Array[Int]) extends Col
   *
   * @param limits  An array with the maximum value of each range
   * @param colors  An array with the color assigned to each range
-  */
 class DoubleColorBreaks(val limits: Array[Double], val colors: Array[Int]) extends ColorBreaks {
   assert(limits.length == colors.length)
   assert(colors.length > 0)
@@ -100,10 +142,11 @@ class DoubleColorBreaks(val limits: Array[Double], val colors: Array[Int]) exten
     s"DoubleColorBreaks($limitsStr, $colorsStr)"
   }
 }
+  */
 
 
-object ColorBreaks {
   /**
+object ColorBreaks {
     * This method is used for cases in which we are provided with a different
     * number of colors than we have value ranges.  This method will return a
     * return a ClassBreak object where the provided colors are spaced out amongst
@@ -117,7 +160,6 @@ object ColorBreaks {
     *
     * @param limits  An array of the maximum value of each range
     * @param colors  An array of RGBA color values
-    */
   private def sample(colors: Array[Int], numSamples: Int) = {
     if (numSamples != colors.length) {
       val used = new Array[Int](numSamples)
@@ -168,3 +210,4 @@ object ColorBreaks {
     }.toOption
   }
 }
+    */

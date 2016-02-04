@@ -72,25 +72,25 @@ case class PngEncoder(settings: Settings) {
 
   def writeBackgroundInfo(dos: DataOutputStream) {
     settings.colorType match {
-      case Grey(t) => {
+      case Grey(ndColor) => {
         // write a single 2-byte color value
         // our data is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
         cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(t, 8))
+        cTRNS.writeByte(shift(ndColor, 8))
         cTRNS.writeTo(dos)
       }
 
-      case Rgb(t) => {
+      case Rgb(ndColor) => {
         // write three 2-byte color values
         // our data is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
         cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(t, 24))
+        cTRNS.writeByte(shift(ndColor, 24))
         cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(t, 16))
+        cTRNS.writeByte(shift(ndColor, 16))
         cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(t, 8))
+        cTRNS.writeByte(shift(ndColor, 8))
         cTRNS.writeTo(dos)
       }
 
