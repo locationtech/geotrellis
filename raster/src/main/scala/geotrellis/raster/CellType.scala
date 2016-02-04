@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import scala.util.matching.Regex
 import java.awt.image.DataBuffer
+import java.lang.IllegalArgumentException
 
 // DataType ADT
 sealed abstract class DataType extends Serializable { self: CellType =>
@@ -26,6 +27,15 @@ sealed abstract class DataType extends Serializable { self: CellType =>
   val name: String
 
   def bytes = bits / 8
+
+  /*
+   * Union only checks to see that the correct bitsize and int vs floating point values are set.
+   * We can be sure that its operations are safe because all data is converted up to int or double
+   * where the internal GT "constant" nodata values are used for *all* tile types. So, for
+   * instance, if a UserDefinedNoData tile is converted to a different UserDefinedNoData tile,
+   * the user defined NoData value will be converted to Int.MinValue/Double.NaN during operations
+   * and then converted once more from that value down to the second UserDefinedNoData value.
+   */
   def union(other: CellType) =
     if (bits < other.bits)
       other
@@ -180,7 +190,7 @@ object CellType {
     case DataBuffer.TYPE_INT => IntConstantNoDataCellType
     case DataBuffer.TYPE_FLOAT => FloatConstantNoDataCellType
     case DataBuffer.TYPE_DOUBLE => DoubleConstantNoDataCellType
-    case _ => sys.error(s"Cell type with AWT type $awtType is not supported")
+    case _ => throw new IllegalArgumentException(s"AWT type $awtType is not supported")
   }
 
   def fromString(name: String): CellType = name match {
@@ -197,30 +207,47 @@ object CellType {
     case "float32" => FloatConstantNoDataCellType
     case "float64" => DoubleConstantNoDataCellType
     case ct if ct.startsWith("int8ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toByte
-      ByteUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      ByteUserDefinedNoDataCellType(ndVal.toByte)
     case ct if ct.startsWith("uint8ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toByte
-      UByteUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      UByteUserDefinedNoDataCellType(ndVal.toByte)
     case ct if ct.startsWith("int16ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toShort
-      ShortUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      ShortUserDefinedNoDataCellType(ndVal.toShort)
     case ct if ct.startsWith("uint16ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toShort
-      UShortUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      UShortUserDefinedNoDataCellType(ndVal.toShort)
     case ct if ct.startsWith("int32ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toInt
-      IntUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      IntUserDefinedNoDataCellType(ndVal.toInt)
     case ct if ct.startsWith("uint32ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).get.toInt
-      UIntUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      UIntUserDefinedNoDataCellType(ndVal.toInt)
     case ct if ct.startsWith("float32ud") =>
-      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).get.toFloat
-      FloatUserDefinedNoDataCellType(ndVal)
+      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      FloatUserDefinedNoDataCellType(ndVal.toFloat)
     case ct if ct.startsWith("float64ud") =>
-      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).get.toDouble
-      DoubleUserDefinedNoDataCellType(ndVal)
-    case _ => sys.error(s"Cell type $name is not supported")
+      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).getOrElse {
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      }
+      DoubleUserDefinedNoDataCellType(ndVal.toDouble)
+    case str =>
+      throw new IllegalArgumentException(s"Cell type $name is not supported")
   }
 
   def toAwtType(cellType: CellType): Int = cellType match {

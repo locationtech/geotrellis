@@ -20,6 +20,7 @@ import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer
+import java.lang.IllegalArgumentException
 
 import spire.syntax.cfor._
 
@@ -36,13 +37,14 @@ trait ConstantTile extends Tile {
   def convert(newType: CellType): Tile = 
     newType match {
       case BitCellType => BitConstantTile(if(iVal == 0) false else true, cols, rows)
-      case ByteConstantNoDataCellType => ByteConstantTile(iVal.toByte, cols, rows)
-      case UByteConstantNoDataCellType => UByteConstantTile(iVal.toByte, cols, rows)
-      case ShortConstantNoDataCellType => ShortConstantTile(iVal.toShort, cols, rows)
-      case UShortConstantNoDataCellType => UShortConstantTile(iVal.toShort, cols, rows)
+      case ByteConstantNoDataCellType => ByteConstantTile(i2b(iVal), cols, rows)
+      case UByteConstantNoDataCellType => UByteConstantTile(i2ub(iVal), cols, rows)
+      case ShortConstantNoDataCellType => ShortConstantTile(i2s(iVal), cols, rows)
+      case UShortConstantNoDataCellType => UShortConstantTile(i2us(iVal), cols, rows)
       case IntConstantNoDataCellType => IntConstantTile(iVal, cols, rows)
-      case FloatConstantNoDataCellType => FloatConstantTile(dVal.toFloat, cols, rows)
+      case FloatConstantNoDataCellType => FloatConstantTile(dVal, cols, rows)
       case DoubleConstantNoDataCellType => DoubleConstantTile(dVal, cols, rows)
+      case _ => throw new IllegalArgumentException(s"Unsupported ConstantTile CellType: $newType")
     }
 
   def foreach(f: Int => Unit) {
@@ -114,65 +116,65 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   def toBytes(): Array[Byte] = Array(iVal.toByte)
 }
 
-case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = b2i(v)
-  protected val dVal = b2d(v)
+case class ByteConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = v
+  protected val dVal = i2d(v)
 
   val cellType = ByteConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = ByteArrayTile.fill(i2b(v), cols, rows)
 
-  def toBytes(): Array[Byte] = Array(v)
+  def toBytes(): Array[Byte] = Array(i2b(v))
 }
 
-case class UByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = b2i(v)
-  protected val dVal = b2d(v)
+case class UByteConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = v
+  protected val dVal = i2d(v)
 
   val cellType = ByteConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = ByteArrayTile.fill(i2ub(v), cols, rows)
 
-  def toBytes(): Array[Byte] = Array(v)
+  def toBytes(): Array[Byte] = Array(i2ub(v))
 
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
 }
 
-case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = s2i(v)
-  protected val dVal = s2d(v)
+case class ShortConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = v
+  protected val dVal = i2d(v)
 
   val cellType = ShortConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = ShortArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = ShortArrayTile.fill(i2s(v), cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
-    ByteBuffer.wrap(arr).asShortBuffer.put(v)
+    ByteBuffer.wrap(arr).asShortBuffer.put(i2s(v))
     arr
   }
 }
 
-case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = v & 0xFFFF
-  protected val dVal = iVal.toDouble
+case class UShortConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = v
+  protected val dVal = i2d(iVal)
 
   val cellType = ShortConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = UShortArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = UShortArrayTile.fill(i2us(v), cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
-    ByteBuffer.wrap(arr).asShortBuffer.put(v)
+    ByteBuffer.wrap(arr).asShortBuffer.put(i2us(v))
     arr
   }
 
@@ -198,19 +200,19 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
   }
 }
 
-case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = f2i(v)
-  protected val dVal = f2d(v)
+case class FloatConstantTile(v: Double, cols: Int, rows: Int) extends ConstantTile {
+  protected val iVal = d2i(v)
+  protected val dVal = v
 
   val cellType = FloatConstantNoDataCellType
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = FloatArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = FloatArrayTile.fill(d2f(v), cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
-    ByteBuffer.wrap(arr).asFloatBuffer.put(v)
+    ByteBuffer.wrap(arr).asFloatBuffer.put(d2f(v))
     arr
   }
 }
@@ -223,11 +225,11 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = DoubleArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = DoubleArrayTile.fill(dVal, cols, rows)
 
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
-    ByteBuffer.wrap(arr).asDoubleBuffer.put(v)
+    ByteBuffer.wrap(arr).asDoubleBuffer.put(dVal)
     arr
   }
 }
