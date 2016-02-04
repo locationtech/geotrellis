@@ -159,8 +159,15 @@ public class BasicCoordinateTransform
         if (srcCRS.getDatum().isEqual(tgtCRS.getDatum()))
             return;
     
-        // TODO: grid shift if required
+        if (srcCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+            srcCRS.getDatum().shift(pt);
+            srcGeoConv.overrideWithWGS84Params();
+        }
     
+        if (tgtCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+            tgtGeoConv.overrideWithWGS84Params();
+        }
+
         /* ==================================================================== */
         /*      Do we need to go through geocentric coordinates?                */
         /* ==================================================================== */
@@ -186,8 +193,10 @@ public class BasicCoordinateTransform
             tgtGeoConv.convertGeocentricToGeodetic( pt );
         }
     
-        // TODO: grid shift if required
 
+        if (tgtCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+            tgtCRS.getDatum().inverseShift(pt);
+        }
     }
   
 }

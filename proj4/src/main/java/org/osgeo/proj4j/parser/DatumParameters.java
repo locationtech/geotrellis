@@ -1,8 +1,11 @@
 package org.osgeo.proj4j.parser;
 
 import org.osgeo.proj4j.CoordinateReferenceSystem;
+import org.osgeo.proj4j.Grid;
 import org.osgeo.proj4j.datum.Datum;
 import org.osgeo.proj4j.datum.Ellipsoid;
+
+import java.util.List;
 
 /**
  * Contains the parsed/computed parameter values 
@@ -27,6 +30,7 @@ public class DatumParameters
 
   private Datum datum = null;
   private double[] datumTransform = null;
+  private List<Grid> grids = null;
   
   private Ellipsoid ellipsoid;
   private double a = Double.NaN;
@@ -50,7 +54,7 @@ public class DatumParameters
       return Datum.WGS84;
     
     // otherwise, return a custom datum with the specified ellipsoid
-    return new Datum("User", datumTransform, getEllipsoid(), "User-defined");
+    return new Datum("User", datumTransform, grids, getEllipsoid(), "User-defined");
   }
   
   private boolean isDefinedExplicitly()
@@ -82,6 +86,10 @@ public class DatumParameters
     this.ellipsoid = ellipsoid;
     es = ellipsoid.eccentricity2;
     a = ellipsoid.equatorRadius;
+  }
+
+  public void setGrids(List<Grid> grids) {
+      this.grids = grids;
   }
   
   public void setA(double a)

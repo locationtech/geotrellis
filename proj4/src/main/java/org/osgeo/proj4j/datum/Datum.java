@@ -17,6 +17,9 @@ limitations under the License.
 package org.osgeo.proj4j.datum;
 
 import org.osgeo.proj4j.ProjCoordinate;
+import org.osgeo.proj4j.Grid;
+
+import java.util.List;
 
 
 /**
@@ -68,20 +71,25 @@ public class Datum implements java.io.Serializable
 	private String name;
 	private Ellipsoid ellipsoid;
 	private double[] transform = DEFAULT_TRANSFORM;
+    private List<Grid> grids = null;
 	
   public Datum(String code, 
       String transformSpec, 
       Ellipsoid ellipsoid,
       String name) {
     // TODO: implement handling of transform specification
-    this(code, (double[]) null, ellipsoid, name);
+    this(code, (double[]) null, null, ellipsoid, name);
+  }
+
+  private Datum(String code, List<Grid> grids, Ellipsoid ellipsoid, String name) {
+      this(code, (double[]) null, grids, ellipsoid, name);
   }
   
   public Datum(String code, 
       double deltaX, double deltaY, double deltaZ, 
       Ellipsoid ellipsoid,
       String name) {
-    this(code, new double[] { deltaX, deltaY, deltaZ },ellipsoid, name);
+    this(code, new double[] { deltaX, deltaY, deltaZ }, null, ellipsoid, name);
   }
   
   public Datum(String code, 
@@ -89,16 +97,18 @@ public class Datum implements java.io.Serializable
       double rx, double ry, double rz, double mbf,
       Ellipsoid ellipsoid,
       String name) {
-    this(code, new double[] { deltaX, deltaY, deltaZ, rx, ry, rz, mbf },ellipsoid, name);
+    this(code, new double[] { deltaX, deltaY, deltaZ, rx, ry, rz, mbf }, null, ellipsoid, name);
   }
   
   public Datum(String code, 
       double[] transform, 
+      List<Grid> grids,
       Ellipsoid ellipsoid,
       String name) {
     this.code = code;
     this.name = name;
     this.ellipsoid = ellipsoid;
+    this.grids = grids;
     if (transform != null)
       this.transform = transform;
   }
@@ -121,7 +131,9 @@ public class Datum implements java.io.Serializable
   
   public int getTransformType()
   {
-    if (transform  == null) return TYPE_WGS84;
+    if (grids != null && grids.size() > 0) return TYPE_GRIDSHIFT;
+
+    if (transform == null) return TYPE_WGS84;
     
     if (isIdentity(transform)) return TYPE_WGS84;
     
@@ -193,14 +205,9 @@ public class Datum implements java.io.Serializable
           return false;
       }
       return true;
-    } 
-    /* 
-     //TODO: complete
-    else if( this.datum_type == Proj4js.common.PJD_GRIDSHIFT ) {
-      return strcmp( pj_param(this.params,"snadgrids").s,
-                     pj_param(dest.params,"snadgrids").s ) == 0;
+    } else if (getTransformType() == TYPE_GRIDSHIFT) {
+        return grids.equals(datum.grids);
     }
-    */ 
     return true; // datums are equal
 
   }
@@ -260,5 +267,13 @@ public class Datum implements java.io.Serializable
       p.y = -Rz_BF*x_tmp +       y_tmp + Rx_BF*z_tmp;
       p.z =  Ry_BF*x_tmp - Rx_BF*y_tmp +       z_tmp;
     }
+  }
+
+  public void shift(ProjCoordinate xy) {
+      Grid.shift(grids, false, xy);
+  }
+
+  public void inverseShift(ProjCoordinate xy) {
+      Grid.shift(grids, true, xy);
   }
 }

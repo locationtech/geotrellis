@@ -1,5 +1,6 @@
 package org.osgeo.proj4j.parser;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -151,7 +152,15 @@ public class Proj4Parser
        throw new InvalidValueException("Unknown datum: " + code);
      datumParam.setDatum(datum);
    }
-   
+
+   String nadgrids = (String) params.get(Proj4Keyword.nadgrids);
+   if (nadgrids != null) {
+       try {
+           datumParam.setGrids(Grid.fromNadGrids(nadgrids));
+       } catch (IOException e) {
+           throw new InvalidValueException("Unknown nadgrid: " + nadgrids);
+       }
+   }
  }
  
  private double[] parseToWGS84(String paramList)

@@ -58,6 +58,11 @@ public class GeocentricConverter implements  java.io.Serializable
     ep2 = (a2 - b2) / b2;
   }
 
+  public void overrideWithWGS84Params() {
+      this.a = Ellipsoid.WGS84.getA();
+      this.e2 = Ellipsoid.WGS84.getEccentricitySquared();
+  }
+
   /**
    * Converts geodetic coordinates
    * (latitude, longitude, and height) to geocentric coordinates (X, Y, Z),
