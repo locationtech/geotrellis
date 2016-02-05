@@ -19,8 +19,12 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.io.hadoop.formats._
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
+import org.apache.avro.Schema
+
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers.FieldSerializer
+
+import scala.util.Properties
 
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
@@ -173,30 +177,25 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[org.osgeo.proj4j.datum.Ellipsoid])
     kryo.register(classOf[org.osgeo.proj4j.proj.LambertConformalConicProjection])
     kryo.register(classOf[org.osgeo.proj4j.units.Unit])
+    kryo.register(classOf[scala.collection.mutable.WrappedArray$ofInt])
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofRef])
     kryo.register(classOf[scala.collection.Seq[Any]])
     kryo.register(classOf[scala.Tuple3[Any,Any,Any]])
 
     /* Special Handling: Problematic Classes */
-    {
-      val cs = List(
-        "geotrellis.proj4.LatLng$",
-        "geotrellis.spark.EmptyBounds$",
-        "scala.collection.immutable.Nil$",
-        "scala.math.Ordering$Double$",
-        "scala.math.Ordering$Float$",
-        "scala.math.Ordering$Int$",
-        "scala.math.Ordering$Long$",
-        "scala.None$"
-      )
-
-      cs.foreach({ c => kryo.register(java.lang.Class.forName(c)) })
-    }
+    List(
+      "geotrellis.proj4.LatLng$",
+      "geotrellis.spark.EmptyBounds$",
+      "scala.collection.immutable.Nil$",
+      "scala.math.Ordering$Double$",
+      "scala.math.Ordering$Float$",
+      "scala.math.Ordering$Int$",
+      "scala.math.Ordering$Long$",
+      "scala.None$"
+    ).foreach({ c => kryo.register(java.lang.Class.forName(c)) })
 
     /* Special Handling: Avro */
     {
-      import org.apache.avro.Schema
-
       val booleanSchema = Schema.create(Schema.Type.BOOLEAN)
       val bytesSchema = Schema.create(Schema.Type.BYTES)
       val doubleSchema = Schema.create(Schema.Type.DOUBLE)
@@ -205,14 +204,10 @@ class KryoRegistrator extends SparkKryoRegistrator {
       val longSchema = Schema.create(Schema.Type.LONG)
       val nullSchema = Schema.create(Schema.Type.NULL)
       val stringSchema = Schema.create(Schema.Type.STRING)
-
       val fields = new java.util.ArrayList[Schema.Field]
-      val field = new Schema.Field("a", Schema.create(Schema.Type.NULL), null, null)
-      fields.add(field)
-      val schemas = new java.util.ArrayList[Schema]
-      schemas.add(booleanSchema); schemas.add(bytesSchema)
-      val enums = new java.util.ArrayList[String]
-      enums.add("b"); enums.add("c")
+      val field = new Schema.Field("a", Schema.create(Schema.Type.NULL), null, null); fields.add(field)
+      val schemas = new java.util.ArrayList[Schema]; schemas.add(booleanSchema); schemas.add(bytesSchema)
+      val enums = new java.util.ArrayList[String]; enums.add("b"); enums.add("c")
 
       kryo.register(field.getClass)       // Field
       kryo.register(field.order.getClass) // Field$order
@@ -238,33 +233,47 @@ class KryoRegistrator extends SparkKryoRegistrator {
       kryo.register(java.lang.Class.forName("org.apache.avro.Schema$Name"))
     }
 
-    /* Special Handling: Anonymous Objects */
-    {
-      val anonymous = List(
-        "geotrellis.proj4.CRS$$anon$",
-        "geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$",
-        "geotrellis.spark.SpaceTimeKey$$anonfun$ordering$",
-        "geotrellis.spark.SpatialKey$$anonfun$ordering$",
-        "geotrellis.spark.TemporalKey$$anonfun$ordering$",
-        "scala.math.Ordering$$anon$",
-        "scala.math.Ordering$$anonfun$by$",
-        "scala.reflect.ClassTag$$anon$"
-      )
+    val reqRegistration = Properties.envOrElse("GEOTRELLIS_KRYO_REGREQ", null)
 
-      // The exact "names" of these anonymous objects may or may not
-      // be known at the time of this file's compilation.  Therefore,
-      // generate guesses at runtime.
-      (1 to 17).foreach({ i =>
-        anonymous.foreach({ anon =>
-          try {
-            kryo.register(Class.forName(anon + i))
-          }
-          catch {
-            case e: java.lang.ClassNotFoundException =>
-          }
-        })
+    if (reqRegistration != null) {
+      List(
+        "geotrellis.proj4.CRS$$anon$1",
+        "geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$1",
+        "geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$2",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$1",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$2",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$3",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$4",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$5",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$6",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$7",
+        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$8",
+        "geotrellis.spark.SpaceTimeKey$$anonfun$ordering$1",
+        "geotrellis.spark.SpatialKey$$anonfun$ordering$1",
+        "geotrellis.spark.TemporalKey$$anonfun$ordering$1",
+        "scala.math.Ordering$$anon$11",
+        "scala.math.Ordering$$anon$9",
+        "scala.math.Ordering$$anonfun$by$1",
+        "scala.reflect.ClassTag$$anon$1"
+      ).foreach({ anon =>
+          // try {
+            kryo.register(Class.forName(anon))
+          // }
+          // catch {
+          //   case e: java.lang.ClassNotFoundException =>
+          // }
       })
+
+      // Needed for only one test
+      try {
+        kryo.register(Class.forName("geotrellis.spark.utils.OptimusPrime"))
+      }
+      catch {
+        case e: java.lang.ClassNotFoundException =>
+      }
+
+      kryo.setRegistrationRequired(true)
+
     }
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
