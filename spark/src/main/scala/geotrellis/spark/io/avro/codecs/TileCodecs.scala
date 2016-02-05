@@ -17,16 +17,16 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: ShortArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -47,16 +47,16 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: UShortArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -84,8 +84,8 @@ trait TileCodecs {
     def encode(tile: IntArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -112,8 +112,8 @@ trait TileCodecs {
     def encode(tile: FloatArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -133,15 +133,15 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().array().items().doubleType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: DoubleArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -161,15 +161,15 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: ByteArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", ByteBuffer.wrap(tile.array))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -188,15 +188,15 @@ trait TileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
+      .name("celltype").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(tile: UByteArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
-      rec.put("celltype", tile.cellType.toString)
       rec.put("cells", ByteBuffer.wrap(tile.array))
+      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {

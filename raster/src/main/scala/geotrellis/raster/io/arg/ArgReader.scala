@@ -103,11 +103,11 @@ object ArgReader {
     }
   }
 
-  final def read(path: String, cellType: CellType, cols: Int, rows: Int): Tile = {
+  final def read(path: String, cellType: DataType with ConstantNoData, cols: Int, rows: Int): Tile = {
     ArrayTile.fromBytes(Filesystem.slurp(path), cellType, cols, rows)
   }
 
-  final def read(path: String, cellType: CellType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
+  final def read(path: String, cellType: DataType with ConstantNoData, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
     val size = cellType.numBytes(rasterExtent.size)
 
     val cols = rasterExtent.cols
