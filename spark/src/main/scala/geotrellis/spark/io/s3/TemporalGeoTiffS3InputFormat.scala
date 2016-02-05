@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce._
 import org.joda.time._
 import org.joda.time.format._
 
-object SpaceTimeGeoTiffS3InputFormat {
+object TemporalGeoTiffS3InputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
 
@@ -40,17 +40,17 @@ object SpaceTimeGeoTiffS3InputFormat {
 /** Read single band GeoTiff from S3
   *
   * This can be configured with the hadoop configuration by providing:
-  * SpaceTimeGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * SpaceTimeGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
+  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class SpaceTimeGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent,Tile] {
+class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent,Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[TemporalProjectedExtent,Tile] {
       def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = SingleBandGeoTiff(bytes)
 
-        val timeTag = SpaceTimeGeoTiffS3InputFormat.getTimeTag(context)
-        val dateFormatter = SpaceTimeGeoTiffS3InputFormat.getTimeFormatter(context)
+        val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
+        val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
 
         val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
         val dateTime = DateTime.parse(dateTimeString, dateFormatter)

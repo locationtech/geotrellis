@@ -38,25 +38,25 @@ trait HadoopSparkContextMethods {
       classOf[Tile]
     )
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(new Path(path), defaultTiffExtensions)
+  def hadoopTemporalGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(new Path(path), Seq(tiffExtension))
+  def hadoopTemporalGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(new Path(path), tiffExtensions)
+  def hadoopTemporalGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(path, defaultTiffExtensions)
+  def hadoopTemporalGeoTiffRDD(path: Path): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(path, defaultTiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(path, Seq(tiffExtension))
+  def hadoopTemporalGeoTiffRDD(path: Path, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(path, Seq(tiffExtension))
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, Tile)] =
+  def hadoopTemporalGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, Tile)] =
     sc.newAPIHadoopRDD(
       sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
-      classOf[SpaceTimeGeoTiffInputFormat],
+      classOf[TemporalGeoTiffInputFormat],
       classOf[TemporalProjectedExtent],
       classOf[Tile]
     )

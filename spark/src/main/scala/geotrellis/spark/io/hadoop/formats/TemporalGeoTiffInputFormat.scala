@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce._
 import org.joda.time._
 import org.joda.time.format._
 
-object SpaceTimeGeoTiffInputFormat {
+object TemporalGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
 
@@ -43,12 +43,12 @@ object SpaceTimeGeoTiffInputFormat {
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class SpaceTimeGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, Tile] {
+class TemporalGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, Tile) = {
     val geoTiff = SingleBandGeoTiff(bytes)
 
-    val timeTag = SpaceTimeGeoTiffInputFormat.getTimeTag(context)
-    val dateFormatter = SpaceTimeGeoTiffInputFormat.getTimeFormatter(context)
+    val timeTag = TemporalGeoTiffInputFormat.getTimeTag(context)
+    val dateFormatter = TemporalGeoTiffInputFormat.getTimeFormatter(context)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = DateTime.parse(dateTimeString, dateFormatter)
