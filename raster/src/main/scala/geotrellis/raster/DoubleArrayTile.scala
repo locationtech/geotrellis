@@ -135,24 +135,4 @@ object DoubleArrayTile {
     case udct @ DoubleUserDefinedNoDataCellType(_) =>
       new DoubleUserDefinedNoDataArrayTile(constructDoubleArray(bytes), cols, rows, udct)
   }
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Double): DoubleArrayTile = 
-    if(isNoData(replaceNoData))
-    fromBytes(bytes, cols, rows)
-    else {
-      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-      val doubleBuffer = byteBuffer.asDoubleBuffer()
-      val len = bytes.size / DoubleConstantNoDataCellType.bytes
-      val doubleArray = new Array[Double](len)
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        val v = doubleBuffer.get(i)
-        if(v == replaceNoData) 
-          doubleArray(i) = Double.NaN
-        else
-          doubleArray(i) = v
-      }
-
-      DoubleArrayTile(doubleArray, cols, rows)
-    }
 }

@@ -102,20 +102,4 @@ object UByteArrayTile {
       case udct @ UByteUserDefinedNoDataCellType(_) =>
         new UByteUserDefinedNoDataArrayTile(bytes.clone, cols, rows, udct)
     }
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): UByteArrayTile = {
-    if(isNoData(replaceNoData))
-      fromBytes(bytes, cols, rows)
-    else {
-      val arr = bytes.clone
-      cfor(0)(_ < arr.size, _ + 1) { i =>
-        val v = bytes(i)
-        if(v == replaceNoData)
-          arr(i) = byteNODATA
-        else
-          arr(i) = v
-      }
-      UByteArrayTile(arr, cols, rows)
-    }
-  }
 }

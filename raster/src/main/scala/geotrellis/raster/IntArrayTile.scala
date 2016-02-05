@@ -140,24 +140,4 @@ object IntArrayTile {
       case udct @ IntUserDefinedNoDataCellType(_) =>
         new IntUserDefinedNoDataArrayTile(constructIntArray(bytes), cols, rows, udct)
     }
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): IntArrayTile =
-    if(isNoData(replaceNoData))
-      fromBytes(bytes, cols, rows)
-    else {
-      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-      val intBuffer = byteBuffer.asIntBuffer()
-      val len = bytes.size / IntConstantNoDataCellType.bytes
-      val intArray = new Array[Int](len)
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        val v = intBuffer.get(i)
-        if(v == replaceNoData)
-          intArray(i) = NODATA
-        else
-          intArray(i) = v
-      }
-
-      IntArrayTile(intArray, cols, rows)
-    }
 }

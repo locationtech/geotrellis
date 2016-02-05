@@ -259,18 +259,6 @@ object ArrayTile {
       case ct: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows, ct)
     }
 
-  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile =
-    t match {
-      case _: BitCells => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
-      case _: ByteCells => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case _: UByteCells => UByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
-      case _: ShortCells => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case _: UShortCells => UShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
-      case _: IntCells => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
-      case _: FloatCells => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
-      case _: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
-    }
-
   def apply(arr: Array[Byte], cols: Int, rows: Int) = new ByteConstantNoDataArrayTile(arr, cols, rows)
   def apply(arr: Array[Short], cols: Int, rows: Int) = new ShortConstantNoDataArrayTile(arr, cols, rows)
   def apply(arr: Array[Int], cols: Int, rows: Int) = new IntConstantNoDataArrayTile(arr, cols, rows)

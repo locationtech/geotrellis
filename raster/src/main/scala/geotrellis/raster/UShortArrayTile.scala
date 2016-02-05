@@ -118,23 +118,4 @@ object UShortArrayTile {
       case udct @ UShortUserDefinedNoDataCellType(_) =>
         new UShortUserDefinedNoDataArrayTile(constructShortArray(bytes.clone), cols, rows, udct)
     }
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): UShortArrayTile =
-    if(isNoData(replaceNoData))
-      fromBytes(bytes, cols, rows)
-    else {
-      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
-      val shortBuffer = byteBuffer.asShortBuffer()
-      val len = bytes.length / UShortConstantNoDataCellType.bytes
-      val shortArray = new Array[Short](len)
-      cfor(0)(_ < len, _ + 1) { i =>
-        val v = shortBuffer.get(i)
-        if(v == replaceNoData)
-          shortArray(i) = shortNODATA
-        else
-          shortArray(i) = v
-      }
-
-      new UShortConstantNoDataArrayTile(shortArray, cols, rows)
-    }
 }
