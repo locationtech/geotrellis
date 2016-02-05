@@ -23,47 +23,6 @@ import geotrellis.raster.histogram.Histogram
 import java.util.Locale
 
 
-class ColorSpec[A] extends Serializable {
-  private val classifications = mutable.Map[A, Int]()
-  private var noDataColor: Option[Int] = None
-
-  def classify(classBoundary: A, classColor: Color): ColorSpec[A] = {
-    classifications(classBoundary) = classColor.get
-    this  // For chaining multiple classifications together
-  }
-
-  def setNoDataColor(color: Color): ColorSpec[A] = {
-    noDataColor = Some(color.get)
-    this
-  }
-
-  lazy val length = classifications.keys.size
-
-  def mapColors(f: Int => Int): ColorSpec[A] =
-    ColorSpec(classifications.mapValues(f).toMap, noDataColor.map(f))
-
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
-    ColorMap(classifications.keys, classifications.values, options)
-
-  def getNoDataColor = noDataColor
-
-  def breaks: Array[A] = classifications.keys.toArray
-
-  def colors: Array[Int] = classifications.values.toArray
-}
-
-
-object ColorSpec {
-  def apply[A](m: Map[A, Int], noDataColor: Option[Int] = None): ColorSpec[A] = {
-    val cspec = new ColorSpec[A]
-    m.toArray.map { case classification: (A, Int) =>
-      cspec.classify(classification._1, classification._2)
-    }
-    cspec
-  }
-}
-
-
 /**
   * ColorBreaks describes a way to render a raster into a colored image.
 trait ColorBreaks extends Serializable {

@@ -16,12 +16,13 @@
 
 package geotrellis.raster.render.png
 
+import geotrellis.raster.render._
 
 sealed abstract class PngColorEncoding(val n:Byte, val depth:Int)
 
 // greyscale and color opaque rasters
-case class GreyPngEncoding(transparent:Int) extends PngColorEncoding(0, 1)
-case class RgbPngEncoding(transparent:Int) extends PngColorEncoding(2, 3)
+case class GreyPngEncoding(transparent: Option[Int]) extends PngColorEncoding(0, 1)
+case class RgbPngEncoding(transparent: Option[Int]) extends PngColorEncoding(2, 3)
 
 // indexed color, using separate rgb and alpha channels
 case class IndexedPngEncoding(rgbs:Array[Int], as:Array[Int]) extends PngColorEncoding(3, 1)
@@ -32,8 +33,8 @@ case object RgbaPngEncoding extends PngColorEncoding(6, 4)
 
 
 object PngColorEncoding {
-  def fromColorSpec(cs: ColorSpec): PngColorEncoding = {
-    val len = cs.length
+  def fromRasterColorClassifier(rcc: RasterColorClassifier[_, Color]): PngColorEncoding = {
+    val len = rcc.length
     if(len <= 256) {
       val indices = (0 until len).toArray
       val rgbs = new Array[Int](256)
@@ -41,9 +42,9 @@ object PngColorEncoding {
 
       var i = 0
       while (i < len) {
-        val c = cs.colors(i)
-        rgbs(i) = c >> 8
-        as(i) = c & 0xff
+        val c = rcc.colors(i)
+        rgbs(i) = c.get
+        as(i) = c.alpha
         i += 1
       }
       rgbs(255) = 0
@@ -54,16 +55,16 @@ object PngColorEncoding {
       var grey = true
       var i = 0
       while (i < len) {
-        val c = cs.colors(i)
-        opaque &&= Color.isOpaque(c)
-        grey &&= Color.isGrey(c)
+        val c = rcc.colors(i)
+        opaque &&= c.isOpaque
+        grey &&= c.isGrey
         i += 1
       }
 
       if (grey && opaque) {
-        GreyPngEncoding(nodata)
+        GreyPngEncoding(rcc.getNoDataColor)
       } else if (opaque) {
-        RgbPngEncoding(nodata)
+        RgbPngEncoding(rcc.getNoDataColor)
       } else if (grey) {
         GreyaPngEncoding
       } else {

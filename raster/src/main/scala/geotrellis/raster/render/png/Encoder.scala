@@ -72,29 +72,33 @@ case class PngEncoder(settings: Settings) {
 
   def writeBackgroundInfo(dos: DataOutputStream) {
     settings.colorType match {
-      case Grey(ndColor) => {
+      case GreyPngEncoding(ndColorOption) => {
         // write a single 2-byte color value
         // our data is presumed to be in RGBA
-        val cTRNS = new Chunk(TRNS)
-        cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(ndColor, 8))
-        cTRNS.writeTo(dos)
+          ndColorOption map { ndColor =>
+          val cTRNS = new Chunk(TRNS)
+          cTRNS.writeByte(0x00)
+          cTRNS.writeByte(shift(ndColor, 8))
+          cTRNS.writeTo(dos)
+        }
       }
 
-      case Rgb(ndColor) => {
+      case RgbPngEncoding(ndColorOption) => {
         // write three 2-byte color values
         // our data is presumed to be in RGBA
-        val cTRNS = new Chunk(TRNS)
-        cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(ndColor, 24))
-        cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(ndColor, 16))
-        cTRNS.writeByte(0x00)
-        cTRNS.writeByte(shift(ndColor, 8))
-        cTRNS.writeTo(dos)
+        ndColorOption map { ndColor =>
+          val cTRNS = new Chunk(TRNS)
+          cTRNS.writeByte(0x00)
+          cTRNS.writeByte(shift(ndColor, 24))
+          cTRNS.writeByte(0x00)
+          cTRNS.writeByte(shift(ndColor, 16))
+          cTRNS.writeByte(0x00)
+          cTRNS.writeByte(shift(ndColor, 8))
+          cTRNS.writeTo(dos)
+        }
       }
 
-      case Indexed(rgbs, alphas) => {
+      case IndexedPngEncoding(rgbs, alphas) => {
         // write 3-byte RGB values for every index entry
         val cPLTE = new Chunk(PLTE)
         rgbs.foreach {
@@ -111,8 +115,8 @@ case class PngEncoder(settings: Settings) {
         cTRNS.writeTo(dos)
       }
 
-      case Greya => {}
-      case Rgba => {}
+      case GreyaPngEncoding => {}
+      case RgbaPngEncoding => {}
     }
   }
 
