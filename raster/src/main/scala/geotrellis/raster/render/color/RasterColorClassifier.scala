@@ -24,51 +24,76 @@ import java.util.Locale
 
 import scala.reflect.ClassTag
 
-class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializable {
-  type Classification = (A, Int)
-  private val classificationBoundaries = mutable.ArrayBuffer[A]()
-  private val classificationColors = mutable.ArrayBuffer[C]()
-  private var noDataColor: Option[Int] = None
+abstract class ColorClassifier extends Serializable {
+  type Classification = (Double, Int)
+  protected val classificationBoundaries = mutable.ArrayBuffer[Double]()
+  protected val classificationColors = mutable.ArrayBuffer[RGBA]()
+  protected var noDataColor: Option[RGBA] = None
 
-  def classify(classBoundary: A, classColor: C): RasterColorClassifier[A, C] = {
-    classificationBoundary.append(classBoundary)
-    classificationColors.append(classColor.x)
+  lazy val length = classificationBoundaries.size
+  def getBounds: Array[Double] = classificationBoundaries.toArray
+  def getColors: Array[RGBA] = classificationColors.toArray
+  def getNoDataColor = noDataColor
+  def normalize: SafeColorClassifier
+
+  def classify(classBoundary: Double, classColor: RGBA): ColorClassifier
+  def setNoDataColor(color: RGBA): ColorClassifier
+  def mapColors(f: RGBA => RGBA): ColorClassifier
+
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
+    ColorMap(getBounds, getColors.map(_.get), options)
+}
+
+class SafeColorClassifier extends ColorClassifier {
+
+  def classify(classBoundary: Double, classColor: RGBA): ColorClassifier = {
+    classificationBoundaries.append(classBoundary)
+    classificationColors.append(classColor)
     this  // For chaining multiple classifications together
   }
 
-  def setNoDataColor(color: C): RasterColorClassifier[A, C] = {
+  def setNoDataColor(color: RGBA): SafeColorClassifier = {
     noDataColor = Some(color)
     this
   }
 
-  lazy val length = classificationBoundaries.size
+  def mapColors(f: RGBA => RGBA): SafeColorClassifier =
+    SafeColorClassifier(getBounds zip getColors.map(f), noDataColor.map(f))
 
-  def mapColors(f: Int => Int): RasterColorClassifier[A, C] =
-    RasterColorClassifier(bounds zip colors.map(f), noDataColor.map(f))
+  def normalize: SafeColorClassifier = this
 
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
-    ColorMap(classifications._1, classifications._2, options)
+}
 
-  def getNoDataColor = noDataColor
+class BlendingColorClassifier extends ColorClassifier {
 
-  def bounds: Array[A] = classificationBoundaries.toArray
+  def classify(classBoundary: Double, classColor: RGBA): BlendingColorClassifier = {
+    classificationBoundaries.append(classBoundary)
+    classificationColors.append(classColor)
+    this  // For chaining multiple classifications together
+  }
 
-  def colors: Array[C] = classificationColors.toArray
+  def setNoDataColor(color: RGBA): BlendingColorClassifier = {
+    noDataColor = Some(color)
+    this
+  }
+
+  def mapColors(f: RGBA => RGBA): BlendingColorClassifier =
+    BlendingColorClassifier(getBounds zip getColors.map(f), noDataColor.map(f))
 
   /**
     * If the count of colors doesn't match the count of classification boundaries, produce a
-    * RasterColorClassification which either interpolates or properly subsets the colors so as
+    * ColorClassification which either interpolates or properly subsets the colors so as
     * to have an equal count of boundaries and colors
   **/
-  def normalize: RasterColorClassifier[A, C] = {
+  def normalize: SafeColorClassifier = {
     if (classificationBoundaries.size < classificationColors.size) {
-      val newColors = spread(colors, classificationBoundaries.size)
-      RasterColorClassifier(bounds zip newColors, noDataColor)
+      val newColors = spread(getColors, classificationBoundaries.size)
+      SafeColorClassifier(getBounds zip newColors, noDataColor)
     } else if (classificationBoundaries.size > classificationColors.size) {
-      val newColors = chooseColors(colors, classificationBoundaries.size)
-      RasterColorClassifier(bounds zip newColors, noDataColor)
+      val newColors = chooseColors(getColors, classificationBoundaries.size)
+      SafeColorClassifier(getBounds zip newColors, noDataColor)
     } else {
-      this
+      SafeColorClassifier(getBounds zip getColors, noDataColor)
     }
   }
 
@@ -76,7 +101,7 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
     * This method is used for cases in which we are provided with a different
     * number of colors than we need.  This method will return a smaller list
     * of colors the provided list of colors, spaced out amongst the provided
-    * color list.  
+    * color list.
     *
     * For example, if we are provided a list of 9 colors on a red
     * to green gradient, but only need a list of 3, we expect to get back a 
@@ -86,17 +111,17 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
     * @param colors  Provided RGBA color values
     * @param n       Length of list to return
     */
-  def spread(c: Array[C], n: Int): Array[C] = {
-    if (c.length == n) return colors
+  def spread(colors: Array[RGBA], n: Int): Array[RGBA] = {
+    if (colors.length == n) return colors
 
-    val colors2 = new Array[C](n)
-    colors2(0) = c(0)
+    val colors2 = new Array[RGBA](n)
+    colors2(0) = colors(0)
 
     val b = n - 1
-    val c = c.length - 1
+    val color = colors.length - 1
     var i = 1
     while (i < n) {
-      colors2(i) = c(math.round(i.toDouble * c / b).toInt)
+      colors2(i) = colors(math.round(i.toDouble * color / b).toInt)
       i += 1
     }
 
@@ -104,12 +129,12 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
   }
 
   // Interpolation logic
-  def blend(start: C, end: C, numerator: Int, denominator: Int): C = {
+  def blend(start: Int, end: Int, numerator: Int, denominator: Int): Int = {
     start + (((end - start) * numerator) / denominator)
   }
 
-  def chooseColors(c: Array[C], numColors: Int): Array[C] =
-    getColorSequence(numColors) { (masker: C => Int, count: Int) =>
+  def chooseColors(c: Array[RGBA], numColors: Int): Array[RGBA] =
+    getColorSequence(numColors) { (masker: RGBA => Int, count: Int) =>
       val hues = c.map(masker)
       val mult = c.length - 1
       val denom = count - 1
@@ -117,7 +142,7 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
       if (count < 2) {
         Array(hues(0))
       } else {
-        val ranges = new Array[C](count)
+        val ranges = new Array[Int](count)
         var i = 0
         while (i < count) {
           val j = (i * mult) / denom
@@ -132,8 +157,8 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
       }
     }
 
-  def chooseColors(color1: C, color2: C, numColors: Int): Array[C] =
-    getColorSequence(numColors) { (masker: C => Int, count: Int) =>
+  def chooseColors(color1: RGBA, color2: RGBA, numColors: Int): Array[RGBA] =
+    getColorSequence(numColors) { (masker: RGBA => Int, count: Int) =>
       val start = masker(color1)
       val end   = masker(color2)
       if (numColors < 2) {
@@ -150,20 +175,20 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
     }
 
   /** Returns a sequence of RGBA integer values */
-  def getColorSequence(n: Int)(getRanges: (C => Int, Int) => Array[Int]): Array[Int] = {
-    val unzipR = { color: C => color.red }
-    val unzipG = { color: C => color.green }
-    val unzipB = { color: C => color.blue }
-    val unzipA = { color: C => color.alpha }
+  def getColorSequence(n: Int)(getRanges: (RGBA => Int, Int) => Array[Int]): Array[RGBA] = {
+    val unzipR = { color: RGBA => color.red }
+    val unzipG = { color: RGBA => color.green }
+    val unzipB = { color: RGBA => color.blue }
+    val unzipA = { color: RGBA => color.alpha }
     val rs = getRanges(unzipR, n)
     val gs = getRanges(unzipG, n)
     val bs = getRanges(unzipB, n)
     val as = getRanges(unzipA, n)
 
-    val theColors = new Array[Int](n)
+    val theColors = new Array[RGBA](n)
     var i = 0
     while (i < n) {
-      theColors(i) = RGBA(rs(i), gs(i), bs(i), as(i)).x
+      theColors(i) = RGBA(rs(i), gs(i), bs(i), as(i))
       i += 1
     }
     theColors
@@ -171,10 +196,20 @@ class RasterColorClassifier[A: ClassTag, C <: Color: ClassTag] extends Serializa
 }
 
 
-object RasterColorClassifier {
-  def apply[A: ClassTag, C <: Color: ClassTag](classifications: Array[(A, C)], noDataColor: Option[Int] = None): RasterColorClassifier[A, C] = {
-    val colorClassifier = new RasterColorClassifier[A, C]
-    classifications map { case classification: (A, C) =>
+object BlendingColorClassifier {
+  def apply(classifications: Array[(Double, RGBA)], noDataColor: Option[RGBA] = None): BlendingColorClassifier = {
+    val colorClassifier = new BlendingColorClassifier
+    classifications foreach { case classification: (Double, RGBA) =>
+      colorClassifier.classify(classification._1, classification._2)
+    }
+    colorClassifier
+  }
+}
+
+object SafeColorClassifier {
+  def apply(classifications: Array[(Double, RGBA)], noDataColor: Option[RGBA] = None): SafeColorClassifier = {
+    val colorClassifier = new SafeColorClassifier
+    classifications foreach { case classification: (Double, RGBA) =>
       colorClassifier.classify(classification._1, classification._2)
     }
     colorClassifier

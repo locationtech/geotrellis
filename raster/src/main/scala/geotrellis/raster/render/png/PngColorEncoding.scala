@@ -33,8 +33,8 @@ case object RgbaPngEncoding extends PngColorEncoding(6, 4)
 
 
 object PngColorEncoding {
-  def fromRasterColorClassifier(rcc: RasterColorClassifier[_, Color]): PngColorEncoding = {
-    val len = rcc.length
+  def fromRasterColorClassifier(cc: ColorClassifier): PngColorEncoding = {
+    val len = cc.length
     if(len <= 256) {
       val indices = (0 until len).toArray
       val rgbs = new Array[Int](256)
@@ -42,7 +42,7 @@ object PngColorEncoding {
 
       var i = 0
       while (i < len) {
-        val c = rcc.colors(i)
+        val c = cc.getColors(i)
         rgbs(i) = c.get
         as(i) = c.alpha
         i += 1
@@ -55,16 +55,16 @@ object PngColorEncoding {
       var grey = true
       var i = 0
       while (i < len) {
-        val c = rcc.colors(i)
+        val c = cc.getColors(i)
         opaque &&= c.isOpaque
         grey &&= c.isGrey
         i += 1
       }
 
       if (grey && opaque) {
-        GreyPngEncoding(rcc.getNoDataColor)
+        GreyPngEncoding(cc.getNoDataColor.map(_.x))
       } else if (opaque) {
-        RgbPngEncoding(rcc.getNoDataColor)
+        RgbPngEncoding(cc.getNoDataColor.map(_.x))
       } else if (grey) {
         GreyaPngEncoding
       } else {
