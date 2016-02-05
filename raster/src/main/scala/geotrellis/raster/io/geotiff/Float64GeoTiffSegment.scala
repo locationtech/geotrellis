@@ -23,32 +23,6 @@ abstract class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegm
   protected def intToDoubleOut(v: Int): Double
   protected def doubleToDoubleOut(v: Double): Double
 
-  def convert(cellType: CellType): Array[Byte] =
-    cellType match {
-      case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
-      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType =>
-        val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = d2b(get(i)) }
-        arr
-      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType =>
-        val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = d2s(get(i)) }
-        arr.toArrayByte()
-      case IntConstantNoDataCellType =>
-        val arr = Array.ofDim[Int](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
-        arr.toArrayByte()
-      case FloatConstantNoDataCellType =>
-        val arr = Array.ofDim[Float](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = d2f(get(i)) }
-        arr.toArrayByte()
-      case DoubleConstantNoDataCellType =>
-        bytes
-    }
-
   def map(f: Int => Int): Array[Byte] = {
     val arr = Array.ofDim[Double](size)
     cfor(0)(_ < size, _ + 1) { i =>

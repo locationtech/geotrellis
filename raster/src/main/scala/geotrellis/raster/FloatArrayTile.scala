@@ -117,7 +117,7 @@ object FloatArrayTile {
         new FloatUserDefinedNoDataArrayTile(Array.ofDim[Float](cols * rows).fill(v), cols, rows, udct)
     }
 
-  def constructFloatArray(bytes: Array[Byte]): Array[Float] = {
+  private def constructFloatArray(bytes: Array[Byte]): Array[Float] = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val floatBuffer = byteBuffer.asFloatBuffer()
     val floatArray = new Array[Float](bytes.size / FloatConstantNoDataCellType.bytes)

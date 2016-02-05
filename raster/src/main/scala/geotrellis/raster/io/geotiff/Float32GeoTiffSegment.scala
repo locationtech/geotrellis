@@ -22,37 +22,6 @@ abstract class Float32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegm
   protected def intToFloatOut(v: Int): Float
   protected def doubleToFloatOut(v: Double): Float
 
-  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte]
-  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte]
-
-  def convert(cellType: CellType): Array[Byte] =
-    cellType match {
-      case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
-      case ByteCellType | UByteCellType =>
-        val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = f2b(get(i)) }
-        arr
-      case ShortCellType | UShortCellType =>
-        val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = f2s(get(i)) }
-        arr.toArrayByte()
-      case IntCellType =>
-        val arr = Array.ofDim[Int](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
-        arr.toArrayByte()
-      case FloatCellType | UIntCellType =>
-        bytes
-      case DoubleCellType =>
-        val arr = Array.ofDim[Double](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
-        arr.toArrayByte()
-      case cct: ConstantNoData => convertToConstantNoData(cct)
-      case udct: UserDefinedNoData[_] => convertToUserDefinedNoData(udct)
-    }
-
   def map(f: Int => Int): Array[Byte] = {
     val arr = Array.ofDim[Float](size)
     cfor(0)(_ < size, _ + 1) { i =>

@@ -45,7 +45,7 @@ object ByteArrayTile {
   def apply(arr: Array[Byte], cols: Int, rows: Int): ByteArrayTile =
     apply(arr, cols, rows, ByteConstantNoDataCellType)
 
-  def apply(arr: Array[Byte], cols: Int, rows: Int, cellType: CellType with ByteCells): ByteArrayTile =
+  def apply(arr: Array[Byte], cols: Int, rows: Int, cellType: ByteCells with NoDataHandling): ByteArrayTile =
     cellType match {
       case ByteCellType =>
         new ByteRawArrayTile(arr, cols, rows)

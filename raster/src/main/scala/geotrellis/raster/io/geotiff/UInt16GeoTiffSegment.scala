@@ -23,27 +23,6 @@ abstract class UInt16GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegme
   protected def intToUShortOut(v: Int): Short
   protected def doubleToUShortOut(v: Double): Short
 
-  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte]
-  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte]
-
-  def convert(cellType: CellType): Array[Byte] =
-    cellType match {
-      case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
-      case ByteCellType | UByteCellType =>
-        val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getRaw(i).toByte }
-        arr
-      case ShortCellType | UShortCellType =>
-        bytes
-      case cct: ConstantNoData =>
-        convertToConstantNoData(cct)
-      case udct: UserDefinedNoData[_] =>
-        convertToUserDefinedNoData(udct)
-    }
-
   def map(f: Int => Int): Array[Byte] = {
     val arr = Array.ofDim[Short](size)
     cfor(0)(_ < size, _ + 1) { i =>

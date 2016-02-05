@@ -34,8 +34,15 @@ object RLECompressor extends Compressor {
 
             putCount(canCountWithChar, count, bb)
 
-            if (tile.cellType == DoubleConstantNoDataCellType) putDouble(c, bb)
-            else putFloat(c.toFloat, bb)
+            tile.cellType match {
+              case ct: ByteCells => bb += c.toByte
+              case ct: UByteCells => bb += c.toByte
+              case ct: ShortCells => putShort(c.toShort, bb)
+              case ct: UShortCells => putShort(c.toShort, bb)
+              case ct: IntCells => putInt(c.toInt, bb)
+              case ct: FloatCells => putFloat(c.toFloat, bb)
+              case ct: DoubleCells => putDouble(c, bb)
+            }
           }
         } else {
           val array = tile.toArray
@@ -49,9 +56,15 @@ object RLECompressor extends Compressor {
 
             putCount(canCountWithChar, count, bb)
 
-            if (tile.cellType == IntConstantNoDataCellType) putInt(c, bb)
-            else if (tile.cellType == ShortConstantNoDataCellType) putShort(c.toShort, bb)
-            else bb += c.toByte
+            tile.cellType match {
+              case ct: ByteCells => bb += c.toByte
+              case ct: UByteCells => bb += c.toByte
+              case ct: ShortCells => putShort(c.toShort, bb)
+              case ct: UShortCells => putShort(c.toShort, bb)
+              case ct: IntCells => putInt(c, bb)
+              case ct: FloatCells => putFloat(c.toFloat, bb)
+              case ct: DoubleCells => putDouble(c.toDouble, bb)
+            }
           }
         }
 

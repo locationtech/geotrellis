@@ -25,6 +25,7 @@ import com.typesafe.config.ConfigFactory
 
 import java.io.File
 import java.nio.ByteBuffer
+import java.lang.IllegalArgumentException
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */
@@ -49,7 +50,7 @@ object ArgReader {
         case "int32" => IntConstantNoDataCellType
         case "float32" => FloatConstantNoDataCellType
         case "float64" => DoubleConstantNoDataCellType
-        case s => sys.error("unsupported datatype '%s'" format s)
+        case s => throw new IllegalArgumentException(s"Unsupported datatype $s")
       }
 
     val xmin = json.getDouble("xmin")
@@ -73,6 +74,7 @@ object ArgReader {
         case IntConstantNoDataCellType => Raster(IntConstantTile(d2i(v), cols, rows), extent)
         case FloatConstantNoDataCellType => Raster(FloatConstantTile(d2f(v), cols, rows), extent)
         case DoubleConstantNoDataCellType => Raster(DoubleConstantTile(v, cols, rows), extent)
+        case _ => throw new IllegalArgumentException(s"Unsupported datatype $cellType")
       }
     } else {
 
@@ -172,6 +174,7 @@ object ArgReader {
         val resampled = Array.ofDim[Double](cols*rows).fill(Double.NaN)
         ResampleAssign(re, targetRe, new DoubleBufferResampleAssign(buffer, resampled))
         DoubleArrayTile(resampled, cols, rows)
+      case _ => throw new IllegalArgumentException(s"Unsupported datatype $cellType")
     }
   }
 }

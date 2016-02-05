@@ -29,31 +29,6 @@ class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends Ge
     ((invertByte(bytes(i2 >> 3)) >> (i2 & 7)) & 1).asInstanceOf[Byte]
   }
 
-  def convert(cellType: CellType): Array[Byte] =
-    cellType match {
-      case BitCellType => bytes
-      case ByteConstantNoDataCellType | UByteConstantNoDataCellType | ByteCellType | UByteCellType | ByteUserDefinedNoDataCellType(_) | UByteUserDefinedNoDataCellType(_) =>
-        val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i) }
-        arr
-      case ShortConstantNoDataCellType | UShortConstantNoDataCellType | ShortCellType | UShortCellType | ShortUserDefinedNoDataCellType(_) | UShortUserDefinedNoDataCellType(_) =>
-        val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toShort }
-        arr.toArrayByte()
-      case IntConstantNoDataCellType | IntCellType | IntUserDefinedNoDataCellType(_) =>
-        val arr = Array.ofDim[Int](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i) }
-        arr.toArrayByte()
-      case FloatConstantNoDataCellType | FloatCellType | FloatUserDefinedNoDataCellType(_) =>
-        val arr = Array.ofDim[Float](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toFloat }
-        arr.toArrayByte()
-      case DoubleConstantNoDataCellType | DoubleCellType | DoubleUserDefinedNoDataCellType(_) =>
-        val arr = Array.ofDim[Double](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = getDouble(i) }
-        arr.toArrayByte()
-    }
-
   def map(f: Int => Int): Array[Byte] = {
     val arr = bytes.clone
     val f0 = f(0) & 1

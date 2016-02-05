@@ -4,8 +4,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.compression._
 
-import java.util.BitSet
-
 import spire.syntax.cfor._
 
 
@@ -19,25 +17,6 @@ abstract class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment
 
   protected def intToByteOut(v: Int): Byte
   protected def doubleToByteOut(v: Double): Byte
-
-  protected def convertToUserDefinedNoData(cellType: DataType with UserDefinedNoData[_]): Array[Byte]
-  protected def convertToConstantNoData(cellType: DataType with ConstantNoData): Array[Byte]
-
-  def convert(cellType: CellType): Array[Byte] =
-    cellType match {
-      case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((get(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
-      case ByteCellType | UByteCellType =>
-        bytes
-      case ShortCellType | UShortCellType =>
-        val arr = Array.ofDim[Short](size)
-        cfor(0)(_ < size, _ + 1) { i => arr(i) = get(i).toShort }
-        arr.toArrayByte()
-      case cct: ConstantNoData => convertToConstantNoData(cct)
-      case udct: UserDefinedNoData[_] => convertToUserDefinedNoData(udct)
-    }
 
   def map(f: Int => Int): Array[Byte] = {
     val arr = bytes.clone

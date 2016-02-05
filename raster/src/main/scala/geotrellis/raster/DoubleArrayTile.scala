@@ -69,7 +69,7 @@ object DoubleArrayTile {
   def apply(arr: Array[Double], cols: Int, rows: Int): DoubleArrayTile =
     apply(arr, cols, rows, DoubleConstantNoDataCellType)
 
-  def apply(arr: Array[Double], cols: Int, rows: Int, cellType: CellType with DoubleCells): DoubleArrayTile =
+  def apply(arr: Array[Double], cols: Int, rows: Int, cellType: DoubleCells with NoDataHandling): DoubleArrayTile =
     cellType match {
       case DoubleCellType =>
         new DoubleRawArrayTile(arr, cols, rows)
