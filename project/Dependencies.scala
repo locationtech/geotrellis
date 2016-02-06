@@ -26,7 +26,7 @@ object Dependencies {
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % Version.monocle
   val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % Version.monocle
 
-  val openCSV       = "net.sf.opencsv" % "opencsv"      % "2.3"
+  val openCSV       = "com.opencsv" % "opencsv" % "3.4"
 
   val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
