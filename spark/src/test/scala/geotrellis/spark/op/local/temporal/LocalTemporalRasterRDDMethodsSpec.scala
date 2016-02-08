@@ -77,7 +77,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
 
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(9, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-      val res = rasterRDD.minimum.per (3) ("years") from (start) to (end)
+      val res = rasterRDD.withContext(_.minimum.per (3) ("years") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
@@ -99,7 +99,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val periodStep = 5
-      val res = rasterRDD.maximum.per (periodStep) ("months") from (start) to (end)
+      val res = rasterRDD.withContext(_.maximum.per (periodStep) ("months") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
@@ -121,7 +121,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val windowSize = 7
-      val res = rasterRDD.average.per (windowSize) ("days") from (start) to (end)
+      val res = rasterRDD.withContext(_.average.per (windowSize) ("days") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
@@ -140,7 +140,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val windowSize = 3
-      val res = rasterRDD.variance.per (windowSize) ("hours") from (start) to (end)
+      val res = rasterRDD.withContext(_.variance.per (windowSize) ("hours") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 

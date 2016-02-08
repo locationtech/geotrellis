@@ -6,6 +6,7 @@ import geotrellis.graph.op._
 import geotrellis.raster._
 
 import geotrellis.vector.Line
+import org.apache.spark.Partitioner
 
 import org.apache.spark.graphx._
 
@@ -57,7 +58,7 @@ trait GraphRDDMethods[K] {
     (vertexId: VertexId) => (vertexId % totalCols, vertexId / totalCols)
   }
 
-  def toRaster: RDD[(K, Tile)] with Metadata[RasterMetaData] = {
+  def toRaster(partitioner: Option[Partitioner] = None): RDD[(K, Tile)] with Metadata[RasterMetaData] = {
     val metaData = graphRDD.metaData
 
     val tileLayout = metaData.tileLayout
@@ -78,21 +79,22 @@ trait GraphRDDMethods[K] {
       ((col, row), k)
     })
 
-    val resRDD: RDD[(K, Tile)] = keysAsPairRDD
-      .join(verticesGroupedByTile)
-      .map { case(_, (key, iter)) =>
-        val in = iter.toArray
-        val tile = ArrayTile.empty(DoubleConstantNoDataCellType, tileCols, tileRows)
-        cfor(0)(_  < in.size, _ + 1) { i =>
-          val ((c, r), v) = in(i)
-          val (tileCol, tileRow) = ((c % tileCols).toInt, (r % tileRows).toInt)
-          val idx = tileRow * tileCols + tileCol
+    val resRDD: RDD[(K, Tile)] =
+      partitioner
+        .fold(keysAsPairRDD.join(verticesGroupedByTile))(keysAsPairRDD.join(verticesGroupedByTile, _))
+        .map { case (_, (key, iter)) =>
+          val in = iter.toArray
+          val tile = ArrayTile.empty(DoubleConstantNoDataCellType, tileCols, tileRows)
+          cfor(0)(_ < in.size, _ + 1) { i =>
+            val ((c, r), v) = in(i)
+            val (tileCol, tileRow) = ((c % tileCols).toInt, (r % tileRows).toInt)
+            val idx = tileRow * tileCols + tileCol
 
-          tile.updateDouble(idx, v)
+            tile.updateDouble(idx, v)
+          }
+
+          (key, tile)
         }
-
-        (key, tile)
-    }
 
     (resRDD, metaData)
   }

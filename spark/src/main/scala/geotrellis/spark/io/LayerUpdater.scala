@@ -12,7 +12,8 @@ abstract class LayerUpdater[ID, K: Boundable, V, M] {
 
   def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, M, Container], rdd: Container)
                  (merge: (Container, Container) => Container) = {
-    val existing = reader.query(id).where(Intersects(implicitly[Boundable[K]].getKeyBounds(rdd))).toRDD
+    val bounds = implicitly[Boundable[K]].collectBounds(rdd)
+    val existing = reader.query(id).where(Intersects(bounds)).toRDD
     update(id, merge(existing, rdd))
   }
 }

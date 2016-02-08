@@ -25,11 +25,11 @@ package object io {
   class LayerNotFoundError(layerId: LayerId)
     extends CatalogError(s"Layer $layerId not found in the catalog")
 
-  class LayerWriteError(layerId: LayerId)
-    extends CatalogError(s"Failed to write $layerId")
+  class LayerWriteError(layerId: LayerId, message: String = "")
+    extends CatalogError(s"Failed to write $layerId" + (if (message.nonEmpty) ": " + message else message))
 
   class LayerUpdateError(layerId: LayerId, message: String = "")
-    extends CatalogError(s"Failed to update $layerId $message")
+    extends CatalogError(s"Failed to update $layerId $message" + (if (message.nonEmpty) ": " + message else message))
 
   class LayerDeleteError(layerId: LayerId)
     extends CatalogError(s"Failed to delete $layerId")

@@ -1,19 +1,19 @@
 package geotrellis.spark.op.local.spatial
 
-import geotrellis.raster.{ArrayTile, Tile}
+import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.vector._
+import scala.reflect.ClassTag
 
-abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterRDDMethods[K] with Serializable {
+abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
 
   /** Masks this raster by the given Polygon. */
   def mask(geom: Polygon): RasterRDD[K] = mask(Seq(geom), Options.DEFAULT)
 
-  def mask(geom: Polygon, options: Options): RasterRDD[K] =
-    mask(Seq(geom), options)
+  def mask(geom: Polygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
 
   /** Masks this raster by the given Polygons. */
   def mask(geoms: Traversable[Polygon]): RasterRDD[K] = mask(geoms, Options.DEFAULT)
@@ -30,11 +30,10 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterR
   /** Masks this raster by the given MultiPolygon. */
   def mask(geom: MultiPolygon): RasterRDD[K] = mask(geom, Options.DEFAULT)
 
-  def mask(geom: MultiPolygon, options: Options): RasterRDD[K] =
-    mask(Seq(geom), options)
+  def mask(geom: MultiPolygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
 
   /** Masks this raster by the given MultiPolygons. */
-  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RasterRDD[K] =
+  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit) =
     _mask { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.safeIntersection(tileExtent).toGeometry()
@@ -44,7 +43,7 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterR
     }
 
   /** Masks this raster by the given Extent. */
-  def mask(ext: Extent, options: Options = Options.DEFAULT): RasterRDD[K] =
+  def mask(ext: Extent, options: Options = Options.DEFAULT) =
     _mask { case (tileExtent, tile) =>
       val tileExts = ext.intersection(tileExtent)
       tileExts match {
@@ -76,14 +75,16 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent] extends RasterR
     }
   }
 
-  private def _mask(masker: (Extent, Tile) => Tile): RasterRDD[K] = {
-    val mapTransform = rasterRDD.metaData.mapTransform
-    rasterRDD.mapPairs { case (k, tile) =>
-      val key = k.spatialComponent
-      val tileExtent = mapTransform(key)
-      val result = masker(tileExtent, tile)
-      (k, result)
-    }
+  private def _mask(masker: (Extent, Tile) => Tile) = {
+    val mapTransform = self.metaData.mapTransform
+    val rdd =
+      self.map { case (k, tile) =>
+        val key = k.spatialComponent
+        val tileExtent = mapTransform(key)
+        val result = masker(tileExtent, tile)
+        (k, result)
+      }
+    ContextRDD(rdd, self.metadata)
   }
 
 }

@@ -16,7 +16,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with TestEngine
-    with GeoTiffTestUtils 
+    with GeoTiffTestUtils
     with TileBuilders {
 
   override def afterAll = purge
@@ -24,7 +24,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
   describe ("GeoTiffMultiBandTile creation") {
 
     it("should create GeoTiffMultiBandTile from ArrayMultiBandTile") {
-      val original = 
+      val original =
         ArrayMultiBandTile(
           ArrayTile(Array.ofDim[Int](15*10).fill(1), 15, 10),
           ArrayTile(Array.ofDim[Int](15*10).fill(2), 15, 10),
@@ -39,7 +39,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
 
     it("should create GeoTiffMultiBandTile from large Float32 ArrayMultiBandTile for Striped") {
-      val original = 
+      val original =
         ArrayMultiBandTile(
           ArrayTile(Array.ofDim[Float](150*140).fill(1.0f), 150, 140),
           ArrayTile(Array.ofDim[Float](150*140).fill(2.0f), 150, 140),
@@ -54,7 +54,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
 
     it("should create GeoTiffMultiBandTile from large Float32 ArrayMultiBandTile for Tiled") {
-      val original = 
+      val original =
         ArrayMultiBandTile(
           ArrayTile(Array.ofDim[Float](150*140).fill(1.0f), 150, 140),
           ArrayTile(Array.ofDim[Float](150*140).fill(2.0f), 150, 140),
@@ -69,7 +69,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
 
     it("should create GeoTiffMultiBandTile from large Short ArrayMultiBandTile for Tiled") {
-      val original = 
+      val original =
         ArrayMultiBandTile(
           RawArrayTile(Array.ofDim[Short](150*140).fill(1.toShort), 150, 140),
           RawArrayTile(Array.ofDim[Short](150*140).fill(2.toShort), 150, 140),
@@ -89,7 +89,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val band1 = ArrayTile( (0 until (3000)).map(_.toDouble).toArray, 50, 60)
       val band2 = ArrayTile( (3000 until (6000)).map(_.toDouble).toArray, 50, 60)
       val band3 = ArrayTile( (6000 until (9000)).map(_.toDouble).toArray, 50, 60)
-      val original = 
+      val original =
         ArrayMultiBandTile(
           band1,
           band2,
@@ -107,6 +107,50 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       assertEqual(actual.band(0), band1)
       assertEqual(actual.band(1), band2)
       assertEqual(actual.band(2), band3)
+    }
+  }
+
+  describe("MutliBand subset methods") {
+
+    it("subset should be inexpensive") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile1 = tile0.subset(List(1, 2, 0))
+
+      tile0.band(0) should be theSameInstanceAs tile1.band(2)
+      tile0.band(1) should be theSameInstanceAs tile1.band(0)
+      tile0.band(2) should be theSameInstanceAs tile1.band(1)
+    }
+
+    it("subset result should have correct bandCount") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile1 = tile0.subset(List(1, 2, 0))
+      val tile2 = tile0.subset(List(1, 2))
+
+      tile1.bandCount should be (3)
+      tile2.bandCount should be (2)
+    }
+
+    it("subset result should work properly with foreach") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile1 = tile0.subset(List(1, 2, 0))
+      val tile2 = tile1.subset(List(1, 2, 0))
+
+      tile0.band(0).foreach { z => z should be (1) }
+      tile0.band(1).foreach { z => z should be (2) }
+      tile0.band(2).foreach { z => z should be (3) }
+      tile1.band(2).foreach { z => z should be (1) }
+      tile1.band(0).foreach { z => z should be (2) }
+      tile1.band(1).foreach { z => z should be (3) }
+      tile2.band(0).foreach { z => z should be (3) }
+      tile2.band(1).foreach { z => z should be (1) }
+      tile2.band(2).foreach { z => z should be (2) }
+    }
+
+    it("should disallow \"invalid\" subsets") {
+      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      an [IllegalArgumentException] should be thrownBy {
+        tile0.subset(0,1,2,3) // There are only 3 bands
+      }
     }
   }
 
@@ -204,7 +248,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       var count = 0
-      tile.foreach(1) { z => 
+      tile.foreach(1) { z =>
         z should be (2)
         count += 1
       }
@@ -219,7 +263,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       var count = 0
-      tile.foreach(1) { z => 
+      tile.foreach(1) { z =>
         z should be (2)
         count += 1
       }
@@ -234,7 +278,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       var count = 0
-      tile.foreach(1) { z => 
+      tile.foreach(1) { z =>
         z should be (2)
         count += 1
       }
@@ -249,7 +293,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       var count = 0
-      tile.foreach(1) { z => 
+      tile.foreach(1) { z =>
         z should be (2)
         count += 1
       }
@@ -264,7 +308,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       val counts = Array.ofDim[Int](3)
-      tile.foreachDouble { (b, z) => 
+      tile.foreachDouble { (b, z) =>
         z should be (b + 1.0)
         counts(b) += 1
       }
@@ -282,7 +326,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       val counts = Array.ofDim[Int](3)
-      tile.foreachDouble { (b, z) => 
+      tile.foreachDouble { (b, z) =>
         z should be (b + 1.0)
         counts(b) += 1
       }
@@ -300,7 +344,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       val counts = Array.ofDim[Int](3)
-      tile.foreachDouble { (b, z) => 
+      tile.foreachDouble { (b, z) =>
         z should be (b + 1.0)
         counts(b) += 1
       }
@@ -318,7 +362,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       val cellCount = tile.band(1).toArray.size
 
       val counts = Array.ofDim[Int](3)
-      tile.foreachDouble { (b, z) => 
+      tile.foreachDouble { (b, z) =>
         z should be (b + 1.0)
         counts(b) += 1
       }
@@ -327,5 +371,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       counts(1)  should be (cellCount)
       counts(2)  should be (cellCount)
     }
+
   }
+
 }
