@@ -9,6 +9,7 @@ import org.apache.avro.generic._
 import org.apache.avro.util.Utf8
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 trait TileCodecs {
   implicit def shortArrayTileCodec: AvroRecordCodec[ShortArrayTile] = new AvroRecordCodec[ShortArrayTile] {
@@ -18,7 +19,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().intType().intDefault(Short.MinValue.toInt)
       .endRecord()
 
     def encode(tile: ShortArrayTile, rec: GenericRecord) = {
@@ -26,7 +27,11 @@ trait TileCodecs {
       rec.put("rows", tile.rows)
       // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
-      rec.put("celltype", tile.cellType.toString)
+      tile.cellType match {
+        case ShortConstantNoDataCellType => rec.put("noDataValue", Short.MinValue.toInt)
+        case ShortUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
+        case ShortCellType => rec.put("noDataValue", null)
+      }
     }
 
     def decode(rec: GenericRecord) = {
@@ -35,8 +40,12 @@ trait TileCodecs {
         .asScala // notice that Avro does not have native support for Short primitive
         .map(_.toShort)
         .toArray
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[ShortCells with NoDataHandling]
+      val cellType = Option(rec[Int]("noDataValue")) match {
+        case Some(nd) if nd == Short.MinValue.toInt => ShortConstantNoDataCellType
+        case Some(nd) => ShortUserDefinedNoDataCellType(nd.toShort)
+        case None => ShortCellType
+      }
+
       ShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
@@ -48,7 +57,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().intType().intDefault(0)
       .endRecord()
 
     def encode(tile: UShortArrayTile, rec: GenericRecord) = {
@@ -56,6 +65,11 @@ trait TileCodecs {
       rec.put("rows", tile.rows)
       // _* expansion is important, otherwise we get List[Array[Short]] instead of List[Short]
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
+      tile.cellType match {
+        case UShortConstantNoDataCellType => rec.put("noDataValue", 0)
+        case UShortUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
+        case UShortCellType => rec.put("noDataValue", null)
+      }
       rec.put("celltype", tile.cellType.toString)
     }
 
@@ -65,8 +79,11 @@ trait TileCodecs {
         .asScala // notice that Avro does not have native support for Short primitive
         .map(_.toShort)
         .toArray
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[UShortCells with NoDataHandling]
+      val cellType = Option(rec[Int]("noDataValue")) match {
+        case Some(nd) if nd == 0 => UShortConstantNoDataCellType
+        case Some(nd) => UShortUserDefinedNoDataCellType(nd.toShort)
+        case None => UShortCellType
+      }
       UShortArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
@@ -78,14 +95,18 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().intType().intDefault(Int.MinValue)
       .endRecord()
 
     def encode(tile: IntArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
-      rec.put("celltype", tile.cellType.toString)
+      tile.cellType match {
+        case IntConstantNoDataCellType => rec.put("noDataValue", 0)
+        case IntUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
+        case IntCellType => rec.put("noDataValue", null)
+      }
     }
 
     def decode(rec: GenericRecord) = {
@@ -93,12 +114,29 @@ trait TileCodecs {
         .asInstanceOf[java.util.Collection[Int]]
         .asScala
         .toArray[Int]
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[IntCells with NoDataHandling]
+      val cellType = Option(rec[Int]("noDataValue")) match {
+        case Some(nd) if isNoData(nd) => IntConstantNoDataCellType
+        case Some(nd) => IntUserDefinedNoDataCellType(nd)
+        case None => IntCellType
+      }
       IntArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
+  /** Avro serialization doesn't support Float.NaN or Double.NaN. Whereas a
+    * union of number and null is sufficient in cases where the nodata value
+    * for some domain is can be serialized (Int.MinValue is just another
+    * integer and, therefore, serializable without difficulty), we are in need
+    * of an alternative strategy for floating point serialization.
+    *
+    * To this end, we've serialized with a union of boolean and floating point
+    * values.
+    * noDataValue can either be:
+    * 1. true (and, therefore, ConstantNoData)
+    * 2. false (NoNoData)
+    * - OR -
+    * 3. a floating point value (which is a UserDefinedNoDataValue's value)
+    */
   implicit def floatArrayTileCodec: AvroRecordCodec[FloatArrayTile] = new AvroRecordCodec[FloatArrayTile] {
     def schema = SchemaBuilder
       .record("FloatArrayTile").namespace("geotrellis.raster")
@@ -106,14 +144,18 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().floatType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().unionOf().booleanType().and().floatType().endUnion().booleanDefault(true)
       .endRecord()
 
     def encode(tile: FloatArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
-      rec.put("celltype", tile.cellType.toString)
+      tile.cellType match {
+        case FloatConstantNoDataCellType => rec.put("noDataValue", true)
+        case FloatUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
+        case FloatCellType => rec.put("noDataValue", false)
+      }
     }
 
     def decode(rec: GenericRecord) = {
@@ -121,12 +163,31 @@ trait TileCodecs {
         .asInstanceOf[java.util.Collection[Float]]
         .asScala
         .toArray[Float]
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[FloatCells with NoDataHandling]
+      val cellType =
+        Try {
+          if (rec[Boolean]("noDataValue") == true) FloatConstantNoDataCellType
+          else FloatCellType
+        } getOrElse {
+          FloatUserDefinedNoDataCellType(rec[Float]("noDataValue"))
+        }
       FloatArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
 
+  /** Avro serialization doesn't support Float.NaN or Double.NaN. Whereas a
+    * union of number and null is sufficient in cases where the nodata value
+    * for some domain is can be serialized (Int.MinValue is just another
+    * integer and, therefore, serializable without difficulty), we are in need
+    * of an alternative strategy for floating point serialization.
+    *
+    * To this end, we've serialized with a union of boolean and floating point
+    * values.
+    * noDataValue can either be:
+    * 1. true (and, therefore, ConstantNoData)
+    * 2. false (NoNoData)
+    * - OR -
+    * 3. a floating point value (which is a UserDefinedNoDataValue's value)
+    */
   implicit def doubleArrayTileCodec: AvroRecordCodec[DoubleArrayTile] = new AvroRecordCodec[DoubleArrayTile] {
     def schema = SchemaBuilder
       .record("DoubleArrayTile").namespace("geotrellis.raster")
@@ -134,14 +195,18 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().doubleType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().unionOf().booleanType().and().doubleType().endUnion().booleanDefault(true)
       .endRecord()
 
     def encode(tile: DoubleArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
-      rec.put("celltype", tile.cellType.toString)
+      tile.cellType match {
+        case DoubleConstantNoDataCellType => rec.put("noDataValue", true)
+        case DoubleUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
+        case DoubleCellType => rec.put("noDataValue", false)
+      }
     }
 
     def decode(rec: GenericRecord) = {
@@ -149,8 +214,13 @@ trait TileCodecs {
         .asInstanceOf[java.util.Collection[Double]]
         .asScala
         .toArray[Double]
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[DoubleCells with NoDataHandling]
+      val cellType =
+        Try {
+          if (rec[Boolean]("noDataValue") == true) DoubleConstantNoDataCellType
+          else DoubleCellType
+        } getOrElse {
+          DoubleUserDefinedNoDataCellType(rec[Double]("noDataValue"))
+        }
       DoubleArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
@@ -162,22 +232,29 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().intType().intDefault(Byte.MinValue.toInt)
       .endRecord()
 
     def encode(tile: ByteArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
       rec.put("cells", ByteBuffer.wrap(tile.array))
-      rec.put("celltype", tile.cellType.toString)
+      tile.cellType match {
+        case ByteConstantNoDataCellType => rec.put("noDataValue", 0.toByte)
+        case ByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
+        case ByteCellType => rec.put("noDataValue", null)
+      }
     }
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells")
         .asInstanceOf[ByteBuffer]
         .array()
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[ByteCells with NoDataHandling]
+      val cellType = Option(rec[Int]("noDataValue")) match {
+        case Some(nd) if nd == Byte.MinValue.toInt => ByteConstantNoDataCellType
+        case Some(nd) => ByteUserDefinedNoDataCellType(nd.toByte)
+        case None => ByteCellType
+      }
       ByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
@@ -189,22 +266,29 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
-      .name("celltype").`type`().stringType().noDefault()
+      .name("noDataValue").`type`().intType().intDefault(0)
       .endRecord()
 
     def encode(tile: UByteArrayTile, rec: GenericRecord) = {
       rec.put("cols", tile.cols)
       rec.put("rows", tile.rows)
       rec.put("cells", ByteBuffer.wrap(tile.array))
-      rec.put("celltype", tile.cellType.toString)
+      tile.cellType match {
+        case UByteConstantNoDataCellType => rec.put("noDataValue", 0)
+        case UByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
+        case UByteCellType => rec.put("noDataValue", null)
+      }
     }
 
     def decode(rec: GenericRecord) = {
       val array  = rec.get("cells")
         .asInstanceOf[ByteBuffer]
         .array()
-      val cellType = CellType.fromString(rec[Utf8]("celltype").toString)
-        .asInstanceOf[UByteCells with NoDataHandling]
+      val cellType = Option(rec[Int]("noDataValue")) match {
+        case Some(nd) if nd == 0 => UByteConstantNoDataCellType
+        case Some(nd) => UByteUserDefinedNoDataCellType(nd.toByte)
+        case None => UByteCellType
+      }
       UByteArrayTile(array, rec[Int]("cols"), rec[Int]("rows"), cellType)
     }
   }
