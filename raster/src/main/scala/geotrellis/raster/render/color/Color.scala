@@ -21,7 +21,7 @@ package geotrellis.raster.render
   *
   * This object provides utility methods that operate on RGBA integer values.
   */ 
-object Colorzzzz {
+object Color {
   // Get red color band from RGBA color value.
   @inline final def unzipR(x: Int) = (x >> 24) & 0xff
 

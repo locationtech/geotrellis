@@ -8,8 +8,8 @@ import geotrellis.raster.op.stats._
 import java.awt.image.BufferedImage
 
 import spire.syntax.cfor._
-
 trait ColorMethods extends TileMethods {
+/*
   def color(breaksToColors: Map[Int, Int]): Tile =
     IntColorMap(breaksToColors).render(tile)
 
@@ -27,7 +27,7 @@ trait ColorMethods extends TileMethods {
 
   def color(colorBreaks: ColorBreaks, options: ColorMapOptions): Tile =
     colorBreaks.toColorMap(options).render(tile)
-
+*/
   def toBufferedImage: BufferedImage = {
     val bi = new BufferedImage(tile.cols, tile.rows, BufferedImage.TYPE_INT_RGB)
     cfor(0)(_ < tile.cols, _ + 1) { x =>

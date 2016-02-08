@@ -63,12 +63,6 @@ object ColorMap {
   def apply(breaksToColors: Map[Double, Int], options: ColorMapOptions): DoubleColorMap =
     DoubleColorMap(breaksToColors, options)
 
-  def apply(colorBreaks: ColorBreaks): ColorMap =
-    apply(colorBreaks, ColorMapOptions.Default)
-
-  def apply(colorBreaks: ColorBreaks, options: ColorMapOptions): ColorMap =
-    colorBreaks.toColorMap(options)
-
   def apply(breaks: Array[Int], color: Array[Int]): IntColorMap =
     apply(breaks, color, ColorMapOptions.Default)
 

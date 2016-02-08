@@ -17,13 +17,10 @@ trait PngRenderMethods extends TileMethods {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new PngEncoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
+    new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(tile)
 
-  def renderPng(colorRamp: ColorRamp): Png =
-    renderPng(colorRamp.toArray)
-
-  def renderPng(colorBreaks: ColorBreaks): Png =
-    renderPng(colorBreaks, 0)
+  def renderPng(colorClassifier: ColorClassifier): Png =
+    renderPng(colorClassifier, None)
 
   /**
     * Generate a PNG image from a raster.
@@ -38,8 +35,6 @@ trait PngRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): Png =
-    renderPng(colorBreaks, noDataColor, None)
 
   /**
     * Generate a PNG image from a raster.
@@ -54,24 +49,13 @@ trait PngRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Png =
-    renderPng(colorBreaks, noDataColor, Some(histogram))
-
   private
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Png = {
-    val renderer =
-      histogram match {
-        case Some(h) => Renderer(colorBreaks, noDataColor, h)
-        case None => Renderer(colorBreaks, noDataColor)
-      }
-
+  def renderPng(colorClassifier: ColorClassifier, histogram: Option[Histogram]): Png = {
+    val renderer = Renderer(colorClassifier, histogram)
     val r2 = renderer.render(tile)
     new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
   }
-
-  def renderPng(ramp: ColorRamp, breaks: Array[Int]): Png =
-    renderPng(ColorBreaks(breaks, ramp.toArray))
-
+/*
   def renderPng(colors: Array[Int]): Png = {
     val h = tile.histogram
     renderPng(ColorBreaks(h, colors), 0, h)
@@ -83,12 +67,13 @@ trait PngRenderMethods extends TileMethods {
   def renderPng(breaks: Array[Int], colors: Array[Int]): Png =
     renderPng(ColorBreaks(breaks, colors), 0)
 
-  def renderPng(breaks: Array[Int], colors: Array[Int], noDataColor: Int): Png =
+  def renderPng(breaks: Array[Int], colors: Array[Int], noDataColor: Option[Int]): Png =
     renderPng(ColorBreaks(breaks, colors), noDataColor)
 
   def renderPng(breaks: Array[Double], colors: Array[Int]): Png =
     renderPng(ColorBreaks(breaks, colors), 0)
 
-  def renderPng(breaks: Array[Double], colors: Array[Int], noDataColor: Int): Png =
+  def renderPng(breaks: Array[Double], colors: Array[Int], noDataColor: Option[Int]): Png =
     renderPng(ColorBreaks(breaks, colors), noDataColor)
+*/
 }
