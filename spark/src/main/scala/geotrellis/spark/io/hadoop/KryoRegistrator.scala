@@ -21,10 +21,12 @@ import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
 import org.apache.avro.Schema
 
+import java.util.{Arrays, Collections}
+
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers.FieldSerializer
+import de.javakaffee.kryoserializers._
 
-import scala.util.Properties
 
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
@@ -43,8 +45,8 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[org.apache.accumulo.core.client.mock.MockConnector])
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
-    kryo.register(classOf[org.joda.time.DateTime], new de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer)
-    kryo.register(classOf[org.joda.time.Interval], new de.javakaffee.kryoserializers.jodatime.JodaIntervalSerializer)
+    kryo.register(classOf[org.joda.time.DateTime], new jodatime.JodaDateTimeSerializer)
+    kryo.register(classOf[org.joda.time.Interval], new jodatime.JodaIntervalSerializer)
     kryo.register(classOf[geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex])
@@ -54,10 +56,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.vector.Extent])
     kryo.register(classOf[geotrellis.proj4.CRS])
 
-    // de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer.registerSerializers(kryo)
-    import java.util.{Arrays, Collections}
-    import de.javakaffee.kryoserializers._
-
+    // UnmodifiableCollectionsSerializer.registerSerializers(kryo)
     kryo.register( Arrays.asList( "" ).getClass, new ArraysAsListSerializer )
     kryo.register( Collections.EMPTY_LIST.getClass, new CollectionsEmptyListSerializer() )
     kryo.register( Collections.EMPTY_MAP.getClass(), new CollectionsEmptyMapSerializer() )
@@ -231,49 +230,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
 
       kryo.register(java.lang.Class.forName("org.apache.avro.Schema$LockableArrayList"))
       kryo.register(java.lang.Class.forName("org.apache.avro.Schema$Name"))
-    }
-
-    val reqRegistration = Properties.envOrElse("GEOTRELLIS_KRYO_REGREQ", null)
-
-    if (reqRegistration != null) {
-      List(
-        "geotrellis.proj4.CRS$$anon$1",
-        "geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$1",
-        "geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$2",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$1",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$2",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$3",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$4",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$5",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$6",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$7",
-        "geotrellis.spark.io.avro.codecs.TileCodecs$$anon$8",
-        "geotrellis.spark.SpaceTimeKey$$anonfun$ordering$1",
-        "geotrellis.spark.SpatialKey$$anonfun$ordering$1",
-        "geotrellis.spark.TemporalKey$$anonfun$ordering$1",
-        "scala.math.Ordering$$anon$11",
-        "scala.math.Ordering$$anon$9",
-        "scala.math.Ordering$$anonfun$by$1",
-        "scala.reflect.ClassTag$$anon$1"
-      ).foreach({ anon =>
-          // try {
-            kryo.register(Class.forName(anon))
-          // }
-          // catch {
-          //   case e: java.lang.ClassNotFoundException =>
-          // }
-      })
-
-      // Needed for only one test
-      try {
-        kryo.register(Class.forName("geotrellis.spark.utils.OptimusPrime"))
-      }
-      catch {
-        case e: java.lang.ClassNotFoundException =>
-      }
-
-      kryo.setRegistrationRequired(true)
-
     }
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
