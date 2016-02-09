@@ -3,12 +3,12 @@ package geotrellis.raster.op.global
 import geotrellis.raster._
 import geotrellis.vector._
 
-trait GlobalMethods extends TileMethods {
+trait GlobalMethods extends MethodExtensions[Tile] {
   def costDistance(points: Seq[(Int, Int)]): Tile =
-    CostDistance(tile, points)
+    CostDistance(self, points)
 
   def costDistanceWithPaths(point: (Int, Int)): CostDistanceWithPathsResult =
-    CostDistanceWithPaths(tile, point)
+    CostDistanceWithPaths(self, point)
 
   def toVector(extent: Extent): List[PolygonFeature[Int]] =
     toVector(extent, RegionGroupOptions.default.connectivity)
@@ -17,26 +17,26 @@ trait GlobalMethods extends TileMethods {
     extent: Extent,
     regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
   ): List[PolygonFeature[Int]] =
-    ToVector(tile, extent, regionConnectivity)
+    ToVector(self, extent, regionConnectivity)
 
   def regionGroup: RegionGroupResult = regionGroup()
 
   def regionGroup(
     options: RegionGroupOptions = RegionGroupOptions.default): RegionGroupResult =
-    RegionGroup(tile, options)
+    RegionGroup(self, options)
 
   def verticalFlip(): Tile =
-    VerticalFlip(tile)
+    VerticalFlip(self)
 
   def viewshed(col: Int, row: Int, exact: Boolean = false): Tile =
     if (exact)
-      Viewshed(tile, col, row)
+      Viewshed(self, col, row)
     else
-      ApproxViewshed(tile, col, row)
+      ApproxViewshed(self, col, row)
 
   def viewshedOffsets(col: Int, row: Int, exact: Boolean = false): Tile =
     if (exact)
-      Viewshed.offsets(tile, col, row)
+      Viewshed.offsets(self, col, row)
     else
-      ApproxViewshed.offsets(tile, col, row)
+      ApproxViewshed.offsets(self, col, row)
 }

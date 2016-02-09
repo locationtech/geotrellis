@@ -3,7 +3,7 @@ package geotrellis.raster.op.elevation
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
 
-trait ElevationMethods extends TileMethods {
+trait ElevationMethods extends MethodExtensions[Tile] {
   /**
    * Calculates the slope of each cell in a raster.
    * @param   cs         cellSize of the raster
@@ -11,7 +11,7 @@ trait ElevationMethods extends TileMethods {
    * @see [[Slope]]
    */
   def slope(cs: CellSize, zFactor: Double = 1.0, bounds: Option[GridBounds] = None): Tile =
-    Slope(tile, Square(1), bounds, cs, zFactor)
+    Slope(self, Square(1), bounds, cs, zFactor)
 
   /**
    * Calculates the aspect of each cell in a raster.
@@ -19,7 +19,7 @@ trait ElevationMethods extends TileMethods {
    * @see [[Aspect]]
    */
   def aspect(cs: CellSize, bounds: Option[GridBounds] = None): Tile =
-    Aspect(tile, Square(1), bounds, cs)
+    Aspect(self, Square(1), bounds, cs)
 
 
   /**
@@ -27,5 +27,5 @@ trait ElevationMethods extends TileMethods {
    * @see [[Hillshade]]
    */
   def hillshade(cs: CellSize, azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1.0, bounds: Option[GridBounds] = None): Tile =
-    Hillshade(tile, Square(1), bounds, cs, azimuth, altitude, zFactor)
+    Hillshade(self, Square(1), bounds, cs, azimuth, altitude, zFactor)
 }
