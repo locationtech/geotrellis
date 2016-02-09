@@ -63,6 +63,9 @@ package object raster
       with op.zonal.summary.ZonalSummaryMethods
       with op.zonal.ZonalMethods
       with prototype.SingleBandTilePrototypeMethods
+      with render.ColorMethods
+      with render.JpgRenderMethods
+      with render.PngRenderMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 
