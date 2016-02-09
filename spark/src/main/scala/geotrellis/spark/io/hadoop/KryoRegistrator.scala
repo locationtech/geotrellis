@@ -169,6 +169,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[java.util.LinkedHashMap[Any,Any]])
     kryo.register(classOf[java.util.LinkedHashSet[Any]])
     kryo.register(classOf[org.apache.accumulo.core.client.BatchWriterConfig])
+    kryo.register(classOf[org.apache.accumulo.core.client.Durability])
     kryo.register(classOf[org.apache.accumulo.core.data.Key])
     kryo.register(classOf[org.apache.accumulo.core.data.Value])
     kryo.register(classOf[org.osgeo.proj4j.CoordinateReferenceSystem])
