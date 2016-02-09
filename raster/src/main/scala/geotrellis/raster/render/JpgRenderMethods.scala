@@ -32,7 +32,7 @@ trait JpgRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderJpg(colorClassifier: ColorClassifier): Jpg =
+  def renderJpg(colorClassifier: ColorClassifier[_]): Jpg =
     renderJpg(colorClassifier, None)
 
   /**
@@ -48,11 +48,11 @@ trait JpgRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderJpg(colorClassifier: ColorClassifier, histogram: Histogram): Jpg =
+  def renderJpg(colorClassifier: ColorClassifier[_], histogram: Histogram): Jpg =
     renderJpg(colorClassifier, Some(histogram))
 
   private
-  def renderJpg(colorClassifier: ColorClassifier, histogram: Option[Histogram]): Jpg = {
+  def renderJpg(colorClassifier: ColorClassifier[_], histogram: Option[Histogram]): Jpg = {
     val renderer = Renderer(colorClassifier, histogram)
     val r2 = renderer.render(tile)
     new JpgEncoder().writeByteArray(r2)

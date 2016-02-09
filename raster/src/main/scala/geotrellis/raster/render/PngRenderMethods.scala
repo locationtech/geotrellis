@@ -19,7 +19,7 @@ trait PngRenderMethods extends TileMethods {
   def renderPng(): Png =
     new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(tile)
 
-  def renderPng(colorClassifier: ColorClassifier): Png =
+  def renderPng(colorClassifier: ColorClassifier[_]): Png =
     renderPng(colorClassifier, None)
 
   /**
@@ -50,7 +50,7 @@ trait PngRenderMethods extends TileMethods {
     * quantile class breaks.
     */
   private
-  def renderPng(colorClassifier: ColorClassifier, histogram: Option[Histogram]): Png = {
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram]): Png = {
     val renderer = Renderer(colorClassifier, histogram)
     val r2 = renderer.render(tile)
     new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)

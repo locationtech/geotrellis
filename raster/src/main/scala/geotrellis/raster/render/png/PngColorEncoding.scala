@@ -33,7 +33,7 @@ case object RgbaPngEncoding extends PngColorEncoding(6, 4)
 
 
 object PngColorEncoding {
-  def fromRasterColorClassifier(cc: ColorClassifier): PngColorEncoding = {
+  def fromRasterColorClassifier(cc: ColorClassifier[_]): PngColorEncoding = {
     val len = cc.length
     if(len <= 256) {
       val indices = (0 until len).toArray

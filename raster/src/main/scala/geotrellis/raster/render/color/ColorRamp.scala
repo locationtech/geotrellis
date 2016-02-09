@@ -49,7 +49,7 @@ class ColorRamp(val colors: Seq[Int]) {
 
   def alphaGradient(start: Int = 0, stop: Int = 0xFF): ColorRamp = {
     val alphas = Color.chooseColors(start, stop, colors.length).map(Color.unzipA)
-    
+
     val newColors = colors.zip(alphas).map ({ case (color, a) =>
       val (r, g, b, _) = Color.unzip(color)
       Color.zip(r, g, b, a)

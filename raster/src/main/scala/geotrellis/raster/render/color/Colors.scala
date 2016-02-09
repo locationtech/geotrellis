@@ -15,6 +15,10 @@ class RGBA(val x: Int) extends AnyVal {
   def unzipRGB = (red, green, blue)
 }
 
+object RGB {
+  def apply(i: Int) = RGBA((i << 8) + 0xff)
+}
+
 object RGBA {
   def apply(i: Int) = new RGBA(i)
 

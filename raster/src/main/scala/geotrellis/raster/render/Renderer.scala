@@ -32,7 +32,7 @@ case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: PngColorE
 
 object Renderer {
   /** Include a precomputed histogram to cache the color map and speed up the rendering. */
-  def apply(colorClassifier: ColorClassifier, h: Option[Histogram]): Renderer = {
+  def apply(colorClassifier: ColorClassifier[_], h: Option[Histogram]): Renderer = {
     val colorMap = colorClassifier.toColorMap()
     val pngEncoding = PngColorEncoding.fromRasterColorClassifier(colorClassifier)
     h match {

@@ -24,15 +24,17 @@ import java.util.Locale
 
 import scala.reflect.ClassTag
 
-abstract class ColorClassifier[A: ClassTag] extends Serializable {
+sealed abstract class ColorClassifier[A: ClassTag] extends Serializable {
   type Classification = (Double, Int)
-  protected var classificationBoundaries: mutable.Set[A] = mutable.Set[A]()
+  protected var classificationBreaks: mutable.Buffer[A] = mutable.Buffer[A]()
   protected var classificationColors: mutable.Buffer[RGBA] = mutable.ArrayBuffer[RGBA]()
   protected var noDataColor: Option[RGBA] = None
 
-  lazy val length = classificationBoundaries.size
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap
 
-  def getBreaks: Array[A] = classificationBoundaries.toArray
+  lazy val length = classificationBreaks.size
+
+  def getBreaks: Array[A] = classificationBreaks.toArray
   def getColors: Array[RGBA] = classificationColors.toArray
   def getNoDataColor = noDataColor
 
@@ -42,9 +44,19 @@ abstract class ColorClassifier[A: ClassTag] extends Serializable {
     this
   }
 
-  def classify(classBoundary: A, classColor: RGBA): ColorClassifier[A] = {
-    if (classificationBoundaries.add(classBoundary)) classificationColors.append(classColor)
-    this  // For chaining multiple classifications together
+  def classify(classBreak: A, classColor: RGBA): ColorClassifier[A] = {
+    appendBreaks(classBreak)
+    appendColors(classColor)
+  }
+
+  def appendBreaks(breaks: A*): ColorClassifier[A] = {
+    classificationBreaks ++= breaks
+    this
+  }
+
+  def appendColors(colors: RGBA*): ColorClassifier[A] = {
+    classificationColors ++= colors
+    this
   }
 
   def setNoDataColor(color: RGBA): ColorClassifier[A] = {
@@ -53,20 +65,18 @@ abstract class ColorClassifier[A: ClassTag] extends Serializable {
   }
 
   /**
-    * If the count of colors doesn't match the count of classification boundaries, produce a
+    * If the count of colors doesn't match the count of classification Breaks, produce a
     * ColorClassification which either interpolates or properly subsets the colors so as
-    * to have an equal count of boundaries and colors
+    * to have an equal count of Breaks and colors
   **/
   protected def normalize: ColorClassifier[A] = {
-    if (classificationBoundaries.size < classificationColors.size) {
-      classificationColors = spread(getColors, classificationBoundaries.size).toBuffer
-    } else if (classificationBoundaries.size > classificationColors.size) {
-      classificationColors = chooseColors(getColors, classificationBoundaries.size).toBuffer
+    if (classificationBreaks.size < classificationColors.size) {
+      classificationColors = spread(getColors, classificationBreaks.size).toBuffer
+    } else if (classificationBreaks.size > classificationColors.size) {
+      classificationColors = chooseColors(getColors, classificationBreaks.size).toBuffer
     }
     this
   }
-
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap
 
   /**
     * This method is used for cases in which we are provided with a different
