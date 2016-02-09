@@ -26,78 +26,47 @@ import scala.reflect.ClassTag
 
 abstract class ColorClassifier[A: ClassTag] extends Serializable {
   type Classification = (Double, Int)
-  protected val classificationBoundaries = mutable.Set[A]()
-  protected val classificationColors = mutable.ArrayBuffer[RGBA]()
+  protected var classificationBoundaries: mutable.Set[A] = mutable.Set[A]()
+  protected var classificationColors: mutable.Buffer[RGBA] = mutable.ArrayBuffer[RGBA]()
   protected var noDataColor: Option[RGBA] = None
 
   lazy val length = classificationBoundaries.size
+
   def getBreaks: Array[A] = classificationBoundaries.toArray
   def getColors: Array[RGBA] = classificationColors.toArray
   def getNoDataColor = noDataColor
 
-  def classify(classBoundary: Double, classColor: RGBA): ColorClassifier[A]
-  def setNoDataColor(color: RGBA): ColorClassifier[A]
-  def mapBreaks[B](f: A => B): ColorClassifier[B]
-  def mapColors(f: RGBA => RGBA): ColorClassifier[A]
+  def mapColors(f: RGBA => RGBA): ColorClassifier[A] = {
+    classificationColors = classificationColors.map(f)
+    noDataColor = noDataColor.map(f)
+    this
+  }
 
-  protected def normalized: SafeColorClassifier[A]
-
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
-    normalized.toColorMap(options)
-}
-
-class SafeColorClassifier[A: ClassTag] extends ColorClassifier[A] {
-
-  def classify(classBoundary: A, classColor: RGBA): ColorClassifier = {
+  def classify(classBoundary: A, classColor: RGBA): ColorClassifier[A] = {
     if (classificationBoundaries.add(classBoundary)) classificationColors.append(classColor)
     this  // For chaining multiple classifications together
   }
 
-  def setNoDataColor(color: RGBA): SafeColorClassifier[A] = {
+  def setNoDataColor(color: RGBA): ColorClassifier[A] = {
     noDataColor = Some(color)
     this
   }
-
-  def mapColors(f: RGBA => RGBA): SafeColorClassifier[A] =
-    SafeColorClassifier(getBreaks zip getColors.map(f), noDataColor.map(f))
-
-  def normalized: SafeColorClassifier[A] = this
-
-  override def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap =
-    ColorMap(getBreaks, getColors.map(_.get), options)
-}
-
-class BlendingColorClassifier[A: ClassTag] extends ColorClassifier[A] {
-
-  def classify(classBoundary: A, classColor: RGBA): BlendingColorClassifier[A] = {
-    if (classificationBoundaries.add(classBoundary)) classificationColors.append(classColor)
-    this  // For chaining multiple classifications together
-  }
-
-  def setNoDataColor(color: RGBA): BlendingColorClassifier[A] = {
-    noDataColor = Some(color)
-    this
-  }
-
-  def mapColors(f: RGBA => RGBA): BlendingColorClassifier[A] =
-    BlendingColorClassifier(getBreaks zip getColors.map(f), noDataColor.map(f))
 
   /**
     * If the count of colors doesn't match the count of classification boundaries, produce a
     * ColorClassification which either interpolates or properly subsets the colors so as
     * to have an equal count of boundaries and colors
   **/
-  def normalized: SafeColorClassifier[A] = {
+  protected def normalize: ColorClassifier[A] = {
     if (classificationBoundaries.size < classificationColors.size) {
-      val newColors = spread(getColors, classificationBoundaries.size)
-      SafeColorClassifier(getBreaks zip newColors, noDataColor)
+      classificationColors = spread(getColors, classificationBoundaries.size).toBuffer
     } else if (classificationBoundaries.size > classificationColors.size) {
-      val newColors = chooseColors(getColors, classificationBoundaries.size)
-      SafeColorClassifier(getBreaks zip newColors, noDataColor)
-    } else {
-      SafeColorClassifier(getBreaks zip getColors, noDataColor)
+      classificationColors = chooseColors(getColors, classificationBoundaries.size).toBuffer
     }
+    this
   }
+
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap
 
   /**
     * This method is used for cases in which we are provided with a different
@@ -197,21 +166,38 @@ class BlendingColorClassifier[A: ClassTag] extends ColorClassifier[A] {
   }
 }
 
+class IntColorClassifier extends ColorClassifier[Int] {
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap = {
+    normalize
+    ColorMap(getBreaks, getColors.map(_.get), options)
+  }
+}
 
-object BlendingColorClassifier {
-  def apply[A: ClassTag](classifications: Array[(A, RGBA)], noDataColor: Option[RGBA] = None): BlendingColorClassifier[A] = {
-    val colorClassifier = new BlendingColorClassifier[A]
-    classifications foreach { case classification: (A, RGBA) =>
+class DoubleColorClassifier extends ColorClassifier[Double] {
+  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap = {
+    normalize
+    ColorMap(getBreaks, getColors.map(_.get), options)
+  }
+}
+
+object ColorClassifier {
+  def apply(classifications: Array[(Int, RGBA)]): IntColorClassifier =
+    apply(classifications, None)
+
+  def apply(classifications: Array[(Int, RGBA)], noDataColor: Option[RGBA]): IntColorClassifier = {
+    val colorClassifier = new IntColorClassifier
+    classifications foreach { case classification: (Int, RGBA) =>
       colorClassifier.classify(classification._1, classification._2)
     }
     colorClassifier
   }
-}
 
-object SafeColorClassifier {
-  def apply[A: ClassTag](classifications: Array[(A, RGBA)], noDataColor: Option[RGBA] = None): SafeColorClassifier[A] = {
-    val colorClassifier = new SafeColorClassifier[A]
-    classifications foreach { case classification: (A, RGBA) =>
+  def apply(classifications: Array[(Double, RGBA)]): DoubleColorClassifier =
+    apply(classifications, None)
+
+  def apply(classifications: Array[(Double, RGBA)], noDataColor: Option[RGBA]): DoubleColorClassifier = {
+    val colorClassifier = new DoubleColorClassifier
+    classifications foreach { case classification: (Double, RGBA) =>
       colorClassifier.classify(classification._1, classification._2)
     }
     colorClassifier
