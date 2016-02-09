@@ -36,19 +36,19 @@ object And extends LocalTileBinaryOp {
     else i2d(d2i(z1) & d2i(z2))
 }
 
-trait AndMethods extends TileMethods {
+trait AndMethods extends MethodExtensions[Tile] {
   /** And a constant Int value to each cell. */
-  def localAnd(i: Int): Tile = And(tile, i)
+  def localAnd(i: Int): Tile = And(self, i)
   /** And a constant Int value to each cell. */
   def &(i: Int): Tile = localAnd(i)
   /** And a constant Int value to each cell. */
   def &:(i: Int): Tile = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(r: Tile): Tile = And(tile, r)
+  def localAnd(r: Tile): Tile = And(self, r)
   /** And the values of each cell in each raster. */
   def &(r: Tile): Tile = localAnd(r)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs: Traversable[Tile]): Tile = And(tile +: rs.toSeq)
+  def localAnd(rs: Traversable[Tile]): Tile = And(self +: rs.toSeq)
   /** And the values of each cell in each raster. */
   def &(rs: Traversable[Tile]): Tile = localAnd(rs)
 }

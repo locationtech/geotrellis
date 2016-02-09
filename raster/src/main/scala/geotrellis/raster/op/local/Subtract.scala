@@ -34,29 +34,29 @@ object Subtract extends LocalTileBinaryOp {
     else z1 - z2
 }
 
-trait SubtractMethods extends TileMethods {
+trait SubtractMethods extends MethodExtensions[Tile] {
   /** Subtract a constant value from each cell.*/
-  def localSubtract(i: Int): Tile = Subtract(tile, i)
+  def localSubtract(i: Int): Tile = Subtract(self, i)
   /** Subtract a constant value from each cell.*/
   def -(i: Int): Tile = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
-  def localSubtractFrom(i: Int): Tile = Subtract(i, tile)
+  def localSubtractFrom(i: Int): Tile = Subtract(i, self)
   /** Subtract each value of a cell from a constant value. */
   def -:(i: Int): Tile = localSubtract(i)
   /** Subtract a double constant value from each cell.*/
-  def localSubtract(d: Double): Tile = Subtract(tile, d)
+  def localSubtract(d: Double): Tile = Subtract(self, d)
   /** Subtract a double constant value from each cell.*/
   def -(d: Double): Tile = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
-  def localSubtractFrom(d: Double): Tile = Subtract(d, tile)
+  def localSubtractFrom(d: Double): Tile = Subtract(d, self)
   /** Subtract each value of a cell from a double constant value. */
   def -:(d: Double): Tile = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(r: Tile): Tile = Subtract(tile, r)
+  def localSubtract(r: Tile): Tile = Subtract(self, r)
   /** Subtract the values of each cell in each raster. */
   def -(r: Tile): Tile = localSubtract(r)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs: Traversable[Tile]): Tile = Subtract(tile +: rs.toSeq)
+  def localSubtract(rs: Traversable[Tile]): Tile = Subtract(self +: rs.toSeq)
   /** Subtract the values of each cell in each raster. */
   def -(rs: Traversable[Tile]): Tile = localSubtract(rs)
 }

@@ -34,29 +34,29 @@ object Pow extends LocalTileBinaryOp {
     math.pow(z1,z2)
 }
 
-trait PowMethods extends TileMethods {
+trait PowMethods extends MethodExtensions[Tile] {
   /** Pow each value of the raster by a constant value.*/
-  def localPow(i: Int): Tile = Pow(tile, i)
+  def localPow(i: Int): Tile = Pow(self, i)
   /** Pow each value of the raster by a constant value.*/
   def **(i: Int): Tile = localPow(i)
   /** Pow a constant value by each cell value.*/
-  def localPowValue(i:Int): Tile = Pow(i, tile)
+  def localPowValue(i:Int): Tile = Pow(i, self)
   /** Pow a constant value by each cell value.*/
   def **:(i: Int): Tile = localPowValue(i)
   /** Pow each value of a raster by a double constant value.*/
-  def localPow(d: Double): Tile = Pow(tile, d)
+  def localPow(d: Double): Tile = Pow(self, d)
   /** Pow each value of a raster by a double constant value.*/
   def **(d: Double): Tile = localPow(d)
   /** Pow a double constant value by each cell value.*/
-  def localPowValue(d: Double): Tile = Pow(d,tile)
+  def localPowValue(d: Double): Tile = Pow(d, self)
   /** Pow a double constant value by each cell value.*/
   def **:(d: Double): Tile = localPowValue(d)
   /** Pow the values of each cell in each raster. */
-  def localPow(r: Tile): Tile = Pow(tile,r)
+  def localPow(r: Tile): Tile = Pow(self,r)
   /** Pow the values of each cell in each raster. */
   def **(r: Tile): Tile = localPow(r)
   /** Pow the values of each cell in each raster. */
-  def localPow(rs: Traversable[Tile]): Tile = Pow(tile +: rs.toSeq)
+  def localPow(rs: Traversable[Tile]): Tile = Pow(self +: rs.toSeq)
   /** Pow the values of each cell in each raster. */
   def **(rs: Traversable[Tile]): Tile = localPow(rs)
 }

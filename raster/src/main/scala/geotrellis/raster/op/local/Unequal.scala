@@ -36,13 +36,13 @@ object Unequal extends LocalTileComparatorOp {
     }
 }
 
-trait UnequalMethods extends TileMethods {
+trait UnequalMethods extends MethodExtensions[Tile] {
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
-  def localUnequal(i: Int): Tile = Unequal(tile, i)
+  def localUnequal(i: Int): Tile = Unequal(self, i)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -60,7 +60,7 @@ trait UnequalMethods extends TileMethods {
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def localUnequal(d: Double): Tile = Unequal(tile, d)
+  def localUnequal(d: Double): Tile = Unequal(self, d)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -77,7 +77,7 @@ trait UnequalMethods extends TileMethods {
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(r: Tile): Tile = Unequal(tile,r)
+  def localUnequal(r: Tile): Tile = Unequal(self,r)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the raster are not equal, else 0.

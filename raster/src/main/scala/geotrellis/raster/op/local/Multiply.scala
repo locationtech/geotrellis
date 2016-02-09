@@ -34,25 +34,25 @@ object Multiply extends LocalTileBinaryOp {
     else z1 * z2
 }
 
-trait MultiplyMethods extends TileMethods {
+trait MultiplyMethods extends MethodExtensions[Tile] {
   /** Multiply a constant value from each cell.*/
-  def localMultiply(i: Int): Tile = Multiply(tile, i)
+  def localMultiply(i: Int): Tile = Multiply(self, i)
   /** Multiply a constant value from each cell.*/
   def *(i: Int): Tile = localMultiply(i)
   /** Multiply a constant value from each cell.*/
   def *:(i: Int): Tile = localMultiply(i)
   /** Multiply a double constant value from each cell.*/
-  def localMultiply(d: Double): Tile = Multiply(tile, d)
+  def localMultiply(d: Double): Tile = Multiply(self, d)
   /** Multiply a double constant value from each cell.*/
   def *(d: Double): Tile = localMultiply(d)
   /** Multiply a double constant value from each cell.*/
   def *:(d: Double): Tile = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(r: Tile): Tile = Multiply(tile,r)
+  def localMultiply(r: Tile): Tile = Multiply(self,r)
   /** Multiply the values of each cell in each raster. */
   def *(r: Tile): Tile = localMultiply(r)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs: Traversable[Tile]): Tile = Multiply(tile +: rs.toSeq)
+  def localMultiply(rs: Traversable[Tile]): Tile = Multiply(self +: rs.toSeq)
   /** Multiply the values of each cell in each raster. */
   def *(rs: Traversable[Tile]): Tile = localMultiply(rs)
 }

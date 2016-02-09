@@ -35,29 +35,29 @@ object Divide extends LocalTileBinaryOp {
     else z1 / z2
 }
 
-trait DivideMethods extends TileMethods {
+trait DivideMethods extends MethodExtensions[Tile] {
   /** Divide each value of the raster by a constant value.*/
-  def localDivide(i: Int): Tile = Divide(tile, i)
+  def localDivide(i: Int): Tile = Divide(self, i)
   /** Divide each value of the raster by a constant value.*/
   def /(i: Int): Tile = localDivide(i)
   /** Divide a constant value by each cell value.*/
-  def localDivideValue(i: Int): Tile = Divide(i,tile)
+  def localDivideValue(i: Int): Tile = Divide(i, self)
   /** Divide a constant value by each cell value.*/
   def /:(i: Int): Tile = localDivideValue(i)
   /** Divide each value of a raster by a double constant value.*/
-  def localDivide(d: Double): Tile = Divide(tile, d)
+  def localDivide(d: Double): Tile = Divide(self, d)
   /** Divide each value of a raster by a double constant value.*/
   def /(d: Double): Tile = localDivide(d)
   /** Divide a double constant value by each cell value.*/
-  def localDivideValue(d: Double): Tile = Divide(d,tile)
+  def localDivideValue(d: Double): Tile = Divide(d, self)
   /** Divide a double constant value by each cell value.*/
   def /:(d: Double): Tile = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(r: Tile): Tile = Divide(tile, r)
+  def localDivide(r: Tile): Tile = Divide(self, r)
   /** Divide the values of each cell in each raster. */
   def /(r: Tile): Tile = localDivide(r)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs: Traversable[Tile]): Tile = Divide(tile +: rs.toSeq)
+  def localDivide(rs: Traversable[Tile]): Tile = Divide(self +: rs.toSeq)
   /** Divide the values of each cell in each raster. */
   def /(rs: Traversable[Tile]): Tile = localDivide(rs)
 }

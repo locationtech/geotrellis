@@ -58,6 +58,7 @@ package object raster
       with op.focal.FocalMethods
       with op.global.GlobalMethods
       with op.hydrology.HydrologyMethods
+      with op.local.LocalMethods
       with prototype.SingleBandTilePrototypeMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods

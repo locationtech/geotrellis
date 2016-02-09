@@ -103,10 +103,10 @@ object Majority extends Serializable {
   }
 }
 
-trait MajorityMethods extends TileMethods {
+trait MajorityMethods extends MethodExtensions[Tile] {
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rs: Traversable[Tile]): Tile =
-    Majority(Traversable(tile) ++ rs)
+    Majority(Traversable(self) ++ rs)
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rs: Tile*)(implicit d: DI): Tile =
@@ -114,7 +114,7 @@ trait MajorityMethods extends TileMethods {
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n: Int, rs: Traversable[Tile]): Tile =
-    Majority(n, Traversable(tile) ++ rs)
+    Majority(n, Traversable(self) ++ rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n: Int, rs: Tile*)(implicit d: DI): Tile =
