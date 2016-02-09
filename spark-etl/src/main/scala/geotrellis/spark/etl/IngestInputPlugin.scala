@@ -13,7 +13,7 @@ import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag
 
-abstract class IngestInputPlugin[I: IngestKey: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends InputPlugin[K] {
+abstract class IngestInputPlugin[I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends InputPlugin[K] {
   def source(props: Parameters)(implicit sc: SparkContext): RDD[(I, V)]
 
   def apply(
