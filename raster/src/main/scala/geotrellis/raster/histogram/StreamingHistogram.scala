@@ -64,9 +64,6 @@ class StreamingHistogram(
   private val buckets = startingBuckets.getOrElse(new TreeMap[Double, Int])
   private val deltas = startingDeltas.getOrElse(new TreeMap[DeltaType, Unit](new DeltaCompare))
 
-  /* The number of samples represented by this histogram */
-  var n = getBuckets.map(_._2).sum
-
   /**
     * Compute the area of the curve between the two buckets.
     */
@@ -120,31 +117,31 @@ class StreamingHistogram(
       if (entry != null) Some(entry.getKey, entry.getValue); else None
     }
 
-    /* remove delta between middle1 and middle2 */
-    deltas.remove(delta)
-
-    /* Replace delta to the left of the merged buckets */
-    if (left != None) {
-      val other = left.get
-      val oldDelta = middle1._1 - other._1
-      val newDelta = middle._1 - other._1
-      deltas.remove((oldDelta, other, middle1))
-      deltas.put((newDelta, other, middle), Unit)
-    }
-
-    /* Replace delta to the right of the merged buckets */
-    if (right != None) {
-      val other = right.get
-      val oldDelta = other._1 - middle2._1
-      val newDelta = other._1 - middle._1
-      deltas.remove((oldDelta, middle2, other))
-      deltas.put((newDelta, middle, other), Unit)
-    }
-
-    /* Replace merged buckets with their average */
+    /* remove middle1 and middle2, as well as the delta between them.*/
     buckets.remove(middle1._1)
     buckets.remove(middle2._1)
-    buckets.put(middle._1, middle._2)
+    deltas.remove(delta)
+
+    /* Remove delta to the left of the merged buckets */
+    if (left != None) {
+      val oldDelta = middle1._1 - left.get._1
+      deltas.remove((oldDelta, left.get, middle1))
+    }
+
+    /* Remove delta to the right of the merged buckets */
+    if (right != None) {
+      val oldDelta = right.get._1 - middle2._1
+      deltas.remove((oldDelta, middle2, right.get))
+    }
+
+    /* Add delta covering the whole range */
+    if (left != None && right != None) {
+      val delta = right.get._1 - left.get._1
+      deltas.put((delta, left.get, right.get), Unit)
+    }
+
+    /* Add the average of the two merged buckets */
+    countItem(middle)
   }
 
   /**
@@ -153,8 +150,6 @@ class StreamingHistogram(
     * one, or it can be used to incrementally merge two histograms.
     */
   private def countItem(b: BucketType): Unit = {
-    n += b._2
-
     /* First entry */
     if (buckets.size == 0)
       buckets.put(b._1, b._2)
@@ -310,11 +305,11 @@ class StreamingHistogram(
 
   /**
     * Return the approximate mode of the distribution.  This is done
-    * by simply returning the most populous bucket (so this answer
-    * could be really bad).
+    * by simply returning the label of most populous bucket (so this
+    * answer could be really bad).
     */
   def getMode(): Double = {
-    if (n <= 0) doubleNODATA
+    if (getTotalCount <= 0) doubleNODATA
     else
       getBuckets.reduce({ (l,r) =>
         if (l._2 > r._2) l; else r
@@ -350,7 +345,7 @@ class StreamingHistogram(
   /**
     * Total number of samples used to build this histogram.
     */
-  def getTotalCount(): Int = n
+  def getTotalCount(): Int = getBuckets.map(_._2).sum
 
   /**
     * Get the (approximate) min value.  This is only approximate
@@ -408,7 +403,8 @@ class StreamingHistogram(
       val (d1, pct1) = tt._1
       val (d2, pct2) = tt._2
       val x = (q - pct1) / (pct2 - pct1)
-      ((x*d2) + (1-x)*d1)
+
+      (1-x)*d1 + x*d2
     })
   }
 
