@@ -14,18 +14,18 @@ import org.apache.hadoop.mapreduce.task._
 import org.joda.time.format._
 import org.scalatest._
 
-class SpaceTimeGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
+class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
   describe("SpaceTime GeoTiff S3 InputFormat") {
     it("should read the time from a file") {
       val path = new java.io.File(inputHomeLocalPath, "test-time-tag.tif").getPath
 
-      val format = new SpaceTimeGeoTiffS3InputFormat
+      val format = new TemporalGeoTiffS3InputFormat
       val conf = new Configuration(false)
 
-      SpaceTimeGeoTiffS3InputFormat.setTimeTag(conf, "TIFFTAG_DATETIME")
-      SpaceTimeGeoTiffS3InputFormat.setTimeFormat(conf, "2015:03:25 18:01:04")
+      TemporalGeoTiffS3InputFormat.setTimeTag(conf, "TIFFTAG_DATETIME")
+      TemporalGeoTiffS3InputFormat.setTimeFormat(conf, "2015:03:25 18:01:04")
 
       val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
       val rr = format.createRecordReader(null, context)
@@ -38,12 +38,12 @@ class SpaceTimeGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestE
       val job = sc.newJob("temporal-geotiff-ingest")
       S3InputFormat.setUrl(job, url)
       S3InputFormat.setAnonymous(job)
-      SpaceTimeGeoTiffS3InputFormat.setTimeTag(job, "ISO_TIME")
-      SpaceTimeGeoTiffS3InputFormat.setTimeFormat(job, "yyyy-MM-dd'T'HH:mm:ss")
+      TemporalGeoTiffS3InputFormat.setTimeTag(job, "ISO_TIME")
+      TemporalGeoTiffS3InputFormat.setTimeFormat(job, "yyyy-MM-dd'T'HH:mm:ss")
 
       val source = sc.newAPIHadoopRDD(job.getConfiguration,
-        classOf[SpaceTimeGeoTiffS3InputFormat],
-        classOf[SpaceTimeInputKey],
+        classOf[TemporalGeoTiffS3InputFormat],
+        classOf[TemporalProjectedExtent],
         classOf[Tile])
 
       source.cache
@@ -51,7 +51,7 @@ class SpaceTimeGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestE
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
 
-      Ingest[SpaceTimeInputKey, SpaceTimeKey](source, LatLng, layoutScheme){ (rdd, level) =>
+      Ingest[TemporalProjectedExtent, SpaceTimeKey](source, LatLng, layoutScheme){ (rdd, level) =>
         val rddCount = rdd.count
         rddCount should not be (0)
         info(s"Tiled RDD count: ${rddCount}")

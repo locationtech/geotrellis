@@ -10,10 +10,10 @@ import monocle.syntax._
 
 
 package object ingest {
-  type IngestKey[T] = KeyComponent[T, ProjectedExtent]
+  type ProjectedExtentComponent[T] = KeyComponent[T, ProjectedExtent]
 
-  implicit class ProjectedExtentComponentMethods[T: IngestKey](key: T) {
-    val _projectedExtent = implicitly[IngestKey[T]]
+  implicit class ProjectedExtentComponentMethods[T: ProjectedExtentComponent](key: T) {
+    val _projectedExtent = implicitly[ProjectedExtentComponent[T]]
 
     def projectedExtent: ProjectedExtent = key &|-> _projectedExtent.lens get
 
@@ -23,7 +23,7 @@ package object ingest {
 
   implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
 
-  implicit class withCollectMetadataMethods[K: IngestKey, V <: CellGrid](rdd: RDD[(K, V)]) extends Serializable {
+  implicit class withCollectMetadataMethods[K: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(K, V)]) extends Serializable {
     def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData) = {
       RasterMetaData.fromRdd(rdd, crs, layoutScheme)(_.projectedExtent.extent)
     }

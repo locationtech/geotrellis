@@ -1,7 +1,5 @@
 package geotrellis.spark
 
-import geotrellis.spark.utils._
-
 import monocle._
 
 trait KeyComponent[K, C] extends Serializable {
