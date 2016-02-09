@@ -31,7 +31,7 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
   def histogram: Histogram = {
     self
       .map { case (key, tile) => tile.histogram }
-      .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1,h2)) }
+      .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1, h2)) }
   }
 
   def classBreaks(numBreaks: Int): Array[Int] =

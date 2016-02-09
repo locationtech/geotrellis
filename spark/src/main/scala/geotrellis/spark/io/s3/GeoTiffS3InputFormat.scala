@@ -1,11 +1,7 @@
 package geotrellis.spark.io.s3
 
-import com.github.nscala_time.time.Imports._
-import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.spark._
-import geotrellis.spark.ingest._
 import geotrellis.vector._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 

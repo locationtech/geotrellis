@@ -7,7 +7,7 @@ import geotrellis.spark.io.avro.codecs._
 import org.apache.spark.SparkContext
 import geotrellis.spark.io.json._
 
-class SpaceTimeAccumuloInput extends AccumuloInput[SpaceTimeKey] {
+class SpaceTimeAccumuloInput extends AccumuloInput[SpaceTimeKey, Tile, RasterMetaData] {
   def reader(props: Parameters)(implicit sc: SparkContext) =
     AccumuloLayerReader[SpaceTimeKey, Tile, RasterMetaData](getInstance(props))
 }

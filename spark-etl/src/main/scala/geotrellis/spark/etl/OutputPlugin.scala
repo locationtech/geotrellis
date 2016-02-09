@@ -2,19 +2,18 @@ package geotrellis.spark.etl
 
 import geotrellis.spark.io.{Writer, AttributeStore}
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.{LayerId, RasterRDD}
+import geotrellis.spark.{Metadata, LayerId, RasterRDD}
+import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
-trait OutputPlugin[K] {
-  type Parameters = Map[String, String]
+trait OutputPlugin[K, V, M] extends Plugin {
   def name: String
-  def requiredKeys: Array[String]
 
   def attributes(props: Parameters): AttributeStore[JsonFormat]
 
-  def writer(method: KeyIndexMethod[K], props: Parameters): Writer[LayerId, RasterRDD[K]]
+  def writer(method: KeyIndexMethod[K], props: Parameters): Writer[LayerId, RDD[(K, V)] with Metadata[M]]
 
-  def apply(id: LayerId, rdd: RasterRDD[K], method: KeyIndexMethod[K], props: Map[String, String]): Unit =
+  def apply(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K], props: Map[String, String]): Unit =
     writer(method, props).write(id, rdd)
 
   def validate(props: Map[String, String]) =

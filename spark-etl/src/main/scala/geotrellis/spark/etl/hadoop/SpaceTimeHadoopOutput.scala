@@ -9,7 +9,7 @@ import geotrellis.spark.{SpaceTimeKey, RasterRDD}
 
 import org.apache.hadoop.fs.Path
 
-class SpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey] {
+class SpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, Tile, RasterMetaData] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
     HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](new Path(props("path")), method)
 }

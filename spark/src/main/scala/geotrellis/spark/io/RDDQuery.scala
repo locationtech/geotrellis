@@ -26,7 +26,7 @@ class RDDQuery[K: Boundable, M](
   // Allows us to treat Function1 as an instance of a Functor
   import scalaz.Scalaz._
 
-  def where[F, T](exp: RDDFilter.Expression[F, T])(implicit filter: RDDFilter[K,F,T, M]): RDDQuery[K, M] = {
+  def where[F, T](exp: RDDFilter.Expression[F, T])(implicit filter: RDDFilter[K, F, T, M]): RDDQuery[K, M] = {
     new RDDQuery( {
       filterChain map { case (metadata, keyBoundsList) =>
         val filteredKeyBounds =

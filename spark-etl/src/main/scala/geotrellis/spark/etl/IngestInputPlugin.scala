@@ -1,8 +1,11 @@
 package geotrellis.spark.etl
 
 import geotrellis.proj4.CRS
+import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.raster.prototype.TilePrototypeMethods
+import geotrellis.raster.reproject.TileReprojectMethods
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.raster.{CellType, Tile, CellGrid}
+import geotrellis.raster.{CellType, CellGrid}
 import geotrellis.spark.reproject._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
@@ -13,7 +16,11 @@ import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag
 
-abstract class IngestInputPlugin[I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends InputPlugin[K] {
+abstract class IngestInputPlugin[
+  I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K],
+  K: SpatialComponent: ClassTag,
+  V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TileReprojectMethods[V]: ? => TilePrototypeMethods[V]
+] extends InputPlugin[K, V, RasterMetaData] {
   def source(props: Parameters)(implicit sc: SparkContext): RDD[(I, V)]
 
   def apply(
@@ -21,7 +28,7 @@ abstract class IngestInputPlugin[I: ProjectedExtentComponent: ? => TilerKeyMetho
     crs: CRS, scheme: Either[LayoutScheme, LayoutDefinition],
     targetCellType: Option[CellType],
     props: Parameters)
-  (implicit sc: SparkContext): (Int, RDD[(K, Tile)] with Metadata[RasterMetaData]) = {
+  (implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
 
     val sourceTiles = source(props).reproject(crs).persist(lvl)
     val (zoom, rasterMetaData) = scheme match {

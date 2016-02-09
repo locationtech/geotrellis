@@ -4,15 +4,18 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.spark.io._
 import geotrellis.spark._
-import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
+import geotrellis.spark.tiling.{MapKeyTransform, LayoutDefinition, LayoutScheme}
 import geotrellis.vector.Extent
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
-abstract class CatalogInputPlugin[K: SpatialComponent: Boundable] extends InputPlugin[K] {
+abstract class CatalogInputPlugin[
+  K: SpatialComponent: Boundable,
+  V, M: (? => { def mapTransform: MapKeyTransform })] extends InputPlugin[K, V, M] {
   def format = "catalog"
   def requiredKeys: Array[String] = Array("layer")
-  def reader(props: Parameters)(implicit sc: SparkContext): FilteringLayerReader[LayerId, K, RasterMetaData, RasterRDD[K]]
+  def reader(props: Parameters)(implicit sc: SparkContext): FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
 
   def parse(props: Parameters): (LayerId, Option[Extent]) = {
     val bbox = props.get("bbox").map(Extent.fromString)
@@ -26,7 +29,7 @@ abstract class CatalogInputPlugin[K: SpatialComponent: Boundable] extends InputP
     crs: CRS, scheme: Either[LayoutScheme, LayoutDefinition],
     targetCellType: Option[CellType],
     props: Parameters)
-  (implicit sc: SparkContext): (Int, RasterRDD[K]) = {
+  (implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[M]) = {
     val (id, boundingBox) = parse(props)
 
     val rdd = boundingBox match {

@@ -1,6 +1,9 @@
 package geotrellis.spark.etl.s3
 
-import geotrellis.raster.Tile
+import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.raster.prototype.TilePrototypeMethods
+import geotrellis.raster.reproject.TileReprojectMethods
+import geotrellis.raster.CellGrid
 import geotrellis.spark._
 import geotrellis.spark.etl._
 import geotrellis.spark.ingest._
@@ -12,7 +15,11 @@ import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
 
-abstract class S3Input[I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends IngestInputPlugin[I, K] {
+abstract class S3Input[
+  I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K],
+  K: SpatialComponent: ClassTag,
+  V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TileReprojectMethods[V]: ? => TilePrototypeMethods[V]
+] extends IngestInputPlugin[I, K, V] {
   val name = "s3"
   val requiredKeys = Array("bucket", "key")
 
