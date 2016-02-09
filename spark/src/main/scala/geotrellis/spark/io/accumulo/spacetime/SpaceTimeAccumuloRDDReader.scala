@@ -6,7 +6,7 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import org.apache.accumulo.core.client.IteratorSetting
-import org.apache.accumulo.core.client.mapreduce.InputFormatBase
+import org.apache.accumulo.core.client.mapreduce.{AccumuloInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Range => AccumuloRange, Key, Value}
 import org.apache.accumulo.core.util.{Pair => APair}
 import org.apache.avro.Schema
@@ -50,10 +50,11 @@ class SpaceTimeAccumuloRDDReader[V: AvroRecordCodec: ClassTag](instance: Accumul
               "endBound" -> bound.maxKey.time.toString,
               "startInclusive" -> "true",
               "endInclusive" -> "true").asJava))
+        InputFormatBase.setBatchScan(job, true)
 
         sc.newAPIHadoopRDD(
           job.getConfiguration,
-          classOf[BatchAccumuloInputFormat],
+          classOf[AccumuloInputFormat],
           classOf[Key],
           classOf[Value])
       }
