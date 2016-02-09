@@ -1,12 +1,15 @@
 package geotrellis.spark.etl
 
-import geotrellis.spark.tiling.{FloatingLayoutScheme, ZoomedLayoutScheme}
+import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.spark.{TemporalProjectedExtent, SpaceTimeKey, SpatialKey}
+import geotrellis.spark.ingest._
+import geotrellis.vector.ProjectedExtent
 import org.scalatest._
 
 object EtlSpec {
   // Test that ETL module can be instantiated in convenient ways
   val args = Seq("-options", "arguments")
 
-  Etl(args)
-  Etl(args, List(s3.S3Module, hadoop.HadoopModule))
+  Etl[ProjectedExtent, SpatialKey, Tile](args)
+  Etl[TemporalProjectedExtent, SpaceTimeKey, MultiBandTile](args, List(s3.S3Module, hadoop.HadoopModule))
 }
