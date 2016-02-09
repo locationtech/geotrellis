@@ -8,9 +8,9 @@ import geotrellis.spark.ingest._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-class GeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, SpatialKey, Tile] {
+class GeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, Tile] {
   val format = "geotiff-sequence"
-  def source(props: Parameters)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
+  def apply(props: Parameters)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
     sc
       .sequenceFile[String, Array[Byte]](props("path"))
       .map { case (path, bytes) =>
