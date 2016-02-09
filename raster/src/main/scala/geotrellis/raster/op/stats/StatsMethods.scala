@@ -3,7 +3,7 @@ package geotrellis.raster.op.stats
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 
-trait StatsMethods extends TileMethods {
+trait StatsMethods extends MethodExtensions[Tile] {
   /**
     * Contains several different operations for building a histograms of a raster.
     *
@@ -11,7 +11,7 @@ trait StatsMethods extends TileMethods {
     *           rounded to integers when making the Histogram.
     */
   def histogram: Histogram =
-    FastMapHistogram.fromTile(tile)
+    FastMapHistogram.fromTile(self)
 
   /**
     * Implements a histogram in terms of an array of the given size.
@@ -22,7 +22,7 @@ trait StatsMethods extends TileMethods {
     *           rounded to integers when making the Histogram.
     */
   def arrayHistogram(size: Int): ArrayHistogram =
-    ArrayHistogram.fromTile(tile, size)
+    ArrayHistogram.fromTile(self, size)
 
   /**
     * Create a histogram from double values in a raster.
@@ -42,7 +42,7 @@ trait StatsMethods extends TileMethods {
     * @param significantDigits   Number of significant digits to preserve by multiplying
     */
   def doubleHistogram(significantDigits: Int): Histogram =
-    FastMapHistogram.fromTileDouble(tile, significantDigits)
+    FastMapHistogram.fromTileDouble(self, significantDigits)
 
   /**
   * Generate quantile class breaks for a given raster.
@@ -70,7 +70,7 @@ trait StatsMethods extends TileMethods {
   def standardDeviations(factor: Double = 1.0): Tile = {
     val Statistics(_, mean, _, _, stddev, _, _) = statistics
 
-    val indata = tile.toArray
+    val indata = self.toArray
     val len = indata.length
     val result = Array.ofDim[Int](len)
 
@@ -81,6 +81,6 @@ trait StatsMethods extends TileMethods {
       i += 1
     }
 
-    ArrayTile(result, tile.cols, tile.rows)
+    ArrayTile(result, self.cols, self.rows)
   }
 }

@@ -59,6 +59,9 @@ package object raster
       with op.global.GlobalMethods
       with op.hydrology.HydrologyMethods
       with op.local.LocalMethods
+      with op.stats.StatsMethods
+      with op.zonal.summary.ZonalSummaryMethods
+      with op.zonal.ZonalMethods
       with prototype.SingleBandTilePrototypeMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
