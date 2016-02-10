@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.io.kryo
 
 import geotrellis.spark.io.hadoop.formats._
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
@@ -181,18 +181,14 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofRef])
     kryo.register(classOf[scala.collection.Seq[Any]])
     kryo.register(classOf[scala.Tuple3[Any,Any,Any]])
-
-    /* Special Handling: Problematic Classes */
-    List(
-      geotrellis.proj4.LatLng.getClass,
-      geotrellis.spark.EmptyBounds.getClass,
-      scala.collection.immutable.Nil.getClass,
-      scala.math.Ordering.Double.getClass,
-      scala.math.Ordering.Float.getClass,
-      scala.math.Ordering.Int.getClass,
-      scala.math.Ordering.Long.getClass,
-      scala.None.getClass
-    ).foreach({ c => kryo.register(c) })
+    kryo.register(geotrellis.proj4.LatLng.getClass)
+    kryo.register(geotrellis.spark.EmptyBounds.getClass)
+    kryo.register(scala.collection.immutable.Nil.getClass)
+    kryo.register(scala.math.Ordering.Double.getClass)
+    kryo.register(scala.math.Ordering.Float.getClass)
+    kryo.register(scala.math.Ordering.Int.getClass)
+    kryo.register(scala.math.Ordering.Long.getClass)
+    kryo.register(scala.None.getClass)
 
     /* Special Handling: Avro */
     {
@@ -229,6 +225,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
       kryo.register(Schema.createRecord(fields).getClass)             // Record
       kryo.register(Schema.createUnion(schemas).getClass)             // Union
 
+      // In accessible and uninstantiatable
       kryo.register(java.lang.Class.forName("org.apache.avro.Schema$LockableArrayList"))
       kryo.register(java.lang.Class.forName("org.apache.avro.Schema$Name"))
     }
