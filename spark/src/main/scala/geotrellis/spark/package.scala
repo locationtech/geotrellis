@@ -115,7 +115,7 @@ package object spark
   implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends MultiBandRasterRDDMethods[K]
 
-  implicit class withIngestKeyRDDMethods[K: IngestKey, V <: CellGrid](val rdd: RDD[(K, V)]) {
+  implicit class withProjectedExtentRDDMethods[K: ProjectedExtentComponent, V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
       rdd.mapPartitions({ partition =>
         partition.map { case (key, value) =>
@@ -128,5 +128,15 @@ package object spark
   implicit class TileTuple[K](tup: (K, Tile)) {
     def id: K = tup._1
     def tile: Tile = tup._2
+  }
+
+  implicit class withProjectedExtentTemporalTilerKeyMethods[K: ProjectedExtentComponent: TemporalComponent](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
+    def extent = self.projectedExtent.extent
+    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.temporalComponent)
+  }
+
+  implicit class withProjectedExtentTilerKeyMethods[K: ProjectedExtentComponent](val self: K) extends TilerKeyMethods[K, SpatialKey] {
+    def extent = self.projectedExtent.extent
+    def translate(spatialKey: SpatialKey) = spatialKey
   }
 }

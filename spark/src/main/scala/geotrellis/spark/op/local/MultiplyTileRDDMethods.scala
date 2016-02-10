@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.op._
 import geotrellis.raster.op.local.Multiply
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 trait MultiplyTileRDDMethods[K] extends TileRDDMethods[K] {
@@ -44,16 +45,18 @@ trait MultiplyTileRDDMethods[K] extends TileRDDMethods[K] {
   def *:(d: Double) = localMultiply(d)
 
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(other: RDD[(K, Tile)]) =
-    self.combineValues(other)(Multiply.apply)
+  def localMultiply(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localMultiply(other, None)
+  def localMultiply(other: RDD[(K, Tile)], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(other, partitioner)(Multiply.apply)
 
   /** Multiply the values of each cell in each raster. */
-  def *(other: RDD[(K, Tile)]) = localMultiply(other)
+  def *(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localMultiply(other, None)
 
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(others: Traversable[RDD[(K, Tile)]]) =
-    self.combineValues(others)(Multiply.apply)
+  def localMultiply(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMultiply(others, None)
+  def localMultiply(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+    self.combineValues(others, partitioner)(Multiply.apply)
 
   /** Multiply the values of each cell in each raster. */
-  def *(others: Traversable[RDD[(K, Tile)]]) = localMultiply(others)
+  def *(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMultiply(others)
 }
