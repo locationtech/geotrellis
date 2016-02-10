@@ -184,15 +184,15 @@ class KryoRegistrator extends SparkKryoRegistrator {
 
     /* Special Handling: Problematic Classes */
     List(
-      "geotrellis.proj4.LatLng$",
-      "geotrellis.spark.EmptyBounds$",
-      "scala.collection.immutable.Nil$",
-      "scala.math.Ordering$Double$",
-      "scala.math.Ordering$Float$",
-      "scala.math.Ordering$Int$",
-      "scala.math.Ordering$Long$",
-      "scala.None$"
-    ).foreach({ c => kryo.register(java.lang.Class.forName(c)) })
+      geotrellis.proj4.LatLng.getClass,
+      geotrellis.spark.EmptyBounds.getClass,
+      scala.collection.immutable.Nil.getClass,
+      scala.math.Ordering.Double.getClass,
+      scala.math.Ordering.Float.getClass,
+      scala.math.Ordering.Int.getClass,
+      scala.math.Ordering.Long.getClass,
+      scala.None.getClass
+    ).foreach({ c => kryo.register(c) })
 
     /* Special Handling: Avro */
     {
