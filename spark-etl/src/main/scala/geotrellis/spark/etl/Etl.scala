@@ -93,7 +93,7 @@ case class Etl[
   def save(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K]): Unit = {
     val attributes = outputPlugin.attributes(conf.outputProps)
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-      val currentId = id.copy( zoom = zoom)
+      val currentId = id.copy(zoom = zoom)
       outputPlugin(currentId, rdd, method, conf.outputProps)
 
       scheme match {
