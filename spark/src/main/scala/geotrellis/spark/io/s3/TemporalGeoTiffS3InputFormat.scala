@@ -43,9 +43,9 @@ object TemporalGeoTiffS3InputFormat {
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent,Tile] {
+class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new S3RecordReader[TemporalProjectedExtent,Tile] {
+    new S3RecordReader[TemporalProjectedExtent, Tile] {
       def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = SingleBandGeoTiff(bytes)
 
