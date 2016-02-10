@@ -19,7 +19,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
-      .name("noDataValue").`type`().intType().intDefault(Short.MinValue.toInt)
+      .name("noDataValue").`type`().unionOf().intType().and().nullType().endUnion().intDefault(Short.MinValue.toInt)
       .endRecord()
 
     def encode(tile: ShortArrayTile, rec: GenericRecord) = {
@@ -57,7 +57,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
-      .name("noDataValue").`type`().intType().intDefault(0)
+      .name("noDataValue").`type`().unionOf().intType().and().nullType().endUnion().intDefault(0)
       .endRecord()
 
     def encode(tile: UShortArrayTile, rec: GenericRecord) = {
@@ -70,7 +70,6 @@ trait TileCodecs {
         case UShortUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case UShortCellType => rec.put("noDataValue", null)
       }
-      rec.put("celltype", tile.cellType.toString)
     }
 
     def decode(rec: GenericRecord) = {
@@ -95,7 +94,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().array().items().intType().noDefault()
-      .name("noDataValue").`type`().intType().intDefault(Int.MinValue)
+      .name("noDataValue").`type`().unionOf().intType().and().nullType().endUnion().intDefault(Int.MinValue)
       .endRecord()
 
     def encode(tile: IntArrayTile, rec: GenericRecord) = {
@@ -232,7 +231,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
-      .name("noDataValue").`type`().intType().intDefault(Byte.MinValue.toInt)
+      .name("noDataValue").`type`().unionOf().intType().and().nullType().endUnion().intDefault(Byte.MinValue.toInt)
       .endRecord()
 
     def encode(tile: ByteArrayTile, rec: GenericRecord) = {
@@ -240,8 +239,8 @@ trait TileCodecs {
       rec.put("rows", tile.rows)
       rec.put("cells", ByteBuffer.wrap(tile.array))
       tile.cellType match {
-        case ByteConstantNoDataCellType => rec.put("noDataValue", 0.toByte)
-        case ByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
+        case ByteConstantNoDataCellType => rec.put("noDataValue", 0)
+        case ByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case ByteCellType => rec.put("noDataValue", null)
       }
     }
@@ -266,7 +265,7 @@ trait TileCodecs {
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
       .name("cells").`type`().bytesType().noDefault()
-      .name("noDataValue").`type`().intType().intDefault(0)
+      .name("noDataValue").`type`().unionOf().intType().and().nullType().endUnion().intDefault(0)
       .endRecord()
 
     def encode(tile: UByteArrayTile, rec: GenericRecord) = {
