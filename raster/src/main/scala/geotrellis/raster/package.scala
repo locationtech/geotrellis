@@ -29,19 +29,6 @@ package object raster
   type SingleBandRaster = Raster[Tile]
   type MultiBandRaster = Raster[MultiBandTile]
 
-  implicit class Nodata[T](x: T) {
-    def getNodata() = {
-      x match {
-        case _: Byte => byteNODATA
-        case _: Double => doubleNODATA
-        case _: Float => floatNODATA
-        case _: Int => NODATA
-        case _: Short => shortNODATA
-        case _ => throw new Exception
-      }
-    }
-  }
-
   // Implicit method extension for core types
 
   implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]

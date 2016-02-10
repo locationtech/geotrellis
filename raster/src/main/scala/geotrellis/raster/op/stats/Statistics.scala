@@ -16,7 +16,7 @@
 
 package geotrellis.raster.op.stats
 
-import geotrellis.raster.{Nodata, doubleNODATA, NODATA}
+import geotrellis.raster.{doubleNODATA, NODATA}
 
 /**
   * Data object for sharing the basic statistics about a raster or region.

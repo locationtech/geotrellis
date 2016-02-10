@@ -11,7 +11,7 @@ trait StatsMethods extends MethodExtensions[Tile] {
     *           rounded to integers when making the Histogram.
     */
   def histogram: Histogram[Int] =
-    FastMapHistogram.fromTile(tile)
+    FastMapHistogram.fromTile(self)
 
   /**
     * Implements a histogram in terms of an array of the given size.
@@ -42,7 +42,7 @@ trait StatsMethods extends MethodExtensions[Tile] {
     * @param significantDigits   Number of significant digits to preserve by multiplying
     */
   def doubleHistogram(significantDigits: Int): Histogram[Int] =
-    FastMapHistogram.fromTileDouble(tile, significantDigits)
+    FastMapHistogram.fromTileDouble(self, significantDigits)
 
   /**
   * Generate quantile class breaks for a given raster.
