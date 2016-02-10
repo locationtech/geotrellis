@@ -77,21 +77,21 @@ object IfCell extends Serializable {
                        { (z1, z2) => if (cond(z1, z2)) trueValue else falseValue }
 }
 
-trait ConditionalMethods extends TileMethods {
+trait ConditionalMethods extends MethodExtensions[Tile] {
   def localIf(cond: Int => Boolean, trueValue: Int): Tile =
-    IfCell(tile, cond, trueValue)
+    IfCell(self, cond, trueValue)
   def localIf(cond: Double => Boolean, trueValue: Double): Tile =
-    IfCell(tile, cond, trueValue)
+    IfCell(self, cond, trueValue)
   def localIf(cond: Int => Boolean, trueValue: Int, falseValue: Int): Tile =
-    IfCell(tile, cond, trueValue, falseValue)
+    IfCell(self, cond, trueValue, falseValue)
   def localIf(cond: Double => Boolean, trueValue: Double, falseValue: Double): Tile =
-    IfCell(tile, cond, trueValue, falseValue)
+    IfCell(self, cond, trueValue, falseValue)
   def localIf(r: Tile, cond: (Int, Int) => Boolean, trueValue: Int): Tile =
-    IfCell(tile, r, cond, trueValue)
+    IfCell(self, r, cond, trueValue)
   def localIf(r: Tile, cond: (Double, Double) => Boolean, trueValue: Double): Tile =
-    IfCell(tile, r, cond, trueValue)
+    IfCell(self, r, cond, trueValue)
   def localIf(r: Tile, cond: (Int, Int) => Boolean, trueValue: Int, falseValue: Int): Tile =
-    IfCell(tile, r, cond, trueValue, falseValue)
+    IfCell(self, r, cond, trueValue, falseValue)
   def localIf(r: Tile, cond: (Double, Double) => Boolean, trueValue: Double, falseValue: Double): Tile =
-    IfCell(tile, r, cond, trueValue, falseValue)
+    IfCell(self, r, cond, trueValue, falseValue)
 }

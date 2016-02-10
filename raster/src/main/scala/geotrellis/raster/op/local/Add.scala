@@ -36,25 +36,25 @@ object Add extends LocalTileBinaryOp {
     else z1 + z2
 }
 
-trait AddMethods extends TileMethods {
+trait AddMethods extends MethodExtensions[Tile] {
   /** Add a constant Int value to each cell. */
-  def localAdd(i: Int): Tile = Add(tile, i)
+  def localAdd(i: Int): Tile = Add(self, i)
   /** Add a constant Int value to each cell. */
   def +(i: Int): Tile = localAdd(i)
   /** Add a constant Int value to each cell. */
   def +:(i: Int): Tile = localAdd(i)
   /** Add a constant Double value to each cell. */
-  def localAdd(d: Double): Tile = Add(tile, d)
+  def localAdd(d: Double): Tile = Add(self, d)
   /** Add a constant Double value to each cell. */
   def +(d: Double): Tile = localAdd(d)
   /** Add a constant Double value to each cell. */
   def +:(d: Double): Tile = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(r: Tile): Tile = Add(tile, r)
+  def localAdd(r: Tile): Tile = Add(self, r)
   /** Add the values of each cell in each raster. */
   def +(r: Tile): Tile = localAdd(r)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs: Traversable[Tile]): Tile = Add(tile +: rs.toSeq)
+  def localAdd(rs: Traversable[Tile]): Tile = Add(self +: rs.toSeq)
   /** Add the values of each cell in each raster. */
   def +(rs: Traversable[Tile]): Tile = localAdd(rs)
 }

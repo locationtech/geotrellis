@@ -21,7 +21,7 @@ import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.{Geometry, Extent}
 
-trait LocalMethods extends TileMethods
+trait LocalMethods extends MethodExtensions[Tile]
                       with AddMethods
                       with SubtractMethods
                       with MultiplyMethods
@@ -51,7 +51,7 @@ trait LocalMethods extends TileMethods
    * the output raster will be empty -- all values set to NODATA.
    */
   def localMask(r: Tile, readMask: Int, writeMask: Int): Tile =
-    Mask(tile, r, readMask, writeMask)
+    Mask(self, r, readMask, writeMask)
 
   /**
     * Generate a raster with the values from the first raster, but only include
@@ -62,45 +62,45 @@ trait LocalMethods extends TileMethods
     * the output raster will be identical to the first raster.
     */
   def localInverseMask(r: Tile, readMask: Int, writeMask: Int): Tile =
-    InverseMask(tile, r, readMask, writeMask)
+    InverseMask(self, r, readMask, writeMask)
 
   /** Maps an integer typed Tile to 1 if the cell value is not NODATA, otherwise 0. */
   def localDefined(): Tile =
-    Defined(tile)
+    Defined(self)
 
   /** Maps an integer typed Tile to 1 if the cell value is NODATA, otherwise 0. */
   def localUndefined(): Tile =
-    Undefined(tile)
+    Undefined(self)
 
   /** Take the square root each value in a raster. */
   def localSqrt(): Tile =
-    Sqrt(tile)
+    Sqrt(self)
 
   /** Round the values of a Tile. */
   def localRound(): Tile =
-    Round(tile)
+    Round(self)
 
   /** Computes the Log of Tile values. */
   def localLog(): Tile =
-    Log(tile)
+    Log(self)
 
   /** Computes the Log base 10 of Tile values. */
   def localLog10(): Tile =
-    Log10(tile)
+    Log10(self)
 
   /** Takes the Flooring of each raster cell value. */
   def localFloor(): Tile =
-    Floor(tile)
+    Floor(self)
 
   /** Takes the Ceiling of each raster cell value. */
   def localCeil(): Tile =
-    Ceil(tile)
+    Ceil(self)
 
   /**
     * Negate (multiply by -1) each value in a raster.
     */
   def localNegate(): Tile =
-    Negate(tile)
+    Negate(self)
 
   /** Negate (multiply by -1) each value in a raster. */
   def unary_-(): Tile = localNegate()
@@ -112,25 +112,25 @@ trait LocalMethods extends TileMethods
     *                     the data values will be rounded to integers.
     */
   def localNot(): Tile =
-    Not(tile)
+    Not(self)
 
   /** Takes the Absolute value of each raster cell value. */
   def localAbs(): Tile =
-    Abs(tile)
+    Abs(self)
 
   /**
     * Takes the arc cos of each raster cell value.
     * @info               Always return a double valued raster.
     */
   def localAcos(): Tile =
-    Acos(tile)
+    Acos(self)
 
   /**
     * Takes the arc sine of each raster cell value.
     * @info               Always return a double valued raster.
     */
   def localAsin(): Tile =
-    Asin(tile)
+    Asin(self)
 
   /** Takes the Arc Tangent2
    *  This raster holds the y - values, and the parameter
@@ -138,52 +138,52 @@ trait LocalMethods extends TileMethods
    *  @info               A double raster is always returned.
    */
    def localAtan2(r: Tile): Tile =
-    Atan2(tile, r)
+    Atan2(self, r)
 
   /**
     * Takes the arc tan of each raster cell value.
     * @info               Always return a double valued raster.
     */
   def localAtan(): Tile =
-    Atan(tile)
+    Atan(self)
 
   /** Takes the Cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localCos(): Tile =
-    Cos(tile)
+    Cos(self)
 
   /** Takes the hyperboic cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localCosh(): Tile =
-    Cosh(tile)
+    Cosh(self)
 
   /**
     * Takes the sine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localSin(): Tile =
-    Sin(tile)
+    Sin(self)
 
   /**
    * Takes the hyperbolic sine of each raster cell value.
    * @info               Always returns a double raster.
    */
   def localSinh(): Tile =
-    Sinh(tile)
+    Sinh(self)
 
   /** Takes the Tangent of each raster cell value.
    * @info               Always returns a double raster.
    */
   def localTan(): Tile =
-    Tan(tile)
+    Tan(self)
 
   /** Takes the hyperboic cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localTanh(): Tile =
-    Tanh(tile)
+    Tanh(self)
 
   /** Masks this tile by the given Geometry. Do not include polygon exteriors */
   def mask(ext: Extent, geom: Geometry): Tile =
@@ -199,16 +199,16 @@ trait LocalMethods extends TileMethods
 
   /** Masks this tile by the given Geometry. */
   def mask(ext: Extent, geoms: Traversable[Geometry], options: Options): Tile = {
-    val re = RasterExtent(tile, ext)
-    val result = ArrayTile.empty(tile.cellType, tile.cols, tile.rows)
+    val re = RasterExtent(self, ext)
+    val result = ArrayTile.empty(self.cellType, self.cols, self.rows)
     for (g <- geoms) {
-      if (tile.cellType.isFloatingPoint) {
+      if (self.cellType.isFloatingPoint) {
         Rasterizer.foreachCellByGeometry(g, re, options) { (col: Int, row: Int) =>
-          result.setDouble(col, row, tile.getDouble(col, row))
+          result.setDouble(col, row, self.getDouble(col, row))
         }
       } else {
         Rasterizer.foreachCellByGeometry(g, re, options) { (col: Int, row: Int) =>
-          result.set(col, row, tile.get(col, row))
+          result.set(col, row, self.get(col, row))
         }
       }
     }

@@ -3,18 +3,18 @@ package geotrellis.raster.op.zonal.summary
 import geotrellis.raster._
 import geotrellis.vector._
 
-trait ZonalSummaryMethods extends TileMethods {
+trait ZonalSummaryMethods extends MethodExtensions[Tile] {
   def zonalSummary[T](extent: Extent, polygon: Polygon, handler: TileIntersectionHandler[T]): T = {
     val results = {
       if(polygon.contains(extent)) {
-        Seq(handler.handleFullTile(tile))
+        Seq(handler.handleFullTile(self))
       } else {
         polygon.intersection(extent) match {
           case PolygonResult(intersection) =>
-            Seq(handler.handlePartialTile(Raster(tile, extent), intersection))
+            Seq(handler.handlePartialTile(Raster(self, extent), intersection))
           case MultiPolygonResult(mp) =>
             mp.polygons.map { intersection =>
-              handler.handlePartialTile(Raster(tile, extent), intersection)
+              handler.handlePartialTile(Raster(self, extent), intersection)
             }
           case _ => Seq()
         }
@@ -27,14 +27,14 @@ trait ZonalSummaryMethods extends TileMethods {
   def zonalSummary[T](extent: Extent, multiPolygon: MultiPolygon, handler: TileIntersectionHandler[T]): T = {
     val results = {
       if(multiPolygon.contains(extent)) {
-        Seq(handler.handleFullTile(tile))
+        Seq(handler.handleFullTile(self))
       } else {
         multiPolygon.intersection(extent) match {
           case PolygonResult(intersection) =>
-            Seq(handler.handlePartialTile(Raster(tile, extent), intersection))
+            Seq(handler.handlePartialTile(Raster(self, extent), intersection))
           case MultiPolygonResult(mp) =>
             mp.polygons.map { intersection =>
-              handler.handlePartialTile(Raster(tile, extent), intersection)
+              handler.handlePartialTile(Raster(self, extent), intersection)
             }
           case _ => Seq()
         }
