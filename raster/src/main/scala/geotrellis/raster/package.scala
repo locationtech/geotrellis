@@ -24,6 +24,7 @@ import geotrellis.raster.rasterize._
 
 package object raster
     extends crop.Implicits
+    with mask.Implicits
     with merge.Implicits
     with reproject.Implicits {
   type SingleBandRaster = Raster[Tile]
@@ -53,6 +54,7 @@ package object raster
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
+      with mask.TileMaskMethods
       with merge.SingleBandTileMergeMethods
       with op.elevation.ElevationMethods
       with op.focal.FocalMethods
