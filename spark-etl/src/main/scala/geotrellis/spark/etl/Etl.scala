@@ -33,12 +33,12 @@ case class Etl[
   @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
 
   type M = RasterMetaData
-  @transient implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
-  @transient implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
+  implicit def classTagK = ClassTag(tk.mirror.runtimeClass(tk.tpe)).asInstanceOf[ClassTag[K]]
+  implicit def classTagV = ClassTag(tv.mirror.runtimeClass(tv.tpe)).asInstanceOf[ClassTag[V]]
 
   @transient val conf = new EtlConf(args)
 
-  @transient val scheme: Either[LayoutScheme, LayoutDefinition] = {
+  def scheme: Either[LayoutScheme, LayoutDefinition] = {
     if (conf.layoutScheme.isDefined) {
       val scheme = conf.layoutScheme()(conf.crs(), conf.tileSize())
       logger.info(scheme.toString)
