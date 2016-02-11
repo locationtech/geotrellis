@@ -6,9 +6,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class MaxSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class MaxSpec extends FunSpec with TestEnvironment {
 
   describe("Max Focal Spec") {
 

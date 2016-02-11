@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class VarietySpec extends FunSpec 
-                     with Matchers 
-                     with TestEngine 
-                     with TileBuilders {
+class VarietySpec extends FunSpec with Matchers with TestEngine {
   describe("Variety") {
     it("computes variety on raster sources") { 
       val n = NODATA

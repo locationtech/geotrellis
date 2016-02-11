@@ -23,10 +23,8 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class XorSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class XorSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Xor Operation") {
     val ones = AllOnesTestFile
     val twos = AllTwosTestFile

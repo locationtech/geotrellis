@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class OrSpec extends FunSpec 
-                with Matchers 
-                with TestEngine 
-                with TileBuilders {
+class OrSpec extends FunSpec with Matchers with TestEngine {
   describe("Or") {
     it("ors three tiled RasterSources correctly") {
       val rs1 = createRasterSource(

@@ -1,4 +1,4 @@
 import Dependencies._
 
-name := "geotrellis-testkit"
+name := "geotrellis-raster-testkit"
 libraryDependencies += scalatest

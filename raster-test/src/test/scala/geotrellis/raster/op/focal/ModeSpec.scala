@@ -1,9 +1,9 @@
 package geotrellis.raster.op.focal
 
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
-class ModeSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
+class ModeSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
 
   val getModeResult = Function.uncurried((getCursorResult _).curried(
     (r,n) => Mode.calculation(r,n)))

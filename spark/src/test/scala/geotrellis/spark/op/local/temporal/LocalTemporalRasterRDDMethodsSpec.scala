@@ -11,9 +11,7 @@ import spire.syntax.cfor._
 
 import org.scalatest.FunSpec
 
-class LocalTemporalSpec extends FunSpec with TestEnvironment
-    with RasterRDDBuilders
-    with RasterRDDMatchers {
+class LocalTemporalSpec extends FunSpec with TestEnvironment {
 
   describe("Local Temporal Operations") {
 

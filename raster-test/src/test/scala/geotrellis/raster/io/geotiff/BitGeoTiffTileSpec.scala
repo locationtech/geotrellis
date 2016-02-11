@@ -8,14 +8,14 @@ import geotrellis.vector.Extent
 
 import geotrellis.proj4._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class BitGeoTiffTileSpec extends FunSpec
     with Matchers
+    with RasterMatchers
     with BeforeAndAfterAll
-    with TestEngine
     with GeoTiffTestUtils 
     with TileBuilders {
   describe("BitGeoTiffTile") {

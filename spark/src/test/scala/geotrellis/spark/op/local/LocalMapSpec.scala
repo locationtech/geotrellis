@@ -9,11 +9,8 @@ import geotrellis.spark.testfiles._
 import com.github.nscala_time.time.Imports.DateTime
 import org.scalatest._
 
-class LocalMapSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Local Map Operations") {
     it("should map an integer function over an integer raster rdd") {
       val arr: Array[Int] =

@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class CeilSpec extends FunSpec 
-                  with Matchers 
-                  with TestEngine 
-                  with TileBuilders {
+class CeilSpec extends FunSpec with Matchers with TestEngine {
   describe("Ceil") {
     it("takes ceil of int tiled RasterSource") {
       val rs = createRasterSource(

@@ -6,8 +6,7 @@ import geotrellis.raster.mosaic._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
-import geotrellis.engine._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
@@ -18,7 +17,7 @@ import spire.syntax.cfor._
 class ReprojectSpec extends FunSpec
     with TileBuilders
     with GeoTiffTestUtils
-    with TestEngine {
+    with RasterMatchers {
   describe("reprojects in approximation to GDAL") {
     import Reproject.Options
 
@@ -27,7 +26,7 @@ class ReprojectSpec extends FunSpec
 
       val ree @ Raster(expected, expectedExtent) =
         SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
- 
+
       val rea @ Raster(actual, actualExtent) =
         raster.reproject(crs, WebMercator, Options(method = NearestNeighbor, errorThreshold = 0.0))
 

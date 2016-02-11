@@ -21,10 +21,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class SubtractSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class SubtractSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Subtract Operation") {
     val ones = AllOnesTestFile

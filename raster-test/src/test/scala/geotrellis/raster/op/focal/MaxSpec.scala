@@ -1,10 +1,10 @@
 package geotrellis.raster.op.focal
 
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.raster._
 
-class MaxSpec extends FunSpec with Matchers with TileBuilders with TestEngine with FocalOpSpec {
+class MaxSpec extends FunSpec with Matchers with TileBuilders with RasterMatchers with FocalOpSpec {
 
   val getMaxResult = Function.uncurried((getCursorResult _).curried(
     (r,n) => Max.calculation(r,n)

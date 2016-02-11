@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.testkit
+package geotrellis.raster.testkit
 
 import org.scalatest._
 import geotrellis.raster._
@@ -26,6 +26,47 @@ trait RasterMatchers extends Matchers {
 
   val Eps = 1e-3
 
+  def assertEqual(r: Tile, arr: Array[Int]): Unit = {
+    withClue(s"Sizes do not match.") {
+      (r.cols * r.rows) should be (arr.length)
+    }
+
+    r.foreach { (col, row, z) =>
+      withClue(s"Value at ($col, $row) are not the same") {
+        z should be (arr(row * r.cols + col))
+      }
+    }
+  }
+
+  def assertEqual(r: Tile, arr: Array[Double], threshold: Double = Eps): Unit = {
+    withClue(s"Sizes do not match.") {
+      (r.cols * r.rows) should be (arr.length)
+    }
+
+    r.foreachDouble { (col, row, v1) =>
+      val v2 = arr(row * r.cols + col)
+      if (isNoData(v1)) {
+        withClue(s"Value at ($col, $row) are not the same: v1 = NoData, v2 = $v2") {
+          isNoData(v2) should be(true)
+        }
+      } else {
+        if (isNoData(v2)) {
+          withClue(s"Value at ($col, $row) are not the same: v1 = $v1, v2 = NoData") {
+            isNoData(v1) should be(true)
+          }
+        } else {
+          withClue(s"Value at ($col, $row) are not the same: ") {
+            v1 should be(v2 +- threshold)
+          }
+        }
+      }
+    }
+  }
+
+  def assertEqual(ta: Tile, tb: Tile): Unit = tilesEqual(ta, tb)
+
+  def assertEqual(ta: Tile, tb: Tile, threshold: Double): Unit = tilesEqual(ta, tb, threshold)
+  
   def arraysEqual(a1: Array[Double], a2: Array[Double], eps: Double = Eps) =
     a1.zipWithIndex.foreach { case (v, i) => v should be (a2(i) +- eps) }
 
@@ -38,13 +79,29 @@ trait RasterMatchers extends Matchers {
 
     cfor(0)(_ < cols, _ + 1) { col =>
       cfor(0)(_ < rows, _ + 1) { row =>
-        withClue(s"Wasn't equal on col: $col, row: $row") {
-          val v1 = ta.getDouble(col, row)
-          val v2 = tb.getDouble(col, row)
+        val v1 = ta.getDouble(col, row)
+        val v2 = tb.getDouble(col, row)
+        withClue(s"Wasn't equal on col: $col, row: $row (v1=$v1, v2=$v2)") {
           if (v1.isNaN) v2.isNaN should be (true)
           else if (v2.isNaN) v1.isNaN should be (true)
           else v1 should be (v2 +- eps)
         }
+      }
+    }
+  }
+
+  /*
+   * Takes a function and checks if each f(x, y) == tile.get(x, y)
+   *  - Specialized for int so the function can check if an
+   *    (x, y) pair are NODATA. Prior to this, the tile's value
+   *    would be converted to a double, and NODATA would become NaN.
+   */
+  def rasterShouldBeInt(tile: Tile, f: (Int, Int) => Int): Unit = {
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val exp = f(col, row)
+        val v = tile.get(col, row)
+        withClue(s"(col=$col, row=$row)") { v should be(exp) }
       }
     }
   }

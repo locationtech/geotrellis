@@ -16,16 +16,14 @@
 
 package geotrellis.engine.io
 
+import geotrellis.engine.TestEngine
 import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class LoadFileSpec extends FunSpec 
-                      with Matchers 
-                      with TestEngine 
-                      with TileBuilders {
+class LoadFileSpec extends FunSpec with Matchers with TestEngine {
+
   describe("LoadFile") {
     it("loads a test raster.") {
       val raster = get(LoadFile("raster-test/data/fake.img8.arg"))

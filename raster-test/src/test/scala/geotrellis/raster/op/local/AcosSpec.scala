@@ -20,11 +20,11 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class AcosSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
   describe("ArcCos") {
     it("finds arccos of a double raster") {

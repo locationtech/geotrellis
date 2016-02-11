@@ -17,13 +17,12 @@
 package geotrellis.engine.op.focal
 
 import geotrellis.raster._
-import geotrellis.testkit._
 import geotrellis.engine._
 
 import org.scalatest._
 
-class FocalRasterSourceMethodsSpec extends FunSpec with TileBuilders
-                                         with TestEngine {
+class FocalRasterSourceMethodsSpec extends FunSpec with TestEngine {
+
   describe("zipWithNeighbors") {
     it("Gets correct neighbors for 3 x 2 tiles") {
       val rs1 = createRasterSource(

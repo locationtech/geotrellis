@@ -24,10 +24,8 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class AddSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class AddSpec extends FunSpec with TestEnvironment with TestFiles {
+  
   describe("Add Operation") {
     val ones = AllOnesTestFile
 

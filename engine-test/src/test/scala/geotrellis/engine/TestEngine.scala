@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.testkit
+package geotrellis.engine
 
-import geotrellis.raster._
-import geotrellis.engine._
 import geotrellis.engine.io._
+import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
+import geotrellis.raster._
 import org.scalatest._
-
-import spire.syntax.cfor._
 
 object TestEngine {
   private var _init = false
@@ -33,7 +31,9 @@ object TestEngine {
     }
 }
 
-trait TestEngine extends Suite with BeforeAndAfter with Matchers {
+trait TestEngine extends Suite with BeforeAndAfter with Matchers
+  with RasterSourceBuilders with TileBuilders with RasterMatchers {
+
   implicit lazy val engine: geotrellis.engine.Engine = {
     val config = GeoTrellisConfig()
     val name = s"engine-${getClass.getName}"
@@ -61,18 +61,6 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
 
   def assertEqual(r: Op[Tile], arr: Array[Int]): Unit =
     assertEqual(get(r), arr)
-
-  def assertEqual(r: Tile, arr: Array[Int]): Unit = {
-    withClue(s"Sizes do not match.") {
-      (r.cols * r.rows) should be (arr.length)
-    }
-
-    r.foreach { (col, row, z) =>
-      withClue(s"Value at ($col, $row) are not the same") {
-        z should be (arr(row * r.cols + col))
-      }
-    }
-  }
 
   def assertEqual(r: Op[Tile], arr: Array[Double]): Unit =
     assertEqual(r, arr, 0.0000000001)

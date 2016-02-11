@@ -22,10 +22,7 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class DivideSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class DivideSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Divide Operation") {
     val twos = AllTwosTestFile

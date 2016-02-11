@@ -18,11 +18,11 @@ package geotrellis.raster.op.focal
 
 import geotrellis.vector.Extent
 import geotrellis.raster._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class MoranSpec extends FunSpec with TestEngine {
+class MoranSpec extends FunSpec with RasterMatchers {
   val x = Array(0, 1, 0, 1, 0, 1, 0, 1)
   val y = Array(1, 0, 1, 0, 1, 0, 1, 0)
 

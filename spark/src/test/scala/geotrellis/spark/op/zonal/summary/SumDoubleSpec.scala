@@ -9,10 +9,7 @@ import geotrellis.vector._
 
 import org.scalatest.FunSpec
 
-class SumDoubleSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Sum Double Zonal Summary Operation") {
     val ones = AllOnesTestFile

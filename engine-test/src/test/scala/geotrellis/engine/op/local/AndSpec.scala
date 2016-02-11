@@ -21,12 +21,9 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class AndSpec extends FunSpec 
-                 with Matchers 
-                 with TestEngine 
-                 with TileBuilders {
+class AndSpec extends FunSpec with Matchers with TestEngine {
+
   describe("And") {
     it("ands three tiled RasterSources correctly") {
       val rs1 = createRasterSource(

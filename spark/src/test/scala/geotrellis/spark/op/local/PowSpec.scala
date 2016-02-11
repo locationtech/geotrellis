@@ -22,10 +22,8 @@ import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class PowSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class PowSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Pow Operation") {
     val hundreds = AllHundredsTestFile
     val twos = AllTwosTestFile

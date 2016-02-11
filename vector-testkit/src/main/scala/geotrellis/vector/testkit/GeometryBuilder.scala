@@ -1,4 +1,4 @@
-package geotrellis.testkit.vector
+package geotrellis.vector.testkit
 
 import geotrellis.vector._
 import com.vividsolutions.jts.{geom => jts}

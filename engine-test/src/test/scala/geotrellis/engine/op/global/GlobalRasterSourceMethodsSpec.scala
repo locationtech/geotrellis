@@ -18,14 +18,12 @@ package geotrellis.engine.op.global
 
 import geotrellis.engine._
 import geotrellis.raster.op.global._
-import geotrellis.testkit._
 import geotrellis.process._
 
 import org.scalatest._
 
-class GlobalRasterSourceMethodsSpec extends FunSpec
-                                       with TestEngine 
-                                       with TileBuilders {
+class GlobalRasterSourceMethodsSpec extends FunSpec with TestEngine {
+
   describe("finding min and max") {
     it("Gets correct min and max for 3 x 2 tiles") {
       val rs1 = createRasterSource(

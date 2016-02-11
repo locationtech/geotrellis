@@ -1,7 +1,7 @@
 package geotrellis.vector.io.json
 
 import geotrellis.vector._
-import geotrellis.testkit.vector._
+import geotrellis.vector.testkit._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
