@@ -1,4 +1,4 @@
-package geotrellis.spark.io.hadoop.formats
+package geotrellis.gdal.io.formats
 
 import org.scalatest.{FunSpec, Matchers}
 

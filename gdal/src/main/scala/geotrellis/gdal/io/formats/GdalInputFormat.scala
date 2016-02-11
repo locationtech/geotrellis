@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.formats
-import geotrellis.spark.io.hadoop._
-import geotrellis.raster._
-import geotrellis.proj4._
+package geotrellis.gdal.io.formats
+
 import geotrellis.gdal.{RasterBand, RasterDataSet, Gdal}
+import geotrellis.proj4.{CRS, LatLng}
+import geotrellis.raster._
+import geotrellis.spark.io.hadoop.HdfsUtils
+import geotrellis.spark.io.hadoop.HdfsUtils._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.InputSplit
@@ -28,8 +30,10 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.Logging
+
 import GdalInputFormat._
-import HdfsUtils.LocalPath
+
 
 /**
  * Uses GDAL to attempt to read a raster file.
@@ -50,10 +54,11 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
     new GdalRecordReader
 }
 
-case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
-case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
 
 object GdalInputFormat {
+  case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
+  case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
+
   def parseMeta(meta: List[String]): Map[String, String] =
     meta
       .map(_.split("="))
