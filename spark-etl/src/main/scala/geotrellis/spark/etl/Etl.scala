@@ -1,6 +1,6 @@
 package geotrellis.spark.etl
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.slf4j.{Logger, LazyLogging}
 import geotrellis.raster.RasterExtent
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
@@ -9,6 +9,7 @@ import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
+import org.slf4j.LoggerFactory
 import scala.reflect._
 import geotrellis.raster.CellGrid
 import geotrellis.spark._
@@ -23,17 +24,21 @@ object Etl {
 }
 
 case class Etl[
-  I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
-  K: SpatialComponent: TypeTag,
-  V <: CellGrid: TypeTag: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-](args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules) extends LazyLogging {
+  I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K],
+  K: SpatialComponent,
+  V <: CellGrid: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+](args: Seq[String], @transient modules: Seq[TypedModule] = Etl.defaultModules)
+ (implicit @transient ti: TypeTag[I], @transient tk: TypeTag[K], @transient tv: TypeTag[V]) {
+
+  @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
+
   type M = RasterMetaData
-  implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
-  implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
+  @transient implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
+  @transient implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
-  val conf = new EtlConf(args)
+  @transient val conf = new EtlConf(args)
 
-  val scheme: Either[LayoutScheme, LayoutDefinition] = {
+  @transient val scheme: Either[LayoutScheme, LayoutDefinition] = {
     if (conf.layoutScheme.isDefined) {
       val scheme = conf.layoutScheme()(conf.crs(), conf.tileSize())
       logger.info(scheme.toString)
@@ -46,7 +51,7 @@ case class Etl[
       sys.error("Either layoutScheme or layoutExtent with cellSize must be provided")
   }
 
-  val combinedModule = modules reduce (_ union _)
+  @transient val combinedModule = modules reduce (_ union _)
     
   lazy val outputPlugin =
     combinedModule
