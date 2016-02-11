@@ -127,7 +127,7 @@ lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit"))
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark).
   settings(commonSettings: _*)
-  
+
 lazy val graph = Project("graph", file("graph")).
   dependsOn(spark % "test->test;compile->compile").
   settings(commonSettings: _*)
