@@ -117,7 +117,7 @@ lazy val admin = Project("admin", file("admin")).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
-  dependsOn(raster, gdal).
+  dependsOn(raster).
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
