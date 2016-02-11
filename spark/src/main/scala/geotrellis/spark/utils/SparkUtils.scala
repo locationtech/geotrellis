@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,9 +28,9 @@ object SparkUtils extends Logging {
   private val gtHomeLock = new Object()
   private var _geoTrellisHome: Option[String] = None
   def geoTrellisHome = _geoTrellisHome
-  def setGeoTrellisHome(path: String): Unit = 
+  def setGeoTrellisHome(path: String): Unit =
     _geoTrellisHome match {
-      case Some(s) => 
+      case Some(s) =>
         if(s != _geoTrellisHome) {
           sys.error(s"GeoTrellis Home directory already set to $s")
         }
@@ -61,7 +61,7 @@ object SparkUtils extends Logging {
     sparkConf
       .setAppName(appName)
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", classOf[geotrellis.spark.io.hadoop.KryoRegistrator].getName)
+      .set("spark.kryo.registrator", classOf[geotrellis.spark.io.kryo.KryoRegistrator].getName)
 
     new SparkContext(sparkConf)
   }
@@ -79,14 +79,14 @@ object SparkUtils extends Logging {
     new Configuration
   }
 
-  /* 
-   * Find the geotrellis-spark jar under the geotrellis home directory and return it with a 
-   * "local:" prefix that tells Spark to look for that jar on every slave node where its 
+  /*
+   * Find the geotrellis-spark jar under the geotrellis home directory and return it with a
+   * "local:" prefix that tells Spark to look for that jar on every slave node where its
    * executors are scheduled
-   * 
-   *  For e.g., if GEOTRELLIS_HOME = /usr/local/geotrellis 
+   *
+   *  For e.g., if GEOTRELLIS_HOME = /usr/local/geotrellis
    *  and the jar lives in /usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar
-   *  then this gets returned: "local:/usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar" 
+   *  then this gets returned: "local:/usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar"
    **/
   def findGeoTrellisJar(gtHome: String): Option[String] = {
     def isMatch(fileName: String): Boolean = "geotrellis-spark(.)*.jar".r.findFirstIn(fileName) match {
@@ -103,7 +103,7 @@ object SparkUtils extends Logging {
     }
 
     def prefix(s: String) = "local:" + s
-    
+
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
       val firstMatch = matches(0).getAbsolutePath
