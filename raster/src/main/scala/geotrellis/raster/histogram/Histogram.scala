@@ -21,14 +21,15 @@ import geotrellis.raster.NODATA
 import math.{abs, round, sqrt}
 
 import spire.syntax.cfor._
+
 /**
   * Data object representing a histogram of values.
   */
-abstract trait Histogram extends Serializable {
+abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Serializable {
   /**
    * Return the number of occurances for 'item'.
    */
-  def getItemCount(item: Int): Int
+  def getItemCount(item: T): Int
 
   /**
    * Return the total number of occurances for all items.
@@ -38,34 +39,51 @@ abstract trait Histogram extends Serializable {
   /**
    * Return the smallest item seen.
    */
-  def getMinValue(): Int
+  def getMinValue(): T
 
   /**
    * Return the largest item seen.
    */
-  def getMaxValue(): Int
+  def getMaxValue(): T
 
   /**
    * Return the smallest and largest items seen as a tuple.
    */
-  def getMinMaxValues(): (Int, Int) = (getMinValue, getMaxValue)
+  def getMinMaxValues(): (T, T) = (getMinValue, getMaxValue)
 
   /**
    * Return a mutable copy of this histogram.
    */
-  def mutable(): MutableHistogram
+  def mutable(): MutableHistogram[T]
 
-  def getValues(): Array[Int]
+  def getValues(): Array[T]
 
-  def rawValues(): Array[Int]
+  def rawValues(): Array[T]
 
-  def foreach(f: (Int, Int) => Unit) {
+  def foreach(f: (T, Int) => Unit): Unit
+
+  def foreachValue(f: T => Unit): Unit
+
+  def getQuantileBreaks(num: Int): Array[T]
+
+  def getMode(): T
+
+  def getMedian(): T
+
+  def getMean(): Double
+
+  def generateStatistics(): Statistics[T]
+
+  def toJSON = {
+    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
+    s"[$counts]"
+  }
+}
+
+abstract trait HistogramInt extends Histogram[Int] {
+  def foreach(f: (Int, Int) => Unit): Unit = {
     getValues.foreach(z => f(z, getItemCount(z)))
   }
-
-  def foreachValue(f: Int => Unit): Unit
-
-  def getQuantileBreaks(num: Int): Array[Int]
 
   def getMode(): Int = {
     if(getTotalCount == 0) { return NODATA }
@@ -119,7 +137,7 @@ abstract trait Histogram extends Serializable {
   def generateStatistics() = {
     val values = getValues()
     if (values.length == 0) {
-      Statistics.EMPTY
+      Statistics.EMPTYInt
     } else {
 
       var dataCount: Long = 0
@@ -184,12 +202,7 @@ abstract trait Histogram extends Serializable {
       }
       val stddev = sqrt(mean2)
 
-      Statistics(dataCount, mean, median, mode, stddev, zmin, zmax)
+      Statistics[Int](dataCount, mean, median, mode, stddev, zmin, zmax)
     }
-  }
-
-  def toJSON = {
-    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
-    s"[$counts]"
   }
 }

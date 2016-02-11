@@ -5,12 +5,20 @@ import geotrellis.raster.op.stats._
 import geotrellis.raster.histogram._
 
 trait ZonalMethods extends MethodExtensions[Tile] {
-  def zonalHistogram(zones: Tile): Map[Int, Histogram] =
-    ZonalHistogram(self, zones)
+  def zonalHistogramInt(zones: Tile): Map[Int, Histogram[Int]] =
+    ZonalHistogramInt(self, zones)
 
-  def zonalStatistics(zones: Tile): Map[Int, Statistics] =
-    ZonalHistogram(self, zones)
-      .map { case (zone: Int, hist: Histogram) => (zone -> hist.generateStatistics) }
+  def zonalStatisticsInt(zones: Tile): Map[Int, Statistics[Int]] =
+    ZonalHistogramInt(self, zones)
+      .map { case (zone: Int, hist: Histogram[Int]) => (zone -> hist.generateStatistics) }
+      .toMap
+
+  def zonalHistogramDouble(zones: Tile): Map[Int, Histogram[Double]] =
+    ZonalHistogramDouble(self, zones)
+
+  def zonalStatisticsDouble(zones: Tile): Map[Int, Statistics[Double]] =
+    ZonalHistogramDouble(self, zones)
+      .map { case (zone: Int, hist: Histogram[Double]) => (zone -> hist.generateStatistics) }
       .toMap
 
   def zonalPercentage(zones: Tile): Tile =

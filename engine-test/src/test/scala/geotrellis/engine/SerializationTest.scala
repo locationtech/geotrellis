@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,9 +28,9 @@ import org.scalatest._
 
 import java.io._
 
-class SerializationTest extends FunSuite 
-                        with Matchers 
-                        with TileBuilders 
+class SerializationTest extends FunSuite
+                        with Matchers
+                        with TileBuilders
                         with TestEngine {
 
   // Operations and data objects that may be sent remotely must be serializable.
@@ -41,7 +41,7 @@ class SerializationTest extends FunSuite
     pickle(addOp)
     pickle(local.Add(addOp, 2))
     pickle(FastMapHistogram())
-    pickle(Statistics(0,0,0,0,0,0))
+    pickle(Statistics[Int](0,0,0,0,0,0,0))
     pickle(Point(0,0))
     pickle(Polygon( Line(Point(1,9) :: Point(1,6) :: Point(4,6) :: Point(4,9) :: Point(1,9) :: Nil)))
   }
@@ -53,5 +53,5 @@ class SerializationTest extends FunSuite
   def pickle(o:AnyRef) = {
     val stream = new ObjectOutputStream(new ByteArrayOutputStream())
     stream.writeObject(o)
-  } 
+  }
 }

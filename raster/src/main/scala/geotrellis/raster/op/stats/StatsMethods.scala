@@ -10,7 +10,7 @@ trait StatsMethods extends MethodExtensions[Tile] {
     * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
     *           rounded to integers when making the Histogram.
     */
-  def histogram: Histogram =
+  def histogram: Histogram[Int] =
     FastMapHistogram.fromTile(self)
 
   /**
@@ -41,7 +41,7 @@ trait StatsMethods extends MethodExtensions[Tile] {
     *
     * @param significantDigits   Number of significant digits to preserve by multiplying
     */
-  def doubleHistogram(significantDigits: Int): Histogram =
+  def doubleHistogram(significantDigits: Int): Histogram[Int] =
     FastMapHistogram.fromTileDouble(self, significantDigits)
 
   /**
@@ -55,7 +55,7 @@ trait StatsMethods extends MethodExtensions[Tile] {
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Statistics =
+  def statistics: Statistics[Int] =
     histogram.generateStatistics
 
   /**

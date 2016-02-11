@@ -44,10 +44,10 @@ trait ZonalSummaryMethods extends MethodExtensions[Tile] {
     handler.combineResults(results)
   }
 
-  def zonalHistogram(extent: Extent, geom: Polygon): histogram.Histogram =
+  def zonalHistogram(extent: Extent, geom: Polygon): histogram.Histogram[Int] =
     zonalSummary(extent, geom, Histogram)
 
-  def zonalHistogram(extent: Extent, geom: MultiPolygon): histogram.Histogram =
+  def zonalHistogram(extent: Extent, geom: MultiPolygon): histogram.Histogram[Int] =
     zonalSummary(extent, geom, Histogram)
 
   def zonalMax(extent: Extent, geom: Polygon): Int =
