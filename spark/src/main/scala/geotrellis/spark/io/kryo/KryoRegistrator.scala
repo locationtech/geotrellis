@@ -20,6 +20,7 @@ import geotrellis.spark.io.hadoop.formats._
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
 import org.apache.avro.Schema
+import org.apache.avro.Schema.{Field, Type}
 
 import java.util.{Arrays, Collections}
 
@@ -191,44 +192,10 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.None.getClass)
 
     /* Special Handling: Avro */
-    {
-      val booleanSchema = Schema.create(Schema.Type.BOOLEAN)
-      val bytesSchema = Schema.create(Schema.Type.BYTES)
-      val doubleSchema = Schema.create(Schema.Type.DOUBLE)
-      val floatSchema = Schema.create(Schema.Type.FLOAT)
-      val intSchema = Schema.create(Schema.Type.INT)
-      val longSchema = Schema.create(Schema.Type.LONG)
-      val nullSchema = Schema.create(Schema.Type.NULL)
-      val stringSchema = Schema.create(Schema.Type.STRING)
-      val fields = new java.util.ArrayList[Schema.Field]
-      val field = new Schema.Field("a", Schema.create(Schema.Type.NULL), null, null); fields.add(field)
-      val schemas = new java.util.ArrayList[Schema]; schemas.add(booleanSchema); schemas.add(bytesSchema)
-      val enums = new java.util.ArrayList[String]; enums.add("b"); enums.add("c")
-
-      kryo.register(field.getClass)       // Field
-      kryo.register(field.order.getClass) // Field$order
-      kryo.register(classOf[Schema.Type]) // Schema$Type
-
-      kryo.register(booleanSchema.getClass) // Boolean
-      kryo.register(bytesSchema.getClass)   // Bytes
-      kryo.register(doubleSchema.getClass)  // Double
-      kryo.register(floatSchema.getClass)   // Float
-      kryo.register(intSchema.getClass)     // Int
-      kryo.register(longSchema.getClass)    // Long
-      kryo.register(nullSchema.getClass)    // Null
-      kryo.register(stringSchema.getClass)  // String
-
-      kryo.register(Schema.createArray(nullSchema).getClass)          // Array
-      kryo.register(Schema.createEnum("d", "e", "f", enums).getClass) // Enum
-      kryo.register(Schema.createFixed("g", "h", "i", 1).getClass)    // Fixed
-      kryo.register(Schema.createMap(nullSchema).getClass)            // Map
-      kryo.register(Schema.createRecord(fields).getClass)             // Record
-      kryo.register(Schema.createUnion(schemas).getClass)             // Union
-
-      // In accessible and uninstantiatable
-      kryo.register(java.lang.Class.forName("org.apache.avro.Schema$LockableArrayList"))
-      kryo.register(java.lang.Class.forName("org.apache.avro.Schema$Name"))
-    }
+    kryo.register((new Field("a", Schema.create(Type.NULL), null, null)).order.getClass)
+    classOf[org.apache.avro.Schema]
+      .getDeclaredClasses()
+      .foreach({ c => kryo.register(c) })
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
     SynchronizedCollectionsSerializer.registerSerializers( kryo )
