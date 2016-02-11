@@ -51,7 +51,7 @@ trait PngRenderMethods extends TileMethods {
     */
   private
   def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram]): Png = {
-    val cmap = colorClassifier.toColorMap(ColorMapOptions.Default, histogram)
+    val cmap = colorClassifier.toColorMap(histogram)
     val r2 = cmap.render(tile).convert(TypeByte)
     val colorEncoding = PngColorEncoding.fromRasterColorClassifier(colorClassifier)
     new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(r2)

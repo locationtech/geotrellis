@@ -36,7 +36,7 @@ class ColorMapSpec extends FunSpec with Matchers
       val arr = (0 until 90 by 5).toArray
       val r = createTile(arr)
 
-      val colorMap = colorClassifier.toColorMap(ColorMapOptions.Default).asInstanceOf[IntColorMap]
+      val colorMap = colorClassifier.toColorMap().asInstanceOf[IntColorMap]
 
       val color:IndexedPngEncoding =
         PngColorEncoding.fromRasterColorClassifier(colorClassifier) match {
@@ -62,7 +62,7 @@ class ColorMapSpec extends FunSpec with Matchers
       val arr = Array(10,10,10,10,10,10,10,20,20,20,20,30,30,30,40,50)
       val r = createTile(arr)
 
-      val colorMap = colorClassifier.toColorMap(ColorMapOptions.Default).asInstanceOf[IntColorMap]
+      val colorMap = colorClassifier.toColorMap().asInstanceOf[IntColorMap]
       val color:IndexedPngEncoding =
         PngColorEncoding.fromRasterColorClassifier(colorClassifier) match {
           case i @ IndexedPngEncoding(_,_) => i

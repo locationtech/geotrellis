@@ -26,7 +26,7 @@ trait ColorMethods extends TileMethods {
     colorBreaks.toColorMap(options).render(tile)
 */
   def color(colorClassifier: ColorClassifier[_]): Tile =
-    colorClassifier.toColorMap(ColorMapOptions.Default, None).render(tile)
+    colorClassifier.toColorMap().render(tile)
 
   def toBufferedImage: BufferedImage = {
     val bi = new BufferedImage(tile.cols, tile.rows, BufferedImage.TYPE_INT_RGB)

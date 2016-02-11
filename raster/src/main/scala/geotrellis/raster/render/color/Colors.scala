@@ -1,7 +1,6 @@
 package geotrellis.raster.render
 
 class RGBA(val int: Int) extends AnyVal {
-  def get = int
   def red = (int >> 24) & 0xff
   def green = (int >> 16) & 0xff
   def blue = (int >> 8) & 0xff

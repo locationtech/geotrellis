@@ -36,7 +36,7 @@ class ColorSpec extends FunSpec with Matchers {
       val breaks = (1 to numColors).toArray
       bicc.addColors(color1, color2).addBreaks(breaks).normalize
       println("lengthsLinear", breaks.length, colorArray.length, bicc.length, bicc.getColors.length)
-      ColorSpec.getColorString(bicc.getColors.map(_.get))
+      ColorSpec.getColorString(bicc.getColors.map(_.int))
     }
 
     def getColorStringArray(numColors:Int) = {
@@ -44,7 +44,7 @@ class ColorSpec extends FunSpec with Matchers {
       val breaks = (1 to numColors).toArray
       bicc.addColors(colorArray).addBreaks(breaks).normalize
       println("lengthsArray", breaks.length, colorArray.length, bicc.length, bicc.getColors.length)
-      ColorSpec.getColorString(bicc.getColors.map(_.get))
+      ColorSpec.getColorString(bicc.getColors.map(_.int))
     }
 
     it("should provide 1 color") {
@@ -137,7 +137,7 @@ class ColorSpec extends FunSpec with Matchers {
       val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
       val bicc = new BlendingIntColorClassifier
       bicc.addColors(colors).addBreaks(1, 2, 3, 4, 5).normalize
-      val interpolatedColors = bicc.getColors.map(_.get)
+      val interpolatedColors = bicc.getColors.map(_.int)
       println(interpolatedColors)
       ColorSpec.hexstringify(interpolatedColors) should be (ColorSpec.hexstringify(expected))
     }
@@ -146,7 +146,7 @@ class ColorSpec extends FunSpec with Matchers {
       val expected = Array(0xff000080, 0x00ff0080, 0x0000ff80)
       val bcc = new BlendingDoubleColorClassifier
       bcc.addColors(colors).setAlpha(0x80)
-      ColorSpec.hexstringify(bcc.getColors.map(_.get)) should be (ColorSpec.hexstringify(expected))
+      ColorSpec.hexstringify(bcc.getColors.map(_.int)) should be (ColorSpec.hexstringify(expected))
     }
 
     it("should create an alpha gradient") {
@@ -154,7 +154,7 @@ class ColorSpec extends FunSpec with Matchers {
       val expected = Array(0xff000000, 0x00ff007f, 0x0000ffff)
       val bcc = new BlendingDoubleColorClassifier
       bcc.addColors(colors).alphaGradient(RGBA(0), RGBA(0xff))
-      ColorSpec.hexstringify(bcc.getColors.map(_.get)) should be (ColorSpec.hexstringify(expected))
+      ColorSpec.hexstringify(bcc.getColors.map(_.int)) should be (ColorSpec.hexstringify(expected))
     }
   }
 }

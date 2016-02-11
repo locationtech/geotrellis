@@ -22,8 +22,8 @@ import org.scalatest._
 import java.util.Locale
 
 class ColorClassifierSpec extends FunSpec with Matchers {
-  describe("construction") {
-    it("should build a mapping from doubles to colors") {
+  describe("color class construction") {
+    it("should classify ints to colors") {
       val cc = new StrictIntColorClassifier
       cc.classify(123, RGBA(123))
         .classify(1234, RGBA(1234))
@@ -31,8 +31,30 @@ class ColorClassifierSpec extends FunSpec with Matchers {
         .classify(1236, RGBA(1236))
         .setNoDataColor(RGBA(8675309))
       cc.getColors shouldBe (Array(RGBA(123), RGBA(1234), RGBA(1235), RGBA(1236)))
-      cc.getBreaks shouldBe (Array(123.0, 1234.0, 1235.0, 1236.0))
+      cc.getBreaks shouldBe (Array(123, 1234, 1235, 1236))
       cc.getNoDataColor shouldBe (RGBA(8675309))
+    }
+
+    it("should classify doubles to colors") {
+      val cc = new StrictDoubleColorClassifier
+      cc.classify(123.23, RGBA(123))
+        .classify(12234.89, RGBA(1234))
+        .classify(45.342, RGBA(1235))
+        .classify(1236.13, RGBA(1236))
+        .setNoDataColor(RGBA(8675309))
+      cc.getColors shouldBe (Array(RGBA(1235), RGBA(123), RGBA(1236), RGBA(1234)))
+      cc.getBreaks shouldBe (Array(45.342, 123.23, 1236.13, 12234.89))
+      cc.getNoDataColor shouldBe (RGBA(8675309))
+    }
+  }
+  describe("color map creation") {
+    it("should build a color map with fully specifiable options") {
+      val cc = StrictIntColorClassifier(Exact)
+      val ndColor = RGBA(0, 0, 0, 100.0)
+      val fallbackColor = RGBA(255, 0, 0, 0)
+      cc.setNoDataColor(ndColor).setFallbackColor(fallbackColor)
+      cc.toColorMap().options shouldBe (ColorMapOptions(Exact, ndColor.int, fallbackColor.int, false))
+
     }
   }
 }
