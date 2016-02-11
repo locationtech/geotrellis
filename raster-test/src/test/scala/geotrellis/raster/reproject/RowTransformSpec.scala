@@ -4,9 +4,9 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4._
-import geotrellis.testkit.vector._
+import geotrellis.vector.testkit._
 import geotrellis.raster.io.geotiff._
 
 import org.scalatest._
@@ -15,7 +15,7 @@ import spire.syntax.cfor._
 
 class RowTransformSpec extends FunSpec
     with TileBuilders
-    with TestEngine {
+    with RasterMatchers {
   val path = "raster-test/data/schoolgeo.json"
 
   val LLtoWM = Transform(LatLng, WebMercator)

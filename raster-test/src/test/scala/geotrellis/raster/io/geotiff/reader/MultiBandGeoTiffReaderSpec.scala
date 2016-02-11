@@ -2,12 +2,12 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class MultiBandGeoTiffReaderSpec extends FunSpec
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with INTERLEAVE=PIXEL") {

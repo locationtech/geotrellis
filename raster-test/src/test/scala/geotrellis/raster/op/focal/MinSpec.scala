@@ -1,10 +1,10 @@
 package geotrellis.raster.op.focal
 
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.raster._
 
-class MinSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
+class MinSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
 
   val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min.calculation(r,n)))
 

@@ -17,12 +17,12 @@
 package geotrellis.raster.io.arg
 
 import geotrellis.raster._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class BoolTest extends FunSuite 
-                  with TestEngine {
+                  with RasterMatchers {
   test("write out the bit raster") {
     val path = "/tmp/foo-bool.arg"
     val arr = Array[Byte]((1 + 0 + 4 + 0 + 0 + 32 + 64 + 128).toByte,

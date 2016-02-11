@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class DivideSpec extends FunSpec 
-                    with Matchers 
-                    with TestEngine 
-                    with TileBuilders {
+class DivideSpec extends FunSpec with Matchers with TestEngine {
   describe("Divide") {
     it("divides two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

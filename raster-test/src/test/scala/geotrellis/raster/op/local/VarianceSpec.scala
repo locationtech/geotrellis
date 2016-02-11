@@ -1,7 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis.raster._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
@@ -9,7 +9,7 @@ import spire.syntax.cfor._
 
 class VarianceSpec extends FunSpec
     with Matchers
-    with TestEngine
+    with RasterMatchers
     with TileBuilders {
 
   describe("Variance") {

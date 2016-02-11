@@ -19,7 +19,7 @@ package geotrellis.vector
 import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
 import geotrellis.proj4._
-import geotrellis.testkit.vector._
+import geotrellis.vector.testkit._
 
 import org.scalatest._
 

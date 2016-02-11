@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class MaxSpec extends FunSpec 
-                 with Matchers 
-                 with TestEngine 
-                 with TileBuilders {
+class MaxSpec extends FunSpec with Matchers with TestEngine {
   describe("Max") {    
     it("takes max of two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

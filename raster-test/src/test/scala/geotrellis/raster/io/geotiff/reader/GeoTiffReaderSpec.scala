@@ -24,7 +24,7 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.op.zonal.summary._
 
 import geotrellis.vector.{Point, Extent}
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4.{CRS, LatLng}
 
 import monocle.syntax._
@@ -42,7 +42,7 @@ import org.scalatest._
 class GeoTiffReaderSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   override def afterAll = purge
@@ -473,7 +473,7 @@ class GeoTiffReaderSpec extends FunSpec
 }
 
 class PackBitsGeoTiffReaderSpec extends FunSpec
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {

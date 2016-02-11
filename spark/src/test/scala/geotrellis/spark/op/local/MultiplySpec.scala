@@ -21,10 +21,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class MultiplySpec extends FunSpec
-                      with TestEnvironment
-                      with TestFiles
-                      with RasterRDDMatchers {
+class MultiplySpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Multiply Operation") {
     val twos = AllTwosTestFile

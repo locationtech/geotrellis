@@ -20,11 +20,11 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class OrSpec extends FunSpec 
                 with Matchers 
-                with TestEngine 
+                with RasterMatchers 
                 with TileBuilders {
   describe("Or") {
     it("ors an Int raster or a constant") {

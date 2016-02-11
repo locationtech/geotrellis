@@ -2,11 +2,10 @@ package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.engine._
 
 import org.scalatest._
 
-class NearestNeighborResampleSpec extends FunSpec with Matchers {
+class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
 
   describe("it should correctly resample using NearestNeighbor") {
     val (cols, rows) = (5, 5)
@@ -77,8 +76,8 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers {
     it("should resize quad8") {
       // double number of rows and cols
       val re = RasterExtent(Extent(-9.5, 3.8, 150.5, 163.8), 4.0, 4.0, 40, 40)
-      val src = RasterSource.fromPath("raster-test/data/quad8.arg").rasterExtent.get.extent
-      val r = RasterSource.fromPath("raster-test/data/quad8.arg").get
+      val src = loadTestArg("quad8").extent
+      val r = loadTestArg("quad8").tile
       val resize1 = r.resample(src, re)
 
       val resize2 = r.resample(src, re.withDimensions(40, 40))
@@ -95,8 +94,8 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers {
     }
 
     it("should resize quad8 to 4x4") {
-      val re = RasterSource.fromPath("raster-test/data/quad8.arg").rasterExtent.get
-      val raster = RasterSource.fromPath("raster-test/data/quad8.arg").get.resample(re.extent, re.withDimensions(4, 4))
+      val re = loadTestArg("quad8").rasterExtent
+      val raster = loadTestArg("quad8").tile.resample(re.extent, re.withDimensions(4, 4))
 
       raster.cols should be (4)
       raster.rows should be (4)

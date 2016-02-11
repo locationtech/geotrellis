@@ -8,15 +8,15 @@ import geotrellis.vector.Extent
 
 import geotrellis.proj4._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class GeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
-    with GeoTiffTestUtils
+    with RasterMatchers
+    with GeoTiffTestUtils 
     with TileBuilders {
 
   override def afterAll = purge

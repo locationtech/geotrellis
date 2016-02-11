@@ -20,11 +20,11 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import org.scalatest._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class AddSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Add") {
     it("adds a constant value to each cell of an int valued raster") {

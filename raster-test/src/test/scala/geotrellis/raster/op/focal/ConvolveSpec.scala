@@ -2,11 +2,11 @@ package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class ConvolveSpec extends FunSuite with TestEngine {
+class ConvolveSpec extends FunSuite with RasterMatchers {
   def doit(in1: Array[Int], in2: Array[Int], out: Array[Int]) = {
     val size1 = math.sqrt(in1.length).toInt    
     assert(size1 * size1 === in1.length)

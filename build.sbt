@@ -67,7 +67,7 @@ lazy val vector = Project("vector", file("vector")).
   settings(commonSettings: _*)
 
 lazy val vectorTest = Project("vector-test", file("vector-test")).
-  dependsOn(vector, testkit)
+  dependsOn(vector, vectorTestkit)
 
 lazy val proj4 = Project("proj4", file("proj4")).
   settings(commonSettings: _*)
@@ -77,7 +77,7 @@ lazy val raster = Project("raster", file("raster")).
   settings(commonSettings: _*)
 
 lazy val rasterTest = Project("raster-test", file("raster-test")).
-  dependsOn(raster, testkit).
+  dependsOn(raster, rasterTestkit, vectorTestkit).
   settings(commonSettings: _*)
 
 lazy val engine = Project("engine", file("engine")).
@@ -85,11 +85,15 @@ lazy val engine = Project("engine", file("engine")).
   settings(commonSettings: _*)
 
 lazy val engineTest = Project("engine-test", file("engine-test")).
-  dependsOn(engine, testkit).
+  dependsOn(engine, rasterTestkit).
   settings(commonSettings: _*)
 
-lazy val testkit = Project("testkit", file("testkit")).
-  dependsOn(raster, engine).
+lazy val rasterTestkit = Project("raster-testkit", file("raster-testkit")).
+  dependsOn(raster, vector).
+  settings(commonSettings: _*)
+
+lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
+  dependsOn(raster, vector).
   settings(commonSettings: _*)
 
 lazy val services = Project("services", file("services")).
@@ -116,6 +120,10 @@ lazy val spark = Project("spark", file("spark")).
   dependsOn(raster, gdal).
   settings(commonSettings: _*)
 
+lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
+  dependsOn(rasterTestkit, spark % "provided").
+  settings(commonSettings: _*)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark).
   settings(commonSettings: _*)
@@ -132,7 +140,7 @@ lazy val gdal: Project = Project("gdal", file("gdal")).
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).
-  dependsOn(raster, engine, testkit % "test").
+  dependsOn(raster, engine, rasterTestkit % "test").
   settings(commonSettings: _*)
 
 lazy val dev = Project("dev", file("dev")).

@@ -18,12 +18,9 @@ package geotrellis.engine.op.focal
 
 import geotrellis.engine._
 import geotrellis.raster.op.focal._
-import geotrellis.testkit._
 import org.scalatest._
 
-class ModeSpec extends FunSpec with Matchers
-                               with TileBuilders
-                               with TestEngine {
+class ModeSpec extends FunSpec with Matchers with TestEngine {
 
   describe("Mode") {
     it("should get mode for raster source") {

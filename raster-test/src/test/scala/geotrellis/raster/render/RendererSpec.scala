@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.raster.render.png._
 import geotrellis.raster.op.stats._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 

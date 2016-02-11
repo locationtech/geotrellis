@@ -9,11 +9,7 @@ import com.github.nscala_time.time.Imports._
 import org.scalatest._
 
 
-class PyramidSpec extends FunSpec
-  with Matchers
-  with TestEnvironment
-  with RasterRDDBuilders
-{
+class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
   describe("Pyramid") {
     it("should work with SpaceTimeKey rasters") {
