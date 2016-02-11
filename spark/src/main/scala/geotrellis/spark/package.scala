@@ -42,7 +42,6 @@ package object spark
     with stitch.Implicits
     with op.Implicits
     with op.local.Implicits
-    with op.local.spatial.Implicits
     with op.local.temporal.Implicits
     with op.stats.Implicits
     with op.zonal.Implicits
