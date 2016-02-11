@@ -24,10 +24,10 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class RenderingSpec extends FunSpec with Matchers
+class ColorMapSpec extends FunSpec with Matchers
                                    with TileBuilders {
-  describe("PNG Rendering") {
-    it("should work with ArrayHistogram") {
+  describe("PNG Color Mapping") {
+    it("should correctly map values to colors") {
       val limits = Array(25,50,80,100)
       val colors = Array(100,110,120,130).map(RGBA(_))
       val colorClassifier = new StrictIntColorClassifier
@@ -46,14 +46,14 @@ class RenderingSpec extends FunSpec with Matchers
         }
 
       for(x <- arr) {
-        if(x <= 25) color.as(colorMap(x)) should be (100)
-        else if(x <= 50) color.as(colorMap(x)) should be (110)
-        else if (x <= 80) color.as(colorMap(x)) should be (120)
-        else { color.as(colorMap(x)) should be (130) }
+        if(x <= 25) colorMap(x) should be (100)
+        else if(x <= 50) colorMap(x) should be (110)
+        else if (x <= 80) colorMap(x) should be (120)
+        else { colorMap(x) should be (130) }
       }
     }
 
-    it("should map color correctly for histogram with varying values and counts") {
+    it("should correctly map redundant values to colors") {
       val limits = Array(25,42,60)
       val colors = Array(10,20,30).map(RGBA(_))
       val colorClassifier = new StrictIntColorClassifier
@@ -70,11 +70,11 @@ class RenderingSpec extends FunSpec with Matchers
             withClue(s"Color should be Indexed") { sys.error("") }
         }
 
-      color.as(colorMap(10)) should be (10)
-      color.as(colorMap(20)) should be (10)
-      color.as(colorMap(30)) should be (20)
-      color.as(colorMap(40)) should be (20)
-      color.as(colorMap(50)) should be (30)
+      colorMap(10) should be (10)
+      colorMap(20) should be (10)
+      colorMap(30) should be (20)
+      colorMap(40) should be (20)
+      colorMap(50) should be (30)
     }
   }
 }

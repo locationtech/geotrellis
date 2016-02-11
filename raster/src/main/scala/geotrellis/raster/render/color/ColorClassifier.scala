@@ -34,7 +34,8 @@ case object Exact extends ClassBoundaryType
 
 
 sealed abstract class ColorClassifier[A] extends Serializable {
-  protected var noDataColor: Option[RGBA] = None
+  protected var noDataColor: RGBA = RGBA(0x00000000)
+  protected var fallbackColor: RGBA = RGBA(0x00000000)
 
   val classificationType: ClassBoundaryType
 
@@ -63,20 +64,35 @@ sealed abstract class ColorClassifier[A] extends Serializable {
   }
 
   def setNoDataColor(color: RGBA): ColorClassifier[A] = {
-    noDataColor = Some(color)
+    noDataColor = color
     this
   }
+
+  def setFallbackColor(color: RGBA): ColorClassifier[A] = {
+    fallbackColor = color
+    this
+  }
+
+  protected def cmapOptions: ColorMapOptions =
+    ColorMapOptions(classificationType, noDataColor.get, fallbackColor.get, false)
+
 }
 
 trait StrictColorClassifier[A] { this: ColorClassifier[A] =>
   protected var colorClassifications: mutable.Map[A, RGBA] = mutable.Map[A, RGBA]()
   implicit val ctag: ClassTag[A]
+  implicit val ord: Ordering[A]
 
   def length = colorClassifications.size
 
-  def getBreaks: Array[A] = colorClassifications.keys.toArray
+  def getBreaks: Array[A] = {
+    colorClassifications.keys.toArray.sorted
+  }
 
-  def getColors: Array[RGBA] = colorClassifications.values.toArray
+  def getColors: Array[RGBA] =
+    getBreaks.map { break =>
+      colorClassifications(break)
+    }
 
   def mapBreaks(f: A => A): ColorClassifier[A] = {
     val newMap = mutable.Map[A, RGBA]()
@@ -104,6 +120,7 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
   protected var classificationBreaks: mutable.Buffer[A] = mutable.Buffer[A]()
   protected var classificationColors: mutable.Buffer[RGBA] = mutable.ArrayBuffer[RGBA]()
   implicit val ctag: ClassTag[A]
+  implicit val ord: Ordering[A]
 
   def length: Int = classificationBreaks.size
 
@@ -154,6 +171,39 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
     } else if (classificationBreaks.size > classificationColors.size) {
       classificationColors = chooseColors(getColors, classificationBreaks.size).toBuffer
     }
+    this
+  }
+
+  /**
+  **/
+  def alphaGradient(start: RGBA = RGBA(0), stop: RGBA = RGBA(0xFF)): BlendingColorClassifier[A] = {
+    val colors = getColors
+    val alphas = chooseColors(start, stop, colors.length).map(_.alpha)
+
+    val newColors = colors.zip(alphas).map ({ case (color, a) =>
+      val (r, g, b) = color.unzipRGB
+      RGBA(r, g, b, a)
+    })
+
+    classificationColors = newColors.toBuffer
+    this
+  }
+
+  def setAlpha(a: Int): BlendingColorClassifier[A] = {
+    val newColors = getColors.map { color =>
+      val(r, g, b) = color.unzipRGB
+      RGBA(r, g, b, a)
+    }
+    classificationColors = newColors.toBuffer
+    this
+  }
+
+  def setAlpha(alphaPct: Double): BlendingColorClassifier[A] = {
+    val newColors: Array[RGBA] = getColors.map { color =>
+      val(r, g, b) = color.unzipRGB
+      RGBA(r, g, b, alphaPct)
+    }
+    classificationColors = newColors.toBuffer
     this
   }
 
@@ -256,52 +306,52 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
 }
 
 
-case class StrictIntColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Int])
+case class StrictIntColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Int], implicit val ord: Ordering[Int])
     extends ColorClassifier[Int]
        with StrictColorClassifier[Int] {
 
   def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
     histogram match {
-      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
-      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), cmapOptions).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), cmapOptions)
     }
   }
 }
 
-case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Double])
+case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Double], implicit val ord: Ordering[Double])
     extends ColorClassifier[Double]
        with StrictColorClassifier[Double] {
 
   def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
     histogram match {
-      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
-      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), cmapOptions).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), cmapOptions)
     }
   }
 }
 
-case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Int])
+case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Int], implicit val ord: Ordering[Int])
     extends ColorClassifier[Int]
        with BlendingColorClassifier[Int] {
 
   def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
     normalize
     histogram match {
-      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
-      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), cmapOptions).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), cmapOptions)
     }
   }
 }
 
-case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Double])
+case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Double], implicit val ord: Ordering[Double])
     extends ColorClassifier[Double]
        with BlendingColorClassifier[Double] {
 
   def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
     normalize
     histogram match {
-      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
-      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), cmapOptions).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), cmapOptions)
     }
   }
 }
@@ -316,6 +366,11 @@ object StrictColorClassifier {
       colorClassifier.classify(classification._1, classification._2)
     }
     colorClassifier
+  }
+
+  def withQuantileBreaks(histogram: Histogram, colors: Array[RGBA]) = {
+    val breaks = histogram.getQuantileBreaks(colors.length)
+    apply(breaks zip colors)
   }
 
   def apply(classifications: Array[(Double, RGBA)]): StrictDoubleColorClassifier =

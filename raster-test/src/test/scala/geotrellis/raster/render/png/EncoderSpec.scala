@@ -100,7 +100,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
     val fh = File.createTempFile("rgb-", ".png")
     val path = fh.getPath
   
-    val encoder = PngEncoder(Settings(RgbPngEncoding(Some(0)), PaethFilter))
+    val encoder = PngEncoder(Settings(RgbPngEncoding(0), PaethFilter))
   
     // map RGBA values into RGB
     val tile2 = tile.map(_ >> 8)

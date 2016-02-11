@@ -32,7 +32,7 @@ class ColorClassifierSpec extends FunSpec with Matchers {
         .setNoDataColor(RGBA(8675309))
       cc.getColors shouldBe (Array(RGBA(123), RGBA(1234), RGBA(1235), RGBA(1236)))
       cc.getBreaks shouldBe (Array(123.0, 1234.0, 1235.0, 1236.0))
-      cc.getNoDataColor shouldBe (Some(RGBA(8675309)))
+      cc.getNoDataColor shouldBe (RGBA(8675309))
     }
   }
 }

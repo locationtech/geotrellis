@@ -14,10 +14,10 @@ class RenderMethodsSpec extends FunSpec with Matchers
       val tile = createTile(arr, 10, 12)
 
       val limits = Array(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-      val colors = Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-      val colorBreaks = ColorBreaks(limits, colors)
+      val colors = Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).map(RGBA(_))
+      val colorClassifier = StrictIntColorClassifier(LessThanOrEqualTo).addClassifications(limits zip colors)
 
-      val result = tile.color(colorBreaks, LessThanOrEqualTo)
+      val result = tile.color(colorClassifier)
 
       result.foreachDouble { (col, row, z) =>
         val i = tile.cols * row + col
@@ -31,10 +31,10 @@ class RenderMethodsSpec extends FunSpec with Matchers
       val tile = createTile(arr, 10, 12)
 
       val limits = Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
-      val colors = Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-      val colorBreaks = ColorBreaks(limits, colors)
+      val colors = Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).map(RGBA(_))
+      val colorClassifier = StrictDoubleColorClassifier(LessThanOrEqualTo).addClassifications(limits zip colors)
 
-      val result = tile.color(colorBreaks, LessThanOrEqualTo)
+      val result = tile.color(colorClassifier)
 
       result.foreachDouble { (col, row, z) =>
         val i = tile.cols * row + col

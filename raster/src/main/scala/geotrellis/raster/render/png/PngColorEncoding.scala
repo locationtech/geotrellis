@@ -21,8 +21,8 @@ import geotrellis.raster.render._
 sealed abstract class PngColorEncoding(val n:Byte, val depth:Int)
 
 // greyscale and color opaque rasters
-case class GreyPngEncoding(transparent: Option[Int]) extends PngColorEncoding(0, 1)
-case class RgbPngEncoding(transparent: Option[Int]) extends PngColorEncoding(2, 3)
+case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1)
+case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3)
 
 // indexed color, using separate rgb and alpha channels
 case class IndexedPngEncoding(rgbs:Array[Int], as:Array[Int]) extends PngColorEncoding(3, 1)
@@ -62,9 +62,9 @@ object PngColorEncoding {
       }
 
       if (grey && opaque) {
-        GreyPngEncoding(cc.getNoDataColor.map(_.x))
+        GreyPngEncoding(cc.getNoDataColor.int)
       } else if (opaque) {
-        RgbPngEncoding(cc.getNoDataColor.map(_.x))
+        RgbPngEncoding(cc.getNoDataColor.int)
       } else if (grey) {
         GreyaPngEncoding
       } else {

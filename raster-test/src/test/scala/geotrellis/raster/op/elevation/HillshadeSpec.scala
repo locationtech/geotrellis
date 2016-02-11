@@ -33,8 +33,9 @@ class HillshadeSpec extends FunSuite with TestEngine with TileBuilders {
   def grayscale(n: Int) = {
     val ns = (1 to 128).toArray
     val limits = ns.map(i => i * n)
-    val colors = ns.map(i => ((i * 65536 * 2 + i * 256 * 2 + i * 2) << 8) | 255)
-    ColorBreaks(limits, colors)
+    val colors = ns.map(i => ((i * 65536 * 2 + i * 256 * 2 + i * 2) << 8) | 255).map(RGBA(_))
+    val bcc = new BlendingIntColorClassifier
+    bcc.addBreaks(limits).addColors(colors)
   }
 
   def time() = System.currentTimeMillis()

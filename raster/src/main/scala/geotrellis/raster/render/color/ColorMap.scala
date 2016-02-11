@@ -59,10 +59,7 @@ object ColorMap {
     apply(breaks, color, ColorMapOptions.Default)
 
   def apply(breaks: Array[Int], colors: Array[Int], options: ColorMapOptions): IntColorMap = {
-    val breaksToColors: Map[Int, Int] =
-      breaks.zip(colors)
-            .toMap
-
+    val breaksToColors: Map[Int, Int] = (breaks zip colors).toMap
     apply(breaksToColors, options)
   }
 
