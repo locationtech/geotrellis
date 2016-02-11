@@ -24,23 +24,23 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-class Renderer2Spec extends FunSpec with Matchers
+class RenderingSpec extends FunSpec with Matchers
                                    with TileBuilders {
-  describe("PNG Renderer") {
+  describe("PNG Rendering") {
     it("should work with ArrayHistogram") {
       val limits = Array(25,50,80,100)
-      val colors = Array(100,110,120,130)
+      val colors = Array(100,110,120,130).map(RGBA(_))
+      val colorClassifier = new StrictIntColorClassifier
+      colorClassifier.addClassifications(limits zip colors).setNoDataColor(RGBA(0))
 
       val arr = (0 until 90 by 5).toArray
       val r = createTile(arr)
 
-      val nodata = 0
-      val renderer = Renderer(limits,colors,nodata)
-      val colorMap = renderer.colorMap.asInstanceOf[IntColorMap]
+      val colorMap = colorClassifier.toColorMap(ColorMapOptions.Default).asInstanceOf[IntColorMap]
 
-      val color:Indexed =
-        renderer.colorType match {
-          case i @ Indexed(_,_) => i
+      val color:IndexedPngEncoding =
+        PngColorEncoding.fromRasterColorClassifier(colorClassifier) match {
+          case i @ IndexedPngEncoding(_,_) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }
         }
@@ -55,17 +55,17 @@ class Renderer2Spec extends FunSpec with Matchers
 
     it("should map color correctly for histogram with varying values and counts") {
       val limits = Array(25,42,60)
-      val colors = Array(10,20,30)
+      val colors = Array(10,20,30).map(RGBA(_))
+      val colorClassifier = new StrictIntColorClassifier
+      colorClassifier.addClassifications(limits zip colors).setNoDataColor(RGBA(0))
 
       val arr = Array(10,10,10,10,10,10,10,20,20,20,20,30,30,30,40,50)
       val r = createTile(arr)
 
-      val nodata = 0
-      val renderer = Renderer(limits,colors,nodata)
-      val colorMap = renderer.colorMap.asInstanceOf[IntColorMap]
-      val color:Indexed =
-        renderer.colorType match {
-          case i @ Indexed(_,_) => i
+      val colorMap = colorClassifier.toColorMap(ColorMapOptions.Default).asInstanceOf[IntColorMap]
+      val color:IndexedPngEncoding =
+        PngColorEncoding.fromRasterColorClassifier(colorClassifier) match {
+          case i @ IndexedPngEncoding(_,_) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }
         }

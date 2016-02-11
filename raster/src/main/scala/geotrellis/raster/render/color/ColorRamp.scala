@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,15 +35,12 @@ import scala.math.round
   *     use the method ColorRamp.createWithRGBColors.
   *
   * @param colors  An array of RGBA integer values
-  */
-class ColorRamp(val colors: Seq[Int]) {
-  /**
+class ColorRampzzz(val colors: Seq[Int]) {
     * Generate n new colors using the existing color ramp as a guide.
     *
     * The first and last colors of the existing ramp will be preserved in the output
     * ColorRamp.  For example, given a color ramp of two colors, red and yellow, a request
     * for 5 colors would return Red, Yellowish-Red, Orange, Reddish-Yellow, Yellow.
-    */
   def interpolate(nBreaks: Int): ColorRamp =
     ColorRamp(Color.chooseColors(colors.toArray, nBreaks))
 
@@ -70,9 +67,8 @@ class ColorRamp(val colors: Seq[Int]) {
 object ColorRamp {
   def apply(colors: Seq[Int]): ColorRamp = new ColorRamp(colors)
 
-  /**
     * Create a color camp with an array of RGB colors (e.g. 0xFF0000 for red).
-    */
   def createWithRGBColors(rgbColors: Int*): ColorRamp =
     new ColorRamp(rgbColors.map(Color.rgbToRgba(_)))
 }
+    */

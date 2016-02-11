@@ -53,8 +53,8 @@ trait JpgRenderMethods extends TileMethods {
 
   private
   def renderJpg(colorClassifier: ColorClassifier[_], histogram: Option[Histogram]): Jpg = {
-    val renderer = Renderer(colorClassifier, histogram)
-    val r2 = renderer.render(tile)
+    val cmap = colorClassifier.toColorMap(ColorMapOptions.Default, histogram)
+    val r2 = cmap.render(tile).convert(TypeByte)
     new JpgEncoder().writeByteArray(r2)
   }
 

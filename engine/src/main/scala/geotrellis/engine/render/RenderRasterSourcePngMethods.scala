@@ -31,6 +31,7 @@ trait RenderRasterSourcePngMethods extends RasterSourceMethods {
     * the first 8 bits are the red value (between 0 and 255), then green, blue,
     * and alpha (with 0 being transparent and 255 being opaque).
     */
+    /*
   def renderPng(): ValueSource[Png] =
     rasterSource.converge.map(_.renderPng)
 
@@ -57,4 +58,7 @@ trait RenderRasterSourcePngMethods extends RasterSourceMethods {
 
   def renderPng(colors: Array[Int], breaks: Array[Int], noDataColor: Int): ValueSource[Png] =
     rasterSource.converge.map(_.renderPng(colors, breaks, noDataColor))
+  */
+  def renderPng(colorClassifier: ColorClassifier[_]): ValueSource[Png] =
+    rasterSource.converge.map(_.renderPng(colorClassifier))
 }

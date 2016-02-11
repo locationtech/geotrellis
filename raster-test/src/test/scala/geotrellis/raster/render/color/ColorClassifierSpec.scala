@@ -24,14 +24,14 @@ import java.util.Locale
 class ColorClassifierSpec extends FunSpec with Matchers {
   describe("construction") {
     it("should build a mapping from doubles to colors") {
-      cc = new SafeColorClassifier
-      cc.classify((123, RGBA(123)))
-        .classify((1234, RGBA(1234)))
-        .classify((1235, RGBA(1235)))
-        .classify((1236, RGBA(1236)))
+      val cc = new StrictIntColorClassifier
+      cc.classify(123, RGBA(123))
+        .classify(1234, RGBA(1234))
+        .classify(1235, RGBA(1235))
+        .classify(1236, RGBA(1236))
         .setNoDataColor(RGBA(8675309))
       cc.getColors shouldBe (Array(RGBA(123), RGBA(1234), RGBA(1235), RGBA(1236)))
-      cc.getBounds shouldBe (Array(123.0, 1234.0, 1235.0, 1236.0))
+      cc.getBreaks shouldBe (Array(123.0, 1234.0, 1235.0, 1236.0))
       cc.getNoDataColor shouldBe (Some(RGBA(8675309)))
     }
   }

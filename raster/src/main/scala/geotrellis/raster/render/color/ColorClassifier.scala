@@ -24,8 +24,19 @@ import java.util.Locale
 
 import scala.reflect.ClassTag
 
+sealed trait ClassBoundaryType
+
+case object GreaterThan extends ClassBoundaryType
+case object GreaterThanOrEqualTo extends ClassBoundaryType
+case object LessThan extends ClassBoundaryType
+case object LessThanOrEqualTo extends ClassBoundaryType
+case object Exact extends ClassBoundaryType
+
+
 sealed abstract class ColorClassifier[A] extends Serializable {
   protected var noDataColor: Option[RGBA] = None
+
+  val classificationType: ClassBoundaryType
 
   def getBreaks: Array[A]
   def getColors: Array[RGBA]
@@ -33,13 +44,16 @@ sealed abstract class ColorClassifier[A] extends Serializable {
   def mapBreaks(f: A => A): ColorClassifier[A]
   def mapColors(f: RGBA => RGBA): ColorClassifier[A]
 
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap
+  def toColorMap(options: ColorMapOptions, histogram: Option[Histogram]): ColorMap
 
   def length: Int
 
   def getNoDataColor = noDataColor
 
   def classify(classBreak: A, classColor: RGBA): ColorClassifier[A]
+
+  def addClassifications(classifications: Array[(A, RGBA)]): ColorClassifier[A] =
+    addClassifications(classifications: _*)
 
   def addClassifications(classifications: (A, RGBA)*): ColorClassifier[A] = {
     classifications map { case classification: (A, RGBA) =>
@@ -52,8 +66,6 @@ sealed abstract class ColorClassifier[A] extends Serializable {
     noDataColor = Some(color)
     this
   }
-
-
 }
 
 trait StrictColorClassifier[A] { this: ColorClassifier[A] =>
@@ -82,8 +94,6 @@ trait StrictColorClassifier[A] { this: ColorClassifier[A] =>
     this
   }
 
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap
-
   def classify(classBreak: A, classColor: RGBA): ColorClassifier[A] = {
     colorClassifications(classBreak) = classColor
     this
@@ -102,8 +112,8 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
   def getColors: Array[RGBA] = classificationColors.toArray
 
   def classify(classBreak: A, classColor: RGBA): ColorClassifier[A] = {
-    appendBreaks(classBreak)
-    appendColors(classColor)
+    addBreaks(classBreak)
+    addColors(classColor)
     this
   }
 
@@ -117,12 +127,18 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
     this
   }
 
-  def appendBreaks(breaks: A*): BlendingColorClassifier[A] = {
+  def addBreaks(breaks: Array[A]): BlendingColorClassifier[A] =
+    addBreaks(breaks: _*)
+
+  def addBreaks(breaks: A*): BlendingColorClassifier[A] = {
     classificationBreaks ++= breaks
     this
   }
 
-  def appendColors(colors: RGBA*): BlendingColorClassifier[A] = {
+  def addColors(colors: Array[RGBA]): BlendingColorClassifier[A] =
+    addColors(colors: _*)
+
+  def addColors(colors: RGBA*): BlendingColorClassifier[A] = {
     classificationColors ++= colors
     this
   }
@@ -132,7 +148,7 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
     * ColorClassification which either interpolates or properly subsets the colors so as
     * to have an equal count of Breaks and colors
   **/
-  protected def normalize: BlendingColorClassifier[A] = {
+  def normalize: BlendingColorClassifier[A] = {
     if (classificationBreaks.size < classificationColors.size) {
       classificationColors = spread(getColors, classificationBreaks.size).toBuffer
     } else if (classificationBreaks.size > classificationColors.size) {
@@ -240,37 +256,53 @@ trait BlendingColorClassifier[A] { this: ColorClassifier[A] =>
 }
 
 
-class StrictIntColorClassifier(implicit val ctag: ClassTag[Int])
+case class StrictIntColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Int])
     extends ColorClassifier[Int]
        with StrictColorClassifier[Int] {
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap = {
-    ColorMap(getBreaks, getColors.map(_.get), options)
+
+  def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
+    histogram match {
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+    }
   }
 }
 
-class StrictDoubleColorClassifier(implicit val ctag: ClassTag[Double])
+case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Double])
     extends ColorClassifier[Double]
        with StrictColorClassifier[Double] {
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap = {
-    ColorMap(getBreaks, getColors.map(_.get), options)
+
+  def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
+    histogram match {
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+    }
   }
 }
 
-class BlendingIntColorClassifier(implicit val ctag: ClassTag[Int])
+case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Int])
     extends ColorClassifier[Int]
        with BlendingColorClassifier[Int] {
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap = {
+
+  def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
     normalize
-    ColorMap(getBreaks, getColors.map(_.get), options)
+    histogram match {
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+    }
   }
 }
 
-class BlendingDoubleColorClassifier(implicit val ctag: ClassTag[Double])
+case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType = LessThanOrEqualTo)(implicit val ctag: ClassTag[Double])
     extends ColorClassifier[Double]
        with BlendingColorClassifier[Double] {
-  def toColorMap(options: ColorMapOptions = ColorMapOptions.Default): ColorMap = {
+
+  def toColorMap(options: ColorMapOptions, histogram: Option[Histogram] = None): ColorMap = {
     normalize
-    ColorMap(getBreaks, getColors.map(_.get), options)
+    histogram match {
+      case Some(h) => ColorMap(getBreaks, getColors.map(_.get), options).cache(h)
+      case None =>  ColorMap(getBreaks, getColors.map(_.get), options)
+    }
   }
 }
 

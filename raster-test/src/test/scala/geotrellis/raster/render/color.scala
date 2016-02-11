@@ -120,17 +120,19 @@ class ColorSpec extends FunSpec with Matchers {
       cb.colors should be (colors)
     }
   }
-  
-  describe("ColorRamp") {
+
+  describe("Blending Color Classifier") {
     it("should return the correct colors") {
       val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
 
     }
     it("should interpolate") {
-      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val colors = Array(RGBA(0xff0000ff), RGBA(0x00ff00ff), RGBA(0x0000ffff))
       val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
-      val interpolatedColors = ColorRamp(colors).interpolate(5)
-      println(interpolatedColors.colors)
+      val cc = new BlendingIntColorClassifier
+      cc.addColors(colors).addBreaks(1, 2, 3, 4, 5).normalize
+      val interpolatedColors = cc.getColors.map(_.get)
+      println(interpolatedColors)
       ColorSpec.hexstringify(interpolatedColors.toArray) should be (ColorSpec.hexstringify(expected))
     }
     it("should set alpha values") {
@@ -140,7 +142,7 @@ class ColorSpec extends FunSpec with Matchers {
       println(interpolatedColors.colors)
       ColorSpec.hexstringify(interpolatedColors.toArray) should be (ColorSpec.hexstringify(expected))
     }
-    
+
     it("should create an alpha gradient") {
       val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Array(0xff000000, 0x00ff007f, 0x0000ffff)

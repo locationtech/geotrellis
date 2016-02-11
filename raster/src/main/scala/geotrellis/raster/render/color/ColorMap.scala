@@ -21,16 +21,8 @@ import geotrellis.raster.histogram.Histogram
 
 import scala.collection.mutable
 
-sealed abstract class ColorMapType
-
-case object GreaterThan extends ColorMapType
-case object GreaterThanOrEqualTo extends ColorMapType
-case object LessThan extends ColorMapType
-case object LessThanOrEqualTo extends ColorMapType
-case object Exact extends ColorMapType
-
 case class ColorMapOptions(
-  colorMapType: ColorMapType,
+  colorMapType: ClassBoundaryType,
   /** Rgba value for NODATA */
   noDataColor: Int = 0x00000000,
   /** Rgba value for data that doesn't fit the map */
@@ -45,7 +37,7 @@ object ColorMapOptions {
   def apply(nd: Int): ColorMapOptions =
     ColorMapOptions(LessThan, nd)
 
-  implicit def colorMapTypeToOptions(colorMapType: ColorMapType): ColorMapOptions =
+  implicit def colorMapTypeToOptions(colorMapType: ClassBoundaryType): ColorMapOptions =
     ColorMapOptions(colorMapType)
 }
 

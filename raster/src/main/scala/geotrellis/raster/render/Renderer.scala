@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
 package geotrellis.raster.render
 
 import  geotrellis.raster.render.jpg._
@@ -31,9 +31,8 @@ case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: PngColorE
 }
 
 object Renderer {
-  /** Include a precomputed histogram to cache the color map and speed up the rendering. */
   def apply(colorClassifier: ColorClassifier[_], h: Option[Histogram]): Renderer = {
-    val colorMap = colorClassifier.toColorMap()
+    val colorMap = colorClassifier.toColorMap(ColorMapOptions.Default, h)
     val pngEncoding = PngColorEncoding.fromRasterColorClassifier(colorClassifier)
     h match {
       case Some(hist) =>
@@ -43,3 +42,4 @@ object Renderer {
     }
   }
 }
+*/

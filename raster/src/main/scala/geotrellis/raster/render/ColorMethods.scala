@@ -22,12 +22,12 @@ trait ColorMethods extends TileMethods {
   def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): Tile =
     DoubleColorMap(breaksToColors, options).render(tile)
 
-  def color(colorBreaks: ColorBreaks): Tile =
-    colorBreaks.toColorMap.render(tile)
-
   def color(colorBreaks: ColorBreaks, options: ColorMapOptions): Tile =
     colorBreaks.toColorMap(options).render(tile)
 */
+  def color(colorClassifier: ColorClassifier[_]): Tile =
+    colorClassifier.toColorMap(ColorMapOptions.Default, None).render(tile)
+
   def toBufferedImage: BufferedImage = {
     val bi = new BufferedImage(tile.cols, tile.rows, BufferedImage.TYPE_INT_RGB)
     cfor(0)(_ < tile.cols, _ + 1) { x =>

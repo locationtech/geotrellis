@@ -21,6 +21,7 @@ import geotrellis.raster.render._
 import geotrellis.engine._
 
 trait RasterSourceColorMethods extends RasterSourceMethods {
+  /*
   def color(breaksToColors: Map[Int, Int]): RasterSource =
     color(breaksToColors, ColorMapOptions.Default)
 
@@ -32,4 +33,7 @@ trait RasterSourceColorMethods extends RasterSourceMethods {
 
   def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): RasterSource =
     rasterSource.mapTile(_.color(breaksToColors, options))
+  */
+  def color(colorClassifier: ColorClassifier[_])(implicit d: DI): RasterSource =
+    rasterSource.mapTile(_.color(colorClassifier))
 }
