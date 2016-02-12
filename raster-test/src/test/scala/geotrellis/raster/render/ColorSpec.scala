@@ -125,9 +125,9 @@ class ColorSpec extends FunSpec with Matchers {
     it("should map breaks to colors") {
       val limits = Array(2, 4, 6)
       val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff).map(RGBA(_))
-      val sicc = StrictColorClassifier(limits zip colors)
-      sicc.getBreaks should be (limits)
-      sicc.getColors should be (colors)
+      val scc = StrictColorClassification(limits zip colors)
+      scc.getBreaks should be (limits)
+      scc.getColors should be (colors)
     }
   }
 

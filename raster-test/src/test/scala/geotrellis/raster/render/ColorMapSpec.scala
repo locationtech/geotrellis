@@ -39,7 +39,7 @@ class ColorMapSpec extends FunSpec with Matchers
       val colorMap = colorClassifier.toColorMap().asInstanceOf[IntColorMap]
 
       val color:IndexedPngEncoding =
-        PngColorEncoding.fromRasterColorClassifier(colorClassifier) match {
+        PngColorEncoding(colorClassifier.getColors, colorClassifier.getNoDataColor) match {
           case i @ IndexedPngEncoding(_,_) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }
@@ -64,7 +64,7 @@ class ColorMapSpec extends FunSpec with Matchers
 
       val colorMap = colorClassifier.toColorMap().asInstanceOf[IntColorMap]
       val color:IndexedPngEncoding =
-        PngColorEncoding.fromRasterColorClassifier(colorClassifier) match {
+        PngColorEncoding(colorClassifier.getColors, colorClassifier.getNoDataColor) match {
           case i @ IndexedPngEncoding(_,_) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }

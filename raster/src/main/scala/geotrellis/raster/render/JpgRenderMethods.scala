@@ -15,6 +15,7 @@ trait JpgRenderMethods extends TileMethods {
     * An RGBA value is a 32 bit integer with 8 bits used for each component:
     * the first 8 bits are the red value (between 0 and 255), then green, blue,
     * and alpha (with 0 being transparent and 255 being opaque).
+    *
     */
   def renderJpg(): Jpg =
     new JpgEncoder().writeByteArray(tile)
@@ -57,29 +58,4 @@ trait JpgRenderMethods extends TileMethods {
     val r2 = cmap.render(tile).convert(TypeByte)
     new JpgEncoder().writeByteArray(r2)
   }
-
-/*
-  def renderJpg(ramp: ColorRamp, breaks: Array[Int]): Jpg =
-    renderJpg(ColorBreaks(breaks, ramp.toArray))
-
-  def renderJpg(colors: Array[Int]): Jpg = {
-    val h = tile.histogram
-    renderJpg(ColorBreaks(h, colors), 0, h)
-  }
-
-  def renderJpg(colors: Array[Int], numColors: Int): Jpg =
-    renderJpg(Color.chooseColors(colors, numColors))
-
-  def renderJpg(breaks: Array[Int], colors: Array[Int]): Jpg =
-    renderJpg(ColorBreaks(breaks, colors), 0)
-
-  def renderJpg(breaks: Array[Int], colors: Array[Int], noDataColor: Int): Jpg =
-    renderJpg(ColorBreaks(breaks, colors), noDataColor)
-
-  def renderJpg(breaks: Array[Double], colors: Array[Int]): Jpg =
-    renderJpg(ColorBreaks(breaks, colors), 0)
-
-  def renderJpg(breaks: Array[Double], colors: Array[Int], noDataColor: Int): Jpg =
-    renderJpg(ColorBreaks(breaks, colors), noDataColor)
-*/
 }
