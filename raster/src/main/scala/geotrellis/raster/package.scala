@@ -21,6 +21,7 @@ import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
 import geotrellis.raster.rasterize._
 
+
 package object raster
     extends crop.Implicits
     with merge.Implicits
@@ -62,7 +63,18 @@ package object raster
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
       with merge.SingleBandTileMergeMethods
+      with op.elevation.ElevationMethods
+      with op.focal.FocalMethods
+      with op.global.GlobalMethods
+      with op.hydrology.HydrologyMethods
+      with op.local.LocalMethods
+      with op.stats.StatsMethods
+      with op.zonal.summary.ZonalSummaryMethods
+      with op.zonal.ZonalMethods
       with prototype.SingleBandTilePrototypeMethods
+      with render.ColorMethods
+      with render.JpgRenderMethods
+      with render.PngRenderMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 

@@ -27,10 +27,10 @@ class HilbertSpatialKeyIndexSpec extends FunSpec with Matchers{
     it("generates hand indexes you can hand check 2x2"){
      val hilbert = HilbertSpatialKeyIndex(SpatialKey(0,0), SpatialKey(upperBound,upperBound), 1) 
      //right oriented
-     hilbert.toIndex(SpatialKey(0,0)) should be (0) 
-     hilbert.toIndex(SpatialKey(1,0)) should be (1) 
-     hilbert.toIndex(SpatialKey(0,1)) should be (3) 
+     hilbert.toIndex(SpatialKey(0,0)) should be (0)
+     hilbert.toIndex(SpatialKey(0,1)) should be (1) 
      hilbert.toIndex(SpatialKey(1,1)) should be (2) 
+     hilbert.toIndex(SpatialKey(1,0)) should be (3)
     }
 
     it("generates hand indexes you can hand check 4x4"){

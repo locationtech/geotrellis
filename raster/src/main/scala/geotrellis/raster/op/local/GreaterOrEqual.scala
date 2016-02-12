@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,26 +29,26 @@ object GreaterOrEqual extends LocalTileComparatorOp {
     if(isNoData(z1)) { false }
     else {
       if(isNoData(z2)) { false }
-      else { 
+      else {
         if(z1 >= z2) true
         else false
       }
     }
 }
 
-trait GreaterOrEqualMethods extends TileMethods {
+trait GreaterOrEqualMethods extends MethodExtensions[Tile] {
   /**
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def localGreaterOrEqual(i: Int): Tile = GreaterOrEqual(tile, i)
+  def localGreaterOrEqual(i: Int): Tile = GreaterOrEqual(self, i)
   /**
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def localGreaterOrEqualRightAssociative(i: Int): Tile = GreaterOrEqual(i, tile)
+  def localGreaterOrEqualRightAssociative(i: Int): Tile = GreaterOrEqual(i, self)
   /**
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
@@ -66,13 +66,13 @@ trait GreaterOrEqualMethods extends TileMethods {
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def localGreaterOrEqual(d: Double): Tile = GreaterOrEqual(tile, d)
+  def localGreaterOrEqual(d: Double): Tile = GreaterOrEqual(self, d)
   /**
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def localGreaterOrEqualRightAssociative(d: Double): Tile = GreaterOrEqual(d, tile)
+  def localGreaterOrEqualRightAssociative(d: Double): Tile = GreaterOrEqual(d, self)
   /**
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
@@ -89,7 +89,7 @@ trait GreaterOrEqualMethods extends TileMethods {
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
-  def localGreaterOrEqual(r: Tile): Tile = GreaterOrEqual(tile, r)
+  def localGreaterOrEqual(r: Tile): Tile = GreaterOrEqual(self, r)
   /**
    * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.

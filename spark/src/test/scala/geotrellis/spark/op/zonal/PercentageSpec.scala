@@ -58,7 +58,7 @@ class PercentageSpec extends FunSpec
       )
 
       val actual = rdd.zonalPercentage(zonesRDD).stitch
-      val expected = rdd.stitch.tile.zonalPercentage(zonesRDD.stitch.tile)
+      val expected = rdd.stitch.zonalPercentage(zonesRDD.stitch)
 
       (actual.cols, actual.rows) should be (expected.cols, expected.rows)
 

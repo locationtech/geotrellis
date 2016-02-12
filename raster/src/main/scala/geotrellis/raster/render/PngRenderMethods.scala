@@ -5,7 +5,7 @@ import geotrellis.raster.render.png._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.op.stats._
 
-trait PngRenderMethods extends TileMethods {
+trait PngRenderMethods extends MethodExtensions[Tile] {
   /** Generate a PNG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -17,7 +17,7 @@ trait PngRenderMethods extends TileMethods {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new PngEncoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
+    new PngEncoder(Settings(Rgba, PaethFilter)).writeByteArray(self)
 
   def renderPng(colorRamp: ColorRamp): Png =
     renderPng(colorRamp.toArray)
@@ -54,18 +54,18 @@ trait PngRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Png =
+  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram[Int]): Png =
     renderPng(colorBreaks, noDataColor, Some(histogram))
 
   private
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Png = {
+  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram[Int]]): Png = {
     val renderer =
       histogram match {
         case Some(h) => Renderer(colorBreaks, noDataColor, h)
         case None => Renderer(colorBreaks, noDataColor)
       }
 
-    val r2 = renderer.render(tile)
+    val r2 = renderer.render(self)
     new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
   }
 
@@ -73,7 +73,7 @@ trait PngRenderMethods extends TileMethods {
     renderPng(ColorBreaks(breaks, ramp.toArray))
 
   def renderPng(colors: Array[Int]): Png = {
-    val h = tile.histogram
+    val h = self.histogram
     renderPng(ColorBreaks(h, colors), 0, h)
   }
 

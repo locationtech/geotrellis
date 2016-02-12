@@ -36,19 +36,19 @@ object Or extends LocalTileBinaryOp {
     else i2d(d2i(z1) | d2i(z2))
 }
 
-trait OrMethods extends TileMethods {
+trait OrMethods extends MethodExtensions[Tile] {
   /** Or a constant Int value to each cell. */
-  def localOr(i: Int): Tile = Or(tile, i)
+  def localOr(i: Int): Tile = Or(self, i)
   /** Or a constant Int value to each cell. */
   def |(i: Int): Tile = localOr(i)
   /** Or a constant Int value to each cell. */
   def |:(i: Int): Tile = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(r: Tile): Tile = Or(tile,r)
+  def localOr(r: Tile): Tile = Or(self,r)
   /** Or the values of each cell in each raster. */
   def |(r: Tile): Tile = localOr(r)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs: Traversable[Tile]): Tile = Or(tile +: rs.toSeq)
+  def localOr(rs: Traversable[Tile]): Tile = Or(self +: rs.toSeq)
   /** Or the values of each cell in each raster. */
   def |(rs: Traversable[Tile]): Tile = localOr(rs)
 }

@@ -34,13 +34,13 @@ object Max extends LocalTileBinaryOp {
     else math.max(z1,z2)
 }
 
-trait MaxMethods extends TileMethods {
+trait MaxMethods extends MethodExtensions[Tile] {
   /** Max a constant Int value to each cell. */
-  def localMax(i: Int): Tile = Max(tile, i)
+  def localMax(i: Int): Tile = Max(self, i)
   /** Max a constant Double value to each cell. */
-  def localMax(d: Double): Tile = Max(tile, d)
+  def localMax(d: Double): Tile = Max(self, d)
   /** Max the values of each cell in each raster.  */
-  def localMax(r: Tile): Tile = Max(tile, r)
+  def localMax(r: Tile): Tile = Max(self, r)
   /** Max the values of each cell in each raster.  */
-  def localMax(rs: Traversable[Tile]): Tile = Max(tile +: rs.toSeq)
+  def localMax(rs: Traversable[Tile]): Tile = Max(self +: rs.toSeq)
 }

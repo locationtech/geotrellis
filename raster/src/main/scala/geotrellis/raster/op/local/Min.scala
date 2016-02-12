@@ -34,13 +34,13 @@ object Min extends LocalTileBinaryOp {
     else math.min(z1,z2)
 }
 
-trait MinMethods extends TileMethods {
+trait MinMethods extends MethodExtensions[Tile] {
   /** Min a constant Int value to each cell. */
-  def localMin(i: Int): Tile = Min(tile, i)
+  def localMin(i: Int): Tile = Min(self, i)
   /** Min a constant Double value to each cell. */
-  def localMin(d: Double): Tile = Min(tile, d)
+  def localMin(d: Double): Tile = Min(self, d)
   /** Min the values of each cell in each raster.  */
-  def localMin(r:Tile): Tile = Min(tile, r)
+  def localMin(r:Tile): Tile = Min(self, r)
   /** Min the values of each cell in each raster.  */
-  def localMin(rs:Traversable[Tile]): Tile = Min(tile +: rs.toSeq)
+  def localMin(rs:Traversable[Tile]): Tile = Min(self +: rs.toSeq)
 }

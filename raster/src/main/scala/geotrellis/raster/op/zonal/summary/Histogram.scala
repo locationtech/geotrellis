@@ -5,8 +5,8 @@ import geotrellis.vector._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.histogram._
 
-object Histogram extends TileIntersectionHandler[Histogram] {
-  def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Histogram = {
+object Histogram extends TileIntersectionHandler[Histogram[Int]] {
+  def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Histogram[Int] = {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     val histogram = FastMapHistogram()
@@ -17,12 +17,12 @@ object Histogram extends TileIntersectionHandler[Histogram] {
     histogram
   }
 
-  def handleFullTile(tile: Tile): Histogram = {
+  def handleFullTile(tile: Tile): Histogram[Int] = {
     val histogram = FastMapHistogram()
     tile.foreach { (z: Int) => if (isData(z)) histogram.countItem(z, 1) }
     histogram
   }
 
-  def combineResults(rs: Seq[Histogram]): Histogram =
+  def combineResults(rs: Seq[Histogram[Int]]): Histogram[Int] =
     FastMapHistogram.fromHistograms(rs)
 }

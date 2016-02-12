@@ -111,10 +111,10 @@ object Minority extends Serializable {
   }
 }
 
-trait MinorityMethods extends TileMethods {
+trait MinorityMethods extends MethodExtensions[Tile] {
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rs: Traversable[Tile]): Tile =
-    Minority(tile +: rs.toSeq)
+    Minority(self +: rs.toSeq)
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rs: Tile*)(implicit d: DI): Tile =
@@ -122,7 +122,7 @@ trait MinorityMethods extends TileMethods {
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n: Int, rs: Traversable[Tile]): Tile =
-    Minority(n, tile +: rs.toSeq)
+    Minority(n, self +: rs.toSeq)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n: Int, rs: Tile*)(implicit d: DI): Tile =

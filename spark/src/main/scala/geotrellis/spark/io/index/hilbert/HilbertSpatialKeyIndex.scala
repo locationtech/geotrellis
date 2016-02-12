@@ -38,8 +38,8 @@ class HilbertSpatialKeyIndex(keyBounds: KeyBounds[SpatialKey], xResolution: Int,
     val dimensionSpec =
       new MultiDimensionalSpec( 
         List(
-          math.pow(2, xResolution).toInt,
-          math.pow(2, yResolution).toInt
+          xResolution,
+          yResolution
         ).map(new java.lang.Integer(_)) 
       )
 
