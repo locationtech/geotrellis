@@ -10,7 +10,7 @@ import java.util.Locale
 
 import math.BigDecimal
 
-trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
+trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] with MacroCombineFunctions[Tile, MultiBandTile] {
   def bandCount: Int
 
   def band(bandIndex: Int): Tile
@@ -70,18 +70,6 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
     */
   def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile
 
-  /** Combine three int band value for each cell.
-    * Note: this method uses macros to side step the inefficiency of Function3 not being specialized.
-    */
-  def combine(b0: Int, b1: Int, b2: Int)(f: (Int, Int, Int) => Int): Tile =
-    macro MultiBandTileMacros.intCombine3_impl[Tile, MultiBandTile]
-
-  /** Combine four int band value for each cell.
-    * Note: this method uses macros to side step the inefficiency of Function4 not being specialized.
-    */
-  def combine(b0: Int, b1: Int, b2: Int, b3: Int)(f: (Int, Int, Int, Int) => Int): Tile =
-    macro MultiBandTileMacros.intCombine4_impl[Tile, MultiBandTile]
-
   /** Combine each double band value for each cell.
     * This method will be inherently slower than calling a method with explicitly stated bands,
     * so if you have as many or fewer bands to combine than an explicit method call, use that.
@@ -91,17 +79,5 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
   /** Combine two double band value for each cell.
     */
   def combineDouble(b0: Int, b1: Int)(f: (Double, Double) => Double): Tile
-
-  /** Combine three double band value for each cell.
-    * Note: this method uses macros to side step the inefficiency of Function3 not being specialized.
-    */
-  def combineDouble(b0: Int, b1: Int, b2: Int)(f: (Double, Double, Double) => Double): Tile =
-    macro MultiBandTileMacros.doubleCombine3_impl[Tile, MultiBandTile]
-
-  /** Combine four double band value for each cell.
-    * Note: this method uses macros to side step the inefficiency of Function4 not being specialized.
-    */
-  def combineDouble(b0: Int, b1: Int, b2: Int, b3: Int)(f: (Double, Double, Double, Double) => Double): Tile =
-    macro MultiBandTileMacros.doubleCombine4_impl[Tile, MultiBandTile]
 
 }
