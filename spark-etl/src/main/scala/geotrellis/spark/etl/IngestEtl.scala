@@ -27,5 +27,4 @@ trait IngestEtl[V <: CellGrid] {
     etl.save(LayerId(etl.conf.layerName(), zoom), tiledRdd, keyIndexMethod)
     sc.stop()
   }
-
 }
