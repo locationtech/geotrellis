@@ -25,6 +25,7 @@ import geotrellis.vector.Extent
 import java.io.{File, BufferedReader}
 import com.typesafe.config.Config
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object AsciiRasterLayerBuilder
 extends RasterLayerBuilder {
   val intRe = """^(-?[0-9]+)$""".r
@@ -151,6 +152,7 @@ extends RasterLayerBuilder {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class AsciiRasterLayer(info: RasterLayerInfo, noDataValue: Int, rasterPath: String)
 extends UntiledRasterLayer(info) {
   private var cached = false

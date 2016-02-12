@@ -32,6 +32,7 @@ import com.typesafe.config.ConfigFactory
 
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class Engine(id: String, val catalog: Catalog) extends Serializable {
   val debug = false
 
@@ -110,6 +111,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object Engine {
   def apply(id: String, path: String) = new Engine(id, Catalog.fromPath(path))
   def apply(id: String, catalog: Catalog) = new Engine(id, catalog)

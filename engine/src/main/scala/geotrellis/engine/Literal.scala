@@ -21,8 +21,8 @@ import geotrellis.engine._
 /**
  * Return the literal value specified.
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class Literal[+A](val value: A) extends Op[A] {
   val nextSteps: Steps[A] = { case _ => Result(value) }
   def _run() = Result(value)
 }
-

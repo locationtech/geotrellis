@@ -18,6 +18,7 @@ package geotrellis.engine.io
 
 import geotrellis.engine._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object LoadRasterLayer {
   def apply(n: String): LoadRasterLayer =
     LoadRasterLayer(LayerId(n))
@@ -29,6 +30,7 @@ object LoadRasterLayer {
 /**
   * Load the [[RasterLayer]] from the raster layer with the specified name.
   */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class LoadRasterLayer(layerId: Op[LayerId]) extends Op[RasterLayer] {
   def _run() = runAsync(List(layerId))
   val nextSteps: Steps[RasterLayer] = {
@@ -42,6 +44,7 @@ case class LoadRasterLayer(layerId: Op[LayerId]) extends Op[RasterLayer] {
 /**
   * Load the [[RasterLayer]] from the raster layer at the specified path.
   */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class LoadRasterLayerFromPath(path: Op[String]) extends Op[RasterLayer] {
   def _run() = runAsync(List(path))
   val nextSteps: Steps[RasterLayer] = {
@@ -55,6 +58,7 @@ case class LoadRasterLayerFromPath(path: Op[String]) extends Op[RasterLayer] {
 /**
   * Load the [[RasterLayer]] from the raster layer at the specified URL.
   */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class LoadRasterLayerFromUrl(url: Op[String]) extends Op[RasterLayer] {
   def _run() = runAsync(List(url))
   val nextSteps: Steps[RasterLayer] = {

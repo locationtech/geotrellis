@@ -19,6 +19,7 @@ package geotrellis.engine.io
 import geotrellis.raster._
 import geotrellis.engine._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object LoadRaster {
   def apply(n: String): LoadRaster =
     LoadRaster(LayerId(n), None)
@@ -37,6 +38,7 @@ object LoadRaster {
  * Load the raster data for a particular extent/resolution for the
  * raster layer in the catalog with name 'n'
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class LoadRaster(layerId: Op[LayerId],
                       r: Op[Option[RasterExtent]]) extends Op[Tile] {
   def _run() = runAsync(List(layerId, r))

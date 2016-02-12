@@ -4,6 +4,7 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.local._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait LocalRasterSourceSeqMethods extends RasterSourceSeqMethods {
   val rasterDefinition = rasterSources.head.rasterDefinition
 

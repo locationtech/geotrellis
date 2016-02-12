@@ -27,6 +27,7 @@ import java.io.File
 import spire.syntax.cfor._
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
@@ -77,6 +78,7 @@ extends RasterLayerBuilder {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object TileSetRasterLayer {
   def tileName(id: LayerId, col: Int, row: Int) =
     s"${id}_${col}_${row}"
@@ -85,6 +87,7 @@ object TileSetRasterLayer {
     Filesystem.join(path, s"${id.name}_${col}_${row}.arg")
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class TileSetRasterLayer(info: RasterLayerInfo,
                          val tileDirPath: String,
                          val tileLayout: TileLayout)
@@ -170,6 +173,7 @@ extends RasterLayer(info) {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract class TileLoader(tileSetInfo: RasterLayerInfo,
                           tileLayout: TileLayout) extends Serializable {
   val tileExtents = TileExtents(tileSetInfo.rasterExtent.extent, tileLayout)
@@ -195,6 +199,7 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
   protected def loadRaster(col: Int, row: Int, re: RasterExtent, tre: Option[RasterExtent]): Tile
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class DiskTileLoader(tileSetInfo: RasterLayerInfo,
                      tileLayout: TileLayout,
                      tileDirPath: String)
@@ -211,6 +216,7 @@ extends TileLoader(tileSetInfo, tileLayout) {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class CacheTileLoader(info: RasterLayerInfo,
                       tileLayout: TileLayout,
                       c: Cache[String])

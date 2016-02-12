@@ -22,6 +22,7 @@ import akka.actor._
 
 import scala.language.implicitConversions
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object Op {
   /**
     * Add simple syntax for creating an operation.
@@ -143,6 +144,7 @@ object Op {
  * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract class Operation[+T] extends Product with Serializable {
   val nextSteps: Steps[T]
 
@@ -247,6 +249,7 @@ abstract class Operation[+T] extends Product with Serializable {
  *
  * If the initial operation is g, you can think of this operation as f(g(x))
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class CompositeOperation[+T, U](gOp: Op[U], f: (U) => Op[T]) extends Operation[T] {
   def _run() = runAsync('firstOp :: gOp :: Nil)
 
@@ -256,20 +259,24 @@ case class CompositeOperation[+T, U](gOp: Op[U], f: (U) => Op[T]) extends Operat
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract class OperationWrapper[+T](op: Op[T]) extends Operation[T] {
   def _run() = op._run()
   val nextSteps: Steps[T] = op.nextSteps
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class RemoteOperation[+T](val op: Op[T], cluster: Option[ActorRef])
-extends OperationWrapper(op) {}
+    extends OperationWrapper(op) {}
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object Operation {
   implicit def implicitLiteralVal[A <: AnyVal](a: A)(implicit m: Manifest[A]): Operation[A] = Literal(a)
   implicit def implicitLiteralRef[A <: AnyRef](a: A): Operation[A] = Literal(a)
 }
 
 /** Operation that simply fails with the given message */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class FailOp[T](msg: String) extends Operation[T] {
   def _run() = StepError(msg, "")
   val nextSteps: Steps[T] = { case _ => StepError(msg, "") }
@@ -286,6 +293,7 @@ case class FailOp[T](msg: String) extends Operation[T] {
  * case class Add2(x: Op[Int], y: Op[Int]) extends Op2(x, y)(_ + _)
  */
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class Op0[T](f: ()=>StepOutput[T]) extends Operation[T] {
   def productArity = 0
   def canEqual(other: Any) = other.isInstanceOf[Op0[_]]
@@ -297,6 +305,7 @@ class Op0[T](f: ()=>StepOutput[T]) extends Operation[T] {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class Op1[A, T](a: Op[A])(f: (A)=>StepOutput[T]) extends Operation[T] {
   def _run() = runAsync(List(a))
 
@@ -309,6 +318,7 @@ class Op1[A, T](a: Op[A])(f: (A)=>StepOutput[T]) extends Operation[T] {
   val nextSteps = myNextSteps
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class Op2[A, B, T](a: Op[A], b: Op[B]) (f: (A, B)=>StepOutput[T]) extends Operation[T] {
   def productArity = 2
   def canEqual(other: Any) = other.isInstanceOf[Op2[_, _, _]]
@@ -323,6 +333,7 @@ class Op2[A, B, T](a: Op[A], b: Op[B]) (f: (A, B)=>StepOutput[T]) extends Operat
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class Op3[A, B, C, T](a: Op[A], b: Op[B], c: Op[C])
 (f: (A, B, C)=>StepOutput[T]) extends Operation[T] {
   def productArity = 3
@@ -341,6 +352,7 @@ class Op3[A, B, C, T](a: Op[A], b: Op[B], c: Op[C])
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class Op4[A, B, C, D, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D])
 (f: (A, B, C, D)=>StepOutput[T]) extends Operation[T] {
   def productArity = 4
@@ -361,6 +373,7 @@ class Op4[A, B, C, D, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D])
 
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract class Op5[A, B, C, D, E, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D], e: Op[E])
 (f: (A, B, C, D, E)=>StepOutput[T]) extends Operation[T] {
   def _run() = runAsync(List(a, b, c, d, e))
@@ -372,6 +385,7 @@ abstract class Op5[A, B, C, D, E, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D], e: 
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract class Op6[A, B, C, D, E, F, T]
 (a: Op[A], b: Op[B], c: Op[C], d: Op[D], e: Op[E], f: Op[F])
 (ff: (A, B, C, D, E, F)=>StepOutput[T]) extends Operation[T] {

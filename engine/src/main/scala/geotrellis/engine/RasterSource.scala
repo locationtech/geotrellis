@@ -29,6 +29,7 @@ import akka.actor.ActorRef
 import spire.syntax.cfor._
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Tile]]])
     extends DataSource[Tile, Tile] {
   type Self = RasterSource
@@ -339,6 +340,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
 
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object RasterSource {
   def fromPath(path: String): RasterSource =
     fromPath(path, None)

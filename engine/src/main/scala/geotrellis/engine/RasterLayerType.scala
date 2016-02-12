@@ -18,13 +18,15 @@ package geotrellis.engine
 
 import geotrellis._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract class RasterLayerType()
 
-case object ArgFile extends RasterLayerType
-case object AsciiFile extends RasterLayerType
-case object Tiled extends RasterLayerType
-case object ConstantRaster extends RasterLayerType
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case object ArgFile extends RasterLayerType
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case object AsciiFile extends RasterLayerType
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case object Tiled extends RasterLayerType
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case object ConstantRaster extends RasterLayerType
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object RasterLayerType {
   implicit def stringToRasterLayerType(s: String) = {
     s match {

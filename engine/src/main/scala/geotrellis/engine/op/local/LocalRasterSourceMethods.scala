@@ -22,6 +22,7 @@ import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.vector.Geometry
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait LocalRasterSourceMethods
   extends RasterSourceMethods
      with LocalMapRasterSourceMethods

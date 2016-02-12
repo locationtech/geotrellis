@@ -30,6 +30,7 @@ import language.implicitConversions
  *
  * engine.run(op) // returns 7
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object Implicits {
   implicit def applyOperator[A, Z:Manifest](lhs:Op[A => Z]) = new {
     def <*>(rhs:Op[A]) = Apply(rhs)(lhs)

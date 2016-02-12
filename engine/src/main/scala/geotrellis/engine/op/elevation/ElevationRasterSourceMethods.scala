@@ -6,6 +6,7 @@ import geotrellis.engine.op.focal._
 import geotrellis.raster.mapalgebra.focal.hillshade._
 import geotrellis.raster.mapalgebra.focal._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait ElevationRasterSourceMethods extends RasterSourceMethods with FocalOperation {
 
   def aspect() =

@@ -24,6 +24,7 @@ import scala.language.higherKinds
  * DataSource[T, V]esents a data source that may be distributed across machines (logical data source)
  * or loaded in memory on a specific machine.
   */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait DataSource[T, +V] extends OpSource[V] {
   type Self <: DataSource[T, V]
 
@@ -137,6 +138,7 @@ trait DataSource[T, +V] extends OpSource[V] {
   def cached(implicit engine: Engine): Self
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object DataSource {
   def convergeSeq[A](elementOps: (Op[Seq[Op[A]]])) =
     logic.Collect(elementOps)

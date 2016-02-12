@@ -21,6 +21,7 @@ import geotrellis.raster.mapalgebra.local._
 
 import scala.annotation.tailrec
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait AddRasterSourceMethods extends RasterSourceMethods {
   /** Add a constant Int value to each cell. */
   def localAdd(i: Int): RasterSource = rasterSource.mapTile(Add(_, i))

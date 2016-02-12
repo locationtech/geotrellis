@@ -18,6 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class RasterLayerInfo(id: LayerId,
                            cellType: CellType,
                            rasterExtent: RasterExtent,
@@ -30,6 +31,7 @@ case class RasterLayerInfo(id: LayerId,
 }
 
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object RasterLayerInfo {
   //* For untiled rasters */
   def apply(id: LayerId,

@@ -20,6 +20,7 @@ import scala.collection.mutable
 
 import geotrellis._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object TreeChars {
   val DOWN_OUT = "├"
   val OUT_DOWN = "┬"
@@ -30,6 +31,7 @@ object TreeChars {
   val DOWN = "│"
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object History {
   def apply(op:Op[_]) =
     new History(op.opId,Nil,None,System.currentTimeMillis,0)
@@ -43,16 +45,20 @@ object History {
   implicit def historyToString(h:History) = h.toString
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 abstract sealed trait HistoryResult {
   def toJson:String
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class SuccessHistory(value:String) extends HistoryResult {
   def toJson() = {
     val escapedVal = value.replace(""""""","""\"""")
     s"""{ "type" : "success", "value" : "$escapedVal" }"""
   }
 }
+
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   def toJson() = {
     val escapedMsg = msg.replace(""""""","""\"""")
@@ -61,6 +67,7 @@ case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class History(id:String,
                    steps:List[StepHistory],
                    result:Option[HistoryResult],
@@ -171,6 +178,7 @@ case class History(id:String,
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class StepHistory(opHistories:List[History]) {
   override
   def toString:String =

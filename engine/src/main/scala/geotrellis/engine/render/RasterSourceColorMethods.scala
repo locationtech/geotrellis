@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.engine._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait RasterSourceColorMethods extends RasterSourceMethods {
   def color(breaksToColors: Map[Int, Int]): RasterSource =
     color(breaksToColors, ColorMapOptions.Default)

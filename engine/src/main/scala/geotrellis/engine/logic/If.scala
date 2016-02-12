@@ -22,6 +22,7 @@ import geotrellis.engine._
  * Conditionally executes one of two operations; if the Boolean Operation evaluates true, the first
  * Operation executes, otherwise the second Operation executes.
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class If[A <: C,B <: C,C:Manifest](bOp: Op[Boolean], trueOp: Op[A], falseOp: Op[B])extends Op[C] {
   def _run() = runAsync('init :: bOp :: Nil)
 

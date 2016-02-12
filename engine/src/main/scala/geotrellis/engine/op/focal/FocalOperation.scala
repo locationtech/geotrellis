@@ -5,6 +5,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.mapalgebra.focal._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait FocalOperation extends RasterSourceMethods {
 
   def zipWithNeighbors: Op[Seq[(Op[Raster[Tile]], TileNeighbors)]] =

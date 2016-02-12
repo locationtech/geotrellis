@@ -24,6 +24,7 @@ import scala.collection.mutable
 // example json is available in the geotrellis.engine.catalog tests. please
 // keep it up-to-date with changes you make here.
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object CatalogParser {
   def error(msg:String) = sys.error(s"Invalid json in catalog: $msg")
 

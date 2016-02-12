@@ -21,6 +21,7 @@ import geotrellis.engine._
 /**
  * This corresponds to Haskell's "fmap" on Functor.
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class Fmap[A, Z:Manifest](a:Op[A])(f:A => Z) extends Op1[A, Z](a)({
   a => Result(f(a))
 })

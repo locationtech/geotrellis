@@ -22,8 +22,10 @@ package geotrellis.engine
   * tyring to load that layer without specifying a datastore will
   * error.
   */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class LayerId(store:Option[String],name:String)
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object LayerId {
   /** Create a LayerId with no data store specified */
   def apply(name:String):LayerId =

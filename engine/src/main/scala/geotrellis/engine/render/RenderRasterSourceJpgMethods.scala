@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.engine._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait RenderRasterSourceJpgMethods extends RasterSourceMethods {
   /** Generate a PNG from a raster of RGBA integer values.
     *

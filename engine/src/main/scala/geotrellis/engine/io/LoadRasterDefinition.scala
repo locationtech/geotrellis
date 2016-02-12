@@ -19,6 +19,7 @@ package geotrellis.engine.io
 import geotrellis.engine._
 import geotrellis.raster._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 object LoadRasterDefinition {
   def apply(n: String): LoadRasterDefinition =
     LoadRasterDefinition(LayerId(n))
@@ -30,6 +31,7 @@ object LoadRasterDefinition {
 /**
   * Load the [[RasterDefinition]] from the raster layer with the specified name.
   */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class LoadRasterDefinition(layerId: Op[LayerId]) extends Op[RasterDefinition] {
   def _run() = runAsync(List(layerId))
   val nextSteps: Steps[RasterDefinition] = {

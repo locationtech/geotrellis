@@ -19,6 +19,7 @@ package geotrellis.engine.op.local
 import geotrellis.engine._
 import geotrellis.raster.mapalgebra.local._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait PowRasterSourceMethods extends RasterSourceMethods {
   /** Pow each value of the raster by a constant value.*/
   def localPow(i: Int): RasterSource = rasterSource.mapTile(Pow(_, i))

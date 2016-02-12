@@ -49,11 +49,13 @@ case class Inlined[T](value:T) extends InternalOperationResult[T]
 /**
  * OperationResult for a successful operation.
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class Complete[T](value:T, history:History) extends OperationResult[T]
                                                     with InternalOperationResult[T]
 
 /**
  * OperationResult for a failed operation.
  */
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 case class Error(message:String, history:History) extends OperationResult[Nothing]
                                                      with InternalOperationResult[Nothing]

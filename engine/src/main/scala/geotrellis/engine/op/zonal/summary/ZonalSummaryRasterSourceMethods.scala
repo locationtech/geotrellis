@@ -26,6 +26,7 @@ import geotrellis.vector._
 import scala.collection.mutable
 import spire.syntax.cfor._
 
+@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
 trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
   def mapIntersecting[B, That](p: Polygon)
                               (handler: TilePolygonalSummaryHandler[B]): DataSource[B, _] =
