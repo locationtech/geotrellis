@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ import geotrellis.raster.viewshed.{ApproxViewshed, Viewshed}
 import geotrellis.vector._
 
 trait GlobalRasterSourceMethods extends RasterSourceMethods {
-  def costDistance(points: Seq[(Int, Int)]) = 
+  def costDistance(points: Seq[(Int, Int)]) =
     rasterSource.global(CostDistance(_, points))
 
   def rescale(newMin: Int, newMax: Int) =
@@ -33,9 +33,9 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
   def rescale(newMin: Double, newMax: Double) =
     rasterSource.global(_.rescale(newMin, newMax))
 
-  def toVector() = 
+  def toVector() =
     rasterSource.converge.mapOp { tileOp =>
-      (tileOp, rasterSource.rasterDefinition).map { (tile, rd) => 
+      (tileOp, rasterSource.rasterDefinition).map { (tile, rd) =>
         tile.toVector(rd.rasterExtent.extent)
       }
     }
@@ -45,14 +45,14 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
 
   def viewshed(p: Point, exact: Boolean = false) =
     if(exact)
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
-          Viewshed(r, col, row) 
+          Viewshed(r, col, row)
         }
       }
     else
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
           ApproxViewshed(r, col, row)
@@ -61,14 +61,14 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
 
   def viewshedOffsets(p: Point, exact: Boolean = false) =
     if(exact)
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
-          Viewshed.offsets(r, col, row) 
+          Viewshed.offsets(r, col, row)
         }
       }
     else
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
           ApproxViewshed.offsets(r, col, row)

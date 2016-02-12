@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import scala.collection.mutable
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
-    val tileDir = 
+    val tileDir =
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
         if(f.isAbsolute) {
@@ -60,7 +60,7 @@ extends RasterLayerBuilder {
       val rasterExtent = RasterExtent(getExtent(json), cw, ch, cols, rows)
       val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
 
-      val info = 
+      val info =
         RasterLayerInfo(
           LayerId(ds, getName(json)),
           getCellType(json),
@@ -78,7 +78,7 @@ extends RasterLayerBuilder {
 }
 
 object TileSetRasterLayer {
-  def tileName(id: LayerId, col: Int, row: Int) = 
+  def tileName(id: LayerId, col: Int, row: Int) =
     s"${id}_${col}_${row}"
 
   def tilePath(path: String, id: LayerId, col: Int, row: Int) =
@@ -135,7 +135,7 @@ extends RasterLayer(info) {
           }
         }
         tile
-      case None => 
+      case None =>
         val loader = getTileLoader()
         val tiles = mutable.ListBuffer[Tile]()
         cfor(0)(_ < tileLayout.layoutRows, _ + 1) { row =>
@@ -148,16 +148,16 @@ extends RasterLayer(info) {
   }
 
   override
-  def getRaster(extent: Extent): Tile = 
+  def getRaster(extent: Extent): Tile =
     CroppedTile(getRaster(None), info.rasterExtent.gridBoundsFor(extent))
 
-  def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]) = 
+  def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]) =
     getTileLoader().getTile(col, row, targetExtent)
 
   def getTileLoader() =
     if(isCached)
       new CacheTileLoader(info, tileLayout, getCache)
-    else 
+    else
       new DiskTileLoader(info, tileLayout, tileDirPath)
 
   def cache(c: Cache[String]) = {
@@ -180,7 +180,7 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
     val re = RasterExtent(tileExtents(col, row), tileLayout.tileCols, tileLayout.tileRows)
     if(col < 0 || row < 0 ||
        tileLayout.layoutCols <= col || tileLayout.layoutRows <= row) {
-      val tre = 
+      val tre =
         targetExtent match {
           case Some(x) => x
           case None => re
@@ -202,9 +202,9 @@ extends TileLoader(tileSetInfo, tileLayout) {
   def loadRaster(col: Int, row: Int, re: RasterExtent, targetExtent: Option[RasterExtent]): Tile = {
     val path = TileSetRasterLayer.tilePath(tileDirPath, tileSetInfo.id, col, row)
     targetExtent match {
-      case Some(tre) => 
+      case Some(tre) =>
         ArgReader.read(path, tileSetInfo.cellType, re, tre)
-      case None => 
+      case None =>
         ArgReader.read(path, tileSetInfo.cellType, re.cols, re.rows)
     }
 
@@ -219,9 +219,9 @@ extends TileLoader(info, tileLayout) {
     c.lookup[Array[Byte]](TileSetRasterLayer.tileName(info.id, col, row)) match {
       case Some(bytes) =>
         targetExtent match {
-          case Some(tre) => 
+          case Some(tre) =>
             ArgReader.resampleBytes(bytes, info.cellType, re, tre)
-          case None => 
+          case None =>
             ArrayTile.fromBytes(bytes, info.cellType, re.cols, re.rows)
         }
       case None =>

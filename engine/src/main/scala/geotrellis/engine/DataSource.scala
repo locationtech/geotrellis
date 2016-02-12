@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@ import akka.actor.ActorRef
 import scala.language.higherKinds
 
 /**
- * DataSource[T, V]esents a data source that may be distributed across machines (logical data source) 
- * or loaded in memory on a specific machine. 
+ * DataSource[T, V]esents a data source that may be distributed across machines (logical data source)
+ * or loaded in memory on a specific machine.
   */
 trait DataSource[T, +V] extends OpSource[V] {
   type Self <: DataSource[T, V]
@@ -32,7 +32,7 @@ trait DataSource[T, +V] extends OpSource[V] {
   def converge[B](f: Seq[T]=>B): ValueSource[B] =
     ValueSource( logic.Collect(elements).map(f).withName("Converge") )
 
-  def withConverge[B](f: Seq[T] => B): DataSource[T, B] = 
+  def withConverge[B](f: Seq[T] => B): DataSource[T, B] =
     new DataSource[T, B] {
       type Self = DataSource[T, B]
       def elements() = DataSource.this.elements
@@ -47,22 +47,22 @@ trait DataSource[T, +V] extends OpSource[V] {
     }
 
   /** apply a function to elements **/
-  def map[B](f: T => B): SeqSource[B] = 
+  def map[B](f: T => B): SeqSource[B] =
     mapOp(Op(f(_)))
 
   /** apply a function to elements **/
-  def map[B](f: T => B, label: String): SeqSource[B] = 
+  def map[B](f: T => B, label: String): SeqSource[B] =
     mapOp(Op(f(_)), label)
 
   /** apply a function to element operations **/
-  def mapOp[B](f: Op[T] => Op[B]): SeqSource[B] =  
+  def mapOp[B](f: Op[T] => Op[B]): SeqSource[B] =
     mapOp(f, s"${getClass.getSimpleName} map")
 
   /** apply a function to element operations **/
   def mapOp[B](f: Op[T]=>Op[B], name: String): SeqSource[B] =
     SeqSource(elements.map(_.map(f)).withName(name))
 
-  def combine[B, C](ds: DataSource[B, _])(f: (T, B)=>C): SeqSource[C] = 
+  def combine[B, C](ds: DataSource[B, _])(f: (T, B)=>C): SeqSource[C] =
     combineOp(ds)( { (a, b) => (a, b).map(f(_, _)) })
 
   def combine[B, C](ds: DataSource[B, _], label: String)
@@ -70,7 +70,7 @@ trait DataSource[T, +V] extends OpSource[V] {
     combineOp(ds, label)( { (a, b) => (a, b).map(f(_, _)) })
 
   def combine[T1 >: T, B](dss: Seq[DataSource[T1, _]])
-                         (f: Seq[T1]=>B): SeqSource[B] = 
+                         (f: Seq[T1]=>B): SeqSource[B] =
     combineOp(dss)(_.mapOps(f(_)))
 
   def combine[T1 >: T, B](dss: Seq[DataSource[T1, _]], label: String)
@@ -89,8 +89,8 @@ trait DataSource[T, +V] extends OpSource[V] {
                      (f: (Op[T], Op[B])=>Op[C]): SeqSource[C] = {
     val newElements: Op[Seq[Op[C]]] =
       ((elements, ds.elements).map { (e1, e2) =>
-        e1.zip(e2).map { case (a, b) => 
-          f(a, b) 
+        e1.zip(e2).map { case (a, b) =>
+          f(a, b)
         }
       }).withName(name)
 
@@ -106,13 +106,13 @@ trait DataSource[T, +V] extends OpSource[V] {
 
     SeqSource(newElements)
   }
-  def reduce[T1 >: T](reducer: (T1, T1) => T1): ValueSource[T1] = 
+  def reduce[T1 >: T](reducer: (T1, T1) => T1): ValueSource[T1] =
     reduceLeft(reducer)
 
-  def reduceLeft[T1 >: T](reducer: (T1, T) => T1): ValueSource[T1] = 
+  def reduceLeft[T1 >: T](reducer: (T1, T) => T1): ValueSource[T1] =
     converge(_.reduceLeft(reducer))
 
-  def reduceRight[T1 >: T](reducer: (T, T1) => T1): ValueSource[T1] = 
+  def reduceRight[T1 >: T](reducer: (T, T1) => T1): ValueSource[T1] =
     converge(_.reduceRight(reducer))
 
   def foldLeft[B](z: B)(folder: (B, T)=>B): ValueSource[B] =

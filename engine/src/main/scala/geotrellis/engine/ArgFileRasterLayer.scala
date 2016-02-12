@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,7 @@ import java.io.File
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
-    val f = 
+    val f =
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
         if(f.isAbsolute) {
@@ -50,7 +50,7 @@ extends RasterLayerBuilder {
       val (cellWidth, cellHeight) = getCellWidthAndHeight(json)
       val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
-      val info = 
+      val info =
         RasterLayerInfo(
           LayerId(ds, getName(json)),
           getCellType(json),
@@ -66,7 +66,7 @@ extends RasterLayerBuilder {
   }
 }
 
-class ArgFileRasterLayer(info: RasterLayerInfo, val rasterPath: String) 
+class ArgFileRasterLayer(info: RasterLayerInfo, val rasterPath: String)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent: Option[RasterExtent]) = {
     if(isCached) {
@@ -91,6 +91,6 @@ extends UntiledRasterLayer(info) {
     }
   }
 
-  def cache(c: Cache[String]) = 
+  def cache(c: Cache[String]) =
     c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 }

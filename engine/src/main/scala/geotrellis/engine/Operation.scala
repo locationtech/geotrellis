@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -129,7 +129,7 @@ object Op {
       (Op[A], Op[B], Op[C], Op[D]) => Op4[A, B, C, D, T] =
     (a: Op[A], b: Op[B], c: Op[C], d: Op[D]) => new Op4(a, b, c, d)((a, b, c, d) =>
       StepRequiresAsync(List(f(a, b, c, d)), (l) => Result(l.head.asInstanceOf[T])))
-  
+
   /**
     * Create an operation from a 4-arg function that returns a literal value.
     */
@@ -143,7 +143,7 @@ object Op {
  * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.
  */
-abstract class Operation[+T] extends Product with Serializable {    
+abstract class Operation[+T] extends Product with Serializable {
   val nextSteps: Steps[T]
 
   val debug = false
@@ -157,9 +157,9 @@ abstract class Operation[+T] extends Product with Serializable {
   def withName(n: String): Operation[T] = { _opId += s" ($n)"; this }
 
   protected[geotrellis] def _run(): StepOutput[T]
-  
+
   /**
-   * Execute this operation and return the result.  
+   * Execute this operation and return the result.
    */
   def run(): StepOutput[T] =
     _run()
@@ -198,7 +198,7 @@ abstract class Operation[+T] extends Product with Serializable {
   /**
    * Create a new operation with a function that takes the result of this operation
    * and returns a new operation.
-   * 
+   *
    * Same as flatMap.
    */
   def withResult[U](f: T=>Operation[U]): Operation[U] = flatMap(f)
@@ -212,7 +212,7 @@ abstract class Operation[+T] extends Product with Serializable {
 
   def andThen[U](f: T => Op[U]) = flatMap(f)
 
-  /** 
+  /**
    * Call the given function with this operation as its argument.
    *
    * This is primarily useful for code readability.
@@ -230,7 +230,7 @@ abstract class Operation[+T] extends Product with Serializable {
           sb.append(s"LT{${lit.value}}")
         case op: Operation[_] =>
           sb.append(s"OP{${op.opId}}")
-        case x => 
+        case x =>
           sb.append(s"$x")
       }
       if(i < arity - 1) { sb.append(",") }
@@ -244,16 +244,16 @@ abstract class Operation[+T] extends Product with Serializable {
 /**
  * Given an operation and a function that takes the result of that operation and returns
  * a new operation, return an operation of the return type of the function.
- * 
- * If the initial operation is g, you can think of this operation as f(g(x)) 
+ *
+ * If the initial operation is g, you can think of this operation as f(g(x))
  */
 case class CompositeOperation[+T, U](gOp: Op[U], f: (U) => Op[T]) extends Operation[T] {
   def _run() = runAsync('firstOp :: gOp :: Nil)
 
   val nextSteps: Steps[T] = {
-    case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
+    case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil)
     case 'result :: t :: Nil => Result(t.asInstanceOf[T])
-  } 
+  }
 }
 
 abstract class OperationWrapper[+T](op: Op[T]) extends Operation[T] {
@@ -318,7 +318,7 @@ class Op2[A, B, T](a: Op[A], b: Op[B]) (f: (A, B)=>StepOutput[T]) extends Operat
     case _ => throw new IndexOutOfBoundsException()
   }
   def _run() = runAsync(List(a, b))
-  val nextSteps: Steps[T] = { 
+  val nextSteps: Steps[T] = {
     case a :: b :: Nil => f(a.asInstanceOf[A], b.asInstanceOf[B])
   }
 }
@@ -334,7 +334,7 @@ class Op3[A, B, C, T](a: Op[A], b: Op[B], c: Op[C])
     case _ => throw new IndexOutOfBoundsException()
   }
   def _run() = runAsync(List(a, b, c))
-  val nextSteps: Steps[T] = { 
+  val nextSteps: Steps[T] = {
     case a :: b :: c :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C])
     }
@@ -353,7 +353,7 @@ class Op4[A, B, C, D, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D])
     case _ => throw new IndexOutOfBoundsException()
   }
   def _run() = runAsync(List(a, b, c, d))
-  val nextSteps: Steps[T] = { 
+  val nextSteps: Steps[T] = {
     case a :: b :: c :: d :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C], d.asInstanceOf[D])
     }
@@ -370,7 +370,6 @@ abstract class Op5[A, B, C, D, E, T](a: Op[A], b: Op[B], c: Op[C], d: Op[D], e: 
         d.asInstanceOf[D], e.asInstanceOf[E])
     }
   }
-  
 }
 
 abstract class Op6[A, B, C, D, E, F, T]

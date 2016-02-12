@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
     val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
     val cellType = getCellType(json)
-    val info = 
+    val info =
       RasterLayerInfo(
         LayerId(ds, getName(json)),
         getCellType(json),
@@ -48,7 +48,8 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
   }
 }
 
-class IntConstantLayer(info: RasterLayerInfo, value: Int) 
+
+class IntConstantLayer(info: RasterLayerInfo, value: Int)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent: Option[RasterExtent] = None) = {
     val re = targetExtent match {
@@ -61,7 +62,7 @@ extends UntiledRasterLayer(info) {
   def cache(c: Cache[String]) = {} // No-op
 }
 
-class DoubleConstantLayer(info: RasterLayerInfo, value: Double) 
+class DoubleConstantLayer(info: RasterLayerInfo, value: Double)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent: Option[RasterExtent]) = {
     val re = targetExtent match {
@@ -73,4 +74,3 @@ extends UntiledRasterLayer(info) {
 
   def cache(c: Cache[String]) = {} // No-op
 }
-
