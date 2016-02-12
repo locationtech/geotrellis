@@ -20,17 +20,6 @@ import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
-
-  def singleBand[
-    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: TypeTag](args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules) =
-      Etl[I, K, Tile](args, modules)
-
-  def multibandBand[
-  I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
-  K: SpatialComponent: TypeTag](args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules) =
-    Etl[I, K, MultiBandTile](args, modules)
-
 }
 
 case class Etl[
