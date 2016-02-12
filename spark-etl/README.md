@@ -28,11 +28,14 @@ object GeoTrellisETL extends App {
 ### Supported Etl type params
 
 Ingest key types: `ProjectedExtent`, `TemporalProjectedExtent`
+
 Catalog key types: `SpatialKey`, `SpaceTimeKey`
+
 Tile types: `Tile`, `MultiBandTile`
 
-Also there are wrappers, to work just with `Multiband` tiles (`MultibandEtl`) and with `Singleband` tiles (`SinglebandEtl`): 
+Also there are wrappers, to work just with `Multiband` tiles: `MultibandEtl`; and with `Singleband` tiles: `SinglebandEtl`. 
 
+```scala
 object GeoTrellisETL extends App {
   val etl = SinglebandEtl[ProjectedExtent, SpatialKey](args)
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
