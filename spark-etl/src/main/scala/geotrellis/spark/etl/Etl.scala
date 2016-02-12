@@ -1,7 +1,7 @@
 package geotrellis.spark.etl
 
 import com.typesafe.scalalogging.slf4j.{Logger, LazyLogging}
-import geotrellis.raster.RasterExtent
+import geotrellis.raster.{MultiBandTile, Tile, RasterExtent, CellGrid}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
@@ -11,7 +11,6 @@ import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
 import org.slf4j.LoggerFactory
 import scala.reflect._
-import geotrellis.raster.CellGrid
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import org.apache.spark.SparkContext
@@ -21,6 +20,17 @@ import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
+
+  def singleBand[
+    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
+    K: SpatialComponent: TypeTag](args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules) =
+      Etl[I, K, Tile](args, modules)
+
+  def multibandBand[
+  I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
+  K: SpatialComponent: TypeTag](args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules) =
+    Etl[I, K, MultiBandTile](args, modules)
+
 }
 
 case class Etl[

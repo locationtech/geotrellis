@@ -1,22 +1,46 @@
 # GeoTrellis ETL
 
-This project implements a plugin architecture for tile input sources and `RasterRDD` sinks which allows you to write
+This project implements a plugin architecture for tile input sources and `RDD[(K, V)]` sinks which allows you to write
 basic ETL code using GeoTrellis without having to specify the type and configuration of the input and output at compile time.
 
 Input layer may be modified using any of the existing raster operations before being saved.
 
 ```scala
+import geotrellis.raster.{Tile, MultiBandTile}
+import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.etl.Etl
+import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.ingest._
+import geotrellis.vector.ProjectedExtent
+import org.apache.spark.SparkConf
 
 object GeoTrellisETL extends App {
-  val etl = Etl[SpatialKey](args)
+  val etl = Etl[ProjectedExtent, SpatialKey, Tile](args)
+  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+  
+  val (zoom, tiledRdd) = etl.tile(etl.reproject(etl.load()))
+  val result = tiledRdd.localAdd(1)
+  etl.save(LayerId(etl.conf.layerName(), zoom), result, ZCurveKeyIndexMethod)
+  sc.stop()  
+```
 
-  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL")
-  val (id, rdd) = etl.load()
-  val result = rdd.localAdd(1)
-  etl.save(id, result, ZCurveKeyIndexMethod)
-  sc.stop()
-}
+### Supported Etl type params
+
+Ingest key types: `ProjectedExtent`, `TemporalProjectedExtent`
+Catalog key types: `SpatialKey`, `SpaceTimeKey`
+Tile types: `Tile`, `MultiBandTile`
+
+Also there are wrappers, to work just with `Multiband` tiles (`MultibandEtl`) and with `Singleband` tiles (`SinglebandEtl`): 
+
+object GeoTrellisETL extends App {
+  val etl = SinglebandEtl[ProjectedExtent, SpatialKey](args)
+  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+  
+  val (zoom, tiledRdd) = etl.tile(etl.reproject(etl.load()))
+  val result = tiledRdd.localAdd(1)
+  etl.save(LayerId(etl.conf.layerName(), zoom), result, ZCurveKeyIndexMethod)
+  sc.stop()  
 ```
 
 ## Running the Spark Job
@@ -89,7 +113,7 @@ to the `Etl` constructor.
 Once defined you can pass the list of modules to be used for ETL like so:
 
 ```scala
-val etl = Etl[SpatialKey](args, Etl(args, List(s3.S3Module, hadoop.HadoopModule)))
+val etl = Etl[ProjectedExtent, SpatialKey, Tile](args, Etl(args, List(s3.S3Module, hadoop.HadoopModule)))
 ```
 
 ## Layout Schemes
