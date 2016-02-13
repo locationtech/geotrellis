@@ -17,9 +17,7 @@ class Float64GeoTiffMultiBandTile(
     with Float64GeoTiffSegmentCollection {
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner = {
-    val _bandCount = bandCount
-    new SegmentCombiner {
-      val bandCount = _bandCount
+    new SegmentCombiner(bandCount) {
       private val arr = Array.ofDim[Double](targetSize)
 
       def set(targetIndex: Int, v: Int): Unit = {

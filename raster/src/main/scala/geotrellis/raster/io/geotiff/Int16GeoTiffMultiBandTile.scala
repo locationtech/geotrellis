@@ -17,9 +17,7 @@ class Int16GeoTiffMultiBandTile(
     with Int16GeoTiffSegmentCollection {
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner = {
-    val _bandCount = bandCount
-    new SegmentCombiner {
-      val bandCount = _bandCount
+    new SegmentCombiner(bandCount) {
       private val arr = Array.ofDim[Short](targetSize)
 
       def set(targetIndex: Int, v: Int): Unit = {
