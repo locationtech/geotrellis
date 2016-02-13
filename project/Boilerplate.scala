@@ -28,7 +28,11 @@ object Boilerplate {
     GenMultiBandTileMacros,
     GenMacroCombineFunctions)
 
-  val templatesRaster: Seq[Template] = Seq(GenMacroMultibandCombiners)
+  val templatesRaster: Seq[Template] = Seq(
+    GenMacroMultibandCombiners, 
+    GenMacroSegmentCombiner,
+    GenMacroGeotiffMultibandCombiners
+  )
 
   val header = "// auto-generated boilerplate" // TODO: put something meaningful here?
 
@@ -239,6 +243,198 @@ object Boilerplate {
         -  }
         -  result
         -  }
+         |}
+      """
+    }
+  }
+
+object GenMacroSegmentCombiner extends Template {
+    def filename(root: File) = root / "geotrellis" / "macros" / "SegmentCombiner.scala"
+    override def range = 3 to maxArity
+    def content(tv: TemplateVals) = {
+      import tv._
+
+      val argsInt     = synArgs("Int")
+      val tupleInt    = tuple("Int")
+      val argsDouble  = synArgs("Double")
+      val tupleDouble = tuple("Double")
+
+      val tupArgs = (0 until arity) map { i => "GeoTiffSegment, Int" } mkString ", "
+      val asserts = (0 until arity) map { i => 
+        s""" assert(b$i < bandCount, s"Illegal band index: $$b$i is out of range ($$bandCount bands)") """ 
+      } mkString "; "
+
+      val diffs = (1 until arity) map { i => s"val diff$i = b$i - b0 "} mkString "; "
+      val diffsArgs = ((((1 until arity) map { i => s"i + diff$i, segment" } mkString ", ") split ", ") init) mkString ", "
+      val startVals = (0 until arity) map { i => s"val start$i = bandSegmentCount * b$i" } mkString "; "
+      val segmentVals = (0 until arity) map { i => s"val segment$i = getSegment(start$i + segmentIndex)" } mkString "; "
+      val segmentArgs = (0 until arity) map { i => s"i, segment$i" } mkString ", "
+      val combinerArgs = (0 until arity) map { i => s"combiner.b$i" } mkString ", "
+      val sArgs = (1 to arity) map { i => s"s$i: GeoTiffSegment, i$i: Int" } mkString ", "
+      val ssArgs = (1 to arity) map { i => s"s$i, i$i" } mkString ", "
+      val zsVals = (1 to arity) map { i => s"val z$i = s$i.getInt(i$i)" } mkString "; "
+      val zArgs = (1 to arity) map { i => s"z$i" } mkString ", "
+
+      val bandVals = (0 until arity) map { i => s"val band$i = band(combiner.b$i)" } mkString "; "
+      val bandArgs = (0 until arity) map { i => s"band$i.get(col, row)" } mkString ", "
+      val bandDoubleArgs = (0 until arity) map { i => s"band$i.getDouble(col, row)" } mkString ", "
+
+      block"""
+         |package geotrellis.raster
+         |import geotrellis.macros._
+         |import geotrellis.raster.io.geotiff._
+         |import geotrellis.raster.io.geotiff.compression._
+         |import spire.syntax.cfor._                       
+         | /** This trait is how subclasses define the necessary pieces that allow
+         | * us to abstract over each of the combine functions */
+         | abstract class SegmentCombiner {
+         |   val bandCount: Int
+         |   private var valueHolder: Array[Int] = null
+         |   private var valueHolderDouble: Array[Double] = null
+         |   def initValueHolder(): Unit = { valueHolder = Array.ofDim[Int](bandCount) }
+         |   def initValueHolderDouble(): Unit = { valueHolderDouble = Array.ofDim[Double](bandCount) }
+         |   def set(targetIndex: Int, v: Int): Unit
+         |   def setDouble(targetIndex: Int, v: Double): Unit
+         |   def set(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int)
+         |   (f: (Int, Int) => Int): Unit = {
+         |     val z1 = s1.getInt(i1)
+         |     val z2 = s2.getInt(i2)
+         |     set(targetIndex, f(z1, z2))
+         |   }         
+         |   def setDouble(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int)
+         |   (f: (Double, Double) => Double): Unit = {
+         |     val z1 = s1.getDouble(i1)
+         |     val z2 = s2.getDouble(i2)
+         |     setDouble(targetIndex, f(z1, z2))
+         |   }       
+         |   // Used for combining all bands.
+         |   def placeValue(segment: GeoTiffSegment, i: Int, bandIndex: Int): Unit = {
+         |     valueHolder(bandIndex) = segment.getInt(i)
+         |   }
+         |   def setFromValues(targetIndex: Int, f: Array[Int] => Int): Unit = {
+         |     set(targetIndex, f(valueHolder))
+         |   }
+         |   def placeValueDouble(segment: GeoTiffSegment, i: Int, bandIndex: Int): Unit = {
+         |     valueHolderDouble(bandIndex) = segment.getDouble(i)
+         |   }
+         |   def setFromValuesDouble(targetIndex: Int, f: Array[Double] => Double): Unit = {
+         |     setDouble(targetIndex, f(valueHolderDouble))
+         |   }
+         |   def getBytes(): Array[Byte]
+         -   def set(targetIndex: Int, $sArgs)(combiner: IntTileCombiner$arity): Unit = {
+         -     $zsVals
+         -     set(targetIndex, combiner($zArgs))
+         -   }
+         -   def setDouble(targetIndex: Int, $sArgs)(combiner: DoubleTileCombiner$arity): Unit = {
+         -     $zsVals
+         -     setDouble(targetIndex, combiner($zArgs))
+         -   }
+         | }
+      """
+    }
+  }
+
+  object GenMacroGeotiffMultibandCombiners extends Template {
+    def filename(root: File) = root / "geotrellis" / "macros" / "MacroGeotiffMultibandCombiners.scala"
+    override def range = 3 to maxArity
+    def content(tv: TemplateVals) = {
+      import tv._
+
+      val argsInt     = synArgs("Int")
+      val tupleInt    = tuple("Int")
+      val argsDouble  = synArgs("Double")
+      val tupleDouble = tuple("Double")
+
+      val tupArgs = (0 until arity) map { i => "GeoTiffSegment, Int" } mkString ", "
+      val asserts = (0 until arity) map { i => 
+        s""" assert(b$i < bandCount, s"Illegal band index: $$b$i is out of range ($$bandCount bands)") """ 
+      } mkString "; "
+
+      val diffs = (1 until arity) map { i => s"val diff$i = b$i - b0 "} mkString "; "
+      val diffsArgs = ((((1 until arity) map { i => s"i + diff$i, segment" } mkString ", ") split ", ") init) mkString ", "
+      val startVals = (0 until arity) map { i => s"val start$i = bandSegmentCount * b$i" } mkString "; "
+      val segmentVals = (0 until arity) map { i => s"val segment$i = getSegment(start$i + segmentIndex)" } mkString "; "
+      val segmentArgs = (0 until arity) map { i => s"i, segment$i" } mkString ", "
+      val combinerArgs = (0 until arity) map { i => s"combiner.b$i" } mkString ", "
+      val sArgs = (1 to arity) map { i => s"s$i: GeoTiffSegment, i$i: Int" } mkString ", "
+      val ssArgs = (1 to arity) map { i => s"s$i, i$i" } mkString ", "
+      val zsVals = (1 to arity) map { i => s"val z$i = s$i.getInt(i$i)" } mkString "; "
+      val zArgs = (1 to arity) map { i => s"z$i" } mkString ", "
+
+      val bandVals = (0 until arity) map { i => s"val band$i = band(combiner.b$i)" } mkString "; "
+      val bandArgs = (0 until arity) map { i => s"band$i.get(col, row)" } mkString ", "
+      val bandDoubleArgs = (0 until arity) map { i => s"band$i.getDouble(col, row)" } mkString ", "
+
+      block"""
+         |package geotrellis.raster
+         |import geotrellis.macros._
+         |import geotrellis.raster.io.geotiff._
+         |import geotrellis.raster.io.geotiff.compression._
+         |import spire.syntax.cfor._              
+         |trait MacroGeotiffMultibandCombiners { 
+         |  val segmentLayout: GeoTiffSegmentLayout
+         |  def cellType: CellType
+         |  val segmentCount: Int
+         |  val bandCount: Int
+         |  val compression: Compression
+         |  val hasPixelInterleave: Boolean
+         |  def getSegment(i: Int): GeoTiffSegment
+         | /** Creates a segment combiner, which is an abstraction that allows us to generalize
+         | * the combine algorithms over BandType. */
+         | protected def createSegmentCombiner(targetSize: Int): SegmentCombiner
+        -  def combineDoubleTileCombiner(combiner: DoubleTileCombiner$arity): Tile =
+        -   _combine($combinerArgs) { segmentCombiner =>
+        -     { (targetIndex: Int, $sArgs) => segmentCombiner.setDouble(targetIndex, $ssArgs)(combiner) } }
+        -  def combineIntTileCombiner(combiner: IntTileCombiner$arity): Tile =
+        -   _combine($combinerArgs) { segmentCombiner =>
+        -     { (targetIndex: Int, $sArgs) => segmentCombiner.set(targetIndex, $ssArgs)(combiner) } }
+        -
+        -  protected def _combine($argsInt)(set: SegmentCombiner => (Int, $tupArgs) => Unit): Tile = {
+        -    $asserts
+        -    val (arr, compressor) =
+        -      if(hasPixelInterleave) {
+        -        $diffs
+
+        -        val compressor = compression.createCompressor(segmentCount)
+        -        val arr = Array.ofDim[Array[Byte]](segmentCount)
+
+        -        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        -          val segment = getSegment(segmentIndex)
+        -          val segmentSize = segment.size
+        -          val segmentCombiner = createSegmentCombiner(segmentSize / bandCount)
+        -          var j = 0
+        -          cfor(b0)(_ < segmentSize, _ + bandCount) { i =>
+        -            set(segmentCombiner)(j, segment, i, segment, $diffsArgs)
+        -            j += 1
+        -          }
+        -          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+        -        }
+        -        (arr, compressor)
+        -    } else {
+        -      val bandSegmentCount = segmentCount / bandCount
+        -      val compressor = compression.createCompressor(bandSegmentCount)
+        -      val arr = Array.ofDim[Array[Byte]](bandSegmentCount)
+        -      $startVals
+        -      cfor(0)(_ < bandSegmentCount, _ + 1) { segmentIndex =>
+        -        $segmentVals
+        -        val segmentSize = segment0.size
+        -        val segmentCombiner = createSegmentCombiner(segmentSize)
+        -        cfor(0)(_ < segmentSize, _ + 1) { i =>
+        -          set(segmentCombiner)($segmentArgs, i)
+        -        }
+        -        arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+        -      }
+        -    (arr, compressor)
+        -  }
+        -  GeoTiffTile(
+        -    BandType.forCellType(cellType),
+        -    arr,
+        -    compressor.createDecompressor(),
+        -    segmentLayout,
+        -    compression,
+        -    None
+        -  )  
+        - }         
          |}
       """
     }
