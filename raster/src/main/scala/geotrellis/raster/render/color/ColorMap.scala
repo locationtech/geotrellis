@@ -89,8 +89,8 @@ trait ColorMap {
     var i = 0
     while (i < colors.length) {
       val c = colors(i)
-      opaque &&= Color.isOpaque(c)
-      grey &&= Color.isGrey(c)
+      opaque &&= RGBA(c).isOpaque
+      grey &&= RGBA(c).isGrey
       i += 1
     }
     _colorsChecked = true
