@@ -48,10 +48,10 @@ object Boilerplate {
 
   final class TemplateVals(val arity: Int) {
     def typedSeq(ts: String) = (0 until arity) map { i => s"b$i: $ts" } mkString ", "
-    def typedVals(ts: String) = (0 until arity) map { i => s"val b$i: $ts"} mkString "; "
-    def typedExprSeq(ts: String) = (0 until arity) map { i => s"b$i: c.Expr[$ts]"} mkString ", "    
-    def seq = (0 until arity) map { i => s"b$i"} mkString ", "    
-    def namedSeq(n: String) = (0 until arity) map { i => s"$n"} mkString ", "    
+    def typedVals(ts: String) = (0 until arity) map { i => s"val b$i: $ts" } mkString "; "
+    def typedExprSeq(ts: String) = (0 until arity) map { i => s"b$i: c.Expr[$ts]" } mkString ", "    
+    def seq = (0 until arity) map { i => s"b$i" } mkString ", "    
+    def namedSeq(n: String) = (0 until arity) map { i => s"$n" } mkString ", "    
   }
 
   trait Template {
