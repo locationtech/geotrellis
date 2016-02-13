@@ -16,7 +16,7 @@ class ByteGeoTiffMultiBandTile(
 ) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
     with ByteGeoTiffSegmentCollection {
 
-  protected def createSegmentCombiner(targetSize: Int): SegmentCombiner = {
+  protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
     new SegmentCombiner(bandCount) {
       private val arr = Array.ofDim[Byte](targetSize)
 
@@ -30,5 +30,4 @@ class ByteGeoTiffMultiBandTile(
 
       def getBytes(): Array[Byte] = arr
     }
-  }
 }
