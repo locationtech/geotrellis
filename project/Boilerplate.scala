@@ -26,8 +26,7 @@ object Boilerplate {
     GenDoubleTileCombinersFunctions,
     GenMacroCombinableMultiBandTile,
     GenMultiBandTileMacros,
-    GenMacroCombineFunctions
-  )
+    GenMacroCombineFunctions)
 
   val templatesRaster: Seq[Template] = Seq(GenMacroMultibandCombiners)
 
@@ -43,7 +42,7 @@ object Boilerplate {
   def genMacro(dir: File) = gen(dir, templatesMacro)
   def genRaster(dir: File) = gen(dir, templatesRaster)
 
-  val maxArity = 22
+  val maxArity = 4
 
   final class TemplateVals(val arity: Int) {
     def synArgs(ts: String) = (0 until arity) map { i => s"b$i: $ts" } mkString ", "
@@ -214,10 +213,11 @@ object Boilerplate {
       val bandDoubleArgs = (0 until arity) map { i => s"band$i.getDouble(col, row)" } mkString ", "
 
       block"""
-         |package geotrellis.raster    
+         |package geotrellis.raster
+         |import geotrellis.macros._
          |import spire.syntax.cfor._              
          |trait MacroMultibandCombiners { self: MultiBandTile =>      
-        -  def combineIntTileCombiner(combiner: macros.IntTileCombiner$arity): Tile = {
+        -  def combineIntTileCombiner(combiner: IntTileCombiner$arity): Tile = {
         -  $bandVals
         -  val result = ArrayTile.empty(cellType, cols, rows)
         -  val arr = Array.ofDim[Int](bandCount)
@@ -228,7 +228,7 @@ object Boilerplate {
         -  }
         -  result
         -  }
-        -  def combineDoubleTileCombiner(combiner: macros.DoubleTileCombiner$arity): Tile = {
+        -  def combineDoubleTileCombiner(combiner: DoubleTileCombiner$arity): Tile = {
         -  $bandVals
         -  val result = ArrayTile.empty(cellType, cols, rows)
         -  val arr = Array.ofDim[Int](bandCount)
