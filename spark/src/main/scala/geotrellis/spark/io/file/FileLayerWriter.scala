@@ -6,9 +6,8 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
-
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
@@ -20,6 +19,7 @@ import com.typesafe.scalalogging.slf4j._
 import AttributeStore.Fields
 
 import java.io.File
+
 
 /**
   * Handles writing Raster RDDs and their metadata to a filesystem.

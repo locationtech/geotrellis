@@ -19,7 +19,7 @@ package geotrellis.engine
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import scala.concurrent._
 import scala.concurrent.Future
@@ -36,6 +36,7 @@ import spray.http._
 import spray.client.pipelining._
 
 import java.io.File
+
 
 /**
  * Represents a Raster Layer that can give detailed information

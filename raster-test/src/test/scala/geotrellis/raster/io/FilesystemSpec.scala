@@ -16,6 +16,7 @@
 
 package geotrellis.raster.io
 
+import geotrellis.util.Filesystem
 import org.scalatest._
 
 class FilesystemSpec extends FunSpec

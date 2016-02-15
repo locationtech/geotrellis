@@ -17,13 +17,13 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.util.Filesystem
 
 import monocle.syntax._
 
@@ -31,6 +31,7 @@ import scala.io._
 import scala.collection.mutable
 import java.nio.{ByteBuffer, ByteOrder}
 import spire.syntax.cfor._
+
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 

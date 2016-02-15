@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.engine._
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import com.typesafe.config.Config
 
@@ -26,6 +26,7 @@ import java.io.File
 
 import scala.collection.mutable
 import scala.util._
+
 
 // example json is available in the geotrellis.engine.catalog tests. please
 // keep it up-to-date with changes you make here.

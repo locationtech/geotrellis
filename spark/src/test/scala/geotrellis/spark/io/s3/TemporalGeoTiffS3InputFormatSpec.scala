@@ -2,17 +2,18 @@ package geotrellis.spark.io.s3
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
+import geotrellis.util.Filesystem
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
 import org.joda.time.format._
 import org.scalatest._
+
 
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)

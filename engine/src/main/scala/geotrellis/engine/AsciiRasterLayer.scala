@@ -21,6 +21,7 @@ import geotrellis.raster.io._
 import geotrellis.raster.io.ascii._
 import geotrellis.engine._
 import geotrellis.vector.Extent
+import geotrellis.util.Filesystem
 
 import java.io.{File, BufferedReader}
 import com.typesafe.config.Config

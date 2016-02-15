@@ -2,11 +2,11 @@ package geotrellis.spark.io.slippy
 
 import geotrellis.vector._
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.util.Filesystem
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter._
@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.Path
 
 import java.io.File
 import scala.collection.JavaConversions._
+
 
 class HadoopSlippyTileWriter[T](uri: String, extension: String)(getBytes: (SpatialKey, T) => Array[Byte])(implicit sc: SparkContext) extends SlippyTileWriter[T] {
   def setupWrite(zoom: Int, rdd: RDD[(SpatialKey, T)]): RDD[(SpatialKey, T)] = {

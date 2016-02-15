@@ -3,13 +3,14 @@ package geotrellis.spark.io.file
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import spray.json._
 import DefaultJsonProtocol._
 
 import java.io._
+
 
 /**
  * Stores and retrieves layer attributes from the file system.

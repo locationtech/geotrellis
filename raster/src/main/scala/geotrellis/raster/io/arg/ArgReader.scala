@@ -18,14 +18,15 @@ package geotrellis.raster.io.arg
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.io.Filesystem
 import geotrellis.vector.Extent
+import geotrellis.util.Filesystem
 
 import com.typesafe.config.ConfigFactory
 
 import java.io.File
 import java.nio.ByteBuffer
 import java.lang.IllegalArgumentException
+
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */
