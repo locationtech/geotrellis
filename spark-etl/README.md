@@ -16,33 +16,31 @@ import geotrellis.vector.ProjectedExtent
 import org.apache.spark.SparkConf
 
 object GeoTrellisETL extends App {
-  val etl = Etl[ProjectedExtent, SpatialKey, Tile](args)
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
   
-  val (zoom, tiledRdd) = etl.tile(etl.reproject(etl.load()))
-  val result = tiledRdd.localAdd(1)
-  etl.save(LayerId(etl.conf.layerName(), zoom), result, ZCurveKeyIndexMethod)
-  sc.stop()  
+  val etl = Etl(args)
+  val tiles = etl.load[ProjectedExtent, Tile]
+  val reprojected = etl.reproject(tiles)
+  val (zoom, metadata) = etl.collectMetadata(reprojected)
+  val tiled = ContextRDD(tiles.cutTiles[SpatialKey](metadata, NearestNeighbor), metadata)
+  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
+
+  sc.stop()
 ```
 
-### Supported Etl type params
+### Etl ingest
 
-Ingest key types: `ProjectedExtent`, `TemporalProjectedExtent`
-
-Catalog key types: `SpatialKey`, `SpaceTimeKey`
-
-Tile types: `Tile`, `MultiBandTile`
-
-Also there are wrappers, to work just with `Multiband` tiles: `MultibandEtl`; and with `Singleband` tiles: `SinglebandEtl`. 
+Just for a standard ingest following functions available:
+  * Etl.ingest[I, K, V]
+  * Etl.singlebandIngest[I, K]
+  * Etl.multibbandIngest[I, K]
 
 ```scala
 object GeoTrellisETL extends App {
-  val etl = SinglebandEtl[ProjectedExtent, SpatialKey](args)
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
   
-  val (zoom, tiledRdd) = etl.tile(etl.reproject(etl.load()))
-  val result = tiledRdd.localAdd(1)
-  etl.save(LayerId(etl.conf.layerName(), zoom), result, ZCurveKeyIndexMethod)
+  Etl.multibandIngest[ProjectedExtent, SpatialKey](args, ZCurveKeyIndexMethod)
+    
   sc.stop()  
 ```
 
