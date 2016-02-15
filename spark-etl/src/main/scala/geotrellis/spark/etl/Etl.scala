@@ -36,18 +36,6 @@ object Etl {
     val tiled = ContextRDD(reprojected.cutTiles[K](metadata, NearestNeighbor), metadata)
     etl.save[K, V](LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
   }
-
-  def singlebandIngest[
-    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: TypeTag
-  ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) =
-    ingest[I, K, Tile](args, keyIndexMethod, modules)
-
-  def multibandIngest[
-    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: TypeTag
-  ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) =
-    ingest[I, K, MultiBandTile](args, keyIndexMethod, modules)
 }
 
 case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.defaultModules) {
