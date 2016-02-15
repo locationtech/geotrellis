@@ -63,15 +63,11 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     V <: CellGrid: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(I, V)]): RDD[(I, V)] = rdd.reproject(conf.crs()).persist(conf.cache())
 
-  def tile[
-    I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[M]) = {
+  def collectMetadata[I: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, M) = {
     val crs = conf.crs()
     val targetCellType = conf.cellType.get
 
-    val (zoom, rasterMetaData) = scheme match {
+    scheme match {
       case Left(layoutScheme) =>
         val (zoom, rmd) = RasterMetaData.fromRdd(rdd, crs, layoutScheme) { key => key.projectedExtent.extent }
         targetCellType match {
@@ -87,8 +83,6 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
           layout = layoutDefinition
         )
     }
-    val tiles = rdd.cutTiles[K](rasterMetaData, NearestNeighbor)
-    zoom -> ContextRDD(tiles, rasterMetaData)
   }
 
   def save[

@@ -10,6 +10,6 @@ object EtlSpec {
   // Test that ETL module can be instantiated in convenient ways
   val args = Seq("-options", "arguments")
 
-  Etl[ProjectedExtent, SpatialKey, Tile](args)
-  Etl[TemporalProjectedExtent, SpaceTimeKey, MultiBandTile](args, List(s3.S3Module, hadoop.HadoopModule))
+  Etl(args)
+  Etl(args, List(s3.S3Module, hadoop.HadoopModule))
 }
