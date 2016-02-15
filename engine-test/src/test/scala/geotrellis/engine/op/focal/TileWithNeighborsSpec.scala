@@ -63,7 +63,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
               assertEqual(tiledRaster,
                 Array( 1,1,1,  2,2,2,
                        1,1,1,  2,2,2,
-                       
+
                        4,4,4,  5,5,5,
                        4,4,4,  5,5,5)
               )
@@ -74,7 +74,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
               assertEqual(tiledRaster,
                 Array( 1,1,1,  2,2,2,  3,3,3,
                        1,1,1,  2,2,2,  3,3,3,
-                       
+
                        4,4,4,  5,5,5,  6,6,6,
                        4,4,4,  5,5,5,  6,6,6)
               )
@@ -85,7 +85,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
               assertEqual(tiledRaster,
                 Array( 2,2,2,  3,3,3,
                        2,2,2,  3,3,3,
-                       
+
                        5,5,5,  6,6,6,
                        5,5,5,  6,6,6)
               )
@@ -96,7 +96,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
               assertEqual(tiledRaster,
                 Array( 1,1,1,  2,2,2,
                        1,1,1,  2,2,2,
-                       
+
                        4,4,4,  5,5,5,
                        4,4,4,  5,5,5,
 
@@ -111,7 +111,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
               assertEqual(tiledRaster,
                 Array( 1,1,1,  2,2,2,  3,3,3,
                        1,1,1,  2,2,2,  3,3,3,
-                       
+
                        4,4,4,  5,5,5,  6,6,6,
                        4,4,4,  5,5,5,  6,6,6,
 
@@ -126,7 +126,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
               assertEqual(tiledRaster,
                 Array( 2,2,2,  3,3,3,
                        2,2,2,  3,3,3,
-                       
+
                        5,5,5,  6,6,6,
                        5,5,5,  6,6,6,
 
@@ -225,7 +225,7 @@ class TileWithNeighborsSpec extends FunSpec with TestEngine {
 
     it("should tile correctly for an untiled raster") {
       val r = IntConstantTile(1, 4, 4)
-      val (tiled,analysisArea) = 
+      val (tiled,analysisArea) =
         TileWithNeighbors(r,Seq[Option[Tile]]())
       analysisArea should be (GridBounds(0,0,3,3))
       assertEqual(r,tiled)

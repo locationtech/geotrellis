@@ -53,7 +53,7 @@ trait RasterSourceBuilders {
 
     val rasters =
       (for(r <- 0 until tileRows;
-        c <- 0 until tileCols) yield {
+           c <- 0 until tileCols) yield {
         ArrayTile(tiles(r)(c), pixelCols, pixelRows)
       }).toSeq
 
@@ -66,7 +66,7 @@ trait RasterSourceBuilders {
     val re = RasterExtent(Extent(xmin, ymin, xmax, ymax), tileCols * pixelCols, tileRows * pixelRows)
     val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
 
-    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, TypeInt), ops)
+    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, IntConstantNoDataCellType), ops)
   }
 
   def createRasterSource(arr: Array[Double], tileCols: Int, tileRows: Int, pixelCols: Int, pixelRows: Int): RasterSource =
@@ -96,7 +96,7 @@ trait RasterSourceBuilders {
 
     val rasters =
       (for(r <- 0 until tileRows;
-        c <- 0 until tileCols) yield {
+           c <- 0 until tileCols) yield {
         val xmin = c * pixelCols * cellwidth
         val xmax = xmin + (pixelCols * cellwidth)
         val ymin = r * (-pixelRows) * cellheight
@@ -114,6 +114,6 @@ trait RasterSourceBuilders {
 
     val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
 
-    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, TypeDouble), ops)
+    RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, DoubleConstantNoDataCellType), ops)
   }
 }

@@ -26,6 +26,6 @@ import geotrellis.raster._
 object Acos extends Serializable {
   def apply(r: Tile): Tile =
     (if(r.cellType.isFloatingPoint) r
-     else r.convert(TypeDouble))
+     else r.convert(DoubleConstantNoDataCellType))
      .mapDouble(z => math.acos(z))
 }

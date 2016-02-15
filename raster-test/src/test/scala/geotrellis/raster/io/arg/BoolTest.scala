@@ -28,8 +28,8 @@ class BoolTest extends FunSuite
     val arr = Array[Byte]((1 + 0 + 4 + 0 + 0 + 32 + 64 + 128).toByte,
                           (0 + 0 + 0 + 8 + 16 + 0 + 64 + 128).toByte)
     val tile = BitArrayTile(arr, 4, 4)
-    ArgWriter(TypeBit).writeData(path, tile)
-    val result = ArgReader.read(path, TypeBit, 4, 4)
+    ArgWriter(BitCellType).writeData(path, tile)
+    val result = ArgReader.read(path, BitCellType, 4, 4)
     assertEqual(result, tile)
   }
 }

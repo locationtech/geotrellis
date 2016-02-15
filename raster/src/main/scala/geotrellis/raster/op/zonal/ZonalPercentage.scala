@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,18 +24,18 @@ import spire.syntax.cfor._
 
 /**
  * Given a raster and a raster representing it's zones, sets all pixels
- * within each zone to the percentage of those pixels having values equal 
+ * within each zone to the percentage of those pixels having values equal
  * to that of the given pixel.
  *
  * Percentages are integer values from 0 - 100.
- * 
+ *
  * @note    ZonalPercentage does not currently support Double raster data.
- *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+ *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
  *          the data values will be rounded to integers.
  */
 object ZonalPercentage {
   def apply(r: Tile, zones: Tile): Tile = {
-    val zonesToValueCounts = mutable.Map[Int, mutable.Map[Int, Int]]()       
+    val zonesToValueCounts = mutable.Map[Int, mutable.Map[Int, Int]]()
     val zoneTotals = mutable.Map[Int, Int]()
 
     val (cols, rows) = (r.cols, r.rows)
@@ -44,12 +44,12 @@ object ZonalPercentage {
       sys.error(s"The zone raster is not the same dimensions as the data raster.")
     }
 
-    cfor(0)(_ < rows, _ + 1) { row => 
+    cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val value = r.get(col, row)
         val zone = zones.get(col, row)
 
-        if(!zonesToValueCounts.contains(zone)) { 
+        if(!zonesToValueCounts.contains(zone)) {
           zonesToValueCounts(zone) = mutable.Map[Int, Int]()
           zoneTotals(zone) = 0
         }
@@ -65,7 +65,7 @@ object ZonalPercentage {
 
     val tile = IntArrayTile.empty(cols, rows)
 
-    cfor(0)(_ < rows, _ + 1) { row => 
+    cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = r.get(col, row)
         val z = zones.get(col, row)

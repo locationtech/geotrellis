@@ -16,13 +16,13 @@ import java.util.Arrays
 
 class ByteGeoTiffMultiBandTileSpec extends FunSpec
     with Matchers with RasterMatchers
-    with BeforeAndAfterAll    
+    with BeforeAndAfterAll
     with GeoTiffTestUtils 
     with TileBuilders {
   def p(s: String, i: String): String = 
     geoTiffPath(s"3bands/byte/3bands-${s}-${i}.tif")
 
-  describe("ByteGeoTiffMultiBandTile") {
+  describe("UByteGeoTiffMultiBandTile") {
 
     // Combine all bands, int
 
@@ -31,7 +31,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -41,7 +41,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -51,7 +51,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -61,7 +61,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -73,7 +73,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -83,7 +83,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -93,7 +93,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -103,7 +103,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combineDouble(_.sum)
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(6), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -115,7 +115,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combine(2, 1) { (z1, z2) => z1 + z2 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -125,7 +125,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combine(1, 2) { (z1, z2) => z1 + z2 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -135,7 +135,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combine(1, 2) { (z1, z2) => z1 + z2 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -145,7 +145,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combine(1, 2) { (z1, z2) => z1 + z2 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(5), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -157,7 +157,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combineDouble(2, 1, 0) { (z1, z2, z3) => z1 + z2 - z3 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(4), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(4), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -167,7 +167,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combineDouble(0, 1, 2) { (z1, z2, z3) => z1 + z2 - z3 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(0), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(0), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -177,7 +177,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combineDouble(0, 1, 2) { (z1, z2, z3) => z1 * z2 - z3 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(-1), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(-1), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -187,7 +187,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combineDouble(0, 1, 2) { (z1, z2, z3) => z1 + (z2 * z3) }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(7), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(7), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -199,7 +199,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "pixel")).tile
 
       val actual = tile.combineDouble(2, 1, 0, 2) { (z1, z2, z3, z4) => z1 + z2 - z3 + z4}
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(7), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(7), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -209,7 +209,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "pixel")).tile
 
       val actual = tile.combineDouble(0, 1, 2, 0) { (z1, z2, z3, z4) => z1 + z2 - z3 + z4 }
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(1), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(1), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -219,7 +219,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("striped", "band")).tile
 
       val actual = tile.combineDouble(0, 1, 2, 0) { (z1, z2, z3, z4) => z1 * z2 - z3 - z4}
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(-2), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(-2), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }
@@ -229,7 +229,7 @@ class ByteGeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff.compressed(p("tiled", "band")).tile
 
       val actual = tile.combineDouble(0, 1, 2, 2) { (z1, z2, z3, z4) => z1 + (z2 * z3) + z4}
-      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(10), tile.cols, tile.rows)
+      val expected = UByteArrayTile(Array.ofDim[Byte](tile.cols * tile.rows).fill(10), tile.cols, tile.rows, UByteCellType)
 
       assertEqual(actual, expected)
     }

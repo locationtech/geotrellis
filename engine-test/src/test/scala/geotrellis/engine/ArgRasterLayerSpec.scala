@@ -50,7 +50,7 @@ class ArgRasterLayerSpec extends FunSpec  with Matchers  with TestEngine {
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path2 = fh.getPath
 
-      ArgWriter(TypeByte).write(path2, raster, rasterExtent.extent, "name")
+      ArgWriter(ByteConstantNoDataCellType).write(path2, raster, rasterExtent.extent, "name")
 
       val data1 = scala.io.Source.fromFile(path2).mkString
       val data2 = scala.io.Source.fromFile("raster-test/data/fake.img8.arg").mkString

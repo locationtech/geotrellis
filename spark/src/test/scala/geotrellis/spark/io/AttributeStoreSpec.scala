@@ -49,7 +49,7 @@ abstract class AttributeStoreSpec
 
     attributeStore.write(layerId, "histogram", histo)
 
-    val loaded = attributeStore.read[Histogram](layerId, "histogram")
+    val loaded = attributeStore.read[Histogram[Int]](layerId, "histogram")
     loaded.getMean should be (histo.getMean)
   }
 

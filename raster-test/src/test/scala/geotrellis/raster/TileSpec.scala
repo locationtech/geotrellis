@@ -47,7 +47,7 @@ class TileSpec extends FunSpec
     }
 
     it("should create empty tiles") {
-      val r = ArrayTile.empty(TypeInt, 10, 10)
+      val r = ArrayTile.empty(IntConstantNoDataCellType, 10, 10)
       val d = r.toArray
       for(i <- 0 until 10 * 10) {
         d(i) should be (NODATA)
@@ -85,10 +85,10 @@ class TileSpec extends FunSpec
     it("should convert a byte raster to an int raster") {
       val r = byteRaster
       var result =
-        r.convert(TypeShort)
+        r.convert(ShortConstantNoDataCellType)
          .localAdd(100)
 
-      result.cellType should be (TypeShort)
+      result.cellType should be (ShortConstantNoDataCellType)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col, row) should be (r.get(col, row) + 100)

@@ -96,7 +96,7 @@ trait TileBuilders {
     Raster(createTile(arr, cols, rows), Extent(xmin, ymin, xmax, ymax))
   }
 
-  def createNoData(cols: Int, rows: Int, t: CellType = TypeInt) =
+  def createNoData(cols: Int, rows: Int, t: CellType = IntConstantNoDataCellType) =
     ArrayTile.empty(t, cols, rows)
 
   def replaceValues(r: Tile, valueMap: Map[(Int, Int), Int]) = {
@@ -181,7 +181,7 @@ trait TileBuilders {
   }
 
   /**
-   * 9x10 TypeDouble raster with values between 0 and 1, exclusive.
+   * 9x10 DoubleConstantNoDataCellType raster with values between 0 and 1, exclusive.
    */
   def probabilityRaster = {
     val arr = Array(0.69, 0.06, 0.72, 0.45, 0.64, 0.17, 0.32, 0.07, 0.04,
@@ -217,7 +217,7 @@ trait TileBuilders {
   }
 
   /**
-   * 9x10 TypeDouble raster with values between 0 and 1, exclusive,
+   * 9x10 DoubleConstantNoDataCellType raster with values between 0 and 1, exclusive,
    * with Double.NaN values in every even column.
    */
   def probabilityNoDataRaster = {

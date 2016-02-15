@@ -147,7 +147,7 @@ trait RasterRDDBuilders {
     sc: SparkContext,
     tiles: Traversable[(Tile, DateTime)],
     tileLayout: TileLayout,
-    cellType: CellType = TypeInt): RasterRDD[SpaceTimeKey] = {
+    cellType: CellType = IntConstantNoDataCellType): RasterRDD[SpaceTimeKey] = {
 
     val extent = defaultCRS.worldExtent
 

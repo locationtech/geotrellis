@@ -72,7 +72,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
             .toMap
         }
 
-      val result: Map[Int, Histogram] = rdd.zonalHistogram(zonesRDD)
+      val result: Map[Int, Histogram[Int]] = rdd.zonalHistogram(zonesRDD)
       result.keys should be (expected.keys)
 
       for(zone <- result.keys) {

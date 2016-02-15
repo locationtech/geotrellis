@@ -31,7 +31,7 @@ class DoubleConstantTest extends FunSuite with RasterMatchers with Matchers {
     val d = DoubleConstantTile(99.0, 2, 2)
 
     assert(d.size === 4)
-    assert(d.cellType === TypeDouble)
+    assert(d.cellType === DoubleConstantNoDataCellType)
     assert(d.get(0,0) === 99.0)
     assert(d.getDouble(0,0) === 99.0)
   }

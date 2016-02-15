@@ -32,7 +32,7 @@ object MapHistogram {
   * Data object representing a histogram that uses a Map (as in hashtable map/dictionary) for internal storage.
   *
   */
-class MapHistogram(counts: Map[Int, Int], var total: Int) extends MutableHistogram {
+class MapHistogram(counts: Map[Int, Int], var total: Int) extends MutableHistogramInt {
   def getTotalCount = this.total
 
   def mutable() = MapHistogram(this.counts.clone, this.total)

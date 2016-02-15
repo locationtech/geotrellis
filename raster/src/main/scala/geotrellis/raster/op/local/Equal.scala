@@ -38,19 +38,19 @@ object Equal extends LocalTileComparatorOp {
 
 trait EqualMethods extends MethodExtensions[Tile] {
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
   def localEqual(i: Int): Tile = Equal(self, i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
   def localEqual(d: Double): Tile = Equal(self, d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the provided
    * raster, else 0.
    */

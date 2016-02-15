@@ -204,6 +204,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
                         n: Neighborhood, added: Seq[Int], removed: Seq[Int]) = {
 
     val r = MockCursor.fromAddRemove(added, removed).raster
+    println(r)
     val calc = getCalc(r, n).asInstanceOf[CellwiseCalculation[Tile]]
 
     var i = 0

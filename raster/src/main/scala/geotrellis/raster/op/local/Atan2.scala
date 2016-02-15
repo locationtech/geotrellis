@@ -27,7 +27,7 @@ import geotrellis.raster._
 object Atan2 extends Serializable {
   def apply(r1: Tile, r2: Tile): Tile = {
     (if(r1.cellType.isFloatingPoint) r1
-     else r1.convert(TypeDouble))
+     else r1.convert(DoubleConstantNoDataCellType))
       .combineDouble(r2) { (z1, z2) => math.atan2(z1, z2) }
   }
 }

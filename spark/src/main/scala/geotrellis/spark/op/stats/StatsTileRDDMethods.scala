@@ -28,7 +28,7 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .mapValues { case (tile, count) => tile / count}
   }
 
-  def histogram: Histogram = {
+  def histogram: Histogram[Int] = {
     self
       .map { case (key, tile) => tile.histogram }
       .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1,h2)) }

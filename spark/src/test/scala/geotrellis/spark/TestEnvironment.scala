@@ -20,6 +20,7 @@ import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import geotrellis.spark.testkit._
+import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
@@ -56,7 +57,13 @@ trait TestEnvironment extends BeforeAndAfterAll
     System.setProperty("spark.ui.enabled", "false")
 
     val conf = new SparkConf()
-    val sparkContext = SparkUtils.createLocalSparkContext("local", s"Test Context for $name", new SparkConf())
+    conf
+      .setMaster("local")
+      .setAppName("Test Context")
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
+
+    val sparkContext = new SparkContext(conf)
 
     System.clearProperty("spark.driver.port")
     System.clearProperty("spark.hostPort")

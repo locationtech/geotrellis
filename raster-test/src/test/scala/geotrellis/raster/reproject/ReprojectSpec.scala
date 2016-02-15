@@ -135,7 +135,7 @@ class ReprojectSpec extends FunSpec
         val RasterExtent(_, cellwidth, cellheight, _, _) = leftRasterExtent
         val unionExtent = leftRasterExtent.extent.combine(rightRasterExtent.extent)
         val re = RasterExtent(unionExtent, CellSize(cellwidth, cellheight))
-        val mergeTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+        val mergeTile = ArrayTile.empty(IntConstantNoDataCellType, re.cols, re.rows)
         mergeTile.merge(unionExtent, leftRasterExtent.extent, leftTile)
         mergeTile.merge(unionExtent, rightRasterExtent.extent, rightTile)
         detectNoDataLine(mergeTile)
@@ -159,7 +159,7 @@ class ReprojectSpec extends FunSpec
       // Specifically fit it ito a web mercator zoom layout tile
       val re = RasterExtent(Extent(-8247861.100, 4872401.931, -8238077.160, 4882185.871), 256, 256)
 
-      val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+      val emptyTile = ArrayTile.empty(IntConstantNoDataCellType, re.cols, re.rows)
       val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile).merge(re.extent, wmRightExtent, wmRightTile)
 
       detectNoDataLine(mergeTile)

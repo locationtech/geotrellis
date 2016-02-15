@@ -31,7 +31,7 @@ class ViewshedSpec extends FunSpec
         1, 0, 1, 1, 1, 1, 0
       )
       val r = createTile(rasterData, 7, 1)
-      val viewRaster = createTile(viewable, 7, 1).convert(TypeBit)
+      val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
       assertEqual(viewRaster, r.viewshed(3, 0, true))
     }
 
@@ -55,7 +55,7 @@ class ViewshedSpec extends FunSpec
           1,     1,     1,     1,     0,     0,     0
       )
       val r = createTile(rasterData, 7, 7)
-      val viewRaster = createTile(viewable, 7, 7).convert(TypeBit)
+      val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
       assertEqual(viewRaster, r.viewshed(3, 3, true))
     }
 
@@ -79,7 +79,7 @@ class ViewshedSpec extends FunSpec
         1,     1,     1,     1,     1,     1,     1
       )
       val r = createTile(rasterData, 7, 7)
-      val viewRaster = createTile(viewable, 7, 7).convert(TypeBit)
+      val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
       assertEqual(viewRaster, r.viewshed(3, 3, true))
     }
 
@@ -91,7 +91,7 @@ class ViewshedSpec extends FunSpec
         1, 0, 1, 1, 0, 1, 0
       )
       val r = createTile(rasterData, 7, 1)
-      val viewRaster = createTile(viewable, 7, 1).convert(TypeBit)
+      val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
       assertEqual(viewRaster, r.viewshed(3, 0, true))
     }
 

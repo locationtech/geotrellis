@@ -9,10 +9,17 @@ class Float32GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val noDataValue: Option[Double]
+  val cellType: FloatCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with Float32GeoTiffSegmentCollection {
+
+  val noDataValue: Option[Float] = cellType match {
+    case FloatCellType => None
+    case FloatConstantNoDataCellType => Some(Float.NaN)
+    case FloatUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   def mutable: MutableArrayTile = {
-    val arr = Array.ofDim[Byte](cols * rows * TypeFloat.bytes)
+    val arr = Array.ofDim[Byte](cols * rows * FloatConstantNoDataCellType.bytes)
 
     if(segmentLayout.isStriped) {
       var i = 0
@@ -29,22 +36,17 @@ class Float32GeoTiffTile(
           getSegment(segmentIndex)
 
         val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-        val width = segmentTransform.segmentCols * TypeFloat.bytes
-        val tileWidth = segmentLayout.tileLayout.tileCols * TypeFloat.bytes
+        val width = segmentTransform.segmentCols * FloatConstantNoDataCellType.bytes
+        val tileWidth = segmentLayout.tileLayout.tileCols * FloatConstantNoDataCellType.bytes
 
         cfor(0)(_ < tileWidth * segmentTransform.segmentRows, _ + tileWidth) { i =>
-          val col = segmentTransform.indexToCol(i / TypeFloat.bytes)
-          val row = segmentTransform.indexToRow(i / TypeFloat.bytes)
-          val j = ((row * cols) + col) * TypeFloat.bytes
+          val col = segmentTransform.indexToCol(i / FloatConstantNoDataCellType.bytes)
+          val row = segmentTransform.indexToRow(i / FloatConstantNoDataCellType.bytes)
+          val j = ((row * cols) + col) * FloatConstantNoDataCellType.bytes
           System.arraycopy(segment.bytes, i, arr, j, width)
         }
       }
     }
-    noDataValue match {
-      case Some(nd) if isData(nd) && Float.MinValue.toDouble <= nd && nd <= Float.MaxValue.toDouble =>
-        FloatArrayTile.fromBytes(arr, cols, rows, nd.toFloat)
-      case _ =>
-        FloatArrayTile.fromBytes(arr, cols, rows)
-    }
+    FloatArrayTile.fromBytes(arr, cols, rows, cellType)
   }
 }

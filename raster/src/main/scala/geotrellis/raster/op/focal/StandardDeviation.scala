@@ -3,10 +3,10 @@ package geotrellis.raster.op.focal
 import geotrellis.raster._
 
 /**
- * Computes the standard deviation of a neighborhood for a given raster. Returns a raster of TypeDouble.
+ * Computes the standard deviation of a neighborhood for a given raster. Returns a raster of DoubleConstantNoDataCellType.
  *
  * @note            StandardDeviation does not currently support Double raster data inputs.
- *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
+ *                  If you use a Tile with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
  *                  the data values will be rounded to integers.
  */
 object StandardDeviation {

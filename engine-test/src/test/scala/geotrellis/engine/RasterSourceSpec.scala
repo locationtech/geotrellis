@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ import geotrellis.raster.io.arg._
 import org.scalatest._
 
 class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
-  def getRasterSource = 
+  def getRasterSource =
     RasterSource("mtsthelens_tiled_cached")
 
   def getSmallRasterSource =
@@ -45,7 +45,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
                3,30,300,3000,2,2,2,2,2,
                4,40,400,4000,2,2,2,2,2),
         9,4)
-      rs.convert(TypeDouble).get.cellType should be (TypeDouble)
+      rs.convert(DoubleConstantNoDataCellType).get.cellType should be (DoubleConstantNoDataCellType)
     }
   }
 
@@ -56,7 +56,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
           .rasterExtent
           .get
 
-      val newRe = 
+      val newRe =
         RasterExtent(
           Extent(xmin,ymax-(ch*256),xmin+(cw*256),ymax),
           cw,ch,256,256)
@@ -82,7 +82,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
     }
 
     it("should read from metadata and match an arg reader with a target RasterExtent") {
-      val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, cols, rows) = 
+      val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, cols, rows) =
         RasterSource("SBN_inc_percap").rasterExtent.get
       val qw = (xmax - xmin) / 4
       val qh = (ymax - ymin) / 4
@@ -100,7 +100,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
           .rasterExtent
           .get
 
-      val combinedExtent = 
+      val combinedExtent =
         RasterSource("mtsthelens_tiled")
           .mapWithExtent { (tile, extent) =>
             extent
@@ -131,7 +131,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
     }
 
     it("should converge a tiled raster") {
-      val s = 
+      val s =
         RasterSource("mtsthelens_tiled_cached")
           .renderPng
 
@@ -139,14 +139,14 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
 
     }
 
-    it("should return a RasterSource when possible") { 
+    it("should return a RasterSource when possible") {
       val d1 = getRasterSource
 
       val d2:RasterSource = d1.localAdd(3)
       val d3:RasterSource  = d2 mapTile(local.Add(_, 3))
       val d4:RasterSource = d3 mapTile(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
-      
+
       val result1 = get(d1)
       val result2 = get(d2)
       val result3 = get(d3)
@@ -168,8 +168,8 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
       val d = getRasterSource
 
       val hist = d.tileHistograms
-      val hist2:DataSource[Histogram,Histogram] = d.tileHistograms
-      case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
+      val hist2:DataSource[Histogram[Int], Histogram[Int]] = d.tileHistograms
+      case class MinFromHistogram(h:Op[Histogram[Int]]) extends Op1(h)({
         (h) => Result(h.getMinValue)
       })
 
@@ -178,7 +178,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
       })
 
       val ints:DataSource[Int,Seq[Int]] = hist.mapOp(MinFromHistogram(_))
-     
+
       val seqIntVS:ValueSource[Seq[Int]] = ints.converge
 
       val intVS:ValueSource[Int] = seqIntVS.map( seqInt => seqInt.reduce(math.min(_,_)))
@@ -194,7 +194,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
       histogramResult.getMaxValue should be (8367)
       intsResult.length should be (12)
       intResult should be (directIntResult)
-      
+
     }
 
     it("should handle combine") {

@@ -31,8 +31,8 @@ class ArgReaderSpec extends FunSpec
     it("should read a constant tile") {
       val tile = ArgReader.read("raster-test/data/data/constant.json").tile
       tile match {
-        case ct: ConstantTile =>
-          tile.cellType should be (TypeInt)
+        case ct: ConstantTile => 
+          tile.cellType should be (IntConstantNoDataCellType)
           tile.get(0,0) should be (5)
         case _ => sys.error(s"Tile should be constant tile, is actually ${tile.getClass.getSimpleName}")
       }
@@ -41,8 +41,8 @@ class ArgReaderSpec extends FunSpec
     it("should read a constant tile with a NaN value") {
       val tile = ArgReader.read("raster-test/data/data/constant-nan.json").tile
       tile match {
-        case ct: ConstantTile =>
-          tile.cellType should be (TypeDouble)
+        case ct: ConstantTile => 
+          tile.cellType should be (DoubleConstantNoDataCellType)
           isNoData(tile.getDouble(0,0)) should be (true)
         case _ => sys.error(s"Tile should be constant tile, is actually ${tile.getClass.getSimpleName}")
       }

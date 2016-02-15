@@ -27,7 +27,7 @@ import spire.syntax.cfor._
  * The geographic extent will remain unchanged.
  *
  * @note    VerticalFlip does not currently support Double raster data.
- *          If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
+ *          If you use a Tile with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
  *          the data values will be rounded to integers.
  */
 object VerticalFlip {

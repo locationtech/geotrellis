@@ -99,10 +99,10 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
     mapIntersecting(p, cachedResult)(handler)
       .converge(handler.combineResults)
 
-  def zonalHistogram(p: Polygon): ValueSource[Histogram] =
+  def zonalHistogram(p: Polygon): ValueSource[Histogram[Int]] =
     zonalSummary(Histogram, p, None)
 
-  def zonalHistogram(p: Polygon, cached: DataSource[Histogram, _]): ValueSource[Histogram] =
+  def zonalHistogram(p: Polygon, cached: DataSource[Histogram[Int], _]): ValueSource[Histogram[Int]] =
     zonalSummary(Histogram, p, Some(cached))
 
   def zonalSum(p: Polygon): ValueSource[Long] =

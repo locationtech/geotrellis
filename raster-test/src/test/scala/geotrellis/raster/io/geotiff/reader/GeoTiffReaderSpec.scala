@@ -48,9 +48,8 @@ class GeoTiffReaderSpec extends FunSpec
   override def afterAll = purge
 
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
-
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val tile = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).tile
+      val tile = SingleBandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(geoTiffPath("us_ext_clip_esri.json")).tile
@@ -66,7 +65,7 @@ class GeoTiffReaderSpec extends FunSpec
       val path = "slope.tif"
       val argPath = s"$baseDataPath/data/slope.json"
 
-      val tile = SingleBandGeoTiff.compressed(s"$baseDataPath/$path").tile
+      val tile = SingleBandGeoTiff.compressed(s"$baseDataPath/$path").convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -162,7 +161,7 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("should match bit and byte-converted rasters") {
       val actual = SingleBandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
-      val expected = SingleBandGeoTiff(geoTiffPath("bilevel.tif")).tile.convert(TypeBit)
+      val expected = SingleBandGeoTiff(geoTiffPath("bilevel.tif")).tile.convert(BitCellType)
 
       assertEqual(actual, expected)
     }
@@ -259,7 +258,7 @@ class GeoTiffReaderSpec extends FunSpec
       val maxX = extent.xmax should equal (645000.0)
       val maxY = extent.ymax should equal (228500.0)
 
-      tiffTags.bandType.cellType should equal (TypeFloat)
+      tiffTags.bandType should equal (Float32BandType)
     }
 
   }
@@ -424,7 +423,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       cfor(0)(_ < 4, _ + 1) { i =>
         val tile = mbTile.band(i)
-        tile.cellType should be (TypeUByte)
+        tile.cellType should be (UByteCellType)
         tile.dimensions should be ((500, 500))
       }
     }
@@ -464,12 +463,14 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read clipped GeoTiff with byte NODATA value") {
-      val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).tile
-      val geoTiff2 = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).tile
-      assertEqual(geoTiff.toArrayTile.convert(TypeFloat), geoTiff2)
+      // Conversions carried out for both of these; first for byte -> float, second for user defined no data to constant
+      val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).convert(FloatConstantNoDataCellType)
+      val geoTiff2 = SingleBandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).convert(FloatConstantNoDataCellType)
+      assertEqual(geoTiff.toArrayTile, geoTiff2)
     }
 
   }
+
 }
 
 class PackBitsGeoTiffReaderSpec extends FunSpec

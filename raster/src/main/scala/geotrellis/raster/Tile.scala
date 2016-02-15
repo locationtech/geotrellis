@@ -174,7 +174,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     * Return tuple of highest and lowest value in raster.
     *
     * @note   Currently does not support double valued raster data types
-    *         (TypeFloat, TypeDouble). Calling findMinMax on rasters of those
+    *         (FloatConstantNoDataCellType, DoubleConstantNoDataCellType). Calling findMinMax on rasters of those
     *         types will give the integer min and max of the rounded values of
     *         their cells.
     */
