@@ -400,7 +400,7 @@ object GenMacroSegmentCombiner extends Template {
         -      segmentLayout,
         -      compression,
         -      cellType
-        -   )
+        -    )
         -  }
          |}
       """
