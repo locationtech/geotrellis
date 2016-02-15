@@ -27,8 +27,8 @@ import java.util.PriorityQueue
   * @param cost     Cost Tile (Int)
   * @param points   List of starting points as tuples
   *
-  * @note    Operation will only work with integer typed Cost Tiles (TypeBit, TypeByte, TypeShort, TypeInt).
-  *          If a double typed Cost Tile (TypeFloat, TypeDouble) is passed in, those costs will be rounded
+  * @note    Operation will only work with integer typed Cost Tiles (BitCellType, ByteConstantNoDataCellType, ShortConstantNoDataCellType, IntConstantNoDataCellType).
+  *          If a double typed Cost Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) is passed in, those costs will be rounded
   *          to their floor integer values.
   *
   */

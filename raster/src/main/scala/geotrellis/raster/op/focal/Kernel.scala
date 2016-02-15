@@ -31,7 +31,7 @@ object Kernel {
    * @param    amp            Amplitude for Gaussian. Will be the value at the center of
    *                          the resulting tile.
    *
-   * @note                    Tile will be TypeInt
+   * @note                    Tile will be IntConstantNoDataCellType
    */
   def gaussian(size: Int, sigma: Double, amp: Double): Kernel = {
     val output = IntArrayTile.empty(size, size)
@@ -61,7 +61,7 @@ object Kernel {
    * @param       cellWidth      Cell width of the resutling tile.
    * @param       rad            Radius of the circle.
    *
-   * @note                       Tile will be TypeInt 
+   * @note                       Tile will be IntConstantNoDataCellType 
    */
   def circle(size: Int, cellWidth: Double, rad: Int) = {
     val output = IntArrayTile.empty(size, size)

@@ -12,6 +12,8 @@ class SingleBandGeoTiff(
   val tags: Tags,
   val options: GeoTiffOptions
 ) extends GeoTiff[Tile] {
+  val cellType = tile.cellType
+
   def mapTile(f: Tile => Tile): SingleBandGeoTiff =
     SingleBandGeoTiff(f(tile), extent, crs, tags, options)
 

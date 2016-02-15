@@ -41,7 +41,7 @@ class UnequalSpec extends FunSpec
     }
 
     it("checks int valued raster against double constant") {
-      val r = probabilityRaster.map(_ * 100).convert(TypeInt)
+      val r = probabilityRaster.map(_ * 100).convert(IntConstantNoDataCellType)
       val result = r !== 69.0
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
@@ -67,7 +67,7 @@ class UnequalSpec extends FunSpec
     }
 
     it("checks double valued raster against int constant (right associative)") {
-      val r = positiveIntegerRaster.convert(TypeDouble).mapDouble(_.toDouble)
+      val r = positiveIntegerRaster.convert(DoubleConstantNoDataCellType).mapDouble(_.toDouble)
       val result = 69.0 !==: r
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
@@ -80,7 +80,7 @@ class UnequalSpec extends FunSpec
     }
 
     it("checks double valued raster against int constant") {
-      val r = positiveIntegerRaster.convert(TypeDouble).mapDouble(_.toDouble)
+      val r = positiveIntegerRaster.convert(DoubleConstantNoDataCellType).mapDouble(_.toDouble)
       val result = r !== 5
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {

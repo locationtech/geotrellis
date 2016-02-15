@@ -21,48 +21,48 @@ import geotrellis.raster.op.local._
 
 trait EqualRasterSourceMethods extends RasterSourceMethods {
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
   def localEqual(i: Int): RasterSource = rasterSource.mapTile(Equal(_, i))
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
   def ===(i: Int): RasterSource = localEqual(i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
   def ===: (i: Int): RasterSource = localEqual(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
   def localEqual(d: Double): RasterSource = rasterSource.mapTile(Equal(_, d))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
   def ===(d: Double): RasterSource = localEqual(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
   def ===: (d: Double): RasterSource = localEqual(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
   def localEqual(rs: RasterSource): RasterSource = rasterSource.combineTile(rs)(Equal(_, _))
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
   def ===(rs: RasterSource): RasterSource = localEqual(rs)

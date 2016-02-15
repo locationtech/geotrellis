@@ -46,11 +46,11 @@ class ArgTest extends FunSuite
   }
 
   test("write all supported arg datatypes") {
-    ArgWriter(TypeByte).write("/tmp/foo-int8.arg", tile, extent, "foo-int8")
-    ArgWriter(TypeShort).write("/tmp/foo-int16.arg", tile, extent, "foo-int16")
-    ArgWriter(TypeInt).write("/tmp/foo-int32.arg", tile, extent, "foo-int32")
-    ArgWriter(TypeFloat).write("/tmp/foo-float32.arg", tile, extent, "foo-float32")
-    ArgWriter(TypeDouble).write("/tmp/foo-float64.arg", tile, extent, "foo-float64")
+    ArgWriter(ByteConstantNoDataCellType).write("/tmp/foo-int8.arg", tile, extent, "foo-int8")
+    ArgWriter(ShortConstantNoDataCellType).write("/tmp/foo-int16.arg", tile, extent, "foo-int16")
+    ArgWriter(IntConstantNoDataCellType).write("/tmp/foo-int32.arg", tile, extent, "foo-int32")
+    ArgWriter(FloatConstantNoDataCellType).write("/tmp/foo-float32.arg", tile, extent, "foo-float32")
+    ArgWriter(DoubleConstantNoDataCellType).write("/tmp/foo-float64.arg", tile, extent, "foo-float64")
   }
 
   test("check int8") {
@@ -106,7 +106,7 @@ class ArgTest extends FunSuite
       o,A,A,A,A,A,A,A,A,o)
 
     val tile = ByteArrayTile(byteArr, cols, rows)
-    ArgWriter(TypeByte).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
+    ArgWriter(ByteConstantNoDataCellType).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
     val r2 = loadRaster("/tmp/fooc-int8.arg")
     assert(r2.toArrayTile === tile.toArrayTile)
   }

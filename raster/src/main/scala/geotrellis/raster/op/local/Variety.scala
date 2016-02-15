@@ -23,7 +23,7 @@ import spire.syntax.cfor._
 /**
  * Variety gives the count of unique values at each location in a set of Tiles.
  *
- * @return     An TypeInt raster with the count values.
+ * @return     An IntConstantNoDataCellType raster with the count values.
  */
 object Variety extends Serializable {
   def apply(rs: Traversable[Tile]): Tile =
@@ -40,7 +40,7 @@ object Variety extends Serializable {
       sys.error(s"Can't compute variety of empty sequence")
     } else {
       val (cols, rows) = rs(0).dimensions
-      val tile = ArrayTile.alloc(TypeInt, cols, rows)
+      val tile = ArrayTile.alloc(IntConstantNoDataCellType, cols, rows)
 
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>

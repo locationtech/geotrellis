@@ -6,7 +6,7 @@ import geotrellis.raster._
  * Computes the mode of a neighborhood for a given raster
  *
  * @note            Mode does not currently support Double raster data.
- *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
+ *                  If you use a Tile with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
  *                  the data values will be rounded to integers.
  */
 object Mode {

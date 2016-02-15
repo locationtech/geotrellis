@@ -11,7 +11,7 @@ final class AsciiReadState(path: String,
                            val noDataValue: Int) extends IntReadState {
   private var ints: IntArrayTile = null
 
-  def getType = TypeInt
+  def getType = IntConstantNoDataCellType
 
   def getNoDataValue = noDataValue
 

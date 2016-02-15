@@ -47,9 +47,9 @@ class DataMap extends OperationBenchmark {
     doubles = init(len)(Random.nextDouble)
     tile = ArrayTile(init(len)(Random.nextInt), size, size)
 
-    bitTile = new BitArrayTile(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
-    byteTile = new ByteArrayTile(bytes, size, size)
-    shortTile = new ShortArrayTile(init(len)(Random.nextInt.toShort), size, size)
+    bitTile = BitArrayTile(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
+    byteTile = ByteArrayTile(bytes, size, size)
+    shortTile = ShortArrayTile(init(len)(Random.nextInt.toShort), size, size)
   }
 
 

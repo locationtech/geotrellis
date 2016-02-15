@@ -41,7 +41,6 @@ class GeoTiffWriterSpec extends FunSpec
   private val testCRS = CRS.fromName("EPSG:3857")
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
-
     it("should write GeoTiff with tags") {
       val path = "/tmp/geotiff-writer.tif"
 
@@ -202,6 +201,5 @@ class GeoTiffWriterSpec extends FunSpec
         assertEqual(actualBand, expectedBand)
       }
     }
-
   }
 }

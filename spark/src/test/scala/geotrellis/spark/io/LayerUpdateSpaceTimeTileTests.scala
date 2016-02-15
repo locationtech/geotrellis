@@ -14,7 +14,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
 
   def dummyRasterMetaData: RasterMetaData =
     RasterMetaData(
-      TypeInt,
+      IntConstantNoDataCellType,
       LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
       Extent(0,0,1,1),
       LatLng
