@@ -38,7 +38,8 @@ object GeoTrellisETL extends App {
   
   Etl.ingest[ProjectedExtent, SpatialKey, MultiBandTile](args, ZCurveKeyIndexMethod)
     
-  sc.stop()  
+  sc.stop()
+}
 ```
 
 ## Running the Spark Job
