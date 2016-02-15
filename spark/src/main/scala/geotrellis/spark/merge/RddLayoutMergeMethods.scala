@@ -21,7 +21,7 @@ class RDDLayoutMergeMethods[
    val thisLayout = self.metadata.layout
    val thatLayout = other.metadata.layout
 
-   val cutRdd = 
+   val cutRdd =
        other
          .flatMap { case (k: K, tile: V) =>
            val extent = thatLayout.mapTransform(k)

@@ -39,7 +39,7 @@ class FileRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec:
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
-  
+
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val resultPartition = mutable.ListBuffer[(K, V)]()

@@ -22,7 +22,7 @@ object FileLayerDeleter {
         val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
           attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](layerId)
         } catch {
-          case e: AttributeNotFoundError => 
+          case e: AttributeNotFoundError =>
             throw new LayerNotFoundError(layerId).initCause(e)
         }
 

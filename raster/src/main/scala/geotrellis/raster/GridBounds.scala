@@ -4,7 +4,7 @@ import scala.collection.mutable
 import spire.syntax.cfor._
 
 object GridBounds {
-  def apply(r: CellGrid): GridBounds = 
+  def apply(r: CellGrid): GridBounds =
     GridBounds(0, 0, r.cols-1, r.rows-1)
 
   def envelope(keys: Iterable[Product2[Int, Int]]): GridBounds = {
@@ -100,7 +100,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     val arr = Array.ofDim[(Int, Int)](width*height)
     cfor(0)(_ < height, _ + 1) { row =>
       cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) = 
+        arr(row * width + col) =
           (col + colMin, row + rowMin)
       }
     }
