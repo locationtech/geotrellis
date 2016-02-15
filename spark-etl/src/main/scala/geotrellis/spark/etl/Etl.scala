@@ -1,13 +1,13 @@
 package geotrellis.spark.etl
 
 import com.typesafe.scalalogging.slf4j.Logger
-import geotrellis.raster.{RasterExtent, CellGrid}
+import geotrellis.raster.{MultiBandTile, Tile, RasterExtent, CellGrid}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark.ingest._
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod}
 import geotrellis.spark.tiling._
 import org.slf4j.LoggerFactory
 import scala.reflect._
@@ -20,6 +20,34 @@ import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
+
+  def ingest[
+    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
+    K: SpatialComponent: TypeTag,
+    V <: CellGrid: TypeTag: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+  ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) = {
+    implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
+    implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
+
+    val etl = Etl(args)
+    val tiles = etl.load[I, V]
+    val reprojected = etl.reproject(tiles)
+    val (zoom, metadata) = etl.collectMetadata(reprojected)
+    val tiled = ContextRDD(reprojected.cutTiles[K](metadata, NearestNeighbor), metadata)
+    etl.save[K, V](LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
+  }
+
+  def singlebandIngest[
+    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
+    K: SpatialComponent: TypeTag
+  ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) =
+    ingest[I, K, Tile](args, keyIndexMethod, modules)
+
+  def multibandIngest[
+    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
+    K: SpatialComponent: TypeTag
+  ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) =
+    ingest[I, K, MultiBandTile](args, keyIndexMethod, modules)
 }
 
 case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.defaultModules) {
