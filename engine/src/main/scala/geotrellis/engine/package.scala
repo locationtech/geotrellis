@@ -24,10 +24,10 @@ import language.experimental.macros
 package object engine {
   implicit lazy val engine = GeoTrellis.engine
 
-  type Args = List[Any]
-  type Op[+A] = Operation[A]
-  type DI = DummyImplicit
-  type Steps[T] = PartialFunction[Any, StepOutput[T]]
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2") type Args = List[Any]
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2") type Op[+A] = Operation[A]
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2") type DI = DummyImplicit
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2") type Steps[T] = PartialFunction[Any, StepOutput[T]]
 
   /**
    * Syntax for converting tuples of operations
@@ -35,16 +35,19 @@ package object engine {
    * this is similiar to a for comprehension, but the
    * operations will be executed in parallel.
    */
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class OpMap2[A, B](t: (Op[A], Op[B])) {
     def map[T](f: (A, B)=>T) = Op(f).apply(t._1, t._2)
     def flatMap[T](f: (A, B)=>Op[T]) = Op(f).apply(t._1, t._2)
   }
 
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class OpMap3[A, B, C](t: (Op[A], Op[B], Op[C])) {
     def map[T](f: (A, B, C)=>T) = Op(f).apply(t._1, t._2, t._3)
     def flatMap[T](f: (A, B, C)=>Op[T]) = Op(f).apply(t._1, t._2, t._3)
   }
 
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class OpMap4[A, B, C, D](t: (Op[A], Op[B], Op[C], Op[D])) {
     def map[T](f: (A, B, C, D)=>T) = Op(f).apply(t._1, t._2, t._3, t._4)
     def flatMap[T](f: (A, B, C, D)=>Op[T]) = Op(f).apply(t._1, t._2, t._3, t._4)
@@ -55,23 +58,28 @@ package object engine {
    * have methods to work with the results of those
    * operations executed in parallel
    */
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class OpMapSeq[A](seq: Seq[Op[A]]) {
     def mapOps[T](f: (Seq[A]=>T)) = logic.Collect(Literal(seq)).map(f)
     def flaMapOps[T](f: (Seq[A]=>Op[T])) = logic.Collect(Literal(seq)).flatMap(f)
   }
 
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class OpMapArray[A](seq: Array[Op[A]]) {
     def mapOps[T](f: (Seq[A]=>T)) = logic.Collect(Literal(seq.toSeq)).map(f)
     def flaMapOps[T](f: (Seq[A]=>Op[T])) = logic.Collect(Literal(seq.toSeq)).flatMap(f)
   }
 
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class OpSeqToCollect[T](seq: Op[Seq[Op[T]]]) {
     def collect() = logic.Collect(seq)
   }
 
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit def dataSourceSeqToSeqSource[T](iterable: Iterable[OpSource[T]]): SeqSource[T] =
     DataSource.fromSources(iterable.toSeq)
 
+  @deprecated("geotrellis-engine has been deprecated", "7b92cb2")
   implicit class DataSourceSeqWrapper[T](dss: Seq[OpSource[T]]) {
     def collectSources(): SeqSource[T] = DataSource.fromSources(dss)
   }
