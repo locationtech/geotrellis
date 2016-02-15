@@ -3,6 +3,8 @@ package geotrellis.spark.mapalgebra.focal
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
+import geotrellis.util.MethodExtensions
+
 
 trait FocalRasterRDDMethods[K] extends FocalOperation[K] {
 

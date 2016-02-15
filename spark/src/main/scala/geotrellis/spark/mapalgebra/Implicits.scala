@@ -1,9 +1,13 @@
 package geotrellis.spark.mapalgebra
 
+import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
-import geotrellis.raster._
+
 import scala.reflect.ClassTag
+
 
 object Implicits extends Implicits
 

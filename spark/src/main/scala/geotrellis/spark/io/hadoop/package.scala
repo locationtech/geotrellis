@@ -5,6 +5,7 @@ import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext._
@@ -14,6 +15,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce._
 
 import scala.reflect._
+
 
 package object hadoop {
   implicit def stringToPath(path: String): Path = new Path(path)
