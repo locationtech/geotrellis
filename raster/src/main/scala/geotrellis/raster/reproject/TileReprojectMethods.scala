@@ -4,6 +4,8 @@ import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.vector.Extent
+import geotrellis.util.MethodExtensions
+
 
 trait TileReprojectMethods[T <: CellGrid] extends MethodExtensions[T] {
   import Reproject.Options

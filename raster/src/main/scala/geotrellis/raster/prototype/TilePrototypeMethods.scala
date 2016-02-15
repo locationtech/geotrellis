@@ -1,6 +1,8 @@
 package geotrellis.raster.prototype
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 
 /** Methods that allow us to create a similar tile type from an already existing tile. */
 trait TilePrototypeMethods[T <: CellGrid] extends MethodExtensions[T] {

@@ -19,6 +19,7 @@ package geotrellis.raster.rasterize
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.{Geometry,Extent}
+import geotrellis.util.MethodExtensions
 
 
 trait TileRasterizeMethods[T <: Tile] extends MethodExtensions[T] {

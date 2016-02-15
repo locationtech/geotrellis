@@ -73,7 +73,7 @@ lazy val proj4 = Project("proj4", file("proj4")).
   settings(commonSettings: _*)
 
 lazy val raster = Project("raster", file("raster")).
-  dependsOn(macros, vector).
+  dependsOn(util, macros, vector).
   settings(commonSettings: _*)
 
 lazy val rasterTest = Project("raster-test", file("raster-test")).
@@ -149,6 +149,9 @@ lazy val dev = Project("dev", file("dev")).
 
 lazy val demo = Project("demo", file("demo")).
   dependsOn(jetty).
+  settings(commonSettings: _*)
+
+lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
 lazy val vectorBenchmark: Project = Project("vector-benchmark", file("vector-benchmark")).

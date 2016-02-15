@@ -1,7 +1,9 @@
 package geotrellis.raster.hydrology
 
 import geotrellis.raster.mapalgebra.focal.Square
-import geotrellis.raster.{Tile, MethodExtensions}
+import geotrellis.raster.Tile
+import geotrellis.util.MethodExtensions
+
 
 trait HydrologyMethods extends MethodExtensions[Tile] {
   def accumulation(): Tile = Accumulation(self)
