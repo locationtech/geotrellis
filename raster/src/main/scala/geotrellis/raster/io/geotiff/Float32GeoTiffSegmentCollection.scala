@@ -8,15 +8,14 @@ trait Float32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = Float32GeoTiffSegment
 
   val bandType = Float32BandType
-  val cellType = TypeFloat
+  val noDataValue: Option[Float]
 
-  val noDataValue: Option[Double]
-  
-  val createSegment: Int => Float32GeoTiffSegment =
-    noDataValue match {
-      case Some(nd) if isData(nd) =>
-        { i: Int => new NoDataFloat32GeoTiffSegment(getDecompressedBytes(i), nd.toFloat) }
-      case _ =>
-        { i: Int => new Float32GeoTiffSegment(getDecompressedBytes(i)) }
-    }
+  lazy val createSegment: Int => Float32GeoTiffSegment = noDataValue match {
+    case None =>
+      { i: Int => new Float32RawGeoTiffSegment(getDecompressedBytes(i)) }
+    case Some(nd) if (nd == Float.NaN) =>
+      { i: Int => new Float32ConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
+    case Some(nd) =>
+      { i: Int => new Float32UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
+  }
 }

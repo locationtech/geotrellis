@@ -52,7 +52,7 @@ extends RasterLayerBuilder {
         }
         t
       } else {
-        TypeInt
+        IntConstantNoDataCellType
       }
     if(!new java.io.File(path).exists) {
       throw new java.io.IOException("[ERROR] Cannot find data (.asc or .grd file) for " +
@@ -86,7 +86,7 @@ extends RasterLayerBuilder {
     val info = 
       RasterLayerInfo(
         LayerId(name),
-        TypeInt,
+        IntConstantNoDataCellType,
         rasterExtent,
         0,
         0,

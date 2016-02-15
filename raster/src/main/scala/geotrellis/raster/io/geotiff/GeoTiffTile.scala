@@ -11,33 +11,37 @@ import spire.syntax.cfor._
 
 object GeoTiffTile {
   def apply(
-    bandType: BandType,
-    compressedBytes: Array[Array[Byte]],
-    decompressor: Decompressor,
-    segmentLayout: GeoTiffSegmentLayout,
-    compression: Compression
-  ): GeoTiffTile =
-    apply(bandType, compressedBytes, decompressor, segmentLayout, compression, None)
-
-  def apply(
-    bandType: BandType,
     compressedBytes: Array[Array[Byte]],
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
-    noDataValue: Option[Double]
-  ): GeoTiffTile =
-    bandType match {
-      case BitBandType     => new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression)
-      case UByteBandType   => new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case ByteBandType    => new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case UInt16BandType  => new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case Int16BandType   => new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case UInt32BandType  => new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case Int32BandType   => new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case Float32BandType => new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
-      case Float64BandType => new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, noDataValue)
+    cellType: CellType
+  ): GeoTiffTile = {
+    cellType match {
+      case ct: BitCells =>
+        new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      // Bytes
+      case ct: ByteCells =>
+        new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      // UBytes
+      case ct: UByteCells =>
+        new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      // Shorts
+      case ct: ShortCells =>
+        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      // UShorts
+      case ct: UShortCells =>
+        new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: IntCells =>
+        new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: UIntCells =>
+        new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: FloatCells =>
+        new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+      case ct: DoubleCells =>
+        new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
     }
+  }
 
   /** Convert a tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. */
   def apply(tile: Tile): GeoTiffTile =
@@ -63,7 +67,7 @@ object GeoTiffTile {
       compressedBytes(i) = compressor.compress(bytes, i)
     }
 
-    apply(bandType, compressedBytes, compressor.createDecompressor, segmentLayout, options.compression)
+    apply(compressedBytes, compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
   }
 }
 
@@ -71,6 +75,8 @@ abstract class GeoTiffTile(
   val segmentLayout: GeoTiffSegmentLayout,
   compression: Compression // Compression to use moving forward
 ) extends Tile with GeoTiffImageData {
+  val cellType: CellType
+
   val bandCount = 1
 
   val cols: Int = segmentLayout.totalCols
@@ -88,12 +94,11 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      BandType.forCellType(newCellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      newCellType
     )
   }
 
@@ -171,12 +176,11 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      cellType
     )
   }
 
@@ -190,12 +194,11 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      cellType
     )
   }
 
@@ -247,12 +250,11 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      cellType
     )
   }
 
@@ -273,12 +275,11 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      cellType
     )
   }
 
@@ -298,12 +299,11 @@ abstract class GeoTiffTile(
         }
 
         GeoTiffTile(
-          BandType.forCellType(cellType.union(other.cellType)),
           arr,
           compressor.createDecompressor(),
           segmentLayout,
           compression,
-          None
+          cellType
         )
       case _ =>
         this.map { (col, row, z) =>
@@ -327,12 +327,11 @@ abstract class GeoTiffTile(
         }
 
         GeoTiffTile(
-          BandType.forCellType(cellType),
           arr,
           compressor.createDecompressor(),
           segmentLayout,
           compression,
-          None
+          cellType
         )
       case _ =>
         this.mapDouble { (col, row, z) =>

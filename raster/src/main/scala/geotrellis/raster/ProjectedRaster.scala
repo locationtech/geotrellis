@@ -16,7 +16,6 @@ object ProjectedRaster {
 
   def apply[T <: CellGrid](tile: T, extent: Extent, crs: CRS): ProjectedRaster[T] =
     ProjectedRaster(Raster(tile, extent), crs)
-
 }
 
 case class ProjectedRaster[T <: CellGrid](raster: Raster[T], crs: CRS) {

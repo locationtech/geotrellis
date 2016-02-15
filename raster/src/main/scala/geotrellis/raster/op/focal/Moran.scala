@@ -18,7 +18,7 @@ import geotrellis.raster.histogram.FastMapHistogram
  *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
- *                        of a double typed Tile (TypeFloat, TypeDouble).
+ *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object TileMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile = {
@@ -67,7 +67,7 @@ object TileMoransICalculation {
  *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
- *                        of a double typed Tile (TypeFloat, TypeDouble).
+ *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object ScalarMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {

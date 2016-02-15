@@ -21,13 +21,13 @@ import java.io.DataOutputStream
 import geotrellis.raster._
 
 object CellWriter {
-  def byType(typ: CellType): CellWriter = typ match {
-    case TypeBit => BoolCellWriter
-    case TypeByte => Int8CellWriter
-    case TypeShort => Int16CellWriter
-    case TypeInt => Int32CellWriter
-    case TypeFloat => Float32CellWriter
-    case TypeDouble => Float64CellWriter
+  def byType(cellType: CellType): CellWriter = cellType match {
+    case BitCellType => BoolCellWriter
+    case ByteConstantNoDataCellType => Int8CellWriter
+    case ShortConstantNoDataCellType => Int16CellWriter
+    case IntConstantNoDataCellType => Int32CellWriter
+    case FloatConstantNoDataCellType => Float32CellWriter
+    case DoubleConstantNoDataCellType => Float64CellWriter
     case t => sys.error(s"raster type $t is not supported yet")
   }
 }

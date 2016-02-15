@@ -395,13 +395,12 @@ object GenMacroSegmentCombiner extends Template {
         -      (arr, compressor)
         -    }
         -    GeoTiffTile(
-        -      BandType.forCellType(cellType),
         -      arr,
         -      compressor.createDecompressor(),
         -      segmentLayout,
         -      compression,
-        -      None
-        -    )
+        -      cellType
+        -   )
         -  }
          |}
       """

@@ -21,42 +21,42 @@ import geotrellis.raster.op.local._
 
 trait LessOrEqualRasterSourceMethods extends RasterSourceMethods {
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
   def localLessOrEqual(i: Int): RasterSource = rasterSource.mapTile(LessOrEqual(_, i))
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
   def localLessOrEqualRightAssociative(i: Int): RasterSource = rasterSource.mapTile(LessOrEqual(i, _))
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
     * integer, else 0.
    */
   def <=(i:Int): RasterSource = localLessOrEqual(i)
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
   def <=:(i:Int): RasterSource = localLessOrEqualRightAssociative(i)
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
   def localLessOrEqual(d: Double): RasterSource = rasterSource.mapTile(LessOrEqual(_, d))
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
@@ -64,28 +64,28 @@ trait LessOrEqualRasterSourceMethods extends RasterSourceMethods {
     rasterSource.mapTile(LessOrEqual(d, _))
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
   def <=(d:Double): RasterSource = localLessOrEqual(d)
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
   def <=:(d:Double): RasterSource = localLessOrEqualRightAssociative(d)
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
    */
   def localLessOrEqual(rs:RasterSource): RasterSource = 
     rasterSource.combineTile(rs)(LessOrEqual(_,_))
 
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
    */
   def <=(rs:RasterSource): RasterSource = localLessOrEqual(rs)

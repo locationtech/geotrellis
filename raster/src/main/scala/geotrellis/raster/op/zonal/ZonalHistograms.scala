@@ -27,7 +27,7 @@ import scala.collection.mutable
  * Given a raster, return a histogram summary of the cells within each zone.
  *
  * @note    ZonalHistogram does not currently support Double raster data.
- *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+ *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
  *          the data values will be rounded to integers.
  */
 trait ZonalHistogram[@specialized (Int, Double) T <: AnyVal] {

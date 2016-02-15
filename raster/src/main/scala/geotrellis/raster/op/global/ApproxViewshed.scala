@@ -23,7 +23,7 @@ object ApproxViewshed extends Serializable {
       sys.error("Point indices out of bounds")
     } else {
       val k = r.getDouble(startCol, startRow)
-      val tile = ArrayTile.alloc(TypeDouble,cols,rows)
+      val tile = ArrayTile.alloc(DoubleConstantNoDataCellType,cols,rows)
       tile.setDouble(startCol, startRow, k)
 
       val maxLayer = List((rows - startRow), (cols - startCol), startRow + 1, startCol + 1).max

@@ -11,7 +11,7 @@ import spire.syntax.cfor._
 object Viewshed extends Serializable {
   def apply(r: Tile, startCol: Int, startRow: Int): Tile = {
     val (cols, rows) = r.dimensions
-    val tile = ArrayTile.alloc(TypeBit,cols,rows)
+    val tile = ArrayTile.alloc(BitCellType,cols,rows)
 
     val height = r.getDouble(startCol, startRow)
 
@@ -37,7 +37,7 @@ object Viewshed extends Serializable {
     if(startRow >= rows || startRow < 0 || startCol >= cols || startCol < 0) {
       sys.error("Point indices out of bounds")
     } else {
-      val tile = ArrayTile.alloc(TypeDouble, cols, rows)
+      val tile = ArrayTile.alloc(DoubleConstantNoDataCellType, cols, rows)
 
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>

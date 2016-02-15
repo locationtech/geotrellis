@@ -21,7 +21,7 @@ class RDDQuerySpec extends FunSpec
 
   describe("RasterQuerySpec") {
     val md = RasterMetaData(
-      TypeFloat,
+      FloatConstantNoDataCellType,
       LayoutDefinition(LatLng.worldExtent, TileLayout(8, 8, 3, 4)),
       Extent(-135.00000125, -89.99999, 134.99999125, 67.49999249999999),
       LatLng

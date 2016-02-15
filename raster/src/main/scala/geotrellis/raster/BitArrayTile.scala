@@ -30,7 +30,7 @@ import spire.syntax.cfor._
  * explicitly told our size, since length=7 and length=8 will both need to
  * allocate an Array[Byte] with length=1.
  */
-final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
+final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
   extends MutableArrayTile {
   // i >> 3 is the same as i / 8 but faster
   // i & 7 is the same as i % 8 but faster
@@ -44,7 +44,7 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
     sys.error(s"BitArrayTile array length must be ${(size + 7) / 8}, was ${array.size}")
   }
 
-  val cellType = TypeBit
+  val cellType = BitCellType
 
   def apply(i: Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
 
@@ -116,10 +116,4 @@ object BitArrayTile {
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile =
     BitArrayTile(bytes, cols, rows)
-
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): BitArrayTile =
-    if(replaceNoData == 0)
-      fromBytes(bytes, cols, rows)
-    else
-      ofDim(cols, rows)
 }

@@ -11,7 +11,7 @@ trait HydrologyMethods extends MethodExtensions[Tile] {
     */
   def flowDirection(): Tile = FlowDirection(self)
 
-  /** Fills sink values in a raster. Returns a Tile of TypeDouble
+  /** Fills sink values in a raster. Returns a Tile of DoubleConstantNoDataCellType
     * @see [[Fill]]
     */
   def fill(threshold: Double): Tile = Fill(self, Square(1), None, threshold)
