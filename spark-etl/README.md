@@ -30,17 +30,13 @@ object GeoTrellisETL extends App {
 
 ### Etl ingest
 
-Following built-in functions are available for tiles ingest:
-
-  * Etl.ingest[I, K, V]
-  * Etl.singlebandIngest[I, K]
-  * Etl.multibbandIngest[I, K]
+To ingest tiles it is possible to use a built-in Etl ingest function:
 
 ```scala
 object GeoTrellisETL extends App {
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
   
-  Etl.multibandIngest[ProjectedExtent, SpatialKey](args, ZCurveKeyIndexMethod)
+  Etl.ingest[ProjectedExtent, SpatialKey, MultiBandTile](args, ZCurveKeyIndexMethod)
     
   sc.stop()  
 ```
@@ -66,6 +62,15 @@ $JAR \
 ```
 
 Note that the arguments before the `$JAR` configure `SparkContext` and arguments after configure GeoTrellis ETL inputs and outputs.
+
+### Built-in ingest jobs
+
+It is possible to make an `assembly` of `spark-etl` project, with two main classes available:
+
+ * geotrellis.spark.etl.SinglebandIngest
+ * geotrellis.spark.etl.MultibandIngest
+ 
+This job can be launched (as described above) with command line arguments described below.
 
 ### Command Line Arguments
 
