@@ -45,10 +45,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
 
   @transient val combinedModule = modules reduce (_ union _)
 
-  def load[
-    I: ProjectedExtentComponent: TypeTag,
-    V <: CellGrid: TypeTag: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ]()(implicit sc: SparkContext): RDD[(I, V)] = {
+  def load[I: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
     val plugin =
       combinedModule
         .findSubclassOf[InputPlugin[I, V]]
@@ -58,10 +55,8 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     plugin(conf.inputProps)
   }
 
-  def reproject[
-    I: ProjectedExtentComponent,
-    V <: CellGrid: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](rdd: RDD[(I, V)]): RDD[(I, V)] = rdd.reproject(conf.crs()).persist(conf.cache())
+  def reproject[I: ProjectedExtentComponent, V <: CellGrid: ? => TileReprojectMethods[V]](rdd: RDD[(I, V)]): RDD[(I, V)] =
+    rdd.reproject(conf.crs()).persist(conf.cache())
 
   def collectMetadata[I: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, M) = {
     val crs = conf.crs()
@@ -87,7 +82,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
 
   def save[
     K: SpatialComponent: TypeTag,
-    V <: CellGrid: TypeTag: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K]): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
