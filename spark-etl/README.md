@@ -30,7 +30,8 @@ object GeoTrellisETL extends App {
 
 ### Etl ingest
 
-Just for a standard ingest following functions available:
+Following built-in functions are available for tiles ingest:
+
   * Etl.ingest[I, K, V]
   * Etl.singlebandIngest[I, K]
   * Etl.multibbandIngest[I, K]
