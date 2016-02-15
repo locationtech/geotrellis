@@ -10,7 +10,6 @@ trait GeoTiffSegmentCollection {
   val decompressor: Decompressor
 
   val bandType: BandType
-  val cellType: CellType
 
   def getDecompressedBytes(i: Int): Array[Byte] =
     decompressor.decompress(compressedBytes(i), i)

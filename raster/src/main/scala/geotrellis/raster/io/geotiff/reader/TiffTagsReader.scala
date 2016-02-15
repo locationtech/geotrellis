@@ -60,7 +60,7 @@ object TiffTagsReader {
 
       if (tagMetaData.tag == codes.TagCodes.GeoKeyDirectoryTag)
         geoTags = Some(tagMetaData)
-      else 
+      else
         tiffTags = readTag(byteBuffer, tiffTags, tagMetaData)
     }
 

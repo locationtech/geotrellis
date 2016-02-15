@@ -25,7 +25,7 @@ object FillOptions {
 }
 
 /**
- * Fills sink values in a raster. Returns a raster of TypeDouble
+ * Fills sink values in a raster. Returns a raster of DoubleConstantNoDataCellType
  *
  * @note               The threshold in the options will be used to determine whether
  *                     or not something is a sink, so if you find that this operation

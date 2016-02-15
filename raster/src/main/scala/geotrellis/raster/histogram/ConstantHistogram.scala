@@ -16,7 +16,7 @@
 
 package geotrellis.raster.histogram
 
-case class ConstantHistogram(value:Int,size:Int) extends Histogram {
+case class ConstantHistogram(value:Int,size:Int) extends HistogramInt {
   def copy = ConstantHistogram(value,size)
 
   def foreachValue(f:Int=>Unit) = f(value)
@@ -27,7 +27,7 @@ case class ConstantHistogram(value:Int,size:Int) extends Histogram {
   def getValues():Array[Int] = Array(value)
   def rawValues():Array[Int] = Array(value)
   def getQuantileBreaks(num:Int):Array[Int] = Array(value)
-  def mutable():MutableHistogram = {
+  def mutable():MutableHistogramInt = {
     val fmh = FastMapHistogram(size)
     fmh.setItem(value,size)
     fmh

@@ -59,7 +59,7 @@ class ByteBufferResampleAssign(src: ByteBuffer, dst: Array[Byte])
 
 class ShortBufferResampleAssign(src: ByteBuffer, dst: Array[Short])
     extends ResampleAssign {
-  final val width = TypeShort.bytes
+  final val width = ShortConstantNoDataCellType.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getShort(srcIndex*width)
   }
@@ -67,7 +67,7 @@ class ShortBufferResampleAssign(src: ByteBuffer, dst: Array[Short])
 
 class IntBufferResampleAssign(src: ByteBuffer, dst: Array[Int])
     extends ResampleAssign {
-  final val width = TypeInt.bytes
+  final val width = IntConstantNoDataCellType.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getInt(srcIndex*width)
   }
@@ -75,7 +75,7 @@ class IntBufferResampleAssign(src: ByteBuffer, dst: Array[Int])
 
 class FloatBufferResampleAssign(src: ByteBuffer, dst: Array[Float])
     extends ResampleAssign {
-  final val width = TypeFloat.bytes
+  final val width = FloatConstantNoDataCellType.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getFloat(srcIndex*width)
   }
@@ -83,7 +83,7 @@ class FloatBufferResampleAssign(src: ByteBuffer, dst: Array[Float])
 
 class DoubleBufferResampleAssign(src: ByteBuffer, dst: Array[Double])
     extends ResampleAssign {
-  final val width = TypeDouble.bytes
+  final val width = DoubleConstantNoDataCellType.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getDouble(srcIndex*width)
   }

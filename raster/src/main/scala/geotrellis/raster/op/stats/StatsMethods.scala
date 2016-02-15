@@ -3,26 +3,26 @@ package geotrellis.raster.op.stats
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 
-trait StatsMethods extends TileMethods {
+trait StatsMethods extends MethodExtensions[Tile] {
   /**
     * Contains several different operations for building a histograms of a raster.
     *
-    * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
+    * @note     Tiles with a double type (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) will have their values
     *           rounded to integers when making the Histogram.
     */
-  def histogram: Histogram =
-    FastMapHistogram.fromTile(tile)
+  def histogram: Histogram[Int] =
+    FastMapHistogram.fromTile(self)
 
   /**
     * Implements a histogram in terms of an array of the given size.
     * The size provided must be less than or equal to the number of distinct
     * values in the Tile.
     *
-    * @note     Tiles with a double type (TypeFloat, TypeDouble) will have their values
+    * @note     Tiles with a double type (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) will have their values
     *           rounded to integers when making the Histogram.
     */
   def arrayHistogram(size: Int): ArrayHistogram =
-    ArrayHistogram.fromTile(tile, size)
+    ArrayHistogram.fromTile(self, size)
 
   /**
     * Create a histogram from double values in a raster.
@@ -41,8 +41,8 @@ trait StatsMethods extends TileMethods {
     *
     * @param significantDigits   Number of significant digits to preserve by multiplying
     */
-  def doubleHistogram(significantDigits: Int): Histogram =
-    FastMapHistogram.fromTileDouble(tile, significantDigits)
+  def doubleHistogram(significantDigits: Int): Histogram[Int] =
+    FastMapHistogram.fromTileDouble(self, significantDigits)
 
   /**
   * Generate quantile class breaks for a given raster.
@@ -55,22 +55,22 @@ trait StatsMethods extends TileMethods {
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Statistics =
+  def statistics: Statistics[Int] =
     histogram.generateStatistics
 
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.
    *
-   * @return        Tile of TypeInt data
+   * @return        Tile of IntConstantNoDataCellType data
    *
    * @note          Currently only supports working with integer types. If you pass in a Tile
-   *                with double type data (TypeFloat, TypeDouble) the values will be rounded to
+   *                with double type data (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) the values will be rounded to
    *                Ints.
    */
   def standardDeviations(factor: Double = 1.0): Tile = {
     val Statistics(_, mean, _, _, stddev, _, _) = statistics
 
-    val indata = tile.toArray
+    val indata = self.toArray
     val len = indata.length
     val result = Array.ofDim[Int](len)
 
@@ -81,6 +81,6 @@ trait StatsMethods extends TileMethods {
       i += 1
     }
 
-    ArrayTile(result, tile.cols, tile.rows)
+    ArrayTile(result, self.cols, self.rows)
   }
 }

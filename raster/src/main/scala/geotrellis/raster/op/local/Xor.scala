@@ -36,19 +36,19 @@ object Xor extends LocalTileBinaryOp {
     else i2d(d2i(z1) ^ d2i(z2))
 }
 
-trait XorMethods extends TileMethods {
+trait XorMethods extends MethodExtensions[Tile] {
   /** Xor a constant Int value to each cell. */
-  def localXor(i: Int): Tile = Xor(tile, i)
+  def localXor(i: Int): Tile = Xor(self, i)
   /** Xor a constant Int value to each cell. */
   def ^(i: Int): Tile = localXor(i)
   /** Xor a constant Int value to each cell. */
   def ^:(i: Int): Tile = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(r: Tile): Tile = Xor(tile, r)
+  def localXor(r: Tile): Tile = Xor(self, r)
   /** Xor the values of each cell in each raster. */
   def ^(r: Tile): Tile = localXor(r)
   /** Xor the values of each cell in each raster. */
-  def localXor(rs: Traversable[Tile]): Tile = Xor(tile +: rs.toSeq)
+  def localXor(rs: Traversable[Tile]): Tile = Xor(self +: rs.toSeq)
   /** Xor the values of each cell in each raster. */
   def ^(rs: Seq[Tile]): Tile = localXor(rs)
 }

@@ -6,7 +6,6 @@ trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = BitGeoTiffSegment
 
   val bandType = BitBandType
-  val cellType = TypeBit
 
   val segmentLayout: GeoTiffSegmentLayout
 

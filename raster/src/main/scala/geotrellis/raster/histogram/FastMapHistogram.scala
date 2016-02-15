@@ -37,7 +37,7 @@ object FastMapHistogram {
     h
   }
 
-  def fromHistograms(hs: TraversableOnce[Histogram]): FastMapHistogram = {
+  def fromHistograms(hs: TraversableOnce[Histogram[Int]]): FastMapHistogram = {
     val total = FastMapHistogram()
     hs.foreach(h => total.update(h))
     total
@@ -65,7 +65,7 @@ object FastMapHistogram {
 }
 
 class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int)
-    extends MutableHistogram {
+    extends MutableHistogramInt {
   if (_size <= 0) error("initializeSize must be > 0")
 
   // we are reserving this value

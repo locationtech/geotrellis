@@ -81,12 +81,12 @@ trait RasterLayerBuilder {
     }
 
   def parseType(s: String): CellType = s match {
-    case "bool" => TypeBit
-    case "int8" => TypeByte
-    case "int16" => TypeShort
-    case "int32" => TypeInt
-    case "float32" => TypeFloat
-    case "float64" => TypeDouble
+    case "bool" => BitCellType
+    case "int8" => ByteConstantNoDataCellType
+    case "int16" => ShortConstantNoDataCellType
+    case "int32" => IntConstantNoDataCellType
+    case "float32" => FloatConstantNoDataCellType
+    case "float64" => DoubleConstantNoDataCellType
     case s => sys.error(s"unsupported datatype '$s'")
   }
 }

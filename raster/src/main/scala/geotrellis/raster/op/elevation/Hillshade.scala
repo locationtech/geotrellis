@@ -13,7 +13,7 @@ import scala.math._
  * based on the sun altitude, azimuth, and the z factor. The z factor is
  * a conversion factor from map units to elevation units.
  *
- * Returns a raster of TypeShort.
+ * Returns a raster of ShortConstantNoDataCellType.
  *
  * This operation uses Horn's method for computing hill shading.
  *
@@ -61,6 +61,6 @@ object Hillshade {
         (sinZe * sin(slopeRads) * cos(az - aspectRads))
       round(127.0 * max(0.0, v))
     }
-    hr.convert(TypeShort)
+    hr.convert(ShortConstantNoDataCellType)
   }
 }

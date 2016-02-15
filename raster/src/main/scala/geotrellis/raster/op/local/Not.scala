@@ -21,7 +21,7 @@ import geotrellis.raster._
 /**
  * Bitwise negation of Tile.
  * @note               NotRaster does not currently support Double raster data.
- *                     If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
+ *                     If you use a Tile with a Double CellType (FloatConstantNoDataCellType,DoubleConstantNoDataCellType)
  *                     the data values will be rounded to integers.
  */
 object Not extends Serializable {

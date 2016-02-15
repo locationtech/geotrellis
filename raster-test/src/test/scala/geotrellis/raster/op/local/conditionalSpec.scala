@@ -50,7 +50,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with integer function on TypeDouble raster for NoData values") {
+    it("should work with integer function on DoubleConstantNoDataCellType raster for NoData values") {
       val r = probabilityNoDataRaster
       val result = r.localIf({z:Int => isNoData(z)}, -1000)
       for(col <- 0 until result.cols) {
@@ -60,7 +60,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with double function on TypeInt raster for NoData values") {
+    it("should work with double function on IntConstantNoDataCellType raster for NoData values") {
       val r = positiveIntegerNoDataRaster
       val result = r.localIf({z:Double => isNoData(z)}, -1000.0)
       for(col <- 0 until result.cols) {
@@ -91,7 +91,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with integer function on TypeDouble raster for NoData values with else value") {
+    it("should work with integer function on DoubleConstantNoDataCellType raster for NoData values with else value") {
       val r = probabilityNoDataRaster
       val result = r.localIf({z:Int => isNoData(z)}, -1000, 2000)
       for(col <- 0 until result.cols) {
@@ -102,7 +102,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with double function on TypeInt raster for NoData values withe else value") {
+    it("should work with double function on IntConstantNoDataCellType raster for NoData values withe else value") {
       val r = positiveIntegerNoDataRaster
       val result = r.localIf({z:Double => isNoData(z)}, -1000.0, 2000.0)
       for(col <- 0 until result.cols) {
@@ -149,7 +149,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with integer function on two TypeDouble rasters for NoData values") {
+    it("should work with integer function on two DoubleConstantNoDataCellType rasters for NoData values") {
       val r1 = createTile(Array( -.1,  Double.NaN, -.13, .5,
                                    -.12, .7,  -.3, Double.NaN,
                                    -.8 , Double.NaN, -.12, .7), 4,3)
@@ -164,7 +164,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with double function on two TypeInt rasters for NoData values") {
+    it("should work with double function on two IntConstantNoDataCellType rasters for NoData values") {
       val r1 = createTile(Array( -1,  NODATA, -13, 5,
                                    -12, 7,  -3, NODATA,
                                    -8 , NODATA, -12, 7), 4,3)
@@ -217,7 +217,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with integer function on two TypeDouble rasters for NoData values and else value") {
+    it("should work with integer function on two DoubleConstantNoDataCellType rasters for NoData values and else value") {
       val r1 = createTile(Array( -.1,  Double.NaN, -.13, .5,
                                    -.12, .7,  -.3, Double.NaN,
                                    -.8 , Double.NaN, -.12, .7), 4,3)
@@ -233,7 +233,7 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("should work with double function on two TypeInt rasters for NoData values and else value") {
+    it("should work with double function on two IntConstantNoDataCellType rasters for NoData values and else value") {
       val r1 = createTile(Array( -1,  NODATA, -13, 5,
                                    -12, 7,  -3, NODATA,
                                    -8 , NODATA, -12, 7), 4,3)

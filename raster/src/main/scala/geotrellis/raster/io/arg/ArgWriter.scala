@@ -27,15 +27,15 @@ import geotrellis.vector.Extent
  * Each instance of ArgWriter is provided a data type (e.g. int or float) to 
  * use for output files.
  */
-case class ArgWriter(typ: CellType) {
-  def width = typ.bits / 8
-  def cellType = typ.name
+case class ArgWriter(cellType: CellType) {
+  def width = cellType.bits / 8
+  def cellTypeName = cellType.name
   def dataType = "arg"
 
   def writeMetadataJSON(path: String, name: String, re: RasterExtent) {
     val metadata = s"""{
         |  "layer": "$name",
-        |  "datatype": "$cellType",
+        |  "datatype": "$cellTypeName",
         |  "type": "$dataType",
         |  "xmin": ${re.extent.xmin},
         |  "xmax": ${re.extent.xmax},
@@ -88,14 +88,14 @@ case class ArgWriter(typ: CellType) {
 
   def writeData(path: String, tile: Tile) {
     val dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))
-    CellWriter.byType(typ).writeCells(tile, dos)
+    CellWriter.byType(cellType).writeCells(tile, dos)
     dos.close()
   }
 
   def writeConstantTile(path: String, ct: ConstantTile, name: String, re: RasterExtent): Unit = {
     val metadata = s"""{
         |  "layer": "$name",
-        |  "datatype": "$cellType",
+        |  "datatype": "$cellTypeName",
         |  "type": "constant",
         |  "xmin": ${re.extent.xmin},
         |  "xmax": ${re.extent.xmax},

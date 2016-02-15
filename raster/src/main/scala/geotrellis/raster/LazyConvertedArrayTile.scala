@@ -27,7 +27,7 @@ import spire.syntax.cfor._
  * @note     If you care converting to a CellType with less bits
  *           than the type of the underlying data, you are responsible
  *           for managing overflow. This convert does not do any casting;
- *           therefore converting from a TypeInt to TypeByte could still
+ *           therefore converting from a IntConstantNoDataCellType to ByteConstantNoDataCellType could still
  *           return values greater than 127 from apply().
  */
 final case class LazyConvertedArrayTile(inner: Tile, cellType: CellType)

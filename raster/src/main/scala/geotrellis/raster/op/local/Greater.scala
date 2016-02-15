@@ -36,27 +36,27 @@ object Greater extends LocalTileComparatorOp {
     }
 }
 
-trait GreaterMethods extends TileMethods {
+trait GreaterMethods extends MethodExtensions[Tile] {
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
-  def localGreater(i: Int): Tile = Greater(tile, i)
+  def localGreater(i: Int): Tile = Greater(self, i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
-  def localGreaterRightAssociative(i: Int): Tile = Greater(i, tile)
+  def localGreaterRightAssociative(i: Int): Tile = Greater(i, self)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
   def >(i: Int): Tile = localGreater(i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    *
@@ -64,25 +64,25 @@ trait GreaterMethods extends TileMethods {
    */
   def >>:(i: Int): Tile = localGreaterRightAssociative(i)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
-  def localGreater(d: Double): Tile = Greater(tile, d)
+  def localGreater(d: Double): Tile = Greater(self, d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
-  def localGreaterRightAssociative(d: Double): Tile = Greater(d, tile)
+  def localGreaterRightAssociative(d: Double): Tile = Greater(d, self)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
   def >(d: Double): Tile = localGreater(d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    *
@@ -90,12 +90,12 @@ trait GreaterMethods extends TileMethods {
    */
   def >>:(d: Double): Tile = localGreaterRightAssociative(d)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
    */
-  def localGreater(r: Tile): Tile = Greater(tile, r)
+  def localGreater(r: Tile): Tile = Greater(self, r)
   /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the raster are greater than the next raster, else 0.
    */
   def >(r: Tile): Tile = localGreater(r)

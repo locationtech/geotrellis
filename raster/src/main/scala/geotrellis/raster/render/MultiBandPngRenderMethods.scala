@@ -19,7 +19,7 @@ trait MultiBandPngRenderMethods {
   def renderPng(): Png = {
     assert(tile.bandCount == 3)
     val rgb =
-      tile.convert(TypeInt).combine(0, 1, 2) { (rBand, gBand, bBand) =>
+      tile.convert(IntConstantNoDataCellType).combine(0, 1, 2) { (rBand, gBand, bBand) =>
         val r = if (isData(rBand)) { rBand } else 0
         val g = if (isData(rBand)) { gBand } else 0
         val b = if (isData(rBand)) { bBand } else 0
