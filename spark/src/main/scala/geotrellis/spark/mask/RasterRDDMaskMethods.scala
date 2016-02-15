@@ -1,56 +1,14 @@
-package geotrellis.spark.op.local.spatial
+package geotrellis.spark.mask
 
 import geotrellis.raster._
-import geotrellis.raster.op.local._
-import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
+import geotrellis.spark.RasterRDD
 import geotrellis.vector._
 import scala.reflect.ClassTag
 
-abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
 
-  /** Masks this raster by the given Polygon. */
-  def mask(geom: Polygon): RasterRDD[K] = mask(Seq(geom), Options.DEFAULT)
-
-  def mask(geom: Polygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
-
-  /** Masks this raster by the given Polygons. */
-  def mask(geoms: Traversable[Polygon]): RasterRDD[K] = mask(geoms, Options.DEFAULT)
-
-  def mask(geoms: Traversable[Polygon], options: Options): RasterRDD[K] =
-    _mask { case (tileExtent, tile) =>
-      val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.safeIntersection(tileExtent).toGeometry()
-        eliminateNotQualified(intersections)
-      }
-      tile.mask(tileExtent, tileGeoms, options)
-    }
-
-  /** Masks this raster by the given MultiPolygon. */
-  def mask(geom: MultiPolygon): RasterRDD[K] = mask(geom, Options.DEFAULT)
-
-  def mask(geom: MultiPolygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
-
-  /** Masks this raster by the given MultiPolygons. */
-  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit) =
-    _mask { case (tileExtent, tile) =>
-      val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.safeIntersection(tileExtent).toGeometry()
-        eliminateNotQualified(intersections)
-      }
-      tile.mask(tileExtent, tileGeoms, options)
-    }
-
-  /** Masks this raster by the given Extent. */
-  def mask(ext: Extent, options: Options = Options.DEFAULT) =
-    _mask { case (tileExtent, tile) =>
-      val tileExts = ext.intersection(tileExtent)
-      tileExts match {
-        case Some(intersected) if intersected.area != 0 => tile.mask(tileExtent, intersected.toPolygon(), options)
-        case _ => ArrayTile.empty(tile.cellType, tile.cols, tile.rows)
-      }
-    }
+abstract class RasterRDDMaskMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
 
   // As done by [[geotrellis.raster.rasterize.polygon.TestLineSet]] in [[geotrellis.raster.rasterize.polygon.PolygonRasterizer]].
   private def eliminateNotQualified(geom: Option[Geometry]): Option[Geometry] = {
@@ -86,5 +44,47 @@ abstract class LocalSpatialRasterRDDMethods[K: SpatialComponent: ClassTag] exten
       }
     ContextRDD(rdd, self.metadata)
   }
+
+  /** Masks this raster by the given Polygon. */
+  def mask(geom: Polygon): RasterRDD[K] = mask(Seq(geom), Options.DEFAULT)
+
+  def mask(geom: Polygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
+
+  /** Masks this raster by the given Polygons. */
+  def mask(geoms: Traversable[Polygon]): RasterRDD[K] = mask(geoms, Options.DEFAULT)
+
+  def mask(geoms: Traversable[Polygon], options: Options): RasterRDD[K] =
+    _mask { case (tileExtent, tile) =>
+      val tileGeoms = geoms.flatMap { g =>
+        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        eliminateNotQualified(intersections)
+      }
+      tile.mask(tileExtent, tileGeoms, options)
+    }
+
+  /** Masks this raster by the given MultiPolygon. */
+  def mask(geom: MultiPolygon): RasterRDD[K] = mask(geom, Options.DEFAULT)
+
+  def mask(geom: MultiPolygon, options: Options): RasterRDD[K] = mask(Seq(geom), options)
+
+  /** Masks this raster by the given MultiPolygons. */
+  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RasterRDD[K] =
+    _mask { case (tileExtent, tile) =>
+      val tileGeoms = geoms.flatMap { g =>
+        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        eliminateNotQualified(intersections)
+      }
+      tile.mask(tileExtent, tileGeoms, options)
+    }
+
+  /** Masks this raster by the given Extent. */
+  def mask(ext: Extent, options: Options = Options.DEFAULT): RasterRDD[K] =
+    _mask { case (tileExtent, tile) =>
+      val tileExts = ext.intersection(tileExtent)
+      tileExts match {
+        case Some(intersected) if intersected.area != 0 => tile.mask(tileExtent, intersected.toPolygon(), options)
+        case _ => ArrayTile.empty(tile.cellType, tile.cols, tile.rows)
+      }
+    }
 
 }
