@@ -28,7 +28,7 @@ class AspectSpec extends FunSpec with Matchers with TestEngine {
 
       val cropExtent = Extent(xmin, ymin, xmax, ymax)
 
-      val rgc = rg.convert(TypeDouble).crop(rasterExtent.extent, cropExtent)
+      val rgc = rg.convert(DoubleConstantNoDataCellType).crop(rasterExtent.extent, cropExtent)
       val rc = get(aspectComputed).crop(rasterExtentElevation.extent, cropExtent)
 
       assertEqual(rgc, rc, 0.1)
