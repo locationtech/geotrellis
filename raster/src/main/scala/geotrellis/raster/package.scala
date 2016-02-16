@@ -139,11 +139,6 @@ package object raster
   type IntTileVisitor = macros.IntTileVisitor
   type DoubleTileVisitor = macros.DoubleTileVisitor
 
-  type IntTileCombiner3 = macros.IntTileCombiner3
-  type DoubleTileCombiner3 = macros.DoubleTileCombiner3
-  type IntTileCombiner4 = macros.IntTileCombiner4
-  type DoubleTileCombiner4 = macros.DoubleTileCombiner4
-
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
   @inline final val ubyteNODATA = 0.toByte
