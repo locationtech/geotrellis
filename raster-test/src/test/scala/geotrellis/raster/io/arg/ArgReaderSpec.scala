@@ -17,15 +17,16 @@
 package geotrellis.raster.io.arg
 
 import geotrellis.raster._
-import geotrellis.engine._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class ArgReaderSpec extends FunSpec
-                       with TestEngine 
-                       with Matchers {
+                            with RasterMatchers
+                            with TestFiles
+                            with Matchers {
   describe("ArgReader") {
     it("should read a constant tile") {
       val tile = ArgReader.read("raster-test/data/data/constant.json").tile

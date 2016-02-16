@@ -20,16 +20,13 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
 import geotrellis.raster.histogram._
-import geotrellis.testkit._
 
 import org.scalatest._
 
 import spire.syntax.cfor._
 import scala.math._
 
-class MedianSpec extends FunSpec with TestEngine
-                                 with TileBuilders
-                                 with Matchers {
+class MedianSpec extends FunSpec with TestEngine with Matchers {
 
   describe("Median") {
 

@@ -20,11 +20,11 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class XorSpec extends FunSpec 
                  with Matchers 
-                 with TestEngine 
+                 with RasterMatchers 
                  with TileBuilders {
   describe("Xor") {
     it("xors an Int raster xor a constant") {

@@ -19,16 +19,13 @@ package geotrellis.engine
 import geotrellis.raster._
 import geotrellis.raster.io.arg._
 import geotrellis.vector.Extent
-import geotrellis.testkit._
 
 import org.scalatest._
 
 import scala.math.abs
 
-class ArgRasterLayerSpec extends FunSpec 
-                            with Matchers 
-                            with TestEngine 
-                            with TileBuilders {
+class ArgRasterLayerSpec extends FunSpec  with Matchers  with TestEngine {
+  
   describe("A RasterLayer") {
     val path1 = "raster-test/data/fake.img8.json"
     	 

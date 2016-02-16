@@ -2,7 +2,6 @@ package geotrellis.spark.op.stats
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.op.local.spatial._
 import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 

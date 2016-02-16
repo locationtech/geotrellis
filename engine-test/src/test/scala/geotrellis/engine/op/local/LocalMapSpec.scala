@@ -21,12 +21,8 @@ import geotrellis.vector.Extent
 import geotrellis.engine._
 
 import org.scalatest._
-import geotrellis.testkit._
 
-class LocalMapSpec extends FunSpec 
-                      with Matchers 
-                      with TestEngine 
-                      with TileBuilders {
+class LocalMapSpec extends FunSpec with Matchers with TestEngine {
   describe("RasterSource methods") {
     it("should map an integer function over an integer raster source") {
       val rs = createRasterSource(

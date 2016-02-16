@@ -22,10 +22,7 @@ import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class GreaterSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class GreaterSpec extends FunSpec with TestEnvironment with TestFiles {
   describe("Greater Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

@@ -8,16 +8,15 @@ import geotrellis.vector.Extent
 
 import geotrellis.proj4._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 import java.util.Arrays
 
-class UByteGeoTiffMultiBandTileSpec extends FunSpec
-    with Matchers
+class ByteGeoTiffMultiBandTileSpec extends FunSpec
+    with Matchers with RasterMatchers
     with BeforeAndAfterAll
-    with TestEngine
     with GeoTiffTestUtils 
     with TileBuilders {
   def p(s: String, i: String): String = 

@@ -35,13 +35,13 @@ import scala.reflect.ClassTag
 
 package object spark
     extends buffer.Implicits
+    with mask.Implicits
     with merge.Implicits
     with reproject.Implicits
     with tiling.Implicits
     with stitch.Implicits
     with op.Implicits
     with op.local.Implicits
-    with op.local.spatial.Implicits
     with op.local.temporal.Implicits
     with op.stats.Implicits
     with op.zonal.Implicits
@@ -111,6 +111,9 @@ package object spark
 
   implicit class withRasterRDDMethods[K](val self: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends RasterRDDMethods[K]
+
+  implicit class withRasterRDDMaskMethods[K: SpatialComponent: ClassTag](val self: RasterRDD[K])
+      extends mask.RasterRDDMaskMethods[K]
 
   implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends MultiBandRasterRDDMethods[K]

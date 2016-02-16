@@ -23,10 +23,8 @@ import geotrellis.spark.testfiles._
 import geotrellis.raster.Tile
 import org.scalatest.FunSpec
 
-class MinSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MinSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Min Operation") {
     val inc = IncreasingTestFile
     val dec = DecreasingTestFile

@@ -20,7 +20,6 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
 class OperationSpec extends FunSpec 
                        with Matchers 

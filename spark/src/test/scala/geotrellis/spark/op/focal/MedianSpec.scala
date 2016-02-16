@@ -7,9 +7,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class MedianSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class MedianSpec extends FunSpec with TestEnvironment {
 
   describe("Median Focal Spec") {
 

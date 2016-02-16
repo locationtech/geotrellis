@@ -20,14 +20,14 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 /**
  * Created by jchien on 2/22/14.
  */
 class MinNSpec extends FunSpec
                   with Matchers
-                  with TestEngine
+                  with RasterMatchers
                   with TileBuilders {
 
   describe("MinN") {

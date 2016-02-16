@@ -1,20 +1,43 @@
 # GeoTrellis ETL
 
-This project implements a plugin architecture for tile input sources and `RasterRDD` sinks which allows you to write
+This project implements a plugin architecture for tile input sources and `RDD[(K, V)]` sinks which allows you to write
 basic ETL code using GeoTrellis without having to specify the type and configuration of the input and output at compile time.
 
 Input layer may be modified using any of the existing raster operations before being saved.
 
 ```scala
+import geotrellis.raster.{Tile, MultiBandTile}
+import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.etl.Etl
+import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.ingest._
+import geotrellis.vector.ProjectedExtent
+import org.apache.spark.SparkConf
 
 object GeoTrellisETL extends App {
-  val etl = Etl[SpatialKey](args)
+  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+  
+  val etl = Etl(args)
+  val tiles = etl.load[ProjectedExtent, Tile]
+  val reprojected = etl.reproject(tiles)
+  val (zoom, metadata) = etl.collectMetadata(reprojected)
+  val tiled = ContextRDD(tiles.cutTiles[SpatialKey](metadata, NearestNeighbor), metadata)
+  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
 
-  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL")
-  val (id, rdd) = etl.load()
-  val result = rdd.localAdd(1)
-  etl.save(id, result, ZCurveKeyIndexMethod)
+  sc.stop()
+```
+
+### Etl ingest
+
+To ingest tiles it is possible to use a built-in Etl ingest function:
+
+```scala
+object GeoTrellisETL extends App {
+  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+  
+  Etl.ingest[ProjectedExtent, SpatialKey, MultiBandTile](args, ZCurveKeyIndexMethod)
+    
   sc.stop()
 }
 ```
@@ -40,6 +63,15 @@ $JAR \
 ```
 
 Note that the arguments before the `$JAR` configure `SparkContext` and arguments after configure GeoTrellis ETL inputs and outputs.
+
+### Built-in ingest jobs
+
+It is possible to make an `assembly` of `spark-etl` project, with two main classes available:
+
+ * geotrellis.spark.etl.SinglebandIngest
+ * geotrellis.spark.etl.MultibandIngest
+ 
+This job can be launched (as described above) with command line arguments described below.
 
 ### Command Line Arguments
 
@@ -89,7 +121,7 @@ to the `Etl` constructor.
 Once defined you can pass the list of modules to be used for ETL like so:
 
 ```scala
-val etl = Etl[SpatialKey](args, Etl(args, List(s3.S3Module, hadoop.HadoopModule)))
+val etl = Etl[ProjectedExtent, SpatialKey, Tile](args, Etl(args, List(s3.S3Module, hadoop.HadoopModule)))
 ```
 
 ## Layout Schemes

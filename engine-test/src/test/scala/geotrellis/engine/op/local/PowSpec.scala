@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class PowSpec extends FunSpec 
-                 with Matchers
-                 with TestEngine 
-                 with TileBuilders {
+class PowSpec extends FunSpec with Matchers with TestEngine {
   describe("Pow") {
     it("pow's an integer to a raster source") {
       val rs = RasterSource("quad_tiled")

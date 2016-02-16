@@ -2,16 +2,18 @@ package geotrellis.spark.etl.hadoop
 
 import java.math.BigInteger
 
+import geotrellis.raster.Tile
 import geotrellis.raster.render.ColorBreaks
 import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.{SpatialKey, RasterRDD, LayerId}
+import geotrellis.spark._
 import geotrellis.spark.render._
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
+import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 
-class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
+class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData] {
   def name = "render"
   def key = classTag[SpatialKey]
   def requiredKeys = Array("path", "format")
@@ -37,12 +39,12 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey] {
     }
   }
   
-  override def apply(id: LayerId, rdd: RasterRDD[SpatialKey], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
+  override def apply(id: LayerId, rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
     props("format").toLowerCase match {
       case "png" =>
-        rdd.asInstanceOf[RasterRDD[SpatialKey]].renderPng(id, props("path"), parseBreaks(props.get("breaks")))
+        rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderPng(id, props("path"), parseBreaks(props.get("breaks")))
       case "geotiff" =>
-        rdd.asInstanceOf[RasterRDD[SpatialKey]].renderGeoTiff(id, props("path"))
+        rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderGeoTiff(id, props("path"))
     }
 
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) = ???

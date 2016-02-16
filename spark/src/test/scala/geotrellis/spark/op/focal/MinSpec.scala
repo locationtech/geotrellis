@@ -6,9 +6,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class MinSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class MinSpec extends FunSpec with TestEnvironment {
 
   describe("Min Focal Spec") {
 

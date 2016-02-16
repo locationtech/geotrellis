@@ -22,10 +22,8 @@ import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class LessOrEqualSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class LessOrEqualSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Less Or Equal Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

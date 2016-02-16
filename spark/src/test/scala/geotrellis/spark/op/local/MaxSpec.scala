@@ -24,10 +24,8 @@ import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class MaxSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MaxSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("Max Operation") {
     val inc = IncreasingTestFile
     val dec = DecreasingTestFile

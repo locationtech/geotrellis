@@ -23,10 +23,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class MinoritySpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MinoritySpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Minority Operation") {
     val ones = AllOnesTestFile

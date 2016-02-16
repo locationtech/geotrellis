@@ -45,7 +45,7 @@ object ArgReader {
         case "bool" => BitCellType
         case "int8" => ByteConstantNoDataCellType
         case "uint8" => UByteConstantNoDataCellType
-        case "int16" => IntConstantNoDataCellType
+        case "int16" => ShortConstantNoDataCellType
         case "uint16" => UShortConstantNoDataCellType
         case "int32" => IntConstantNoDataCellType
         case "float32" => FloatConstantNoDataCellType

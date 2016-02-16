@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class AsinSpec extends FunSpec
-                  with Matchers
-                  with TestEngine
-                  with TileBuilders {
+class AsinSpec extends FunSpec with Matchers with TestEngine {
   describe("ArcSin") {
     it("finds arcsin of a double raster") {
       val rasterData = Array(

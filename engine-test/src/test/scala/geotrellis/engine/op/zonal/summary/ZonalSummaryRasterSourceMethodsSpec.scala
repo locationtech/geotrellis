@@ -21,13 +21,9 @@ import geotrellis.raster.op.zonal.summary._
 import geotrellis.raster.histogram._
 import geotrellis.vector._
 import geotrellis.engine._
-import geotrellis.testkit._
 
 import org.scalatest._
-class ZonalSummaryRasterSourceMethodsSpec extends FunSpec
-                                             with Matchers
-                                             with TestEngine
-                                             with TileBuilders {  
+class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with TestEngine {  
   val tiledRS = 
     createRasterSource(
       Array(  1, 2, 3,   4, 5, 6,   7, 8, 9,

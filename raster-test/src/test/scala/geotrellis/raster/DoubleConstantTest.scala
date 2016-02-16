@@ -16,11 +16,11 @@
 
 package geotrellis.raster
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class DoubleConstantTest extends FunSuite with TestEngine with Matchers {
+class DoubleConstantTest extends FunSuite with RasterMatchers with Matchers {
   test("building") {
     val d1 = DoubleConstantTile(99.0, 2, 2)
     val d2 = DoubleArrayTile(Array.fill(4)(99.0), 2, 2)

@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class GreaterOrEqualSpec extends FunSpec 
-                            with Matchers 
-                            with TestEngine 
-                            with TileBuilders {
+class GreaterOrEqualSpec extends FunSpec with Matchers with TestEngine {
   describe("GreaterOrEqual") {
     it("Compares two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

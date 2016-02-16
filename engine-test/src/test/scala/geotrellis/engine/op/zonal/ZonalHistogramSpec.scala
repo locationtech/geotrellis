@@ -19,19 +19,15 @@ package geotrellis.engine.op.zonal
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 import geotrellis.raster.op.zonal._
+import geotrellis.engine._
 
 import org.scalatest._
-
-import geotrellis.testkit._
 
 import scala.collection.mutable
 
 import spire.syntax.cfor._
 
-class ZonalHistogramSpec extends FunSpec
-                            with Matchers
-                            with TestEngine
-                            with TileBuilders {
+class ZonalHistogramSpec extends FunSpec with Matchers with TestEngine {
   describe("ZonalHistogram") {
     it("gives correct histogram map for example raster sources") {
       val rs = createRasterSource(

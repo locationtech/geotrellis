@@ -1,6 +1,6 @@
 import Dependencies._
 
-name := "geotrellis-raster-test"     
+name := "geotrellis-raster-test"
 libraryDependencies ++= Seq(
   scalatest % "test",
   scalacheck  % "test",

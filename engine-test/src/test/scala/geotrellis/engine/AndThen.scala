@@ -18,7 +18,6 @@ package geotrellis.engine
 
 import org.scalatest.FunSuite
 
-import geotrellis.testkit._
 
 import org.scalatest._
 

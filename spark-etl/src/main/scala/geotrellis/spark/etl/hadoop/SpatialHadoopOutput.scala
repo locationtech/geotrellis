@@ -8,7 +8,7 @@ import geotrellis.spark.io.json._
 
 import org.apache.hadoop.fs.Path
 
-class SpatialHadoopOutput extends HadoopOutput[SpatialKey] {
+class SpatialHadoopOutput extends HadoopOutput[SpatialKey, Tile, RasterMetaData] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) =
     HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](new Path(props("path")), method)
 }
