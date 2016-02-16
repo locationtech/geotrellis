@@ -17,7 +17,7 @@
 package geotrellis.engine.op.local
 
 import geotrellis.engine._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 import spire.syntax.cfor._
 import scala.collection.mutable

@@ -18,7 +18,7 @@ package geotrellis.benchmark
 
 import geotrellis.vector._
 import geotrellis.raster._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 import scala.util.Random
 

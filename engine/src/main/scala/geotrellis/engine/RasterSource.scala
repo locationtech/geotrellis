@@ -20,7 +20,7 @@ import geotrellis.engine.op._
 import geotrellis.engine.io._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
 import geotrellis.vector.Extent
 

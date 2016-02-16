@@ -40,14 +40,14 @@ package object spark
     with reproject.Implicits
     with tiling.Implicits
     with stitch.Implicits
-    with op.Implicits
-    with op.local.Implicits
-    with op.local.temporal.Implicits
-    with op.stats.Implicits
-    with op.zonal.Implicits
-    with op.zonal.summary.Implicits
-    with op.elevation.Implicits
-    with op.focal.Implicits
+    with mapalgebra.Implicits
+    with mapalgebra.local.Implicits
+    with mapalgebra.local.temporal.Implicits
+    with mapalgebra.focal.Implicits
+    with mapalgebra.zonal.Implicits
+    with polygonal.Implicits
+    with summary.Implicits
+    with elevation.Implicits
     with partitioner.Implicits
     with Serializable // required for java serialization, even though it's mixed in
 {

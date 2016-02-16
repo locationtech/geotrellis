@@ -17,7 +17,7 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
-import geotrellis.raster.histogram.Histogram
+import geotrellis.raster.summary.histogram.Histogram
 
 import scala.collection.mutable
 

@@ -2,12 +2,12 @@ package geotrellis.graph.op
 
 import geotrellis.graph._
 import geotrellis.spark._
-import geotrellis.spark.op.global._
+import geotrellis.spark.mapalgebra.global._
 
 import geotrellis.vector.Line
 
 import geotrellis.raster._
-import geotrellis.raster.op.global._
+import geotrellis.raster.mapalgebra.global._
 
 import org.scalatest.FunSpec
 

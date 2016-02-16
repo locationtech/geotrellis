@@ -21,9 +21,9 @@ import geotrellis.engine.op.local._
 import geotrellis.engine.op.global._
 import geotrellis.engine.render._
 import geotrellis.raster._
-import geotrellis.raster.op._
-import geotrellis.raster.op.local._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.mapalgebra._
+import geotrellis.raster.mapalgebra.local._
+import geotrellis.raster.summary._
 import geotrellis.raster.render._
 
 import com.google.caliper.Param

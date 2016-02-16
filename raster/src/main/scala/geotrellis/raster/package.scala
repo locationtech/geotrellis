@@ -26,6 +26,7 @@ package object raster
     extends crop.Implicits
     with mask.Implicits
     with merge.Implicits
+    with elevation.Implicits
     with reproject.Implicits {
   type CellType = DataType with NoDataHandling
   type SingleBandRaster = Raster[Tile]
@@ -65,14 +66,15 @@ package object raster
       with crop.SingleBandTileCropMethods
       with mask.TileMaskMethods
       with merge.SingleBandTileMergeMethods
-      with op.elevation.ElevationMethods
-      with op.focal.FocalMethods
-      with op.global.GlobalMethods
-      with op.hydrology.HydrologyMethods
-      with op.local.LocalMethods
-      with op.stats.StatsMethods
-      with op.zonal.summary.ZonalSummaryMethods
-      with op.zonal.ZonalMethods
+      with mapalgebra.local.LocalMethods
+      with mapalgebra.focal.FocalMethods
+      with mapalgebra.zonal.ZonalMethods
+      with mapalgebra.global.GlobalMethods
+      with geotrellis.raster.elevation.ElevationMethods
+      with geotrellis.raster.hydrology.HydrologyMethods
+      with geotrellis.raster.summary.SummaryMethods
+      with geotrellis.raster.polygonal.PolygonalSummaryMethods
+      with geotrellis.raster.viewshed.ViewshedMethods
       with prototype.SingleBandTilePrototypeMethods
       with render.ColorMethods
       with render.JpgRenderMethods

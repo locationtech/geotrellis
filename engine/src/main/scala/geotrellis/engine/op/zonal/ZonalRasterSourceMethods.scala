@@ -17,8 +17,8 @@
 package geotrellis.engine.op.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.op.zonal._
-import geotrellis.raster.histogram.Histogram
+import geotrellis.raster.mapalgebra.zonal._
+import geotrellis.raster.summary.histogram.Histogram
 import geotrellis.engine._
 
 import spire.syntax.cfor._

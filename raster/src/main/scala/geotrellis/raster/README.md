@@ -155,7 +155,7 @@ That's probably enough to get started. `geotrellis.raster` is a pretty big place
 
 Here's what you can expect to find in `geotrellis.raster`:
 - [`geotrellis.raster.compression`](./compression) defines functions for squeezing extra bits out of serialized formats
-- [`geotrellis.raster.histogram`](./histogram) defines the classes used for analyzing the cell-value distributions of tiles (of special interest is `geotrellis.raster.histogram.FastMapHistogram`, though actual usage is typically done through the methods exposed in [`geotrellis.raster.op.stats`](./op/stats)
+- [`geotrellis.raster.summary.histogram`](./histogram) defines the classes used for analyzing the cell-value distributions of tiles (of special interest is `geotrellis.raster.summary.histogram.FastMapHistogram`, though actual usage is typically done through the methods exposed in [`geotrellis.raster.op.stats`](./op/stats)
 - [`geotrellis.raster.interpolation`](./interpolation) - TODO
 - [`geotrellis.raster.io`](./io) follows the package naming conventions elsewhere in GeoTrellis - `io` handles serialization for transmission and storage of rasters
 - [`geotrellis.raster.merge`](./merge) defines methods for merging tiles.

@@ -18,7 +18,8 @@ package geotrellis.engine.op.global
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.global._
+import geotrellis.raster.mapalgebra.global._
+import geotrellis.raster.viewshed.{ApproxViewshed, Viewshed}
 import geotrellis.vector._
 
 trait GlobalRasterSourceMethods extends RasterSourceMethods {

@@ -1,7 +1,7 @@
 package geotrellis.graph
 
 import geotrellis.spark._
-import geotrellis.spark.op.focal._
+import geotrellis.spark.mapalgebra.focal._
 
 import geotrellis.raster._
 

@@ -18,7 +18,7 @@ package geotrellis.engine.op.local
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 trait LocalMapRasterSourceMethods extends RasterSourceMethods {
     /** Map the integer values of a each cell to a new integer value. */

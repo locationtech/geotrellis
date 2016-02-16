@@ -3,8 +3,8 @@ package geotrellis.engine.op.elevation
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.engine.op.focal._
-import geotrellis.raster.op.elevation._
-import geotrellis.raster.op.focal._
+import geotrellis.raster.elevation._
+import geotrellis.raster.mapalgebra.focal._
 
 trait ElevationRasterSourceMethods extends RasterSourceMethods with FocalOperation {
 

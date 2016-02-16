@@ -17,7 +17,7 @@
 package geotrellis.engine.op.local
 
 import geotrellis.engine._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 trait DivideRasterSourceMethods extends RasterSourceMethods {
   /** Divide each value of the raster by a constant value.*/

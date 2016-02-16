@@ -21,7 +21,7 @@ import geotrellis.raster.io.arg._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.op.zonal.summary._
+import geotrellis.raster.polygonal._
 
 import geotrellis.vector.{Point, Extent}
 import geotrellis.raster.testkit._
@@ -364,9 +364,9 @@ class GeoTiffReaderSpec extends FunSpec
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
       val SingleBandGeoTiff(tile, extent, _, _) = SingleBandGeoTiff.compressed(s"$baseDataPath/$file")
 
-      tile.zonalMax(extent, extent.toPolygon) should be (max)
-      tile.zonalMin(extent, extent.toPolygon) should be (min)
-      tile.zonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+      tile.polygonalMax(extent, extent.toPolygon) should be (max)
+      tile.polygonalMin(extent, extent.toPolygon) should be (min)
+      tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
     }
 
     it("should read UINT 16 little endian files correctly") {
@@ -395,9 +395,9 @@ class GeoTiffReaderSpec extends FunSpec
 
       val (max, min, mean) = (74032, -20334, 17.023709809131)
 
-      tile.zonalMax(extent, extent.toPolygon) should be (max)
-      tile.zonalMin(extent, extent.toPolygon) should be (min)
-      tile.zonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+      tile.polygonalMax(extent, extent.toPolygon) should be (max)
+      tile.polygonalMin(extent, extent.toPolygon) should be (min)
+      tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
     }
 
     it("should read GeoTiff with tags") {
