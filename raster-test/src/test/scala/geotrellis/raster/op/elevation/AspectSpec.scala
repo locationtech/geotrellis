@@ -48,7 +48,7 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       val cropExtent = Extent(xmin, ymin, xmax, ymax)
 
       val rgc = rg.convert(DoubleConstantNoDataCellType).crop(rasterExtent.extent, cropExtent)
-      val rc = get(aspectComputed).crop(rasterExtentElevation.extent, cropExtent)
+      val rc = aspectComputed.crop(rasterExtentElevation.extent, cropExtent)
 
       assertEqual(rgc, rc, 0.1)
     }

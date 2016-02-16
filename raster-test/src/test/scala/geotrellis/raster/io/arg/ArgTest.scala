@@ -34,7 +34,7 @@ class ArgTest extends FunSuite
   val tile = IntArrayTile(array, 4, 4)
   val extent = Extent(10.0, 11.0, 14.0, 15.0)
 
-  def loadRaster(path:String) = ArgReader.read(path)
+  def loadRaster(path: String) = ArgReader.read(path)
 
   test("test float compatibility") {
     assert(isNoData(tile.applyDouble(0)))
@@ -79,18 +79,10 @@ class ArgTest extends FunSuite
   }
 
   test("check c# test") {
-    var xmin = 0
-    var ymin = 0
-    var xmax = 15
-    var ymax = 11
-
-    var cellwidth = 1.5
-    var cellheight = 1.0
-
-    var cols = 10
-    var rows = 11
-    var A = 50.toByte
-    var o = -128.toByte
+    val cols = 10
+    val rows = 11
+    val A = 50.toByte
+    val o = -128.toByte
     val byteArr:Array[Byte] = Array[Byte](
       o,o,o,o,o,o,o,o,o,o,
       o,o,o,o,o,o,o,o,o,o,
@@ -107,14 +99,14 @@ class ArgTest extends FunSuite
     val tile = ByteArrayTile(byteArr, cols, rows)
 
     ArgWriter(ByteConstantNoDataCellType).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
-    val r2 = loadRaster("/tmp/fooc-int8.arg")
+    val r2 = loadRaster("/tmp/fooc-int8.json")
 
     assert(r2.toArrayTile === tile.toArrayTile)
   }
 
   test("make sure it contains 100 cells") {
     val d = FloatArrayTile.ofDim(10, 10)
-    assert((d.cols*d.rows) === 100)
+    assert((d.cols * d.rows) === 100)
   }
 
   test("make sure it's an array of zeros") {
