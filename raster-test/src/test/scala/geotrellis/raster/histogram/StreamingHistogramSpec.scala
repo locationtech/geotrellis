@@ -84,7 +84,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
 
       Iterator.continually(list1)
         .flatten.take(list1.length * 10000)
-        .foreach({ i => h.countItem(i + r.nextDouble / 1000.0) })
+        .foreach({ i => h.countItem(i + (3.0 + r.nextGaussian) / 60000.0) })
 
       h.getMedian.toInt should equal (9)
       h.getMedian should equal (h.generateStatistics.median)
@@ -98,7 +98,6 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       list2.foreach({ i => h.countItem(i) })
 
       val mean = h.getMean()
-      println(s"$mean")
       abs(mean - 18194.14285714286) should be < 1e-7
       mean should equal (h.generateStatistics.mean)
     }
@@ -120,10 +119,10 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
 
       Iterator.continually(list2)
         .flatten.take(list2.length * 10000)
-        .foreach({ i => h.countItem(i + r.nextDouble / 100000.0) })
+        .foreach({ i => h.countItem(i + r.nextGaussian / 10000.0) })
 
       val mean = h.getMean()
-      abs(mean - 18194.14285714286) should be < 1e-5
+      abs(mean - 18194.14285714286) should be < 1e-4
       mean should equal (h.generateStatistics.mean)
     }
   }
