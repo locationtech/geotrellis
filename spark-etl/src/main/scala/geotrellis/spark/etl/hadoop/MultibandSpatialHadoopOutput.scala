@@ -1,6 +1,6 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.raster.Tile
+import geotrellis.raster.MultiBandTile
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.HadoopLayerWriter
 import geotrellis.spark.io.index.KeyIndexMethod
@@ -8,7 +8,7 @@ import geotrellis.spark.io.json._
 
 import org.apache.hadoop.fs.Path
 
-class SpatialHadoopOutput extends HadoopOutput[SpatialKey, Tile, RasterMetaData] {
+class MultibandSpatialHadoopOutput extends HadoopOutput[SpatialKey, MultiBandTile, RasterMetaData] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) =
-    HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](new Path(props("path")), method)
+    HadoopLayerWriter[SpatialKey, MultiBandTile, RasterMetaData](new Path(props("path")), method)
 }
