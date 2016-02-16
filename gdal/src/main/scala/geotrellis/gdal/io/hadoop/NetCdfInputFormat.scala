@@ -1,4 +1,4 @@
-package geotrellis.gdal.io.formats
+package geotrellis.gdal.io.hadoop
 
 import org.joda.time.{DateTimeZone, DateTime}
 

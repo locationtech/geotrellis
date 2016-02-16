@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.gdal.io.formats
+package geotrellis.gdal.io.hadoop
 
 import geotrellis.gdal.{RasterBand, RasterDataSet, Gdal}
 import geotrellis.proj4.{CRS, LatLng}
