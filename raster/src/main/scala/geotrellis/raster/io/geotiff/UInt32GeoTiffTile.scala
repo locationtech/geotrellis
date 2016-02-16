@@ -14,7 +14,7 @@ class UInt32GeoTiffTile(
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Float](cols * rows)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = 
+      val segment =
         getSegment(segmentIndex)
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       cfor(0)(_ < segment.size, _ + 1) { i =>

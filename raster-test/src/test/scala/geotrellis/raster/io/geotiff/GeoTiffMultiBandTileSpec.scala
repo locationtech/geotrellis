@@ -16,7 +16,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with RasterMatchers
-    with GeoTiffTestUtils 
+    with GeoTiffTestUtils
     with TileBuilders {
 
   override def afterAll = purge
