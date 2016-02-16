@@ -25,7 +25,7 @@ import com.vividsolutions.jts.geom
 
 import scala.collection.mutable
 
-object ToVector {
+object RegionsToVector {
   def apply(
     tile: Tile,
     extent: Extent,

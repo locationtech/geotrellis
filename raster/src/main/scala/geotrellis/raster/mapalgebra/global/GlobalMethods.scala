@@ -10,14 +10,11 @@ trait GlobalMethods extends MethodExtensions[Tile] {
   def costDistanceWithPaths(point: (Int, Int)): CostDistanceWithPathsResult =
     CostDistanceWithPaths(self, point)
 
-  def toVector(extent: Extent): List[PolygonFeature[Int]] =
-    toVector(extent, RegionGroupOptions.default.connectivity)
+  def regionsToVector(extent: Extent): List[PolygonFeature[Int]] =
+    regionsToVector(extent, RegionGroupOptions.default.connectivity)
 
-  def toVector(
-    extent: Extent,
-    regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
-  ): List[PolygonFeature[Int]] =
-    ToVector(self, extent, regionConnectivity)
+  def regionsToVector(extent: Extent, regionConnectivity: Connectivity): List[PolygonFeature[Int]] =
+    RegionsToVector(self, extent, regionConnectivity)
 
   def regionGroup: RegionGroupResult = regionGroup()
 

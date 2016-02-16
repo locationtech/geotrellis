@@ -35,7 +35,7 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
   def toVector() = 
     rasterSource.converge.mapOp { tileOp =>
       (tileOp, rasterSource.rasterDefinition).map { (tile, rd) => 
-        tile.toVector(rd.rasterExtent.extent) 
+        tile.regionsToVector(rd.rasterExtent.extent)
       }
     }
 

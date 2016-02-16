@@ -87,7 +87,7 @@ class ToVectorSpec extends FunSpec
 
       val r = ArrayTile(arr, cols, rows)
 
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
       val onesCoords = List(
         (1.0,0.0), (3.0,-0.0),
         (1.0,-20.0),(3.0,-20.0),
@@ -124,7 +124,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(xmin,ymin,xmax,ymax)
       val r = ArrayTile(arr, cols, rows)
 
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
 
       val onesCoords = List( tl(1,1), tr(3,1),
                              bl(1,3), br(1,3),
@@ -172,7 +172,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(xmin,ymin,xmax,ymax)
       val r = ArrayTile(arr, cols, rows)
 
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
 
       val onesCoords = List(  tl(4,3), tr(5,3),                       tl(9,3), tr(10,3),
                     tl(3,4), tl(4,4),                                
@@ -213,7 +213,7 @@ class ToVectorSpec extends FunSpec
 
       val extent = Extent(xmin,ymin,xmax,ymax)
       val r = ArrayTile(arr, cols, rows)
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
 
       val shellCoords = List( 
         tl(0,0),                               tr(3,0),
@@ -268,7 +268,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(xmin,ymin,xmax,ymax)
       val r = ArrayTile(arr, cols, rows)
 
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
 
       val expectedShellCoords = List( 
 
@@ -322,7 +322,7 @@ class ToVectorSpec extends FunSpec
       val r = ArrayTile(arr, cols, rows)
 
 
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
 
       val expectedShellCoords = List( 
                 tl(1,0),     tr(3,0),
@@ -384,7 +384,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(xmin,ymin,xmax,ymax)
       val r = ArrayTile(arr, cols, rows)
 
-      val geoms = r.toVector(extent)
+      val geoms = r.regionsToVector(extent)
 
       withClue ("Number of polygons did not match expected:") { geoms.length should be (3) }
     }
@@ -393,7 +393,7 @@ class ToVectorSpec extends FunSpec
       val rs = loadTestArg("data/vectorbugger")
       val r = rs.tile
       val extent = rs.extent
-      val vect = r.toVector(extent)
+      val vect = r.regionsToVector(extent)
     }
 
     it("should vectorize another raster that was at one point not vectorizing properly") {
@@ -401,7 +401,7 @@ class ToVectorSpec extends FunSpec
       val rs = loadTestArg("data/vectorbugger2")
       val r = rs.tile
       val extent = rs.extent
-      val vect = r.toVector(extent)
+      val vect = r.regionsToVector(extent)
     }
 
     it("should vectorize yet another raster that was at one point not vectorizing properly") {
@@ -409,7 +409,7 @@ class ToVectorSpec extends FunSpec
       val rs = loadTestArg("data/vectorbugger3")
       val r = rs.tile
       val extent = rs.extent
-      val vect = r.toVector(extent)
+      val vect = r.regionsToVector(extent)
     }
 
     it("should vectorize a two cell polygon") {
@@ -430,7 +430,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(0,-4,3,0)
       val r = ArrayTile(arr, cols, rows)
 
-      val toVector = r.toVector(extent)
+      val toVector = r.regionsToVector(extent)
 
       toVector.length should be (1)
       val geom = toVector.head.geom
@@ -464,7 +464,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(0,-4,4,0)
       val r = ArrayTile(arr, cols, rows)
 
-      val toVector = r.toVector(extent)
+      val toVector = r.regionsToVector(extent)
       println(toVector.toSeq)
 
       toVector.length should be (1)
@@ -507,7 +507,7 @@ class ToVectorSpec extends FunSpec
       val extent = Extent(0,-4,4,0)
       val r = ArrayTile(arr, cols, rows)
 
-      val toVector = r.toVector(extent)
+      val toVector = r.regionsToVector(extent)
 
       toVector.length should be (1)
       val geom = toVector.head.geom
