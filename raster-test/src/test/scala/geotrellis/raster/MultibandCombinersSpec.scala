@@ -5,9 +5,9 @@ import geotrellis.raster.testkit._
 import org.scalatest._
 
 class MultibandCombinersSpec extends FunSuite with RasterMatchers with Matchers {
-  val tile       = IntConstantTile(99, 3, 3)
+  val original = IntConstantTile(99, 3, 3)
 
-  private def mkMultiBandTile(arity: Int) = ArrayMultiBandTile((0 to arity) map (_ => tile))
+  private def mkMultiBandTile(arity: Int) = ArrayMultiBandTile((0 to arity) map (_ => original))
 
   private def combineAssert(combined: Tile, arity: Int) = {
     val expected = IntConstantTile(99 * arity, 3, 3)
