@@ -22,10 +22,8 @@ import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
-class UnequalSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class UnequalSpec extends FunSpec with TestEnvironment with TestFiles {
+
   describe("UnEqual Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

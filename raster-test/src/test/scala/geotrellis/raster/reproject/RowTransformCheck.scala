@@ -3,7 +3,7 @@ package geotrellis.raster.reproject
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4._
 
 import org.scalacheck._

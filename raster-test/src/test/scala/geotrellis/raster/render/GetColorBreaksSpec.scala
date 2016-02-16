@@ -22,10 +22,10 @@ import geotrellis.raster.op.stats._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class GetColorBreaksSpec extends FunSpec
-                            with TestEngine
+                            with RasterMatchers
                             with Matchers {
   describe("GetColorBreaks") {
     it("gets color breaks for test raster.") {

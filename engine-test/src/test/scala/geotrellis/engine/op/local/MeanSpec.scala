@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class MeanSpec extends FunSpec 
-                  with Matchers 
-                  with TestEngine 
-                  with TileBuilders {
+class MeanSpec extends FunSpec with Matchers with TestEngine {
   describe("Mean") {
     it("takes mean on raster sources of varying values") {
       val n = NODATA

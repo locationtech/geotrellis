@@ -12,11 +12,7 @@ import org.scalatest.FunSpec
 
 import collection._
 
-class StatsRasterRDDMethodsSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class StatsRasterRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("RDD Stats Method Operations") {
 

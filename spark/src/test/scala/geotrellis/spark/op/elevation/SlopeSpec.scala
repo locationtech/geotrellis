@@ -7,10 +7,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class SlopeSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders
-    with OpAsserter {
+class SlopeSpec extends FunSpec with TestEnvironment {
 
   describe("Slope Elevation Spec") {
 

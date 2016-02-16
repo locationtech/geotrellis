@@ -17,7 +17,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis.raster._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import scala.collection.mutable.Set
 import org.scalatest._
 

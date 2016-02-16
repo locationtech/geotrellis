@@ -7,9 +7,7 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 
-class ModeSpec extends FunSpec with TestEnvironment
-    with RasterRDDMatchers
-    with RasterRDDBuilders {
+class ModeSpec extends FunSpec with TestEnvironment {
 
   describe("Mode Focal Spec") {
 

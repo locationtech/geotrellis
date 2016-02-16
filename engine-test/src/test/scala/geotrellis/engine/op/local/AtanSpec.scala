@@ -21,12 +21,9 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class AtanSpec extends FunSpec
-                  with Matchers
-                  with TestEngine
-                  with TileBuilders {
+class AtanSpec extends FunSpec with Matchers with TestEngine {
+
   describe("ArcTan") {
     it("finds arctan of a double raster") {
       val rasterData = Array(

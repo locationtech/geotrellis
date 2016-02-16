@@ -22,15 +22,12 @@ import geotrellis.engine._
 import geotrellis.vector.Extent
 import geotrellis.raster.op._
 import geotrellis.raster.render._
-import geotrellis.testkit._
 
 import org.scalatest._
 
 import spire.syntax.cfor._
 
-class HillshadeSpec extends FunSuite
-                       with TestEngine
-                       with TileBuilders {
+class HillshadeSpec extends FunSuite with TestEngine {
   def grayscale(n: Int) = {
     val ns = (1 to 128).toArray
     val limits = ns.map(i => i * n)

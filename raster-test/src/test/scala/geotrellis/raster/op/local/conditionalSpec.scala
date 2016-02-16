@@ -22,11 +22,11 @@ import org.scalatest._
 
 import scala.math.min
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class ConditionalSpec extends FunSpec 
                          with Matchers 
-                         with TestEngine 
+                         with RasterMatchers 
                          with TileBuilders {
   describe("IfCell") {
     it("should work with integers") {

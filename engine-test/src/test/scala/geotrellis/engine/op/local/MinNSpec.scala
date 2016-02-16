@@ -21,15 +21,11 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
 /**
  * Created by jchien on 2/22/14.
  */
-class MinNSpec extends FunSpec
-                  with Matchers
-                  with TestEngine
-                  with TileBuilders {
+class MinNSpec extends FunSpec with Matchers with TestEngine {
 
   describe("MinN") {
     it("takes nth min on rasters sources of all one value") {

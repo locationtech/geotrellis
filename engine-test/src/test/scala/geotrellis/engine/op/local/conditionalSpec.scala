@@ -23,12 +23,9 @@ import org.scalatest._
 
 import scala.math.min
 
-import geotrellis.testkit._
 
-class ConditionalSpec extends FunSpec 
-                         with Matchers 
-                         with TestEngine 
-                         with TileBuilders {
+class ConditionalSpec extends FunSpec with Matchers with TestEngine {
+
   describe("IfCell") {
     it("conditionally combines two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

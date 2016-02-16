@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class CoshSpec extends FunSpec
-                  with Matchers
-                  with TestEngine
-                  with TileBuilders {
+class CoshSpec extends FunSpec with Matchers with TestEngine {
   describe("Cosh") {
     it("finds the hyperbolic cosine of a double raster") {
       val rasterData = Array (

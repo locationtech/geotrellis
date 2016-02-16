@@ -20,18 +20,15 @@ import geotrellis.engine.io._
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.raster.op.stats._
+import geotrellis.raster.testkit._
 import geotrellis.raster.histogram._
 import geotrellis.vector._
-import geotrellis.testkit._
 
 import org.scalatest._
 
 import java.io._
 
-class SerializationTest extends FunSuite
-                        with Matchers
-                        with TileBuilders
-                        with TestEngine {
+class SerializationTest extends FunSuite with Matchers with TestEngine {
 
   // Operations and data objects that may be sent remotely must be serializable.
   test("Operation and data object serialization test") {

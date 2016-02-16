@@ -18,14 +18,14 @@ package geotrellis.raster.op.elevation
 
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import org.scalatest._
 
 import scala.math._
 
 class SlopeAspectTests extends FunSpec 
                           with Matchers 
-                          with TestEngine {
+                          with RasterMatchers {
   describe("SurfacePoint") {
     it("should calculate trig values correctly") {
       val tolerance = 0.0000000001

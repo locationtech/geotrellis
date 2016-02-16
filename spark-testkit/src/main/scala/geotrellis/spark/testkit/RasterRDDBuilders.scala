@@ -1,9 +1,10 @@
-package geotrellis.spark
+package geotrellis.spark.testkit
 
 import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.resample._
+import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 

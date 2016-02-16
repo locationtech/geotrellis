@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class LessSpec extends FunSpec 
-                  with Matchers 
-                  with TestEngine 
-                  with TileBuilders {
+class LessSpec extends FunSpec with Matchers with TestEngine {
   describe("Less") {
     it("compares Less on 2 RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

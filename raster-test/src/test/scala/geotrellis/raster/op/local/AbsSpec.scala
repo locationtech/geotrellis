@@ -20,11 +20,11 @@ import geotrellis.raster._
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 class AbsSpec extends FunSpec
                  with Matchers
-                 with TestEngine
+                 with RasterMatchers
                  with TileBuilders {
   describe("Abs") {
     it("takes the absolute value of each cell of an int raster") {

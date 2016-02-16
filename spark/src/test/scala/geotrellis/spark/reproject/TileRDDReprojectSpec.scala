@@ -18,10 +18,7 @@ import geotrellis.proj4._
 import spire.syntax.cfor._
 import org.scalatest.FunSpec
 
-class TileRDDReprojectSpec extends FunSpec
-    with TestEnvironment
-    with RasterRDDBuilders
-    with RasterMatchers {
+class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
   describe("TileRDDReproject") {
     val path = "raster-test/data/aspect.tif"

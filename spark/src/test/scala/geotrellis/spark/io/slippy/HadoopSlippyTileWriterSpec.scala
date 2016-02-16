@@ -16,8 +16,8 @@ class HadoopSlippyTileWriterSpec
     extends FunSpec 
     with Matchers 
     with TestEnvironment 
-    with TestFiles
-    with RasterRDDMatchers {
+    with TestFiles 
+{
   describe("HadoopSlippyTileWriter") {
     val testPath = new File(outputLocalPath, "slippy-write-test").getPath
 

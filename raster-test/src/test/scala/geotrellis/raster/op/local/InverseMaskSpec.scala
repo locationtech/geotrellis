@@ -22,11 +22,11 @@ import org.scalatest._
 
 import scala.math.min
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
-class InverseMaskSpec extends FunSpec
-                         with Matchers
-                         with TestEngine
+class InverseMaskSpec extends FunSpec 
+                         with Matchers 
+                         with RasterMatchers
                          with TileBuilders {
   describe("Mask") {
     it("should work with integers") {

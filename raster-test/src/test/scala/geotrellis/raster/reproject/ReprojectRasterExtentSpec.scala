@@ -6,9 +6,8 @@ import geotrellis.raster.mosaic._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
-import geotrellis.engine._
-import geotrellis.testkit._
-import geotrellis.testkit.vector._
+import geotrellis.raster.testkit._
+import geotrellis.vector.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
@@ -19,7 +18,7 @@ import spire.syntax.cfor._
 class ReprojectRasterExtentSpec extends FunSpec
     with TileBuilders
     with GeoTiffTestUtils
-    with TestEngine {
+    with RasterMatchers {
   describe("ReprojectRasterExtent") {
 
     def formatExtent(name: String, re: RasterExtent) = {

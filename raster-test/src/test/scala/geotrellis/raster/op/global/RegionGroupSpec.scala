@@ -19,14 +19,14 @@ package geotrellis.raster.op.global
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.raster.op.stats._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import scala.collection.mutable
 
 import org.scalatest._
 
 class RegionGroupSpec extends FunSpec
-                         with TestEngine
+                         with RasterMatchers
                          with TileBuilders {
   describe("RegionGroup") {
     it("should group regions.") {
@@ -332,7 +332,7 @@ class RegionGroupSpec extends FunSpec
 
 
 class RegionPartitionSpec extends FunSpec
-                             with TestEngine
+                             with RasterMatchers
                              with TileBuilders {
   describe("RegionPartition") {
     it("should work in a once problematic case") {

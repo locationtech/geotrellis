@@ -21,12 +21,8 @@ import geotrellis.vector.Extent
 import geotrellis.engine._
 
 import org.scalatest._
-import geotrellis.testkit._
 
-class SubtractSpec extends FunSpec 
-                 with Matchers 
-                 with TestEngine 
-                 with TileBuilders {
+class SubtractSpec extends FunSpec with Matchers with TestEngine {
   describe("Subtract") {
     it("subtracts two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

@@ -17,15 +17,14 @@
 package geotrellis.raster.op.global
 
 import geotrellis.raster._
-import geotrellis.testkit._
-import geotrellis.engine._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class VerticalFlipTest extends FunSuite 
-                          with TestEngine {
+                          with RasterMatchers with TestFiles {
   test("load valid raster") {
-    val r1 = RasterSource("test:fs","quadborder").get
+    val r1 = loadTestArg("data/quad").tile
     val r2 = r1.verticalFlip
     val r3 = r2.verticalFlip
 

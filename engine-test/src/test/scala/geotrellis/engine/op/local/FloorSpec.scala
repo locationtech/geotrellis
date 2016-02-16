@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class FloorSpec extends FunSpec 
-                   with Matchers 
-                   with TestEngine 
-                   with TileBuilders {
+class FloorSpec extends FunSpec with Matchers with TestEngine {
   describe("Floor") {    
     it("takes floor of int tiled RasterSource") {
       val rs = createRasterSource(

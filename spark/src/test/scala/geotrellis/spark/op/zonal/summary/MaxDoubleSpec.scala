@@ -9,10 +9,7 @@ import geotrellis.vector._
 
 import org.scalatest.FunSpec
 
-class MaxDoubleSpec extends FunSpec
-    with TestEnvironment
-    with TestFiles
-    with RasterRDDMatchers {
+class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Max Double Zonal Summary Operation") {
     val inc = IncreasingTestFile

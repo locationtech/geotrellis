@@ -18,7 +18,7 @@ package geotrellis.raster.op.zonal
 
 import geotrellis.raster.op.stats._
 import geotrellis.raster._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 import spire.syntax.cfor._
@@ -27,7 +27,7 @@ import scala.collection.mutable
 
 class ZonalStatisticsSpec extends FunSpec
                             with Matchers
-                            with TestEngine
+                            with RasterMatchers
                             with TileBuilders {
   describe("ZonalStatistics") {
     val r = createTile(

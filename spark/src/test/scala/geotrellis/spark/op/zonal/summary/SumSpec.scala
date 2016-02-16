@@ -12,7 +12,7 @@ import org.scalatest.FunSpec
 class SumSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with RasterRDDMatchers {
+{
 
   describe("Sum Zonal Summary Operation") {
     val ones = AllOnesTestFile

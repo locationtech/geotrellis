@@ -24,11 +24,7 @@ import org.scalatest.FunSpec
 
 import scala.util.Random
 
-class LocalSpatialSpec extends FunSpec
-                               with TestEnvironment
-                               with TestFiles
-                               with RasterRDDMatchers
-                               with RasterRDDBuilders {
+class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Local Operations") {
     val rdd = AllOnesTestFile
