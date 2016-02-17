@@ -1,4 +1,4 @@
-package geotrellis.spark
+package geotrellis.gdal
 
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll

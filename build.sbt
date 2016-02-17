@@ -117,7 +117,7 @@ lazy val admin = Project("admin", file("admin")).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
-  dependsOn(raster, gdal).
+  dependsOn(raster).
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
@@ -127,7 +127,7 @@ lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit"))
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark).
   settings(commonSettings: _*)
-  
+
 lazy val graph = Project("graph", file("graph")).
   dependsOn(spark % "test->test;compile->compile").
   settings(commonSettings: _*)
@@ -136,7 +136,7 @@ lazy val index = Project("index", file("index")).
   settings(commonSettings: _*)
 
 lazy val gdal: Project = Project("gdal", file("gdal")).
-  dependsOn(raster, geotools % "test").
+  dependsOn(proj4, raster, spark, sparkEtl, geotools % "test").
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).
