@@ -4,7 +4,7 @@ import java.io.IOException
 
 import geotrellis.raster._
 import geotrellis.raster.io.json._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 
 import geotrellis.spark._
 

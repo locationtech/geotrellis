@@ -25,7 +25,7 @@ import geotrellis.vector.Extent
 
 import geotrellis.raster.mapalgebra._
 import geotrellis.raster.summary._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 import geotrellis.raster.io.arg._
 
 import org.scalatest._

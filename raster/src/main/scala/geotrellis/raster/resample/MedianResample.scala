@@ -2,7 +2,7 @@ package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.raster.summary._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 import geotrellis.vector.Extent
 
 import scala.collection.mutable

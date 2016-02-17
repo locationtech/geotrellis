@@ -2,7 +2,7 @@ package geotrellis.raster.mapalgebra.zonal
 
 import geotrellis.raster._
 import geotrellis.raster.summary._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 
 trait ZonalMethods extends MethodExtensions[Tile] {
   def zonalHistogramInt(zones: Tile): Map[Int, Histogram[Int]] =

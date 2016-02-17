@@ -16,4 +16,17 @@ trait FocalRasterRDDMethods[K] extends FocalOperation[K] {
   def focalConway() = { val n = Square(1) ; focal(n) { (tile, bounds) => Sum(tile, n, bounds) } }
   def focalConvolve(k: Kernel) = { focal(k) { (tile, bounds) => Convolve(tile, k, bounds) } }
 
+  def aspect() = {
+    val n = Square(1)
+    focalWithCellSize(n) { (tile, bounds, cellSize) =>
+      Aspect(tile, n, bounds, cellSize)
+    }
+  }
+
+  def slope(zFactor: Double = 1.0) = {
+    val n = Square(1)
+    focalWithCellSize(n) { (tile, bounds, cellSize) =>
+      Slope(tile, n, bounds, cellSize, zFactor)
+    }
+  }
 }

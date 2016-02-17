@@ -21,7 +21,7 @@ import  geotrellis.raster.render.png._
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.render._
-import geotrellis.raster.summary.histogram.Histogram
+import geotrellis.raster.histogram.Histogram
 
 import scala.collection.mutable
 

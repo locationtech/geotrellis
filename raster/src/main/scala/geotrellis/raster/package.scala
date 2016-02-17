@@ -24,7 +24,6 @@ import geotrellis.raster.rasterize._
 
 package object raster
     extends crop.Implicits
-    with mask.Implicits
     with merge.Implicits
     with elevation.Implicits
     with reproject.Implicits {
@@ -69,12 +68,14 @@ package object raster
       with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.zonal.ZonalMethods
-      with mapalgebra.global.GlobalMethods
-      with geotrellis.raster.elevation.ElevationMethods
-      with geotrellis.raster.hydrology.HydrologyMethods
-      with geotrellis.raster.summary.SummaryMethods
-      with geotrellis.raster.polygonal.PolygonalSummaryMethods
-      with geotrellis.raster.viewshed.ViewshedMethods
+      with elevation.ElevationMethods
+      with hydrology.HydrologyMethods
+      with viewshed.ViewshedMethods
+      with costdistance.CostDistanceMethods
+      with regiongroup.RegionGroupMethods
+      with vectorize.VectorizeMethods
+      with summary.SummaryMethods
+      with summary.polygonal.PolygonalSummaryMethods
       with prototype.SingleBandTilePrototypeMethods
       with render.ColorMethods
       with render.JpgRenderMethods

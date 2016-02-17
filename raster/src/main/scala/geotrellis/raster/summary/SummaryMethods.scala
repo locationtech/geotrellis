@@ -1,7 +1,7 @@
 package geotrellis.raster.summary
 
 import geotrellis.raster._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 
 trait SummaryMethods extends MethodExtensions[Tile] {
   /**

@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 
 import spire.syntax.cfor._
 

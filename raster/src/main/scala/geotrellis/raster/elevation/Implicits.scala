@@ -21,7 +21,7 @@ import geotrellis.raster._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class HillshadeTuple(val tuple: Tuple2[Tile, Tile]) {
+  implicit class HillshadeTuple(val tuple: (Tile, Tile)) {
     def hillshade(azimuth: Double, altitude: Double) = {
       val (aspect, slope) = tuple
       Hillshade.indirect(aspect, slope, azimuth, altitude)

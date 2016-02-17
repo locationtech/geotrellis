@@ -18,8 +18,8 @@ package geotrellis.engine.op.zonal.summary
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.polygonal._
-import geotrellis.raster.summary.histogram.Histogram
+import geotrellis.raster.summary.polygonal._
+import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 

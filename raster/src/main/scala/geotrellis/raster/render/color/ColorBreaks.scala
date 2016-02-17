@@ -18,7 +18,7 @@ package geotrellis.raster.render
 
 import scala.util.Try
 
-import geotrellis.raster.summary.histogram.Histogram
+import geotrellis.raster.histogram.Histogram
 import java.util.Locale
 
 /**

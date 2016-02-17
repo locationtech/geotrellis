@@ -18,7 +18,7 @@ package geotrellis.engine.stats
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 import geotrellis.raster.summary._
 
 trait StatsRasterSourceMethods extends RasterSourceMethods {

@@ -1,7 +1,7 @@
 package geotrellis.raster.io
 
 import geotrellis.raster._
-import geotrellis.raster.summary.histogram.{FastMapHistogram, MapHistogram, Histogram}
+import geotrellis.raster.histogram.{FastMapHistogram, MapHistogram, Histogram}
 import geotrellis.vector.Extent
 import geotrellis.vector.io.json._
 

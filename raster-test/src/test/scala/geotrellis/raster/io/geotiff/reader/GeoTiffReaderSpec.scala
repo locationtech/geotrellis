@@ -21,7 +21,7 @@ import geotrellis.raster.io.arg._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.polygonal._
+import geotrellis.raster.summary.polygonal._
 
 import geotrellis.vector.{Point, Extent}
 import geotrellis.raster.testkit._

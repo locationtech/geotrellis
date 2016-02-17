@@ -45,7 +45,7 @@ package object spark
     with mapalgebra.local.temporal.Implicits
     with mapalgebra.focal.Implicits
     with mapalgebra.zonal.Implicits
-    with polygonal.Implicits
+    with summary.polygonal.Implicits
     with summary.Implicits
     with elevation.Implicits
     with partitioner.Implicits

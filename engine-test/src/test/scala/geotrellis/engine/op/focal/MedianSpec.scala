@@ -19,7 +19,7 @@ package geotrellis.engine.op.focal
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.summary.histogram._
+import geotrellis.raster.histogram._
 
 import org.scalatest._
 
