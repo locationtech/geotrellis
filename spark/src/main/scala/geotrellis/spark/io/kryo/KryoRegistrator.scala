@@ -132,7 +132,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.LazyConvertedArrayTile])
     kryo.register(classOf[geotrellis.raster.MultiBandTile])
     kryo.register(classOf[geotrellis.raster.MutableArrayTile])
-    kryo.register(classOf[geotrellis.raster.op.zonal.summary.MeanResult])
+    kryo.register(classOf[geotrellis.raster.summary.polygonal.MeanResult])
     kryo.register(classOf[geotrellis.raster.ProjectedRaster[Any]])
     kryo.register(classOf[geotrellis.raster.Raster[Any]])
     kryo.register(classOf[geotrellis.raster.RasterExtent])

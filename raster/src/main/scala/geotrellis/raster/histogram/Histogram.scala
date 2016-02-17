@@ -16,7 +16,7 @@
 
 package geotrellis.raster.histogram
 
-import geotrellis.raster.op.stats.Statistics
+import geotrellis.raster.summary.Statistics
 import geotrellis.raster.NODATA
 import math.{abs, round, sqrt}
 

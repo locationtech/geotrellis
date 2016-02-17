@@ -18,7 +18,7 @@ package geotrellis.engine.op.elevation
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.elevation._
+import geotrellis.raster.mapalgebra.focal.hillshade._
 import geotrellis.vector.Extent
 import org.scalatest._
 

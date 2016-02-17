@@ -18,7 +18,7 @@ package geotrellis.engine.op.focal
 
 import geotrellis.vector.Extent
 import geotrellis.raster._
-import geotrellis.raster.op.focal._
+import geotrellis.raster.mapalgebra.focal._
 import geotrellis.engine._
 
 import org.scalatest._

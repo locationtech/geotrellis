@@ -18,7 +18,7 @@ package geotrellis.engine.op.focal
 
 import geotrellis.raster._
 import geotrellis.engine._
-import geotrellis.raster.op.focal.TileWithNeighbors
+import geotrellis.raster.mapalgebra.focal.TileWithNeighbors
 import org.scalatest._
 
 class TileWithNeighborsSpec extends FunSpec with TestEngine {

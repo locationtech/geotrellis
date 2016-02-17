@@ -18,7 +18,9 @@ package geotrellis.engine.op.global
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.global._
+import geotrellis.raster.costdistance.CostDistance
+import geotrellis.raster.regiongroup.RegionGroupOptions
+import geotrellis.raster.viewshed.{ApproxViewshed, Viewshed}
 import geotrellis.vector._
 
 trait GlobalRasterSourceMethods extends RasterSourceMethods {
@@ -34,15 +36,12 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
   def toVector() = 
     rasterSource.converge.mapOp { tileOp =>
       (tileOp, rasterSource.rasterDefinition).map { (tile, rd) => 
-        tile.toVector(rd.rasterExtent.extent) 
+        tile.toVector(rd.rasterExtent.extent)
       }
     }
 
   def regionGroup(options: RegionGroupOptions = RegionGroupOptions.default) =
     rasterSource.converge.map(_.regionGroup(options))
-
-  def verticalFlip() =
-    rasterSource.global(VerticalFlip(_))
 
   def viewshed(p: Point, exact: Boolean = false) =
     if(exact)

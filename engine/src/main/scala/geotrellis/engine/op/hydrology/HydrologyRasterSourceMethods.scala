@@ -18,8 +18,8 @@ package geotrellis.engine.op.hydrology
 
 import geotrellis.engine._
 import geotrellis.engine.op.focal.FocalOperation
-import geotrellis.raster.op.focal._
-import geotrellis.raster.op.hydrology._
+import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.hydrology._
 
 trait HydrologyRasterSourceMethods extends RasterSourceMethods with FocalOperation {
   def accumulation() = rasterSource.globalOp(Accumulation(_))

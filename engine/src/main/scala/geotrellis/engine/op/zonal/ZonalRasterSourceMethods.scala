@@ -17,7 +17,7 @@
 package geotrellis.engine.op.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.op.zonal._
+import geotrellis.raster.mapalgebra.zonal._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.engine._
 

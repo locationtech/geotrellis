@@ -19,7 +19,7 @@ package geotrellis.benchmark
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.engine.op.local._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 import geotrellis.raster.render._
 
 import com.google.caliper.Param

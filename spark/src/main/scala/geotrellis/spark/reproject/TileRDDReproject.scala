@@ -1,7 +1,7 @@
 package geotrellis.spark.reproject
 
 import geotrellis.spark._
-import geotrellis.spark.op._
+import geotrellis.spark.mapalgebra._
 import geotrellis.spark.ingest._
 import geotrellis.spark.tiling._
 import geotrellis.spark.buffer._

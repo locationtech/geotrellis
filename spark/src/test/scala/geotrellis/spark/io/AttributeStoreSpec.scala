@@ -2,7 +2,7 @@ package geotrellis.spark.io
 
 import geotrellis.spark._
 import geotrellis.spark.testfiles._
-import geotrellis.spark.op.stats._
+import geotrellis.spark.summary._
 import geotrellis.raster.io.json._
 import geotrellis.raster.histogram._
 

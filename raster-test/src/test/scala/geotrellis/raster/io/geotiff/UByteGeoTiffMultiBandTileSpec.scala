@@ -2,7 +2,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 import geotrellis.vector.Extent
 

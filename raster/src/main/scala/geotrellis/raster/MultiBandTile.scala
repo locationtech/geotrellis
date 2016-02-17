@@ -1,7 +1,7 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 import geotrellis.macros._
 
 import spire.syntax.cfor._
