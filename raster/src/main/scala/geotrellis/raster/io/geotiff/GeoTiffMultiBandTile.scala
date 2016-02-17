@@ -239,6 +239,34 @@ abstract class GeoTiffMultiBandTile(
     )
   }
 
+  /**
+    * Piggy-back on the other map method to support mapping a subset
+    * of the bands.
+    */
+  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultiBandTile = {
+    val set = subset.toSet
+    val fn = { (bandIndex: Int, z: Int) =>
+      if (set.contains(bandIndex)) f(bandIndex, z)
+      else z
+    }
+
+    map(fn)
+  }
+
+  /**
+    * Piggy-back on the other map method to support mapping a subset
+    * of the bands.
+    */
+  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultiBandTile = {
+    val set = subset.toSet
+    val fn = { (bandIndex: Int, z: Double) =>
+      if (set.contains(bandIndex)) f(bandIndex, z)
+      else z
+    }
+
+    mapDouble(fn)
+  }
+
   def map(b0: Int)(f: Int => Int): MultiBandTile =
     if(hasPixelInterleave) {
       mapSegments { (segment, _) =>

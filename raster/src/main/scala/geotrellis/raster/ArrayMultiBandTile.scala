@@ -55,6 +55,60 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     ArrayMultiBandTile(newBands)
   }
 
+  /**
+    * Map over a subset of the bands of a multiband tile to create a
+    * new integer-valued multiband tile.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to map over the bands.
+    */
+  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultiBandTile = {
+    val newBands = Array.ofDim[Tile](bandCount)
+    val set = subset.toSet
+
+    subset.foreach({ b =>
+      require(0 <= b && b < bandCount, "All elements of subset must be present")
+    })
+
+    (0 until bandCount).foreach({ b =>
+      if (set.contains(b))
+        newBands(b) = band(b).map({ z => f(b, z) })
+      else if (cellType.isFloatingPoint)
+        newBands(b) = band(b).map({ z => z })
+      else
+        newBands(b) = band(b)
+    })
+
+    ArrayMultiBandTile(newBands)
+  }
+
+  /**
+    * Map over a subset of the bands of a multiband tile to create a
+    * new double-valued multiband tile.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to map over the bands.
+    */
+  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultiBandTile = {
+    val newBands = Array.ofDim[Tile](bandCount)
+    val set = subset.toSet
+
+    subset.foreach({ b =>
+      require(0 <= b && b < bandCount, "All elements of subset must be present")
+    })
+
+    (0 until bandCount).foreach({ b =>
+      if (set.contains(b))
+        newBands(b) = band(b).mapDouble({ z => f(b, z) })
+      else if (cellType.isFloatingPoint)
+        newBands(b) = band(b)
+      else
+        newBands(b) = band(b).mapDouble({ z => z })
+    })
+
+    ArrayMultiBandTile(newBands)
+  }
+
   /** Map each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
