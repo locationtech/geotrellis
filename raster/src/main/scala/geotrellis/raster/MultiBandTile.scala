@@ -60,6 +60,24 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
     */
   def foreachDouble(b0: Int)(f: Double => Unit): Unit
 
+  /**
+    * Combine a subset of the bands of a tile into a new
+    * integer-valued multiband tile using the function f.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to combine the bands.
+    */
+  def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile
+
+  /**
+    * Combine a subset of the bands of a tile into a new double-valued
+    * multiband tile using the function f.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to combine the bands.
+    */
+  def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile
+
   /** Combine each int band value for each cell.
     * This method will be inherently slower than calling a method with explicitly stated bands,
     * so if you have as many or fewer bands to combine than an explicit method call, use that.
