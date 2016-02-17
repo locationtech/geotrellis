@@ -85,6 +85,12 @@ abstract class ColorClassifier[T] extends Serializable {
 
 }
 
+/** An abstract class for strictly (explicitly) classifying a raster's values in terms of color
+  * for rendering
+  *
+  * @tparam T  The underlying datatype being classified (implementations for Int and Double)
+  *
+  */
 abstract class StrictColorClassifier[T] extends ColorClassifier[T] {
   protected var colorClassifications: mutable.Map[T, RGBA] = mutable.Map[T, RGBA]()
   implicit val ctag: ClassTag[T]
@@ -118,16 +124,21 @@ abstract class StrictColorClassifier[T] extends ColorClassifier[T] {
     this
   }
 
+  /** Add a classification (T with a corresponding RGBA) to this classifier instance
+   *
+    * @param classBreak  A provided class boundary/breakpoint
+    * @param classColor  A provided RGBA color value
+   */
   def classify(classBreak: T, classColor: RGBA): StrictColorClassifier[T] = {
     colorClassifications(classBreak) = classColor
     this
   }
 
-  /** Add classifications to this classifier */
+  /** Add color classifications to this classifier instance */
   def addClassifications(classifications: Array[(T, RGBA)]): StrictColorClassifier[T] =
     addClassifications(classifications: _*)
 
-  /** Add classifications to this classifier */
+  /** Add color classifications to this classifier instance */
   def addClassifications(classifications: (T, RGBA)*): StrictColorClassifier[T] = {
     classifications map { case classification: (T, RGBA) =>
       classify(classification._1, classification._2)
@@ -137,6 +148,12 @@ abstract class StrictColorClassifier[T] extends ColorClassifier[T] {
 
 }
 
+/** An abstract class for automatically (through color interpolation) classifying a raster's values
+  *  in terms of color for rendering
+  *
+  * @tparam T  The underlying datatype being classified (implementations for Int and Double)
+  *
+  */
 abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
   protected var classificationBreaks: mutable.Buffer[T] = mutable.Buffer[T]()
   protected var classificationColors: mutable.Buffer[RGBA] = mutable.ArrayBuffer[RGBA]()
@@ -176,13 +193,15 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
     this
   }
 
-  /**
-    * If the count of colors doesn't match the count of classification Breaks, produce a
+  /** If the count of colors doesn't match the count of classification Breaks, produce a
     * ColorClassifier which either interpolates or properly subsets the colors so as
-    * to have an equal count of Breaks and colors
-  **/
+    * to have an equal count of Breaks and colors.
+    *
+    * @note normalization is not possible without at least one break and at least one color
+   **/
   def normalize: BlendingColorClassifier[T] = {
-    if (classificationBreaks.size < classificationColors.size) {
+    if (classificationBreaks.size == 0 || classificationColors.size == 0) {
+    } else if (classificationBreaks.size < classificationColors.size) {
       classificationColors = spread(getColors, classificationBreaks.size).toBuffer
     } else if (classificationBreaks.size > classificationColors.size) {
       classificationColors = chooseColors(getColors, classificationBreaks.size).toBuffer
@@ -190,8 +209,13 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
     this
   }
 
-  /**
-  **/
+  /** Transform this instances colors such that the transformed colors sit along an alpha gradient.
+    *
+    * @param start An integer whose last two bytes are the alpha value at the start of the
+    *              gradient (default 0)
+    * @param stop  An integer whose last two bytes are the alpha value at the end of the
+    *              gradient (default 255)
+    */
   def alphaGradient(start: RGBA = RGBA(0), stop: RGBA = RGBA(0xFF)): BlendingColorClassifier[T] = {
     val colors = getColors
     val alphas = chooseColors(start, stop, colors.length).map(_.alpha)
@@ -205,6 +229,7 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
     this
   }
 
+  /** Set a uniform alpha value for all contained colors */
   def setAlpha(a: Int): BlendingColorClassifier[T] = {
     val newColors = getColors.map { color =>
       val(r, g, b) = color.unzipRGB
@@ -214,6 +239,7 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
     this
   }
 
+  /** Set a uniform alpha value for all contained colors */
   def setAlpha(alphaPct: Double): BlendingColorClassifier[T] = {
     val newColors: Array[RGBA] = getColors.map { color =>
       val(r, g, b) = color.unzipRGB
@@ -224,10 +250,8 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
   }
 
   /**
-    * This method is used for cases in which we are provided with a different
-    * number of colors than we need.  This method will return a smaller list
-    * of colors the provided list of colors, spaced out amongst the provided
-    * color list.
+    * This method will return a smaller list of colors the provided list of colors, spaced
+    * out amongst the provided color list. Used internally for normalization
     *
     * For example, if we are provided a list of 9 colors on a red
     * to green gradient, but only need a list of 3, we expect to get back a
@@ -253,7 +277,7 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
     colors2
   }
 
-  // Interpolation logic
+  /** RGBA interpolation logic */
   protected def blend(start: Int, end: Int, numerator: Int, denominator: Int): Int = {
     start + (((end - start) * numerator) / denominator)
   }
@@ -321,6 +345,11 @@ abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
 }
 
 
+/** A concrete class for strict (fully explicit) color classification of int-based tiles
+  *
+  * @param classificationType The ClassBoundaryType which specifies the sort of boundary used in
+  *                           color classification
+  */
 case class StrictIntColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Int], implicit val ord: Ordering[Int])
     extends StrictColorClassifier[Int] {
   val self = this
@@ -333,6 +362,11 @@ case class StrictIntColorClassifier(classificationType: ClassBoundaryType = Less
   }
 }
 
+/** A concrete class for strict (fully explicit) color classification of double-based tiles
+  *
+  * @param classificationType The ClassBoundaryType which specifies the sort of boundary used in
+  *                           color classification
+  */
 case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Double], implicit val ord: Ordering[Double])
     extends StrictColorClassifier[Double] {
   val self = this
@@ -345,6 +379,12 @@ case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = L
   }
 }
 
+/** A concrete class for automatic (interpolating to generate breaks' corresponding colors)
+  * color classification of int-based tiles
+  *
+  * @param classificationType The ClassBoundaryType which specifies the sort of boundary used in
+  *                           color classification
+  */
 case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Int], implicit val ord: Ordering[Int])
     extends BlendingColorClassifier[Int] {
   val self = this
@@ -358,6 +398,12 @@ case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = Le
   }
 }
 
+/** A concrete class for automatic (interpolating to generate breaks' corresponding colors)
+  * color classification of double-based tiles
+  *
+  * @param classificationType The ClassBoundaryType which specifies the sort of boundary used in
+  *                           color classification
+  */
 case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Double], implicit val ord: Ordering[Double])
     extends BlendingColorClassifier[Double] {
   val self = this

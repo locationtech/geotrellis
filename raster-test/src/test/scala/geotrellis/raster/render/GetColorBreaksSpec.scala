@@ -43,11 +43,11 @@ class GetColorBreaksSpec extends FunSpec
       val h = testTile.histogram
       val (g, y, o, r) = (RGBA(0x00ff00ff), RGBA(0xffff00ff), RGBA(0xff7f00ff), RGBA(0xff0000ff))
       val colors: Array[RGBA] = Array(g, y, o, r)
-      val colorClassifier = StrictColorClassification.fromQuantileBreaks(h, colors)
+      val colorClassifier = StrictColorClassifier.fromQuantileBreaks(h, colors)
       colorClassifier.getBreaks should be (Array(12, 15, 66, 95))
       colorClassifier.getColors should be (Array(g, y, o, r))
     }
-/* TODO: Implement this for colorclassification
+/* TODO: Implement this for colorclassifier
     it("can come from a string.") {
       val goodString = "12:00ff00ff;15:ffff00ff"
       ColorBreaks.fromStringInt(goodString) should not be empty
