@@ -6,7 +6,6 @@
 ./sbt "project raster" publish-local && \
 ./sbt "project index" publish-local && \
 ./sbt "project engine" publish-local && \
-./sbt "project testkit" publish-local && \
 ./sbt "project services" publish-local && \
 ./sbt "project jetty" publish-local && \
 ./sbt "project spark" publish-local && \
