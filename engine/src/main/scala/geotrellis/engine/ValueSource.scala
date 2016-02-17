@@ -16,7 +16,7 @@
 
 package geotrellis.engine
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class ValueSource[+T](val element:Op[T]) extends OpSource[T] {
   def convergeOp() = element
 
@@ -32,7 +32,7 @@ class ValueSource[+T](val element:Op[T]) extends OpSource[T] {
     ValueSource(f(convergeOp,os.convergeOp))
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object ValueSource {
   def apply[T](element:Op[T]):ValueSource[T] = new ValueSource(element)
  }

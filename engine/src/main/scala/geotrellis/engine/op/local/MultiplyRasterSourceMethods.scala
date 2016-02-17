@@ -19,7 +19,7 @@ package geotrellis.engine.op.local
 import geotrellis.engine._
 import geotrellis.raster.mapalgebra.local._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait MultiplyRasterSourceMethods extends RasterSourceMethods {
   /** Multiply a constant value from each cell.*/
   def localMultiply(i: Int): RasterSource = rasterSource.mapTile(Multiply(_, i))

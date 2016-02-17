@@ -21,7 +21,7 @@ import geotrellis.engine._
 /**
  * This corresponds to Haskell's "pure" on Functor.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Pure[Z:Manifest](z:Z) extends Op0[Z]({
   () => Result(z)
 })

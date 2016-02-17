@@ -19,7 +19,7 @@ package geotrellis.engine.io
 import geotrellis.raster._
 import geotrellis.engine._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadTile {
   def apply(n: String, col: Op[Int], row: Op[Int]): LoadTile =
     LoadTile(LayerId(n), col, row, None)
@@ -37,7 +37,7 @@ object LoadTile {
     LoadTile(layerId, col, row, None)
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadTile(layerId: Op[LayerId],
                     col: Op[Int],
                     row: Op[Int],

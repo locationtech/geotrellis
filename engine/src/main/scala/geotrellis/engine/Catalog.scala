@@ -34,7 +34,7 @@ import scala.util._
  * Represents a named collection of data stores. We expect each JSON file to
  * correspond to one catalog.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Catalog(name:String, stores:Map[String, DataStore], json: String,source: String) {
 
   private var cacheSet = false
@@ -107,7 +107,7 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
   def getStore(name:String) = stores.get(name)
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object Catalog {
   private val stringToRasterLayerBuilder =
     mutable.Map[String,RasterLayerBuilder](

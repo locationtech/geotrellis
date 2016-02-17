@@ -20,7 +20,7 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait FocalRasterSourceMethods extends RasterSourceMethods with FocalOperation {
   def focalSum(n: Neighborhood) = focal(n)(Sum.apply)
   def focalMin(n: Neighborhood) = focal(n)(Min.apply)

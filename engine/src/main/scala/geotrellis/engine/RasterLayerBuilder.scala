@@ -26,7 +26,7 @@ import com.typesafe.config.Config
  * to GeoTrellis. Also provides some baseline helper functions for getting
  * Information out of the metadata json files.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait RasterLayerBuilder {
   def apply(path: String, json: Config): RasterLayer =
     apply(None, path, json)

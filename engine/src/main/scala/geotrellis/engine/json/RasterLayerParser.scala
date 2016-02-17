@@ -21,7 +21,7 @@ import geotrellis.engine._
 
 import com.typesafe.config.ConfigFactory
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object RasterLayerParser {
   def apply(jsonString:String,path:String = "") = {
     val json = ConfigFactory.parseString(jsonString)

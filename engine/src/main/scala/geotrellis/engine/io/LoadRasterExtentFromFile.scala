@@ -19,7 +19,7 @@ package geotrellis.engine.io
 import geotrellis.raster._
 import geotrellis.engine._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadRasterExtent {
   def apply(name: String): LoadRasterExtent =
     LoadRasterExtent(LayerId(name))
@@ -30,7 +30,7 @@ object LoadRasterExtent {
 
 /** Load the [[RasterExtent]] from the raster layer with the specified name.
   */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadRasterExtent(layerId: Op[LayerId]) extends Op[RasterExtent] {
   def _run() = runAsync(List(layerId))
   val nextSteps: Steps[RasterExtent] = {
@@ -43,7 +43,7 @@ case class LoadRasterExtent(layerId: Op[LayerId]) extends Op[RasterExtent] {
 
 /** Load the [[RasterExtent]] from the raster in the specified file.
   */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadRasterExtentFromFile(path: Op[String]) extends Op[RasterExtent] {
   def _run() = runAsync(List(path))
   val nextSteps: Steps[RasterExtent] = {

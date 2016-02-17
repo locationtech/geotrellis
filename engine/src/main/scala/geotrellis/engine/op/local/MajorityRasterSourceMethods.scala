@@ -22,7 +22,7 @@ import geotrellis.raster.mapalgebra.local._
 import spire.syntax.cfor._
 import scala.collection.mutable
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait MajorityRasterSourceMethods extends RasterSourceMethods {
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */

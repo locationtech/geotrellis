@@ -18,10 +18,10 @@ package geotrellis.engine
 
 import com.typesafe.config.{ConfigFactory,Config}
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class GeoTrellisConfig(catalogPath:Option[String])
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object GeoTrellisConfig {
   def apply():GeoTrellisConfig = apply(ConfigFactory.load())
 

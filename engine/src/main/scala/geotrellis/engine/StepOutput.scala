@@ -23,13 +23,13 @@ package geotrellis.engine
  */
 sealed trait StepOutput[+T]
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case class Result[+T](value: T) extends StepOutput[T]
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case class StepError(msg: String, trace: String) extends StepOutput[Nothing]
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case class StepRequiresAsync[+T](args: Args, cb: Args => StepOutput[T]) extends StepOutput[T]
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case class AndThen[+T](op: Operation[T]) extends StepOutput[T]
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2") case class LayerResult[+T](loadFunc: LayerLoader => T) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class Result[+T](value: T) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class StepError(msg: String, trace: String) extends StepOutput[Nothing]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class StepRequiresAsync[+T](args: Args, cb: Args => StepOutput[T]) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class AndThen[+T](op: Operation[T]) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class LayerResult[+T](loadFunc: LayerLoader => T) extends StepOutput[T]
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object StepError {
   def fromException(e: Throwable) = {
     val msg = e.getMessage

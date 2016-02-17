@@ -57,7 +57,7 @@ import java.io.File
  * which by default just creates a RasterExtent with that extent snapped to
  * the raster's native resolution.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 abstract class RasterLayer(val info: RasterLayerInfo) {
   private var _cache: Option[Cache[String]] = None
   protected def getCache =
@@ -96,13 +96,13 @@ abstract class RasterLayer(val info: RasterLayerInfo) {
   def getTile(tileCol: Int, tileRow: Int, targetExtent: Option[RasterExtent]): Tile
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 abstract class UntiledRasterLayer(info: RasterLayerInfo) extends RasterLayer(info) {
   def getTile(tileCol: Int, tileRow: Int, targetExtent: Option[RasterExtent]) =
     getRaster(targetExtent)
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object RasterLayer {
   /**
    * Build a RasterLayer instance given a path to a JSON file.

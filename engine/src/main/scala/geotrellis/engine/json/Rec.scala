@@ -28,12 +28,12 @@ import java.io.File
  * instance of T. Records are also required to have a name (which will be
  * used when building maps out of lists.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait Rec[T] {
   def name: String
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class CatalogRec(catalog:String,
                       stores:List[DataStoreRec]) extends Rec[Catalog] {
   def create(json:String, source:String) =
@@ -41,7 +41,7 @@ case class CatalogRec(catalog:String,
   def name = catalog
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class DataStoreRec(store:String,
                         params:Map[String, String],
                         catalogPath:String) extends Rec[DataStore] {

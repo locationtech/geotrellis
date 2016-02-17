@@ -29,7 +29,7 @@ import akka.actor._
  * External message to compute the given operation and return result to sender.
  * Run child operations using default local dispatcher.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Run(op:Operation[_])
 
 /********************

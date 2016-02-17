@@ -6,5 +6,5 @@ package geotrellis.engine
   * wraps Travesable[RasterSourceSeq], that extends your Methods trait. See
   * [[LocalSeqRasterSourceMethods]] and [[geotrellis.raster.op.local.LocalRasterSourceSeqMethodExtensions]]
   */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait RasterSourceSeqMethods { val rasterSources: Traversable[RasterSource] }

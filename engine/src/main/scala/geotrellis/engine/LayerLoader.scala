@@ -24,7 +24,7 @@ import scala.util._
   * mix in the LayerOp trait right before 'run' is called
   * on the operation step and cleared afterwards.
   */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class LayerLoader(engine:Engine) {
   /**
    * Clients can call the raster path loading functions

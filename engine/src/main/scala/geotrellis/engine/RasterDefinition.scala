@@ -19,7 +19,7 @@ package geotrellis.engine
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class RasterDefinition(layerId: LayerId,
                             rasterExtent: RasterExtent,
                             tileLayout: TileLayout,
@@ -47,7 +47,7 @@ case class RasterDefinition(layerId: LayerId,
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object RasterDefinition {
   def fromRaster(r: Tile, extent: Extent): RasterDefinition = {
     val rasterExtent = RasterExtent(extent, r.cols, r.rows)

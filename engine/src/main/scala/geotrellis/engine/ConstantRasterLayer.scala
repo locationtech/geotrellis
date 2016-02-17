@@ -21,7 +21,7 @@ import geotrellis.raster._
 
 import com.typesafe.config.Config
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object ConstantRasterLayerBuilder extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
     val cols = json.getInt("cols")

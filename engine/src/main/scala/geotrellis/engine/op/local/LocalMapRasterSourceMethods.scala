@@ -20,7 +20,7 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.local._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait LocalMapRasterSourceMethods extends RasterSourceMethods {
     /** Map the integer values of a each cell to a new integer value. */
   def localMap(f:Int=>Int) =

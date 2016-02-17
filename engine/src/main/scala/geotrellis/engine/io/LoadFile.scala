@@ -22,7 +22,7 @@ import geotrellis.engine._
 /**
  * Load the raster data for a particular extent/resolution from the specified file.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadFile(p: Op[String]) extends Operation[Tile] {
   def _run() = runAsync(List(p))
   val nextSteps: Steps[Tile] = {
@@ -36,7 +36,7 @@ case class LoadFile(p: Op[String]) extends Operation[Tile] {
 /**
  * Load the raster data from the specified file, using the RasterExtent provided.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadFileWithRasterExtent(p: Op[String], e: Op[RasterExtent]) extends Operation[Tile] {
   def _run() = runAsync(List(p, e))
   val nextSteps: Steps[Tile] = {
@@ -47,7 +47,7 @@ case class LoadFileWithRasterExtent(p: Op[String], e: Op[RasterExtent]) extends 
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadFile {
   def apply(p: Op[String], e: Op[RasterExtent]) = LoadFileWithRasterExtent(p, e)
 }

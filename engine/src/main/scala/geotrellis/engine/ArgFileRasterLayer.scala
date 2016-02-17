@@ -24,7 +24,7 @@ import com.typesafe.config.Config
 
 import java.io.File
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
@@ -67,7 +67,7 @@ extends RasterLayerBuilder {
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class ArgFileRasterLayer(info: RasterLayerInfo, val rasterPath: String)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent: Option[RasterExtent]) = {

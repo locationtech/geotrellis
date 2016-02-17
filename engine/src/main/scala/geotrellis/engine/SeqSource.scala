@@ -2,7 +2,7 @@ package geotrellis.engine
 
 import akka.actor.ActorRef
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class SeqSource[T](elements: Op[Seq[Op[T]]]) extends DataSource[T, Seq[T]] {
   type Self = SeqSource[T]
 

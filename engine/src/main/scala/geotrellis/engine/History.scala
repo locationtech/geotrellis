@@ -20,7 +20,7 @@ import scala.collection.mutable
 
 import geotrellis._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object TreeChars {
   val DOWN_OUT = "├"
   val OUT_DOWN = "┬"
@@ -31,7 +31,7 @@ object TreeChars {
   val DOWN = "│"
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object History {
   def apply(op:Op[_]) =
     new History(op.opId,Nil,None,System.currentTimeMillis,0)
@@ -45,12 +45,12 @@ object History {
   implicit def historyToString(h:History) = h.toString
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 abstract sealed trait HistoryResult {
   def toJson:String
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class SuccessHistory(value:String) extends HistoryResult {
   def toJson() = {
     val escapedVal = value.replace(""""""","""\"""")
@@ -58,7 +58,7 @@ case class SuccessHistory(value:String) extends HistoryResult {
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   def toJson() = {
     val escapedMsg = msg.replace(""""""","""\"""")
@@ -67,7 +67,7 @@ case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class History(id:String,
                    steps:List[StepHistory],
                    result:Option[HistoryResult],
@@ -178,7 +178,7 @@ case class History(id:String,
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class StepHistory(opHistories:List[History]) {
   override
   def toString:String =

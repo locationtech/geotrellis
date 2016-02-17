@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import scala.language.higherKinds
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait OpSource[+V] {
   private[geotrellis] def convergeOp(): Op[V]
 

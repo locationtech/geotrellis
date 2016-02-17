@@ -23,7 +23,7 @@ import geotrellis.raster.regiongroup.RegionGroupOptions
 import geotrellis.raster.viewshed.{ApproxViewshed, Viewshed}
 import geotrellis.vector._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait GlobalRasterSourceMethods extends RasterSourceMethods {
   def costDistance(points: Seq[(Int, Int)]) =
     rasterSource.global(CostDistance(_, points))

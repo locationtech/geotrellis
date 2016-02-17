@@ -25,7 +25,7 @@ import scala.collection.mutable
 /**
  * Trait for a T-keyed, any valued cache.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait Cache[T] extends Serializable {
   /** Lookup the value for key k
    * @return Some(v) if the value was cached, None otherwise
@@ -57,7 +57,7 @@ trait Cache[T] extends Serializable {
 /**
  * Simple HashMap backed cache keyed by String and can hold any type.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class HashCache[T] extends Cache[T] {
   val cache = new mutable.HashMap[T,Any].empty
 

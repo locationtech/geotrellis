@@ -32,7 +32,7 @@ import spray.client.pipelining._
 
 import com.typesafe.config.Config
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object ArgUrlRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
@@ -64,7 +64,7 @@ extends RasterLayerBuilder {
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class ArgUrlRasterLayer(info: RasterLayerInfo, rasterUrl: String)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent: Option[RasterExtent]) =

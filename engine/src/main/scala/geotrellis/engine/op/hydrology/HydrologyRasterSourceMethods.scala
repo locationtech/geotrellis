@@ -21,7 +21,7 @@ import geotrellis.engine.op.focal.FocalOperation
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.hydrology._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait HydrologyRasterSourceMethods extends RasterSourceMethods with FocalOperation {
   def accumulation() = rasterSource.globalOp(Accumulation(_))
   def fill(threshold: Double) =

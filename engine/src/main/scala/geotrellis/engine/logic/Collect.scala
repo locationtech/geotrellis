@@ -18,7 +18,7 @@ package geotrellis.engine.logic
 
 import geotrellis.engine._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class CollectMap[K, V](map: Op[Map[K, Op[V]]]) extends Op[Map[K, V]] {
   def _run() = runAsync(List('init, map))
   val nextSteps: Steps[Map[K, V]] = {
@@ -31,7 +31,7 @@ case class CollectMap[K, V](map: Op[Map[K, Op[V]]]) extends Op[Map[K, V]] {
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object Collect {
   def apply[K, V](m: Op[Map[K, Op[V]]]): CollectMap[K, V] =
     CollectMap(m)
@@ -40,7 +40,7 @@ object Collect {
 /**
  * Takes a sequence of operations, and returns a Sequence of the results of those operations.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Collect[A](ops: Op[Seq[Op[A]]]) extends Op[Seq[A]] {
   def _run() = runAsync(List('init, ops))
   val nextSteps: Steps[Seq[A]] = {
@@ -50,7 +50,7 @@ case class Collect[A](ops: Op[Seq[Op[A]]]) extends Op[Seq[A]] {
   }
 }
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object CollectArray {
   @deprecated("Use Collect.", "0.9")
   def apply[A: Manifest](ops: Array[Op[A]]): Op[Array[A]] = Collect(Literal(ops.toSeq)).map( _.toArray )

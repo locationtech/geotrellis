@@ -21,7 +21,7 @@ import geotrellis.engine._
 /**
  * Return the result of the input operation as a List.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class AsList[A](x: Op[A]) extends Op1(x)({
     x => Result(List(x))
 })

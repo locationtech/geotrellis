@@ -24,7 +24,7 @@ import geotrellis.engine._
  * Functionally speaking, this represents the bind operation
  * on the Operation monad
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class WithResult[A, Z](a:Op[A])(call:A => Op[Z]) extends Op[Z] {
   def _run() = runAsync(a.flatMap(call) :: Nil)
   val nextSteps:Steps[Z] = {

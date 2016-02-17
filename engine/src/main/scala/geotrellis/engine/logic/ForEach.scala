@@ -20,7 +20,7 @@ import geotrellis.engine._
 
 import scala.{PartialFunction => PF}
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object ForEach {
   def apply[A, Z:Manifest](a:Op[Array[A]])(f:(A) => Op[Z]) = ForEach1(a)(f)
   def apply[A, B, Z:Manifest](a:Op[Array[A]], b:Op[Array[B]])(f:(A, B) => Op[Z]) = ForEach2(a, b)(f)
@@ -32,7 +32,7 @@ object ForEach {
  * the given function (f) to each item in the array in. The resulting array of
  * Z's is returned.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class ForEach1[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[Array[Z]] {
 
   def _run() = runAsync(List(op))
@@ -57,7 +57,7 @@ case class ForEach1[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[A
  * the arrays (pairwise by array index) to get a Z value. The resulting array
  * of Z's is returned.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
                                      (f:(A, B) => Op[Z]) extends Op[Array[Z]] {
 
@@ -85,7 +85,7 @@ case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
  * Then, applies the given function (f) to each (A, B, C) triple in (grouped by
  * array index) to get a Z value. The resulting array of Z's is returned.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class ForEach3[A, B, C, Z:Manifest](opA:Op[Array[A]],
                                          opB:Op[Array[B]],
                                          opC:Op[Array[C]])

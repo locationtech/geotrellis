@@ -18,7 +18,7 @@ package geotrellis.engine.logic
 
 import geotrellis.engine._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object Filter {
   def apply[A](ops:Op[Seq[A]], condition:(A) => Boolean) = ops.map(_.filter(condition))
 

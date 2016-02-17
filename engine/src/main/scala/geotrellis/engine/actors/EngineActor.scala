@@ -20,7 +20,7 @@ import geotrellis.engine._
 import akka.actor._
 import akka.routing._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class EngineContext(externalId:String,layerLoader:LayerLoader,engineRef:ActorRef)
 
 /**
@@ -33,7 +33,7 @@ case class EngineContext(externalId:String,layerLoader:LayerLoader,engineRef:Act
  * In the first case, we dispatch the message to a pool of workers). In the second
  * case we will spin up a Step Aggregator actor who will handle the message.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class EngineActor(engine: Engine) extends Actor {
   val fullExternalId = context.system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
   val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@"))

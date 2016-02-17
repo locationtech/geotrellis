@@ -19,7 +19,7 @@ package geotrellis.engine.io
 import geotrellis.raster._
 import geotrellis.engine._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadRasterUrl {
   def apply(url: Op[String]): LoadRasterUrl = LoadRasterUrl(url, None)
 }
@@ -27,7 +27,7 @@ object LoadRasterUrl {
 /**
  * Load the raster from JSON metadata recieved from a URL
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadRasterUrl(url: Op[String], re: Op[Option[RasterExtent]]) extends Operation[Tile] {
   def _run() = runAsync(List(url, re))
   val nextSteps: Steps[Tile] = {

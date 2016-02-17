@@ -26,7 +26,7 @@ import scala.util._
  * Represents a location where data can be loaded from (e.g. the filesystem,
  * postgis, a web service, etc).
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class DataStore(name:String, path:String, hasCacheAll:Boolean) {
 
   private val layers = mutable.Map.empty[String, RasterLayer]

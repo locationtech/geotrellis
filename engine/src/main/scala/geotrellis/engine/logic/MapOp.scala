@@ -18,7 +18,7 @@ package geotrellis.engine.logic
 
 import geotrellis.engine._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object MapOp {
   /**
    * Invoke a function that takes no arguments.
@@ -46,7 +46,7 @@ object MapOp {
 /**
  * Invoke a function that takes no arguments.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class MapOp0[Z](call:() => Z) extends Op[Z] {
   def _run() = Result(call())
   val nextSteps:Steps[Z] = {
@@ -60,7 +60,7 @@ case class MapOp0[Z](call:() => Z) extends Op[Z] {
  * Functionally speaking: MapOp an Op[A] into an Op[Z]
  * using a function from A => Z.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class MapOp1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
   def _run() = runAsync(a :: Nil)
   val nextSteps:Steps[Z] = {
@@ -74,7 +74,7 @@ case class MapOp1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
  * Functionally speaking: MapOp an Op[A] and Op[B] into an Op[Z] using a
  * function from (A,B) => Z.
  */
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class MapOp2[A, B, Z]
 (a:Op[A], b:Op[B])(call:(A,B) => Z) extends Op[Z] {
   def _run() = runAsync(a :: b :: Nil)

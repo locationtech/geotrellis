@@ -19,7 +19,7 @@ package geotrellis.engine
 import geotrellis.engine._
 import geotrellis.raster._
 
-@deprecated("geotrellis-engine has been deprecated", "7b92cb2")
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object GeoTrellis {
   private var _engine: Engine = null
   def engine = {
