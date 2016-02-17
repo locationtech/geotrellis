@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.elevation
+package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
 

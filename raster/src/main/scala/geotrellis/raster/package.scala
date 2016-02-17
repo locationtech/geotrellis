@@ -25,7 +25,7 @@ import geotrellis.raster.rasterize._
 package object raster
     extends crop.Implicits
     with merge.Implicits
-    with elevation.Implicits
+    with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
     with reproject.Implicits {
   type CellType = DataType with NoDataHandling
   type SingleBandRaster = Raster[Tile]
@@ -68,7 +68,7 @@ package object raster
       with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.zonal.ZonalMethods
-      with elevation.ElevationMethods
+      with mapalgebra.focal.hillshade.HillshadeMethods
       with hydrology.HydrologyMethods
       with viewshed.ViewshedMethods
       with costdistance.CostDistanceMethods

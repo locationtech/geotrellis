@@ -47,7 +47,7 @@ package object spark
     with mapalgebra.zonal.Implicits
     with summary.polygonal.Implicits
     with summary.Implicits
-    with elevation.Implicits
+    with mapalgebra.focal.hillshade.Implicits
     with partitioner.Implicits
     with Serializable // required for java serialization, even though it's mixed in
 {

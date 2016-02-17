@@ -1,10 +1,7 @@
-package geotrellis.spark.elevation
+package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.spark._
-
-import geotrellis.raster.elevation._
 import geotrellis.raster._
-
+import geotrellis.spark._
 import org.scalatest.FunSpec
 
 class AspectSpec extends FunSpec with TestEnvironment {

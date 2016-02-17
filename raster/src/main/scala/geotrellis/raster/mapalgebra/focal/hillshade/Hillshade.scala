@@ -1,4 +1,4 @@
-package geotrellis.raster.elevation
+package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._

@@ -1,7 +1,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.raster.elevation.{SurfacePoint, SurfacePointCalculation}
+import geotrellis.raster.mapalgebra.focal.hillshade.{SurfacePoint, SurfacePointCalculation}
 import geotrellis.raster.mapalgebra.focal.Angles._
 
 /**

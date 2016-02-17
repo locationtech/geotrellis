@@ -1,7 +1,7 @@
-package geotrellis.spark.elevation
+package geotrellis.spark.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.elevation._
+import geotrellis.raster.mapalgebra.focal.hillshade._
 
 import geotrellis.spark._
 

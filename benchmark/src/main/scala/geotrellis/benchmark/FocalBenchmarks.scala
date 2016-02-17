@@ -22,7 +22,7 @@ import geotrellis.engine.op.focal._
 import geotrellis.engine.op.elevation._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.elevation._
+import geotrellis.raster.mapalgebra.focal.hillshade._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
