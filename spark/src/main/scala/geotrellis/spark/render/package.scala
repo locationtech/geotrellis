@@ -20,14 +20,14 @@ package object render {
      *
      * @param id            LayerId required to fill the zoom variable
      * @param pathTemplate  path template for each file. (ex: "s3://tile-bucket/{name}/{z}/{x}/{y}.png")
-     * @param breaks        If not defined cells are assumed to be RGBA values
+     * @param classifier    If not defined cells are assumed to be RGBA values
      */
-    def renderPng(id: LayerId, pathTemplate: String, breaks: Option[ColorBreaks] = None): Unit = {
+    def renderPng(id: LayerId, pathTemplate: String, classifier: Option[ColorClassifier[_]] = None): Unit = {
       // '(' and ')' are oddly enough valid URI characters that parser will not fail
       val parseFriendlyTemplate = pathTemplate.replace("{","(").replace("}",")")
       val uri = new URI(parseFriendlyTemplate)
 
-      val paintTile = (k: SpatialKey, t: Tile) => breaks.fold(t.renderPng())( b => t.renderPng(b)).bytes
+      val paintTile = (k: SpatialKey, t: Tile) => classifier.fold(t.renderPng())( b => t.renderPng(b)).bytes
 
       // Hadoop appears to have  poor support for S3, requiring  specialized handling
       if (uri.getScheme == "s3")
@@ -41,14 +41,14 @@ package object render {
      *
      * @param id            LayerId required to fill the zoom variable
      * @param pathTemplate  path template for each file. (ex: "s3://tile-bucket/{name}/{z}/{x}/{y}.png")
-     * @param breaks        If not defined cells are assumed to be RGB values
+     * @param classifier    If not defined cells are assumed to be RGB values
      */
-    def renderJpg(id: LayerId, pathTemplate: String, breaks: Option[ColorBreaks] = None): Unit = {
+    def renderJpg(id: LayerId, pathTemplate: String, classifier: Option[ColorClassifier[_]] = None): Unit = {
       // '(' and ')' are oddly enough valid URI characters that parser will not fail
       val parseFriendlyTemplate = pathTemplate.replace("{","(").replace("}",")")
       val uri = new URI(parseFriendlyTemplate)
 
-      val paintTile = (k: SpatialKey, t: Tile) => breaks.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
+      val paintTile = (k: SpatialKey, t: Tile) => classifier.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
 
       // Hadoop appears to have  poor support for S3, requiring  specialized handling
       if (uri.getScheme == "s3")

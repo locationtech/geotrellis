@@ -69,7 +69,7 @@ class ColorSpec extends FunSpec with Matchers {
 
     it("should unzip colors") {
       val n = 0xff9900ff
-      val (r, g, b, a) = Color.unzip(n)
+      val (r, g, b, a) = RGBA(n).unzip
       println(s"n=$n, r=$r g=$g b=$b a=$a")
       r should be (0xff)
       g should be (0x99)
@@ -79,8 +79,12 @@ class ColorSpec extends FunSpec with Matchers {
   }
 
   describe("MultiColorRangeChooser()") {
-    def getColors(baseColors:Array[Int], numColors:Int) = 
-      Color.chooseColors(baseColors,numColors)
+    def getColors(baseColors:Array[Int], numColors:Int): Array[Int] = {
+      val theBreaks = 1 to numColors toArray
+      val bcc = new BlendingIntColorClassifier
+      bcc.addColors(baseColors.map { RGBA(_) }).addBreaks(theBreaks).normalize
+      bcc.getColors.map(_.int)
+    }
 
     it("should work 1") {
       val baseColors = Array(0x0000ffff)
@@ -90,7 +94,7 @@ class ColorSpec extends FunSpec with Matchers {
 
     it("should work 2") {
       val baseColors = Array(0x0000ffff, 0xff0000ff)
-      val colors = getColors(baseColors,baseColors.length)      
+      val colors = getColors(baseColors,baseColors.length)
       colors.toList should be (baseColors.toList)
     }
 
@@ -105,14 +109,14 @@ class ColorSpec extends FunSpec with Matchers {
       val colors = getColors(baseColors,baseColors.length)
       colors.toList should be (baseColors.toList)
     }
-    
+
     it ("should interpolate") {
       val baseColors = Array(0x0000ffff, 0xff0000ff)
       val expectedColors = Array(0x0000ffff, 0x7f0080ff, 0xff0000ff)
       val colors = getColors(baseColors,3)
       ColorSpec.hexstringify(colors) should be (ColorSpec.hexstringify(expectedColors))
     }
-    
+
     it ("should interpolate 5 colors between 3 given") {
       val baseColors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)

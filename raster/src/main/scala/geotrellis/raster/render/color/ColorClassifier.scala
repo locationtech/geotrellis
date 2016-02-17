@@ -41,6 +41,9 @@ abstract class ColorClassifier[T] extends Serializable {
   protected var noDataColor: RGBA = RGBA(0x00000000)
   protected var fallbackColor: RGBA = RGBA(0x00000000)
 
+  type ClassifierInstance[_] <: ColorClassifier[_]
+  val self: ClassifierInstance[T]
+
   val classificationType: ClassBoundaryType
 
   /** Return a sorted list of classification boundaries */
@@ -49,42 +52,44 @@ abstract class ColorClassifier[T] extends Serializable {
   /** Return a sorted list of classification colors */
   def getColors: Array[RGBA]
 
-  /** Transform a color classifier's boundaries according to some function */
-  def mapBreaks(f: T => T): ColorClassifier[T]
+  /** Transform a color classifier's boundaries according to a provided function */
+  def mapBreaks(f: T => T): ClassifierInstance[T]
 
-  /** Transform a color classifier's colors according to some function */
-  def mapColors(f: RGBA => RGBA): ColorClassifier[T]
+  /** Transform a color classifier's colors according to a provided function */
+  def mapColors(f: RGBA => RGBA): ClassifierInstance[T]
 
-  /** Return a colormap which corresponds to this classifier instance */
+  /** Return a colormap for this classifier instance */
   def toColorMap(histogram: Option[Histogram] = None): ColorMap
 
   /** Return the number of classifications */
   def length: Int
 
   /** Set the color for NoData values */
-  def setNoDataColor(color: RGBA): ColorClassifier[T] = {
+  def setNoDataColor(color: RGBA): ClassifierInstance[T] = {
     noDataColor = color
-    this
+    self
   }
 
   /** Return the color to be used in representing NoData */
   def getNoDataColor = noDataColor
 
   /** Set the color to be used for any data not captured through classification */
-  def setFallbackColor(color: RGBA): ColorClassifier[T] = {
+  def setFallbackColor(color: RGBA): ClassifierInstance[T] = {
     fallbackColor = color
-    this
+    self
   }
 
+  /** Return options for the construction of a ColorMap */
   def cmapOptions: ColorMapOptions =
     ColorMapOptions(classificationType, noDataColor.int, fallbackColor.int, false)
 
 }
 
-trait StrictColorClassification[T] extends ColorClassifier[T] {
+abstract class StrictColorClassifier[T] extends ColorClassifier[T] {
   protected var colorClassifications: mutable.Map[T, RGBA] = mutable.Map[T, RGBA]()
   implicit val ctag: ClassTag[T]
   implicit val ord: Ordering[T]
+  type ClassifierInstance[_] = StrictColorClassifier[_]
 
   def length = colorClassifications.size
 
@@ -97,7 +102,7 @@ trait StrictColorClassification[T] extends ColorClassifier[T] {
       colorClassifications(break)
     }
 
-  def mapBreaks(f: T => T): ColorClassifier[T] = {
+  def mapBreaks(f: T => T): ClassifierInstance[T] = {
     val newMap = mutable.Map[T, RGBA]()
     colorClassifications map { case (k, v) =>
       newMap(f(k)) = v
@@ -106,24 +111,24 @@ trait StrictColorClassification[T] extends ColorClassifier[T] {
     this
   }
 
-  def mapColors(f: RGBA => RGBA): ColorClassifier[T] = {
+  def mapColors(f: RGBA => RGBA): ClassifierInstance[T] = {
     colorClassifications map { case (k, v) =>
       colorClassifications(k) = v
     }
     this
   }
 
-  def classify(classBreak: T, classColor: RGBA): StrictColorClassification[T] = {
+  def classify(classBreak: T, classColor: RGBA): StrictColorClassifier[T] = {
     colorClassifications(classBreak) = classColor
     this
   }
 
   /** Add classifications to this classifier */
-  def addClassifications(classifications: Array[(T, RGBA)]): StrictColorClassification[T] =
+  def addClassifications(classifications: Array[(T, RGBA)]): StrictColorClassifier[T] =
     addClassifications(classifications: _*)
 
   /** Add classifications to this classifier */
-  def addClassifications(classifications: (T, RGBA)*): StrictColorClassification[T] = {
+  def addClassifications(classifications: (T, RGBA)*): StrictColorClassifier[T] = {
     classifications map { case classification: (T, RGBA) =>
       classify(classification._1, classification._2)
     }
@@ -132,11 +137,12 @@ trait StrictColorClassification[T] extends ColorClassifier[T] {
 
 }
 
-trait BlendingColorClassification[T] extends ColorClassifier[T] {
+abstract class BlendingColorClassifier[T] extends ColorClassifier[T] {
   protected var classificationBreaks: mutable.Buffer[T] = mutable.Buffer[T]()
   protected var classificationColors: mutable.Buffer[RGBA] = mutable.ArrayBuffer[RGBA]()
   implicit val ctag: ClassTag[T]
   implicit val ord: Ordering[T]
+  type ClassifierInstance[_] = BlendingColorClassifier[_]
 
   def length: Int = classificationBreaks.size
 
@@ -144,38 +150,38 @@ trait BlendingColorClassification[T] extends ColorClassifier[T] {
 
   def getColors: Array[RGBA] = classificationColors.toArray
 
-  def mapBreaks(f: T => T): ColorClassifier[T] = {
+  def mapBreaks(f: T => T): ClassifierInstance[T] = {
     classificationBreaks = classificationBreaks map(f(_))
     this
   }
 
-  def mapColors(f: RGBA => RGBA): ColorClassifier[T] = {
+  def mapColors(f: RGBA => RGBA): ClassifierInstance[T] = {
     classificationColors = classificationColors map(f(_))
     this
   }
 
-  def addBreaks(breaks: Array[T]): BlendingColorClassification[T] =
+  def addBreaks(breaks: Array[T]): BlendingColorClassifier[T] =
     addBreaks(breaks: _*)
 
-  def addBreaks(breaks: T*): BlendingColorClassification[T] = {
+  def addBreaks(breaks: T*): BlendingColorClassifier[T] = {
     classificationBreaks ++= breaks
     this
   }
 
-  def addColors(colors: Array[RGBA]): BlendingColorClassification[T] =
+  def addColors(colors: Array[RGBA]): BlendingColorClassifier[T] =
     addColors(colors: _*)
 
-  def addColors(colors: RGBA*): BlendingColorClassification[T] = {
+  def addColors(colors: RGBA*): BlendingColorClassifier[T] = {
     classificationColors ++= colors
     this
   }
 
   /**
     * If the count of colors doesn't match the count of classification Breaks, produce a
-    * ColorClassification which either interpolates or properly subsets the colors so as
+    * ColorClassifier which either interpolates or properly subsets the colors so as
     * to have an equal count of Breaks and colors
   **/
-  def normalize: BlendingColorClassification[T] = {
+  def normalize: BlendingColorClassifier[T] = {
     if (classificationBreaks.size < classificationColors.size) {
       classificationColors = spread(getColors, classificationBreaks.size).toBuffer
     } else if (classificationBreaks.size > classificationColors.size) {
@@ -186,7 +192,7 @@ trait BlendingColorClassification[T] extends ColorClassifier[T] {
 
   /**
   **/
-  def alphaGradient(start: RGBA = RGBA(0), stop: RGBA = RGBA(0xFF)): BlendingColorClassification[T] = {
+  def alphaGradient(start: RGBA = RGBA(0), stop: RGBA = RGBA(0xFF)): BlendingColorClassifier[T] = {
     val colors = getColors
     val alphas = chooseColors(start, stop, colors.length).map(_.alpha)
 
@@ -199,7 +205,7 @@ trait BlendingColorClassification[T] extends ColorClassifier[T] {
     this
   }
 
-  def setAlpha(a: Int): BlendingColorClassification[T] = {
+  def setAlpha(a: Int): BlendingColorClassifier[T] = {
     val newColors = getColors.map { color =>
       val(r, g, b) = color.unzipRGB
       RGBA(r, g, b, a)
@@ -208,7 +214,7 @@ trait BlendingColorClassification[T] extends ColorClassifier[T] {
     this
   }
 
-  def setAlpha(alphaPct: Double): BlendingColorClassification[T] = {
+  def setAlpha(alphaPct: Double): BlendingColorClassifier[T] = {
     val newColors: Array[RGBA] = getColors.map { color =>
       val(r, g, b) = color.unzipRGB
       RGBA(r, g, b, alphaPct)
@@ -224,7 +230,7 @@ trait BlendingColorClassification[T] extends ColorClassifier[T] {
     * color list.
     *
     * For example, if we are provided a list of 9 colors on a red
-    * to green gradient, but only need a list of 3, we expect to get back a 
+    * to green gradient, but only need a list of 3, we expect to get back a
     * list of 3 colors with the first being red, the second color being the 5th
     * color (between red and green), and the last being green.
     *
@@ -316,8 +322,8 @@ trait BlendingColorClassification[T] extends ColorClassifier[T] {
 
 
 case class StrictIntColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Int], implicit val ord: Ordering[Int])
-    extends ColorClassifier[Int]
-       with StrictColorClassification[Int] {
+    extends StrictColorClassifier[Int] {
+  val self = this
 
   def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
     histogram match {
@@ -328,8 +334,8 @@ case class StrictIntColorClassifier(classificationType: ClassBoundaryType = Less
 }
 
 case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Double], implicit val ord: Ordering[Double])
-    extends ColorClassifier[Double]
-       with StrictColorClassification[Double] {
+    extends StrictColorClassifier[Double] {
+  val self = this
 
   def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
     histogram match {
@@ -340,8 +346,8 @@ case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = L
 }
 
 case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Int], implicit val ord: Ordering[Int])
-    extends ColorClassifier[Int]
-       with BlendingColorClassification[Int] {
+    extends BlendingColorClassifier[Int] {
+  val self = this
 
   def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
     normalize
@@ -353,8 +359,8 @@ case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = Le
 }
 
 case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType = LessThan)(implicit val ctag: ClassTag[Double], implicit val ord: Ordering[Double])
-    extends ColorClassifier[Double]
-       with BlendingColorClassification[Double] {
+    extends BlendingColorClassifier[Double] {
+  val self = this
 
   def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
     normalize
@@ -365,7 +371,7 @@ case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType =
   }
 }
 
-object StrictColorClassification {
+object StrictColorClassifier {
   def apply(classifications: Array[(Int, RGBA)]): StrictIntColorClassifier =
     apply(classifications, None)
 
@@ -394,7 +400,7 @@ object StrictColorClassification {
   }
 }
 
-object BlendingColorClassification {
+object BlendingColorClassifier {
   def apply(breaks: Array[Int], colors: Array[RGBA]): BlendingIntColorClassifier =
     apply(breaks, colors, None)
 

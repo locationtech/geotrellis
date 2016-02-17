@@ -22,6 +22,9 @@ trait PngRenderMethods extends TileMethods {
   def renderPng(colorClassifier: ColorClassifier[_]): Png =
     renderPng(colorClassifier, None)
 
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram): Png =
+    renderPng(colorClassifier, Some(histogram))
+
   /**
     * Generate a PNG image from a raster.
     *
