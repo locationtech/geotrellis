@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,8 @@ import akka.routing._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-/** 
- * A StepAggregator is responsible for executing 
+/**
+ * A StepAggregator is responsible for executing
  * operations in a list of arguments that are returned
  * from a step in an Operation's execution. Each operation
  * is sent to the engine for asynchronous execution.
@@ -33,11 +33,11 @@ import scala.concurrent.duration._
  * is executed and the results are handled by a ResultHandler.
  */
 private[actors]
-case class StepAggregator[T](engineContext:EngineContext, 
-                             pos:Int, 
+case class StepAggregator[T](engineContext:EngineContext,
+                             pos:Int,
                              args:Args,
-                             cb:Callback[T], 
-                             client:ActorRef, 
+                             cb:Callback[T],
+                             client:ActorRef,
                              history:History)
     extends Actor {
 
@@ -63,7 +63,7 @@ case class StepAggregator[T](engineContext:EngineContext,
       }
     }
 
-    if (isDone) { 
+    if (isDone) {
       finishCallback()
       context.stop(self)
     }
@@ -72,7 +72,7 @@ case class StepAggregator[T](engineContext:EngineContext,
   // This should create a list of all the (non-trivial) child histories we
   // have. This leaves out inlined arguments, who don't have history in any
   // real sense (e.g. they were complete when we received them).
-  def childHistories = 
+  def childHistories =
     results.toList.flatMap {
       case Some(Complete(_, t)) => Some(t)
       case Some(Error(_, t)) => Some(t)
@@ -83,7 +83,7 @@ case class StepAggregator[T](engineContext:EngineContext,
   // If any entry in the results array is null, we're not done.
   def isDone = results.find(_ == None).isEmpty
 
-  def error:Option[Error] = 
+  def error:Option[Error] =
     results.flatten
            .filter { case err:Error => true; case _ => false }
            .headOption
@@ -93,7 +93,7 @@ case class StepAggregator[T](engineContext:EngineContext,
   def getValues = results.toList.map {
     case Some(Complete(value, _)) => value
     case Some(Inlined(value)) => value
-    case r => sys.error("found unexpected result (some(error)) ") 
+    case r => sys.error("found unexpected result (some(error)) ")
   }
 
   // This is called when we have heard back from all our sub-operations and

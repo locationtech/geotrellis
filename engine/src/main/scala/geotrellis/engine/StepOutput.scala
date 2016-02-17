@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,16 +23,17 @@ package geotrellis.engine
  */
 sealed trait StepOutput[+T]
 
-case class Result[+T](value: T) extends StepOutput[T]
-case class StepError(msg: String, trace: String) extends StepOutput[Nothing]
-case class StepRequiresAsync[+T](args: Args, cb: Args => StepOutput[T]) extends StepOutput[T]
-case class AndThen[+T](op: Operation[T]) extends StepOutput[T]
-case class LayerResult[+T](loadFunc: LayerLoader => T) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class Result[+T](value: T) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class StepError(msg: String, trace: String) extends StepOutput[Nothing]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class StepRequiresAsync[+T](args: Args, cb: Args => StepOutput[T]) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class AndThen[+T](op: Operation[T]) extends StepOutput[T]
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10") case class LayerResult[+T](loadFunc: LayerLoader => T) extends StepOutput[T]
 
-object StepError { 
-  def fromException(e: Throwable) = { 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
+object StepError {
+  def fromException(e: Throwable) = {
     val msg = e.getMessage
-    val trace = e.getStackTrace.map(_.toString).mkString("\n") 
-    StepError(msg, trace) 
-  } 
-} 
+    val trace = e.getStackTrace.map(_.toString).mkString("\n")
+    StepError(msg, trace)
+  }
+}

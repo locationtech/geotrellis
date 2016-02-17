@@ -21,6 +21,7 @@ import geotrellis.raster._
 import scala.collection.concurrent.Map
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object TileNeighbors {
   val NONE = new TileNeighbors {
     def n: Option[Op[Tile]] = None
@@ -36,6 +37,7 @@ object TileNeighbors {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait TileNeighbors {
   /** North */
   def n: Option[Op[Tile]]
@@ -61,6 +63,7 @@ trait TileNeighbors {
   *  Tile Neighbors that are represented by a sequence of neighboring tiles,
   *  in the order (n, ne, e, se, s, sw, w, nw)
   */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class SeqTileNeighbors(seq: Seq[Option[Op[Tile]]]) extends TileNeighbors {
   def n = seq(0)
   def ne = seq(1)

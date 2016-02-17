@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import com.typesafe.config.ConfigFactory
 
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class Engine(id: String, val catalog: Catalog) extends Serializable {
   val debug = false
 
@@ -48,7 +49,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
 
   def startUp: Unit = ()
 
-  def shutdown(): Unit = { 
+  def shutdown(): Unit = {
     Engine.actorSystem.shutdown()
     Engine.actorSystem.awaitTermination()
   }
@@ -56,8 +57,8 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
   private val routers = mutable.Map[String, ActorRef]()
   def getRouter(): ActorRef = getRouter("clusterRouter")
   def getRouter(routerName: String): ActorRef = {
-    if(!routers.contains(routerName)) { 
-      routers(routerName) = 
+    if(!routers.contains(routerName)) {
+      routers(routerName) =
         system.actorOf(
           Props.empty.withRouter(FromConfig),
           name = routerName)
@@ -74,8 +75,8 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
         println(s"Operation Error. Trace: $trace")
         sys.error(msg)
     }
-  
-  def get[T](op: Op[T]): T = 
+
+  def get[T](op: Op[T]): T =
     run(op) match {
       case Complete(value, _) => value
       case Error(msg, trace) =>
@@ -86,7 +87,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
   def run[T](src: OpSource[T]): OperationResult[T] =
     run(src.convergeOp)
 
-  def run[T](op: Op[T]): OperationResult[T] = 
+  def run[T](op: Op[T]): OperationResult[T] =
     _run(op)
 
   def layerExists(layerId: LayerId): Boolean = catalog.layerExists(layerId)
@@ -97,7 +98,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
 
     val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
-    val future = 
+    val future =
         (actor ? Run(op)).mapTo[PositionedResult[T]]
 
     val result = Await.result(future, d)
@@ -110,6 +111,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object Engine {
   def apply(id: String, path: String) = new Engine(id, Catalog.fromPath(path))
   def apply(id: String, catalog: Catalog) = new Engine(id, catalog)
@@ -120,6 +122,6 @@ object Engine {
   def startActorSystem {
     if (actorSystem.isTerminated) {
       actorSystem = akka.actor.ActorSystem("GeoTrellis", ConfigFactory.load())
-    } 
+    }
   }
 }

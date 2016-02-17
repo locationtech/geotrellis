@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,13 +25,14 @@ import geotrellis.vector.Extent
 import java.io.{File, BufferedReader}
 import com.typesafe.config.Config
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object AsciiRasterLayerBuilder
 extends RasterLayerBuilder {
   val intRe = """^(-?[0-9]+)$""".r
   val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
 
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
-    val path = 
+    val path =
       if(json.hasPath("path")) {
         json.getString("path")
       } else {
@@ -43,7 +44,7 @@ extends RasterLayerBuilder {
         }
       }
 
-    val cellType: CellType = 
+    val cellType: CellType =
       if(json.hasPath("type")) {
         val t = getCellType(json)
         if(t.isFloatingPoint) {
@@ -60,7 +61,7 @@ extends RasterLayerBuilder {
     } else {
       val (rasterExtent, noDataValue) = loadMetaData(path)
 
-      val info = 
+      val info =
         RasterLayerInfo(
           LayerId(ds, getName(json)),
           cellType,
@@ -83,7 +84,7 @@ extends RasterLayerBuilder {
 
     val name = Filesystem.basename(f.getName)
 
-    val info = 
+    val info =
       RasterLayerInfo(
         LayerId(name),
         IntConstantNoDataCellType,
@@ -118,10 +119,10 @@ extends RasterLayerBuilder {
       while (!done) {
         val line = br.readLine().trim()
         val toks = line.split(" ")
-  
+
         if (line == null) throw new Exception(s"premature end of file: $path")
         if (toks.length == 0) throw new Exception(s"illegal empty line: $path")
-  
+
         if (line.charAt(0).isDigit) {
           done = true
         } else {
@@ -132,7 +133,7 @@ extends RasterLayerBuilder {
             case Array("yllcorner", floatRe(n)) => yllcorner = n.toDouble
             case Array("cellsize", floatRe(n)) => cellsize = n.toDouble
             case Array("nodata_value", intRe(n)) => nodata_value = n.toInt
-  
+
             case _ => throw new Exception(s"mal-formed line '$line'")
           }
         }
@@ -151,7 +152,8 @@ extends RasterLayerBuilder {
   }
 }
 
-class AsciiRasterLayer(info: RasterLayerInfo, noDataValue: Int, rasterPath: String) 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
+class AsciiRasterLayer(info: RasterLayerInfo, noDataValue: Int, rasterPath: String)
 extends UntiledRasterLayer(info) {
   private var cached = false
 
@@ -167,7 +169,7 @@ extends UntiledRasterLayer(info) {
       getReader.readPath(info.cellType, info.rasterExtent, targetExtent)
     }
 
-  def cache(c: Cache[String]) = 
+  def cache(c: Cache[String]) =
     c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 
   private def getReader = new AsciiReader(rasterPath, noDataValue)

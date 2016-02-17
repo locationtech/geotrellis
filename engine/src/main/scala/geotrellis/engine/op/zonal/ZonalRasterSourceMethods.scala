@@ -25,6 +25,7 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait ZonalRasterSourceMethods extends RasterSourceMethods {
   /**
    * Given a raster, return a histogram summary of the cells within each zone.
