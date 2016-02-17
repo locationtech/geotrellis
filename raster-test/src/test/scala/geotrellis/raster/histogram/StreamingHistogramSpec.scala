@@ -82,11 +82,17 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
     it("getMedian should work when n is large with unique elements") {
       val h = StreamingHistogram()
 
+      /* Here  the list of values  is used repeatedly, but  with small
+       * perturbations to  make the values  unique (to make  sure that
+       * the maximum number of buckets  is exceeded so that the median
+       * can be tested under  those circumstances).  The perturbations
+       * should be  positive numbers  with magnitude somewhere  in the
+       * neighborhood of 1e-4.*/
       Iterator.continually(list1)
         .flatten.take(list1.length * 10000)
         .foreach({ i => h.countItem(i + (3.0 + r.nextGaussian) / 60000.0) })
 
-      h.getMedian.toInt should equal (9)
+      math.round(h.getMedian).toInt should equal (9)
       h.getMedian should equal (h.generateStatistics.median)
     }
   }
@@ -117,6 +123,13 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
     it("getMean should work when n is large with unique elements") {
       val h = StreamingHistogram()
 
+      /* The  list of values is  used repeatedly here, but  with small
+       * perturbations.   The motivation  for  those  is similar  that
+       * stated above for the median case.  The difference of the mean
+       * of the perturbed list and the mean of the unperturbed list is
+       * a random variable with mean zero and standard deviation 1e-6,
+       * so this test "should never fail" unless the histogram code is
+       * faulty. */
       Iterator.continually(list2)
         .flatten.take(list2.length * 10000)
         .foreach({ i => h.countItem(i + r.nextGaussian / 10000.0) })
