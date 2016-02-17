@@ -11,7 +11,7 @@ object CostDistance {
 
   def apply[K](graphRDD: GraphRDD[K], points: Seq[(Long, Long)])
     (implicit keyClassTag: ClassTag[K], _sc: SpatialComponent[K]): RasterRDD[K] =
-    graphRDD.shortestPath(points).toRaster
+    graphRDD.shortestPath(points).toRaster()
 
   def apply[K](graphRDD: GraphRDD[K], start: (Long, Long), dest: (Long, Long))
     (implicit keyClassTag: ClassTag[K], _sc: SpatialComponent[K]): Seq[Line] =
