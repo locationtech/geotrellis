@@ -19,7 +19,6 @@ package geotrellis.engine.op.global
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.costdistance.CostDistance
-import geotrellis.raster.mapalgebra.global._
 import geotrellis.raster.regiongroup.RegionGroupOptions
 import geotrellis.raster.viewshed.{ApproxViewshed, Viewshed}
 import geotrellis.vector._
@@ -37,7 +36,7 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
   def toVector() = 
     rasterSource.converge.mapOp { tileOp =>
       (tileOp, rasterSource.rasterDefinition).map { (tile, rd) => 
-        tile.regionsToVector(rd.rasterExtent.extent)
+        tile.toVector(rd.rasterExtent.extent)
       }
     }
 

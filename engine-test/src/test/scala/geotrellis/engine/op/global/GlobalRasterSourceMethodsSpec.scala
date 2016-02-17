@@ -17,8 +17,6 @@
 package geotrellis.engine.op.global
 
 import geotrellis.engine._
-import geotrellis.raster.mapalgebra.global._
-import geotrellis.process._
 
 import org.scalatest._
 
@@ -44,29 +42,6 @@ class GlobalRasterSourceMethodsSpec extends FunSpec with TestEngine {
       rs1.min.get should be (1)
       rs1.max.get should be (20)
       rs1.minMax.get should be ((1,20))
-    }
-  }
-
-  describe("verticalFlip") {
-    it("flips a tiled rastersource the same as one raster") {
-      val rs = createRasterSource(
-        Array( 1,1,1,      2,2,2,      3,3,3,
-          1,1,1,      2,2,2,      3,3,3,
-
-          4,4,4,      5,5,nd,      6,6,nd,
-          4,4,4,      5,5,5,      6,6,6,
-
-          7,7,7,      8,4,8,      9,9,9,
-          7,1,7,      8,nd,8,      9,9,9,
-
-          10,10,10,   11,11,11,   12,12,12,
-          10,9,10,   11,20,11,   12,12,12
-        ),
-        3,4,3,2
-      )
-      val t = rs.get
-
-      assertEqual(rs.verticalFlip.get, t.verticalFlip)
     }
   }
 }
