@@ -49,7 +49,7 @@ object SparkUtils extends Logging {
       .setMaster(sparkMaster)
       .setAppName(appName)
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
+      .set("spark.kryo.registrator", classOf[geotrellis.spark.io.kryo.KryoRegistrator].getName)
 
     new SparkContext(sparkConf)
   }
