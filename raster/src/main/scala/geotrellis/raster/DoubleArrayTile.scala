@@ -40,7 +40,7 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
     bytebuff.asDoubleBuffer.put(array)
     pixels
   }
-  def copy = ArrayTile(array.clone, cols, rows)
+  def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 }
 
 final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
