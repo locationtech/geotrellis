@@ -23,8 +23,8 @@ import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.vector.Extent
 
-import geotrellis.raster.op._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.mapalgebra._
+import geotrellis.raster.summary._
 import geotrellis.raster.histogram._
 import geotrellis.raster.io.arg._
 

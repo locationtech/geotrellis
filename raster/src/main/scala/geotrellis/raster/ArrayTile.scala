@@ -259,17 +259,17 @@ object ArrayTile {
       case ct: DoubleCells => DoubleArrayTile.fromBytes(bytes, cols, rows, ct)
     }
 
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = new ByteConstantNoDataArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = new ShortConstantNoDataArrayTile(arr, cols, rows)
-  def apply(arr: Array[Int], cols: Int, rows: Int) = new IntConstantNoDataArrayTile(arr, cols, rows)
-  def apply(arr: Array[Float], cols: Int, rows: Int) = new FloatConstantNoDataArrayTile(arr, cols, rows)
-  def apply(arr: Array[Double], cols: Int, rows: Int) = new DoubleConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Byte], cols: Int, rows: Int): ByteConstantNoDataArrayTile = new ByteConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int): ShortConstantNoDataArrayTile = new ShortConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int): IntConstantNoDataArrayTile = new IntConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int): FloatConstantNoDataArrayTile = new FloatConstantNoDataArrayTile(arr, cols, rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int): DoubleConstantNoDataArrayTile = new DoubleConstantNoDataArrayTile(arr, cols, rows)
 }
 
 object RawArrayTile {
-  def apply(arr: Array[Byte], cols: Int, rows: Int) = new ByteRawArrayTile(arr, cols, rows)
-  def apply(arr: Array[Short], cols: Int, rows: Int) = new ShortRawArrayTile(arr, cols, rows)
-  def apply(arr: Array[Int], cols: Int, rows: Int) = new IntRawArrayTile(arr, cols, rows)
-  def apply(arr: Array[Float], cols: Int, rows: Int) = new FloatRawArrayTile(arr, cols, rows)
-  def apply(arr: Array[Double], cols: Int, rows: Int) = new DoubleRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Byte], cols: Int, rows: Int): ByteRawArrayTile = new ByteRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int): ShortRawArrayTile = new ShortRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int): IntRawArrayTile = new IntRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int): FloatRawArrayTile = new FloatRawArrayTile(arr, cols, rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int): DoubleRawArrayTile = new DoubleRawArrayTile(arr, cols, rows)
 }

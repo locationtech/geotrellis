@@ -11,6 +11,8 @@ libraryDependencies <++= scalaVersion {
   )
 }
 
+sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genMacro)
+
 libraryDependencies += "org.spire-math" %% "spire-macros" % "0.10.1"
 
 resolvers += Resolver.sonatypeRepo("snapshots")

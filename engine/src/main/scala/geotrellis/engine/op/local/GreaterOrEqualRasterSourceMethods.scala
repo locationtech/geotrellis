@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,15 +17,16 @@
 package geotrellis.engine.op.local
 
 import geotrellis.engine._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait GreaterOrEqualRasterSourceMethods extends RasterSourceMethods {
   /**
    * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def localGreaterOrEqual(i: Int): RasterSource = 
+  def localGreaterOrEqual(i: Int): RasterSource =
     rasterSource.mapTile(GreaterOrEqual(_, i))
 
   /**
@@ -33,7 +34,7 @@ trait GreaterOrEqualRasterSourceMethods extends RasterSourceMethods {
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def localGreaterOrEqualRightAssociative(i: Int): RasterSource = 
+  def localGreaterOrEqualRightAssociative(i: Int): RasterSource =
     rasterSource.mapTile(GreaterOrEqual(i, _))
 
   /**
@@ -62,7 +63,7 @@ trait GreaterOrEqualRasterSourceMethods extends RasterSourceMethods {
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def localGreaterOrEqualRightAssociative(d: Double): RasterSource = 
+  def localGreaterOrEqualRightAssociative(d: Double): RasterSource =
     rasterSource.mapTile(GreaterOrEqual(d, _))
 
   /**
@@ -83,7 +84,7 @@ trait GreaterOrEqualRasterSourceMethods extends RasterSourceMethods {
    * Returns a Raster with data of BitCellType, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
-  def localGreaterOrEqual(rs: RasterSource): RasterSource = 
+  def localGreaterOrEqual(rs: RasterSource): RasterSource =
     rasterSource.combineTile(rs)(GreaterOrEqual(_, _))
 
   /**

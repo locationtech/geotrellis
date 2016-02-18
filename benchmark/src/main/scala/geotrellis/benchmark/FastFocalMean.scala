@@ -18,8 +18,8 @@ package geotrellis.benchmark
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.raster.op.focal.Square
-import geotrellis.raster.op._
+import geotrellis.raster.mapalgebra.focal.Square
+import geotrellis.raster.mapalgebra._
 import geotrellis.engine._
 import geotrellis.engine.op.focal._
 

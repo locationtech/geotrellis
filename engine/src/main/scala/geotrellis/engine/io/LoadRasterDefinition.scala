@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ package geotrellis.engine.io
 import geotrellis.engine._
 import geotrellis.raster._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadRasterDefinition {
   def apply(n: String): LoadRasterDefinition =
     LoadRasterDefinition(LayerId(n))
@@ -30,10 +31,11 @@ object LoadRasterDefinition {
 /**
   * Load the [[RasterDefinition]] from the raster layer with the specified name.
   */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadRasterDefinition(layerId: Op[LayerId]) extends Op[RasterDefinition] {
   def _run() = runAsync(List(layerId))
   val nextSteps: Steps[RasterDefinition] = {
-    case (layerId: LayerId) :: Nil => 
+    case (layerId: LayerId) :: Nil =>
       LayerResult { layerLoader =>
         val info = layerLoader.getRasterLayer(layerId).info
         RasterDefinition(layerId, info.rasterExtent, info.tileLayout, info.cellType)

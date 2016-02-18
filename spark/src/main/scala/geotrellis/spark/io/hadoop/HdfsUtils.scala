@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -65,17 +65,17 @@ object HdfsUtils extends Logging {
     FileInputFormat.setInputPaths(job, filesAsCsv)
     job.getConfiguration()
   }
-  
+
   /* get the default block size for that path */
   def defaultBlockSize(path: Path, conf: Configuration): Long =
     path.getFileSystem(conf).getDefaultBlockSize(path)
 
-  /* 
+  /*
    * Recursively descend into a directory and and get list of file paths
    * The input path can have glob patterns
    *    e.g. /geotrellis/images/ne*.tif
-   * to only return those files that match "ne*.tif" 
-   */ 
+   * to only return those files that match "ne*.tif"
+   */
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
     val files = new ListBuffer[Path]
@@ -105,10 +105,10 @@ object HdfsUtils extends Logging {
   /* get hadoop's temporary directory */
   def getTempDir(conf: Configuration): String = conf.get("hadoop.tmp.dir", "/tmp")
 
-  /* 
-   * Create a temporary directory called "dir" under hadoop's temporary directory.  
+  /*
+   * Create a temporary directory called "dir" under hadoop's temporary directory.
    * If "dir" is empty, it generates a random 40-character string as the directory name
-   */ 
+   */
   def createTempDir(conf: Configuration, dir: String = ""): Path = {
     val dirPath = if (dir == "") new Path(getTempDir(conf), createRandomString(40)) else new Path(dir)
     dirPath.getFileSystem(conf).mkdirs(dirPath)

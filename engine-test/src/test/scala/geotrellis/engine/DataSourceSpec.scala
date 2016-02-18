@@ -16,7 +16,7 @@
 
 package geotrellis.engine
 
-import geotrellis.raster.op._
+import geotrellis.raster.mapalgebra._
 
 import org.scalatest._
 

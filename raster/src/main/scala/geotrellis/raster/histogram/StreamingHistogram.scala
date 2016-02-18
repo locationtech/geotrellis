@@ -17,7 +17,7 @@
 package geotrellis.raster.histogram
 
 import geotrellis.raster._
-import geotrellis.raster.op.stats.Statistics
+import geotrellis.raster.summary.Statistics
 import geotrellis.raster.doubleNODATA
 
 import java.util.TreeMap

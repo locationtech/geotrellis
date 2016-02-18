@@ -2,8 +2,6 @@ package geotrellis.graph.op
 
 import geotrellis.graph._
 import geotrellis.spark._
-
-import geotrellis.raster.op.global.{CostDistance => SingleCD}
 import geotrellis.raster._
 
 import org.scalatest.FunSpec

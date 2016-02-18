@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import com.typesafe.config.Config
  * to GeoTrellis. Also provides some baseline helper functions for getting
  * Information out of the metadata json files.
  */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait RasterLayerBuilder {
   def apply(path: String, json: Config): RasterLayer =
     apply(None, path, json)
@@ -48,21 +49,21 @@ trait RasterLayerBuilder {
     (cellWidth, cellHeight)
   }
 
-  def getEpsg(json: Config) = 
+  def getEpsg(json: Config) =
     if(json.hasPath("epsg")) {
       json.getInt("epsg")
     } else {
       3785
     }
 
-  def getXskew(json: Config) = 
+  def getXskew(json: Config) =
     if(json.hasPath("xskew")) {
       json.getDouble("xskew")
     } else {
       0.0
     }
 
-  def getYskew(json: Config) = 
+  def getYskew(json: Config) =
     if(json.hasPath("yskew")) {
       json.getDouble("yskew")
     } else {
@@ -73,7 +74,7 @@ trait RasterLayerBuilder {
     parseType(json.getString("datatype"))
   }
 
-  def getCacheFlag(json: Config): Boolean = 
+  def getCacheFlag(json: Config): Boolean =
     if(json.hasPath("cache")) {
       json.getBoolean("cache")
     } else {

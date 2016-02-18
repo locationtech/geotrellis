@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ package geotrellis.engine.io
 import geotrellis.raster._
 import geotrellis.engine._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadTile {
   def apply(n: String, col: Op[Int], row: Op[Int]): LoadTile =
     LoadTile(LayerId(n), col, row, None)
@@ -36,15 +37,16 @@ object LoadTile {
     LoadTile(layerId, col, row, None)
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadTile(layerId: Op[LayerId],
                     col: Op[Int],
                     row: Op[Int],
                     targetExtent: Op[Option[RasterExtent]]) extends Op[Tile] {
   def _run() = runAsync(List(layerId, col, row, targetExtent))
   val nextSteps: Steps[Tile] = {
-    case (layerId: LayerId) :: 
-         (col: Int) :: 
-         (row: Int) :: 
+    case (layerId: LayerId) ::
+         (col: Int) ::
+         (row: Int) ::
          (te: Option[_]) :: Nil =>
       LayerResult { layerLoader =>
         val layer = layerLoader.getRasterLayer(layerId)

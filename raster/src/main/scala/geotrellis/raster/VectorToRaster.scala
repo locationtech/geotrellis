@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
-import geotrellis.raster.op.focal.Kernel
+import geotrellis.raster.mapalgebra.focal.Kernel
 
 import spire.syntax.cfor._
 

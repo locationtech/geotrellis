@@ -18,8 +18,8 @@ package geotrellis.engine
 
 import geotrellis.engine.io._
 import geotrellis.raster._
-import geotrellis.raster.op._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.mapalgebra._
+import geotrellis.raster.summary._
 import geotrellis.raster.testkit._
 import geotrellis.raster.histogram._
 import geotrellis.vector._

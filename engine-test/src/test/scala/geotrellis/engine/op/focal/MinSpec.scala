@@ -17,7 +17,7 @@
 package geotrellis.engine.op.focal
 
 import geotrellis.engine._
-import geotrellis.raster.op.focal._
+import geotrellis.raster.mapalgebra.focal._
 import org.scalatest._
 
 class MinSpec extends FunSpec with Matchers with TestEngine {

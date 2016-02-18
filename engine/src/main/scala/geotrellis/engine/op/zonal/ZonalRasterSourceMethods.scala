@@ -17,7 +17,7 @@
 package geotrellis.engine.op.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.op.zonal._
+import geotrellis.raster.mapalgebra.zonal._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.engine._
 
@@ -25,6 +25,7 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait ZonalRasterSourceMethods extends RasterSourceMethods {
   /**
    * Given a raster, return a histogram summary of the cells within each zone.

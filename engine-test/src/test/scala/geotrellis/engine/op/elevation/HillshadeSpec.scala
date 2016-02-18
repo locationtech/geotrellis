@@ -17,10 +17,10 @@
 package geotrellis.engine.op.elevation
 
 import geotrellis.raster._
-import geotrellis.raster.op.elevation._
+import geotrellis.raster.mapalgebra.focal.hillshade._
 import geotrellis.engine._
 import geotrellis.vector.Extent
-import geotrellis.raster.op._
+import geotrellis.raster.mapalgebra._
 import geotrellis.raster.render._
 
 import org.scalatest._

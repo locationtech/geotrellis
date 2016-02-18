@@ -3,7 +3,7 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.render.jpg._
 import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
 trait JpgRenderMethods extends MethodExtensions[Tile] {
   /** Generate a JPG from a raster of RGBA integer values.

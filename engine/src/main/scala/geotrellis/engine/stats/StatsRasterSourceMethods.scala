@@ -19,8 +19,9 @@ package geotrellis.engine.stats
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.histogram._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait StatsRasterSourceMethods extends RasterSourceMethods {
   private def convergeHistograms(histograms: Seq[Histogram[Int]]): Histogram[Int] = FastMapHistogram.fromHistograms(histograms)
 

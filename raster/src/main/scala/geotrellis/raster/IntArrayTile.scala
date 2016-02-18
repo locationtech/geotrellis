@@ -41,7 +41,7 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     pixels
   }
 
-  def copy = ArrayTile(array.clone, cols, rows)
+  def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 }
 
 final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)

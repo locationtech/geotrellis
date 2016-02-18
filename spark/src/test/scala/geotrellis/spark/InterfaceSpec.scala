@@ -32,7 +32,7 @@ object InterfaceSpec {
      Seq(rdd1, rdd2, rdd3).localAdd
 
 
-    import geotrellis.raster.op.local._
+    import geotrellis.raster.mapalgebra.local._
 
     // we can break it down and be explicit
     rdd1.join(rdd2).mapValues { case (tile1, tile2) => Add(tile1, tile2) }
