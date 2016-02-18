@@ -8,8 +8,12 @@ import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.render._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.s3._
+
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
 import org.apache.spark.rdd.RDD
+
 import scala.reflect._
 
 
@@ -39,13 +43,30 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData]
     }
   }
 
-  override def apply(id: LayerId, rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
-    props("format").toLowerCase match {
-      case "png" =>
-        rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderPng(id, props("path"), parseBreaks(props.get("breaks")))
-      case "geotiff" =>
-        rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderGeoTiff(id, props("path"))
+  override def apply(
+    id: LayerId,
+    rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData],
+    method: KeyIndexMethod[SpatialKey],
+    props: Map[String, String]
+  ): Unit = {
+    val useS3 = (props("path").take(5) == "s3://")
+    val images =
+      props("format").toLowerCase match {
+        case "png" =>
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderPng(parseBreaks(props.get("breaks")))
+        case "geotiff" =>
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderGeoTiff()
+      }
+
+    if (useS3) {
+      val keyToPath = SaveToS3Methods.spatialKeyToPath(id, props("path"))
+      images.saveToS3(keyToPath)
     }
+    else {
+      val keyToPath = SaveToHadoopMethods.spatialKeyToPath(id, props("path"))
+      images.saveToHadoop(keyToPath)
+    }
+  }
 
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) = ???
 }

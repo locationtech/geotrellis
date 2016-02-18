@@ -125,7 +125,7 @@ lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit"))
   settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark).
+  dependsOn(spark, s3, accumulo).
   settings(commonSettings: _*)
 
 lazy val gdal: Project = Project("gdal", file("gdal")).
