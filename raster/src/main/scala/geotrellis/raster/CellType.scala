@@ -194,7 +194,7 @@ object CellType {
   }
 
   def fromString(name: String): CellType = name match {
-    case "bool" => BitCellType  // No NoData values
+    case "bool" | "boolraw" => BitCellType  // No NoData values
     case "int8raw" => ByteCellType
     case "uint8raw" => UByteCellType
     case "int16raw" => ShortCellType
