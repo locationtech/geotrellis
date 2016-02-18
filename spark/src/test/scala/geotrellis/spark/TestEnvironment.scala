@@ -45,10 +45,10 @@ object TestEnvironment {
  * These set of traits handle the creation and deletion of test directories on the local fs and hdfs,
  * It uses commons-io in at least one case (recursive directory deletion)
  */
-trait TestEnvironment extends BeforeAndAfterAll 
-  with RasterRDDBuilders 
+trait TestEnvironment extends BeforeAndAfterAll
+  with RasterRDDBuilders
   with RasterRDDMatchers
-  with OpAsserter 
+  with OpAsserter
 { self: Suite =>
 
   var _sc: SparkContext = {

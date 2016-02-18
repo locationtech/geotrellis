@@ -23,7 +23,7 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
     if (accessKeyId != null && secretKey != null && sessionToken != null)
       new BasicSessionCredentials(accessKeyId, secretKey, sessionToken)
     else if (accessKeyId != null && secretKey != null)
-      new BasicAWSCredentials(accessKeyId, secretKey)    
+      new BasicAWSCredentials(accessKeyId, secretKey)
     else
       new AnonymousAWSCredentials()
   }
@@ -49,7 +49,7 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
 
   override def getLocations: Array[String] = Array.empty
 
-  override def write(out: DataOutput): Unit = {    
+  override def write(out: DataOutput): Unit = {
     val haveAuth = accessKeyId != null && secretKey != null
     out.writeBoolean(haveAuth)
     if (haveAuth){
@@ -63,8 +63,8 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
     out.writeInt(keys.length)
     keys.foreach(out.writeUTF)
   }
-  
-  override def readFields(in: DataInput): Unit = {    
+
+  override def readFields(in: DataInput): Unit = {
     if (in.readBoolean){
       accessKeyId = in.readUTF
       secretKey = in.readUTF

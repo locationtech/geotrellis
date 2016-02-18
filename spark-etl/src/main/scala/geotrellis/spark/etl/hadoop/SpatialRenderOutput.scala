@@ -38,7 +38,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData]
       }
     }
   }
-  
+
   override def apply(id: LayerId, rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData], method: KeyIndexMethod[SpatialKey], props: Map[String, String]) =
     props("format").toLowerCase match {
       case "png" =>

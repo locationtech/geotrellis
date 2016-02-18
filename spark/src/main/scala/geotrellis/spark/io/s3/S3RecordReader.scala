@@ -23,7 +23,7 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
     keys = sp.keys.iterator
     keyCount =  sp.keys.length
     bucket = sp.bucket
-    logger.debug(s"Initialize split on bucket '$bucket' with $keyCount keys")  
+    logger.debug(s"Initialize split on bucket '$bucket' with $keyCount keys")
   }
 
   def getProgress: Float = curCount / keyCount
@@ -38,11 +38,11 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
       val inStream = obj.getObjectContent
       val objectData = IOUtils.toByteArray(inStream)
       inStream.close()
-      
+
       val (k, v) = read(key, objectData)
       curKey = k
       curValue = v
-      curCount += 1      
+      curCount += 1
       true
     } else {
       false
