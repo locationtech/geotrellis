@@ -3,7 +3,7 @@ package geotrellis.spark
 import geotrellis.raster.Tile
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render._
-import geotrellis.spark.io.s3._
+// import geotrellis.spark.io.s3._
 import geotrellis.spark.io.hadoop._
 import java.net.URI
 
@@ -30,9 +30,9 @@ package object render {
       val paintTile = (k: SpatialKey, t: Tile) => breaks.fold(t.renderPng())( b => t.renderPng(b)).bytes
 
       // Hadoop appears to have  poor support for S3, requiring  specialized handling
-      if (uri.getScheme == "s3")
-        rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
-      else
+      // if (uri.getScheme == "s3")
+      //   rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
+      // else
         rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
     }
 
@@ -51,9 +51,9 @@ package object render {
       val paintTile = (k: SpatialKey, t: Tile) => breaks.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
 
       // Hadoop appears to have  poor support for S3, requiring  specialized handling
-      if (uri.getScheme == "s3")
-        rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
-      else
+      // if (uri.getScheme == "s3")
+      //   rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
+      // else
         rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
 
     }
@@ -75,9 +75,9 @@ package object render {
       val paintTile = (k: SpatialKey, t: Tile) => GeoTiff(t, transform(k), crs).toByteArray
 
       // Hadoop appears to have  poor support for S3, requiring  specialized handling
-      if (uri.getScheme == "s3")
-        rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
-      else
+      // if (uri.getScheme == "s3")
+      //   rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
+      // else
         rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
     }
   }

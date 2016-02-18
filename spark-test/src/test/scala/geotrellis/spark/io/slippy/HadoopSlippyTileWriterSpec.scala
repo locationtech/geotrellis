@@ -1,4 +1,4 @@
-package geotrellis.spark.io.slippy
+package geotrellis.slippy
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._

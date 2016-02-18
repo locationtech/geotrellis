@@ -1,4 +1,4 @@
-package geotrellis.spark.io.slippy
+package geotrellis.slippy
 
 import geotrellis.vector._
 import geotrellis.raster._
