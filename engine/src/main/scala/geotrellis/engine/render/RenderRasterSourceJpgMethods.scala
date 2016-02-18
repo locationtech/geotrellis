@@ -39,7 +39,7 @@ trait RenderRasterSourceJpgMethods extends RasterSourceMethods {
   def renderJpg(colorClassifier: ColorClassifier[_]): ValueSource[Jpg] =
     rasterSource.converge.map(_.renderJpg(colorClassifier))
 
-  def renderJpg(colorClassifier: ColorClassifier[_], histogram: Histogram): ValueSource[Jpg] =
+  def renderJpg(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): ValueSource[Jpg] =
     rasterSource.converge.map(_.renderJpg(colorClassifier, histogram))
 }
 

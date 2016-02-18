@@ -24,9 +24,9 @@ import org.scalatest._
 
 import geotrellis.raster.testkit._
 
-class GetColorBreaksSpec extends FunSpec
-                            with RasterMatchers
-                            with Matchers {
+class GetColorsAndBreaksSpec extends FunSpec
+    with RasterMatchers
+    with Matchers {
   describe("GetColorBreaks") {
     it("gets color breaks for test raster.") {
       val testTile = {
@@ -47,13 +47,5 @@ class GetColorBreaksSpec extends FunSpec
       colorClassifier.getBreaks should be (Array(12, 15, 66, 95))
       colorClassifier.getColors should be (Array(g, y, o, r))
     }
-/* TODO: Implement this for colorclassifier
-    it("can come from a string.") {
-      val goodString = "12:00ff00ff;15:ffff00ff"
-      ColorBreaks.fromStringInt(goodString) should not be empty
-
-      val badString = "12:0bad_data0ff00ff;15:ffff00ff"
-      ColorBreaks.fromStringInt(badString) shouldBe empty
-    }*/
   }
 }
