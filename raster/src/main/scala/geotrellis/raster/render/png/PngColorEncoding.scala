@@ -18,18 +18,36 @@ package geotrellis.raster.render.png
 
 import geotrellis.raster.render._
 
-sealed abstract class PngColorEncoding(val n:Byte, val depth:Int)
+sealed abstract class PngColorEncoding(val n:Byte, val depth:Int) {
+ def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T]
+}
 
 // greyscale and color opaque rasters
-case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1)
-case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3)
+case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
+ def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
+   classifier.mapColors { c => new RGBA(c.blue) }
+}
+case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
+ def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
+   classifier.mapColors { c => c.toRGB }
+}
 
 // indexed color, using separate rgb and alpha channels
-case class IndexedPngEncoding(rgbs:Array[Int], as:Array[Int]) extends PngColorEncoding(3, 1)
+case class IndexedPngEncoding(rgbs:Array[Int], as:Array[Int]) extends PngColorEncoding(3, 1) {
+ def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
+   classifier.self
+}
 
 // greyscale and color rasters with an alpha byte
-case object GreyaPngEncoding extends PngColorEncoding(4, 4)
-case object RgbaPngEncoding extends PngColorEncoding(6, 4)
+case object GreyaPngEncoding extends PngColorEncoding(4, 4) {
+ def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
+   classifier.mapColors { c => RGBA(c.int & 0xffff) }
+}
+
+case object RgbaPngEncoding extends PngColorEncoding(6, 4) {
+ def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
+   classifier.self
+}
 
 
 object PngColorEncoding {
