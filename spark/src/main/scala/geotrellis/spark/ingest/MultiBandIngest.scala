@@ -16,20 +16,22 @@ object MultiBandIngest {
     sourceTiles: RDD[(T, MultiBandTile)],
     destCRS: CRS,
     layoutScheme: LayoutScheme,
+    bufferSize: Int = 256 * 256,
     pyramid: Boolean = false,
     cacheLevel: StorageLevel = StorageLevel.NONE,
     resampleMethod: ResampleMethod = NearestNeighbor,
     partitioner: Option[Partitioner] = None)
     (sink: (MultiBandRasterRDD[K], Int) => Unit): Unit =
   {
-    val reprojectedTiles = sourceTiles.reproject(destCRS, resampleMethod).cache()
-    val (zoom, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = sourceTiles.cutTiles(rasterMetaData, resampleMethod).cache()
-    val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
+    val (_, rasterMetaData) =
+      RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
+    val tiledRdd = sourceTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
+    val contextRdd = new ContextRDD(tiledRdd, rasterMetaData)
+    val (zoom, rasterRdd) = contextRdd.reproject(destCRS, layoutScheme, bufferSize)
+    rasterRdd.cache()
 
     def buildPyramid(zoom: Int, rdd: MultiBandRasterRDD[K]): List[(Int, MultiBandRasterRDD[K])] = {
-      if (zoom > 1) {
+      if (zoom >= 1) {
         rdd.persist(cacheLevel)
         sink(rdd, zoom)
         val pyramidLevel @ (nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, zoom, partitioner)

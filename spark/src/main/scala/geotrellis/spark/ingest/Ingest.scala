@@ -57,6 +57,7 @@ object Ingest {
       sourceTiles: RDD[(T, Tile)],
       destCRS: CRS,
       layoutScheme: LayoutScheme,
+      bufferSize: Int = 256 * 256,
       pyramid: Boolean = false,
       cacheLevel: StorageLevel = StorageLevel.NONE,
       resampleMethod: ResampleMethod = NearestNeighbor,
@@ -65,12 +66,12 @@ object Ingest {
     (sink: (RasterRDD[K], Int) => Unit): Unit =
   {
     sourceTiles.persist()
-    val reprojectedTiles =
-      sourceTiles.reproject(destCRS, resampleMethod).cache()
-    val (zoom, rasterMetaData) =
-      RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
-    val tiledRdd = reprojectedTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
-    val rasterRdd = new ContextRDD(tiledRdd, rasterMetaData)
+    val (_, rasterMetaData) =
+      RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
+    val tiledRdd = sourceTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
+    val contextRdd = new ContextRDD(tiledRdd, rasterMetaData)
+    var (zoom, rasterRdd) = contextRdd.reproject(destCRS, layoutScheme, bufferSize)
+    rasterRdd.cache()
 
     def buildPyramid(zoom: Int, rdd: RasterRDD[K]): List[(Int, RasterRDD[K])] = {
       if (zoom >= 1) {
