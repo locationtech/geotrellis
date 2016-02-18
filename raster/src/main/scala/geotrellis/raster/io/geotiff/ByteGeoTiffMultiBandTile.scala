@@ -23,7 +23,7 @@ class ByteGeoTiffMultiBandTile(
   }
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
-    new SegmentCombiner {
+    new SegmentCombiner(bandCount) {
       private val arr = Array.ofDim[Byte](targetSize)
 
       def set(targetIndex: Int, v: Int): Unit = {

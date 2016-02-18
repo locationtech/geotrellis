@@ -24,7 +24,7 @@ object ArrayMultiBandTile {
   }
 }
 
-class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
+class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMultibandCombiners {
   val bandCount = bands.size
 
   assert(bandCount > 0, "Band count must be greater than 0")
@@ -265,39 +265,6 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     result
   }
 
-  /** Combine three int band value for each cell.
-    */
-  def combineIntTileCombiner(combiner: IntTileCombiner3): Tile = {
-    val band1 = band(combiner.b0)
-    val band2 = band(combiner.b1)
-    val band3 = band(combiner.b2)
-    val result = ArrayTile.empty(cellType, cols, rows)
-    val arr = Array.ofDim[Int](bandCount)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        result.set(col, row, combiner(band1.get(col, row), band2.get(col, row), band3.get(col,row)))
-      }
-    }
-    result
-  }
-
-  /** Combine four int band value for each cell.
-    */
-  def combineIntTileCombiner(combiner: IntTileCombiner4): Tile = {
-    val band1 = band(combiner.b0)
-    val band2 = band(combiner.b1)
-    val band3 = band(combiner.b2)
-    val band4 = band(combiner.b3)
-    val result = ArrayTile.empty(cellType, cols, rows)
-    val arr = Array.ofDim[Int](bandCount)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        result.set(col, row, combiner(band1.get(col, row), band2.get(col, row), band3.get(col,row), band4.get(col, row)))
-      }
-    }
-    result
-  }
-
   /** Combine each double band value for each cell.
     * This method will be inherently slower than calling a method with explicitly stated bands,
     * so if you have as many or fewer bands to combine than an explicit method call, use that.
@@ -326,39 +293,6 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         result.setDouble(col, row, f(band1.getDouble(col, row), band2.getDouble(col, row)))
-      }
-    }
-    result
-  }
-
-  /** Combine three double band value for each cell.
-    */
-  def combineDoubleTileCombiner(combiner: DoubleTileCombiner3): Tile = {
-    val band1 = band(combiner.b0)
-    val band2 = band(combiner.b1)
-    val band3 = band(combiner.b2)
-    val result = ArrayTile.empty(cellType, cols, rows)
-    val arr = Array.ofDim[Int](bandCount)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        result.setDouble(col, row, combiner(band1.getDouble(col, row), band2.getDouble(col, row), band3.getDouble(col,row)))
-      }
-    }
-    result
-  }
-
-  /** Combine four double band value for each cell.
-    */
-  def combineDoubleTileCombiner(combiner: DoubleTileCombiner4) = {
-    val band1 = band(combiner.b0)
-    val band2 = band(combiner.b1)
-    val band3 = band(combiner.b2)
-    val band4 = band(combiner.b3)
-    val result = ArrayTile.empty(cellType, cols, rows)
-    val arr = Array.ofDim[Int](bandCount)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        result.setDouble(col, row, combiner(band1.getDouble(col, row), band2.getDouble(col, row), band3.getDouble(col,row), band4.getDouble(col, row)))
       }
     }
     result
