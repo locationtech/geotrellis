@@ -49,8 +49,7 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "Tile size in pixels (default: 256)",
                       default = Some(256))
   val bufferSize   = opt[Int]("bufferSize",
-                      descr = "Number of pixels to buffer the tile with (default: 65536)",
-                      default = Some(256 * 256))
+                      descr = "Number of pixels to buffer the tile with")
   val clobber      = opt[Boolean]("clobber",
                       descr = "clobber layer on save (default: false)",
                       default = Some(false))
