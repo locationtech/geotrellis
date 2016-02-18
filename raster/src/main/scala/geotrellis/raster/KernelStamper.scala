@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.op.focal.Kernel
+import geotrellis.raster.mapalgebra.focal.Kernel
 
 /**
  * Supplies functionality to operations that do convolution.

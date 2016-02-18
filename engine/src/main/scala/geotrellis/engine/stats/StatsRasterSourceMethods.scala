@@ -19,18 +19,19 @@ package geotrellis.engine.stats
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.histogram._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait StatsRasterSourceMethods extends RasterSourceMethods {
-  private def convergeHistograms(histograms: Seq[Histogram]): Histogram = FastMapHistogram.fromHistograms(histograms)
+  private def convergeHistograms(histograms: Seq[Histogram[Int]]): Histogram[Int] = FastMapHistogram.fromHistograms(histograms)
 
-  def tileHistograms(): DataSource[Histogram, Histogram] =
+  def tileHistograms(): DataSource[Histogram[Int], Histogram[Int]] =
     rasterSource map (_.histogram) withConverge(convergeHistograms)
 
-  def histogram(): ValueSource[Histogram] =
+  def histogram(): ValueSource[Histogram[Int]] =
     rasterSource map(_.histogram) converge(convergeHistograms)
 
-  def statistics(): ValueSource[Statistics] =
+  def statistics(): ValueSource[Statistics[Int]] =
     histogram map (_.generateStatistics())
 
   def classBreaks(numBreaks: Int): ValueSource[Array[Int]] =

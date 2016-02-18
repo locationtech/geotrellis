@@ -21,14 +21,14 @@ import geotrellis.engine._
 import geotrellis.engine.op.focal._
 import geotrellis.engine.op.elevation._
 import geotrellis.raster._
-import geotrellis.raster.op.focal._
-import geotrellis.raster.op.elevation._
+import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.mapalgebra.focal.hillshade._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
 import com.google.caliper.runner.CaliperMain 
 import com.google.caliper.Benchmark
-import geotrellis.raster.op.focal.{Square, Circle, Convolve}
+import geotrellis.raster.mapalgebra.focal.{Square, Circle, Convolve}
 
 import scala.math.{min, max}
 import scala.util.Random

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,10 +27,10 @@ sealed trait OperationResult[+T]
 
 /**
  * Internal version to include Inlined;
- * outside match statements shouldn't get warned about 
+ * outside match statements shouldn't get warned about
  * not handling an Inlined case since they should never leak outside.
  */
-private[engine] 
+private[engine]
 sealed trait InternalOperationResult[+T]
 
 /**
@@ -49,11 +49,13 @@ case class Inlined[T](value:T) extends InternalOperationResult[T]
 /**
  * OperationResult for a successful operation.
  */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Complete[T](value:T, history:History) extends OperationResult[T]
                                                     with InternalOperationResult[T]
 
 /**
  * OperationResult for a failed operation.
  */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Error(message:String, history:History) extends OperationResult[Nothing]
                                                      with InternalOperationResult[Nothing]

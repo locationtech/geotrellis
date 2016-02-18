@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ package geotrellis.engine.io
 import geotrellis.raster._
 import geotrellis.engine._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object LoadRasterUrl {
   def apply(url: Op[String]): LoadRasterUrl = LoadRasterUrl(url, None)
 }
@@ -26,6 +27,7 @@ object LoadRasterUrl {
 /**
  * Load the raster from JSON metadata recieved from a URL
  */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class LoadRasterUrl(url: Op[String], re: Op[Option[RasterExtent]]) extends Operation[Tile] {
   def _run() = runAsync(List(url, re))
   val nextSteps: Steps[Tile] = {

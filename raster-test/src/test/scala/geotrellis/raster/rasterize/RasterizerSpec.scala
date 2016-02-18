@@ -18,15 +18,15 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import math.{max,min,round}
 
 import org.scalatest._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import scala.collection.mutable
 
-class RasterizeSpec extends FunSuite with TestEngine 
+class RasterizeSpec extends FunSuite with RasterMatchers 
                                      with Matchers {
    test("Point Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)

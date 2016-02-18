@@ -32,7 +32,7 @@ object InterfaceSpec {
      Seq(rdd1, rdd2, rdd3).localAdd
 
 
-    import geotrellis.raster.op.local._
+    import geotrellis.raster.mapalgebra.local._
 
     // we can break it down and be explicit
     rdd1.join(rdd2).mapValues { case (tile1, tile2) => Add(tile1, tile2) }
@@ -62,7 +62,7 @@ object InterfaceSpec {
     // Sometimes you need to chain updating Metadata to operation that changes RDD meaning
     rdd1
       .withContext { _ localEqual 123 }
-      .mapContext { rmd: RasterMetaData => rmd.copy(cellType = TypeBit) }
+      .mapContext { rmd: RasterMetaData => rmd.copy(cellType = BitCellType) }
 
 
     // Chaining updates on results of spatialJoin is different because they produce Metadata

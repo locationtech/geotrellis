@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class MinoritySpec extends FunSpec 
-                      with Matchers 
-                      with TestEngine 
-                      with TileBuilders {
+class MinoritySpec extends FunSpec with Matchers with TestEngine {
   describe("Minority") {
     it("takes minority on rasters sources of all one value") {
       val r1 = createRasterSource(Array.fill(6*8)(1), 2,2,3,4)

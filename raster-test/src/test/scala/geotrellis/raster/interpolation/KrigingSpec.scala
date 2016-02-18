@@ -19,14 +19,13 @@ package geotrellis.raster.interpolation
 import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
 import geotrellis.vector.interpolation._
 import geotrellis.vector.io.json._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.vector._
 import spire.syntax.cfor._
 import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
-class KrigingSpec extends FunSpec
-                     with TestEngine {
+class KrigingSpec extends FunSpec with Matchers {
   def generateLogPoints(pointsData: Array[PointFeature[Double]]): Array[PointFeature[Double]] = {
     (1 to pointsData.length)
       .map { i => PointFeature(pointsData(i - 1).geom, math.log(pointsData(i - 1).data)) }

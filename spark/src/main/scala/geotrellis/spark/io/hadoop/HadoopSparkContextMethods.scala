@@ -78,55 +78,6 @@ trait HadoopSparkContextMethods {
       classOf[MultiBandTile]
     )
 
-  def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
-    val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)
-
-    sc.newAPIHadoopRDD(
-      updatedConf,
-      classOf[GdalInputFormat],
-      classOf[GdalRasterInfo],
-      classOf[Tile]
-    )
-  }
-
-  def netCdfRDD(
-    path: Path,
-    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(TemporalProjectedExtent, Tile)] = {
-    val makeTime = (info: GdalRasterInfo) =>
-    info.file.meta.find {
-      case(key, value) => key.toLowerCase == inputFormat.baseDateMetaDataKey.toLowerCase
-    }.map(_._2) match {
-      case Some(baseString) => {
-
-        val (typ, base) = NetCdfInputFormat.readTypeAndDate(
-          baseString,
-          inputFormat.dateTimeFormat,
-          inputFormat.yearOffset,
-          inputFormat.monthOffset,
-          inputFormat.dayOffset
-        )
-
-        info.bandMeta.find {
-          case(key, value) => key.toLowerCase == "netcdf_dim_time"
-        }.map(_._2) match {
-          case Some(s) => NetCdfInputFormat.incrementDate(typ, s.toDouble, base)
-          case _ => base
-        }
-      }
-      case None => throw new IllegalArgumentException("Can't find base date!")
-    }
-
-    gdalRDD(path)
-      .map { case (info, tile) =>
-        val band = TemporalProjectedExtent(
-          extent = info.file.rasterExtent.extent,
-          crs = info.file.crs,
-          time = makeTime(info)
-        )
-        band -> tile
-    }
-  }
-
   def newJob: Job =
     Job.getInstance(sc.hadoopConfiguration)
 

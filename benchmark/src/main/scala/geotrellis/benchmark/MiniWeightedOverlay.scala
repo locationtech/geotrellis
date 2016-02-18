@@ -17,7 +17,7 @@
 package geotrellis.benchmark
 
 import geotrellis.raster._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 import geotrellis.engine._
 import geotrellis.engine.op.local._
 
@@ -99,7 +99,7 @@ class SmallIOBenchmark extends OperationBenchmark {
   def loadTheRasterOp = get(op)
 
   def timeReader(reps: Int) = run(reps)(reader)
-  def reader = geotrellis.raster.io.arg.ArgReader.read(path, TypeFloat, baseRe, re)
+  def reader = geotrellis.raster.io.arg.ArgReader.read(path, FloatConstantNoDataCellType, baseRe, re)
 
   def timeLoadTwoRaster(reps: Int) = run(reps)(loadTwoRaster)
   def loadTwoRaster = get(geotrellis.engine.io.LoadRaster(layers(cellType)))

@@ -1,6 +1,9 @@
 package geotrellis.spark.etl
 
-import geotrellis.spark.tiling.{FloatingLayoutScheme, ZoomedLayoutScheme}
+import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.spark.{TemporalProjectedExtent, SpaceTimeKey, SpatialKey}
+import geotrellis.spark.ingest._
+import geotrellis.vector.ProjectedExtent
 import org.scalatest._
 
 object EtlSpec {

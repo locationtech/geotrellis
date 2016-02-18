@@ -1,11 +1,11 @@
 package geotrellis.benchmark
 
+import geotrellis.raster.viewshed.ApproxViewshed
 import geotrellis.vector._
 import geotrellis.raster._
 
 import com.google.caliper.Param
 import scala.util.Random
-import geotrellis.raster.op.global.ApproxViewshed
 
 /*
  * Current times for 256x256 (ms)

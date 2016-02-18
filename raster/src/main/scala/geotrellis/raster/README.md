@@ -155,11 +155,17 @@ That's probably enough to get started. `geotrellis.raster` is a pretty big place
 
 Here's what you can expect to find in `geotrellis.raster`:
 - [`geotrellis.raster.compression`](./compression) defines functions for squeezing extra bits out of serialized formats
+- [`geotrellis.raster.summary`](./summary) defines operations for generating high level statistical analytics from your tiles.
 - [`geotrellis.raster.histogram`](./histogram) defines the classes used for analyzing the cell-value distributions of tiles (of special interest is `geotrellis.raster.histogram.FastMapHistogram`, though actual usage is typically done through the methods exposed in [`geotrellis.raster.op.stats`](./op/stats)
+- [`geotrellis.raster.summary.polygonal`](./polygonal) defines summaries which apply over an area zone defined by either `geotrellis.vector.Polygon` or `geotrellis.vector.MultiPolygon`.
 - [`geotrellis.raster.interpolation`](./interpolation) - TODO
 - [`geotrellis.raster.io`](./io) follows the package naming conventions elsewhere in GeoTrellis - `io` handles serialization for transmission and storage of rasters
 - [`geotrellis.raster.merge`](./merge) defines methods for merging tiles.
-- [`geotrellis.raster.op`](./op) provides a slew of options, categorized by the type of relationship computed over (is it an operation which looks only at local relationships of cells or one which looks at all the cells of a raster together to compute its result?)
-- [`geotrellis.raster.rasterize`](./rasterize) allows for conversion from raster to vector data
+- [`geotrellis.raster.mapalgebra`](./mapalgebra) provides map algebra operations on raster tiles: local, focal, and zonal.
+- [`geotrellis.raster.elevation`](./elevation) defines operations which are specialized for rasters whose tile values represent the elevation of terrain. If you're interested in calculating slope or even determining how shadows fall over the land given a light source's location, this is should be of great interest.
+- [`geotrellis.raster.hydrology`](./hydrology) defines operations specialized for dealing with the flow of water. If your tile encodes information used in calculations that involve water accumulation or the movement of fluids more generally, `geotrellis.raster.hydrology` is probably a good place to start building out custom operations.
+- [`geotrellis.raster.rasterize`](./rasterize) allows for conversion from vector to raster data
+- [`geotrellis.raster.vectorize`](./vectorize) allows for conversion from raster to a set of region polygon features.
+- [`geotrellis.raster.regiongroup`](./regiongroup) groups same-valued cells into regions, allowing choice of connectivity options.
 - [`geotrellis.raster.render`](./render) allows for conversion from raster to the web-friendly png format
 - [`geotrellis.raster.reproject`](./reproject) defines methods for translating between projections 

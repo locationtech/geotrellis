@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,10 +18,11 @@ package geotrellis.engine.op.local
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.vector.Geometry
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait LocalRasterSourceMethods
   extends RasterSourceMethods
      with LocalMapRasterSourceMethods
@@ -62,7 +63,7 @@ trait LocalRasterSourceMethods
 
   def localCombineDouble[That](rs: RasterSource)
                               (f: (Double, Double)=>Double): RasterSource = {
-    val tileOps = 
+    val tileOps =
       (rasterSource.tiles, rs.tiles).map { (ts1, ts2) =>
         for((t1, t2) <- ts1.zip(ts2)) yield {
           (t1, t2).map { (r1, r2) =>
@@ -126,27 +127,27 @@ trait LocalRasterSourceMethods
   def localUndefined(): RasterSource = rasterSource.mapTile(Undefined(_), "Undefined")
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
-  def localMask(rs: RasterSource, readMask: Int, writeMask: Int): RasterSource = 
+  def localMask(rs: RasterSource, readMask: Int, writeMask: Int): RasterSource =
     rasterSource.combineTile(rs, "localMask")(Mask(_, _, readMask, writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
-  def localInverseMask(rs: RasterSource, readMask: Int, writeMask: Int): RasterSource = 
+  def localInverseMask(rs: RasterSource, readMask: Int, writeMask: Int): RasterSource =
     rasterSource.combineTile(rs, "localMask")(InverseMask(_, _, readMask, writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss: Seq[RasterSource]): RasterSource = 
+  def localMean(rss: Seq[RasterSource]): RasterSource =
     rasterSource.combineTile(rss, "Mean")(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss: RasterSource*)(implicit d: DI): RasterSource = 
+  def localMean(rss: RasterSource*)(implicit d: DI): RasterSource =
     localMean(rss)
 
  /** Gives the count of unique values at each location in a set of Rasters.*/
-  def localVariety(rss: Seq[RasterSource]): RasterSource = 
+  def localVariety(rss: Seq[RasterSource]): RasterSource =
     rasterSource.combineTile(rss, "Variety")(Variety(_))
 
  /** Gives the count of unique values at each location in a set of Rasters.*/
-  def localVariety(rss: RasterSource*)(implicit d: DI): RasterSource = 
+  def localVariety(rss: RasterSource*)(implicit d: DI): RasterSource =
     localVariety(rss)
 
   /** Takes the sine of each raster cell value. */
@@ -177,7 +178,7 @@ trait LocalRasterSourceMethods
   def localAtan(): RasterSource = rasterSource.mapTile(Atan(_), "Atan")
 
   /** Takes the arc tangent 2 of each raster cell value. */
-  def localAtan2(rs: RasterSource): RasterSource = 
+  def localAtan2(rs: RasterSource): RasterSource =
     rasterSource.combineTile(rs, "Atan2")(Atan2(_, _))
 
   /** Assigns to each cell the value within the given rasters that is the nth min */

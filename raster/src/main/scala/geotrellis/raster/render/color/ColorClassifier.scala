@@ -59,7 +59,7 @@ abstract class ColorClassifier[T] extends Serializable {
   def mapColors(f: RGBA => RGBA): ClassifierInstance[T]
 
   /** Return a colormap for this classifier instance */
-  def toColorMap(histogram: Option[Histogram] = None): ColorMap
+  def toColorMap(histogram: Option[Histogram[Int]] = None): ColorMap
 
   /** Return the number of classifications */
   def length: Int
@@ -354,7 +354,7 @@ case class StrictIntColorClassifier(classificationType: ClassBoundaryType = Less
     extends StrictColorClassifier[Int] {
   val self = this
 
-  def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
+  def toColorMap(histogram: Option[Histogram[Int]] = None): ColorMap = {
     histogram match {
       case Some(h) => ColorMap(getBreaks, getColors.map(_.int), cmapOptions).cache(h)
       case None =>  ColorMap(getBreaks, getColors.map(_.int), cmapOptions)
@@ -371,7 +371,7 @@ case class StrictDoubleColorClassifier(classificationType: ClassBoundaryType = L
     extends StrictColorClassifier[Double] {
   val self = this
 
-  def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
+  def toColorMap(histogram: Option[Histogram[Int]] = None): ColorMap = {
     histogram match {
       case Some(h) => ColorMap(getBreaks, getColors.map(_.int), cmapOptions).cache(h)
       case None =>  ColorMap(getBreaks, getColors.map(_.int), cmapOptions)
@@ -389,7 +389,7 @@ case class BlendingIntColorClassifier(classificationType: ClassBoundaryType = Le
     extends BlendingColorClassifier[Int] {
   val self = this
 
-  def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
+  def toColorMap(histogram: Option[Histogram[Int]] = None): ColorMap = {
     normalize
     histogram match {
       case Some(h) => ColorMap(getBreaks, getColors.map(_.int), cmapOptions).cache(h)
@@ -408,7 +408,7 @@ case class BlendingDoubleColorClassifier(classificationType: ClassBoundaryType =
     extends BlendingColorClassifier[Double] {
   val self = this
 
-  def toColorMap(histogram: Option[Histogram] = None): ColorMap = {
+  def toColorMap(histogram: Option[Histogram[Int]] = None): ColorMap = {
     normalize
     histogram match {
       case Some(h) => ColorMap(getBreaks, getColors.map(_.int), cmapOptions).cache(h)
@@ -429,7 +429,7 @@ object StrictColorClassifier {
     colorClassifier
   }
 
-  def fromQuantileBreaks(histogram: Histogram, colors: Array[RGBA]) = {
+  def fromQuantileBreaks(histogram: Histogram[Int], colors: Array[RGBA]) = {
     val breaks = histogram.getQuantileBreaks(colors.length)
     apply(breaks zip colors)
   }

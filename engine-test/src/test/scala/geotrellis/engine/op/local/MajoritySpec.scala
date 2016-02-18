@@ -17,15 +17,11 @@
 package geotrellis.engine.op.local
 
 import geotrellis.raster._
-
+import geotrellis.engine._
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class MajoritySpec extends FunSpec 
-                      with Matchers 
-                      with TestEngine 
-                      with TileBuilders {
+class MajoritySpec extends FunSpec with Matchers with TestEngine {
   describe("Majority") {
     it("takes majority on rasters sources of all one value") {
       val r1 = createRasterSource(Array.fill(6*8)(8), 2,2,3,4)

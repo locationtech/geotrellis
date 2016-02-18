@@ -9,8 +9,15 @@ class UByteGeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val noDataValue: Option[Double]
+  val cellType: UByteCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with UByteGeoTiffSegmentCollection {
+
+  val noDataValue: Option[Int] = cellType match {
+    case UByteCellType => None
+    case UByteConstantNoDataCellType => Some(0)
+    case UByteUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows)
 
@@ -25,8 +32,7 @@ class UByteGeoTiffTile(
       }
     } else {
       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        val segment =
-          getSegment(segmentIndex)
+        val segment = getSegment(segmentIndex)
 
         val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         val width = segmentTransform.segmentCols
@@ -40,12 +46,6 @@ class UByteGeoTiffTile(
         }
       }
     }
-
-    noDataValue match {
-      case Some(nd) if isData(nd) && Byte.MinValue.toDouble <= nd && nd <= Byte.MaxValue.toDouble =>
-        UByteArrayTile.fromBytes(arr, cols, rows, nd.toByte)
-      case _ =>
-        UByteArrayTile.fromBytes(arr, cols, rows)
-    }
+    UByteArrayTile.fromBytes(arr, cols, rows, cellType)
   }
 }

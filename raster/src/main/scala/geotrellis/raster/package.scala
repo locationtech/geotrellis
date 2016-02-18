@@ -21,12 +21,23 @@ import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
 import geotrellis.raster.rasterize._
 
+
 package object raster
     extends crop.Implicits
     with merge.Implicits
+    with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
     with reproject.Implicits {
+  type CellType = DataType with NoDataHandling
   type SingleBandRaster = Raster[Tile]
   type MultiBandRaster = Raster[MultiBandTile]
+
+  // Implicit conversion for unsigned integer celltypes; they are represented as 32bit floats
+  implicit def unsignedIntIsFloat(uintCellType: UIntCells with NoDataHandling) =
+    uintCellType match {
+      case UIntCellType => FloatCellType
+      case UIntConstantNoDataCellType => FloatConstantNoDataCellType
+      case UIntUserDefinedNoDataCellType(nd) => FloatUserDefinedNoDataCellType(nd)
+    }
 
   // Implicit method extension for core types
 
@@ -52,8 +63,23 @@ package object raster
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with crop.SingleBandTileCropMethods
+      with mask.TileMaskMethods
       with merge.SingleBandTileMergeMethods
+      with mapalgebra.local.LocalMethods
+      with mapalgebra.focal.FocalMethods
+      with mapalgebra.zonal.ZonalMethods
+      with mapalgebra.focal.hillshade.HillshadeMethods
+      with hydrology.HydrologyMethods
+      with viewshed.ViewshedMethods
+      with costdistance.CostDistanceMethods
+      with regiongroup.RegionGroupMethods
+      with vectorize.VectorizeMethods
+      with summary.SummaryMethods
+      with summary.polygonal.PolygonalSummaryMethods
       with prototype.SingleBandTilePrototypeMethods
+      with render.ColorMethods
+      with render.JpgRenderMethods
+      with render.PngRenderMethods
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 
@@ -116,16 +142,11 @@ package object raster
   type IntTileVisitor = macros.IntTileVisitor
   type DoubleTileVisitor = macros.DoubleTileVisitor
 
-  type IntTileCombiner3 = macros.IntTileCombiner3
-  type DoubleTileCombiner3 = macros.DoubleTileCombiner3
-  type IntTileCombiner4 = macros.IntTileCombiner4
-  type DoubleTileCombiner4 = macros.DoubleTileCombiner4
-
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
-  @inline final val ubyteNODATA = (Byte.MinValue & 0xFF).toByte
+  @inline final val ubyteNODATA = 0.toByte
   @inline final val shortNODATA = Short.MinValue
-  @inline final val ushortNODATA = (Short.MinValue & 0xFFFF).toShort
+  @inline final val ushortNODATA = 0.toShort
   @inline final val NODATA = Int.MinValue
   @inline final val floatNODATA = Float.NaN
   @inline final val doubleNODATA = Double.NaN
@@ -138,28 +159,51 @@ package object raster
   def isData(f: Float): Boolean = macro NoDataMacros.isDataFloat_impl
   def isData(d: Double): Boolean = macro NoDataMacros.isDataDouble_impl
 
-  def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl
+  def b2ub(n: Byte): Byte = macro TypeConversionMacros.b2ub_impl
   def b2s(n: Byte): Short = macro TypeConversionMacros.b2s_impl
+  def b2us(n: Byte): Short = macro TypeConversionMacros.b2us_impl
+  def b2i(n: Byte): Int = macro TypeConversionMacros.b2i_impl
   def b2f(n: Byte): Float = macro TypeConversionMacros.b2f_impl
   def b2d(n: Byte): Double = macro TypeConversionMacros.b2d_impl
 
+  def ub2b(n: Byte): Byte = macro TypeConversionMacros.ub2b_impl
+  def ub2s(n: Byte): Short = macro TypeConversionMacros.ub2s_impl
+  def ub2us(n: Byte): Short = macro TypeConversionMacros.ub2us_impl
+  def ub2i(n: Byte): Int = macro TypeConversionMacros.ub2i_impl
+  def ub2f(n: Byte): Float = macro TypeConversionMacros.ub2f_impl
+  def ub2d(n: Byte): Double = macro TypeConversionMacros.ub2d_impl
+
   def s2b(n: Short): Byte = macro TypeConversionMacros.s2b_impl
+  def s2ub(n: Short): Byte = macro TypeConversionMacros.s2ub_impl
   def s2i(n: Short): Int = macro TypeConversionMacros.s2i_impl
   def s2f(n: Short): Float = macro TypeConversionMacros.s2f_impl
   def s2d(n: Short): Double = macro TypeConversionMacros.s2d_impl
 
+  def us2b(n: Short): Byte = macro TypeConversionMacros.us2b_impl
+  def us2ub(n: Short): Byte = macro TypeConversionMacros.us2ub_impl
+  def us2s(n: Short): Short = macro TypeConversionMacros.us2s_impl
+  def us2i(n: Short): Int = macro TypeConversionMacros.us2i_impl
+  def us2f(n: Short): Float = macro TypeConversionMacros.us2f_impl
+  def us2d(n: Short): Double = macro TypeConversionMacros.us2d_impl
+
   def i2b(n: Int): Byte = macro TypeConversionMacros.i2b_impl
+  def i2ub(n: Int): Byte = macro TypeConversionMacros.i2ub_impl
   def i2s(n: Int): Short = macro TypeConversionMacros.i2s_impl
+  def i2us(n: Int): Short = macro TypeConversionMacros.i2s_impl
   def i2f(n: Int): Float = macro TypeConversionMacros.i2f_impl
   def i2d(n: Int): Double = macro TypeConversionMacros.i2d_impl
 
   def f2b(n: Float): Byte = macro TypeConversionMacros.f2b_impl
+  def f2ub(n: Float): Byte = macro TypeConversionMacros.f2ub_impl
   def f2s(n: Float): Short = macro TypeConversionMacros.f2s_impl
+  def f2us(n: Float): Short = macro TypeConversionMacros.f2us_impl
   def f2i(n: Float): Int = macro TypeConversionMacros.f2i_impl
   def f2d(n: Float): Double = macro TypeConversionMacros.f2d_impl
 
   def d2b(n: Double): Byte = macro TypeConversionMacros.d2b_impl
+  def d2ub(n: Double): Byte = macro TypeConversionMacros.d2b_impl
   def d2s(n: Double): Short = macro TypeConversionMacros.d2s_impl
+  def d2us(n: Double): Short = macro TypeConversionMacros.d2us_impl
   def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl
   def d2f(n: Double): Float = macro TypeConversionMacros.d2f_impl
 

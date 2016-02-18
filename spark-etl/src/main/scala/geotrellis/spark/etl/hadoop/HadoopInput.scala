@@ -1,14 +1,8 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.raster.Tile
-import geotrellis.spark._
 import geotrellis.spark.etl._
-import geotrellis.spark.ingest._
-import geotrellis.spark.tiling._
 
-import scala.reflect.ClassTag
-
-abstract class HadoopInput[I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K], K: SpatialComponent: ClassTag] extends IngestInputPlugin[I, K] {
+abstract class HadoopInput[I, V] extends InputPlugin[I, V] {
   val name = "hadoop"
   val requiredKeys = Array("path")
 }

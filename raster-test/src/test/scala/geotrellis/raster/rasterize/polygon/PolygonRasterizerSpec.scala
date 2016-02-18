@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import math.{max,min,round}
 
@@ -30,7 +30,7 @@ import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.{geom => jts}
 
 class PolygonRasterizerSpec extends FunSuite
-    with TestEngine
+    with RasterMatchers
     with TileBuilders {
 
   test("Polygon Rasterization") {

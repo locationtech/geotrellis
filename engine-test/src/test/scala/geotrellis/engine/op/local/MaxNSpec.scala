@@ -17,18 +17,14 @@
 package geotrellis.engine.op.local
 
 import geotrellis.raster._
-
+import geotrellis.engine._
 import org.scalatest._
 
-import geotrellis.testkit._
 
 /**
  * Created by jchien on 2/22/14.
  */
-class MaxNSpec extends FunSpec
-                  with Matchers
-                  with TestEngine
-                  with TileBuilders {
+class MaxNSpec extends FunSpec with Matchers with TestEngine {
 
   describe("MaxN") {
     it("takes nth max on rasters sources of all one value") {

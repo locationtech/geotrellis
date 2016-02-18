@@ -30,7 +30,7 @@ object ArrayHistogram {
     h
   }
 
-  def fromHistograms(hs: List[Histogram], n: Int): ArrayHistogram = {
+  def fromHistograms(hs: List[Histogram[Int]], n: Int): ArrayHistogram = {
     val total = ArrayHistogram(n)
     hs.foreach(h => total.update(h))
     total
@@ -43,7 +43,7 @@ object ArrayHistogram {
   * Data object representing a histogram that uses an array for internal storage.
   */
 class ArrayHistogram(val counts: Array[Int], var total: Int)
-    extends MutableHistogram {
+    extends MutableHistogramInt {
   def size = counts.length
 
   def getTotalCount = total

@@ -19,16 +19,13 @@ package geotrellis.engine
 import geotrellis.raster._
 import geotrellis.raster.io.arg._
 import geotrellis.vector.Extent
-import geotrellis.testkit._
 
 import org.scalatest._
 
 import scala.math.abs
 
-class ArgRasterLayerSpec extends FunSpec 
-                            with Matchers 
-                            with TestEngine 
-                            with TileBuilders {
+class ArgRasterLayerSpec extends FunSpec  with Matchers  with TestEngine {
+  
   describe("A RasterLayer") {
     val path1 = "raster-test/data/fake.img8.json"
     	 
@@ -53,7 +50,7 @@ class ArgRasterLayerSpec extends FunSpec
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path2 = fh.getPath
 
-      ArgWriter(TypeByte).write(path2, raster, rasterExtent.extent, "name")
+      ArgWriter(ByteConstantNoDataCellType).write(path2, raster, rasterExtent.extent, "name")
 
       val data1 = scala.io.Source.fromFile(path2).mkString
       val data2 = scala.io.Source.fromFile("raster-test/data/fake.img8.arg").mkString

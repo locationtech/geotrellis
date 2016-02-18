@@ -12,12 +12,12 @@ class BitGeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  noDataValue: Option[Double]
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+  val cellType: BitCells with NoDataHandling
+) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with BitGeoTiffSegmentCollection {
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
-    new SegmentCombiner {
+    new SegmentCombiner(bandCount) {
       private val arr = Array.ofDim[Byte](targetSize + 7 / 8)
 
       def set(targetIndex: Int, v: Int): Unit = {

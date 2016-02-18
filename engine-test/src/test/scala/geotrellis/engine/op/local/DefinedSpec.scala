@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class DefinedSpec extends FunSpec 
-                     with Matchers 
-                     with TestEngine 
-                     with TileBuilders {
+class DefinedSpec extends FunSpec with Matchers with TestEngine  {
   describe("Defined") {
     it("returns correct result for a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")

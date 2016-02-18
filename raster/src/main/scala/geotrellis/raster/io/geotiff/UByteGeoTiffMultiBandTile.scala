@@ -12,12 +12,18 @@ class UByteGeoTiffMultiBandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  noDataValue: Option[Double]
-) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+  val cellType: UByteCells with NoDataHandling
+) extends GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with UByteGeoTiffSegmentCollection {
 
+  val noDataValue: Option[Int] = cellType match {
+    case UByteCellType => None
+    case UByteConstantNoDataCellType => Some(0)
+    case UByteUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
-    new SegmentCombiner {
+    new SegmentCombiner(bandCount) {
       private val arr = Array.ofDim[Byte](targetSize)
 
       def set(targetIndex: Int, v: Int): Unit = {

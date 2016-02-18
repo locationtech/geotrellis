@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class XorSpec extends FunSpec 
-                 with Matchers 
-                 with TestEngine 
-                 with TileBuilders {
+class XorSpec extends FunSpec with Matchers with TestEngine {
   describe("Xor") {
     it("xors three tiled RasterSources correctly") {
       val rs1 = createRasterSource(

@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class RoundSpec extends FunSpec 
-                   with Matchers 
-                   with TestEngine 
-                   with TileBuilders {
+class RoundSpec extends FunSpec with Matchers with TestEngine {
   describe("Round") {    
     it("takes round of int tiled RasterSource") {
       val rs = createRasterSource(

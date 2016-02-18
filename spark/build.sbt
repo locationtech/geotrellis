@@ -2,7 +2,7 @@ import Dependencies._
 
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
-  "org.apache.accumulo" % "accumulo-core" % Version.accumulo 
+  "org.apache.accumulo" % "accumulo-core" % Version.accumulo
     exclude("org.jboss.netty", "netty")
     exclude("org.apache.hadoop", "hadoop-client"),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
@@ -16,6 +16,13 @@ libraryDependencies ++= Seq(
   nscalaTime,
   scalazStream,
   scalatest % "test")
+
+// must use this method of import to avoid cyclic dependency errors
+internalDependencyClasspath in Test <++= 
+  exportedProducts in Compile in LocalProject("raster-testkit")
+
+internalDependencyClasspath in Test <++= 
+  exportedProducts in Compile in LocalProject("spark-testkit")
 
 fork in Test := false
 parallelExecution in Test := false

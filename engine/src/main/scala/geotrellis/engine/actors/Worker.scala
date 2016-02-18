@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@ import scala.concurrent.duration._
 
 /**
  * Workers are responsible for evaluating an operation. However, if the
- * operation in question returns a step result that requires asynchronous callbacks, 
+ * operation in question returns a step result that requires asynchronous callbacks,
  * the work will be off-loaded to a StepAggregator.
  *
  * Thus, in practice workers only ever do work on simple operations.
@@ -34,7 +34,7 @@ import scala.concurrent.duration._
 private[actors]
 case class Worker(val engineContext: EngineContext) extends Actor {
   // Workers themselves don't have direct children. If the operation in
-  // question has a step result requiring child operations be executed 
+  // question has a step result requiring child operations be executed
   // asynchronously, it will be processed by a StepAggregator
   // instead, who will be responsible for constructing the response (including
   // history).
@@ -50,7 +50,7 @@ case class Worker(val engineContext: EngineContext) extends Actor {
       } catch {
         case e:Throwable => {
           val error = StepError.fromException(e)
-          System.err.println("Operation failed, with exception: " + 
+          System.err.println("Operation failed, with exception: " +
             s"${e}\n\nStack trace:\n${error.trace}\n", error.msg,error.trace)
           handler.handleResult(error,history)
         }

@@ -9,43 +9,31 @@ class Int16GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val noDataValue: Option[Double]
+  val cellType: ShortCells with NoDataHandling
 ) extends GeoTiffTile(segmentLayout, compression) with Int16GeoTiffSegmentCollection {
+
+  val noDataValue: Option[Short] = cellType match {
+    case ShortCellType => None
+    case ShortConstantNoDataCellType => Some(Short.MinValue)
+    case ShortUserDefinedNoDataCellType(nd) => Some(nd)
+  }
+
   def mutable: MutableArrayTile = {
-    val arr = Array.ofDim[Byte](cols * rows * TypeShort.bytes)
-
-    if(segmentLayout.isStriped) {
-      var i = 0
-      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        val segment =
-          getSegment(segmentIndex)
-        val size = segment.bytes.size
-        System.arraycopy(segment.bytes, 0, arr, i, size)
-        i += size
-      }
-    } else {
-      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        val segment =
-          getSegment(segmentIndex)
-
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-        val width = segmentTransform.segmentCols * TypeShort.bytes
-        val tileWidth = segmentLayout.tileLayout.tileCols * TypeShort.bytes
-
-        cfor(0)(_ < tileWidth * segmentTransform.segmentRows, _ + tileWidth) { i =>
-          val col = segmentTransform.indexToCol(i / TypeShort.bytes)
-          val row = segmentTransform.indexToRow(i / TypeShort.bytes)
-          val j = ((row * cols) + col) * TypeShort.bytes
-          System.arraycopy(segment.bytes, i, arr, j, width)
+    val arr = Array.ofDim[Short](cols * rows)
+    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+      val segment =
+        getSegment(segmentIndex)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+      cfor(0)(_ < segment.size, _ + 1) { i =>
+        val col = segmentTransform.indexToCol(i)
+        val row = segmentTransform.indexToRow(i)
+        if(col < cols && row < rows) {
+          val data = segment.get(i)
+          arr(row * cols + col) = data
         }
       }
     }
 
-    noDataValue match {
-      case Some(nd) if isData(nd) && Short.MinValue.toDouble <= nd && nd <= Short.MaxValue.toDouble =>
-        ShortArrayTile.fromBytes(arr, cols, rows, nd.toShort)
-      case _ =>
-        ShortArrayTile.fromBytes(arr, cols, rows)
-    }
+    ShortArrayTile(arr, cols, rows, cellType)
   }
 }

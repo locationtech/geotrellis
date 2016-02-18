@@ -25,7 +25,7 @@ class GdalReaderSpec extends FunSpec with Matchers {
       gdRaster.cols should be (gtRaster.cols)
       gdRaster.rows should be (gtRaster.rows)
 
-      gdRaster.cellType should be (gtRaster.cellType)
+      gdRaster.cellType.toString.take(7) should be (gtRaster.cellType.toString.take(7))
 
       println("Comparing rasters...")
       for(col <- 0 until gdRaster.cols) {

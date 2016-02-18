@@ -18,7 +18,7 @@ package geotrellis.engine.op.zonal.summary
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.zonal.summary._
+import geotrellis.raster.summary.polygonal._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
@@ -26,17 +26,18 @@ import geotrellis.vector._
 import scala.collection.mutable
 import spire.syntax.cfor._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
   def mapIntersecting[B, That](p: Polygon)
-                              (handler: TileIntersectionHandler[B]): DataSource[B, _] =
+                              (handler: TilePolygonalSummaryHandler[B]): DataSource[B, _] =
     _mapIntersecting(p, None)(handler.handleFullTile)(handler.handlePartialTile)
 
   def mapIntersecting[B, That](p: Polygon, fullTileResults: DataSource[B, _])
-                               (handler: TileIntersectionHandler[B]): DataSource[B, _] =
+                               (handler: TilePolygonalSummaryHandler[B]): DataSource[B, _] =
     _mapIntersecting(p, Some(fullTileResults))(handler.handleFullTile)(handler.handlePartialTile)
 
   def mapIntersecting[B, That](p: Polygon, fullTileResults: Option[DataSource[B, _]])
-                               (handler: TileIntersectionHandler[B]): DataSource[B, _] =
+                               (handler: TilePolygonalSummaryHandler[B]): DataSource[B, _] =
     _mapIntersecting(p, fullTileResults)(handler.handleFullTile)(handler.handlePartialTile)
 
 
@@ -92,58 +93,58 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
   }
 
   def zonalSummary[T](
-    handler: TileIntersectionHandler[T],
-    p: Polygon,
-    cachedResult: Option[DataSource[T, _]]
+                       handler: TilePolygonalSummaryHandler[T],
+                       p: Polygon,
+                       cachedResult: Option[DataSource[T, _]]
   ): ValueSource[T] =
     mapIntersecting(p, cachedResult)(handler)
       .converge(handler.combineResults)
 
-  def zonalHistogram(p: Polygon): ValueSource[Histogram] =
-    zonalSummary(Histogram, p, None)
+  def zonalHistogram(p: Polygon): ValueSource[Histogram[Int]] =
+    zonalSummary(HistogramSummary, p, None)
 
-  def zonalHistogram(p: Polygon, cached: DataSource[Histogram, _]): ValueSource[Histogram] =
-    zonalSummary(Histogram, p, Some(cached))
+  def zonalHistogram(p: Polygon, cached: DataSource[Histogram[Int], _]): ValueSource[Histogram[Int]] =
+    zonalSummary(HistogramSummary, p, Some(cached))
 
   def zonalSum(p: Polygon): ValueSource[Long] =
-    zonalSummary(Sum, p, None)
+    zonalSummary(SumSummary, p, None)
 
   def zonalSum(p: Polygon, cached: DataSource[Long, _]): ValueSource[Long] =
-    zonalSummary(Sum, p, Some(cached))
+    zonalSummary(SumSummary, p, Some(cached))
 
   def zonalSumDouble(p: Polygon): ValueSource[Double] =
-    zonalSummary(SumDouble, p, None)
+    zonalSummary(SumDoubleSummary, p, None)
 
   def zonalSumDouble(p: Polygon, cached: DataSource[Double, _]): ValueSource[Double] =
-    zonalSummary(SumDouble, p, Some(cached))
+    zonalSummary(SumDoubleSummary, p, Some(cached))
 
   def zonalMin(p: Polygon): ValueSource[Int] =
-    zonalSummary(Min, p, None)
+    zonalSummary(MinSummary, p, None)
 
   def zonalMin(p: Polygon, cached: DataSource[Int, _]): ValueSource[Int] =
-    zonalSummary(Min, p, Some(cached))
+    zonalSummary(MinSummary, p, Some(cached))
 
   def zonalMinDouble(p: Polygon): ValueSource[Double] =
-    zonalSummary(MinDouble, p, None)
+    zonalSummary(MinDoubleSummary, p, None)
 
   def zonalMinDouble(p: Polygon, cached: DataSource[Double, _]): ValueSource[Double] =
-    zonalSummary(MinDouble, p, Some(cached))
+    zonalSummary(MinDoubleSummary, p, Some(cached))
 
   def zonalMax(p: Polygon): ValueSource[Int] =
-    zonalSummary(Max, p, None)
+    zonalSummary(MaxSummary, p, None)
 
   def zonalMax(p: Polygon, cached: DataSource[Int, _]): ValueSource[Int] =
-    zonalSummary(Max, p, Some(cached))
+    zonalSummary(MaxSummary, p, Some(cached))
 
   def zonalMaxDouble(p: Polygon): ValueSource[Double] =
-    zonalSummary(MaxDouble, p, None)
+    zonalSummary(MaxDoubleSummary, p, None)
 
   def zonalMaxDouble(p: Polygon, cached: DataSource[Double, _]): ValueSource[Double] =
-    zonalSummary(MaxDouble, p, Some(cached))
+    zonalSummary(MaxDoubleSummary, p, Some(cached))
 
   def zonalMean(p: Polygon): ValueSource[Double] =
-    zonalSummary(Mean, p, None).map(_.mean)
+    zonalSummary(MeanSummary, p, None).map(_.mean)
 
   def zonalMean(p: Polygon, cached: DataSource[MeanResult, _]): ValueSource[Double] =
-    zonalSummary(Mean, p, Some(cached)).map(_.mean)
+    zonalSummary(MeanSummary, p, Some(cached)).map(_.mean)
 }

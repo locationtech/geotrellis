@@ -3,9 +3,9 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.render.png._
 import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
-trait PngRenderMethods extends TileMethods {
+trait PngRenderMethods extends MethodExtensions[Tile] {
   /** Generate a PNG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -17,12 +17,12 @@ trait PngRenderMethods extends TileMethods {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(tile)
+    new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(self)
 
   def renderPng(colorClassifier: ColorClassifier[_]): Png =
     renderPng(colorClassifier, None)
 
-  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram): Png =
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): Png =
     renderPng(colorClassifier, Some(histogram))
 
   /**
@@ -39,11 +39,20 @@ trait PngRenderMethods extends TileMethods {
     * quantile class breaks.
     */
   private
-  def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram]): Png = {
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram[Int]]): Png = {
     val colorEncoding = PngColorEncoding(colorClassifier.getColors, colorClassifier.getNoDataColor)
     colorEncoding.convertColorClassifier(colorClassifier)
     val cmap = colorClassifier.toColorMap(histogram)
-    val r2 = cmap.render(tile).convert(TypeByte)
+    val r2 = self.cellType match {
+      case ct: ConstantNoData =>
+        cmap.render(self).convert(ByteConstantNoDataCellType)
+      case ct: UByteCells with UserDefinedNoData[Byte] =>
+        cmap.render(self).convert(UByteUserDefinedNoDataCellType(ct.noDataValue))
+      case ct: UShortCells with UserDefinedNoData[Short] =>
+        cmap.render(self).convert(UShortUserDefinedNoDataCellType(ct.noDataValue))
+      case _ =>
+        cmap.render(self).convert(ByteCellType)
+    }
     new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(r2)
   }
 }

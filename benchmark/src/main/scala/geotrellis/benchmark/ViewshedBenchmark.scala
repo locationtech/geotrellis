@@ -4,12 +4,12 @@ package geotrellis.benchmark
  * Created by jchien on 4/24/14.
  */
 import geotrellis._
+import geotrellis.raster.viewshed.Viewshed
 import geotrellis.vector._
 import geotrellis.raster._
 
 import com.google.caliper.Param
 import scala.util.Random
-import geotrellis.raster.op.global.Viewshed
 
 /*
  * Current times for 256x256 (ms)

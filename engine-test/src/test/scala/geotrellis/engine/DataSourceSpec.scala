@@ -16,15 +16,12 @@
 
 package geotrellis.engine
 
-import geotrellis.raster.op._
-import geotrellis.testkit._
+import geotrellis.raster.mapalgebra._
 
 import org.scalatest._
 
-class DataSourceSpec extends FunSpec 
-                        with Matchers 
-                        with TestEngine 
-                        with TileBuilders {
+class DataSourceSpec extends FunSpec with Matchers  with TestEngine {
+
   describe("DataSource") {
     it("should cache") {
       case class MockOperation(f:()=>Unit) extends Op1(f)({ f => f(); Result(true) })

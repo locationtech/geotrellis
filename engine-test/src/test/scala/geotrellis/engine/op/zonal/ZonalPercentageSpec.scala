@@ -21,16 +21,12 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
 import scala.collection.mutable
 
 import spire.syntax.cfor._
 
-class ZonalPercentageSpec extends FunSpec
-                             with Matchers
-                             with TestEngine
-                             with TileBuilders {
+class ZonalPercentageSpec extends FunSpec with Matchers with TestEngine {
   describe("ZonalPercentage") {
     it("gives correct percentage for example raster sources") {
       val rs = createRasterSource(

@@ -16,11 +16,11 @@
 
 package geotrellis.raster
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class IntConstantTest extends FunSuite with TestEngine with Matchers {
+class IntConstantTest extends FunSuite with RasterMatchers with Matchers {
   test("building") {
     val d1 = IntConstantTile(99, 2, 2)
     val d2 = IntArrayTile(Array.fill(4)(99), 2, 2)
@@ -31,7 +31,7 @@ class IntConstantTest extends FunSuite with TestEngine with Matchers {
     val d = IntConstantTile(99, 2, 2)
 
     assert(d.size === 4)
-    assert(d.cellType === TypeInt)
+    assert(d.cellType === IntConstantNoDataCellType)
     assert(d.get(0,0) === 99)
     assert(d.getDouble(0,0) === 99.0)
   }

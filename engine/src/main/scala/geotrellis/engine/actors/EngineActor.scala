@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ import geotrellis.engine._
 import akka.actor._
 import akka.routing._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class EngineContext(externalId:String,layerLoader:LayerLoader,engineRef:ActorRef)
 
 /**
@@ -29,14 +30,15 @@ case class EngineContext(externalId:String,layerLoader:LayerLoader,engineRef:Act
  *  1. Requests made by the outside world to run operations.
  *  2. Requests made by other actors to asynchronously evaluate arguments.
  *
- * In the first case, we dispatch the message to a pool of workers). In the second 
+ * In the first case, we dispatch the message to a pool of workers). In the second
  * case we will spin up a Step Aggregator actor who will handle the message.
  */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class EngineActor(engine: Engine) extends Actor {
   val fullExternalId = context.system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
-  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@")) 
+  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@"))
     fullExternalId.substring(22)
-  else 
+  else
     ""
 
   val engineContext = EngineContext(externalId, engine.layerLoader,self)
@@ -48,20 +50,20 @@ case class EngineActor(engine: Engine) extends Actor {
     case Run(op) =>
       val msgSender = sender
       workerPool ! RunOperation(op, 0, msgSender)
- 
-    case RunOperation(op,pos,client) => 
+
+    case RunOperation(op,pos,client) =>
       op match {
-        case Literal(value) => 
+        case Literal(value) =>
           val hist = History(op,engineContext.externalId).withResult(value)
           client ! PositionedResult(Complete(value, hist.withResult(value).withResult(value)), pos)
-        case RemoteOperation(sendOp, None) => 
+        case RemoteOperation(sendOp, None) =>
           engine.getRouter ! RunOperation(sendOp,pos,client)
-        case RemoteOperation(sendOp, Some(cluster)) => 
+        case RemoteOperation(sendOp, Some(cluster)) =>
           cluster ! RunOperation(sendOp,pos,client)
         case _ =>
           workerPool ! RunOperation(op,pos,client)
       }
-    
+
     case RunCallback(args, pos, cb, client, tracker) =>
       context.actorOf(Props(StepAggregator(engineContext, pos, args, cb, client, tracker)))
 

@@ -3,16 +3,16 @@ package geotrellis.raster.mosaic
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.vector.Extent
-import geotrellis.engine._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 import spire.syntax.cfor._
 
-class MosaicSpec extends FunSpec 
-                           with TileBuilders
-                           with TestEngine {
+class MosaicSpec extends FunSpec
+                         with TileBuilders
+                         with RasterMatchers
+                         with TestFiles {
 
   describe("Merge functions") {
     it("should merge values from overlapping extents") {
@@ -24,7 +24,7 @@ class MosaicSpec extends FunSpec
       )
 
       val extent = Extent(2,2,6,6)
-      val mergeTile = ArrayTile.empty(TypeInt, 4,4)
+      val mergeTile = ArrayTile.empty(IntConstantNoDataCellType, 4,4)
 
       for ( (ex, tile) <- tiles) {
         mergeTile.merge(extent, ex, tile)

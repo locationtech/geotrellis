@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class MultiplySpec extends FunSpec 
-                      with Matchers 
-                      with TestEngine 
-                      with TileBuilders {
+class MultiplySpec extends FunSpec with Matchers with TestEngine {
   describe("Multiply") {
     it("multiplies two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")

@@ -20,7 +20,7 @@ import geotrellis.engine.op._
 import geotrellis.engine.io._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
 import geotrellis.vector.Extent
 
@@ -29,6 +29,7 @@ import akka.actor.ActorRef
 import spire.syntax.cfor._
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Tile]]])
     extends DataSource[Tile, Tile] {
   type Self = RasterSource
@@ -339,6 +340,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
 
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object RasterSource {
   def fromPath(path: String): RasterSource =
     fromPath(path, None)

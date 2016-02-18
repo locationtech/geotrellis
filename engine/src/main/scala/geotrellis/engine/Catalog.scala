@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,6 +34,7 @@ import scala.util._
  * Represents a named collection of data stores. We expect each JSON file to
  * correspond to one catalog.
  */
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class Catalog(name:String, stores:Map[String, DataStore], json: String,source: String) {
 
   private var cacheSet = false
@@ -66,7 +67,7 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
 
   def getRasterLayer(layerId:LayerId):Try[RasterLayer] =
     layerId.store match {
-      case Some(ds) => 
+      case Some(ds) =>
         stores.get(ds) match {
           case Some(store) =>
             store.getRasterLayer(layerId.name) match {
@@ -75,7 +76,7 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
             }
           case None => Failure(new java.io.IOException(s"No store with name $ds exists in the catalog."))
         }
-      case None => 
+      case None =>
         stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
           case Nil => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in the catalog."))
           case layer :: Nil => Success(layer)
@@ -106,8 +107,9 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
   def getStore(name:String) = stores.get(name)
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object Catalog {
-  private val stringToRasterLayerBuilder = 
+  private val stringToRasterLayerBuilder =
     mutable.Map[String,RasterLayerBuilder](
       "constant" -> ConstantRasterLayerBuilder,
       "ascii" -> AsciiRasterLayerBuilder,
@@ -123,7 +125,7 @@ object Catalog {
       stringToRasterLayerBuilder(layerType) = builder
     }
 
-  def getRasterLayerBuilder(layerType:String):Option[RasterLayerBuilder] = 
+  def getRasterLayerBuilder(layerType:String):Option[RasterLayerBuilder] =
     if(stringToRasterLayerBuilder.contains(layerType)) {
       Some(stringToRasterLayerBuilder(layerType))
     } else {
@@ -141,7 +143,7 @@ object Catalog {
   /**
    * Build a Catalog instance given a string of JSON data.
    */
-  def fromJSON(data:String,path:String): Catalog = 
+  def fromJSON(data:String,path:String): Catalog =
     json.CatalogParser(data,path).create(data,path)
 
   /**

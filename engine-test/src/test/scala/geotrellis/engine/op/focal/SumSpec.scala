@@ -18,13 +18,12 @@ package geotrellis.engine.op.focal
 
 import geotrellis.vector.Extent
 import geotrellis.raster._
-import geotrellis.raster.op.focal._
-import geotrellis.testkit._
+import geotrellis.raster.mapalgebra.focal._
 import geotrellis.engine._
 
 import org.scalatest._
 
-class SumSpec extends FunSpec with TestEngine with TileBuilders {
+class SumSpec extends FunSpec with TestEngine {
 
   describe("Sum") {
 

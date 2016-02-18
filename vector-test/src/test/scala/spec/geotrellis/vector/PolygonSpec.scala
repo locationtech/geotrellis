@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import geotrellis.testkit.vector._
+import geotrellis.vector.testkit._
 
 import com.vividsolutions.jts.{geom=>jts}
 

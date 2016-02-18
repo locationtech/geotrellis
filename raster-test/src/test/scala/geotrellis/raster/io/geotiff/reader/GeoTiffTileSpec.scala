@@ -3,13 +3,13 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
 import org.scalatest._
 
 class GeoTiffTileSpec extends FunSpec 
-    with TestEngine
+    with RasterMatchers
     with TileBuilders
     with GeoTiffTestUtils {
 
@@ -69,7 +69,7 @@ class GeoTiffTileSpec extends FunSpec
   }
 
   describe("GeoTiffTile") {
-    it("should convert from TypeInt to TypeDouble") {
+    it("should convert from IntConstantNoDataCellType to DoubleConstantNoDataCellType") {
       val arrInt = 
         Array(1, 2, 1, 1, 2,
               1, 2, 2, 1, 2,
@@ -80,11 +80,10 @@ class GeoTiffTileSpec extends FunSpec
 
       val t = createTile(arrInt, 5, 3)
 
-      val actual = t.toGeoTiffTile().convert(TypeDouble)
+      val actual = t.toGeoTiffTile().convert(DoubleConstantNoDataCellType)
       val expected = createTile(arrDouble, 5, 3)
 
       assertEqual(actual, expected)
     }
-
   }
 }

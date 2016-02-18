@@ -112,7 +112,7 @@ trait ColorMap {
 
   def render(r: Tile): Tile
 
-  def cache(h: Histogram): ColorMap
+  def cache(h: Histogram[Int]): ColorMap
 }
 
 case class IntColorMap(breaksToColors: Map[Int, Int],
@@ -164,22 +164,22 @@ case class IntColorMap(breaksToColors: Map[Int, Int],
   }
 
   def render(r: Tile) =
-      r.convert(TypeByte).map { z => apply(z) }
+      r.convert(ByteConstantNoDataCellType).map { z => apply(z) }
 
-  def cache(h: Histogram): ColorMap = {
+  def cache(h: Histogram[Int]): ColorMap = {
     val ch = h.mutable
     h.foreachValue(z => ch.setItem(z, apply(z)))
     CachedColorMap(orderedColors, options, ch)
   }
 }
 
-case class CachedColorMap(colors: Array[Int], options: ColorMapOptions, h: Histogram)
+case class CachedColorMap(colors: Array[Int], options: ColorMapOptions, h: Histogram[Int])
   extends ColorMap with Function1[Int, Int] {
   final val noDataColor = options.noDataColor
   def render(r: Tile) =
     r.map(this)
   final def apply(z: Int) = { if(isNoData(z)) noDataColor else h.getItemCount(z) }
-  def cache(h: Histogram) = this
+  def cache(h: Histogram[Int]) = this
 }
 
 case class DoubleColorMap(breaksToColors: Map[Double, Int],
@@ -232,7 +232,7 @@ case class DoubleColorMap(breaksToColors: Map[Double, Int],
   def render(r: Tile) =
       r.mapDouble { z => apply(z) }
 
-  def cache(h: Histogram): ColorMap = {
+  def cache(h: Histogram[Int]): ColorMap = {
     val ch = h.mutable
 
     h.foreachValue(z => ch.setItem(z, apply(z)))
@@ -244,7 +244,7 @@ case class DoubleColorMap(breaksToColors: Map[Double, Int],
       val options = opts
       def render(r: Tile) =
         r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
-      def cache(h: Histogram) = this
+      def cache(h: Histogram[Int]) = this
     }
   }
 }

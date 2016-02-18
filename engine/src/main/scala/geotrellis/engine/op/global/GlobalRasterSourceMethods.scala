@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,14 @@ package geotrellis.engine.op.global
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.global._
+import geotrellis.raster.costdistance.CostDistance
+import geotrellis.raster.regiongroup.RegionGroupOptions
+import geotrellis.raster.viewshed.{ApproxViewshed, Viewshed}
 import geotrellis.vector._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait GlobalRasterSourceMethods extends RasterSourceMethods {
-  def costDistance(points: Seq[(Int, Int)]) = 
+  def costDistance(points: Seq[(Int, Int)]) =
     rasterSource.global(CostDistance(_, points))
 
   def rescale(newMin: Int, newMax: Int) =
@@ -31,29 +34,26 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
   def rescale(newMin: Double, newMax: Double) =
     rasterSource.global(_.rescale(newMin, newMax))
 
-  def toVector() = 
+  def toVector() =
     rasterSource.converge.mapOp { tileOp =>
-      (tileOp, rasterSource.rasterDefinition).map { (tile, rd) => 
-        tile.toVector(rd.rasterExtent.extent) 
+      (tileOp, rasterSource.rasterDefinition).map { (tile, rd) =>
+        tile.toVector(rd.rasterExtent.extent)
       }
     }
 
   def regionGroup(options: RegionGroupOptions = RegionGroupOptions.default) =
     rasterSource.converge.map(_.regionGroup(options))
 
-  def verticalFlip() =
-    rasterSource.global(VerticalFlip(_))
-
   def viewshed(p: Point, exact: Boolean = false) =
     if(exact)
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
-          Viewshed(r, col, row) 
+          Viewshed(r, col, row)
         }
       }
     else
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
           ApproxViewshed(r, col, row)
@@ -62,14 +62,14 @@ trait GlobalRasterSourceMethods extends RasterSourceMethods {
 
   def viewshedOffsets(p: Point, exact: Boolean = false) =
     if(exact)
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
-          Viewshed.offsets(r, col, row) 
+          Viewshed.offsets(r, col, row)
         }
       }
     else
-      rasterSource.globalOp { r => 
+      rasterSource.globalOp { r =>
         rasterSource.rasterDefinition.map { rd =>
           val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
           ApproxViewshed.offsets(r, col, row)
