@@ -112,8 +112,12 @@ lazy val slippy = Project("slippy", file("backends/slippy")).
   dependsOn(spark, s3).
   settings(commonSettings: _*)
 
+lazy val accumulo = Project("accumulo", file("backends/accumulo")).
+  dependsOn(spark).
+  settings(commonSettings: _*)
+
 lazy val sparkTest = Project("spark-test", file("spark-test")).
-  dependsOn(util, raster, spark, s3, slippy).
+  dependsOn(util, raster, spark, s3, slippy, accumulo).
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
