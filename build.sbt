@@ -120,6 +120,9 @@ lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo).
   settings(commonSettings: _*)
 
+lazy val index = Project("index", file("index")).
+  settings(commonSettings: _*)
+
 lazy val gdal: Project = Project("gdal", file("gdal")).
   dependsOn(proj4, raster, spark, sparkEtl).
   settings(commonSettings: _*)

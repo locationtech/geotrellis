@@ -1,6 +1,6 @@
 #geotrellis.raster
 
->“Yes raster is faster, but raster is vaster and vector just SEEMS more corrector.”  
+> “Yes raster is faster, but raster is vaster and vector just SEEMS more corrector.”
 — [C. Dana Tomlin](http://uregina.ca/piwowarj/NotableQuotables.html)
 
 ##Tiles
