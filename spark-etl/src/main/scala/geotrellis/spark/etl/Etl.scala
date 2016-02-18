@@ -1,13 +1,14 @@
 package geotrellis.spark.etl
 
 import com.typesafe.scalalogging.slf4j.Logger
-import geotrellis.raster.{MultiBandTile, Tile, RasterExtent, CellGrid}
+import geotrellis.raster.crop.CropMethods
+import geotrellis.raster.stitch.Stitcher
+import geotrellis.raster.{RasterExtent, CellGrid}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.spark.ingest._
-import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
 import org.slf4j.LoggerFactory
 import scala.reflect._
@@ -24,17 +25,17 @@ object Etl {
   def ingest[
     I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
     K: SpatialComponent: TypeTag,
-    V <: CellGrid: TypeTag: ? => TileReprojectMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    V <: CellGrid: TypeTag: Stitcher: ? => TileReprojectMethods[V]: ? => CropMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
     val etl = Etl(args)
-    val tiles = etl.load[I, V]
-    val reprojected = etl.reproject(tiles)
-    val (zoom, metadata) = etl.collectMetadata(reprojected)
-    val tiled = ContextRDD(reprojected.cutTiles[K](metadata, NearestNeighbor), metadata)
-    etl.save[K, V](LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
+    val sourceTiles = etl.load[I, V]
+    val (_, metadata) = etl.collectMetadata(sourceTiles)
+    val tiled = sourceTiles.cutTiles[K](metadata, NearestNeighbor)
+    val (zoom, reprojected) = etl.reproject(ContextRDD(tiled, metadata))
+    etl.save[K, V](LayerId(etl.conf.layerName(), zoom), reprojected, keyIndexMethod)
   }
 }
 
@@ -71,8 +72,14 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     plugin(conf.inputProps)
   }
 
-  def reproject[I: ProjectedExtentComponent, V <: CellGrid: ? => TileReprojectMethods[V]](rdd: RDD[(I, V)]): RDD[(I, V)] =
-    rdd.reproject(conf.crs()).persist(conf.cache())
+  def reproject[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: Stitcher: ? => TileReprojectMethods[V]: ? => CropMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+  ](rdd: RDD[(K, V)] with Metadata[M]): (Int, RDD[(K, V)] with Metadata[M]) = {
+    val tuple = rdd.reproject(conf.crs(), conf.layoutScheme()(conf.crs(), conf.tileSize()), conf.bufferSize())
+    tuple._2.persist(conf.cache())
+    tuple
+  }
 
   def collectMetadata[I: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, M) = {
     val crs = conf.crs()
