@@ -16,7 +16,7 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
     with RasterMatchers
-    with GeoTiffTestUtils 
+    with GeoTiffTestUtils
     with TileBuilders {
 
   override def afterAll = purge
@@ -110,7 +110,87 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
   }
 
-  describe("MutliBand subset methods") {
+  describe("MultiBand subset combine methods") {
+
+    it("should work correctly on integer-valued tiles") {
+      val tiles = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val band0 = tiles.band(0).toArray
+      val band2 = tiles.band(2).toArray
+      val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum }).toArray
+      val expected = band0.zip(band2).map({ pair => pair._1 + pair._2 })
+
+      (actual.zip(expected)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected")
+      })
+    }
+
+    it("should work correctly on double-valued tiles") {
+      val original =
+        ArrayMultiBandTile(
+          ArrayTile(Array.ofDim[Float](150*140).fill(1.5f), 150, 140),
+          ArrayTile(Array.ofDim[Float](150*140).fill(2.5f), 150, 140),
+          ArrayTile(Array.ofDim[Float](150*140).fill(3.5f), 150, 140))
+      val tiles = GeoTiffMultiBandTile(original)
+      val band0 = tiles.band(0).toArrayDouble
+      val band2 = tiles.band(2).toArrayDouble
+      val actual = tiles.combineDouble(List(0,2))({ seq: Seq[Double] => seq.sum }).toArray
+      val expected = band0.zip(band2).map({ pair => pair._1 + pair._2 })
+
+      (actual.zip(expected)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected")
+      })
+    }
+  }
+
+  describe("MultiBand subset map methods") {
+
+    it("should work correctly on integer-valued tiles") {
+      val tiles = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val actual = tiles.map(List(0,2))({ (band,z) => z + band + 3 })
+      val expectedBand0 = tiles.band(0).map({ z => z + 0 + 3 }).toArray
+      val expectedBand1 = tiles.band(1).toArray
+      val expectedBand2 = tiles.band(2).map({ z => z + 2 + 3 }).toArray
+
+      (actual.band(0).toArray.zip(expectedBand0)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected in band 0")
+      })
+
+      (actual.band(1).toArray.zip(expectedBand1)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected in band 1")
+      })
+
+      (actual.band(2).toArray.zip(expectedBand2)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected in band 2")
+      })
+    }
+
+    it("should work correctly on double-valued tiles") {
+      val original =
+        ArrayMultiBandTile(
+          ArrayTile(Array.ofDim[Float](150*140).fill(1.5f), 150, 140),
+          ArrayTile(Array.ofDim[Float](150*140).fill(2.5f), 150, 140),
+          ArrayTile(Array.ofDim[Float](150*140).fill(3.5f), 150, 140))
+      val tiles = GeoTiffMultiBandTile(original)
+      val actual = tiles.mapDouble(List(0,2))({ (band,z) => z + band + 3.5 })
+      val expectedBand0 = tiles.band(0).mapDouble({ z => z + 0 + 3.5 }).toArrayDouble
+      val expectedBand1 = tiles.band(1).toArrayDouble
+      val expectedBand2 = tiles.band(2).mapDouble({ z => z + 2 + 3.5 }).toArrayDouble
+
+      (actual.band(0).toArrayDouble.zip(expectedBand0)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected in band 0")
+      })
+
+      (actual.band(1).toArrayDouble.zip(expectedBand1)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected in band 1")
+      })
+
+      (actual.band(2).toArrayDouble.zip(expectedBand2)).foreach({ pair =>
+        assert(pair._1 == pair._2, "actual should equal expected in band 2")
+      })
+    }
+  }
+
+  describe("MultiBand subset methods") {
 
     it("subset should be inexpensive") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))

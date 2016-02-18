@@ -56,7 +56,7 @@ object GeoTiffTile {
     val compressor = options.compression.createCompressor(segmentCount)
 
     val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
-    val segmentTiles = 
+    val segmentTiles =
       options.storageMethod match {
         case _: Tiled => CompositeTile.split(tile, segmentLayout.tileLayout)
         case _: Striped => CompositeTile.split(tile, segmentLayout.tileLayout, extend = false)
@@ -339,7 +339,7 @@ abstract class GeoTiffTile(
         }
     }
 
-  def toArray(): Array[Int] = 
+  def toArray(): Array[Int] =
     toArrayTile.toArray
 
   def toArrayDouble(): Array[Double] =

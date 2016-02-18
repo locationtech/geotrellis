@@ -239,6 +239,34 @@ abstract class GeoTiffMultiBandTile(
     )
   }
 
+  /**
+    * Piggy-back on the other map method to support mapping a subset
+    * of the bands.
+    */
+  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultiBandTile = {
+    val set = subset.toSet
+    val fn = { (bandIndex: Int, z: Int) =>
+      if (set.contains(bandIndex)) f(bandIndex, z)
+      else z
+    }
+
+    map(fn)
+  }
+
+  /**
+    * Piggy-back on the other map method to support mapping a subset
+    * of the bands.
+    */
+  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultiBandTile = {
+    val set = subset.toSet
+    val fn = { (bandIndex: Int, z: Double) =>
+      if (set.contains(bandIndex)) f(bandIndex, z)
+      else z
+    }
+
+    mapDouble(fn)
+  }
+
   def map(b0: Int)(f: Int => Int): MultiBandTile =
     if(hasPixelInterleave) {
       mapSegments { (segment, _) =>
@@ -446,6 +474,36 @@ abstract class GeoTiffMultiBandTile(
     }
   }
 
+  /**
+    * Piggy-back on the other combine method to support combing a
+    * subset of the bands.
+    */
+  def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
+    subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+
+    val fn = { array: Array[Int] =>
+      val data = subset.map({ i => array(i) })
+      f(data)
+    }
+
+    combine(fn)
+  }
+
+  /**
+    * Piggy-back on the other combineDouble method to support
+    * combining a subset of the bands.
+    */
+  def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
+    subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+
+    val fn = { array: Array[Double] =>
+      val data = subset.map({ i => array(i) })
+      f(data)
+    }
+
+    combineDouble(fn)
+  }
+
   override
   def combine(f: Array[Int] => Int): Tile =
     _combine(_.initValueHolder)({ segmentCombiner => segmentCombiner.placeValue _ })({ segmentCombiner =>
@@ -518,14 +576,14 @@ abstract class GeoTiffMultiBandTile(
     )
   }
 
-  def combine(b0: Int,b1: Int)(f: (Int, Int) => Int): Tile =
+  def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
         segmentCombiner.set(targetIndex, s1, i1, s2, i2)(f)
       }
     }
 
-  def combineDouble(b0: Int,b1: Int)(f: (Double, Double) => Double): Tile =
+  def combineDouble(b0: Int, b1: Int)(f: (Double, Double) => Double): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
         segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2)(f)

@@ -17,6 +17,24 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
 
   def convert(newCellType: CellType): MultiBandTile
 
+  /**
+    * Map over a subset of the bands of a multiband tile to create a
+    * new integer-valued multiband tile.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to map over the bands.
+    */
+  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultiBandTile
+
+  /**
+    * Map over a subset of the bands of a multiband tile to create a
+    * new double-valued multiband tile.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to map over the bands.
+    */
+  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultiBandTile
+
   /** Map each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
@@ -59,6 +77,24 @@ trait MultiBandTile extends CellGrid with MacroCombinableMultiBandTile[Tile] {
     * @param    f          Function that takes in a band number and a value, and returns the foreachped value for that cell value.
     */
   def foreachDouble(b0: Int)(f: Double => Unit): Unit
+
+  /**
+    * Combine a subset of the bands of a tile into a new
+    * integer-valued multiband tile using the function f.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to combine the bands.
+    */
+  def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile
+
+  /**
+    * Combine a subset of the bands of a tile into a new double-valued
+    * multiband tile using the function f.
+    *
+    * @param    subset   A sequence containing the subset of bands that are of interest.
+    * @param    f        A function to combine the bands.
+    */
+  def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile
 
   /** Combine each int band value for each cell.
     * This method will be inherently slower than calling a method with explicitly stated bands,
