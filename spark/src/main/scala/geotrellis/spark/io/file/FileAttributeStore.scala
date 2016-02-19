@@ -3,7 +3,7 @@ package geotrellis.spark.io.file
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import spray.json._
@@ -11,9 +11,10 @@ import DefaultJsonProtocol._
 
 import java.io._
 
+
 /**
  * Stores and retrieves layer attributes from the file system.
- * 
+ *
  * @param catalogPath      The directory of the base catalog
  */
 class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFormat] {
@@ -32,7 +33,7 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
         val att = f.getName.split(SEP).last.replace(".json", "")
         (att.substring(0, att.length - 5), f)
       }
-  
+
   def read[T: Format](file: File): (LayerId, T) =
     Filesystem.readText(file)
       .parseJson
@@ -68,7 +69,7 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
       .isEmpty
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
-    val layerFiles = 
+    val layerFiles =
       attributeDirectory
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
     if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
@@ -79,7 +80,7 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
   }
 
   def delete(layerId: LayerId): Unit = {
-    val layerFiles = 
+    val layerFiles =
       attributeDirectory
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
     if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)

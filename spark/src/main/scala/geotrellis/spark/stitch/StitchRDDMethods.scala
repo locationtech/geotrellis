@@ -5,7 +5,10 @@ import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.rdd.RDD
+
 
 object TileLayoutStitcher {
   /**

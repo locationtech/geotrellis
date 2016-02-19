@@ -17,8 +17,10 @@
 package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
 
 import scala.annotation.tailrec
+
 
 /**
  * Operation to add values.

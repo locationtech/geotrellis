@@ -17,13 +17,13 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.io.geotiff.utils._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.util.Filesystem
 
 import monocle.syntax._
 
@@ -31,6 +31,7 @@ import scala.io._
 import scala.collection.mutable
 import java.nio.{ByteBuffer, ByteOrder}
 import spire.syntax.cfor._
+
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
@@ -50,7 +51,7 @@ object GeoTiffReader {
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleBand(path: String, decompress: Boolean): SingleBandGeoTiff = 
+  def readSingleBand(path: String, decompress: Boolean): SingleBandGeoTiff =
     readSingleBand(Filesystem.slurp(path), decompress)
 
   /* Read a single band GeoTIFF file.
@@ -96,7 +97,7 @@ object GeoTiffReader {
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(path: String, decompress: Boolean): MultiBandGeoTiff = 
+  def readMultiBand(path: String, decompress: Boolean): MultiBandGeoTiff =
     readMultiBand(Filesystem.slurp(path), decompress)
 
   /* Read a multi band GeoTIFF file.

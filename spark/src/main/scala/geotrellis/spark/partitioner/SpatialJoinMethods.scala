@@ -3,8 +3,10 @@ package geotrellis.spark.partitioner
 import geotrellis.raster._
 import geotrellis.spark._
 import org.apache.spark.rdd._
+import geotrellis.util.MethodExtensions
 
 import scala.reflect._
+
 
 abstract class SpatialJoinMethods[
   K: Boundable: PartitionerIndex: ClassTag,

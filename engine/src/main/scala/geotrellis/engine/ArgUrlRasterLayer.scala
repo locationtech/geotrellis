@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgReader
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import akka.actor.ActorSystem
 import akka.io.IO

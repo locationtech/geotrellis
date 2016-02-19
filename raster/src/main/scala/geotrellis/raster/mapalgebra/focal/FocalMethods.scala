@@ -1,6 +1,8 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 
 trait FocalMethods extends MethodExtensions[Tile] {
 

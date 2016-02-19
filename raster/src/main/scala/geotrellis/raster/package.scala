@@ -20,6 +20,7 @@ import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
 import geotrellis.raster.rasterize._
+import geotrellis.util.MethodExtensions
 
 
 package object raster

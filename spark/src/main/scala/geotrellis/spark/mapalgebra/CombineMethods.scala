@@ -1,9 +1,13 @@
 package geotrellis.spark.mapalgebra
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
+
 import scala.reflect.ClassTag
+
 
 abstract class CombineMethods[K: ClassTag, V: ClassTag] extends MethodExtensions[RDD[(K, V)]] {
   def combineValues[R: ClassTag](other: RDD[(K, V)])(f: (V, V) => R): RDD[(K, R)] = combineValues(other, None)(f)

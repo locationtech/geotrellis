@@ -17,6 +17,8 @@
 package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 
 /**
  * Determines if values are less than or equal to other values. Sets to 1 if true, else 0.

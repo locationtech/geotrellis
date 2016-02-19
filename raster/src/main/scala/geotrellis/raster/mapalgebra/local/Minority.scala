@@ -17,9 +17,11 @@
 package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
 
 import spire.syntax.cfor._
 import scala.collection.mutable
+
 
 object Minority extends Serializable {
   def apply(r: Tile*): Tile =

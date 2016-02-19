@@ -4,10 +4,13 @@ import geotrellis.spark._
 import geotrellis.spark.mapalgebra._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.local._
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
+
 import scala.reflect._
-import org.apache.spark.rdd.RDD
+
 
 abstract class LocalTileRDDSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
   private def r(f: Traversable[Tile] => (Tile), partitioner: Option[Partitioner]): RDD[(K, Tile)] =

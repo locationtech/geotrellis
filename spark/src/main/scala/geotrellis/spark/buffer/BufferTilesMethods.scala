@@ -4,10 +4,13 @@ import geotrellis.raster._
 import geotrellis.raster.stitch._
 import geotrellis.raster.crop._
 import geotrellis.spark._
+import geotrellis.util.MethodExtensions
+import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+
 
 class BufferTilesMethods[
   K: SpatialComponent: ClassTag,

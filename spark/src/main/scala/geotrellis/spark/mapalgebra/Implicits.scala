@@ -1,9 +1,13 @@
 package geotrellis.spark.mapalgebra
 
+import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
-import geotrellis.raster._
+
 import scala.reflect.ClassTag
+
 
 object Implicits extends Implicits
 
@@ -23,7 +27,7 @@ trait Implicits {
 
   implicit class withMapValuesOptionMethods[K: ClassTag, V: ClassTag](val self: RDD[(K, (V, Option[V]))]) extends MethodExtensions[RDD[(K, (V, Option[V]))]] {
     def updateValues(f: (V, V) => V): RDD[(K, V)] =
-      self.mapValues { case (v1, ov2) => 
+      self.mapValues { case (v1, ov2) =>
         ov2 match {
           case Some(v2) => f(v1, v2)
           case None => v1
