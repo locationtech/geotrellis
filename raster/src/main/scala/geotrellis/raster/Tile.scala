@@ -278,7 +278,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     * Return ascii art of a range from this raster.
     */
   def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int) = {
-    var s = "";
+    var s = ""
     for (row <- rowMin to rowMax) {
       for (col <- colMin to colMax) {
         val z = this.get(row, col)
@@ -291,5 +291,14 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
       s += "\n"
     }
     s
+  }
+
+  def isNoDataTile = {
+    import scala.util.control.Breaks._
+    var empty = true
+    breakable { foreach { z =>
+      if (isData(z)) { empty = false; break }
+    } }
+    empty
   }
 }
