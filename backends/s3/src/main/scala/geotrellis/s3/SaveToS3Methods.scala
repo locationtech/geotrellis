@@ -1,28 +1,75 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.spark.render._
+import geotrellis.spark.{LayerId, SpatialKey}
+
 import java.io.ByteArrayInputStream
+import java.util.concurrent.Executors
+import java.net.URI
+
 import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult, ObjectMetadata}
 import com.amazonaws.services.s3.model.AmazonS3Exception
+
 import org.apache.spark.rdd.RDD
-import java.util.concurrent.Executors
+
 import scalaz.stream._
 import scalaz.concurrent.Task
 
-class SaveToS3Methods[K, V](rdd: RDD[(K, V)]) {
-  /**
-   * @param bucket    name of the S3 bucket
-   * @param keyToPath maps each key to full path in the bucket
-   * @param asBytes   K and V both provided in case K contains required information, like extent.
-   */
-  def saveToS3(bucket: String, keyToPath: K => String, asBytes: (K,V) => Array[Byte]): Unit = {
-    rdd.persist() .foreachPartition { partition =>
-      val s3Client = S3Client.default
 
+object SaveToS3Methods {
+  /**
+    * @param id           A Layer ID
+    * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
+    * @return             A functon which takes a spatial key and returns an S3 URI
+    */
+  def spatialKeyToPath(id: LayerId, pathTemplate: String): (SpatialKey => String) = {
+    // Return λ
+    { key =>
+      pathTemplate
+        .replace("{x}", key.col.toString)
+        .replace("{y}", key.row.toString)
+        .replace("{z}", id.zoom.toString)
+        .replace("{name}", id.name)
+    }
+  }
+}
+
+class SaveToS3Methods[K](images: RenderedImages[K]) {
+  /**
+    * @param keyToPath A function from K (a key) to an S3 URI
+    * @param s3Client  An S3 Client (real or mock) into-which to save the images
+    */
+  def saveToS3(
+    keyToPath: K => String,
+    s3Client: S3Client = S3Client.default
+  ): Unit = {
+    val rdd = images match {
+      case RenderedPngs(rdd) => rdd
+      case RenderedJpgs(rdd) => rdd
+      case RenderedGeoTiffs(rdd) => rdd
+    }
+    val bucket = new URI(keyToPath(rdd.first._1)).getAuthority
+
+    saveToS3(bucket, keyToPath, rdd, s3Client)
+  }
+
+  /**
+    * @param bucket    name of the S3 bucket
+    * @param keyToPath maps each key to full path in the bucket
+    * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
+    * @param s3Client  An S3 Client (real or mock) into-which to save the images
+    */
+  def saveToS3(
+    bucket: String,
+    keyToPath: K => String,
+    rdd: RDD[(K, Array[Byte])],
+    s3Client: S3Client
+  ): Unit = {
+    rdd.persist() .foreachPartition { partition =>
       val requests: Process[Task, PutObjectRequest] =
         Process.unfold(partition) { iter =>
           if (iter.hasNext) {
-            val (key, value) = iter.next()
-            val bytes = asBytes(key, value)
+            val (key, bytes) = iter.next()
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)

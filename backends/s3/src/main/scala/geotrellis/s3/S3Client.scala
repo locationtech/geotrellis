@@ -14,7 +14,7 @@ import com.amazonaws.ClientConfiguration
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConversions._
 
-trait S3Client extends LazyLogging {
+trait S3Client extends LazyLogging with Serializable {
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
 
