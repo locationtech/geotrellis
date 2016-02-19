@@ -76,7 +76,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: ? => TileReprojectMethods[V]: ? => CropMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[M]): (Int, RDD[(K, V)] with Metadata[M]) = {
-    val tuple = conf.bufferSize.get.fold(rdd.reproject(conf.crs(), conf.layoutScheme()(conf.crs(), conf.tileSize())))(rdd.reproject(conf.crs(), conf.layoutScheme()(conf.crs(), conf.tileSize()), _))
+    val tuple = rdd.reproject(conf.crs(), conf.layoutScheme()(conf.crs(), conf.tileSize()))
     tuple._2.persist(conf.cache())
     tuple
   }

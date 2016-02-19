@@ -294,8 +294,11 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   }
 
   def isNoDataTile = {
+    import scala.util.control.Breaks._
     var empty = true
-    foreach { z => if (isData(z)) empty = false }
+    breakable { foreach { z =>
+      if (isData(z)) { empty = false; break }
+    } }
     empty
   }
 }
