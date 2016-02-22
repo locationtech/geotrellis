@@ -1,7 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.Tile
-import geotrellis.spark.io.accumulo.spacetime.{SpaceTimeAccumuloRDDReader, SpaceTimeAccumuloRDDWriter}
+import geotrellis.spark.io.accumulo.spacetime._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
@@ -9,7 +9,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro.codecs._
 
-class AccumuloSpaceTimeAlternativeSpec 
+class AccumuloSpaceTimeAlternativeSpec
     extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
     with TestEnvironment
     with TestFiles
@@ -24,15 +24,17 @@ class AccumuloSpaceTimeAlternativeSpec
     new SpaceTimeAccumuloRDDReader[Tile](instance))
 
   lazy val writer =
-    new AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](
+    new SpaceTimeAccumuloLayerWriter[Tile, RasterMetaData](
       attributeStore = AccumuloAttributeStore(instance.connector),
-      rddWriter = new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()),
+      instance = instance,
       keyIndexMethod = ZCurveKeyIndexMethod.byYear,
       table = "tiles")
 
-  lazy val updater = new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData] (
-    AccumuloAttributeStore(instance.connector),
-    new SpaceTimeAccumuloRDDWriter[Tile](instance, SocketWriteStrategy()))
+  lazy val updater =
+    new AccumuloLayerUpdater[SpaceTimeKey, Tile, RasterMetaData](
+      instance,
+      AccumuloAttributeStore(instance.connector)
+    )
 
   lazy val deleter   = new AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
   lazy val copier    = AccumuloLayerCopier[SpaceTimeKey, Tile, RasterMetaData](instance, reader, writer)

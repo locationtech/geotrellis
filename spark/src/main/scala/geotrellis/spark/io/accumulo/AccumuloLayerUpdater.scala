@@ -13,6 +13,8 @@ import scala.reflect._
 import AccumuloLayerWriter.Options
 
 // TODO: What happens if the schema changes between initial write and update?
+// Check to see if Schema is the same.
+// If not, we need to rewrite the whole layer.
 class AccumuloLayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
   val instance: AccumuloInstance,
   val attributeStore: AttributeStore[JsonFormat],
