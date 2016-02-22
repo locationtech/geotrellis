@@ -139,10 +139,6 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, engine, rasterTestkit % "test").
   settings(commonSettings: _*)
 
-lazy val dev = Project("dev", file("dev")).
-  dependsOn(raster, engine).
-  settings(commonSettings: _*)
-
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
