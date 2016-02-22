@@ -16,7 +16,7 @@
 ./sbt -J-Xmx2G "project jetty" clean || { exit 1; }
 ./sbt -J-Xmx2G "project admin" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vector-benchmark" clean || { exit 1; }
-./sbt -J-Xmx2G "project util" publish-local clean || { exit 1; }
+./sbt -J-Xmx2G "project util" clean || { exit 1; }
 
 rm -r proj4/target
 rm -r macros/target
