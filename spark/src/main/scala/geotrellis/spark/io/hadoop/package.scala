@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.render._
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 import org.apache.spark._
@@ -84,5 +85,6 @@ package object hadoop {
     }
   }
 
-  implicit class RDDHadoopMethods[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
+  implicit class RDDHadoopMethods[K](rdd: RenderedImages[K]) extends SaveToHadoopMethods[K](rdd)
+  implicit class RDDHadoopMethods2[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods2[K, V](rdd)
 }
