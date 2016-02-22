@@ -100,10 +100,6 @@ lazy val services = Project("services", file("services")).
   dependsOn(raster, vector, engine).
   settings(commonSettings: _*)
 
-lazy val jetty = Project("jetty", file("jetty")).
-  dependsOn(services).
-  settings(commonSettings: _*)
-
 lazy val geotrellisSlick = Project("slick", file("slick")).
   dependsOn(vector).
   settings(commonSettings: _*)
@@ -140,5 +136,5 @@ lazy val vectorBenchmark: Project = Project("vector-benchmark", file("vector-ben
   settings(commonSettings: _*)
 
 lazy val benchmark: Project = Project("benchmark", file("benchmark")).
-  dependsOn(raster, engine, jetty).
+  dependsOn(raster, engine).
   settings(commonSettings: _*)

@@ -10,7 +10,6 @@
 ./sbt -J-Xmx2G "project gdal" clean || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" clean || { exit 1; }
 ./sbt -J-Xmx2G "project services" clean || { exit 1; }
-./sbt -J-Xmx2G "project jetty" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vector-benchmark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project util" clean || { exit 1; }
 
@@ -28,7 +27,6 @@ rm -r slick/target
 rm -r gdal/target
 rm -r shapefile/target
 rm -r services/target
-rm -r jetty/target
 rm -r vector-benchmark/target
 rm -r graph/target
 rm -r tasks/target
