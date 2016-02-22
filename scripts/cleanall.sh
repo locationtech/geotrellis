@@ -26,7 +26,6 @@ rm -r slick/target
 rm -r gdal/target
 rm -r shapefile/target
 rm -r vector-benchmark/target
-rm -r tasks/target
 rm -r util/target
 rm -r raster-testkit/target
 rm -r vector-testkit/target
