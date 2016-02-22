@@ -143,10 +143,6 @@ lazy val dev = Project("dev", file("dev")).
   dependsOn(raster, engine).
   settings(commonSettings: _*)
 
-lazy val demo = Project("demo", file("demo")).
-  dependsOn(jetty).
-  settings(commonSettings: _*)
-
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
