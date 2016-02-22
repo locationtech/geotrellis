@@ -33,11 +33,7 @@ class SaveToHadoopMethods[K](images: RenderedImages[K]) {
     * @param keyToPath A function from K (a key) to a Hadoop URI
     */
   def saveToHadoop(keyToPath: K => String): Unit = {
-    val rdd = images match {
-      case RenderedPngs(rdd) => rdd
-      case RenderedJpgs(rdd) => rdd
-      case RenderedGeoTiffs(rdd) => rdd
-    }
+    val rdd = images.rdd
     val scheme = new URI(keyToPath(rdd.first._1)).getScheme
 
     saveToHadoop(scheme, keyToPath, rdd)
@@ -65,13 +61,7 @@ class SaveToHadoopMethods[K](images: RenderedImages[K]) {
     scheme: String,
     keyToPath: K => String
   ): RDD[(K, Array[Byte])] = {
-    val rdd = images match {
-      case RenderedPngs(rdd) => rdd
-      case RenderedJpgs(rdd) => rdd
-      case RenderedGeoTiffs(rdd) => rdd
-    }
-
-    rdd.mapPartitions { partition =>
+    images.rdd.mapPartitions { partition =>
       val fs = FileSystem.get(new URI(scheme + ":/"), new Configuration)
       for ( (key, data) <- partition ) yield {
         val tilePath = new Path(keyToPath(key))

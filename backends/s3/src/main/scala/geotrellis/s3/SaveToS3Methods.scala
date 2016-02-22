@@ -43,11 +43,7 @@ class SaveToS3Methods[K](images: RenderedImages[K]) {
     keyToPath: K => String,
     s3Client: S3Client = S3Client.default
   ): Unit = {
-    val rdd = images match {
-      case RenderedPngs(rdd) => rdd
-      case RenderedJpgs(rdd) => rdd
-      case RenderedGeoTiffs(rdd) => rdd
-    }
+    val rdd = images.rdd
     val bucket = new URI(keyToPath(rdd.first._1)).getAuthority
 
     saveToS3(bucket, keyToPath, rdd, s3Client)
