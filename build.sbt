@@ -96,10 +96,6 @@ lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
-lazy val services = Project("services", file("services")).
-  dependsOn(raster, vector, engine).
-  settings(commonSettings: _*)
-
 lazy val geotrellisSlick = Project("slick", file("slick")).
   dependsOn(vector).
   settings(commonSettings: _*)

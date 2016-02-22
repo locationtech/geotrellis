@@ -10,7 +10,6 @@
 ./sbt -J-Xmx2G "project slick" test:compile || { exit 1; }
 ./sbt -J-Xmx2G "project gdal" test:compile || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" compile || { exit 1; }
-./sbt -J-Xmx2G "project services" compile || { exit 1; }
 ./sbt -J-Xmx2G "project util" compile || { exit 1; }
 ./sbt -J-Xmx2G "project vector-benchmark" compile || { exit 1; }
 ./sbt -J-Xmx2G "project raster-testkit" compile || { exit 1; }
