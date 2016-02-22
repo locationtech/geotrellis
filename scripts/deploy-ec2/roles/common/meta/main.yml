@@ -1,2 +1,0 @@
-dependencies:
-  - { role: "azavea.libgdal-java", sudo: True }
