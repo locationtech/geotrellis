@@ -8,6 +8,8 @@ the collected notes, use-cases, and examples in this folder are intended
 to help you grapple with the various components which make up
 GeoTrellis.
 
+![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
+
 - [geotrellis.etl](etl/etl-intro.md)
 - [geotrellis.gdal](gdal/gdal-intro.md)
 - [geotrellis.graph](graph/graph-intro.md)
