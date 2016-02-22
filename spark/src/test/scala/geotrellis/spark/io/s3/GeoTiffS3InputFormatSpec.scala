@@ -7,7 +7,6 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
-import org.apache.spark.storage.StorageLevel
 import org.scalatest._
 
 class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
