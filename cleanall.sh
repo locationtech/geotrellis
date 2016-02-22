@@ -5,7 +5,6 @@
 ./sbt -J-Xmx2G "project raster-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project spark" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project engine-test" clean || { exit 1; }
-./sbt -J-Xmx2G "project index" clean || { exit 1; }
 ./sbt -J-Xmx2G "project benchmark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project slick" clean || { exit 1; }
 ./sbt -J-Xmx2G "project gdal" clean || { exit 1; }
@@ -24,7 +23,6 @@ rm -r raster-test/target
 rm -r spark/target
 rm -r engine/target
 rm -r engine-test/target
-rm -r index/target
 rm -r benchmark/target
 rm -r slick/target
 rm -r gdal/target

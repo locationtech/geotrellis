@@ -124,9 +124,6 @@ lazy val graph = Project("graph", file("graph")).
   dependsOn(spark % "test->test;compile->compile").
   settings(commonSettings: _*)
 
-lazy val index = Project("index", file("index")).
-  settings(commonSettings: _*)
-
 lazy val gdal: Project = Project("gdal", file("gdal")).
   dependsOn(proj4, raster, spark, sparkEtl).
   settings(commonSettings: _*)
