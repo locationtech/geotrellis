@@ -14,7 +14,6 @@
 ./sbt -J-Xmx2G "project dev" clean || { exit 1; }
 ./sbt -J-Xmx2G "project services" clean || { exit 1; }
 ./sbt -J-Xmx2G "project jetty" clean || { exit 1; }
-./sbt -J-Xmx2G "project admin" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vector-benchmark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project util" clean || { exit 1; }
 
@@ -36,7 +35,6 @@ rm -r demo/target
 rm -r dev/target
 rm -r services/target
 rm -r jetty/target
-rm -r admin/target
 rm -r vector-benchmark/target
 rm -r graph/target
 rm -r tasks/target

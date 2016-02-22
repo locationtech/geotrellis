@@ -112,10 +112,6 @@ lazy val examples = Project("examples", file("examples")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
-lazy val admin = Project("admin", file("admin")).
-  dependsOn(raster, services, vector).
-  settings(commonSettings: _*)
-
 lazy val spark = Project("spark", file("spark")).
   dependsOn(util, raster).
   settings(commonSettings: _*)
