@@ -65,7 +65,6 @@ object Ingest {
     )
     (sink: (RasterRDD[K], Int) => Unit): Unit =
   {
-    sourceTiles.persist(cacheLevel)
     val (_, rasterMetaData) =
       RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = sourceTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
