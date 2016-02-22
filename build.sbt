@@ -108,10 +108,6 @@ lazy val geotrellisSlick = Project("slick", file("slick")).
   dependsOn(vector).
   settings(commonSettings: _*)
 
-lazy val examples = Project("examples", file("examples")).
-  dependsOn(raster, vector).
-  settings(commonSettings: _*)
-
 lazy val spark = Project("spark", file("spark")).
   dependsOn(util, raster).
   settings(commonSettings: _*)
