@@ -112,10 +112,6 @@ lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark).
   settings(commonSettings: _*)
 
-lazy val graph = Project("graph", file("graph")).
-  dependsOn(spark % "test->test;compile->compile").
-  settings(commonSettings: _*)
-
 lazy val gdal: Project = Project("gdal", file("gdal")).
   dependsOn(proj4, raster, spark, sparkEtl).
   settings(commonSettings: _*)
