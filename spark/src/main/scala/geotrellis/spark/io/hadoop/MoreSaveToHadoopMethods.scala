@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 
 
-class SaveToHadoopMethods2[K, V](rdd: RDD[(K, V)]) {
+class MoreSaveToHadoopMethods[K, V](rdd: RDD[(K, V)]) {
   /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.
     *
     * @param scheme    URI scheme, used to get a hadoop FileSystem object
