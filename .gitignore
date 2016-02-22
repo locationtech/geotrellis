@@ -28,3 +28,7 @@ _SUCCESS
 *.swo
 *.sublime-*
 .vagrant
+
+lib
+index.html
+index.js
