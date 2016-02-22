@@ -149,7 +149,7 @@ public class Registry {
     register( "bonne", BonneProjection.class, "Bonne (Werner lat_1=90)" );
     register( "cass", CassiniProjection.class, "Cassini" );
     register( "cc", CentralCylindricalProjection.class, "Central Cylindrical" );
-    register( "cea", Projection.class, "Equal Area Cylindrical" );
+    register( "cea", EqualAreaCylindricalProjection.class, "Equal Area Cylindrical" );
 //    register( "chamb", Projection.class, "Chamberlin Trimetric" );
     register( "collg", CollignonProjection.class, "Collignon" );
     register( "crast", CrasterProjection.class, "Craster Parabolic (Putnins P4)" );
@@ -178,6 +178,7 @@ public class Registry {
 //    register( "imw_p", Projection.class, "Internation Map of the World Polyconic" );
     register( "kav5", KavraiskyVProjection.class, "Kavraisky V" );
 //    register( "kav7", Projection.class, "Kavraisky VII" );
+    register( "krovak", KrovakProjection.class, "Krovak" );
 //    register( "labrd", Projection.class, "Laborde" );
     register( "laea", LambertAzimuthalEqualAreaProjection.class, "Lambert Azimuthal Equal Area" );
     register( "lagrng", LagrangeProjection.class, "Lagrange" );
@@ -207,7 +208,7 @@ public class Registry {
 //    register( "nell_h", Projection.class, "Nell-Hammer" );
     register( "nicol", NicolosiProjection.class, "Nicolosi Globular" );
     register( "nsper", PerspectiveProjection.class, "Near-sided perspective" );
-//    register( "nzmg", Projection.class, "New Zealand Map Grid" );
+    register( "nzmg", NewZealandMapGridProjection.class, "New Zealand Map Grid" );
 //    register( "ob_tran", Projection.class, "General Oblique Transformation" );
 //    register( "ocea", Projection.class, "Oblique Cylindrical Equal Area" );
 //    register( "oea", Projection.class, "Oblated Equal Area" );

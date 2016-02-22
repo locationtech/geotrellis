@@ -35,6 +35,14 @@ class MetaCRSTest extends FunSuite with Matchers {
       test.execute(crsFactory)
     }
   }
+
+  test("PROJ4_Empirical") {
+    val file = new File("proj4/src/test/resources/proj4-epsg.csv")
+    val tests = MetaCRSTestFileReader.readTests(file)
+    for (test <- tests) {
+      test.execute(crsFactory)
+    }
+  }
 }
 
 case class MetaCRSTestCase(

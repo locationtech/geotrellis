@@ -1,8 +1,10 @@
 package geotrellis.proj4
 
 import java.io.File
+import com.opencsv.CSVReader
 
-import org.parboiled2._
+import scala.collection.breakOut
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 /**
@@ -19,50 +21,26 @@ import scala.util.Try
 object MetaCRSTestFileReader {
   final val COL_COUNT = 19
 
-  private case class InternalCsvParser(input: ParserInput, delimeter: String) extends Parser {
-    def DQUOTE = '"'
-    def DELIMITER_TOKEN = rule(capture(delimeter))
-    def DQUOTE2 = rule("\"\"" ~ push("\""))
-    def CRLF = rule(capture("\n\r" | "\n"))
-    def NON_CAPTURING_CRLF = rule("\n\r" | "\n")
-
-    val delims = s"$delimeter\r\n"
-    def TXT = rule(capture(!anyOf(delims) ~ ANY))
-    val WHITESPACE = CharPredicate(" \t")
-    def SPACES: Rule0 = rule(oneOrMore(WHITESPACE))
-
-    def escaped = rule(optional(SPACES) ~
-      DQUOTE ~ zeroOrMore(DELIMITER_TOKEN | TXT | CRLF | DQUOTE2) ~ DQUOTE ~
-        optional(SPACES) ~> (_.mkString("")))
-    def nonEscaped = rule(zeroOrMore(TXT) ~> (_.mkString("")))
-
-    def field = rule(escaped | nonEscaped)
-    def row: Rule1[Seq[String]] = rule(oneOrMore(field).separatedBy(delimeter))
-    def file = rule(zeroOrMore(row).separatedBy(NON_CAPTURING_CRLF))
-
-    def parsed() : Try[Seq[Seq[String]]] = file.run()
-  }
-
-  def parse(path: String): Seq[Seq[String]] = {
-    val source = scala.io.Source.fromFile(path)
+  private def parse(path: String): java.util.List[Array[String]] = {
+    val reader = new CSVReader(new java.io.FileReader(path))
     try {
-      val text = source.getLines filter(!_.startsWith("#")) drop(1) filter(_ != "") mkString "\n"
-      new InternalCsvParser(ParserInput(text), ",").file.run().getOrElse(throw new RuntimeException)
+      reader.readAll().asInstanceOf[java.util.List[Array[String]]]
     } finally {
-      source.close
+      reader.close()
     }
   }
   
   def readTests(file: File): List[MetaCRSTestCase] = {
-    parse(file.getAbsolutePath).map(parseTest).toList
+    parse(file.getAbsolutePath).asScala.iterator
+      .filter(r => r.nonEmpty && !r.head.startsWith("#"))
+      .drop(1)
+      .map(parseTest)
+      .to[List]
   }
 
-  private def parseTest(line: Seq[String]): MetaCRSTestCase = {
-    // Weird CSV parser adding quotes to everything. Hack it out.
-    val cols = line.map(s => s.stripPrefix("\"").stripSuffix("\"")).toArray
-
+  private def parseTest(cols: Array[String]): MetaCRSTestCase = {
     if (cols.length != COL_COUNT)
-      throw new IllegalStateException("Expected " + COL_COUNT+ " columns in file, but found " + cols.length)
+      throw new IllegalStateException("Expected " + COL_COUNT + " columns in file, but found " + cols.length)
 
     val testName    = cols(0)
     val testMethod  = cols(1)
@@ -87,8 +65,8 @@ object MetaCRSTestFileReader {
     MetaCRSTestCase(testName,testMethod,srcCrsAuth,srcCrs,tgtCrsAuth,tgtCrs,srcOrd1,srcOrd2,srcOrd3,tgtOrd1,tgtOrd2,tgtOrd3,tolOrd1,tolOrd2,tolOrd3,using,dataSource,dataCmnts,maintenanceCmnts)
   }
  
-  def parseNumber(numStr: String): Double = {
-    if (numStr == null || numStr.length() == 0) {
+  private def parseNumber(numStr: String): Double = {
+    if (numStr == null || numStr.isEmpty) {
       Double.NaN
     } else {
       numStr.toDouble
