@@ -13,6 +13,7 @@
 ./sbt "project gdal" publish-local && \
 ./sbt "project geotools" publish-local && \
 ./sbt "project slick" publish-local && \
+./sbt "project util" publish-local && \
 ./sbt "project raster-testkit" publish-local && \
 ./sbt "project vector-testkit" publish-local && \
 ./sbt "project spark-testkit" publish-local

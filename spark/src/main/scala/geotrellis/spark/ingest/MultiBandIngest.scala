@@ -23,12 +23,13 @@ object MultiBandIngest {
     bufferSize: Option[Int] = None)
     (sink: (MultiBandRasterRDD[K], Int) => Unit): Unit =
   {
+    sourceTiles.persist(cacheLevel)
     val (_, rasterMetaData) =
       RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
     val tiledRdd = sourceTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
     val contextRdd = new ContextRDD(tiledRdd, rasterMetaData)
     val (zoom, rasterRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))
-    rasterRdd.cache()
+    rasterRdd.persist(cacheLevel)
 
     def buildPyramid(zoom: Int, rdd: MultiBandRasterRDD[K]): List[(Int, MultiBandRasterRDD[K])] = {
       if (zoom >= 1) {
