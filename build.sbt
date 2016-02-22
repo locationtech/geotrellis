@@ -63,7 +63,7 @@ lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).
-  dependsOn(proj4).
+  dependsOn(proj4, util).
   settings(commonSettings: _*)
 
 lazy val vectorTest = Project("vector-test", file("vector-test")).
