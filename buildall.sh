@@ -16,6 +16,7 @@
 ./sbt -J-Xmx2G "project services" compile || { exit 1; }
 ./sbt -J-Xmx2G "project jetty" compile || { exit 1; }
 ./sbt -J-Xmx2G "project admin" compile || { exit 1; }
+./sbt -J-Xmx2G "project util" compile || { exit 1; }
 ./sbt -J-Xmx2G "project vector-benchmark" compile || { exit 1; }
 ./sbt -J-Xmx2G "project raster-testkit" compile || { exit 1; }
 ./sbt -J-Xmx2G "project vector-testkit" compile || { exit 1; }

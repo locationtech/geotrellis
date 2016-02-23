@@ -25,6 +25,7 @@ EOF
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project gdal" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project shapefile" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project slick" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project util" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project raster-testkit" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project vector-testkit" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project spark-testkit" publish

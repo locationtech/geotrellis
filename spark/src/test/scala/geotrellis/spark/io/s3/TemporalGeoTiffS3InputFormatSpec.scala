@@ -14,7 +14,6 @@ import org.apache.hadoop.mapreduce.task._
 import org.joda.time.format._
 import org.scalatest._
 
-
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
