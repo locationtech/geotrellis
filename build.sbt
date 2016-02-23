@@ -104,20 +104,16 @@ lazy val spark = Project("spark", file("spark")).
   dependsOn(util, raster).
   settings(commonSettings: _*)
 
+lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
+  dependsOn(rasterTestkit, spark % "provided").
+  settings(commonSettings: _*)
+
 lazy val s3 = Project("s3", file("s3")).
-  dependsOn(spark % "provided").
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val accumulo = Project("accumulo", file("accumulo")).
-  dependsOn(spark % "provided").
-  settings(commonSettings: _*)
-
-lazy val sparkTest = Project("spark-test", file("spark-test")).
-  dependsOn(util, raster, spark, s3, accumulo).
-  settings(commonSettings: _*)
-
-lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
-  dependsOn(rasterTestkit, spark % "provided").
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).

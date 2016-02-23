@@ -6,7 +6,11 @@ libraryDependencies ++= Seq(
     exclude("org.jboss.netty", "netty")
     exclude("org.apache.hadoop", "hadoop-client"),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  spire)
+  spire,
+  scalatest % "test")
+
+fork in Test := false
+parallelExecution in Test := false
 
 javaOptions ++= List(
   "-Xmx2G",

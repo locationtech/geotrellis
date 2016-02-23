@@ -2,9 +2,6 @@ import Dependencies._
 
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
-  "org.apache.accumulo" % "accumulo-core" % Version.accumulo
-    exclude("org.jboss.netty", "netty")
-    exclude("org.apache.hadoop", "hadoop-client"),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "de.javakaffee" % "kryo-serializers" % "0.27" exclude("com.esotericsoftware.kryo", "kryo"),
@@ -14,7 +11,18 @@ libraryDependencies ++= Seq(
   spire,
   monocleCore, monocleMacro,
   nscalaTime,
-  scalazStream)
+  scalazStream,
+  scalatest % "test")
+
+// must use this method of import to avoid cyclic dependency errors
+internalDependencyClasspath in Test <++=
+  exportedProducts in Compile in LocalProject("raster-testkit")
+
+internalDependencyClasspath in Test <++=
+  exportedProducts in Compile in LocalProject("spark-testkit")
+
+fork in Test := false
+parallelExecution in Test := false
 
 javaOptions ++= List(
   "-Xmx2G",
@@ -31,6 +39,8 @@ initialCommands in console :=
   import geotrellis.spark.utils._
   import geotrellis.spark.tiling._
   """
+
+test in assembly := {}
 
 assemblyMergeStrategy in assembly := {
   case "reference.conf" => MergeStrategy.concat

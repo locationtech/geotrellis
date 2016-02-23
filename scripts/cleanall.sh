@@ -29,4 +29,3 @@ rm -r vector-benchmark/target
 rm -r util/target
 rm -r raster-testkit/target
 rm -r vector-testkit/target
-rm -r spark-testkit/target

@@ -37,7 +37,7 @@ object TestEnvironment {
   def inputHome: Path = {
     val conf = SparkUtils.hadoopConfiguration
     val localFS = getLocalFS(conf)
-    new Path(localFS.getWorkingDirectory, "spark-test/src/test/resources/")
+    new Path(localFS.getWorkingDirectory, "spark/src/test/resources/")
   }
 }
 
