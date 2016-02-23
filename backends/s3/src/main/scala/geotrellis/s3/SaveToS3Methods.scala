@@ -32,36 +32,21 @@ object SaveToS3Methods {
         .replace("{name}", id.name)
     }
   }
-}
-
-class SaveToS3Methods[K](images: RenderedImages[K]) {
-  /**
-    * @param keyToPath A function from K (a key) to an S3 URI
-    * @param s3Client  An S3 Client (real or mock) into-which to save the images
-    */
-  def saveToS3(
-    keyToPath: K => String,
-    s3Client: S3Client = S3Client.default
-  ): Unit = {
-    val rdd = images.rdd
-    val bucket = new URI(keyToPath(rdd.first._1)).getAuthority
-
-    saveToS3(bucket, keyToPath, rdd, s3Client)
-  }
 
   /**
     * @param bucket    name of the S3 bucket
     * @param keyToPath maps each key to full path in the bucket
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
-    * @param s3Client  An S3 Client (real or mock) into-which to save the images
+    * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the images
     */
-  def saveToS3(
+  def apply[K](
     bucket: String,
     keyToPath: K => String,
     rdd: RDD[(K, Array[Byte])],
-    s3Client: S3Client
+    s3Maker: () => S3Client
   ): Unit = {
     rdd.persist() .foreachPartition { partition =>
+      val s3Client = s3Maker()
       val requests: Process[Task, PutObjectRequest] =
         Process.unfold(partition) { iter =>
           if (iter.hasNext) {
@@ -97,5 +82,18 @@ class SaveToS3Methods[K](images: RenderedImages[K]) {
       results.run.run
       pool.shutdown()
     }
+  }
+}
+
+class SaveToS3Methods[K](images: RenderedImages[K]) {
+  /**
+    * @param keyToPath A function from K (a key) to an S3 URI
+    * @param s3Client  An S3 Client (real or mock) into-which to save the images
+    */
+  def saveToS3(keyToPath: K => String): Unit = {
+    val rdd = images.rdd
+    val bucket = new URI(keyToPath(rdd.first._1)).getAuthority
+
+    SaveToS3Methods(bucket, keyToPath, rdd, { () => S3Client.default })
   }
 }

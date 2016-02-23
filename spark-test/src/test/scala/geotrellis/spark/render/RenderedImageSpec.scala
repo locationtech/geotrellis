@@ -19,22 +19,34 @@ class RenderedImageSpec extends FunSpec with TestEnvironment {
     it ("should work with PNGs") {
       val template = "s3://mock-bucket/catalog/{name}/{z}/{x}/{y}.png"
       val id = LayerId("sample", 1)
+      val bucket = "mock-bucket"
       val keyToPath = SaveToS3Methods.spatialKeyToPath(id, template)
-      sample.renderPng().saveToS3(keyToPath, new MockS3Client())
+      val rdd = sample.renderPng().rdd
+      val maker = { () => new MockS3Client() }
+
+      SaveToS3Methods(bucket, keyToPath, rdd, maker)
     }
 
     it ("should work with JPEGs") {
       val template = "s3://mock-bucket/catalog/{name}/{z}/{x}/{y}.jpg"
       val id = LayerId("sample", 1)
+      val bucket = "mock-bucket"
       val keyToPath = SaveToS3Methods.spatialKeyToPath(id, template)
-      sample.renderJpg().saveToS3(keyToPath, new MockS3Client())
+      val rdd = sample.renderPng().rdd
+      val maker = { () => new MockS3Client() }
+
+      SaveToS3Methods(bucket, keyToPath, rdd, maker)
     }
 
     it ("should work with GeoTIFFs") {
       val template = "s3://mock-bucket/catalog/{name}/{z}/{x}/{y}.tiff"
       val id = LayerId("sample", 1)
+      val bucket = "mock-bucket"
       val keyToPath = SaveToS3Methods.spatialKeyToPath(id, template)
-      sample.renderGeoTiff().saveToS3(keyToPath, new MockS3Client())
+      val rdd = sample.renderPng().rdd
+      val maker = { () => new MockS3Client() }
+
+      SaveToS3Methods(bucket, keyToPath, rdd, maker)
     }
   }
 
