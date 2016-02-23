@@ -31,7 +31,7 @@ trait BaseAccumuloRDDWriter[K, TileType] {
     val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
     ops.setLocalityGroups(tableName, groups.updated(tableName, newGroup))
   }
-  
+
   def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit
 }
 

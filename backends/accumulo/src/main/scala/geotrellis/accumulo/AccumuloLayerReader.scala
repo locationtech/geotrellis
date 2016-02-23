@@ -46,8 +46,8 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 
 object AccumuloLayerReader {
   def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, 
-    V: AvroRecordCodec: ClassTag, 
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M] =
     new AccumuloLayerReader[K, V, M] (

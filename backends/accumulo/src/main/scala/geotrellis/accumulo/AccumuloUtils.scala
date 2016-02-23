@@ -11,7 +11,7 @@ object AccumuloUtils {
    */
   def getSplits[K: Boundable](rdd: RDD[(K, V)] forSome {type V}, keyIndexMethod: KeyIndexMethod[K], n: Int): Seq[Text] = {
     implicitly[Boundable[K]].collectBounds(rdd) match {
-      case bounds: KeyBounds[K] => 
+      case bounds: KeyBounds[K] =>
         val keyIndex = keyIndexMethod.createIndex(bounds)
         getSplits(bounds, keyIndex, n).map(index2RowId)
       case EmptyBounds =>

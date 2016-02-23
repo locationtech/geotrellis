@@ -30,11 +30,11 @@ sealed trait AccumuloWriteStrategy {
 }
 
 /**
- * This strategy will perfom Accumulo bulk ingest. Bulk ingest requires that sorted records be written to the 
+ * This strategy will perfom Accumulo bulk ingest. Bulk ingest requires that sorted records be written to the
  * filesystem, preferbly HDFS, before Accumulo is able to ingest them. After the ingest is finished
  * the nodes will likely go through a period of high load as they perform major compactions.
  *
- * Note: Giving relative URLs will cause HDFS to use the `fs.defaultFS` property in `core-site.xml`. 
+ * Note: Giving relative URLs will cause HDFS to use the `fs.defaultFS` property in `core-site.xml`.
  * If not specified this will default to local ('file:/') system, this is undesriable.
  *
  * @param ingestPath Path where spark will write RDD records for ingest
