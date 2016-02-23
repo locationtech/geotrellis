@@ -1,6 +1,7 @@
 package geotrellis.slippy
 
 import geotrellis.spark._
+import geotrellis.spark.io.slippy._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._

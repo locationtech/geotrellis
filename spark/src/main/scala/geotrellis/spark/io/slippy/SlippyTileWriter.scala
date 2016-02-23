@@ -1,10 +1,9 @@
-package geotrellis.slippy
+package geotrellis.spark.io.slippy
 
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.s3._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.util.Filesystem
@@ -22,13 +21,7 @@ import java.io.File
 import scala.collection.JavaConversions._
 
 
-trait SlippyTileReader[T] {
-  def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)]
-  def read(zoom: Int, key: SpatialKey): T
-  def read(zoom: Int, x: Int, y: Int): T =
-    read(zoom, SpatialKey(x, y))
-}
-
-object SlippyTileReader {
-  val TilePath = """.*/(\d+)/(\d+)\.\w+$""".r
+trait SlippyTileWriter[T] {
+  def setupWrite(zoom: Int, rdd: RDD[(SpatialKey, T)]): RDD[(SpatialKey, T)]
+  def write(zoom: Int, rdd: RDD[(SpatialKey, T)]): Unit = setupWrite(zoom, rdd).foreach { x => }
 }
