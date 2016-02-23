@@ -136,7 +136,7 @@ trait RasterRDDBuilders {
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
     val (_, metadata) =
-      RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)(_.extent)
+      RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)
 
     val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
 

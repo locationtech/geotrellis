@@ -2,7 +2,7 @@ package geotrellis.spark
 
 import geotrellis.proj4.CRS
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
-import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
+import geotrellis.spark.tiling.{ TilerKeyMethods, LayoutDefinition, LayoutScheme }
 import geotrellis.vector._
 import geotrellis.raster._
 import org.apache.spark.rdd._
@@ -23,13 +23,17 @@ package object ingest {
 
   implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
 
-  implicit class withCollectMetadataMethods[K: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(K, V)]) extends Serializable {
+  implicit class withCollectMetadataMethods[
+    K1: (? => TilerKeyMethods[K1, K2]),
+    V <: CellGrid,
+    K2: SpatialComponent: Boundable
+  ](rdd: RDD[(K1, V)]) extends Serializable {
     def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData) = {
-      RasterMetaData.fromRdd(rdd, crs, layoutScheme)(_.projectedExtent.extent)
+      RasterMetaData.fromRdd(rdd, crs, layoutScheme)
     }
 
     def collectMetaData(crs: CRS, layout: LayoutDefinition): RasterMetaData = {
-      RasterMetaData.fromRdd(rdd, crs, layout)(_.projectedExtent.extent)
+      RasterMetaData.fromRdd(rdd, crs, layout)
     }
   }
 }

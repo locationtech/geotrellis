@@ -20,7 +20,7 @@ trait Implicits {
       extends ProjectedExtentComponentReprojectMethods[K, V](self) { }
 
   implicit class withTileRDDReprojectMethods[
-    K: SpatialComponent: ClassTag,
+    K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](self: RDD[(K, V)] with Metadata[RasterMetaData]) extends TileRDDReprojectMethods[K, V](self)
 }

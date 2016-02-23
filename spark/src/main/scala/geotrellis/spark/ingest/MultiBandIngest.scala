@@ -12,7 +12,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object MultiBandIngest {
-  def apply[T: ProjectedExtentComponent: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: ClassTag](
+  def apply[T: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: Boundable: ClassTag](
     sourceTiles: RDD[(T, MultiBandTile)],
     destCRS: CRS,
     layoutScheme: LayoutScheme,
@@ -24,7 +24,7 @@ object MultiBandIngest {
     (sink: (MultiBandRasterRDD[K], Int) => Unit): Unit =
   {
     val (_, rasterMetaData) =
-      RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)(_.projectedExtent.extent)
+      RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)
     val tiledRdd = sourceTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
     val contextRdd = new ContextRDD(tiledRdd, rasterMetaData)
     val (zoom, rasterRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))

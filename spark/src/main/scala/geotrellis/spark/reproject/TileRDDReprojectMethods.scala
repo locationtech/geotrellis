@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
 
 
 class TileRDDReprojectMethods[
-  K: SpatialComponent: ClassTag,
+  K: SpatialComponent: Boundable: ClassTag,
   V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
 ](val self: RDD[(K, V)] with Metadata[RasterMetaData]) extends MethodExtensions[RDD[(K, V)] with Metadata[RasterMetaData]] {
   import Reproject.Options
