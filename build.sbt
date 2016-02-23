@@ -136,10 +136,10 @@ lazy val index = Project("index", file("index")).
   settings(commonSettings: _*)
 
 lazy val gdal: Project = Project("gdal", file("gdal")).
-  dependsOn(proj4, raster, spark, sparkEtl, geotools % "test").
+  dependsOn(proj4, raster, spark, sparkEtl).
   settings(commonSettings: _*)
 
-lazy val geotools = Project("geotools", file("geotools")).
+lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, engine, rasterTestkit % "test").
   settings(commonSettings: _*)
 
@@ -159,5 +159,5 @@ lazy val vectorBenchmark: Project = Project("vector-benchmark", file("vector-ben
   settings(commonSettings: _*)
 
 lazy val benchmark: Project = Project("benchmark", file("benchmark")).
-  dependsOn(raster, engine, geotools, jetty).
+  dependsOn(raster, engine, jetty).
   settings(commonSettings: _*)
