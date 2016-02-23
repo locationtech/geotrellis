@@ -1,6 +1,5 @@
-package geotrellis.vector.op
-
-import geotrellis.vector._
+package geotrellis.vector
+package summary.polygonal
 
 object PolygonalSummaryHandler {
   def apply[G <: Geometry, D, T]

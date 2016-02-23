@@ -6,7 +6,7 @@ import geotrellis.spark.testfiles._
 import geotrellis.raster.summary.polygonal._
 
 import geotrellis.vector._
-import geotrellis.vector.op._
+import geotrellis.vector.summary.polygonal._
 
 import org.scalatest._
 

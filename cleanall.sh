@@ -9,7 +9,7 @@
 ./sbt -J-Xmx2G "project benchmark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project slick" clean || { exit 1; }
 ./sbt -J-Xmx2G "project gdal" clean || { exit 1; }
-./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
+./sbt -J-Xmx2G "project shapefile" clean || { exit 1; }
 ./sbt -J-Xmx2G "project demo" clean || { exit 1; }
 ./sbt -J-Xmx2G "project dev" clean || { exit 1; }
 ./sbt -J-Xmx2G "project services" clean || { exit 1; }
@@ -31,7 +31,7 @@ rm -r index/target
 rm -r benchmark/target
 rm -r slick/target
 rm -r gdal/target
-rm -r geotools/target
+rm -r shapefile/target
 rm -r demo/target
 rm -r dev/target
 rm -r services/target

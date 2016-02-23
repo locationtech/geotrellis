@@ -11,7 +11,7 @@
 ./sbt "project spark" +publish-local && \
 ./sbt "project spark-etl" +publish-local && \
 ./sbt "project gdal" +publish-local && \
-./sbt "project geotools" +publish-local && \
+./sbt "project shapefile" +publish-local && \
 ./sbt "project slick" +publish-local && \
 ./sbt "project util" +publish-local && \
 ./sbt "project raster-testkit" +publish-local && \
