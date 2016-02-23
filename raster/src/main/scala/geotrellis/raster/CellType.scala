@@ -199,6 +199,8 @@ object CellType {
     case "uint8raw" => UByteCellType
     case "int16raw" => ShortCellType
     case "uint16raw" => UShortCellType
+    case "float32raw" => FloatCellType
+    case "float64raw" => DoubleCellType
     case "int8" => ByteConstantNoDataCellType  // Constant NoData values
     case "uint8" => UByteConstantNoDataCellType
     case "int16" => ShortConstantNoDataCellType
@@ -206,8 +208,6 @@ object CellType {
     case "int32" => IntConstantNoDataCellType
     case "float32" => FloatConstantNoDataCellType
     case "float64" => DoubleConstantNoDataCellType
-    case "float32raw" => FloatCellType
-    case "float64raw" => DoubleCellType
     case ct if ct.startsWith("int8ud") =>
       val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
         throw new IllegalArgumentException(s"Cell type $name is not supported")
