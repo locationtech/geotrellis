@@ -104,12 +104,12 @@ lazy val spark = Project("spark", file("spark")).
   dependsOn(util, raster).
   settings(commonSettings: _*)
 
-lazy val s3 = Project("s3", file("backends/s3")).
-  dependsOn(spark).
+lazy val s3 = Project("s3", file("s3")).
+  dependsOn(spark % "provided").
   settings(commonSettings: _*)
 
-lazy val accumulo = Project("accumulo", file("backends/accumulo")).
-  dependsOn(spark).
+lazy val accumulo = Project("accumulo", file("accumulo")).
+  dependsOn(spark % "provided").
   settings(commonSettings: _*)
 
 lazy val sparkTest = Project("spark-test", file("spark-test")).
