@@ -85,6 +85,6 @@ package object hadoop {
     }
   }
 
-  implicit class RDDHadoopMethods[K](rdd: RenderedImages[K]) extends SaveToHadoopMethods[K](rdd)
-  implicit class RDDHadoopMethods2[K,V](rdd: RDD[(K,V)]) extends MoreSaveToHadoopMethods[K, V](rdd)
+  implicit class withSaveToHadoopMethods[K](rdd: RenderedImages[K]) extends SaveToHadoopMethods[K](rdd)
+  implicit class withMoreSaveToHadoopMethods[K,V](rdd: RDD[(K,V)]) extends MoreSaveToHadoopMethods[K, V](rdd)
 }
