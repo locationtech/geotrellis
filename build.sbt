@@ -104,6 +104,10 @@ lazy val spark = Project("spark", file("spark")).
   dependsOn(util, raster).
   settings(commonSettings: _*)
 
+lazy val sparkTest = Project("spark-test", file("spark-test")).
+  dependsOn(util, raster, spark).
+  settings(commonSettings: _*)
+
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
   dependsOn(rasterTestkit, spark % "provided").
   settings(commonSettings: _*)
