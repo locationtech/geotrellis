@@ -106,7 +106,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
 
       scheme match {
         case Left(s) =>
-          if (conf.pyramid() && zoom > 1) {
+          if (conf.pyramid() && zoom >= 1) {
             val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom)
             savePyramid(nextLevel, nextRdd)
           }
