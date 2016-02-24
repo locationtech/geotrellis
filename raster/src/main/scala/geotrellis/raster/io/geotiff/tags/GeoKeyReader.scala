@@ -23,7 +23,7 @@ import GeoKeys._
 
 import java.nio.ByteBuffer
 
-import monocle.syntax._
+import monocle.syntax.apply._
 import monocle.macros.Lenses
 
 object GeoKeyReader {

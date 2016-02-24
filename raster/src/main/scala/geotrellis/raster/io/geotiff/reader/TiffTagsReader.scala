@@ -8,7 +8,7 @@ import geotrellis.util.Filesystem
 
 import geotrellis.raster.io.geotiff.utils._
 import spire.syntax.cfor._
-import monocle.syntax._
+import monocle.syntax.apply._
 
 import java.nio.{ ByteBuffer, ByteOrder }
 

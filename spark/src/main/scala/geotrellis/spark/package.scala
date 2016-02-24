@@ -32,6 +32,7 @@ import monocle.{Lens, PLens}
 import monocle.syntax._
 
 import scala.reflect.ClassTag
+import scalaz.Functor
 
 package object spark
     extends buffer.Implicits
@@ -72,19 +73,19 @@ package object spark
   implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
     val _spatialComponent = implicitly[SpatialComponent[K]]
 
-    def spatialComponent: SpatialKey = key &|-> _spatialComponent.lens get
+    def spatialComponent: SpatialKey = _spatialComponent.lens.get(key)
 
     def updateSpatialComponent(spatialKey: SpatialKey): K =
-      key &|-> _spatialComponent.lens set(spatialKey)
+      _spatialComponent.lens.set(spatialKey)(key)
   }
 
   implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
     val _temporalComponent = implicitly[TemporalComponent[K]]
 
-    def temporalComponent: TemporalKey = key &|-> _temporalComponent.lens get
+    def temporalComponent: TemporalKey = _temporalComponent.lens.get(key)
 
     def updateTemporalComponent(temporalKey: TemporalKey): K =
-      key &|-> _temporalComponent.lens set(temporalKey)
+      _temporalComponent.lens.set(temporalKey)(key)
   }
 
   type TileBounds = GridBounds

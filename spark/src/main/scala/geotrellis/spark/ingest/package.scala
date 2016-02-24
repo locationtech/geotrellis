@@ -15,10 +15,10 @@ package object ingest {
   implicit class ProjectedExtentComponentMethods[T: ProjectedExtentComponent](key: T) {
     val _projectedExtent = implicitly[ProjectedExtentComponent[T]]
 
-    def projectedExtent: ProjectedExtent = key &|-> _projectedExtent.lens get
+    def projectedExtent: ProjectedExtent = _projectedExtent.lens.get(key)
 
     def updateProjectedExtent(pe: ProjectedExtent): T =
-      key &|-> _projectedExtent.lens set (pe)
+      _projectedExtent.lens.set(pe)(key)
   }
 
   implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
