@@ -81,27 +81,11 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     tuple
   }
 
-  def collectMetadata[I: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, M) = {
-    val crs = conf.crs()
-    val targetCellType = conf.cellType.get
-
+  def collectMetadata[I: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, M) =
     scheme match {
-      case Left(layoutScheme) =>
-        val (zoom, rmd) = RasterMetaData.fromRdd(rdd, crs, layoutScheme) { key => key.projectedExtent.extent }
-        targetCellType match {
-          case None => zoom -> rmd
-          case Some(ct) => zoom -> rmd.copy(cellType = ct)
-        }
-
-      case Right(layoutDefinition) =>
-        0 -> RasterMetaData(
-          crs = crs,
-          cellType = targetCellType.get,
-          extent = layoutDefinition.extent,
-          layout = layoutDefinition
-        )
+      case Left(layoutScheme: LayoutScheme) => RasterMetaData.fromRdd(rdd, layoutScheme)
+      case Right(layoutDefinition) => 0 -> RasterMetaData.fromRdd(rdd, layoutDefinition)
     }
-  }
 
   def save[
     K: SpatialComponent: TypeTag,
@@ -122,7 +106,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
 
       scheme match {
         case Left(s) =>
-          if (conf.pyramid() && zoom > 1) {
+          if (conf.pyramid() && zoom >= 1) {
             val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom)
             savePyramid(nextLevel, nextRdd)
           }
