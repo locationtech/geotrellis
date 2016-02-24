@@ -125,30 +125,30 @@ object FileLayerWriter {
     keyIndexMethod: KeyIndexMethod[SpatialKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
 
   def spatialMultiBand(
     catalogPath: String,
     keyIndexMethod: KeyIndexMethod[SpatialKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
 
   def spaceTime(
     catalogPath: String,
     keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
 
   def spaceTimeMultiBand(
     catalogPath: String,
     keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): FileLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
+  ): FileLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](catalogPath, keyIndexMethod, Options(clobber, oneToOne))
 }

@@ -116,8 +116,8 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpatialKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
   def spatialMultiBand(
     bucket: String,
@@ -125,8 +125,8 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpatialKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
   def spaceTime(
     bucket: String,
@@ -134,8 +134,8 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
   def spaceTimeMultiBand(
     bucket: String,
@@ -143,6 +143,6 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 }

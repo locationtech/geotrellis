@@ -28,11 +28,11 @@ package object ingest {
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K1, V)]) extends Serializable {
-    def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData) = {
+    def collectMetaData(crs: CRS, layoutScheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
       RasterMetaData.fromRdd(rdd, crs, layoutScheme)
     }
 
-    def collectMetaData(crs: CRS, layout: LayoutDefinition): RasterMetaData = {
+    def collectMetaData(crs: CRS, layout: LayoutDefinition): RasterMetaData[K2] = {
       RasterMetaData.fromRdd(rdd, crs, layout)
     }
   }

@@ -52,15 +52,15 @@ package object spark
     with Serializable // required for java serialization, even though it's mixed in
 {
 
-  type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
+  type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData[K]]
   object RasterRDD {
-    def apply[K](rdd: RDD[(K, Tile)], metadata: RasterMetaData): RasterRDD[K] =
+    def apply[K](rdd: RDD[(K, Tile)], metadata: RasterMetaData[K]): RasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 
-  type MultiBandRasterRDD[K] = RDD[(K, MultiBandTile)] with Metadata[RasterMetaData]
+  type MultiBandRasterRDD[K] = RDD[(K, MultiBandTile)] with Metadata[RasterMetaData[K]]
   object MultiBandRasterRDD {
-    def apply[K](rdd: RDD[(K, MultiBandTile)], metadata: RasterMetaData): MultiBandRasterRDD[K] =
+    def apply[K](rdd: RDD[(K, MultiBandTile)], metadata: RasterMetaData[K]): MultiBandRasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 

@@ -41,11 +41,11 @@ object TileRDDReproject {
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
-    metadata: RasterMetaData,
+    metadata: RasterMetaData[K],
     destCrs: CRS,
     layoutScheme: LayoutScheme,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val mapTransform: MapKeyTransform = layout.mapTransform
@@ -129,11 +129,11 @@ object TileRDDReproject {
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    rdd: RDD[(K, V)] with Metadata[RasterMetaData],
+    rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]],
     destCrs: CRS,
     layoutScheme: LayoutScheme,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val crs = rdd.metaData.crs
     val mapTransform = rdd.metaData.layout.mapTransform
     val tileLayout = rdd.metaData.layout.tileLayout
@@ -193,12 +193,12 @@ object TileRDDReproject {
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    rdd: RDD[(K, V)] with Metadata[RasterMetaData],
+    rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]],
     destCrs: CRS,
     layoutScheme: LayoutScheme,
     bufferSize: Int,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
       apply(fakeBuffers, rdd.metadata, destCrs, layoutScheme, options)

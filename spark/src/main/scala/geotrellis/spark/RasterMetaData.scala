@@ -15,11 +15,12 @@ import org.apache.spark.rdd._
  * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
-case class RasterMetaData(
+case class RasterMetaData[K](
   cellType: CellType,
   layout: LayoutDefinition,
   extent: Extent,
-  crs: CRS
+  crs: CRS,
+  keyBounds: KeyBounds[K]
 ) {
   /** Transformations between tiling scheme and map references */
   def mapTransform = layout.mapTransform
@@ -33,7 +34,7 @@ case class RasterMetaData(
   def tileTransform(tileScheme: TileScheme): TileKeyTransform =
     tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
 
-  def combine(other: RasterMetaData) = {
+  def combine(other: RasterMetaData[K]): RasterMetaData[K] = {
     val combinedExtent       = extent combine other.extent
     val combinedLayoutExtent = layout.extent combine other.layout.extent
     val combinedTileLayout   = layout.tileLayout combine other.layout.tileLayout
@@ -51,13 +52,13 @@ case class RasterMetaData(
 }
 
 object RasterMetaData {
-  implicit def toLayoutDefinition(md: RasterMetaData): LayoutDefinition =
+  implicit def toLayoutDefinition(md: RasterMetaData[_]): LayoutDefinition =
     md.layout
 
-  implicit def toMapKeyTransform(md: RasterMetaData): MapKeyTransform =
+  implicit def toMapKeyTransform(md: RasterMetaData[_]): MapKeyTransform =
     md.layout.mapTransform
 
-  implicit def toSpatialKeyBounds(md: RasterMetaData): KeyBounds[SpatialKey] =
+  implicit def toSpatialKeyBounds(md: RasterMetaData[SpatialKey]): KeyBounds[SpatialKey] =
     KeyBounds(SpatialKey(md.gridBounds.colMin, md.gridBounds.rowMin),
               SpatialKey(md.gridBounds.colMax, md.gridBounds.rowMax))
 
@@ -87,29 +88,29 @@ object RasterMetaData {
   /**
     * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
     */
-  def fromRdd[K: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): RasterMetaData = {
+  def fromRdd[K: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): RasterMetaData[K2] = {
     val (extent: Extent, cellType, _, bounds) = collectMetadata(rdd)
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb: KeyBounds[K2] =
       KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
                 bounds.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
-    RasterMetaData(cellType, layout, extent, crs)
+    RasterMetaData(cellType, layout, extent, crs, kb)
   }
 
   /**
    * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
    */
-  def fromRdd[K: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, RasterMetaData) = {
+  def fromRdd[K: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
     val (extent: Extent, cellType, cellSize, bounds) = collectMetadata(rdd)
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb: KeyBounds[K2] =
       KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
                 bounds.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
-    (zoom, RasterMetaData(cellType, layout, extent, crs))
+    (zoom, RasterMetaData(cellType, layout, extent, crs, kb))
   }
 
-  def fromRdd[K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData) = {
+  def fromRdd[K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
     val (extent: Extent, cellType, cellSize, crsSet, bounds) =
       rdd
         .map { case (key, grid) =>
@@ -135,6 +136,6 @@ object RasterMetaData {
     val kb: KeyBounds[K2] =
       KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
                 bounds.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
-    (zoom, RasterMetaData(cellType, layout, extent, crsSet.head))
+    (zoom, RasterMetaData(cellType, layout, extent, crsSet.head, kb))
   }
 }

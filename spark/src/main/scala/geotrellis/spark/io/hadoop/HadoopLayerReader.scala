@@ -70,14 +70,14 @@ object HadoopLayerReader {
     apply(HadoopAttributeStore.default(rootPath), new HadoopRDDReader[K, V](HadoopCatalogConfig.DEFAULT))
 
   def spatial(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath)
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](rootPath)
 
   def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](rootPath)
 
   def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](rootPath)
 
   def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](rootPath)
 }

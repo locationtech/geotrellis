@@ -9,30 +9,30 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 
 abstract class HadoopSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData[SpatialKey]]
     with TestEnvironment
     with TestFiles
     with AllOnesTestTileTests {
 
-  lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterMetaData](outputLocal)
+  lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
-  lazy val copier = HadoopLayerCopier[SpatialKey, Tile, RasterMetaData](outputLocal)
-  lazy val mover  = HadoopLayerMover[SpatialKey, Tile, RasterMetaData](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod)
+  lazy val copier = HadoopLayerCopier[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal)
+  lazy val mover  = HadoopLayerMover[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal)
+  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal, ZCurveKeyIndexMethod)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
 }
 
 class HadoopSpatialRowMajorSpec extends HadoopSpatialSpec {
-  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocal, RowMajorKeyIndexMethod)
+  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal, RowMajorKeyIndexMethod)
 }
 
 class HadoopSpatialZCurveSpec extends HadoopSpatialSpec {
-  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod)
+  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal, ZCurveKeyIndexMethod)
 }
 
 class HadoopSpatialHilbertSpec extends HadoopSpatialSpec {
-  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocal, HilbertKeyIndexMethod)
+  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](outputLocal, HilbertKeyIndexMethod)
 }
 
 

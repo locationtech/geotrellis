@@ -28,7 +28,11 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
           tileLayout
         )
 
-        val metaData = rasterRDD.metaData
+        val kb = rasterRDD.metaData.keyBounds
+        val metaData = rasterRDD.metaData.copy(keyBounds =
+          KeyBounds(SpaceTimeKey(kb.minKey, TemporalKey(dates.min)),
+                    SpaceTimeKey(kb.maxKey, TemporalKey(dates.max)))
+        )
         val rdd = rasterRDD.map { case(spatialKey, tile) =>
           (SpaceTimeKey(spatialKey, TemporalKey(dateTime)), tile)
         }
@@ -71,7 +75,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
 
     it("should work with min for a 9 year period where the window is 3 years.") {
       val dates = (1 until 10).map(i => new DateTime(i, 1, 1, 0, 0, 0, DateTimeZone.UTC))
-      val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+      val rasterRDD: RasterRDD[SpaceTimeKey] = createIncreasingTemporalRasterRDD(dates)
 
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(9, 1, 1, 0, 0, 0, DateTimeZone.UTC)

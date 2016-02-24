@@ -85,15 +85,15 @@ object HadoopLayerWriter {
     )
 
   def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](rootPath, keyIndexMethod)
 
   def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](rootPath, keyIndexMethod)
 
   def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](rootPath, keyIndexMethod)
 
   def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](rootPath, keyIndexMethod)
 
 }

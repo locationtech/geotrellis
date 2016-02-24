@@ -14,17 +14,17 @@ import spray.json._
 import scala.reflect.ClassTag
 
 package object json {
-  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
+  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
     new JavaSerializationJsonFormat[index.KeyIndex[K]]
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
       JsString(crs.toProj4String)
 
-    def read(value: JsValue): CRS = 
+    def read(value: JsValue): CRS =
       value match {
         case JsString(proj4String) => CRS.fromString(proj4String)
-        case _ => 
+        case _ =>
           throw new DeserializationException("CRS must be a proj4 string.")
       }
   }
@@ -60,24 +60,26 @@ package object json {
           throw new DeserializationException("LayoutDefinition expected")
       }
   }
-  
-  implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
-    def write(metaData: RasterMetaData) = 
+
+  implicit def rasterMetaDataFormat[K: JsonFormat] = new RootJsonFormat[RasterMetaData[K]] {
+    def write(metaData: RasterMetaData[K]) =
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,
         "layoutDefinition" -> metaData.layout.toJson,
-        "crs" -> metaData.crs.toJson
+        "crs" -> metaData.crs.toJson,
+        "keyBounds" -> metaData.keyBounds.toJson
       )
 
-    def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs") match {
-        case Seq(cellType, extent, layoutDefinition, crs) =>
+    def read(value: JsValue): RasterMetaData[K] =
+      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "keyBounds") match {
+        case Seq(cellType, extent, layoutDefinition, crs, keyBounds) =>
           RasterMetaData(
             cellType.convertTo[CellType],
             layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
-            crs.convertTo[CRS]
+            crs.convertTo[CRS],
+            keyBounds.convertTo[KeyBounds[K]]
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")

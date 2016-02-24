@@ -24,11 +24,11 @@ class TilerMethods[K, V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => Ti
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     cutTiles(cellType, layoutDefinition, NearestNeighbor)
 
-  def cutTiles[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData, resampleMethod: ResampleMethod)
+  def cutTiles[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData[K2], resampleMethod: ResampleMethod)
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     cutTiles(rasterMetaData.cellType, rasterMetaData.layout, resampleMethod)
 
-  def cutTiles[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData)
+  def cutTiles[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData[K2])
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     cutTiles(rasterMetaData, NearestNeighbor)
 
@@ -41,11 +41,11 @@ class TilerMethods[K, V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => Ti
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     tileToLayout(cellType, layoutDefinition, Options.DEFAULT)
 
-  def tileToLayout[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData, options: Options)
+  def tileToLayout[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData[K2], options: Options)
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     tileToLayout(rasterMetaData.cellType, rasterMetaData.layout, options)
 
-  def tileToLayout[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData)
+  def tileToLayout[K2: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData[K2])
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     tileToLayout(rasterMetaData, Options.DEFAULT)
 
