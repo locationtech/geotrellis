@@ -12,7 +12,7 @@ import org.joda.time.DateTime
 
 abstract class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with TestEnvironment
+    with AccumuloTestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests
     with LayerUpdateSpaceTimeTileTests {

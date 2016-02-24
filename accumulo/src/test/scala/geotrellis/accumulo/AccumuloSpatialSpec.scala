@@ -10,7 +10,7 @@ import geotrellis.spark._
 
 abstract class AccumuloSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
-    with TestEnvironment
+    with AccumuloTestEnvironment
     with TestFiles
     with AllOnesTestTileTests {
 

@@ -3,9 +3,6 @@ import Dependencies._
 name := "geotrellis-s3"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  "org.apache.accumulo" % "accumulo-core" % Version.accumulo % "test"
-    exclude("org.jboss.netty", "netty")
-    exclude("org.apache.hadoop", "hadoop-client"),
   awsSdkS3,
   spire,
   scalatest % "test")

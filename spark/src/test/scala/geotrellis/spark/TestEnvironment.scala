@@ -51,6 +51,9 @@ trait TestEnvironment extends BeforeAndAfterAll
   with OpAsserter
 { self: Suite =>
 
+  def extraConf(conf: SparkConf): Unit =
+    conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
+
   var _sc: SparkContext = {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
@@ -62,6 +65,7 @@ trait TestEnvironment extends BeforeAndAfterAll
       .setAppName("Test Context")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
+    extraConf(conf)
 
     val sparkContext = new SparkContext(conf)
 
