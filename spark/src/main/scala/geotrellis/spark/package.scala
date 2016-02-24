@@ -22,7 +22,7 @@ import geotrellis.proj4._
 
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
-
+import geotrellis.spark.filter._
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
@@ -49,6 +49,7 @@ package object spark
     with summary.Implicits
     with mapalgebra.focal.hillshade.Implicits
     with partitioner.Implicits
+    with filter.Implicits
     with Serializable // required for java serialization, even though it's mixed in
 {
 
@@ -126,6 +127,12 @@ package object spark
         }
       }, preservesPartitioning = true)
   }
+
+  implicit class withRasterRDDSpatialKeyCropMethods(val self: RasterRDD[SpatialKey])
+      extends RasterRDDCropMethods[SpatialKey]
+
+  implicit class withRasterRDDSpaceTimeKeyCropMethods(val self: RasterRDD[SpaceTimeKey])
+      extends RasterRDDCropMethods[SpaceTimeKey]
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {
