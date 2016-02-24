@@ -105,4 +105,5 @@ package object vector extends SeqMethods {
     with convexhull.ConvexHullMethods[G]
     with densify.DensifyMethods[G]
     with simplify.SimplifyMethods[G]
+    with prepared.PreparedGeometryMethods[G]
 }
