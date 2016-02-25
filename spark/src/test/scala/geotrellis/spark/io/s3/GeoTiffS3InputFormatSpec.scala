@@ -9,10 +9,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import org.scalatest._
 
-/**
-  * Actually failes due to LatLon issue: https://github.com/geotrellis/geotrellis/issues/1341
-  */
-@Ignore class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
+class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
 
   describe("GeoTiff S3 InputFormat") {
     val url = "s3n://geotrellis-test/nlcd-geotiff"
@@ -31,11 +28,14 @@ import org.scalatest._
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
 
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng)){ (rdd, level) =>
+      /**
+        * Actually failes due to LatLon issue: https://github.com/geotrellis/geotrellis/issues/1341
+        */
+      /*Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng)){ (rdd, level) =>
         val rddCount = rdd.count
         rddCount should not be (0)
         info(s"Tiled RDD count: ${rddCount}")
-      }
+      }*/
     }
   }
 }

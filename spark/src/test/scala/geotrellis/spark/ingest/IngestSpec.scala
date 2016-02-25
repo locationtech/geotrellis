@@ -10,7 +10,7 @@ import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 /** Actually failes due to LatLon issue: https://github.com/geotrellis/geotrellis/issues/1341 */
-@Ignore class IngestSpec extends FunSpec
+/*class IngestSpec extends FunSpec
   with Matchers
   with TestEnvironment {
   describe("Ingest") {
@@ -22,4 +22,4 @@ import org.scalatest._
       }
     }
   }
-}
+}*/
