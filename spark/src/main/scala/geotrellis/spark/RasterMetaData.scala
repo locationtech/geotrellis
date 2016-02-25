@@ -88,8 +88,12 @@ object RasterMetaData {
   /**
     * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
     */
-  def fromRdd[K: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): RasterMetaData[K2] = {
-    val (extent: Extent, cellType, _, bounds) = collectMetadata(rdd)
+  def fromRdd[
+    K: (? => TilerKeyMethods[K, K2]),
+    V <: CellGrid,
+    K2: SpatialComponent: Boundable
+  ](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): RasterMetaData[K2] = {
+    val (extent, cellType, _, bounds) = collectMetadata(rdd)
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb: KeyBounds[K2] =
       KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
@@ -100,8 +104,12 @@ object RasterMetaData {
   /**
    * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
    */
-  def fromRdd[K: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
-    val (extent: Extent, cellType, cellSize, bounds) = collectMetadata(rdd)
+  def fromRdd[
+    K: (? => TilerKeyMethods[K, K2]) ,
+    V <: CellGrid,
+    K2: SpatialComponent: Boundable
+  ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
+    val (extent, cellType, cellSize, bounds) = collectMetadata(rdd)
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb: KeyBounds[K2] =
@@ -110,8 +118,12 @@ object RasterMetaData {
     (zoom, RasterMetaData(cellType, layout, extent, crs, kb))
   }
 
-  def fromRdd[K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]) , V <: CellGrid, K2: SpatialComponent: Boundable](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
-    val (extent: Extent, cellType, cellSize, crsSet, bounds) =
+  def fromRdd[
+    K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]),
+    V <: CellGrid,
+    K2: SpatialComponent: Boundable
+  ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
+    val (extent, cellType, cellSize, crsSet, bounds) =
       rdd
         .map { case (key, grid) =>
           val ProjectedExtent(extent, crs) = key.projectedExtent
@@ -127,7 +139,7 @@ object RasterMetaData {
             if (cellSize1.resolution < cellSize2.resolution) cellSize1 else cellSize2,
             crs1 ++ crs2,
             bounds1.combine(bounds2)
-            )
+          )
         }
 
     require(crsSet.size == 1, s"Multiple CRS tags found in source tiles: $crsSet")
