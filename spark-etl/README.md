@@ -21,8 +21,7 @@ object GeoTrellisETL extends App {
   val etl = Etl(args)
   val tiles = etl.load[ProjectedExtent, Tile]
   val (zoom, tiled) = etl.tile(tiles)
-  val (reprojectZoom, reprojected) = etl.reproject(tiled) 
-  etl.save(LayerId(etl.conf.layerName(), reprojectZoom), reprojected, ZCurveKeyIndexMethod)
+  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
 
   sc.stop()
 ```
