@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.{LayerId, Boundable}
+import geotrellis.spark.{ Bounds, LayerId, Boundable }
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
@@ -10,7 +10,7 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object AccumuloLayerReindexer {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat: (? => Bounds[K])](
     instance: AccumuloInstance,
     table: String,
     keyIndexMethod: KeyIndexMethod[K],

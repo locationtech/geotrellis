@@ -45,11 +45,5 @@ object SpatialKey {
     def maxBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
     }
-
-    def collectBounds[V](rdd: RDD[(SpatialKey, V)]): Bounds[SpatialKey] = {
-      rdd
-        .map{ case (k, tile) => Bounds(k, k) }
-        .fold(EmptyBounds) { _ combine  _ }
-    }
   }
 }

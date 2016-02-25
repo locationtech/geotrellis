@@ -20,7 +20,7 @@ object FileLayerReindexer {
   def apply[
     K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](
     attributeStore: FileAttributeStore,
     keyIndexMethod: KeyIndexMethod[K]
@@ -46,7 +46,7 @@ object FileLayerReindexer {
   def apply[
     K: AvroRecordCodec: JsonFormat: Boundable: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K])(implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val attributeStore = FileAttributeStore(catalogPath)
     apply[K, V, M](attributeStore, keyIndexMethod)

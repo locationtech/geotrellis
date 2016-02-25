@@ -13,6 +13,4 @@ trait Boundable[K] extends Serializable {
   def minBound(p1: K, p2: K): K
   
   def maxBound(p1: K, p2: K): K
-
-  def collectBounds[V](rdd: RDD[(K, V)]): Bounds[K]
 }

@@ -1,7 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.utils.cache.Cache
-import geotrellis.spark.{LayerId, Boundable}
+import geotrellis.spark.{ Bounds, LayerId, Boundable }
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
@@ -24,7 +24,7 @@ object S3LayerReindexer {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](
     attributeStore: S3AttributeStore,
     keyIndexMethod: KeyIndexMethod[K],
@@ -52,14 +52,14 @@ object S3LayerReindexer {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K])(implicit sc: SparkContext): LayerReindexer[LayerId] =
     apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](
     bucket: String,
     prefix: String,
@@ -71,7 +71,7 @@ object S3LayerReindexer {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K])(implicit sc: SparkContext): LayerReindexer[LayerId] =
     apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, Options.DEFAULT)
 }

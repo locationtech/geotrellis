@@ -34,7 +34,7 @@ import java.io.File
   * @param clobber           flag to overwrite raster if already present on File
   * @param attributeStore    AttributeStore to be used for storing raster metadata
   */
-class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat: (? => Bounds[K])](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: FileRDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
@@ -57,8 +57,8 @@ class FileLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFo
         path = path
       )
 
-    val keyBounds = implicitly[Boundable[K]].collectBounds(rdd)
-      .getOrElse(throw new LayerWriteError(layerId, "empty rdd write"))
+    val bounds: Bounds[K] = rdd.metadata
+    val keyBounds = bounds.getOrElse(throw new LayerWriteError(layerId, "empty rdd write"))
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
@@ -88,7 +88,7 @@ object FileLayerWriter {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](attributeStore: FileAttributeStore, keyIndexMethod: KeyIndexMethod[K], options: Options): FileLayerWriter[K, V, M] =
     new FileLayerWriter[K, V, M](
       attributeStore,
@@ -102,21 +102,21 @@ object FileLayerWriter {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](attributeStore: FileAttributeStore, keyIndexMethod: KeyIndexMethod[K]): FileLayerWriter[K, V, M] =
     apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K], options: Options): FileLayerWriter[K, V, M] =
     apply[K, V, M](FileAttributeStore(catalogPath), keyIndexMethod, options)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](catalogPath: String, keyIndexMethod: KeyIndexMethod[K]): FileLayerWriter[K, V, M] =
     apply[K, V, M](catalogPath, keyIndexMethod, Options.DEFAULT)
 

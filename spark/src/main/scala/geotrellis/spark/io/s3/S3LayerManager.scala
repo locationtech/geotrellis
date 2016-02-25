@@ -32,7 +32,7 @@ class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext
     mover.move(from, to)
   }
 
-  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
+  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat: (? => Bounds[K])]
      (id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val reindexer = S3LayerReindexer[K, V, M](attributeStore, keyIndexMethod)
     reindexer.reindex(id) // keyIndexMethod should be part of the LayerReindexer trait

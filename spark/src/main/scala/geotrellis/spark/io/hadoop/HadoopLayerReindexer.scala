@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.{KeyBounds, LayerId, Boundable}
+import geotrellis.spark.{ Bounds, KeyBounds, LayerId, Boundable }
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.spark.io._
@@ -17,7 +17,7 @@ import scala.reflect.ClassTag
 import org.apache.hadoop.fs.Path
 
 object HadoopLayerReindexer {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat: (? => Bounds[K])](
     rootPath: Path, keyIndexMethod: KeyIndexMethod[K])
    (implicit sc: SparkContext, format: HadoopFormat[K, V]): LayerReindexer[LayerId] = {
     val attributeStore = HadoopAttributeStore(new Path(rootPath, "attributes"))

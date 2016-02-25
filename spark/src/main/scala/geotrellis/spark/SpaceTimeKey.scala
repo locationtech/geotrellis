@@ -60,11 +60,5 @@ object SpaceTimeKey {
     def maxBound(a: SpaceTimeKey, b: SpaceTimeKey) = {
       SpaceTimeKey(math.max(a.col, b.col), math.max(a.row, b.row), if (a.time > b.time) a.time else b.time )
     }
-
-    def collectBounds[V](rdd: RDD[(SpaceTimeKey, V)]): Bounds[SpaceTimeKey] = {
-      rdd
-        .map { case (k, tile) => Bounds(k, k) }
-        .fold(EmptyBounds) { _ combine  _ }
-    }
   }
 }

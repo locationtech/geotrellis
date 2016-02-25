@@ -62,6 +62,8 @@ object RasterMetaData {
     KeyBounds(SpatialKey(md.gridBounds.colMin, md.gridBounds.rowMin),
               SpatialKey(md.gridBounds.colMax, md.gridBounds.rowMax))
 
+  implicit def toBounds[K](md: RasterMetaData[K]): Bounds[K] =
+    md.bounds
   def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
@@ -85,6 +87,33 @@ object RasterMetaData {
       }
   }
 
+  def collectMetadataWithCRS[
+    K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]),
+    V <: CellGrid,
+    K2: SpatialComponent: Boundable
+  ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
+    val (extent, cellType, cellSize, crsSet, bounds) =
+      rdd
+      .map { case (key, grid) =>
+        val ProjectedExtent(extent, crs) = key.projectedExtent
+        val boundsKey = key.translate(SpatialKey(0,0))
+        (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), Set(crs), KeyBounds(boundsKey, boundsKey))
+      }
+      .reduce { (tuple1, tuple2) =>
+        val (extent1, cellType1, cellSize1, crs1, bounds1) = tuple1
+        val (extent2, cellType2, cellSize2, crs2, bounds2) = tuple2
+        (
+          extent1.combine(extent2),
+          cellType1.union(cellType2),
+          if (cellSize1.resolution < cellSize2.resolution) cellSize1 else cellSize2,
+          crs1 ++ crs2,
+          bounds1.combine(bounds2)
+          )
+      }
+    require(crsSet.size == 1, s"Multiple CRS tags found: $crsSet")
+    (extent, cellType, cellSize, bounds, crsSet.head)
+  }
+
   /**
     * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
     */
@@ -94,10 +123,7 @@ object RasterMetaData {
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): RasterMetaData[K2] = {
     val (extent, cellType, _, bounds) = collectMetadata(rdd)
-    val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
-    val kb: KeyBounds[K2] =
-      KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
-                bounds.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
+    val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
     RasterMetaData(cellType, layout, extent, crs, kb)
   }
 
@@ -111,10 +137,7 @@ object RasterMetaData {
   ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
     val (extent, cellType, cellSize, bounds) = collectMetadata(rdd)
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
-    val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
-    val kb: KeyBounds[K2] =
-      KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
-                bounds.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
+    val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
     (zoom, RasterMetaData(cellType, layout, extent, crs, kb))
   }
 
@@ -123,31 +146,21 @@ object RasterMetaData {
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
-    val (extent, cellType, cellSize, crsSet, bounds) =
-      rdd
-        .map { case (key, grid) =>
-          val ProjectedExtent(extent, crs) = key.projectedExtent
-          val boundsKey = key.translate(SpatialKey(0,0))
-          (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), Set(crs), KeyBounds(boundsKey, boundsKey))
-        }
-        .reduce { (tuple1, tuple2) =>
-          val (extent1, cellType1, cellSize1, crs1, bounds1) = tuple1
-          val (extent2, cellType2, cellSize2, crs2, bounds2) = tuple2
-          (
-            extent1.combine(extent2),
-            cellType1.union(cellType2),
-            if (cellSize1.resolution < cellSize2.resolution) cellSize1 else cellSize2,
-            crs1 ++ crs2,
-            bounds1.combine(bounds2)
-          )
-        }
+    val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
 
-    require(crsSet.size == 1, s"Multiple CRS tags found in source tiles: $crsSet")
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
-    val kb: KeyBounds[K2] =
-      KeyBounds(bounds.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
-                bounds.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
-    (zoom, RasterMetaData(cellType, layout, extent, crsSet.head, kb))
+    val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+    (zoom, RasterMetaData(cellType, layout, extent, crs, kb))
+  }
+
+  def fromRdd[
+    K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]),
+    V <: CellGrid,
+    K2: SpatialComponent: Boundable
+  ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): (Int, RasterMetaData[K2]) = {
+    val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
+    val kb = bounds.setSpatialBounds(KeyBounds(layoutDefinition.mapTransform(extent)))
+    (0, RasterMetaData(cellType, layoutDefinition, extent, crs, kb))
   }
 }

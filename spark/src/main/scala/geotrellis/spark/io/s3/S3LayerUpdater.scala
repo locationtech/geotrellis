@@ -11,7 +11,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat: (? => Bounds[K])](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     clobber: Boolean = true)
@@ -29,8 +29,8 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
-    val boundable = implicitly[Boundable[K]]
-    val keyBounds = boundable.collectBounds(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
+    val bounds: Bounds[K] = rdd.metadata
+    val keyBounds = bounds.getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
 
     if (!(existingKeyBounds includes keyBounds.minKey) || !(existingKeyBounds includes keyBounds.maxKey))
       throw new LayerOutOfKeyBoundsError(id)
@@ -47,7 +47,7 @@ class S3LayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFor
 }
 
 object S3LayerUpdater {
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat: (? => Bounds[K])](
       bucket: String,
       prefix: String,
       clobber: Boolean = true): S3LayerUpdater[K, V, M] =
