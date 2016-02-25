@@ -53,7 +53,7 @@ object Ingest {
    * @tparam K            type of output tile key, must have SpatialComponent
    * @return
    */
-  def apply[T: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: Boundable: ClassTag](
+  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: ProjectedExtentComponent, K: SpatialComponent: Boundable: ClassTag](
       sourceTiles: RDD[(T, Tile)],
       destCRS: CRS,
       layoutScheme: LayoutScheme,
@@ -65,8 +65,7 @@ object Ingest {
     )
     (sink: (RasterRDD[K], Int) => Unit): Unit =
   {
-    val (_, rasterMetaData) =
-      RasterMetaData.fromRdd(sourceTiles, destCRS, layoutScheme)
+    val (_, rasterMetaData) = RasterMetaData.fromRdd(sourceTiles, layoutScheme)
     val tiledRdd = sourceTiles.tileToLayout(rasterMetaData, resampleMethod).cache()
     val contextRdd = new ContextRDD(tiledRdd, rasterMetaData)
     val (zoom, rasterRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))
