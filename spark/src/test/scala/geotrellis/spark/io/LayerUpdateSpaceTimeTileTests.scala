@@ -22,13 +22,22 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       KeyBounds(SpaceTimeKey(0,0, new DateTime()), SpaceTimeKey(1,1, new DateTime()))
     )
 
+  def emptyRasterMetaData =
+    RasterMetaData[SpaceTimeKey](
+      IntConstantNoDataCellType,
+      LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
+      Extent(0,0,1,1),
+      LatLng,
+      EmptyBounds
+    )
+
   it("should update a layer") {
     updater.update(layerId, sample)
   }
 
   it("should not update a layer (empty set)") {
     intercept[LayerUpdateError] {
-      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
     }
   }
 
