@@ -7,7 +7,7 @@ import geotrellis.raster.{RasterExtent, CellGrid}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
-import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.raster.resample.{ ResampleMethod, NearestNeighbor }
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
 import org.slf4j.LoggerFactory
@@ -24,27 +24,25 @@ object Etl {
 
   def ingest[
     I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: TypeTag,
-    V <: CellGrid: TypeTag: Stitcher: ? => TileReprojectMethods[V]: ? => CropMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules)(implicit sc: SparkContext) = {
+    K: SpatialComponent: Boundable: TypeTag,
+    V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+  ](
+    args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules
+  )(implicit sc: SparkContext) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
     val etl = Etl(args)
     val sourceTiles = etl.load[I, V]
-    val (_, metadata) = etl.collectMetadata(sourceTiles)
-    val tiled = sourceTiles.cutTiles[K](metadata, NearestNeighbor)
-    val (zoom, reprojected) = etl.reproject(ContextRDD(tiled, metadata))
-    etl.save[K, V](LayerId(etl.conf.layerName(), zoom), reprojected, keyIndexMethod)
+    val (tiledZoom, tiled) = etl.tile(sourceTiles)
+    val (reprojectedZoom, reprojected) = etl.reproject(tiled)
+    etl.save(LayerId(etl.conf.layerName(), reprojectedZoom), reprojected, keyIndexMethod)
   }
 }
 
 case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.defaultModules) {
 
   @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
-
-  type M = RasterMetaData
-
   @transient val conf = new EtlConf(args)
 
   def scheme: Either[LayoutScheme, LayoutDefinition] = {
@@ -72,57 +70,61 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     plugin(conf.inputProps)
   }
 
-  def reproject[
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: ? => TileReprojectMethods[V]: ? => CropMethods[V]: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[M]): (Int, RDD[(K, V)] with Metadata[M]) = {
-    val tuple = rdd.reproject(conf.crs(), conf.layoutScheme()(conf.crs(), conf.tileSize()))
-    tuple._2.persist(conf.cache())
-    tuple
-  }
-
-  def collectMetadata[I: ProjectedExtentComponent, V <: CellGrid](rdd: RDD[(I, V)])(implicit sc: SparkContext): (Int, M) = {
-    val crs = conf.crs()
+  def tile[
+    I: ProjectedExtentComponent,
+    V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    K: SpatialComponent: Boundable: ClassTag
+  ](
+    rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
+  )(implicit
+    sc: SparkContext, ev: I => TilerKeyMethods[I, K]
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val targetCellType = conf.cellType.get
 
-    scheme match {
-      case Left(layoutScheme) =>
-        val (zoom, rmd) = RasterMetaData.fromRdd(rdd, crs, layoutScheme) { key => key.projectedExtent.extent }
-        targetCellType match {
-          case None => zoom -> rmd
-          case Some(ct) => zoom -> rmd.copy(cellType = ct)
-        }
-
-      case Right(layoutDefinition) =>
-        0 -> RasterMetaData(
-          crs = crs,
-          cellType = targetCellType.get,
-          extent = layoutDefinition.extent,
-          layout = layoutDefinition
-        )
+    val (zoom: Int, rmd: RasterMetaData[K]) = {
+      scheme match {
+        case Left(layoutScheme) =>
+          RasterMetaData.fromRdd(rdd, layoutScheme)
+        case Right(layoutDefinition) =>
+          RasterMetaData.fromRdd(rdd, layoutDefinition)
+      }
     }
+
+    val adjustedMetadata = targetCellType.fold(rmd){ ct => rmd.copy(cellType = ct) }
+    val tiled: RDD[(K, V)] = rdd.tileToLayout[K](adjustedMetadata, method)
+    zoom -> ContextRDD(tiled, adjustedMetadata)
+  }
+
+  def reproject[
+    K: SpatialComponent: Boundable: ClassTag,
+    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+  ](rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]]): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
+    val destCrs = conf.crs()
+    val layoutScheme = conf.layoutScheme()
+    val tileSize = conf.tileSize()
+    rdd.reproject(destCrs, layoutScheme(destCrs, tileSize))
   }
 
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]], method: KeyIndexMethod[K]): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
     val outputPlugin =
       combinedModule
-        .findSubclassOf[OutputPlugin[K, V, M]]
+        .findSubclassOf[OutputPlugin[K, V, RasterMetaData[K]]]
         .find { _.suitableFor(conf.output()) }
         .getOrElse(sys.error(s"Unable to find output module of type '${conf.output()}'"))
 
-    def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
       outputPlugin(currentId, rdd, method, conf.outputProps)
 
       scheme match {
         case Left(s) =>
-          if (conf.pyramid() && zoom > 1) {
+          if (conf.pyramid() && zoom >= 1) {
             val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom)
             savePyramid(nextLevel, nextRdd)
           }
