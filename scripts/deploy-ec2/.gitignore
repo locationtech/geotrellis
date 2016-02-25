@@ -1,4 +1,0 @@
-*.pem
-group_vars/*.yml
-hosts
-.vagrant
