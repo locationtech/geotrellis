@@ -8,7 +8,7 @@ import geotrellis.spark.io.json._
 
 import org.apache.hadoop.fs.Path
 
-class MultibandSpatialHadoopOutput extends HadoopOutput[SpatialKey, MultiBandTile, RasterMetaData] {
+class MultibandSpatialHadoopOutput extends HadoopOutput[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) =
-    HadoopLayerWriter[SpatialKey, MultiBandTile, RasterMetaData](new Path(props("path")), method)
+    HadoopLayerWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](new Path(props("path")), method)
 }

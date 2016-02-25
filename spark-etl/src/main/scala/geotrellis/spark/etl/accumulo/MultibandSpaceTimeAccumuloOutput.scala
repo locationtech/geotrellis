@@ -7,7 +7,7 @@ import geotrellis.spark.io.accumulo.AccumuloLayerWriter
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io.json._
 
-class MultibandSpaceTimeAccumuloOutput extends AccumuloOutput[SpaceTimeKey, MultiBandTile, RasterMetaData] {
+class MultibandSpaceTimeAccumuloOutput extends AccumuloOutput[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
-    AccumuloLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData](getInstance(props), props("table"), method)
+    AccumuloLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](getInstance(props), props("table"), method)
 }
