@@ -31,15 +31,7 @@ object Pyramid extends Logging {
     resampleMethod: ResampleMethod,
     partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(LayoutLevel(zoom, rdd.metadata.layout))
-    val newKeyBounds = {
-      rdd.metadata.bounds match {
-        case kb: KeyBounds[K] =>
-          val GridBounds(colMin, rowMin, colMax, rowMax) = nextLayout.mapTransform(rdd.metadata.extent)
-          KeyBounds(kb.minKey.updateSpatialComponent(SpatialKey(colMin, rowMin)),
-                    kb.maxKey.updateSpatialComponent(SpatialKey(colMax, rowMax)))
-        case EmptyBounds => EmptyBounds
-      }
-    }
+    val newKeyBounds = rdd.metadata.bounds.setSpatialBounds(KeyBounds(nextLayout.mapTransform(rdd.metadata.extent)))
     val nextMetadata = RasterMetaData[K](
       rdd.metadata.cellType,
       nextLayout,

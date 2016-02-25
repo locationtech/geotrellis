@@ -28,8 +28,8 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
           tileLayout
         )
 
-        val kb = rasterRDD.metaData.keyBounds.get
-        val metaData = rasterRDD.metaData.copy(keyBounds =
+        val kb = rasterRDD.metaData.bounds.get
+        val metaData = rasterRDD.metaData.copy(bounds =
           KeyBounds(SpaceTimeKey(kb.minKey, TemporalKey(dates.min)),
             SpaceTimeKey(kb.maxKey, TemporalKey(dates.max)))
         )

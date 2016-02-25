@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.raster.GridBounds
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -23,6 +24,7 @@ sealed trait Bounds[+A] extends Product with Serializable {
 
   def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] = 
     if (isEmpty) default else this.get
+  def setSpatialBounds[B >: A](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B]
 }
 
 object Bounds{
@@ -45,6 +47,9 @@ case object EmptyBounds extends Bounds[Nothing] {
     EmptyBounds
 
   def get = throw new NoSuchElementException("EmptyBounds.get")
+
+  def setSpatialBounds[B](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B] =
+    this
 }
 
 case class KeyBounds[+K](
@@ -86,19 +91,25 @@ case class KeyBounds[+K](
     }
 
   def get = this
+
+  def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]) =
+    KeyBounds(ev.lens.set(other.minKey)(minKey), ev.lens.set(other.maxKey)(maxKey))
 }
 
 object KeyBounds {
+  def apply(gridBounds: GridBounds): KeyBounds[SpatialKey] =
+    KeyBounds(SpatialKey(gridBounds.colMin, gridBounds.rowMin), SpatialKey(gridBounds.colMax, gridBounds.rowMax))
+
   def includeKey[K: Boundable](seq: Seq[KeyBounds[K]], key: K) = {
     seq
-      .map{ kb => kb.includes(key) }
+      .map { kb => kb.includes(key) }
       .foldLeft(false)(_ || _)
   }
 
   implicit class KeyBoundsSeqMethods[K](seq: Seq[KeyBounds[K]]) {
     def includeKey(key: K)(implicit b: Boundable[K]): Boolean = {
       seq
-        .map{ kb => kb.includes(key) }
+        .map { kb => kb.includes(key) }
         .foldLeft(false)(_ || _)
     }
   }
@@ -123,3 +134,4 @@ object KeyBounds {
         }
     }
 }
+
