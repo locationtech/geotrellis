@@ -96,24 +96,8 @@ lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
-lazy val services = Project("services", file("services")).
-  dependsOn(raster, vector, engine).
-  settings(commonSettings: _*)
-
-lazy val jetty = Project("jetty", file("jetty")).
-  dependsOn(services).
-  settings(commonSettings: _*)
-
 lazy val geotrellisSlick = Project("slick", file("slick")).
   dependsOn(vector).
-  settings(commonSettings: _*)
-
-lazy val examples = Project("examples", file("examples")).
-  dependsOn(raster, vector).
-  settings(commonSettings: _*)
-
-lazy val admin = Project("admin", file("admin")).
-  dependsOn(raster, services, vector).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
@@ -128,27 +112,12 @@ lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark).
   settings(commonSettings: _*)
 
-lazy val graph = Project("graph", file("graph")).
-  dependsOn(spark % "test->test;compile->compile").
-  settings(commonSettings: _*)
-
-lazy val index = Project("index", file("index")).
-  settings(commonSettings: _*)
-
 lazy val gdal: Project = Project("gdal", file("gdal")).
   dependsOn(proj4, raster, spark, sparkEtl).
   settings(commonSettings: _*)
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, engine, rasterTestkit % "test").
-  settings(commonSettings: _*)
-
-lazy val dev = Project("dev", file("dev")).
-  dependsOn(raster, engine).
-  settings(commonSettings: _*)
-
-lazy val demo = Project("demo", file("demo")).
-  dependsOn(jetty).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
@@ -159,5 +128,5 @@ lazy val vectorBenchmark: Project = Project("vector-benchmark", file("vector-ben
   settings(commonSettings: _*)
 
 lazy val benchmark: Project = Project("benchmark", file("benchmark")).
-  dependsOn(raster, engine, jetty).
+  dependsOn(raster, engine).
   settings(commonSettings: _*)
