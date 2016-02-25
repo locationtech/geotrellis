@@ -20,7 +20,7 @@ case class RasterMetaData[K](
   layout: LayoutDefinition,
   extent: Extent,
   crs: CRS,
-  keyBounds: KeyBounds[K]
+  bounds: Bounds[K]
 ) {
   /** Transformations between tiling scheme and map references */
   def mapTransform = layout.mapTransform

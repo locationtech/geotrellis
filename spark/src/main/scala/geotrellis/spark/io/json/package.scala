@@ -68,18 +68,18 @@ package object json {
         "extent" -> metaData.extent.toJson,
         "layoutDefinition" -> metaData.layout.toJson,
         "crs" -> metaData.crs.toJson,
-        "keyBounds" -> metaData.keyBounds.toJson
+        "bounds" -> metaData.bounds.get.toJson // we will only store non-empty bounds
       )
 
     def read(value: JsValue): RasterMetaData[K] =
-      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "keyBounds") match {
-        case Seq(cellType, extent, layoutDefinition, crs, keyBounds) =>
+      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "bounds") match {
+        case Seq(cellType, extent, layoutDefinition, crs, bounds) =>
           RasterMetaData(
             cellType.convertTo[CellType],
             layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
             crs.convertTo[CRS],
-            keyBounds.convertTo[KeyBounds[K]]
+            bounds.convertTo[KeyBounds[K]]
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
