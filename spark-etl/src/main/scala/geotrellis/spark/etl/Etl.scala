@@ -60,6 +60,12 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
 
   @transient val combinedModule = modules reduce (_ union _)
 
+  /**
+    * Loads RDD of rasters using the input module specified in the arguments.
+    * This RDD will contain rasters as they are stored, possibly overlapping and not conforming to any tile layout.
+    * @tparam I Input key type
+    * @tparam V Input raster value type
+    */
   def load[I: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
     val plugin =
       combinedModule
@@ -70,15 +76,23 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     plugin(conf.inputProps)
   }
 
+  /**
+    * Tiles RDD of arbitrary rasters to conform to a layout scheme or definition provided in the arguments.
+    * First metadata will be collected over input rasters to determine the overall extent, common crs, and resolution.
+    * This information will be used to select a LayoutDefinition if LayoutScheme is provided in the arguments.
+    * The tiling step will use this LayoutDefinition to cut input rasters into chunks that conform to the layout.
+    * If multiple rasters contribute to single target tile their values will be merged cell by cell.
+    *
+    * @param rdd    RDD of source rasters
+    * @param method Resampling method to be used when merging raster chunks in tiling step
+    */
   def tile[
-    I: ProjectedExtentComponent,
+    I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K],
     V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
   ](
     rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
-  )(implicit
-    sc: SparkContext, ev: I => TilerKeyMethods[I, K]
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
+  )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val targetCellType = conf.cellType.get
 
     val (zoom: Int, rmd: RasterMetaData[K]) = {
@@ -95,6 +109,16 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     zoom -> ContextRDD(tiled, adjustedMetadata)
   }
 
+  /**
+    * Performs buffered reproject over already tiled rasters with available metadata.
+    * Metadata contains LayoutDefinition that defines how the tiles are arranged spatially.
+    * The buffered reproject will perform neighborhood operation, where cells from surrounding tiles will be sampled.
+    * Zoom level is returned because overall layer resolution may have changed during the reprojection.
+    *
+    * @param rdd Tiled raster RDD with RasterMetadata
+    * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
+    * @tparam V  Tile raster with cells from single tile in LayoutDefinition
+    */
   def reproject[
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
@@ -105,6 +129,16 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     rdd.reproject(destCrs, layoutScheme(destCrs, tileSize))
   }
 
+  /**
+    * Saves provided RDD to an output module specified by the ETL arguments.
+    * This step may perform two to one pyramiding until zoom level 1 is reached.
+    *
+    * @param id     Layout ID to b
+    * @param rdd Tiled raster RDD with RasterMetadata
+    * @param method Index Method that maps an instance of K to a Long
+    * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
+    * @tparam V  Tile raster with cells from single tile in LayoutDefinition
+    */
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
