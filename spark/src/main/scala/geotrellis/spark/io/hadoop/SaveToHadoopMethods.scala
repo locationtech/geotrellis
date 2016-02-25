@@ -13,6 +13,7 @@ object SaveToHadoopMethods {
   /**
     * @param id           A Layer ID
     * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into a Hadoop URI
+    *
     * @return             A functon which takes a spatial key and returns a Hadoop URI
     */
   def spatialKeyToPath(id: LayerId, pathTemplate: String): (SpatialKey => String) = {
@@ -27,13 +28,12 @@ object SaveToHadoopMethods {
   }
 }
 
-class SaveToHadoopMethods[K](images: RenderedImages[K]) {
+class SaveToHadoopMethods[K](rdd: RDD[(K, Array[Byte])]) {
 
   /**
     * @param keyToPath A function from K (a key) to a Hadoop URI
     */
   def saveToHadoop(keyToPath: K => String): Unit = {
-    val rdd = images.rdd
     val scheme = new URI(keyToPath(rdd.first._1)).getScheme
 
     saveToHadoop(scheme, keyToPath, rdd)
@@ -61,7 +61,7 @@ class SaveToHadoopMethods[K](images: RenderedImages[K]) {
     scheme: String,
     keyToPath: K => String
   ): RDD[(K, Array[Byte])] = {
-    images.rdd.mapPartitions { partition =>
+    rdd.mapPartitions { partition =>
       val fs = FileSystem.get(new URI(scheme + ":/"), new Configuration)
       for ( (key, data) <- partition ) yield {
         val tilePath = new Path(keyToPath(key))

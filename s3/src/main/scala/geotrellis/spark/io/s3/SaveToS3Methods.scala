@@ -37,7 +37,7 @@ object SaveToS3Methods {
     * @param bucket    name of the S3 bucket
     * @param keyToPath maps each key to full path in the bucket
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
-    * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the images
+    * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the data
     */
   def apply[K](
     bucket: String,
@@ -85,13 +85,12 @@ object SaveToS3Methods {
   }
 }
 
-class SaveToS3Methods[K](images: RenderedImages[K]) {
+class SaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) {
   /**
     * @param keyToPath A function from K (a key) to an S3 URI
-    * @param s3Client  An S3 Client (real or mock) into-which to save the images
+    * @param s3Client  An S3 Client (real or mock) into-which to save the data
     */
   def saveToS3(keyToPath: K => String): Unit = {
-    val rdd = images.rdd
     val bucket = new URI(keyToPath(rdd.first._1)).getAuthority
 
     SaveToS3Methods(bucket, keyToPath, rdd, { () => S3Client.default })

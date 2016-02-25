@@ -64,7 +64,6 @@ trait TestEnvironment extends BeforeAndAfterAll
       .setMaster("local")
       .setAppName("Test Context")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
     extraConf(conf)
 
     val sparkContext = new SparkContext(conf)
