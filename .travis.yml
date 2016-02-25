@@ -22,7 +22,7 @@ cache:
   - "$HOME/.sbt"
 
 script:
-  - ./buildall.sh
+  - ./scripts/buildall.sh
 
 notifications:
   email:
