@@ -13,7 +13,7 @@ object AccumuloUtils {
     val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
 
-    getSplits(keyBounds, keyIndex, n).map(index2RowId)
+    getSplits(keyBounds, keyIndex, n).map(AccumuloKeyEncoder.index2RowId)
   }
 
   /**

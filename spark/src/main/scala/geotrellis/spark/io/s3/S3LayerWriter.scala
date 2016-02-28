@@ -29,19 +29,20 @@ import AttributeStore.Fields
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerWriter(
-    val attributeStore: AttributeStore[JsonFormat],
-    bucket: String,
-    keyPrefix: String,
-    clobber: Boolean = true,
-    oneToOne: Boolean = false
+  val attributeStore: AttributeStore[JsonFormat],
+  bucket: String,
+  keyPrefix: String,
+  options: S3LayerWriter.Options
 ) extends LayerWriter[LayerId] with LazyLogging {
+
+  def rddWriter: S3RDDWriter = S3RDDWriter
 
   def write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {
-    require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
+    require(!attributeStore.layerExists(id) || options.clobber, s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
     val metadata = rdd.metadata
@@ -59,7 +60,7 @@ class S3LayerWriter(
       attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, schema)
 
       logger.info(s"Saving RDD ${id.name} to $bucket  $prefix")
-      S3RDDWriter.write(rdd, bucket, keyPath, oneToOne = oneToOne)
+      rddWriter.write(rdd, bucket, keyPath, oneToOne = options.oneToOne)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -67,19 +68,19 @@ class S3LayerWriter(
 }
 
 object S3LayerWriter {
-  case class Options(clobber: Boolean, oneToOne: Boolean)
+  case class Options(clobber: Boolean = true, oneToOne: Boolean = false)
   object Options {
-    def DEFAULT = Options(clobber = true, oneToOne = false)
+    def DEFAULT = Options()
   }
 
+  def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, prefix: String, options: Options): S3LayerWriter =
+    new S3LayerWriter(attributeStore, bucket, prefix, options)
+
+  def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, prefix: String): S3LayerWriter =
+    apply(attributeStore, bucket, prefix, Options.DEFAULT)
+
   def apply(attributeStore: S3AttributeStore, options: Options): S3LayerWriter =
-    new S3LayerWriter(
-      attributeStore,
-      attributeStore.bucket,
-      attributeStore.prefix,
-      options.clobber,
-      options.oneToOne
-    )
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, options)
 
   def apply(attributeStore: S3AttributeStore): S3LayerWriter =
     apply(attributeStore, Options.DEFAULT)
@@ -89,4 +90,5 @@ object S3LayerWriter {
 
   def apply(bucket: String, prefix: String): S3LayerWriter =
     apply(bucket, prefix, Options.DEFAULT)
+
 }

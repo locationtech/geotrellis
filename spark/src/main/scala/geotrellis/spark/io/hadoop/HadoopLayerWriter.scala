@@ -56,6 +56,6 @@ object HadoopLayerWriter {
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerWriter =
     apply(
       rootPath = rootPath,
-      attributeStore = HadoopAttributeStore(rootPath)
+      attributeStore = HadoopAttributeStore.default(rootPath)
     )
 }

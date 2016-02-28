@@ -34,15 +34,14 @@ class AccumuloLayerWriter(
         tileTable = table
       )
     val metaData = rdd.metadata
-    val keyEncoder = options.keyEncoderStrategy.encoderFor[K]
-    val encodeKey = (key: K) => keyEncoder.encode(id, key, keyIndex.toIndex(key))
+    val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
     try {
       attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, schema)
-      AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table, oneToOne = false)
+      AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table)
 
       // Create locality groups based on encoding strategy
-      for(lg <- keyEncoder.getLocalityGroups(id)) {
+      for(lg <- AccumuloKeyEncoder.getLocalityGroups(id)) {
         instance.makeLocalityGroup(table, lg)
       }
     } catch {
@@ -53,7 +52,6 @@ class AccumuloLayerWriter(
 
 object AccumuloLayerWriter {
   case class Options(
-    keyEncoderStrategy: AccumuloKeyEncoderStrategy = AccumuloKeyEncoderStrategy.DEFAULT,
     writeStrategy: AccumuloWriteStrategy = AccumuloWriteStrategy.DEFAULT
   )
 
@@ -62,9 +60,6 @@ object AccumuloLayerWriter {
 
     implicit def writeStrategyToOptions(ws: AccumuloWriteStrategy): Options =
       Options(writeStrategy = ws)
-
-    implicit def keyEncoderStrategyToOptions(kes: AccumuloKeyEncoderStrategy): Options =
-      Options(keyEncoderStrategy = kes)
   }
 
   def apply(

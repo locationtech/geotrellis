@@ -43,7 +43,7 @@ object TestEnvironment {
  * It uses commons-io in at least one case (recursive directory deletion)
  */
 trait TestEnvironment extends BeforeAndAfterAll { self: Suite =>
-  var _sc: SparkContext = {
+  lazy val _sc: SparkContext = {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
     System.setProperty("spark.ui.enabled", "false")

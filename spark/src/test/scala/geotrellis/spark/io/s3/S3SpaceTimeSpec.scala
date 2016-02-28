@@ -10,8 +10,9 @@ import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 import org.joda.time.DateTime
 
-abstract class S3SpaceTimeSpec
+class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+    with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests
@@ -26,11 +27,12 @@ abstract class S3SpaceTimeSpec
   lazy val rddReader = new S3RDDReader[SpaceTimeKey, Tile]() {
     override val getS3Client = () => new MockS3Client
   }
-  lazy val rddWriter = new S3RDDWriter[SpaceTimeKey, Tile](){
-    override val getS3Client = () => new MockS3Client
+  lazy val rddWriter = new S3RDDWriter{
+    def getS3Client = () => new MockS3Client
   }
 
   lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddReader, None)
+  lazy val writer = new MockS3LayerWriter(attributeStore, bucket, prefix, S3LayerWriter.Options.DEFAULT)
   lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }
 
@@ -39,9 +41,7 @@ abstract class S3SpaceTimeSpec
     val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterMetaData](
       attributeStore = attributeStore,
       layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](
-        attributeStore, rddWriter, ZCurveKeyIndexMethod.byPattern("YMM"), bucket, prefix, true
-      )
+      layerWriter    = writer
     ) {
       def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
         header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
@@ -55,24 +55,4 @@ abstract class S3SpaceTimeSpec
     override val s3Client = new MockS3Client
   }
   lazy val sample =  CoordinateSpaceTime
-}
-
-class S3SpaceTimeZCurveByYearSpec extends S3SpaceTimeSpec {
-  override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, ZCurveKeyIndexMethod.byYear, bucket, prefix, true)
-}
-
-class S3SpaceTimeZCurveByFuncSpec extends S3SpaceTimeSpec {
-  override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 }, bucket, prefix, true)
-}
-
-class S3SpaceTimeHilbertSpec extends S3SpaceTimeSpec {
-  override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4), bucket, prefix, true)
-}
-
-class S3SpaceTimeHilbertWithResolutionSpec extends S3SpaceTimeSpec {
-  override val layerId = LayerId("sample-" + name, 1) // avoid test collisions
-  lazy val writer = new S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, HilbertKeyIndexMethod(2), bucket, prefix, true)
 }

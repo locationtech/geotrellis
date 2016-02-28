@@ -44,8 +44,7 @@ class AccumuloLayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, 
     if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
       throw new LayerOutOfKeyBoundsError(id)
 
-    val keyEncoder = options.keyEncoderStrategy.encoderFor[K]
-    val encodeKey = (key: K) => keyEncoder.encode(id, key, keyIndex.toIndex(key))
+    val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
 
     try {

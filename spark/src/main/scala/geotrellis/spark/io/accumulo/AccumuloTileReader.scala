@@ -24,7 +24,7 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
   extends Reader[LayerId, Reader[K, V]] {
 
   val codec = KeyValueRecordCodec[K, V]
-  val rowId = (index: Long) => new Text(long2Bytes(index))
+  val rowId = (index: Long) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val (layerMetaData, _, _, keyIndex, writerSchema) =

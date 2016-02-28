@@ -11,10 +11,10 @@ import org.apache.spark.rdd.RDD
  */
 trait Boundable[K] extends Serializable {
   def minBound(p1: K, p2: K): K
-  
+
   def maxBound(p1: K, p2: K): K
-  
-  def include(p: K, bounds: KeyBounds[K]): KeyBounds[K] = {    
+
+  def include(p: K, bounds: KeyBounds[K]): KeyBounds[K] = {
     KeyBounds(
       minBound(bounds.minKey, p),
       maxBound(bounds.maxKey, p))
@@ -49,4 +49,9 @@ trait Boundable[K] extends Serializable {
   }
 
   def getKeyBounds(rdd: RDD[(K, V)] forSome {type V}): KeyBounds[K]
+}
+
+object Boundable {
+  def getKeyBounds[K](rdd: RDD[(K, V)] forSome {type V})(implicit boundable: Boundable[K]): KeyBounds[K] =
+    boundable.getKeyBounds(rdd)
 }

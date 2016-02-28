@@ -1,7 +1,6 @@
-package geotrellis.spark.io.accumulo.encoder
+package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
-import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index._
 
 import org.apache.accumulo.core.client.IteratorSetting
@@ -16,11 +15,16 @@ import org.joda.time.DateTimeZone
 import scala.collection.JavaConverters._
 import scala.reflect._
 
-class DefaultAccumuloKeyEncoder[K] extends AccumuloKeyEncoder[K] {
-  def encode(id: LayerId, key: K, index: Long): Key =
+object AccumuloKeyEncoder {
+  final def long2Bytes(x: Long): Array[Byte] =
+    Array[Byte](x>>56 toByte, x>>48 toByte, x>>40 toByte, x>>32 toByte, x>>24 toByte, x>>16 toByte, x>>8 toByte, x toByte)
+
+  final def index2RowId(index: Long): Text = new Text(long2Bytes(index))
+
+  def encode[K](id: LayerId, key: K, index: Long): Key =
     new Key(index2RowId(index), columnFamily(id))
 
-  def setupQuery(id: LayerId, queryKeyBounds: Seq[KeyBounds[K]], keyIndex: KeyIndex[K])(getJob: () => Job): Seq[Job] = {
+  def setupQuery[K](id: LayerId, queryKeyBounds: Seq[KeyBounds[K]], keyIndex: KeyIndex[K])(getJob: () => Job): Seq[Job] = {
     val cf = new Text(columnFamily(id))
 
     val ranges =

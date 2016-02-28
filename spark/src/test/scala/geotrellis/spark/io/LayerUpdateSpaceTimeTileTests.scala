@@ -20,27 +20,31 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       LatLng
     )
 
-  it("should update a layer") {
-    updater.update(layerId, sample)
-  }
+  addSpecs { layerIds =>
+    val layerId = layerIds.layerId
 
-  it("should not update a layer (empty set)") {
-    intercept[LayerUpdateError] {
-      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+    it("should update a layer") {
+      updater.update(layerId, sample)
     }
-  }
 
-  it("should not update a layer (keys out of bounds)") {
-    val (minKey, minTile) = sample.sortByKey().first()
-    val (maxKey, maxTile) = sample.sortByKey(false).first()
+    it("should not update a layer (empty set)") {
+      intercept[LayerUpdateError] {
+        updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+      }
+    }
 
-    val update = new ContextRDD(sc.parallelize(
-      (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-        (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-    ), dummyRasterMetaData)
+    it("should not update a layer (keys out of bounds)") {
+      val (minKey, minTile) = sample.sortByKey().first()
+      val (maxKey, maxTile) = sample.sortByKey(false).first()
 
-    intercept[LayerOutOfKeyBoundsError] {
-      updater.update(layerId, update)
+      val update = new ContextRDD(sc.parallelize(
+        (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
+          (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+      ), dummyRasterMetaData)
+
+      intercept[LayerOutOfKeyBoundsError] {
+        updater.update(layerId, update)
+      }
     }
   }
 }

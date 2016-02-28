@@ -13,6 +13,7 @@ import scala.reflect._
 
 class S3LayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
     val attributeStore: AttributeStore[JsonFormat],
+    rddWriter: S3RDDWriter,
     clobber: Boolean = true)
   extends LayerUpdater[LayerId, K, V, M] with LazyLogging {
   type container = RDD[(K, V)] with Metadata[M]
@@ -45,7 +46,7 @@ class S3LayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: Avr
     val keyPath = (key: K) => makePath(prefix, Index.encode(existingKeyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
-    S3RDDWriter.write(rdd, bucket, keyPath, oneToOne = false)
+    rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
   }
 }
 
@@ -56,6 +57,7 @@ object S3LayerUpdater {
       clobber: Boolean = true): S3LayerUpdater[K, V, M] =
     new S3LayerUpdater[K, V, M](
       S3AttributeStore(bucket, prefix),
+      S3RDDWriter,
       clobber
     )
 }

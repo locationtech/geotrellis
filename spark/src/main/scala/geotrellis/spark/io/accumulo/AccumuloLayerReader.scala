@@ -35,7 +35,7 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
 
     val decompose = (bounds: KeyBounds[K]) =>
       keyIndex.indexRanges(bounds).map { case (min, max) =>
-        new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
+        new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
       }
 
     val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))

@@ -32,17 +32,24 @@ object AccumuloRDDWriter {
 
     instance.ensureTableExists(table)
 
-    val kvPairs: RDD[(Key, Value)] = {
-      if (oneToOne)
-        raster.map { case row => encodeKey(row._1) -> Vector(row) }
-      else
-        raster.groupBy { row => encodeKey(row._1) }
-    }.map { case (key, pairs) =>
-      (key, new Value(AvroEncoder.toBinary(pairs.toVector)(codec)))
-    }
+    val grouped: RDD[(Key, Iterable[(K, V)])] =
+      if(writeStrategy.requiresSort) {
+        // Map and sort first, so that partitioner is carried over to groupByKey
+        raster
+          .map { case (key, value) => (encodeKey(key), (key, value)) }
+          .sortByKey()
+          .groupByKey()
+      } else {
+        raster
+          .groupBy { row => encodeKey(row._1) }
+      }
+
+    val kvPairs: RDD[(Key, Value)] =
+      grouped
+        .map { case (key, pairs) =>
+          (key, new Value(AvroEncoder.toBinary(pairs.toVector)(codec)))
+        }
 
     writeStrategy.write(kvPairs, instance, table)
-
-
   }
 }

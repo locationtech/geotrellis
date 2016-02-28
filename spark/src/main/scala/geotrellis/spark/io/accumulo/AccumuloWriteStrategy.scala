@@ -30,6 +30,8 @@ object AccumuloWriteStrategy {
 }
 
 sealed trait AccumuloWriteStrategy {
+  def requiresSort: Boolean
+
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit
 }
 
@@ -44,6 +46,9 @@ sealed trait AccumuloWriteStrategy {
  * @param ingestPath Path where spark will write RDD records for ingest
  */
 case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
+  def requiresSort = true
+
+  /** Requires that the RDD be pre-sorted */
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val sc = kvPairs.sparkContext
     val job = Job.getInstance(sc.hadoopConfiguration)
@@ -54,7 +59,6 @@ case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
 
     HdfsUtils.ensurePathExists(failuresPath, conf)
     kvPairs
-      .sortBy{ case (key, _) => key }
       .saveAsNewAPIHadoopFile(
         outPath.toString,
         classOf[Key],
@@ -100,6 +104,8 @@ object HdfsWriteStrategy {
 case class SocketWriteStrategy(
   config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32)
 ) extends AccumuloWriteStrategy {
+  def requiresSort = false
+
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
     kvPairs.foreachPartition { partition =>
