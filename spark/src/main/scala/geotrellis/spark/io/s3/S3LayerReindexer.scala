@@ -7,7 +7,6 @@ import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
@@ -34,15 +33,11 @@ object S3LayerReindexer {
     val layerDeleter = S3LayerDeleter(attributeStore)
     val layerWriter  = S3LayerWriter[K, V, M](attributeStore, keyIndexMethod, options)
 
-    val (bucket, prefix) = (attributeStore.bucket, attributeStore.prefix)
     val layerCopier = new SparkLayerCopier[S3LayerHeader, K, V, M](
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
+    )
 
     val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 
