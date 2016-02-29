@@ -94,6 +94,12 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def center: Point =
     Point((xmin + xmax) / 2.0, (ymin + ymax) / 2.0)
 
+  def interiorIntersects(other: Extent): Boolean =
+    !(other.xmax <= xmin ||
+      other.xmin >= xmax) &&
+    !(other.ymax <= ymin ||
+      other.ymin >= ymax)
+
   def intersects(other: Extent): Boolean =
     !(other.xmax < xmin ||
       other.xmin > xmax) &&
