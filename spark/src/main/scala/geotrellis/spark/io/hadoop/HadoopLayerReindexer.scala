@@ -1,20 +1,15 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.{KeyBounds, LayerId, Boundable}
+import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
+import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 
-import org.apache.avro.Schema
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-
 import spray.json.JsonFormat
-import spray.json.DefaultJsonProtocol._
+import org.apache.hadoop.fs.Path
 
 import scala.reflect.ClassTag
-import org.apache.hadoop.fs.Path
 
 object HadoopLayerReindexer {
   def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
@@ -30,30 +25,7 @@ object HadoopLayerReindexer {
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
-    ) {
-      def headerUpdate(id: LayerId, header: HadoopLayerHeader): HadoopLayerHeader =
-        header.copy(path = new Path(rootPath, s"${id.name}/${id.zoom}"))
-
-      override def copy(from: LayerId, to: LayerId): Unit = {
-        if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
-        if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
-
-        val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, _) = try {
-          attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Unit](from)
-        } catch {
-          case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
-        }
-
-        try {
-          layerWriter.write(to, layerReader.read(from))
-          attributeStore.writeLayerAttributes(
-            to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, Option.empty[Schema]
-          )
-        } catch {
-          case e: Exception => new LayerCopyError(from, to).initCause(e)
-        }
-      }
-    }
+    )
 
     GenericLayerReindexer(layerDeleter, layerCopier, layerMover)
   }

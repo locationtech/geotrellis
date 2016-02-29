@@ -4,9 +4,10 @@ import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
+
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+
 import scala.reflect.ClassTag
 
 object AccumuloLayerReindexer {
@@ -30,9 +31,7 @@ object AccumuloLayerReindexer {
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
-    ) {
-      def headerUpdate(id: LayerId, header: AccumuloLayerHeader): AccumuloLayerHeader = header.copy(tileTable = table)
-    }
+    )
 
     val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 

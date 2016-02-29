@@ -4,17 +4,11 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
-import geotrellis.util.Filesystem
-import AttributeStore.Fields
 
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
-import org.apache.avro.Schema
 
 import scala.reflect.ClassTag
-import java.io.File
-
 
 object FileLayerReindexer {
   def apply[
@@ -33,10 +27,7 @@ object FileLayerReindexer {
       attributeStore = attributeStore,
       layerReader    = layerReader,
       layerWriter    = layerWriter
-    ) {
-      def headerUpdate(layerId: LayerId, header: FileLayerHeader): FileLayerHeader =
-        header.copy(path = LayerPath(layerId))
-    }
+    )
 
     val layerMover = GenericLayerMover(layerCopier, layerDeleter)
 
