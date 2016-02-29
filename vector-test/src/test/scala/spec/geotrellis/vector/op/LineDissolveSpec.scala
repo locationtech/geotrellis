@@ -30,8 +30,8 @@ class LineDissolveSpec extends FunSpec
   describe("LineDissolve") {
 
     it("should handle two line segments not overlapping") {
-      val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
-      s.dissolve.sortBy(_.hashCode) should be(List(
+      val s = MultiLine(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
+      s.dissolve.as[MultiLine].get.lines.sortBy(_.hashCode) should be(List(
         Line(Point(0, 0), Point(1, 1)),
         Line(Point(2, 2), Point(3, 3))
       ).sortBy(_.hashCode))
@@ -39,12 +39,12 @@ class LineDissolveSpec extends FunSpec
 
     it("should merge two lines that are coincidental at the middle") {
       val s = 
-        List(
+        MultiLine(
           Line( (0, 0), (1, 1), (1, 2), (2, 3)),
           Line( (0, 3), (1, 2), (1, 1), (2, 0))
         )
 
-      s.dissolve.sortBy(_.hashCode) should be(
+      s.dissolve.as[MultiLine].get.lines.sortBy(_.hashCode) should be(
         List(
           Line((0, 0), (1, 1)),
           Line((1, 1), (1, 2)),
@@ -57,38 +57,35 @@ class LineDissolveSpec extends FunSpec
 
     it("should handle one line string") {
       val s = Line((0, 0), (1, 1), (2, 2), (3, 3))
-      Seq(s).dissolve.sortBy(_.hashCode) should be(List(
-        Line(Point(0, 0), Point(1, 1)),
-        Line(Point(1, 1), Point(2, 2)),
-        Line(Point(2, 2), Point(3, 3))
-      ).sortBy(_.hashCode))
+      s.dissolve.as[Line].get should be(s)
     }
 
     it("should handle two line segments overlapping") {
-      val s = List(Line((0, 0), (1, 1)), Line((1, 1), (0, 0)))
-      s.dissolve.sortBy(_.hashCode) should be(List(
+      val s = MultiLine(Line((0, 0), (1, 1)), Line((1, 1), (0, 0)))
+      s.dissolve.as[Line].get should be(
         Line(Point(0, 0), Point(1, 1))
-      ).sortBy(_.hashCode))
+      )
     }
 
     it("should handle two line segments intersecting") {
-      val s = List(Line((0, 0), (1, 1)), Line((1, 0), (0, 1)))
-      s.dissolve.toList.sortBy(_.points.head.x) should be(List(
+      val s = MultiLine(Line((0, 0), (1, 1)), Line((1, 0), (0, 1)))
+      s.dissolve.as[MultiLine].get.lines.sortBy(_.points.head.x) should be(List(
         Line(Point(0, 0), Point(1, 1)),
         Line(Point(1, 0), Point(0, 1))
       ).sortBy(_.points.head.x))
     }
 
     it("should not throw exceptions when dissolving a multiline that throws a topology exception in JTS for .union call") {
-      val testCase = readFile("vector-test/data/topologyException.json")
-      an[com.vividsolutions.jts.geom.TopologyException] should be thrownBy { MultiLine(testCase).union }
-      MultiLine(testCase.dissolve)
+      val testCaseLines = readFile("vector-test/data/topologyException.json")
+      val testCaseMultiLine = MultiLine(testCaseLines)
+      an[com.vividsolutions.jts.geom.TopologyException] should be thrownBy { testCaseMultiLine.union }
+      testCaseMultiLine.dissolve
     }
 
     it("should maintain immutability over dissolve") {
       val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
       val expected = s.map(_.jtsGeom.clone)
-      val d = s.dissolve
+      val d = MultiLine(s).dissolve.as[MultiLine].get.lines
       
       val coord = d(0).jtsGeom.getCoordinate()
       val newCoord = Point(5,5).jtsGeom.getCoordinate()
@@ -106,7 +103,7 @@ class LineDissolveSpec extends FunSpec
 
 //    val seattleLines = readFile("vector-test/data/seattle.json") // (Taken out because the `union` call takes too long).
 
-    val septaRailLines = readFile("vector-test/data/septaRail.geojson")
+    val septaRailLines = MultiLine(readFile("vector-test/data/septaRail.geojson"))
 
     // it("should read seattle lines") {
     //   Timer.timedTask("seattle.json MultiLine.union") {
@@ -120,7 +117,7 @@ class LineDissolveSpec extends FunSpec
 
     it("should read septa rail lines") {
       Timer.timedTask("septaRail.geojson MultiLine.union") {
-        MultiLine(septaRailLines).union
+        septaRailLines.union
       }
 
       Timer.timedTask("septaRail.geojson dissolve") {

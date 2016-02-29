@@ -2,7 +2,7 @@ package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.vector.op._
+import geotrellis.vector.summary.polygonal._
 
 trait TilePolygonalSummaryHandler[T] extends PolygonalSummaryHandler[Polygon, Tile, T] {
   def handleContains(feature: PolygonFeature[Tile]): T = handleFullTile(feature.data)

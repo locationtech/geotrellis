@@ -1,8 +1,10 @@
 package geotrellis.spark
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
 import org.apache.spark.rdd._
 import scala.reflect.ClassTag
+
 
 abstract class MultiBandRasterRDDMethods[K: ClassTag] extends MethodExtensions[MultiBandRasterRDD[K]] {
   def convert(cellType: CellType): MultiBandRasterRDD[K] =

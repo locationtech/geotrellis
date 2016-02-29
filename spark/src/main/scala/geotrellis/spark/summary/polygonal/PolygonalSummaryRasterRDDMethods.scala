@@ -5,10 +5,12 @@ import geotrellis.raster.histogram._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.vector._
+import geotrellis.util.MethodExtensions
 import org.apache.spark.Partitioner
 
 import org.apache.spark.rdd._
 import reflect.ClassTag
+
 
 abstract class PolygonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
   import Implicits._

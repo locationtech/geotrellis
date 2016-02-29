@@ -5,6 +5,7 @@ import geotrellis.raster.mapalgebra.local.{Mask, InverseMask}
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.{Geometry, Extent}
+import geotrellis.util.MethodExtensions
 
 
 trait TileMaskMethods extends MethodExtensions[Tile] {

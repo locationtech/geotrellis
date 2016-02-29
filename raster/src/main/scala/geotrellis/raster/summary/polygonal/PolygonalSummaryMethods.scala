@@ -3,6 +3,8 @@ package geotrellis.raster.summary.polygonal
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.vector._
+import geotrellis.util.MethodExtensions
+
 
 trait PolygonalSummaryMethods extends MethodExtensions[Tile] {
   def polygonalSummary[T](extent: Extent, polygon: Polygon, handler: TilePolygonalSummaryHandler[T]): T = {

@@ -2,6 +2,8 @@ package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.util.MethodExtensions
+
 
 trait TileResampleMethods[T <: CellGrid] extends MethodExtensions[T] {
   def resample(extent: Extent, target: RasterExtent, method: ResampleMethod): T

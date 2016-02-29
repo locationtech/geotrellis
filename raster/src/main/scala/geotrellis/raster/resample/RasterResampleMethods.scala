@@ -2,6 +2,8 @@ package geotrellis.raster.resample
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+import geotrellis.util.MethodExtensions
+
 
 trait RasterResampleMethods[+T <: Raster[_]] extends MethodExtensions[T] {
   def resample(target: RasterExtent, method: ResampleMethod): T

@@ -5,6 +5,7 @@ import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.spark.RasterRDD
 import geotrellis.vector._
+import geotrellis.util.MethodExtensions
 import scala.reflect.ClassTag
 
 

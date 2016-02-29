@@ -1,5 +1,0 @@
----
-
-- include: "setup-hdfs.yml"
-- include: "setup-spark.yml"
-- include: "setup-accumulo.yml"

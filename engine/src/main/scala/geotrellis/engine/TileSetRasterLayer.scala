@@ -18,8 +18,8 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.arg.ArgReader
+import geotrellis.util.Filesystem
 
 import com.typesafe.config.Config
 import java.io.File

@@ -4,6 +4,8 @@ import geotrellis.raster._
 import geotrellis.raster.render.png._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.summary._
+import geotrellis.util.MethodExtensions
+
 
 trait PngRenderMethods extends MethodExtensions[Tile] {
   /** Generate a PNG from a raster of RGBA integer values.

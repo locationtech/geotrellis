@@ -17,6 +17,11 @@
 package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize.Rasterizer
+import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.vector.{Geometry, Extent}
+import geotrellis.util.MethodExtensions
+
 
 trait LocalMethods extends MethodExtensions[Tile]
                       with AddMethods

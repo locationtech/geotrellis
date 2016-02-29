@@ -4,6 +4,8 @@ import geotrellis.raster._
 import geotrellis.raster.render.jpg._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.summary._
+import geotrellis.util.MethodExtensions
+
 
 trait JpgRenderMethods extends MethodExtensions[Tile] {
   /** Generate a JPG from a raster of RGBA integer values.

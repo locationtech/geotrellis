@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,14 +18,15 @@ package geotrellis.raster.io.arg
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.io.Filesystem
 import geotrellis.vector.Extent
+import geotrellis.util.Filesystem
 
 import com.typesafe.config.ConfigFactory
 
 import java.io.File
 import java.nio.ByteBuffer
 import java.lang.IllegalArgumentException
+
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */
