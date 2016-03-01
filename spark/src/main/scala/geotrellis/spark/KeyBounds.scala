@@ -19,9 +19,9 @@ sealed trait Bounds[+A] extends Product with Serializable {
   def intersects[B >: A](other: KeyBounds[B])(implicit b: Boundable[B]): Boolean =
     intersect(other).nonEmpty
 
-  def get: KeyBounds[A] 
+  def get: KeyBounds[A]
 
-  def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] = 
+  def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] =
     if (isEmpty) default else this.get
 }
 
