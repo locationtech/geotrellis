@@ -108,8 +108,16 @@ lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit"))
   dependsOn(rasterTestkit, spark % "provided").
   settings(commonSettings: _*)
 
+lazy val s3 = Project("s3", file("s3")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
+lazy val accumulo = Project("accumulo", file("accumulo")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark).
+  dependsOn(spark, s3, accumulo).
   settings(commonSettings: _*)
 
 lazy val gdal: Project = Project("gdal", file("gdal")).

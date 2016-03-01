@@ -35,7 +35,7 @@ object Etl {
     val etl = Etl(args)
     val sourceTiles = etl.load[I, V]
     val (zoom, tiled) = etl.tile(sourceTiles)
-    etl.save(LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
+    etl.save[K, V](LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
   }
 }
 

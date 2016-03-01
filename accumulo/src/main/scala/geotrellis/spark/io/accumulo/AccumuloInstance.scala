@@ -40,7 +40,7 @@ case class BaseAccumuloInstance(
       .withZkHosts(zookeeper)
       .withInstance(instanceName)
 
-    
+
     if (instanceName == "fake") {
       AIF.setMockInstance(job, instanceName)
       AOF.setMockInstance(job, instanceName)

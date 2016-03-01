@@ -4,6 +4,8 @@
 ./sbt -J-Xmx2G "project vector-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project raster-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project spark" clean  || { exit 1; }
+./sbt -J-Xmx2G "project s3" clean  || { exit 1; }
+./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project engine-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project benchmark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project slick" clean || { exit 1; }
@@ -19,6 +21,8 @@ rm -r vector-test/target
 rm -r raster/target
 rm -r raster-test/target
 rm -r spark/target
+rm -r s3/target
+rm -r accumulo/target
 rm -r engine/target
 rm -r engine-test/target
 rm -r benchmark/target
