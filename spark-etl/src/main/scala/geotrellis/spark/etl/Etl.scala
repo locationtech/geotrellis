@@ -32,9 +32,13 @@ object Etl {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
+    /* parse command line arguments */
     val etl = Etl(args)
+    /* load source tiles using input module specified */
     val sourceTiles = etl.load[I, V]
+    /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
     val (zoom, tiled) = etl.tile(sourceTiles)
+    /* save and optionally pyramid the mosaiced layer */
     etl.save(LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
   }
 }
