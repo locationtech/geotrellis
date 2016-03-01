@@ -13,7 +13,7 @@ package object render {
     /**
      * Renders each tile as a PNG.
      *
-     * @param breaks If not defined cells are assumed to be RGBA values
+     * @param classifier If not defined cells are assumed to be RGBA values
      */
     def renderPng(classifier: Option[ColorClassifier[_]] = None): RDD[(SpatialKey, Array[Byte])] = {
       val paintTile = (k: SpatialKey, t: Tile) => classifier.fold(t.renderPng())( b => t.renderPng(b)).bytes
@@ -23,10 +23,10 @@ package object render {
     /**
      * Renders each tile as a JPG.
      *
-     * @param breaks If not defined cells are assumed to be RGB values
+     * @param classifier If not defined cells are assumed to be RGB values
      */
     def renderJpg(classifier: Option[ColorClassifier[_]] = None): RDD[(SpatialKey, Array[Byte])] = {
-      val paintTile = (k: SpatialKey, t: Tile) => breaks.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
+      val paintTile = (k: SpatialKey, t: Tile) => classifier.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
       rdd.map { case (k,t) => (k, paintTile(k,t)) }
     }
 
