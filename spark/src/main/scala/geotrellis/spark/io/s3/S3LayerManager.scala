@@ -12,7 +12,8 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext) {
+class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext)
+    extends LayerManager[LayerId] {
   def delete(id: LayerId): Unit =
     S3LayerDeleter(attributeStore).delete(id)
 

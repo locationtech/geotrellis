@@ -1,9 +1,10 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index._
-import geotrellis.spark.{Boundable, LayerId}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -11,7 +12,8 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: AccumuloInstance)(implicit sc: SparkContext) {
+class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: AccumuloInstance)(implicit sc: SparkContext)
+    extends LayerManager[LayerId]{
   def delete(id: LayerId): Unit =
     AccumuloLayerDeleter(attributeStore, instance).delete(id)
 

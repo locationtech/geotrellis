@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index._
@@ -11,7 +12,8 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext) {
+class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext)
+    extends LayerManager[LayerId] {
   def delete(id: LayerId): Unit =
     HadoopLayerDeleter(attributeStore).delete(id)
 
