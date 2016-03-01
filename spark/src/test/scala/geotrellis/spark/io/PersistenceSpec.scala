@@ -2,8 +2,9 @@ package geotrellis.spark.io
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index._
+import geotrellis.spark.io.json._
 
 import org.apache.spark.rdd.RDD
 import org.scalatest._
@@ -15,7 +16,7 @@ import scala.reflect._
 case class PersistenceSpecLayerIds(layerId: LayerId, deleteLayerId: LayerId, copiedLayerId: LayerId, movedLayerId: LayerId, reindexedLayerId: LayerId)
 
 abstract class PersistenceSpec[
-  K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+  K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
   V: AvroRecordCodec: ClassTag,
   M: JsonFormat
 ] extends FunSpec with Matchers { self: FunSpec =>

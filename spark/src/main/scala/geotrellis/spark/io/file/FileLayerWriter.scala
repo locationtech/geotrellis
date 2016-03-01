@@ -41,7 +41,7 @@ class FileLayerWriter(
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   def write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {

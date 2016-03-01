@@ -28,9 +28,9 @@ import scala.reflect.ClassTag
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerReader(
-    val attributeStore: AttributeStore[JsonFormat],
-    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None)
-  (implicit sc: SparkContext)
+  val attributeStore: AttributeStore[JsonFormat],
+  getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
+)(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -38,7 +38,7 @@ class S3LayerReader(
   def rddReader: S3RDDReader = S3RDDReader
 
   def read[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {

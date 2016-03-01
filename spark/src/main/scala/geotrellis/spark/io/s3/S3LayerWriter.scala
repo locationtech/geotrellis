@@ -38,7 +38,7 @@ class S3LayerWriter(
   def rddWriter: S3RDDWriter = S3RDDWriter
 
   def write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {

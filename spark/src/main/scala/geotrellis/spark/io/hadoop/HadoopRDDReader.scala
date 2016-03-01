@@ -57,8 +57,7 @@ object HadoopRDDReader extends LazyLogging {
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
     val indexRanges = queryKeyBounds.flatMap(decomposeBounds).toArray
     inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, indexRanges)
 

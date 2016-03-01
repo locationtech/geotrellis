@@ -19,7 +19,7 @@ object FileLayerCopier {
   def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId] =
     new LayerCopier[LayerId] {
       def copy[
-        K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+        K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
         V: AvroRecordCodec: ClassTag,
         M: JsonFormat
       ](from: LayerId, to: LayerId): Unit = {

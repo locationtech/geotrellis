@@ -8,9 +8,7 @@ import com.github.nscala_time.time.Imports._
 
 object ZSpaceTimeKeyIndex {
   def byMilliseconds(millis: Long): ZSpaceTimeKeyIndex =
-    new ZSpaceTimeKeyIndex({ key =>
-      (key.instant / millis).toInt
-    })
+    new ZSpaceTimeKeyIndex(millis)
 
   def bySecond(): ZSpaceTimeKeyIndex =
     byMilliseconds(1000L)
@@ -49,10 +47,10 @@ object ZSpaceTimeKeyIndex {
     byMilliseconds(1000L * 60 * 60 * 365 * years)
 }
 
-class ZSpaceTimeKeyIndex(toGrid: SpaceTimeKey => Int) extends KeyIndex[SpaceTimeKey] {
-  def keyBounds = None
+class ZSpaceTimeKeyIndex(val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
+  def keyBounds: Option[KeyBounds[SpaceTimeKey]] = None
 
-  private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, toGrid(key))
+  private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, (key.instant / temporalResolution).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z
 

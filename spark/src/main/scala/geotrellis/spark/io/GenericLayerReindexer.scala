@@ -22,7 +22,7 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   def getTmpId(id: LayerId): LayerId
 
   def reindex[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
@@ -39,7 +39,7 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   }
 
   def reindex[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {

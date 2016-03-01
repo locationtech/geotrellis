@@ -4,6 +4,7 @@ import geotrellis.spark._
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.json._
 
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -12,13 +13,13 @@ import scala.reflect.ClassTag
 
 abstract class LayerUpdater[ID] {
   def update[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit
 
   def mergeUpdate[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ] (id: ID, reader: FilteringLayerReader[ID], rdd: RDD[(K, V)] with Metadata[M])

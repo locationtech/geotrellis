@@ -21,7 +21,7 @@ class S3LayerUpdater(
   def rddWriter: S3RDDWriter = S3RDDWriter
 
   def update[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {

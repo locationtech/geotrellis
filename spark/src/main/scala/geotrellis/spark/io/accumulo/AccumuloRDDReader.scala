@@ -26,8 +26,7 @@ object AccumuloRDDReader {
   )(implicit sc: SparkContext, instance: AccumuloInstance): RDD[(K, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
-    val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)

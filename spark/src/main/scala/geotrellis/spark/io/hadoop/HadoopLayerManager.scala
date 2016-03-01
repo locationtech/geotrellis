@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index._
+import geotrellis.spark.io.json._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -18,28 +19,28 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
     HadoopLayerDeleter(attributeStore).delete(id)
 
   def copy[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: LayerId, to: LayerId): Unit =
     HadoopLayerCopier(attributeStore).copy[K, V, M](from, to)
 
   def move[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: LayerId, to: LayerId): Unit =
     HadoopLayerMover(attributeStore).move[K, V, M](from, to)
 
   def reindex[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
     HadoopLayerReindexer(attributeStore).reindex[K, V, M](id, keyIndex)
 
   def reindex[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =

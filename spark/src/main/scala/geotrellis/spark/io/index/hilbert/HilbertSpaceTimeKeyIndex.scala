@@ -33,11 +33,11 @@ object HilbertSpaceTimeKeyIndex {
 
 class HilbertSpaceTimeKeyIndex(
   kb: KeyBounds[SpaceTimeKey],
-  xResolution: Int,
-  yResolution: Int,
-  temporalResolution: Int
+  val xResolution: Int,
+  val yResolution: Int,
+  val temporalResolution: Int
 ) extends KeyIndex[SpaceTimeKey] {
-  def keyBounds = Some(kb)
+  def keyBounds: Option[KeyBounds[SpaceTimeKey]] = Some(kb)
 
   val startMillis = kb.minKey.temporalKey.time.getMillis
   val timeWidth = kb.maxKey.temporalKey.time.getMillis - startMillis

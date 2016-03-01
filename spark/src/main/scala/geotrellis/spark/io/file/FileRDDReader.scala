@@ -19,7 +19,7 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileRDDReader {
-  def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
+  def read[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](
     keyPath: Long => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],

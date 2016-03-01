@@ -13,18 +13,15 @@ import org.apache.avro.Schema
 import spray.json._
 import scala.reflect.ClassTag
 
-package object json {
-  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
-    new JavaSerializationJsonFormat[index.KeyIndex[K]]
-
+package object json extends KeyIndexFormats {
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
       JsString(crs.toProj4String)
 
-    def read(value: JsValue): CRS = 
+    def read(value: JsValue): CRS =
       value match {
         case JsString(proj4String) => CRS.fromString(proj4String)
-        case _ => 
+        case _ =>
           throw new DeserializationException("CRS must be a proj4 string.")
       }
   }
@@ -60,9 +57,9 @@ package object json {
           throw new DeserializationException("LayoutDefinition expected")
       }
   }
-  
+
   implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
-    def write(metaData: RasterMetaData) = 
+    def write(metaData: RasterMetaData) =
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,

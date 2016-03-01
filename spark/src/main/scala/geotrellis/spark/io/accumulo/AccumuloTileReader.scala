@@ -18,7 +18,7 @@ import scala.collection.JavaConversions._
 
 import scala.reflect.ClassTag
 
-class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](
     instance: AccumuloInstance,
     val attributeStore: AccumuloAttributeStore)
   extends Reader[LayerId, Reader[K, V]] {
@@ -56,7 +56,7 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
 }
 
 object AccumuloTileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag](
+  def apply[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec: ClassTag](
       instance: AccumuloInstance): AccumuloTileReader[K, V] =
     new AccumuloTileReader[K, V](
       instance = instance,

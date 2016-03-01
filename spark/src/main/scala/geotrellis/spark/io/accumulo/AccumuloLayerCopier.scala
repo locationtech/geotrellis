@@ -19,7 +19,7 @@ class AccumuloLayerCopier(
   getLayerWriter: LayerId => AccumuloLayerWriter
 ) extends LayerCopier[LayerId] {
   def copy[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: LayerId, to: LayerId): Unit = {
