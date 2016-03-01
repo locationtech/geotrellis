@@ -14,7 +14,6 @@ import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFile
 import org.apache.hadoop.mapreduce.Job
 import scala.reflect._
 
-
 object HadoopRDDWriter extends LazyLogging {
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -24,8 +23,8 @@ object HadoopRDDWriter extends LazyLogging {
     clobber: Boolean = true,
     tileSize: Int = 256*256*8,
     compressionFactor: Double = 1.3
-  )(implicit sc: SparkContext): Unit = {
-
+  ): Unit = {
+    implicit val sc = rdd.sparkContext
     val conf = sc.hadoopConfiguration
 
     val fs = path.getFileSystem(sc.hadoopConfiguration)

@@ -6,6 +6,8 @@
 ./sbt "project raster" +publish-local && \
 ./sbt "project engine" +publish-local && \
 ./sbt "project spark" +publish-local && \
+./sbt "project s3" +publish-local && \
+./sbt "project accumulo" +publish-local && \
 ./sbt "project spark-etl" +publish-local && \
 ./sbt "project gdal" +publish-local && \
 ./sbt "project shapefile" +publish-local && \

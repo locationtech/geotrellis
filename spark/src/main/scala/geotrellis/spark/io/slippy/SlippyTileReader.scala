@@ -4,7 +4,6 @@ import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.spark.io.s3._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.util.Filesystem

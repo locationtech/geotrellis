@@ -7,24 +7,23 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
-import com.github.nscala_time.time.Imports._
 
-class AccumuloSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
-    with SpaceTimeKeyIndexMethods
+class AccumuloSpatialSpec
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+    with SpatialKeyIndexMethods
     with TestEnvironment
+    with AccumuloTestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
+    with AllOnesTestTileTests {
+
   implicit val instance = MockAccumuloInstance()
 
-  lazy val reader    = AccumuloLayerReader(instance)
+  lazy val reader = AccumuloLayerReader(instance)
   lazy val writer = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())
-  lazy val updater   = AccumuloLayerUpdater(instance, SocketWriteStrategy())
-  lazy val deleter   = AccumuloLayerDeleter(instance)
+  lazy val deleter = AccumuloLayerDeleter(instance)
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
-  lazy val tiles     = AccumuloTileReader[SpaceTimeKey, Tile](instance)
-  lazy val sample    =  CoordinateSpaceTime
+  lazy val tiles = AccumuloTileReader[SpatialKey, Tile](instance)
+  lazy val sample = AllOnesTestFile
 
   lazy val copier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover  = AccumuloLayerMover(copier, deleter)

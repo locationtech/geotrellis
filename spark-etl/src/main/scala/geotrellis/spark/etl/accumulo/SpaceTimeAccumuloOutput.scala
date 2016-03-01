@@ -7,7 +7,9 @@ import geotrellis.spark.io.accumulo.AccumuloLayerWriter
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io.json._
 
+import org.apache.spark.SparkContext
+
 class SpaceTimeAccumuloOutput extends AccumuloOutput[SpaceTimeKey, Tile, RasterMetaData] {
-  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
-    AccumuloLayerWriter[SpaceTimeKey, Tile, RasterMetaData](getInstance(props),  props("table"), method)
+  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
+    AccumuloLayerWriter(getInstance(props), props("table")).keyBoundsComputingWriter[SpaceTimeKey, Tile, RasterMetaData](method)
 }

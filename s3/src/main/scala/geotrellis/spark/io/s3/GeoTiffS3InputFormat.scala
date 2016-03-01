@@ -7,12 +7,12 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 /** Read single band GeoTiff from S3 */
 class GeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Tile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) = 
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[ProjectedExtent, Tile] {
       def read(key: String, bytes: Array[Byte]) = {
-        val geoTiff = SingleBandGeoTiff(bytes)        
+        val geoTiff = SingleBandGeoTiff(bytes)
         val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-        (ProjectedExtent(extent, crs), tile)        
+        (ProjectedExtent(extent, crs), tile)
       }
-    }     
+    }
 }

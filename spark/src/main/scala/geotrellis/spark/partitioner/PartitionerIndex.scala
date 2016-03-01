@@ -35,6 +35,6 @@ object PartitionerIndex {
     def toIndex(key: SpaceTimeKey): Long = toZ(key).z
 
     def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] =
-      Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))  }
-
+      Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))
+  }
 }

@@ -20,7 +20,7 @@ import scala.reflect._
 class HadoopLayerWriter(
   rootPath: Path,
   val attributeStore: AttributeStore[JsonFormat]
-)(implicit sc: SparkContext) extends LayerWriter[LayerId] {
+) extends LayerWriter[LayerId] {
 
   def write[
     K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
@@ -47,7 +47,7 @@ class HadoopLayerWriter(
 }
 
 object HadoopLayerWriter {
-  def apply(rootPath: Path, attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): HadoopLayerWriter =
+  def apply(rootPath: Path, attributeStore: AttributeStore[JsonFormat]): HadoopLayerWriter =
     new HadoopLayerWriter(
       rootPath = rootPath,
       attributeStore = attributeStore
@@ -56,6 +56,6 @@ object HadoopLayerWriter {
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerWriter =
     apply(
       rootPath = rootPath,
-      attributeStore = HadoopAttributeStore.default(rootPath)
+      attributeStore = HadoopAttributeStore(rootPath)
     )
 }

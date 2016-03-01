@@ -12,7 +12,7 @@ import java.io.ByteArrayInputStream
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
- * 
+ *
  * @param bucket    S3 bucket to use for attribute store
  * @param prefix  path in the bucket for given LayerId, not ending in "/"
  */
@@ -46,7 +46,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
 
     json.parseJson.convertTo[(LayerId, T)]
   }
-  
+
   def read[T: Format](layerId: LayerId, attributeName: String): T =
     try {
       readKey[T](attributePath(layerId, attributeName))._2

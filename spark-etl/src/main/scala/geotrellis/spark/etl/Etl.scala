@@ -90,7 +90,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
   def save[
   K: SpatialComponent: TypeTag,
   V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K])(implicit sc: SparkContext): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 

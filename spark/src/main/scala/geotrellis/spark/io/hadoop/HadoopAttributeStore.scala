@@ -121,7 +121,4 @@ object HadoopAttributeStore {
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
     apply(rootPath, sc.hadoopConfiguration)
-
-  def default(rootPath: Path) =
-    apply(rootPath, new Configuration)
 }

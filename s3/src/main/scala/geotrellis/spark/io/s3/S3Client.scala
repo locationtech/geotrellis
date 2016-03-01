@@ -17,7 +17,7 @@ import scala.collection.JavaConversions._
 trait S3Client extends LazyLogging {
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
-  
+
   def listObjects(bucketName: String, prefix: String): ObjectListing =
     listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null))
 
@@ -60,10 +60,10 @@ trait S3Client extends LazyLogging {
   def deleteObject(bucketName: String, key: String): Unit =
     deleteObject(new DeleteObjectRequest(bucketName, key))
 
-  def putObject(bucketName: String, key: String, input: InputStream, metadata: ObjectMetadata): PutObjectResult = 
+  def putObject(bucketName: String, key: String, input: InputStream, metadata: ObjectMetadata): PutObjectResult =
     putObject(new PutObjectRequest(bucketName, key, input, metadata))
 
-  def putObject(bucketName: String, key: String, bytes: Array[Byte], metadata: ObjectMetadata): PutObjectResult = {    
+  def putObject(bucketName: String, key: String, bytes: Array[Byte], metadata: ObjectMetadata): PutObjectResult = {
     metadata.setContentLength(bytes.length)
     putObject(bucketName, key, new ByteArrayInputStream(bytes), metadata)
   }
@@ -80,7 +80,7 @@ trait S3Client extends LazyLogging {
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
-    new Iterator[S3ObjectSummary] {      
+    new Iterator[S3ObjectSummary] {
       var listing = listObjects(request)
       var iter = listing.getObjectSummaries.asScala.iterator
 
@@ -93,10 +93,10 @@ trait S3Client extends LazyLogging {
 
       def hasNext: Boolean = {
         iter.hasNext || getNextPage
-      }      
+      }
 
       def next: S3ObjectSummary = iter.next
-    }                
+    }
 }
 
 object S3Client {

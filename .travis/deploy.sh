@@ -18,6 +18,8 @@ EOF
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project raster" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project engine" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project spark" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project s3" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project accumulo" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project spark-etl" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project gdal" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project shapefile" publish \

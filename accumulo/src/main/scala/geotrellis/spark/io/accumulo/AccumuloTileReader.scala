@@ -4,7 +4,6 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.io.s3.S3LayerHeader
 import geotrellis.spark.io.{CatalogError, TileNotFoundError, Reader}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.json._

@@ -26,7 +26,7 @@ class MockS3Client() extends S3Client with LazyLogging {
 
     val bucket = getBucket(r.getBucketName)
     var marker = r.getMarker
-    
+
     if (null == marker) {
       bucket.findFirstKey(r.getPrefix) match {
         case Some(key) => marker = key
@@ -39,7 +39,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     var nextMarker: String = null
     val iter = bucket.entries.from(marker).iterator
     logger.debug(s"LISTING prefix=${r.getPrefix}, marker=$marker")
-    
+
     var endSeen = false
     while (iter.hasNext && keyCount <= r.getMaxKeys) {
       val (key, bytes) = iter.next
@@ -103,7 +103,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
 
-  def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {    
+  def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {
     logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
     bucket.synchronized {

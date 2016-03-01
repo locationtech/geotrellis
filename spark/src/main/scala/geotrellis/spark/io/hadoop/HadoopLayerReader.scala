@@ -66,5 +66,5 @@ object HadoopLayerReader {
     new HadoopLayerReader(attributeStore)
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerReader =
-    apply(HadoopAttributeStore.default(rootPath))
+    apply(HadoopAttributeStore(rootPath))
 }

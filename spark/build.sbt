@@ -2,15 +2,13 @@ import Dependencies._
 
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
-  "org.apache.accumulo" % "accumulo-core" % Version.accumulo
-    exclude("org.jboss.netty", "netty")
-    exclude("org.apache.hadoop", "hadoop-client"),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "de.javakaffee" % "kryo-serializers" % "0.27" exclude("com.esotericsoftware.kryo", "kryo"),
   "com.esotericsoftware.kryo" % "kryo" % "2.21",
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
-  logging, awsSdkS3, avro,
+  logging,
+  avro,
   spire,
   monocleCore, monocleMacro,
   nscalaTime,
@@ -18,10 +16,10 @@ libraryDependencies ++= Seq(
   scalatest % "test")
 
 // must use this method of import to avoid cyclic dependency errors
-internalDependencyClasspath in Test <++= 
+internalDependencyClasspath in Test <++=
   exportedProducts in Compile in LocalProject("raster-testkit")
 
-internalDependencyClasspath in Test <++= 
+internalDependencyClasspath in Test <++=
   exportedProducts in Compile in LocalProject("spark-testkit")
 
 fork in Test := false
