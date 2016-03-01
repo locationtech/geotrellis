@@ -14,25 +14,26 @@ import scala.reflect.ClassTag
 
 import org.apache.hadoop.conf.Configuration
 
-class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore[JsonFormat] {
-  val fs = attributeDir.getFileSystem(hadoopConfiguration)
+class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends AttributeStore[JsonFormat] {
+  val attributePath = new Path(rootPath, "_attributes")
+  val fs = attributePath.getFileSystem(hadoopConfiguration)
 
   val SEP = "___"
 
   // Create directory if it doesn't exist
-  if(!fs.exists(attributeDir)) {
-    fs.mkdirs(attributeDir)
+  if(!fs.exists(attributePath)) {
+    fs.mkdirs(attributePath)
   }
 
   def attributePath(layerId: LayerId, attributeName: String): Path = {
     val fname = s"${layerId.name}${SEP}${layerId.zoom}${SEP}${attributeName}.json"
-    new Path(attributeDir, fname)
+    new Path(attributePath, fname)
   }
 
   private def delete(layerId: LayerId, path: Path): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     HdfsUtils
-      .listFiles(new Path(attributeDir, path), hadoopConfiguration)
+      .listFiles(new Path(attributePath, path), hadoopConfiguration)
       .foreach(fs.delete(_, false))
   }
 
@@ -92,7 +93,7 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
 
   def layerExists(layerId: LayerId): Boolean =
     HdfsUtils
-      .listFiles(new Path(attributeDir, s"*.json"), hadoopConfiguration)
+      .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
       .exists { path: Path =>
         val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
         layerId == LayerId(name, zoomStr.toInt)
@@ -106,7 +107,7 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
 
   def layerIds: Seq[LayerId] =
     HdfsUtils
-      .listFiles(new Path(attributeDir, s"*.json"), hadoopConfiguration)
+      .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
       .map { path: Path =>
         val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
         LayerId(name, zoomStr.toInt)
@@ -116,11 +117,11 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
 
 object HadoopAttributeStore {
   def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
-    new HadoopAttributeStore(config, rootPath)
+    new HadoopAttributeStore(rootPath, config)
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
-    new HadoopAttributeStore(sc.hadoopConfiguration, rootPath)
+    apply(rootPath, sc.hadoopConfiguration)
 
   def default(rootPath: Path) =
-    HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration)
+    apply(rootPath, new Configuration)
 }

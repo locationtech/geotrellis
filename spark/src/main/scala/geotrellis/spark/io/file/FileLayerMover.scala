@@ -15,9 +15,13 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerMover {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
+  def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
     new LayerMover[LayerId] {
-      def move(from: LayerId, to: LayerId): Unit = {
+      def move[
+        K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+        V: AvroRecordCodec: ClassTag,
+        M: JsonFormat
+      ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
@@ -63,12 +67,12 @@ object FileLayerMover {
       }
     }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerMover[LayerId] =
-    apply[K, V, M](FileAttributeStore(catalogPath))
+  def apply(catalogPath: String): LayerMover[LayerId] =
+    apply(FileAttributeStore(catalogPath))
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerMover[LayerId] =
-    apply[K, V, M](attributeStore, attributeStore)
+  def apply(attributeStore: FileAttributeStore): LayerMover[LayerId] =
+    apply(attributeStore, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId] =
-    apply[K, V, M](FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
+  def apply(sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId] =
+    apply(FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
 }

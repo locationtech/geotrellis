@@ -2,6 +2,8 @@ package geotrellis.spark.io
 
 import geotrellis.raster.{GridBounds, Tile}
 import geotrellis.spark._
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.json._
 import geotrellis.vector.Extent
 
 trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, RasterMetaData] =>
@@ -11,7 +13,7 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, RasterMetaD
 
   self.addSpecs { layerIds =>
     val layerId = layerIds.layerId
-    val query = reader.query(layerId)
+    val query = reader.query[SpatialKey, Tile, RasterMetaData](layerId)
 
     it("filters past layout bounds") {
       query.where(Intersects(GridBounds(6, 2, 7, 3))).toRDD.keys.collect() should

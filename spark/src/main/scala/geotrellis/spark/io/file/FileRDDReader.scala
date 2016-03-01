@@ -18,28 +18,28 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 import java.io.File
 
-class FileRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](implicit sc: SparkContext) {
+object FileRDDReader {
 
-  def read(
+  def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     keyPath: Long => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     writerSchema: Option[Schema] = None,
     cache: Option[Cache[Long, Array[Byte]]] = None,
-    numPartitions: Int = sc.defaultParallelism
-  ): RDD[(K, V)] = {
+    numPartitions: Option[Int] = None
+  )(implicit sc: SparkContext): RDD[(K, V)] = {
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = IndexRanges.bin(ranges, numPartitions)
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
-  
+
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val resultPartition = mutable.ListBuffer[(K, V)]()

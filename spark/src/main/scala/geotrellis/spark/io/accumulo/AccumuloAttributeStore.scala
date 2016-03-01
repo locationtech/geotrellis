@@ -13,15 +13,21 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
 
-object AccumuloAttributeStore { 
+object AccumuloAttributeStore {
   def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =
     new AccumuloAttributeStore(connector, attributeTable)
 
   def apply(connector: Connector): AccumuloAttributeStore =
     apply(connector, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+
+  def apply(instance: AccumuloInstance, attributeTable: String): AccumuloAttributeStore =
+    apply(instance.connector, attributeTable)
+
+  def apply(instance: AccumuloInstance): AccumuloAttributeStore =
+    apply(instance.connector)
 }
 
-class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
+class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()

@@ -1,9 +1,11 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{KeyBounds, LayerId}
+import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+
 
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
@@ -16,11 +18,15 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class HadoopLayerCopier(
    rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
   (implicit sc: SparkContext) extends LayerCopier[LayerId] {
 
-  def copy(from: LayerId, to: LayerId): Unit = {
+  def copy[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -38,12 +44,15 @@ class HadoopLayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
 }
 
 object HadoopLayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    rootPath: Path, attributeStore: AttributeStore[JsonFormat])
-  (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
-    new HadoopLayerCopier[K, V, M](rootPath, attributeStore)
+  def apply(
+    rootPath: Path,
+    attributeStore: AttributeStore[JsonFormat]
+  )(implicit sc: SparkContext): HadoopLayerCopier =
+    new HadoopLayerCopier(rootPath, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](rootPath: Path)
-    (implicit sc: SparkContext): HadoopLayerCopier[K, V, M] =
-    apply[K, V, M](rootPath, HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration))
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerCopier =
+    apply(rootPath, HadoopAttributeStore(rootPath, sc.hadoopConfiguration))
+
+  def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): HadoopLayerCopier =
+    apply(attributeStore.rootPath, attributeStore)
 }

@@ -24,34 +24,25 @@ class S3SpaceTimeSpec
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override val s3Client = new MockS3Client
   }
-  lazy val rddReader = new S3RDDReader[SpaceTimeKey, Tile]() {
-    override val getS3Client = () => new MockS3Client
-  }
-  lazy val rddWriter = new S3RDDWriter{
+
+  lazy val rddReader =
+    new S3RDDReader {
+      def getS3Client = () => new MockS3Client()
+    }
+
+  lazy val rddWriter =
+    new S3RDDWriter {
     def getS3Client = () => new MockS3Client
   }
 
-  lazy val reader = new S3LayerReader[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddReader, None)
+  lazy val reader = new MockS3LayerReader(attributeStore, None)
   lazy val writer = new MockS3LayerWriter(attributeStore, bucket, prefix, S3LayerWriter.Options.DEFAULT)
-  lazy val updater = new S3LayerUpdater[SpaceTimeKey, Tile, RasterMetaData](attributeStore, rddWriter, true)
+  lazy val updater = new S3LayerUpdater(attributeStore, true) { override def rddWriter = S3SpaceTimeSpec.this.rddWriter }
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }
-
-  lazy val copier  = new S3LayerCopier[SpaceTimeKey, Tile, RasterMetaData](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpaceTimeKey, Tile, RasterMetaData](
-      attributeStore = attributeStore,
-      layerReader    = reader,
-      layerWriter    = writer
-    ) {
-      def headerUpdate(id: LayerId, header: S3LayerHeader): S3LayerHeader =
-        header.copy(bucket, key = makePath(prefix, s"${id.name}/${id.zoom}"))
-    }
-
-    val mover   = GenericLayerMover(copier, deleter)
-    GenericLayerReindexer(deleter, copier, mover)
-  }
-  lazy val mover   = GenericLayerMover(copier, deleter)
-  lazy val tiles   = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
+  lazy val copier = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
+  lazy val mover = GenericLayerMover(copier, deleter)
+  lazy val tiles = new S3TileReader[SpaceTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client
   }
   lazy val sample =  CoordinateSpaceTime

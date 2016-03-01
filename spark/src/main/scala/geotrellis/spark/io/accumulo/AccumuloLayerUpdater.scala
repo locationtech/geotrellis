@@ -15,14 +15,18 @@ import AccumuloLayerWriter.Options
 // TODO: What happens if the schema changes between initial write and update?
 // Check to see if Schema is the same.
 // If not, we need to rewrite the whole layer.
-class AccumuloLayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+class AccumuloLayerUpdater(
   val instance: AccumuloInstance,
   val attributeStore: AttributeStore[JsonFormat],
   options: Options
-) extends LayerUpdater[LayerId, K, V, M] {
+) extends LayerUpdater[LayerId] {
 
   // TODO: fix
-  def update(id: LayerId, rdd: Container) = {
+  def update[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
@@ -56,11 +60,8 @@ class AccumuloLayerUpdater[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, 
 }
 
 object AccumuloLayerUpdater {
-  def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag, M: JsonFormat]
-  (instance: AccumuloInstance,
-   options: Options = Options.DEFAULT): AccumuloLayerUpdater[K, V, M] =
-    new AccumuloLayerUpdater[K, V, M](
+  def apply(instance: AccumuloInstance, options: Options = Options.DEFAULT): AccumuloLayerUpdater =
+    new AccumuloLayerUpdater(
       instance = instance,
       attributeStore = AccumuloAttributeStore(instance.connector),
       options = options

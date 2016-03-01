@@ -2,17 +2,28 @@ package geotrellis.spark.io
 
 import geotrellis.spark._
 
-import geotrellis.spark.Boundable
+import geotrellis.spark._
+import geotrellis.spark.io.avro._
+
 import org.apache.spark.rdd.RDD
+import spray.json._
 
-abstract class LayerUpdater[ID, K: Boundable, V, M] {
-  type Container = RDD[(K, V)] with Metadata[M]
+import scala.reflect.ClassTag
 
-  def update(id: ID, rdd: Container): Unit
+abstract class LayerUpdater[ID] {
+  def update[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit
 
-  def mergeUpdate(id: ID, reader: FilteringLayerReader[ID, K, M, Container], rdd: Container)
-                 (merge: (Container, Container) => Container) = {
-    val existing = reader.query(id).where(Intersects(implicitly[Boundable[K]].getKeyBounds(rdd))).toRDD
+  def mergeUpdate[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ] (id: ID, reader: FilteringLayerReader[ID], rdd: RDD[(K, V)] with Metadata[M])
+    (merge: (RDD[(K, V)] with Metadata[M], RDD[(K, V)] with Metadata[M]) => RDD[(K, V)] with Metadata[M]) = {
+    val existing = reader.query[K, V, M](id).where(Intersects(Boundable.getKeyBounds(rdd))).toRDD
     update(id, merge(existing, rdd))
   }
 }

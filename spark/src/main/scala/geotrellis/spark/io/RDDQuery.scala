@@ -40,7 +40,7 @@ class RDDQuery[K: Boundable, M](
 }
 
 /**
- * Wrapper for [[RDDQuery]] that binds it to some function that is able to produce a [[geotrellis.spark.RasterRDD]].
+ * Wrapper for [[RDDQuery]] that binds it to some function that is able to produce a resulting RDD.
  */
 class BoundRDDQuery[K, M, ReturnType](query: RDDQuery[K, M], f: RDDQuery[K, M] => ReturnType) {
   def where[F, T](params: RDDFilter.Expression[F, T])(implicit ev: RDDFilter[K, F, T, M]): BoundRDDQuery[K, M, ReturnType] =

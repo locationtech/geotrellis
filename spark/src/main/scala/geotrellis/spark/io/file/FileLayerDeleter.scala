@@ -15,16 +15,17 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerDeleter {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerDeleter[LayerId] =
+  def apply(attributeStore: FileAttributeStore): LayerDeleter[LayerId] =
     new LayerDeleter[LayerId] {
       def delete(layerId: LayerId): Unit = {
         // Read the metadata file out.
-        val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-          attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](layerId)
-        } catch {
-          case e: AttributeNotFoundError => 
-            throw new LayerNotFoundError(layerId).initCause(e)
-        }
+        val header =
+          try {
+            attributeStore.readLayerAttribute[FileLayerHeader](layerId, Fields.header)
+          } catch {
+            case e: AttributeNotFoundError =>
+              throw new LayerNotFoundError(layerId).initCause(e)
+          }
 
         // Delete the attributes
         for((_, file) <- attributeStore.attributeFiles(layerId)) {
@@ -39,6 +40,6 @@ object FileLayerDeleter {
       }
     }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerDeleter[LayerId] =
-    apply[K, V, M](FileAttributeStore(catalogPath))
+  def apply(catalogPath: String): LayerDeleter[LayerId] =
+    apply(FileAttributeStore(catalogPath))
 }

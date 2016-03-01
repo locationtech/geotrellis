@@ -11,31 +11,60 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
+class AccumuloLayerMover(layerCopier: AccumuloLayerCopier, layerDeleter: AccumuloLayerDeleter) extends LayerMover[LayerId] {
+  def move[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](from: LayerId, to: LayerId): Unit = {
+    layerCopier.copy[K, V, M](from, to)
+    layerDeleter.delete(from)
+  }
+}
+
+
 object AccumuloLayerMover {
-  def apply[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
-   instance: AccumuloInstance,
-   layerReader: AccumuloLayerReader[K, V, M],
-   layerWriter: AccumuloLayerWriter)
-  (implicit sc: SparkContext): LayerMover[LayerId] = {
+  def apply(
+    layerCopier: AccumuloLayerCopier,
+    layerDeleter: AccumuloLayerDeleter
+  ): AccumuloLayerMover =
+    new AccumuloLayerMover(layerCopier, layerDeleter)
+
+  def apply(
+   instance: AccumuloInstance
+  )(implicit sc: SparkContext): AccumuloLayerMover = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    new GenericLayerMover[LayerId](
-      layerCopier = AccumuloLayerCopier[K, V, M](
-        attributeStore = attributeStore,
-        layerReader    = layerReader,
-        layerWriter    = layerWriter
-      ),
-      layerDeleter = AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
+    apply(
+      layerCopier = AccumuloLayerCopier(instance),
+      layerDeleter = AccumuloLayerDeleter(attributeStore)
     )
   }
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply(
     instance: AccumuloInstance,
     table: String,
-    strategy: AccumuloWriteStrategy = AccumuloWriteStrategy.DEFAULT)
-   (implicit sc: SparkContext): LayerMover[LayerId] =
-    apply[K, V, M](
-      instance    = instance,
-      layerReader = AccumuloLayerReader[K, V, M](instance),
-      layerWriter = AccumuloLayerWriter(instance, table, strategy)
+    options: AccumuloLayerWriter.Options
+  )(implicit sc: SparkContext): AccumuloLayerMover =
+    apply(
+      layerCopier = AccumuloLayerCopier(instance, table, options),
+      layerDeleter = AccumuloLayerDeleter(instance)
+    )
+
+  def apply(
+    instance: AccumuloInstance,
+    table: String
+  )(implicit sc: SparkContext): AccumuloLayerMover =
+    apply(
+      layerCopier = AccumuloLayerCopier(instance, table),
+      layerDeleter = AccumuloLayerDeleter(instance)
+    )
+
+  def apply(
+    instance: AccumuloInstance,
+    options: AccumuloLayerWriter.Options
+  )(implicit sc: SparkContext): AccumuloLayerMover =
+    apply(
+      layerCopier = AccumuloLayerCopier(instance, options),
+      layerDeleter = AccumuloLayerDeleter(instance)
     )
 }

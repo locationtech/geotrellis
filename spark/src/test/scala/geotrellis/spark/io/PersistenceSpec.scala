@@ -23,9 +23,8 @@ abstract class PersistenceSpec[
   def addSpecs(f: PersistenceSpecLayerIds => Unit): Unit =
     additionalSpecs = f :: additionalSpecs
 
-  type TestReader = FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]]
+  type TestReader = FilteringLayerReader[LayerId]
   type TestWriter = LayerWriter[LayerId]
-  type TestUpdater = LayerUpdater[LayerId, K, V, M]
   type TestDeleter = LayerDeleter[LayerId]
   type TestCopier = LayerCopier[LayerId]
   type TestMover = LayerMover[LayerId]
@@ -56,11 +55,11 @@ abstract class PersistenceSpec[
   for((keyIndexMethodName, keyIndexMethod: KeyIndexMethod[K]) <- keyIndexMethods) {
     describe(s"using key index method ${keyIndexMethodName}") {
       lazy val layerIds @ PersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId) = getLayerIds(keyIndexMethodName)
-      lazy val query = reader.query(layerId)
+      lazy val query = reader.query[K, V, M](layerId)
 
       it("should not find layer before write") {
         intercept[LayerNotFoundError] {
-          reader.read(layerId)
+          reader.read[K, V, M](layerId)
         }
       }
 
@@ -77,7 +76,7 @@ abstract class PersistenceSpec[
       }
 
       it("should read a layer back") {
-        val actual = reader.read(layerId).keys.collect()
+        val actual = reader.read[K, V, M](layerId).keys.collect()
         val expected = sample.keys.collect()
 
         if (expected.diff(actual).nonEmpty)
@@ -99,46 +98,53 @@ abstract class PersistenceSpec[
       it("should delete a layer") {
         deleter.delete(deleteLayerId)
         intercept[LayerNotFoundError] {
-          reader.read(deleteLayerId)
+          reader.read[K, V, M](deleteLayerId)
         }
       }
 
       it("shouldn't copy a layer which already exists") {
         intercept[LayerExistsError] {
-          copier.copy(layerId, layerId)
+          copier.copy[K, V, M](layerId, layerId)
         }
       }
 
       it("should copy a layer") {
-        copier.copy(layerId, copiedLayerId)
-        reader.read(copiedLayerId).keys.collect() should contain theSameElementsAs reader.read(layerId).keys.collect()
+        copier.copy[K, V, M](layerId, copiedLayerId)
+        reader.read[K, V, M](copiedLayerId).keys.collect() should contain theSameElementsAs reader.read[K, V, M](layerId).keys.collect()
       }
 
       it("shouldn't move a layer which already exists") {
         intercept[LayerExistsError] {
-          mover.move(layerId, layerId)
+          mover.move[K, V, M](layerId, layerId)
         }
       }
 
       it("should move a layer") {
-        val keysBeforeMove = reader.read(layerId).keys.collect()
-        mover.move(layerId, movedLayerId)
+        val keysBeforeMove = reader.read[K, V, M](layerId).keys.collect()
+        mover.move[K, V, M](layerId, movedLayerId)
         intercept[LayerNotFoundError] {
-          reader.read(layerId)
+          reader.read[K, V, M](layerId)
         }
-        keysBeforeMove should contain theSameElementsAs reader.read(movedLayerId).keys.collect()
-        mover.move(movedLayerId, layerId)
+        keysBeforeMove should contain theSameElementsAs reader.read[K, V, M](movedLayerId).keys.collect()
+        mover.move[K, V, M](movedLayerId, layerId)
       }
 
       it("should not reindex a layer which doesn't exists") {
         intercept[LayerNotFoundError] {
-          reindexer.reindex(movedLayerId)
+          reindexer.reindex[K, V, M](movedLayerId, keyIndexMethods.head._2)
         }
       }
 
       it("should reindex a layer") {
-        copier.copy(layerId, reindexedLayerId)
-        reindexer.reindex(reindexedLayerId)
+        for((n, reindexMethod) <- keyIndexMethods.filter(_._1 != keyIndexMethodName)) {
+          val rid = reindexedLayerId.copy(name = s"""${reindexedLayerId.name}-reindex-${n.replace(" ", "_")}""")
+          withClue(s"Failed on method $n") {
+            copier.copy[K, V, M](layerId, rid)
+            reindexer.reindex[K, V, M](rid, reindexMethod)
+            // RETODO: We need to test better
+            reader.read[K, V, M](rid).keys.collect() should contain theSameElementsAs reader.read[K, V, M](layerId).keys.collect()
+          }
+        }
       }
 
       for(f <- additionalSpecs) {

@@ -16,25 +16,14 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 
-trait BaseAccumuloRDDReader[K, V] {
-  def read(
+object AccumuloRDDReader {
+  def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     table: String,
     columnFamily: Text,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
-    writerSchema: Option[Schema])
-    (implicit sc: SparkContext): RDD[(K, V)]
-}
-
-class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
-  instance: AccumuloInstance) extends BaseAccumuloRDDReader[K,V] {
-  def read(
-      table: String,
-      columnFamily: Text,
-      queryKeyBounds: Seq[KeyBounds[K]],
-      decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
-      writerSchema: Option[Schema] = None)
-    (implicit sc: SparkContext): RDD[(K, V)] = {
+    writerSchema: Option[Schema] = None
+  )(implicit sc: SparkContext, instance: AccumuloInstance): RDD[(K, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
     val boundable = implicitly[Boundable[K]]

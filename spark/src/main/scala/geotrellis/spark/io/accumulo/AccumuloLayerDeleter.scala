@@ -39,6 +39,9 @@ object AccumuloLayerDeleter {
   def apply(attributeStore: AttributeStore[JsonFormat], instance: AccumuloInstance): AccumuloLayerDeleter =
     new AccumuloLayerDeleter(attributeStore, instance.connector)
 
+  def apply(attributeStore: AccumuloAttributeStore): AccumuloLayerDeleter =
+    new AccumuloLayerDeleter(attributeStore, attributeStore.connector)
+
   def apply(instance: AccumuloInstance): AccumuloLayerDeleter =
     apply(AccumuloAttributeStore(instance.connector), instance.connector)
 }

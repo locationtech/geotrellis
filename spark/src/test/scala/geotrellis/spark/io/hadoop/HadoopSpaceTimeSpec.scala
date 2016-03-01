@@ -16,12 +16,12 @@ class HadoopSpaceTimeSpec
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests {
-  lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
+  lazy val reader = HadoopLayerReader(outputLocal)
   lazy val writer = HadoopLayerWriter(outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
-  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
-  lazy val mover  = HadoopLayerMover[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.byPattern("YMM"))
+  lazy val copier = HadoopLayerCopier(outputLocal)
+  lazy val mover  = HadoopLayerMover(outputLocal)
+  lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
   lazy val sample =  CoordinateSpaceTime
 }

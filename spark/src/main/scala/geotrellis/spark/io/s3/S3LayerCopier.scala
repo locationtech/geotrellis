@@ -15,8 +15,11 @@ import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-   val attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String) extends LayerCopier[LayerId] {
+class S3LayerCopier(
+  val attributeStore: AttributeStore[JsonFormat],
+  destBucket: String,
+  destKeyPrefix: String
+) extends LayerCopier[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
@@ -29,7 +32,11 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
     if (listing.isTruncated) copyListing(s3Client, bucket, s3Client.listNextBatchOfObjects(listing), from, to)
   }
 
-  def copy(from: LayerId, to: LayerId): Unit = {
+  def copy[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -54,15 +61,15 @@ class S3LayerCopier[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
 }
 
 object S3LayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-  (attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M] =
-    new S3LayerCopier[K, V, M](attributeStore, destBucket, destKeyPrefix)
+  def apply(attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier =
+    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-  (bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier[K, V, M] =
+  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier =
     apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat]
-  (bucket: String, keyPrefix: String): S3LayerCopier[K, V, M] =
+  def apply(bucket: String, keyPrefix: String): S3LayerCopier =
     apply(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
+
+  def apply(attributeStore: S3AttributeStore): S3LayerCopier =
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix)
 }

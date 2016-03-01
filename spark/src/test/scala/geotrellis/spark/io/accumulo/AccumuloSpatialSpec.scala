@@ -17,13 +17,13 @@ class AccumuloSpatialSpec
 
   implicit val instance = MockAccumuloInstance()
 
-  lazy val reader = AccumuloLayerReader[SpatialKey, Tile, RasterMetaData](instance)
+  lazy val reader = AccumuloLayerReader(instance)
   lazy val writer = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())
   lazy val deleter = AccumuloLayerDeleter(instance)
-  lazy val reindexer = AccumuloLayerReindexer[SpatialKey, Tile, RasterMetaData](instance, "tiles", ZCurveKeyIndexMethod, SocketWriteStrategy())
+  lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val tiles = AccumuloTileReader[SpatialKey, Tile](instance)
   lazy val sample = AllOnesTestFile
 
-  lazy val copier = AccumuloLayerCopier[SpatialKey, Tile, RasterMetaData](instance, reader, writer)
-  lazy val mover  = GenericLayerMover(copier, deleter)
+  lazy val copier = AccumuloLayerCopier(instance, reader, writer)
+  lazy val mover  = AccumuloLayerMover(copier, deleter)
 }

@@ -3,6 +3,8 @@ package geotrellis.spark.io
 import com.github.nscala_time.time.Imports._
 import geotrellis.raster.{GridBounds, Tile}
 import geotrellis.spark._
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.json._
 import org.joda.time.DateTime
 
 trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] =>
@@ -17,7 +19,7 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, Raste
 
   self.addSpecs { layerIds =>
     val layerId = layerIds.layerId
-    val query = reader.query(layerId)
+    val query = reader.query[SpaceTimeKey, Tile, RasterMetaData](layerId)
 
     it("query outside of layer bounds") {
       query.where(Intersects(GridBounds(10, 10, 15, 15))).toRDD.collect() should be(empty)

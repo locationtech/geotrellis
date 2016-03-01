@@ -63,5 +63,5 @@ object HadoopTileReader {
 
   def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](rootPath: Path)
     (implicit sc: SparkContext): HadoopTileReader[K, V] =
-    apply(HadoopAttributeStore(new Path(rootPath, "attributes")))
+    apply(HadoopAttributeStore(rootPath))
 }

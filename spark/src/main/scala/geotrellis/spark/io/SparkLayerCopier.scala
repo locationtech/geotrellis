@@ -10,15 +10,19 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-abstract class SparkLayerCopier[Header: JsonFormat, K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+// RETODO: Generic or Spark, pick one
+// RETODO: Copier does not consider client layer metadata
+class SparkLayerCopier[Header: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
-  layerReader: FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]],
+  layerReader: LayerReader[LayerId],
   layerWriter: LayerWriter[LayerId]
 ) extends LayerCopier[LayerId] {
 
-  def headerUpdate(id: LayerId, header: Header): Header
-
-  def copy(from: LayerId, to: LayerId): Unit = {
+  def copy[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
@@ -29,10 +33,7 @@ abstract class SparkLayerCopier[Header: JsonFormat, K: AvroRecordCodec: Boundabl
     }
 
     try {
-      layerWriter.write(to, layerReader.read(from), existingKeyIndex, existingKeyBounds)
-      attributeStore.writeLayerAttributes(
-        to, headerUpdate(to, existingLayerHeader), existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema
-      )
+      layerWriter.write(to, layerReader.read[K, V, M](from), existingKeyIndex, existingKeyBounds)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }

@@ -26,14 +26,18 @@ import scala.reflect.ClassTag
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
-class HadoopLayerReader[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+class HadoopLayerReader(
   val attributeStore: AttributeStore[JsonFormat]
 )(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] with LazyLogging {
+  extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
+  def read[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
       import spray.json.DefaultJsonProtocol._
@@ -58,29 +62,9 @@ class HadoopLayerReader[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag, V: 
 }
 
 object HadoopLayerReader {
-  def apply[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](attributeStore: HadoopAttributeStore)(implicit sc: SparkContext) =
-    new HadoopLayerReader[K, V, M](attributeStore)
+  def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext) =
+    new HadoopLayerReader(attributeStore)
 
-  def apply[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](rootPath: Path)(implicit sc: SparkContext): HadoopLayerReader[K, V, M] =
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerReader =
     apply(HadoopAttributeStore.default(rootPath))
-
-  def spatial(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath)
-
-  def spatialMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath)
-
-  def spaceTime(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath)
-
-  def spaceTimeMultiBand(rootPath: Path)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath)
 }

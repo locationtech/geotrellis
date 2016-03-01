@@ -1,20 +1,44 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.Boundable
+import geotrellis.spark._
+import geotrellis.spark.io.avro._
+import org.apache.spark.rdd._
+import spray.json._
+import scala.reflect._
 
-abstract class FilteringLayerReader[ID, K: Boundable, M, ReturnType] extends LayerReader[ID, ReturnType] {
+abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
 
-  def read(id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int): ReturnType
+  def read[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
-  def read(id: ID, rasterQuery: RDDQuery[K, M]): ReturnType =
+  def read[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: ID, rasterQuery: RDDQuery[K, M]): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, defaultNumPartitions)
 
-  def read(id: ID, numPartitions: Int): ReturnType =
+  def read[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M] =
     read(id, new RDDQuery[K, M], numPartitions)
 
-  def query(layerId: ID): BoundRDDQuery[K, M, ReturnType] =
+  def query[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](layerId: ID): BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _))
 
-  def query(layerId: ID, numPartitions: Int): BoundRDDQuery[K, M, ReturnType] =
+  def query[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](layerId: ID, numPartitions: Int): BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
 }

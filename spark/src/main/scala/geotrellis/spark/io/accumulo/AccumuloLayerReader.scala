@@ -15,14 +15,16 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
-  val attributeStore: AttributeStore[JsonFormat],
-  rddReader: BaseAccumuloRDDReader[K, V]
-)(implicit sc: SparkContext) extends FilteringLayerReader[LayerId, K, M, RDD[(K, V)] with Metadata[M]] {
+class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext, instance: AccumuloInstance)
+    extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def read(id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  def read[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
@@ -38,30 +40,18 @@ class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V
         new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
       }
 
-    val rdd = rddReader.read(header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
+    val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
     new ContextRDD(rdd, metaData)
   }
 }
 
 object AccumuloLayerReader {
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader[K, V, M] =
-    new AccumuloLayerReader[K, V, M] (
-      AccumuloAttributeStore(instance.connector),
-      new AccumuloRDDReader[K, V](instance))
+  def apply(instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader =
+    new AccumuloLayerReader(AccumuloAttributeStore(instance.connector))(sc, instance)
 
-  def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](instance)
+  def apply(attributeStore: AccumuloAttributeStore)(implicit sc: SparkContext, instance: AccumuloInstance): AccumuloLayerReader =
+    new AccumuloLayerReader(attributeStore)
 
-  def spatialMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](instance)
-
-  def spaceTime(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](instance)
-
-  def spaceTimeMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance)
+  def apply()(implicit sc: SparkContext, instance: AccumuloInstance): AccumuloLayerReader =
+    new AccumuloLayerReader(AccumuloAttributeStore(instance.connector))
 }

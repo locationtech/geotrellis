@@ -14,12 +14,12 @@ class FileSpatialSpec
     with TestEnvironment
     with TestFiles
     with AllOnesTestTileTests {
-  lazy val reader = FileLayerReader[SpatialKey, Tile, RasterMetaData](outputLocalPath)
+  lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
-  lazy val deleter = FileLayerDeleter[SpatialKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val copier = FileLayerCopier[SpatialKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val mover  = FileLayerMover[SpatialKey, Tile, RasterMetaData](outputLocalPath)
-  lazy val reindexer = FileLayerReindexer[SpatialKey, Tile, RasterMetaData](outputLocalPath, ZCurveKeyIndexMethod)
+  lazy val deleter = FileLayerDeleter(outputLocalPath)
+  lazy val copier = FileLayerCopier(outputLocalPath)
+  lazy val mover  = FileLayerMover(outputLocalPath)
+  lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val tiles = FileTileReader[SpatialKey, Tile](outputLocalPath)
   lazy val sample = AllOnesTestFile
 }

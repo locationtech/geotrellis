@@ -13,28 +13,34 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext) {
-  def delete[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](id: LayerId): Unit = {
-    val deleter = S3LayerDeleter(attributeStore)
-    deleter.delete(id)
-  }
+  def delete(id: LayerId): Unit =
+    S3LayerDeleter(attributeStore).delete(id)
 
-  def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-     (from: LayerId, to: LayerId): Unit = {
-    val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
-    val copier = S3LayerCopier[K, V, M](attributeStore, header.bucket, header.key)
-    copier.copy(from, to)
-  }
+  def copy[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](from: LayerId, to: LayerId): Unit =
+    S3LayerCopier(attributeStore).copy[K, V, M](from, to)
 
-  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-     (from: LayerId, to: LayerId): Unit = {
-    val header = attributeStore.readLayerAttribute[S3LayerHeader](from, Fields.header)
-    val mover = S3LayerMover[K, V, M](attributeStore, header.bucket, header.key)
-    mover.move(from, to)
-  }
+  def move[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](from: LayerId, to: LayerId): Unit =
+    S3LayerMover(attributeStore).move[K, V, M](from, to)
 
-  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-     (id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
-    val reindexer = S3LayerReindexer[K, V, M](attributeStore, keyIndexMethod)
-    reindexer.reindex(id) // keyIndexMethod should be part of the LayerReindexer trait
-  }
+  def reindex[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
+    S3LayerReindexer(attributeStore).reindex[K, V, M](id, keyIndexMethod)
+
+  def reindex[
+    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat
+  ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
+    S3LayerReindexer(attributeStore).reindex[K, V, M](id, keyIndex)
 }

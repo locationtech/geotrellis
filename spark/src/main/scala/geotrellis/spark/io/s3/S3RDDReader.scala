@@ -15,25 +15,25 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
 
-class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](implicit sc: SparkContext) {
+trait S3RDDReader {
 
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client
 
-  def read(
+  def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     bucket: String,
     keyPath: Long => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     writerSchema: Option[Schema] = None,
     cache: Option[Cache[Long, Array[Byte]]] = None,
-    numPartitions: Int = sc.defaultParallelism
-  ): RDD[(K, V)] = {
+    numPartitions: Option[Int] = None
+  )(implicit sc: SparkContext): RDD[(K, V)] = {
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = IndexRanges.bin(ranges, numPartitions)
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
@@ -75,4 +75,8 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
 
     rdd
   }
+}
+
+object S3RDDReader extends S3RDDReader {
+  def getS3Client: () => S3Client = () => S3Client.default
 }
