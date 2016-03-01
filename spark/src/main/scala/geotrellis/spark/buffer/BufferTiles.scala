@@ -90,6 +90,10 @@ object BufferTiles {
                   case Right       => acc.copy(right = slice.cols)
                   case Top         => acc.copy(top = slice.rows)
                   case Bottom      => acc.copy(bottom = slice.rows)
+                  case BottomRight => acc.copy(bottom = slice.rows, right = slice.cols)
+                  case BottomLeft  => acc.copy(bottom = slice.rows, left = slice.cols)
+                  case TopRight    => acc.copy(top = slice.rows, right = slice.cols)
+                  case TopRight    => acc.copy(top = slice.rows, right = slice.cols)
                   case _           => acc
                 }
               }
