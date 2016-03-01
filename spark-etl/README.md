@@ -103,7 +103,7 @@ crs           | Desired CRS for input layer. May trigger raster reprojection. (e
 tileSize      | Pixel height and width of each tile in the input layer
 layoutScheme  | Scheme to be used to determine raster resolution and extent (ex: tms, floating)
 layoutExtent  | Explicit alternative to use of `layoutScheme` (format: xmin,ymin,xmax,ymax)
-reproject     | Reproject method to use during tiling (ex: buffered or pertile)
+reproject     | Reproject method to use during tiling (ex: buffered or per-tile)
 cellSize      | Width and Height of each pixel (format: width,height)
 cellType      | Value of type of the target raster (ex: bool, int8, int32, int64, float32, float64)
 output        | Name of output module to use (ex: s3, hadoop, accumulo)
@@ -147,7 +147,7 @@ Together with `tileSize` option this is enough to fully define the layout and st
 
 #### Reprojection
 
-`spark-etl` project supports two methods of reprojection: `buffered` and `pertile`. They provide a trade-off between accuracy and flexibility.
+`spark-etl` project supports two methods of reprojection: `buffered` and `per-tile`. They provide a trade-off between accuracy and flexibility.
 
 Buffered reprojection method is able to sample pixels past the tile boundaries by performing a neighborhood join. 
 This method is the default and produces the best results. However it requires that all of the source tiles share the same CRS.

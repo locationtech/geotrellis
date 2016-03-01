@@ -166,13 +166,13 @@ object EtlConf {
   }
 
   def reprojectMethodConvert = new ValueConverter[ReprojectMethod] {
-    val wrong = Left("wrong arguments format (ex: buffered or pertile")
+    val wrong = Left("wrong arguments format (ex: buffered or per-tile")
     def parse(s : List[(String, List[String])]) = s match {
       case (_, str :: Nil) :: Nil  =>
         str match {
           case "buffered" =>
             Right(Some(BufferedReproject))
-          case "pertile" =>
+          case "per-tile" =>
             Right(Some(PerTileReproject))
           case _ =>
             wrong
