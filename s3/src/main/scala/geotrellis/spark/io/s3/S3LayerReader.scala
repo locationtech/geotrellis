@@ -95,16 +95,16 @@ object S3LayerReader {
   ](bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[K, V, M] =
     apply[K, V, M](bucket, prefix, None)
 
-  def spatial(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix)
+  def spatial(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, Tile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](bucket, prefix)
 
-  def spatialMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix)
+  def spatialMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](bucket, prefix)
 
-  def spaceTime(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix)
+  def spaceTime(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](bucket, prefix)
 
 
-  def spaceTimeMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix)
+  def spaceTimeMultiBand(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](bucket, prefix)
 }

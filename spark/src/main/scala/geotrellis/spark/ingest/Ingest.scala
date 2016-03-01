@@ -53,7 +53,7 @@ object Ingest {
    * @tparam K            type of output tile key, must have SpatialComponent
    * @return
    */
-  def apply[T: ProjectedExtentComponent: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: ClassTag](
+  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: ProjectedExtentComponent, K: SpatialComponent: Boundable: ClassTag](
       sourceTiles: RDD[(T, Tile)],
       destCRS: CRS,
       layoutScheme: LayoutScheme,

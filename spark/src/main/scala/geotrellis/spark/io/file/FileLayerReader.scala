@@ -104,16 +104,16 @@ object FileLayerReader {
   ](attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileLayerReader[K, V, M] =
     apply[K, V, M](attributeStore, attributeStore.catalogPath, None)
 
-  def spatial(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](catalogPath)
+  def spatial(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, Tile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](catalogPath)
 
-  def spatialMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](catalogPath)
+  def spatialMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](catalogPath)
 
-  def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](catalogPath)
+  def spaceTime(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](catalogPath)
 
 
-  def spaceTimeMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](catalogPath)
+  def spaceTimeMultiBand(catalogPath: String)(implicit sc: SparkContext): FileLayerReader[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](catalogPath)
 }

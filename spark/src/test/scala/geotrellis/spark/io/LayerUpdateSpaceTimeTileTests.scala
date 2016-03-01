@@ -7,17 +7,28 @@ import geotrellis.vector._
 import geotrellis.proj4.LatLng
 
 import org.apache.spark.rdd._
+import org.joda.time.DateTime
 
-trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData] with TestEnvironment =>
+trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] with TestEnvironment =>
 
   def updater: TestUpdater
 
-  def dummyRasterMetaData: RasterMetaData =
+  def dummyRasterMetaData =
     RasterMetaData(
       IntConstantNoDataCellType,
       LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
       Extent(0,0,1,1),
-      LatLng
+      LatLng,
+      KeyBounds(SpaceTimeKey(0,0, new DateTime()), SpaceTimeKey(1,1, new DateTime()))
+    )
+
+  def emptyRasterMetaData =
+    RasterMetaData[SpaceTimeKey](
+      IntConstantNoDataCellType,
+      LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
+      Extent(0,0,1,1),
+      LatLng,
+      EmptyBounds
     )
 
   it("should update a layer") {
@@ -26,7 +37,7 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
 
   it("should not update a layer (empty set)") {
     intercept[LayerUpdateError] {
-      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData](sc.emptyRDD[(SpaceTimeKey, Tile)], dummyRasterMetaData))
+      updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
     }
   }
 

@@ -16,7 +16,7 @@ import geotrellis.spark.io.s3._
 
 implicit val sc: SparkContext = ???
 
-val reader : S3LayerReader[SpatialKey, Tile, RasterMetaData] = 
+val reader : S3LayerReader[SpatialKey, Tile, RasterMetaData[SpatialKey]] = 
   S3LayerReader.spatial("bucket", "prefix")
 
 def getLayerId(idx: Int): LayerId = ???

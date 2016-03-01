@@ -32,6 +32,7 @@ import monocle.{Lens, PLens}
 import monocle.syntax._
 
 import scala.reflect.ClassTag
+import scalaz.Functor
 
 package object spark
     extends buffer.Implicits
@@ -52,15 +53,15 @@ package object spark
     with Serializable // required for java serialization, even though it's mixed in
 {
 
-  type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData]
+  type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData[K]]
   object RasterRDD {
-    def apply[K](rdd: RDD[(K, Tile)], metadata: RasterMetaData): RasterRDD[K] =
+    def apply[K](rdd: RDD[(K, Tile)], metadata: RasterMetaData[K]): RasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 
-  type MultiBandRasterRDD[K] = RDD[(K, MultiBandTile)] with Metadata[RasterMetaData]
+  type MultiBandRasterRDD[K] = RDD[(K, MultiBandTile)] with Metadata[RasterMetaData[K]]
   object MultiBandRasterRDD {
-    def apply[K](rdd: RDD[(K, MultiBandTile)], metadata: RasterMetaData): MultiBandRasterRDD[K] =
+    def apply[K](rdd: RDD[(K, MultiBandTile)], metadata: RasterMetaData[K]): MultiBandRasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 
@@ -72,19 +73,19 @@ package object spark
   implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
     val _spatialComponent = implicitly[SpatialComponent[K]]
 
-    def spatialComponent: SpatialKey = key &|-> _spatialComponent.lens get
+    def spatialComponent: SpatialKey = _spatialComponent.lens.get(key)
 
     def updateSpatialComponent(spatialKey: SpatialKey): K =
-      key &|-> _spatialComponent.lens set(spatialKey)
+      _spatialComponent.lens.set(spatialKey)(key)
   }
 
   implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
     val _temporalComponent = implicitly[TemporalComponent[K]]
 
-    def temporalComponent: TemporalKey = key &|-> _temporalComponent.lens get
+    def temporalComponent: TemporalKey = _temporalComponent.lens.get(key)
 
     def updateTemporalComponent(temporalKey: TemporalKey): K =
-      key &|-> _temporalComponent.lens set(temporalKey)
+      _temporalComponent.lens.set(temporalKey)(key)
   }
 
   type TileBounds = GridBounds

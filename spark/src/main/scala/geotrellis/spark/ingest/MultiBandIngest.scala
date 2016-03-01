@@ -12,7 +12,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object MultiBandIngest {
-  def apply[T: ProjectedExtentComponent: ClassTag: ? => TilerKeyMethods[T, K], K: SpatialComponent: ClassTag](
+  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: ProjectedExtentComponent, K: SpatialComponent: Boundable: ClassTag](
     sourceTiles: RDD[(T, MultiBandTile)],
     destCRS: CRS,
     layoutScheme: LayoutScheme,

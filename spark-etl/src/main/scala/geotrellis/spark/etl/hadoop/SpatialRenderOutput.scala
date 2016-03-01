@@ -17,7 +17,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 
-class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData] {
+class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData[SpatialKey]] {
   def name = "render"
   def key = classTag[SpatialKey]
   def requiredKeys = Array("path", "format")
@@ -45,7 +45,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData]
 
   override def apply(
     id: LayerId,
-    rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData],
+    rdd: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData[SpatialKey]],
     method: KeyIndexMethod[SpatialKey],
     props: Map[String, String]
   ): Unit = {
@@ -53,9 +53,9 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData]
     val images =
       props("format").toLowerCase match {
         case "png" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderPng(parseBreaks(props.get("breaks")))
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData[SpatialKey]]].renderPng(parseBreaks(props.get("breaks")))
         case "geotiff" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderGeoTiff()
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData[SpatialKey]]].renderGeoTiff()
       }
 
     if (useS3) {

@@ -20,10 +20,8 @@ object GeoTrellisETL extends App {
   
   val etl = Etl(args)
   val tiles = etl.load[ProjectedExtent, Tile]
-  val reprojected = etl.reproject(tiles)
-  val (zoom, metadata) = etl.collectMetadata(reprojected)
-  val tiled = ContextRDD(tiles.cutTiles[SpatialKey](metadata, NearestNeighbor), metadata)
-  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
+  val (zoom, tiled) = etl.tile(tiles)
+  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
 
   sc.stop()
 ```

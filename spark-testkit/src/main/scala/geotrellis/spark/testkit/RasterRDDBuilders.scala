@@ -136,7 +136,7 @@ trait RasterRDDBuilders {
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
     val (_, metadata) =
-      RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)(_.extent)
+      RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)
 
     val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
 
@@ -150,12 +150,19 @@ trait RasterRDDBuilders {
     cellType: CellType = IntConstantNoDataCellType): RasterRDD[SpaceTimeKey] = {
 
     val extent = defaultCRS.worldExtent
-
+    val layout = LayoutDefinition(extent, tileLayout)
+    val keyBounds = {
+      val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
+      val minTime = tiles.minBy(_._2)._2
+      val maxTime = tiles.maxBy(_._2)._2
+      KeyBounds(SpaceTimeKey(colMin, rowMin, minTime), SpaceTimeKey(colMax, rowMax, maxTime))
+    }
     val metaData = RasterMetaData(
       cellType,
-      LayoutDefinition(extent, tileLayout),
+      layout,
       extent,
-      defaultCRS
+      defaultCRS,
+      keyBounds
     )
 
     val re = RasterExtent(

@@ -11,7 +11,7 @@ import org.scalatest._
 
 
 class SaveImagesSpec extends FunSpec with TestEnvironment {
-  lazy val sample = TestFiles.generateSpatial("all-ones", TestFiles.rasterMetaData)
+  lazy val sample = TestFiles.generateSpatial("all-ones")
   val tmpdir = System.getProperty("java.io.tmpdir")
 
   describe("Saving of Rendered Tiles to Hadoop") {

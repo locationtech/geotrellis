@@ -1,7 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.{Boundable, LayerId}
+import geotrellis.spark.{ Bounds, Boundable, LayerId }
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
@@ -41,7 +41,7 @@ object AccumuloLayerCopier {
       layerWriter    = layerWriter
     )
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat: (? => Bounds[K])](
    instance: AccumuloInstance,
    table: String,
    indexMethod: KeyIndexMethod[K],

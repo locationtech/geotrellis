@@ -7,8 +7,7 @@ import geotrellis.spark.io.s3.S3LayerWriter
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 
-
-class SpatialMultibandS3Output extends S3Output[SpatialKey, MultiBandTile, RasterMetaData] {
+class SpatialMultibandS3Output extends S3Output[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) =
-    S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData](props("bucket"), props("key"), method)
+    S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](props("bucket"), props("key"), method)
 }

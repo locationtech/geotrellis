@@ -9,7 +9,7 @@ import geotrellis.spark.SpaceTimeKey
 
 import org.apache.hadoop.fs.Path
 
-class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, Tile, RasterMetaData] {
+class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
-    HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](new Path(props("path")), method)
+    HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](new Path(props("path")), method)
 }

@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.{Boundable, LayerId}
+import geotrellis.spark.{ Bounds, Boundable, LayerId }
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -45,7 +45,7 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
   def reindex[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K])(implicit hadoopFormat: HadoopFormat[K,V]): Unit = {
     val header = attributeStore.readLayerAttribute[HadoopLayerHeader](id, Fields.header)
     val reindexer = HadoopLayerReindexer[K, V, M](header.path, keyIndexMethod)

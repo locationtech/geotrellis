@@ -55,14 +55,14 @@ object AccumuloLayerReader {
       new AccumuloRDDReader[K, V](instance))
 
   def spatial(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](instance)
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](instance)
 
   def spatialMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](instance)
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](instance)
 
   def spaceTime(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](instance)
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](instance)
 
   def spaceTimeMultiBand(instance: AccumuloInstance)(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](instance)
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](instance)
 }

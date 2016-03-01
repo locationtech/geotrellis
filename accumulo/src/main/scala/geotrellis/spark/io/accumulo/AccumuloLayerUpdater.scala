@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat: (? => Bounds[K])](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: BaseAccumuloRDDWriter[K, V])
   extends LayerUpdater[LayerId, K, V, M] {
@@ -25,8 +25,8 @@ class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: J
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
-    val boundable = implicitly[Boundable[K]]
-    val keyBounds = boundable.collectBounds(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
+    val bounds: Bounds[K] = rdd.metadata
+    val keyBounds = bounds.getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
 
     if (!(existingKeyBounds includes keyBounds.minKey ) || !(existingKeyBounds includes keyBounds.maxKey))
       throw new LayerOutOfKeyBoundsError(id)
@@ -45,7 +45,7 @@ object AccumuloLayerUpdater {
   def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
 
   def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag, M: JsonFormat]
+  V: AvroRecordCodec: ClassTag, M: JsonFormat: (? => Bounds[K])]
   (instance: AccumuloInstance,
    strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M] =
     new AccumuloLayerUpdater[K, V, M](

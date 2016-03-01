@@ -2,7 +2,7 @@ package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
-import monocle.syntax._
+import monocle.syntax.apply._
 
 object Predictor {
   val PREDICTOR_NONE = 1

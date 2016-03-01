@@ -11,7 +11,7 @@ import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 
 abstract class S3SpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData[SpatialKey]]
     with TestEnvironment with TestFiles
     with AllOnesTestTileTests {
 
@@ -32,15 +32,15 @@ abstract class S3SpatialSpec
       client
     }
   }
-  lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData](attributeStore, rddReader, None)
-  lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData](attributeStore, rddWriter, true)
+  lazy val reader = new S3LayerReader[SpatialKey, Tile, RasterMetaData[SpatialKey]](attributeStore, rddReader, None)
+  lazy val updater = new S3LayerUpdater[SpatialKey, Tile, RasterMetaData[SpatialKey]](attributeStore, rddWriter, true)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
-  lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  lazy val copier  = new S3LayerCopier[SpatialKey, Tile, RasterMetaData[SpatialKey]](attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
   lazy val reindexer = {
-    val copier = new SparkLayerCopier[S3LayerHeader, SpatialKey, Tile, RasterMetaData](
+    val copier = new SparkLayerCopier[S3LayerHeader, SpatialKey, Tile, RasterMetaData[SpatialKey]](
       attributeStore = attributeStore,
       layerReader    = reader,
-      layerWriter    = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](
+      layerWriter    = new S3LayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](
         attributeStore, rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true
       )
     ) {
@@ -59,13 +59,13 @@ abstract class S3SpatialSpec
 }
 
 class S3SpatialRowMajorSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](attributeStore,rddWriter, RowMajorKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialZCurveSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](attributeStore,rddWriter, ZCurveKeyIndexMethod, bucket, prefix, true)
 }
 
 class S3SpatialHilbertSpec extends S3SpatialSpec {
-  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
+  lazy val writer = new S3LayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](attributeStore,rddWriter, HilbertKeyIndexMethod, bucket, prefix, true)
 }

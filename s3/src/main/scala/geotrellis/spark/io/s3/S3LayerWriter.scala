@@ -28,7 +28,7 @@ import AttributeStore.Fields
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat: (? => Bounds[K])](
     val attributeStore: AttributeStore[JsonFormat],
     rddWriter: S3RDDWriter[K, V],
     keyIndexMethod: KeyIndexMethod[K],
@@ -51,8 +51,8 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
       bucket = bucket,
       key = prefix)
 
-    val keyBounds = implicitly[Boundable[K]].collectBounds(rdd)
-      .getOrElse(throw new LayerWriteError(id, "empty rdd write"))
+    val bounds: Bounds[K] = rdd.metadata
+    val keyBounds = bounds.getOrElse(throw new LayerWriteError(id, "empty rdd write"))
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
@@ -77,7 +77,7 @@ object S3LayerWriter {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K], options: Options): S3LayerWriter[K, V, M] =
     new S3LayerWriter[K, V, M](
       attributeStore,
@@ -92,21 +92,21 @@ object S3LayerWriter {
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
     apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K], options: Options): S3LayerWriter[K, V, M] =
     apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
 
   def apply[
     K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: (? => Bounds[K])
   ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
     apply[K, V, M](bucket, prefix, keyIndexMethod, Options.DEFAULT)
 
@@ -116,8 +116,8 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpatialKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, Tile, RasterMetaData[SpatialKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
   def spatialMultiBand(
     bucket: String,
@@ -125,8 +125,8 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpatialKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] =
+    apply[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
   def spaceTime(
     bucket: String,
@@ -134,8 +134,8 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 
   def spaceTimeMultiBand(
     bucket: String,
@@ -143,6 +143,6 @@ object S3LayerWriter {
     keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
     clobber: Boolean = true,
     oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] =
+    apply[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 }
