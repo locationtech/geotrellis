@@ -38,6 +38,12 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
   def renderJpg(colorClassifier: ColorClassifier[_]): Jpg =
     renderJpg(colorClassifier, None)
 
+  def renderJpg(colors: Array[RGBA]): Jpg = {
+    val histogram = self.histogram
+    val colorClassifier = StrictColorClassifier.fromQuantileBreaks(histogram, colors)
+    renderJpg(colorClassifier, Some(histogram))
+  }
+
   /**
     * Generate a JPG image from a raster.
     *

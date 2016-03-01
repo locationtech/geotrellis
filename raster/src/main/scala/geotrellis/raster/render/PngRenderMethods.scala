@@ -24,6 +24,12 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
   def renderPng(colorClassifier: ColorClassifier[_]): Png =
     renderPng(colorClassifier, None)
 
+  def renderPng(colors: Array[RGBA]): Png = {
+    val histogram = self.histogram
+    val colorClassifier = StrictColorClassifier.fromQuantileBreaks(histogram, colors)
+    renderPng(colorClassifier, Some(histogram))
+  }
+
   def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): Png =
     renderPng(colorClassifier, Some(histogram))
 
