@@ -6,7 +6,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.hadoop.fs.Path
 
-trait HadoopOutput[K] extends OutputPlugin[K] {
+trait HadoopOutput[K, V, M] extends OutputPlugin[K, V, M] {
   val name = "hadoop"
   val requiredKeys = Array("path")
 

@@ -1,14 +1,16 @@
 package geotrellis.spark.merge
 
-import scala.reflect.ClassTag
-
-import org.apache.spark.rdd.RDD
-
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.util.MethodExtensions
+
+import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
+
 
 // TODO: Handle metadata lens abstraction for layout definition.
 class RDDLayoutMergeMethods[
@@ -21,7 +23,7 @@ class RDDLayoutMergeMethods[
    val thisLayout = self.metadata.layout
    val thatLayout = other.metadata.layout
 
-   val cutRdd = 
+   val cutRdd =
        other
          .flatMap { case (k: K, tile: V) =>
            val extent = thatLayout.mapTransform(k)

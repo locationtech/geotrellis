@@ -6,9 +6,12 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
 import geotrellis.spark._
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
+
 
 class TilerMethods[K, V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
   import Tiler.Options

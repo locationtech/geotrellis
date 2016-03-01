@@ -17,15 +17,11 @@
 package geotrellis.engine.op.focal
 
 import geotrellis.engine._
-import geotrellis.raster.op.focal._
-import geotrellis.testkit._
+import geotrellis.raster.mapalgebra.focal._
 
 import org.scalatest._
 
-class MaxSpec extends FunSpec with TileBuilders
-                              with Matchers 
-                              with TestEngine {
-
+class MaxSpec extends FunSpec with Matchers with TestEngine {
 
   describe("Max") {
     it("should square max for raster source") {

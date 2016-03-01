@@ -19,6 +19,8 @@ package geotrellis.raster.rasterize
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.Geometry
+import geotrellis.util.MethodExtensions
+
 
 trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends MethodExtensions[Raster[T]] {
   def foreachCell(

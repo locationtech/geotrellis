@@ -129,7 +129,7 @@ abstract class PersistenceSpec[
         mover.move[K, V, M](movedLayerId, layerId)
       }
 
-      it("should not reindex a layer which doesn't exists") {
+      it("should not reindex a layer which doesn't exist") {
         intercept[LayerNotFoundError] {
           reindexer.reindex[K, V, M](movedLayerId, keyIndexMethods.head._2)
         }

@@ -2,20 +2,20 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 import geotrellis.vector.Extent
 
 import geotrellis.proj4._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class BitGeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils 
     with TileBuilders {
   def p(s: String, i: String): String = 

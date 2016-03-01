@@ -18,8 +18,8 @@ package geotrellis.benchmark
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.raster.op.focal.Square
-import geotrellis.raster.op._
+import geotrellis.raster.mapalgebra.focal.Square
+import geotrellis.raster.mapalgebra._
 import geotrellis.engine._
 import geotrellis.engine.op.focal._
 
@@ -108,7 +108,7 @@ final class CalcFastFocalMean(r: Tile, n: Int) {
   final val data = r.toArrayTile
 
   // raster data used to store the results
-  final val out = ArrayTile.alloc(TypeInt, r.cols, r.rows)
+  final val out = ArrayTile.alloc(IntConstantNoDataCellType, r.cols, r.rows)
 
   // this is the length of a side of the square kernel
   final val radius = n

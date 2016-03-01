@@ -25,14 +25,16 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
+
+import java.io._
 
 import org.scalatest._
 
 class GeoTiffWriterSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with TileBuilders
     with GeoTiffTestUtils {
 
@@ -41,10 +43,10 @@ class GeoTiffWriterSpec extends FunSpec
   private val testCRS = CRS.fromName("EPSG:3857")
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
+    val temp = File.createTempFile("geotiff-writer", ".tif"); 
+    val path = temp.getPath()
 
     it("should write GeoTiff with tags") {
-      val path = "/tmp/geotiff-writer.tif"
-
       val geoTiff = MultiBandGeoTiff(geoTiffPath("multi-tag.tif"))
       GeoTiffWriter.write(geoTiff, path)
 
@@ -57,7 +59,6 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it("should write web mercator correctly") {
-      val path = "/tmp/geotiff-writer.tif"
       val geoTiff = SingleBandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
 
       addToPurge(path)
@@ -68,7 +69,6 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it("should write NY State Plane correctly") {
-      val path = "/tmp/geotiff-writer.tif"
       val geoTiff = SingleBandGeoTiff(geoTiffPath("ny-state-plane.tif"))
 
       addToPurge(path)
@@ -79,7 +79,6 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it ("should write Polar stereographic correctly") {
-      val path = "/tmp/geotiff-writer.tif"
       val geoTiff = SingleBandGeoTiff(geoTiffPath("alaska-polar-3572.tif"))
 
       addToPurge(path)
@@ -94,8 +93,6 @@ class GeoTiffWriterSpec extends FunSpec
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
       val geoTiff = SingleBandGeoTiff(t, e, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
-
-      val path = "/tmp/geotiff-writer.tif"
 
       GeoTiffWriter.write(geoTiff, path)
 
@@ -114,8 +111,6 @@ class GeoTiffWriterSpec extends FunSpec
       val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng)
       val reprojGeoTiff = SingleBandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
 
-      val path = "/tmp/geotiff-writer.tif"
-
       GeoTiffWriter.write(reprojGeoTiff, path)
 
       addToPurge(path)
@@ -129,8 +124,6 @@ class GeoTiffWriterSpec extends FunSpec
 
     it ("should read write multibandraster correctly") {
       val geoTiff = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-
-      val path = "/tmp/geotiff-writer.tif"
 
       GeoTiffWriter.write(geoTiff, path)
 
@@ -158,8 +151,6 @@ class GeoTiffWriterSpec extends FunSpec
         )
 
       val geoTiff = MultiBandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
-
-      val path = "/tmp/geotiff-writer.tif"
 
       GeoTiffWriter.write(geoTiff, path)
 
@@ -202,6 +193,5 @@ class GeoTiffWriterSpec extends FunSpec
         assertEqual(actualBand, expectedBand)
       }
     }
-
   }
 }

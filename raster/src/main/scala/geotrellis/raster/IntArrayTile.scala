@@ -24,13 +24,13 @@ import java.nio.ByteBuffer
 /**
  * ArrayTile based on Array[Int] (each cell as an Int).
  */
-final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
-    extends MutableArrayTile with IntBasedArrayTile {
+abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
+    extends MutableArrayTile
+       with IntBasedArrayTile {
+  val cellType: IntCells with NoDataHandling
 
-  val cellType = TypeInt
-
-  def apply(i: Int) = array(i)
-  def update(i: Int, z: Int) { array(i) = z }
+  def apply(i: Int): Int
+  def update(i: Int, z: Int)
 
   override def toArray = array.clone
 
@@ -41,45 +41,103 @@ final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
     pixels
   }
 
-  def copy = ArrayTile(array.clone, cols, rows)
+  def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
+}
+
+final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
+    extends IntArrayTile(arr, cols, rows) {
+  val cellType = IntCellType
+  def apply(i: Int): Int = arr(i)
+  def update(i: Int, z: Int) { arr(i) = z }
+}
+
+final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
+    extends IntArrayTile(arr, cols, rows) {
+  val cellType = IntConstantNoDataCellType
+  def apply(i: Int): Int = arr(i)
+  def update(i: Int, z: Int) { arr(i) = z }
+}
+
+final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int, val cellType: IntUserDefinedNoDataCellType)
+    extends IntArrayTile(arr, cols, rows)
+       with UserDefinedIntNoDataConversions {
+  val userDefinedIntNoDataValue = cellType.noDataValue
+  def apply(i: Int): Int = i2udi(arr(i))
+  def update(i: Int, z: Int) { arr(i) = udi2i(z) }
 }
 
 object IntArrayTile {
+  def apply(arr: Array[Int], cols: Int, rows: Int): IntArrayTile =
+    apply(arr, cols, rows, IntConstantNoDataCellType)
+
+
+  def apply(arr: Array[Int], cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
+    cellType match {
+      case IntCellType =>
+        new IntRawArrayTile(arr, cols, rows)
+      case IntConstantNoDataCellType =>
+        new IntConstantNoDataArrayTile(arr, cols, rows)
+      case udct @ IntUserDefinedNoDataCellType(_) =>
+        new IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+    }
+
   def ofDim(cols: Int, rows: Int): IntArrayTile =
-    new IntArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
+    ofDim(cols, rows, IntConstantNoDataCellType)
+
+  def ofDim(cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
+    cellType match {
+      case IntCellType =>
+        new IntRawArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
+      case IntConstantNoDataCellType =>
+        new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
+      case udct @ IntUserDefinedNoDataCellType(_) =>
+        new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows), cols, rows, udct)
+    }
 
   def empty(cols: Int, rows: Int): IntArrayTile =
-    new IntArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
+    empty(cols, rows, IntConstantNoDataCellType)
+
+  def empty(cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
+    cellType match {
+      case IntCellType =>
+        new IntRawArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
+      case IntConstantNoDataCellType =>
+        new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
+      case udct @ IntUserDefinedNoDataCellType(_) =>
+        new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows, udct)
+    }
 
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
-    new IntArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
+    fill(v, cols, rows, IntConstantNoDataCellType)
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): IntArrayTile = {
+  def fill(v: Int, cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
+    cellType match {
+      case IntCellType =>
+        new IntRawArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
+      case IntConstantNoDataCellType =>
+        new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
+      case udct @ IntUserDefinedNoDataCellType(_) =>
+        new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows, udct)
+    }
+
+  private def constructIntArray(bytes: Array[Byte]): Array[Int] = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val intBuffer = byteBuffer.asIntBuffer()
-    val intArray = new Array[Int](bytes.size / TypeInt.bytes)
+    val intArray = new Array[Int](bytes.size / IntConstantNoDataCellType.bytes)
     intBuffer.get(intArray)
-
-    IntArrayTile(intArray, cols, rows)
+    intArray
   }
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): IntArrayTile = 
-    if(isNoData(replaceNoData))
-      fromBytes(bytes, cols, rows)
-    else {
-      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-      val intBuffer = byteBuffer.asIntBuffer()
-      val len = bytes.size / TypeInt.bytes
-      val intArray = new Array[Int](len)
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): IntArrayTile =
+    fromBytes(bytes, cols, rows, IntConstantNoDataCellType)
 
-      cfor(0)(_ < len, _ + 1) { i =>
-        val v = intBuffer.get(i)
-        if(v == replaceNoData)
-          intArray(i) = NODATA
-        else
-          intArray(i) = v
-      }
-
-      IntArrayTile(intArray, cols, rows)
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
+    cellType match {
+      case IntCellType =>
+        new IntRawArrayTile(constructIntArray(bytes), cols, rows)
+      case IntConstantNoDataCellType =>
+        new IntConstantNoDataArrayTile(constructIntArray(bytes), cols, rows)
+      case udct @ IntUserDefinedNoDataCellType(_) =>
+        new IntUserDefinedNoDataArrayTile(constructIntArray(bytes), cols, rows, udct)
     }
 }

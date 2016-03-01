@@ -17,13 +17,11 @@
 package geotrellis.engine.op.focal
 
 import geotrellis.engine._
-import geotrellis.raster.op.focal._
-import geotrellis.testkit._
+import geotrellis.raster.mapalgebra.focal._
 import org.scalatest._
 
-class MinSpec extends FunSpec with TileBuilders
-                              with Matchers
-                              with TestEngine {
+class MinSpec extends FunSpec with Matchers with TestEngine {
+
   describe("Min") {
     it("should square min for raster source") {
       val rs1 = createRasterSource(

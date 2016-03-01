@@ -19,7 +19,7 @@ package geotrellis.benchmark
 import geotrellis._
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op._
+import geotrellis.raster.mapalgebra._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 import geotrellis.raster.PixelSampleType

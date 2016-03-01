@@ -36,7 +36,7 @@ trait S3RDDReader {
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
     val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
     val _getS3Client = getS3Client
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable

@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 scalacOptions ++= Seq("-optimize", "-language:experimental.macros")
 javaOptions in run += "-Xmx2G"
+sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genRaster)
 parallelExecution := false
 fork in test := false
 initialCommands in console :=

@@ -20,16 +20,12 @@ import geotrellis.raster._
 import geotrellis.engine._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
-import geotrellis.testkit._
 
 import spray.json.DefaultJsonProtocol._
 
 import org.scalatest._
 
-class MaskSpec extends FunSpec 
-                  with Matchers 
-                  with TestEngine 
-                  with TileBuilders {
+class MaskSpec extends FunSpec with Matchers with TestEngine  {
   describe("Mask") {
     it("should work with integers") {
             val rs1 = createRasterSource(

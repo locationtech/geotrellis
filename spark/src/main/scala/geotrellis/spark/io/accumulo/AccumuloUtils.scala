@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.{Boundable, KeyBounds}
+import geotrellis.spark.{Boundable, KeyBounds, EmptyBounds}
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import org.apache.hadoop.io.Text
 import org.apache.spark.rdd.RDD
@@ -10,10 +10,13 @@ object AccumuloUtils {
    * Collect keyBounds from the rdd and use given keyIndexMethod to generate n balanced split points for covered space.
    */
   def getSplits[K: Boundable](rdd: RDD[(K, V)] forSome {type V}, keyIndexMethod: KeyIndexMethod[K], n: Int): Seq[Text] = {
-    val keyBounds = implicitly[Boundable[K]].getKeyBounds(rdd)
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
-
-    getSplits(keyBounds, keyIndex, n).map(AccumuloKeyEncoder.index2RowId)
+    implicitly[Boundable[K]].collectBounds(rdd) match {
+      case bounds: KeyBounds[K] =>
+        val keyIndex = keyIndexMethod.createIndex(bounds)
+        getSplits(bounds, keyIndex, n).map(index2RowId)
+      case EmptyBounds =>
+        Seq.empty[Text]
+    }
   }
 
   /**

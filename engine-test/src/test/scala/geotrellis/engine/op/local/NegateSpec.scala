@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class NegateSpec extends FunSpec 
-                    with Matchers 
-                    with TestEngine 
-                    with TileBuilders {
+class NegateSpec extends FunSpec with Matchers with TestEngine {
   describe("Negate") {
     it("negates a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")

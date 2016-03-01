@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.resample._
 import geotrellis.raster.io._
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 import geotrellis.engine._
 import geotrellis.engine.io._
 
@@ -46,7 +46,7 @@ class IOBenchmark extends OperationBenchmark {
 
   var path: String = ""
   var rasterExtent: RasterExtent = null
-  var typ: CellType = TypeFloat
+  var typ: CellType = FloatConstantNoDataCellType
 
   var targetExtent: RasterExtent = null
 
@@ -106,7 +106,7 @@ class ReadAndResampleBenchmark extends OperationBenchmark {
 
   var path: String = ""
   var extent: RasterExtent = null
-  var typ: CellType = TypeFloat
+  var typ: CellType = FloatConstantNoDataCellType
 
   var targetExtent: RasterExtent = null
 
@@ -150,7 +150,7 @@ class SmallTileReadAndResampleBenchmark extends OperationBenchmark {
 
   var path: String = ""
   var extent: RasterExtent = null
-  var typ: CellType = TypeFloat
+  var typ: CellType = FloatConstantNoDataCellType
 
   var rasterExtent: RasterExtent = null
   var targetExtent: RasterExtent = null

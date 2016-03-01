@@ -12,6 +12,8 @@ class MultiBandGeoTiff(
   val tags: Tags,
   options: GeoTiffOptions
 ) extends GeoTiff[MultiBandTile] {
+  val cellType = tile.cellType
+
   def mapTile(f: MultiBandTile => MultiBandTile): MultiBandGeoTiff =
     MultiBandGeoTiff(f(tile), extent, crs, tags, options)
 
@@ -20,31 +22,48 @@ class MultiBandGeoTiff(
       case gtt: GeoTiffMultiBandTile => gtt
       case _ => GeoTiffMultiBandTile(tile)
     }
+
+  def subset(bands: Seq[Int]): ArrayMultiBandTile = {
+    val mbTile = this.tile
+    val newBands = Array.ofDim[Tile](bands.size)
+    var i = 0
+
+    require(bands.size <= mbTile.bandCount)
+    bands.foreach({ j =>
+      newBands(i) = mbTile.band(j)
+      i += 1
+    })
+
+    new ArrayMultiBandTile(newBands)
+  }
+
+  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    subset(bands)
 }
 
 object MultiBandGeoTiff {
   /** Read a multi-band GeoTIFF file from a byte array.
     * GeoTIFF will be fully uncompressed and held in memory.
     */
-  def apply(bytes: Array[Byte]): MultiBandGeoTiff = 
+  def apply(bytes: Array[Byte]): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(bytes)
 
   /** Read a multi-band GeoTIFF file from a byte array.
     * If decompress = true, the GeoTIFF will be fully uncompressed and held in memory.
     */
-  def apply(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff = 
+  def apply(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(bytes, decompress)
 
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String): MultiBandGeoTiff = 
+  def apply(path: String): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(path)
 
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean): MultiBandGeoTiff = 
+  def apply(path: String, decompress: Boolean): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(path, decompress)
 
 

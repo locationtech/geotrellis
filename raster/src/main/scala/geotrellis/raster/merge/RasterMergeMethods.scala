@@ -3,6 +3,8 @@ package geotrellis.raster.merge
 import geotrellis.raster._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.vector.Extent
+import geotrellis.util.MethodExtensions
+
 
 class RasterMergeMethods[T <: CellGrid: ? => TileMergeMethods[T]](val self: Raster[T]) extends MethodExtensions[Raster[T]] {
   def merge(other: Raster[T], method: ResampleMethod): Raster[T] =

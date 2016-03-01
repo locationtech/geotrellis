@@ -7,7 +7,7 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
 import spray.json._
@@ -15,6 +15,7 @@ import spray.json.DefaultJsonProtocol._
 
 import java.io.File
 import scala.reflect.ClassTag
+
 
 class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
   val attributeStore: AttributeStore[JsonFormat],

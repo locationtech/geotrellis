@@ -21,12 +21,9 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class AbsSpec extends FunSpec
-                 with Matchers
-                 with TestEngine
-                 with TileBuilders {
+class AbsSpec extends FunSpec with Matchers with TestEngine {
+
   describe("Abs") {
     it("takes the absolute value of each cell of an int tiled raster") {
       val rasterData = Array(

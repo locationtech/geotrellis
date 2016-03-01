@@ -3,9 +3,11 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.render.jpg._
 import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
+import geotrellis.util.MethodExtensions
 
-trait JpgRenderMethods extends TileMethods {
+
+trait JpgRenderMethods extends MethodExtensions[Tile] {
   /** Generate a JPG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -17,10 +19,10 @@ trait JpgRenderMethods extends TileMethods {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderJpg(): Jpg =
-    new JpgEncoder().writeByteArray(tile)
+    new JpgEncoder().writeByteArray(self)
 
   def renderJpg(settings: jpg.Settings) =
-    new JpgEncoder(settings).writeByteArray(tile)
+    new JpgEncoder(settings).writeByteArray(self)
 
   def renderJpg(colorRamp: ColorRamp): Jpg =
     renderJpg(colorRamp.toArray)
@@ -57,18 +59,18 @@ trait JpgRenderMethods extends TileMethods {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram): Jpg =
+  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram[Int]): Jpg =
     renderJpg(colorBreaks, noDataColor, Some(histogram))
 
   private
-  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram]): Jpg = {
+  def renderJpg(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram[Int]]): Jpg = {
     val renderer =
       histogram match {
         case Some(h) => Renderer(colorBreaks, noDataColor, h)
         case None => Renderer(colorBreaks, noDataColor)
       }
 
-    val r2 = renderer.render(tile)
+    val r2 = renderer.render(self)
     new JpgEncoder().writeByteArray(r2)
   }
 
@@ -76,7 +78,7 @@ trait JpgRenderMethods extends TileMethods {
     renderJpg(ColorBreaks(breaks, ramp.toArray))
 
   def renderJpg(colors: Array[Int]): Jpg = {
-    val h = tile.histogram
+    val h = self.histogram
     renderJpg(ColorBreaks(h, colors), 0, h)
   }
 

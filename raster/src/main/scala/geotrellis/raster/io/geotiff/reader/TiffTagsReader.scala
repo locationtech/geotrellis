@@ -1,16 +1,17 @@
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
+import geotrellis.util.Filesystem
 
 import geotrellis.raster.io.geotiff.utils._
 import spire.syntax.cfor._
 import monocle.syntax._
 
 import java.nio.{ ByteBuffer, ByteOrder }
+
 
 object TiffTagsReader {
   def read(path: String): TiffTags = read(Filesystem.slurp(path))
@@ -60,7 +61,7 @@ object TiffTagsReader {
 
       if (tagMetaData.tag == codes.TagCodes.GeoKeyDirectoryTag)
         geoTags = Some(tagMetaData)
-      else 
+      else
         tiffTags = readTag(byteBuffer, tiffTags, tagMetaData)
     }
 

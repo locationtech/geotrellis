@@ -18,8 +18,7 @@ package geotrellis.engine.op.focal
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.focal._
-import geotrellis.testkit._
+import geotrellis.raster.mapalgebra.focal._
 
 import org.scalatest._
 
@@ -27,10 +26,7 @@ import scala.math._
 
 import spire.syntax.cfor._
 
-class MeanSpec extends FunSpec with TileBuilders
-                               with TestEngine
-                               with Matchers {
-
+class MeanSpec extends FunSpec with Matchers with TestEngine {
 
   describe("Mean") {
     it("should square mean for raster source") {

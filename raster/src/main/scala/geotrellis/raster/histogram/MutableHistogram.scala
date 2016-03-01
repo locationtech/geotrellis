@@ -18,7 +18,7 @@ package geotrellis.raster.histogram
 
 import math.{abs, round, sqrt}
 
-abstract class MutableHistogram extends Histogram {
+abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends Histogram[T] {
   /**
    * Note the occurance of 'item'.
    *
@@ -26,21 +26,34 @@ abstract class MutableHistogram extends Histogram {
    * efficiently. Negative counts can be used to remove a particular number
    * of occurances of 'item'.
    */
-  def countItem(item: Int, count: Int = 1): Unit
+  def countItem(item: T, count: Int = 1): Unit
+
+  def countItemInt(item: Int, count: Int = 1): Unit
 
   /**
    * Forget all occurances of 'item'.
    */
-  def uncountItem(item: Int): Unit
+  def uncountItem(item: T): Unit
 
-  def update(other: Histogram) {
-    other.foreach((z, count) => countItem(z, count))
-  }
+  def update(other: Histogram[T]): Unit
 
   /**
    * Sets the item to the given count.
    */
-  def setItem(item: Int, count: Int): Unit
+  def setItem(item: T, count: Int): Unit
+
+  /**
+   *
+   */
+  def getQuantileBreaks(num: Int): Array[T]
+}
+
+abstract class MutableHistogramInt extends MutableHistogram[Int] with HistogramInt {
+  def countItemInt(item: Int, count: Int = 1): Unit = countItem(item, count)
+
+  def update(other: Histogram[Int]): Unit = {
+    other.foreach((z, count) => countItem(z, count))
+  }
 
   /**
    * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
@@ -48,8 +61,59 @@ abstract class MutableHistogram extends Histogram {
   private def getEvenQuantiles(num: Int) = (1 to num).map(_.toDouble / num).toArray
 
   /**
-   *
+   * This is a heuristic used by getQuantileBreaks, which mutates the
+   * histogram.
    */
+  private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram[Int] = {
+    val (zmin, zmax) = getMinMaxValues()
+
+    // see how many (if any) extreme values we have, and store their indices
+    val values: Array[Int] = getValues()
+    val vLen = values.length
+
+    val eItems: List[Int] = values.foldLeft(Nil: List[Int]) {
+      (is, i) => if (getItemCount(i) > cutoff) i :: is else is
+    }
+    val eLen = eItems.length
+
+    // if we don't have extreme values we're done
+    if (eLen == 0) return this
+
+    val h = mutable()
+
+    // if we only have extreme values, just set all histogram counts to 1.
+    if (eLen == vLen) {
+      eItems.foreach(item => h.setItem(item, 1))
+      return h
+    }
+
+    // ok, so we want extreme values to each get exactly one bucket after
+    // normalization. we will assign each of our extreme indices the same
+    // value, which will be our new target bucket size. to do this, we have to
+    // take into account the "new total" (consisting of all our non-extreme
+    // values plus the "new" extreme values). here is an equation that might
+    // help get the idea across:
+    //
+    // T: the total of all "non-extreme" values added together
+    // Q: the number of quantiles we want
+    // E: the number of extreme values we have
+    // X: our goal, an extreme value which we will assign into the histogram
+    //    for the extreme indices which *also* will correspond to our new
+    //    bucket size
+    //
+    // X             = (T + E * X) / Q
+    // X * Q         = (T + E * X)
+    // X * Q - X * E = T
+    // X * (Q - E)   = T
+    // X             = T / (Q - E)
+    val eSubtotal: Int = eItems.foldLeft(0)((t, i) => t + h.getItemCount(i))
+    val oSubtotal: Int = h.getTotalCount - eSubtotal
+    var eValue: Int = oSubtotal / (num - eLen)
+
+    eItems.foreach(i => h.setItem(i, eValue))
+    h
+  }
+
   def getQuantileBreaks(num: Int): Array[Int] = {
     // first, we create a list of percentages to use, along with determining
     // how many cells should fit in one "ideal" quantile bucket.
@@ -60,7 +124,7 @@ abstract class MutableHistogram extends Histogram {
     // remove extreme values. an extreme value is one that would automatically
     // overflow any bucket it is in (even alone). if size=100, and there are
     // 200 cells with the value "1" then 1 would be an extreme value.
-    val h: Histogram = normalizeExtremeValues(num, size)
+    val h: Histogram[Int] = normalizeExtremeValues(num, size)
 
     // now we'll store some data about the histogram, our quantiles, etc, for
     // future use and fast access.
@@ -123,59 +187,5 @@ abstract class MutableHistogram extends Histogram {
 
     // figure out which breaks got filled, and only return those
     breaks.slice(0, qIndex)
-  }
-
-  /**
-   * This is a heuristic used by getQuantileBreaks, which mutates the
-   * histogram.
-   */
-  private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram = {
-    val (zmin, zmax) = getMinMaxValues()
-
-    // see how many (if any) extreme values we have, and store their indices
-    val values: Array[Int] = getValues()
-    val vLen = values.length
-
-    val eItems: List[Int] = values.foldLeft(Nil: List[Int]) {
-      (is, i) => if (getItemCount(i) > cutoff) i :: is else is
-    }
-    val eLen = eItems.length
-
-    // if we don't have extreme values we're done
-    if (eLen == 0) return this
-
-    val h = mutable()
-
-    // if we only have extreme values, just set all histogram counts to 1.
-    if (eLen == vLen) {
-      eItems.foreach(item => h.setItem(item, 1))
-      return h
-    }
-
-    // ok, so we want extreme values to each get exactly one bucket after
-    // normalization. we will assign each of our extreme indices the same
-    // value, which will be our new target bucket size. to do this, we have to
-    // take into account the "new total" (consisting of all our non-extreme
-    // values plus the "new" extreme values). here is an equation that might
-    // help get the idea across:
-    //
-    // T: the total of all "non-extreme" values added together
-    // Q: the number of quantiles we want
-    // E: the number of extreme values we have
-    // X: our goal, an extreme value which we will assign into the histogram
-    //    for the extreme indices which *also* will correspond to our new
-    //    bucket size
-    //
-    // X             = (T + E * X) / Q
-    // X * Q         = (T + E * X)
-    // X * Q - X * E = T
-    // X * (Q - E)   = T
-    // X             = T / (Q - E)
-    val eSubtotal: Int = eItems.foldLeft(0)((t, i) => t + h.getItemCount(i))
-    val oSubtotal: Int = h.getTotalCount - eSubtotal
-    var eValue: Int = oSubtotal / (num - eLen)
-
-    eItems.foreach(i => h.setItem(i, eValue))
-    h
   }
 }

@@ -11,45 +11,33 @@ import spire.syntax.cfor._
 
 object GeoTiffMultiBandTile {
   def apply(
-    bandType: BandType,
-    compressedBytes: Array[Array[Byte]],
-    decompressor: Decompressor,
-    segmentLayout: GeoTiffSegmentLayout,
-    bandCount: Int,
-    hasPixelInterleave: Boolean,
-    compression: Compression
-  ): GeoTiffMultiBandTile =
-    apply(bandType, compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, None)
-
-  def apply(
-    bandType: BandType,
     compressedBytes: Array[Array[Byte]],
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
     bandCount: Int,
     hasPixelInterleave: Boolean,
-    noDataValue: Option[Double]
-  ): GeoTiffMultiBandTile =    
-    bandType match {
-      case BitBandType => 
-        new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UByteBandType    => 
-        new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case ByteBandType    => 
-        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UInt16BandType  => 
-        new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case Int16BandType   =>
-        new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case UInt32BandType  =>
-        new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case Int32BandType   =>
-        new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case Float32BandType =>
-        new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
-      case Float64BandType =>
-        new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, noDataValue)
+    cellType: CellType
+  ): GeoTiffMultiBandTile =
+    cellType match {
+      case ct: BitCells =>
+        new BitGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: ByteCells =>
+        new ByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: UByteCells =>
+        new UByteGeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: ShortCells =>
+        new Int16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: UShortCells =>
+        new UInt16GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: IntCells =>
+        new Int32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: UIntCells =>
+        new UInt32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: FloatCells =>
+        new Float32GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
+      case ct: DoubleCells =>
+        new Float64GeoTiffMultiBandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, ct)
     }
 
   /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
@@ -109,7 +97,7 @@ object GeoTiffMultiBandTile {
       compressedBytes(i) = compressor.compress(segmentBytes, i)
     }
 
-    apply(bandType, compressedBytes, compressor.createDecompressor, segmentLayout, bandCount, true, options.compression)
+    apply(compressedBytes, compressor.createDecompressor, segmentLayout, options.compression, bandCount, true, tile.cellType)
   }
 
 }
@@ -120,9 +108,9 @@ abstract class GeoTiffMultiBandTile(
   val segmentLayout: GeoTiffSegmentLayout,
   val compression: Compression,
   val bandCount: Int,
-  val hasPixelInterleave: Boolean,
-  val noDataValue: Option[Double]
-) extends MultiBandTile with GeoTiffImageData {
+  val hasPixelInterleave: Boolean
+) extends MultiBandTile with GeoTiffImageData with MacroGeotiffMultibandCombiners {
+  val cellType: CellType
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
 
@@ -171,7 +159,7 @@ abstract class GeoTiffMultiBandTile(
             compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)
           }
 
-          GeoTiffTile(bandType, compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression)
+          GeoTiffTile(compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression, cellType)
         case _ =>
           val compressedBandBytes = Array.ofDim[Array[Byte]](segmentCount)
           val compressor = compression.createCompressor(segmentCount)
@@ -194,18 +182,18 @@ abstract class GeoTiffMultiBandTile(
             compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)
           }
 
-          GeoTiffTile(bandType, compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression)
+          GeoTiffTile(compressedBandBytes, compressor.createDecompressor(), segmentLayout, compression, cellType)
       }
     } else {
       val bandSegmentCount = segmentCount / bandCount
       val compressedBandBytes = Array.ofDim[Array[Byte]](bandSegmentCount)
 
-      var start = bandSegmentCount * bandIndex
+      val start = bandSegmentCount * bandIndex
       cfor(0)(_ < bandSegmentCount, _ + 1) { i =>
         compressedBandBytes(i) = compressedBytes(i + start).clone
       }
 
-      GeoTiffTile(bandType, compressedBandBytes, decompressor, segmentLayout, compression)
+      GeoTiffTile(compressedBandBytes, decompressor, segmentLayout, compression, cellType)
     }
   }
 
@@ -222,14 +210,13 @@ abstract class GeoTiffMultiBandTile(
     }
 
     GeoTiffMultiBandTile(
-      BandType.forCellType(newCellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
       bandCount,
       hasPixelInterleave,
-      None
+      cellType
     )
   }
 
@@ -242,15 +229,42 @@ abstract class GeoTiffMultiBandTile(
     }
 
     GeoTiffMultiBandTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
       bandCount,
       hasPixelInterleave,
-      None
+      cellType
     )
+  }
+
+  /**
+    * Piggy-back on the other map method to support mapping a subset
+    * of the bands.
+    */
+  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultiBandTile = {
+    val set = subset.toSet
+    val fn = { (bandIndex: Int, z: Int) =>
+      if (set.contains(bandIndex)) f(bandIndex, z)
+      else z
+    }
+
+    map(fn)
+  }
+
+  /**
+    * Piggy-back on the other map method to support mapping a subset
+    * of the bands.
+    */
+  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultiBandTile = {
+    val set = subset.toSet
+    val fn = { (bandIndex: Int, z: Double) =>
+      if (set.contains(bandIndex)) f(bandIndex, z)
+      else z
+    }
+
+    mapDouble(fn)
   }
 
   def map(b0: Int)(f: Int => Int): MultiBandTile =
@@ -460,6 +474,36 @@ abstract class GeoTiffMultiBandTile(
     }
   }
 
+  /**
+    * Piggy-back on the other combine method to support combing a
+    * subset of the bands.
+    */
+  def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
+    subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+
+    val fn = { array: Array[Int] =>
+      val data = subset.map({ i => array(i) })
+      f(data)
+    }
+
+    combine(fn)
+  }
+
+  /**
+    * Piggy-back on the other combineDouble method to support
+    * combining a subset of the bands.
+    */
+  def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
+    subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+
+    val fn = { array: Array[Double] =>
+      val data = subset.map({ i => array(i) })
+      f(data)
+    }
+
+    combineDouble(fn)
+  }
+
   override
   def combine(f: Array[Int] => Int): Tile =
     _combine(_.initValueHolder)({ segmentCombiner => segmentCombiner.placeValue _ })({ segmentCombiner =>
@@ -467,8 +511,8 @@ abstract class GeoTiffMultiBandTile(
     })
 
   override
-  def combineDouble(f: Array[Double] => Double): Tile = 
-    _combine(_.initValueHolderDouble)({ segmentCombiner => segmentCombiner.placeValueDouble _ })({ segmentCombiner => 
+  def combineDouble(f: Array[Double] => Double): Tile =
+    _combine(_.initValueHolderDouble)({ segmentCombiner => segmentCombiner.placeValueDouble _ })({ segmentCombiner =>
       { i => segmentCombiner.setFromValuesDouble(i, f) }
     })
 
@@ -524,26 +568,25 @@ abstract class GeoTiffMultiBandTile(
       }
 
     GeoTiffTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      cellType
     )
   }
 
-  def combine(b0: Int,b1: Int)(f: (Int, Int) => Int): Tile =
+  def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
-        segmentCombiner.set(targetIndex, s1, i1, s2, i2)(f) 
+        segmentCombiner.set(targetIndex, s1, i1, s2, i2)(f)
       }
     }
 
-  def combineDouble(b0: Int,b1: Int)(f: (Double, Double) => Double): Tile =
+  def combineDouble(b0: Int, b1: Int)(f: (Double, Double) => Double): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
-        segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2)(f) 
+        segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2)(f)
       }
     }
 
@@ -597,259 +640,11 @@ abstract class GeoTiffMultiBandTile(
       }
 
     GeoTiffTile(
-      BandType.forCellType(cellType),
       arr,
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      None
+      cellType
     )
-  }
-
-  override
-  def combineIntTileCombiner(combiner: IntTileCombiner3): Tile =
-    _combine(combiner.b0, combiner.b1, combiner.b2) { segmentCombiner =>
-      { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int) =>
-        segmentCombiner.set(targetIndex, s1, i1, s2, i2, s3, i3)(combiner)
-      }
-    }
-
-  override
-  def combineDoubleTileCombiner(combiner: DoubleTileCombiner3): Tile =
-    _combine(combiner.b0, combiner.b1, combiner.b2) { segmentCombiner =>
-      { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int) =>
-        segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2, s3, i3)(combiner)
-      }
-    }
-
-  private def _combine(b0: Int, b1: Int, b2: Int)
-    (set: SegmentCombiner => (Int, GeoTiffSegment, Int, GeoTiffSegment, Int, GeoTiffSegment, Int) => Unit): Tile = {
-    assert(b0 < bandCount, s"Illegal band index: $b0 is out of range ($bandCount bands)")
-    assert(b1 < bandCount, s"Illegal band index: $b1 is out of range ($bandCount bands)")
-    assert(b2 < bandCount, s"Illegal band index: $b2 is out of range ($bandCount bands)")
-
-    val (arr, compressor) =
-      if(hasPixelInterleave) {
-        val diff1 = b1 - b0
-        val diff2 = b2 - b0
-
-        val compressor = compression.createCompressor(segmentCount)
-        val arr = Array.ofDim[Array[Byte]](segmentCount)
-
-        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-          val segment = getSegment(segmentIndex)
-          val segmentSize = segment.size
-          val segmentCombiner = createSegmentCombiner(segmentSize / bandCount)
-
-          var j = 0
-          cfor(b0)(_ < segmentSize, _ + bandCount) { i =>
-            set(segmentCombiner)(j, segment, i, segment, i + diff1, segment, i + diff2)
-            j += 1
-          }
-
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
-        }
-        (arr, compressor)
-      } else {
-        val bandSegmentCount = segmentCount / bandCount
-        val compressor = compression.createCompressor(bandSegmentCount)
-        val arr = Array.ofDim[Array[Byte]](bandSegmentCount)
-
-        val start0 = bandSegmentCount * b0
-        val start1 = bandSegmentCount * b1
-        val start2 = bandSegmentCount * b2
-        cfor(0)(_ < bandSegmentCount, _ + 1) { segmentIndex =>
-          val segment0 = getSegment(start0 + segmentIndex)
-          val segment1 = getSegment(start1 + segmentIndex)
-          val segment2 = getSegment(start2 + segmentIndex)
-          val segmentSize = segment0.size
-
-          val segmentCombiner = createSegmentCombiner(segmentSize)
-
-          cfor(0)(_ < segmentSize, _ + 1) { i =>
-            set(segmentCombiner)(i, segment0, i, segment1, i, segment2, i)
-          }
-
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
-        }
-
-        (arr, compressor)
-      }
-
-    GeoTiffTile(
-      BandType.forCellType(cellType),
-      arr,
-      compressor.createDecompressor(),
-      segmentLayout,
-      compression,
-      None
-    )
-  }
-
-  def combineIntTileCombiner(combiner: IntTileCombiner4): Tile =
-    _combine(combiner.b0, combiner.b1, combiner.b2, combiner.b3) { segmentCombiner =>
-      { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int, s4: GeoTiffSegment, i4: Int) =>
-        segmentCombiner.set(targetIndex, s1, i1, s2, i2, s3, i3, s4, i4)(combiner)
-      }
-    }
-
-  def combineDoubleTileCombiner(combiner: DoubleTileCombiner4): Tile =
-    _combine(combiner.b0, combiner.b1, combiner.b2, combiner.b3) { segmentCombiner =>
-      { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int, s4: GeoTiffSegment, i4: Int) =>
-        segmentCombiner.setDouble(targetIndex, s1, i1, s2, i2, s3, i3, s4, i4)(combiner)
-      }
-    }
-
-  private def _combine(b0: Int, b1: Int, b2: Int, b3: Int)
-    (set: SegmentCombiner => (Int, GeoTiffSegment, Int, GeoTiffSegment, Int, GeoTiffSegment, Int, GeoTiffSegment, Int) => Unit): Tile = {
-    assert(b0 < bandCount, s"Illegal band index: $b0 is out of range ($bandCount bands)")
-    assert(b1 < bandCount, s"Illegal band index: $b1 is out of range ($bandCount bands)")
-    assert(b2 < bandCount, s"Illegal band index: $b2 is out of range ($bandCount bands)")
-    assert(b3 < bandCount, s"Illegal band index: $b2 is out of range ($bandCount bands)")
-
-    val (arr, compressor) =
-      if(hasPixelInterleave) {
-        val diff1 = b1 - b0
-        val diff2 = b2 - b0
-        val diff3 = b3 - b0
-
-        val compressor = compression.createCompressor(segmentCount)
-        val arr = Array.ofDim[Array[Byte]](segmentCount)
-
-        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-          val segment = getSegment(segmentIndex)
-          val segmentSize = segment.size
-          val segmentCombiner = createSegmentCombiner(segmentSize / bandCount)
-
-          var j = 0
-          cfor(b0)(_ < segmentSize, _ + bandCount) { i =>
-            set(segmentCombiner)(j, segment, i, segment, i + diff1, segment, i + diff2, segment, i + diff3)
-            j += 1
-          }
-
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
-        }
-        (arr, compressor)
-      } else {
-        val bandSegmentCount = segmentCount / bandCount
-        val compressor = compression.createCompressor(bandSegmentCount)
-        val arr = Array.ofDim[Array[Byte]](bandSegmentCount)
-
-        val start0 = bandSegmentCount * b0
-        val start1 = bandSegmentCount * b1
-        val start2 = bandSegmentCount * b2
-        val start3 = bandSegmentCount * b3
-        cfor(0)(_ < bandSegmentCount, _ + 1) { segmentIndex =>
-          val segment0 = getSegment(start0 + segmentIndex)
-          val segment1 = getSegment(start1 + segmentIndex)
-          val segment2 = getSegment(start2 + segmentIndex)
-          val segment3 = getSegment(start3 + segmentIndex)
-          val segmentSize = segment0.size
-
-          val segmentCombiner = createSegmentCombiner(segmentSize)
-
-          cfor(0)(_ < segmentSize, _ + 1) { i =>
-            set(segmentCombiner)(i, segment0, i, segment1, i, segment2, i, segment3, i)
-          }
-
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
-        }
-
-        (arr, compressor)
-      }
-
-    GeoTiffTile(
-      BandType.forCellType(cellType),
-      arr,
-      compressor.createDecompressor(),
-      segmentLayout,
-      compression,
-      None
-    )
-  }
-
-  /** Creates a segment combiner, which is an abstraction that allows us to generalize
-    * the combine algorithms over BandType. */
-  protected def createSegmentCombiner(targetSize: Int): SegmentCombiner
-
-  /** This trait is how subclasses define the necessary pieces that allow
-    * us to abstract over each of the combine functions */
-  protected abstract class SegmentCombiner {
-
-    private var valueHolder: Array[Int] = null
-    private var valueHolderDouble: Array[Double] = null
-
-    def initValueHolder(): Unit = { valueHolder = Array.ofDim[Int](bandCount) }
-    def initValueHolderDouble(): Unit = { valueHolderDouble = Array.ofDim[Double](bandCount) }
-
-    def set(targetIndex: Int, v: Int): Unit
-    def setDouble(targetIndex: Int, v: Double): Unit
-
-    def set(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int)
-      (f: (Int, Int) => Int): Unit = {
-      val z1 = s1.getInt(i1)
-      val z2 = s2.getInt(i2)
-      set(targetIndex, f(z1, z2))
-    }
-
-    def set(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int)
-      (combiner: IntTileCombiner3): Unit = {
-      val z1 = s1.getInt(i1)
-      val z2 = s2.getInt(i2)
-      val z3 = s3.getInt(i3)
-      set(targetIndex, combiner(z1, z2, z3))
-    }
-
-    def set(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int, s4: GeoTiffSegment, i4: Int)
-      (combiner: IntTileCombiner4): Unit = {
-      val z1 = s1.getInt(i1)
-      val z2 = s2.getInt(i2)
-      val z3 = s3.getInt(i3)
-      val z4 = s4.getInt(i4)
-      set(targetIndex, combiner(z1, z2, z3, z4))
-    }
-
-    def setDouble(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int)
-      (f: (Double, Double) => Double): Unit = {
-      val z1 = s1.getDouble(i1)
-      val z2 = s2.getDouble(i2)
-      setDouble(targetIndex, f(z1, z2))
-    }
-
-    def setDouble(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int)
-      (combiner: DoubleTileCombiner3): Unit = {
-      val z1 = s1.getInt(i1)
-      val z2 = s2.getInt(i2)
-      val z3 = s3.getInt(i3)
-      setDouble(targetIndex, combiner(z1, z2, z3))
-    }
-
-    def setDouble(targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int, s3: GeoTiffSegment, i3: Int, s4: GeoTiffSegment, i4: Int)
-      (combiner: DoubleTileCombiner4): Unit = {
-      val z1 = s1.getDouble(i1)
-      val z2 = s2.getDouble(i2)
-      val z3 = s3.getDouble(i3)
-      val z4 = s4.getDouble(i4)
-      setDouble(targetIndex, combiner(z1, z2, z3, z4))
-    }
-
-    // Used for combining all bands.
-    def placeValue(segment: GeoTiffSegment, i: Int, bandIndex: Int): Unit = {
-      valueHolder(bandIndex) = segment.getInt(i)
-    }
-
-    def setFromValues(targetIndex: Int, f: Array[Int] => Int): Unit = {
-      set(targetIndex, f(valueHolder))
-    }
-
-    def placeValueDouble(segment: GeoTiffSegment, i: Int, bandIndex: Int): Unit = {
-      valueHolderDouble(bandIndex) = segment.getDouble(i)
-    }
-
-    def setFromValuesDouble(targetIndex: Int, f: Array[Double] => Double): Unit = {
-      setDouble(targetIndex, f(valueHolderDouble))
-    }
-
-    def getBytes(): Array[Byte]
   }
 }

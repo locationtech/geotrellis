@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,8 +18,8 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.arg.ArgReader
+import geotrellis.util.Filesystem
 
 import com.typesafe.config.Config
 import java.io.File
@@ -27,10 +27,11 @@ import java.io.File
 import spire.syntax.cfor._
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
-    val tileDir = 
+    val tileDir =
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
         if(f.isAbsolute) {
@@ -60,7 +61,7 @@ extends RasterLayerBuilder {
       val rasterExtent = RasterExtent(getExtent(json), cw, ch, cols, rows)
       val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
 
-      val info = 
+      val info =
         RasterLayerInfo(
           LayerId(ds, getName(json)),
           getCellType(json),
@@ -77,14 +78,16 @@ extends RasterLayerBuilder {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object TileSetRasterLayer {
-  def tileName(id: LayerId, col: Int, row: Int) = 
+  def tileName(id: LayerId, col: Int, row: Int) =
     s"${id}_${col}_${row}"
 
   def tilePath(path: String, id: LayerId, col: Int, row: Int) =
     Filesystem.join(path, s"${id.name}_${col}_${row}.arg")
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class TileSetRasterLayer(info: RasterLayerInfo,
                          val tileDirPath: String,
                          val tileLayout: TileLayout)
@@ -135,7 +138,7 @@ extends RasterLayer(info) {
           }
         }
         tile
-      case None => 
+      case None =>
         val loader = getTileLoader()
         val tiles = mutable.ListBuffer[Tile]()
         cfor(0)(_ < tileLayout.layoutRows, _ + 1) { row =>
@@ -148,16 +151,16 @@ extends RasterLayer(info) {
   }
 
   override
-  def getRaster(extent: Extent): Tile = 
+  def getRaster(extent: Extent): Tile =
     CroppedTile(getRaster(None), info.rasterExtent.gridBoundsFor(extent))
 
-  def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]) = 
+  def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]) =
     getTileLoader().getTile(col, row, targetExtent)
 
   def getTileLoader() =
     if(isCached)
       new CacheTileLoader(info, tileLayout, getCache)
-    else 
+    else
       new DiskTileLoader(info, tileLayout, tileDirPath)
 
   def cache(c: Cache[String]) = {
@@ -170,6 +173,7 @@ extends RasterLayer(info) {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 abstract class TileLoader(tileSetInfo: RasterLayerInfo,
                           tileLayout: TileLayout) extends Serializable {
   val tileExtents = TileExtents(tileSetInfo.rasterExtent.extent, tileLayout)
@@ -180,7 +184,7 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
     val re = RasterExtent(tileExtents(col, row), tileLayout.tileCols, tileLayout.tileRows)
     if(col < 0 || row < 0 ||
        tileLayout.layoutCols <= col || tileLayout.layoutRows <= row) {
-      val tre = 
+      val tre =
         targetExtent match {
           case Some(x) => x
           case None => re
@@ -195,6 +199,7 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
   protected def loadRaster(col: Int, row: Int, re: RasterExtent, tre: Option[RasterExtent]): Tile
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class DiskTileLoader(tileSetInfo: RasterLayerInfo,
                      tileLayout: TileLayout,
                      tileDirPath: String)
@@ -202,15 +207,16 @@ extends TileLoader(tileSetInfo, tileLayout) {
   def loadRaster(col: Int, row: Int, re: RasterExtent, targetExtent: Option[RasterExtent]): Tile = {
     val path = TileSetRasterLayer.tilePath(tileDirPath, tileSetInfo.id, col, row)
     targetExtent match {
-      case Some(tre) => 
+      case Some(tre) =>
         ArgReader.read(path, tileSetInfo.cellType, re, tre)
-      case None => 
+      case None =>
         ArgReader.read(path, tileSetInfo.cellType, re.cols, re.rows)
     }
 
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 class CacheTileLoader(info: RasterLayerInfo,
                       tileLayout: TileLayout,
                       c: Cache[String])
@@ -219,9 +225,9 @@ extends TileLoader(info, tileLayout) {
     c.lookup[Array[Byte]](TileSetRasterLayer.tileName(info.id, col, row)) match {
       case Some(bytes) =>
         targetExtent match {
-          case Some(tre) => 
+          case Some(tre) =>
             ArgReader.resampleBytes(bytes, info.cellType, re, tre)
-          case None => 
+          case None =>
             ArrayTile.fromBytes(bytes, info.cellType, re.cols, re.rows)
         }
       case None =>

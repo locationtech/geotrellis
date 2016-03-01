@@ -21,12 +21,8 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-import geotrellis.testkit._
 
-class SinSpec extends FunSpec
-                 with Matchers
-                 with TestEngine
-                 with TileBuilders {
+class SinSpec extends FunSpec with Matchers with TestEngine {
   describe("Sin") {
     it("finds the sine of a double raster") {
       val rasterData = Array (

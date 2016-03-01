@@ -17,7 +17,7 @@
 package geotrellis.engine.op.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.op.zonal._
+import geotrellis.raster.mapalgebra.zonal._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.engine._
 
@@ -25,21 +25,33 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait ZonalRasterSourceMethods extends RasterSourceMethods {
   /**
    * Given a raster, return a histogram summary of the cells within each zone.
    *
    * @note    zonalHistogram does not currently support Double raster data.
-   *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+   *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
    *          the data values will be rounded to integers.
    */
-  def zonalHistogram(zonesSource: RasterSource): ValueSource[Map[Int, Histogram]] =
+  def zonalHistogramInt(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Int]]] = {
     ValueSource(
       (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
-        ZonalHistogram(tile, zones)
+        ZonalHistogramInt(tile, zones)
       }
     )
+  }
 
+  /**
+   * Given a raster, return a histogram summary of the cells within each zone.
+   */
+  def zonalHistogramDouble(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Double]]] = {
+    ValueSource(
+      (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
+        ZonalHistogramDouble(tile, zones)
+      }
+    )
+  }
 
   /**
    * Given a raster and a raster representing it's zones, sets all pixels
@@ -49,7 +61,7 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
    * Percentages are integer values from 0 - 100.
    *
    * @note    ZonalPercentage does not currently support Double raster data.
-   *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
+   *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
    *          the data values will be rounded to integers.
    */
   def zonalPercentage(zonesSource: RasterSource): RasterSource =

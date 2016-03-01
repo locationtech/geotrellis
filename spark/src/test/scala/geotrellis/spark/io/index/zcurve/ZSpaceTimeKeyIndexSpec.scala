@@ -93,7 +93,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
     }
 
     it("generates indexes by string pattern") {
-      val pattern = "YM" //by months
+      val pattern = "YMM" //by months
       val zst = ZSpaceTimeKeyIndex.byPattern(pattern)
 
       val keys =

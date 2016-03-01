@@ -10,7 +10,7 @@ import geotrellis.spark._
 
 import geotrellis.spark.io._
 import geotrellis.spark.testfiles._
-import geotrellis.spark.op.stats._
+import geotrellis.spark.summary._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._

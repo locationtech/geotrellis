@@ -40,13 +40,20 @@ object TiffTagFieldValue {
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
-      case TypeBit => None
-      case TypeByte => Some(byteNODATA.toString)
-      case TypeUByte => Some(ubyteNODATA.toString)
-      case TypeShort => Some(shortNODATA.toString)
-      case TypeUShort => Some(ushortNODATA.toString)
-      case TypeInt => Some(NODATA.toString)
-      case (TypeFloat | TypeDouble) => Some("nan")
+      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType | FloatCellType | DoubleCellType => None
+      case ByteConstantNoDataCellType => Some(byteNODATA.toString)
+      case ByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case UByteConstantNoDataCellType => Some(ubyteNODATA.toString)
+      case UByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case ShortConstantNoDataCellType => Some(shortNODATA.toString)
+      case ShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case UShortConstantNoDataCellType => Some(ushortNODATA.toString)
+      case UShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case IntConstantNoDataCellType => Some(NODATA.toString)
+      case IntUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
+      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case DoubleUserDefinedNoDataCellType(nd) => Some(nd.toString)
     }
 
   def collect(geoTiff: GeoTiffData): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
@@ -70,10 +77,10 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
-    createNoDataString(imageData.bandType.cellType) match {
+    createNoDataString(geoTiff.cellType) match {
       case Some(noDataString) =>
         fieldValues += TiffTagFieldValue(GDALInternalNoDataTag, AsciisFieldType, noDataString.length + 1, toBytes(noDataString))
-      case _ =>
+      case _ => ()
     }
 
     val re = RasterExtent(extent, imageData.cols, imageData.rows)

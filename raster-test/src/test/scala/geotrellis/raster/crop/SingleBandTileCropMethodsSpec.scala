@@ -2,15 +2,16 @@ package geotrellis.raster.crop
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class SingleBandTileCropMethodsSpec 
     extends FunSpec
     with Matchers
-    with TestEngine
-    with TileBuilders {
+    with TileBuilders
+    with RasterMatchers
+    with TestFiles {
 
   describe("cropping by extent") {
     val (cols, rows) = (5, 5)

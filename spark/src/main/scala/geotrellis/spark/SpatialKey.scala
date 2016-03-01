@@ -41,15 +41,15 @@ object SpatialKey {
   implicit object Boundable extends Boundable[SpatialKey] {
     def minBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.min(a.col, b.col), math.min(a.row, b.row))
-    }    
+    }
     def maxBound(a: SpatialKey, b: SpatialKey) = {
       SpatialKey(math.max(a.col, b.col), math.max(a.row, b.row))
     }
 
-    def getKeyBounds(rdd: RDD[(SpatialKey, X)] forSome {type X}): KeyBounds[SpatialKey] = {
+    def collectBounds[V](rdd: RDD[(SpatialKey, V)]): Bounds[SpatialKey] = {
       rdd
-        .map{ case (k, tile) => KeyBounds(k, k) }
-        .reduce { combine }
+        .map{ case (k, tile) => Bounds(k, k) }
+        .fold(EmptyBounds) { _ combine  _ }
     }
   }
 }

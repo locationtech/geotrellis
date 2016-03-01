@@ -143,7 +143,7 @@ object ColorBreaks {
   def apply(limits: Array[Double], colors: Array[Int]): DoubleColorBreaks =
     new DoubleColorBreaks(limits, sample(colors, limits.length))
 
-  def apply(histogram: Histogram, colors: Array[Int]): IntColorBreaks = {
+  def apply(histogram: Histogram[Int], colors: Array[Int]): IntColorBreaks = {
     val limits = histogram.getQuantileBreaks(colors.length)
     new IntColorBreaks(limits, sample(colors, limits.length))
   }

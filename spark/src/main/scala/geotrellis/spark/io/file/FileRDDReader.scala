@@ -6,7 +6,7 @@ import geotrellis.spark.io.index.{MergeQueue, KeyIndex, IndexRanges}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
 import geotrellis.spark.utils.cache.Cache
-import geotrellis.raster.io.Filesystem
+import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -19,7 +19,6 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileRDDReader {
-
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     keyPath: Long => String,
     queryKeyBounds: Seq[KeyBounds[K]],

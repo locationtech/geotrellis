@@ -10,10 +10,12 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.proj4._
+import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
+
 
 class TileRDDReprojectMethods[
   K: SpatialComponent: ClassTag,

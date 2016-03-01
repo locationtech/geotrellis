@@ -18,7 +18,6 @@ package geotrellis.engine.logic
 
 import geotrellis.engine._
 
-import geotrellis.testkit._
 
 import org.scalatest._
 

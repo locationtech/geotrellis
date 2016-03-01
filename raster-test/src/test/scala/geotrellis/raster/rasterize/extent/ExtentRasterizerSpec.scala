@@ -20,14 +20,13 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import math.{max,min,round}
 
 import org.scalatest.FunSuite
 
 class ExtentRasterizerSpec extends FunSuite
-    with TestEngine
     with TileBuilders {
 
   test("Rasterization of a covering Extent") {
@@ -76,7 +75,6 @@ class ExtentRasterizerSpec extends FunSuite
 }
 
 class ExtentPolygonXCheckSpec extends FunSuite
-    with TestEngine
     with TileBuilders {
 
   test("Cross-Check with Polygon Rasterizer and 1x1 Pixels") {

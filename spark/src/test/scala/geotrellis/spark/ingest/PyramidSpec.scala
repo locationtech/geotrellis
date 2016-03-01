@@ -1,25 +1,15 @@
 package geotrellis.spark.ingest
 
 import geotrellis.spark._
-import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.formats.NetCdfBand
 import geotrellis.spark.tiling._
 import geotrellis.proj4.LatLng
-import geotrellis.spark.utils.SparkUtils
 import geotrellis.raster._
 
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
-import org.apache.hadoop.fs.Path
 import com.github.nscala_time.time.Imports._
 import org.scalatest._
 
 
-class PyramidSpec extends FunSpec
-  with Matchers
-  with TestEnvironment
-  with RasterRDDBuilders
-{
+class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
   describe("Pyramid") {
     it("should work with SpaceTimeKey rasters") {

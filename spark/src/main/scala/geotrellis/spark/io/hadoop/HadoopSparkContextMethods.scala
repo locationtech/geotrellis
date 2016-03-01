@@ -1,9 +1,9 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
+import geotrellis.spark.TemporalProjectedExtent
 import geotrellis.vector._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.ingest.SpaceTimeInputKey
 
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -38,26 +38,26 @@ trait HadoopSparkContextMethods {
       classOf[Tile]
     )
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String): RDD[(SpaceTimeInputKey, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(new Path(path), defaultTiffExtensions)
+  def hadoopTemporalGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtension: String): RDD[(SpaceTimeInputKey, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(new Path(path), Seq(tiffExtension))
+  def hadoopTemporalGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopSpaceTimeGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(SpaceTimeInputKey, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(new Path(path), tiffExtensions)
+  def hadoopTemporalGeoTiffRDD(path: String, tiffExtensions: Seq[String] ): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path): RDD[(SpaceTimeInputKey, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(path, defaultTiffExtensions)
+  def hadoopTemporalGeoTiffRDD(path: Path): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(path, defaultTiffExtensions)
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtension: String): RDD[(SpaceTimeInputKey, Tile)] =
-    hadoopSpaceTimeGeoTiffRDD(path, Seq(tiffExtension))
+  def hadoopTemporalGeoTiffRDD(path: Path, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
+    hadoopTemporalGeoTiffRDD(path, Seq(tiffExtension))
 
-  def hadoopSpaceTimeGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(SpaceTimeInputKey, Tile)] =
+  def hadoopTemporalGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, Tile)] =
     sc.newAPIHadoopRDD(
       sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
-      classOf[SpaceTimeGeoTiffInputFormat],
-      classOf[SpaceTimeInputKey],
+      classOf[TemporalGeoTiffInputFormat],
+      classOf[TemporalProjectedExtent],
       classOf[Tile]
     )
 
@@ -77,55 +77,6 @@ trait HadoopSparkContextMethods {
       classOf[ProjectedExtent],
       classOf[MultiBandTile]
     )
-
-  def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
-    val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)
-
-    sc.newAPIHadoopRDD(
-      updatedConf,
-      classOf[GdalInputFormat],
-      classOf[GdalRasterInfo],
-      classOf[Tile]
-    )
-  }
-
-  def netCdfRDD(
-    path: Path,
-    inputFormat: NetCdfInputFormat = DefaultNetCdfInputFormat): RDD[(NetCdfBand, Tile)] = {
-    val makeTime = (info: GdalRasterInfo) =>
-    info.file.meta.find {
-      case(key, value) => key.toLowerCase == inputFormat.baseDateMetaDataKey.toLowerCase
-    }.map(_._2) match {
-      case Some(baseString) => {
-
-        val (typ, base) = NetCdfInputFormat.readTypeAndDate(
-          baseString,
-          inputFormat.dateTimeFormat,
-          inputFormat.yearOffset,
-          inputFormat.monthOffset,
-          inputFormat.dayOffset
-        )
-
-        info.bandMeta.find {
-          case(key, value) => key.toLowerCase == "netcdf_dim_time"
-        }.map(_._2) match {
-          case Some(s) => NetCdfInputFormat.incrementDate(typ, s.toDouble, base)
-          case _ => base
-        }
-      }
-      case None => throw new IllegalArgumentException("Can't find base date!")
-    }
-
-    gdalRDD(path)
-      .map { case (info, tile) =>
-        val band = NetCdfBand(
-          extent = info.file.rasterExtent.extent,
-          crs = info.file.crs,
-          time = makeTime(info)
-        )
-        band -> tile
-    }
-  }
 
   def newJob: Job =
     Job.getInstance(sc.hadoopConfiguration)

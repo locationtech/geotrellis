@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
-import geotrellis.raster.op.stats._
+import geotrellis.raster.summary._
 
 import spire.syntax.cfor._
 
@@ -174,7 +174,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     * Return tuple of highest and lowest value in raster.
     *
     * @note   Currently does not support double valued raster data types
-    *         (TypeFloat, TypeDouble). Calling findMinMax on rasters of those
+    *         (FloatConstantNoDataCellType, DoubleConstantNoDataCellType). Calling findMinMax on rasters of those
     *         types will give the integer min and max of the rounded values of
     *         their cells.
     */
@@ -278,7 +278,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     * Return ascii art of a range from this raster.
     */
   def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int) = {
-    var s = "";
+    var s = ""
     for (row <- rowMin to rowMax) {
       for (col <- colMin to colMax) {
         val z = this.get(row, col)
@@ -291,5 +291,19 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
       s += "\n"
     }
     s
+  }
+
+  def isNoDataTile: Boolean = {
+    var (c, r) = (0, 0)
+    while (r < rows) {
+      while(c < cols) {
+        if(cellType.isFloatingPoint) { if (isData(getDouble(c, r))) return false }
+        else { if(isData(get(c, r))) return false }
+        c += 1
+      }
+      c = 0; r += 1
+    }
+
+    true
   }
 }

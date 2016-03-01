@@ -2,7 +2,7 @@ package geotrellis.spark.io
 
 import geotrellis.spark._
 import geotrellis.spark.testfiles._
-import geotrellis.spark.op.stats._
+import geotrellis.spark.summary._
 import geotrellis.raster.io.json._
 import geotrellis.raster.histogram._
 
@@ -49,7 +49,7 @@ abstract class AttributeStoreSpec
 
     attributeStore.write(layerId, "histogram", histo)
 
-    val loaded = attributeStore.read[Histogram](layerId, "histogram")
+    val loaded = attributeStore.read[Histogram[Int]](layerId, "histogram")
     loaded.getMean should be (histo.getMean)
   }
 

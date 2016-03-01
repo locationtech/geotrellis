@@ -4,7 +4,7 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.utils.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import org.apache.accumulo.core.client.mapreduce.InputFormatBase
+import org.apache.accumulo.core.client.mapreduce.{AccumuloInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Range => AccumuloRange, Value, Key}
 import org.apache.accumulo.core.util.{Pair => AccumuloPair}
 import org.apache.avro.Schema
@@ -27,7 +27,7 @@ object AccumuloRDDReader {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
     val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)
@@ -36,11 +36,12 @@ object AccumuloRDDReader {
     val ranges = queryKeyBounds.flatMap(decomposeBounds).asJava
     InputFormatBase.setRanges(job, ranges)
     InputFormatBase.fetchColumns(job, List(new AccumuloPair(columnFamily, null: Text)).asJava)
+    InputFormatBase.setBatchScan(job, true)
 
     val kwWriterSchema = KryoWrapper(writerSchema)
     sc.newAPIHadoopRDD(
       job.getConfiguration,
-      classOf[BatchAccumuloInputFormat],
+      classOf[AccumuloInputFormat],
       classOf[Key],
       classOf[Value])
     .map { case (_, value) =>

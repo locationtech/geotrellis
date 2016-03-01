@@ -18,13 +18,12 @@ package geotrellis.raster.io.arg
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.testkit._
-import geotrellis.engine.io.LoadFile
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class ArgTest extends FunSuite
-                 with TestEngine {
+                 with RasterMatchers {
   val array =
     Array(NODATA, -1, 2, -3,
       4, -5, 6, -7,
@@ -35,7 +34,7 @@ class ArgTest extends FunSuite
   val tile = IntArrayTile(array, 4, 4)
   val extent = Extent(10.0, 11.0, 14.0, 15.0)
 
-  def loadRaster(path:String) = get(LoadFile(path))
+  def loadRaster(path: String) = ArgReader.read(path)
 
   test("test float compatibility") {
     assert(isNoData(tile.applyDouble(0)))
@@ -46,52 +45,44 @@ class ArgTest extends FunSuite
   }
 
   test("write all supported arg datatypes") {
-    ArgWriter(TypeByte).write("/tmp/foo-int8.arg", tile, extent, "foo-int8")
-    ArgWriter(TypeShort).write("/tmp/foo-int16.arg", tile, extent, "foo-int16")
-    ArgWriter(TypeInt).write("/tmp/foo-int32.arg", tile, extent, "foo-int32")
-    ArgWriter(TypeFloat).write("/tmp/foo-float32.arg", tile, extent, "foo-float32")
-    ArgWriter(TypeDouble).write("/tmp/foo-float64.arg", tile, extent, "foo-float64")
+    ArgWriter(ByteConstantNoDataCellType).write("/tmp/foo-int8.arg", tile, extent, "foo-int8")
+    ArgWriter(ShortConstantNoDataCellType).write("/tmp/foo-int16.arg", tile, extent, "foo-int16")
+    ArgWriter(IntConstantNoDataCellType).write("/tmp/foo-int32.arg", tile, extent, "foo-int32")
+    ArgWriter(FloatConstantNoDataCellType).write("/tmp/foo-float32.arg", tile, extent, "foo-float32")
+    ArgWriter(DoubleConstantNoDataCellType).write("/tmp/foo-float64.arg", tile, extent, "foo-float64")
   }
 
   test("check int8") {
-    assert(loadRaster("/tmp/foo-int8.arg").toArray === array)
+    assert(loadRaster("/tmp/foo-int8.json").toArray === array)
   }
 
   test("check int16") {
-    assert(loadRaster("/tmp/foo-int16.arg").toArray === array)
+    assert(loadRaster("/tmp/foo-int16.json").toArray === array)
   }
 
   test("check int32") {
-    assert(loadRaster("/tmp/foo-int32.arg").toArray === array)
+    assert(loadRaster("/tmp/foo-int32.json").toArray === array)
   }
 
   test("check float32") {
-    val d = loadRaster("/tmp/foo-float32.arg").toArrayTile
+    val d = loadRaster("/tmp/foo-float32.json").toArrayTile
     assert(isNoData(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
   }
 
   test("check float64") {
-    val d = loadRaster("/tmp/foo-float64.arg").toArrayTile
+    val d = loadRaster("/tmp/foo-float64.json").toArrayTile
     assert(isNoData(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
   }
 
   test("check c# test") {
-    var xmin = 0
-    var ymin = 0
-    var xmax = 15
-    var ymax = 11
-
-    var cellwidth = 1.5
-    var cellheight = 1.0
-
-    var cols = 10
-    var rows = 11
-    var A = 50.toByte
-    var o = -128.toByte
+    val cols = 10
+    val rows = 11
+    val A = 50.toByte
+    val o = -128.toByte
     val byteArr:Array[Byte] = Array[Byte](
       o,o,o,o,o,o,o,o,o,o,
       o,o,o,o,o,o,o,o,o,o,
@@ -106,14 +97,16 @@ class ArgTest extends FunSuite
       o,A,A,A,A,A,A,A,A,o)
 
     val tile = ByteArrayTile(byteArr, cols, rows)
-    ArgWriter(TypeByte).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
-    val r2 = loadRaster("/tmp/fooc-int8.arg")
+
+    ArgWriter(ByteConstantNoDataCellType).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
+    val r2 = loadRaster("/tmp/fooc-int8.json")
+
     assert(r2.toArrayTile === tile.toArrayTile)
   }
 
   test("make sure it contains 100 cells") {
     val d = FloatArrayTile.ofDim(10, 10)
-    assert((d.cols*d.rows) === 100)
+    assert((d.cols * d.rows) === 100)
   }
 
   test("make sure it's an array of zeros") {

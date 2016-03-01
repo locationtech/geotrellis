@@ -34,13 +34,9 @@ class S3LayerUpdater(
     }
 
     val boundable = implicitly[Boundable[K]]
-    val keyBounds = try {
-      boundable.getKeyBounds(rdd)
-    } catch {
-      case e: UnsupportedOperationException => throw new LayerUpdateError(id, ": empty rdd update").initCause(e)
-    }
+    val keyBounds = boundable.collectBounds(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
 
-    if (!boundable.includes(keyBounds.minKey, existingKeyBounds) || !boundable.includes(keyBounds.maxKey, existingKeyBounds))
+    if (!(existingKeyBounds includes keyBounds.minKey) || !(existingKeyBounds includes keyBounds.maxKey))
       throw new LayerOutOfKeyBoundsError(id)
 
     val prefix = existingHeader.key

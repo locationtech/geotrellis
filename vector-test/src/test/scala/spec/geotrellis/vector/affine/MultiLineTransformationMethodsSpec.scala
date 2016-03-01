@@ -1,7 +1,7 @@
 package geotrellis.vector.affine
 
 import geotrellis.vector._
-import geotrellis.testkit.vector._
+import geotrellis.vector.testkit._
 
 import com.vividsolutions.jts.{geom=>jts}
 

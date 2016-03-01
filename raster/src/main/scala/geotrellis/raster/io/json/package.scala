@@ -8,8 +8,8 @@ import geotrellis.vector.io.json._
 import spray.json._
 
 package object json {
-  implicit object HistogramFormat extends RootJsonFormat[Histogram] {
-    def write(h: Histogram): JsValue = {
+  implicit object HistogramFormat extends RootJsonFormat[Histogram[Int]] {
+    def write(h: Histogram[Int]): JsValue = {
       var pairs: List[JsArray] = Nil
       h.foreach{ (value, count) => pairs = JsArray(JsNumber(value), JsNumber(count)) :: pairs }
       JsArray(pairs:_*)

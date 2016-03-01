@@ -6,8 +6,7 @@ import geotrellis.raster.mosaic._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
-import geotrellis.engine._
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
@@ -18,7 +17,7 @@ import spire.syntax.cfor._
 class ReprojectSpec extends FunSpec
     with TileBuilders
     with GeoTiffTestUtils
-    with TestEngine {
+    with RasterMatchers {
   describe("reprojects in approximation to GDAL") {
     import Reproject.Options
 
@@ -27,7 +26,7 @@ class ReprojectSpec extends FunSpec
 
       val ree @ Raster(expected, expectedExtent) =
         SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
- 
+
       val rea @ Raster(actual, actualExtent) =
         raster.reproject(crs, WebMercator, Options(method = NearestNeighbor, errorThreshold = 0.0))
 
@@ -136,7 +135,7 @@ class ReprojectSpec extends FunSpec
         val RasterExtent(_, cellwidth, cellheight, _, _) = leftRasterExtent
         val unionExtent = leftRasterExtent.extent.combine(rightRasterExtent.extent)
         val re = RasterExtent(unionExtent, CellSize(cellwidth, cellheight))
-        val mergeTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+        val mergeTile = ArrayTile.empty(IntConstantNoDataCellType, re.cols, re.rows)
         mergeTile.merge(unionExtent, leftRasterExtent.extent, leftTile)
         mergeTile.merge(unionExtent, rightRasterExtent.extent, rightTile)
         detectNoDataLine(mergeTile)
@@ -160,7 +159,7 @@ class ReprojectSpec extends FunSpec
       // Specifically fit it ito a web mercator zoom layout tile
       val re = RasterExtent(Extent(-8247861.100, 4872401.931, -8238077.160, 4882185.871), 256, 256)
 
-      val emptyTile = ArrayTile.empty(TypeInt, re.cols, re.rows)
+      val emptyTile = ArrayTile.empty(IntConstantNoDataCellType, re.cols, re.rows)
       val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile).merge(re.extent, wmRightExtent, wmRightTile)
 
       detectNoDataLine(mergeTile)

@@ -19,6 +19,7 @@ package geotrellis.raster.rasterize
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector.Geometry
+import geotrellis.util.MethodExtensions
 
 
 trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
@@ -26,7 +27,7 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
   def foreachCell(
     re : RasterExtent,
     options: Options = Options.DEFAULT,
-    ct : CellType = TypeInt
+    ct : CellType = IntConstantNoDataCellType
   )(fn : (Int, Int) => Int) : Tile = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.set(x,y,fn(x,y)) })
@@ -36,7 +37,7 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
   def foreachCellDouble(
     re : RasterExtent,
     options: Options = Options.DEFAULT,
-    ct : CellType = TypeDouble
+    ct : CellType = DoubleConstantNoDataCellType
   )(fn : (Int, Int) => Double) : Tile = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.setDouble(x,y,fn(x,y)) })

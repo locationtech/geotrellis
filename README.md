@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.svg)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 *GeoTrellis* is a Scala library and framework that uses Spark to work with raster data.  It is released under the Apache 2 License.
 
@@ -83,6 +83,7 @@ Throughout this repo, you'll find readme documents specific to particular the mo
   1. [`geotrellis.vector.interpolation`](./vector/src/main/scala/geotrellis/vector/interpolation) - Kriging interpoloation from vector point data
   2. [`geotrellis.vector.io.json`](./vector/src/main/scala/geotrellis/vector/io/json/) - parsing vector data as GeoJSON
 6. [spark-etl](./spark-etl) - ingesting raster data and storing as Raster RDDs using Spark
+7. [spark](./spark/op) - performing raster operations on Raster RDDs using Spark
 
 
 

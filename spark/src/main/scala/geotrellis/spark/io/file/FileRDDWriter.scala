@@ -1,8 +1,8 @@
 package geotrellis.spark.io.file
 
-import geotrellis.raster.io.Filesystem
 import geotrellis.spark.io.avro.{AvroRecordCodec, AvroEncoder}
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.util.Filesystem
 
 import org.apache.spark.rdd.RDD
 
@@ -18,7 +18,6 @@ object FileRDDWriter {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
-    // TODO: Is there a way to reduce the shuffle?
     val pathsToTiles =
       rdd.groupBy { case (key, _) => keyPath(key) }
 

@@ -2,20 +2,20 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 import geotrellis.vector.Extent
 
 import geotrellis.proj4._
 
-import geotrellis.testkit._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 
 class Int16GeoTiffMultiBandTileSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine
+    with RasterMatchers
     with GeoTiffTestUtils 
     with TileBuilders {
   def p(s: String, i: String): String = 
@@ -30,7 +30,7 @@ class Int16GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff(p("striped", "pixel")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = ShortArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
@@ -40,7 +40,7 @@ class Int16GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff(p("tiled", "pixel")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = ShortArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
@@ -50,7 +50,7 @@ class Int16GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff(p("striped", "band")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = ShortArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }
@@ -60,7 +60,7 @@ class Int16GeoTiffMultiBandTileSpec extends FunSpec
         MultiBandGeoTiff(p("tiled", "band")).tile
 
       val actual = tile.combine(_.sum)
-      val expected = ShortArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
+      val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
 
       assertEqual(actual, expected)
     }

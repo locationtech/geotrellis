@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ import scala.collection.mutable
 
 import geotrellis._
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object TreeChars {
   val DOWN_OUT = "├"
   val OUT_DOWN = "┬"
@@ -30,6 +31,7 @@ object TreeChars {
   val DOWN = "│"
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 object History {
   def apply(op:Op[_]) =
     new History(op.opId,Nil,None,System.currentTimeMillis,0)
@@ -43,16 +45,20 @@ object History {
   implicit def historyToString(h:History) = h.toString
 }
 
-abstract sealed trait HistoryResult { 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
+abstract sealed trait HistoryResult {
   def toJson:String
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class SuccessHistory(value:String) extends HistoryResult {
   def toJson() = {
     val escapedVal = value.replace(""""""","""\"""")
     s"""{ "type" : "success", "value" : "$escapedVal" }"""
   }
 }
+
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   def toJson() = {
     val escapedMsg = msg.replace(""""""","""\"""")
@@ -61,6 +67,7 @@ case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class History(id:String,
                    steps:List[StepHistory],
                    result:Option[HistoryResult],
@@ -71,13 +78,13 @@ case class History(id:String,
 
   def withResult[T](value:T,forced:Boolean = false) = {
     val now = System.currentTimeMillis
-    val resultString = 
+    val resultString =
       value match {
         case null => "null"
         case s:String => s""""$s""""
         case i:Int => s"""$i"""
         case d:Double => s"""$d"""
-        case v:Vector[_] => 
+        case v:Vector[_] =>
           val sb = new StringBuilder
           sb.append("Vector(")
           val len = v.length
@@ -87,7 +94,7 @@ case class History(id:String,
           }
           sb.append(")")
           sb.toString
-        case l:List[_] => 
+        case l:List[_] =>
           val sb = new StringBuilder
           sb.append("List(")
           val len = l.length
@@ -100,7 +107,7 @@ case class History(id:String,
         case _ => value.getClass.getSimpleName
       }
 
-    val s = 
+    val s =
       if(forced) { resultString + " [Forced]" }
       else { resultString }
 
@@ -119,7 +126,7 @@ case class History(id:String,
     new History(id,StepHistory(stepHistorys) :: steps,result,startTime,endTime,system)
 
   override
-  def toString:String = 
+  def toString:String =
     toString("",false)
 
   def toString(indentString:String,initialIndent:Boolean,includeSystem:Boolean=true):String = {
@@ -141,7 +148,7 @@ case class History(id:String,
     sb.append("Result: ")
     sb.append(result match {
       case Some(SuccessHistory(s)) => s"$s (in ${endTime - startTime} ms)"
-      case Some(FailureHistory(msg,trace)) => 
+      case Some(FailureHistory(msg,trace)) =>
         s"ERROR: $msg (in $elapsedTime ms): \n" + trace + "\n"
       case None => "No Result"
     })
@@ -158,7 +165,7 @@ case class History(id:String,
       case None => """{ "type" : "none" }"""
     }
     val orderedSteps = steps.reverse.toList
-    val stepsJson = 
+    val stepsJson =
       (for(i <- 0 until orderedSteps.length) yield {
         orderedSteps(i).toJson(i)
       }).mkString(",")
@@ -171,6 +178,7 @@ case class History(id:String,
   }
 }
 
+@deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 case class StepHistory(opHistories:List[History]) {
   override
   def toString:String =
@@ -188,14 +196,14 @@ case class StepHistory(opHistories:List[History]) {
     for(i <- 0 until len) {
       if(i == 0 && len == 1) {
         sb.append(opIndentString + (TreeChars.OUT * 2))
-      } else if(i == len - 1) { 
+      } else if(i == len - 1) {
         sb.append(lastOpIndentString)
       } else if(i == 0) {
-        sb.append(firstOpIndentString) 
-      } else { 
-        sb.append(otherOpIndentString) 
+        sb.append(firstOpIndentString)
+      } else {
+        sb.append(otherOpIndentString)
       }
-      val ins = 
+      val ins =
         if(i == len - 1) { indentString + (" " * 2) }
         else { betweenIndentString }
       sb.append(opHistories(i).toString(ins,false))

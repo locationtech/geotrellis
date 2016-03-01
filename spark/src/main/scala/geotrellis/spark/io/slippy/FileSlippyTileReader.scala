@@ -2,11 +2,11 @@ package geotrellis.spark.io.slippy
 
 import geotrellis.vector._
 import geotrellis.raster._
-import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.util.Filesystem
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter._
@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.Path
 
 import java.io._
 import scala.collection.JavaConversions._
+
 
 class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
