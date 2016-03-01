@@ -12,11 +12,11 @@ import geotrellis.spark.testfiles._
 import org.scalatest._
 import java.io.File
 
-class HadoopSlippyTileWriterSpec 
-    extends FunSpec 
-    with Matchers 
-    with TestEnvironment 
-    with TestFiles 
+class HadoopSlippyTileWriterSpec
+    extends FunSpec
+    with Matchers
+    with TestEnvironment
+    with TestFiles
 {
   describe("HadoopSlippyTileWriter") {
     val testPath = new File(outputLocalPath, "slippy-write-test").getPath

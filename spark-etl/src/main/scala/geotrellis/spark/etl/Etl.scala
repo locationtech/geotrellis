@@ -33,7 +33,7 @@ object Etl {
     val etl = Etl(args)
     val sourceTiles = etl.load[I, V]
     val (_, metadata) = etl.collectMetadata(sourceTiles)
-    val tiled = sourceTiles.cutTiles[K](metadata, NearestNeighbor)
+    val tiled = sourceTiles.tileToLayout[K](metadata, NearestNeighbor)
     val (zoom, reprojected) = etl.reproject(ContextRDD(tiled, metadata))
     etl.save[K, V](LayerId(etl.conf.layerName(), zoom), reprojected, keyIndexMethod)
   }

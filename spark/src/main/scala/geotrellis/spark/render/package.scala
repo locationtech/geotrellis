@@ -3,82 +3,41 @@ package geotrellis.spark
 import geotrellis.raster.Tile
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render._
-import geotrellis.spark.io.s3._
 import geotrellis.spark.io.hadoop._
-import java.net.URI
+
+import org.apache.spark.rdd.RDD
+
 
 package object render {
-  private def fill(template: String, id: LayerId, key: SpatialKey) = template
-    .replace("(x)", key.col.toString)
-    .replace("(y)", key.row.toString)
-    .replace("(z)", id.zoom.toString)
-    .replace("(name)", id.name)
-
   implicit class SpatialRasterRDDRenderMethods(rdd: RasterRDD[SpatialKey]) {
     /**
-     * Renders and saves each tile as a PNG.
+     * Renders each tile as a PNG.
      *
-     * @param id            LayerId required to fill the zoom variable
-     * @param pathTemplate  path template for each file. (ex: "s3://tile-bucket/{name}/{z}/{x}/{y}.png")
-     * @param classifier    If not defined cells are assumed to be RGBA values
+     * @param breaks If not defined cells are assumed to be RGBA values
      */
-    def renderPng(id: LayerId, pathTemplate: String, classifier: Option[ColorClassifier[_]] = None): Unit = {
-      // '(' and ')' are oddly enough valid URI characters that parser will not fail
-      val parseFriendlyTemplate = pathTemplate.replace("{","(").replace("}",")")
-      val uri = new URI(parseFriendlyTemplate)
-
+    def renderPng(classifier: Option[ColorClassifier[_]] = None): RDD[(SpatialKey, Array[Byte])] = {
       val paintTile = (k: SpatialKey, t: Tile) => classifier.fold(t.renderPng())( b => t.renderPng(b)).bytes
-
-      // Hadoop appears to have  poor support for S3, requiring  specialized handling
-      if (uri.getScheme == "s3")
-        rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
-      else
-        rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
+      rdd.map { case (k,t) => (k, paintTile(k,t)) }
     }
 
     /**
-     * Renders and saves each tile as a JPG.
+     * Renders each tile as a JPG.
      *
-     * @param id            LayerId required to fill the zoom variable
-     * @param pathTemplate  path template for each file. (ex: "s3://tile-bucket/{name}/{z}/{x}/{y}.png")
-     * @param classifier    If not defined cells are assumed to be RGB values
+     * @param breaks If not defined cells are assumed to be RGB values
      */
-    def renderJpg(id: LayerId, pathTemplate: String, classifier: Option[ColorClassifier[_]] = None): Unit = {
-      // '(' and ')' are oddly enough valid URI characters that parser will not fail
-      val parseFriendlyTemplate = pathTemplate.replace("{","(").replace("}",")")
-      val uri = new URI(parseFriendlyTemplate)
-
-      val paintTile = (k: SpatialKey, t: Tile) => classifier.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
-
-      // Hadoop appears to have  poor support for S3, requiring  specialized handling
-      if (uri.getScheme == "s3")
-        rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
-      else
-        rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
-
+    def renderJpg(classifier: Option[ColorClassifier[_]] = None): RDD[(SpatialKey, Array[Byte])] = {
+      val paintTile = (k: SpatialKey, t: Tile) => breaks.fold(t.renderJpg())( b => t.renderJpg(b)).bytes
+      rdd.map { case (k,t) => (k, paintTile(k,t)) }
     }
 
     /**
-     * Renders and saves each tile as a GeoTiff.
-     *
-     * @param id            LayerId required to fill the zoom variable
-     * @param pathTemplate  path template for each file. (ex: "s3://tile-bucket/{name}/{z}/{x}/{y}.tiff")
+     * Renders each tile as a GeoTiff.
      */
-    def renderGeoTiff(id: LayerId, pathTemplate: String): Unit = {
-      // '(' and ')' are oddly enough valid URI characters that parser will not fail
-      val parseFriendlyTemplate = pathTemplate.replace("{","(").replace("}",")")
-      val uri = new URI(parseFriendlyTemplate)
-
-
+    def renderGeoTiff(): RDD[(SpatialKey, Array[Byte])] = {
       val transform = rdd.metaData.mapTransform
       val crs = rdd.metaData.crs
       val paintTile = (k: SpatialKey, t: Tile) => GeoTiff(t, transform(k), crs).toByteArray
-
-      // Hadoop appears to have  poor support for S3, requiring  specialized handling
-      if (uri.getScheme == "s3")
-        rdd.saveToS3(uri.getAuthority, key => fill(uri.getPath, id, key).replaceFirst("/",""), paintTile)
-      else
-        rdd.saveToHadoop(uri.getScheme, key => fill(parseFriendlyTemplate, id, key), paintTile)
+      rdd.map { case (k,t) => (k, paintTile(k,t)) }
     }
   }
 }
