@@ -185,6 +185,8 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
     new CopyObjectResult()
   }
+
+  def setRegion(region: com.amazonaws.regions.Region): Unit = {}
 }
 
 object MockS3Client{

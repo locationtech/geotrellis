@@ -96,7 +96,9 @@ trait S3Client extends LazyLogging {
       }      
 
       def next: S3ObjectSummary = iter.next
-    }                
+    }
+
+  def setRegion(region: com.amazonaws.regions.Region): Unit
 }
 
 object S3Client {
@@ -167,5 +169,9 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     } finally {
       inStream.close()
     }
+  }
+
+  def setRegion(region: com.amazonaws.regions.Region): Unit = {
+    s3client.setRegion(region)
   }
 }

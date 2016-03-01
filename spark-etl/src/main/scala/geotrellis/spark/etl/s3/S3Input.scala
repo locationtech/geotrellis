@@ -14,8 +14,10 @@ abstract class S3Input[I, V] extends InputPlugin[I, V] {
     val job = Job.getInstance(sc.hadoopConfiguration, "S3 GeoTiff ETL")
     S3InputFormat.setBucket(job, props("bucket"))
     S3InputFormat.setPrefix(job, props("key"))
-    if (props.contains("splitSize"))
-      S3InputFormat.setMaxKeys(job, props("splitSize").toInt)
+    if (props.contains("partitionCount"))
+      S3InputFormat.setPartitionCount(job, props("partitionCount").toInt)
+    if (props.contains("partitionBytes"))
+      S3InputFormat.setPartitionBytes(job, props("partitionBytes").toInt)
     job.getConfiguration
   }
 }
