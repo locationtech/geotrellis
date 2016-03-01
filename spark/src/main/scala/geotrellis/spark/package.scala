@@ -23,6 +23,8 @@ import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
+import geotrellis.spark.filter._
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
@@ -127,6 +129,9 @@ package object spark
         }
       }, preservesPartitioning = true)
   }
+
+  implicit class withRasterRDDFilterMethods[K: Boundable : ClassTag, V: ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
+      extends RasterRDDFilterMethods[K, V, M]
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {
