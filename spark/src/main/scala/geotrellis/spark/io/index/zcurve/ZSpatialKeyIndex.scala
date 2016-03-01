@@ -5,6 +5,8 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.index.zcurve._
 
 class ZSpatialKeyIndex() extends KeyIndex[SpatialKey] {
+  def keyBounds = None
+
   private def toZ(key: SpatialKey): Z2 = Z2(key.col, key.row)
 
   def toIndex(key: SpatialKey): Long = toZ(key).z

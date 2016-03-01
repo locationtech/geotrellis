@@ -10,7 +10,7 @@ trait SpaceTimeKeyIndexMethods {
   def keyIndexMethods: Map[String, KeyIndexMethod[SpaceTimeKey]] =
     Map(
       "z order by year" -> ZCurveKeyIndexMethod.byYear,
-      "z order using now" -> ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 },
+      "z order by 6 months" -> ZCurveKeyIndexMethod.byMonths(6),
       "hilbert using now" -> HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4),
       "hilbert resolution" -> HilbertKeyIndexMethod(2)
     )

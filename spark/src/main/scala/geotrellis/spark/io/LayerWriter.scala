@@ -32,7 +32,7 @@ trait LayerWriter[ID] {
     V: AvroRecordCodec: ClassTag,
     M: Component[?, KeyBounds[K]]: JsonFormat
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
-    val keyBounds = layer.metadata.get[KeyBounds[K]]
+    val keyBounds = layer.metadata.getComponent[KeyBounds[K]]
     write[K, V, M](id, layer, keyIndex, keyBounds)
   }
 
@@ -41,7 +41,7 @@ trait LayerWriter[ID] {
     V: AvroRecordCodec: ClassTag,
     M: Component[?, KeyBounds[K]]: JsonFormat
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit = {
-    val keyBounds = layer.metadata.get[KeyBounds[K]]
+    val keyBounds = layer.metadata.getComponent[KeyBounds[K]]
     val keyIndex = keyIndexMethod.createIndex(keyBounds)
     write[K, V, M](id, layer, keyIndex, keyBounds)
   }

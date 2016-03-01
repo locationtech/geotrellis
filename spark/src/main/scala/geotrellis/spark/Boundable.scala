@@ -52,6 +52,6 @@ trait Boundable[K] extends Serializable {
 }
 
 object Boundable {
-  def getKeyBounds[K](rdd: RDD[(K, V)] forSome {type V})(implicit boundable: Boundable[K]): KeyBounds[K] =
-    boundable.getKeyBounds(rdd)
+  def getKeyBounds[K](rdd: RDD[(K, V)] forSome {type V})(implicit boundable: Boundable[K]): Bounds[K] =
+    boundable.collectBounds(rdd)
 }

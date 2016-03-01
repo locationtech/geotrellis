@@ -1,6 +1,8 @@
 package geotrellis.spark
 
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.json._
 import geotrellis.raster._
 
 import org.apache.spark._
@@ -13,16 +15,13 @@ import org.apache.spark.rdd._
 object InterfaceSpec {
   type RRDD = RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]
 
-  def onlyCompile = { 
-    val reader: FilteringLayerReader[
-      LayerId, SpatialKey, RasterMetaData,
-      RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]
-    ] = ???
+  def onlyCompile = {
+    val reader: FilteringLayerReader[LayerId] = ???
     val id: LayerId = ???
 
-    val rdd1 = reader.read(id)
-    val rdd2 = reader.read(id)
-    val rdd3 = reader.read(id)
+    val rdd1 = reader.read[SpatialKey, Tile, RasterMetaData](id)
+    val rdd2 = reader.read[SpatialKey, Tile, RasterMetaData](id)
+    val rdd3 = reader.read[SpatialKey, Tile, RasterMetaData](id)
 
 
      rdd1 + 1
@@ -38,7 +37,7 @@ object InterfaceSpec {
     rdd1.join(rdd2).mapValues { case (tile1, tile2) => Add(tile1, tile2) }
     // we can make that operation shorter
     rdd1.join(rdd2).combineValues(Add(_, _))
-    
+
     // we can update an RDD with a left join
     rdd1.leftOuterJoin(rdd2).mapValues { case (tile1, optionTile) => optionTile.fold(tile1)(Add(tile1, _)) }
     // again we can make that shorter
@@ -53,8 +52,8 @@ object InterfaceSpec {
     ContextRDD(rdd1 localAdd rdd2, rdd1.metadata)
 
     // Using .withContext is easier
-    rdd1.withContext { _ localAdd rdd2 } 
-    
+    rdd1.withContext { _ localAdd rdd2 }
+
     rdd1.withContext { rdd =>
       rdd localAdd rdd2 localAdd rdd3
     }
@@ -68,14 +67,14 @@ object InterfaceSpec {
     // Chaining updates on results of spatialJoin is different because they produce Metadata
     import geotrellis.spark.partitioner._
     def updateLayout(md: RasterMetaData, bounds: Bounds[SpatialKey]): RasterMetaData = ???
-    
+
     rdd1.spatialJoin(rdd2)
       .withContext { _.combineValues(Add(_, _)) }
       .mapContext { bounds => updateLayout(rdd1.metadata, bounds) }
-        
+
     rdd1 // spatial join will consume and transform my metadata to keybounds
       .spatialJoin(rdd2).withContext { _.combineValues(Add(_, _)) }
       .spatialJoin(rdd3).withContext { _.combineValues(Add(_, _)) } // this saved KeyBounds of the join through combine
-      .mapContext{ bounds => updateLayout(rdd1.metadata, bounds) }  
+      .mapContext{ bounds => updateLayout(rdd1.metadata, bounds) }
   }
 }

@@ -32,15 +32,17 @@ object HilbertSpaceTimeKeyIndex {
 }
 
 class HilbertSpaceTimeKeyIndex(
-  keyBounds: KeyBounds[SpaceTimeKey],
+  kb: KeyBounds[SpaceTimeKey],
   xResolution: Int,
   yResolution: Int,
   temporalResolution: Int
 ) extends KeyIndex[SpaceTimeKey] {
-  val startMillis = keyBounds.minKey.temporalKey.time.getMillis
-  val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
+  def keyBounds = Some(kb)
+
+  val startMillis = kb.minKey.temporalKey.time.getMillis
+  val timeWidth = kb.maxKey.temporalKey.time.getMillis - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
-  val minKey = keyBounds.minKey.spatialKey
+  val minKey = kb.minKey.spatialKey
 
   @transient lazy val chc = {
     val dimensionSpec =

@@ -9,7 +9,7 @@ object AccumuloUtils {
   /**
    * Collect keyBounds from the rdd and use given keyIndexMethod to generate n balanced split points for covered space.
    */
-  def getSplits[K: Boundable](rdd: RDD[(K, V)] forSome {type V}, keyIndexMethod: KeyIndexMethod[K], n: Int): Seq[Text] = {
+  def getSplits[K: Boundable](rdd: RDD[(K, V)] forSome {type V}, keyIndexMethod: KeyIndexMethod[K], n: Int)(index2RowId: Long => Text): Seq[Text] = {
     implicitly[Boundable[K]].collectBounds(rdd) match {
       case bounds: KeyBounds[K] =>
         val keyIndex = keyIndexMethod.createIndex(bounds)

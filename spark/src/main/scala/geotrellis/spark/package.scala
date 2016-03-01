@@ -19,6 +19,7 @@ package geotrellis
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
+import geotrellis.util._
 
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
@@ -75,10 +76,10 @@ package object spark
     * with a specific type.
     */
   implicit class ComponentMethods[T](val self: T) extends MethodExtensions[T] {
-    def get[C]()(implicit component: Component[T, C]): C =
+    def getComponent[C]()(implicit component: Component[T, C]): C =
       self &|-> component get
 
-    def set[C](value: C)(implicit component: Component[T, C]): T =
+    def setComponent[C](value: C)(implicit component: Component[T, C]): T =
       self &|-> component set(value)
   }
 

@@ -7,15 +7,17 @@ import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._
 
 object Implicits {
-  implicit object TestPartitioner extends ZSpatialKeyIndex with PartitionerIndex[SpatialKey] {
+  implicit object TestPartitioner extends PartitionerIndex[SpatialKey] {
+    private val zCurveIndex = new ZSpatialKeyIndex()
+
     def rescale(key: SpatialKey): SpatialKey =
       SpatialKey(key.col/2, key.row/2)
 
     override def toIndex(key: SpatialKey): Long =
-      super.toIndex(rescale(key))
+      zCurveIndex.toIndex(rescale(key))
 
     override def indexRanges(r: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
-      super.indexRanges((rescale(r._1), rescale(r._2)))
+      zCurveIndex.indexRanges((rescale(r._1), rescale(r._2)))
   }
 }
 
