@@ -1,6 +1,7 @@
 package org.osgeo.proj4j;
 
 import org.osgeo.proj4j.datum.*;
+import java.util.Arrays;
 
 /**
  * Represents the operation of transforming 
@@ -156,7 +157,9 @@ public class BasicCoordinateTransform
         /* -------------------------------------------------------------------- */
         /*      Short cut if the datums are identical.                          */
         /* -------------------------------------------------------------------- */
-        if (srcCRS.getDatum().isEqual(tgtCRS.getDatum()))
+        if (srcCRS.getDatum().isEqual(tgtCRS.getDatum())
+                || srcCRS.getDatum().getTransformType() == Datum.TYPE_UNKNOWN
+                || tgtCRS.getDatum().getTransformType() == Datum.TYPE_UNKNOWN)
             return;
     
         if (srcCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
@@ -183,6 +186,7 @@ public class BasicCoordinateTransform
             if( srcCRS.getDatum().hasTransformToWGS84() ) {
                 srcCRS.getDatum().transformFromGeocentricToWgs84( pt );
             }
+
             if( tgtCRS.getDatum().hasTransformToWGS84() ) {
                 tgtCRS.getDatum().transformToGeocentricFromWgs84( pt );
             }

@@ -170,6 +170,9 @@ public class GeocentricConverter implements  java.io.Serializable
   		if (RR/this.a < genau) {
   			Latitude = ProjectionMath.HALFPI;
   			Height   = -this.b;
+            p.x = Longitude;
+            p.y = Latitude;
+            p.z = Height;
   			return;
   		}
   	} else {

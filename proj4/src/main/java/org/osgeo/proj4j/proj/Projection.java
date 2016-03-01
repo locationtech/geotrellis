@@ -18,6 +18,7 @@ package org.osgeo.proj4j.proj;
 
 import org.osgeo.proj4j.*;
 import org.osgeo.proj4j.datum.Ellipsoid;
+import org.osgeo.proj4j.datum.PrimeMeridian;
 import org.osgeo.proj4j.units.AngleFormat;
 import org.osgeo.proj4j.units.Unit;
 import org.osgeo.proj4j.units.Units;
@@ -178,6 +179,8 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
      * units of this projection.  Default is metres, but may be degrees
      */
     protected Unit unit = null;
+
+    public PrimeMeridian primeMeridian = PrimeMeridian.forName("greenwich");
 
     // Some useful constants
     protected final static double EPS10 = 1e-10;
@@ -725,6 +728,10 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setUnits(Unit unit)
     {
         this.unit = unit;
+    }
+
+    public Unit getUnits() {
+        return this.unit;
     }
   
     /**

@@ -4,6 +4,7 @@ import org.osgeo.proj4j.CoordinateReferenceSystem;
 import org.osgeo.proj4j.Grid;
 import org.osgeo.proj4j.datum.Datum;
 import org.osgeo.proj4j.datum.Ellipsoid;
+import static org.osgeo.proj4j.util.ProjectionMath.isIdentity;
 
 import java.util.List;
 
@@ -49,8 +50,8 @@ public class DatumParameters
     if (ellipsoid == null && ! isDefinedExplicitly()) {
       return Datum.WGS84;
     }
-    // if ellipsoid was WGS84, return that datum
-    if (ellipsoid == Ellipsoid.WGS84)
+    // Check for WGS84 datum parameters
+    if (ellipsoid == Ellipsoid.WGS84 && grids == null && (datumTransform == null || isIdentity(datumTransform)))
       return Datum.WGS84;
     
     // otherwise, return a custom datum with the specified ellipsoid

@@ -186,18 +186,18 @@ public class Proj4Parser
      }
    }
    
-   /**
-    * PROJ4 towgs84 7-parameter transform uses 
-    * units of arc-seconds for the rotation factors, 
-    * and parts-per-million for the scale factor.
-    * These need to be converted to radians and a scale factor. 
-    */
-   if (param.length > 3) {
-     param[3] *= ProjectionMath.SECONDS_TO_RAD;
-     param[4] *= ProjectionMath.SECONDS_TO_RAD;
-     param[5] *= ProjectionMath.SECONDS_TO_RAD;
-     param[6] = (param[6]/ProjectionMath.MILLION) + 1;
-   }
+   // /**
+   //  * PROJ4 towgs84 7-parameter transform uses 
+   //  * units of arc-seconds for the rotation factors, 
+   //  * and parts-per-million for the scale factor.
+   //  * These need to be converted to radians and a scale factor. 
+   //  */
+   // if (param.length > 3) {
+   //   param[3] *= ProjectionMath.SECONDS_TO_RAD;
+   //   param[4] *= ProjectionMath.SECONDS_TO_RAD;
+   //   param[5] *= ProjectionMath.SECONDS_TO_RAD;
+   //   param[6] = (param[6]/ProjectionMath.MILLION) + 1;
+   // }
    
    return param;
  }

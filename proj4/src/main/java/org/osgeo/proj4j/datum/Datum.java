@@ -18,6 +18,9 @@ package org.osgeo.proj4j.datum;
 
 import org.osgeo.proj4j.ProjCoordinate;
 import org.osgeo.proj4j.Grid;
+import static org.osgeo.proj4j.util.ProjectionMath.MILLION;
+import static org.osgeo.proj4j.util.ProjectionMath.SECONDS_TO_RAD;
+import static org.osgeo.proj4j.util.ProjectionMath.isIdentity;
 
 import java.util.List;
 
@@ -60,9 +63,9 @@ public class Datum implements java.io.Serializable
   public static final Datum GGRS87 = new Datum("GGRS87", -199.87,74.79,246.62, Ellipsoid.GRS80, "Greek_Geodetic_Reference_System_1987");
   public static final Datum NAD83 = new Datum("NAD83", 0,0,0, Ellipsoid.GRS80,"North_American_Datum_1983");
   public static final Datum NAD27 = new Datum("NAD27", "@conus,@alaska,@ntv2_0.gsb,@ntv1_can.dat", Ellipsoid.CLARKE_1866,"North_American_Datum_1927");
-  public static final Datum POTSDAM = new Datum("potsdam", 606.0,23.0,413.0, Ellipsoid.BESSEL, "Potsdam Rauenberg 1950 DHDN");
+  public static final Datum POTSDAM = new Datum("potsdam", 598.1,73.7,418.2,0.202,0.045,-2.455,6.7, Ellipsoid.BESSEL, "Potsdam Rauenberg 1950 DHDN");
   public static final Datum CARTHAGE = new Datum("carthage",-263.0,6.0,431.0, Ellipsoid.CLARKE_1880, "Carthage 1934 Tunisia");
-  public static final Datum HERMANNSKOGEL = new Datum("hermannskogel", 653.0,-212.0,449.0, Ellipsoid.BESSEL, "Hermannskogel");
+  public static final Datum HERMANNSKOGEL = new Datum("hermannskogel", 577.326, 90.129, 463.919, 5.137, 1.474, 5.297, 2.4232, Ellipsoid.BESSEL, "Hermannskogel");
   public static final Datum IRE65 = new Datum("ire65", 482.530,-130.596,564.557,-1.042,-0.214,-0.631,8.15, Ellipsoid.MOD_AIRY, "Ireland 1965");
   public static final Datum NZGD49 = new Datum("nzgd49", 59.47,-5.04,187.44,0.47,-0.1,1.024,-4.5993, Ellipsoid.INTERNATIONAL, "New Zealand Geodetic Datum 1949");
   public static final Datum OSEB36 = new Datum("OSGB36", 446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894, Ellipsoid.AIRY, "Airy 1830");
@@ -109,8 +112,13 @@ public class Datum implements java.io.Serializable
     this.name = name;
     this.ellipsoid = ellipsoid;
     this.grids = grids;
-    if (transform != null)
-      this.transform = transform;
+    if (transform != null && transform.length > 3) {
+        transform[3] *= SECONDS_TO_RAD;
+        transform[4] *= SECONDS_TO_RAD;
+        transform[5] *= SECONDS_TO_RAD;
+        transform[6] = transform[6] / MILLION + 1.;
+    }
+    this.transform = transform;
   }
   
   public String getCode() { return code; }
@@ -133,36 +141,17 @@ public class Datum implements java.io.Serializable
   {
     if (grids != null && grids.size() > 0) return TYPE_GRIDSHIFT;
 
-    if (transform == null) return TYPE_WGS84;
+    if (ellipsoid == Ellipsoid.WGS84 || ellipsoid == Ellipsoid.GRS80) {
+        if (transform == null) return TYPE_WGS84;
+        
+        if (isIdentity(transform)) return TYPE_WGS84;
+    }
     
-    if (isIdentity(transform)) return TYPE_WGS84;
-    
+    if (transform == null) return TYPE_UNKNOWN;
     if (transform.length  == 3) return TYPE_3PARAM;
     if (transform.length  == 7) return TYPE_7PARAM;
     
-    return TYPE_WGS84;
-  }
-  
-  /**
-   * Tests whether the datum parameter-based transform 
-   * is the identity transform 
-   * (in which case datum transformation can be short-circuited,
-   * thus avoiding some loss of numerical precision).
-   * 
-   * @param transform
-   * @return
-   */
-  private static boolean isIdentity(double[] transform)
-  {
-    for (int i = 0; i < transform.length; i++) {
-      // scale factor will normally be 1 for an identity transform
-      if (i == 6) {
-        if (transform[i] != 1.0 && transform[i] != 0.0)
-          return false;
-      }
-      else if (transform[i] != 0.0) return false;
-    }
-    return true;
+    return TYPE_UNKNOWN;
   }
   
   public boolean hasTransformToWGS84()

@@ -518,6 +518,29 @@ public class ProjectionMath {
         return a;
     }
 
+  /**
+   * Tests whether the datum parameter-based transform 
+   * is the identity transform 
+   * (in which case datum transformation can be short-circuited,
+   * thus avoiding some loss of numerical precision).
+   * 
+   * @param transform
+   * @return
+   */
+  public static boolean isIdentity(double[] transform)
+  {
+    for (int i = 0; i < transform.length; i++) {
+      // scale factor will normally be 1 for an identity transform
+      if (i == 6) {
+        if (transform[i] != 1.0 && transform[i] != 0.0)
+          return false;
+      }
+      else if (transform[i] != 0.0) return false;
+    }
+    return true;
+  }
+  
+
   /* SECONDS_TO_RAD = Pi/180/3600 */
   public static final double SECONDS_TO_RAD = 4.84813681109535993589914102357e-6;
   public static final double MILLION = 1000000.0;
