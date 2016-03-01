@@ -122,6 +122,10 @@ public class Proj4Parser
    if ( params.containsKey( Proj4Keyword.south ) ) 
      projection.setSouthernHemisphere(true);
 
+   s = (String) params.get( Proj4Keyword.pm );
+   if ( params.containsKey( Proj4Keyword.pm ) )
+       projection.setPrimeMeridian(s);
+
    //TODO: implement some of these parameters ?
      
    // this must be done last, since behaviour depends on other params being set (eg +south)

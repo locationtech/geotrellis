@@ -123,7 +123,7 @@ public class BasicCoordinateTransform
             geoCoord.setValue(src);
         }
 
-        //TODO: adjust src Prime Meridian if specified
+        srcCRS.getProjection().getPrimeMeridian().toGreenwich(geoCoord);
     
         // fixes bug where computed Z value sticks around
         geoCoord.clearZ();
@@ -132,7 +132,7 @@ public class BasicCoordinateTransform
             datumTransform(geoCoord);
         }
 		
-        //TODO: adjust target Prime Meridian if specified
+        tgtCRS.getProjection().getPrimeMeridian().fromGreenwich(geoCoord);
 
         if (doForwardProjection) {
             // project from geographic to planar

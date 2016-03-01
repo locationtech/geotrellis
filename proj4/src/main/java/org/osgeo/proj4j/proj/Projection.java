@@ -439,6 +439,14 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
         return "None";
     }
 
+    public void setPrimeMeridian(String primeMeridian) {
+        this.primeMeridian = PrimeMeridian.forName(primeMeridian);
+    }
+
+    public PrimeMeridian getPrimeMeridian() {
+        return this.primeMeridian;
+    }
+
     /**
      * Set the minimum latitude. This is only used for Shape clipping and doesn't affect projection.
      */

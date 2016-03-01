@@ -22,7 +22,7 @@ class FeatureTest extends FunSuite with BaseCoordinateTransformTest
     checkTransformFromWGS84("EPSG:31466",   6.685, 51.425, 2547685.01212,5699155.7345, 10  )
   }
  
-  test("NOTSUPPORTED_testPrimeMeridian") {
+  ignore("NOTSUPPORTED_testPrimeMeridian") {
     //# NTF (Paris) / Lambert Sud France
     //<27563> +proj=lcc +lat_1=44.10000000000001 +lat_0=44.10000000000001 +lon_0=0 +k_0=0.999877499 +x_0=600000 +y_0=200000 +a=6378249.2 +b=6356515 +towgs84=-168,-60,320,0,0,0,0 +pm=paris +units=m +no_defs  <>
     checkTransformFromGeo("EPSG:27563",    3.005, 43.89, 653704.865208, 176887.660037  )
