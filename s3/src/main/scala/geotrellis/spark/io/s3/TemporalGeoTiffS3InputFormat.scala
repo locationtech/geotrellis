@@ -45,19 +45,21 @@ object TemporalGeoTiffS3InputFormat {
   */
 class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new S3RecordReader[TemporalProjectedExtent, Tile] {
-      def read(key: String, bytes: Array[Byte]) = {
-        val geoTiff = SingleBandGeoTiff(bytes)
+    new TemporalGeoTiffS3RecordReader(context)
+}
 
-        val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
-        val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
+class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile] {
+  val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
+  val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
 
-        val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
-        val dateTime = DateTime.parse(dateTimeString, dateFormatter)
+  def read(key: String, bytes: Array[Byte]) = {
+    val geoTiff = SingleBandGeoTiff(bytes)
 
-        //WARNING: Assuming this is a single band GeoTiff
-        val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-        (TemporalProjectedExtent(extent, crs, dateTime), tile)
-      }
-    }
+    val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
+    val dateTime = DateTime.parse(dateTimeString, dateFormatter)
+
+    //WARNING: Assuming this is a single band GeoTiff
+    val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
+    (TemporalProjectedExtent(extent, crs, dateTime), tile)
+  }
 }
