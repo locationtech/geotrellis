@@ -9,6 +9,25 @@ import org.rogach.scallop._
 import scala.util.{Success, Try, Failure}
 import reflect.runtime.universe._
 
+sealed trait ReprojectMethod
+
+/**
+  * BufferedReproject method will perform reproject still after the tiling step.
+  * Because tiling step creates keys with SpatialComponent this method of reprojection is able to sample pixels past the
+  * tile boundaries by performing a spatial neighborhood join. This method is the default and produces the best results.
+  * Note that method of reprojection requires that all of the source tiles share the same CRS.
+  */
+case object BufferedReproject extends ReprojectMethod
+
+/**
+  * PerTileReproject method will perform reproject step before the tiling step.
+  * This method of reprojection can not consider pixels past the individual tile boundaries,
+  * even if they exist elsewhere in the dataset, and will read them as NODATA when interpolating.
+  * However this restriction allows for source tiles to have projections that differ per tile.
+  * The projections will be unified before the tiling step, which requires all extents to be in the same projection.
+  */
+case object PerTileReproject extends ReprojectMethod
+
 class EtlConf(args: Seq[String]) extends ScallopConf(args){
   import EtlConf._
 
@@ -51,6 +70,11 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
   val clobber      = opt[Boolean]("clobber",
                       descr = "clobber layer on save (default: false)",
                       default = Some(false))
+
+  val reproject    = opt[ReprojectMethod]("reproject",
+                      descr = "reproject method to use during the tiling stege",
+                      default = Some(BufferedReproject))(reprojectMethodConvert)
+
   val pyramid      = opt[Boolean]("pyramid",
                       descr = "pyramid layer on save (default: false)",
                       default = Some(false))
@@ -138,6 +162,27 @@ object EtlConf {
     }
 
     val tag = typeTag[CellType]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
+
+  def reprojectMethodConvert = new ValueConverter[ReprojectMethod] {
+    val wrong = Left("wrong arguments format (ex: buffered or per-tile")
+    def parse(s : List[(String, List[String])]) = s match {
+      case (_, str :: Nil) :: Nil  =>
+        str match {
+          case "buffered" =>
+            Right(Some(BufferedReproject))
+          case "per-tile" =>
+            Right(Some(PerTileReproject))
+          case _ =>
+            wrong
+        }
+      case Nil  =>
+        Right(None)
+      case _ => wrong
+    }
+
+    val tag = typeTag[ReprojectMethod]
     val argType = org.rogach.scallop.ArgType.SINGLE
   }
 }
