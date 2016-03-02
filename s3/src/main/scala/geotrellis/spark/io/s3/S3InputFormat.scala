@@ -73,7 +73,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     if (null == partitionCountConf) {
       // By default attempt to make partitions the same size
       val maxSplitBytes = if (null == partitionSizeConf) S3InputFormat.DEFAULT_PARTITION_BYTES else partitionSizeConf.toLong
-      logger.info(s"Building partitions of at most $maxSplitBytes bytes")
+      logger.info(s"Building partitions, attempting to create them with size at most $maxSplitBytes bytes")
       s3client
         .listObjectsIterator(request)
         .filter(!_.getKey.endsWith("/"))
