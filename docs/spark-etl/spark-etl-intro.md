@@ -1,9 +1,12 @@
 # GeoTrellis ETL
 
-This project implements a plugin architecture for tile input sources and `RDD[(K, V)]` sinks which allows you to write
-basic ETL code using GeoTrellis without having to specify the type and configuration of the input and output at compile time.
+This project implements a plugin architecture for tile
+input sources and `RDD[(K, V)]` sinks which allows you to write
+basic ETL code using GeoTrellis without having to specify the type
+and configuration of the input and output at compile time.
 
-Input layer may be modified using any of the existing raster operations before being saved.
+Input layer may be modified using any of the existing
+raster operations before being saved.
 
 ```scala
 import geotrellis.raster.{Tile, MultiBandTile}
@@ -17,7 +20,7 @@ import org.apache.spark.SparkConf
 
 object GeoTrellisETL extends App {
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
-  
+
   val etl = Etl(args)
   val tiles = etl.load[ProjectedExtent, Tile]
   val reprojected = etl.reproject(tiles)
@@ -35,18 +38,21 @@ To ingest tiles it is possible to use a built-in Etl ingest function:
 ```scala
 object GeoTrellisETL extends App {
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
-  
+
   Etl.ingest[ProjectedExtent, SpatialKey, MultiBandTile](args, ZCurveKeyIndexMethod)
-    
+
   sc.stop()
 }
 ```
 
 ## Running the Spark Job
 
-For maximum flexibility it is desirable to run spark jobs with `spark-submit`. In order to achieve this `spark-core`
-dependency must be listed as `provided` and `sbt-assembly` plugin used to create the fat jar, with all dependencies included but `spark-core`.
-Once the assembly jar is read outputs and inputs can be setup through command line arguments like so:
+For maximum flexibility it is desirable to run spark jobs with
+`spark-submit`. In order to achieve this `spark-core` dependency
+must be listed as `provided` and `sbt-assembly` plugin used to
+create the fat jar, with all dependencies included but `spark-core`.
+Once the assembly jar is read outputs and inputs can be setup
+through command line arguments like so:
 
 ```sh
 #!/bin/sh
@@ -62,16 +68,19 @@ $JAR \
 --layer nlcd-tms --crs EPSG:3857 --pyramid
 ```
 
-Note that the arguments before the `$JAR` configure `SparkContext` and arguments after configure GeoTrellis ETL inputs and outputs.
+Note that the arguments before the `$JAR` configure `SparkContext`
+and arguments after configure GeoTrellis ETL inputs and outputs.
 
 ### Built-in ingest jobs
 
-It is possible to make an `assembly` of `spark-etl` project, with two main classes available:
+It is possible to make an `assembly` of `spark-etl` project,
+with two main classes available:
 
  * geotrellis.spark.etl.SinglebandIngest
  * geotrellis.spark.etl.MultibandIngest
- 
-This job can be launched (as described above) with command line arguments described below.
+
+This job can be launched (as described above) with command line
+arguments described below.
 
 ### Command Line Arguments
 
@@ -114,9 +123,11 @@ render    | path, format=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{R
 
 ## Extension
 
-In order to provide your own input or output modules you must extend `InputPlugin` (src/main/scala/geotrellis/spark/etl/InputPlugin) and
-`OutputPlugin` (src/main/scala/geotrellis/spark/etl/OutputPlugin) respectively. These subclasses must be registered in a Guice `Module` and provided
-to the `Etl` constructor.
+In order to provide your own input or output modules you must extend
+`InputPlugin` (src/main/scala/geotrellis/spark/etl/InputPlugin) and
+`OutputPlugin` (src/main/scala/geotrellis/spark/etl/OutputPlugin)
+respectively. These subclasses must be registered in a Guice `Module`
+and provided to the `Etl` constructor.
 
 Once defined you can pass the list of modules to be used for ETL like so:
 
@@ -126,16 +137,24 @@ val etl = Etl[ProjectedExtent, SpatialKey, Tile](args, Etl(args, List(s3.S3Modul
 
 ## Layout Schemes
 
-GeoTrellis is able to tile layers in either `ZoomedLayoutScheme`, matching TMS pyramid, or `FloatingLayoutScheme`, matching the native resolution of input raster.
+GeoTrellis is able to tile layers in either `ZoomedLayoutScheme`,
+matching TMS pyramid, or `FloatingLayoutScheme`, matching the native
+resolution of input raster.
 
 These alternatives may be selecting by using the `layoutScheme` option.
 
-Note that `ZoomedLayoutScheme` needs to know the world extent, which it gets from the CRS, in order to build the TMS pyramid layout.
-This will likely cause resampling of input rasters to match the resolution of the TMS levels.
+Note that `ZoomedLayoutScheme` needs to know the world extent, which it
+gets from the CRS, in order to build the TMS pyramid layout. This will
+likely cause resampling of input rasters to match the resolution of
+the TMS levels.
 
-On other hand `FloatingLayoutScheme` will discover the native resolution and extent and partition it by given tile size without resampling.
+On other hand `FloatingLayoutScheme` will discover the native resolution
+and extent and partition it by given tile size without resampling.
 
 ### User Defined Layout
 
-You may bypass the metadata collection step by providing `layoutExtent`, `cellSize`, and `cellType` instead of the `layoutScheme` option.
-Together with `tileSize` option this is enough to fully define the raster metadata and start the tiling process.
+You may bypass the metadata collection step by providing `layoutExtent`,
+`cellSize`, and `cellType` instead of the `layoutScheme` option. Together
+with `tileSize` option this is enough to fully define the raster
+metadata and start the tiling process.
+

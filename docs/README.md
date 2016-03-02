@@ -12,7 +12,6 @@ GeoTrellis.
 
 - [geotrellis.etl](etl/etl-intro.md)
 - [geotrellis.gdal](gdal/gdal-intro.md)
-- [geotrellis.graph](graph/graph-intro.md)
 - [geotrellis.proj4](proj4/proj4-intro.md)
 - [geotrellis.raster](raster/raster-intro.md)
   - [cell types](raster/celltype.md)
