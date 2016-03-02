@@ -28,13 +28,6 @@ import org.scalatest._
 import spire.syntax.cfor._
 
 class HillshadeSpec extends FunSuite with TestEngine {
-  def grayscale(n: Int) = {
-    val ns = (1 to 128).toArray
-    val limits = ns.map(i => i * n)
-    val colors = ns.map(i => ((i * 65536 * 2 + i * 256 * 2 + i * 2) << 8) | 255)
-    ColorBreaks(limits, colors)
-  }
-
   def time() = System.currentTimeMillis()
 
   test("should get the same result for split raster") {

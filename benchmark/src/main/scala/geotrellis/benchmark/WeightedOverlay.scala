@@ -35,7 +35,7 @@ class WeightedOverlay extends OperationBenchmark {
   val n = 4
   val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
   val weights = Array(2, 1, 5, 2)
-  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
+  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000).map(RGBA(_))
 
   @Param(Array("256","512", "1024", "2048", "4096"))
   var size:Int = 0
@@ -88,7 +88,7 @@ class WeightedOverlayOverTypes extends OperationBenchmark {
   @Param(Array("4","8","16"))
   var layerCount = 0
 
-  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
+  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000).map(RGBA(_))
 
   var source:ValueSource[Png] = null
   var sourceSeq:ValueSource[Png] = null
