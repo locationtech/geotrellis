@@ -4,6 +4,8 @@ env:
   global:
     - secure: "XAhJXuXqnGlZlU2pGcIQKJ2rF44gIReA0arHwapFII/gR1h+2e6hgqnMXwrZaQa/EvNBaXq7nF3XcTBjrbK+ABeKA/0lOh/7ryIotP0i1YVrca69pSK9BY+Kr1y7ncLMqvoyjBziobOeVZmxbK4RflgUTIO7MKzzb5pNb9SnOK8="
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
+    #Scaladocs
+    - secure: "FPfJbtXmhyMTh/eh9B/f6JZIv6aw+XZMipYlJsdgMEv+XKzL1tdYbKQv8G4C13lhyBZmOlQAbOhl4mRUBmq0FqG3361Y9SS4o5KfDRkZNErBTb8tveoRgKLkdLPwooAOUmRUeygKmhO4ehdQsMXCZmCk33nDq/ZrNallfnCRdm8="
 
 language: scala
 
@@ -46,7 +48,7 @@ deploy:
       scala: "2.10.5"
 
   - provider: script
-    script: .travis/deploy.sh
+    script: .travis/deploy-with-scaladdocs.sh
     skip_cleanup: true
     on:
       repo: geotrellis/geotrellis
@@ -55,5 +57,4 @@ deploy:
       scala: "2.11.5"
 
 after_deploy:
-  - bash .travis/scaladocs.sh
   - rm -f "${HOME}/.bintray/.credentials"
