@@ -52,6 +52,7 @@ package object spark
     with mapalgebra.focal.hillshade.Implicits
     with partitioner.Implicits
     with crop.Implicits
+    with filter.Implicits
     with Serializable // required for java serialization, even though it's mixed in
 {
 
@@ -129,9 +130,6 @@ package object spark
         }
       }, preservesPartitioning = true)
   }
-
-  implicit class withRasterRDDFilterMethods[K: Boundable : ClassTag, V: ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
-      extends RasterRDDFilterMethods[K, V, M]
 
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {

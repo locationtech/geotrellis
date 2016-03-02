@@ -38,28 +38,27 @@ class RasterRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
 
     it("should correctly filter by a covering range") {
       val query = rdd.filterByKeyBounds(List(allKeys))
-      query.toRDD.count should be (25)
+      query.count should be (25)
     }
 
     it("should correctly filter by an intersecting range") {
       val query = rdd.filterByKeyBounds(List(someKeys))
-      query.toRDD.count should be (9)
+      query.count should be (9)
     }
 
     it("should correctly filter by an intersecting range given as a singleton") {
       val query = rdd.filterByKeyBounds(someKeys)
-      query.toRDD.count should be (9)
+      query.count should be (9)
     }
 
     it("should correctly filter by a non-intersecting range") {
       val query = rdd.filterByKeyBounds(List(noKeys))
-      query.toRDD.count should be (0)
+      query.count should be (0)
     }
 
     it("should correctly filter by multiple ranges") {
       val query = rdd.filterByKeyBounds(List(someKeys, moreKeys, noKeys))
-      query.toRDD.count should be (10)
+      query.count should be (10)
     }
   }
 }
-

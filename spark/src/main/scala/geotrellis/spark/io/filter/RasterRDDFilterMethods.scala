@@ -24,32 +24,29 @@ import org.apache.spark.rdd._
 
 
 abstract class RasterRDDFilterMethods[K: Boundable, V, M] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
-  type FilterChainArg = (M, List[KeyBounds[K]])
-
   /**
     * A method that takes a sequence of [[KeyBounds]] objects and
-    * returns an [[BoundedRDDQuery]] which filters out all keys in the
-    * RDD not contained in the union of the given KeyBounds.
+    * returns a [[RasterRDD]] in-which all keys in the original RDD
+    * which are not contained in the union of the given KeyBounds have
+    * been filtered-out.
     *
     * @param  keybounds A sequence of KeyBounds[K] objects
-    * @return           An RDDQuery that filters out keys in the RDD not found in keybounds
+    * @return           A filtered RasterRDD
     */
-  def filterByKeyBounds(keybounds: Seq[KeyBounds[K]]): BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]] = {
+  def filterByKeyBounds(keybounds: Seq[KeyBounds[K]]): RDD[(K, V)] with Metadata[M] = {
     val rdd = self.filter({ case (k, _) => keybounds.exists({ kb => kb.includes(k) }) })
     val metadata = self.metadata
-    val fn: RDDQuery[K, M] => RDD[(K, V)] with Metadata[M] = { _ => ContextRDD(rdd, metadata) }
-
-    new BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]](new RDDQuery, fn)
+    ContextRDD(rdd, metadata)
   }
 
   /**
-    * A method that takes a single [[KeyBounds]] object and returns an
-    * [[BoundedRDDQuery]] which filters out all keys in the RDD not
-    * contained in the given KeyBounds.
+    * A method that takes a single [[KeyBounds]] objects and returns a
+    * [[RasterRDD]] in-which all keys in the original RDD which are
+    * not contained in the KeyBounds have been filtered-out.
     *
-    * @param  keybounds A KeyBounds[K] object
-    * @return           An RDDQuery that filters out keys in the RDD not found in kb
+    * @param  keybounds A sequence of KeyBounds[K] objects
+    * @return           A filtered RasterRDD
     */
-  def filterByKeyBounds(kb: KeyBounds[K]): BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+  def filterByKeyBounds(kb: KeyBounds[K]): RDD[(K, V)] with Metadata[M] =
     filterByKeyBounds(List(kb))
 }
