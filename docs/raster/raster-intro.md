@@ -168,18 +168,16 @@ Here's a fun method for exploring your tiles:
 ```scala
 scala> res0.asciiDraw()
 res3: String =
-"     1
+"    1
      2
      3
-
 "
 
 scala> res2.asciiDraw()
 res4: String =
-"     1     2     3
+"    1     2     3
      4     5     6
      7     8     9
-
 "
 ```
 That's probably enough to get started. `geotrellis.raster` is a pretty big place, so you'll

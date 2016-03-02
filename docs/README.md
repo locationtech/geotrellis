@@ -11,25 +11,24 @@ GeoTrellis.
 ![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
 
 - [geotrellis.etl](etl/etl-intro.md)
-- [geotrellis.gdal](gdal/gdal-intro.md)
-- [geotrellis.proj4](proj4/proj4-intro.md)
+- [geotrellis.gdal](gdal/gdal-intro.md) // incomplete
+- [geotrellis.proj4](proj4/proj4-intro.md) // incomplete
 - [geotrellis.raster](raster/raster-intro.md)
   - [cell types](raster/celltype.md)
   - [cloud removal](raster/cloud-removal.md)
-  - [interpolation](raster/interpolation.md)
+  - [interpolation](raster/interpolation.md) // planned
   - [map algebra](raster/map-algebra.md)
-  - [raster input/output](raster/raster-io.md)
+  - [raster input/output](raster/raster-io.md) // planned
   - [rendering](raster/rendering.md)
   - [resampling](raster/resampling.md)
-- [geotrellis.slick](spark/slick-intro.md)
-- [geotrellis.spark](spark/spark-intro.md)
-  - [indexing with the hilbert curve](spark/hilbert-curve.md)
+- [geotrellis.slick](spark/slick-intro.md) // planned
+- [geotrellis.spark](spark/spark-intro.md) // planned
+  - [indexing with the hilbert curve](spark/hilbert-index.md)
+  - [map algebra (on spark)](spark/map-algebra.md)
 - [geotrellis.spark-etl](spark/spark-intro.md)
-- [geotrellis.scripts](spark/scripts-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)
   - [geojson support](vector/geojson-support.md)
   - [kriging interpolation](vector/kriging-interpolation.md)
-  - [geometries](vector/geometry.md)
 
 
 
