@@ -114,13 +114,14 @@ public class BasicCoordinateTransform
     public ProjCoordinate transform( ProjCoordinate src, ProjCoordinate tgt )
         throws Proj4jException
     {
+        geoCoord.setValue(src);
+        srcCRS.getProjection().getAxes().toENU(geoCoord);
         // NOTE: this method may be called many times, so needs to be as efficient as possible
         if (doInverseProjection) {
             // inverse project to geographic
-            srcCRS.getProjection().inverseProjectRadians(src, geoCoord);
-        }
-        else {
-            geoCoord.setValue(src);
+            ProjCoordinate coord = new ProjCoordinate();
+            coord.setValue(geoCoord);
+            srcCRS.getProjection().inverseProjectRadians(coord, geoCoord);
         }
 
         srcCRS.getProjection().getPrimeMeridian().toGreenwich(geoCoord);
@@ -141,6 +142,8 @@ public class BasicCoordinateTransform
         else {
             tgt.setValue(geoCoord);
         }
+
+        tgtCRS.getProjection().getAxes().fromENU(tgt);
 
         return tgt;
     }

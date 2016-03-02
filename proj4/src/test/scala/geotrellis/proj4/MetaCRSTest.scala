@@ -21,21 +21,21 @@ import scala.collection.JavaConversions._
 class MetaCRSTest extends FunSuite with Matchers {
   val crsFactory = new CRSFactory
 
-  // test("MetaCRSExample") {
-  //   val file = new File("proj4/src/test/resources/TestData.csv")
-  //   val tests = MetaCRSTestFileReader.readTests(file)
-  //   for (test <- tests) {
-  //     test should be(passing)
-  //   }
-  // }
+  test("MetaCRSExample") {
+    val file = new File("proj4/src/test/resources/TestData.csv")
+    val tests = MetaCRSTestFileReader.readTests(file)
+    for (test <- tests) {
+      test should be(passing)
+    }
+  }
 
-  // test("PROJ4_SPCS") {
-  //   val file = new File("proj4/src/test/resources/PROJ4_SPCS_EPSG_nad83.csv")
-  //   val tests = MetaCRSTestFileReader.readTests(file)
-  //   for (test <- tests) {
-  //     test should be(passing)
-  //   }
-  // }
+  test("PROJ4_SPCS") {
+    val file = new File("proj4/src/test/resources/PROJ4_SPCS_EPSG_nad83.csv")
+    val tests = MetaCRSTestFileReader.readTests(file)
+    for (test <- tests) {
+      test should be(passing)
+    }
+  }
 
   test("PROJ4_Empirical") {
     val file = new File("proj4/src/test/resources/proj4-epsg.csv")

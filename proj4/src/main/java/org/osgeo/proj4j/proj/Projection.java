@@ -17,6 +17,7 @@
 package org.osgeo.proj4j.proj;
 
 import org.osgeo.proj4j.*;
+import org.osgeo.proj4j.datum.Axes;
 import org.osgeo.proj4j.datum.Ellipsoid;
 import org.osgeo.proj4j.datum.PrimeMeridian;
 import org.osgeo.proj4j.units.AngleFormat;
@@ -180,7 +181,8 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
      */
     protected Unit unit = null;
 
-    public PrimeMeridian primeMeridian = PrimeMeridian.forName("greenwich");
+    private PrimeMeridian primeMeridian = PrimeMeridian.forName("greenwich");
+    private Axes axes = Axes.ENU;
 
     // Some useful constants
     protected final static double EPS10 = 1e-10;
@@ -437,6 +439,14 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
 
     public String toString() {
         return "None";
+    }
+
+    public void setAxes(String axes) {
+        this.axes = Axes.fromString(axes);
+    }
+
+    public Axes getAxes() {
+        return this.axes;
     }
 
     public void setPrimeMeridian(String primeMeridian) {
@@ -775,5 +785,8 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
         return angle;
     }
 
+    public void setGamma(double gamma) {
+        // no-op, overridden for Oblique Mercator
+    }
 }
 

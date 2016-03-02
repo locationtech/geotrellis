@@ -104,6 +104,9 @@ public class Proj4Parser
      s = (String)params.get( Proj4Keyword.k );
    if ( s != null ) 
      projection.setScaleFactor( Double.parseDouble( s ) );
+   s = (String)params.get( Proj4Keyword.gamma );
+   if ( s != null )
+       projection.setGamma(Double.parseDouble(s) * ProjectionMath.DTR);
 
    s = (String)params.get( Proj4Keyword.units );
    if ( s != null ) {
@@ -123,8 +126,12 @@ public class Proj4Parser
      projection.setSouthernHemisphere(true);
 
    s = (String) params.get( Proj4Keyword.pm );
-   if ( params.containsKey( Proj4Keyword.pm ) )
+   if ( s != null )
        projection.setPrimeMeridian(s);
+
+   s = (String) params.get( Proj4Keyword.axis );
+   if ( s != null )
+       projection.setAxes(s);
 
    //TODO: implement some of these parameters ?
      
