@@ -3,7 +3,7 @@ package geotrellis.spark.etl.hadoop
 import java.math.BigInteger
 
 import geotrellis.raster.Tile
-import geotrellis.raster.render.ColorBreaks
+import geotrellis.raster.render._
 import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
@@ -23,22 +23,22 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData]
   def requiredKeys = Array("path", "format")
   def attributes(props: Map[String, String]) = null
   /**
-   * Parses into ColorBreaks a string of limits and their colors in hex RGBA
+   * Parses to a ColorClassifier a string of limits and their colors in hex RGBA
    * Only used for rendering PNGs
    *
-   * @param breaks ex: "23:cc00ccff;30:aa00aaff;120->ff0000ff"
+   * @param classifications ex: "23:cc00ccff;30:aa00aaff;120->ff0000ff"
    * @return
    */
-  def parseBreaks(breaks: Option[String]): Option[ColorBreaks] = {
-    breaks.map { blob =>
+  def parseClassifications(classifications: Option[String]): Option[StrictColorClassifier[Int]] = {
+    classifications.map { blob =>
       try {
         val split = blob.split(";").map(_.trim.split(":"))
         val limits = split.map(pair => Integer.parseInt(pair(0)))
         val colors = split.map(pair => new BigInteger(pair(1), 16).intValue())
-        ColorBreaks(limits, colors)
+        StrictColorClassifier(limits zip colors.map(RGBA(_)))
       } catch {
         case e: Exception =>
-          throw new BadFormatException(s"Unable to parse breaks, expected '{limit}:{RGBA};{limit}:{RGBA};...' got: '$blob'")
+          throw new BadFormatException(s"Unable to parse classifications, expected '{limit}:{RGBA};{limit}:{RGBA};...' got: '$blob'")
       }
     }
   }
@@ -53,7 +53,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData]
     val images =
       props("format").toLowerCase match {
         case "png" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderPng(parseBreaks(props.get("breaks")))
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderPng(parseClassifications(props.get("breaks")))
         case "geotiff" =>
           rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]].renderGeoTiff()
       }

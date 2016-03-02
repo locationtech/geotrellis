@@ -19,29 +19,19 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new PngEncoder(Settings(Rgba, PaethFilter)).writeByteArray(self)
+    new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(self)
 
-  def renderPng(colorRamp: ColorRamp): Png =
-    renderPng(colorRamp.toArray)
+  def renderPng(colorClassifier: ColorClassifier[_]): Png =
+    renderPng(colorClassifier, None)
 
-  def renderPng(colorBreaks: ColorBreaks): Png =
-    renderPng(colorBreaks, 0)
+  def renderPng(colors: Array[RGBA]): Png = {
+    val histogram = self.histogram
+    val colorClassifier = StrictColorClassifier.fromQuantileBreaks(histogram, colors)
+    renderPng(colorClassifier, Some(histogram))
+  }
 
-  /**
-    * Generate a PNG image from a raster.
-    *
-    * Use this operation when you have a raster of data that you want to visualize
-    * with an image.
-    *
-    * To render a data raster into an image, the operation needs to know which
-    * values should be painted with which colors.  To that end, you'll need to
-    * generate a ColorBreaks object which represents the value ranges and the
-    * assigned color.  One way to create these color breaks is to use the
-    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks.
-    */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): Png =
-    renderPng(colorBreaks, noDataColor, None)
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): Png =
+    renderPng(colorClassifier, Some(histogram))
 
   /**
     * Generate a PNG image from a raster.
@@ -56,41 +46,21 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Histogram[Int]): Png =
-    renderPng(colorBreaks, noDataColor, Some(histogram))
-
   private
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int, histogram: Option[Histogram[Int]]): Png = {
-    val renderer =
-      histogram match {
-        case Some(h) => Renderer(colorBreaks, noDataColor, h)
-        case None => Renderer(colorBreaks, noDataColor)
-      }
-
-    val r2 = renderer.render(self)
-    new PngEncoder(Settings(renderer.colorType, PaethFilter)).writeByteArray(r2)
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram[Int]]): Png = {
+    val colorEncoding = PngColorEncoding(colorClassifier.getColors, colorClassifier.getNoDataColor)
+    colorEncoding.convertColorClassifier(colorClassifier)
+    val cmap = colorClassifier.toColorMap(histogram)
+    val r2 = self.cellType match {
+      case ct: ConstantNoData =>
+        cmap.render(self).convert(ByteConstantNoDataCellType)
+      case ct: UByteCells with UserDefinedNoData[Byte] =>
+        cmap.render(self).convert(UByteUserDefinedNoDataCellType(ct.noDataValue))
+      case ct: UShortCells with UserDefinedNoData[Short] =>
+        cmap.render(self).convert(UShortUserDefinedNoDataCellType(ct.noDataValue))
+      case _ =>
+        cmap.render(self).convert(ByteCellType)
+    }
+    new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(r2)
   }
-
-  def renderPng(ramp: ColorRamp, breaks: Array[Int]): Png =
-    renderPng(ColorBreaks(breaks, ramp.toArray))
-
-  def renderPng(colors: Array[Int]): Png = {
-    val h = self.histogram
-    renderPng(ColorBreaks(h, colors), 0, h)
-  }
-
-  def renderPng(colors: Array[Int], numColors: Int): Png =
-    renderPng(Color.chooseColors(colors, numColors))
-
-  def renderPng(breaks: Array[Int], colors: Array[Int]): Png =
-    renderPng(ColorBreaks(breaks, colors), 0)
-
-  def renderPng(breaks: Array[Int], colors: Array[Int], noDataColor: Int): Png =
-    renderPng(ColorBreaks(breaks, colors), noDataColor)
-
-  def renderPng(breaks: Array[Double], colors: Array[Int]): Png =
-    renderPng(ColorBreaks(breaks, colors), 0)
-
-  def renderPng(breaks: Array[Double], colors: Array[Int], noDataColor: Int): Png =
-    renderPng(ColorBreaks(breaks, colors), noDataColor)
 }

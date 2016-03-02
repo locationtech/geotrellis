@@ -28,14 +28,24 @@ object ColorSpec {
 
 class ColorSpec extends FunSpec with Matchers {
   describe("chooseColors") {
-    val (color1,color2) = (0xFF0000, 0x0000FF)
-    val colorArray = Array(0xFF0000, 0x0000FF)
+    val (color1,color2) = (RGBA(0xFF0000), RGBA(0x0000FF))
+    val colorArray = Array(0xFF0000, 0x0000FF).map(RGBA(_))
 
-    def getColorStringLinear(numColors:Int) =
-      ColorSpec.getColorString(Color.chooseColors(color1,color2,numColors))
+    def getColorStringLinear(numColors:Int) = {
+      val bicc = new BlendingIntColorClassifier
+      val breaks = (1 to numColors).toArray
+      bicc.addColors(color1, color2).addBreaks(breaks).normalize
+      println("lengthsLinear", breaks.length, colorArray.length, bicc.length, bicc.getColors.length)
+      ColorSpec.getColorString(bicc.getColors.map(_.int))
+    }
 
-    def getColorStringArray(numColors:Int) = 
-      ColorSpec.getColorString(Color.chooseColors(colorArray,numColors))
+    def getColorStringArray(numColors:Int) = {
+      val bicc = new BlendingIntColorClassifier
+      val breaks = (1 to numColors).toArray
+      bicc.addColors(colorArray).addBreaks(breaks).normalize
+      println("lengthsArray", breaks.length, colorArray.length, bicc.length, bicc.getColors.length)
+      ColorSpec.getColorString(bicc.getColors.map(_.int))
+    }
 
     it("should provide 1 color") {
       getColorStringLinear(1) should be ("FF0000")
@@ -59,7 +69,7 @@ class ColorSpec extends FunSpec with Matchers {
 
     it("should unzip colors") {
       val n = 0xff9900ff
-      val (r, g, b, a) = Color.unzip(n)
+      val (r, g, b, a) = RGBA(n).unzip
       println(s"n=$n, r=$r g=$g b=$b a=$a")
       r should be (0xff)
       g should be (0x99)
@@ -69,8 +79,12 @@ class ColorSpec extends FunSpec with Matchers {
   }
 
   describe("MultiColorRangeChooser()") {
-    def getColors(baseColors:Array[Int], numColors:Int) = 
-      Color.chooseColors(baseColors,numColors)
+    def getColors(baseColors:Array[Int], numColors:Int): Array[Int] = {
+      val theBreaks = 1 to numColors toArray
+      val bcc = new BlendingIntColorClassifier
+      bcc.addColors(baseColors.map { RGBA(_) }).addBreaks(theBreaks).normalize
+      bcc.getColors.map(_.int)
+    }
 
     it("should work 1") {
       val baseColors = Array(0x0000ffff)
@@ -80,7 +94,7 @@ class ColorSpec extends FunSpec with Matchers {
 
     it("should work 2") {
       val baseColors = Array(0x0000ffff, 0xff0000ff)
-      val colors = getColors(baseColors,baseColors.length)      
+      val colors = getColors(baseColors,baseColors.length)
       colors.toList should be (baseColors.toList)
     }
 
@@ -95,14 +109,14 @@ class ColorSpec extends FunSpec with Matchers {
       val colors = getColors(baseColors,baseColors.length)
       colors.toList should be (baseColors.toList)
     }
-    
+
     it ("should interpolate") {
       val baseColors = Array(0x0000ffff, 0xff0000ff)
       val expectedColors = Array(0x0000ffff, 0x7f0080ff, 0xff0000ff)
       val colors = getColors(baseColors,3)
       ColorSpec.hexstringify(colors) should be (ColorSpec.hexstringify(expectedColors))
     }
-    
+
     it ("should interpolate 5 colors between 3 given") {
       val baseColors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
@@ -111,41 +125,40 @@ class ColorSpec extends FunSpec with Matchers {
     }
   }
 
-  describe("ColorBreaks") {
+  describe("ColorClassifier") {
     it("should map breaks to colors") {
       val limits = Array(2, 4, 6)
-      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
-      val cb = ColorBreaks(limits, colors)
-      cb.limits should be (limits)
-      cb.colors should be (colors)
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff).map(RGBA(_))
+      val scc = StrictColorClassifier(limits zip colors)
+      scc.getBreaks should be (limits)
+      scc.getColors should be (colors)
     }
   }
-  
-  describe("ColorRamp") {
-    it("should return the correct colors") {
-      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
 
-    }
+  describe("Blending Color Classifier") {
     it("should interpolate") {
-      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val colors = Array(RGBA(0xff0000ff), RGBA(0x00ff00ff), RGBA(0x0000ffff))
       val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
-      val interpolatedColors = ColorRamp(colors).interpolate(5)
-      println(interpolatedColors.colors)
-      ColorSpec.hexstringify(interpolatedColors.toArray) should be (ColorSpec.hexstringify(expected))
+      val bicc = new BlendingIntColorClassifier
+      bicc.addColors(colors).addBreaks(1, 2, 3, 4, 5).normalize
+      val interpolatedColors = bicc.getColors.map(_.int)
+      println(interpolatedColors)
+      ColorSpec.hexstringify(interpolatedColors) should be (ColorSpec.hexstringify(expected))
     }
     it("should set alpha values") {
-      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff).map(RGBA(_))
       val expected = Array(0xff000080, 0x00ff0080, 0x0000ff80)
-      val interpolatedColors = ColorRamp(colors).setAlpha(0x80)
-      println(interpolatedColors.colors)
-      ColorSpec.hexstringify(interpolatedColors.toArray) should be (ColorSpec.hexstringify(expected))
+      val bcc = new BlendingDoubleColorClassifier
+      bcc.addColors(colors).setAlpha(0x80)
+      ColorSpec.hexstringify(bcc.getColors.map(_.int)) should be (ColorSpec.hexstringify(expected))
     }
-    
+
     it("should create an alpha gradient") {
-      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff).map(RGBA(_))
       val expected = Array(0xff000000, 0x00ff007f, 0x0000ffff)
-      val interpolatedColors = ColorRamp(colors).alphaGradient(0, 0xff)
-      ColorSpec.hexstringify(interpolatedColors.toArray) should be (ColorSpec.hexstringify(expected))
+      val bcc = new BlendingDoubleColorClassifier
+      bcc.addColors(colors).alphaGradient(RGBA(0), RGBA(0xff))
+      ColorSpec.hexstringify(bcc.getColors.map(_.int)) should be (ColorSpec.hexstringify(expected))
     }
   }
 }
