@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import java.io.{DataOutput, DataInput}
+import com.amazonaws.services.s3.model.{ S3ObjectSummary, ObjectListing }
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
 import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, AnonymousAWSCredentials, BasicSessionCredentials}
@@ -16,7 +17,9 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   var secretKey: String = null
   var sessionToken: String = null
   var bucket: String = _
-  var keys: Seq[String] = Seq.empty
+  var keys: Seq[String] = Vector.empty
+  /** Combined size of objects in bytes */
+  var size: Long = _
 
   def credentials: AWSCredentials = {
     logger.debug(s"AWS Credentials: $accessKeyId:$secretKey")
@@ -43,6 +46,13 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
       sessionToken = c.getSessionToken
     case _ =>
       throw new IllegalArgumentException("Can not handle $c")
+  }
+
+  def addKey(obj: S3ObjectSummary): Long = {
+    val objSize = obj.getSize
+    size += objSize
+    keys = keys :+ obj.getKey
+    objSize
   }
 
   override def getLength: Long = keys.length
