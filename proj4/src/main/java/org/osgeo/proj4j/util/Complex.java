@@ -12,7 +12,7 @@ public final class Complex {
     }
 
     public int hashCode() {
-        return Double.hashCode(r) | 37 * Double.hashCode(i);
+        return Double.valueOf(r).hashCode() | 37 * Double.valueOf(i).hashCode();
     }
 
     public boolean equals(Object that) {
