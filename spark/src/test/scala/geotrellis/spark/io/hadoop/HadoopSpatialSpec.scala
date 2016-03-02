@@ -9,7 +9,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 
 class HadoopSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment
     with TestFiles

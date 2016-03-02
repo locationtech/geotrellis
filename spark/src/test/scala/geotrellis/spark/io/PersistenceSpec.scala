@@ -71,7 +71,7 @@ abstract class PersistenceSpec[
       }
 
       it("should write a layer") {
-        val keyBounds: KeyBounds[K] = Boundable.getKeyBounds(sample).get
+        val keyBounds: KeyBounds[K] = Bounds.fromRdd(sample).get
         writer.write[K, V, M](layerId, sample, keyIndexMethod, keyBounds)
         writer.write[K, V, M](deleteLayerId, sample, keyIndexMethod, keyBounds)
       }

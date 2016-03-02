@@ -12,7 +12,7 @@ import org.scalatest._
 
 
 class S3SaveImagesSpec extends FunSpec with TestEnvironment {
-  lazy val sample = TestFiles.generateSpatial("all-ones", TestFiles.rasterMetaData)
+  lazy val sample = TestFiles.generateSpatial("all-ones")
 
   describe("Saving of Rendered Tiles to S3") {
     it ("should work with PNGs") {

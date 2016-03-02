@@ -11,7 +11,7 @@ import geotrellis.spark._
 import org.joda.time.DateTime
 
 class S3SpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles

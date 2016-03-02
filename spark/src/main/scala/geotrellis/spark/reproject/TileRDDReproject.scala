@@ -28,24 +28,24 @@ object TileRDDReproject {
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
     *
-    * @param            rdd                An RDD of buffered tiles, created using the BufferTiles operation.
+    * @param            bufferedTiles                An RDD of buffered tiles, created using the BufferTiles operation.
     * @param            metadata           The raster metadata for this keyed tile set.
     * @param            destCrs            The CRS to reproject to.
-    * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
+    * @param            targetLayout       Either the layout scheme or layout definition to use when re-keying the reprojected layers.
     * @param            options            Reprojection options.
     *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
-    metadata: RasterMetaData,
+    metadata: RasterMetaData[K],
     destCrs: CRS,
-    layoutScheme: LayoutScheme,
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val mapTransform: MapKeyTransform = layout.mapTransform
@@ -106,7 +106,12 @@ object TileRDDReproject {
         }
 
     val (zoom, newMetadata) =
-      RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme) { key => key._2 }
+      targetLayout match {
+        case Left(layoutScheme) =>
+          RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutScheme)
+        case Right(layoutDefinition) =>
+          0 -> RasterMetaData.fromRdd(reprojectedTiles, destCrs, layoutDefinition)
+      }
 
     val tiled = reprojectedTiles
       .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.rasterReprojectOptions.method, partitioner = bufferedTiles.partitioner))
@@ -120,20 +125,20 @@ object TileRDDReproject {
     *
     * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
-    * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
+    * @param            targetLayout       The layout scheme to use when re-keying the reprojected layers.
     * @param            options            Reprojection options.
     *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    rdd: RDD[(K, V)] with Metadata[RasterMetaData],
+    rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]],
     destCrs: CRS,
-    layoutScheme: LayoutScheme,
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) = {
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
     val crs = rdd.metaData.crs
     val mapTransform = rdd.metaData.layout.mapTransform
     val tileLayout = rdd.metaData.layout.tileLayout
@@ -169,7 +174,7 @@ object TileRDDReproject {
     val bufferedTiles =
       rdd.bufferTiles(borderSizesPerKey)
 
-    apply(bufferedTiles, rdd.metadata, destCrs, layoutScheme, options)
+    apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options)
   }
 
   /** Reproject this keyed tile RDD, using a constant border size for the operation.
@@ -178,7 +183,7 @@ object TileRDDReproject {
     *
     * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
-    * @param            layoutScheme       The layout scheme to use when re-keying the reprojected layers.
+    * @param            targetLayout       The layout scheme to use when re-keying the reprojected layers.
     * @param            bufferSize         Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
     *                                      any side if there is an adjacent, abutting tile to contribute the border pixels.
     * @param            options            Reprojection options.
@@ -190,18 +195,18 @@ object TileRDDReproject {
     *                   for performance benefit.
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    rdd: RDD[(K, V)] with Metadata[RasterMetaData],
+    rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]],
     destCrs: CRS,
-    layoutScheme: LayoutScheme,
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
     bufferSize: Int,
     options: Options
-  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  ): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
-      apply(fakeBuffers, rdd.metadata, destCrs, layoutScheme, options)
+      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, options)
     } else
-      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, layoutScheme, options)
+      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, options)
 }

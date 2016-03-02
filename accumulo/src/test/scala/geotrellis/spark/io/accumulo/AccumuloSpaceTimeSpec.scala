@@ -10,7 +10,7 @@ import geotrellis.spark._
 import com.github.nscala_time.time.Imports._
 
 class AccumuloSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with AccumuloTestEnvironment

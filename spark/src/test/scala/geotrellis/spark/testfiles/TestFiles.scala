@@ -13,18 +13,18 @@ object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 
-  val rasterMetaData: RasterMetaData = {
-    val cellType = FloatConstantNoDataCellType
-    val crs = LatLng
-    val tileLayout = TileLayout(8, 8, 3, 4)
-    val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
-    val gridBounds = GridBounds(1, 1, 6, 7)
-    val extent = mapTransform(gridBounds)
+  def generateSpatial(layerName: String)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {
+    val md = {
+      val cellType = FloatConstantNoDataCellType
+      val crs = LatLng
+      val tileLayout = TileLayout(8, 8, 3, 4)
+      val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
+      val gridBounds = GridBounds(1, 1, 6, 7)
+      val extent = mapTransform(gridBounds)
+      val keyBounds = KeyBounds(SpatialKey(1,1), SpatialKey(6,7))
+      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
+    }
 
-    RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
-  }
-
-  def generateSpatial(layerName: String, md: RasterMetaData)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {
     val gridBounds = md.gridBounds
     val tileLayout = md.tileLayout
 
@@ -53,12 +53,24 @@ object TestFiles extends Logging {
     new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 
-  def generateSpaceTime(layerName: String, md: RasterMetaData)(implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
-    val gridBounds = md.gridBounds
-    val tileLayout = md.tileLayout
-
+  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
     val times =
       (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
+
+
+    val md = {
+      val cellType = FloatConstantNoDataCellType
+      val crs = LatLng
+      val tileLayout = TileLayout(8, 8, 3, 4)
+      val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
+      val gridBounds = GridBounds(1, 1, 6, 7)
+      val extent = mapTransform(gridBounds)
+      val keyBounds = KeyBounds(SpaceTimeKey(1,1,times.min), SpaceTimeKey(6,7, times.max))
+      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
+    }
+
+    val gridBounds = md.gridBounds
+    val tileLayout = md.tileLayout
 
     val spaceTimeTestTiles = layerName match {
       case "spacetime-all-ones" => new ConstantSpaceTimeTestTiles(tileLayout, 1)
@@ -84,9 +96,9 @@ object TestFiles extends Logging {
 }
 
 trait TestFiles { self: TestEnvironment =>
-  def spatialTestFile(name: String) = TestFiles.generateSpatial(name, TestFiles.rasterMetaData)
+  def spatialTestFile(name: String) = TestFiles.generateSpatial(name)
 
-  def spaceTimeTestFile(name: String) = TestFiles.generateSpaceTime(name, TestFiles.rasterMetaData)
+  def spaceTimeTestFile(name: String) = TestFiles.generateSpaceTime(name)
 
   lazy val AllOnesTestFile =
     spatialTestFile("all-ones")

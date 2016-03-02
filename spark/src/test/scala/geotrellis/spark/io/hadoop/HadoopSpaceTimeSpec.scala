@@ -11,7 +11,7 @@ import geotrellis.spark.io.avro.codecs._
 import org.joda.time.DateTime
 
 class HadoopSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles

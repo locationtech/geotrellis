@@ -9,7 +9,7 @@ import geotrellis.spark.io.json._
 
 import org.apache.spark.SparkContext
 
-class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultiBandTile, RasterMetaData] {
+class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
-    S3LayerWriter(props("bucket"), props("key")).keyBoundsComputingWriter[SpaceTimeKey, MultiBandTile, RasterMetaData](method)
+    S3LayerWriter(props("bucket"), props("key")).keyBoundsComputingWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](method)
 }

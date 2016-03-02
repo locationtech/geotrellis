@@ -47,11 +47,4 @@ trait Boundable[K] extends Serializable {
   def intersects(b1: KeyBounds[K], b2: KeyBounds[K]): Boolean = {
     intersect(b1,b2).isDefined
   }
-
-  def collectBounds[V](rdd: RDD[(K, V)]): Bounds[K]
-}
-
-object Boundable {
-  def getKeyBounds[K](rdd: RDD[(K, V)] forSome {type V})(implicit boundable: Boundable[K]): Bounds[K] =
-    boundable.collectBounds(rdd)
 }

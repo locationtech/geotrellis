@@ -10,7 +10,7 @@ import geotrellis.spark.io.avro.codecs._
 import com.github.nscala_time.time.Imports._
 
 class FileSpaceTimeSpec
-    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+    extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles

@@ -24,7 +24,7 @@ abstract class LayerUpdater[ID] {
     M: JsonFormat
   ] (id: ID, reader: FilteringLayerReader[ID], rdd: RDD[(K, V)] with Metadata[M])
     (merge: (RDD[(K, V)] with Metadata[M], RDD[(K, V)] with Metadata[M]) => RDD[(K, V)] with Metadata[M]) = {
-    val existing = reader.query[K, V, M](id).where(Intersects(Boundable.getKeyBounds(rdd))).toRDD
+    val existing = reader.query[K, V, M](id).where(Intersects(Bounds.fromRdd(rdd))).toRDD
     update(id, merge(existing, rdd))
   }
 }

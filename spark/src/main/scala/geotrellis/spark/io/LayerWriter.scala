@@ -94,7 +94,7 @@ trait LayerWriter[ID] {
   ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
     new Writer[ID, RDD[(K, V)] with Metadata[M]] {
       def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) = {
-        val keyBounds = Boundable.getKeyBounds(layer).get
+        val keyBounds = Bounds.fromRdd(layer).get
         LayerWriter.this.write[K, V, M](id, layer, keyIndexMethod, keyBounds)
       }
     }

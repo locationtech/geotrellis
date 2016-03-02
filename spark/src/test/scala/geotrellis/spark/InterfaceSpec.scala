@@ -13,15 +13,15 @@ import org.apache.spark.rdd._
  * Its only purprose is to verify that they compile, therefore key implemintations are undefined.
  */
 object InterfaceSpec {
-  type RRDD = RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData]
+  type RRDD = RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData[SpatialKey]]
 
   def onlyCompile = {
     val reader: FilteringLayerReader[LayerId] = ???
     val id: LayerId = ???
 
-    val rdd1 = reader.read[SpatialKey, Tile, RasterMetaData](id)
-    val rdd2 = reader.read[SpatialKey, Tile, RasterMetaData](id)
-    val rdd3 = reader.read[SpatialKey, Tile, RasterMetaData](id)
+    val rdd1 = reader.read[SpatialKey, Tile, RasterMetaData[SpatialKey]](id)
+    val rdd2 = reader.read[SpatialKey, Tile, RasterMetaData[SpatialKey]](id)
+    val rdd3 = reader.read[SpatialKey, Tile, RasterMetaData[SpatialKey]](id)
 
 
      rdd1 + 1
@@ -61,12 +61,12 @@ object InterfaceSpec {
     // Sometimes you need to chain updating Metadata to operation that changes RDD meaning
     rdd1
       .withContext { _ localEqual 123 }
-      .mapContext { rmd: RasterMetaData => rmd.copy(cellType = BitCellType) }
+      .mapContext { rmd => rmd.copy(cellType = BitCellType) }
 
 
     // Chaining updates on results of spatialJoin is different because they produce Metadata
     import geotrellis.spark.partitioner._
-    def updateLayout(md: RasterMetaData, bounds: Bounds[SpatialKey]): RasterMetaData = ???
+    def updateLayout(md: RasterMetaData[SpatialKey], bounds: Bounds[SpatialKey]): RasterMetaData[SpatialKey] = ???
 
     rdd1.spatialJoin(rdd2)
       .withContext { _.combineValues(Add(_, _)) }

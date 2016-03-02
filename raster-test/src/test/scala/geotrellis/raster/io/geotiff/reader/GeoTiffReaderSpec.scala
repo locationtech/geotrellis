@@ -27,7 +27,7 @@ import geotrellis.vector.{Point, Extent}
 import geotrellis.raster.testkit._
 import geotrellis.proj4.{CRS, LatLng}
 
-import monocle.syntax._
+import monocle.syntax.apply._
 import org.scalactic.Tolerance
 
 import scala.io.{Source, Codec}
