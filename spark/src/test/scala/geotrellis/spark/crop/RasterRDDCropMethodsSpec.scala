@@ -1,7 +1,6 @@
-package geotrellis.spark.filter
+package geotrellis.spark.crop
 
 import geotrellis.spark._
-import geotrellis.spark.filter._
 import geotrellis.raster.io.geotiff.SingleBandGeoTiff
 import geotrellis.vector.Extent
 
@@ -17,8 +16,9 @@ class RasterRDDCropMethodsSpec extends FunSpec with TestEnvironment {
     val (_, rdd) = createRasterRDD(originalRaster, 5, 5, gt.crs)
     val md = rdd.metadata
     val overall = md.extent
-    val half = Extent(633750, 218375, 641250, 225125)
-    val small = Extent(639000.0, 217700.0, 642000.0, 220399.0)
+    val Extent(xmin, ymin, xmax, ymax) = overall
+    val half = Extent(xmin, ymin, xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2)
+    val small = Extent(xmin, ymin, xmin + (xmax - xmin) / 5, ymin + (ymax - ymin) / 5)
     val mt = md.mapTransform
 
     it("should correctly crop by the rdd extent") {

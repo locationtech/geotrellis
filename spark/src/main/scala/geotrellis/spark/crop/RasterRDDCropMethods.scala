@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.filter
+package geotrellis.spark.crop
 
 import geotrellis.raster._
 import geotrellis.raster.crop.Crop.Options
@@ -25,18 +25,23 @@ import geotrellis.vector.Extent
 import org.apache.spark.rdd._
 
 
-abstract class RasterRDDCropMethods[K <% SpatialKey] extends MethodExtensions[RasterRDD[K]] {
+abstract class RasterRDDCropMethods[K: SpatialComponent] extends MethodExtensions[RasterRDD[K]] {
   def crop(extent: Extent, options: Options): RasterRDD[K] = {
     val md = self.metadata
     val mt = md.mapTransform
     val rdd = self
-      .filter({ case (key, tile) =>
-        val srcExtent = mt(SpatialKey(key.col, key.row))
-        extent.interiorIntersects(srcExtent) })
-      .map({ case (key, tile) =>
-        val srcExtent = mt(SpatialKey(key.col, key.row))
-        val newTile = tile.crop(srcExtent, extent, options)
-        (key, newTile) })
+      .mapPartitions({ partition =>
+        partition.flatMap({ case (key, tile) =>
+          val srcExtent = mt(key)
+          if (extent.contains(srcExtent))
+            Some((key, tile))
+          else if (extent.interiorIntersects(srcExtent)) {
+            val newTile = tile.crop(srcExtent, extent, options)
+            Some((key, newTile))
+          }
+          else None
+        })
+      }, preservesPartitioning = true)
 
     ContextRDD(rdd, md)
   }
