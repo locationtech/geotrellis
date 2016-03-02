@@ -6,7 +6,7 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class SingleBandTileCropMethodsSpec 
+class SingleBandTileCropMethodsSpec
     extends FunSpec
     with Matchers
     with TileBuilders
@@ -30,7 +30,7 @@ class SingleBandTileCropMethodsSpec
 
     it("should crop raster to inner raster") {
       val r = createTile(
-        Array[Int]( 
+        Array[Int](
           1, 1, 1, 1, 1,
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1,
@@ -47,7 +47,7 @@ class SingleBandTileCropMethodsSpec
 
     it("should crop one row off raster") {
       val r = createTile(
-        Array[Int]( 
+        Array[Int](
           1, 1, 1, 1, 1,
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1,
@@ -55,14 +55,14 @@ class SingleBandTileCropMethodsSpec
           1, 1, 1, 1, 1))
 
       val innerExtent = Extent(0, 1, 5, 5)
-      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent), 
+      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent),
         Array[Int](
           1, 1, 1, 1, 1,
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1))
       val innerExtent2 = Extent(0, 0, 5, 4)
-      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent2), 
+      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent2),
         Array[Int](
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1,
@@ -72,7 +72,7 @@ class SingleBandTileCropMethodsSpec
 
     it("should crop one column off raster") {
       val r = createTile(
-        Array[Int]( 
+        Array[Int](
           1, 1, 1, 1, 1,
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1,
@@ -80,7 +80,7 @@ class SingleBandTileCropMethodsSpec
           1, 1, 1, 1, 1))
 
       val innerExtent = Extent(1, 0, 5, 5)
-      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent), 
+      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent),
         Array[Int](
           1, 1, 1, 1,
           2, 2, 2, 1,
@@ -89,7 +89,7 @@ class SingleBandTileCropMethodsSpec
           1, 1, 1, 1))
 
       val innerExtent2 = Extent(0, 0, 4, 5)
-      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent2), 
+      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent2),
         Array[Int](
           1, 1, 1, 1,
           1, 2, 2, 2,
@@ -101,7 +101,7 @@ class SingleBandTileCropMethodsSpec
 
     it("should crop raster with no data on larger crop extent than raster extent") {
       val r = createTile(
-        Array[Int]( 
+        Array[Int](
           1, 1, 1, 1, 1,
           1, 2, 2, 2, 1,
           1, 2, 2, 2, 1,
@@ -109,7 +109,7 @@ class SingleBandTileCropMethodsSpec
           1, 1, 1, 1, 1))
 
       val innerExtent = Extent(1, 0, 6, 5)
-      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent, Crop.Options(clamp = false)), 
+      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent, Crop.Options(clamp = false)),
         Array[Int](
           1, 1, 1, 1, NODATA,
           2, 2, 2, 1, NODATA,
@@ -118,7 +118,7 @@ class SingleBandTileCropMethodsSpec
           1, 1, 1, 1, NODATA))
 
       val innerExtent2 = Extent(0, 1, 5, 6)
-      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent2, Crop.Options(clamp = false)), 
+      assertEqual(r.crop(Extent(0, 0, 5, 5), innerExtent2, Crop.Options(clamp = false)),
         Array[Int](
           NODATA, NODATA, NODATA, NODATA, NODATA,
           1, 1, 1, 1, 1,
