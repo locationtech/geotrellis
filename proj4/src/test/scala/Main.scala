@@ -1,6 +1,7 @@
 package dwins
 
 import scala.sys.process._
+import geotrellis.proj4._
 
 object Proj {
   implicit class withAsStream(val a: String) extends AnyVal {
@@ -36,6 +37,8 @@ object Proj {
           // .filterNot { _ contains "+pm=" }
           // .filterNot { _ contains "+axis=" }
           // .filterNot { _ contains "+gamma=" }
+          // .filterNot { _ contains "+proj=utm" }
+          // .filterNot { _ contains "+datum=NAD27" }
           // .filterNot { _ contains "+proj=cea" }
           // .filterNot { _ contains "+proj=krovak" }
           // .filterNot { _ contains "+proj=nzmg" }
@@ -52,10 +55,10 @@ object Proj {
     csvWriter.writeNext(
       Array("testName","testMethod","srcCrsAuth","srcCrs","tgtCrsAuth","tgtCrs","srcOrd1","srcOrd2","srcOrd3","tgtOrd1","tgtOrd2","tgtOrd3","tolOrd1","tolOrd2","tolOrd3","using","dataSource","dataCmnts","maintenanceCmnts"));
 
-    def writeLine(srcCrs: Int, tgtCrs: Int, src: (Double, Double, Double), tgt: (Double, Double, Double)): Array[String] =
+    def writeLine(srcCrs: Int, tgtCrs: Int, method: String, src: (Double, Double, Double), tgt: (Double, Double, Double), tol: Double): Array[String] =
       Array(
         s"$srcCrs -> $tgtCrs", // "testName",
-        "proj4j", // "testMethod",
+        method, // "testMethod",
         "EPSG", // "srcCrsAuth",
         srcCrs.toString, // "srcCrs",
         "EPSG", // "tgtCrsAuth",
@@ -66,9 +69,9 @@ object Proj {
         tgt._1.toString, // "tgtOrd1",
         tgt._2.toString, // "tgtOrd2",
         tgt._3.toString, // "tgtOrd3",
-        f"${1e-6}%f", // "tolOrd1",
-        f"${1e-6}%f", // "tolOrd2",
-        f"${1e-6}%f", // "tolOrd3",
+        f"${tol}%f", // "tolOrd1",
+        f"${tol}%f", // "tolOrd2",
+        f"${tol}%f", // "tolOrd3",
         "", // "using",
         "", // "dataSource",
         "", // "dataCmnts",
@@ -76,8 +79,26 @@ object Proj {
     
     knownCodes.foreach { code =>
       val forward = cs2cs(4326, code.toInt, (1, -1, 0))
-      if (forward.isDefined) {
-        csvWriter.writeNext(writeLine(4326, code.toInt, (1, -1, 0), forward.get))
+      for (pt @ (x, y, z) <- forward) {
+        val (method, tolerance) = 
+          try {
+            val dst = CRS.fromName(s"EPSG:$code")
+            val tolerance = dst.crs.getProjection.getUnits match {
+              case null => 1
+              case u if Set(org.osgeo.proj4j.units.Units.DEGREES) contains u => 1e-6 * u.value
+              case u => 0.1 * u.value
+            }
+            val tx = Transform(LatLng, dst)
+            val (u, v) = tx(1, -1)
+              if ((x - u).abs < tolerance && (v - y).abs < tolerance) 
+                ("passing", tolerance)
+              else
+                ("failing", tolerance)
+          } catch {
+            case _: org.osgeo.proj4j.Proj4jException => ("error", 0.01d)
+          }
+
+        csvWriter.writeNext(writeLine(4326, code.toInt, method, (1, -1, 0), pt, tolerance))
         // TODO: Need to do better selection of the starting point, we get
         // results sometimes that are outside the area of validity for the
         // target coordinate system.  Until we do, the inverse transform tests won't all pass.
