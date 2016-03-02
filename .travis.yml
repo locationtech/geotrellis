@@ -55,4 +55,5 @@ deploy:
       scala: "2.11.5"
 
 after_deploy:
+  - bash .travis/scaladocs.sh
   - rm -f "${HOME}/.bintray/.credentials"
