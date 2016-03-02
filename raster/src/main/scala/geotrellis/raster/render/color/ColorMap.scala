@@ -21,16 +21,8 @@ import geotrellis.raster.histogram.Histogram
 
 import scala.collection.mutable
 
-sealed abstract class ColorMapType
-
-case object GreaterThan extends ColorMapType
-case object GreaterThanOrEqualTo extends ColorMapType
-case object LessThan extends ColorMapType
-case object LessThanOrEqualTo extends ColorMapType
-case object Exact extends ColorMapType
-
 case class ColorMapOptions(
-  colorMapType: ColorMapType,
+  colorMapType: ClassBoundaryType,
   /** Rgba value for NODATA */
   noDataColor: Int = 0x00000000,
   /** Rgba value for data that doesn't fit the map */
@@ -45,7 +37,7 @@ object ColorMapOptions {
   def apply(nd: Int): ColorMapOptions =
     ColorMapOptions(LessThan, nd)
 
-  implicit def colorMapTypeToOptions(colorMapType: ColorMapType): ColorMapOptions =
+  implicit def colorMapTypeToOptions(colorMapType: ClassBoundaryType): ColorMapOptions =
     ColorMapOptions(colorMapType)
 }
 
@@ -63,20 +55,11 @@ object ColorMap {
   def apply(breaksToColors: Map[Double, Int], options: ColorMapOptions): DoubleColorMap =
     DoubleColorMap(breaksToColors, options)
 
-  def apply(colorBreaks: ColorBreaks): ColorMap =
-    apply(colorBreaks, ColorMapOptions.Default)
-
-  def apply(colorBreaks: ColorBreaks, options: ColorMapOptions): ColorMap =
-    colorBreaks.toColorMap(options)
-
   def apply(breaks: Array[Int], color: Array[Int]): IntColorMap =
     apply(breaks, color, ColorMapOptions.Default)
 
   def apply(breaks: Array[Int], colors: Array[Int], options: ColorMapOptions): IntColorMap = {
-    val breaksToColors: Map[Int, Int] =
-      breaks.zip(colors)
-            .toMap
-
+    val breaksToColors: Map[Int, Int] = (breaks zip colors).toMap
     apply(breaksToColors, options)
   }
 
@@ -106,8 +89,8 @@ trait ColorMap {
     var i = 0
     while (i < colors.length) {
       val c = colors(i)
-      opaque &&= Color.isOpaque(c)
-      grey &&= Color.isGrey(c)
+      opaque &&= RGBA(c).isOpaque
+      grey &&= RGBA(c).isGrey
       i += 1
     }
     _colorsChecked = true

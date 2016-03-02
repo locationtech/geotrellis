@@ -16,4 +16,4 @@
 
 package geotrellis.raster.render.png
 
-case class Settings(colorType:ColorType, filter:Filter)
+case class Settings(colorType: PngColorEncoding, filter: Filter)

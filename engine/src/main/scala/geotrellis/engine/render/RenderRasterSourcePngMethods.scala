@@ -18,6 +18,7 @@ package geotrellis.engine.render
 
 import geotrellis.raster._
 import geotrellis.raster.render._
+import geotrellis.raster.histogram.Histogram
 import geotrellis.engine._
 
 @deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
@@ -35,27 +36,13 @@ trait RenderRasterSourcePngMethods extends RasterSourceMethods {
   def renderPng(): ValueSource[Png] =
     rasterSource.converge.map(_.renderPng)
 
-  def renderPng(colorRamp: ColorRamp): ValueSource[Png] =
-    rasterSource.converge.map(_.renderPng(colorRamp))
-
-  def renderPng(colorBreaks: ColorBreaks): ValueSource[Png] =
-    renderPng(colorBreaks, 0)
-
-  def renderPng(colorBreaks: ColorBreaks, noDataColor: Int): ValueSource[Png] =
-    rasterSource.converge.map(_.renderPng(colorBreaks, noDataColor))
-
-  def renderPng(ramp: ColorRamp, breaks: Array[Int]): ValueSource[Png] =
-    renderPng(ColorBreaks(breaks, ramp.toArray))
-
-  def renderPng(colors: Array[Int]): ValueSource[Png] =
+  def renderPng(colors: Array[RGBA]): ValueSource[Png] =
     rasterSource.converge.map(_.renderPng(colors))
 
-  def renderPng(colors: Array[Int], numColors: Int): ValueSource[Png] =
-    rasterSource.converge.map(_.renderPng(colors, numColors))
+  def renderPng(colorClassifier: ColorClassifier[_]): ValueSource[Png] =
+    rasterSource.converge.map(_.renderPng(colorClassifier))
 
-  def renderPng(colors: Array[Int], breaks: Array[Int]): ValueSource[Png] =
-    rasterSource.converge.map(_.renderPng(colors, breaks))
-
-  def renderPng(colors: Array[Int], breaks: Array[Int], noDataColor: Int): ValueSource[Png] =
-    rasterSource.converge.map(_.renderPng(colors, breaks, noDataColor))
+  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): ValueSource[Png] =
+    rasterSource.converge.map(_.renderPng(colorClassifier, histogram))
 }
+

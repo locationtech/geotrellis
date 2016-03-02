@@ -17,6 +17,7 @@
 package geotrellis.vector
 
 import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.algorithm.CGAlgorithms
 import GeomFactory._
 
 object Point {
@@ -321,4 +322,16 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    */
   def within(g: Geometry): Boolean =
     jtsGeom.within(g.jtsGeom)
+
+  def isInRing(l: Line): Boolean =
+    CGAlgorithms.isPointInRing(jtsGeom.getCoordinate, l.jtsGeom.getCoordinates)
+
+  def isOnLine(l: Line): Boolean =
+    CGAlgorithms.isOnLine(jtsGeom.getCoordinate, l.jtsGeom.getCoordinates)
+
+  def distanceToSegment(a: Point, b: Point): Double =
+    CGAlgorithms.distancePointLine(jtsGeom.getCoordinate, a.toCoordinate, b.toCoordinate)
+
+  def distanceToInfiniteLine(a: Point, b: Point): Double =
+    CGAlgorithms.distancePointLinePerpendicular(jtsGeom.getCoordinate, a.toCoordinate, b.toCoordinate)
 }

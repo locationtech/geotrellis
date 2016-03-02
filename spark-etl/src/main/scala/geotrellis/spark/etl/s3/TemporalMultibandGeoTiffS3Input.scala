@@ -6,6 +6,7 @@ import geotrellis.spark.io.s3._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+
 class TemporalMultibandGeoTiffS3Input extends S3Input[TemporalProjectedExtent, MultiBandTile] {
   val format = "temporal-geotiff"
   def apply(props: Parameters)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultiBandTile)] =

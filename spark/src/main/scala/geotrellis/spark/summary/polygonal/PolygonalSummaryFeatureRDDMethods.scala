@@ -1,7 +1,7 @@
 package geotrellis.spark.summary.polygonal
 
 import geotrellis.vector._
-import geotrellis.vector.op._
+import geotrellis.vector.summary.polygonal._
 
 import org.apache.spark.rdd._
 import reflect.ClassTag

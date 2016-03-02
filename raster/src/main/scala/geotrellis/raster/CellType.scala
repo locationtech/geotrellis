@@ -194,11 +194,13 @@ object CellType {
   }
 
   def fromString(name: String): CellType = name match {
-    case "bool" => BitCellType  // No NoData values
+    case "bool" | "boolraw" => BitCellType  // No NoData values
     case "int8raw" => ByteCellType
     case "uint8raw" => UByteCellType
     case "int16raw" => ShortCellType
     case "uint16raw" => UShortCellType
+    case "float32raw" => FloatCellType
+    case "float64raw" => DoubleCellType
     case "int8" => ByteConstantNoDataCellType  // Constant NoData values
     case "uint8" => UByteConstantNoDataCellType
     case "int16" => ShortConstantNoDataCellType
