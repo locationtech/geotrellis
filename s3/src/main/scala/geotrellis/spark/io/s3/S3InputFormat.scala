@@ -20,6 +20,9 @@ import scala.util.matching.Regex
 abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
   import S3InputFormat._
 
+  def getS3Client(credentials: AWSCredentials): S3Client =
+    new geotrellis.spark.io.s3.AmazonS3Client(credentials, S3Client.defaultConfiguration)
+
   override def getSplits(context: JobContext) = {
     import scala.collection.JavaConversions._
 
@@ -35,10 +38,10 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       else None
     }
 
-    val maxKeys: Integer = {
-      val max = conf.get(MAX_KEYS)
-      if (max != null)  max.toInt  else  null
-    }
+    val partitionCountConf = conf.get(PARTITION_COUNT)
+    val partitionSizeConf = conf.get(PARTITION_BYTES)
+    require(null == partitionCountConf || null == partitionSizeConf,
+      "Either PARTITION_COUNT or PARTITION_SIZE option may be set")
 
     val credentials =
       if (anon != null)
@@ -48,51 +51,81 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       else
         new DefaultAWSCredentialsProviderChain().getCredentials
 
-    val s3client = new com.amazonaws.services.s3.AmazonS3Client(credentials)
-
-    region match {
-      case Some(r) =>
-        s3client.setRegion(r)
-      case None =>
-    }
+    val s3client: S3Client = getS3Client(credentials)
+    for (r <- region) s3client.setRegion(r)
 
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
-    logger.debug(s"Authenticationg with ID=${credentials.getAWSAccessKeyId}")
+    logger.debug(s"Authenticating with ID=${credentials.getAWSAccessKeyId}")
+
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
       .withPrefix(prefix)
-      .withMaxKeys(maxKeys)
 
-    var listing: ObjectListing = null
-    var splits: List[S3InputSplit] = Nil
-    do {
-      listing = s3client.listObjects(request)
-      val split = new S3InputSplit()
+    def makeNewSplit =  {
+      val split = new S3InputSplit
       split.setCredentials(credentials)
       split.bucket = bucket
-      // avoid including "directories" in the input split, can cause 403 errors on GET
-      split.keys = listing.getObjectSummaries.map(_.getKey).filterNot(_ endsWith "/")
+      split
+    }
 
-      splits = split :: splits
-      request.setMarker(listing.getNextMarker)
-    } while (listing.isTruncated)
+    var splits: Vector[S3InputSplit] = Vector(makeNewSplit)
+
+    if (null == partitionCountConf) {
+      // By default attempt to make partitions the same size
+      val maxSplitBytes = if (null == partitionSizeConf) S3InputFormat.DEFAULT_PARTITION_BYTES else partitionSizeConf.toLong
+      logger.info(s"Building partitions, attempting to create them with size at most $maxSplitBytes bytes")
+      s3client
+        .listObjectsIterator(request)
+        .filter(!_.getKey.endsWith("/"))
+        .foreach { obj =>
+          val curSplit = splits.last
+          val objSize = obj.getSize
+          if (curSplit.getLength == 0)
+            curSplit.addKey(obj)
+          else if (curSplit.size + objSize <= maxSplitBytes)
+            curSplit.addKey(obj)
+          else {
+            val newSplit = makeNewSplit
+            newSplit.addKey(obj)
+            splits = splits :+ newSplit
+          }
+        }
+    } else {
+      val partitionCount = partitionCountConf.toInt
+      logger.info(s"Building partitions of at most $partitionCountConf objects")
+      val keys =
+        s3client
+          .listObjectsIterator(request)
+          .filter(! _.getKey.endsWith("/"))
+          .toVector
+
+      splits = keys
+        .grouped(keys.length / partitionCount)
+        .map { keys =>
+          val split = makeNewSplit
+          keys.foreach(split.addKey)
+          split
+        }.toVector
+    }
 
     splits
   }
 }
 
 object S3InputFormat {
+  final val DEFAULT_PARTITION_BYTES =  256 * 1024 * 1024
   final val ANONYMOUS = "s3.anonymous"
   final val AWS_ID = "s3.awsId"
   final val AWS_KEY = "s3.awsKey"
   final val BUCKET = "s3.bucket"
   final val PREFIX = "s3.prefix"
-  final val REGION = "s3.maxKeys"
-  final val MAX_KEYS = "s3.region"
+  final val REGION = "s3.region"
+  final val PARTITION_COUNT = "s3.partitionCount"
+  final val PARTITION_BYTES = "S3.partitionBytes"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
-  private val slug = "[a-z0-9-]+"
+  private val slug = "[a-zA-Z0-9-]+"
   val S3UrlRx = new Regex(s"""s3n://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
 
   /** Set S3N url to use, may include AWS Id and Key */
@@ -122,12 +155,13 @@ object S3InputFormat {
   def setPrefix(conf: Configuration, prefix: String): Unit =
     conf.set(PREFIX, prefix)
 
-  /** Set maximum number of keys per split, less may be returned */
-  def setMaxKeys(job: Job, limit: Int): Unit =
-    setMaxKeys(job.getConfiguration, limit)
+  /** Set desired partition count */
+  def setPartitionCount(job: Job, limit: Int): Unit =
+    setPartitionCount(job.getConfiguration, limit)
 
-  def setMaxKeys(conf: Configuration, limit: Int): Unit =
-    conf.set(MAX_KEYS, limit.toString)
+  /** Set desired partition count */
+  def setPartitionCount(conf: Configuration, limit: Int): Unit =
+    conf.set(PARTITION_COUNT, limit.toString)
 
   def setRegion(job: Job, region: String): Unit =
     setRegion(job.getConfiguration, region)
@@ -142,4 +176,12 @@ object S3InputFormat {
   /** Force anonymous access, bypass all key discovery */
   def setAnonymous(conf: Configuration): Unit =
     conf.set(ANONYMOUS, "true")
+
+  /** Set desired partition size in bytes, at least one item per partition will be assigned */
+  def setPartitionBytes(job: Job, bytes: Long): Unit =
+    setPartitionBytes(job.getConfiguration, bytes)
+
+  /** Set desired partition size in bytes, at least one item per partition will be assigned */
+  def setPartitionBytes(conf: Configuration, bytes: Long): Unit =
+    conf.set(PARTITION_BYTES, bytes.toString)
 }

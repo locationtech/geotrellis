@@ -98,7 +98,7 @@ histogram     | Save histogram to the output AttributeStore for every saved laye
 Output    | Options
 ----------|----------------
 hadoop    | path
-s3        | bucket, key, splitSize
+s3        | bucket, key, partitionCount, partitionBytes
 
 #### Supported Outputs
 
