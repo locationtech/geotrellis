@@ -50,7 +50,7 @@ object Dependencies {
   val asm           = "asm"               % "asm"       % "3.3.1"
 
   val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
-  val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
+  val postgresql    = "postgresql"         % "postgresql"  % "9.2-1002.jdbc4"
 
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
     from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
