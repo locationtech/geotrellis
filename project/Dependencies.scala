@@ -42,7 +42,7 @@ object Dependencies {
   val sprayHttpx    = "io.spray"        %% "spray-httpx"   % Version.spray
   val sprayJson     = "io.spray"        %% "spray-json"    % Version.sprayJson
 
-  val apacheMath    = "org.apache.commons" % "commons-math3" % "3.5"
+  val apacheMath    = "org.apache.commons" % "commons-math3" % "3.6"
 
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
