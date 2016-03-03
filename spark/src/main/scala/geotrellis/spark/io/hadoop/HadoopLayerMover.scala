@@ -23,7 +23,7 @@ class HadoopLayerMover(
 )(implicit sc: SparkContext) extends LayerMover[LayerId] {
 
   override def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: LayerId, to: LayerId): Unit = {

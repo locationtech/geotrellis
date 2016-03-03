@@ -44,7 +44,7 @@ class AccumuloLayerReindexer(
     id.copy(name = s"${id.name}-${DateTime.now.getMillis}")
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
@@ -67,7 +67,7 @@ class AccumuloLayerReindexer(
   }
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {

@@ -6,35 +6,101 @@ import geotrellis.spark.io.index.hilbert._
 import geotrellis.spark.io.index.rowmajor._
 import geotrellis.spark.io.index.zcurve._
 
+import com.typesafe.config.ConfigFactory
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+import scala.collection.mutable
 import scala.reflect._
 
-case class KeyIndexFormatEntry[K: JsonFormat, T <: KeyIndex[K]: JsonFormat: ClassTag](typeName: String) {
+case class KeyIndexFormatEntry[K: JsonFormat: ClassTag, T <: KeyIndex[K]: JsonFormat: ClassTag](typeName: String) {
+  val keyClassTag = implicitly[ClassTag[K]]
   val jsonFormat = implicitly[JsonFormat[T]]
-  val classTag = implicitly[ClassTag[T]]
+  val indexClassTag = implicitly[ClassTag[T]]
+}
+
+trait KeyIndexRegistrator {
+  def register(keyIndexRegistry: KeyIndexRegistry)
+}
+
+class KeyIndexJsonFormat[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends RootJsonFormat[KeyIndex[K]] {
+  def write(obj: KeyIndex[K]): JsValue =
+    entries.find(_.indexClassTag.runtimeClass.isAssignableFrom(obj.getClass)) match {
+      case Some(entry) =>
+        obj.toJson(entry.jsonFormat.asInstanceOf[JsonFormat[KeyIndex[K]]])
+      case None =>
+        throw new SerializationException(s"Cannot serialize this key index with this KeyIndexJsonFormat: $obj")
+    }
+
+  def read(value: JsValue): KeyIndex[K] =
+    value.asJsObject.getFields("type", "properties") match {
+      case Seq(JsString(typeName), properties) =>
+        entries.find(_.typeName == typeName) match {
+          case Some(entry) =>
+            // Deserialize the key index based on the entry information.
+            entry.jsonFormat.read(value).asInstanceOf[KeyIndex[K]]
+          case None =>
+            throw new DeserializationException(s"Cannot deserialize key index with type $typeName in json $value")
+        }
+      case _ =>
+        throw new DeserializationException(s"Expected KeyIndex, got $value")
+    }
+}
+
+object KeyIndexJsonFormatFactory {
+  private val REG_SETTING_NAME = "geotrellis.spark.io.index.registrator"
+
+  private lazy val registry: Map[ClassTag[_], List[KeyIndexFormatEntry[_, _]]] = {
+    val entryRegistry = new KeyIndexRegistry
+
+    entryRegistry register KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](HilbertSpatialKeyIndexFormat.TYPE_NAME)
+    entryRegistry register KeyIndexFormatEntry[SpatialKey, ZSpatialKeyIndex](ZSpatialKeyIndexFormat.TYPE_NAME)
+    entryRegistry register KeyIndexFormatEntry[SpatialKey, RowMajorSpatialKeyIndex](RowMajorSpatialKeyIndexFormat.TYPE_NAME)
+
+    entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, HilbertSpaceTimeKeyIndex](HilbertSpaceTimeKeyIndexFormat.TYPE_NAME)
+    entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeKeyIndex](ZSpaceTimeKeyIndexFormat.TYPE_NAME)
+
+    // User defined here
+    val conf = ConfigFactory.load()
+    if(conf.hasPath(REG_SETTING_NAME)) {
+      val userRegistratorClassName = conf.getString("geotrellis.spark.io.index.registrator")
+      val userRegistrator =
+        Class.forName(userRegistratorClassName)
+          .getConstructor()
+          .newInstance()
+          .asInstanceOf[KeyIndexRegistrator]
+      userRegistrator.register(entryRegistry)
+    }
+
+    entryRegistry
+      .entries
+      .groupBy(_.keyClassTag)
+      .toMap
+  }
+
+  def getKeyIndexJsonFormat[K: ClassTag](): RootJsonFormat[KeyIndex[K]] = {
+    for((key, entries) <- registry) {
+      if(key == classTag[K]) {
+        return new KeyIndexJsonFormat[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
+      }
+    }
+    throw new DeserializationException(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME")
+  }
+}
+
+class KeyIndexRegistry {
+  private var _entries = mutable.ListBuffer[KeyIndexFormatEntry[_, _]]()
+  def register(entry: KeyIndexFormatEntry[_, _]): Unit = {
+    _entries += entry
+  }
+
+  def entries: List[KeyIndexFormatEntry[_, _]] =
+    _entries.toList
 }
 
 trait KeyIndexFormats {
-  implicit def optionKeyBoundsFormat[K: JsonFormat]: RootJsonFormat[Option[KeyBounds[K]]] =
-    new RootJsonFormat[Option[KeyBounds[K]]] {
-      def write(obj: Option[KeyBounds[K]]): JsValue =
-        obj match {
-          case Some(kb) => kb.toJson
-          case None => JsString("none")
-        }
-
-      def read(value: JsValue): Option[KeyBounds[K]] =
-        value match {
-          case kb: JsObject =>
-            Some(kb.convertTo[KeyBounds[K]])
-          case JsString("none") =>
-            None
-          case _ =>
-            throw new DeserializationException(s"Expected KeyBounds option, instead got $value")
-        }
-    }
+  implicit def keyIndexJsonFormat[K: ClassTag]: RootJsonFormat[KeyIndex[K]] =
+    KeyIndexJsonFormatFactory.getKeyIndexJsonFormat[K]
 
   implicit object HilbertSpatialKeyIndexFormat extends RootJsonFormat[HilbertSpatialKeyIndex] {
     final def TYPE_NAME = "hilbert"
@@ -159,7 +225,7 @@ trait KeyIndexFormats {
 
           properties.convertTo[JsObject].getFields("keyBounds", "temporalResolution") match {
             case Seq(keyBounds, temporalResolution) =>
-              ZSpaceTimeKeyIndex.byMilliseconds(temporalResolution.convertTo[Long])
+              ZSpaceTimeKeyIndex.byMilliseconds(keyBounds.convertTo[KeyBounds[SpaceTimeKey]], temporalResolution.convertTo[Long])
             case _ =>
               throw new DeserializationException(
                 "Wrong KeyIndex constructor arguments: ZSpaceTimeKeyIndex constructor arguments expected.")
@@ -187,7 +253,7 @@ trait KeyIndexFormats {
 
           properties.convertTo[JsObject].getFields("keyBounds") match {
             case Seq(kb) =>
-              new ZSpatialKeyIndex()
+              new ZSpatialKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
             case _ =>
               throw new DeserializationException(
                 "Wrong KeyIndex constructor arguments: ZSpatialKeyIndex constructor arguments expected.")
@@ -197,59 +263,4 @@ trait KeyIndexFormats {
           throw new DeserializationException("Wrong KeyIndex type: ZSpatialKeyIndex expected.")
       }
   }
-
-  implicit def keyIndexFormat[K: KeyIndexJsonFormat] = new RootJsonFormat[KeyIndex[K]] {
-    def write(obj: KeyIndex[K]): JsValue = {obj: KeyIndex[K]}.toJson
-
-    /** Type cast is correct until all inner keyIndex types implement BoundedKeyIndex trait */
-    def read(value: JsValue): KeyIndex[K] =
-      value.asJsObject.convertTo[KeyIndex[K]].asInstanceOf[KeyIndex[K]]
-  }
-
-  trait KeyIndexJsonFormat[K] extends RootJsonFormat[KeyIndex[K]] {
-    protected val entries: Vector[KeyIndexFormatEntry[K, _]]
-
-    def write(obj: KeyIndex[K]): JsValue =
-      entries.find(_.classTag.runtimeClass.isAssignableFrom(obj.getClass)) match {
-        case Some(entry) =>
-          obj.toJson(entry.jsonFormat.asInstanceOf[JsonFormat[KeyIndex[K]]])
-        case None =>
-          throw new SerializationException(s"Cannot serialize this key index with this KeyIndexJsonFormat: $obj")
-      }
-
-    def read(value: JsValue): KeyIndex[K] =
-      value.asJsObject.getFields("type", "properties") match {
-        case Seq(JsString(typeName), properties) =>
-          entries.find(_.typeName == typeName) match {
-            case Some(entry) =>
-              // Deserialize the key index based on the entry information.
-              entry.jsonFormat.read(value).asInstanceOf[KeyIndex[K]]
-            case None =>
-              throw new DeserializationException(s"Cannot deserialize key index with type $typeName in json $value")
-          }
-        case _ =>
-          throw new DeserializationException(s"Expected KeyIndex, got $value")
-      }
-  }
-
-  object SpatialKeyIndexJsonFormat extends KeyIndexJsonFormat[SpatialKey] {
-    val entries =
-      Vector(
-        KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](HilbertSpatialKeyIndexFormat.TYPE_NAME),
-        KeyIndexFormatEntry[SpatialKey, ZSpatialKeyIndex](ZSpatialKeyIndexFormat.TYPE_NAME),
-        KeyIndexFormatEntry[SpatialKey, RowMajorSpatialKeyIndex](RowMajorSpatialKeyIndexFormat.TYPE_NAME)
-      )
-  }
-
-  object SpaceTimeKeyIndexJsonFormat extends KeyIndexJsonFormat[SpaceTimeKey] {
-    val entries =
-      Vector(
-        KeyIndexFormatEntry[SpaceTimeKey, HilbertSpaceTimeKeyIndex](HilbertSpaceTimeKeyIndexFormat.TYPE_NAME),
-        KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeKeyIndex](ZSpaceTimeKeyIndexFormat.TYPE_NAME)
-      )
-  }
-
-  implicit def spatialKeyIndexJsonFormat: KeyIndexJsonFormat[SpatialKey] = SpatialKeyIndexJsonFormat
-  implicit def spaceTimeKeyIndexJsonFormat: KeyIndexJsonFormat[SpaceTimeKey] = SpaceTimeKeyIndexJsonFormat
-
 }

@@ -19,28 +19,28 @@ class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: Acc
     AccumuloLayerDeleter(attributeStore, instance).delete(id)
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: LayerId, to: LayerId): Unit =
     AccumuloLayerCopier(instance).copy[K, V, M](from, to)
 
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: LayerId, to: LayerId): Unit =
     AccumuloLayerMover(instance).move[K, V, M](from, to)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
     AccumuloLayerReindexer(instance).reindex[K, V, M](id, keyIndexMethod)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =

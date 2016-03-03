@@ -38,7 +38,7 @@ class S3LayerReader(
   def rddReader: S3RDDReader = S3RDDReader
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {

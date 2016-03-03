@@ -19,7 +19,7 @@ object FileLayerMover {
   def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
     new LayerMover[LayerId] {
       def move[
-        K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+        K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
         V: AvroRecordCodec: ClassTag,
         M: JsonFormat
       ](from: LayerId, to: LayerId): Unit = {

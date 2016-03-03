@@ -14,7 +14,7 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
-class S3TileReader[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](
+class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
   val attributeStore: AttributeStore[JsonFormat]
 )  extends Reader[LayerId, Reader[K, V]] {
 
@@ -49,9 +49,9 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
 }
 
 object S3TileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](bucket: String, root: String): S3TileReader[K, V] =
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String, root: String): S3TileReader[K, V] =
     new S3TileReader[K, V](new S3AttributeStore(bucket, root))
 
-  def apply[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](bucket: String): S3TileReader[K, V] =
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String): S3TileReader[K, V] =
     apply(bucket, "")
 }

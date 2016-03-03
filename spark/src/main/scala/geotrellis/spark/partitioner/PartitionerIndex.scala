@@ -8,7 +8,10 @@ import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
   * Coarseness means that multiple keys will be mapped to a single SFC value.
   * This many to one mapping forms spatially relate key blocks
   */
-trait PartitionerIndex[K] extends KeyIndex[K] { def keyBounds: Option[KeyBounds[K]] = None }
+trait PartitionerIndex[K] extends Serializable {
+  def toIndex(key: K): Long
+  def indexRanges(keyRange: (K, K)): Seq[(Long, Long)]
+}
 
 object PartitionerIndex {
 

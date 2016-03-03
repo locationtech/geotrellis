@@ -11,12 +11,12 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
   implicit def spatialKeyIndexMethod(m: ZCurveKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
       def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-        new ZSpatialKeyIndex()
+        new ZSpatialKeyIndex(keyBounds)
     }
 
   def byMilliseconds(millis: Long): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMilliseconds(millis)
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, millis)
     }
 
   def bySecond(): KeyIndexMethod[SpaceTimeKey] =

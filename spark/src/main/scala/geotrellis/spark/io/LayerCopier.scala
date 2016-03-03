@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 
 trait LayerCopier[ID] {
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](from: ID, to: ID): Unit

@@ -23,7 +23,7 @@ class HadoopLayerWriter(
 ) extends LayerWriter[LayerId] {
 
   def write[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {

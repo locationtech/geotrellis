@@ -14,13 +14,13 @@ trait LayerWriter[ID] {
   val attributeStore: AttributeStore[JsonFormat]
 
   def write[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit
 
   def write[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K], keyBounds: KeyBounds[K]): Unit = {
@@ -29,7 +29,7 @@ trait LayerWriter[ID] {
   }
 
   def write[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Component[?, KeyBounds[K]]: JsonFormat
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
@@ -38,7 +38,7 @@ trait LayerWriter[ID] {
   }
 
   def write[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Component[?, KeyBounds[K]]: JsonFormat
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit = {
@@ -48,7 +48,7 @@ trait LayerWriter[ID] {
   }
 
   def writer[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](keyBounds: KeyBounds[K], keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
@@ -58,7 +58,7 @@ trait LayerWriter[ID] {
     }
 
   def writer[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](keyBounds: KeyBounds[K], keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
@@ -68,7 +68,7 @@ trait LayerWriter[ID] {
     }
 
   def writer[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Component[?, KeyBounds[K]]: JsonFormat
   ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
@@ -78,7 +78,7 @@ trait LayerWriter[ID] {
     }
 
   def writer[
-    K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Component[?, KeyBounds[K]]: JsonFormat
   ](keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
@@ -88,7 +88,7 @@ trait LayerWriter[ID] {
     }
 
   def keyBoundsComputingWriter[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =

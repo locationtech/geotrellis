@@ -1,42 +1,45 @@
 package geotrellis.spark.io.index.zcurve
 
-import scala.collection.immutable.TreeSet
+import geotrellis.spark._
+
 import org.scalatest._
-import geotrellis.spark.SpatialKey
+
+import scala.collection.immutable.TreeSet
 
 class ZSpatialKeyIndexSpec extends FunSpec with Matchers {
 
   val upperBound = 64
+  val keyBounds = KeyBounds(SpatialKey(0, 0), SpatialKey(100, 100))
 
   describe("ZSpatialKeyIndex test") {
     it("generates an index from a SpatialKey"){
-    
-      val zsk = new ZSpatialKeyIndex()
-  
-      val keys = 
+
+      val zsk = new ZSpatialKeyIndex(keyBounds)
+
+      val keys =
         for(col <- 0 until upperBound;
              row <- 0 until upperBound) yield {
           zsk.toIndex(SpatialKey(col, row))
         }
-     
+
       keys.distinct.size should be (upperBound * upperBound)
       keys.min should be (0)
       keys.max should be (upperBound * upperBound - 1)
     }
 
     it("generates indexes you can hand check 2x2"){
-     val zsk = new ZSpatialKeyIndex()
+     val zsk = new ZSpatialKeyIndex(keyBounds)
      val keys= List[SpatialKey](SpatialKey(0,0),SpatialKey(1,0),
-                                SpatialKey(0,1),SpatialKey(1,1)) 
+                                SpatialKey(0,1),SpatialKey(1,1))
 
-     for(i <- 0 to 3){  
+     for(i <- 0 to 3){
        zsk.toIndex(keys(i)) should be(i)
      }
     }
 
 
     it("generates indexes you can hand check 4x4"){
-     val zsk = new ZSpatialKeyIndex()
+     val zsk = new ZSpatialKeyIndex(keyBounds)
      val keys= List[SpatialKey](SpatialKey(0,0),SpatialKey(1,0),
                                 SpatialKey(0,1),SpatialKey(1,1),
                                 SpatialKey(2,0),SpatialKey(3,0),
@@ -45,14 +48,14 @@ class ZSpatialKeyIndexSpec extends FunSpec with Matchers {
                                 SpatialKey(0,3),SpatialKey(1,3),
                                 SpatialKey(2,2),SpatialKey(3,2),
                                 SpatialKey(2,3),SpatialKey(3,3))
-     
-     for(i <- 0 to 15){  
+
+     for(i <- 0 to 15){
        zsk.toIndex(keys(i)) should be(i)
      }
     }
 
     it("generates a Seq[(Long, Long)] from a keyRange (SpatialKey,SpatialKey)"){
-     val zsk = new ZSpatialKeyIndex()
+     val zsk = new ZSpatialKeyIndex(keyBounds)
 
      //checked by hand 4x4
      var idx: Seq[(Long,Long)] = zsk.indexRanges((SpatialKey(0,0), SpatialKey(1,1)))
@@ -139,4 +142,3 @@ class ZSpatialKeyIndexSpec extends FunSpec with Matchers {
     }
   }
 }
-

@@ -7,49 +7,47 @@ import geotrellis.spark.io.index.zcurve._
 import com.github.nscala_time.time.Imports._
 
 object ZSpaceTimeKeyIndex {
-  def byMilliseconds(millis: Long): ZSpaceTimeKeyIndex =
-    new ZSpaceTimeKeyIndex(millis)
+  def byMilliseconds(keyBounds: KeyBounds[SpaceTimeKey], millis: Long): ZSpaceTimeKeyIndex =
+    new ZSpaceTimeKeyIndex(keyBounds, millis)
 
-  def bySecond(): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L)
+  def bySecond(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L)
 
-  def bySeconds(seconds: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * seconds)
+  def bySeconds(keyBounds: KeyBounds[SpaceTimeKey], seconds: Int): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * seconds)
 
-  def byMinute(): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60)
+  def byMinute(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60)
 
-  def byMinutes(minutes: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * minutes)
+  def byMinutes(keyBounds: KeyBounds[SpaceTimeKey], minutes: Int): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * minutes)
 
-  def byHour(): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60)
+  def byHour(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60)
 
-  def byHours(hours: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * hours)
+  def byHours(keyBounds: KeyBounds[SpaceTimeKey], hours: Int): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * hours)
 
-  def byDay(): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * 24)
+  def byDay(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 24)
 
-  def byDays(days: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * 24 * days)
+  def byDays(keyBounds: KeyBounds[SpaceTimeKey], days: Int): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 24 * days)
 
-  def byMonth(): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * 30)
+  def byMonth(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 30)
 
-  def byMonths(months: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * 30 * months)
+  def byMonths(keyBounds: KeyBounds[SpaceTimeKey], months: Int): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 30 * months)
 
-  def byYear(): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * 365)
+  def byYear(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 365)
 
-  def byYears(years: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(1000L * 60 * 60 * 365 * years)
+  def byYears(keyBounds: KeyBounds[SpaceTimeKey], years: Int): ZSpaceTimeKeyIndex =
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 365 * years)
 }
 
-class ZSpaceTimeKeyIndex(val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
-  def keyBounds: Option[KeyBounds[SpaceTimeKey]] = None
-
+class ZSpaceTimeKeyIndex(val keyBounds: KeyBounds[SpaceTimeKey], val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
   private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, (key.instant / temporalResolution).toInt)
 
   def toIndex(key: SpaceTimeKey): Long = toZ(key).z

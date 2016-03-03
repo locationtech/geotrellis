@@ -37,7 +37,7 @@ class FileLayerReader(
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {

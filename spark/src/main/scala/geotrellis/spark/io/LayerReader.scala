@@ -11,20 +11,20 @@ trait LayerReader[ID] {
   val defaultNumPartitions: Int
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ](id: ID): RDD[(K, V)] with Metadata[M] =
     read(id, defaultNumPartitions)
 
   def reader[
-    K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat
   ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =

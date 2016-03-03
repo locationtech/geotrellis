@@ -17,7 +17,7 @@ import java.io.File
 import scala.reflect.ClassTag
 
 
-class FileTileReader[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](
+class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
   val attributeStore: AttributeStore[JsonFormat],
   catalogPath: String
 )  extends Reader[LayerId, Reader[K, V]] {
@@ -48,9 +48,9 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTa
 }
 
 object FileTileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](catalogPath: String): FileTileReader[K, V] =
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](catalogPath: String): FileTileReader[K, V] =
     new FileTileReader[K, V](new FileAttributeStore(catalogPath), catalogPath)
 
-  def apply[K: AvroRecordCodec: JsonFormat: KeyIndexJsonFormat: ClassTag, V: AvroRecordCodec](attributeStore: FileAttributeStore): FileTileReader[K, V] =
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](attributeStore: FileAttributeStore): FileTileReader[K, V] =
     new FileTileReader[K, V](attributeStore, attributeStore.catalogPath)
 }

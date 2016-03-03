@@ -16,7 +16,7 @@ import scala.reflect._
 case class PersistenceSpecLayerIds(layerId: LayerId, deleteLayerId: LayerId, copiedLayerId: LayerId, movedLayerId: LayerId, reindexedLayerId: LayerId)
 
 abstract class PersistenceSpec[
-  K: AvroRecordCodec: Boundable: JsonFormat: KeyIndexJsonFormat: ClassTag,
+  K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
   V: AvroRecordCodec: ClassTag,
   M: JsonFormat
 ] extends FunSpec with Matchers { self: FunSpec =>

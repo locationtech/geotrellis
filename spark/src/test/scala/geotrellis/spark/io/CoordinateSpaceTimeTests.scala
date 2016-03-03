@@ -63,26 +63,25 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, Raste
 
       actual should contain theSameElementsAs expected
     }
-  }
+    it("query at particular times") {
+      val actual = query.where(Intersects(bounds1) or Intersects(bounds2))
+        .where(At(dates(0)) or At(dates(4))).toRDD.keys.collect()
 
-  it("query at particular times") {
-    val actual = query.where(Intersects(bounds1) or Intersects(bounds2))
-      .where(At(dates(0)) or At(dates(4))).toRDD.keys.collect()
-
-    val expected = {
-      for {
-        (col, row) <- bounds1.coords ++ bounds2.coords
-        time <- Seq(dates(0), dates(4))
-      } yield {
-        SpaceTimeKey(col, row, time)
+      val expected = {
+        for {
+          (col, row) <- bounds1.coords ++ bounds2.coords
+          time <- Seq(dates(0), dates(4))
+        } yield {
+          SpaceTimeKey(col, row, time)
+        }
       }
+
+      if (expected.diff(actual).nonEmpty)
+        info(s"missing: ${(expected diff actual).toList}")
+      if (actual.diff(expected).nonEmpty)
+        info(s"unwanted: ${(actual diff expected).toList}")
+
+      actual should contain theSameElementsAs expected
     }
-
-    if (expected.diff(actual).nonEmpty)
-      info(s"missing: ${(expected diff actual).toList}")
-    if (actual.diff(expected).nonEmpty)
-      info(s"unwanted: ${(actual diff expected).toList}")
-
-    actual should contain theSameElementsAs expected
   }
 }
