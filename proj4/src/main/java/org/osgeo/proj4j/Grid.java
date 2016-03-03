@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.net.URI;
@@ -13,7 +14,7 @@ import java.net.URL;
 
 import org.osgeo.proj4j.util.ProjectionMath;
 
-public final class Grid {
+public final class Grid implements Serializable {
     /**
      * Identifying name for this Grid. eg "conus" or ntv2_0.gsb
      */
@@ -126,7 +127,7 @@ public final class Grid {
         }
     }
 
-    public static final class ConversionTable {
+    public static final class ConversionTable implements Serializable {
         /**
          * ASCII info
          */

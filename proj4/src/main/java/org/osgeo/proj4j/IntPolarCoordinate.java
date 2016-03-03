@@ -1,6 +1,8 @@
 package org.osgeo.proj4j;
 
-public final class IntPolarCoordinate {
+import java.io.Serializable;
+
+public final class IntPolarCoordinate implements Serializable {
     public int lam, phi;
     public IntPolarCoordinate(IntPolarCoordinate that) {
         this(that.lam, that.phi);

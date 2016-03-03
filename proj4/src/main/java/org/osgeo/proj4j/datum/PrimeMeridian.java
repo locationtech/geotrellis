@@ -1,10 +1,11 @@
 package org.osgeo.proj4j.datum;
 
+import java.io.Serializable;
 import org.osgeo.proj4j.ProjCoordinate;
 import org.osgeo.proj4j.util.ProjectionMath;
 import org.osgeo.proj4j.units.AngleFormat;
 
-public final class PrimeMeridian {
+public final class PrimeMeridian implements Serializable {
     private final String name;
     private final double offsetFromGreenwich;
 

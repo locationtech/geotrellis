@@ -1,6 +1,8 @@
 package org.osgeo.proj4j;
 
-public final class PolarCoordinate {
+import java.io.Serializable;
+
+public final class PolarCoordinate implements Serializable {
     public double lam, phi;
     public PolarCoordinate(PolarCoordinate that) {
         this(that.lam, that.phi);

@@ -1,9 +1,11 @@
-package dwins
+package geotrellis.proj4
 
 import scala.sys.process._
-import geotrellis.proj4._
 
-object Proj {
+/**
+ * Use the C proj.4 library to generate test cases to cross-validate the proj4j implementation.
+ */
+object GenerateTestCases {
   implicit class withAsStream(val a: String) extends AnyVal {
     def asStream: java.io.InputStream = 
       new java.io.ByteArrayInputStream(a.getBytes(java.nio.charset.StandardCharsets.UTF_8))
@@ -24,15 +26,8 @@ object Proj {
   }
 
   def main(args: Array[String]): Unit = {
-    val registeredCodes = 
-      loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/geotrellis/proj4/nad/epsg"))) { source =>
-        source.getLines
-          .filter { _ startsWith "<" }
-          .map { s => s.tail.take(s.indexOf('>') - 1) }
-          .to[Set]
-      }
     val knownCodes = 
-      loan(scala.io.Source.fromFile("/Users/dwins/Projects/radiantblue/proj.4/nad/epsg")) { source =>
+      loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/geotrellis/proj4/nad/epsg"))) { source =>
         source.getLines
           // .filterNot { _ contains "+pm=" }
           // .filterNot { _ contains "+axis=" }
@@ -45,7 +40,6 @@ object Proj {
           .filter { _ startsWith "<" }
           .map { s => s.tail.take(s.indexOf('>') - 1) }
           .filter { _ != "4326" }
-          .filter { registeredCodes }
           .to[Vector]
       }
     

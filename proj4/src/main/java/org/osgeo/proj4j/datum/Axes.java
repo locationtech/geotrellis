@@ -1,8 +1,9 @@
 package org.osgeo.proj4j.datum;
 
 import org.osgeo.proj4j.ProjCoordinate;
+import java.io.Serializable;
 
-public final class Axes {
+public final class Axes implements Serializable {
     private enum Axis {
         Easting {
             public double fromENU(ProjCoordinate c) {
