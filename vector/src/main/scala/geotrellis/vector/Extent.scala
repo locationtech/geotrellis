@@ -43,7 +43,7 @@ object ProjectedExtent {
  */
 case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
-  // Validation: Do not accept extents min values greater than or equal to max values.
+  // Validation: Do not accept extents min values greater than max values.
   if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
   if (ymin > ymax) { throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)") }
 
