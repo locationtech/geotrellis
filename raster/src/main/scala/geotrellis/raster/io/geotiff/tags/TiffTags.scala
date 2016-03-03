@@ -291,9 +291,9 @@ case class TiffTags(
     val (x1, y1) = (modelPixels(0).x, modelPixels(0).y)
     val (x2, y2) = (modelPixels(1).x, modelPixels(1).y)
 
-    Extent(math.min(x1, x2), 
-           math.min(y1, y2), 
-           math.max(x1, x2), 
+    Extent(math.min(x1, x2),
+           math.min(y1, y2),
+           math.max(x1, x2),
            math.max(y1, y2))
   }
 
@@ -317,7 +317,7 @@ case class TiffTags(
   lazy val geoTiffCSTags = GeoTiffCSParser(this)
 
   def tags: Tags = {
-    val (headTags, bandTags) = 
+    val (headTags, bandTags) =
       (this &|->
         TiffTags._geoTiffTags ^|->
         GeoTiffTags._metadata get
@@ -354,7 +354,7 @@ case class TiffTags(
         case None =>
           (Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
       }
-  
+
       this &|->
         TiffTags._metadataTags ^|->
         MetadataTags._dateTime get match {
