@@ -138,7 +138,9 @@ trait ArrayTile extends Tile with Serializable {
       case ct: ConstantTile =>
         ct.combine(this)(f)
       case ct: CompositeTile =>
-        ct.combine(this)((z1, z2)=>f(z2, z1))
+        ct.combine(this)((z1, z2) => f(z2, z1))
+      case ct: CroppedTile =>
+        ct.combine(this)((z1, z2) => f(z2, z1))
     }
   }
 
