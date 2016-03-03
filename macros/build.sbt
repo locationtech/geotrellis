@@ -17,4 +17,4 @@ libraryDependencies += "org.spire-math" %% "spire-macros" % "0.11.0"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
-addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
