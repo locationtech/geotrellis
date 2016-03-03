@@ -1,4 +1,7 @@
-
+index.html
+index.js
+package.html
+lib
 
 project/boot
 project/plugins/project
@@ -28,3 +31,7 @@ _SUCCESS
 *.swo
 *.sublime-*
 .vagrant
+
+lib
+index.html
+index.js
