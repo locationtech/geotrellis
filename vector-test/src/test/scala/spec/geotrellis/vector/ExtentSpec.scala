@@ -16,8 +16,6 @@
 
 package geotrellis.vector
 
-import java.awt.Rectangle
-
 import geotrellis.vector.io.json._
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
