@@ -6,7 +6,7 @@ libraryDependencies ++= Seq(
   caliper,
   "com.google.guava" % "guava" % "r09",
   "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-  "com.google.code.gson" % "gson" % "1.7.1")
+  "com.google.code.gson" % "gson" % "2.6.2")
 fork := true
 
 // custom kludge to get caliper to see the right classpath
