@@ -4,7 +4,7 @@ name := "geotrellis-gdal"
 libraryDependencies ++= Seq(
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  "org.gdal"         % "gdal"       % "1.11.1",
+  "org.gdal"         % "gdal"       % "1.11.2",
   "com.github.scopt" %% "scopt" % "3.4.0",
   scalatest % "test")
 
