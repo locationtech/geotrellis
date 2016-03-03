@@ -49,7 +49,8 @@ lazy val commonSettings = Seq(
       <url>http://github.com/lossyrob/</url>
         </developer>
       </developers>),
-  shellPrompt := { s => Project.extract(s).currentProject.id + " > " }
+  shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
+  dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang")
 ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val root = Project("geotrellis", file(".")).
