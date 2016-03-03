@@ -29,8 +29,8 @@ class RDDLayoutMergeMethods[
            val extent = thatLayout.mapTransform(k)
            thisLayout.mapTransform(extent)
              .coords
-             .map { spatialComponent =>
-             val outKey = k.updateSpatialComponent(spatialComponent)
+             .map { case (col, row) =>
+             val outKey = k.setComponent(SpatialKey(col, row))
              val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
              val merged = newTile.merge(thisLayout.mapTransform(outKey), extent, tile)
              (outKey, merged)

@@ -1,15 +1,15 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
-import geotrellis.spark.io._
 import geotrellis.spark.io.json._
 
+import com.amazonaws.services.s3.model.ObjectListing
 import org.apache.spark.rdd.RDD
 import org.apache.avro.Schema
 import spray.json.JsonFormat
-import com.amazonaws.services.s3.model.ObjectListing
 
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
@@ -35,7 +35,7 @@ class S3LayerCopier(
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

@@ -11,11 +11,11 @@ import scala.reflect._
 abstract class SpatialJoinMethods[
   K: Boundable: PartitionerIndex: ClassTag,
   V: ClassTag,
-  M: (? => Bounds[K])
+  M: Component[?, Bounds[K]]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   def left = self
-  def spatialLeftOuterJoin[W, M1: ? => Bounds[K]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, Option[W]))] with Metadata[Bounds[K]] = {
-    val kb: Bounds[K] = left.metadata
+  def spatialLeftOuterJoin[W, M1: Component[?, Bounds[K]]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, Option[W]))] with Metadata[Bounds[K]] = {
+    val kb: Bounds[K] = left.metadata.getComponent[Bounds[K]]
     val part = SpacePartitioner(kb)
     val joinRdd =
       new CoGroupedRDD[K](List(part(left), part(right)), part)
@@ -31,9 +31,9 @@ abstract class SpatialJoinMethods[
     ContextRDD(joinRdd, part.bounds)
   }
 
-  def spatialJoin[W, M1: (? => Bounds[K])](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, W))] with Metadata[Bounds[K]] = {
-    val kbLeft: Bounds[K] = left.metadata
-    val kbRight: Bounds[K] = right.metadata
+  def spatialJoin[W, M1: Component[?, Bounds[K]]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, W))] with Metadata[Bounds[K]] = {
+    val kbLeft: Bounds[K] = left.metadata.getComponent[Bounds[K]]
+    val kbRight: Bounds[K] = right.metadata.getComponent[Bounds[K]]
     val part = SpacePartitioner(kbLeft intersect kbRight)
     val joinRdd =
       new CoGroupedRDD[K](List(part(left), part(right)), part)

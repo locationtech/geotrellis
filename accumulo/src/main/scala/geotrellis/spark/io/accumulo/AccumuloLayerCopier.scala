@@ -21,7 +21,7 @@ class AccumuloLayerCopier(
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
@@ -33,7 +33,7 @@ class AccumuloLayerCopier(
     }
 
     try {
-      getLayerWriter(from).write(to, layerReader.read[K, V, M](from), existingKeyIndex, existingKeyBounds)
+      getLayerWriter(from).write(to, layerReader.read[K, V, M](from), existingKeyIndex)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }

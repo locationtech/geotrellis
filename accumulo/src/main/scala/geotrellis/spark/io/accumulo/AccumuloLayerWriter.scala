@@ -19,10 +19,10 @@ class AccumuloLayerWriter(
   options: AccumuloLayerWriter.Options
 ) extends LayerWriter[LayerId] {
 
-  def write[
+  protected def write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

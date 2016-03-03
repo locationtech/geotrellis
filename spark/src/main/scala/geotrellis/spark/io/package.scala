@@ -14,46 +14,49 @@ package object io {
   }
 
   // Custom exceptions
-  class CatalogError(val message: String) extends Exception(message)
+  class LayerIOError(val message: String) extends Exception(message)
 
   class LayerReadError(layerId: LayerId)
-    extends CatalogError(s"LayerMetaData not found for layer $layerId")
+    extends LayerIOError(s"LayerMetaData not found for layer $layerId")
 
   class LayerExistsError(layerId: LayerId)
-    extends CatalogError(s"Layer $layerId already exists in the catalog")
+    extends LayerIOError(s"Layer $layerId already exists in the catalog")
 
   class LayerNotFoundError(layerId: LayerId)
-    extends CatalogError(s"Layer $layerId not found in the catalog")
+    extends LayerIOError(s"Layer $layerId not found in the catalog")
 
   class LayerWriteError(layerId: LayerId, message: String = "")
-    extends CatalogError(s"Failed to write $layerId" + (if (message.nonEmpty) ": " + message else message))
+    extends LayerIOError(s"Failed to write $layerId" + (if (message.nonEmpty) ": " + message else message))
 
   class LayerUpdateError(layerId: LayerId, message: String = "")
-    extends CatalogError(s"Failed to update $layerId $message" + (if (message.nonEmpty) ": " + message else message))
+    extends LayerIOError(s"Failed to update $layerId $message" + (if (message.nonEmpty) ": " + message else message))
 
   class LayerDeleteError(layerId: LayerId)
-    extends CatalogError(s"Failed to delete $layerId")
+    extends LayerIOError(s"Failed to delete $layerId")
 
   class LayerReindexError(layerId: LayerId)
-    extends CatalogError(s"Failed to reindex $layerId")
+    extends LayerIOError(s"Failed to reindex $layerId")
 
   class LayerCopyError(from: LayerId, to: LayerId)
-    extends CatalogError(s"Failed to copy $from to $to")
+    extends LayerIOError(s"Failed to copy $from to $to")
 
   class LayerMoveError(from: LayerId, to: LayerId)
-    extends CatalogError(s"Failed to move $from to $to")
+    extends LayerIOError(s"Failed to move $from to $to")
 
   class AttributeNotFoundError(attributeName: String, layerId: LayerId)
-    extends CatalogError(s"Attribute $attributeName not found for layer $layerId")
+    extends LayerIOError(s"Attribute $attributeName not found for layer $layerId")
 
   class TileNotFoundError(key: Any, layerId: LayerId)
-    extends CatalogError(s"Tile with key $key not found for layer $layerId")
+    extends LayerIOError(s"Tile with key $key not found for layer $layerId")
 
   class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
-    extends CatalogError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
+    extends LayerIOError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
 
-  class LayerOutOfKeyBoundsError(layerId: LayerId)
-    extends CatalogError(s"Updating rdd is out of $layerId bounds")
+  class LayerOutOfKeyBoundsError(layerId: LayerId, bounds: KeyBounds[_])
+    extends LayerIOError(s"Updating rdd is out of the key index space for $layerId: $bounds. You must reindex this layer with large enough key bounds for this update.")
+
+  class LayerEmptyBoundsError(layerId: LayerId)
+      extends LayerIOError(s"Layer $layerId contains empty bounds; is this layer corrupt?")
 
   implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])
     extends JsonAttributeStoreMethods(store)

@@ -23,7 +23,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implic
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

@@ -73,6 +73,9 @@ package object spark
       PLens[T, T, C, C](get)(c => t => set(t, c))
   }
 
+  implicit def identityComponent[T]: Component[T, T] =
+    Component(v => v, (_, v) => v)
+
   /** Describes a getter and setter for an object that has
     * an implicitly defined lens into a component of that object
     * with a specific type.
@@ -85,26 +88,30 @@ package object spark
       component.set(value)(self)
   }
 
-  type SpatialComponent[K] = KeyComponent[K, SpatialKey]
-  type TemporalComponent[K] = KeyComponent[K, TemporalKey]
+  type SpatialComponent[K] = Component[K, SpatialKey]
+  type TemporalComponent[K] = Component[K, TemporalKey]
 
-  implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
-    val _spatialComponent = implicitly[SpatialComponent[K]]
+  // implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
+  //   val _spatialComponent = implicitly[SpatialComponent[K]]
 
-    def spatialComponent: SpatialKey = _spatialComponent.lens.get(key)
+  //   def spatialComponent: SpatialKey = _spatialComponent.lens.get(key)
 
-    def updateSpatialComponent(spatialKey: SpatialKey): K =
-      _spatialComponent.lens.set(spatialKey)(key)
-  }
+  //   def updateSpatialComponent(spatialKey: SpatialKey): K =
+  //     _spatialComponent.lens.set(spatialKey)(key)
+  // }
 
-  implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
-    val _temporalComponent = implicitly[TemporalComponent[K]]
+  // implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
+  //   val _temporalComponent = implicitly[TemporalComponent[K]]
 
-    def temporalComponent: TemporalKey = _temporalComponent.lens.get(key)
+  //   def temporalComponent: TemporalKey = _temporalComponent.lens.get(key)
 
-    def updateTemporalComponent(temporalKey: TemporalKey): K =
-      _temporalComponent.lens.set(temporalKey)(key)
-  }
+  //   def updateTemporalComponent(temporalKey: TemporalKey): K =
+  //     _temporalComponent.lens.set(temporalKey)(key)
+  // }
+
+  // implicit class withBoundsComponentMethods[K, M: Component[?, Bounds[K]]](val self: M) extends MethodExtensions[M] {
+  //   def getBounds: Bounds[K] = self.getComponent[Bounds[K]]
+  // }
 
   type TileBounds = GridBounds
 
@@ -137,11 +144,11 @@ package object spark
   implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends MultiBandRasterRDDMethods[K]
 
-  implicit class withProjectedExtentRDDMethods[K: ProjectedExtentComponent, V <: CellGrid](val rdd: RDD[(K, V)]) {
+  implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
       rdd.mapPartitions({ partition =>
         partition.map { case (key, value) =>
-          (key, Raster(value, key.projectedExtent.extent))
+          (key, Raster(value, key.getComponent[ProjectedExtent].extent))
         }
       }, preservesPartitioning = true)
   }
@@ -152,13 +159,13 @@ package object spark
     def tile: Tile = tup._2
   }
 
-  implicit class withProjectedExtentTemporalTilerKeyMethods[K: ProjectedExtentComponent: TemporalComponent](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
-    def extent = self.projectedExtent.extent
-    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.temporalComponent)
+  implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
+    def extent = self.getComponent[ProjectedExtent].extent
+    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.getComponent[TemporalKey])
   }
 
-  implicit class withProjectedExtentTilerKeyMethods[K: ProjectedExtentComponent](val self: K) extends TilerKeyMethods[K, SpatialKey] {
-    def extent = self.projectedExtent.extent
+  implicit class withProjectedExtentTilerKeyMethods[K: Component[?, ProjectedExtent]](val self: K) extends TilerKeyMethods[K, SpatialKey] {
+    def extent = self.getComponent[ProjectedExtent].extent
     def translate(spatialKey: SpatialKey) = spatialKey
   }
 }

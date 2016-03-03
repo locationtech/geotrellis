@@ -87,10 +87,10 @@ trait RasterRDDBuilders {
   )(implicit sc: SparkContext): (Tile, RasterRDD[SpatialKey]) = {
     val (cols, rows) = (input.cols, input.rows)
 
-    val tileLayout = 
+    val tileLayout =
       if (layoutCols >= cols || layoutRows >= rows)
         sys.error(s"Invalid for tile of dimensions ${(cols, rows)}: ${(layoutCols, layoutRows)}")
-      else 
+      else
         TileLayout(layoutCols, layoutRows, cols / layoutCols, rows / layoutRows)
 
     val tile: Tile =

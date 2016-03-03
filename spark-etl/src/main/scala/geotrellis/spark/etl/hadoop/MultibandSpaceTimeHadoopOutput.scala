@@ -13,5 +13,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
-    HadoopLayerWriter(props("path")).keyBoundsComputingWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](method)
+    HadoopLayerWriter(props("path")).writer[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](method)
 }

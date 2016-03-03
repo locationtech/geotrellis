@@ -18,7 +18,7 @@ case class PersistenceSpecLayerIds(layerId: LayerId, deleteLayerId: LayerId, cop
 abstract class PersistenceSpec[
   K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
   V: AvroRecordCodec: ClassTag,
-  M: JsonFormat
+  M: JsonFormat: Component[?, Bounds[K]]
 ] extends FunSpec with Matchers { self: FunSpec =>
   private var additionalSpecs: List[PersistenceSpecLayerIds => Unit] = List()
   def addSpecs(f: PersistenceSpecLayerIds => Unit): Unit =
@@ -71,9 +71,8 @@ abstract class PersistenceSpec[
       }
 
       it("should write a layer") {
-        val keyBounds: KeyBounds[K] = Bounds.fromRdd(sample).get
-        writer.write[K, V, M](layerId, sample, keyIndexMethod, keyBounds)
-        writer.write[K, V, M](deleteLayerId, sample, keyIndexMethod, keyBounds)
+        writer.write[K, V, M](layerId, sample, keyIndexMethod)
+        writer.write[K, V, M](deleteLayerId, sample, keyIndexMethod)
       }
 
       it("should read a layer back") {

@@ -63,7 +63,7 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
             iter
               .toSeq
               .sorted(Ordering.by[(SpaceTimeKey, Tile), (Int, Int)] { case (key, tile) =>
-                val SpatialKey(col, row) = key.spatialComponent
+                val SpatialKey(col, row) = key.getComponent[SpatialKey]
                 (row, col)
               })
               .map(_._2)

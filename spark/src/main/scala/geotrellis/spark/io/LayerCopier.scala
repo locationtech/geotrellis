@@ -12,6 +12,6 @@ trait LayerCopier[ID] {
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit
 }

@@ -21,16 +21,15 @@ class AccumuloLayerUpdater(
   options: Options
 ) extends LayerUpdater[LayerId] {
 
-  // TODO: fix
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
-    val (header, metaData, existingKeyBounds, keyIndex, _) = try {
+    val (header, metadata, _, keyIndex, _) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
@@ -38,14 +37,10 @@ class AccumuloLayerUpdater(
 
     val table = header.tileTable
 
-    val boundable = implicitly[Boundable[K]]
-    val keyBounds = Bounds.fromRdd(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
-
-    if (!(existingKeyBounds includes keyBounds.minKey ) || !(existingKeyBounds includes keyBounds.maxKey))
-      throw new LayerOutOfKeyBoundsError(id)
+    if (!(keyIndex.keyBounds contains keyBounds))
+      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
     val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
-
 
     try {
       AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table, oneToOne = false)

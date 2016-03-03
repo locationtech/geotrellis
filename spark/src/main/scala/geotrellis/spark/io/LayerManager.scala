@@ -1,6 +1,6 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.{Boundable, LayerId}
+import geotrellis.spark._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
@@ -18,25 +18,25 @@ trait LayerManager[ID] {
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit
 
   def move[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit
 
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: ID, keyIndexMethod: KeyIndexMethod[K]): Unit
 
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: ID, keyIndex: KeyIndex[K]): Unit
 
 }

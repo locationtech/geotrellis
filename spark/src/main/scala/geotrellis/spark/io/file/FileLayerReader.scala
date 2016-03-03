@@ -39,17 +39,20 @@ class FileLayerReader(
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+    val (header, metadata, _, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
     val layerPath = header.path
+
+    val keyBounds =
+      metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
 
     val queryKeyBounds = rasterQuery(metadata, keyBounds)
     val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))

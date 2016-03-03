@@ -46,7 +46,7 @@ class AccumuloLayerReindexer(
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -60,7 +60,7 @@ class AccumuloLayerReindexer(
     val layerDeleter = AccumuloLayerDeleter(instance)
     val layerCopier = AccumuloLayerCopier(attributeStore, layerReader, layerWriter)
 
-    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndex, existingKeyBounds)
+    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndex)
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
     layerDeleter.delete(tmpId)
@@ -69,7 +69,7 @@ class AccumuloLayerReindexer(
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -83,7 +83,7 @@ class AccumuloLayerReindexer(
     val layerDeleter = AccumuloLayerDeleter(instance)
     val layerCopier = AccumuloLayerCopier(attributeStore, layerReader, layerWriter)
 
-    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(existingKeyBounds), existingKeyBounds)
+    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(existingKeyBounds))
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
     layerDeleter.delete(tmpId)

@@ -16,6 +16,8 @@ sealed trait Bounds[+A] extends Product with Serializable {
 
   def combine[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B]
 
+  def contains[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Boolean
+
   def intersect[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B]
 
   def intersects[B >: A](other: KeyBounds[B])(implicit b: Boundable[B]): Boolean =
@@ -67,6 +69,9 @@ case object EmptyBounds extends Bounds[Nothing] {
   def combine[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     other
 
+  def contains[B](other: Bounds[B])(implicit b: Boundable[B]): Boolean =
+    false
+
   def intersect[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     EmptyBounds
 
@@ -99,6 +104,14 @@ case class KeyBounds[+K](
         this
     }
 
+  def contains[B >: K](other: Bounds[B])(implicit b: Boundable[B]): Boolean =
+    other match {
+      case KeyBounds(otherMinKey, otherMaxKey) =>
+        minKey == b.minBound(minKey, otherMinKey) && maxKey == b.maxBound(maxKey, otherMaxKey)
+      case EmptyBounds =>
+        true
+    }
+
   def intersect[B >: K](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     other match {
       case KeyBounds(otherMin, otherMax) =>
@@ -117,7 +130,7 @@ case class KeyBounds[+K](
   def get = this
 
   def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]) =
-    KeyBounds(ev.lens.set(other.minKey)(minKey), ev.lens.set(other.maxKey)(maxKey))
+    KeyBounds((minKey: B).setComponent(other.minKey), (maxKey: B).setComponent(other.maxKey))
 }
 
 object KeyBounds {

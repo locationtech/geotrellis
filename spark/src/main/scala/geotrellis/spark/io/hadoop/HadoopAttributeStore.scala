@@ -67,7 +67,7 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
       .map{ path: Path =>
         readFile[T](path) match {
           case Some(tup) => tup
-          case None => throw new CatalogError(s"Unable to list $attributeName attributes from $path")
+          case None => throw new LayerIOError(s"Unable to list $attributeName attributes from $path")
         }
       }
       .toMap

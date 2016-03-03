@@ -51,7 +51,7 @@ object Pyramid extends Logging {
         .map { case (key, tile) =>
           val extent = sourceLayout.mapTransform(key)
           val newSpatialKey = nextLayout.mapTransform(extent.center)
-          (key.updateSpatialComponent(newSpatialKey), (key, tile))
+          (key.setComponent(newSpatialKey), (key, tile))
         }
 
         partitioner

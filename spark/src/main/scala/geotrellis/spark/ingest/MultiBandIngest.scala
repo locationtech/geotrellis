@@ -1,18 +1,20 @@
 package geotrellis.spark.ingest
 
+import geotrellis.proj4._
+import geotrellis.raster._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.reproject._
-import geotrellis.raster._
-import geotrellis.proj4._
+import geotrellis.vector._
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object MultiBandIngest {
-  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: ProjectedExtentComponent, K: SpatialComponent: Boundable: ClassTag](
+  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: Component[?, ProjectedExtent], K: SpatialComponent: Boundable: ClassTag](
     sourceTiles: RDD[(T, MultiBandTile)],
     destCRS: CRS,
     layoutScheme: LayoutScheme,

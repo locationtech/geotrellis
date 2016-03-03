@@ -23,27 +23,27 @@ class S3LayerUpdater(
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
-    val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
+    val (existingHeader, metadata, _, keyIndex, _) = try {
       attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
-    val boundable = implicitly[Boundable[K]]
-    val keyBounds = Bounds.fromRdd(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
+    if (!(keyIndex.keyBounds contains keyBounds))
+      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    if (!(existingKeyBounds includes keyBounds.minKey) || !(existingKeyBounds includes keyBounds.maxKey))
-      throw new LayerOutOfKeyBoundsError(id)
+    val existingKeyBounds =
+      metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
 
     val prefix = existingHeader.key
     val bucket = existingHeader.bucket
 
-    val maxWidth = Index.digits(existingKeyIndex.toIndex(existingKeyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, Index.encode(existingKeyIndex.toIndex(key), maxWidth))
+    val maxWidth = Index.digits(keyIndex.toIndex(existingKeyBounds.maxKey))
+    val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")
     rddWriter.write(rdd, bucket, keyPath, oneToOne = false)

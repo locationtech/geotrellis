@@ -11,5 +11,5 @@ import org.apache.spark.SparkContext
 
 class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
-    S3LayerWriter(props("bucket"), props("key")).keyBoundsComputingWriter[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](method)
+    S3LayerWriter(props("bucket"), props("key")).writer[SpaceTimeKey, MultiBandTile, RasterMetaData[SpaceTimeKey]](method)
 }

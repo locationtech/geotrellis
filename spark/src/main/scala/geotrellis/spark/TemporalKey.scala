@@ -11,8 +11,6 @@ object TemporalKey {
   def apply(dateTime: DateTime): TemporalKey =
     TemporalKey(dateTime.getMillis)
 
-  implicit object TemporalComponent extends IdentityComponent[TemporalKey]
-
   implicit def dateTimeToKey(time: DateTime): TemporalKey =
     TemporalKey(time)
 

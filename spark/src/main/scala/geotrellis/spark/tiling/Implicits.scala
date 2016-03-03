@@ -17,6 +17,6 @@ trait Implicits {
 
   implicit class withTupleTilerKeyMethods[K: SpatialComponent](val self: (K, Extent)) extends TilerKeyMethods[(K, Extent), K] {
     def extent = self._2
-    def translate(spatialKey: SpatialKey): K = self._1.updateSpatialComponent(spatialKey)
+    def translate(spatialKey: SpatialKey): K = self._1.setComponent(spatialKey)
   }
 }

@@ -38,7 +38,7 @@ abstract class RasterRDDMaskMethods[K: SpatialComponent: ClassTag] extends Metho
     val mapTransform = self.metaData.mapTransform
     val rdd =
       self.map { case (k, tile) =>
-        val key = k.spatialComponent
+        val key = k.getComponent[SpatialKey]
         val tileExtent = mapTransform(key)
         val result = masker(tileExtent, tile)
         (k, result)

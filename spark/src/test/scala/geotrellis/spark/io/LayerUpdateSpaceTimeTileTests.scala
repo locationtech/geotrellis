@@ -51,8 +51,8 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       val (maxKey, maxTile) = sample.sortByKey(false).first()
 
       val update = new ContextRDD(sc.parallelize(
-        (minKey.updateSpatialComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-          (minKey.updateSpatialComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+        (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
+          (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
       ), dummyRasterMetaData)
 
       intercept[LayerOutOfKeyBoundsError] {

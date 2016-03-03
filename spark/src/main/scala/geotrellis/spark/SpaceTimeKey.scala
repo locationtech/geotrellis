@@ -24,13 +24,11 @@ object SpaceTimeKey {
   def apply(col: Int, row: Int, dateTime: DateTime): SpaceTimeKey =
     SpaceTimeKey(col, row, dateTime.getMillis)
 
-  implicit object SpatialComponent extends SpatialComponent[SpaceTimeKey] {
-    def lens = createLens(k => k.spatialKey, sk => k => SpaceTimeKey(sk.col, sk.row, k.time))
-  }
+  implicit val spatialComponent =
+    Component[SpaceTimeKey, SpatialKey](k => k.spatialKey, (k, sk) => SpaceTimeKey(sk.col, sk.row, k.time))
 
-  implicit object TemporalComponent extends TemporalComponent[SpaceTimeKey] {
-    def lens = createLens(k => k.temporalKey, tk => k => SpaceTimeKey(k.col, k.row, tk.time))
-  }
+  implicit val temporalComponent =
+    Component[SpaceTimeKey, TemporalKey](k => k.temporalKey, (k, tk) => SpaceTimeKey(k.col, k.row, tk.instant))
 
   implicit def ordering: Ordering[SpaceTimeKey] =
     Ordering.by(stk => (stk.spatialKey, stk.temporalKey))

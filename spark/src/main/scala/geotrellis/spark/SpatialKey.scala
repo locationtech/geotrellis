@@ -11,8 +11,6 @@ case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
 }
 
 object SpatialKey {
-  implicit object SpatialComponent extends IdentityComponent[SpatialKey]
-
   implicit def tupToKey(tup: (Int, Int)): SpatialKey =
     SpatialKey(tup._1, tup._2)
 

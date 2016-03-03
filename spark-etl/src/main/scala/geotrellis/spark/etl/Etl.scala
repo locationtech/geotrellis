@@ -1,29 +1,31 @@
 package geotrellis.spark.etl
 
-import com.typesafe.scalalogging.slf4j.Logger
-import geotrellis.raster.crop.CropMethods
-import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.{RasterExtent, CellGrid}
+import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample.{ ResampleMethod, NearestNeighbor }
-import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.tiling._
-import org.slf4j.LoggerFactory
-import scala.reflect._
+import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
 import geotrellis.spark.ingest._
+import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.tiling._
+import geotrellis.vector._
+
+import com.typesafe.scalalogging.slf4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.slf4j.LoggerFactory
 
+import scala.reflect._
 import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule)
 
   def ingest[
-    I: ProjectedExtentComponent: TypeTag: ? => TilerKeyMethods[I, K],
+    I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
     K: SpatialComponent: Boundable: TypeTag,
     V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
@@ -90,7 +92,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     * @param method Resampling method to be used when merging raster chunks in tiling step
     */
   def tile[
-    I: ProjectedExtentComponent: ? => TilerKeyMethods[I, K],
+    I: Component[?, ProjectedExtent]: ? => TilerKeyMethods[I, K],
     V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
       (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag

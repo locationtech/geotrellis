@@ -48,7 +48,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
       val d = (extent.ymax - otherExtent.ymin) / extent.height
 
       if(d == math.floor(d)) { (d * layoutRows).toInt - 1 }
-      else { (d * layoutRows).toInt } 
+      else { (d * layoutRows).toInt }
     }
 
     GridBounds(colMin, rowMin, colMax, rowMax)
@@ -74,7 +74,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   }
 
   def apply[K: SpatialComponent](key: K): Extent = {
-    apply(key.spatialComponent)
+    apply(key.getComponent[SpatialKey])
   }
 
   def apply(key: SpatialKey): Extent =

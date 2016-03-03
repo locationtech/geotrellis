@@ -58,12 +58,9 @@ object RasterMetaData {
   implicit def toMapKeyTransform(md: RasterMetaData[_]): MapKeyTransform =
     md.layout.mapTransform
 
-  implicit def toSpatialKeyBounds(md: RasterMetaData[SpatialKey]): KeyBounds[SpatialKey] =
-    KeyBounds(SpatialKey(md.gridBounds.colMin, md.gridBounds.rowMin),
-              SpatialKey(md.gridBounds.colMax, md.gridBounds.rowMax))
+  implicit def boundsComponent[K]: Component[RasterMetaData[K], Bounds[K]] =
+    Component(_.bounds, (md, b) => md.copy(bounds = b))
 
-  implicit def toBounds[K](md: RasterMetaData[K]): Bounds[K] =
-    md.bounds
   def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
@@ -88,14 +85,14 @@ object RasterMetaData {
   }
 
   def collectMetadataWithCRS[
-    K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]),
+    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
     val (extent, cellType, cellSize, crsSet, bounds) =
       rdd
       .map { case (key, grid) =>
-        val ProjectedExtent(extent, crs) = key.projectedExtent
+        val ProjectedExtent(extent, crs) = key.getComponent[ProjectedExtent]
         val boundsKey = key.translate(SpatialKey(0,0))
         (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), Set(crs), KeyBounds(boundsKey, boundsKey))
       }
@@ -142,7 +139,7 @@ object RasterMetaData {
   }
 
   def fromRdd[
-    K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]),
+    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetaData[K2]) = {
@@ -155,7 +152,7 @@ object RasterMetaData {
   }
 
   def fromRdd[
-    K: ProjectedExtentComponent: (? => TilerKeyMethods[K, K2]),
+    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): (Int, RasterMetaData[K2]) = {

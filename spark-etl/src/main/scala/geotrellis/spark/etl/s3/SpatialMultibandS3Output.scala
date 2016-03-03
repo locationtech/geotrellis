@@ -11,5 +11,5 @@ import org.apache.spark.SparkContext
 
 class SpatialMultibandS3Output extends S3Output[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters)(implicit sc: SparkContext) =
-    S3LayerWriter(props("bucket"), props("key")).keyBoundsComputingWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](method)
+    S3LayerWriter(props("bucket"), props("key")).writer[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](method)
 }

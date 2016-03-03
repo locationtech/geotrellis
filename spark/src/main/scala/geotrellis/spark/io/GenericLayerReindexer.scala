@@ -24,15 +24,12 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](id)
-
-    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndex, existingKeyBounds)
+    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndex)
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
     layerDeleter.delete(tmpId)
@@ -41,16 +38,19 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
+    val (_, metadata, _, _, _) =
       attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](id)
 
+    val keyBounds =
+      metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
+
     // RETODO: Should take existing key bound's index
-    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(existingKeyBounds), existingKeyBounds)
+    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(keyBounds))
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
     layerDeleter.delete(tmpId)

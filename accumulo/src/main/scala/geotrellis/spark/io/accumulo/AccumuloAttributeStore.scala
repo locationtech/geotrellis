@@ -68,7 +68,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     if(values.isEmpty) {
       throw new AttributeNotFoundError(attributeName, layerId)
     } else if(values.size > 1) {
-      throw new CatalogError(s"Multiple attributes found for $attributeName for layer $layerId")
+      throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
       values.head.toString.parseJson.convertTo[(LayerId, T)]._2
     }

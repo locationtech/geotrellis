@@ -12,5 +12,5 @@ import org.apache.spark.SparkContext
 
 class SpatialHadoopOutput extends HadoopOutput[SpatialKey, Tile, RasterMetaData[SpatialKey]] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters)(implicit sc: SparkContext) =
-    HadoopLayerWriter(props("path")).keyBoundsComputingWriter[SpatialKey, Tile, RasterMetaData[SpatialKey]](method)
+    HadoopLayerWriter(props("path")).writer[SpatialKey, Tile, RasterMetaData[SpatialKey]](method)
 }

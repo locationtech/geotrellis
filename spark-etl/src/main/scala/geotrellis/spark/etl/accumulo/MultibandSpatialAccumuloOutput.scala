@@ -11,5 +11,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpatialAccumuloOutput extends AccumuloOutput[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters)(implicit sc: SparkContext) =
-    AccumuloLayerWriter(getInstance(props), props("table")).keyBoundsComputingWriter[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](method)
+    AccumuloLayerWriter(getInstance(props), props("table")).writer[SpatialKey, MultiBandTile, RasterMetaData[SpatialKey]](method)
 }
