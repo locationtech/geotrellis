@@ -111,34 +111,31 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     val targetCellType = conf.cellType.get
     val destCrs = conf.crs()
 
-    val source = // reproject source tiles before performing any mosaicing
-      if (conf.reproject() == PerTileReproject) {
-        rdd.reproject(destCrs)
-      } else {
-        rdd
-      }
+    def adjustCellType(md: RasterMetaData) =
+      md.copy(cellType = targetCellType.getOrElse(md.cellType))
 
-    val (tiledZoom: Int, rmd: RasterMetaData) = {
-      scheme match {
-        case Left(layoutScheme) =>
-          RasterMetaData.fromRdd(source, layoutScheme)
-        case Right(layoutDefinition) =>
-          RasterMetaData.fromRdd(source, layoutDefinition)
-      }
-    }
-    val adjustedMetadata = targetCellType.fold(rmd){ ct => rmd.copy(cellType = ct) }
-    val tiled: RDD[(K, V)] with Metadata[RasterMetaData] =
-      ContextRDD(source.tileToLayout[K](adjustedMetadata, method), adjustedMetadata)
+    conf.reproject() match {
+      case PerTileReproject =>
+        val reprojected = rdd.reproject(destCrs)
+        val (zoom: Int, md: RasterMetaData) = scheme match {
+          case Left(layoutScheme) =>
+            RasterMetaData.fromRdd(rdd, layoutScheme)
+          case Right(layoutDefinition) =>
+            RasterMetaData.fromRdd(rdd, layoutDefinition)
+        }
+        val amd = adjustCellType(md)
+        zoom -> ContextRDD(reprojected.tileToLayout[K](amd, method), amd)
 
-    if (conf.reproject() == BufferedReproject) {
-      scheme match {
-        case Left(layoutScheme) =>
-          tiled.reproject(destCrs, layoutScheme, method)
-        case Right(layoutDefinition) =>
-          tiled.reproject(destCrs, layoutDefinition, method)
-      }
-    } else {
-      tiledZoom -> tiled
+      case BufferedReproject =>
+        val (_, md) = RasterMetaData.fromRdd(rdd, FloatingLayoutScheme(conf.tileSize()))
+        val amd = adjustCellType(md)
+        val tiled = ContextRDD(rdd.tileToLayout[K](amd, method), amd)
+        scheme match {
+          case Left(layoutScheme) =>
+            tiled.reproject(destCrs, layoutScheme, method)
+          case Right(layoutDefinition) =>
+            tiled.reproject(destCrs, layoutDefinition, method)
+        }
     }
   }
 
