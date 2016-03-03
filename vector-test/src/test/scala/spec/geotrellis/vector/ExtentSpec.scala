@@ -16,7 +16,8 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.io._
+import java.awt.Rectangle
+
 import geotrellis.vector.io.json._
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
@@ -74,6 +75,11 @@ class ExtentSpec extends FunSpec with Matchers {
       assert(e1.combine(e2) === e3)
     }
 
+    it("should combine empty extents") {
+      val e = Extent(0.0, 0.0, 0.0, 0.0)
+      assert(e.combine(e) === e)
+    }
+
     it("should contains interior points") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       assert(e.contains(3.0, 3.0) === true)
@@ -93,6 +99,11 @@ class ExtentSpec extends FunSpec with Matchers {
       assert(e.contains(0.0, 10.0) === false)
       assert(e.contains(10.0, 0.0) === false)
       assert(e.contains(10.0, 10.0) === false)
+    }
+
+    it("empty extent should contain empty extent") {
+      val e = Extent(0.0, 0.0, 0.0, 0.0)
+      assert(e.contains(e) === true)
     }
 
     it("should get corners") {
@@ -142,7 +153,7 @@ class ExtentSpec extends FunSpec with Matchers {
       )
     }
 
-    it (" should give envelopes for geometries and features") {
+    it ("should give envelopes for geometries and features") {
 
       val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val l2 = Line(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
