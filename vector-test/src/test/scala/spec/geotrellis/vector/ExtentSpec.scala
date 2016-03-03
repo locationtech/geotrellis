@@ -99,11 +99,6 @@ class ExtentSpec extends FunSpec with Matchers {
       assert(e.contains(10.0, 10.0) === false)
     }
 
-    it("empty extent should contain empty extent") {
-      val e = Extent(0.0, 0.0, 0.0, 0.0)
-      assert(e.contains(e) === true)
-    }
-
     it("should get corners") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       assert(e.southWest === Point(0.0, 0.0))
@@ -210,6 +205,20 @@ class ExtentSpec extends FunSpec with Matchers {
                      |}""".stripMargin
       val env8 = jsonFc.parseGeoJson[JsonFeatureCollection].getAllPoints().envelope
       assert(env8.contains(env7))
+    }
+  }
+
+  describe("Empty extent") {
+    it("should not contain itself") {
+      val e = Extent(0.0, 0.0, 0.0, 0.0)
+      assert(e.contains(e) === false)
+    }
+  }
+
+  describe("Non empty extent") {
+    it("should contain itself") {
+      val e = Extent(0.0, 0.0, 3.0, 3.0)
+      assert(e.contains(e) === true)
     }
   }
 }
