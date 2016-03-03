@@ -5,7 +5,7 @@ libraryDependencies ++= Seq(
   spire,
   caliper,
   "com.google.guava" % "guava" % "r09",
-  "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
+  "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.1",
   "com.google.code.gson" % "gson" % "2.6.2")
 fork := true
 
