@@ -19,7 +19,7 @@ import sbt._
 object Dependencies {
   val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
-  val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.0"
+  val scalatest     = "org.scalatest"       %%  "scalatest"      % "2.2.6"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val jts           = "com.vividsolutions"  %  "jts-core"        % "1.14.0"
 
