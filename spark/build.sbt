@@ -4,8 +4,8 @@ name := "geotrellis-spark"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
-  "de.javakaffee" % "kryo-serializers" % "0.27" exclude("com.esotericsoftware.kryo", "kryo"),
   "com.esotericsoftware.kryo" % "kryo" % "2.21",
+  "de.javakaffee" % "kryo-serializers" % "0.37" exclude("com.esotericsoftware.kryo", "kryo"),
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
   logging,
   avro,
