@@ -48,7 +48,7 @@ deploy:
       scala: "2.10.5"
 
   - provider: script
-    script: .travis/deploy-with-scaladdocs.sh
+    script: .travis/deploy-with-scaladocs.sh
     skip_cleanup: true
     on:
       repo: geotrellis/geotrellis

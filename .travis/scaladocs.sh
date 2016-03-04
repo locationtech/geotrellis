@@ -27,4 +27,4 @@ git remote add originAuth https://$CI_GH_TOKEN@github.com/geotrellis/scaladocs.g
 
 git add -A .
 git commit -m "rebuild scaladocs at ${rev}"
-git push -q originAuth HEAD:gh-pages
+git push -q originAuth gh-pages
