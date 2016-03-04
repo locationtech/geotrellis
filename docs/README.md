@@ -8,14 +8,16 @@ the collected notes, use-cases, and examples in this folder are intended
 to help you grapple with the various components which make up
 GeoTrellis.
 
-![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
+
+## Contributing to Geotrellis
+
+## Index of package-specific documentation
 
 - [geotrellis.etl](etl/etl-intro.md)
 - [geotrellis.proj4](proj4/proj4-intro.md) // incomplete
 - [geotrellis.raster](raster/raster-intro.md)
   - [cell types](raster/celltype.md)
   - [cloud removal](raster/cloud-removal.md)
-  - [interpolation](raster/interpolation.md) // planned
   - [map algebra](raster/map-algebra.md)
   - [raster input/output](raster/raster-io.md) // planned
   - [rendering](raster/rendering.md)
@@ -29,27 +31,5 @@ GeoTrellis.
   - [geojson support](vector/geojson-support.md)
   - [kriging interpolation](vector/kriging-interpolation.md)
 
+![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
 
-
-## Rasters
-
-Information pertaining to operations on and with raster data
-
-## Vectors
-
-Information pertaining to operations on and with vector data
-
-## Distributing Work
-
-Information pertaining to the use of spark to distribute work across
-commodity hardware
-
-## Ingesting Data
-
-Documentation around the provided ETL (extract, transform, and
-load) facilities and their extension.
-
-## Misc.
-
-Documentation which doesn't neatly fit the package structure of
-GeoTrellis.

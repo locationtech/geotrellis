@@ -79,29 +79,36 @@ It looks like there are two different chains of inheritance here (`IntBasedArray
 1. `MutableArrayTile` adds some nifty methods for in-place manipulation of cells (GeoTrellis is
 about performance, so this minor affront to the gods of immutability can be forgiven).
 From MutableArrayTile.scala:
+
 ```scala
 trait MutableArrayTile extends ArrayTile
 ```  
+
 2. One level up is `ArrayTile`. It's handy because it implements the behavior which largely allows
 us to treat our tiles like big, long arrays of (arrays of) data. They also have the trait
 `Serializable`, which is neat any time you can't completely conduct your business within the
 neatly defined space-time of the JVM processes which are running on a single machine (this is the
 point of GeoTrellis' Spark integration).
 From ArrayTile.scala:
+
 ```scala
 trait ArrayTile extends Tile with Serializable
 ```  
+
 3. At the top rung in our abstraction ladder we have `Tile`. You might be surprised how much we
 can say about tile behavior from the base of its inheritance tree, so (at risk of sounding
 redundant) the source is worth spending some time on.
 From Tile.scala
+
 ```scala
 trait Tile
 ```  
+
 Cool. That wraps up one half of the inheritance. But how about that the features they don't share?
 As it turns out, each reified tile's second piece of inheritance merely implements methods for
 dealing with their constitutent `CellType`s.
 From IntBasedArrayTile.scala:
+
 ```scala
 trait IntBasedArrayTile {
   def apply(i:Int):Int
@@ -111,7 +118,9 @@ trait IntBasedArrayTile {
   def updateDouble(i:Int, z:Double):Unit = update(i, d2i(z))
 }
 ```
+
 From DoubleBasedArrayTile.scala:
+
 ```scala
 trait DoubleBasedArray {
   def apply(i:Int):Int = d2i(applyDouble(i))
@@ -121,6 +130,7 @@ trait DoubleBasedArray {
   def updateDouble(i:Int, z:Double):Unit
 }
 ```
+
 Mostly we've been looking to tiny snippets of source, but the two above are the entire files.
 All they do is:
 1. Tell the things that inherit from them that they'd better define methods for application
@@ -142,6 +152,7 @@ int-like `CellType`s, probably use `get`. If you're working with float-like
 
 #### Taking our tiles out for a spin
 In the repl, you can try this out:
+
 ```scala
 import geotrellis.raster._
 import geotrellis.vector._
@@ -157,6 +168,7 @@ res2: geotrellis.raster.IntArrayTile = IntArrayTile([I@5466441b,3,3)
 ```
 
 #### Constructing a Raster
+
 ```scala
 scala> Extent(0, 0, 1, 1)
 res4: geotrellis.vector.Extent = Extent(0.0,0.0,1.0,1.0)
@@ -164,7 +176,9 @@ res4: geotrellis.vector.Extent = Extent(0.0,0.0,1.0,1.0)
 scala> Raster(res2, res4)
 res5: geotrellis.raster.Raster = Raster(IntArrayTile([I@7b47ab7,1,3),Extent(0.0,0.0,1.0,1.0))
 ```
+
 Here's a fun method for exploring your tiles:
+
 ```scala
 scala> res0.asciiDraw()
 res3: String =
@@ -180,6 +194,7 @@ res4: String =
      7     8     9
 "
 ```
+
 That's probably enough to get started. `geotrellis.raster` is a pretty big place, so you'll
 benefit from spending a few hours playing with the tools it provides.
 
