@@ -110,8 +110,6 @@ class RDDQuerySpec extends FunSpec
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      println(expected)
-      println(actual)
       (expected diff actual) should be ('empty)
     }
   }

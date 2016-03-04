@@ -20,7 +20,7 @@ import scala.reflect._
 class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData[SpatialKey]] {
   def name = "render"
   def key = classTag[SpatialKey]
-  def requiredKeys = Array("path", "format")
+  def requiredKeys = Array("path", "encoding")
   def attributes(props: Map[String, String]) = null
   /**
    * Parses to a ColorClassifier a string of limits and their colors in hex RGBA
@@ -51,7 +51,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, RasterMetaData[
   ): Unit = {
     val useS3 = (props("path").take(5) == "s3://")
     val images =
-      props("format").toLowerCase match {
+      props("encoding").toLowerCase match {
         case "png" =>
           rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData[SpatialKey]]].renderPng(parseClassifications(props.get("breaks")))
         case "geotiff" =>

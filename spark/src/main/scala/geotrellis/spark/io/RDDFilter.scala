@@ -121,9 +121,10 @@ object Intersects {
         val keyext = metadata.mapTransform(kb.minKey)
         val bounds = metadata.mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
+
         /*
-         * Construct a rasterExtent that fits tightly around the
-         * candidate tiles (the candidate keys).  IT IS ASSUMED THAT
+         * Construct  a  rasterExtent  that fits  tightly  around  the
+         * candidate tiles  (the candidate keys).  IT  IS ASSUMED THAT
          * ALL TILES HAVE THE SAME LENGTH AND HEIGHT.
          */
         val xmin = math.floor(extent.min.x / keyext.width) * keyext.width

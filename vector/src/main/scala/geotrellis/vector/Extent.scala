@@ -28,7 +28,7 @@ object Extent {
 }
 
 case class ProjectedExtent(extent: Extent, crs: CRS) {
-  def reproject(dest: CRS): Extent = 
+  def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
 }
 
@@ -44,7 +44,7 @@ object ProjectedExtent {
 case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
   // Validation: Do not accept extents min values greater than max values.
-  if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)")  }
+  if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
   if (ymin > ymax) { throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)") }
 
   def jtsGeom =
@@ -76,7 +76,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
    * The SE corner (xmax, ymin) as a Point.
    */
   def southEast = Point(xmax, ymin)
- 
+
   /**
    * The NE corner (xmax, ymax) as a Point.
    */
@@ -91,8 +91,14 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def minExtent = if(width < height) width else height
   def maxExtent = if(width > height) width else height
 
-  def center: Point = 
+  def center: Point =
     Point((xmin + xmax) / 2.0, (ymin + ymax) / 2.0)
+
+  def interiorIntersects(other: Extent): Boolean =
+    !(other.xmax <= xmin ||
+      other.xmin >= xmax) &&
+    !(other.ymax <= ymin ||
+      other.ymin >= ymax)
 
   def intersects(other: Extent): Boolean =
     !(other.xmax < xmin ||
@@ -106,17 +112,21 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def intersects(x: Double, y: Double): Boolean =
     x >= xmin && x <= xmax && y >= ymin && y <= ymax
 
-  def contains(other: Extent): Boolean =
-    other.xmin >= xmin &&
-    other.ymin >= ymin &&
-    other.xmax <= xmax &&
-    other.ymax <= ymax
+  /** Empty extent contains nothing, though non empty extent contains iteslf */
+  def contains(other: Extent): Boolean = {
+    if(xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0) false
+    else
+      other.xmin >= xmin &&
+      other.ymin >= ymin &&
+      other.xmax <= xmax &&
+      other.ymax <= ymax
+  }
 
   /**
     * Tests if the given point lies in or on the envelope.
-    * 
+    *
     * @note Note that this is the same definition as the SFS <tt>contains</tt>,
-    *       which is unlike the JTS Envelope.contains, which would include the 
+    *       which is unlike the JTS Envelope.contains, which would include the
     *       envelope boundary.
     */
   def contains(p: Point): Boolean =
@@ -124,9 +134,9 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
   /**
     * Tests if the given point lies in or on the envelope.
-    * 
+    *
     * @note Note that this is the same definition as the SFS <tt>contains</tt>,
-    *       which is unlike the JTS Envelope.contains, which would include the 
+    *       which is unlike the JTS Envelope.contains, which would include the
     *       envelope boundary.
     */
   def contains(x: Double, y: Double): Boolean =
@@ -144,26 +154,26 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def distance(other: Extent): Double =
     if(intersects(other)) 0
     else {
-      val dx = 
+      val dx =
         if(xmax < other.xmin)
           other.xmin - xmax
         else if(xmin > other.xmax)
           xmin - other.xmax
         else
           0.0
-    
-        val dy = 
+
+        val dy =
           if(ymax < other.ymin)
             other.ymin - ymax
-          else if(ymin > other.ymax) 
+          else if(ymin > other.ymax)
             ymin - other.ymax
           else
             0.0
 
         // if either is zero, the envelopes overlap either vertically or horizontally
-        if(dx == 0.0) 
+        if(dx == 0.0)
           dy
-        else if(dy == 0.0) 
+        else if(dy == 0.0)
           dx
         else
           math.sqrt(dx * dx + dy * dy)
@@ -173,14 +183,14 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
     val xminNew = if(xmin > other.xmin) xmin else other.xmin
     val yminNew = if(ymin > other.ymin) ymin else other.ymin
     val xmaxNew = if(xmax < other.xmax) xmax else other.xmax
-    val ymaxNew = if(ymax < other.ymax) ymax else other.ymax 
+    val ymaxNew = if(ymax < other.ymax) ymax else other.ymax
 
     if(xminNew <= xmaxNew && yminNew <= ymaxNew) {
       Some(Extent(xminNew, yminNew, xmaxNew, ymaxNew))
     } else { None }
   }
 
-  def &(other: Extent): Option[Extent] = 
+  def &(other: Extent): Option[Extent] =
     intersection(other)
 
   def buffer(d: Double): Extent =
@@ -239,7 +249,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       if(ymax > y) ymax else y
     )
 
-  def expandBy(distance: Double): Extent = 
+  def expandBy(distance: Double): Extent =
     expandBy(distance, distance)
 
 
@@ -259,13 +269,13 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       ymin + deltaY
     )
 
-  def toPolygon(): Polygon = 
+  def toPolygon(): Polygon =
     Polygon( Line((xmin, ymin), (xmin, ymax), (xmax, ymax), (xmax, ymin), (xmin, ymin)) )
 
   override
   def equals(o: Any): Boolean =
     o match {
-      case other: Extent => 
+      case other: Extent =>
         xmin == other.xmin && ymin == other.ymin &&
         xmax == other.xmax && ymax == other.ymax
       case _ => false

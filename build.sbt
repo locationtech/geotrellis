@@ -1,4 +1,5 @@
 import Dependencies._
+import UnidocKeys._
 
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
@@ -16,6 +17,7 @@ lazy val commonSettings = Seq(
     "-language:higherKinds",
     "-language:postfixOps",
     "-language:existentials",
+    "-language:experimental.macros",
     "-feature"),
   publishMavenStyle := true,
   publishArtifact in Test := false,
@@ -27,6 +29,8 @@ lazy val commonSettings = Seq(
   bintrayPackageLabels := Info.tags,
 
   addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary),
+
+  addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
     <scm>
@@ -50,7 +54,9 @@ lazy val commonSettings = Seq(
 
 lazy val root = Project("geotrellis", file(".")).
   dependsOn(raster, vector, proj4, spark).
+  settings(commonSettings: _*).
   settings(
+    scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
     initialCommands in console :=
       """
       import geotrellis.raster._
@@ -58,6 +64,7 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.proj4._
       """
   )
+  .settings(unidocSettings: _*)
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
@@ -129,10 +136,6 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
-  settings(commonSettings: _*)
-
-lazy val vectorBenchmark: Project = Project("vector-benchmark", file("vector-benchmark")).
-  dependsOn(vectorTest % "compile->test").
   settings(commonSettings: _*)
 
 lazy val benchmark: Project = Project("benchmark", file("benchmark")).

@@ -209,4 +209,5 @@ object TileRDDReproject {
       apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, options)
     } else
       apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, options)
+
 }
