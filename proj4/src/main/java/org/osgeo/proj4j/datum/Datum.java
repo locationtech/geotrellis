@@ -141,7 +141,7 @@ public class Datum implements java.io.Serializable
   {
     if (grids != null && grids.size() > 0) return TYPE_GRIDSHIFT;
 
-    if (ellipsoid == Ellipsoid.WGS84 || ellipsoid == Ellipsoid.GRS80) {
+    if (Ellipsoid.WGS84.equals(ellipsoid) || Ellipsoid.GRS80.equals(ellipsoid)) {
         if (transform == null) return TYPE_WGS84;
         
         if (isIdentity(transform)) return TYPE_WGS84;
