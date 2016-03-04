@@ -64,7 +64,7 @@ trait Geometry {
     }
 
   def as[G <: Geometry : ClassTag]: Option[G] = {
-    if (classTag[G].runtimeClass.isInstance(this)) 
+    if (classTag[G].runtimeClass.isInstance(this))
       Some(this.asInstanceOf[G])
     else
       None

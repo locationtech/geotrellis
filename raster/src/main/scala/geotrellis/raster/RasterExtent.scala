@@ -119,7 +119,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * of containing all points within the extent. The extent is considered inclusive
     * on it's north and west borders, exclusive on it's east and south borders.
     * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
-    * 
+    *
     * @param     subExtent      The extent to get the grid bounds for
     * @param     clamp          Determines whether or not to clamp the GridBounds to the
     *                           RasterExtent; defaults to true. If false, GridBounds can
