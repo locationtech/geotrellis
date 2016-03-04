@@ -44,7 +44,7 @@ object ProjectedExtent {
 case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
   // Validation: Do not accept extents min values greater than max values.
-  if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)")  }
+  if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
   if (ymin > ymax) { throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)") }
 
   def jtsGeom =
@@ -112,11 +112,15 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def intersects(x: Double, y: Double): Boolean =
     x >= xmin && x <= xmax && y >= ymin && y <= ymax
 
-  def contains(other: Extent): Boolean =
-    other.xmin >= xmin &&
-    other.ymin >= ymin &&
-    other.xmax <= xmax &&
-    other.ymax <= ymax
+  /** Empty extent contains nothing, though non empty extent contains iteslf */
+  def contains(other: Extent): Boolean = {
+    if(xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0) false
+    else
+      other.xmin >= xmin &&
+      other.ymin >= ymin &&
+      other.xmax <= xmax &&
+      other.ymax <= ymax
+  }
 
   /**
     * Tests if the given point lies in or on the envelope.

@@ -350,6 +350,7 @@ case class CompositeTile(tiles: Seq[Tile],
         tile.set(col, row, f(get(col, row), other.get(col, row)))
       }
     }
+
     tile
   }
 

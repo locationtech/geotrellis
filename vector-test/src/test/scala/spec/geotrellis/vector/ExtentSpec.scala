@@ -16,7 +16,6 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.io._
 import geotrellis.vector.io.json._
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
@@ -72,6 +71,11 @@ class ExtentSpec extends FunSpec with Matchers {
       val e2 = Extent(20.0, 0.0, 30.0, 10.0)
       val e3 = Extent(0.0, 0.0, 30.0, 10.0)
       assert(e1.combine(e2) === e3)
+    }
+
+    it("should combine empty extents") {
+      val e = Extent(0.0, 0.0, 0.0, 0.0)
+      assert(e.combine(e) === e)
     }
 
     it("should contains interior points") {
@@ -142,7 +146,7 @@ class ExtentSpec extends FunSpec with Matchers {
       )
     }
 
-    it (" should give envelopes for geometries and features") {
+    it ("should give envelopes for geometries and features") {
 
       val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val l2 = Line(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
@@ -201,6 +205,20 @@ class ExtentSpec extends FunSpec with Matchers {
                      |}""".stripMargin
       val env8 = jsonFc.parseGeoJson[JsonFeatureCollection].getAllPoints().envelope
       assert(env8.contains(env7))
+    }
+  }
+
+  describe("Empty extent") {
+    it("should not contain itself") {
+      val e = Extent(0.0, 0.0, 0.0, 0.0)
+      assert(e.contains(e) === false)
+    }
+  }
+
+  describe("Non empty extent") {
+    it("should contain itself") {
+      val e = Extent(0.0, 0.0, 3.0, 3.0)
+      assert(e.contains(e) === true)
     }
   }
 }
