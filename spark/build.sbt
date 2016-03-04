@@ -5,7 +5,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "de.javakaffee" % "kryo-serializers" % "0.37" exclude("com.esotericsoftware.kryo", "kryo"),
-  "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
+  "com.esotericsoftware.kryo" % "kryo" % "2.21",
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
   logging,
   avro,
