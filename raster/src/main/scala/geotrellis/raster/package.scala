@@ -42,6 +42,9 @@ package object raster
 
   // Implicit method extension for core types
 
+  implicit class withRasterRasterizeMethods[+T <: Tile](val self: Raster[T]) extends MethodExtensions[Raster[T]]
+      with RasterRasterizeMethods[T]
+
   implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
       with RasterExtentRasterizeMethods[RasterExtent]
 
