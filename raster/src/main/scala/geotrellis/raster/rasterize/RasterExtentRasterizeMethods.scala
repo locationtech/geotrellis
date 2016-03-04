@@ -21,19 +21,40 @@ import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry
 
+import spire.syntax.cfor._
+
 
 trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T] {
+
   def foreachCell(
     geom : Geometry,
     options: Options = Options.DEFAULT,
     ct : CellType = IntConstantNoDataCellType
-  )(fn : (Int, Int) => Int) : Tile =
-    geom.foreachCell(self, options, ct)(fn)
+  )(fn : (Int, Int) => Unit) : Unit =
+    geom.foreachCell(self, options)(fn)
 
-  def foreachCellDouble(
+  def foreachCell(fn: (Int, Int) => Unit): Unit = {
+    val cols = self.cols
+    val rows = self.rows
+
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        fn(col, row)
+      }
+    }
+  }
+
+  def rasterize(
+    geom : Geometry,
+    options: Options = Options.DEFAULT,
+    ct : CellType = IntConstantNoDataCellType
+  )(fn : (Int, Int) => Int) : Tile =
+    geom.rasterize(self, options, ct)(fn)
+
+  def rasterizeDouble(
     geom : Geometry,
     options: Options = Options.DEFAULT,
     ct : CellType = DoubleConstantNoDataCellType
   )(fn : (Int, Int) => Double) : Tile =
-    geom.foreachCellDouble(self, options, ct)(fn)
+    geom.rasterizeDouble(self, options, ct)(fn)
 }
