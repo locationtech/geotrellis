@@ -26,6 +26,14 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
 
   def foreachCell(
     re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn : (Int, Int) => Unit) : Unit = {
+    Rasterizer.foreachCellByGeometry(self, re, options)(fn)
+    Unit
+  }
+
+  def rasterize(
+    re : RasterExtent,
     options: Options = Options.DEFAULT,
     ct : CellType = IntConstantNoDataCellType
   )(fn : (Int, Int) => Int) : Tile = {
@@ -34,7 +42,7 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
     tile
   }
 
-  def foreachCellDouble(
+  def rasterizeDouble(
     re : RasterExtent,
     options: Options = Options.DEFAULT,
     ct : CellType = DoubleConstantNoDataCellType
@@ -44,6 +52,9 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
     tile
   }
 
-  def rasterize(re : RasterExtent)(fn : (Int, Int) => Int) =
-    Rasterizer.rasterize(self, re)(fn)
+  def rasterize(re: RasterExtent, value: Int): Tile =
+    rasterize(re)({ (col: Int, row: Int) => value })
+
+  def rasterizeDouble(re: RasterExtent, value: Double): Tile =
+    rasterizeDouble(re)({ (col: Int, row: Int) => value })
 }
