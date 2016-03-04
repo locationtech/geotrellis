@@ -138,10 +138,6 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
-lazy val vectorBenchmark: Project = Project("vector-benchmark", file("vector-benchmark")).
-  dependsOn(vectorTest % "compile->test").
-  settings(commonSettings: _*)
-
 lazy val benchmark: Project = Project("benchmark", file("benchmark")).
   dependsOn(raster, engine).
   settings(commonSettings: _*)
