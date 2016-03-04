@@ -13,16 +13,25 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
-case class PersistenceSpecLayerIds(layerId: LayerId, deleteLayerId: LayerId, copiedLayerId: LayerId, movedLayerId: LayerId, reindexedLayerId: LayerId)
+case class PersistenceSpecDefinition[K](
+  keyIndexMethodName: String,
+  keyIndexMethod: KeyIndexMethod[K],
+  layerIds: PersistenceSpecLayerIds
+)
+
+case class PersistenceSpecLayerIds(
+  layerId: LayerId,
+  deleteLayerId: LayerId,
+  copiedLayerId: LayerId,
+  movedLayerId: LayerId,
+  reindexedLayerId: LayerId
+)
 
 abstract class PersistenceSpec[
   K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
   V: AvroRecordCodec: ClassTag,
   M: JsonFormat: Component[?, Bounds[K]]
-] extends FunSpec with Matchers { self: FunSpec =>
-  private var additionalSpecs: List[PersistenceSpecLayerIds => Unit] = List()
-  def addSpecs(f: PersistenceSpecLayerIds => Unit): Unit =
-    additionalSpecs = f :: additionalSpecs
+] extends FunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = FilteringLayerReader[LayerId]
   type TestWriter = LayerWriter[LayerId]
@@ -53,9 +62,13 @@ abstract class PersistenceSpec[
     PersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)
   }
 
-  for((keyIndexMethodName, keyIndexMethod: KeyIndexMethod[K]) <- keyIndexMethods) {
+  def specLayerIds =
+    for((keyIndexMethodName, keyIndexMethod: KeyIndexMethod[K]) <- keyIndexMethods) yield {
+      PersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, getLayerIds(keyIndexMethodName))
+    }
+
+  for(ps @ PersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, PersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)) <- specLayerIds) {
     describe(s"using key index method ${keyIndexMethodName}") {
-      lazy val layerIds @ PersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId) = getLayerIds(keyIndexMethodName)
       lazy val query = reader.query[K, V, M](layerId)
 
       it("should not find layer before write") {
@@ -141,14 +154,10 @@ abstract class PersistenceSpec[
           withClue(s"Failed on method $n") {
             copier.copy[K, V, M](layerId, rid)
             reindexer.reindex[K, V, M](rid, reindexMethod)
-            // RETODO: We need to test better
+
             reader.read[K, V, M](rid).keys.collect() should contain theSameElementsAs reader.read[K, V, M](layerId).keys.collect()
           }
         }
-      }
-
-      for(f <- additionalSpecs) {
-        f(layerIds)
       }
     }
   }

@@ -33,30 +33,32 @@ trait LayerUpdateSpaceTimeTileTests { self: PersistenceSpec[SpaceTimeKey, Tile, 
       EmptyBounds
     )
 
-  addSpecs { layerIds =>
+  for(PersistenceSpecDefinition(keyIndexMethodName, _, layerIds) <- specLayerIds) {
     val layerId = layerIds.layerId
 
-    it("should update a layer") {
-      updater.update(layerId, sample)
-    }
-
-    it("should not update a layer (empty set)") {
-      intercept[LayerUpdateError] {
-        updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
+    describe(s"updating for $keyIndexMethodName") {
+      it("should update a layer") {
+        updater.update(layerId, sample)
       }
-    }
 
-    it("should not update a layer (keys out of bounds)") {
-      val (minKey, minTile) = sample.sortByKey().first()
-      val (maxKey, maxTile) = sample.sortByKey(false).first()
+      it("should not update a layer (empty set)") {
+        intercept[EmptyBoundsError] {
+          updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
+        }
+      }
 
-      val update = new ContextRDD(sc.parallelize(
-        (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-          (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-      ), dummyRasterMetaData)
+      it("should not update a layer (keys out of bounds)") {
+        val (minKey, minTile) = sample.sortByKey().first()
+        val (maxKey, maxTile) = sample.sortByKey(false).first()
 
-      intercept[LayerOutOfKeyBoundsError] {
-        updater.update(layerId, update)
+        val update = new ContextRDD(sc.parallelize(
+          (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
+            (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+        ), dummyRasterMetaData)
+
+        intercept[LayerOutOfKeyBoundsError] {
+          updater.update(layerId, update)
+        }
       }
     }
   }

@@ -4,8 +4,10 @@ import geotrellis.spark._
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 
+import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
 
@@ -17,6 +19,12 @@ abstract class LayerUpdater[ID] {
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]): Unit
+
+  protected def schemaHasChanged[K: AvroRecordCodec, V: AvroRecordCodec](writerSchema: Schema): Boolean = {
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+    !schema.fingerprintMatches(writerSchema)
+  }
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

@@ -17,7 +17,7 @@ class AccumuloSpaceTimeSpec
     with TestFiles
     with CoordinateSpaceTimeTests
     with LayerUpdateSpaceTimeTileTests {
-  implicit val instance = MockAccumuloInstance()
+  implicit lazy val instance = MockAccumuloInstance()
 
   lazy val reader    = AccumuloLayerReader(instance)
   lazy val writer = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())

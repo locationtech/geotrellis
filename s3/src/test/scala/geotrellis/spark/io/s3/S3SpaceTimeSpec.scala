@@ -1,6 +1,5 @@
 package geotrellis.spark.io.s3
 
-import com.github.nscala_time.time.Imports._
 import geotrellis.raster.Tile
 import geotrellis.spark.io._
 import geotrellis.spark.io.json._
@@ -8,7 +7,11 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
+
+import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
+
+import org.scalatest._
 
 class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
@@ -16,10 +19,15 @@ class S3SpaceTimeSpec
     with TestEnvironment
     with TestFiles
     with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
+    with LayerUpdateSpaceTimeTileTests
+    with BeforeAndAfterAll {
 
-  val bucket = "mock-bucket"
-  val prefix = "catalog"
+  registerAfterAll { () =>
+    MockS3Client.reset()
+  }
+
+  lazy val bucket = "mock-bucket"
+  lazy val prefix = "catalog"
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override val s3Client = new MockS3Client
@@ -37,7 +45,7 @@ class S3SpaceTimeSpec
 
   lazy val reader = new MockS3LayerReader(attributeStore, None)
   lazy val writer = new MockS3LayerWriter(attributeStore, bucket, prefix, S3LayerWriter.Options.DEFAULT)
-  lazy val updater = new S3LayerUpdater(attributeStore, true) { override def rddWriter = S3SpaceTimeSpec.this.rddWriter }
+  lazy val updater = new S3LayerUpdater(attributeStore, reader) { override def rddWriter = S3SpaceTimeSpec.this.rddWriter }
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }
   lazy val copier = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
   lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)

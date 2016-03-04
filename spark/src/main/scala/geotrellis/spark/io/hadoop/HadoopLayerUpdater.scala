@@ -1,25 +1,24 @@
-package geotrellis.spark.io.s3
+package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index._
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 
 import com.typesafe.scalalogging.slf4j._
 import org.apache.avro.Schema
+import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import scala.reflect._
 
-class S3LayerUpdater(
-  val attributeStore: AttributeStore[JsonFormat],
-  layerReader: S3LayerReader
+class HadoopLayerUpdater(
+  attributeStore: AttributeStore[JsonFormat],
+  layerReader: HadoopLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
-
-  def rddWriter: S3RDDWriter = S3RDDWriter
 
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -27,23 +26,18 @@ class S3LayerUpdater(
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-
-    val (existingHeader, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id)
+    val (header, _, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
+    val path = header.path
+
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    val prefix = existingHeader.key
-    val bucket = existingHeader.bucket
-
-    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
-
-    logger.info(s"Saving updated RDD for layer ${id} to $bucket $prefix")
+    logger.info(s"Saving updated RDD for layer ${id} to $path")
     if(schemaHasChanged[K, V](writerSchema)) {
       logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
       val entireLayer = layerReader.read[K, V, M](id)
@@ -56,20 +50,17 @@ class S3LayerUpdater(
             }
         }
 
-      rddWriter.write(updated, bucket, keyPath, oneToOne = false)
+      HadoopRDDWriter.write[K, V](updated, path, keyIndex)
     } else {
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+      HadoopRDDWriter.write[K, V](rdd, path, keyIndex)
     }
   }
 }
 
-object S3LayerUpdater {
-  def apply(
-      bucket: String,
-      prefix: String
-  )(implicit sc: SparkContext): S3LayerUpdater =
-    new S3LayerUpdater(
-      S3AttributeStore(bucket, prefix),
-      S3LayerReader(bucket, prefix)
+object HadoopLayerUpdater {
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerUpdater =
+    new HadoopLayerUpdater(
+      HadoopAttributeStore(rootPath),
+      HadoopLayerReader(rootPath)
     )
 }
