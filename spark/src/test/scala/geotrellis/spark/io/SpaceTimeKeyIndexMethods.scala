@@ -5,7 +5,6 @@ import geotrellis.spark.io.index._
 
 import com.github.nscala_time.time.Imports._
 
-// RETODO - Make these correct
 trait SpaceTimeKeyIndexMethods {
   def keyIndexMethods: Map[String, KeyIndexMethod[SpaceTimeKey]] =
     Map(

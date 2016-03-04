@@ -95,28 +95,6 @@ package object spark
   type SpatialComponent[K] = Component[K, SpatialKey]
   type TemporalComponent[K] = Component[K, TemporalKey]
 
-  // implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
-  //   val _spatialComponent = implicitly[SpatialComponent[K]]
-
-  //   def spatialComponent: SpatialKey = _spatialComponent.lens.get(key)
-
-  //   def updateSpatialComponent(spatialKey: SpatialKey): K =
-  //     _spatialComponent.lens.set(spatialKey)(key)
-  // }
-
-  // implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
-  //   val _temporalComponent = implicitly[TemporalComponent[K]]
-
-  //   def temporalComponent: TemporalKey = _temporalComponent.lens.get(key)
-
-  //   def updateTemporalComponent(temporalKey: TemporalKey): K =
-  //     _temporalComponent.lens.set(temporalKey)(key)
-  // }
-
-  // implicit class withBoundsComponentMethods[K, M: Component[?, Bounds[K]]](val self: M) extends MethodExtensions[M] {
-  //   def getBounds: Bounds[K] = self.getComponent[Bounds[K]]
-  // }
-
   type TileBounds = GridBounds
 
   /** Auto wrap a partitioner when something is requestion an Option[Partitioner];

@@ -10,19 +10,6 @@ import monocle.syntax._
 
 
 package object ingest {
-//  type ProjectedExtentComponent[T] = KeyComponent[T, ProjectedExtent]
-
-  // implicit class ProjectedExtentComponentMethods[T: Component[](key: T) {
-  //   val _projectedExtent = implicitly[ProjectedExtentComponent[T]]
-
-  //   def projectedExtent: ProjectedExtent = _projectedExtent.lens.get(key)
-
-  //   def updateProjectedExtent(pe: ProjectedExtent): T =
-  //     _projectedExtent.lens.set(pe)(key)
-  // }
-
-  // implicit object ProjectedExtentComponent extends IdentityComponent[ProjectedExtent]
-
   implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
     def collectMetaData[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, RasterMetaData[K2]) = {
