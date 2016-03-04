@@ -35,7 +35,7 @@ trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends Method
       if (!ct.isFloatingPoint) ArrayTile.empty(tile.cellType, re.cols, re.rows)
       else IntArrayTile.empty(re.cols, re.rows)
 
-    Rasterizer.foreachCellByGeometry(geom, re, options)(new Callback {
+    geom.foreachCell(re, options)(new Callback {
       def apply(col : Int, row : Int): Unit = {
         val z = tile.get(col, row)
         mutableTile.set(col, row, fn(z))
@@ -56,7 +56,7 @@ trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends Method
       if (ct.isFloatingPoint) ArrayTile.empty(tile.cellType, re.cols, re.rows)
       else DoubleArrayTile.empty(re.cols, re.rows)
 
-    Rasterizer.foreachCellByGeometry(geom, re, options)(new Callback {
+    geom.foreachCell(re, options)(new Callback {
       def apply(col : Int, row : Int): Unit = {
         val z = tile.get(col, row)
         mutableTile.setDouble(col, row, fn(z))

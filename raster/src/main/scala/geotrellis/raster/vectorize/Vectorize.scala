@@ -115,7 +115,7 @@ object Vectorize {
 
             val callback = new ToVectorCallback(polyizer, r, v)
 
-            PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, rasterExtent)(callback)
+            shellPoly.geom.foreachCell(rasterExtent)(callback)
 
             val holes = {
               val rings = callback.linearRings.map(Line.apply)

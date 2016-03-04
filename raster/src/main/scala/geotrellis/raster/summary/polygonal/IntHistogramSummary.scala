@@ -11,10 +11,10 @@ object IntHistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     val histogram = FastMapHistogram()
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.get(col, row)
       if (isData(z)) histogram.countItem(z, 1)
-    }
+    })
     histogram
   }
 

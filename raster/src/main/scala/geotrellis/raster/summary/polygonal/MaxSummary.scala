@@ -10,10 +10,10 @@ object MaxSummary extends TilePolygonalSummaryHandler[Int] {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var max = NODATA
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.get(col, row)
       if (isData(z) && (z > max || isNoData(max)) ) { max = z }
-    }
+    })
     max
   }
 
@@ -40,10 +40,10 @@ object MaxDoubleSummary extends TilePolygonalSummaryHandler[Double] {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var max = Double.NaN
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.getDouble(col, row)
       if (isData(z) && (z > max || isNoData(max))) { max = z }
-    }
+    })
     max
   }
 

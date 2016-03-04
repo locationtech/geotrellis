@@ -76,13 +76,6 @@ class MaskSpec extends FunSpec with Matchers with TestEngine  {
 
       val masked = rs.mask(poly).get
 
-      // rasterize.Rasterizer.foreachCellByFeature(g, re)(new rasterize.Callback {
-      //   def apply(col: Int, row: Int) = {
-      //     println(
-      //   }
-      //     result.setDouble(col, row, tile.getDouble(col, row))
-      // })
-
       for(col <- 0 until raster.cols;
           row <- 0 until raster.rows) {
         val rvalue = raster.getDouble(col,row)

@@ -37,16 +37,16 @@ object MeanSummary extends TilePolygonalSummaryHandler[MeanResult] {
     var sum = 0.0
     var count = 0L
     if(tile.cellType.isFloatingPoint) {
-      Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
         val z = tile.getDouble(col, row)
         if (isData(z)) { sum = sum + z; count = count + 1 }
+      })
+      } else {
+        polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
+          val z = tile.get(col, row)
+          if (isData(z)) { sum = sum + z; count = count + 1 }
+        })
       }
-    } else {
-      Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
-        val z = tile.get(col, row)
-        if (isData(z)) { sum = sum + z; count = count + 1 }
-      }
-    }
 
     MeanResult(sum, count)
   }

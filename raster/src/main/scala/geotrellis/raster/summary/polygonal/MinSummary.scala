@@ -10,10 +10,10 @@ object MinSummary extends TilePolygonalSummaryHandler[Int] {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var min = NODATA
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.get(col, row)
       if (isData(z) && (z < min || isNoData(min)) ) { min = z }
-    }
+    })
     min
   }
 
@@ -40,10 +40,10 @@ object MinDoubleSummary extends TilePolygonalSummaryHandler[Double] {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var min = Double.NaN
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.getDouble(col, row)
       if (isData(z) && (z < min || isNoData(min))) { min = z }
-    }
+    })
 
     min
   }
