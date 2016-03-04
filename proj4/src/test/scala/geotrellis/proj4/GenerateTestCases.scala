@@ -1,6 +1,7 @@
 package geotrellis.proj4
 
 import scala.sys.process._
+import scala.util.Try
 
 /**
  * Use the C proj.4 library to generate test cases to cross-validate the proj4j implementation.
@@ -10,12 +11,6 @@ object GenerateTestCases {
     def asStream: java.io.InputStream = 
       new java.io.ByteArrayInputStream(a.getBytes(java.nio.charset.StandardCharsets.UTF_8))
   }
-
-  def grid(minx: Int, miny: Int, maxx: Int, maxy: Int): Iterator[(Double, Double)] = 
-    for { 
-      x <- (minx to maxx).iterator
-      y <- miny to maxy
-    } yield (x.toDouble, y.toDouble)
 
   def loan[T](r: => scala.io.Source)(f: scala.io.Source => T): T = {
     val resource = r
@@ -29,17 +24,9 @@ object GenerateTestCases {
     val knownCodes = 
       loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/geotrellis/proj4/nad/epsg"))) { source =>
         source.getLines
-          // .filterNot { _ contains "+pm=" }
-          // .filterNot { _ contains "+axis=" }
-          // .filterNot { _ contains "+gamma=" }
-          // .filterNot { _ contains "+proj=utm" }
-          // .filterNot { _ contains "+datum=NAD27" }
-          // .filterNot { _ contains "+proj=cea" }
-          // .filterNot { _ contains "+proj=krovak" }
-          // .filterNot { _ contains "+proj=nzmg" }
           .filter { _ startsWith "<" }
           .map { s => s.tail.take(s.indexOf('>') - 1) }
-          .filter { _ != "4326" }
+          .filterNot { _ == "4326" }
           .to[Vector]
       }
     
@@ -108,7 +95,7 @@ object GenerateTestCases {
 
   def cs2cs(src: Int, dst: Int, xyz: (Double, Double, Double)): Option[(Double, Double, Double)] = {
     val cmd = Vector(
-      "../proj.4/built/bin/cs2cs",
+      "cs2cs",
       "-e", "NaN NaN",
       "-f", "%1.06f",
       s"+init=epsg:$src",
@@ -119,20 +106,22 @@ object GenerateTestCases {
     val logger = ProcessLogger(
       out => ???,
       err => error = true)
-    val line = ((cmd #< f"${xyz._1}%1.6f ${xyz._2}%1.6f ${xyz._3}%1.6f".asStream) !! logger).trim
+    val line = Try { ((cmd #< f"${xyz._1}%1.6f ${xyz._2}%1.6f ${xyz._3}%1.6f".asStream) !! logger).trim }
 
     if (error)
       None
     else {
-      val coords @ Seq(x, y, z) = line.split("\\s+").toSeq.map {
-        case "nan" => Double.NaN
-        case "inf" => Double.PositiveInfinity
-        case s => s.toDouble
+      line.toOption.flatMap { line =>
+        val coords @ Seq(x, y, z) = line.split("\\s+").toSeq.map {
+          case "nan" => Double.NaN
+          case "inf" => Double.PositiveInfinity
+          case s => s.toDouble
+        }
+        if (coords.exists(d => d.isInfinite || d.isNaN))
+          None
+        else
+          Some((x, y, z))
       }
-      if (coords.exists(d => d.isInfinite || d.isNaN))
-        None
-      else
-        Some((x, y, z))
     }
   }
 }
