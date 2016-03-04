@@ -5,10 +5,10 @@ The slick module of GeoTrellis is a combination of Minglei Tu's
 some modifications which streamline its use in persisting
 `geotrellis.vector.Geometry` instances on Postgres/PostGIS.  
 
-#### Example Usage
+#### Example
 
 In the following example, we walk through the steps that you'd take if
-you wanted to create a catalog of city halls:
+you wanted to create a catalog of city halls backed by Postgres:
 
 ```scala
 import geotrellis.slick._
