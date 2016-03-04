@@ -23,6 +23,8 @@ import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
+import geotrellis.spark.filter._
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
@@ -50,6 +52,7 @@ package object spark
     with mapalgebra.focal.hillshade.Implicits
     with partitioner.Implicits
     with crop.Implicits
+    with filter.Implicits
     with Serializable // required for java serialization, even though it's mixed in
 {
 

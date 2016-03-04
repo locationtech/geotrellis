@@ -114,16 +114,17 @@ object Intersects {
   }
 
   /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M] =
+  implicit def forPolygon[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
     new RDDFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val extent = polygon.envelope
-        val keyext = metadata.asInstanceOf[RasterMetaData].mapTransform(kb.minKey)
-        val bounds = metadata.asInstanceOf[RasterMetaData].mapTransform(extent)
+        val keyext = metadata.mapTransform(kb.minKey)
+        val bounds = metadata.mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
+
         /*
-         * Construct a rasterExtent that fits tightly around the
-         * candidate tiles (the candidate keys).  IT IS ASSUMED THAT
+         * Construct  a  rasterExtent  that fits  tightly  around  the
+         * candidate tiles  (the candidate keys).  IT  IS ASSUMED THAT
          * ALL TILES HAVE THE SAME LENGTH AND HEIGHT.
          */
         val xmin = math.floor(extent.min.x / keyext.width) * keyext.width
