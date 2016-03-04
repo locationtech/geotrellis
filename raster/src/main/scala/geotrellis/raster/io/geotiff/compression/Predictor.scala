@@ -14,10 +14,10 @@ object Predictor {
       &|-> TiffTags._nonBasicTags
       ^|-> NonBasicTags._predictor get
     ) match {
-      case None | Some(PREDICTOR_NONE) => 
-        new Predictor { 
+      case None | Some(PREDICTOR_NONE) =>
+        new Predictor {
           val checkEndian = true
-          def apply(bytes: Array[Byte], segmentIndex: Int) = bytes 
+          def apply(bytes: Array[Byte], segmentIndex: Int) = bytes
         }
       case Some(PREDICTOR_HORIZONTAL) =>
         HorizontalPredictor(tiffTags)
@@ -34,5 +34,3 @@ trait Predictor {
 
   def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 }
-
-
