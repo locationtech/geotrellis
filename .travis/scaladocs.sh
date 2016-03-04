@@ -14,8 +14,8 @@ rev=$(git rev-parse --short HEAD)
 ./sbt "++2.11.5 unidoc"
 
 # Set up git
-# git config --global user.email "azaveadev@azavea.com"
-# git config --global user.name "azaveaci"
+git config --global user.email "azaveadev@azavea.com"
+git config --global user.name "azaveaci"
 
 # Inside scaladocs from hereon
 rm -rf scaladocs
