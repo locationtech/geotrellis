@@ -1,7 +1,7 @@
-package geotrellis.spark
+package geotrellis.spark.io
 
 import geotrellis.raster._
-import geotrellis.spark.io.{RDDQuery, Intersects}
+import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
@@ -34,7 +34,7 @@ class RDDQuerySpec extends FunSpec
 
     it("should be better then Java serialization") {
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(GridBounds(2, 2, 2, 2)))
-      val outKeyBounds = query(md, keyBounds)
+      val outKeyBounds = query(md)
       info(outKeyBounds.toString)
     }
 
@@ -43,7 +43,7 @@ class RDDQuerySpec extends FunSpec
         .where(Intersects(GridBounds(2, 2, 2, 2)) or Intersects(GridBounds(2, 2, 2, 2)))
 
       intercept[RuntimeException] {
-        query(md, keyBounds)
+        query(md)
       }
     }
 
@@ -84,7 +84,7 @@ class RDDQuerySpec extends FunSpec
     it("should find all keys that intersect appreciably with a horizontal rectangle") {
       val polygon = MultiPolygon(horizontal)
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(polygon))
-      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
     }
@@ -92,7 +92,7 @@ class RDDQuerySpec extends FunSpec
     it("should find all keys that intersect appreciably with a vertical rectangle") {
       val polygon = MultiPolygon(vertical)
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(polygon))
-      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
     }
@@ -100,7 +100,7 @@ class RDDQuerySpec extends FunSpec
     it("should find all keys that intersect appreciably with an L-shaped polygon") {
       val polygon = MultiPolygon(List(horizontal, vertical))
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(polygon))
-      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
     }
@@ -108,7 +108,7 @@ class RDDQuerySpec extends FunSpec
     it("should find all keys that intersect appreciably with a diagonal rectangle") {
       val polygon = MultiPolygon(diagonal)
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(polygon))
-      val actual = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       println(expected)
       println(actual)
@@ -125,7 +125,7 @@ class RDDQuerySpec extends FunSpec
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(bounds1))
       val expected = for ((x, y) <- bounds1.coords) yield SpatialKey(x, y)
 
-      val found = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val found = query(md).flatMap(spatialKeyBoundsKeys)
       info(s"missing: ${(expected diff found).toList}")
       info(s"unwanted: ${(found diff expected).toList}")
 
@@ -138,7 +138,7 @@ class RDDQuerySpec extends FunSpec
       val query = new RDDQuery[SpatialKey, RasterMetaData[SpatialKey]].where(Intersects(bounds1) or Intersects(bounds2))
       val expected = for ((x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x, y)
 
-      val found = query(md, kb).flatMap(spatialKeyBoundsKeys)
+      val found = query(md).flatMap(spatialKeyBoundsKeys)
       info(s"missing: ${(expected diff found).toList}")
       info(s"unwanted: ${(found diff expected).toList}")
 

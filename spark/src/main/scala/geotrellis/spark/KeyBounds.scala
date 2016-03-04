@@ -2,8 +2,6 @@ package geotrellis.spark
 
 import geotrellis.raster.GridBounds
 import org.apache.spark.rdd.RDD
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 sealed trait Bounds[+A] extends Product with Serializable {
   def isEmpty: Boolean
@@ -55,6 +53,12 @@ object Bounds {
     rdd
       .map{ case (k, tile) => Bounds(k, k) }
       .fold(EmptyBounds) { _ combine  _ }
+
+  implicit def toIterableKeyBounds[K](b: Bounds[K]): Iterable[KeyBounds[K]] =
+    b match {
+      case kb: KeyBounds[K] => Seq(kb)
+      case EmptyBounds => Seq()
+    }
 }
 
 case object EmptyBounds extends Bounds[Nothing] {
@@ -152,22 +156,4 @@ object KeyBounds {
   }
 
   implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
-
-  implicit def keyBoundsFormat[K: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
-    new RootJsonFormat[KeyBounds[K]] {
-
-      def write(keyBounds: KeyBounds[K]) =
-        JsObject(
-          "minKey" -> keyBounds.minKey.toJson,
-          "maxKey" -> keyBounds.maxKey.toJson
-        )
-
-      def read(value: JsValue): KeyBounds[K] =
-        value.asJsObject.getFields("minKey", "maxKey") match {
-          case Seq(minKey, maxKey) =>
-            KeyBounds(minKey.convertTo[K], maxKey.convertTo[K])
-          case _ =>
-            throw new DeserializationException("${classOf[KeyBounds[K]] expected")
-        }
-    }
 }

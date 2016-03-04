@@ -40,8 +40,8 @@ class S3LayerCopier(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (header, metadata, keyBounds, keyIndex, schema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+    val (header, metadata, keyIndex, schema) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
@@ -55,7 +55,7 @@ class S3LayerCopier(
       to, header.copy(
         bucket = destBucket,
         key    = makePath(destKeyPrefix, s"${to.name}/${to.zoom}")
-      ), metadata, keyBounds, keyIndex, schema
+      ), metadata, keyIndex, schema
     )
   }
 }

@@ -44,8 +44,8 @@ class S3LayerReader(
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val (header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -53,8 +53,8 @@ class S3LayerReader(
     val bucket = header.bucket
     val prefix = header.key
 
-    val queryKeyBounds = rasterQuery(metadata, keyBounds)
-    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val queryKeyBounds = rasterQuery(metadata)
+    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val cache = getCache.map(f => f(id))

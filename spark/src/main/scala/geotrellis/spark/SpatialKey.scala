@@ -2,7 +2,6 @@ package geotrellis.spark
 
 import geotrellis.spark._
 import org.apache.spark.rdd.RDD
-import spray.json._
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
 case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
@@ -19,22 +18,6 @@ object SpatialKey {
 
   implicit def ordering[A <: SpatialKey]: Ordering[A] =
     Ordering.by(sk => (sk.col, sk.row))
-
-  implicit val spatialKeyFormat = new RootJsonFormat[SpatialKey] {
-    def write(key: SpatialKey) =
-      JsObject(
-        "col" -> JsNumber(key.col),
-        "row" -> JsNumber(key.row)
-      )
-
-    def read(value: JsValue): SpatialKey =
-      value.asJsObject.getFields("col", "row") match {
-        case Seq(JsNumber(col), JsNumber(row)) =>
-          SpatialKey(col.toInt, row.toInt)
-        case _ =>
-          throw new DeserializationException("SpatialKey expected")
-      }
-  }
 
   implicit object Boundable extends Boundable[SpatialKey] {
     def minBound(a: SpatialKey, b: SpatialKey) = {

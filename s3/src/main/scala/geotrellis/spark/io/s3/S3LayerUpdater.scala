@@ -11,8 +11,6 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-// RETODO: Updater for File and Hadoop
-
 class S3LayerUpdater(
     val attributeStore: AttributeStore[JsonFormat],
     clobber: Boolean = true)
@@ -20,15 +18,15 @@ class S3LayerUpdater(
 
   def rddWriter: S3RDDWriter = S3RDDWriter
 
-  def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
-    val (existingHeader, metadata, _, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val (existingHeader, metadata, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
@@ -36,13 +34,10 @@ class S3LayerUpdater(
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    val existingKeyBounds =
-      metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
-
     val prefix = existingHeader.key
     val bucket = existingHeader.bucket
 
-    val maxWidth = Index.digits(keyIndex.toIndex(existingKeyBounds.maxKey))
+    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving RDD ${rdd.name} to $bucket  $prefix")

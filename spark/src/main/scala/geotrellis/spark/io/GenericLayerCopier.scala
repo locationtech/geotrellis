@@ -10,8 +10,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import scala.reflect._
 
-// RETODO: Generic or Spark, pick one
-class SparkLayerCopier[Header: JsonFormat](
+class GenericLayerCopier[Header: JsonFormat](
   val attributeStore: AttributeStore[JsonFormat],
   layerReader: LayerReader[LayerId],
   layerWriter: LayerWriter[LayerId]
@@ -25,8 +24,8 @@ class SparkLayerCopier[Header: JsonFormat](
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (_, _, _, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](from)
+    val (_, _, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[Header, M, KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }

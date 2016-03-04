@@ -30,8 +30,8 @@ object FileLayerMover {
         if(!sourceMetadataFile.exists) throw new LayerNotFoundError(from)
 
         // Read the metadata file out.
-        val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+        val (header, metadata, keyIndex, writerSchema) = try {
+          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyIndex[K], Schema](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
         }
@@ -48,7 +48,7 @@ object FileLayerMover {
         val sourceLayerPath = new File(sourceAttributeStore.catalogPath, header.path)
         val targetHeader = header.copy(path = LayerPath(to))
 
-        targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyBounds, keyIndex, writerSchema)
+        targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyIndex, writerSchema)
 
         // Delete the metadata file in the source
         sourceMetadataFile.delete()

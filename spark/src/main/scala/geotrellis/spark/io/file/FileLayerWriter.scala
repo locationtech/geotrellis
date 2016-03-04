@@ -40,11 +40,11 @@ class FileLayerWriter(
     clobber: Boolean = true
 ) extends LayerWriter[LayerId] with LazyLogging {
 
-  def write[
+  protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {
+  ](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val catalogPathFile = new File(catalogPath)
 
     val codec  = KeyValueRecordCodec[K, V]
@@ -61,12 +61,12 @@ class FileLayerWriter(
         path = path
       )
 
-    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
     val layerPath = new File(catalogPath, path).getAbsolutePath
 
     try {
-      attributeStore.writeLayerAttributes(layerId, header, metadata, keyBounds, keyIndex, schema)
+      attributeStore.writeLayerAttributes(layerId, header, metadata, keyIndex, schema)
 
       logger.info(s"Saving RDD ${layerId.name} to ${catalogPath}")
       FileRDDWriter.write(rdd, layerPath, keyPath)

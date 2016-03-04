@@ -30,15 +30,15 @@ class HadoopLayerCopier(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+    val (header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
     val newPath = new Path(rootPath,  s"${to.name}/${to.zoom}")
     HdfsUtils.copyPath(header.path, newPath, sc.hadoopConfiguration)
     attributeStore.writeLayerAttributes(
-      to, header.copy(path = newPath), metadata, keyBounds, keyIndex, writerSchema
+      to, header.copy(path = newPath), metadata, keyIndex, writerSchema
     )
   }
 }

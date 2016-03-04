@@ -43,19 +43,16 @@ class FileLayerReader(
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metadata, _, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val (header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
     val layerPath = header.path
 
-    val keyBounds =
-      metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
-
-    val queryKeyBounds = rasterQuery(metadata, keyBounds)
-    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val queryKeyBounds = rasterQuery(metadata)
+    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val cache = getCache.map(f => f(id))

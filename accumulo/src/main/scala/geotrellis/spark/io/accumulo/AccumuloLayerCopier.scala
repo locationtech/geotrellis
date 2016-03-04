@@ -26,14 +26,14 @@ class AccumuloLayerCopier(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+    val (_, _, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }
 
     try {
-      getLayerWriter(from).write(to, layerReader.read[K, V, M](from), existingKeyIndex)
+      getLayerWriter(from).write(to, layerReader.read[K, V, M](from), keyIndex)
     } catch {
       case e: Exception => new LayerCopyError(from, to).initCause(e)
     }

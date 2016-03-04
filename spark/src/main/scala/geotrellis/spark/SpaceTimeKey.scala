@@ -5,11 +5,9 @@ import geotrellis.spark.io.json._
 import monocle._
 import org.apache.spark.rdd.RDD
 
-import org.joda.time.DateTime
-
+import com.github.nscala_time.time.Imports._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-import com.github.nscala_time.time.Imports._
 
 case class SpaceTimeKey(col: Int, row: Int, instant: Long) {
   def spatialKey: SpatialKey = SpatialKey(col, row)
@@ -32,23 +30,6 @@ object SpaceTimeKey {
 
   implicit def ordering: Ordering[SpaceTimeKey] =
     Ordering.by(stk => (stk.spatialKey, stk.temporalKey))
-
-  implicit object SpaceTimeKeyFormat extends RootJsonFormat[SpaceTimeKey] {
-    def write(key: SpaceTimeKey) =
-      JsObject(
-        "col" -> JsNumber(key.spatialKey.col),
-        "row" -> JsNumber(key.spatialKey.row),
-        "time" -> key.temporalKey.time.toJson
-      )
-
-    def read(value: JsValue): SpaceTimeKey =
-      value.asJsObject.getFields("col", "row", "time") match {
-        case Seq(JsNumber(col), JsNumber(row), time) =>
-          SpaceTimeKey(col.toInt, row.toInt, time.convertTo[DateTime])
-        case _ =>
-          throw new DeserializationException("SpatialKey expected")
-      }
-  }
 
   implicit object Boundable extends Boundable[SpaceTimeKey] {
     def minBound(a: SpaceTimeKey, b: SpaceTimeKey) = {

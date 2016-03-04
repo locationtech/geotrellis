@@ -37,11 +37,11 @@ class S3LayerWriter(
 
   def rddWriter: S3RDDWriter = S3RDDWriter
 
-  protected def write[
+  protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     require(!attributeStore.layerExists(id) || options.clobber, s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
@@ -52,12 +52,12 @@ class S3LayerWriter(
       bucket = bucket,
       key = prefix)
 
-    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
     val schema = KeyValueRecordCodec[K, V].schema
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, schema)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
 
       logger.info(s"Saving RDD ${id.name} to $bucket  $prefix")
       rddWriter.write(rdd, bucket, keyPath, oneToOne = options.oneToOne)

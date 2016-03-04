@@ -34,6 +34,7 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
+  - export GEOTRELLIS_KRYO_REGREQ="YES"
 
 deploy:
   - provider: script

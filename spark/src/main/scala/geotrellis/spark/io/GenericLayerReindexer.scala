@@ -43,14 +43,10 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (_, metadata, _, _, _) =
-      attributeStore.readLayerAttributes[Header, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val (_, _, index, _) =
+      attributeStore.readLayerAttributes[Header, M, KeyIndex[K], Schema](id)
 
-    val keyBounds =
-      metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
-
-    // RETODO: Should take existing key bound's index
-    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(keyBounds))
+    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(index.keyBounds))
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
     layerDeleter.delete(tmpId)

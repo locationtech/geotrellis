@@ -13,7 +13,7 @@ import org.apache.avro.Schema
 import spray.json._
 import scala.reflect.ClassTag
 
-package object json extends KeyIndexFormats {
+package object json extends KeyFormats with KeyIndexFormats {
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =

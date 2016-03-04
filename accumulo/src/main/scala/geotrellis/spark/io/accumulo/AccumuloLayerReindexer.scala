@@ -51,9 +51,9 @@ class AccumuloLayerReindexer(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
-    val table = existingLayerHeader.tileTable
+    val (header, _, _, _) =
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val table = header.tileTable
 
     val layerReader = AccumuloLayerReader(instance)
     val layerWriter = AccumuloLayerWriter(instance, table, options)
@@ -74,16 +74,16 @@ class AccumuloLayerReindexer(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (existingLayerHeader, existingMetaData, existingKeyBounds, existingKeyIndex, existingSchema) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
-    val table = existingLayerHeader.tileTable
+    val (header, _, existingKeyIndex, _) =
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val table = header.tileTable
 
     val layerReader = AccumuloLayerReader(instance)
     val layerWriter = AccumuloLayerWriter(instance, table, options)
     val layerDeleter = AccumuloLayerDeleter(instance)
     val layerCopier = AccumuloLayerCopier(attributeStore, layerReader, layerWriter)
 
-    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(existingKeyBounds))
+    layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(existingKeyIndex.keyBounds))
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
     layerDeleter.delete(tmpId)

@@ -12,16 +12,13 @@ import scala.reflect._
 
 import AccumuloLayerWriter.Options
 
-// TODO: What happens if the schema changes between initial write and update?
-// Check to see if Schema is the same.
-// If not, we need to rewrite the whole layer.
 class AccumuloLayerUpdater(
   val instance: AccumuloInstance,
   val attributeStore: AttributeStore[JsonFormat],
   options: Options
 ) extends LayerUpdater[LayerId] {
 
-  def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
@@ -29,8 +26,8 @@ class AccumuloLayerUpdater(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     implicit val sc = rdd.sparkContext
 
-    val (header, metadata, _, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val (header, _, keyIndex, _) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }

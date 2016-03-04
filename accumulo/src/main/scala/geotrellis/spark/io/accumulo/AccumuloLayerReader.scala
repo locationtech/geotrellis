@@ -27,13 +27,13 @@ class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implic
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metaData, keyBounds, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val (header, metaData, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val queryKeyBounds = rasterQuery(metaData, keyBounds)
+    val queryKeyBounds = rasterQuery(metaData)
 
     val decompose = (bounds: KeyBounds[K]) =>
       keyIndex.indexRanges(bounds).map { case (min, max) =>

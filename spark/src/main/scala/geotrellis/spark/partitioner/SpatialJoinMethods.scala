@@ -7,7 +7,6 @@ import geotrellis.util.MethodExtensions
 
 import scala.reflect._
 
-
 abstract class SpatialJoinMethods[
   K: Boundable: PartitionerIndex: ClassTag,
   V: ClassTag,

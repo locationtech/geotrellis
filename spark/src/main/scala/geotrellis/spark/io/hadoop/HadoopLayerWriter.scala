@@ -22,11 +22,11 @@ class HadoopLayerWriter(
   val attributeStore: AttributeStore[JsonFormat]
 ) extends LayerWriter[LayerId] {
 
-  def write[
+  protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
 
     val header =
@@ -38,7 +38,7 @@ class HadoopLayerWriter(
     val metaData = rdd.metadata
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, KeyValueRecordCodec[K, V].schema)
+      attributeStore.writeLayerAttributes(id, header, metaData, keyIndex, KeyValueRecordCodec[K, V].schema)
       HadoopRDDWriter.write[K, V](rdd, layerPath, keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)

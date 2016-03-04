@@ -12,7 +12,7 @@ import spray.json._
 import scala.reflect.ClassTag
 
 abstract class LayerUpdater[ID] {
-  protected def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
@@ -25,7 +25,7 @@ abstract class LayerUpdater[ID] {
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit =
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
-        update(id, rdd, keyBounds)
+        _update(id, rdd, keyBounds)
       case EmptyBounds =>
         throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
     }

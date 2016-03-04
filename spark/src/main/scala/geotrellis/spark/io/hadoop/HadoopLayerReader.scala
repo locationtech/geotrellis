@@ -39,15 +39,16 @@ class HadoopLayerReader(
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
+    val (header, metadata, keyIndex, writerSchema) = try {
       import spray.json.DefaultJsonProtocol._
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
     val layerPath = header.path
-    val queryKeyBounds = rasterQuery(metadata, keyBounds)
+    val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
+    val queryKeyBounds = rasterQuery(metadata)
 
     val rdd: RDD[(K, V)] =
       if (queryKeyBounds == Seq(keyBounds)) {

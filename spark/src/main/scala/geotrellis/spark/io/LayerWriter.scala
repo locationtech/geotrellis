@@ -13,20 +13,11 @@ import scala.reflect.ClassTag
 trait LayerWriter[ID] {
   val attributeStore: AttributeStore[JsonFormat]
 
-  protected def write[
+  protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit
-
-  protected def write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
-  ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K], keyBounds: KeyBounds[K]): Unit = {
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
-    write[K, V, M](id, layer, keyIndex, keyBounds)
-  }
+  ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit
 
   def write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
@@ -35,7 +26,7 @@ trait LayerWriter[ID] {
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
-        write[K, V, M](id, layer, keyIndex, keyBounds)
+        _write[K, V, M](id, layer, keyIndex)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
@@ -48,29 +39,9 @@ trait LayerWriter[ID] {
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
         val keyIndex = keyIndexMethod.createIndex(keyBounds)
-        write[K, V, M](id, layer, keyIndex, keyBounds)
+        _write[K, V, M](id, layer, keyIndex)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
-    }
-
-  def writer[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
-  ](keyBounds: KeyBounds[K], keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
-    new Writer[ID, RDD[(K, V)] with Metadata[M]] {
-      def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =
-        LayerWriter.this.write[K, V, M](id, layer, keyIndexMethod, keyBounds)
-    }
-
-  def writer[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
-  ](keyBounds: KeyBounds[K], keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
-    new Writer[ID, RDD[(K, V)] with Metadata[M]] {
-      def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =
-        LayerWriter.this.write[K, V, M](id, layer, keyIndex, keyBounds)
     }
 
   def writer[

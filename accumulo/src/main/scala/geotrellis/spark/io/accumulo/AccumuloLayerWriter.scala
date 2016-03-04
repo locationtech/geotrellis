@@ -19,11 +19,11 @@ class AccumuloLayerWriter(
   options: AccumuloLayerWriter.Options
 ) extends LayerWriter[LayerId] {
 
-  protected def write[
+  protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K], keyBounds: KeyBounds[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
@@ -37,7 +37,7 @@ class AccumuloLayerWriter(
     val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, schema)
+      attributeStore.writeLayerAttributes(id, header, metaData, keyIndex, schema)
       AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table)
 
       // Create locality groups based on encoding strategy

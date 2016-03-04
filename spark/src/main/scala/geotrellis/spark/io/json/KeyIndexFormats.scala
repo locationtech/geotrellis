@@ -13,6 +13,8 @@ import spray.json.DefaultJsonProtocol._
 import scala.collection.mutable
 import scala.reflect._
 
+import KeyFormats._
+
 case class KeyIndexFormatEntry[K: JsonFormat: ClassTag, T <: KeyIndex[K]: JsonFormat: ClassTag](typeName: String) {
   val keyClassTag = implicitly[ClassTag[K]]
   val jsonFormat = implicitly[JsonFormat[T]]
