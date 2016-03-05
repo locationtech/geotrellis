@@ -116,15 +116,15 @@ object Vectorize {
             PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, rasterExtent)(callback)
 
             val holes = {
-              val ringLines = callback.linearRings.map(Line.apply)
-              if(h.size > 1) {
+              val rings = callback.linearRings.map(Line.apply)
+              if(rings.size > 1) {
                 // We need to get rid of intersecting holes.
-                h.map(Polygon.apply).unionGeometries.as[MultiPolygon] match {
+                rings.map(Polygon.apply).unionGeometries.as[MultiPolygon] match {
                   case Some(mp) => mp.polygons.map(_.exterior).toSet
-                  case None => Set[Line]()
+                  case None => sys.error(s"Invalid geometries returned by polygon holes: ${rings.toSeq}")
                 }
               } else {
-                h.toSet
+                rings.toSet
               }
             }
 
