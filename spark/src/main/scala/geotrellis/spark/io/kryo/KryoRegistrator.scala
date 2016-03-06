@@ -16,18 +16,15 @@
 
 package geotrellis.spark.io.kryo
 
-import geotrellis.spark.io.hadoop.formats._
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.{Field, Type}
 
-import java.util.{Arrays, Collections}
-
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.serializers.FieldSerializer
 import de.javakaffee.kryoserializers._
 
+import java.util.{Arrays, Collections}
 
 class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
@@ -58,11 +55,11 @@ class KryoRegistrator extends SparkKryoRegistrator {
     // UnmodifiableCollectionsSerializer.registerSerializers(kryo)
     kryo.register( Arrays.asList( "" ).getClass, new ArraysAsListSerializer )
     kryo.register( Collections.EMPTY_LIST.getClass, new CollectionsEmptyListSerializer() )
-    kryo.register( Collections.EMPTY_MAP.getClass(), new CollectionsEmptyMapSerializer() )
-    kryo.register( Collections.EMPTY_SET.getClass(), new CollectionsEmptySetSerializer() )
-    kryo.register( Collections.singletonList( "" ).getClass(), new CollectionsSingletonListSerializer )
-    kryo.register( Collections.singleton( "" ).getClass(), new CollectionsSingletonSetSerializer )
-    kryo.register( Collections.singletonMap( "", "" ).getClass(), new CollectionsSingletonMapSerializer )
+    kryo.register( Collections.EMPTY_MAP.getClass, new CollectionsEmptyMapSerializer() )
+    kryo.register( Collections.EMPTY_SET.getClass, new CollectionsEmptySetSerializer() )
+    kryo.register( Collections.singletonList( "" ).getClass, new CollectionsSingletonListSerializer )
+    kryo.register( Collections.singleton( "" ).getClass, new CollectionsSingletonSetSerializer )
+    kryo.register( Collections.singletonMap( "", "" ).getClass, new CollectionsSingletonMapSerializer )
     kryo.register(geotrellis.spark.buffer.BufferTiles.Center.getClass)
     kryo.register(geotrellis.spark.buffer.BufferTiles.Top.getClass)
     kryo.register(geotrellis.spark.buffer.BufferTiles.Bottom.getClass)
@@ -92,8 +89,8 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[Array[geotrellis.vector.Point]])
     kryo.register(classOf[Array[geotrellis.vector.Polygon]])
     kryo.register(classOf[Array[scala.collection.Seq[Any]]])
-    kryo.register(classOf[Array[scala.Tuple2[Any,Any]]])
-    kryo.register(classOf[Array[scala.Tuple3[Any,Any,Any]]])
+    kryo.register(classOf[Array[scala.Tuple2[Any, Any]]])
+    kryo.register(classOf[Array[scala.Tuple3[Any, Any, Any]]])
     kryo.register(classOf[com.vividsolutions.jts.geom.Coordinate])
     kryo.register(classOf[com.vividsolutions.jts.geom.Envelope])
     kryo.register(classOf[com.vividsolutions.jts.geom.GeometryFactory])
@@ -201,7 +198,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofInt])
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofRef])
     kryo.register(classOf[scala.collection.Seq[Any]])
-    kryo.register(classOf[scala.Tuple3[Any,Any,Any]])
+    kryo.register(classOf[scala.Tuple3[Any, Any, Any]])
     kryo.register(geotrellis.proj4.LatLng.getClass)
     kryo.register(geotrellis.spark.EmptyBounds.getClass)
     kryo.register(scala.collection.immutable.Nil.getClass)
@@ -212,9 +209,9 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.None.getClass)
 
     /* Special Handling: Avro */
-    kryo.register((new Field("a", Schema.create(Type.NULL), null, null)).order.getClass)
+    kryo.register(new Field("a", Schema.create(Type.NULL), null: String, null: Object).order.getClass)
     classOf[org.apache.avro.Schema]
-      .getDeclaredClasses()
+      .getDeclaredClasses
       .foreach({ c => kryo.register(c) })
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
