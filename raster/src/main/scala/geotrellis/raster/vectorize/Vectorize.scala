@@ -119,9 +119,9 @@ object Vectorize {
               val rings = callback.linearRings.map(Line.apply)
               if(rings.size > 1) {
                 // We need to get rid of intersecting holes.
-                rings.map(Polygon.apply).unionGeometries.as[MultiPolygon] match {
+                rings.map(Polygon.apply).unionGeometries.asMultiPolygon match {
                   case Some(mp) => mp.polygons.map(_.exterior).toSet
-                  case None => sys.error(s"Invalid geometries returned by polygon holes: ${rings.toSeq}")
+                  case None => sys.error(s"Invalid geometries returned by polygon holes: ${rings.map(Polygon.apply).unionGeometries}")
                 }
               } else {
                 rings.toSet
