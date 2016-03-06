@@ -3,7 +3,6 @@ package geotrellis.spark.io.s3
 import java.nio.charset.Charset
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import spray.json._
 import DefaultJsonProtocol._
 import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}

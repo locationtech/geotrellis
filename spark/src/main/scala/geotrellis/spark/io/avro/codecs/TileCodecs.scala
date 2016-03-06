@@ -4,9 +4,10 @@ import java.nio.ByteBuffer
 
 import geotrellis.raster._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs.Implicits._
+
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic._
-import org.apache.avro.util.Utf8
 
 import scala.collection.JavaConverters._
 import scala.util.Try

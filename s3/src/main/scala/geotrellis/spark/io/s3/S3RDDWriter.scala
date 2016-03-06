@@ -9,7 +9,7 @@ import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult, Obje
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.json.Implicits._
 import geotrellis.spark.io.avro.{AvroRecordCodec, AvroEncoder}
 import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod, KeyIndex}
 import geotrellis.spark.utils.KryoWrapper

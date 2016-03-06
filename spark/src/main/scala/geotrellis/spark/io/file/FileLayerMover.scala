@@ -2,9 +2,7 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
 import geotrellis.util.Filesystem
 import AttributeStore.Fields
 
@@ -13,7 +11,6 @@ import org.apache.avro.Schema
 
 import scala.reflect.ClassTag
 import java.io.File
-
 
 object FileLayerMover {
   def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =

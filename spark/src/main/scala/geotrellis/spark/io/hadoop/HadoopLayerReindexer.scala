@@ -4,11 +4,9 @@ import geotrellis.spark.{KeyBounds, LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._

@@ -6,7 +6,7 @@ import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.{CatalogError, TileNotFoundError, Reader}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.json.Implicits._
 import org.apache.accumulo.core.data.{Value, Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema

@@ -3,7 +3,7 @@ package geotrellis.spark.io.accumulo
 import com.typesafe.config.ConfigFactory
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.json.Implicits._
 import spray.json._
 import DefaultJsonProtocol._
 import scala.collection.JavaConversions._

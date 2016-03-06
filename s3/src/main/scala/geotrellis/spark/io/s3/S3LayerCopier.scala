@@ -1,12 +1,9 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
+import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 
-import org.apache.spark.rdd.RDD
 import org.apache.avro.Schema
 import spray.json.JsonFormat
 import com.amazonaws.services.s3.model.ObjectListing

@@ -3,7 +3,7 @@ package geotrellis.spark.io.accumulo
 import geotrellis.raster.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.json.Implicits._
 import spray.json._
 
 case class AccumuloLayerHeader(

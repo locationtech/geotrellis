@@ -2,9 +2,7 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.raster.{MultiBandTile, Tile}
 
@@ -12,12 +10,10 @@ import org.apache.avro.Schema
 import geotrellis.spark.utils.cache._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json.{JsObject, JsonFormat}
-import AttributeStore.Fields
+import spray.json.JsonFormat
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
-
 
 /**
  * Handles reading raster RDDs and their metadata from a filesystem.

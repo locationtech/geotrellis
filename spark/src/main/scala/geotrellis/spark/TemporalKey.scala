@@ -1,11 +1,9 @@
 package geotrellis.spark
 
-import geotrellis.spark._
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.json.Implicits._
 import com.github.nscala_time.time.Imports._
 
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 object TemporalKey {
   def apply(dateTime: DateTime): TemporalKey =

@@ -2,17 +2,11 @@ package geotrellis.spark.io
 
 import geotrellis.spark.LayerId
 import org.apache.hadoop.io.Text
-import org.apache.spark._
 
-import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.{Scanner, BatchWriterConfig, Connector}
-import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
-import org.apache.accumulo.core.data.{Range => ARange, Mutation, Key, Value}
-import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
+import org.apache.accumulo.core.data.{Mutation, Key, Value}
 
-import scala.collection.JavaConversions._
-
-package object accumulo {
+package object accumulo extends json.Implicits with avro.codecs.Implicits {
   implicit def stringToText(s: String): Text = new Text(s)
 
   def long2Bytes(x: Long): Array[Byte] =

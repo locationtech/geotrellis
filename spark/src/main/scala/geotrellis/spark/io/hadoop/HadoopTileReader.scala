@@ -4,11 +4,12 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 import scala.reflect.ClassTag
 
 class HadoopTileReader[K: Boundable: JsonFormat: ClassTag, V](val attributeStore: HadoopAttributeStore)

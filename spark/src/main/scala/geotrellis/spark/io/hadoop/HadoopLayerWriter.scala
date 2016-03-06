@@ -1,12 +1,10 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.{MultiBandTile, Tile}
-import geotrellis.spark.io.json._
 import geotrellis.spark._
-import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
 import org.apache.avro.Schema
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

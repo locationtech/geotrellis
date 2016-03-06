@@ -1,6 +1,6 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.json.Implicits._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import org.apache.avro.Schema

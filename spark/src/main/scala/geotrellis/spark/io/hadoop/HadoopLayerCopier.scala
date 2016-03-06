@@ -3,13 +3,11 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.{KeyBounds, LayerId}
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
