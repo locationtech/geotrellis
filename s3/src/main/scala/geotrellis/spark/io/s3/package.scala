@@ -2,8 +2,7 @@ package geotrellis.spark.io
 
 import org.apache.spark.rdd.RDD
 
-
-package object s3 extends json.Implicits with avro.codecs.Implicits {
+package object s3 {
   private[s3]
   def makePath(chunks: String*) =
     chunks.filter(_.nonEmpty).mkString("/")

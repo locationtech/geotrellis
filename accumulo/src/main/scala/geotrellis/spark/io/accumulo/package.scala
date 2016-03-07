@@ -6,7 +6,7 @@ import org.apache.hadoop.io.Text
 import org.apache.accumulo.core.client.{Scanner, BatchWriterConfig, Connector}
 import org.apache.accumulo.core.data.{Mutation, Key, Value}
 
-package object accumulo extends json.Implicits with avro.codecs.Implicits {
+package object accumulo {
   implicit def stringToText(s: String): Text = new Text(s)
 
   def long2Bytes(x: Long): Array[Byte] =

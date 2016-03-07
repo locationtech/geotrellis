@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce._
 
 import scala.reflect._
 
-package object hadoop extends json.Implicits with avro.codecs.Implicits {
+package object hadoop {
   implicit def stringToPath(path: String): Path = new Path(path)
 
   class SpatialKeyWritable() extends AvroKeyWritable[SpatialKey, SpatialKeyWritable]

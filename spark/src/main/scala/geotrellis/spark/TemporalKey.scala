@@ -1,8 +1,8 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.json.Implicits._
-import com.github.nscala_time.time.Imports._
 
+import com.github.nscala_time.time.Imports._
 import spray.json._
 
 object TemporalKey {

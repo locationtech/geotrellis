@@ -2,9 +2,9 @@ package geotrellis.spark.etl.hadoop
 
 import geotrellis.raster.MultiBandTile
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.HadoopLayerWriter
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.json.Implicits._
 
 import org.apache.hadoop.fs.Path
 

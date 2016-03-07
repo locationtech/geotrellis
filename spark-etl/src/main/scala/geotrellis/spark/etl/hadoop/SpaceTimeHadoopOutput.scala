@@ -2,10 +2,10 @@ package geotrellis.spark.etl.hadoop
 
 import geotrellis.raster.Tile
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop.HadoopLayerWriter
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.json.Implicits._
-import geotrellis.spark.{SpaceTimeKey, RasterRDD}
+import geotrellis.spark.SpaceTimeKey
 
 import org.apache.hadoop.fs.Path
 

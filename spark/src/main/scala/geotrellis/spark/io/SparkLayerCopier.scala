@@ -1,11 +1,12 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.io.json.Implicits._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
+
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
+
 import scala.reflect._
 
 abstract class SparkLayerCopier[Header: JsonFormat, K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](

@@ -1,10 +1,9 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.json.Implicits._
+
 import org.apache.spark.rdd.RDD
-
 import org.joda.time.DateTime
-
 import spray.json._
 import com.github.nscala_time.time.Imports._
 
