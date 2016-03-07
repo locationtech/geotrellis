@@ -73,11 +73,6 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   def getMean(): Double
 
   def generateStatistics(): Statistics[T]
-
-  def toJSON = {
-    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
-    s"[$counts]"
-  }
 }
 
 abstract trait HistogramInt extends Histogram[Int] {

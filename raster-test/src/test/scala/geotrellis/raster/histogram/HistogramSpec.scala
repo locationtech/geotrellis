@@ -16,14 +16,13 @@
 
 package geotrellis.raster.histogram
 
-import math.round
-
-import scala.util.Random
 import Console.printf
-
+import math.round
 import org.scalatest._
 
+import scala.util.Random
 import java.util.Locale
+
 
 class HistogramSpec extends FunSpec with Matchers {
   def stringToInts(s:String) = {
@@ -121,14 +120,6 @@ class HistogramSpec extends FunSpec with Matchers {
           h.countItem(7, 50)
 
           h.getQuantileBreaks(5) should be (Array(2, 3, 5, 6, 7))
-        }
-
-        it("should serialize to json") {
-          val h = ArrayHistogram(10)
-          h.countItem(3, 2)
-          h.countItem(5, 3)
-          h.countItem(8, 5)
-          h.toJSON should be ("[[3,2],[5,3],[8,5]]")
         }
       }
     }
