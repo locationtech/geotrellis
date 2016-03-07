@@ -18,7 +18,6 @@ package geotrellis.raster.vectorize
 
 import com.vividsolutions.jts.geom
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Callback
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.regiongroup.{RegionGroup, RegionGroupOptions}
 import geotrellis.vector._
@@ -31,10 +30,12 @@ object Vectorize {
     extent: Extent,
     regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
   ): List[PolygonFeature[Int]] = {
-    class ToVectorCallback(val polyizer: Polygonizer,
+    class ToVectorCallback(
+      val polyizer: Polygonizer,
       val r: Tile,
-      val v: Int) extends Callback {
-      val innerStarts = mutable.Map[Int, (Int, Int)]()
+      val v: Int
+    ) extends ((Int, Int) => Unit) {
+      private val innerStarts = mutable.Map[Int, (Int, Int)]()
 
       def linearRings =
         for(k <- innerStarts.keys) yield {
@@ -63,9 +64,7 @@ object Vectorize {
       )
     val rgr = RegionGroup(tile, regionGroupOptions)
 
-    val r = rgr.raster
-
-
+    val r = rgr.tile
 
     val regionMap = rgr.regionMap
     val rasterExtent = RasterExtent(extent, r.cols, r.rows)
@@ -116,8 +115,21 @@ object Vectorize {
 
             PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, rasterExtent)(callback)
 
+            val holes = {
+              val rings = callback.linearRings.map(Line.apply)
+              if(rings.size > 1) {
+                // We need to get rid of intersecting holes.
+                rings.map(Polygon.apply).unionGeometries.asMultiPolygon match {
+                  case Some(mp) => mp.polygons.map(_.exterior).toSet
+                  case None => sys.error(s"Invalid geometries returned by polygon holes: ${rings.map(Polygon.apply).unionGeometries}")
+                }
+              } else {
+                rings.toSet
+              }
+            }
+
             polygons += PolygonFeature(
-              Polygon(Line(shell), callback.linearRings.map(Line.apply).toSet),
+              Polygon(Line(shell), holes),
               rgr.regionMap(v)
             )
 
@@ -132,5 +144,3 @@ object Vectorize {
     polygons.toList
   }
 }
-
-

@@ -36,7 +36,7 @@ class RegionGroupSpec extends FunSpec
                    7,     7,NODATA,     9,     9),
           5, 6
       )
-      val regions = r.regionGroup.raster
+      val regions = r.regionGroup.tile
 
       val histogram = regions.histogram
       val count = histogram.getValues.length
@@ -55,7 +55,7 @@ class RegionGroupSpec extends FunSpec
           5, 6
       )
       val options = RegionGroupOptions(connectivity = EightNeighbors)
-      val regions = r.regionGroup(options).raster
+      val regions = r.regionGroup(options).tile
 
       val histogram = regions.histogram
       val count = histogram.getValues.length

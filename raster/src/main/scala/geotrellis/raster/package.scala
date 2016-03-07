@@ -50,6 +50,7 @@ package object raster
 
   implicit class withSingleBandRasterRasterizeMethods(val self: SingleBandRaster) extends MethodExtensions[Raster[Tile]]
       with SingleBandRasterRasterizeMethods[Tile, Raster[Tile]]
+      with vectorize.SingleBandRasterVectorizeMethods
 
   implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
       with GeometryRasterizeMethods[Geometry]
