@@ -19,12 +19,13 @@ package geotrellis.raster.histogram
 import geotrellis.raster._
 import geotrellis.raster.summary.Statistics
 import geotrellis.raster.doubleNODATA
-
-import java.util.TreeMap
-import java.util.Comparator
-import scala.collection.JavaConverters._
-import math.{abs, min, max, sqrt}
 import StreamingHistogram.{BucketType, DeltaType}
+
+import math.{abs, min, max, sqrt}
+
+import java.util.Comparator
+import java.util.TreeMap
+import scala.collection.JavaConverters._
 
 
 object StreamingHistogram {
@@ -33,10 +34,10 @@ object StreamingHistogram {
 
   private val defaultSize = 80
 
-  def apply(m: Int = defaultSize) = new StreamingHistogram(m, None, None)
+  def apply(size: Int = defaultSize) = new StreamingHistogram(size, None, None)
 
-  def apply(m: Int, buckets: TreeMap[Double, Int], deltas: TreeMap[DeltaType, Unit]) =
-    new StreamingHistogram(m, Some(buckets), Some(deltas))
+  def apply(size: Int, buckets: TreeMap[Double, Int], deltas: TreeMap[DeltaType, Unit]) =
+    new StreamingHistogram(size, Some(buckets), Some(deltas))
 }
 
 /**
@@ -79,7 +80,7 @@ class StreamingHistogram(
   /**
     * Take two buckets and return their composite.
     */
-  private def merge(left: BucketType, right: BucketType): BucketType = {
+  private def compose(left: BucketType, right: BucketType): BucketType = {
     val (value1, count1) = left
     val (value2, count2) = right
 
@@ -93,7 +94,7 @@ class StreamingHistogram(
   }
 
   /**
-    * Merge the two closest-together buckets.
+    * Combine the two closest-together buckets.
     *
     * Before: left ----- middle1 ----- middle2 ----- right
     *
@@ -104,10 +105,10 @@ class StreamingHistogram(
     * removed and replaced with deltas between the mid-point and
     * respective extremes.
     */
-  private def merge(): Unit = {
+  private def combine(): Unit = {
     val delta = deltas.firstKey
     val (_, middle1, middle2) = delta
-    val middle = merge(middle1, middle2)
+    val middle = compose(middle1, middle2)
     val left = {
       val entry = buckets.lowerEntry(middle1._1)
       if (entry != null) Some(entry.getKey, entry.getValue); else None
@@ -122,13 +123,13 @@ class StreamingHistogram(
     buckets.remove(middle2._1)
     deltas.remove(delta)
 
-    /* Remove delta to the left of the merged buckets */
+    /* Remove delta to the left of the combined buckets */
     if (left != None) {
       val oldDelta = middle1._1 - left.get._1
       deltas.remove((oldDelta, left.get, middle1))
     }
 
-    /* Remove delta to the right of the merged buckets */
+    /* Remove delta to the right of the combined buckets */
     if (right != None) {
       val oldDelta = right.get._1 - middle2._1
       deltas.remove((oldDelta, middle2, right.get))
@@ -140,7 +141,7 @@ class StreamingHistogram(
       deltas.put((delta, left.get, right.get), Unit)
     }
 
-    /* Add the average of the two merged buckets */
+    /* Add the average of the two combined buckets */
     countItem(middle)
   }
 
@@ -193,7 +194,7 @@ class StreamingHistogram(
     }
 
     buckets.put(b._1, b._2)
-    if (buckets.size > m) merge
+    if (buckets.size > m) combine()
   }
 
   /**
@@ -294,13 +295,17 @@ class StreamingHistogram(
     StreamingHistogram(this.m, this.buckets, this.deltas)
 
   /**
-    * Combine operator: create a new histogram from this one and
-    * another without altering either.
+    * Create a new histogram from this one and another without
+    * altering either.
     */
   def +(other: StreamingHistogram): StreamingHistogram = {
     val sh = StreamingHistogram(this.m, this.buckets, this.deltas)
     sh.countItems(other.getBuckets)
     sh
+  }
+
+  def merge(other: StreamingHistogram): StreamingHistogram = {
+    this + other
   }
 
   /**
@@ -349,7 +354,7 @@ class StreamingHistogram(
 
   /**
     * Get the (approximate) min value.  This is only approximate
-    * because the lowest bucket may be a composite one.
+    * because the lowest bucket may be a combined one.
     */
   def getMinValue(): Double = {
     val entry = buckets.higherEntry(Double.NegativeInfinity)
