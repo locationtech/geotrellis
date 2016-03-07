@@ -71,7 +71,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   }
 
   def rasterize() = {
-    poly.geom.foreachCell(re)({ (col: Int, row: Int) =>
+    poly.geom.foreach(re)({ (col: Int, row: Int) =>
       tile.set(col,row,4)
     })
   }
@@ -79,7 +79,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   //Because of a refactor, Callback is not getting a geom as a param, since it can close over it if it really wanted
   //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
   def rasterizeUsingValue() = {
-    poly.geom.foreachCell(re)({ (col: Int, row: Int) =>
+    poly.geom.foreach(re)({ (col: Int, row: Int) =>
       tile.set(col,row, poly.data)
     })
   }
@@ -97,7 +97,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   def rasterizeTransitPoly = {
     var x = 0
     val options = Options(includePartial = true, sampleType = PixelIsArea)
-    transitPoly.foreachCell(transitRe, options)({ (col: Int, row: Int) =>
+    transitPoly.foreach(transitRe, options)({ (col: Int, row: Int) =>
       x += (col + row)
     })
   }
@@ -106,7 +106,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   def rasterizeTransitPolyNoHoles = {
     var x = 0
     val options = Options(includePartial = true, sampleType = PixelIsArea)
-    transitPolyNoHoles.foreachCell(transitRe, options)({ (col: Int, row: Int) =>
+    transitPolyNoHoles.foreach(transitRe, options)({ (col: Int, row: Int) =>
       x += (col + row)
     })
   }

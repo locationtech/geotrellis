@@ -26,14 +26,14 @@ import spire.syntax.cfor._
 
 trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T] {
 
-  def foreachCell(
+  def foreach(
     geom : Geometry,
     options: Options = Options.DEFAULT,
     ct : CellType = IntConstantNoDataCellType
   )(fn : (Int, Int) => Unit) : Unit =
-    geom.foreachCell(self, options)(fn)
+    geom.foreach(self, options)(fn)
 
-  def foreachCell(fn: (Int, Int) => Unit): Unit = {
+  def foreach(fn: (Int, Int) => Unit): Unit = {
     val cols = self.cols
     val rows = self.rows
 

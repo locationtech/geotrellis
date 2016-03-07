@@ -210,11 +210,11 @@ trait LocalRasterSourceMethods
       val result = ArrayTile.empty(tile.cellType, cols, rows)
       for(g <- geoms) {
         if(tile.cellType.isFloatingPoint) {
-          g.foreachCell(re)({ (col: Int, row: Int) =>
+          g.foreach(re)({ (col: Int, row: Int) =>
               result.setDouble(col, row, tile.getDouble(col, row))
           })
         } else {
-          g.foreachCell(re)({ (col: Int, row: Int) =>
+          g.foreach(re)({ (col: Int, row: Int) =>
               result.set(col, row, tile.get(col, row))
           })
         }

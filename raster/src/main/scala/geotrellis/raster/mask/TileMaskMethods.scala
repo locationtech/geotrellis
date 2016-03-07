@@ -49,11 +49,11 @@ trait TileMaskMethods extends MethodExtensions[Tile] {
     val result = ArrayTile.empty(self.cellType, self.cols, self.rows)
     for (g <- geoms) {
       if (self.cellType.isFloatingPoint) {
-        g.foreachCell(re, options)({ (col: Int, row: Int) =>
+        g.foreach(re, options)({ (col: Int, row: Int) =>
           result.setDouble(col, row, self.getDouble(col, row))
         })
       } else {
-        g.foreachCell(re, options)({ (col: Int, row: Int) =>
+        g.foreach(re, options)({ (col: Int, row: Int) =>
           result.set(col, row, self.get(col, row))
         })
       }

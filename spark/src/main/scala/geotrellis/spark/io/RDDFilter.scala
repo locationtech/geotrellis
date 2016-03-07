@@ -10,7 +10,6 @@ import geotrellis.vector.{Extent, Point, MultiPolygon}
 import com.github.nscala_time.time.Imports._
 
 import scala.annotation.implicitNotFound
-
 import scala.collection.mutable
 
 
@@ -150,7 +149,7 @@ object Intersects {
           }
         }
 
-        polygon.foreachCell(rasterExtent, options)(fn)
+        polygon.foreach(rasterExtent, options)(fn)
         tiles.keys.asScala
           .map({ tile =>
             val qb = KeyBounds(

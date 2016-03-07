@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
 
 trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
 
-  def foreachCell(
+  def foreach(
     re : RasterExtent,
     options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Unit) : Unit = {

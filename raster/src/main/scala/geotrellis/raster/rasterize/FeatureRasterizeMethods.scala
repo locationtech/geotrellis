@@ -24,11 +24,11 @@ import geotrellis.vector.{Geometry,Feature}
 
 trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends MethodExtensions[T] {
 
-  def foreachCell(
+  def foreach(
     re : RasterExtent,
     options: Options = Options.DEFAULT
   )(fn: (Int, Int) => Unit): Unit =
-    self.geom.foreachCell(re, options)(fn)
+    self.geom.foreach(re, options)(fn)
 
   def rasterize(
     re : RasterExtent,
@@ -57,11 +57,11 @@ trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends Me
 
 trait FeatureDoubleRasterizeMethods[+G <: Geometry, T <: Feature[G,Double]] extends MethodExtensions[T] {
 
-  def foreachCell(
+  def foreach(
     re : RasterExtent,
     options: Options = Options.DEFAULT
   )(fn: (Int, Int) => Unit): Unit =
-    self.geom.foreachCell(re, options)(fn)
+    self.geom.foreach(re, options)(fn)
 
   def rasterize(
     re : RasterExtent,

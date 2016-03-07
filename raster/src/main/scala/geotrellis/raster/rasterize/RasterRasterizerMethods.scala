@@ -24,13 +24,13 @@ import spire.syntax.cfor._
 
 trait RasterRasterizeMethods[+T <: Tile] extends MethodExtensions[Raster[T]] {
 
-  def foreachCell(fn: Int => Unit): Unit =
+  def foreach(fn: Int => Unit): Unit =
     self.tile.foreach(fn)
 
-  def foreachCellDouble(fn: Double => Unit): Unit =
+  def foreachDouble(fn: Double => Unit): Unit =
     self.tile.foreachDouble(fn)
 
-  def foreachCell(fn: (Int, Int, Int) => Unit): Unit = {
+  def foreach(fn: (Int, Int, Int) => Unit): Unit = {
     val tile = self.tile
     val cols = tile.cols
     val rows = tile.rows
@@ -42,7 +42,7 @@ trait RasterRasterizeMethods[+T <: Tile] extends MethodExtensions[Raster[T]] {
     }
   }
 
-  def foreachCellDouble(fn: (Int, Int, Double) => Unit): Unit = {
+  def foreachDouble(fn: (Int, Int, Double) => Unit): Unit = {
     val tile = self.tile
     val cols = tile.cols
     val rows = tile.rows

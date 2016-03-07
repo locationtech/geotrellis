@@ -11,7 +11,7 @@ object SumSummary extends TilePolygonalSummaryHandler[Long] {
     val rasterExtent = raster.rasterExtent
     var sum: Long = 0L
 
-    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
+    polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.get(col, row)
       if (isData(z)) { sum = sum + z }
     })
@@ -35,7 +35,7 @@ object SumDoubleSummary extends TilePolygonalSummaryHandler[Double] {
     val rasterExtent = raster.rasterExtent
     var sum = 0.0
 
-    polygon.foreachCell(rasterExtent)({ (col: Int, row: Int) =>
+    polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.getDouble(col, row)
       if(isData(z)) { sum = sum + z }
     })

@@ -219,7 +219,7 @@ class RasterizeMethodsSpec extends FunSpec
       val r = re.rasterize(e)({ (x,y) => x+y })
       var sum = 0
 
-      r.foreachCell({ z => sum += z })
+      r.foreach({ z => sum += z })
       sum should be (900)
     }
 
@@ -227,7 +227,7 @@ class RasterizeMethodsSpec extends FunSpec
       val r = re.rasterize(e)({ (x,y) => x+y })
       var sum = 0
 
-      r.foreachCell({ (x,y,z) => sum += (x + y + z) })
+      r.foreach({ (x,y,z) => sum += (x + y + z) })
       sum should be (1800)
     }
   }
@@ -273,7 +273,7 @@ class RasterizeMethodsSpec extends FunSpec
     it("foreach should iterate over the extent") {
       var sum = 0
 
-      re.foreachCell({ (x, y) => sum += (x + y) })
+      re.foreach({ (x, y) => sum += (x + y) })
       sum should be (900)
     }
   }
