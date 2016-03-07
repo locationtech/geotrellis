@@ -119,7 +119,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.GridExtent])
     kryo.register(classOf[geotrellis.raster.histogram.ArrayHistogram])
     kryo.register(classOf[geotrellis.raster.histogram.CompressedArrayHistogram])
-    kryo.register(classOf[geotrellis.raster.histogram.ConstantHistogram])
     kryo.register(classOf[geotrellis.raster.histogram.FastMapHistogram])
     kryo.register(classOf[geotrellis.raster.histogram.Histogram[Any]])
     kryo.register(classOf[geotrellis.raster.histogram.MutableHistogram[Any]])
