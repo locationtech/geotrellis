@@ -70,4 +70,8 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   def getMean(): Double
 
   def generateStatistics(): Statistics[T]
+
+  def bucketCount(): Int
+
+  def merge(histogram: Histogram[T]): Histogram[T]
 }

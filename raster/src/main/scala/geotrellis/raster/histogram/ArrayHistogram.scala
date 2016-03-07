@@ -29,12 +29,6 @@ object ArrayHistogram {
     r.foreach(z => if (isData(z)) h.countItem(z, 1))
     h
   }
-
-  def fromHistograms(hs: List[Histogram[Int]], n: Int): ArrayHistogram = {
-    val total = ArrayHistogram(n)
-    hs.foreach(h => total.update(h))
-    total
-  }
 }
 
 // TODO: can currently only handle non-negative integers
@@ -45,6 +39,8 @@ object ArrayHistogram {
 class ArrayHistogram(val counts: Array[Int], var total: Int)
     extends MutableIntHistogram {
   def size = counts.length
+
+  def bucketCount() = size
 
   def getTotalCount = total
 
@@ -100,5 +96,12 @@ class ArrayHistogram(val counts: Array[Int], var total: Int)
       i -= 1
     }
     return Int.MinValue
+  }
+
+  def merge(histogram: Histogram[Int]): Histogram[Int] = {
+    val total = ArrayHistogram(histogram.bucketCount())
+
+    total.update(this); total.update(histogram)
+    total
   }
 }

@@ -38,6 +38,12 @@ object StreamingHistogram {
 
   def apply(size: Int, buckets: TreeMap[Double, Int], deltas: TreeMap[DeltaType, Unit]) =
     new StreamingHistogram(size, Some(buckets), Some(deltas))
+
+  def fromTile(r: Tile): StreamingHistogram = {
+    val h = StreamingHistogram()
+    r.foreach(z => if (isData(z)) h.countItem(z, 1))
+    h
+  }
 }
 
 /**
@@ -304,8 +310,12 @@ class StreamingHistogram(
     sh
   }
 
-  def merge(other: StreamingHistogram): StreamingHistogram = {
-    this + other
+  def bucketCount():Int = buckets.size
+
+  def merge(histogram: Histogram[Double]): Histogram[Double] = {
+    val sh = StreamingHistogram(this.m, this.buckets, this.deltas)
+    histogram.foreach({ (item: Double, count: Int) => sh.countItem((item, count)) })
+    sh
   }
 
   /**
