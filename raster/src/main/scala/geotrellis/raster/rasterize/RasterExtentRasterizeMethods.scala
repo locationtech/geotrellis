@@ -18,8 +18,8 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.Geometry
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.Geometry
 
 
 trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T] {

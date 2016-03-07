@@ -1,8 +1,9 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.vector._
 import geotrellis.raster.rasterize._
+import geotrellis.vector._
+
 
 object SumSummary extends TilePolygonalSummaryHandler[Long] {
   def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Long = {

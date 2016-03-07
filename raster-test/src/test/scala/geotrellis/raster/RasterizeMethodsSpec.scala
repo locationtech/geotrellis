@@ -17,10 +17,11 @@
 package geotrellis.raster
 
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.vector.{Extent, Feature}
 import geotrellis.raster.testkit._
+import geotrellis.vector.{Extent, Feature}
 
 import org.scalatest._
+
 
 class RasterizeMethodsSpec extends FunSpec
     with Matchers

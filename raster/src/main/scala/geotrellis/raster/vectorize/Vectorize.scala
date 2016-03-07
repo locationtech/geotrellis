@@ -16,13 +16,15 @@
 
 package geotrellis.raster.vectorize
 
-import com.vividsolutions.jts.geom
 import geotrellis.raster._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.regiongroup.{RegionGroup, RegionGroupOptions}
 import geotrellis.vector._
 
+import com.vividsolutions.jts.geom
+
 import scala.collection.mutable
+
 
 object Vectorize {
   def apply(

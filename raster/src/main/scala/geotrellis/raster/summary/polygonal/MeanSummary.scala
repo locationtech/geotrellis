@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
+
 case class MeanResult(sum: Double, count: Long) {
   def mean: Double = if (count == 0) {
     Double.NaN
