@@ -31,8 +31,7 @@ import AttributeStore.Fields
 class S3LayerWriter(
   val attributeStore: AttributeStore[JsonFormat],
   bucket: String,
-  keyPrefix: String,
-  options: S3LayerWriter.Options
+  keyPrefix: String
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   def rddWriter: S3RDDWriter = S3RDDWriter
@@ -42,7 +41,7 @@ class S3LayerWriter(
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
-    require(!attributeStore.layerExists(id) || options.clobber, s"$id already exists")
+    require(!attributeStore.layerExists(id), s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
     val metadata = rdd.metadata
@@ -60,7 +59,7 @@ class S3LayerWriter(
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
 
       logger.info(s"Saving RDD ${id.name} to $bucket  $prefix")
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = options.oneToOne)
+      rddWriter.write(rdd, bucket, keyPath)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -68,27 +67,13 @@ class S3LayerWriter(
 }
 
 object S3LayerWriter {
-  case class Options(clobber: Boolean = true, oneToOne: Boolean = false)
-  object Options {
-    def DEFAULT = Options()
-  }
-
-  def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, prefix: String, options: Options): S3LayerWriter =
-    new S3LayerWriter(attributeStore, bucket, prefix, options)
-
   def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, prefix: String): S3LayerWriter =
-    apply(attributeStore, bucket, prefix, Options.DEFAULT)
-
-  def apply(attributeStore: S3AttributeStore, options: Options): S3LayerWriter =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, options)
+    new S3LayerWriter(attributeStore, bucket, prefix)
 
   def apply(attributeStore: S3AttributeStore): S3LayerWriter =
-    apply(attributeStore, Options.DEFAULT)
-
-  def apply(bucket: String, prefix: String, options: Options): S3LayerWriter =
-    apply(S3AttributeStore(bucket, prefix), options)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix)
 
   def apply(bucket: String, prefix: String): S3LayerWriter =
-    apply(bucket, prefix, Options.DEFAULT)
+    apply(S3AttributeStore(bucket, prefix))
 
 }

@@ -5,7 +5,6 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{MergeQueue, KeyIndex, IndexRanges}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.utils.KryoWrapper
-import geotrellis.spark.utils.cache.Cache
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
@@ -28,7 +27,6 @@ trait S3RDDReader {
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     writerSchema: Option[Schema] = None,
-    cache: Option[Cache[Long, Array[Byte]]] = None,
     numPartitions: Option[Int] = None
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     val ranges = if (queryKeyBounds.length > 1)
@@ -59,12 +57,7 @@ trait S3RDDReader {
 
               try {
                 val bytes: Array[Byte] =
-                  cache match {
-                    case Some(cache) =>
-                      cache.getOrInsert(index, getS3Bytes())
-                    case None =>
-                      getS3Bytes()
-                  }
+                  getS3Bytes()
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
                 recs.filter { row => includeKey(row._1) }
               } catch {

@@ -76,22 +76,22 @@ object AccumuloLayerCopier {
 
   def apply(
     instance: AccumuloInstance,
-    table: String,
+    targetTable: String,
     options: AccumuloLayerWriter.Options
   )(implicit sc: SparkContext): AccumuloLayerCopier =
     apply(
       AccumuloAttributeStore(instance),
       AccumuloLayerReader(instance),
-      _ => AccumuloLayerWriter(instance, table, options)
+      _ => AccumuloLayerWriter(instance, targetTable, options)
     )
 
   def apply(
    instance: AccumuloInstance,
-   table: String
+   targetTable: String
   )(implicit sc: SparkContext): AccumuloLayerCopier =
     apply(
       instance,
-      table,
+      targetTable,
       AccumuloLayerWriter.Options.DEFAULT
     )
 

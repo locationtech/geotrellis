@@ -56,9 +56,9 @@ class S3LayerUpdater(
             }
         }
 
-      rddWriter.write(updated, bucket, keyPath, oneToOne = false)
+      rddWriter.write(updated, bucket, keyPath)
     } else {
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = false)
+      rddWriter.write(rdd, bucket, keyPath)
     }
   }
 }

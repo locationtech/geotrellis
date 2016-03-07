@@ -20,7 +20,7 @@ object AccumuloLayerReindexer {
     attributeStore: AttributeStore[JsonFormat],
     options: AccumuloLayerWriter.Options
   )(implicit sc: SparkContext): AccumuloLayerReindexer =
-    new AccumuloLayerReindexer(instance, AccumuloAttributeStore(instance), options)
+    new AccumuloLayerReindexer(instance, attributeStore, options)
 
   def apply(
     instance: AccumuloInstance,

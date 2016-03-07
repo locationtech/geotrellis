@@ -135,12 +135,6 @@ package object spark
       }, preservesPartitioning = true)
   }
 
-  /** Keeps with the convention while still using simple tups, nice */
-  implicit class TileTuple[K](tup: (K, Tile)) {
-    def id: K = tup._1
-    def tile: Tile = tup._2
-  }
-
   implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
     def extent = self.getComponent[ProjectedExtent].extent
     def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.getComponent[TemporalKey])
@@ -149,5 +143,17 @@ package object spark
   implicit class withProjectedExtentTilerKeyMethods[K: Component[?, ProjectedExtent]](val self: K) extends TilerKeyMethods[K, SpatialKey] {
     def extent = self.getComponent[ProjectedExtent].extent
     def translate(spatialKey: SpatialKey) = spatialKey
+  }
+
+  implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
+    def collectMetaData[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, RasterMetaData[K2]) = {
+      RasterMetaData.fromRdd(rdd, crs, layoutScheme)
+    }
+
+    def collectMetaData[K2: Boundable: SpatialComponent](crs: CRS, layout: LayoutDefinition)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2]): RasterMetaData[K2] = {
+      RasterMetaData.fromRdd(rdd, crs, layout)
+    }
   }
 }

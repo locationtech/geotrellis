@@ -22,15 +22,11 @@ import scala.reflect.ClassTag
  * Handles reading raster RDDs and their metadata from S3.
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
- * @param getCache        Optional cache function to be used when reading S3 objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class S3LayerReader(
-  val attributeStore: AttributeStore[JsonFormat],
-  getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
-)(implicit sc: SparkContext)
+class S3LayerReader(val attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -57,26 +53,16 @@ class S3LayerReader(
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val cache = getCache.map(f => f(id))
-    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, Some(writerSchema), cache, Some(numPartitions))
+    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, Some(writerSchema), Some(numPartitions))
 
     new ContextRDD(rdd, metadata)
   }
 }
 
 object S3LayerReader {
-  def apply(
-    attributeStore: AttributeStore[JsonFormat],
-    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
-  )(implicit sc: SparkContext): S3LayerReader =
-    new S3LayerReader(attributeStore, getCache)
-
   def apply(attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): S3LayerReader =
-    apply(attributeStore, None)
-
-  def apply(bucket: String, prefix: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): S3LayerReader =
-    apply(new S3AttributeStore(bucket, prefix), getCache)
+    new S3LayerReader(attributeStore)
 
   def apply(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader =
-    apply(bucket, prefix, None)
+    apply(new S3AttributeStore(bucket, prefix))
 }

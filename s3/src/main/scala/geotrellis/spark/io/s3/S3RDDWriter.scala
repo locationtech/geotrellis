@@ -27,7 +27,7 @@ trait S3RDDWriter {
 
   def getS3Client: () => S3Client
 
-  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](rdd: RDD[(K, V)], bucket: String, keyPath: K => String, oneToOne: Boolean): Unit = {
+  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](rdd: RDD[(K, V)], bucket: String, keyPath: K => String): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
@@ -37,11 +37,7 @@ trait S3RDDWriter {
     val _codec = codec
 
     val pathsToTiles =
-      if (oneToOne) {
-        rdd.map { case row => keyPath(row._1) -> Vector(row) }
-      } else {
         rdd.groupBy { row => keyPath(row._1) }
-      }
 
     pathsToTiles.foreachPartition { partition =>
       import geotrellis.spark.utils.TaskUtils._

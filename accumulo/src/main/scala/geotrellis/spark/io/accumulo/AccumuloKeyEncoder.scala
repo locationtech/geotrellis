@@ -24,23 +24,5 @@ object AccumuloKeyEncoder {
   def encode[K](id: LayerId, key: K, index: Long): Key =
     new Key(index2RowId(index), columnFamily(id))
 
-  def setupQuery[K](id: LayerId, queryKeyBounds: Seq[KeyBounds[K]], keyIndex: KeyIndex[K])(getJob: () => Job): Seq[Job] = {
-    val cf = new Text(columnFamily(id))
-
-    val ranges =
-      queryKeyBounds
-        .flatMap { bounds =>
-          keyIndex.indexRanges(bounds).map { case (min, max) =>
-            new AccumuloRange(new Text(long2Bytes(min)), new Text(long2Bytes(max)))
-          }
-        }
-        .asJava
-
-    val job = getJob()
-    InputFormatBase.setRanges(job, ranges)
-    InputFormatBase.fetchColumns(job, List(new AccumuloPair(cf, null: Text)).asJava)
-    Seq(job)
-  }
-
   def getLocalityGroups(id: LayerId): Seq[String] = Seq(columnFamily(id))
 }

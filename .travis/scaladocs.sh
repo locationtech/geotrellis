@@ -14,8 +14,8 @@ rev=$(git rev-parse --short HEAD)
 ./sbt "++2.11.5 unidoc"
 
 # Set up git
-# git config --global user.email "azaveadev@azavea.com"
-# git config --global user.name "azaveaci"
+git config --global user.email "azaveadev@azavea.com"
+git config --global user.name "azaveaci"
 
 # Inside scaladocs from hereon
 rm -rf scaladocs
@@ -27,4 +27,4 @@ git remote add originAuth https://$CI_GH_TOKEN@github.com/geotrellis/scaladocs.g
 
 git add -A .
 git commit -m "rebuild scaladocs at ${rev}"
-git push -q originAuth HEAD:gh-pages
+git push -q originAuth gh-pages

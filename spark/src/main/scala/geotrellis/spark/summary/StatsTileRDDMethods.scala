@@ -38,7 +38,7 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
     histogram.getQuantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
-    self.map(_.tile.findMinMax)
+    self.map(_._2.findMinMax)
       .reduce { (t1, t2) =>
         val (min1, max1) = t1
         val (min2, max2) = t2
@@ -59,7 +59,7 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
 
   def minMaxDouble: (Double, Double) =
     self
-      .map(_.tile.findMinMaxDouble)
+      .map(_._2.findMinMaxDouble)
       .reduce { (t1, t2) =>
         val (min1, max1) = t1
         val (min2, max2) = t2

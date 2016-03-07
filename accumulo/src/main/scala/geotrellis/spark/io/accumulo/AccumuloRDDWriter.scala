@@ -22,8 +22,7 @@ object AccumuloRDDWriter {
     instance: AccumuloInstance,
     encodeKey: K => Key,
     writeStrategy: AccumuloWriteStrategy,
-    table: String,
-    oneToOne: Boolean = false
+    table: String
   ): Unit = {
     implicit val sc = raster.sparkContext
 

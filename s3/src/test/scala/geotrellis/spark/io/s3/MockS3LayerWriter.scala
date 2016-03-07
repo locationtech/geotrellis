@@ -8,9 +8,8 @@ import spray.json._
 class MockS3LayerWriter(
   attributeStore: AttributeStore[JsonFormat],
   bucket: String,
-  keyPrefix: String,
-  options: S3LayerWriter.Options
-) extends S3LayerWriter(attributeStore, bucket, keyPrefix, options) {
+  keyPrefix: String
+) extends S3LayerWriter(attributeStore, bucket, keyPrefix) {
   override def rddWriter =
     new S3RDDWriter {
       def getS3Client = () => {

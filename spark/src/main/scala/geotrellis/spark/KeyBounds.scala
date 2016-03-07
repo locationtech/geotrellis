@@ -26,21 +26,20 @@ sealed trait Bounds[+A] extends Product with Serializable {
   def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] =
     if (isEmpty) default else this.get
 
-  @inline final def map[B >: A](f: (A, A) => (B, B)): Bounds[B] =
+  @inline
+  final def map[B](f: KeyBounds[A] => KeyBounds[B]): Bounds[B] =
     if (isEmpty)
       EmptyBounds
     else {
-      val kb = get
-      val (newMin, newMax) = f(kb.minKey, kb.maxKey)
-      KeyBounds(newMin, newMax)
+      f(get)
     }
 
-  @inline final def flatMap[B >: A](f: (A, A) => Bounds[B]): Bounds[B] =
+  @inline
+  final def flatMap[B](f: KeyBounds[A] => Bounds[B]): Bounds[B] =
     if (isEmpty)
       EmptyBounds
     else {
-      val kb = get
-      f(kb.minKey, kb.maxKey)
+      f(get)
     }
 
   def setSpatialBounds[B >: A](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B]

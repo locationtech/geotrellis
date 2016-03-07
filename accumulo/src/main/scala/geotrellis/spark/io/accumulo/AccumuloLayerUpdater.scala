@@ -56,9 +56,9 @@ class AccumuloLayerUpdater(
             }
         }
 
-      AccumuloRDDWriter.write(updated, instance, encodeKey, options.writeStrategy, table, oneToOne = false)
+      AccumuloRDDWriter.write(updated, instance, encodeKey, options.writeStrategy, table)
     } else {
-      AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table, oneToOne = false)
+      AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table)
     }
   }
 }
