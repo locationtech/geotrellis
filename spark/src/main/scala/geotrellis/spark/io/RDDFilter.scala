@@ -99,10 +99,10 @@ object Intersects {
     }
 
   /** Define Intersects filter for Extent */
-  implicit def forExtent[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
+  implicit def forExtent[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
     new RDDFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
-      val bounds = metadata.mapTransform(extent)
+      val bounds = (metadata: MapKeyTransform)(extent)
       val queryBounds = KeyBounds(
         kb.minKey setComponent SpatialKey(bounds.colMin, bounds.rowMin),
         kb.maxKey setComponent SpatialKey(bounds.colMax, bounds.rowMax))
@@ -114,12 +114,12 @@ object Intersects {
   }
 
   /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
+  implicit def forPolygon[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
     new RDDFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val extent = polygon.envelope
-        val keyext = metadata.mapTransform(kb.minKey)
-        val bounds = metadata.mapTransform(extent)
+        val keyext = (metadata: MapKeyTransform)(kb.minKey)
+        val bounds = (metadata: MapKeyTransform)(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
         /*
@@ -203,10 +203,10 @@ object Contains {
   def apply[T](value: T) = RDDFilter.Value[Contains.type, T](value)
 
   /** Define Intersects filter for Extent */
-  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
+  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
     new RDDFilter[K, Contains.type, Point, M] {
     def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
-      val spatialKey = metadata.mapTransform(point)
+      val spatialKey = (metadata: MapKeyTransform)(point)
       val queryBounds =
         KeyBounds(
           kb.minKey setComponent spatialKey,

@@ -11,17 +11,15 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-
-// TODO: Handle metadata lens abstraction for layout definition.
 class RDDLayoutMergeMethods[
   K: SpatialComponent: ClassTag,
   V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
-  M: (? => {def layout: LayoutDefinition})
+  M: (? => LayoutDefinition)
 ](val self: RDD[(K, V)] with Metadata[M]) extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
 
  def merge(other: RDD[(K, V)] with Metadata[M]) = {
-   val thisLayout = self.metadata.layout
-   val thatLayout = other.metadata.layout
+   val thisLayout: LayoutDefinition = self.metadata
+   val thatLayout: LayoutDefinition = other.metadata
 
    val cutRdd =
        other

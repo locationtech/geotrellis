@@ -19,7 +19,7 @@ trait Implicits {
   implicit class withRDDLayoutMergeMethods[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
-    M: (? => {def layout: LayoutDefinition})
+    M: (? => LayoutDefinition)
   ](self: RDD[(K, V)] with Metadata[M]) extends RDDLayoutMergeMethods[K, V, M](self)
 
 }
