@@ -20,7 +20,6 @@ object HadoopRDDWriter extends LazyLogging {
     rdd: RDD[(K, V)],
     path: Path,
     keyIndex: KeyIndex[K],
-    clobber: Boolean = true,
     tileSize: Int = 256*256*8,
     compressionFactor: Double = 1.3
   ): Unit = {
@@ -29,13 +28,7 @@ object HadoopRDDWriter extends LazyLogging {
 
     val fs = path.getFileSystem(sc.hadoopConfiguration)
 
-    if(fs.exists(path)) {
-      if(clobber) {
-        logger.debug(s"Deleting $path")
-        fs.delete(path, true)
-      } else
-        throw new Exception(s"Directory already exists: $path")
-    }
+    if(fs.exists(path)) { throw new Exception(s"Directory already exists: $path") }
 
     val job = Job.getInstance(conf)
     job.getConfiguration.set("io.map.index.interval", "1")

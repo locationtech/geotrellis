@@ -22,7 +22,6 @@ import AttributeStore.Fields
  * @param bucket          S3 bucket to be written to
  * @param keyPrefix       S3 prefix to write the raster to
  * @param keyIndexMethod  Method used to convert RDD keys to SFC indexes
- * @param clobber         flag to overwrite raster if already present on S3
  * @param attributeStore  AttributeStore to be used for storing raster metadata
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )

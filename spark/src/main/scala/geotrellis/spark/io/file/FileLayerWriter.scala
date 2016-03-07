@@ -31,13 +31,11 @@ import java.io.File
   * @param catalogPath  The root directory of this catalog.
   * @param keyPrefix         File prefix to write the raster to
   * @param keyIndexMethod    Method used to convert RDD keys to SFC indexes
-  * @param clobber           flag to overwrite raster if already present on File
   * @param attributeStore    AttributeStore to be used for storing raster metadata
   */
 class FileLayerWriter(
     val attributeStore: AttributeStore[JsonFormat],
-    catalogPath: String,
-    clobber: Boolean = true
+    catalogPath: String
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   protected def _write[
@@ -50,7 +48,7 @@ class FileLayerWriter(
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
-    require(!attributeStore.layerExists(layerId) || clobber, s"$layerId already exists")
+    require(!attributeStore.layerExists(layerId), s"$layerId already exists")
 
     val path = LayerPath(layerId)
     val metadata = rdd.metadata
@@ -77,20 +75,13 @@ class FileLayerWriter(
 }
 
 object FileLayerWriter {
-  def apply(attributeStore: FileAttributeStore, clobber: Boolean): FileLayerWriter =
+  def apply(attributeStore: FileAttributeStore): FileLayerWriter =
     new FileLayerWriter(
       attributeStore,
-      attributeStore.catalogPath,
-      clobber
+      attributeStore.catalogPath
     )
 
-  def apply(attributeStore: FileAttributeStore): FileLayerWriter =
-    apply(attributeStore, true)
-
-  def apply(catalogPath: String, clobber: Boolean): FileLayerWriter =
-    apply(FileAttributeStore(catalogPath), clobber)
-
   def apply(catalogPath: String): FileLayerWriter =
-    apply(catalogPath, true)
+    apply(FileAttributeStore(catalogPath))
 
 }
