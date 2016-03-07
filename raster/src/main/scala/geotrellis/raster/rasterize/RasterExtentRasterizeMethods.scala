@@ -45,16 +45,16 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
   }
 
   def rasterize(
-    geom : Geometry,
+    geom: Geometry,
     options: Options = Options.DEFAULT,
-    ct : CellType = IntConstantNoDataCellType
-  )(fn : (Int, Int) => Int) : Tile =
+    ct: CellType = IntConstantNoDataCellType
+  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
     geom.rasterize(self, options, ct)(fn)
 
   def rasterizeDouble(
-    geom : Geometry,
+    geom: Geometry,
     options: Options = Options.DEFAULT,
-    ct : CellType = DoubleConstantNoDataCellType
-  )(fn : (Int, Int) => Double) : Tile =
+    ct: CellType = DoubleConstantNoDataCellType
+  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
     geom.rasterizeDouble(self, options, ct)(fn)
 }

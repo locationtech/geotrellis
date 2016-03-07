@@ -45,18 +45,23 @@ class RasterizeMethodsSpec extends FunSpec
   val diamondExpected = Rasterizer.rasterizeWithValue(diamond, re, magicNumber).toArray.filter(_ == magicNumber).length
   val triangleExpected = Rasterizer.rasterizeWithValue(triangle, re, magicNumber).toArray.filter(_ == magicNumber).length
 
-  val tile = re.rasterize(e)({ (x,y) => 0 })
-  val raster = Raster(tile, e)
+  val raster = re.rasterize(e)({ (x,y) => 0 })
+  val tile = raster.tile
 
   /*
    * Feature
    */
-  describe("rasterize methods on the Feature class") {
+  describe("The rasterize methods on the Feature class") {
     it("should agree with Rasterizer.rasterizeWithValue for a point") {
-      val actual1 = Feature[Point, Int](point, magicNumber).rasterize(re).toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Point, Int](point, magicNumber).rasterizeDouble(re).toArray.filter(_ == magicNumber).length
-      val actual3 = Feature[Point, Double](point, magicNumber).rasterize(re).toArray.filter(_ == magicNumber).length
-      val actual4 = Feature[Point, Double](point, magicNumber).rasterizeDouble(re).toArray.filter(_ == magicNumber).length
+      val actual1 = Feature[Point, Int](point, magicNumber).rasterize(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = Feature[Point, Int](point, magicNumber).rasterizeDouble(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual3 = Feature[Point, Double](point, magicNumber).rasterize(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual4 = Feature[Point, Double](point, magicNumber).rasterizeDouble(re)
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == pointExpected)
       assert(actual2 == pointExpected)
       assert(actual3 == pointExpected)
@@ -64,10 +69,15 @@ class RasterizeMethodsSpec extends FunSpec
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a line") {
-      val actual1 = Feature[Line, Int](line, magicNumber).rasterize(re).toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Line, Int](line, magicNumber).rasterizeDouble(re).toArray.filter(_ == magicNumber).length
-      val actual3 = Feature[Line, Double](line, magicNumber).rasterize(re).toArray.filter(_ == magicNumber).length
-      val actual4 = Feature[Line, Double](line, magicNumber).rasterizeDouble(re).toArray.filter(_ == magicNumber).length
+      val actual1 = Feature[Line, Int](line, magicNumber).rasterize(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = Feature[Line, Int](line, magicNumber).rasterizeDouble(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual3 = Feature[Line, Double](line, magicNumber).rasterize(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual4 = Feature[Line, Double](line, magicNumber).rasterizeDouble(re)
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == lineExpected)
       assert(actual2 == lineExpected)
       assert(actual3 == lineExpected)
@@ -75,10 +85,15 @@ class RasterizeMethodsSpec extends FunSpec
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a polygon") {
-      val actual1 = Feature[Polygon, Int](square, magicNumber).rasterize(re).toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Polygon, Int](square, magicNumber).rasterizeDouble(re).toArray.filter(_ == magicNumber).length
-      val actual3 = Feature[Polygon, Double](square, magicNumber).rasterize(re).toArray.filter(_ == magicNumber).length
-      val actual4 = Feature[Polygon, Double](square, magicNumber).rasterizeDouble(re).toArray.filter(_ == magicNumber).length
+      val actual1 = Feature[Polygon, Int](square, magicNumber).rasterize(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = Feature[Polygon, Int](square, magicNumber).rasterizeDouble(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual3 = Feature[Polygon, Double](square, magicNumber).rasterize(re)
+        .toArray.filter(_ == magicNumber).length
+      val actual4 = Feature[Polygon, Double](square, magicNumber).rasterizeDouble(re)
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == squareExpected)
       assert(actual2 == squareExpected)
       assert(actual3 == squareExpected)
@@ -89,24 +104,33 @@ class RasterizeMethodsSpec extends FunSpec
   /*
    * Geometry
    */
-  describe("rasterize methods on the Geometry class") {
+  describe("The rasterize methods on the Geometry class") {
     it("should agree with Rasterizer.rasterizeWithValue for a point") {
-      val actual1 = point.rasterize(re)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = point.rasterizeDouble(re)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
+      val actual1 = point.rasterize(re)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = point.rasterizeDouble(re)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == pointExpected)
       assert(actual2 == pointExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a line") {
-      val actual1 = line.rasterize(re)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = line.rasterizeDouble(re)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
+      val actual1 = line.rasterize(re)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = line.rasterizeDouble(re)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == lineExpected)
       assert(actual2 == lineExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a polygon") {
-      val actual1 = square.rasterize(re)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = square.rasterizeDouble(re)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
+      val actual1 = square.rasterize(re)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = square.rasterizeDouble(re)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == squareExpected)
       assert(actual2 == squareExpected)
     }
@@ -115,31 +139,43 @@ class RasterizeMethodsSpec extends FunSpec
   /*
    * Tile
    */
-  describe("rasterize method on the Tile class") {
+  describe("The rasterize methods on the Tile class") {
     it("should make use of function argument") {
-      val actual1 = tile.foreachCell(square,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
-      val actual2 = tile.foreachCell(square,e)({ z => if (z == 1) magicNumber; else z }).toArray.filter(_ == magicNumber).length
+      val actual1 = tile.rasterize(square,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = tile.rasterize(square,e)({ z => if (z == 1) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 != 0)
       assert(actual2 == 0)
     }
 
     it("should agree with Rasterizer.rasterizeWithvalue for a square") {
-      val actual1 = tile.foreachCell(square,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
-      val actual2 = tile.foreachCellDouble(square,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
+      val actual1 = tile.rasterize(square,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = tile.rasterizeDouble(square,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == squareExpected)
       assert(actual2 == squareExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithvalue for a diamond") {
-      val actual1 = tile.foreachCell(diamond,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
-      val actual2 = tile.foreachCellDouble(diamond,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
+      val actual1 = tile.rasterize(diamond,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = tile.rasterizeDouble(diamond,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == diamondExpected)
       assert(actual2 == diamondExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithvalue for a triangle") {
-      val actual1 = tile.foreachCell(triangle,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
-      val actual2 = tile.foreachCellDouble(triangle,e)({ z => if (z == 0) magicNumber; else z }).toArray.filter(_ == magicNumber).length
+      val actual1 = tile.rasterize(triangle,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = tile.rasterizeDouble(triangle,e)({ z => if (z == 0) magicNumber; else z })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == triangleExpected)
       assert(actual2 == triangleExpected)
     }
@@ -148,54 +184,97 @@ class RasterizeMethodsSpec extends FunSpec
   /*
    * Raster
    */
-  describe("rasterize method on the Raster class") {
-    it("should agree with Rasterizer.rasterizeWithvalue for a square") {
-      val actual1 = raster.foreachCell(square)({ z => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = raster.foreachCellDouble(square)({ z => magicNumber }).toArray.filter(_ == magicNumber).length
+  describe("The rasterize methods on the Raster class") {
+    it("rasterize should agree with Rasterizer.rasterizeWithvalue for a square") {
+      val actual1 = raster.rasterize(square)({ z => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = raster.rasterizeDouble(square)({ z => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == squareExpected)
       assert(actual2 == squareExpected)
     }
 
-    it("should agree with Rasterizer.rasterizeWithvalue for a diamond") {
-      val actual1 = raster.foreachCell(diamond)({ z => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = raster.foreachCellDouble(diamond)({ z => magicNumber }).toArray.filter(_ == magicNumber).length
+    it("rasterize should agree with Rasterizer.rasterizeWithvalue for a diamond") {
+      val actual1 = raster.rasterize(diamond)({ z => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = raster.rasterizeDouble(diamond)({ z => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == diamondExpected)
       assert(actual2 == diamondExpected)
     }
 
-    it("should agree with Rasterizer.rasterizeWithvalue for a triangle") {
-      val actual1 = raster.foreachCell(triangle)({ z => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = raster.foreachCellDouble(triangle)({ z => magicNumber }).toArray.filter(_ == magicNumber).length
+    it("rasterize should agree with Rasterizer.rasterizeWithvalue for a triangle") {
+      val actual1 = raster.rasterize(triangle)({ z => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = raster.rasterizeDouble(triangle)({ z => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == triangleExpected)
       assert(actual2 == triangleExpected)
+    }
+
+    it("foreach should iterate over the raster and its values 1") {
+      val r = re.rasterize(e)({ (x,y) => x+y })
+      var sum = 0
+
+      r.foreachCell({ z => sum += z })
+      sum should be (900)
+    }
+
+    it("foreach should iterate over the raster and its values 2") {
+      val r = re.rasterize(e)({ (x,y) => x+y })
+      var sum = 0
+
+      r.foreachCell({ (x,y,z) => sum += (x + y + z) })
+      sum should be (1800)
     }
   }
 
   /*
    * RasterExtent
    */
-  describe("rasterize method on the RasterExtent class") {
+  describe("The rasterize and foreach methods on the RasterExtent class") {
     it("should agree with Rasterizer.rasterizeWithValue for a square") {
-      val actual1 = re.rasterize(square)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = re.rasterizeDouble(square)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
+      val actual1 = re.rasterize(square)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = re.rasterizeDouble(square)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == squareExpected)
       assert(actual2 == squareExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a diamond") {
-      val actual1 = re.rasterize(diamond)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = re.rasterizeDouble(diamond)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val expected = Rasterizer.rasterizeWithValue(diamond, re, magicNumber).toArray.filter(_ == magicNumber).length
+      val actual1 = re.rasterize(diamond)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = re.rasterizeDouble(diamond)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val expected = Rasterizer.rasterizeWithValue(diamond, re, magicNumber)
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == diamondExpected)
       assert(actual2 == diamondExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a triangle") {
-      val actual1 = re.rasterize(triangle)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val actual2 = re.rasterizeDouble(triangle)({ (x: Int, y: Int) => magicNumber }).toArray.filter(_ == magicNumber).length
-      val expected = Rasterizer.rasterizeWithValue(triangle, re, magicNumber).toArray.filter(_ == magicNumber).length
+      val actual1 = re.rasterize(triangle)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val actual2 = re.rasterizeDouble(triangle)({ (x: Int, y: Int) => magicNumber })
+        .toArray.filter(_ == magicNumber).length
+      val expected = Rasterizer.rasterizeWithValue(triangle, re, magicNumber)
+        .toArray.filter(_ == magicNumber).length
+
       assert(actual1 == triangleExpected)
       assert(actual2 == triangleExpected)
+    }
+
+    it("foreach should iterate over the extent") {
+      var sum = 0
+
+      re.foreachCell({ (x, y) => sum += (x + y) })
+      sum should be (900)
     }
   }
 

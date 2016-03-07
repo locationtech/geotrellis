@@ -36,25 +36,29 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
     re : RasterExtent,
     options: Options = Options.DEFAULT,
     ct : CellType = IntConstantNoDataCellType
-  )(fn : (Int, Int) => Int) : Tile = {
+  )(fn : (Int, Int) => Int) : Raster[ArrayTile] = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
+    val extent = re.extent
+
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.set(x,y,fn(x,y)) })
-    tile
+    Raster(tile, extent)
   }
 
   def rasterizeDouble(
     re : RasterExtent,
     options: Options = Options.DEFAULT,
     ct : CellType = DoubleConstantNoDataCellType
-  )(fn : (Int, Int) => Double) : Tile = {
+  )(fn : (Int, Int) => Double) : Raster[ArrayTile] = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
+    val extent = re.extent
+
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.setDouble(x,y,fn(x,y)) })
-    tile
+    Raster(tile, extent)
   }
 
-  def rasterize(re: RasterExtent, value: Int): Tile =
+  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
     rasterize(re)({ (col: Int, row: Int) => value })
 
-  def rasterizeDouble(re: RasterExtent, value: Double): Tile =
+  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
     rasterizeDouble(re)({ (col: Int, row: Int) => value })
 }

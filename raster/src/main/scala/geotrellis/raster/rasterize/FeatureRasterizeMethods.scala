@@ -33,25 +33,25 @@ trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends Me
   def rasterize(
     re : RasterExtent,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Int): Tile =
+  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
     self.geom.rasterize(re, options)(fn)
 
   def rasterizeDouble(
     re : RasterExtent,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Double): Tile =
+  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
     self.geom.rasterizeDouble(re, options)(fn)
 
-  def rasterize(re: RasterExtent, value: Int): Tile =
+  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
     self.geom.rasterize(re, value)
 
   def rasterizeDouble(re: RasterExtent, value: Double): Tile =
     self.geom.rasterizeDouble(re, value)
 
-  def rasterize(re: RasterExtent): Tile =
+  def rasterize(re: RasterExtent): Raster[ArrayTile] =
     self.geom.rasterize(re, self.data)
 
-  def rasterizeDouble(re: RasterExtent): Tile =
+  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
     self.geom.rasterizeDouble(re, self.data.toDouble)
 }
 
@@ -66,24 +66,24 @@ trait FeatureDoubleRasterizeMethods[+G <: Geometry, T <: Feature[G,Double]] exte
   def rasterize(
     re : RasterExtent,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Int): Tile =
+  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
     self.geom.rasterize(re, options)(fn)
 
   def rasterizeDouble(
     re : RasterExtent,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Double): Tile =
+  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
     self.geom.rasterizeDouble(re, options)(fn)
 
-  def rasterize(re: RasterExtent, value: Int): Tile =
+  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
     self.geom.rasterize(re, value)
 
-  def rasterizeDouble(re: RasterExtent, value: Double): Tile =
+  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
     self.geom.rasterizeDouble(re, value)
 
-  def rasterize(re: RasterExtent): Tile =
+  def rasterize(re: RasterExtent): Raster[ArrayTile] =
     self.geom.rasterize(re, self.data.toInt)
 
-  def rasterizeDouble(re: RasterExtent): Tile =
+  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
     self.geom.rasterizeDouble(re, self.data)
 }

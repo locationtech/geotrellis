@@ -23,10 +23,10 @@ import geotrellis.util.MethodExtensions
 
 
 trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends MethodExtensions[Raster[T]] {
-  def foreachCell(
+  def rasterize(
     geom : Geometry,
     options: Options = Options.DEFAULT
-  )(fn : Int => Int) : Tile = {
+  )(fn : Int => Int) : Raster[MutableArrayTile] = {
     val extent = self.extent
     val re = RasterExtent(extent, self.cols, self.rows)
     val tile = self.tile
@@ -41,13 +41,13 @@ trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends Method
         mutableTile.set(col, row, fn(z))
       }
     })
-    mutableTile
+    Raster(mutableTile, extent)
   }
 
-  def foreachCellDouble(
+  def rasterizeDouble(
     geom : Geometry,
     options: Options = Options.DEFAULT
-  )(fn : Double => Double) : Tile = {
+  )(fn : Double => Double) : Raster[MutableArrayTile] = {
     val extent = self.extent
     val re = RasterExtent(extent, self.cols, self.rows)
     val tile = self.tile
@@ -62,6 +62,6 @@ trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends Method
         mutableTile.setDouble(col, row, fn(z))
       }
     })
-    mutableTile
+    Raster(mutableTile, extent)
   }
 }
