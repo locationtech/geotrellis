@@ -51,7 +51,7 @@ public class DatumParameters
       return Datum.WGS84;
     }
     // Check for WGS84 datum parameters
-    if (ellipsoid == Ellipsoid.WGS84 && grids == null && (datumTransform == null || isIdentity(datumTransform)))
+    if (Ellipsoid.WGS84.equals(ellipsoid) && grids == null && (datumTransform == null || isIdentity(datumTransform)))
       return Datum.WGS84;
     
     // otherwise, return a custom datum with the specified ellipsoid
