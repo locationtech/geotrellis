@@ -48,7 +48,7 @@ abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends 
   def getQuantileBreaks(num: Int): Array[T]
 }
 
-abstract class MutableHistogramInt extends MutableHistogram[Int] with HistogramInt {
+abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogram {
   def countItemInt(item: Int, count: Int = 1): Unit = countItem(item, count)
 
   def update(other: Histogram[Int]): Unit = {

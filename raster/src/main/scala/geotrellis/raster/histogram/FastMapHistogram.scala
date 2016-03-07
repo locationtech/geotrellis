@@ -65,7 +65,7 @@ object FastMapHistogram {
 }
 
 class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int)
-    extends MutableHistogramInt {
+    extends MutableIntHistogram {
   if (_size <= 0) error("initializeSize must be > 0")
 
   // we are reserving this value
