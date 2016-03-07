@@ -4,7 +4,7 @@ import org.osgeo.proj4j.ProjCoordinate;
 import java.io.Serializable;
 
 public final class Axes implements Serializable {
-    private enum Axis {
+    public static enum Axis {
         Easting {
             public double fromENU(ProjCoordinate c) {
                 return c.x;
