@@ -1,4 +1,4 @@
-package org.osgeo.proj4j;
+package org.osgeo.proj4j.datum;
 
 import java.io.File;
 import java.io.DataInputStream;
@@ -12,6 +12,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.osgeo.proj4j.ProjCoordinate;
+import org.osgeo.proj4j.util.IntPolarCoordinate;
+import org.osgeo.proj4j.util.FloatPolarCoordinate;
+import org.osgeo.proj4j.util.PolarCoordinate;
 import org.osgeo.proj4j.util.ProjectionMath;
 
 public final class Grid implements Serializable {

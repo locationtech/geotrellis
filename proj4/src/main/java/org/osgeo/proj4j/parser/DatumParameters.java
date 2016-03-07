@@ -1,7 +1,7 @@
 package org.osgeo.proj4j.parser;
 
 import org.osgeo.proj4j.CoordinateReferenceSystem;
-import org.osgeo.proj4j.Grid;
+import org.osgeo.proj4j.datum.Grid;
 import org.osgeo.proj4j.datum.Datum;
 import org.osgeo.proj4j.datum.Ellipsoid;
 import static org.osgeo.proj4j.util.ProjectionMath.isIdentity;

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.osgeo.proj4j.*;
 import org.osgeo.proj4j.datum.Datum;
 import org.osgeo.proj4j.datum.Ellipsoid;
+import org.osgeo.proj4j.datum.Grid;
 import org.osgeo.proj4j.proj.Projection;
 import org.osgeo.proj4j.proj.TransverseMercatorProjection;
 import org.osgeo.proj4j.units.Angle;

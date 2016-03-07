@@ -1,4 +1,4 @@
-package org.osgeo.proj4j;
+package org.osgeo.proj4j.datum;
 
 import java.nio.charset.StandardCharsets;
 

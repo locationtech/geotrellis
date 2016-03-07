@@ -1,4 +1,4 @@
-package org.osgeo.proj4j;
+package org.osgeo.proj4j.util;
 
 import java.io.Serializable;
 

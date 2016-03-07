@@ -17,7 +17,6 @@ limitations under the License.
 package org.osgeo.proj4j.datum;
 
 import org.osgeo.proj4j.ProjCoordinate;
-import org.osgeo.proj4j.Grid;
 import static org.osgeo.proj4j.util.ProjectionMath.MILLION;
 import static org.osgeo.proj4j.util.ProjectionMath.SECONDS_TO_RAD;
 import static org.osgeo.proj4j.util.ProjectionMath.isIdentity;

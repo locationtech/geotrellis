@@ -1,4 +1,4 @@
-package org.osgeo.proj4j;
+package org.osgeo.proj4j.datum;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -6,6 +6,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+
+import org.osgeo.proj4j.util.IntPolarCoordinate;
+import org.osgeo.proj4j.util.FloatPolarCoordinate;
+import org.osgeo.proj4j.util.PolarCoordinate;
 
 public final class CTABLEV2 {
     private CTABLEV2() {
