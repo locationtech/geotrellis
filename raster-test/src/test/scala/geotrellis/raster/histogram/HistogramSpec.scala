@@ -30,7 +30,6 @@ class HistogramSpec extends FunSpec with Matchers {
     s.toCharArray.map { _.toByte - 32 }
   }
   val kinds = List(("ArrayHistogram", ArrayHistogram, () => {ArrayHistogram(100)}),
-                   ("MapHistogram", MapHistogram, () => {MapHistogram()}),
                    ("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
   kinds.foreach {
     case (name, cls, builder) => {
@@ -268,8 +267,6 @@ class HistogramSpec extends FunSpec with Matchers {
       val vmin = 0
       val vmax = 4000
       //val h = CompressedArrayHistogram(vmin, vmax)
-
-      //val h = MapHistogram()
 
       val h = FastMapHistogram()
 
