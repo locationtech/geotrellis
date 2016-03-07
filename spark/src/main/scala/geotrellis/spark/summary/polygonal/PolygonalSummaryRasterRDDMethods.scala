@@ -73,10 +73,16 @@ abstract class PolygonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExten
       .polygonalSummaryByKey(multiPolygon, zeroValue, partitioner)(handler)
 
   def polygonalHistogram(polygon: Polygon): Histogram[Int] =
-    polygonalSummary(polygon, FastMapHistogram(), HistogramSummary)
+    polygonalSummary(polygon, FastMapHistogram(), IntHistogramSummary)
 
   def polygonalHistogram(multiPolygon: MultiPolygon): Histogram[Int] =
-    polygonalSummary(multiPolygon, FastMapHistogram(), HistogramSummary)
+    polygonalSummary(multiPolygon, FastMapHistogram(), IntHistogramSummary)
+
+  def polygonalHistogramDouble(polygon: Polygon): Histogram[Double] =
+    polygonalSummary(polygon, StreamingHistogram(), DoubleHistogramSummary)
+
+  def polygonalHistogramDouble(multiPolygon: MultiPolygon): Histogram[Double] =
+    polygonalSummary(multiPolygon, StreamingHistogram(), DoubleHistogramSummary)
 
   def polygonalMax(polygon: Polygon): Int =
     polygonalSummary(polygon, Int.MinValue, MaxSummary)

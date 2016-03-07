@@ -19,14 +19,31 @@ package geotrellis.raster.mapalgebra.zonal
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 
+import spire.syntax.cfor._
 
-/**
- * Given a raster, return a histogram summary of the cells within each zone.
- *
- * @note    ZonalHistogram does not currently support Double raster data.
- *          If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
- *          the data values will be rounded to integers.
- */
-trait ZonalHistogram[@specialized (Int, Double) T <: AnyVal] {
-  def apply(tile: Tile, zones: Tile): Map[Int, Histogram[T]]
+import scala.collection.mutable
+
+
+object DoubleZonalHistogram extends ZonalHistogram[Double] {
+
+  def apply(tile: Tile, zones: Tile): Map[Int, Histogram[Double]] =
+    apply(tile, zones, 80)
+
+  def apply(tile: Tile, zones: Tile, n: Int): Map[Int, Histogram[Double]] = {
+    val histMap = mutable.Map[Int, MutableHistogram[Double]]()
+
+    val rows  = tile.rows
+    val cols  = tile.cols
+
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val v = tile.get(col, row)
+        val z = zones.get(col, row)
+        if(!histMap.contains(z)) { histMap(z) = StreamingHistogram(n) }
+        histMap(z).countItem(v)
+      }
+    }
+
+    histMap.toMap
+  }
 }

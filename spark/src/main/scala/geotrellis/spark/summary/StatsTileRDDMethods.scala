@@ -33,11 +33,20 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
   def histogram: Histogram[Int] = {
     self
       .map { case (key, tile) => tile.histogram }
-      .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1, h2)) }
+      .reduce { _ merge _ }
+  }
+
+  def doubleHistogram: Histogram[Double] = {
+    self
+      .map { case (key, tile) => tile.doubleHistogram }
+      .reduce { _ merge _ }
   }
 
   def classBreaks(numBreaks: Int): Array[Int] =
     histogram.getQuantileBreaks(numBreaks)
+
+  def classBreaksDouble(numBreaks: Int): Array[Double] =
+    doubleHistogram.getQuantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
     self.map(_.tile.findMinMax)

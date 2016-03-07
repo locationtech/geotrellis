@@ -14,12 +14,12 @@ import spire.syntax.cfor._
 
 trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
 
-  private def mergeMaps(a: Map[Int, Histogram[Int]], b: Map[Int, Histogram[Int]]) = {
+  private def mergeMaps[X <: AnyVal](a: Map[Int, Histogram[X]], b: Map[Int, Histogram[X]]) = {
     var res = a
     for ((k, v) <- b)
       res = res + (k ->
         (
-          if (res.contains(k)) FastMapHistogram.fromHistograms(Seq(res(k), v))
+          if (res.contains(k)) res(k).merge(v)
           else v
         )
       )
@@ -30,8 +30,15 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
   def zonalHistogram(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram[Int]] = {
     partitioner
       .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
-      .map((t: (K, (Tile, Tile))) => ZonalHistogramInt(t._2._1, t._2._2))
+      .map((t: (K, (Tile, Tile))) => IntZonalHistogram(t._2._1, t._2._2))
       .fold(Map[Int, Histogram[Int]]())(mergeMaps)
+  }
+
+  def zonalHistogramDouble(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram[Double]] = {
+    partitioner
+      .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
+      .map((t: (K, (Tile, Tile))) => DoubleZonalHistogram(t._2._1, t._2._2))
+      .fold(Map[Int, Histogram[Double]]())(mergeMaps)
   }
 
   def zonalPercentage(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {

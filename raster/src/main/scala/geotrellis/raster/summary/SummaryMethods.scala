@@ -43,8 +43,8 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     *
     * @param significantDigits   Number of significant digits to preserve by multiplying
     */
-  def doubleHistogram(significantDigits: Int): Histogram[Int] =
-    FastMapHistogram.fromTileDouble(self, significantDigits)
+  def doubleHistogram: Histogram[Double] =
+    StreamingHistogram.fromTile(self)
 
   /**
   * Generate quantile class breaks for a given raster.
@@ -53,12 +53,26 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     histogram.getQuantileBreaks(numBreaks)
 
   /**
+  * Generate quantile class breaks for a given raster.
+  */
+  def classBreaksDouble(numBreaks: Int): Array[Double] =
+    doubleHistogram.getQuantileBreaks(numBreaks)
+
+  /**
     * Determine statistical data for the given histogram.
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
   def statistics: Statistics[Int] =
     histogram.generateStatistics
+
+  /**
+    * Determine statistical data for the given histogram.
+    *
+    * This includes mean, median, mode, stddev, and min and max values.
+    */
+  def statisticsDouble: Statistics[Double] =
+    doubleHistogram.generateStatistics
 
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.
