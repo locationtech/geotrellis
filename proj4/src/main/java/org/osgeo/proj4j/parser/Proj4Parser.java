@@ -196,19 +196,11 @@ public class Proj4Parser
        param = new double[] { param[0], param[1], param[2] };
      }
    }
-   
-   // /**
-   //  * PROJ4 towgs84 7-parameter transform uses 
-   //  * units of arc-seconds for the rotation factors, 
-   //  * and parts-per-million for the scale factor.
-   //  * These need to be converted to radians and a scale factor. 
-   //  */
-   // if (param.length > 3) {
-   //   param[3] *= ProjectionMath.SECONDS_TO_RAD;
-   //   param[4] *= ProjectionMath.SECONDS_TO_RAD;
-   //   param[5] *= ProjectionMath.SECONDS_TO_RAD;
-   //   param[6] = (param[6]/ProjectionMath.MILLION) + 1;
-   // }
+
+   // NOTE: proj.4 adjusts the units of parameters 3-6 during parsing and
+   // maintains "well-known" datum parameters as strings which also go through
+   // the parsing routine.  In Proj4J we keep well-known datums in full-fledged
+   // Datum instances so this is handled in the Datum class itself.
    
    return param;
  }
