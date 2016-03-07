@@ -6,6 +6,7 @@ trait HadoopModule extends TypedModule {
   register(new GeoTiffHadoopInput)
   register(new SpatialHadoopOutput)
   register(new TemporalGeoTiffHadoopInput)
+  register(new TemporalMultibandGeoTiffHadoopInput)
   register(new SpaceTimeHadoopOutput)
   register(new SpatialRenderOutput)
   register(new GeoTiffSequenceHadoopInput)
