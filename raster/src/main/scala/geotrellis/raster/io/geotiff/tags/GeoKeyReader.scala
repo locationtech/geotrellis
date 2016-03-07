@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.util._
 import codes.TagCodes._
 
 import GeoKeys._

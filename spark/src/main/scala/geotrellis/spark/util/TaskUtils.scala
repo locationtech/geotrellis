@@ -1,4 +1,4 @@
-package geotrellis.spark.utils
+package geotrellis.spark.util
 
 
 import java.util.concurrent.Executors

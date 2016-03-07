@@ -1,6 +1,5 @@
 package geotrellis.spark
 
-import geotrellis.spark.io.index.KeyIndexMethod
 import spray.json.JsonFormat
 import scala.util.{Failure, Success, Try}
 

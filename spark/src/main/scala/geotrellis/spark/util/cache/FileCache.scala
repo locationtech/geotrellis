@@ -1,4 +1,4 @@
-package geotrellis.spark.utils.cache
+package geotrellis.spark.util.cache
 
 import java.io.{File, FileInputStream, FileOutputStream}
 

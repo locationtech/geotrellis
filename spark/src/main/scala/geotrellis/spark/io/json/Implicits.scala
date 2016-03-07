@@ -3,7 +3,7 @@ package geotrellis.spark.io.json
 import geotrellis.spark._
 import geotrellis.spark.io.index
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.spark.utils._
+import geotrellis.spark.util._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.json._

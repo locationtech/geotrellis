@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS

@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.raster.MultiBandTile
-import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.util.SparkUtils
 import geotrellis.vector.ProjectedExtent
 import org.apache.spark.SparkConf
 

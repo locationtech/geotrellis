@@ -64,7 +64,7 @@ object SaveToS3Methods {
 
       val pool = Executors.newFixedThreadPool(8)
 
-      import geotrellis.spark.utils.TaskUtils._
+      import geotrellis.spark.util.TaskUtils._
       val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
         Process eval Task {
           request.getInputStream.reset() // reset in case of retransmission to avoid 400 error

@@ -8,7 +8,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.Implicits._
 import geotrellis.spark.io.index._
 import org.apache.avro.Schema
-import geotrellis.spark.utils.cache._
+import geotrellis.spark.util.cache._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat

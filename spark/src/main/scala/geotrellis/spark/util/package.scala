@@ -7,7 +7,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 
 import scala.util.{Failure, Success, Try}
 
-package object utils {
+package object util {
   implicit class TryOption[T](option: Option[T]) {
     def mapNone(exception: => Throwable) = option match {
       case Some(t) => Success(t)

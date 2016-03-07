@@ -12,7 +12,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.json.Implicits._
 import geotrellis.spark.io.avro.{AvroRecordCodec, AvroEncoder}
 import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod, KeyIndex}
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.util.KryoWrapper
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.reflect._
@@ -40,7 +40,7 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
       }
 
     pathsToTiles.foreachPartition { partition =>
-      import geotrellis.spark.utils.TaskUtils._
+      import geotrellis.spark.util.TaskUtils._
       val getS3Client = _getS3Client
       val s3client: S3Client = getS3Client()
 

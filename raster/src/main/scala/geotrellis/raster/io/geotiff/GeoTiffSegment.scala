@@ -1,6 +1,6 @@
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster._
 
 import java.util.BitSet

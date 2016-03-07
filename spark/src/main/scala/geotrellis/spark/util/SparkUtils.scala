@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.utils
+package geotrellis.spark.util
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.Logging
 import org.apache.spark.SparkConf

@@ -17,7 +17,7 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.hadoop.HdfsUtils
-import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.util.SparkUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import geotrellis.spark.testkit._
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }

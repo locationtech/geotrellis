@@ -1,4 +1,4 @@
-package geotrellis.spark.utils
+package geotrellis.spark.util
 
 class KryoClosure1[T1, R](f: T1=>R) extends KryoWrapper[T1=>R] with (T1=>R) {
   assert(f != null)

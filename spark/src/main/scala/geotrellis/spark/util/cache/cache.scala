@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.utils.cache
+package geotrellis.spark.util.cache
 
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
