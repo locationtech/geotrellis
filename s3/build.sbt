@@ -13,7 +13,6 @@ parallelExecution in Test := false
 javaOptions ++= List(
   "-Xmx2G",
   "-XX:MaxPermSize=384m",
-  s"-Djava.library.path=${Environment.javaGdalDir}",
   "-Dsun.io.serialization.extendedDebugInfo=true")
 
 initialCommands in console :=
