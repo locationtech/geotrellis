@@ -21,7 +21,7 @@ import geotrellis.raster.summary.Statistics
 import geotrellis.raster.doubleNODATA
 import StreamingHistogram.{BucketType, DeltaType}
 
-import math.{abs, min, max, sqrt}
+import math.{abs, exp, min, max, sqrt}
 
 import java.util.Comparator
 import java.util.TreeMap
@@ -34,16 +34,15 @@ object StreamingHistogram {
 
   private val defaultSize = 80
 
-  def apply(size: Int = defaultSize) = new StreamingHistogram(size, None, None, Double.PositiveInfinity, Double.NegativeInfinity)
+  def apply(size: Int = defaultSize) =
+    new StreamingHistogram(size, None, None, Double.PositiveInfinity, Double.NegativeInfinity)
 
   def apply(
     size: Int,
-    buckets: TreeMap[Double, Int],
-    deltas: TreeMap[DeltaType, Unit],
     minimumSeen: Double,
     maximumSeen: Double
   ) =
-    new StreamingHistogram(size, Some(buckets), Some(deltas), minimumSeen, maximumSeen)
+    new StreamingHistogram(size, None, None, minimumSeen, maximumSeen)
 
   def fromTile(r: Tile): StreamingHistogram = {
     val h = StreamingHistogram()
@@ -65,7 +64,7 @@ class StreamingHistogram(
   maximum: Double = Double.NegativeInfinity
 ) extends MutableHistogram[Double] {
 
-  class DeltaCompare extends Comparator[DeltaType] {
+  class DeltaCompare extends Comparator[DeltaType] with Serializable {
     def compare(a: DeltaType, b: DeltaType): Int =
       if (a._1 < b._1) -1
       else if (a._1 > b._1) 1
@@ -167,8 +166,8 @@ class StreamingHistogram(
     * one, or it can be used to incrementally merge two histograms.
     */
   private def countItem(b: BucketType): Unit = {
-    if (b._1 < _min) _min = b._1
-    if (b._1 > _max) _max = b._2
+    if (b._1 < _min && b._2 != 0) _min = b._1
+    if (b._1 > _max && b._2 != 0) _max = b._2
 
     /* First entry */
     if (_buckets.size == 0)
@@ -240,24 +239,32 @@ class StreamingHistogram(
     * Get the (approximate) number of occurances of an item.
     */
   def itemCount(item: Double): Int = {
-    val lo = _buckets.lowerEntry(item * 1.0001)
-    val hi = _buckets.higherEntry(item * 1.0001)
-    val raw = {
-      if (lo == null && hi == null) 0
-      else if (lo == null) {
-        val x = item / hi.getKey
-        x * hi.getValue
-      }
-      else if (hi == null) {
-        val x = (lo.getKey - item) / lo.getKey
-        (1 - x) * lo.getValue
-      }
-      else {
-        val x = (item - lo.getKey) / (hi.getKey - lo.getKey)
-        x * (hi.getValue - lo.getValue) + lo.getValue
-      }
+    if (bucketCount() == 0) 0
+    else if (bucketCount() == 1) {
+      val (item2, count) = buckets().head
+      count / exp(abs(7 * (item2 - item))).toInt
     }
-    return ((raw / areaUnderCurve) * totalCount).toInt
+    else {
+      val lo = _buckets.lowerEntry(item * 1.0001)
+      val hi = _buckets.higherEntry(item * 1.0001)
+      val raw = {
+        if (lo == null && hi == null) 0
+        else if (lo == null) {
+          val x = item / hi.getKey
+          x * hi.getValue
+        }
+        else if (hi == null) {
+          val x = (lo.getKey - item) / lo.getKey
+            (1 - x) * lo.getValue
+        }
+        else {
+          val x = (item - lo.getKey) / (hi.getKey - lo.getKey)
+          x * (hi.getValue - lo.getValue) + lo.getValue
+        }
+      }
+      if (areaUnderCurve != 0) ((raw / areaUnderCurve) * totalCount).toInt
+      else 0
+    }
   }
 
   /**
@@ -312,15 +319,19 @@ class StreamingHistogram(
   def update(other: Histogram[Double]): Unit =
     other.foreach({ case (item, count) => this.countItem((item, count)) })
 
-  def mutable(): StreamingHistogram =
-    StreamingHistogram(this.m, this._buckets, this._deltas, this._min, this._max)
+  def mutable(): StreamingHistogram = {
+    val sh = StreamingHistogram(this.m, this._min, this._max)
+    sh.countItems(this.buckets)
+    sh
+  }
 
   /**
     * Create a new histogram from this one and another without
     * altering either.
     */
   def +(other: StreamingHistogram): StreamingHistogram = {
-    val sh = StreamingHistogram(this.m, this._buckets, this._deltas, this._min, this._max)
+    val sh = StreamingHistogram(this.m, this._min, this._max)
+    sh.countItems(this.buckets)
     sh.countItems(other.buckets)
     sh
   }
@@ -328,7 +339,8 @@ class StreamingHistogram(
   def bucketCount():Int = _buckets.size
 
   def merge(histogram: Histogram[Double]): Histogram[Double] = {
-    val sh = StreamingHistogram(this.m, this._buckets, this._deltas, this._min, this._max)
+    val sh = StreamingHistogram(this.m, this._min, this._max)
+    sh.countItems(this.buckets)
     histogram.foreach({ (item: Double, count: Int) => sh.countItem((item, count)) })
     sh
   }
@@ -362,9 +374,12 @@ class StreamingHistogram(
     * Return the area under the curve.
     */
   def areaUnderCurve(): Double = {
-    buckets
+    buckets()
       .sliding(2)
-      .map({ case List(x,y) => computeArea(x,y) })
+      .map({
+        case List(x,y) => computeArea(x,y)
+        case List(_) => 0.0
+      })
       .sum
   }
 
