@@ -48,6 +48,7 @@ object HadoopRDDReader extends LazyLogging {
     path: Path,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None)
   (implicit sc: SparkContext): RDD[(K, V)] = {
     val dataPath = path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
@@ -71,8 +72,11 @@ object HadoopRDDReader extends LazyLogging {
       classOf[BytesWritable]
     )
       .flatMap { case (keyWritable, valueWritable) =>
-        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), valueWritable.getBytes)(codec)
-          .filter { row => includeKey(row._1) }
+        val items = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), valueWritable.getBytes)(codec)
+        if(indexFilterOnly)
+          items
+        else
+          items.filter { row => includeKey(row._1) }
       }
   }
 }

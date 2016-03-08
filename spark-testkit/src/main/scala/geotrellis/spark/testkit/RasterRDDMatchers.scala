@@ -33,7 +33,7 @@ trait RasterRDDMatchers extends RasterMatchers {
    * b. if number of tiles == count
    */
   def rasterShouldBe[K](rdd: RDD[(K, Tile)], minMax: (Int, Int)): Unit = {
-    val res = rdd.map(_.tile.findMinMax).collect
+    val res = rdd.map(_._2.findMinMax).collect
     withClue(s"Actual MinMax: ${res.toSeq}; expecting: ${minMax}") {
       res.count(_ == minMax) should be(res.length)
     }
@@ -43,8 +43,8 @@ trait RasterRDDMatchers extends RasterMatchers {
     first: RDD[(K, Tile)],
     second: RDD[(K, Tile)]): Unit = {
 
-    val firstKeys = first.sortBy(_.id).map(_.id).collect
-    val secondKeys = second.sortBy(_.id).map(_.id).collect
+    val firstKeys = first.sortBy(_._1).map(_._1).collect
+    val secondKeys = second.sortBy(_._1).map(_._1).collect
 
     (firstKeys zip secondKeys) foreach { case (key1, key2) => key1 should be(key2) }
 

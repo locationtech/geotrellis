@@ -43,22 +43,28 @@ class FileLayerUpdater(
     val layerPath = new File(catalogPath, path).getAbsolutePath
 
     logger.info(s"Saving updated RDD for layer ${id} to $path")
-    if(schemaHasChanged[K, V](writerSchema)) {
-      logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
-      val entireLayer = layerReader.read[K, V, M](id)
-      val updated: RDD[(K, V)] with Metadata[M] =
-        entireLayer.withContext { allTiles =>
-          allTiles
-            .leftOuterJoin(rdd)
-            .mapValues { case (layerTile, updateTile) =>
-              updateTile.getOrElse(layerTile)
-            }
-        }
+    val existingTiles =
+      if(schemaHasChanged[K, V](writerSchema)) {
+        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
+        layerReader
+          .read[K, V, M](id)
+      } else {
+        layerReader
+          .query[K, V, M](id)
+          .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
+          .toRDD
+      }
 
-      FileRDDWriter.write[K, V](updated, layerPath, keyPath)
-    } else {
-      FileRDDWriter.write[K, V](rdd, layerPath, keyPath)
-    }
+    val updated: RDD[(K, V)] with Metadata[M] =
+      existingTiles.withContext { allTiles =>
+        allTiles
+          .leftOuterJoin(rdd)
+          .mapValues { case (layerTile, updateTile) =>
+            updateTile.getOrElse(layerTile)
+        }
+      }
+
+    FileRDDWriter.write[K, V](updated, layerPath, keyPath)
   }
 }
 

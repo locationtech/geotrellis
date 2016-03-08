@@ -8,7 +8,7 @@ import spray.json._
 import scala.reflect._
 
 trait LayerReader[ID] {
-  val defaultNumPartitions: Int
+  def defaultNumPartitions: Int
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

@@ -9,7 +9,6 @@ import geotrellis.spark.io.index._
 import geotrellis.raster.{MultiBandTile, Tile}
 
 import org.apache.avro.Schema
-import geotrellis.spark.utils.cache._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.{JsObject, JsonFormat}
@@ -30,8 +29,7 @@ import scala.reflect.ClassTag
  */
 class FileLayerReader(
   val attributeStore: AttributeStore[JsonFormat],
-  catalogPath: String,
-  getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
+  catalogPath: String
 )(implicit sc: SparkContext) extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -40,7 +38,7 @@ class FileLayerReader(
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyIndex, writerSchema) = try {
@@ -55,34 +53,19 @@ class FileLayerReader(
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val cache = getCache.map(f => f(id))
-    val rdd = FileRDDReader.read[K, V](keyPath, queryKeyBounds, decompose, Some(writerSchema), cache, Some(numPartitions))
+    val rdd = FileRDDReader.read[K, V](keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
 
     new ContextRDD(rdd, metadata)
   }
 }
 
 object FileLayerReader {
-  def apply(
-    attributeStore: AttributeStore[JsonFormat],
-    catalogPath: String,
-    getCache: Option[LayerId => Cache[Long, Array[Byte]]] = None
-  )(implicit sc: SparkContext): FileLayerReader =
-    new FileLayerReader(
-      attributeStore,
-      catalogPath,
-      getCache
-    )
-
   def apply(attributeStore: AttributeStore[JsonFormat], catalogPath: String)(implicit sc: SparkContext): FileLayerReader =
-    apply(attributeStore, catalogPath, None)
-
-  def apply(catalogPath: String, getCache: Option[LayerId => Cache[Long, Array[Byte]]])(implicit sc: SparkContext): FileLayerReader =
-    apply(new FileAttributeStore(catalogPath), catalogPath, getCache)
+    new FileLayerReader(attributeStore, catalogPath)
 
   def apply(catalogPath: String)(implicit sc: SparkContext): FileLayerReader =
-    apply(catalogPath, None)
+    apply(new FileAttributeStore(catalogPath), catalogPath)
 
   def apply(attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileLayerReader =
-    apply(attributeStore, attributeStore.catalogPath, None)
+    apply(attributeStore, attributeStore.catalogPath)
 }

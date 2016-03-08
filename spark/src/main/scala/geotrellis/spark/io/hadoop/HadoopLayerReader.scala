@@ -37,7 +37,7 @@ class HadoopLayerReader(
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] = {
+  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val (header, metadata, keyIndex, writerSchema) = try {
       import spray.json.DefaultJsonProtocol._
@@ -55,7 +55,7 @@ class HadoopLayerReader(
         HadoopRDDReader.readFully(layerPath, Some(writerSchema))
       } else {
         val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-        HadoopRDDReader.readFiltered(layerPath, queryKeyBounds, decompose, Some(writerSchema))
+        HadoopRDDReader.readFiltered(layerPath, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
       }
 
     new ContextRDD[K, V, M](rdd, metadata)

@@ -14,7 +14,7 @@ class FileSpaceTimeSpec
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
+//    with CoordinateSpaceTimeTests
     with LayerUpdateSpaceTimeTileTests {
   lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)

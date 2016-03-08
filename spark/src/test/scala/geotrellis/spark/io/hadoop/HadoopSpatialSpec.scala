@@ -21,6 +21,7 @@ class HadoopSpatialSpec
   lazy val copier = HadoopLayerCopier(outputLocal)
   lazy val mover  = HadoopLayerMover(outputLocal)
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
+  lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
 }

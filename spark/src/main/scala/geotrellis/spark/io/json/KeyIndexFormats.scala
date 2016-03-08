@@ -27,7 +27,9 @@ trait KeyIndexRegistrator {
 
 class KeyIndexJsonFormat[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends RootJsonFormat[KeyIndex[K]] {
   def write(obj: KeyIndex[K]): JsValue =
-    entries.find(_.indexClassTag.runtimeClass.isAssignableFrom(obj.getClass)) match {
+    entries.find { entry =>
+      entry.indexClassTag.runtimeClass.getCanonicalName == obj.getClass.getCanonicalName
+    } match {
       case Some(entry) =>
         obj.toJson(entry.jsonFormat.asInstanceOf[JsonFormat[KeyIndex[K]]])
       case None =>
@@ -65,7 +67,7 @@ object KeyIndexJsonFormatFactory {
     // User defined here
     val conf = ConfigFactory.load()
     if(conf.hasPath(REG_SETTING_NAME)) {
-      val userRegistratorClassName = conf.getString("geotrellis.spark.io.index.registrator")
+      val userRegistratorClassName = conf.getString(REG_SETTING_NAME)
       val userRegistrator =
         Class.forName(userRegistratorClassName)
           .getConstructor()
