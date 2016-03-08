@@ -44,8 +44,8 @@ class HistogramSpec extends FunSpec with Matchers {
           h.countItem(13)
           h.countItem(84)
 
-          h.getMinValue should be (4)
-          h.getMaxValue should be (84)
+          h.minValue should be (4)
+          h.maxValue should be (84)
         }
 
         // REFACTOR: this should use option
@@ -54,8 +54,8 @@ class HistogramSpec extends FunSpec with Matchers {
           // min value should be largest possible int
           // max value should be smallest possible int
           // this way it signals that the values don't really make sense
-          h.getMinValue should be (Int.MaxValue)
-          h.getMaxValue should be (Int.MinValue)
+          h.minValue should be (Int.MaxValue)
+          h.maxValue should be (Int.MinValue)
         }
 
         it("should store values and retrieve them later") {
@@ -64,12 +64,12 @@ class HistogramSpec extends FunSpec with Matchers {
           val s = "This is some great test data--see?"
           stringToInts(s).foreach { i => h.countItem(i) }
 
-          h.getItemCount('z'.toByte - 32) should be (0)
-          h.getItemCount('?'.toByte - 32) should be (1)
-          h.getItemCount('T'.toByte - 32) should be (1)
-          h.getItemCount('i'.toByte - 32) should be (2)
-          h.getItemCount('s'.toByte - 32) should be (5)
-          h.getItemCount(' '.toByte - 32) should be (5)
+          h.itemCount('z'.toByte - 32) should be (0)
+          h.itemCount('?'.toByte - 32) should be (1)
+          h.itemCount('T'.toByte - 32) should be (1)
+          h.itemCount('i'.toByte - 32) should be (2)
+          h.itemCount('s'.toByte - 32) should be (5)
+          h.itemCount(' '.toByte - 32) should be (5)
         }
 
         it("should do fancy kinds of counting and uncounting") {
@@ -79,9 +79,9 @@ class HistogramSpec extends FunSpec with Matchers {
           h.countItem(16, 20)
           h.uncountItem(16)
 
-          h.getTotalCount should be (42)
-          h.getMinValue should be (6)
-          h.getMaxValue should be (8)
+          h.totalCount should be (42)
+          h.minValue should be (6)
+          h.maxValue should be (8)
         }
 
         it("should generate quantile breaks") {
@@ -92,9 +92,7 @@ class HistogramSpec extends FunSpec with Matchers {
           "43wjtnejinherhoe9980437843t43n8hy8h89huntjhgfjogfdtgj895n34y8nt34tpn"
           stringToInts(s).foreach { i => h.countItem(i) }
 
-          h.getQuantileBreaks(6) should be (Array(23, 67, 71, 73, 78, 90))
-
-          //println(h.generateStatistics)
+          h.quantileBreaks(6) should be (Array(23, 67, 71, 73, 78, 90))
         }
 
         it("should handle quantile breaks with extreme values") {
@@ -106,7 +104,7 @@ class HistogramSpec extends FunSpec with Matchers {
           h.countItem(5, 80)
           h.countItem(6, 20)
 
-          h.getQuantileBreaks(3) should be (Array(2, 3, 6))
+          h.quantileBreaks(3) should be (Array(2, 3, 6))
         }
 
         it("should handle quantile breaks with multiple extreme values") {
@@ -119,7 +117,7 @@ class HistogramSpec extends FunSpec with Matchers {
           h.countItem(6, 70)
           h.countItem(7, 50)
 
-          h.getQuantileBreaks(5) should be (Array(2, 3, 5, 6, 7))
+          h.quantileBreaks(5) should be (Array(2, 3, 5, 6, 7))
         }
       }
     }
@@ -134,7 +132,7 @@ class HistogramSpec extends FunSpec with Matchers {
       h.countItem(3, 10)
       h.countItem(4, 5)
       h.countItem(5, 10)
-      h.getQuantileBreaks(4) should be (Array(0, 1, 2, 5))
+      h.quantileBreaks(4) should be (Array(0, 1, 2, 5))
     }
 
     it("should handle a tricky double unbalanced later values") {
@@ -145,7 +143,7 @@ class HistogramSpec extends FunSpec with Matchers {
       h.countItem(3, 15)
       h.countItem(4, 10)
       h.countItem(5, 5)
-      h.getQuantileBreaks(4) should be (Array(0, 1, 2, 5))
+      h.quantileBreaks(4) should be (Array(0, 1, 2, 5))
     }
   }
 
@@ -158,16 +156,16 @@ class HistogramSpec extends FunSpec with Matchers {
       h.countItem(4, 10)
       h.countItem(5, 10)
 
-      h.getQuantileBreaks(1) should be (Array(5))
-      h.getQuantileBreaks(2) should be (Array(2,5))
-      h.getQuantileBreaks(3) should be (Array(2,3,5))
-      h.getQuantileBreaks(4) should be (Array(1,2,4,5))
-      h.getQuantileBreaks(5) should be (Array(1,2,3,4,5))
-      h.getQuantileBreaks(6) should be (Array(1,2,3,4,5))
-      h.getQuantileBreaks(7) should be (Array(1,2,3,4,5))
-      h.getQuantileBreaks(8) should be (Array(1,2,3,4,5))
-      h.getQuantileBreaks(9) should be (Array(1,2,3,4,5))
-      h.getQuantileBreaks(10) should be (Array(1,2,3,4,5))
+      h.quantileBreaks(1) should be (Array(5))
+      h.quantileBreaks(2) should be (Array(2,5))
+      h.quantileBreaks(3) should be (Array(2,3,5))
+      h.quantileBreaks(4) should be (Array(1,2,4,5))
+      h.quantileBreaks(5) should be (Array(1,2,3,4,5))
+      h.quantileBreaks(6) should be (Array(1,2,3,4,5))
+      h.quantileBreaks(7) should be (Array(1,2,3,4,5))
+      h.quantileBreaks(8) should be (Array(1,2,3,4,5))
+      h.quantileBreaks(9) should be (Array(1,2,3,4,5))
+      h.quantileBreaks(10) should be (Array(1,2,3,4,5))
     }
   }
 
@@ -185,7 +183,7 @@ class HistogramSpec extends FunSpec with Matchers {
       h.countItem(8, 0)
       h.countItem(9, 0)
 
-      val stats = h.generateStatistics
+      val stats = h.statistics
       //println(stats)
       "%.3f".formatLocal(Locale.ENGLISH, stats.mean) should be ("4.130")
       stats.median should be (5)

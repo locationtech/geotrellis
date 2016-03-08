@@ -87,7 +87,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
             for(col <- 0 until tiledR.cols) {
               val v = tiledR.get(col,row)
               if(isData(v)) {
-                result.getItemCount(v) should be (h.getItemCount(v))
+                result.itemCount(v) should be (h.itemCount(v))
               }
             }
           }

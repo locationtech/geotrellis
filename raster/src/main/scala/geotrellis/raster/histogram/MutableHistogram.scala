@@ -41,5 +41,5 @@ abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends 
    */
   def setItem(item: T, count: Int): Unit
 
-  def getQuantileBreaks(num: Int): Array[T]
+  def quantileBreaks(num: Int): Array[T]
 }

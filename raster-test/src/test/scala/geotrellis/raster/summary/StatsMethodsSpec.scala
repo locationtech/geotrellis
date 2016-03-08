@@ -57,11 +57,11 @@ class StatsMethodsSpec extends FunSpec
       }
       val histo = testRaster.histogram
 
-      histo.getTotalCount should be (18)
-      histo.getItemCount(11) should be (2)
-      histo.getItemCount(12) should be (3)
+      histo.totalCount should be (18)
+      histo.itemCount(11) should be (2)
+      histo.itemCount(12) should be (3)
 
-      histo.getQuantileBreaks(4) should be (Array(12, 15, 66, 95))
+      histo.quantileBreaks(4) should be (Array(12, 15, 66, 95))
     }
   }
 }

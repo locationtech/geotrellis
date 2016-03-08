@@ -29,21 +29,21 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
   /**
    * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
    */
-  private def getEvenQuantiles(num: Int) = (1 to num).map(_.toDouble / num).toArray
+  private def evenQuantiles(num: Int) = (1 to num).map(_.toDouble / num).toArray
 
   /**
-   * This is a heuristic used by getQuantileBreaks, which mutates the
+   * This is a heuristic used by quantileBreaks, which mutates the
    * histogram.
    */
   private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram[Int] = {
-    val (zmin, zmax) = getMinMaxValues()
+    val (zmin, zmax) = minMaxValues()
 
     // see how many (if any) extreme values we have, and store their indices
-    val values: Array[Int] = getValues()
-    val vLen = values.length
+    val localValue: Array[Int] = values()
+    val vLen = localValue.length
 
-    val eItems: List[Int] = values.foldLeft(Nil: List[Int]) {
-      (is, i) => if (getItemCount(i) > cutoff) i :: is else is
+    val eItems: List[Int] = localValue.foldLeft(Nil: List[Int]) {
+      (is, i) => if (itemCount(i) > cutoff) i :: is else is
     }
     val eLen = eItems.length
 
@@ -77,19 +77,19 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // X * Q - X * E = T
     // X * (Q - E)   = T
     // X             = T / (Q - E)
-    val eSubtotal: Int = eItems.foldLeft(0)((t, i) => t + h.getItemCount(i))
-    val oSubtotal: Int = h.getTotalCount - eSubtotal
+    val eSubtotal: Int = eItems.foldLeft(0)((t, i) => t + h.itemCount(i))
+    val oSubtotal: Int = h.totalCount - eSubtotal
     var eValue: Int = oSubtotal / (num - eLen)
 
     eItems.foreach(i => h.setItem(i, eValue))
     h
   }
 
-  def getQuantileBreaks(num: Int): Array[Int] = {
+  def quantileBreaks(num: Int): Array[Int] = {
     // first, we create a list of percentages to use, along with determining
     // how many cells should fit in one "ideal" quantile bucket.
-    val quantiles: Array[Double] = getEvenQuantiles(num)
-    val size: Int = (quantiles(0) * getTotalCount).toInt
+    val quantiles: Array[Double] = evenQuantiles(num)
+    val size: Int = (quantiles(0) * totalCount).toInt
 
     // then we need to make a copy of ourself to do some preprocessing on to
     // remove extreme values. an extreme value is one that would automatically
@@ -99,9 +99,9 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
 
     // now we'll store some data about the histogram, our quantiles, etc, for
     // future use and fast access.
-    val total    = h.getTotalCount
+    val total    = h.totalCount
     val limits   = quantiles.map(_ * total)
-    val maxValue = h.getMaxValue
+    val maxValue = h.maxValue
 
     // this is the array of breaks we will return
     val breaks = Array.ofDim[Int](quantiles.length)
@@ -111,7 +111,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
 
     // the value we're currently working on
     var j = 0
-    val values = getValues()
+    val localValue = values()
 
     // the current total of all previous values we've seen
     var currTotal = 0
@@ -120,26 +120,26 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // a running total against our current quantile (qIndex). we know that the
     // last break is "everything else" so we stop when we reach that one.
     while (qIndex < breaks.length && j < values.length) {
-      val i = values(j)
-      val count = h.getItemCount(i)
+      val i = localValue(j)
+      val count = h.itemCount(i)
       val newTotal = currTotal + count
 
       if (count == 0) {
       } else if (newTotal > limits(qIndex)) {
         if (abs(limits(qIndex) - currTotal) > abs(limits(qIndex) - newTotal)) {
-          // in this case values(j) is closer than values(j - 1)
+          // in this case localValue(j) is closer than localValue(j - 1)
           breaks(qIndex) = i
         } else if(j > 0) {
-          // in this case values(j - 1) is closer, did we already use it?
-          if (qIndex > 0 && breaks(qIndex - 1) == values(j - 1)) {
-            // yes, so now use values(j)
-            breaks(qIndex) = values(j)
+          // in this case localValue(j - 1) is closer, did we already use it?
+          if (qIndex > 0 && breaks(qIndex - 1) == localValue(j - 1)) {
+            // yes, so now use localValue(j)
+            breaks(qIndex) = localValue(j)
           } else {
-            // no, so use values(j - 1)
-            breaks(qIndex) = values(j - 1)
+            // no, so use localValue(j - 1)
+            breaks(qIndex) = localValue(j - 1)
           }
         } else {
-          // in this case j == 0 so there is no values(j - 1)
+          // in this case j == 0 so there is no localValue(j - 1)
           breaks(qIndex) = i
         }
 

@@ -36,8 +36,8 @@ class HistogramSpec extends FunSpec
 
       val result = tile.polygonalHistogram(extent, zone)
 
-      result.getItemCount(1) should equal (40)
-      result.getItemCount(2) should equal (0)
+      result.itemCount(1) should equal (40)
+      result.itemCount(2) should equal (0)
     }
   }
 }

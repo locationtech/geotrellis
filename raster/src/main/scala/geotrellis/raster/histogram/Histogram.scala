@@ -26,34 +26,34 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   /**
    * Return the number of occurances for 'item'.
    */
-  def getItemCount(item: T): Int
+  def itemCount(item: T): Int
 
   /**
    * Return the total number of occurances for all items.
    */
-  def getTotalCount(): Int
+  def totalCount(): Int
 
   /**
    * Return the smallest item seen.
    */
-  def getMinValue(): T
+  def minValue(): T
 
   /**
    * Return the largest item seen.
    */
-  def getMaxValue(): T
+  def maxValue(): T
 
   /**
    * Return the smallest and largest items seen as a tuple.
    */
-  def getMinMaxValues(): (T, T) = (getMinValue, getMaxValue)
+  def minMaxValues(): (T, T) = (minValue, maxValue)
 
   /**
    * Return a mutable copy of this histogram.
    */
   def mutable(): MutableHistogram[T]
 
-  def getValues(): Array[T]
+  def values(): Array[T]
 
   def rawValues(): Array[T]
 
@@ -61,15 +61,15 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
 
   def foreachValue(f: T => Unit): Unit
 
-  def getQuantileBreaks(num: Int): Array[T]
+  def quantileBreaks(num: Int): Array[T]
 
-  def getMode(): T
+  def mode(): T
 
-  def getMedian(): T
+  def median(): T
 
-  def getMean(): Double
+  def mean(): Double
 
-  def generateStatistics(): Statistics[T]
+  def statistics(): Statistics[T]
 
   def bucketCount(): Int
 

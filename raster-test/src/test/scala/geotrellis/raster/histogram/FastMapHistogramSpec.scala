@@ -21,28 +21,28 @@ import geotrellis.raster._
 import org.scalatest._
 
 class FastMapHistogramSpec extends FunSpec with Matchers {
-  describe("getMode") {
+  describe("mode") {
     it("should return NODATA if no items are counted") {
       val h = FastMapHistogram()
-      h.getMode should equal (NODATA)
+      h.mode should equal (NODATA)
     }
   }
 
   describe("median calculations") {
-    it("should return the same result for getMedian and generateStatistics.median") {
+    it("should return the same result for median and statistics.median") {
       val h = FastMapHistogram()
 
       for(i <- List(1,2,3,3,4,5,6,6,6,7,8,9,9,9,9,10,11,12,12,13,14,14,15,16,17,17,18,19)) {
         h.countItem(i)
       }
 
-      h.getMedian should equal (9)
-      h.getMedian should equal (h.generateStatistics.median)
+      h.median should equal (9)
+      h.median should equal (h.statistics.median)
     }
   }
 
   describe("mean calculation") {
-    it("should return the same result for getMean and generateStatistics.mean") {
+    it("should return the same result for mean and statistics.mean") {
       val h = FastMapHistogram()
       //large values to check that overflow does not trip as it would with sum/count method
       val list = List(1, 32, 243, 243, 1024, 3125, 7776, 7776, 7776, 16807, 32768, 59049, 59049,
@@ -52,14 +52,14 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
         h.countItem(i)
       }
 
-      val mean = h.getMean()
+      val mean = h.mean()
       mean should equal (7.444884144827585E7)
-      mean should equal (h.generateStatistics.mean)
+      mean should equal (h.statistics.mean)
     }
   }
 
   describe("mode calculation") {
-    it("should return the same result for getMode and generateStatistics.mode") {
+    it("should return the same result for mode and statistics.mode") {
       val h = FastMapHistogram()
       val list = List(1, 32, 243, 243, 1024, 1024, 7776, 7776, 7776, 16807, 32768, 59049, 59049,
         59049, 59049, 100000, 161051, 248832, 248832, 371293, 537824, 537824, 759375, 1048576,
@@ -68,20 +68,20 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
         h.countItem(i)
       }
 
-      val mode = h.getMode()
+      val mode = h.mode()
       mode should equal (59049)
-      mode should equal (h.generateStatistics.mode)
+      mode should equal (h.statistics.mode)
     }
 
-    it(".getMode and .generateStatistics.mode should agree on a mode of a unique list") {
+    it(".mode and .statistics.mode should agree on a mode of a unique list") {
       val h = FastMapHistogram()
       val list = List(9, 8, 7, 6, 5, 4, 3, 2, -10)
       for(i <- list) {
         h.countItem(i)
       }
 
-      val mode = h.getMode()
-      mode should equal (h.generateStatistics.mode)
+      val mode = h.mode()
+      mode should equal (h.statistics.mode)
     }
   }
 

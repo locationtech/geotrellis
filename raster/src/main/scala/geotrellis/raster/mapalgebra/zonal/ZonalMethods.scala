@@ -12,7 +12,7 @@ trait ZonalMethods extends MethodExtensions[Tile] {
 
   def zonalStatisticsInt(zones: Tile): Map[Int, Statistics[Int]] =
     IntZonalHistogram(self, zones)
-      .map { case (zone: Int, hist: Histogram[Int]) => (zone -> hist.generateStatistics) }
+      .map { case (zone: Int, hist: Histogram[Int]) => (zone -> hist.statistics) }
       .toMap
 
   def zonalHistogramDouble(zones: Tile): Map[Int, Histogram[Double]] =
@@ -20,7 +20,7 @@ trait ZonalMethods extends MethodExtensions[Tile] {
 
   def zonalStatisticsDouble(zones: Tile): Map[Int, Statistics[Double]] =
     DoubleZonalHistogram(self, zones)
-      .map { case (zone: Int, hist: Histogram[Double]) => (zone -> hist.generateStatistics) }
+      .map { case (zone: Int, hist: Histogram[Double]) => (zone -> hist.statistics) }
       .toMap
 
   def zonalPercentage(zones: Tile): Tile =

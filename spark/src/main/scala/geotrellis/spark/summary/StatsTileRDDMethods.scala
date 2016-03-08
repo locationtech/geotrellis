@@ -43,10 +43,10 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
   }
 
   def classBreaks(numBreaks: Int): Array[Int] =
-    histogram.getQuantileBreaks(numBreaks)
+    histogram.quantileBreaks(numBreaks)
 
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    doubleHistogram.getQuantileBreaks(numBreaks)
+    doubleHistogram.quantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
     self.map(_.tile.findMinMax)

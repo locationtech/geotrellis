@@ -33,7 +33,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
         map = map + (key -> v)
       }
 
-      map.foreach { case (v, k) => histogram.getItemCount(v) should be (k) }
+      map.foreach { case (v, k) => histogram.itemCount(v) should be (k) }
     }
 
     it("should get correct histogram over a quarter of the extent") {
@@ -50,8 +50,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val histogram = ones.polygonalHistogram(quarterExtent.toPolygon)
       val expected = ones.stitch.tile.polygonalHistogram(totalExtent, quarterExtent.toPolygon)
 
-      histogram.getMinMaxValues should be (expected.getMinMaxValues)
-      histogram.getItemCount(1) should be (expected.getItemCount(1))
+      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over half of the extent in diamond shape") {
@@ -69,8 +69,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val histogram = ones.polygonalHistogram(poly)
       val expected = ones.stitch.tile.polygonalHistogram(totalExtent, poly)
 
-      histogram.getMinMaxValues should be (expected.getMinMaxValues)
-      histogram.getItemCount(1) should be (expected.getItemCount(1))
+      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over polygon with hole") {
@@ -98,8 +98,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val histogram = ones.polygonalHistogram(poly)
       val expected = ones.stitch.tile.polygonalHistogram(totalExtent, poly)
 
-      histogram.getMinMaxValues should be (expected.getMinMaxValues)
-      histogram.getItemCount(1) should be (expected.getItemCount(1))
+      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.itemCount(1) should be (expected.itemCount(1))
     }
   }
 }

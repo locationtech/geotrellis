@@ -430,7 +430,7 @@ object StrictColorClassifier {
   }
 
   def fromQuantileBreaks(histogram: Histogram[Int], colors: Array[RGBA]) = {
-    val breaks = histogram.getQuantileBreaks(colors.length)
+    val breaks = histogram.quantileBreaks(colors.length)
     apply(breaks zip colors)
   }
 

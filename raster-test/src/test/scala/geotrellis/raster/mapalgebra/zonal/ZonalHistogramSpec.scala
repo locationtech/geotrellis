@@ -88,7 +88,7 @@ class ZonalHistogramSpec extends FunSpec
       for(zone <- histograms.keys) {
         val hist = histograms(zone)
         for(v <- expected(zone).keys) {
-          hist.getItemCount(v) should be (expected(zone)(v))
+          hist.itemCount(v) should be (expected(zone)(v))
         }
       }
     }

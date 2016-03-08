@@ -181,7 +181,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     limit = (size * FACTOR).toInt
   }
 
-  def getTotalCount = total
+  def totalCount = total
 
   def mutable() = new FastMapHistogram(size, buckets.clone(), used, total)
 
@@ -200,7 +200,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     keys
   }
 
-  def getValues() = {
+  def values() = {
     val keys = rawValues()
     Sorting.quickSort(keys)
     keys
@@ -215,12 +215,12 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     }
   }
 
-  def getItemCount(item: Int) = {
+  def itemCount(item: Int) = {
     val i = hashItem(item, mask, buckets)
     if (buckets(i) == UNSET) 0 else buckets(i + 1)
   }
 
-  def getMinValue: Int = {
+  def minValue: Int = {
     val len = size * 2
     var zmin = Int.MaxValue
     var i = 0
@@ -232,7 +232,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     zmin
   }
 
-  def getMaxValue: Int = {
+  def maxValue: Int = {
     val len = size * 2
     var zmax = Int.MinValue
     var i = 0
@@ -244,7 +244,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     zmax
   }
 
-  override def getMinMaxValues = {
+  override def minMaxValues = {
     val len = size * 2
     var zmin = Int.MaxValue
     var zmax = Int.MinValue

@@ -50,13 +50,13 @@ trait SummaryMethods extends MethodExtensions[Tile] {
   * Generate quantile class breaks for a given raster.
   */
   def classBreaks(numBreaks: Int): Array[Int] =
-    histogram.getQuantileBreaks(numBreaks)
+    histogram.quantileBreaks(numBreaks)
 
   /**
   * Generate quantile class breaks for a given raster.
   */
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    doubleHistogram.getQuantileBreaks(numBreaks)
+    doubleHistogram.quantileBreaks(numBreaks)
 
   /**
     * Determine statistical data for the given histogram.
@@ -64,7 +64,7 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     * This includes mean, median, mode, stddev, and min and max values.
     */
   def statistics: Statistics[Int] =
-    histogram.generateStatistics
+    histogram.statistics
 
   /**
     * Determine statistical data for the given histogram.
@@ -72,7 +72,7 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     * This includes mean, median, mode, stddev, and min and max values.
     */
   def statisticsDouble: Statistics[Double] =
-    doubleHistogram.generateStatistics
+    doubleHistogram.statistics
 
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.

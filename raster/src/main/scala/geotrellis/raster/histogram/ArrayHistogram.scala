@@ -42,7 +42,7 @@ class ArrayHistogram(val counts: Array[Int], var total: Int)
 
   def bucketCount() = size
 
-  def getTotalCount = total
+  def totalCount = total
 
   def mutable() = ArrayHistogram(counts.clone, total)
 
@@ -56,7 +56,7 @@ class ArrayHistogram(val counts: Array[Int], var total: Int)
     }
   }
 
-  def getValues() = rawValues()
+  def values() = rawValues()
 
   def rawValues() = (0 until counts.length).filter(counts(_) > 0).toArray
 
@@ -75,10 +75,10 @@ class ArrayHistogram(val counts: Array[Int], var total: Int)
     counts(i) += count
   }
 
-  def getItemCount(i: Int) = counts(i)
+  def itemCount(i: Int) = counts(i)
 
   // REFACTOR: use Option
-  def getMinValue: Int = {
+  def minValue: Int = {
     var i = 0
     val limit = counts.length
     while (i < limit) {
@@ -89,7 +89,7 @@ class ArrayHistogram(val counts: Array[Int], var total: Int)
   }
 
   // REFACTOR: use Option
-  def getMaxValue: Int = {
+  def maxValue: Int = {
     var i = counts.length - 1
     while (i >= 0) {
       if (counts(i) > 0) return i
