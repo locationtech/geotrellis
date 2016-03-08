@@ -11,7 +11,6 @@ GeoTrellis.
 ![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
 
 - [geotrellis.etl](etl/etl-intro.md)
-- [geotrellis.gdal](gdal/gdal-intro.md) // incomplete
 - [geotrellis.proj4](proj4/proj4-intro.md) // incomplete
 - [geotrellis.raster](raster/raster-intro.md)
   - [cell types](raster/celltype.md)
@@ -54,4 +53,3 @@ load) facilities and their extension.
 
 Documentation which doesn't neatly fit the package structure of
 GeoTrellis.
-
