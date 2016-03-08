@@ -47,5 +47,28 @@ class GetColorsAndBreaksSpec extends FunSpec
       colorClassifier.getBreaks should be (Array(12, 15, 66, 95))
       colorClassifier.getColors should be (Array(g, y, o, r))
     }
+
+    it("gets color breaks for test double raster.") {
+      val testTile = {
+        val nd = doubleNODATA
+        ArrayTile(
+          Array(
+            12.0, 12.0, 13.0, 14.0, 15.0,
+            44.0, 91.0, nd,   11.0, 95.0,
+            12.0, 13.0, 56.0, 66.0, 66.0,
+            44.0, 91.0, nd,   11.0, 95.0),
+          5, 4)
+      }
+
+      val h = testTile.doubleHistogram
+      val (g, y, o, r) = (RGBA(0x00ff00ff), RGBA(0xffff00ff), RGBA(0xff7f00ff), RGBA(0xff0000ff))
+      val colors: Array[RGBA] = Array(g, y, o, r)
+      val colorClassifier = StrictColorClassifier.fromQuantileBreaks(h, colors)
+      val breaks = colorClassifier.getBreaks
+
+      breaks(0) should be (11.0)
+      breaks.length should be (4)
+      colorClassifier.getColors should be (Array(g, y, o, r))
+    }
   }
 }

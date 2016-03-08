@@ -34,10 +34,16 @@ object StreamingHistogram {
 
   private val defaultSize = 80
 
-  def apply(size: Int = defaultSize) = new StreamingHistogram(size, None, None)
+  def apply(size: Int = defaultSize) = new StreamingHistogram(size, None, None, Double.PositiveInfinity, Double.NegativeInfinity)
 
-  def apply(size: Int, buckets: TreeMap[Double, Int], deltas: TreeMap[DeltaType, Unit]) =
-    new StreamingHistogram(size, Some(buckets), Some(deltas))
+  def apply(
+    size: Int,
+    buckets: TreeMap[Double, Int],
+    deltas: TreeMap[DeltaType, Unit],
+    minimumSeen: Double,
+    maximumSeen: Double
+  ) =
+    new StreamingHistogram(size, Some(buckets), Some(deltas), minimumSeen, maximumSeen)
 
   def fromTile(r: Tile): StreamingHistogram = {
     val h = StreamingHistogram()
@@ -54,7 +60,9 @@ object StreamingHistogram {
 class StreamingHistogram(
   m: Int,
   startingBuckets: Option[TreeMap[Double, Int]],
-  startingDeltas: Option[TreeMap[DeltaType, Unit]]
+  startingDeltas: Option[TreeMap[DeltaType, Unit]],
+  minimum: Double = Double.PositiveInfinity,
+  maximum: Double = Double.NegativeInfinity
 ) extends MutableHistogram[Double] {
 
   class DeltaCompare extends Comparator[DeltaType] {
@@ -68,6 +76,8 @@ class StreamingHistogram(
       }
   }
 
+  private var _min = minimum
+  private var _max = maximum
   private val _buckets = startingBuckets.getOrElse(new TreeMap[Double, Int])
   private val _deltas = startingDeltas.getOrElse(new TreeMap[DeltaType, Unit](new DeltaCompare))
 
@@ -157,6 +167,9 @@ class StreamingHistogram(
     * one, or it can be used to incrementally merge two histograms.
     */
   private def countItem(b: BucketType): Unit = {
+    if (b._1 < _min) _min = b._1
+    if (b._1 > _max) _max = b._2
+
     /* First entry */
     if (_buckets.size == 0)
       _buckets.put(b._1, b._2)
@@ -217,6 +230,8 @@ class StreamingHistogram(
 
   /**
     * Uncount item.
+    *
+    * Note: _min and _max are not changed by this.
     */
   def uncountItem(item: Double): Unit =
     countItem((item, -1))
@@ -248,6 +263,8 @@ class StreamingHistogram(
   /**
     * Make a change to the distribution to approximate changing the
     * value of a particular item.
+    *
+    * Note: _min and _max are not changed by this.
     */
   def setItem(item: Double, count: Int): Unit = {
     val oldCount = itemCount(item)
@@ -292,20 +309,18 @@ class StreamingHistogram(
   /**
     * Update this histogram with the entries from another.
     */
-  def update(other: Histogram[Double]): Unit = {
-    require(other.isInstanceOf[StreamingHistogram])
-    this.countItems(other.asInstanceOf[StreamingHistogram].buckets)
-  }
+  def update(other: Histogram[Double]): Unit =
+    other.foreach({ case (item, count) => this.countItem((item, count)) })
 
   def mutable(): StreamingHistogram =
-    StreamingHistogram(this.m, this._buckets, this._deltas)
+    StreamingHistogram(this.m, this._buckets, this._deltas, this._min, this._max)
 
   /**
     * Create a new histogram from this one and another without
     * altering either.
     */
   def +(other: StreamingHistogram): StreamingHistogram = {
-    val sh = StreamingHistogram(this.m, this._buckets, this._deltas)
+    val sh = StreamingHistogram(this.m, this._buckets, this._deltas, this._min, this._max)
     sh.countItems(other.buckets)
     sh
   }
@@ -313,7 +328,7 @@ class StreamingHistogram(
   def bucketCount():Int = _buckets.size
 
   def merge(histogram: Histogram[Double]): Histogram[Double] = {
-    val sh = StreamingHistogram(this.m, this._buckets, this._deltas)
+    val sh = StreamingHistogram(this.m, this._buckets, this._deltas, this._min, this._max)
     histogram.foreach({ (item: Double, count: Int) => sh.countItem((item, count)) })
     sh
   }
@@ -364,7 +379,7 @@ class StreamingHistogram(
     */
   def minValue(): Double = {
     val entry = _buckets.higherEntry(Double.NegativeInfinity)
-    if (entry != null) entry.getKey; else Double.NaN
+    if (entry != null) entry.getKey; else this._min
   }
 
   /**
@@ -372,7 +387,7 @@ class StreamingHistogram(
     */
   def maxValue(): Double = {
     val entry = _buckets.lowerEntry(Double.PositiveInfinity)
-    if (entry != null) entry.getKey; else Double.NaN
+    if (entry != null) entry.getKey; else this._max
   }
 
   /**
@@ -410,12 +425,16 @@ class StreamingHistogram(
   def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
     val data = cdfIntervals
     qs.map({ q =>
-      val tt = data.dropWhile(_._2._2 <= q).next
-      val (d1, pct1) = tt._1
-      val (d2, pct2) = tt._2
-      val x = (q - pct1) / (pct2 - pct1)
+      if (q == 0.0) minValue()
+      else if (q == 1.0) maxValue()
+      else {
+        val tt = data.dropWhile(_._2._2 <= q).next
+        val (d1, pct1) = tt._1
+        val (d2, pct2) = tt._2
+        val x = (q - pct1) / (pct2 - pct1)
 
-      (1-x)*d1 + x*d2
+        (1-x)*d1 + x*d2
+      }
     })
   }
 
