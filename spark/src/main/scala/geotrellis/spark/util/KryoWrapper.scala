@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.utils
+package geotrellis.spark.util
 
 import scala.reflect.ClassTag
 

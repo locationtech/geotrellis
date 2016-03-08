@@ -5,7 +5,6 @@ import geotrellis.spark.SpaceTimeKey
 import geotrellis.spark.io.accumulo.{AccumuloInstance, BaseAccumuloRDDWriter}
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.utils.KryoWrapper
 import org.apache.accumulo.core.data.{Key, Value}
 import org.apache.hadoop.io.Text
 import org.apache.spark.rdd.RDD

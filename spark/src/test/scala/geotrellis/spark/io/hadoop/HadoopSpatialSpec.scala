@@ -1,12 +1,10 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.Tile
+import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark._
-import geotrellis.spark.io.avro.codecs._
 
 abstract class HadoopSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]

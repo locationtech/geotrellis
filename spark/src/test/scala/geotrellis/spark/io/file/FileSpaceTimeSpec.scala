@@ -1,12 +1,11 @@
 package geotrellis.spark.io.file
 
 import geotrellis.raster.Tile
+import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark._
-import geotrellis.spark.io.avro.codecs._
+
 import com.github.nscala_time.time.Imports._
 
 abstract class FileSpaceTimeSpec

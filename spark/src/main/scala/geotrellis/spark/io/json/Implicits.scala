@@ -1,30 +1,35 @@
-package geotrellis.spark.io
+package geotrellis.spark.io.json
 
 import geotrellis.spark._
+import geotrellis.spark.io.index
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.spark.utils._
+import geotrellis.spark.util._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.json._
 import geotrellis.vector._
 import geotrellis.vector.io.json._
+
 import com.github.nscala_time.time.Imports._
 import org.apache.avro.Schema
 import spray.json._
+
 import scala.reflect.ClassTag
 
-package object json {
-  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] = 
+object Implicits extends Implicits
+
+trait Implicits {
+  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
     new JavaSerializationJsonFormat[index.KeyIndex[K]]
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
       JsString(crs.toProj4String)
 
-    def read(value: JsValue): CRS = 
+    def read(value: JsValue): CRS =
       value match {
         case JsString(proj4String) => CRS.fromString(proj4String)
-        case _ => 
+        case _ =>
           throw new DeserializationException("CRS must be a proj4 string.")
       }
   }
@@ -60,9 +65,9 @@ package object json {
           throw new DeserializationException("LayoutDefinition expected")
       }
   }
-  
+
   implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
-    def write(metaData: RasterMetaData) = 
+    def write(metaData: RasterMetaData) =
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,
@@ -101,3 +106,4 @@ package object json {
     def write(obj: Schema) = obj.toString.parseJson
   }
 }
+

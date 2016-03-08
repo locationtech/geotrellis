@@ -1,4 +1,4 @@
-package geotrellis.spark.utils
+package geotrellis.spark.util
 
 import geotrellis.spark._
 import geotrellis.proj4._

@@ -1,15 +1,15 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.{MultiBandTile, Tile}
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index.KeyIndexMethod
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
+
 import scala.reflect._
 
 class AccumuloLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](

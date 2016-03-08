@@ -1,8 +1,11 @@
-package geotrellis.spark.io.avro
+package geotrellis.spark.io.avro.codecs
 
 import geotrellis.raster.Tile
+import geotrellis.spark.io.avro.{AvroRecordCodec, AvroUnionCodec}
 
-package object codecs extends TileCodecs with KeyCodecs {
+object Implicits extends Implicits
+
+trait Implicits extends TileCodecs with KeyCodecs {
   implicit def tileUnionCodec = new AvroUnionCodec[Tile](
     byteArrayTileCodec,
     floatArrayTileCodec,
@@ -15,4 +18,3 @@ package object codecs extends TileCodecs with KeyCodecs {
 
   implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec]: TupleCodec[A, B] = TupleCodec[A, B]
 }
-

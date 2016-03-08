@@ -6,7 +6,7 @@ import TagCodes._
 import TiffFieldType._
 import geotrellis.util.Filesystem
 
-import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.util._
 import spire.syntax.cfor._
 import monocle.syntax._
 

@@ -6,8 +6,6 @@ import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro.codecs._
 
 class AccumuloSpaceTimeAlternativeSpec
     extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]

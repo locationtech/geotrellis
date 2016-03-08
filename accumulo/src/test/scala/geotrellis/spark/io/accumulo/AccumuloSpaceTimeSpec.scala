@@ -1,13 +1,12 @@
 package geotrellis.spark.io.accumulo
 
-import com.github.nscala_time.time.Imports._
 import geotrellis.raster.Tile
+import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark._
+
+import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 
 abstract class AccumuloSpaceTimeSpec
@@ -24,7 +23,7 @@ abstract class AccumuloSpaceTimeSpec
   lazy val deleter   = AccumuloLayerDeleter(instance)
   lazy val reindexer = AccumuloLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](instance, "tiles", ZCurveKeyIndexMethod.byPattern("YMM"), SocketWriteStrategy())
   lazy val tiles     = AccumuloTileReader[SpaceTimeKey, Tile](instance)
-  lazy val sample    =  CoordinateSpaceTime
+  lazy val sample    = CoordinateSpaceTime
 }
 
 class AccumuloSpaceTimeZCurveByYearSpec extends AccumuloSpaceTimeSpec {

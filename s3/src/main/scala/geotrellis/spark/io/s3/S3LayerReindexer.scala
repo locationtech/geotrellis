@@ -1,6 +1,6 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.utils.cache.Cache
+import geotrellis.spark.util.cache.Cache
 import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod

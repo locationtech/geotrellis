@@ -36,6 +36,6 @@ initialCommands in console :=
   import geotrellis.vector._
   import geotrellis.proj4._
   import geotrellis.spark._
-  import geotrellis.spark.utils._
+  import geotrellis.spark.util._
   import geotrellis.spark.tiling._
   """

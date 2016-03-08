@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.utils.cache
+package geotrellis.spark.util.cache
 
 import org.scalatest._
 

@@ -1,18 +1,18 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.{MultiBandTile, Tile}
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.json._
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index.KeyIndex
+
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.spark.rdd.RDD
 import spray.json._
+
 import scala.reflect._
 
 class AccumuloLayerReader[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](

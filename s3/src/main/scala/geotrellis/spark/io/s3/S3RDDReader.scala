@@ -4,8 +4,8 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{MergeQueue, KeyIndex, IndexRanges}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.utils.KryoWrapper
-import geotrellis.spark.utils.cache.Cache
+import geotrellis.spark.util.KryoWrapper
+import geotrellis.spark.util.cache.Cache
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext

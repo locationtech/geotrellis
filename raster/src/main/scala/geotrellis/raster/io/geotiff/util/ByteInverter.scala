@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff.utils
+package geotrellis.raster.io.geotiff.util
 
 trait ByteInverter {
 

@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.util.KryoWrapper
 import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.client.mapreduce.{AccumuloInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Range => AccumuloRange, Key, Value}

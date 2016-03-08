@@ -2,15 +2,12 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
-import geotrellis.spark.utils._
 
 import spray.json._
 import DefaultJsonProtocol._
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import java.io.PrintWriter
-import scala.reflect.ClassTag
 
 import org.apache.hadoop.conf.Configuration
 
