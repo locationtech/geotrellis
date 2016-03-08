@@ -107,74 +107,74 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
     if(d == DOWN) {
       if(pd != DOWN) {
         if(pd == RIGHT) {                //RHT
-          points += mark(col, row-1, BOTTOMLEFT)
+          points += mark(col, row - 1, BOTTOMLEFT)
         } else if(pd == LEFT) {          //LHT
-          points += mark(col, row-1, TOPLEFT)
+          points += mark(col, row - 1, TOPLEFT)
         } else {                         //RT
-          points += mark(col, row-1, TOPRIGHT)
-          points += mark(col, row-1, TOPLEFT)
+          points += mark(col, row - 1, TOPRIGHT)
+          points += mark(col, row - 1, TOPLEFT)
         }
       }
     } else if(d == RIGHT) {
       if(pd != RIGHT) {
         if(pd == UP) {                   //RHT
-          points += mark(col-1, row, BOTTOMRIGHT)
+          points += mark(col - 1, row, BOTTOMRIGHT)
         } else if(pd == DOWN) {          //LHT
-          points += mark(col-1, row, BOTTOMLEFT)
+          points += mark(col - 1, row, BOTTOMLEFT)
         } else {                         //RT
-          points += mark(col-1, row, TOPLEFT)
-          points += mark(col-1, row, BOTTOMLEFT)
+          points += mark(col - 1, row, TOPLEFT)
+          points += mark(col - 1, row, BOTTOMLEFT)
         }
       }
     } else if(d == UP) {
       if(pd != UP) {
         if(pd == LEFT) {                 //RHT
-          points += mark(col, row+1, TOPRIGHT)
+          points += mark(col, row + 1, TOPRIGHT)
         } else if(pd == RIGHT) {         //LHT
-          points += mark(col, row+1, BOTTOMRIGHT)
+          points += mark(col, row + 1, BOTTOMRIGHT)
         } else {                         //RT
-          points += mark(col, row+1, BOTTOMLEFT)
-          points += mark(col, row+1, BOTTOMRIGHT)
+          points += mark(col, row + 1, BOTTOMLEFT)
+          points += mark(col, row + 1, BOTTOMRIGHT)
         }
       }
     } else if(d == LEFT) {
       if(pd != LEFT) {
         if(pd == DOWN) {                 //RHT
-          points += mark(col+1, row, TOPLEFT)
+          points += mark(col + 1, row, TOPLEFT)
         } else if(pd == UP) {            //LHT
-          points += mark(col+1, row, TOPRIGHT)
+          points += mark(col + 1, row, TOPRIGHT)
         } else {                         //RT
-          points += mark(col+1, row, BOTTOMRIGHT)
-          points += mark(col+1, row, TOPRIGHT)
+          points += mark(col + 1, row, BOTTOMRIGHT)
+          points += mark(col + 1, row, TOPRIGHT)
         }
       }
     } else { sys.error(s"Unknown direction $d") }
   }
 
-  def findNextDirection(col: Int, row: Int, d: Int, v: Int): Int = {
+  def findNextDirection(col: Int, row: Int, d: Int, targetValue: Int): Int = {
     var i = d + 3
     while(i < d + 7) {
       val m = i % 4
       if(m == 0) {
         // Check left
         if(col > 0) {
-          if(r.get(col-1, row) == v) {
+          if(r.get(col - 1, row) == targetValue) {
             return LEFT
           }
         }
       }
       else if(m == 1) {
         // Check down
-        if(row+1 < rows) {
-          if(r.get(col, row+1) == v) {
+        if(row + 1 < rows) {
+          if(r.get(col, row + 1) == targetValue) {
             return DOWN
           }
         }
       }
       else if(m == 2) {
         // Check right
-        if(col+1 < cols) {
-          if(r.get(col+1, row) == v) {
+        if(col + 1 < cols) {
+          if(r.get(col + 1, row) == targetValue) {
             return RIGHT
           }
         }
@@ -182,7 +182,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
       else if(m == 3) {
         // Check up
         if(row > 0) {
-          if(r.get(col, row-1) == v) {
+          if(r.get(col, row - 1) == targetValue) {
             return UP
           }
         }
@@ -193,33 +193,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
     return NOTFOUND
   }
 
-  def getPolygon[T](v: Int, data: T): PolygonFeature[T] = {
-    // Find upper left start point.
-    var sc = 0
-    var sr = 0
-    var found = false
-    while(!found && sc < cols) {
-      sr = 0
-      while(!found && sr < rows) {
-        if(r.get(sc, sr) == v) { found = true }
-        if(!found) { sr += 1 }
-      }
-      if(!found) { sc += 1 }
-    }
-
-    if(!found) { sys.error(s"This raster does not contain value $v") }
-    getPolygon(v, data, (sc, sr))
-  }
-
-  def getPolygon[T](v: Int, data: T, startPoint: (Int, Int)): PolygonFeature[T] = {
-    val shell = getLinearRing(v: Int, startPoint: (Int, Int))
-    PolygonFeature(
-      Polygon(jtsFactory.createPolygon(shell, Array())),
-      data
-    )
-  }
-
-  def getLinearRing[T](v: Int, startPoint: (Int, Int)): geom.LinearRing = {
+  def getLinearRing[T](targetValue: Int, startPoint: (Int, Int)): geom.LinearRing = {
     val points = mutable.ArrayBuffer[geom.Coordinate]()
 
     val startCol = startPoint._1
@@ -227,14 +201,14 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
 
     // First check down and right of first.
     var direction = NOTFOUND
-    if(startRow+1 < rows) {
-      if(r.get(startCol, startRow + 1) == v) {
+    if(startRow + 1 < rows) {
+      if(r.get(startCol, startRow + 1) == targetValue) {
         direction = DOWN
       }
     }
 
     if(direction == NOTFOUND && startCol < cols) {
-      if(r.get(startCol+1, startRow) == v) {
+      if(r.get(startCol + 1, startRow) == targetValue) {
         direction = RIGHT
       }
     }
@@ -269,7 +243,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
 
         makeMarks(points, col, row, direction, previousDirection)
         previousDirection = direction
-        direction = findNextDirection(col, row, direction, v)
+        direction = findNextDirection(col, row, direction, targetValue)
         //println(s"PREVIOUS ${sd(previousDirection)} NEXT ${sd(direction)}  ($col, $row)")
         if(col == startCol && row == startRow) {
           if(previousDirection == LEFT || previousDirection == DOWN) {

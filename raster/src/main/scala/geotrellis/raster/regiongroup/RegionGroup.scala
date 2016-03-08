@@ -21,7 +21,7 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 
-case class RegionGroupResult(raster: Tile, regionMap: Map[Int, Int])
+case class RegionGroupResult(tile: Tile, regionMap: Map[Int, Int])
 
 object RegionGroupOptions { val default = RegionGroupOptions() }
 case class RegionGroupOptions(
@@ -40,12 +40,12 @@ object RegionGroup {
     val ignoreNoData = options.ignoreNoData
 
     /* Go through each cell row by row, and set all considered neighbors
-     * whose values are equal to the current cell's values to be of the 
+     * whose values are equal to the current cell's values to be of the
      * same region. If there are no equal considered neighbors, then the cell
-     * represents a new region. Considered neighbors are: west and north, for 
+     * represents a new region. Considered neighbors are: west and north, for
      * connectivity of FourNieghbors, and west, north, and northwest for connectivity
      * of EightNeighbors.
-     * 
+     *
      * Code is duplicated for Four and Eight Neighbor connectivity for performance
      * and to try and avoid a mess of conditionals.
      */
@@ -192,13 +192,13 @@ object RegionGroup {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = tile.get(col, row)
-        if(isData(v) || !ignoreNoData) { 
+        if(isData(v) || !ignoreNoData) {
           val cls = regions.getClass(v)
           if(cls != v && regionMap.contains(v)) {
             if(!regionMap.contains(cls)) {
               sys.error(s"Region map should contain class identifier $cls")
             }
-            regionMap.remove(v) 
+            regionMap.remove(v)
           }
           tile.set(col, row, regions.getClass(v))
         }
@@ -271,7 +271,7 @@ class RegionPartition() {
     }
   }
 
-  def getClass(x: Int) = 
+  def getClass(x: Int) =
     if(!regionMap.contains(x)) { sys.error(s"There is no partition containing $x") }
     else {
       regionMap(x).min
