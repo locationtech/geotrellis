@@ -3,7 +3,7 @@ package org.osgeo.proj4j.datum;
 import org.osgeo.proj4j.ProjCoordinate;
 import java.io.Serializable;
 
-public final class Axes implements Serializable {
+public final class AxisOrder implements Serializable {
     public static enum Axis {
         Easting {
             public double fromENU(ProjCoordinate c) {
@@ -70,18 +70,18 @@ public final class Axes implements Serializable {
         public abstract void toENU(double x, ProjCoordinate c);
     }
 
-    public final static Axes ENU = 
-        new Axes(Axis.Easting, Axis.Northing, Axis.Up);
+    public final static AxisOrder ENU = 
+        new AxisOrder(Axis.Easting, Axis.Northing, Axis.Up);
 
     private final Axis x, y, z;
 
-    private Axes(Axis x, Axis y, Axis z) {
+    private AxisOrder(Axis x, Axis y, Axis z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public static Axes fromString(String spec) {
+    public static AxisOrder fromString(String spec) {
         if (spec.length() != 3) {
             throw new Error();
         }
@@ -90,7 +90,7 @@ public final class Axes implements Serializable {
         Axis y = Axis.fromChar(spec.charAt(1));
         Axis z = Axis.fromChar(spec.charAt(2));
 
-        return new Axes(x, y, z);
+        return new AxisOrder(x, y, z);
     }
 
     public void fromENU(ProjCoordinate coord) {
@@ -109,5 +109,20 @@ public final class Axes implements Serializable {
         this.x.toENU(x, coord);
         this.y.toENU(y, coord);
         this.z.toENU(z, coord);
+    }
+
+    @Override
+    public int hashCode() {
+        return x.hashCode() | (17 * y.hashCode()) | (37 * z.hashCode());
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (that instanceof AxisOrder) {
+            AxisOrder a = (AxisOrder) that;
+            return x == a.x && y == a.y && z == a.z;
+        } else {
+            return false;
+        }
     }
 }

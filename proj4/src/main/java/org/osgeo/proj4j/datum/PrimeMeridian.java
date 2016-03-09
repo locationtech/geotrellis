@@ -67,6 +67,21 @@ public final class PrimeMeridian implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return new Double(offsetFromGreenwich).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (that instanceof PrimeMeridian) {
+            return offsetFromGreenwich == ((PrimeMeridian)that).offsetFromGreenwich;
+
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public String toString() {
         return "PM[" + name + ": " + offsetFromGreenwich + "]";
     }

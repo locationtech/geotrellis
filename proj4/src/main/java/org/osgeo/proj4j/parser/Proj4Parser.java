@@ -132,7 +132,7 @@ public class Proj4Parser
 
    s = (String) params.get( Proj4Keyword.axis );
    if ( s != null )
-       projection.setAxes(s);
+       projection.setAxisOrder(s);
 
    //TODO: implement some of these parameters ?
      

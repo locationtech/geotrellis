@@ -17,4 +17,19 @@ public final class IntPolarCoordinate implements Serializable {
     public String toString() {
         return String.format("ILP %x:%x", lam, phi);
     }
+
+    @Override
+    public int hashCode() {
+        return lam | (17 * phi);
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (that instanceof IntPolarCoordinate) {
+            IntPolarCoordinate c = (IntPolarCoordinate) that;
+            return lam == c.lam && phi == c.phi;
+        } else {
+            return false;
+        }
+    }
 }

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -156,6 +157,32 @@ public final class Grid implements Serializable {
         @Override
         public String toString() {
             return String.format("Grid: %s", id);
+        }
+
+        @Override
+        public int hashCode() {
+            int idHash = id == null ? 0 : id.hashCode();
+            int delHash = del == null ? 0 : del.hashCode();
+            int llHash = ll == null ? 0 : ll.hashCode();
+            int cvsHash = Arrays.hashCode(cvs);
+            return idHash | (11 * delHash) | (23 * llHash) | (37 * cvsHash);
+        }
+
+        @Override
+        public boolean equals(Object that) {
+            if (that instanceof ConversionTable) {
+                ConversionTable ct = (ConversionTable) that;
+                if (id == null && ct.id != null) return false;
+                if (! id.equals(ct.id)) return false;
+                if (del == null && ct.del != null) return false;
+                if (! del.equals(ct.del)) return false;
+                if (ll == null && ct.ll != null) return false;
+                if (! ll.equals(ct.ll)) return false;
+                if (! Arrays.equals(cvs, ct.cvs)) return false;
+                return true;
+            } else { 
+                return false;
+            }
         }
     }
 
@@ -318,5 +345,38 @@ public final class Grid implements Serializable {
         if (resource != null) return new DataInputStream(resource);
 
         return null;
+    }
+
+    @Override
+    public int hashCode() {
+        int nameHash = gridName == null ? 0 : gridName.hashCode();
+        int fileHash = fileName == null ? 0 : fileName.hashCode();
+        int formatHash = format == null ? 0 : format.hashCode();
+        int tableHash = table == null ? 0 : table.hashCode();
+        int nextHash = next == null ? 0 : next.hashCode();
+        int childHash = next == null ? 0 : next.hashCode();
+        return nameHash | (7 * fileHash) | (11 * formatHash) | (17 * tableHash) | (23 * nextHash) | (31 * childHash);
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (that instanceof Grid) {
+            Grid g = (Grid) that;
+            if (gridName == null && g.gridName != null) return false;
+            if (!gridName.equals(g.gridName)) return false;
+            if (fileName == null && g.fileName != null) return false;
+            if (!fileName.equals(g.fileName)) return false;
+            if (format == null && g.format != null) return false;
+            if (!format.equals(g.format)) return false;
+            if (table == null && g.table != null) return false;
+            if (!table.equals(g.table)) return false;
+            if (next == null && g.next != null) return false;
+            if (!next.equals(g.next)) return false;
+            if (child == null && g.child != null) return false;
+            if (!child.equals(g.child)) return false;
+            return true;
+        } else {
+            return false;
+        }
     }
 }
