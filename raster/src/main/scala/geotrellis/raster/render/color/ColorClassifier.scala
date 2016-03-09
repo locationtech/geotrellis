@@ -429,11 +429,14 @@ object StrictColorClassifier {
     colorClassifier
   }
 
-  def fromQuantileBreaks[X <: AnyVal : ClassTag](histogram: Histogram[X], colors: Array[RGBA]) = {
-    histogram.quantileBreaks(colors.length) match {
-      case breaks: Array[Int] => apply(breaks zip colors)
-      case breaks: Array[Double] => apply(breaks zip colors)
-    }
+  def fromQuantileBreaks(histogram: Histogram[Int], colors: Array[RGBA]) = {
+    val breaks = histogram.quantileBreaks(colors.length)
+    apply(breaks zip colors)
+  }
+
+  def fromQuantileBreaksDouble(histogram: Histogram[Double], colors: Array[RGBA]) = {
+    val breaks = histogram.quantileBreaks(colors.length)
+    apply(breaks zip colors)
   }
 
   def apply(classifications: Array[(Double, RGBA)]): StrictDoubleColorClassifier =

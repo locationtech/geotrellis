@@ -14,7 +14,7 @@ import spire.syntax.cfor._
 
 trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
 
-  private def mergeMaps[X <: AnyVal](a: Map[Int, Histogram[X]], b: Map[Int, Histogram[X]]) = {
+  private def mergeMaps[T <: AnyVal](a: Map[Int, Histogram[T]], b: Map[Int, Histogram[T]]) = {
     var res = a
     for ((k, v) <- b)
       res = res + (k ->

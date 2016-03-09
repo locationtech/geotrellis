@@ -471,6 +471,14 @@ class StreamingHistogram(
   def percentile(q: Double): Double =
     percentileBreaks(List(q)).head
 
+  /**
+    * This method return the (approximate) quantile breaks of the
+    * distribution of points that the histogram has seen so far.  It
+    * is guranteed that no value in the returned array will be outside
+    * the range minimum-maximum range of values seen.
+    *
+    * @param num The number of breaks desired
+    */
   def quantileBreaks(num: Int): Array[Double] =
     percentileBreaks(List.range(0,num).map(_ / num.toDouble)).toArray
 
