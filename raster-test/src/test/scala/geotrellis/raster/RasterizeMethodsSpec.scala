@@ -182,57 +182,6 @@ class RasterizeMethodsSpec extends FunSpec
   }
 
   /*
-   * Raster
-   */
-  describe("The rasterize methods on the Raster class") {
-    it("rasterize should agree with Rasterizer.rasterizeWithvalue for a square") {
-      val actual1 = raster.rasterize(square)({ z => magicNumber })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = raster.rasterizeDouble(square)({ z => magicNumber })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 == squareExpected)
-      assert(actual2 == squareExpected)
-    }
-
-    it("rasterize should agree with Rasterizer.rasterizeWithvalue for a diamond") {
-      val actual1 = raster.rasterize(diamond)({ z => magicNumber })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = raster.rasterizeDouble(diamond)({ z => magicNumber })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 == diamondExpected)
-      assert(actual2 == diamondExpected)
-    }
-
-    it("rasterize should agree with Rasterizer.rasterizeWithvalue for a triangle") {
-      val actual1 = raster.rasterize(triangle)({ z => magicNumber })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = raster.rasterizeDouble(triangle)({ z => magicNumber })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 == triangleExpected)
-      assert(actual2 == triangleExpected)
-    }
-
-    it("foreach should iterate over the raster and its values 1") {
-      val r = re.rasterize(e)({ (x,y) => x+y })
-      var sum = 0
-
-      r.foreach({ z => sum += z })
-      sum should be (900)
-    }
-
-    it("foreach should iterate over the raster and its values 2") {
-      val r = re.rasterize(e)({ (x,y) => x+y })
-      var sum = 0
-
-      r.foreach({ (x,y,z) => sum += (x + y + z) })
-      sum should be (1800)
-    }
-  }
-
-  /*
    * RasterExtent
    */
   describe("The rasterize and foreach methods on the RasterExtent class") {
