@@ -137,51 +137,6 @@ class RasterizeMethodsSpec extends FunSpec
   }
 
   /*
-   * Tile
-   */
-  describe("The rasterize methods on the Tile class") {
-    it("should make use of function argument") {
-      val actual1 = tile.rasterize(square,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = tile.rasterize(square,e)({ z => if (z == 1) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 != 0)
-      assert(actual2 == 0)
-    }
-
-    it("should agree with Rasterizer.rasterizeWithvalue for a square") {
-      val actual1 = tile.rasterize(square,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = tile.rasterizeDouble(square,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 == squareExpected)
-      assert(actual2 == squareExpected)
-    }
-
-    it("should agree with Rasterizer.rasterizeWithvalue for a diamond") {
-      val actual1 = tile.rasterize(diamond,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = tile.rasterizeDouble(diamond,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 == diamondExpected)
-      assert(actual2 == diamondExpected)
-    }
-
-    it("should agree with Rasterizer.rasterizeWithvalue for a triangle") {
-      val actual1 = tile.rasterize(triangle,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-      val actual2 = tile.rasterizeDouble(triangle,e)({ z => if (z == 0) magicNumber; else z })
-        .toArray.filter(_ == magicNumber).length
-
-      assert(actual1 == triangleExpected)
-      assert(actual2 == triangleExpected)
-    }
-  }
-
-  /*
    * RasterExtent
    */
   describe("The rasterize and foreach methods on the RasterExtent class") {
