@@ -36,8 +36,6 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
    * histogram.
    */
   private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram[Int] = {
-    val (zmin, zmax) = minMaxValues()
-
     // see how many (if any) extreme values we have, and store their indices
     val localValue: Array[Int] = values()
     val vLen = localValue.length
@@ -151,8 +149,8 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     }
 
     // put the maximum value at the end
-    if (qIndex < breaks.length && (qIndex == 0 || breaks(qIndex - 1) < maxValue)) {
-      breaks(qIndex) = maxValue
+    if (maxValue.nonEmpty && qIndex < breaks.length && (qIndex == 0 || breaks(qIndex - 1) < maxValue.get)) {
+      breaks(qIndex) = maxValue.get
       qIndex += 1
     }
 

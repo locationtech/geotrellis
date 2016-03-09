@@ -43,18 +43,17 @@ class HistogramSpec extends FunSpec with Matchers {
           h.countItem(13)
           h.countItem(84)
 
-          h.minValue should be (4)
-          h.maxValue should be (84)
+          h.minValue.get should be (4)
+          h.maxValue.get should be (84)
         }
 
-        // REFACTOR: this should use option
         it("should behave predictably when empty") {
           val h = builder()
           // min value should be largest possible int
           // max value should be smallest possible int
           // this way it signals that the values don't really make sense
-          h.minValue should be (Int.MaxValue)
-          h.maxValue should be (Int.MinValue)
+          h.minValue should be (None)
+          h.maxValue should be (None)
         }
 
         it("should store values and retrieve them later") {
@@ -79,8 +78,8 @@ class HistogramSpec extends FunSpec with Matchers {
           h.uncountItem(16)
 
           h.totalCount should be (42)
-          h.minValue should be (6)
-          h.maxValue should be (8)
+          h.minValue.get should be (6)
+          h.maxValue.get should be (8)
         }
 
         it("should generate quantile breaks") {

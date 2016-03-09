@@ -307,8 +307,8 @@ class StreamingHistogram(
     val localMode = mode
     val ex2 = buckets.map({ case(item, count) => item*item*count }).sum / totalCount
     val stddev = sqrt(ex2 - localMean * localMean)
-    val zmin = minValue
-    val zmax = maxValue
+    val zmin = minValue.getOrElse(this._min)
+    val zmax = maxValue.getOrElse(this._max)
 
     Statistics[Double](dataCount, localMean, localMedian, localMode, stddev, zmin, zmax)
   }
@@ -392,17 +392,17 @@ class StreamingHistogram(
     * Get the (approximate) min value.  This is only approximate
     * because the lowest bucket may be a combined one.
     */
-  def minValue(): Double = {
+  def minValue(): Option[Double] = {
     val entry = _buckets.higherEntry(Double.NegativeInfinity)
-    if (entry != null) entry.getKey; else this._min
+    if (entry != null) Some(entry.getKey); else None
   }
 
   /**
     * Get the (approximate) max value.
     */
-  def maxValue(): Double = {
+  def maxValue(): Option[Double] = {
     val entry = _buckets.lowerEntry(Double.PositiveInfinity)
-    if (entry != null) entry.getKey; else this._max
+    if (entry != null) Some(entry.getKey); else None
   }
 
   /**
@@ -440,8 +440,8 @@ class StreamingHistogram(
   def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
     val data = cdfIntervals
     qs.map({ q =>
-      if (q == 0.0) minValue()
-      else if (q == 1.0) maxValue()
+      if (q == 0.0) minValue().getOrElse(Double.NegativeInfinity)
+      else if (q == 1.0) maxValue().getOrElse(Double.PositiveInfinity)
       else {
         val tt = data.dropWhile(_._2._2 <= q).next
         val (d1, pct1) = tt._1

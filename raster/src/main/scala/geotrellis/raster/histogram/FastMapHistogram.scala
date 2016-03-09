@@ -222,7 +222,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     if (buckets(i) == UNSET) 0 else buckets(i + 1)
   }
 
-  def minValue: Int = {
+  def minValue: Option[Int] = {
     val len = size * 2
     var zmin = Int.MaxValue
     var i = 0
@@ -231,10 +231,13 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
       if (z != UNSET && z < zmin) zmin = z
       i += 2
     }
-    zmin
+    if (zmin != Int.MaxValue)
+      Some(zmin)
+    else
+      None
   }
 
-  def maxValue: Int = {
+  def maxValue: Option[Int] = {
     val len = size * 2
     var zmax = Int.MinValue
     var i = 0
@@ -243,10 +246,13 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
       if (z != UNSET && z > zmax) zmax = z
       i += 2
     }
-    zmax
+    if (zmax != Int.MinValue)
+      Some(zmax)
+    else
+      None
   }
 
-  override def minMaxValues = {
+  override def minMaxValues: Option[(Int, Int)] = {
     val len = size * 2
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
@@ -263,8 +269,12 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     }
     // there's a small chance that we saw the max first, and zmin consumed it.
     // in that case we need to make sure to set zmax properly.
-    if (zmax == Int.MinValue && zmin > zmax) zmax = zmin
-    (zmin, zmax)
+    if (zmax == Int.MinValue && zmin == Int.MaxValue)
+      None
+    else if (zmax == Int.MinValue && zmin > zmax)
+      Some((zmin, zmin))
+    else
+      Some((zmin, zmax))
   }
 
   def bucketCount() = size
