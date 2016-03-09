@@ -36,8 +36,11 @@ object AccumuloRDDWriter {
           .sortByKey()
           .groupByKey()
       } else {
+        // Call groupBy with numPartitions; if called without that argument or a partitioner,
+        // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
+        // on a key type that may no longer by valid for the key type of the resulting RDD.
         raster
-          .groupBy { row => encodeKey(row._1) }
+          .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
       }
 
     val kvPairs: RDD[(Key, Value)] =

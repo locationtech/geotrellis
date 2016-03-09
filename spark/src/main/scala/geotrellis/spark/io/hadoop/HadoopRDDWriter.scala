@@ -52,8 +52,11 @@ object HadoopRDDWriter extends LazyLogging {
     val closureKeyIndex = keyIndex
     val codec = KeyValueRecordCodec[K, V]
 
+    // Call groupBy with numPartitions; if called without that argument or a partitioner,
+    // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
+    // on a key type that may no longer by valid for the key type of the resulting RDD.
     rdd
-      .groupBy { case (key, _) => closureKeyIndex.toIndex(key) }
+      .groupBy({ case (key, _) => closureKeyIndex.toIndex(key) }, numPartitions = rdd.partitions.length)
       .map { case (index, pairs) =>
         (new LongWritable(index), new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
       }

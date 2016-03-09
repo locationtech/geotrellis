@@ -34,7 +34,10 @@ trait S3RDDWriter {
     val _codec = codec
 
     val pathsToTiles =
-        rdd.groupBy { row => keyPath(row._1) }
+      // Call groupBy with numPartitions; if called without that argument or a partitioner,
+      // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
+      // on a key type that may no longer by valid for the key type of the resulting RDD.
+      rdd.groupBy({ row => keyPath(row._1) }, numPartitions = rdd.partitions.length)
 
     pathsToTiles.foreachPartition { partition =>
       import geotrellis.spark.util.TaskUtils._
