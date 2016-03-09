@@ -82,11 +82,20 @@ public class BasicCoordinateTransform
             if (srcCRS.getDatum().hasTransformToWGS84() 
                 || tgtCRS.getDatum().hasTransformToWGS84())
                 transformViaGeocentric = true;
-      
+
             if (transformViaGeocentric) {
                 srcGeoConv = new GeocentricConverter(srcCRS.getDatum().getEllipsoid());
                 tgtGeoConv = new GeocentricConverter(tgtCRS.getDatum().getEllipsoid());
+
+                if (srcCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+                    srcGeoConv.overrideWithWGS84Params();
+                }
+
+                if (tgtCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+                    tgtGeoConv.overrideWithWGS84Params();
+                }
             }
+      
         }
     }
 	
@@ -167,13 +176,8 @@ public class BasicCoordinateTransform
     
         if (srcCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
             srcCRS.getDatum().shift(pt);
-            srcGeoConv.overrideWithWGS84Params();
         }
     
-        if (tgtCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
-            tgtGeoConv.overrideWithWGS84Params();
-        }
-
         /* ==================================================================== */
         /*      Do we need to go through geocentric coordinates?                */
         /* ==================================================================== */
