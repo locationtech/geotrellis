@@ -177,7 +177,7 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
         (ints) => Result(ints.reduce(math.min(_,_)))
       })
 
-      val ints:DataSource[Int,Seq[Int]] = hist.mapOp(MinFromHistogram(_))
+      val ints: DataSource[Int,Seq[Int]] = hist.mapOp(MinFromHistogram(_))
 
       val seqIntVS:ValueSource[Seq[Int]] = ints.converge
 

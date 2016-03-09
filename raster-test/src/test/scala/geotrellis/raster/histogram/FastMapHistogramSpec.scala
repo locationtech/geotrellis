@@ -24,7 +24,7 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
   describe("mode") {
     it("should return NODATA if no items are counted") {
       val h = FastMapHistogram()
-      h.mode should equal (NODATA)
+      h.mode should equal (None)
     }
   }
 
@@ -36,8 +36,8 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
         h.countItem(i)
       }
 
-      h.median should equal (9)
-      h.median should equal (h.statistics.median)
+      h.median.get should equal (9)
+      h.median.get should equal (h.statistics.get.median)
     }
   }
 
@@ -53,8 +53,8 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
       }
 
       val mean = h.mean()
-      mean should equal (7.444884144827585E7)
-      mean should equal (h.statistics.mean)
+      mean.get should equal (7.444884144827585E7)
+      mean.get should equal (h.statistics.get.mean)
     }
   }
 
@@ -69,8 +69,8 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
       }
 
       val mode = h.mode()
-      mode should equal (59049)
-      mode should equal (h.statistics.mode)
+      mode.get should equal (59049)
+      mode.get should equal (h.statistics.get.mode)
     }
 
     it(".mode and .statistics.mode should agree on a mode of a unique list") {
@@ -81,7 +81,7 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
       }
 
       val mode = h.mode()
-      mode should equal (h.statistics.mode)
+      mode.get should equal (h.statistics.get.mode)
     }
   }
 

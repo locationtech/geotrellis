@@ -35,7 +35,7 @@ class StatsMethodsSpec extends FunSpec
     }
 
     it("get expected statistics from quad8") {
-      val stats = loadTestArg("quad8").tile.statistics
+      val stats = loadTestArg("quad8").tile.statistics.get
 
       val dev = math.sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
       val expected = Statistics[Int](400, 2.5, 3, 1, dev, 1, 4)

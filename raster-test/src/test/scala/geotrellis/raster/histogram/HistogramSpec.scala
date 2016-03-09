@@ -181,7 +181,9 @@ class HistogramSpec extends FunSpec with Matchers {
       h.countItem(8, 0)
       h.countItem(9, 0)
 
-      val stats = h.statistics
+      val stats = h.statistics.get
+      stats should not be (None)
+
       //println(stats)
       "%.3f".formatLocal(Locale.ENGLISH, stats.mean) should be ("4.130")
       stats.median should be (5)

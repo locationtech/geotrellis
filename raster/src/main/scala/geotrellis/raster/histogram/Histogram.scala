@@ -70,13 +70,13 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
 
   def quantileBreaks(num: Int): Array[T]
 
-  def mode(): T
+  def mode(): Option[T]
 
-  def median(): T
+  def median(): Option[T]
 
-  def mean(): Double
+  def mean(): Option[Double]
 
-  def statistics(): Statistics[T]
+  def statistics(): Option[Statistics[T]]
 
   def bucketCount(): Int
 

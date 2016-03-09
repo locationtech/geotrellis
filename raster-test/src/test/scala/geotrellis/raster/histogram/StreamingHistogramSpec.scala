@@ -31,9 +31,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
     1419857, 1419857, 1889568, 2476099, 2147483647)
 
   describe("mode calculation") {
-    it("should return NODATA if no items are counted") {
+    it("should return None if no items are counted") {
       val h = StreamingHistogram()
-      h.mode.isNaN should equal (true)
+      h.mode should be (None)
     }
 
     it("should return the same result for mode and statistics.mode") {
@@ -41,9 +41,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
 
       list3.foreach({i => h.countItem(i) })
 
-      val mode = h.mode()
+      val mode = h.mode.get
       mode should equal (59049)
-      mode should equal (h.statistics.mode)
+      mode should equal (h.statistics.get.mode)
     }
 
     it(".mode and .statistics.mode should agree on a mode of a unique list") {
@@ -53,8 +53,8 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         h.countItem(i)
       }
 
-      val mode = h.mode()
-      mode should equal (h.statistics.mode)
+      val mode = h.mode.get
+      mode should equal (h.statistics.get.mode)
     }
   }
 
@@ -64,8 +64,8 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
 
       list1.foreach({ i => h.countItem(i) })
 
-      h.median should equal (8.75)
-      h.median should equal (h.statistics.median)
+      h.median.get should equal (8.75)
+      h.median.get should equal (h.statistics.get.median)
     }
 
     it("median should work when n is large with repeated elements") {
@@ -75,8 +75,8 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .flatten.take(list1.length * 10000)
         .foreach({ i => h.countItem(i) })
 
-      h.median should equal (8.75)
-      h.median should equal (h.statistics.median)
+      h.median.get should equal (8.75)
+      h.median.get should equal (h.statistics.get.median)
     }
 
     it("median should work when n is large with unique elements") {
@@ -92,8 +92,8 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .flatten.take(list1.length * 10000)
         .foreach({ i => h.countItem(i + (3.0 + r.nextGaussian) / 60000.0) })
 
-      math.round(h.median).toInt should equal (9)
-      h.median should equal (h.statistics.median)
+      math.round(h.median.get).toInt should equal (9)
+      h.median.get should equal (h.statistics.get.median)
     }
   }
 
@@ -103,9 +103,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
 
       list2.foreach({ i => h.countItem(i) })
 
-      val mean = h.mean()
+      val mean = h.mean.get
       abs(mean - 18194.14285714286) should be < 1e-7
-      mean should equal (h.statistics.mean)
+      mean should equal (h.statistics.get.mean)
     }
 
     it("mean should work when n is large with repeated elements") {
@@ -115,9 +115,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .flatten.take(list2.length * 10000)
         .foreach({ i => h.countItem(i) })
 
-      val mean = h.mean()
+      val mean = h.mean.get
       abs(mean - 18194.14285714286) should be < 1e-7
-      mean should equal (h.statistics.mean)
+      mean should equal (h.statistics.get.mean)
     }
 
     it("mean should work when n is large with unique elements") {
@@ -134,9 +134,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .flatten.take(list2.length * 10000)
         .foreach({ i => h.countItem(i + r.nextGaussian / 10000.0) })
 
-      val mean = h.mean()
+      val mean = h.mean.get
       abs(mean - 18194.14285714286) should be < 1e-4
-      mean should equal (h.statistics.mean)
+      mean should equal (h.statistics.get.mean)
     }
   }
 

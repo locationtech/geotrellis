@@ -38,16 +38,14 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Statistics[Int] =
-    histogram.statistics
+  def statistics: Option[Statistics[Int]] = histogram.statistics
 
   /**
     * Determine statistical data for the given histogram.
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statisticsDouble: Statistics[Double] =
-    doubleHistogram.statistics
+  def statisticsDouble: Option[Statistics[Double]] = doubleHistogram.statistics
 
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.
@@ -59,7 +57,8 @@ trait SummaryMethods extends MethodExtensions[Tile] {
    *                Ints.
    */
   def standardDeviations(factor: Double = 1.0): Tile = {
-    val Statistics(_, mean, _, _, stddev, _, _) = statistics
+    require(statistics.nonEmpty)
+    val Statistics(_, mean, _, _, stddev, _, _) = statistics.get
 
     val indata = self.toArray
     val len = indata.length

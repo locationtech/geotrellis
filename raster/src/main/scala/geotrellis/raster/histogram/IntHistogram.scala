@@ -33,8 +33,8 @@ abstract trait IntHistogram extends Histogram[Int] {
     values.foreach(z => f(z, itemCount(z)))
   }
 
-  def mode(): Int = {
-    if(totalCount == 0) { return NODATA }
+  def mode(): Option[Int] = {
+    if(totalCount == 0) { return None }
     val localValues = values()
     var mode = localValues(0)
     var count = itemCount(mode)
@@ -47,25 +47,27 @@ abstract trait IntHistogram extends Histogram[Int] {
         mode = z
       }
     }
-    mode
+    Some(mode)
   }
 
-  def median() = if (totalCount == 0) {
-    NODATA
-  } else {
-    val localValues = values()
-    val middle: Int = totalCount() / 2
-    var total = 0
-    var i = 0
-    while (total <= middle) {
-      total += itemCount(localValues(i))
-      i += 1
+  def median(): Option[Int] = {
+    if (totalCount == 0) {
+      None
+    } else {
+      val localValues = values()
+      val middle: Int = totalCount() / 2
+      var total = 0
+      var i = 0
+      while (total <= middle) {
+        total += itemCount(localValues(i))
+        i += 1
+      }
+      Some(localValues(i-1))
     }
-    localValues(i-1)
   }
 
-  def mean(): Double = {
-    if(totalCount == 0) { return NODATA }
+  def mean(): Option[Double] = {
+    if(totalCount == 0) { return None }
 
     val localValues = rawValues()
     var mean = 0.0
@@ -79,13 +81,13 @@ abstract trait IntHistogram extends Histogram[Int] {
       total += count
       mean += (count * delta) / total
     }
-    mean
+    Some(mean)
   }
 
   def statistics() = {
     val localValues = values()
     if (localValues.length == 0) {
-      Statistics.EMPTYInt
+      None
     } else {
 
       var dataCount: Long = 0
@@ -150,7 +152,7 @@ abstract trait IntHistogram extends Histogram[Int] {
       }
       val stddev = sqrt(mean2)
 
-      Statistics[Int](dataCount, mean, median, mode, stddev, zmin, zmax)
+      Some(Statistics[Int](dataCount, mean, median, mode, stddev, zmin, zmax))
     }
   }
 }

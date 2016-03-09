@@ -33,7 +33,7 @@ trait StatsRasterSourceMethods extends RasterSourceMethods {
     rasterSource map(_.histogram) converge(convergeHistograms)
 
   def statistics(): ValueSource[Statistics[Int]] =
-    histogram map (_.statistics())
+    histogram map (_.statistics().get)
 
   def classBreaks(numBreaks: Int): ValueSource[Array[Int]] =
     histogram map (_.quantileBreaks(numBreaks))

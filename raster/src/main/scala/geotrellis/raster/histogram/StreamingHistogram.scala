@@ -300,17 +300,22 @@ class StreamingHistogram(
   /**
     * Generate Statistics.
     */
-  def statistics(): Statistics[Double] = {
-    val dataCount = totalCount
-    val localMean = mean()
-    val localMedian = median()
-    val localMode = mode
-    val ex2 = buckets.map({ case(item, count) => item*item*count }).sum / totalCount
-    val stddev = sqrt(ex2 - localMean * localMean)
-    val zmin = minValue.getOrElse(this._min)
-    val zmax = maxValue.getOrElse(this._max)
+  def statistics(): Option[Statistics[Double]] = {
+    val zmin = minValue
+    val zmax = maxValue
 
-    Statistics[Double](dataCount, localMean, localMedian, localMode, stddev, zmin, zmax)
+    if (zmin.nonEmpty && zmax.nonEmpty) {
+      val dataCount = totalCount
+      val localMean = mean.get
+      val localMedian = median.get
+      val localMode = mode.get
+      val ex2 = buckets.map({ case(item, count) => item*item*count }).sum / totalCount
+      val stddev = sqrt(ex2 - localMean * localMean)
+
+      Some(Statistics[Double](dataCount, localMean, localMedian, localMode, stddev, zmin.get, zmax.get))
+    }
+    else
+      None
   }
 
   /**
@@ -350,24 +355,34 @@ class StreamingHistogram(
     * by simply returning the label of most populous bucket (so this
     * answer could be really bad).
     */
-  def mode(): Double = {
-    if (totalCount <= 0) doubleNODATA
+  def mode(): Option[Double] = {
+    if (totalCount <= 0)
+      None
     else
-      buckets.reduce({ (l,r) => if (l._2 > r._2) l; else r })._1
+      Some(buckets.reduce({ (l,r) => if (l._2 > r._2) l; else r })._1)
   }
 
   /**
     * Median.
     */
-  def median(): Double = percentile(0.50)
+  def median(): Option[Double] = {
+    if (totalCount <= 0)
+      None
+    else
+      Some(percentile(0.50))
+  }
 
   /**
     *  Mean.
     */
-  def mean(): Double = {
-    val weightedSum =
-      buckets.foldLeft(0.0)({ (acc,bucket) => acc + (bucket._1 * bucket._2) })
-    weightedSum / totalCount
+  def mean(): Option[Double] = {
+    if (totalCount <= 0)
+      None
+    else {
+      val weightedSum =
+        buckets.foldLeft(0.0)({ (acc,bucket) => acc + (bucket._1 * bucket._2) })
+      Some(weightedSum / totalCount)
+    }
   }
 
   /**
