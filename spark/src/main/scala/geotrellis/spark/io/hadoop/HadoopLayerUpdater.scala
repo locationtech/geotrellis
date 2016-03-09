@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+import geotrellis.spark.merge._
 import geotrellis.spark.utils._
 
 import com.typesafe.scalalogging.slf4j._
@@ -27,10 +28,10 @@ class HadoopLayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]) = {
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, keyIndex, writerSchema) = try {
+    val (header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
@@ -44,14 +45,23 @@ class HadoopLayerUpdater(
     logger.warn(s"MapFiles cannot be updatd, so this requires rewriting the entire layer.")
 
     val entireLayer = layerReader.read[K, V, M](id)
-    val updated: RDD[(K, V)] with Metadata[M] =
-      entireLayer.withContext { allTiles =>
-        allTiles
-          .leftOuterJoin(rdd)
-          .mapValues { case (layerTile, updateTile) =>
-            updateTile.getOrElse(layerTile)
-        }
+
+    val updatedMetadata: M =
+      metadata.merge(rdd.metadata)
+
+    val updatedRdd: RDD[(K, V)] =
+      entireLayer
+        .leftOuterJoin(rdd)
+        .mapValues { case (layerTile, updateTile) =>
+          updateTile match {
+            case Some(tile) =>
+              mergeFunc(layerTile, tile)
+            case None =>
+              layerTile
+          }
       }
+
+    val updated = ContextRDD(updatedRdd, updatedMetadata)
 
     val tmpId = id.createTemporaryId
     logger.info(s"Saving updated RDD to temporary id $tmpId")

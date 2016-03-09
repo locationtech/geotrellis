@@ -26,6 +26,7 @@ trait S3RDDReader {
     keyPath: Long => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None
   )(implicit sc: SparkContext): RDD[(K, V)] = {
@@ -59,7 +60,10 @@ trait S3RDDReader {
                 val bytes: Array[Byte] =
                   getS3Bytes()
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                recs.filter { row => includeKey(row._1) }
+                if(filterIndexOnly)
+                  recs
+                else
+                  recs.filter { row => includeKey(row._1) }
               } catch {
                 case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
               }

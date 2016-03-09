@@ -38,29 +38,29 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
     val layerId = layerIds.layerId
 
     describe(s"updating for $keyIndexMethodName") {
-      // it("should update a layer") {
-      //   updater.update(layerId, sample)
-      // }
+      it("should update a layer") {
+        updater.update(layerId, sample)
+      }
 
-      // it("should not update a layer (empty set)") {
-      //   intercept[EmptyBoundsError] {
-      //     updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
-      //   }
-      // }
+      it("should not update a layer (empty set)") {
+        intercept[EmptyBoundsError] {
+          updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
+        }
+      }
 
-      // it("should not update a layer (keys out of bounds)") {
-      //   val (minKey, minTile) = sample.sortByKey().first()
-      //   val (maxKey, maxTile) = sample.sortByKey(false).first()
+      it("should not update a layer (keys out of bounds)") {
+        val (minKey, minTile) = sample.sortByKey().first()
+        val (maxKey, maxTile) = sample.sortByKey(false).first()
 
-      //   val update = new ContextRDD(sc.parallelize(
-      //     (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-      //       (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-      //   ), dummyRasterMetaData)
+        val update = new ContextRDD(sc.parallelize(
+          (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
+            (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+        ), dummyRasterMetaData)
 
-      //   intercept[LayerOutOfKeyBoundsError] {
-      //     updater.update(layerId, update)
-      //   }
-      // }
+        intercept[LayerOutOfKeyBoundsError] {
+          updater.update(layerId, update)
+        }
+      }
 
       it("should update correctly inside the bounds of a metatile") {
         val id = layerId.createTemporaryId
@@ -99,11 +99,11 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
 
         val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
         readTiles.size should be (4)
-
-        assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1))
-        assertEqual(readTiles(1)._2, Array(2, 2, 2, 2, 2, 2))
-        assertEqual(readTiles(2)._2, Array(3, 3, 3, 3, 3, 3))
-        assertEqual(readTiles(3)._2, Array(5, 5, 5, 5, 5, 5))
+        println(readTiles(0)._2.toArray.toSeq)
+        assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
+        assertEqual(readTiles(1)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
+        assertEqual(readTiles(2)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))
+        assertEqual(readTiles(3)._2, Array(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
       }
     }
   }

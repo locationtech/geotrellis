@@ -5,6 +5,7 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 
@@ -22,4 +23,8 @@ trait Implicits {
     M: (? => LayoutDefinition)
   ](self: RDD[(K, V)] with Metadata[M]) extends RDDLayoutMergeMethods[K, V, M](self)
 
+  implicit class withMergableMethods[T: Mergable](val self: T) extends MethodExtensions[T] {
+    def merge(other: T): T =
+      implicitly[Mergable[T]].merge(self, other)
+  }
 }

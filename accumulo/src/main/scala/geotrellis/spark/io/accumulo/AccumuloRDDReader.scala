@@ -22,6 +22,7 @@ object AccumuloRDDReader {
     columnFamily: Text,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
+    filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None
   )(implicit sc: SparkContext, instance: AccumuloInstance): RDD[(K, V)] = {
 
@@ -47,7 +48,10 @@ object AccumuloRDDReader {
       AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
     }
     .flatMap { pairs: Vector[(K, V)] =>
-      pairs.filter { pair => includeKey(pair._1) }
+      if(filterIndexOnly)
+        pairs
+      else
+        pairs.filter { pair => includeKey(pair._1) }
     }
   }
 }

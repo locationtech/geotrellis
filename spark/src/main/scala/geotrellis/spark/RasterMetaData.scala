@@ -61,6 +61,12 @@ object RasterMetaData {
   implicit def boundsComponent[K]: Component[RasterMetaData[K], Bounds[K]] =
     Component(_.bounds, (md, b) => md.copy(bounds = b))
 
+  implicit def mergable[K]: merge.Mergable[RasterMetaData[K]] =
+    new merge.Mergable[RasterMetaData[K]] {
+      def merge(t1: RasterMetaData[K], t2: RasterMetaData[K]): RasterMetaData[K] =
+        t1.combine(t2)
+    }
+
   def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,

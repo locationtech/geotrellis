@@ -28,6 +28,8 @@ object HadoopRDDWriter extends LazyLogging {
 
     val fs = path.getFileSystem(sc.hadoopConfiguration)
 
+    if(fs.exists(path)) { throw new Exception(s"Directory already exists: $path") }
+
     val job = Job.getInstance(conf)
     job.getConfiguration.set("io.map.index.interval", "1")
     SequenceFileOutputFormat.setOutputCompressionType(job, SequenceFile.CompressionType.RECORD)

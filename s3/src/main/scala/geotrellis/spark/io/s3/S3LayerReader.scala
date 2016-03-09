@@ -37,7 +37,7 @@ class S3LayerReader(val attributeStore: AttributeStore[JsonFormat])(implicit sc:
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metadata, keyIndex, writerSchema) = try {
@@ -53,7 +53,7 @@ class S3LayerReader(val attributeStore: AttributeStore[JsonFormat])(implicit sc:
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, Some(writerSchema), Some(numPartitions))
+    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
 
     new ContextRDD(rdd, metadata)
   }

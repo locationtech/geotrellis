@@ -3,8 +3,10 @@ package geotrellis.spark.io.s3
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.merge._
 
 import com.typesafe.scalalogging.slf4j._
 import org.apache.avro.Schema
@@ -24,11 +26,11 @@ class S3LayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]) = {
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (existingHeader, metadata, keyIndex, writerSchema) = try {
+    val (header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
@@ -37,29 +39,49 @@ class S3LayerUpdater(
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    val prefix = existingHeader.key
-    val bucket = existingHeader.bucket
+    val prefix = header.key
+    val bucket = header.bucket
 
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
     logger.info(s"Saving updated RDD for layer ${id} to $bucket $prefix")
-    if(schemaHasChanged[K, V](writerSchema)) {
-      logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
-      val entireLayer = layerReader.read[K, V, M](id)
-      val updated: RDD[(K, V)] with Metadata[M] =
-        entireLayer.withContext { allTiles =>
-          allTiles
-            .leftOuterJoin(rdd)
-            .mapValues { case (layerTile, updateTile) =>
-              updateTile.getOrElse(layerTile)
-            }
-        }
+    val existingTiles =
+      if(schemaHasChanged[K, V](writerSchema)) {
+        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
+        layerReader
+          .read[K, V, M](id)
 
-      rddWriter.write(updated, bucket, keyPath)
-    } else {
-      rddWriter.write(rdd, bucket, keyPath)
-    }
+      } else {
+        val query =
+          new RDDQuery[K, M]
+            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
+
+        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
+      }
+
+    val updatedMetadata: M =
+      metadata.merge(rdd.metadata)
+
+    val updatedRdd: RDD[(K, V)] =
+      existingTiles
+        .leftOuterJoin(rdd)
+        .mapValues { case (layerTile, updateTile) =>
+          updateTile match {
+            case Some(tile) =>
+              mergeFunc(layerTile, tile)
+            case None =>
+              layerTile
+          }
+      }
+
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+
+    // Write updated metadata, and the possibly updated schema
+    // Only really need to write the metadata and schema
+    attributeStore.writeLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id, header, updatedMetadata, keyIndex, schema)
+    rddWriter.write(updatedRdd, bucket, keyPath)
   }
 }
 

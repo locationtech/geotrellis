@@ -24,7 +24,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implic
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int) = {
+  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val (header, metaData, keyIndex, writerSchema) = try {
@@ -40,7 +40,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implic
         new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
       }
 
-    val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, Some(writerSchema))
+    val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
     new ContextRDD(rdd, metaData)
   }
 }
