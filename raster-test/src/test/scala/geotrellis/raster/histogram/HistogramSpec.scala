@@ -28,8 +28,7 @@ class HistogramSpec extends FunSpec with Matchers {
   def stringToInts(s:String) = {
     s.toCharArray.map { _.toByte - 32 }
   }
-  val kinds = List(("ArrayHistogram", ArrayHistogram, () => {ArrayHistogram(100)}),
-                   ("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
+  val kinds = List(("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
   kinds.foreach {
     case (name, cls, builder) => {
       describe("A " + name) {
@@ -96,7 +95,7 @@ class HistogramSpec extends FunSpec with Matchers {
         }
 
         it("should handle quantile breaks with extreme values") {
-          val h = ArrayHistogram(10)
+          val h = FastMapHistogram()
           h.countItem(1, 10)
           h.countItem(2, 1000)
           h.countItem(3, 120)
@@ -108,7 +107,7 @@ class HistogramSpec extends FunSpec with Matchers {
         }
 
         it("should handle quantile breaks with multiple extreme values") {
-          val h = ArrayHistogram(10)
+          val h = FastMapHistogram()
           h.countItem(1, 20)
           h.countItem(2, 60)
           h.countItem(3, 10000)
@@ -125,7 +124,7 @@ class HistogramSpec extends FunSpec with Matchers {
 
   describe("A severely unbalanced histogram") {
     it("should handle a tricky double unbalanced starting values") {
-      val h = ArrayHistogram(10)
+      val h = FastMapHistogram()
       h.countItem(0, 100)
       h.countItem(1, 1000)
       h.countItem(2, 15)
@@ -136,7 +135,7 @@ class HistogramSpec extends FunSpec with Matchers {
     }
 
     it("should handle a tricky double unbalanced later values") {
-      val h = ArrayHistogram(10)
+      val h = FastMapHistogram()
       h.countItem(0, 10)
       h.countItem(1, 100)
       h.countItem(2, 1000)
@@ -149,7 +148,7 @@ class HistogramSpec extends FunSpec with Matchers {
 
   describe("A Histogram") {
     it("should be able to handle any number of quantiles") {
-      val h = ArrayHistogram(10)
+      val h = FastMapHistogram()
       h.countItem(1, 10)
       h.countItem(2, 10)
       h.countItem(3, 10)
@@ -171,7 +170,7 @@ class HistogramSpec extends FunSpec with Matchers {
 
   describe("The statistics generator") {
     it("should generate stats where there are zero values") {
-      val h = ArrayHistogram(20)
+      val h = FastMapHistogram()
       h.countItem(0, 0)
       h.countItem(1, 0)
       h.countItem(2, 10)
