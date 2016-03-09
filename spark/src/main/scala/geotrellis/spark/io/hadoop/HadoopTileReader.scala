@@ -6,15 +6,15 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.util.KryoWrapper
 
 import org.apache.avro.Schema
-import org.apache.hadoop.io._
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io._
 import org.apache.spark.SparkContext
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 import scala.reflect.ClassTag
 
 class HadoopTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](val attributeStore: HadoopAttributeStore)

@@ -2,11 +2,9 @@ package geotrellis.spark.etl.hadoop
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.json._
-import geotrellis.spark.SpaceTimeKey
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext

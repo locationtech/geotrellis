@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.util.KryoWrapper
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.avro.Schema

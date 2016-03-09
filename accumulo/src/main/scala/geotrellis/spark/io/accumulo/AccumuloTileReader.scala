@@ -1,14 +1,12 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark.LayerId
+import geotrellis.spark.io._
+import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.{KeyBounds, LayerId}
-import geotrellis.spark.io._
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.json._
 
-import org.apache.accumulo.core.data.{Value, Range => ARange}
+import org.apache.accumulo.core.data.{Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text

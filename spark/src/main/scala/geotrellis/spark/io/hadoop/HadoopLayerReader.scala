@@ -14,8 +14,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
-import scala.reflect.ClassTag
 
+import scala.reflect.ClassTag
 
 /**
  * Handles reading raster RDDs and their metadata from S3.
@@ -24,7 +24,6 @@ import scala.reflect.ClassTag
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
- * @tparam C      Type of RDD Container that composes RDD and it's metadata (ex: RasterRDD or MultiBandRasterRDD)
  */
 class HadoopLayerReader(
   val attributeStore: AttributeStore[JsonFormat]

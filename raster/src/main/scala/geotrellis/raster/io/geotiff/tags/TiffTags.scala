@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.utils._
+import geotrellis.raster.io.geotiff.util._
 import CommonPublicValues._
 
 import geotrellis.vector.Extent

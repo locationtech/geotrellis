@@ -1,10 +1,7 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index._
-import geotrellis.spark.utils.KryoWrapper
 import org.apache.avro.Schema
 
 import org.apache.hadoop.io.Text

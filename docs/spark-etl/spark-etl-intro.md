@@ -21,7 +21,7 @@ import geotrellis.raster.{Tile, MultiBandTile}
 import geotrellis.spark.{LayerId, SpatialKey}
 import geotrellis.spark.etl.Etl
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
-import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark.util.SparkUtils
 import geotrellis.spark.ingest._
 import geotrellis.vector.ProjectedExtent
 import org.apache.spark.SparkConf

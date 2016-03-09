@@ -36,7 +36,7 @@ object Polygon {
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
-  def apply(exterior: Line, holes:Line*): Polygon = 
+  def apply(exterior: Line, holes:Line*): Polygon =
     apply(exterior, holes)
 
   def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
@@ -65,19 +65,25 @@ object Polygon {
     val p = factory.createPolygon(extGeom, holeGeoms)
     // Sometimes polygons are invalid even if they aren't.
     // Try buffer(0) per http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#G
-    if(!p.isValid) { p.buffer(0).asInstanceOf[jts.Polygon] }
+    if(!p.isValid) {
+      val buffered = p.buffer(0)
+      buffered match {
+        case p: jts.Polygon if p.isValid => p
+        case _ => sys.error(s"Invalid polygon: $p")
+      }
+    }
     else { p }
   }
 }
 
-case class Polygon(jtsGeom: jts.Polygon) extends Geometry 
+case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                             with Relatable
                                             with TwoDimensions {
 
   assert(!jtsGeom.isEmpty, s"Polygon Empty: $jtsGeom")
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): Polygon = { 
+  def normalized(): Polygon = {
     val geom = jtsGeom.clone.asInstanceOf[jts.Polygon]
     geom.normalize
     Polygon(geom)

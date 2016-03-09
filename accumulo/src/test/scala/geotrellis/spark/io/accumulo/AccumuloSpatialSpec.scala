@@ -1,12 +1,10 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.Tile
+import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark._
 
 class AccumuloSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, RasterMetaData[SpatialKey]]

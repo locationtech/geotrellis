@@ -1,7 +1,6 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.{MultiBandTile, Tile}
-import geotrellis.spark.io.json._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -9,12 +8,12 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 
 import org.apache.avro.Schema
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 import scala.reflect._
 
 class HadoopLayerWriter(

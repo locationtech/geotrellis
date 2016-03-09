@@ -2,16 +2,16 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
+
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 import scala.reflect.ClassTag
 
 class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](

@@ -1,6 +1,7 @@
 package geotrellis.spark.io.json
 
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 
 import spray.json._

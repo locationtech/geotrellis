@@ -2,27 +2,22 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.raster.{MultiBandTile, Tile}
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json.{JsObject, JsonFormat}
-import AttributeStore.Fields
+import spray.json.JsonFormat
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
-
 
 /**
  * Handles reading raster RDDs and their metadata from a filesystem.
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
- * @param getCache        Optional cache function to be used when reading File objects.
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]

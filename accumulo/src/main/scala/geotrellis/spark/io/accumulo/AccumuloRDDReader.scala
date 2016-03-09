@@ -1,7 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import org.apache.accumulo.core.client.mapreduce.{AccumuloInputFormat, InputFormatBase}

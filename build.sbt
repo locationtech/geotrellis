@@ -128,10 +128,6 @@ lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo).
   settings(commonSettings: _*)
 
-lazy val gdal: Project = Project("gdal", file("gdal")).
-  dependsOn(proj4, raster, spark, sparkEtl).
-  settings(commonSettings: _*)
-
 lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, engine, rasterTestkit % "test").
   settings(commonSettings: _*)

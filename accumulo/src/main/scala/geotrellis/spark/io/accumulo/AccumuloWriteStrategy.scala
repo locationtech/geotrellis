@@ -5,7 +5,7 @@ import java.util.UUID
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.utils._
+import geotrellis.spark.util._
 import geotrellis.spark.io.hadoop._
 
 import org.apache.hadoop.io.Text

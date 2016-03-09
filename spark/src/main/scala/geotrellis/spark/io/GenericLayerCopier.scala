@@ -2,12 +2,13 @@ package geotrellis.spark.io
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
+import geotrellis.spark.io.index.KeyIndex
+
 
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json._
+
 import scala.reflect._
 
 class GenericLayerCopier[Header: JsonFormat](

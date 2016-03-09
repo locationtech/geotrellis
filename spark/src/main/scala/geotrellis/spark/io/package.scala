@@ -1,10 +1,9 @@
 package geotrellis.spark
 
-import geotrellis.spark.io.index.KeyIndexMethod
 import spray.json.JsonFormat
 import scala.util.{Failure, Success, Try}
 
-package object io {
+package object io extends json.Implicits with avro.codecs.Implicits {
   implicit class TryOption[T](option: Option[T]) {
     def toTry(exception: => Throwable): Try[T] =
       option match {

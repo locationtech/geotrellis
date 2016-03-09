@@ -2,24 +2,18 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
-import geotrellis.util.Filesystem
 
-import org.apache.avro.Schema
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-import scala.reflect._
 import com.typesafe.scalalogging.slf4j._
-import AttributeStore.Fields
+import spray.json._
+
+import scala.reflect._
 
 import java.io.File
-
 
 /**
   * Handles writing Raster RDDs and their metadata to a filesystem.

@@ -2,9 +2,8 @@ package geotrellis.spark.etl.accumulo
 
 import geotrellis.raster.MultiBandTile
 import geotrellis.spark._
-import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.accumulo.AccumuloLayerWriter
 
 import org.apache.spark.SparkContext

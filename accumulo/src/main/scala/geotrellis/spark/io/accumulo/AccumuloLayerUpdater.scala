@@ -5,7 +5,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
 
 import com.typesafe.scalalogging.slf4j._

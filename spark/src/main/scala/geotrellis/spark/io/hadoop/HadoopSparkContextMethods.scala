@@ -78,6 +78,23 @@ trait HadoopSparkContextMethods {
       classOf[MultiBandTile]
     )
 
+  def hadoopTemporalMultiBandGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, MultiBandTile)] =
+    hadoopTemporalMultiBandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+
+  def hadoopTemporalMultiBandGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, MultiBandTile)] =
+    hadoopTemporalMultiBandGeoTiffRDD(new Path(path), Seq(tiffExtension))
+
+  def hadoopTemporalMultiBandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, MultiBandTile)] =
+    hadoopTemporalMultiBandGeoTiffRDD(new Path(path), tiffExtensions)
+
+  def hadoopTemporalMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(TemporalProjectedExtent, MultiBandTile)] =
+    sc.newAPIHadoopRDD(
+      sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
+      classOf[TemporalMultiBandGeoTiffInputFormat],
+      classOf[TemporalProjectedExtent],
+      classOf[MultiBandTile]
+    )
+
   def newJob: Job =
     Job.getInstance(sc.hadoopConfiguration)
 

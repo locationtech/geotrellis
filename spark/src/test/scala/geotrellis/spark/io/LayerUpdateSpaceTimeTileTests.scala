@@ -6,7 +6,7 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
-import geotrellis.spark.utils._
+import geotrellis.spark.util._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4.LatLng

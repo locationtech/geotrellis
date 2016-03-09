@@ -7,8 +7,8 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 
 import com.amazonaws.services.s3.model.ObjectListing
-import org.apache.spark.rdd.RDD
 import org.apache.avro.Schema
+import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
 import scala.annotation.tailrec

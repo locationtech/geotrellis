@@ -51,47 +51,6 @@ class KeyIndexJsonFormat[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends Roo
     }
 }
 
-object KeyIndexJsonFormatFactory {
-  private val REG_SETTING_NAME = "geotrellis.spark.io.index.registrator"
-
-  private lazy val registry: Map[ClassTag[_], List[KeyIndexFormatEntry[_, _]]] = {
-    val entryRegistry = new KeyIndexRegistry
-
-    entryRegistry register KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](HilbertSpatialKeyIndexFormat.TYPE_NAME)
-    entryRegistry register KeyIndexFormatEntry[SpatialKey, ZSpatialKeyIndex](ZSpatialKeyIndexFormat.TYPE_NAME)
-    entryRegistry register KeyIndexFormatEntry[SpatialKey, RowMajorSpatialKeyIndex](RowMajorSpatialKeyIndexFormat.TYPE_NAME)
-
-    entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, HilbertSpaceTimeKeyIndex](HilbertSpaceTimeKeyIndexFormat.TYPE_NAME)
-    entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeKeyIndex](ZSpaceTimeKeyIndexFormat.TYPE_NAME)
-
-    // User defined here
-    val conf = ConfigFactory.load()
-    if(conf.hasPath(REG_SETTING_NAME)) {
-      val userRegistratorClassName = conf.getString(REG_SETTING_NAME)
-      val userRegistrator =
-        Class.forName(userRegistratorClassName)
-          .getConstructor()
-          .newInstance()
-          .asInstanceOf[KeyIndexRegistrator]
-      userRegistrator.register(entryRegistry)
-    }
-
-    entryRegistry
-      .entries
-      .groupBy(_.keyClassTag)
-      .toMap
-  }
-
-  def getKeyIndexJsonFormat[K: ClassTag](): RootJsonFormat[KeyIndex[K]] = {
-    for((key, entries) <- registry) {
-      if(key == classTag[K]) {
-        return new KeyIndexJsonFormat[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
-      }
-    }
-    throw new DeserializationException(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME")
-  }
-}
-
 class KeyIndexRegistry {
   private var _entries = mutable.ListBuffer[KeyIndexFormatEntry[_, _]]()
   def register(entry: KeyIndexFormatEntry[_, _]): Unit = {
@@ -103,6 +62,47 @@ class KeyIndexRegistry {
 }
 
 trait KeyIndexFormats {
+  object KeyIndexJsonFormatFactory {
+    private val REG_SETTING_NAME = "geotrellis.spark.io.index.registrator"
+
+    private lazy val registry: Map[ClassTag[_], List[KeyIndexFormatEntry[_, _]]] = {
+      val entryRegistry = new KeyIndexRegistry
+
+      entryRegistry register KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](HilbertSpatialKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[SpatialKey, ZSpatialKeyIndex](ZSpatialKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[SpatialKey, RowMajorSpatialKeyIndex](RowMajorSpatialKeyIndexFormat.TYPE_NAME)
+
+      entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, HilbertSpaceTimeKeyIndex](HilbertSpaceTimeKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeKeyIndex](ZSpaceTimeKeyIndexFormat.TYPE_NAME)
+
+      // User defined here
+      val conf = ConfigFactory.load()
+      if(conf.hasPath(REG_SETTING_NAME)) {
+        val userRegistratorClassName = conf.getString(REG_SETTING_NAME)
+        val userRegistrator =
+          Class.forName(userRegistratorClassName)
+            .getConstructor()
+            .newInstance()
+            .asInstanceOf[KeyIndexRegistrator]
+        userRegistrator.register(entryRegistry)
+      }
+
+      entryRegistry
+        .entries
+        .groupBy(_.keyClassTag)
+        .toMap
+    }
+
+    def getKeyIndexJsonFormat[K: ClassTag](): RootJsonFormat[KeyIndex[K]] = {
+      for((key, entries) <- registry) {
+        if(key == classTag[K]) {
+          return new KeyIndexJsonFormat[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
+        }
+      }
+      throw new DeserializationException(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME")
+    }
+  }
+
   implicit def keyIndexJsonFormat[K: ClassTag]: RootJsonFormat[KeyIndex[K]] =
     KeyIndexJsonFormatFactory.getKeyIndexJsonFormat[K]
 

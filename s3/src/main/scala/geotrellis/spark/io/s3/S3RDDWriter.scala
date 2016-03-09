@@ -1,14 +1,12 @@
 package geotrellis.spark.io.s3
 
-
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod, KeyIndex}
-import geotrellis.spark.utils.KryoWrapper
+import geotrellis.spark.util.KryoWrapper
 
 import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult, ObjectMetadata, PutObjectRequest}
 import com.typesafe.scalalogging.slf4j._
@@ -18,10 +16,9 @@ import scalaz.stream.{Process, nondeterminism}
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-import java.io.{ObjectOutputStream, ByteArrayOutputStream, ByteArrayInputStream}
+import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import scala.reflect._
-
 
 trait S3RDDWriter {
 
@@ -40,7 +37,7 @@ trait S3RDDWriter {
         rdd.groupBy { row => keyPath(row._1) }
 
     pathsToTiles.foreachPartition { partition =>
-      import geotrellis.spark.utils.TaskUtils._
+      import geotrellis.spark.util.TaskUtils._
       val getS3Client = _getS3Client
       val s3client: S3Client = getS3Client()
 

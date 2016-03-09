@@ -1,13 +1,13 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.Tile
+import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.json._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
-import geotrellis.spark._
+
 import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 
 class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
@@ -25,8 +25,7 @@ class AccumuloSpaceTimeSpec
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val updater   = AccumuloLayerUpdater(instance, SocketWriteStrategy())
   lazy val tiles     = AccumuloTileReader[SpaceTimeKey, Tile](instance)
-  lazy val sample    =  CoordinateSpaceTime
-
+  lazy val sample    = CoordinateSpaceTime
   lazy val copier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover  = AccumuloLayerMover(copier, deleter)
 }
