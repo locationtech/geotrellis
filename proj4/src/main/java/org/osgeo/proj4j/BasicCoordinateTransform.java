@@ -124,7 +124,7 @@ public class BasicCoordinateTransform
         throws Proj4jException
     {
         geoCoord.setValue(src);
-        srcCRS.getProjection().getAxes().toENU(geoCoord);
+        srcCRS.getProjection().getAxisOrder().toENU(geoCoord);
         // NOTE: this method may be called many times, so needs to be as efficient as possible
         if (doInverseProjection) {
             // inverse project to geographic
@@ -152,7 +152,7 @@ public class BasicCoordinateTransform
             tgt.setValue(geoCoord);
         }
 
-        tgtCRS.getProjection().getAxes().fromENU(tgt);
+        tgtCRS.getProjection().getAxisOrder().fromENU(tgt);
 
         return tgt;
     }
