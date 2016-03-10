@@ -23,13 +23,13 @@ class MultiBandGeoTiff(
       case _ => GeoTiffMultiBandTile(tile)
     }
 
-  def subset(bands: Seq[Int]): ArrayMultiBandTile = {
+  def bands(bandSequence: Seq[Int]): ArrayMultiBandTile = {
     val mbTile = this.tile
-    val newBands = Array.ofDim[Tile](bands.size)
+    val newBands = Array.ofDim[Tile](bandSequence.size)
     var i = 0
 
-    require(bands.size <= mbTile.bandCount)
-    bands.foreach({ j =>
+    require(bandSequence.size <= mbTile.bandCount)
+    bandSequence.foreach({ j =>
       newBands(i) = mbTile.band(j)
       i += 1
     })
@@ -37,8 +37,14 @@ class MultiBandGeoTiff(
     new ArrayMultiBandTile(newBands)
   }
 
-  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
-    subset(bands)
+  def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    bands(bandSequence)
+
+  def subset(bandSequence: Seq[Int]): ArrayMultiBandTile =
+    bands(bandSequence.sorted)
+
+  def subset(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    bands(bandSequence.sorted)
 }
 
 object MultiBandGeoTiff {
