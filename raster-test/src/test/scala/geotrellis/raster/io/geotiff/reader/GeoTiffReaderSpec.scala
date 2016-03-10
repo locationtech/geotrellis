@@ -417,7 +417,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with multiple bands correctly") {
-      val mbTile  = MultiBandGeoTiff(geoTiffPath("multi-tag.tif")).tile
+      val mbTile  = MultibandGeoTiff(geoTiffPath("multi-tag.tif")).tile
 
       mbTile.bandCount should be (4)
 
@@ -429,7 +429,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with bands metadata correctly") {
-      val geoTiff = MultiBandGeoTiff(geoTiffPath("multi-tag.tif"))
+      val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
 
       val tags = geoTiff.tags
 

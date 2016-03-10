@@ -29,12 +29,12 @@ class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
       roundTrip(DoubleArrayTile.fill(53232322.4,10,15))
     }
 
-    it("encodes ArrayMultiBandTile"){
+    it("encodes ArrayMultibandTile"){
       val tiles= for (i <- 0 to 3) yield DoubleArrayTile.fill(53232322.4,10,15)
-      val thing = ArrayMultiBandTile(tiles): MultiBandTile
+      val thing = ArrayMultibandTile(tiles): MultibandTile
       roundTrip(thing)
 //      val bytes = AvroEncoder.toBinary(thing)
-//      val fromBytes = AvroEncoder.fromBinary[MultiBandTile](bytes)
+//      val fromBytes = AvroEncoder.fromBinary[MultibandTile](bytes)
 //      fromBytes should be equals (thing)
     }
   }
@@ -61,9 +61,9 @@ class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
     it("encodes DoubleArrayTile"){
       roundTrip(DoubleArrayTile.fill(53232322.4,10,15, DoubleCellType))
     }
-    it("encodes ArrayMultiBandTile"){
+    it("encodes ArrayMultibandTile"){
       val tiles= for (i <- 0 to 3) yield DoubleArrayTile.fill(53232322.4,10,15, DoubleCellType)
-      val thing = ArrayMultiBandTile(tiles): MultiBandTile
+      val thing = ArrayMultibandTile(tiles): MultibandTile
       roundTrip(thing)
     }
   }
@@ -90,9 +90,9 @@ class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
     it("encodes DoubleArrayTile"){
       roundTrip(DoubleArrayTile.fill(53232322.4,10,15, DoubleUserDefinedNoDataCellType(2.2)))
     }
-    it("encodes ArrayMultiBandTile"){
+    it("encodes ArrayMultibandTile"){
       val tiles= for (i <- 0 to 3) yield DoubleArrayTile.fill(53232322.4,10,15, DoubleUserDefinedNoDataCellType(42.23))
-      val thing = ArrayMultiBandTile(tiles): MultiBandTile
+      val thing = ArrayMultibandTile(tiles): MultibandTile
       roundTrip(thing)
     }
   }

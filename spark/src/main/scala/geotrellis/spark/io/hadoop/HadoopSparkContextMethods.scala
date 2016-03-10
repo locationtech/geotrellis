@@ -61,38 +61,38 @@ trait HadoopSparkContextMethods {
       classOf[Tile]
     )
 
-  def hadoopMultiBandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultiBandTile)] =
-    hadoopMultiBandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+  def hadoopMultibandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultibandTile)] =
+    hadoopMultibandGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
-  def hadoopMultiBandGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, MultiBandTile)] =
-    hadoopMultiBandGeoTiffRDD(new Path(path), Seq(tiffExtension))
+  def hadoopMultibandGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, MultibandTile)] =
+    hadoopMultibandGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopMultiBandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultiBandTile)] =
-    hadoopMultiBandGeoTiffRDD(new Path(path), tiffExtensions)
+  def hadoopMultibandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultibandTile)] =
+    hadoopMultibandGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultiBandTile)] =
+  def hadoopMultibandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(ProjectedExtent, MultibandTile)] =
     sc.newAPIHadoopRDD(
       sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
-      classOf[MultiBandGeoTiffInputFormat],
+      classOf[MultibandGeoTiffInputFormat],
       classOf[ProjectedExtent],
-      classOf[MultiBandTile]
+      classOf[MultibandTile]
     )
 
-  def hadoopTemporalMultiBandGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, MultiBandTile)] =
-    hadoopTemporalMultiBandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+  def hadoopTemporalMultibandGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, MultibandTile)] =
+    hadoopTemporalMultibandGeoTiffRDD(new Path(path), defaultTiffExtensions)
 
-  def hadoopTemporalMultiBandGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, MultiBandTile)] =
-    hadoopTemporalMultiBandGeoTiffRDD(new Path(path), Seq(tiffExtension))
+  def hadoopTemporalMultibandGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, MultibandTile)] =
+    hadoopTemporalMultibandGeoTiffRDD(new Path(path), Seq(tiffExtension))
 
-  def hadoopTemporalMultiBandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, MultiBandTile)] =
-    hadoopTemporalMultiBandGeoTiffRDD(new Path(path), tiffExtensions)
+  def hadoopTemporalMultibandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, MultibandTile)] =
+    hadoopTemporalMultibandGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopTemporalMultiBandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(TemporalProjectedExtent, MultiBandTile)] =
+  def hadoopTemporalMultibandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(TemporalProjectedExtent, MultibandTile)] =
     sc.newAPIHadoopRDD(
       sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
-      classOf[TemporalMultiBandGeoTiffInputFormat],
+      classOf[TemporalMultibandGeoTiffInputFormat],
       classOf[TemporalProjectedExtent],
-      classOf[MultiBandTile]
+      classOf[MultibandTile]
     )
 
   def newJob: Job =
