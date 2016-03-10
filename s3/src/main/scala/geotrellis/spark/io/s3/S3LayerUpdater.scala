@@ -79,7 +79,7 @@ class S3LayerUpdater(
 
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
-    attributeStore.writeLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id, header, updatedMetadata, keyIndex, schema)
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
     rddWriter.write(updatedRdd, bucket, keyPath)
   }
 }
