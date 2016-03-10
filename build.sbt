@@ -54,7 +54,7 @@ lazy val commonSettings = Seq(
 ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 lazy val root = Project("geotrellis", file(".")).
-  dependsOn(raster, vector, proj4, spark, spark-etl, s3, accumulo).
+  dependsOn(raster, vector, proj4, spark, sparkEtl, s3, accumulo).
   settings(commonSettings: _*).
   settings(
     scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
