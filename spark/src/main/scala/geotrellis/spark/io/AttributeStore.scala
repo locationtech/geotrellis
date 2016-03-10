@@ -11,8 +11,6 @@ import spray.json.DefaultJsonProtocol.JsValueFormat
 import scala.reflect.ClassTag
 
 trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
-  type Format[_] = JsonFormat[_]
-
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T
   def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T]
   def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit
@@ -55,7 +53,6 @@ trait LayerAttributeStore {
 
 
 trait BlobLayerAttributeStore extends AttributeStore {
-
   import AttributeStore._
   import DefaultJsonProtocol._
 
