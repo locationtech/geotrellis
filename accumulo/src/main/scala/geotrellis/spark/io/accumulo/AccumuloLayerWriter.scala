@@ -14,7 +14,7 @@ import spray.json._
 import scala.reflect._
 
 class AccumuloLayerWriter(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   instance: AccumuloInstance,
   table: String,
   options: AccumuloLayerWriter.Options
@@ -88,7 +88,7 @@ object AccumuloLayerWriter {
 
   def apply(
     instance: AccumuloInstance,
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     table: String,
     options: Options
   ): AccumuloLayerWriter =
@@ -101,7 +101,7 @@ object AccumuloLayerWriter {
 
   def apply(
     instance: AccumuloInstance,
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     table: String
   ): AccumuloLayerWriter =
     new AccumuloLayerWriter(

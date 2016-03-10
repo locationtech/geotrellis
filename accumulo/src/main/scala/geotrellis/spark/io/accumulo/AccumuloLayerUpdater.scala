@@ -19,7 +19,7 @@ import AccumuloLayerWriter.Options
 
 class AccumuloLayerUpdater(
   val instance: AccumuloInstance,
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   layerReader: AccumuloLayerReader,
   options: Options
 ) extends LayerUpdater[LayerId] with LazyLogging {

@@ -15,7 +15,7 @@ import spray.json._
 
 import scala.reflect._
 
-class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext, instance: AccumuloInstance)
+class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext, instance: AccumuloInstance)
     extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism

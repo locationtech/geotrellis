@@ -2,6 +2,8 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index.KeyIndex
+import org.apache.avro.Schema
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -11,11 +13,13 @@ import java.io.PrintWriter
 
 import org.apache.hadoop.conf.Configuration
 
-class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends AttributeStore[JsonFormat] {
+import scala.util.matching.Regex
+
+class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends BlobLayerAttributeStore {
+  import HadoopAttributeStore._
+
   val attributePath = new Path(rootPath, "_attributes")
   val fs = attributePath.getFileSystem(hadoopConfiguration)
-
-  val SEP = "___"
 
   // Create directory if it doesn't exist
   if(!fs.exists(attributePath)) {
@@ -32,12 +36,16 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
     HdfsUtils
       .listFiles(new Path(attributePath, path), hadoopConfiguration)
       .foreach(fs.delete(_, false))
+    clearCache(layerId)
   }
 
   def attributeWildcard(attributeName: String): Path =
     new Path(s"*${SEP}${attributeName}.json")
 
-  private def readFile[T: Format](path: Path): Option[(LayerId, T)] = {
+  def layerWildcard(layerId: LayerId): Path =
+    new Path(s"${layerId.name}${SEP}${layerId.name}${SEP}*.json")
+
+  private def readFile[T: JsonFormat](path: Path): Option[(LayerId, T)] = {
     HdfsUtils
       .getLineScanner(path, hadoopConfiguration)
       .map{ in =>
@@ -52,13 +60,13 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
       }
   }
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T =
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
     readFile[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
       case None => throw new AttributeNotFoundError(attributeName, layerId)
     }
 
-  def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId,T] = {
     HdfsUtils
       .listFiles(attributeWildcard(attributeName), hadoopConfiguration)
       .map{ path: Path =>
@@ -70,7 +78,7 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
       .toMap
   }
 
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {
@@ -96,11 +104,15 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
         layerId == LayerId(name, zoomStr.toInt)
       }
 
-  def delete(layerId: LayerId): Unit =
+  def delete(layerId: LayerId): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))
+    clearCache(layerId)
+  }
 
-  def delete(layerId: LayerId, attributeName: String): Unit =
+  def delete(layerId: LayerId, attributeName: String): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}${attributeName}.json"))
+    clearCache(layerId, attributeName)
+  }
 
   def layerIds: Seq[LayerId] =
     HdfsUtils
@@ -110,9 +122,26 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
         LayerId(name, zoomStr.toInt)
       }
       .distinct
+
+  def availableAttributes(layerId: LayerId): Seq[String] = {
+    HdfsUtils
+      .listFiles(layerWildcard(layerId), hadoopConfiguration)
+      .map { path: Path =>
+        val attributeRx(name, zoom, attribute) = path.getName
+        attribute
+      }
+      .toVector
+  }
 }
 
 object HadoopAttributeStore {
+  final val SEP = "___"
+
+  val attributeRx = {
+    val slug = "[a-zA-Z0-9-]+"
+    new Regex(s"""($slug)$SEP($slug)${SEP}($slug).json""", "layer", "zoom", "attribute")
+  }
+
   def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
     new HadoopAttributeStore(rootPath, config)
 

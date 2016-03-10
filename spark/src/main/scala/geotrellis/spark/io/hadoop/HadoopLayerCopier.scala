@@ -19,7 +19,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class HadoopLayerCopier(
-   rootPath: Path, val attributeStore: AttributeStore[JsonFormat])
+   rootPath: Path, val attributeStore: AttributeStore)
   (implicit sc: SparkContext) extends LayerCopier[LayerId] {
 
   def copy[
@@ -30,8 +30,8 @@ class HadoopLayerCopier(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](from)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, K](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
@@ -46,7 +46,7 @@ class HadoopLayerCopier(
 object HadoopLayerCopier {
   def apply(
     rootPath: Path,
-    attributeStore: AttributeStore[JsonFormat]
+    attributeStore: AttributeStore
   )(implicit sc: SparkContext): HadoopLayerCopier =
     new HadoopLayerCopier(rootPath, attributeStore)
 

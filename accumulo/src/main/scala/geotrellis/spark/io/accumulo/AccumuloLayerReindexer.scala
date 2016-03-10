@@ -17,7 +17,7 @@ import scala.reflect.ClassTag
 object AccumuloLayerReindexer {
   def apply(
     instance: AccumuloInstance,
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     options: AccumuloLayerWriter.Options
   )(implicit sc: SparkContext): AccumuloLayerReindexer =
     new AccumuloLayerReindexer(instance, attributeStore, options)
@@ -36,7 +36,7 @@ object AccumuloLayerReindexer {
 
 class AccumuloLayerReindexer(
   instance: AccumuloInstance,
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   options: AccumuloLayerWriter.Options
 )(implicit sc: SparkContext) extends LayerReindexer[LayerId] {
 

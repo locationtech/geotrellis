@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class HadoopLayerReader(
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 )(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
@@ -38,9 +38,8 @@ class HadoopLayerReader(
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, metadata, keyIndex, writerSchema) = try {
-      import spray.json.DefaultJsonProtocol._
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }

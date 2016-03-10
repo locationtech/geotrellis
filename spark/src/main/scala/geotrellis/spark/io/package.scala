@@ -56,7 +56,4 @@ package object io extends json.Implicits with avro.codecs.Implicits {
 
   class LayerEmptyBoundsError(layerId: LayerId)
       extends LayerIOError(s"Layer $layerId contains empty bounds; is this layer corrupt?")
-
-  implicit class withJsonAttributeStoreMethods(store: AttributeStore[JsonFormat])
-    extends JsonAttributeStoreMethods(store)
 }

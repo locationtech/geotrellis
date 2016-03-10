@@ -15,7 +15,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 )  extends Reader[LayerId, Reader[K, V]] {
 
   val s3Client: S3Client = S3Client.default

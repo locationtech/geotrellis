@@ -14,7 +14,7 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 class AccumuloLayerCopier(
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   layerReader: AccumuloLayerReader,
   getLayerWriter: LayerId => AccumuloLayerWriter
 ) extends LayerCopier[LayerId] {
@@ -42,7 +42,7 @@ class AccumuloLayerCopier(
 
 object AccumuloLayerCopier {
   def apply(
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     layerReader: AccumuloLayerReader,
     getLayerWriter: LayerId => AccumuloLayerWriter
   )(implicit sc: SparkContext): AccumuloLayerCopier =
@@ -53,7 +53,7 @@ object AccumuloLayerCopier {
     )
 
   def apply(
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     layerReader: AccumuloLayerReader,
     layerWriter: AccumuloLayerWriter
   )(implicit sc: SparkContext): AccumuloLayerCopier =

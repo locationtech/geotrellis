@@ -16,7 +16,7 @@ import spray.json._
 import scala.reflect._
 
 class S3LayerUpdater(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   layerReader: S3LayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
@@ -29,8 +29,8 @@ class S3LayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
