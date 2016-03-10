@@ -469,6 +469,78 @@ public class ProjectionMath {
 		return nf*Math.pow(10., expv);
 	}
 
+    /**
+     * Evaluate complex polynomial. 
+     * Note coefficients are always C[1] to C[n], C[0] is always (0,0).
+     */
+    public static Complex zpoly1(Complex z, Complex[] c) {
+        Complex a = new Complex(c[c.length - 1]);
+        double t;
+        int n = c.length - 1;
+        while (n-- > 0) {
+            Complex C = c[n];
+            a.r = C.r + z.r * (t = a.r) - z.i * a.i;
+            a.i = C.i + z.r * a.i + z.i * t;
+        }
+        a.r = z.r * (t = a.r) - z.i * a.i;
+        a.i = z.r * a.i + z.i * t;
+        return a;
+    }
+
+    /**
+     * Evaluate a complex polynomial and its derivative
+     */
+    public static Complex zpoly1d(Complex z, Complex[] C, Complex der) {
+        Complex a, b;
+        double t;
+        boolean first = true;
+
+        a = new Complex(C[C.length - 1]);
+        b = new Complex(a);
+        for (int i = C.length - 1; i > 0; i--) {
+            if (first) {
+                first = false;
+            } else {
+                b.r = a.r + z.r * (t = b.r) - z.i * b.i;
+                b.i = a.i + z.r * b.i + z.i * t;
+            }
+            Complex c = C[i];
+            a.r = c.r + z.r * (t = a.r) - z.i * a.i;
+            a.i = c.i + z.r * a.i + z.i * t;
+        }
+
+        b.r = a.r + z.r * (t = b.r) - z.i * b.i;
+        b.i = a.i + z.r * b.i + z.i * t;
+        a.r = z.r * (t = a.r) - z.i * a.i;
+        a.i = z.r * a.i + z.i * t;
+        der.i = b.i;
+        der.r = b.r;
+        return a;
+    }
+
+  /**
+   * Tests whether the datum parameter-based transform 
+   * is the identity transform 
+   * (in which case datum transformation can be short-circuited,
+   * thus avoiding some loss of numerical precision).
+   * 
+   * @param transform
+   * @return
+   */
+  public static boolean isIdentity(double[] transform)
+  {
+    for (int i = 0; i < transform.length; i++) {
+      // scale factor will normally be 1 for an identity transform
+      if (i == 6) {
+        if (transform[i] != 1.0 && transform[i] != 0.0)
+          return false;
+      }
+      else if (transform[i] != 0.0) return false;
+    }
+    return true;
+  }
+  
+
   /* SECONDS_TO_RAD = Pi/180/3600 */
   public static final double SECONDS_TO_RAD = 4.84813681109535993589914102357e-6;
   public static final double MILLION = 1000000.0;

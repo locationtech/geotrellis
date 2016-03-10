@@ -1,6 +1,7 @@
 package org.osgeo.proj4j;
 
 import org.osgeo.proj4j.datum.*;
+import java.util.Arrays;
 
 /**
  * Represents the operation of transforming 
@@ -81,11 +82,20 @@ public class BasicCoordinateTransform
             if (srcCRS.getDatum().hasTransformToWGS84() 
                 || tgtCRS.getDatum().hasTransformToWGS84())
                 transformViaGeocentric = true;
-      
+
             if (transformViaGeocentric) {
                 srcGeoConv = new GeocentricConverter(srcCRS.getDatum().getEllipsoid());
                 tgtGeoConv = new GeocentricConverter(tgtCRS.getDatum().getEllipsoid());
+
+                if (srcCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+                    srcGeoConv.overrideWithWGS84Params();
+                }
+
+                if (tgtCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+                    tgtGeoConv.overrideWithWGS84Params();
+                }
             }
+      
         }
     }
 	
@@ -113,16 +123,17 @@ public class BasicCoordinateTransform
     public ProjCoordinate transform( ProjCoordinate src, ProjCoordinate tgt )
         throws Proj4jException
     {
+        geoCoord.setValue(src);
+        srcCRS.getProjection().getAxisOrder().toENU(geoCoord);
         // NOTE: this method may be called many times, so needs to be as efficient as possible
         if (doInverseProjection) {
             // inverse project to geographic
-            srcCRS.getProjection().inverseProjectRadians(src, geoCoord);
-        }
-        else {
-            geoCoord.setValue(src);
+            ProjCoordinate coord = new ProjCoordinate();
+            coord.setValue(geoCoord);
+            srcCRS.getProjection().inverseProjectRadians(coord, geoCoord);
         }
 
-        //TODO: adjust src Prime Meridian if specified
+        srcCRS.getProjection().getPrimeMeridian().toGreenwich(geoCoord);
     
         // fixes bug where computed Z value sticks around
         geoCoord.clearZ();
@@ -131,7 +142,7 @@ public class BasicCoordinateTransform
             datumTransform(geoCoord);
         }
 		
-        //TODO: adjust target Prime Meridian if specified
+        tgtCRS.getProjection().getPrimeMeridian().fromGreenwich(geoCoord);
 
         if (doForwardProjection) {
             // project from geographic to planar
@@ -140,6 +151,8 @@ public class BasicCoordinateTransform
         else {
             tgt.setValue(geoCoord);
         }
+
+        tgtCRS.getProjection().getAxisOrder().fromENU(tgt);
 
         return tgt;
     }
@@ -156,10 +169,14 @@ public class BasicCoordinateTransform
         /* -------------------------------------------------------------------- */
         /*      Short cut if the datums are identical.                          */
         /* -------------------------------------------------------------------- */
-        if (srcCRS.getDatum().isEqual(tgtCRS.getDatum()))
+        if (srcCRS.getDatum().isEqual(tgtCRS.getDatum())
+                || srcCRS.getDatum().getTransformType() == Datum.TYPE_UNKNOWN
+                || tgtCRS.getDatum().getTransformType() == Datum.TYPE_UNKNOWN)
             return;
     
-        // TODO: grid shift if required
+        if (srcCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+            srcCRS.getDatum().shift(pt);
+        }
     
         /* ==================================================================== */
         /*      Do we need to go through geocentric coordinates?                */
@@ -176,6 +193,7 @@ public class BasicCoordinateTransform
             if( srcCRS.getDatum().hasTransformToWGS84() ) {
                 srcCRS.getDatum().transformFromGeocentricToWgs84( pt );
             }
+
             if( tgtCRS.getDatum().hasTransformToWGS84() ) {
                 tgtCRS.getDatum().transformToGeocentricFromWgs84( pt );
             }
@@ -186,8 +204,10 @@ public class BasicCoordinateTransform
             tgtGeoConv.convertGeocentricToGeodetic( pt );
         }
     
-        // TODO: grid shift if required
 
+        if (tgtCRS.getDatum().getTransformType() == Datum.TYPE_GRIDSHIFT) {
+            tgtCRS.getDatum().inverseShift(pt);
+        }
     }
   
 }
