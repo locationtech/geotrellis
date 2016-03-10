@@ -5,7 +5,7 @@ import geotrellis.raster.resample.{Resample, ResampleMethod}
 import geotrellis.vector.Extent
 import spire.syntax.cfor._
 
-trait SingleBandTileMergeMethods extends TileMergeMethods[Tile] {
+trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
   def merge(other: Tile): Tile = {
     val mutableTile = self.mutable
     Seq(self, other).assertEqualDimensions()

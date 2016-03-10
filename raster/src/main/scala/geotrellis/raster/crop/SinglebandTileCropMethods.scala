@@ -3,7 +3,7 @@ package geotrellis.raster.crop
 import geotrellis.vector._
 import geotrellis.raster._
 
-trait SingleBandTileCropMethods extends TileCropMethods[Tile] {
+trait SinglebandTileCropMethods extends TileCropMethods[Tile] {
   import Crop.Options
 
   def crop(gb: GridBounds, options: Options): Tile = {

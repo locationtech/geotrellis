@@ -5,8 +5,8 @@ import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
-trait SingleBandRasterResampleMethods extends RasterResampleMethods[SingleBandRaster] {
-  def resample(target: RasterExtent, method: ResampleMethod): SingleBandRaster = {
+trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRaster] {
+  def resample(target: RasterExtent, method: ResampleMethod): SinglebandRaster = {
     val (cols, rows) = (target.cols, target.rows)
     val targetTile = ArrayTile.empty(self.cellType, cols, rows)
     val targetCS = CellSize(self.extent, cols, rows)

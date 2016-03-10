@@ -7,7 +7,7 @@ import geotrellis.proj4._
 
 import spire.syntax.cfor._
 
-trait SingleBandRasterReprojectMethods extends RasterReprojectMethods[SingleBandRaster] {
+trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[SinglebandRaster] {
   import Reproject.Options
 
   def reproject(
@@ -15,7 +15,7 @@ trait SingleBandRasterReprojectMethods extends RasterReprojectMethods[SingleBand
     transform: Transform,
     inverseTransform: Transform,
     options: Options
-  ): SingleBandRaster = {
+  ): SinglebandRaster = {
     val Raster(tile, extent) = self
     val RasterExtent(_, cellwidth, cellheight, _, _) = self.rasterExtent
     val RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) = targetRasterExtent
