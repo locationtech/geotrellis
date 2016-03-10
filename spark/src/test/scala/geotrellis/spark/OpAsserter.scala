@@ -44,7 +44,7 @@ trait OpAsserter {self: TestEnvironment =>
         layoutRows
       )(sc)
 
-    val rasterResult = rasterOp(tile, rasterRDD.metaData.layout.toRasterExtent)
+    val rasterResult = rasterOp(tile, rasterRDD.metadata.layout.toRasterExtent)
     val sparkResult = sparkOp(rasterRDD).stitch
 
     asserter(rasterResult, sparkResult)

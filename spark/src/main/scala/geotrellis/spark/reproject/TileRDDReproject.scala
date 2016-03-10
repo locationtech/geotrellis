@@ -139,9 +139,9 @@ object TileRDDReproject {
     targetLayout: Either[LayoutScheme, LayoutDefinition],
     options: Options
   ): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) = {
-    val crs = rdd.metaData.crs
-    val mapTransform = rdd.metaData.layout.mapTransform
-    val tileLayout = rdd.metaData.layout.tileLayout
+    val crs = rdd.metadata.crs
+    val mapTransform = rdd.metadata.layout.mapTransform
+    val tileLayout = rdd.metadata.layout.tileLayout
 
     val rasterExtents: RDD[(K, (RasterExtent, RasterExtent))] =
       rdd

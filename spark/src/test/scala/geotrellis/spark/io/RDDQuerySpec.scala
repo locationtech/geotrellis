@@ -52,7 +52,7 @@ class RDDQuerySpec extends FunSpec
   describe("RDDFilter Polygon Intersection") {
     import geotrellis.vector.{Point, Polygon, MultiPolygon}
 
-    val md = AllOnesTestFile.metaData
+    val md = AllOnesTestFile.metadata
     val mt = md.mapTransform
     val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
     val bounds = GridBounds(1, 1, 3, 2)
@@ -115,7 +115,7 @@ class RDDQuerySpec extends FunSpec
   }
 
   describe("RDDQuery KeyBounds generation") {
-    val md = AllOnesTestFile.metaData
+    val md = AllOnesTestFile.metadata
     val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
 
     it("should generate KeyBounds for single region") {

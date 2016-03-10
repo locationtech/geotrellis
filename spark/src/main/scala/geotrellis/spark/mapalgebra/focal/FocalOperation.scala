@@ -34,7 +34,7 @@ object FocalOperation {
   def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
       (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
     rasterRDD.withContext { rdd =>
-      apply(rdd, neighborhood, rasterRDD.metaData.gridBounds)(calc)
+      apply(rdd, neighborhood, rasterRDD.metadata.gridBounds)(calc)
     }
 }
 
@@ -46,7 +46,7 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExten
 
   def focalWithCellSize(n: Neighborhood)
       (calc: (Tile, Option[GridBounds], CellSize) => Tile): RasterRDD[K] = {
-    val cellSize = self.metaData.layout.cellSize
+    val cellSize = self.metadata.layout.cellSize
     FocalOperation(self, n){ (tile, bounds) =>
       calc(tile, bounds, cellSize)
     }

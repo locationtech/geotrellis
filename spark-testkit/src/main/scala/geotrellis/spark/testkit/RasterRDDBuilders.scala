@@ -162,7 +162,7 @@ trait RasterRDDBuilders {
       val maxTime = tiles.maxBy(_._2)._2
       KeyBounds(SpaceTimeKey(colMin, rowMin, minTime), SpaceTimeKey(colMax, rowMax, maxTime))
     }
-    val metaData = RasterMetadata(
+    val metadata = RasterMetadata(
       cellType,
       layout,
       extent,
@@ -202,6 +202,6 @@ trait RasterRDDBuilders {
         }
     }
 
-    new ContextRDD(sc.parallelize(tmsTiles), metaData)
+    new ContextRDD(sc.parallelize(tmsTiles), metadata)
   }
 }

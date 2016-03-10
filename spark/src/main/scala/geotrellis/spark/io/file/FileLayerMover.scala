@@ -24,7 +24,7 @@ object FileLayerMover {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
-        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metaData)
+        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metadata)
         if(!sourceMetadataFile.exists) throw new LayerNotFoundError(from)
 
         // Read the metadata file out.

@@ -65,13 +65,13 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
   }
 
   implicit def rasterMetadataFormat[K: JsonFormat] = new RootJsonFormat[RasterMetadata[K]] {
-    def write(metaData: RasterMetadata[K]) =
+    def write(metadata: RasterMetadata[K]) =
       JsObject(
-        "cellType" -> metaData.cellType.toJson,
-        "extent" -> metaData.extent.toJson,
-        "layoutDefinition" -> metaData.layout.toJson,
-        "crs" -> metaData.crs.toJson,
-        "bounds" -> metaData.bounds.get.toJson // we will only store non-empty bounds
+        "cellType" -> metadata.cellType.toJson,
+        "extent" -> metadata.extent.toJson,
+        "layoutDefinition" -> metadata.layout.toJson,
+        "crs" -> metadata.crs.toJson,
+        "bounds" -> metadata.bounds.get.toJson // we will only store non-empty bounds
       )
 
     def read(value: JsValue): RasterMetadata[K] =
