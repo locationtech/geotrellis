@@ -24,11 +24,11 @@ import org.apache.spark.rdd._
 import org.joda.time.DateTime
 
 
-abstract class SpaceTimeRasterRDDFilterMethods[K <: SpaceTimeKey, V, M] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
-  def filterByInstant(instant: DateTime): RDD[(SpatialKey, V)] with Metadata[M] = {
+abstract class SpaceTimeToSpatialMethods[K : SpatialComponent : TemporalComponent, V, M] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
+  def toSpatial(instant: DateTime): RDD[(SpatialKey, V)] with Metadata[M] = {
     val rdd = self.mapPartitions({ p =>
       p.flatMap({ case (key, tile) =>
-        if (key.time == instant) Some((key.spatialKey, tile))
+        if (key.temporalComponent.time == instant) Some((key.spatialComponent, tile))
         else None
       })
     }, preservesPartitioning = true)
@@ -36,8 +36,8 @@ abstract class SpaceTimeRasterRDDFilterMethods[K <: SpaceTimeKey, V, M] extends 
     ContextRDD(rdd, metadata)
   }
 
-  def filterByInstant(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] = {
+  def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] = {
     val dtInstant = SpaceTimeKey(0, 0, instant).time
-    filterByInstant(dtInstant)
+    toSpatial(dtInstant)
   }
 }

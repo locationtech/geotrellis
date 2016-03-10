@@ -13,6 +13,6 @@ trait Implicits {
   implicit class withRasterRDDFilterMethods[K: Boundable : ClassTag, V: ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
       extends RasterRDDFilterMethods[K, V, M]
 
-  implicit class withSpaceTimeRasterRDDFilterMethods[K <: SpaceTimeKey : ClassTag, V : ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
-      extends SpaceTimeRasterRDDFilterMethods[K, V, M]
+  implicit class withSpaceTimeToSpatialMethods[K : SpatialComponent : TemporalComponent : ClassTag, V : ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
+      extends SpaceTimeToSpatialMethods[K, V, M]
 }

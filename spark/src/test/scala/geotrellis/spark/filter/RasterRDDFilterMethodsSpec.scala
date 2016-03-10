@@ -53,15 +53,15 @@ class RasterRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
     val rasterRDD = ContextRDD(rdd, metadata)
 
     it("should filter out all items that are not at the given instant") {
-      rasterRDD.filterByInstant(0).count should be (0)
-      rasterRDD.filterByInstant(1).count should be (1)
-      rasterRDD.filterByInstant(2).count should be (2)
-      rasterRDD.filterByInstant(3).count should be (3)
-      rasterRDD.filterByInstant(4).count should be (4)
+      rasterRDD.toSpatial(0).count should be (0)
+      rasterRDD.toSpatial(1).count should be (1)
+      rasterRDD.toSpatial(2).count should be (2)
+      rasterRDD.toSpatial(3).count should be (3)
+      rasterRDD.toSpatial(4).count should be (4)
     }
 
     it ("should produce an RDD whose keys are of type SpatialKey") {
-      rasterRDD.filterByInstant(1).first._1 should be (SpatialKey(0,0))
+      rasterRDD.toSpatial(1).first._1 should be (SpatialKey(0,0))
     }
   }
 
