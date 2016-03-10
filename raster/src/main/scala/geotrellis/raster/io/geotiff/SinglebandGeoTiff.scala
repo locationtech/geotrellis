@@ -82,12 +82,12 @@ object SinglebandGeoTiff {
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, false)
 
-  implicit def singleBandGeoTiffToTile(sbg: SinglebandGeoTiff): Tile =
+  implicit def singlebandGeoTiffToTile(sbg: SinglebandGeoTiff): Tile =
     sbg.tile
 
-  implicit def singleBandGeoTiffToRaster(sbg: SinglebandGeoTiff): SinglebandRaster =
+  implicit def singlebandGeoTiffToRaster(sbg: SinglebandGeoTiff): SinglebandRaster =
     sbg.raster
 
-  implicit def singleBandGeoTiffToProjectedRaster(sbg: SinglebandGeoTiff): ProjectedRaster[Tile] =
+  implicit def singlebandGeoTiffToProjectedRaster(sbg: SinglebandGeoTiff): ProjectedRaster[Tile] =
     sbg.projectedRaster
 }
