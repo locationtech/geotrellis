@@ -5,7 +5,7 @@ import geotrellis.raster._
 
 import spire.syntax.cfor._
 
-abstract class TestFileSpatialTiles(tileLayout: TileLayout) {
+abstract class TestFileGridKeyTiles(tileLayout: TileLayout) {
   final def apply(key: GridKey): Tile = {
     val tile = FloatArrayTile.empty(tileLayout.tileCols, tileLayout.tileRows)
 
@@ -22,11 +22,11 @@ abstract class TestFileSpatialTiles(tileLayout: TileLayout) {
 }
 
 
-class ConstantSpatialTiles(tileLayout: TileLayout, f: Double) extends TestFileSpatialTiles(tileLayout) {
+class ConstantGridKeyTiles(tileLayout: TileLayout, f: Double) extends TestFileGridKeyTiles(tileLayout) {
   def value(key: GridKey, col: Int, row: Int): Double = f
 }
 
-class IncreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) extends TestFileSpatialTiles(tileLayout) {
+class IncreasingGridKeyTiles(tileLayout: TileLayout, gridBounds: GridBounds) extends TestFileGridKeyTiles(tileLayout) {
   def value(key: GridKey, col: Int, row: Int): Double = {
     val GridKey(tileCol, tileRow) = key
 
@@ -40,7 +40,7 @@ class IncreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) ext
   }
 }
 
-class DecreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) extends TestFileSpatialTiles(tileLayout) {
+class DecreasingGridKeyTiles(tileLayout: TileLayout, gridBounds: GridBounds) extends TestFileGridKeyTiles(tileLayout) {
   def value(key: GridKey, col: Int, row: Int): Double = {
     val GridKey(tileCol, tileRow) = key
 
@@ -54,13 +54,13 @@ class DecreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) ext
   }
 }
 
-class EveryOtherSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds, firstValue: Double, secondValue: Double) extends IncreasingSpatialTiles(tileLayout, gridBounds) {
+class EveryOtherGridKeyTiles(tileLayout: TileLayout, gridBounds: GridBounds, firstValue: Double, secondValue: Double) extends IncreasingGridKeyTiles(tileLayout, gridBounds) {
   override
   def value(key: GridKey, col: Int, row: Int): Double =
     if(super.value(key, col, row) % 2 == 0) { firstValue } else { secondValue }
 }
 
-class ModSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds, mod: Int) extends IncreasingSpatialTiles(tileLayout, gridBounds) {
+class ModGridKeyTiles(tileLayout: TileLayout, gridBounds: GridBounds, mod: Int) extends IncreasingGridKeyTiles(tileLayout, gridBounds) {
   override
   def value(key: GridKey, col: Int, row: Int) = super.value(key, col, row) % mod
 

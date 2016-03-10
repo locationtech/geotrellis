@@ -13,8 +13,8 @@ class FileGridTimeKeySpec
     with GridTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-//    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
+//    with CoordinateGridTimeKeyTests
+    with LayerUpdateGridTimeKeyTileTests {
   lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)

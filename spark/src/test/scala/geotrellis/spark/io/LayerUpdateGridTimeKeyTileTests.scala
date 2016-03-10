@@ -14,7 +14,7 @@ import geotrellis.proj4.LatLng
 import org.apache.spark.rdd._
 import org.joda.time.DateTime
 
-trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders { self: PersistenceSpec[GridTimeKey, Tile, RasterMetadata[GridTimeKey]] with TestEnvironment =>
+trait LayerUpdateGridTimeKeyTileTests extends RasterRDDBuilders with TileBuilders { self: PersistenceSpec[GridTimeKey, Tile, RasterMetadata[GridTimeKey]] with TestEnvironment =>
 
   def dummyRasterMetadata =
     RasterMetadata(

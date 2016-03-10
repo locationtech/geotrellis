@@ -15,8 +15,8 @@ class AccumuloGridTimeKeySpec
     with TestEnvironment
     with AccumuloTestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
+    with CoordinateGridTimeKeyTests
+    with LayerUpdateGridTimeKeyTileTests {
   implicit lazy val instance = MockAccumuloInstance()
 
   lazy val reader    = AccumuloLayerReader(instance)

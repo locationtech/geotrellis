@@ -16,8 +16,8 @@ class S3GridTimeKeySpec
     with GridTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests
+    with CoordinateGridTimeKeyTests
+    with LayerUpdateGridTimeKeyTileTests
     with BeforeAndAfterAll {
 
   registerAfterAll { () =>
