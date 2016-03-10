@@ -32,17 +32,17 @@ def main(args: Array[String]) : Unit = {
   // Should have an equal number of R, G, B tiles
   assert(numImages == fileListBlue.length && numImages == fileListGreen.length)
 
-  val multiBands = Array.ofDim[MultibandTile](numImages)
+  val multibands = Array.ofDim[MultibandTile](numImages)
 
   cfor(0)(_ < numImages, _ + 1) { i =>
     val red = SinglebandGeoTiff(fileListRed(i).toString).tile
     val green = SinglebandGeoTiff(fileListGreen(i).toString).tile
     val blue = SinglebandGeoTiff(fileListBlue(i).toString).tile
 
-    multiBands(i) = ArrayMultibandTile(Array(red, green, blue))
+    multibands(i) = ArrayMultibandTile(Array(red, green, blue))
   }
 
-  val cloudless = cloudRemovalMultiband(multiBands)
+  val cloudless = cloudRemovalMultiband(multibands)
   cloudless.renderPng().write("/tmp/cloudless.png")
 }
 ```

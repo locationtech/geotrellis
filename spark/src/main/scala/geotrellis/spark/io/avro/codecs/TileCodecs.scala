@@ -314,7 +314,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def multiBandTileCodec: AvroRecordCodec[MultibandTile] = new AvroRecordCodec[MultibandTile] {
+  implicit def multibandTileCodec: AvroRecordCodec[MultibandTile] = new AvroRecordCodec[MultibandTile] {
     def schema = SchemaBuilder
       .record("ArrayMultibandTile").namespace("geotrellis.raster")
       .fields()
