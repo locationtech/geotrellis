@@ -57,16 +57,16 @@ package object spark
     with filter.Implicits
     with Serializable // required for java serialization, even though it's mixed in
 {
-  type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetaData[K]]
+  type RasterRDD[K] = RDD[(K, Tile)] with Metadata[RasterMetadata[K]]
 
   object RasterRDD {
-    def apply[K](rdd: RDD[(K, Tile)], metadata: RasterMetaData[K]): RasterRDD[K] =
+    def apply[K](rdd: RDD[(K, Tile)], metadata: RasterMetadata[K]): RasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 
-  type MultibandRasterRDD[K] = RDD[(K, MultibandTile)] with Metadata[RasterMetaData[K]]
+  type MultibandRasterRDD[K] = RDD[(K, MultibandTile)] with Metadata[RasterMetadata[K]]
   object MultibandRasterRDD {
-    def apply[K](rdd: RDD[(K, MultibandTile)], metadata: RasterMetaData[K]): MultibandRasterRDD[K] =
+    def apply[K](rdd: RDD[(K, MultibandTile)], metadata: RasterMetadata[K]): MultibandRasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 
@@ -146,14 +146,14 @@ package object spark
   }
 
   implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
-    def collectMetaData[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
-        (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, RasterMetaData[K2]) = {
-      RasterMetaData.fromRdd(rdd, crs, layoutScheme)
+    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, RasterMetadata[K2]) = {
+      RasterMetadata.fromRdd(rdd, crs, layoutScheme)
     }
 
-    def collectMetaData[K2: Boundable: SpatialComponent](crs: CRS, layout: LayoutDefinition)
-        (implicit ev: K1 => TilerKeyMethods[K1, K2]): RasterMetaData[K2] = {
-      RasterMetaData.fromRdd(rdd, crs, layout)
+    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layout: LayoutDefinition)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2]): RasterMetadata[K2] = {
+      RasterMetadata.fromRdd(rdd, crs, layout)
     }
   }
 }

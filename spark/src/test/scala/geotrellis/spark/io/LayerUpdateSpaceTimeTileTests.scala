@@ -14,10 +14,10 @@ import geotrellis.proj4.LatLng
 import org.apache.spark.rdd._
 import org.joda.time.DateTime
 
-trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]] with TestEnvironment =>
+trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders { self: PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]] with TestEnvironment =>
 
-  def dummyRasterMetaData =
-    RasterMetaData(
+  def dummyRasterMetadata =
+    RasterMetadata(
       IntConstantNoDataCellType,
       LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
       Extent(0,0,1,1),
@@ -25,8 +25,8 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
       KeyBounds(SpaceTimeKey(0,0, new DateTime()), SpaceTimeKey(1,1, new DateTime()))
     )
 
-  def emptyRasterMetaData =
-    RasterMetaData[SpaceTimeKey](
+  def emptyRasterMetadata =
+    RasterMetadata[SpaceTimeKey](
       IntConstantNoDataCellType,
       LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
       Extent(0,0,1,1),
@@ -44,7 +44,7 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
 
       it("should not update a layer (empty set)") {
         intercept[EmptyBoundsError] {
-          updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetaData))
+          updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyRasterMetadata))
         }
       }
 
@@ -55,7 +55,7 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
         val update = new ContextRDD(sc.parallelize(
           (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
             (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
-        ), dummyRasterMetaData)
+        ), dummyRasterMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
           updater.update(layerId, update)
@@ -82,7 +82,7 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
         assert(rdd.count == 4)
 
         writer.write(id, rdd, keyIndexMethod)
-        assert(reader.read[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](id).count == 4)
+        assert(reader.read[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]](id).count == 4)
 
         val updateRdd =
           createSpaceTimeRasterRDD(
@@ -93,7 +93,7 @@ trait LayerUpdateSpaceTimeTileTests extends RasterRDDBuilders with TileBuilders 
         assert(updateRdd.count == 1)
         updateRdd.withContext(_.mapValues { tile => tile + 1 })
 
-        updater.update[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]](id, updateRdd)
+        updater.update[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]](id, updateRdd)
 
         val read: RasterRDD[SpaceTimeKey] = reader.read(id)
 

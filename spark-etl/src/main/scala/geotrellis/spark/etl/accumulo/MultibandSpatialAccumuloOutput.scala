@@ -8,7 +8,7 @@ import geotrellis.spark.io.index.KeyIndexMethod
 
 import org.apache.spark.SparkContext
 
-class MultibandSpatialAccumuloOutput extends AccumuloOutput[SpatialKey, MultibandTile, RasterMetaData[SpatialKey]] {
+class MultibandSpatialAccumuloOutput extends AccumuloOutput[SpatialKey, MultibandTile, RasterMetadata[SpatialKey]] {
   def writer(method: KeyIndexMethod[SpatialKey], props: Parameters)(implicit sc: SparkContext) =
-    AccumuloLayerWriter(getInstance(props), props("table")).writer[SpatialKey, MultibandTile, RasterMetaData[SpatialKey]](method)
+    AccumuloLayerWriter(getInstance(props), props("table")).writer[SpatialKey, MultibandTile, RasterMetadata[SpatialKey]](method)
 }

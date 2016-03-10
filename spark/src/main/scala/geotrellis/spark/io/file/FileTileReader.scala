@@ -21,11 +21,11 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCode
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
-    val (layerMetaData, _, keyIndex, writerSchema) =
+    val (layerMetadata, _, keyIndex, writerSchema) =
       attributeStore.readLayerAttributes[FileLayerHeader, Unit, KeyIndex[K], Schema](layerId)
 
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = KeyPathGenerator(catalogPath, layerMetaData.path, keyIndex, maxWidth)
+    val keyPath = KeyPathGenerator(catalogPath, layerMetadata.path, keyIndex, maxWidth)
 
     def read(key: K): V = {
       val path = keyPath(key)

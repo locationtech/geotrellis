@@ -16,7 +16,7 @@ package object io extends json.Implicits with avro.codecs.Implicits {
   class LayerIOError(val message: String) extends Exception(message)
 
   class LayerReadError(layerId: LayerId)
-    extends LayerIOError(s"LayerMetaData not found for layer $layerId")
+    extends LayerIOError(s"LayerMetadata not found for layer $layerId")
 
   class LayerExistsError(layerId: LayerId)
     extends LayerIOError(s"Layer $layerId already exists in the catalog")

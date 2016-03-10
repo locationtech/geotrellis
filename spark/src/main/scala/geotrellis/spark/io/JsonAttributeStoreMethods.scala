@@ -22,8 +22,8 @@ import AttributeStore.Fields
  */
 class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
 
-  def readLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat]
-    (id: LayerId):(Header, MetaData, KeyIndex, Schema) = {
+  def readLayerAttributes[Header: JsonFormat, Metadata: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat]
+    (id: LayerId):(Header, Metadata, KeyIndex, Schema) = {
     val header = Try {
       attributeStore.cacheRead[JsObject](id, Fields.metaData)
         .convertTo[Header](fieldLens(Fields.header))
@@ -35,11 +35,11 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
 
     val metadata = Try {
       attributeStore.cacheRead[JsObject](id, Fields.metaData)
-        .convertTo[MetaData](fieldLens(Fields.metaData))
+        .convertTo[Metadata](fieldLens(Fields.metaData))
     }.getOrElse {
-      // Back in my day we used rasterMetaData tag because it was the only possible type of metadata
+      // Back in my day we used rasterMetadata tag because it was the only possible type of metadata
       attributeStore.cacheRead[JsObject](id, Fields.metaData)
-        .convertTo[MetaData](fieldLens("rasterMetaData"))
+        .convertTo[Metadata](fieldLens("rasterMetadata"))
     }
 
     val keyIndex = Try {
@@ -64,8 +64,8 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
   def readLayerAttribute[T: JsonFormat](id: LayerId, attributeName: String): T =
     attributeStore.cacheRead[JsObject](id, Fields.metaData).convertTo[T](fieldLens(attributeName))
 
-  def writeLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
-    id: LayerId, header: Header, metadata: MetaData, keyIndex: KeyIndex, schema: Schema): Unit = {
+  def writeLayerAttributes[Header: JsonFormat, Metadata: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
+    id: LayerId, header: Header, metadata: Metadata, keyIndex: KeyIndex, schema: Schema): Unit = {
 
     val obj = JsObject(
       Fields.header -> header.toJson,

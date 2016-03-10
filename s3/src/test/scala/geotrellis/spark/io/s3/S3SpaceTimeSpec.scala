@@ -12,7 +12,7 @@ import org.joda.time.DateTime
 import org.scalatest._
 
 class S3SpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
+  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles

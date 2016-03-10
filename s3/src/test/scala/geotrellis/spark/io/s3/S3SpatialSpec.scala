@@ -9,7 +9,7 @@ import geotrellis.spark._
 import org.scalatest._
 
 class S3SpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData[SpatialKey]]
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment with TestFiles
     with AllOnesTestTileTests {

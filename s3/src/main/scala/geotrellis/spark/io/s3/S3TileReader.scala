@@ -22,16 +22,16 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec]
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
-    val (layerMetaData, _, keyIndex, writerSchema) =
+    val (layerMetadata, _, keyIndex, writerSchema) =
       attributeStore.readLayerAttributes[S3LayerHeader, Unit, KeyIndex[K], Schema](layerId)
 
     def read(key: K): V = {
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val path = s"${layerMetaData.key}/${Index.encode(keyIndex.toIndex(key), maxWidth)}"
+      val path = s"${layerMetadata.key}/${Index.encode(keyIndex.toIndex(key), maxWidth)}"
 
       val is =
         try {
-          s3Client.getObject(layerMetaData.bucket, path).getObjectContent
+          s3Client.getObject(layerMetadata.bucket, path).getObjectContent
         } catch {
           case e: AmazonS3Exception if e.getStatusCode == 404 =>
             throw new TileNotFoundError(key, layerId)
