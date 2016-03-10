@@ -11,7 +11,7 @@ class MultiBandGeoTiff(
   val crs: CRS,
   val tags: Tags,
   options: GeoTiffOptions
-) extends GeoTiff[MultiBandTile] {
+) extends GeoTiff[MultiBandTile] with SimpleMultiBandTile {
   val cellType = tile.cellType
 
   def mapTile(f: MultiBandTile => MultiBandTile): MultiBandGeoTiff =
