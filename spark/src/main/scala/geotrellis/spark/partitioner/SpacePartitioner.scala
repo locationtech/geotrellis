@@ -27,7 +27,6 @@ case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
   def numPartitions = regions.length
 
   def getPartition(key: Any): Int = {
-    println(s"         KEY $key  ${key.getClass.getCanonicalName}")
     val k = key.asInstanceOf[SpatialKey]
     val x = index.asInstanceOf[PartitionerIndex[SpatialKey]]
     x.toIndex(k)

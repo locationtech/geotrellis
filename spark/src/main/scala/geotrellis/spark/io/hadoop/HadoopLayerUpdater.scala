@@ -42,7 +42,7 @@ class HadoopLayerUpdater(
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    logger.warn(s"MapFiles cannot be updatd, so this requires rewriting the entire layer.")
+    logger.warn(s"MapFiles cannot be updated, so this requires rewriting the entire layer.")
 
     val entireLayer = layerReader.read[K, V, M](id)
 
