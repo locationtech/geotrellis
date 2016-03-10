@@ -85,12 +85,12 @@ object Intersects {
     }
 
   /** Define Intersects filter for GridBounds */
-  implicit def forGridBounds[K: SpatialComponent: Boundable, M] =
+  implicit def forGridBounds[K: GridComponent: Boundable, M] =
     new RDDFilter[K, Intersects.type, GridBounds, M] {
       def apply(metadata: M, kb: KeyBounds[K], bounds: GridBounds) = {
         val queryBounds = KeyBounds(
-          kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
-          kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
+          kb.minKey setComponent GridKey(bounds.colMin, bounds.rowMin),
+          kb.maxKey setComponent GridKey(bounds.colMax, bounds.rowMax))
         (queryBounds intersect kb) match {
           case kb: KeyBounds[K] => List(kb)
           case EmptyBounds => Nil
@@ -99,13 +99,13 @@ object Intersects {
     }
 
   /** Define Intersects filter for Extent */
-  implicit def forExtent[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
+  implicit def forExtent[K: GridComponent: Boundable, M: (? => MapKeyTransform)] =
     new RDDFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
-      val bounds = metadata.mapTransform(extent)
+      val bounds = (metadata: MapKeyTransform)(extent)
       val queryBounds = KeyBounds(
-        kb.minKey updateSpatialComponent SpatialKey(bounds.colMin, bounds.rowMin),
-        kb.maxKey updateSpatialComponent SpatialKey(bounds.colMax, bounds.rowMax))
+        kb.minKey setComponent GridKey(bounds.colMin, bounds.rowMin),
+        kb.maxKey setComponent GridKey(bounds.colMax, bounds.rowMax))
       (queryBounds intersect kb) match {
         case kb: KeyBounds[K] => List(kb)
         case EmptyBounds => Nil
@@ -114,12 +114,12 @@ object Intersects {
   }
 
   /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
+  implicit def forPolygon[K: GridComponent: Boundable, M: (? => MapKeyTransform)] =
     new RDDFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val extent = polygon.envelope
-        val keyext = metadata.mapTransform(kb.minKey)
-        val bounds = metadata.mapTransform(extent)
+        val keyext = (metadata: MapKeyTransform)(kb.minKey)
+        val bounds = (metadata: MapKeyTransform)(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
         /*
@@ -151,8 +151,8 @@ object Intersects {
         tiles.keys.asScala
           .map({ tile =>
             val qb = KeyBounds(
-              kb.minKey updateSpatialComponent SpatialKey(tile._1, tile._2),
-              kb.maxKey updateSpatialComponent SpatialKey(tile._1, tile._2))
+              kb.minKey setComponent GridKey(tile._1, tile._2),
+              kb.maxKey setComponent GridKey(tile._1, tile._2))
             qb intersect kb match {
               case kb: KeyBounds[K] => List(kb)
               case EmptyBounds => Nil
@@ -171,8 +171,8 @@ object At {
     new RDDFilter[K, At.type, DateTime, M] {
       def apply(metadata: M, kb: KeyBounds[K], at: DateTime) = {
         val queryBounds = KeyBounds(
-          kb.minKey updateTemporalComponent TemporalKey(at),
-          kb.maxKey updateTemporalComponent TemporalKey(at))
+          kb.minKey setComponent TemporalKey(at),
+          kb.maxKey setComponent TemporalKey(at))
         (queryBounds intersect kb) match {
           case kb: KeyBounds[K] => List(kb)
           case EmptyBounds => Nil
@@ -189,8 +189,8 @@ object Between {
     new RDDFilter[K, Between.type, (DateTime, DateTime), M] {
       def apply(metadata: M, kb: KeyBounds[K], range: (DateTime, DateTime)) = {
         val queryBounds = KeyBounds(
-          kb.minKey updateTemporalComponent TemporalKey(range._1),
-          kb.maxKey updateTemporalComponent TemporalKey(range._2))
+          kb.minKey setComponent TemporalKey(range._1),
+          kb.maxKey setComponent TemporalKey(range._2))
         (queryBounds intersect kb) match {
           case kb: KeyBounds[K] => List(kb)
           case EmptyBounds => Nil
@@ -203,14 +203,14 @@ object Contains {
   def apply[T](value: T) = RDDFilter.Value[Contains.type, T](value)
 
   /** Define Intersects filter for Extent */
-  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => {def mapTransform: MapKeyTransform})] =
+  implicit def forPoint[K: GridComponent: Boundable, M: (? => MapKeyTransform)] =
     new RDDFilter[K, Contains.type, Point, M] {
     def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
-      val spatialKey = metadata.mapTransform(point)
+      val spatialKey = (metadata: MapKeyTransform)(point)
       val queryBounds =
         KeyBounds(
-          kb.minKey updateSpatialComponent spatialKey,
-          kb.maxKey updateSpatialComponent spatialKey
+          kb.minKey setComponent spatialKey,
+          kb.maxKey setComponent spatialKey
         )
       (queryBounds intersect kb) match {
         case kb: KeyBounds[K] => List(kb)

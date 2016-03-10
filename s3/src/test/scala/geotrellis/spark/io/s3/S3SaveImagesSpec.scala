@@ -1,7 +1,7 @@
 package geotrellis.spark.render
 
 import geotrellis.raster.{Tile, TileLayout}
-import geotrellis.spark.{SpatialKey, LayerId}
+import geotrellis.spark.{GridKey, LayerId}
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testfiles.TestFiles
@@ -12,7 +12,7 @@ import org.scalatest._
 
 
 class S3SaveImagesSpec extends FunSpec with TestEnvironment {
-  lazy val sample = TestFiles.generateSpatial("all-ones", TestFiles.rasterMetaData)
+  lazy val sample = TestFiles.generateSpatial("all-ones")
 
   describe("Saving of Rendered Tiles to S3") {
     it ("should work with PNGs") {

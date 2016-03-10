@@ -4,7 +4,7 @@ import Implicits._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
-import geotrellis.raster.{ArrayTile, TileLayout}
+import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 
 import geotrellis.vector._

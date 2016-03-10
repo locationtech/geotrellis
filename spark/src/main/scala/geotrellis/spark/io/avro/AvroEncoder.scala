@@ -29,7 +29,6 @@ object AvroEncoder {
     IOUtils.toByteArray(in)
   }
 
-
   def toBinary[T: AvroRecordCodec](thing: T): Array[Byte] = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema: Schema = format.schema
@@ -56,7 +55,7 @@ object AvroEncoder {
     val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
     format.decode(rec)
   }
-  
+
   def toJson[T: AvroRecordCodec](thing: T): String = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
@@ -68,7 +67,7 @@ object AvroEncoder {
     encoder.flush()
     jos.toByteArray.map(_.toChar).mkString
   }
-  
+
   def fromJson[T: AvroRecordCodec](json: String): T = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema

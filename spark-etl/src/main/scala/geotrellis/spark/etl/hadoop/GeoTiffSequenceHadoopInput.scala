@@ -14,7 +14,7 @@ class GeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, Tile] {
     sc
       .sequenceFile[String, Array[Byte]](props("path"))
       .map { case (path, bytes) =>
-        val geotiff = GeoTiffReader.readSingleBand(bytes)
+        val geotiff = GeoTiffReader.readSingleband(bytes)
         (ProjectedExtent(geotiff.extent, geotiff.crs), geotiff.tile)
       }
 }

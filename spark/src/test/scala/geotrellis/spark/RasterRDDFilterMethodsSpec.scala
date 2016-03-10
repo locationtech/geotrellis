@@ -19,7 +19,7 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.filter._
-import geotrellis.raster.io.geotiff.SingleBandGeoTiff
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 
 import org.scalatest.FunSpec
 
@@ -28,13 +28,13 @@ class RasterRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
 
   describe("RasterRDD Crop Methods") {
     val path = "raster-test/data/aspect.tif"
-    val gt = SingleBandGeoTiff(path)
+    val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
     val (_, rdd) = createRasterRDD(originalRaster, 5, 5, gt.crs)
-    val allKeys = KeyBounds(SpatialKey(0,0), SpatialKey(4,4))
-    val someKeys = KeyBounds(SpatialKey(1,1), SpatialKey(3,3))
-    val moreKeys = KeyBounds(SpatialKey(4,4), SpatialKey(4,4))
-    val noKeys = KeyBounds(SpatialKey(5,5), SpatialKey(6,6))
+    val allKeys = KeyBounds(GridKey(0,0), GridKey(4,4))
+    val someKeys = KeyBounds(GridKey(1,1), GridKey(3,3))
+    val moreKeys = KeyBounds(GridKey(4,4), GridKey(4,4))
+    val noKeys = KeyBounds(GridKey(5,5), GridKey(6,6))
 
     it("should correctly filter by a covering range") {
       val query = rdd.filterByKeyBounds(List(allKeys))

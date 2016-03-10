@@ -13,7 +13,7 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withBufferTilesMethodsWrapper[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](self: RDD[(K, V)]) extends BufferTilesMethods[K, V](self)
 }

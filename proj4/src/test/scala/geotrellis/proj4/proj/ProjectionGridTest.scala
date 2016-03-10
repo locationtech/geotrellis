@@ -13,7 +13,7 @@ import org.osgeo.proj4j.CoordinateReferenceSystem
   * @author Martin Davis (port by Rob Emanuele)
   *
   */
-class ProjectionGridTest extends FunSuite with Matchers {
+class ProjectionGridKeyTest extends FunSuite with Matchers {
   val TOLERANCE = 0.00001
   
   test("Albers") {

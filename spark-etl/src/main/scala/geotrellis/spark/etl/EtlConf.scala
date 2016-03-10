@@ -13,7 +13,7 @@ sealed trait ReprojectMethod
 
 /**
   * BufferedReproject method will perform reproject still after the tiling step.
-  * Because tiling step creates keys with SpatialComponent this method of reprojection is able to sample pixels past the
+  * Because tiling step creates keys with GridComponent this method of reprojection is able to sample pixels past the
   * tile boundaries by performing a spatial neighborhood join. This method is the default and produces the best results.
   * Note that method of reprojection requires that all of the source tiles share the same CRS.
   */
@@ -60,16 +60,16 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
 
   val output       = opt[String]("output", required = true,
                       descr ="name of output module (ex: s3, hadoop, accumulo")
+
   val layerName    = opt[String]("layer", required = true,
                       descr = "Name of the input layer")
+
   val crs          = opt[CRS]("crs", required = true,
                       descr = "target CRS for the layer (ex: EPSG:3857")
+
   val tileSize     = opt[Int]("tileSize",
                       descr = "Tile size in pixels (default: 256)",
                       default = Some(256))
-  val clobber      = opt[Boolean]("clobber",
-                      descr = "clobber layer on save (default: false)",
-                      default = Some(false))
 
   val reproject    = opt[ReprojectMethod]("reproject",
                       descr = "reproject method to use during the tiling stege",
@@ -186,4 +186,3 @@ object EtlConf {
     val argType = org.rogach.scallop.ArgType.SINGLE
   }
 }
-

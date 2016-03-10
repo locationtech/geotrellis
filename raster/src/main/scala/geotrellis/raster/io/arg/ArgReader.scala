@@ -30,15 +30,15 @@ import java.lang.IllegalArgumentException
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */
-  final def read(path: String): SingleBandRaster =
+  final def read(path: String): SinglebandRaster =
     read(path, None)
 
   /** Reads an arg from the json metadata file. */
-  final def read(path: String, targetRasterExtent: RasterExtent): SingleBandRaster =
+  final def read(path: String, targetRasterExtent: RasterExtent): SinglebandRaster =
     read(path, Some(targetRasterExtent))
 
   /** Reads an arg from the json metadata file. */
-  private final def read(path: String, targetRasterExtent: Option[RasterExtent]): SingleBandRaster = {
+  private final def read(path: String, targetRasterExtent: Option[RasterExtent]): SinglebandRaster = {
     val json = ConfigFactory.parseString(Filesystem.readText(path))
 
     val cellType =

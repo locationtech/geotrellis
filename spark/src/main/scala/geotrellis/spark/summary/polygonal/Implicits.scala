@@ -9,7 +9,7 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withZonalSummaryRasterRDDMethods[K](val self: RasterRDD[K])
-    (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
+    (implicit val keyClassTag: ClassTag[K], implicit val _sc: GridComponent[K])
       extends PolygonalSummaryRasterRDDMethods[K] with Serializable
 
   implicit class withZonalSummaryFeatureRDDMethods[G <: Geometry, D](val featureRdd: RDD[Feature[G, D]])

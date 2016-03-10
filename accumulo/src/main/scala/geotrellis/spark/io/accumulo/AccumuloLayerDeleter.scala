@@ -13,8 +13,8 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conne
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, _, _, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, Unit, Unit](id)
+    val (header, _, _, _) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, Unit](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
@@ -38,6 +38,9 @@ object AccumuloLayerDeleter {
 
   def apply(attributeStore: AttributeStore[JsonFormat], instance: AccumuloInstance): AccumuloLayerDeleter =
     new AccumuloLayerDeleter(attributeStore, instance.connector)
+
+  def apply(attributeStore: AccumuloAttributeStore): AccumuloLayerDeleter =
+    new AccumuloLayerDeleter(attributeStore, attributeStore.connector)
 
   def apply(instance: AccumuloInstance): AccumuloLayerDeleter =
     apply(AccumuloAttributeStore(instance.connector), instance.connector)

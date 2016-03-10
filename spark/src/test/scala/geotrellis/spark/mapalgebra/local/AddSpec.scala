@@ -29,7 +29,7 @@ class AddSpec extends FunSpec with TestEnvironment with TestFiles {
   describe("Add Operation") {
     val ones = AllOnesTestFile
 
-    val onesST = AllOnesSpaceTime
+    val onesST = AllOnesGridTimeKey
 
     it("should add a constant to a raster") {
       val twos = ones + 1

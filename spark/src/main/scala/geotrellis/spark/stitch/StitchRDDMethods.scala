@@ -25,7 +25,7 @@ object TileLayoutStitcher {
     val tileRows = sample.rows
 
     val pieces =
-      for ((SpatialKey(col, row), v) <- tiles) yield {
+      for ((GridKey(col, row), v) <- tiles) yield {
         val updateCol = (col - te.colMin) * tileCols
         val updateRow = (row - te.rowMin) * tileRows
         (v, (updateCol, updateRow))
@@ -36,7 +36,7 @@ object TileLayoutStitcher {
 }
 
 abstract class SpatialTileLayoutRDDMethods[V <: CellGrid, M: ? => MapKeyTransform]
-  extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
+  extends MethodExtensions[RDD[(GridKey, V)] with Metadata[M]] {
 
   def stitch(implicit stitcher: Stitcher[V]): Raster[V] = {
     val (tile, bounds) = TileLayoutStitcher.stitch(self.collect())
@@ -46,7 +46,7 @@ abstract class SpatialTileLayoutRDDMethods[V <: CellGrid, M: ? => MapKeyTransfor
 }
 
 abstract class SpatialTileRDDMethods[V <: CellGrid]
-  extends MethodExtensions[RDD[(SpatialKey, V)]] {
+  extends MethodExtensions[RDD[(GridKey, V)]] {
 
   def stitch(implicit stitcher: Stitcher[V]): V = {
     TileLayoutStitcher.stitch(self.collect())._1

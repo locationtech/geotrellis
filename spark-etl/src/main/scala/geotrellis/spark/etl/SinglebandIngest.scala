@@ -10,6 +10,6 @@ import org.apache.spark.SparkConf
 
 object SinglebandIngest extends App {
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL SinglebandIngest", new SparkConf(true))
-  Etl.ingest[ProjectedExtent, SpatialKey, Tile](args, ZCurveKeyIndexMethod)
+  Etl.ingest[ProjectedExtent, GridKey, Tile](args, ZCurveKeyIndexMethod)
   sc.stop()
 }

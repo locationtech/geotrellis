@@ -15,8 +15,8 @@ jdk:
 - oraclejdk8
 
 scala:
-- "2.10.5"
-- "2.11.5"
+- "2.10.6"
+- "2.11.8"
 
 cache:
   directories:
@@ -36,6 +36,7 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
+  - export GEOTRELLIS_KRYO_REGREQ="YES"
 
 deploy:
   - provider: script
@@ -45,7 +46,7 @@ deploy:
       repo: geotrellis/geotrellis
       branch: master
       jdk: oraclejdk7
-      scala: "2.10.5"
+      scala: "2.10.6"
 
   - provider: script
     script: .travis/deploy-with-scaladocs.sh
@@ -54,7 +55,7 @@ deploy:
       repo: geotrellis/geotrellis
       branch: master
       jdk: oraclejdk7
-      scala: "2.11.5"
+      scala: "2.11.8"
 
 after_deploy:
   - rm -f "${HOME}/.bintray/.credentials"

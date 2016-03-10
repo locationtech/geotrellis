@@ -11,12 +11,12 @@ import geotrellis.raster._
  *        Bing tiling scheme has upper left as it's origin
  */
 trait TileKeyTransform extends Serializable {
-  def tileToKey(coord: (Int, Int)): SpatialKey =
+  def tileToKey(coord: (Int, Int)): GridKey =
     tileToKey(coord._1, coord._2)
 
-  def tileToKey(x: Int, y: Int): SpatialKey
+  def tileToKey(x: Int, y: Int): GridKey
 
-  def keyToTile(key: SpatialKey): (Int, Int) =
+  def keyToTile(key: GridKey): (Int, Int) =
     keyToTile(key.col, key.row)
 
   def keyToTile(col: Int, row: Int): TileCoord
@@ -28,8 +28,8 @@ trait TileKeyTransform extends Serializable {
   }
 
   def keyToTile(gridBounds: GridBounds): GridBounds = {
-    val SpatialKey(newColMin, newRowMin) = tileToKey(gridBounds.colMin, gridBounds.rowMin)
-    val SpatialKey(newColMax, newRowMax) = tileToKey(gridBounds.colMax, gridBounds.rowMax)
+    val GridKey(newColMin, newRowMin) = tileToKey(gridBounds.colMin, gridBounds.rowMin)
+    val GridKey(newColMax, newRowMax) = tileToKey(gridBounds.colMax, gridBounds.rowMax)
     GridBounds(newColMin, newRowMin, newColMax, newRowMax)
   }
 }

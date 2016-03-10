@@ -19,7 +19,7 @@ class PercentageSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Percentage Zonal Operation") {
     it("gives correct percentage for example raster rdds") {
-      val rdd: RDD[(SpatialKey, Tile)] = createRasterRDD(
+      val rdd: RDD[(GridKey, Tile)] = createRasterRDD(
         sc,
         ArrayTile(Array(
           1, 2, 2,  2, 3, 1,  6, 5, 1,
@@ -36,7 +36,7 @@ class PercentageSpec extends FunSpec with TestEnvironment with TestFiles {
         TileLayout(3, 4, 3, 2)
       )
 
-      val zonesRDD: RDD[(SpatialKey, Tile)] = createRasterRDD(
+      val zonesRDD: RDD[(GridKey, Tile)] = createRasterRDD(
         sc,
         ArrayTile(Array(
           1, 1, 1,  4, 4, 4,  5, 6, 6,

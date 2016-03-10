@@ -47,43 +47,43 @@ class GeoTiffWriterSpec extends FunSpec
     val path = temp.getPath()
 
     it("should write GeoTiff with tags") {
-      val geoTiff = MultiBandGeoTiff(geoTiffPath("multi-tag.tif"))
+      val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
       GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
 
-      val actual = MultiBandGeoTiff(path).tags
+      val actual = MultibandGeoTiff(path).tags
       val expected = geoTiff.tags
 
       actual should be (expected)
     }
 
     it("should write web mercator correctly") {
-      val geoTiff = SingleBandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
 
       addToPurge(path)
       geoTiff.write(path)
-      val actualCRS = SingleBandGeoTiff(path).crs
+      val actualCRS = SinglebandGeoTiff(path).crs
 
       actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
     }
 
     it("should write NY State Plane correctly") {
-      val geoTiff = SingleBandGeoTiff(geoTiffPath("ny-state-plane.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("ny-state-plane.tif"))
 
       addToPurge(path)
       geoTiff.write(path)
-      val actualCRS = SingleBandGeoTiff(path).crs
+      val actualCRS = SinglebandGeoTiff(path).crs
 
       actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
     }
 
     it ("should write Polar stereographic correctly") {
-      val geoTiff = SingleBandGeoTiff(geoTiffPath("alaska-polar-3572.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("alaska-polar-3572.tif"))
 
       addToPurge(path)
       geoTiff.write(path)
-      val actualCRS = SingleBandGeoTiff(path).crs
+      val actualCRS = SinglebandGeoTiff(path).crs
 
       actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
     }
@@ -92,13 +92,13 @@ class GeoTiffWriterSpec extends FunSpec
       val e = Extent(100.0, 400.0, 120.0, 420.0)
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
-      val geoTiff = SingleBandGeoTiff(t, e, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
+      val geoTiff = SinglebandGeoTiff(t, e, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
 
       GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
 
-      val SingleBandGeoTiff(tile, extent, crs, _) = SingleBandGeoTiff(path)
+      val SinglebandGeoTiff(tile, extent, crs, _) = SinglebandGeoTiff(path)
 
       extent should equal (e)
       crs should equal (testCRS)
@@ -106,16 +106,16 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it ("should read write raster correctly") {
-      val geoTiff = SingleBandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
+      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
       val projectedRaster = geoTiff.projectedRaster
       val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng)
-      val reprojGeoTiff = SingleBandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
+      val reprojGeoTiff = SinglebandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
 
       GeoTiffWriter.write(reprojGeoTiff, path)
 
       addToPurge(path)
 
-      val SingleBandGeoTiff(actualTile, actualExtent, actualCrs, _) = SingleBandGeoTiff(path)
+      val SinglebandGeoTiff(actualTile, actualExtent, actualCrs, _) = SinglebandGeoTiff(path)
 
       actualExtent should equal (extent)
       crs should equal (LatLng)
@@ -123,13 +123,13 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it ("should read write multibandraster correctly") {
-      val geoTiff = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val geoTiff = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
 
       GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
 
-      val gt = MultiBandGeoTiff(path)
+      val gt = MultibandGeoTiff(path)
 
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)
@@ -144,19 +144,19 @@ class GeoTiffWriterSpec extends FunSpec
 
     it ("should write hand made multiband and read back correctly") {
       val tile =
-        ArrayMultiBandTile(
+        ArrayMultibandTile(
           positiveIntegerRaster,
           positiveIntegerRaster.map(_ * 100),
           positiveIntegerRaster.map(_ * 10000)
         )
 
-      val geoTiff = MultiBandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
+      val geoTiff = MultibandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
 
       GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
 
-      val gt = MultiBandGeoTiff(path)
+      val gt = MultibandGeoTiff(path)
 
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)
@@ -171,17 +171,17 @@ class GeoTiffWriterSpec extends FunSpec
 
     it("should write a GeoTiff to byte array") {
       val tile =
-        ArrayMultiBandTile(
+        ArrayMultibandTile(
           positiveIntegerRaster,
           positiveIntegerRaster.map(_ * 100),
           positiveIntegerRaster.map(_ * 10000)
         )
 
-      val geoTiff = MultiBandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
+      val geoTiff = MultibandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
 
       val bytes = GeoTiffWriter.write(geoTiff)
 
-      val gt = MultiBandGeoTiff(bytes)
+      val gt = MultibandGeoTiff(bytes)
 
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)

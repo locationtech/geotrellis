@@ -40,7 +40,7 @@ class StatsRasterRDDMethodsSpec extends FunSpec with TestEnvironment with TestFi
     }
 
     it("should find integer min/max of AllOnesTestFile") {
-      val ones: RasterRDD[SpatialKey] = AllOnesTestFile
+      val ones: RasterRDD[GridKey] = AllOnesTestFile
       val (min, max) = ones.minMax
 
       min should be (1)

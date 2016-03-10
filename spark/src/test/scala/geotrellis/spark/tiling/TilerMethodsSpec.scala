@@ -12,9 +12,9 @@ import org.apache.spark._
 import org.apache.spark.rdd._
 
 // Defined here because of serialization
-class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyMethods[Int, SpatialKey] {
+class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyMethods[Int, GridKey] {
   def extent = extents(self - 1)
-  def translate(k: SpatialKey): SpatialKey = k
+  def translate(k: GridKey): GridKey = k
 }
 
 class TilerMethodsSpec extends FunSpec
@@ -44,7 +44,7 @@ class TilerMethodsSpec extends FunSpec
 
       val mapTransform = MapKeyTransform(totalExtent, tileLayout.layoutCols, tileLayout.layoutRows)
 
-      implicit val tm: Int => TilerKeyMethods[Int, SpatialKey] = i => new IntTilerKeyMethods(i, extents)
+      implicit val tm: Int => TilerKeyMethods[Int, GridKey] = i => new IntTilerKeyMethods(i, extents)
       val rdd: RDD[(Int, Tile)] = sc.parallelize(Array( (1, tile1), (2, tile2) ))
       val tiled =
         rdd.cutTiles(IntConstantNoDataCellType, layoutDefinition)
@@ -55,7 +55,7 @@ class TilerMethodsSpec extends FunSpec
       tiled.size should be (4*4 - 2)
 
       val n = NODATA
-      tiled( SpatialKey(1,2) ).toArray should be (
+      tiled( GridKey(1,2) ).toArray should be (
         Array(
           1, 1, 2, 2,
           1, 1, 2, 2,
@@ -64,7 +64,7 @@ class TilerMethodsSpec extends FunSpec
           n, n, 2, 2)
       )
 
-      tiled( SpatialKey(1,1) ).toArray should be (
+      tiled( GridKey(1,1) ).toArray should be (
         Array(
           1, 1, 1, 1,
           1, 1, 1, 1,

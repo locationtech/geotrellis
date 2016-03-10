@@ -1,27 +1,31 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 import scala.reflect._
 
-class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
+class HadoopLayerWriter(
   rootPath: Path,
-  val attributeStore: AttributeStore[JsonFormat],
-  rddWriter: HadoopRDDWriter[K, V],
-  keyIndexMethod: KeyIndexMethod[K])
-  extends Writer[LayerId, RDD[(K, V)] with Metadata[M]] {
+  val attributeStore: AttributeStore[JsonFormat]
+) extends LayerWriter[LayerId] {
 
-  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    implicit val sc = rdd.sparkContext
-
+  protected def _write[
+    K: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
 
     val header =
@@ -30,16 +34,11 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
         valueClass = classTag[V].toString(),
         path = layerPath
       )
-    val metaData = rdd.metadata
-    val keyBounds = implicitly[Boundable[K]].collectBounds(rdd)
-      .getOrElse(throw new LayerWriteError(id, "empty rdd write"))
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
+    val metadata = rdd.metadata
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyBounds, keyIndex, Option.empty[Schema])
-      // TODO: Writers need to handle Schema changes
-
-      rddWriter.write(rdd, layerPath, keyIndex)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, KeyValueRecordCodec[K, V].schema)
+      HadoopRDDWriter.write[K, V](rdd, layerPath, keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -47,51 +46,15 @@ class HadoopLayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: Json
 }
 
 object HadoopLayerWriter {
-  def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
-    M: JsonFormat
-  ](rootPath: Path, attributeStore: HadoopAttributeStore, rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K]): HadoopLayerWriter[K, V, M] =
-    new HadoopLayerWriter[K, V, M](
+  def apply(rootPath: Path, attributeStore: AttributeStore[JsonFormat]): HadoopLayerWriter =
+    new HadoopLayerWriter(
       rootPath = rootPath,
-      attributeStore = attributeStore,
-      rddWriter = rddWriter,
-      keyIndexMethod = indexMethod
+      attributeStore = attributeStore
     )
 
-  def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
-    M: JsonFormat
-  ](rootPath: Path, rddWriter: HadoopRDDWriter[K, V], indexMethod: KeyIndexMethod[K]): HadoopLayerWriter[K, V, M] =
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerWriter =
     apply(
       rootPath = rootPath,
-      attributeStore = HadoopAttributeStore.default(rootPath),
-      rddWriter = rddWriter,
-      indexMethod = indexMethod
+      attributeStore = HadoopAttributeStore(rootPath)
     )
-
-  def apply[
-    K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
-    M: JsonFormat
-  ](rootPath: Path, indexMethod: KeyIndexMethod[K])(implicit format: HadoopFormat[K, V]): HadoopLayerWriter[K, V, M] =
-    apply(
-      rootPath = rootPath,
-      rddWriter = new HadoopRDDWriter[K, V](HadoopCatalogConfig.DEFAULT),
-      indexMethod = indexMethod
-    )
-
-  def spatial(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
-    apply[SpatialKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
-
-  def spatialMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpatialKey])(implicit sc: SparkContext) =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
-
-  def spaceTime(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, Tile, RasterMetaData](rootPath, keyIndexMethod)
-
-  def spaceTimeMultiBand(rootPath: Path, keyIndexMethod: KeyIndexMethod[SpaceTimeKey])(implicit sc: SparkContext) =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](rootPath, keyIndexMethod)
-
 }

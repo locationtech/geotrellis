@@ -62,7 +62,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
           readKey[T](os.getKey)
         } catch {
           case e: AmazonS3Exception =>
-            throw new CatalogError(s"Unable to list $attributeName attributes from $bucket/${os.getKey}").initCause(e)
+            throw new LayerIOError(s"Unable to list $attributeName attributes from $bucket/${os.getKey}").initCause(e)
         }
       }
       .toMap

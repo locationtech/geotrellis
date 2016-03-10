@@ -16,7 +16,7 @@ import geotrellis.proj4._
  *
  *  @see [[geotrellis.spark.tiling.MapGridTransform]]
  *  @see [[geotrellis.spark.tiling.TileGridTransform]]
- *  @see [[geotrellis.spark.tiling.SpatialKeyGridTransform]]
+ *  @see [[geotrellis.spark.tiling.GridKeyGridTransform]]
  */
 package object tiling {
   /**

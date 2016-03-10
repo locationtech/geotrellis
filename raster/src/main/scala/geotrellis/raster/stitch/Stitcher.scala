@@ -17,8 +17,8 @@ object Stitcher {
     }
   }
 
-  implicit object MultiBandTileStitcher extends Stitcher[MultiBandTile] {
-    def stitch(pieces: Iterable[(MultiBandTile, (Int, Int))], cols: Int, rows: Int): MultiBandTile = {
+  implicit object MultibandTileStitcher extends Stitcher[MultibandTile] {
+    def stitch(pieces: Iterable[(MultibandTile, (Int, Int))], cols: Int, rows: Int): MultibandTile = {
       val headTile = pieces.head._1
       val bands = Array.fill[MutableArrayTile](headTile.bandCount)(ArrayTile.empty(headTile.cellType, cols, rows))
 
@@ -28,7 +28,7 @@ object Stitcher {
         }
       }
 
-      ArrayMultiBandTile(bands)
+      ArrayMultibandTile(bands)
     }
   }
 

@@ -29,8 +29,8 @@ package object raster
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
     with reproject.Implicits {
   type CellType = DataType with NoDataHandling
-  type SingleBandRaster = Raster[Tile]
-  type MultiBandRaster = Raster[MultiBandTile]
+  type SinglebandRaster = Raster[Tile]
+  type MultibandRaster = Raster[MultibandTile]
 
   // Implicit conversion for unsigned integer celltypes; they are represented as 32bit floats
   implicit def unsignedIntIsFloat(uintCellType: UIntCells with NoDataHandling) =
@@ -48,9 +48,9 @@ package object raster
   implicit class withTileRasterizeMethods(val self: Tile) extends MethodExtensions[Tile]
       with TileRasterizeMethods[Tile]
 
-  implicit class withSingleBandRasterRasterizeMethods(val self: SingleBandRaster) extends MethodExtensions[Raster[Tile]]
-      with SingleBandRasterRasterizeMethods[Tile, Raster[Tile]]
-      with vectorize.SingleBandRasterVectorizeMethods
+  implicit class withSinglebandRasterRasterizeMethods(val self: SinglebandRaster) extends MethodExtensions[Raster[Tile]]
+      with SinglebandRasterRasterizeMethods[Tile, Raster[Tile]]
+      with vectorize.SinglebandRasterVectorizeMethods
 
   implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
       with GeometryRasterizeMethods[Geometry]
@@ -64,9 +64,9 @@ package object raster
       with FeatureDoubleRasterizeMethods[Geometry, Feature[Geometry, Double]]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
-      with crop.SingleBandTileCropMethods
+      with crop.SinglebandTileCropMethods
       with mask.TileMaskMethods
-      with merge.SingleBandTileMergeMethods
+      with merge.SinglebandTileMergeMethods
       with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.zonal.ZonalMethods
@@ -78,29 +78,29 @@ package object raster
       with vectorize.VectorizeMethods
       with summary.SummaryMethods
       with summary.polygonal.PolygonalSummaryMethods
-      with prototype.SingleBandTilePrototypeMethods
+      with prototype.SinglebandTilePrototypeMethods
       with render.ColorMethods
       with render.JpgRenderMethods
       with render.PngRenderMethods
-      with reproject.SingleBandTileReprojectMethods
-      with resample.SingleBandTileResampleMethods
+      with reproject.SinglebandTileReprojectMethods
+      with resample.SinglebandTileResampleMethods
 
-  implicit class withMultiBandTileMethods(val self: MultiBandTile) extends MethodExtensions[MultiBandTile]
-      with crop.MultiBandTileCropMethods
-      with merge.MultiBandTileMergeMethods
-      with prototype.MultiBandTilePrototypeMethods
-      with reproject.MultiBandTileReprojectMethods
-      with resample.MultiBandTileResampleMethods
+  implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
+      with crop.MultibandTileCropMethods
+      with merge.MultibandTileMergeMethods
+      with prototype.MultibandTilePrototypeMethods
+      with reproject.MultibandTileReprojectMethods
+      with resample.MultibandTileResampleMethods
 
-  implicit class withSingleBandRasterMethods(val self: SingleBandRaster) extends MethodExtensions[SingleBandRaster]
-      with reproject.SingleBandRasterReprojectMethods
-      with resample.SingleBandRasterResampleMethods
+  implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
+      with reproject.SinglebandRasterReprojectMethods
+      with resample.SinglebandRasterResampleMethods
 
-  implicit class withMultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
-      with reproject.MultiBandRasterReprojectMethods
-      with resample.MultiBandRasterResampleMethods
+  implicit class withMultibandRasterMethodExtensions(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
+      with reproject.MultibandRasterReprojectMethods
+      with resample.MultibandRasterResampleMethods
 
-  implicit class SingleBandRasterAnyRefMethods(val self: SingleBandRaster) extends AnyRef {
+  implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
       getValueAtPoint(point.x, point.y)
 

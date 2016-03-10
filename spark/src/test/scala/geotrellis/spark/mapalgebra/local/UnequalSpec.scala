@@ -28,8 +28,8 @@ class UnequalSpec extends FunSpec with TestEnvironment with TestFiles {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile
 
-    val onesST = AllOnesSpaceTime
-    val twosST = AllTwosSpaceTime
+    val onesST = AllOnesGridTimeKey
+    val twosST = AllTwosGridTimeKey
 
     it("should check unEqual between an integer and a raster") {
       val res = inc !== 1

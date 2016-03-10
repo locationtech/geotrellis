@@ -14,7 +14,7 @@ import reflect.ClassTag
 
 abstract class PolygonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
   import Implicits._
-  protected implicit val _sc: SpatialComponent[K]
+  protected implicit val _sc: GridComponent[K]
 
   def polygonalSummary[T: ClassTag](
     polygon: Polygon,

@@ -1,24 +1,11 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.{Boundable, KeyBounds, EmptyBounds}
+import geotrellis.spark.{ Bounds, Boundable, KeyBounds, EmptyBounds }
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 import org.apache.hadoop.io.Text
 import org.apache.spark.rdd.RDD
 
 object AccumuloUtils {
-  /**
-   * Collect keyBounds from the rdd and use given keyIndexMethod to generate n balanced split points for covered space.
-   */
-  def getSplits[K: Boundable](rdd: RDD[(K, V)] forSome {type V}, keyIndexMethod: KeyIndexMethod[K], n: Int): Seq[Text] = {
-    implicitly[Boundable[K]].collectBounds(rdd) match {
-      case bounds: KeyBounds[K] =>
-        val keyIndex = keyIndexMethod.createIndex(bounds)
-        getSplits(bounds, keyIndex, n).map(index2RowId)
-      case EmptyBounds =>
-        Seq.empty[Text]
-    }
-  }
-
   /**
    * Mapping KeyBounds of Extent to SFC ranges will often result in a set of non-contigrious ranges.
    * The indices exluded by these ranges should not be included in split calculation as they will never be seen.

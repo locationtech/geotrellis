@@ -3,7 +3,7 @@
 In `geotrellis.spark` we represent a raster layer as a distributed
 collection of non-overlapping tiles indexed by keys according to some
 `TileLayout`. For instance a spatial raster is represented as
-`RDD[(SpatialKey, Tile)]` where `SpatialKey(col: Int, row: Int)` from
+`RDD[(GridKey, Tile)]` where `GridKey(col: Int, row: Int)` from
 a `TileLayout`. In this setup we represent operations between raster
 layers as a join.
 
@@ -11,7 +11,7 @@ layers as a join.
 
 A previously tiled and saved GeoTrellis Raster RDD read in through an
 instance of geotrellis.spark.io.LayerReader will be mixed in with the
-Metadata[RasterMetaData] trait. This metadata describes the TileLayout
+Metadata[RasterMetadata] trait. This metadata describes the TileLayout
 used by the layer, the extent it covers, the CRS of its projection,
 and what the CellType of each tile is. This metadata allows you to
 verify that you are working with compatible layers.
@@ -26,7 +26,7 @@ import geotrellis.spark.io.s3._
 
 implicit val sc: SparkContext = ???
 
-val reader : S3LayerReader[SpatialKey, Tile, RasterMetaData] =
+val reader : S3LayerReader[GridKey, Tile, RasterMetadata[GridKey]] =
   S3LayerReader.spatial("bucket", "prefix")
 
 def getLayerId(idx: Int): LayerId = ???
@@ -34,7 +34,7 @@ def getLayerId(idx: Int): LayerId = ???
 val rdd1 =
   reader.read(getLayerId(1))
 
-val rdd2: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rdd2: RDD[(GridKey, Tile)] with Metadata[RasterMetadata] =
   reader.read(getLayerId(2))
 
 val rdd3: RasterRDD[SpaitalKey] =
@@ -55,7 +55,7 @@ import geotrellis.spark.op.local._
  rdd1 + rdd2        // do a cell wise local addition between two rasters
  rdd1 localAdd rdd2 // explicit method name for above operation
  List(rdd1, rdd2, rdd3).localAdd
- // all results are of type RDD[(SpatialKey, Tile)]
+ // all results are of type RDD[(GridKey, Tile)]
 ```
 
 Other supported operations can been seen `geotrellis.spark.op._`
@@ -116,7 +116,7 @@ rdd1.leftOuterJoin(rdd2).updateValues(Add(_, _))
 #### Spatial Join
 
 Given that we know the key bounds of our RDD, from accompanying
-`RasterMetaData`, before performing the join we may use a spark
+`RasterMetadata`, before performing the join we may use a spark
 `Partitioner` that performs space partitioning. Such a partitioner
 has a number of benefits over standard `HashPartitioenr`:
 
@@ -130,15 +130,15 @@ Because the partitioner requires ability to extract `Bounds` of the
 original RDD from it's `Metadata` it is able to provide the `Bounds`
 of the join result. Since the result of a join may be empty the user
 must match on the resulting `Bounds` object to find out if it's
-`EmptyBounds` or `KeyBounds[SpatialKey]`.
+`EmptyBounds` or `KeyBounds[GridKey]`.
 
 ```scala
 import geotrellis.spark.partitioner._
 
-val joinRes: RDD[(SpatialKey, (Tile, Tile))] with Metadata[Bounds[SpatialKey]] =
+val joinRes: RDD[(GridKey, (Tile, Tile))] with Metadata[Bounds[GridKey]] =
   rdd1.spatialJoin(rdd2)
 
-val leftJoinRes: RDD[(SpatialKey, (Tile, Option[Tile])] with Metadata[Bounds[SpatialKey]] =
+val leftJoinRes: RDD[(GridKey, (Tile, Option[Tile])] with Metadata[Bounds[GridKey]] =
   rdd1.spatialLeftOuterJoin(rdd2)
 ```
 
@@ -153,8 +153,8 @@ The concrete implementation of `RDD[(K, V)] with Metadata[M]` signature
 in GeoTrellis is `ContextRDD[K, V, M]`
 
 ```scala
-val rdd: RDD[(SpatialKey, Tile)] = rdd1 localAdd rdd2
-val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rdd: RDD[(GridKey, Tile)] = rdd1 localAdd rdd2
+val rddWithContext: RDD[(GridKey, Tile)] with Metadata[RasterMetadata] =
   ContextRDD(rdd, rdd1.metadata)
 ```
 
@@ -167,19 +167,19 @@ metadata while preserving the rdd.
 ```scala
 
 // .withContext preserves the RDD context, the Metadata
-val rddWithContext1: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext1: RDD[(GridKey, Tile)] with Metadata[RasterMetadata] =
   rdd1.withContext { _ localAdd rdd2 }
 
-val rddWithContext2: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext2: RDD[(GridKey, Tile)] with Metadata[RasterMetadata] =
   rdd1.withContext { _ localAdd rdd2 localAdd rdd3 }
 
 
 // .mapContext allows to chain changing Metadata after an operation
 // example: localEqual will produce tiles with CellType of TypeBit
-val rddWithContext3: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext3: RDD[(GridKey, Tile)] with Metadata[RasterMetadata] =
   rdd1
     .withContext { _ localEqual 123 }
-    .mapContext { rmd: RasterMetaData => rmd.copy(cellType = TypeBit) }
+    .mapContext { rmd: RasterMetadata => rmd.copy(cellType = TypeBit) }
 ```
 
 ### Preserving Metadata Through Spatial Joins
@@ -189,13 +189,13 @@ joins, we must use `.withContext` wrapper at every transformation in
 order to allow the updated `Bounds` to flow to the end where they can be used.
 
 For instance lets assume we wrote `updateLayout` that combines
-`Bounds[SpatialKey]` and `LayoutDefinition` from `RasterMetaData`
+`Bounds[GridKey]` and `LayoutDefinition` from `RasterMetadata`
 to produce an RDD with updated, smaller `TileLayout`.
 
 ```scala
-def updateLayout(md: RasterMetaData, bounds: Bounds[SpatialKey]): RasterMetaData = ???
+def updateLayout(md: RasterMetadata, bounds: Bounds[GridKey]): RasterMetadata = ???
 
-val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext: RDD[(GridKey, Tile)] with Metadata[RasterMetadata] =
   rdd1
     .spatialJoin(rdd2).withContext { _.combineValues(Add(_, _)) }
     .spatialJoin(rdd3).withContext { _.combineValues(Add(_, _)) }

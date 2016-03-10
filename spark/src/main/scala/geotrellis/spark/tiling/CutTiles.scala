@@ -14,9 +14,9 @@ import scala.reflect.ClassTag
 
 object CutTiles {
   def apply[
-    K1: ? => TilerKeyMethods[K1, K2],
-    K2: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    K1: (? => TilerKeyMethods[K1, K2]),
+    K2: GridComponent: ClassTag,
+    V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ] (
     rdd: RDD[(K1, V)],
     cellType: CellType,

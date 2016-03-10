@@ -18,7 +18,7 @@ import collection.mutable.ListBuffer
 
 import xml._
 
-import monocle.syntax._
+import monocle.syntax.apply._
 import monocle.macros.Lenses
 
 import spire.syntax.cfor._

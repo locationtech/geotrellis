@@ -16,7 +16,7 @@ import org.scalatest._
   describe("Ingest") {
     it("should ingest GeoTiff"){
       val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512)){ (rdd, zoom) =>
+      Ingest[ProjectedExtent, GridKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512)){ (rdd, zoom) =>
         zoom should be (11)
         rdd.filter(!_._2.isNoDataTile).count should be (18)
       }

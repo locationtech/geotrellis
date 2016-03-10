@@ -46,7 +46,7 @@ object Dependencies {
 
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
-  val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.7.18"
+  val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.7.7"
   val asm           = "asm"               % "asm"       % "3.3.1"
 
   val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
@@ -59,7 +59,7 @@ object Dependencies {
 
   val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.34"
 
-  val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8"
+  val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8a"
 
   val sparkCore     = "org.apache.spark" %% "spark-core" % Version.spark
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop

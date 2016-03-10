@@ -18,38 +18,38 @@ import scala.reflect.ClassTag
 
 
 class TileRDDReprojectMethods[
-  K: SpatialComponent: ClassTag,
+  K: GridComponent: Boundable: ClassTag,
   V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-](val self: RDD[(K, V)] with Metadata[RasterMetaData]) extends MethodExtensions[RDD[(K, V)] with Metadata[RasterMetaData]] {
+](val self: RDD[(K, V)] with Metadata[RasterMetadata[K]]) extends MethodExtensions[RDD[(K, V)] with Metadata[RasterMetadata[K]]] {
   import Reproject.Options
 
-  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     TileRDDReproject(self, destCrs, Left(layoutScheme), options)
 
-  def reproject(destCrs: CRS, layoutScheme: LayoutScheme): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     reproject(destCrs, layoutScheme, Options.DEFAULT)
 
-  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, options)
 
-  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     reproject(zoomedLayoutScheme, Options.DEFAULT)
 
-  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, bufferSize, options)
 
-  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     reproject(zoomedLayoutScheme, bufferSize, Options.DEFAULT)
 
-  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     TileRDDReproject(self, destCrs, Left(layoutScheme), bufferSize, options)
 
-  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     reproject(destCrs, layoutScheme, bufferSize, Options.DEFAULT)
 
-  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, options: Options): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     TileRDDReproject(self, destCrs, Right(layoutDefinition), options)
 
-  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition): (Int, RDD[(K, V)] with Metadata[RasterMetaData]) =
+  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     TileRDDReproject(self, destCrs, Right(layoutDefinition), Options.DEFAULT)
 }

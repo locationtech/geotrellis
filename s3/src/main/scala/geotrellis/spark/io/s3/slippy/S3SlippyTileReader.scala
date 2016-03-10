@@ -14,7 +14,7 @@ import org.apache.spark.rdd._
 import java.io.File
 
 
-class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
+class S3SlippyTileReader[T](uri: String)(fromBytes: (GridKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
 
   val client = S3Client.default
@@ -25,7 +25,7 @@ class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) =>
     path.substring(1, path.length)
   }
 
-  def read(zoom: Int, key: SpatialKey): T = {
+  def read(zoom: Int, key: GridKey): T = {
     val s3key = new File(prefix, s"$zoom/${key.col}/${key.row}").getPath
 
     S3Client.default.listKeys(bucket, s3key) match {
@@ -35,12 +35,12 @@ class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) =>
     }
   }
 
-  def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)] = {
+  def read(zoom: Int)(implicit sc: SparkContext): RDD[(GridKey, T)] = {
     val keys = {
       client.listKeys(bucket, new File(prefix, zoom.toString).getPath)
         .map { key =>
           key match {
-            case TilePath(x, y) => Some((SpatialKey(x.toInt, y.toInt), key))
+            case TilePath(x, y) => Some((GridKey(x.toInt, y.toInt), key))
             case _ => None
           }
         }

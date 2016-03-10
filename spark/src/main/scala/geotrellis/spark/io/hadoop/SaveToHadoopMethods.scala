@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.render._
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.{LayerId, GridKey}
 
 import java.net.URI
 import org.apache.hadoop.conf.Configuration
@@ -12,11 +12,11 @@ import org.apache.spark.rdd.RDD
 object SaveToHadoopMethods {
   /**
     * @param id           A Layer ID
-    * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into a Hadoop URI
+    * @param pathTemplate The template used to convert a Layer ID and a GridKey into a Hadoop URI
     *
     * @return             A functon which takes a spatial key and returns a Hadoop URI
     */
-  def spatialKeyToPath(id: LayerId, pathTemplate: String): (SpatialKey => String) = {
+  def spatialKeyToPath(id: LayerId, pathTemplate: String): (GridKey => String) = {
     // Return λ
     { key =>
       pathTemplate

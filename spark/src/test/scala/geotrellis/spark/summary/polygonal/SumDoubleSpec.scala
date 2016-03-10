@@ -14,9 +14,9 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
   describe("Sum Double Zonal Summary Operation") {
     val ones = AllOnesTestFile
 
-    val tileLayout = ones.metaData.tileLayout
+    val tileLayout = ones.metadata.tileLayout
     val count = (ones.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-    val totalExtent = ones.metaData.extent
+    val totalExtent = ones.metadata.extent
 
     it("should get correct double sum over whole raster extent") {
       ones.polygonalSumDouble(totalExtent.toPolygon) should be(count)

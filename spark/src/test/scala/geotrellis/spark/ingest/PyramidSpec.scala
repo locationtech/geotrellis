@@ -12,7 +12,7 @@ import org.scalatest._
 class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
   describe("Pyramid") {
-    it("should work with SpaceTimeKey rasters") {
+    it("should work with GridTimeKey rasters") {
       val tileLayout = TileLayout(4, 4, 2, 2)
 
       val dt1 = new DateTime(2014, 5, 17, 4, 0)
@@ -51,8 +51,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
         ) , 8, 8)
 
       val rdd =
-        createSpaceTimeRasterRDD(
-          sc,
+        createGridTimeKeyRasterRDD(
           Seq( (tile1, dt1), (tile2, dt2) ),
           tileLayout
         )
@@ -62,8 +61,8 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
       val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)
 
-      levelOneRDD.metaData.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
-      val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
+      levelOneRDD.metadata.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
+      val results: Array[(GridTimeKey, Tile)] = levelOneRDD.collect()
 
       results.map(_._1.temporalKey.instant).distinct.sorted.toSeq should be (Seq(dt1.getMillis, dt2.getMillis))
 
@@ -72,13 +71,13 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
           if(key.temporalKey.instant == dt1.getMillis) 1
           else 10
         key.spatialKey match {
-          case SpatialKey(0, 0) =>
+          case GridKey(0, 0) =>
             tile.toArray.distinct should be (Array(1 * multi))
-          case SpatialKey(1, 0) =>
+          case GridKey(1, 0) =>
             tile.toArray.distinct should be (Array(2 * multi))
-          case SpatialKey(0, 1) =>
+          case GridKey(0, 1) =>
             tile.toArray.distinct should be (Array(3 * multi))
-          case SpatialKey(1, 1) =>
+          case GridKey(1, 1) =>
             tile.toArray.distinct should be (Array(4 * multi))
         }
       }

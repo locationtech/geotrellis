@@ -28,62 +28,66 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
           tileLayout
         )
 
-        val metaData = rasterRDD.metaData
-        val rdd = rasterRDD.map { case(spatialKey, tile) =>
-          (SpaceTimeKey(spatialKey, TemporalKey(dateTime)), tile)
+        val kb = rasterRDD.metadata.bounds.get
+        val metadata = rasterRDD.metadata.copy(bounds =
+          KeyBounds(GridTimeKey(kb.minKey, TemporalKey(dates.min)),
+            GridTimeKey(kb.maxKey, TemporalKey(dates.max)))
+        )
+        val rdd = rasterRDD.map { case (spatialKey, tile) =>
+          (GridTimeKey(spatialKey, TemporalKey(dateTime)), tile)
         }
 
-        new ContextRDD(rdd, metaData)
+        new ContextRDD(rdd, metadata)
       }
 
-      val metaData = rasterRDDs.head.metaData
+      val metadata = rasterRDDs.head.metadata
       val combinedRDDs = rasterRDDs.map(_.rdd).reduce(_ ++ _)
 
-      new ContextRDD(combinedRDDs, metaData)
+      new ContextRDD(combinedRDDs, metadata)
     }
 
-    def groupRasterRDDToRastersByTemporalKey(rasterRDD: RasterRDD[SpaceTimeKey]): Map[DateTime, Tile] = {
-      val metaData = rasterRDD.metaData
-      val gridBounds = metaData.mapTransform(metaData.extent)
-      val tileLayout = 
-        TileLayout(gridBounds.width, gridBounds.height, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
+    def groupRasterRDDToRastersByTemporalKey(rasterRDD: RasterRDD[GridTimeKey]): Map[DateTime, Tile] = {
+      val metadata = rasterRDD.metadata
+      val gridBounds = metadata.mapTransform(metadata.extent)
+      val tileLayout =
+        TileLayout(gridBounds.width, gridBounds.height, metadata.tileLayout.tileCols, metadata.tileLayout.tileRows)
 
       rasterRDD
         .groupBy { case (key, tile) =>
           key.time
-         }
+        }
         .collect
         .sortWith { (x, y) => x._1.isBefore(y._1) }
         .map { case (time, iter) =>
-          val tiles = 
+          val tiles =
             iter
               .toSeq
-              .sorted(Ordering.by[(SpaceTimeKey, Tile), (Int, Int)] { case (key, tile) =>
-                val SpatialKey(col, row) = key.spatialComponent
+              .sorted(Ordering.by[(GridTimeKey, Tile), (Int, Int)] { case (key, tile) =>
+                val GridKey(col, row) = key.getComponent[GridKey]
                 (row, col)
               })
               .map(_._2)
 
           (time, CompositeTile(tiles.toSeq, tileLayout))
-         }
+        }
         .toMap
     }
 
     it("should work with min for a 9 year period where the window is 3 years.") {
       val dates = (1 until 10).map(i => new DateTime(i, 1, 1, 0, 0, 0, DateTimeZone.UTC))
-      val rasterRDD = createIncreasingTemporalRasterRDD(dates)
+      val rasterRDD: RasterRDD[GridTimeKey] = createIncreasingTemporalRasterRDD(dates)
 
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(9, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-      val res = rasterRDD.withContext(_.minimum.per (3) ("years") from (start) to (end))
+      val res = rasterRDD.withContext(_.minimum.per(3)("years") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
-      rasters.size should be (3)
+      rasters.size should be(3)
 
       // Years 1, 4 and 7 have the mins.
-      rasters.zip(List(1, 4, 7)).foreach { case((date, tile), idx) =>
-        date.getYear should be (idx)
+      rasters.zip(List(1, 4, 7)).foreach { case ((date, tile), idx) =>
+        date.getYear should be(idx)
         val tileArray = tile.toArray
         val correct = (idx to (idx + 80)).toArray
         tileArray should be(correct)
@@ -97,15 +101,15 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val periodStep = 5
-      val res = rasterRDD.withContext(_.maximum.per (periodStep) ("months") from (start) to (end))
+      val res = rasterRDD.withContext(_.maximum.per(periodStep)("months") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
-      rasters.size should be (3)
+      rasters.size should be(3)
 
       // Months 5, 10 and 12 have the maxs.
 
-      rasters.zip(List(5, 10, 12)).foreach { case((date, tile), idx) =>
+      rasters.zip(List(5, 10, 12)).foreach { case ((date, tile), idx) =>
         val tileArray = tile.toArray
         val correct = (idx to (idx + 80)).toArray
         tileArray should be(correct)
@@ -119,15 +123,15 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val windowSize = 7
-      val res = rasterRDD.withContext(_.average.per (windowSize) ("days") from (start) to (end))
+      val res = rasterRDD.withContext(_.average.per(windowSize)("days") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
-      rasters.size should be (4)
+      rasters.size should be(4)
 
       val firsts = (1 to 25) grouped 7 map { seq => seq.sum / seq.size }
-      for( ((time, tile), expected) <- rasters.zip(firsts.toSeq)) {
-        tile.getDouble(0, 0) should be (expected)
+      for (((time, tile), expected) <- rasters.zip(firsts.toSeq)) {
+        tile.getDouble(0, 0) should be(expected)
       }
     }
 
@@ -138,21 +142,23 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
       val start = new DateTime(1, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val end = new DateTime(2, 1, 1, 0, 0, 0, DateTimeZone.UTC)
       val windowSize = 3
-      val res = rasterRDD.withContext(_.variance.per (windowSize) ("hours") from (start) to (end))
+      val res = rasterRDD.withContext(_.variance.per(windowSize)("hours") from (start) to (end))
 
       val rasters = groupRasterRDDToRastersByTemporalKey(res)
 
-      rasters.size should be (4)
+      rasters.size should be(4)
 
       val inputRasters = groupRasterRDDToRastersByTemporalKey(rasterRDD).values.toList
-      val expectedTiles = 
-        for(indicies <- (0 to 11).grouped(3)) yield {
-          Variance(indicies.map { inputRasters(_) })
+      val expectedTiles =
+        for (indicies <- (0 to 11).grouped(3)) yield {
+          Variance(indicies.map {
+            inputRasters(_)
+          })
         }
-      expectedTiles.size should be (4)
+      expectedTiles.size should be(4)
 
       rasters.zip(expectedTiles.toSeq) foreach { case ((_, tile), expected) =>
-        tile.toArrayDouble should be (expected.toArrayDouble)
+        tile.toArrayDouble should be(expected.toArrayDouble)
       }
     }
   }
