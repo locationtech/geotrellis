@@ -11,7 +11,7 @@ fi
 rev=$(git rev-parse --short HEAD)
 
 # Build docs
-./sbt "++2.11.5 unidoc"
+./sbt "++$TRAVIS_SCALA_VERSION" unidoc
 
 # Set up git
 git config --global user.email "azaveadev@azavea.com"
