@@ -298,12 +298,14 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
     result
   }
 
-  def subset(bands: Seq[Int]): ArrayMultiBandTile = {
-    val newBands = Array.ofDim[Tile](bands.size)
+  val _bands = bands
+
+  def bands(bandSequence: Seq[Int]): ArrayMultiBandTile = {
+    val newBands = Array.ofDim[Tile](bandSequence.size)
     var i = 0
 
-    require(bands.size <= this.bandCount)
-    bands.foreach({ j =>
+    require(bandSequence.size <= this.bandCount)
+    bandSequence.foreach({ j =>
       newBands(i) = this.band(j)
       i += 1
     })
@@ -311,6 +313,12 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
     new ArrayMultiBandTile(newBands)
   }
 
-  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
-    subset(bands)
+  def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    bands(bandSequence)
+
+  def subset(bandSequence: Seq[Int]): ArrayMultiBandTile =
+    bands(bandSequence.sorted)
+
+  def subset(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+    bands(bandSequence.sorted)
 }
