@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.raster.Tile
+import geotrellis.spark.io.{ StorageFormat, S3, LayerHeader }
 import spray.json._
 
 case class S3LayerHeader(
@@ -8,12 +9,15 @@ case class S3LayerHeader(
   valueClass: String,
   bucket: String,
   key: String
-)
+) extends LayerHeader {
+  def format = StorageFormat.S3
+}
 
 object S3LayerHeader {
   implicit object S3LayerHeaderFormat extends RootJsonFormat[S3LayerHeader] {
     def write(md: S3LayerHeader) =
       JsObject(
+        "format" -> JsString(md.format.name),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "bucket" -> JsString(md.bucket.toString),

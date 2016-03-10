@@ -1,5 +1,6 @@
 package geotrellis.spark.io.hadoop
 
+import geotrellis.spark.io.{ StorageFormat, LayerHeader }
 import org.apache.hadoop.fs.Path
 
 import spray.json._
@@ -8,12 +9,15 @@ case class HadoopLayerHeader(
   keyClass: String,
   valueClass: String,
   path: Path
-)
+) extends LayerHeader {
+  def format = StorageFormat.HDFS
+}
 
 object HadoopLayerHeader {
   implicit object HadoopLayerMetaDataFormat extends RootJsonFormat[HadoopLayerHeader] {
     def write(md: HadoopLayerHeader) =
       JsObject(
+        "format" -> JsString(md.format.name),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "path" -> JsString(md.path.toString)

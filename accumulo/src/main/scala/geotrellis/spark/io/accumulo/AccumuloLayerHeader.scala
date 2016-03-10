@@ -1,17 +1,21 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark.io.{ StorageFormat, LayerHeader }
 import spray.json._
 
 case class AccumuloLayerHeader(
   keyClass: String,
   valueClass: String,
   tileTable: String
-)
+) extends LayerHeader {
+  def format = StorageFormat.Accumulo
+}
 
 object AccumuloLayerHeader {
   implicit object AccumuloLayerMetaDataFormat extends RootJsonFormat[AccumuloLayerHeader] {
     def write(md: AccumuloLayerHeader) =
       JsObject(
+        "format" -> JsString(md.format.name),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "tileTable" -> JsString(md.tileTable)
