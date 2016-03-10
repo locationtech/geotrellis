@@ -1,7 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.raster.Tile
-import geotrellis.spark.io.{ StorageFormat, S3, LayerHeader }
+import geotrellis.spark.io.{ StorageFormat, LayerHeader }
 import spray.json._
 
 case class S3LayerHeader(
