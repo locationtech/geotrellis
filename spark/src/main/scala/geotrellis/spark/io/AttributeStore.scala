@@ -79,7 +79,7 @@ trait BlobLayerAttributeStore extends AttributeStore {
   }
 
   def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit = {
-    cacheWrite(id, Fields.metaData,
+    cacheWrite(id, Fields.metadataBlob,
       JsObject(
         Fields.header -> header.toJson,
         Fields.metaData -> metadata.toJson,

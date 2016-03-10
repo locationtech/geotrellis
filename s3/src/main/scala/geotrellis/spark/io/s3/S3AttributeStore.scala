@@ -113,7 +113,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
 
   def availableAttributes(layerId: LayerId): Seq[String] = {
     layerKeys(layerId).map { key =>
-      key.split(SEP).head
+      new java.io.File(key).getName.split(SEP).head
     }
   }
 }
