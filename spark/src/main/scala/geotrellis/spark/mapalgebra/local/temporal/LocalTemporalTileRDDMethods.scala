@@ -20,7 +20,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
 
   import TemporalWindowHelper._
 
-  implicit val _sc: SpatialComponent[K]
+  implicit val _sc: GridComponent[K]
 
   implicit val _tc: TemporalComponent[K]
 
@@ -67,7 +67,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     val rdd =
       self
         .map { case (key, tile) =>
-          val SpatialKey(col, row) = key.getComponent[SpatialKey]
+          val GridKey(col, row) = key.getComponent[GridKey]
           val time = key.getComponent[TemporalKey].time
           val startDiff = getDifferenceByUnit(unit, start, time)
           val endDiff = getDifferenceByUnit(unit, time, end)

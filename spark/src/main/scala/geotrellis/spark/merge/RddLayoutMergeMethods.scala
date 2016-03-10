@@ -12,7 +12,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 class RDDLayoutMergeMethods[
-  K: SpatialComponent: ClassTag,
+  K: GridComponent: ClassTag,
   V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
   M: (? => LayoutDefinition)
 ](val self: RDD[(K, V)] with Metadata[M]) extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
@@ -28,7 +28,7 @@ class RDDLayoutMergeMethods[
            thisLayout.mapTransform(extent)
              .coords
              .map { case (col, row) =>
-             val outKey = k.setComponent(SpatialKey(col, row))
+             val outKey = k.setComponent(GridKey(col, row))
              val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
              val merged = newTile.merge(thisLayout.mapTransform(outKey), extent, tile)
              (outKey, merged)

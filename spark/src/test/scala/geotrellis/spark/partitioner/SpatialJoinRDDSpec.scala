@@ -9,39 +9,39 @@ import spire.math.interval.EmptyBound
 class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
   import Implicits._
 
-  val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))
+  val bounds1 = KeyBounds(GridKey(0,0), GridKey(10,10))
   val part1 = SpacePartitioner(bounds1)
-  val rdd1: RDD[(SpatialKey, Int)] = sc.parallelize {
+  val rdd1: RDD[(GridKey, Int)] = sc.parallelize {
     for {
       col <- 0 to 10
       row <- 0 to 10
-    } yield (SpatialKey(col, row), col + row)
+    } yield (GridKey(col, row), col + row)
   }
   val pr1 = ContextRDD(rdd1, part1.bounds)
 
 
-  val bounds2 = KeyBounds(SpatialKey(5,5), SpatialKey(15,15))
+  val bounds2 = KeyBounds(GridKey(5,5), GridKey(15,15))
   val part2 = SpacePartitioner(bounds2)
-  val rdd2: RDD[(SpatialKey, Int)] = sc.parallelize {
+  val rdd2: RDD[(GridKey, Int)] = sc.parallelize {
     for {
       col <- 5 to 15
       row <- 5 to 15
-    } yield (SpatialKey(col, row), col + row)
+    } yield (GridKey(col, row), col + row)
   }
   val pr2 = ContextRDD(rdd2, part2.bounds)
 
 
-  val bounds3 = KeyBounds(SpatialKey(20,20), SpatialKey(25,25))
-  val rdd3: RDD[(SpatialKey, Int)] = sc.parallelize {
+  val bounds3 = KeyBounds(GridKey(20,20), GridKey(25,25))
+  val rdd3: RDD[(GridKey, Int)] = sc.parallelize {
     for {
       col <- 20 to 25
       row <- 20 to 25
-    } yield (SpatialKey(col, row), col + row)
+    } yield (GridKey(col, row), col + row)
   }
-  val pr3 = ContextRDD(rdd3, bounds3: Bounds[SpatialKey])
+  val pr3 = ContextRDD(rdd3, bounds3: Bounds[GridKey])
 
-   val rddEmpty = sc.emptyRDD[(SpatialKey, Int)]
-   val prEmpty = ContextRDD(rddEmpty, SpacePartitioner[SpatialKey](EmptyBounds))
+   val rddEmpty = sc.emptyRDD[(GridKey, Int)]
+   val prEmpty = ContextRDD(rddEmpty, SpacePartitioner[GridKey](EmptyBounds))
 
   def maxPartitionSize(rdd: RDD[_]): Int = {
     rdd.mapPartitions(it => Iterator(it.size)).collect().max
@@ -74,7 +74,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
    it("left join to empty SpaceRDD") {
      val res = prEmpty.leftOuterJoin(pr3)
      val records = res.collect()
-     records sameElements Array[(SpatialKey, Int)]()
+     records sameElements Array[(GridKey, Int)]()
      info("records: " + records.length)
    }
 
@@ -84,7 +84,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
 
     info(s"PairRDDFunctions partitioner: ${expected.partitioner}")
     info(s"SpaceRDD join partitioner: ${res.partitioner}")
-    res.partitioner.get should be equals SpacePartitioner(KeyBounds(SpatialKey(5,5), SpatialKey(10,10)))
+    res.partitioner.get should be equals SpacePartitioner(KeyBounds(GridKey(5,5), GridKey(10,10)))
     res.collect() sameElements expected.collect()
     maxPartitionSize(res) should be <= 4
   }
@@ -92,7 +92,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
   it("inner join non intersecting rdds") {
     val res = pr1.join(pr3)
     val records =res.collect()
-    records sameElements Array[(SpatialKey, Int)]()
+    records sameElements Array[(GridKey, Int)]()
     info("records: " + records.length)
   }
 

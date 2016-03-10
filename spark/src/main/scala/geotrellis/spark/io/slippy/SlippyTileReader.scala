@@ -22,10 +22,10 @@ import scala.collection.JavaConversions._
 
 
 trait SlippyTileReader[T] {
-  def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)]
-  def read(zoom: Int, key: SpatialKey): T
+  def read(zoom: Int)(implicit sc: SparkContext): RDD[(GridKey, T)]
+  def read(zoom: Int, key: GridKey): T
   def read(zoom: Int, x: Int, y: Int): T =
-    read(zoom, SpatialKey(x, y))
+    read(zoom, GridKey(x, y))
 }
 
 object SlippyTileReader {

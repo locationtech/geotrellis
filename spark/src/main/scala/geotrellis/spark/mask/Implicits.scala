@@ -11,6 +11,6 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRDDMaskMethods[K: SpatialComponent: ClassTag](val self: RasterRDD[K])
+  implicit class withRDDMaskMethods[K: GridComponent: ClassTag](val self: RasterRDD[K])
       extends RasterRDDMaskMethods[K]
 }

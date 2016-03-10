@@ -18,7 +18,7 @@ import java.io.File
 /**
   * Handles writing Raster RDDs and their metadata to a filesystem.
   *
-  * @tparam K                Type of RDD Key (ex: SpatialKey)
+  * @tparam K                Type of RDD Key (ex: GridKey)
   * @tparam V                Type of RDD Value (ex: Tile or MultibandTile )
   * @tparam M                Type of Metadata associated with the RDD[(K,V)]
   *

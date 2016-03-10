@@ -37,7 +37,7 @@ object TileRDDReproject {
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
-    K: SpatialComponent: Boundable: ClassTag,
+    K: GridComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
@@ -131,7 +131,7 @@ object TileRDDReproject {
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
-    K: SpatialComponent: Boundable: ClassTag,
+    K: GridComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
@@ -195,7 +195,7 @@ object TileRDDReproject {
     *                   for performance benefit.
     */
   def apply[
-    K: SpatialComponent: Boundable: ClassTag,
+    K: GridComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],

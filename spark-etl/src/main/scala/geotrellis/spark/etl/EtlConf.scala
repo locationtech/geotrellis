@@ -13,7 +13,7 @@ sealed trait ReprojectMethod
 
 /**
   * BufferedReproject method will perform reproject still after the tiling step.
-  * Because tiling step creates keys with SpatialComponent this method of reprojection is able to sample pixels past the
+  * Because tiling step creates keys with GridComponent this method of reprojection is able to sample pixels past the
   * tile boundaries by performing a spatial neighborhood join. This method is the default and produces the best results.
   * Note that method of reprojection requires that all of the source tiles share the same CRS.
   */

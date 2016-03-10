@@ -2,7 +2,7 @@ package geotrellis.spark.partitioner
 
 import geotrellis.spark._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
+import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZGridKeyIndex}
 import org.apache.spark._
 import org.apache.spark.rdd.{ShuffledRDD, RDD}
 
@@ -27,8 +27,8 @@ case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
   def numPartitions = regions.length
 
   def getPartition(key: Any): Int = {
-    val k = key.asInstanceOf[SpatialKey]
-    val x = index.asInstanceOf[PartitionerIndex[SpatialKey]]
+    val k = key.asInstanceOf[GridKey]
+    val x = index.asInstanceOf[PartitionerIndex[GridKey]]
     x.toIndex(k)
 
     val region = index.toIndex(key.asInstanceOf[K])

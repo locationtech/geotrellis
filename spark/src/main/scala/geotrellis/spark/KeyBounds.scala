@@ -42,7 +42,7 @@ sealed trait Bounds[+A] extends Product with Serializable {
       f(get)
     }
 
-  def setSpatialBounds[B >: A](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B]
+  def setSpatialBounds[B >: A](other: KeyBounds[GridKey])(implicit ev: GridComponent[B]): Bounds[B]
 }
 
 object Bounds {
@@ -80,7 +80,7 @@ case object EmptyBounds extends Bounds[Nothing] {
 
   def get = throw new NoSuchElementException("EmptyBounds.get")
 
-  def setSpatialBounds[B](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B] =
+  def setSpatialBounds[B](other: KeyBounds[GridKey])(implicit ev: GridComponent[B]): Bounds[B] =
     this
 }
 
@@ -132,13 +132,13 @@ case class KeyBounds[+K](
 
   def get = this
 
-  def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]) =
+  def setSpatialBounds[B >: K](other: KeyBounds[GridKey])(implicit ev: GridComponent[B]) =
     KeyBounds((minKey: B).setComponent(other.minKey), (maxKey: B).setComponent(other.maxKey))
 }
 
 object KeyBounds {
-  def apply(gridBounds: GridBounds): KeyBounds[SpatialKey] =
-    KeyBounds(SpatialKey(gridBounds.colMin, gridBounds.rowMin), SpatialKey(gridBounds.colMax, gridBounds.rowMax))
+  def apply(gridBounds: GridBounds): KeyBounds[GridKey] =
+    KeyBounds(GridKey(gridBounds.colMin, gridBounds.rowMin), GridKey(gridBounds.colMax, gridBounds.rowMax))
 
   def includeKey[K: Boundable](seq: Seq[KeyBounds[K]], key: K) = {
     seq

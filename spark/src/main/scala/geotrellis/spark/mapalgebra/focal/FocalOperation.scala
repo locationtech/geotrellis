@@ -18,27 +18,27 @@ import scala.collection.mutable.ArrayBuffer
 
 
 object FocalOperation {
-  private def mapOverBufferedTiles[K: SpatialComponent: ClassTag](bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood)
+  private def mapOverBufferedTiles[K: GridComponent: ClassTag](bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood)
       (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
     bufferedTiles
       .mapValues { case BufferedTile(tile, gridBounds) => calc(tile, Some(gridBounds)) }
 
-  def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood)
+  def apply[K: GridComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood)
       (calc: (Tile, Option[GridBounds]) => Tile)(implicit d: DummyImplicit): RDD[(K, Tile)] =
     mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent), neighborhood)(calc)
 
-  def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, layerBounds: GridBounds)
+  def apply[K: GridComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, layerBounds: GridBounds)
       (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
     mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
 
-  def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
+  def apply[K: GridComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
       (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
     rasterRDD.withContext { rdd =>
       apply(rdd, neighborhood, rasterRDD.metadata.gridBounds)(calc)
     }
 }
 
-abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+abstract class FocalOperation[K: GridComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
 
   def focal(n: Neighborhood)
       (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =

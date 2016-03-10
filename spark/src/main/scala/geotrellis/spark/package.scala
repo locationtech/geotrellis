@@ -92,7 +92,7 @@ package object spark
       component.set(value)(self)
   }
 
-  type SpatialComponent[K] = Component[K, SpatialKey]
+  type GridComponent[K] = Component[K, GridKey]
   type TemporalComponent[K] = Component[K, TemporalKey]
 
   type TileBounds = GridBounds
@@ -120,7 +120,7 @@ package object spark
   implicit class withRasterRDDMethods[K](val self: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
     extends RasterRDDMethods[K]
 
-  implicit class withRasterRDDMaskMethods[K: SpatialComponent: ClassTag](val self: RasterRDD[K])
+  implicit class withRasterRDDMaskMethods[K: GridComponent: ClassTag](val self: RasterRDD[K])
       extends mask.RasterRDDMaskMethods[K]
 
   implicit class withMultibandRasterRDDMethods[K](val self: MultibandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
@@ -135,23 +135,23 @@ package object spark
       }, preservesPartitioning = true)
   }
 
-  implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
+  implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, GridTimeKey] {
     def extent = self.getComponent[ProjectedExtent].extent
-    def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.getComponent[TemporalKey])
+    def translate(spatialKey: GridKey): GridTimeKey = GridTimeKey(spatialKey, self.getComponent[TemporalKey])
   }
 
-  implicit class withProjectedExtentTilerKeyMethods[K: Component[?, ProjectedExtent]](val self: K) extends TilerKeyMethods[K, SpatialKey] {
+  implicit class withProjectedExtentTilerKeyMethods[K: Component[?, ProjectedExtent]](val self: K) extends TilerKeyMethods[K, GridKey] {
     def extent = self.getComponent[ProjectedExtent].extent
-    def translate(spatialKey: SpatialKey) = spatialKey
+    def translate(spatialKey: GridKey) = spatialKey
   }
 
   implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
-    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
+    def collectMetadata[K2: Boundable: GridComponent](crs: CRS, layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, RasterMetadata[K2]) = {
       RasterMetadata.fromRdd(rdd, crs, layoutScheme)
     }
 
-    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layout: LayoutDefinition)
+    def collectMetadata[K2: Boundable: GridComponent](crs: CRS, layout: LayoutDefinition)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): RasterMetadata[K2] = {
       RasterMetadata.fromRdd(rdd, crs, layout)
     }

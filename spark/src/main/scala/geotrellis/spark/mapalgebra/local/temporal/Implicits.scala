@@ -11,12 +11,12 @@ trait Implicits  {
 
   implicit class withLocalTemporalTileRDDMethods[K](val self: RDD[(K, Tile)])(
     implicit val keyClassTag: ClassTag[K],
-    implicit val _sc: SpatialComponent[K],
+    implicit val _sc: GridComponent[K],
     implicit val _tc: TemporalComponent[K]) extends LocalTemporalTileRDDMethods[K] { }
 
   implicit class TemporalWindow[K](val self: RDD[(K, Tile)])(
     implicit val keyClassTag: ClassTag[K],
-    _sc: SpatialComponent[K],
+    _sc: GridComponent[K],
     _tc: TemporalComponent[K]) {
 
     import TemporalWindowHelper._

@@ -1,7 +1,7 @@
 package geotrellis.spark.render
 
 import geotrellis.raster.{Tile, TileLayout}
-import geotrellis.spark.{SpatialKey, LayerId}
+import geotrellis.spark.{GridKey, LayerId}
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testfiles.TestFiles

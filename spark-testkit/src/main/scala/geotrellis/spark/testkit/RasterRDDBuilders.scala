@@ -28,7 +28,7 @@ trait RasterRDDBuilders {
     input: Raster[Tile],
     layoutCols: Int,
     layoutRows: Int
-  )(implicit sc: SparkContext): (Raster[Tile], RasterRDD[SpatialKey]) =
+  )(implicit sc: SparkContext): (Raster[Tile], RasterRDD[GridKey]) =
     createRasterRDD(input, layoutCols, layoutRows, defaultCRS)
 
   /** Cuts the raster according to the layoutCols and layoutRows given.
@@ -42,7 +42,7 @@ trait RasterRDDBuilders {
     layoutCols: Int,
     layoutRows: Int,
     crs: CRS
-  )(implicit sc: SparkContext): (Raster[Tile], RasterRDD[SpatialKey]) = {
+  )(implicit sc: SparkContext): (Raster[Tile], RasterRDD[GridKey]) = {
     val Raster(input, extent) = raster
     val (cols, rows) = (input.cols, input.rows)
 
@@ -72,7 +72,7 @@ trait RasterRDDBuilders {
     input: Tile,
     layoutCols: Int,
     layoutRows: Int
-  )(implicit sc: SparkContext): (Tile, RasterRDD[SpatialKey]) =
+  )(implicit sc: SparkContext): (Tile, RasterRDD[GridKey]) =
     createRasterRDD(input, layoutCols, layoutRows, defaultCRS)
 
   /** Cuts the tile according to the layoutCols and layoutRows given.
@@ -84,7 +84,7 @@ trait RasterRDDBuilders {
     layoutCols: Int,
     layoutRows: Int,
     crs: CRS
-  )(implicit sc: SparkContext): (Tile, RasterRDD[SpatialKey]) = {
+  )(implicit sc: SparkContext): (Tile, RasterRDD[GridKey]) = {
     val (cols, rows) = (input.cols, input.rows)
 
     val tileLayout =
@@ -105,14 +105,14 @@ trait RasterRDDBuilders {
   def createRasterRDD(
     tile: Tile,
     tileLayout: TileLayout
-  )(implicit sc: SparkContext): RasterRDD[SpatialKey] =
+  )(implicit sc: SparkContext): RasterRDD[GridKey] =
     createRasterRDD(sc, tile, tileLayout)
 
   def createRasterRDD(
     sc: SparkContext,
     tile: Tile,
     tileLayout: TileLayout
-  ): RasterRDD[SpatialKey] =
+  ): RasterRDD[GridKey] =
     createRasterRDD(sc, tile, tileLayout, defaultCRS)
 
   def createRasterRDD(
@@ -120,7 +120,7 @@ trait RasterRDDBuilders {
     tile: Tile,
     tileLayout: TileLayout,
     crs: CRS
-  ): RasterRDD[SpatialKey] = {
+  ): RasterRDD[GridKey] = {
     val extent = crs.worldExtent
     createRasterRDD(sc, Raster(tile, extent), tileLayout, crs)
   }
@@ -129,7 +129,7 @@ trait RasterRDDBuilders {
     sc: SparkContext,
     raster: Raster[Tile],
     tileLayout: TileLayout
-  ): RasterRDD[SpatialKey] =
+  ): RasterRDD[GridKey] =
     createRasterRDD(sc, raster, tileLayout, defaultCRS)
 
   def createRasterRDD(
@@ -137,14 +137,14 @@ trait RasterRDDBuilders {
     raster: Raster[Tile],
     tileLayout: TileLayout,
     crs: CRS
-  ): RasterRDD[SpatialKey] = {
+  ): RasterRDD[GridKey] = {
     val layoutScheme = FloatingLayoutScheme(tileLayout.tileCols, tileLayout.tileRows)
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
     val (_, metadata) =
       RasterMetadata.fromRdd(inputRdd, crs, layoutScheme)
 
-    val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
+    val tiled: RDD[(GridKey, Tile)] = inputRdd.cutTiles(metadata)
 
     new ContextRDD(tiled, metadata)
   }
@@ -152,7 +152,7 @@ trait RasterRDDBuilders {
   def createSpaceTimeRasterRDD(
     tiles: Traversable[(Tile, DateTime)],
     tileLayout: TileLayout,
-    cellType: CellType = IntConstantNoDataCellType)(implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
+    cellType: CellType = IntConstantNoDataCellType)(implicit sc: SparkContext): RasterRDD[GridTimeKey] = {
 
     val extent = defaultCRS.worldExtent
     val layout = LayoutDefinition(extent, tileLayout)
@@ -160,7 +160,7 @@ trait RasterRDDBuilders {
       val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
       val minTime = tiles.minBy(_._2)._2
       val maxTime = tiles.maxBy(_._2)._2
-      KeyBounds(SpaceTimeKey(colMin, rowMin, minTime), SpaceTimeKey(colMax, rowMax, maxTime))
+      KeyBounds(GridTimeKey(colMin, rowMin, minTime), GridTimeKey(colMax, rowMax, maxTime))
     }
     val metadata = RasterMetadata(
       cellType,
@@ -178,7 +178,7 @@ trait RasterRDDBuilders {
 
     val tileBounds = re.gridBoundsFor(extent)
 
-    val tmsTiles = mutable.ListBuffer[(SpaceTimeKey, Tile)]()
+    val tmsTiles = mutable.ListBuffer[(GridTimeKey, Tile)]()
 
     for( (tile, time) <- tiles) {
       val adjustedTile =
@@ -198,7 +198,7 @@ trait RasterRDDBuilders {
 
           val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
 
-          (SpaceTimeKey(col, row, time), subTile)
+          (GridTimeKey(col, row, time), subTile)
         }
     }
 

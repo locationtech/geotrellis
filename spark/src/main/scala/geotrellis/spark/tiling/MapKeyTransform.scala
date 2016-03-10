@@ -34,7 +34,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   lazy val tileHeight: Double = extent.height / layoutRows
 
   def apply(otherExtent: Extent): GridBounds = {
-    val SpatialKey(colMin, rowMin) = apply(otherExtent.xmin, otherExtent.ymax)
+    val GridKey(colMin, rowMin) = apply(otherExtent.xmin, otherExtent.ymax)
 
     // Pay attention to the exclusitivity of the east and south extent border.
     val colMax = {
@@ -60,10 +60,10 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     e1.expandToInclude(e2)
   }
 
-  def apply(p: Point): SpatialKey =
+  def apply(p: Point): GridKey =
     apply(p.x, p.y)
 
-  def apply(x: Double, y: Double): SpatialKey = {
+  def apply(x: Double, y: Double): GridKey = {
     val tcol =
       ((x - extent.xmin) / extent.width) * layoutCols
 
@@ -73,11 +73,11 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     (tcol.toInt, trow.toInt)
   }
 
-  def apply[K: SpatialComponent](key: K): Extent = {
-    apply(key.getComponent[SpatialKey])
+  def apply[K: GridComponent](key: K): Extent = {
+    apply(key.getComponent[GridKey])
   }
 
-  def apply(key: SpatialKey): Extent =
+  def apply(key: GridKey): Extent =
     apply(key.col, key.row)
 
   def apply(col: Int, row: Int): Extent =

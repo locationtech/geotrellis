@@ -7,16 +7,16 @@ import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._
 
 object Implicits {
-  implicit object TestPartitioner extends PartitionerIndex[SpatialKey] {
-    private val zCurveIndex = new ZSpatialKeyIndex(KeyBounds(SpatialKey(0, 0), SpatialKey(100, 100)))
+  implicit object TestPartitioner extends PartitionerIndex[GridKey] {
+    private val zCurveIndex = new ZGridKeyIndex(KeyBounds(GridKey(0, 0), GridKey(100, 100)))
 
-    def rescale(key: SpatialKey): SpatialKey =
-      SpatialKey(key.col/2, key.row/2)
+    def rescale(key: GridKey): GridKey =
+      GridKey(key.col/2, key.row/2)
 
-    override def toIndex(key: SpatialKey): Long =
+    override def toIndex(key: GridKey): Long =
       zCurveIndex.toIndex(rescale(key))
 
-    override def indexRanges(r: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
+    override def indexRanges(r: (GridKey, GridKey)): Seq[(Long, Long)] =
       zCurveIndex.indexRanges((rescale(r._1), rescale(r._2)))
   }
 }
@@ -24,23 +24,23 @@ object Implicits {
 class ReorderedRDDSpec extends FunSpec with Matchers with TestEnvironment {
   import Implicits._
 
-  val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))
+  val bounds1 = KeyBounds(GridKey(0,0), GridKey(10,10))
   val part1 = SpacePartitioner(bounds1)
-  val rdd1: RDD[(SpatialKey, Int)] = sc.parallelize {
+  val rdd1: RDD[(GridKey, Int)] = sc.parallelize {
     for {
       col <- 0 to 10
       row <- 0 to 10
-    } yield (SpatialKey(col, row), col + row)
+    } yield (GridKey(col, row), col + row)
   }.partitionBy(part1)
 
 
-  val bounds2 = KeyBounds(SpatialKey(5,5), SpatialKey(15,15))
+  val bounds2 = KeyBounds(GridKey(5,5), GridKey(15,15))
   val part2 = SpacePartitioner(bounds2)
-  val rdd2: RDD[(SpatialKey, Int)] = sc.parallelize {
+  val rdd2: RDD[(GridKey, Int)] = sc.parallelize {
     for {
       col <- 5 to 15
       row <- 5 to 15
-    } yield (SpatialKey(col, row), col + row)
+    } yield (GridKey(col, row), col + row)
   }.partitionBy(part2)
 
   it("should reorder partitions"){
@@ -49,12 +49,12 @@ class ReorderedRDDSpec extends FunSpec with Matchers with TestEnvironment {
   }
 
   it("should reorder to empty"){
-    val res = new ReorderedSpaceRDD(rdd1, SpacePartitioner[SpatialKey](EmptyBounds))
+    val res = new ReorderedSpaceRDD(rdd1, SpacePartitioner[GridKey](EmptyBounds))
     res.collect() shouldBe empty
   }
 
-  val partEmpty = SpacePartitioner[SpatialKey](EmptyBounds)
-  val rddEmpty = sc.emptyRDD[(SpatialKey, Int)].partitionBy(partEmpty)
+  val partEmpty = SpacePartitioner[GridKey](EmptyBounds)
+  val rddEmpty = sc.emptyRDD[(GridKey, Int)].partitionBy(partEmpty)
 
   it("should reorder from empty"){
     val res = new ReorderedSpaceRDD(rddEmpty, part1)

@@ -70,12 +70,12 @@ object RasterMetadata {
   def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
-    K2: SpatialComponent: Boundable
+    K2: GridComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2]) = {
     rdd
       .map { case (key, grid) =>
         val extent = key.extent
-        val boundsKey = key.translate(SpatialKey(0,0))
+        val boundsKey = key.translate(GridKey(0,0))
         (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), KeyBounds(boundsKey, boundsKey))
       }
       .reduce { (tuple1, tuple2) =>
@@ -93,13 +93,13 @@ object RasterMetadata {
   def collectMetadataWithCRS[
     K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
-    K2: SpatialComponent: Boundable
+    K2: GridComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
     val (extent, cellType, cellSize, crsSet, bounds) =
       rdd
       .map { case (key, grid) =>
         val ProjectedExtent(extent, crs) = key.getComponent[ProjectedExtent]
-        val boundsKey = key.translate(SpatialKey(0,0))
+        val boundsKey = key.translate(GridKey(0,0))
         (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), Set(crs), KeyBounds(boundsKey, boundsKey))
       }
       .reduce { (tuple1, tuple2) =>
@@ -123,7 +123,7 @@ object RasterMetadata {
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
-    K2: SpatialComponent: Boundable
+    K2: GridComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): RasterMetadata[K2] = {
     val (extent, cellType, _, bounds) = collectMetadata(rdd)
     val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
@@ -136,7 +136,7 @@ object RasterMetadata {
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
-    K2: SpatialComponent: Boundable
+    K2: GridComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, RasterMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds) = collectMetadata(rdd)
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
@@ -147,7 +147,7 @@ object RasterMetadata {
   def fromRdd[
     K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
-    K2: SpatialComponent: Boundable
+    K2: GridComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, RasterMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
 
@@ -160,7 +160,7 @@ object RasterMetadata {
   def fromRdd[
     K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
-    K2: SpatialComponent: Boundable
+    K2: GridComponent: Boundable
   ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): (Int, RasterMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
     val kb = bounds.setSpatialBounds(KeyBounds(layoutDefinition.mapTransform(extent)))

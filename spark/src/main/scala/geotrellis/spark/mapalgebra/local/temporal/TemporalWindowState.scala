@@ -47,7 +47,7 @@ case class TemporalWindowState[K](
   partitioner: Option[Partitioner] = None
 )(
   implicit val keyClassTag: ClassTag[K],
-    _sc: SpatialComponent[K],
+    _sc: GridComponent[K],
     _tc: TemporalComponent[K]) {
 
   import TemporalWindowHelper._

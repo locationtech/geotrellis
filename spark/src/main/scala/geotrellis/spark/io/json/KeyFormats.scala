@@ -8,36 +8,36 @@ import spray.json.DefaultJsonProtocol._
 object KeyFormats extends KeyFormats
 
 trait KeyFormats {
-  implicit object SpatialKeyFormat extends RootJsonFormat[SpatialKey] {
-    def write(key: SpatialKey) =
+  implicit object GridKeyFormat extends RootJsonFormat[GridKey] {
+    def write(key: GridKey) =
       JsObject(
         "col" -> JsNumber(key.col),
         "row" -> JsNumber(key.row)
       )
 
-    def read(value: JsValue): SpatialKey =
+    def read(value: JsValue): GridKey =
       value.asJsObject.getFields("col", "row") match {
         case Seq(JsNumber(col), JsNumber(row)) =>
-          SpatialKey(col.toInt, row.toInt)
+          GridKey(col.toInt, row.toInt)
         case _ =>
-          throw new DeserializationException("SpatialKey expected")
+          throw new DeserializationException("GridKey expected")
       }
   }
 
-  implicit object SpaceTimeKeyFormat extends RootJsonFormat[SpaceTimeKey] {
-    def write(key: SpaceTimeKey) =
+  implicit object GridTimeKeyFormat extends RootJsonFormat[GridTimeKey] {
+    def write(key: GridTimeKey) =
       JsObject(
         "col" -> JsNumber(key.col),
         "row" -> JsNumber(key.row),
         "instant" -> JsNumber(key.instant)
       )
 
-    def read(value: JsValue): SpaceTimeKey =
+    def read(value: JsValue): GridTimeKey =
       value.asJsObject.getFields("col", "row", "instant") match {
         case Seq(JsNumber(col), JsNumber(row), JsNumber(time)) =>
-          SpaceTimeKey(col.toInt, row.toInt, time.toLong)
+          GridTimeKey(col.toInt, row.toInt, time.toLong)
         case _ =>
-          throw new DeserializationException("SpatialKey expected")
+          throw new DeserializationException("GridKey expected")
       }
   }
 

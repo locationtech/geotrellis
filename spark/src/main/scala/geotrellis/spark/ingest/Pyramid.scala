@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
 object Pyramid extends Logging {
 
   def up[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,
@@ -23,7 +23,7 @@ object Pyramid extends Logging {
     up(rdd, layoutScheme, zoom, resampleMethod, None)
 
   def up[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,
@@ -50,8 +50,8 @@ object Pyramid extends Logging {
      val transformedRdd = rdd
         .map { case (key, tile) =>
           val extent = sourceLayout.mapTransform(key)
-          val newSpatialKey = nextLayout.mapTransform(extent.center)
-          (key.setComponent(newSpatialKey), (key, tile))
+          val newGridKey = nextLayout.mapTransform(extent.center)
+          (key.setComponent(newGridKey), (key, tile))
         }
 
         partitioner
@@ -72,13 +72,13 @@ object Pyramid extends Logging {
   }
 
   def up[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], layoutScheme: LayoutScheme, zoom: Int): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) =
     up[K, V](rdd, layoutScheme, zoom, None)
 
   def up[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,
@@ -87,14 +87,14 @@ object Pyramid extends Logging {
     up[K, V](rdd, layoutScheme, zoom, NearestNeighbor, partitioner)
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int, resampleMethod: ResampleMethod)
    (f: (RDD[(K, V)] with Metadata[RasterMetadata[K]], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetadata[K]] =
     upLevels[K, V](rdd, layoutScheme, startZoom, endZoom, resampleMethod, None)(f)
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,
@@ -117,14 +117,14 @@ object Pyramid extends Logging {
   }
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], layoutScheme: LayoutScheme, startZoom: Int, endZoom: Int)
    (f: (RDD[(K, V)] with Metadata[RasterMetadata[K]], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetadata[K]] =
     upLevels[K, V](rdd, layoutScheme, startZoom, endZoom, None)(f)
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,
@@ -135,14 +135,14 @@ object Pyramid extends Logging {
     upLevels[K, V](rdd, layoutScheme, startZoom, endZoom, NearestNeighbor, partitioner)(f)
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], layoutScheme: LayoutScheme, startZoom: Int, resampleMethod: ResampleMethod)
    (f: (RDD[(K, V)] with Metadata[RasterMetadata[K]], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetadata[K]] =
     upLevels[K, V](rdd, layoutScheme, startZoom, resampleMethod, None)(f)
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,
@@ -153,14 +153,14 @@ object Pyramid extends Logging {
     upLevels[K, V](rdd, layoutScheme, startZoom, 0, resampleMethod, partitioner)(f)
 
   def upLevels[
-  K: SpatialComponent: ClassTag,
+  K: GridComponent: ClassTag,
   V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], layoutScheme: LayoutScheme, startZoom: Int)
    (f: (RDD[(K, V)] with Metadata[RasterMetadata[K]], Int) => Unit): RDD[(K, V)] with Metadata[RasterMetadata[K]] =
     upLevels[K, V](rdd, layoutScheme, startZoom, None)(f)
 
   def upLevels[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]],
     layoutScheme: LayoutScheme,

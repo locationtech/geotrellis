@@ -68,12 +68,12 @@ trait KeyIndexFormats {
     private lazy val registry: Map[ClassTag[_], List[KeyIndexFormatEntry[_, _]]] = {
       val entryRegistry = new KeyIndexRegistry
 
-      entryRegistry register KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](HilbertSpatialKeyIndexFormat.TYPE_NAME)
-      entryRegistry register KeyIndexFormatEntry[SpatialKey, ZSpatialKeyIndex](ZSpatialKeyIndexFormat.TYPE_NAME)
-      entryRegistry register KeyIndexFormatEntry[SpatialKey, RowMajorSpatialKeyIndex](RowMajorSpatialKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[GridKey, HilbertGridKeyIndex](HilbertGridKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[GridKey, ZGridKeyIndex](ZGridKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[GridKey, RowMajorGridKeyIndex](RowMajorGridKeyIndexFormat.TYPE_NAME)
 
-      entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, HilbertSpaceTimeKeyIndex](HilbertSpaceTimeKeyIndexFormat.TYPE_NAME)
-      entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeKeyIndex](ZSpaceTimeKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[GridTimeKey, HilbertGridTimeKeyIndex](HilbertGridTimeKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[GridTimeKey, ZGridTimeKeyIndex](ZGridTimeKeyIndexFormat.TYPE_NAME)
 
       // User defined here
       val conf = ConfigFactory.load()
@@ -106,10 +106,10 @@ trait KeyIndexFormats {
   implicit def keyIndexJsonFormat[K: ClassTag]: RootJsonFormat[KeyIndex[K]] =
     KeyIndexJsonFormatFactory.getKeyIndexJsonFormat[K]
 
-  implicit object HilbertSpatialKeyIndexFormat extends RootJsonFormat[HilbertSpatialKeyIndex] {
+  implicit object HilbertGridKeyIndexFormat extends RootJsonFormat[HilbertGridKeyIndex] {
     final def TYPE_NAME = "hilbert"
 
-    def write(obj: HilbertSpatialKeyIndex): JsValue =
+    def write(obj: HilbertGridKeyIndex): JsValue =
       JsObject(
         "type"   -> JsString(TYPE_NAME),
         "properties" -> JsObject(
@@ -119,7 +119,7 @@ trait KeyIndexFormats {
         )
       )
 
-    def read(value: JsValue): HilbertSpatialKeyIndex =
+    def read(value: JsValue): HilbertGridKeyIndex =
       value.asJsObject.getFields("type", "properties") match {
         case Seq(JsString(typeName), properties) => {
           if (typeName != TYPE_NAME)
@@ -127,25 +127,25 @@ trait KeyIndexFormats {
           properties.convertTo[JsObject]
             .getFields("keyBounds", "xResolution", "yResolution") match {
             case Seq(kb, xr, yr) =>
-              HilbertSpatialKeyIndex(
-                kb.convertTo[KeyBounds[SpatialKey]],
+              HilbertGridKeyIndex(
+                kb.convertTo[KeyBounds[GridKey]],
                 xr.convertTo[Int],
                 yr.convertTo[Int]
               )
             case _ =>
               throw new DeserializationException(
-                "Wrong KeyIndex constructor arguments: HilbertSpatialKeyIndex constructor arguments expected.")
+                "Wrong KeyIndex constructor arguments: HilbertGridKeyIndex constructor arguments expected.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type: HilbertSpatialKeyIndex expected.")
+          throw new DeserializationException("Wrong KeyIndex type: HilbertGridKeyIndex expected.")
       }
   }
 
-  implicit object HilbertSpaceTimeKeyIndexFormat extends RootJsonFormat[HilbertSpaceTimeKeyIndex] {
+  implicit object HilbertGridTimeKeyIndexFormat extends RootJsonFormat[HilbertGridTimeKeyIndex] {
     final def TYPE_NAME = "hilbert"
 
-    def write(obj: HilbertSpaceTimeKeyIndex): JsValue =
+    def write(obj: HilbertGridTimeKeyIndex): JsValue =
       JsObject(
         "type"   -> JsString(TYPE_NAME),
         "properties" -> JsObject(
@@ -156,7 +156,7 @@ trait KeyIndexFormats {
         )
       )
 
-    def read(value: JsValue): HilbertSpaceTimeKeyIndex =
+    def read(value: JsValue): HilbertGridTimeKeyIndex =
       value.asJsObject.getFields("type", "properties") match {
         case Seq(JsString(typeName), properties) => {
           if (typeName != TYPE_NAME)
@@ -165,32 +165,32 @@ trait KeyIndexFormats {
           properties.convertTo[JsObject]
             .getFields("keyBounds", "xResolution", "yResolution", "temporalResolution") match {
             case Seq(kb, xr, yr, tr) =>
-              HilbertSpaceTimeKeyIndex(
-                kb.convertTo[KeyBounds[SpaceTimeKey]],
+              HilbertGridTimeKeyIndex(
+                kb.convertTo[KeyBounds[GridTimeKey]],
                 xr.convertTo[Int],
                 yr.convertTo[Int],
                 tr.convertTo[Int]
               )
             case _ =>
               throw new DeserializationException(
-                "Wrong KeyIndex constructor arguments: HilbertSpaceTimeKeyIndex constructor arguments expected.")
+                "Wrong KeyIndex constructor arguments: HilbertGridTimeKeyIndex constructor arguments expected.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type: HilberSpaceTimeKeyIndex expected.")
+          throw new DeserializationException("Wrong KeyIndex type: HilberGridTimeKeyIndex expected.")
       }
   }
 
-  implicit object RowMajorSpatialKeyIndexFormat extends RootJsonFormat[RowMajorSpatialKeyIndex] {
+  implicit object RowMajorGridKeyIndexFormat extends RootJsonFormat[RowMajorGridKeyIndex] {
     final def TYPE_NAME = "rowmajor"
 
-    def write(obj: RowMajorSpatialKeyIndex): JsValue =
+    def write(obj: RowMajorGridKeyIndex): JsValue =
       JsObject(
         "type"   -> JsString(TYPE_NAME),
         "properties" -> JsObject("keyBounds" -> obj.keyBounds.toJson)
       )
 
-    def read(value: JsValue): RowMajorSpatialKeyIndex =
+    def read(value: JsValue): RowMajorGridKeyIndex =
       value.asJsObject.getFields("type", "properties") match {
         case Seq(JsString(typeName), properties) => {
           if (typeName != TYPE_NAME)
@@ -198,21 +198,21 @@ trait KeyIndexFormats {
 
           properties.convertTo[JsObject].getFields("keyBounds") match {
             case Seq(kb) =>
-              new RowMajorSpatialKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
+              new RowMajorGridKeyIndex(kb.convertTo[KeyBounds[GridKey]])
             case _ =>
               throw new DeserializationException(
-                "Wrong KeyIndex constructor arguments: RowMajorSpatialKeyIndex constructor arguments expected.")
+                "Wrong KeyIndex constructor arguments: RowMajorGridKeyIndex constructor arguments expected.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type: RowMajorSpatialKeyIndex expected.")
+          throw new DeserializationException("Wrong KeyIndex type: RowMajorGridKeyIndex expected.")
       }
   }
 
-  implicit object ZSpaceTimeKeyIndexFormat extends RootJsonFormat[ZSpaceTimeKeyIndex] {
+  implicit object ZGridTimeKeyIndexFormat extends RootJsonFormat[ZGridTimeKeyIndex] {
     final def TYPE_NAME = "zorder"
 
-    def write(obj: ZSpaceTimeKeyIndex): JsValue =
+    def write(obj: ZGridTimeKeyIndex): JsValue =
       JsObject(
         "type"   -> JsString(TYPE_NAME),
         "properties" -> JsObject(
@@ -221,7 +221,7 @@ trait KeyIndexFormats {
         )
       )
 
-    def read(value: JsValue): ZSpaceTimeKeyIndex =
+    def read(value: JsValue): ZGridTimeKeyIndex =
       value.asJsObject.getFields("type", "properties") match {
         case Seq(JsString(typeName), properties) => {
           if (typeName != TYPE_NAME)
@@ -229,27 +229,27 @@ trait KeyIndexFormats {
 
           properties.convertTo[JsObject].getFields("keyBounds", "temporalResolution") match {
             case Seq(keyBounds, temporalResolution) =>
-              ZSpaceTimeKeyIndex.byMilliseconds(keyBounds.convertTo[KeyBounds[SpaceTimeKey]], temporalResolution.convertTo[Long])
+              ZGridTimeKeyIndex.byMilliseconds(keyBounds.convertTo[KeyBounds[GridTimeKey]], temporalResolution.convertTo[Long])
             case _ =>
               throw new DeserializationException(
-                "Wrong KeyIndex constructor arguments: ZSpaceTimeKeyIndex constructor arguments expected.")
+                "Wrong KeyIndex constructor arguments: ZGridTimeKeyIndex constructor arguments expected.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type: ZSpaceTimeKeyIndex expected.")
+          throw new DeserializationException("Wrong KeyIndex type: ZGridTimeKeyIndex expected.")
       }
   }
 
-  implicit object ZSpatialKeyIndexFormat extends RootJsonFormat[ZSpatialKeyIndex] {
+  implicit object ZGridKeyIndexFormat extends RootJsonFormat[ZGridKeyIndex] {
     final def TYPE_NAME = "zorder"
 
-    def write(obj: ZSpatialKeyIndex): JsValue =
+    def write(obj: ZGridKeyIndex): JsValue =
       JsObject(
         "type"   -> JsString(TYPE_NAME),
         "properties" -> JsObject("keyBounds" -> obj.keyBounds.toJson)
       )
 
-    def read(value: JsValue): ZSpatialKeyIndex =
+    def read(value: JsValue): ZGridKeyIndex =
       value.asJsObject.getFields("type", "properties") match {
         case Seq(JsString(typeName), properties) => {
           if (typeName != TYPE_NAME)
@@ -257,14 +257,14 @@ trait KeyIndexFormats {
 
           properties.convertTo[JsObject].getFields("keyBounds") match {
             case Seq(kb) =>
-              new ZSpatialKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
+              new ZGridKeyIndex(kb.convertTo[KeyBounds[GridKey]])
             case _ =>
               throw new DeserializationException(
-                "Wrong KeyIndex constructor arguments: ZSpatialKeyIndex constructor arguments expected.")
+                "Wrong KeyIndex constructor arguments: ZGridKeyIndex constructor arguments expected.")
           }
         }
         case _ =>
-          throw new DeserializationException("Wrong KeyIndex type: ZSpatialKeyIndex expected.")
+          throw new DeserializationException("Wrong KeyIndex type: ZGridKeyIndex expected.")
       }
   }
 }

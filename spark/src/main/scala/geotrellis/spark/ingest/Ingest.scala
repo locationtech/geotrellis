@@ -53,10 +53,10 @@ object Ingest {
    * @param cacheLevel    Storage level to use for RDD caching
    * @param sink          function that utilize the result of the ingest, assumed to force materialization of the RDD
    * @tparam T            type of input tile key
-   * @tparam K            type of output tile key, must have SpatialComponent
+   * @tparam K            type of output tile key, must have GridComponent
    * @return
    */
-  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: Component[?, ProjectedExtent], K: SpatialComponent: Boundable: ClassTag](
+  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: Component[?, ProjectedExtent], K: GridComponent: Boundable: ClassTag](
       sourceTiles: RDD[(T, Tile)],
       destCRS: CRS,
       layoutScheme: LayoutScheme,

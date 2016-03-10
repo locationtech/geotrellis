@@ -22,6 +22,6 @@ import scala.collection.JavaConversions._
 
 
 trait SlippyTileWriter[T] {
-  def setupWrite(zoom: Int, rdd: RDD[(SpatialKey, T)]): RDD[(SpatialKey, T)]
-  def write(zoom: Int, rdd: RDD[(SpatialKey, T)]): Unit = setupWrite(zoom, rdd).foreach { x => }
+  def setupWrite(zoom: Int, rdd: RDD[(GridKey, T)]): RDD[(GridKey, T)]
+  def write(zoom: Int, rdd: RDD[(GridKey, T)]): Unit = setupWrite(zoom, rdd).foreach { x => }
 }

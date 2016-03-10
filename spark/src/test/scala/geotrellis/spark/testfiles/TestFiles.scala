@@ -13,7 +13,7 @@ object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 
-  def generateSpatial(layerName: String)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {
+  def generateSpatial(layerName: String)(implicit sc: SparkContext): RasterRDD[GridKey] = {
     val md = {
       val cellType = FloatConstantNoDataCellType
       val crs = LatLng
@@ -21,7 +21,7 @@ object TestFiles extends Logging {
       val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
-      val keyBounds = KeyBounds(SpatialKey(1,1), SpatialKey(6,7))
+      val keyBounds = KeyBounds(GridKey(1,1), GridKey(6,7))
       RasterMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
@@ -45,7 +45,7 @@ object TestFiles extends Logging {
         row <- gridBounds.rowMin to gridBounds.rowMax;
         col <- gridBounds.colMin to gridBounds.colMax
       ) yield {
-        val key = SpatialKey(col, row)
+        val key = GridKey(col, row)
         val tile = spatialTestFile(key)
         (key, tile)
       }
@@ -53,7 +53,7 @@ object TestFiles extends Logging {
     new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 
-  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
+  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RasterRDD[GridTimeKey] = {
     val times =
       (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
 
@@ -65,7 +65,7 @@ object TestFiles extends Logging {
       val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
-      val keyBounds = KeyBounds(SpaceTimeKey(1,1,times.min), SpaceTimeKey(6,7, times.max))
+      val keyBounds = KeyBounds(GridTimeKey(1,1,times.min), GridTimeKey(6,7, times.max))
       RasterMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
@@ -85,7 +85,7 @@ object TestFiles extends Logging {
         col <- gridBounds.colMin to gridBounds.colMax;
         (time, timeIndex) <- times.zipWithIndex
       ) yield {
-        val key = SpaceTimeKey(col, row, time)
+        val key = GridTimeKey(col, row, time)
         val tile = spaceTimeTestTiles(key, timeIndex)
         (key, tile)
 

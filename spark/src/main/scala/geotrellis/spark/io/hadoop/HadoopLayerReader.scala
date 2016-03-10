@@ -21,7 +21,7 @@ import scala.reflect.ClassTag
  * Handles reading raster RDDs and their metadata from S3.
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
- * @tparam K              Type of RDD Key (ex: SpatialKey)
+ * @tparam K              Type of RDD Key (ex: GridKey)
  * @tparam V       Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */

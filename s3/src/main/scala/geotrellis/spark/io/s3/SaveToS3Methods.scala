@@ -1,7 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.render._
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.{LayerId, GridKey}
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
@@ -19,10 +19,10 @@ import scalaz.concurrent.Task
 object SaveToS3Methods {
   /**
     * @param id           A Layer ID
-    * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
+    * @param pathTemplate The template used to convert a Layer ID and a GridKey into an S3 URI
     * @return             A functon which takes a spatial key and returns an S3 URI
     */
-  def spatialKeyToPath(id: LayerId, pathTemplate: String): (SpatialKey => String) = {
+  def spatialKeyToPath(id: LayerId, pathTemplate: String): (GridKey => String) = {
     // Return λ
     { key =>
       pathTemplate

@@ -21,13 +21,13 @@ import java.io.File
 import scala.collection.JavaConversions._
 
 
-class HadoopSlippyTileWriter[T](uri: String, extension: String)(getBytes: (SpatialKey, T) => Array[Byte])(implicit sc: SparkContext) extends SlippyTileWriter[T] {
-  def setupWrite(zoom: Int, rdd: RDD[(SpatialKey, T)]): RDD[(SpatialKey, T)] = {
+class HadoopSlippyTileWriter[T](uri: String, extension: String)(getBytes: (GridKey, T) => Array[Byte])(implicit sc: SparkContext) extends SlippyTileWriter[T] {
+  def setupWrite(zoom: Int, rdd: RDD[(GridKey, T)]): RDD[(GridKey, T)] = {
     val lZoom = zoom
     val lUri = uri
     val lExtension = extension
     val scheme = new Path("/Users").getFileSystem(sc.hadoopConfiguration).getScheme
-    val keyToPath = { key: SpatialKey => new File(lUri, s"$lZoom/${key.col}/${key.row}.${lExtension}").getPath }
+    val keyToPath = { key: GridKey => new File(lUri, s"$lZoom/${key.col}/${key.row}.${lExtension}").getPath }
     rdd.setupSaveToHadoop(scheme, keyToPath, getBytes)
   }
 }

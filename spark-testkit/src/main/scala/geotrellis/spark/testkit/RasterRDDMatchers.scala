@@ -25,7 +25,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 trait RasterRDDMatchers extends RasterMatchers {
-  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]) = rdd.stitch
+  implicit def rddToTile(rdd: RDD[(GridKey, Tile)]) = rdd.stitch
 
   /*
    * Takes a 3-tuple, min, max, and count and checks
@@ -56,19 +56,19 @@ trait RasterRDDMatchers extends RasterMatchers {
    * a. if every pixel == value, and
    * b. if number of tiles == count
    */
-  def rasterShouldBe(rdd: RDD[(SpatialKey, Tile)], value: Int, count: Int): Unit = {
+  def rasterShouldBe(rdd: RDD[(GridKey, Tile)], value: Int, count: Int): Unit = {
     rasterShouldBe(rdd, value)
     rdd.count should be(count)
   }
 
   def rastersEqual(
-    first: RDD[(SpatialKey, Tile)],
-    second: RDD[(SpatialKey, Tile)]): Unit = {
+    first: RDD[(GridKey, Tile)],
+    second: RDD[(GridKey, Tile)]): Unit = {
 
     tilesEqual(first, second)
   }
 
-  def rasterShouldBe(rdd: RDD[(SpaceTimeKey, Tile)], value: Int, count: Int)(implicit d: DummyImplicit): Unit = {
+  def rasterShouldBe(rdd: RDD[(GridTimeKey, Tile)], value: Int, count: Int)(implicit d: DummyImplicit): Unit = {
     rdd.count should be (count)
     rdd.collect.map { case (_, tile) => rasterShouldBe(tile, value) }
   }

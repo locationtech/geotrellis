@@ -9,10 +9,10 @@ import spray.json._
 class KeyIndexJsonFormatFactorySpec extends FunSpec with Matchers {
   describe("KeyIndexJsonFormatFactory"){
     it("should be able to serialize and deserialize a custom key index set through application.conf") {
-      val expectedKeyBounds = KeyBounds(SpatialKey(1, 2), SpatialKey(5, 6))
-      val testKeyIndex: KeyIndex[SpatialKey] = new TestKeyIndex(expectedKeyBounds)
+      val expectedKeyBounds = KeyBounds(GridKey(1, 2), GridKey(5, 6))
+      val testKeyIndex: KeyIndex[GridKey] = new TestKeyIndex(expectedKeyBounds)
       val json = testKeyIndex.toJson
-      val actual = json.convertTo[KeyIndex[SpatialKey]]
+      val actual = json.convertTo[KeyIndex[GridKey]]
       actual.keyBounds should be (expectedKeyBounds)
       actual should be (a[TestKeyIndex])
     }

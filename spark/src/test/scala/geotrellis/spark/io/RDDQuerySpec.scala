@@ -12,15 +12,15 @@ import org.scalatest._
 class RDDQuerySpec extends FunSpec
   with TestEnvironment with TestFiles with Matchers {
 
-  def spatialKeyBoundsKeys(kb: KeyBounds[SpatialKey]) = {
+  def spatialKeyBoundsKeys(kb: KeyBounds[GridKey]) = {
     for {
       row <- kb.minKey.row to kb.maxKey.row
       col <- kb.minKey.col to kb.maxKey.col
-    } yield SpatialKey(col, row)
+    } yield GridKey(col, row)
   }
 
   describe("RasterQuerySpec") {
-    val keyBounds = KeyBounds(SpatialKey(1, 1), SpatialKey(6, 7))
+    val keyBounds = KeyBounds(GridKey(1, 1), GridKey(6, 7))
 
     val md = RasterMetadata(
       FloatConstantNoDataCellType,
@@ -33,13 +33,13 @@ class RDDQuerySpec extends FunSpec
 
 
     it("should be better then Java serialization") {
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(GridBounds(2, 2, 2, 2)))
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(GridBounds(2, 2, 2, 2)))
       val outKeyBounds = query(md)
       info(outKeyBounds.toString)
     }
 
     it("should throw on intersecting regions") {
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]]
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]]
         .where(Intersects(GridBounds(2, 2, 2, 2)) or Intersects(GridBounds(2, 2, 2, 2)))
 
       intercept[RuntimeException] {
@@ -54,7 +54,7 @@ class RDDQuerySpec extends FunSpec
 
     val md = AllOnesTestFile.metadata
     val mt = md.mapTransform
-    val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
+    val kb = KeyBounds[GridKey](GridKey(0, 0), GridKey(6, 7))
     val bounds = GridBounds(1, 1, 3, 2)
     val horizontal = Polygon(List(
       Point(-130.0, 60.0),
@@ -77,13 +77,13 @@ class RDDQuerySpec extends FunSpec
 
     def naiveKeys(polygon : MultiPolygon) = {
       (for ((x, y) <- bounds.coords
-        if (polygon.intersects(md.mapTransform(SpatialKey(x, y))))) yield SpatialKey(x, y))
+        if (polygon.intersects(md.mapTransform(GridKey(x, y))))) yield GridKey(x, y))
         .toList
     }
 
     it("should find all keys that intersect appreciably with a horizontal rectangle") {
       val polygon = MultiPolygon(horizontal)
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(polygon))
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
@@ -91,7 +91,7 @@ class RDDQuerySpec extends FunSpec
 
     it("should find all keys that intersect appreciably with a vertical rectangle") {
       val polygon = MultiPolygon(vertical)
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(polygon))
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
@@ -99,7 +99,7 @@ class RDDQuerySpec extends FunSpec
 
     it("should find all keys that intersect appreciably with an L-shaped polygon") {
       val polygon = MultiPolygon(List(horizontal, vertical))
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(polygon))
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
@@ -107,7 +107,7 @@ class RDDQuerySpec extends FunSpec
 
     it("should find all keys that intersect appreciably with a diagonal rectangle") {
       val polygon = MultiPolygon(diagonal)
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(polygon))
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
@@ -116,12 +116,12 @@ class RDDQuerySpec extends FunSpec
 
   describe("RDDQuery KeyBounds generation") {
     val md = AllOnesTestFile.metadata
-    val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
+    val kb = KeyBounds[GridKey](GridKey(0, 0), GridKey(6, 7))
 
     it("should generate KeyBounds for single region") {
       val bounds1 = GridBounds(1, 1, 3, 2)
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(bounds1))
-      val expected = for ((x, y) <- bounds1.coords) yield SpatialKey(x, y)
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(bounds1))
+      val expected = for ((x, y) <- bounds1.coords) yield GridKey(x, y)
 
       val found = query(md).flatMap(spatialKeyBoundsKeys)
       info(s"missing: ${(expected diff found).toList}")
@@ -133,8 +133,8 @@ class RDDQuerySpec extends FunSpec
     it("should generate KeyBounds for two regions") {
       val bounds1 = GridBounds(1, 1, 3, 3)
       val bounds2 = GridBounds(4, 5, 6, 6)
-      val query = new RDDQuery[SpatialKey, RasterMetadata[SpatialKey]].where(Intersects(bounds1) or Intersects(bounds2))
-      val expected = for ((x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x, y)
+      val query = new RDDQuery[GridKey, RasterMetadata[GridKey]].where(Intersects(bounds1) or Intersects(bounds2))
+      val expected = for ((x, y) <- bounds1.coords ++ bounds2.coords) yield GridKey(x, y)
 
       val found = query(md).flatMap(spatialKeyBoundsKeys)
       info(s"missing: ${(expected diff found).toList}")

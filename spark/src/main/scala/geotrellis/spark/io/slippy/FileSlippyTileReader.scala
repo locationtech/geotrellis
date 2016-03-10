@@ -21,7 +21,7 @@ import java.io._
 import scala.collection.JavaConversions._
 
 
-class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
+class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(fromBytes: (GridKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
 
   private def listFiles(path: String): Seq[File] =
@@ -31,7 +31,7 @@ class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(from
     if(extensions.isEmpty) { FileUtils.listFiles(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).toSeq }
     else { FileUtils.listFiles(file, new SuffixFileFilter(extensions), TrueFileFilter.INSTANCE).toSeq }
 
-  def read(zoom: Int, key: SpatialKey): T = {
+  def read(zoom: Int, key: GridKey): T = {
     val dir = new File(uri, s"$zoom/${key.col}/")
 
     val lFromBytes = fromBytes
@@ -42,13 +42,13 @@ class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(from
     }
   }
 
-  def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)] = {
+  def read(zoom: Int)(implicit sc: SparkContext): RDD[(GridKey, T)] = {
     val paths = {
       listFiles(new File(uri, zoom.toString).getPath)
         .flatMap { file =>
           val path = file.getAbsolutePath
           path match {
-            case TilePath(x, y) => Some((SpatialKey(x.toInt, y.toInt), path))
+            case TilePath(x, y) => Some((GridKey(x.toInt, y.toInt), path))
             case _ => None
           }
         }

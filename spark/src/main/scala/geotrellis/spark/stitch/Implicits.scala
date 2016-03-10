@@ -10,10 +10,10 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withSpatialTileLayoutRDDMethods[V <: CellGrid, M: ? => MapKeyTransform](
-    val self: RDD[(SpatialKey, V)] with Metadata[M]
+    val self: RDD[(GridKey, V)] with Metadata[M]
   ) extends SpatialTileLayoutRDDMethods[V, M]
 
   implicit class withSpatialTileRDDMethods[V <: CellGrid](
-    val self: RDD[(SpatialKey, V)]
+    val self: RDD[(GridKey, V)]
   ) extends SpatialTileRDDMethods[V]
 }

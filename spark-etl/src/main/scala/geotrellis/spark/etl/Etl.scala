@@ -30,7 +30,7 @@ object Etl {
 
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: Boundable: TypeTag,
+    K: GridComponent: Boundable: TypeTag,
     V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules
@@ -95,7 +95,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     * If multiple rasters contribute to single target tile their values will be merged cell by cell.
     *
     * The timing of the reproject steps depends on the method chosen.
-    * BufferedReproject must be performed after the tiling step because it leans on SpatialComponent to identify neighboring
+    * BufferedReproject must be performed after the tiling step because it leans on GridComponent to identify neighboring
     * tiles and sample their edge pixels. This method is the default and produces the best results.
     *
     * PerTileReproject method will be performed before the tiling step, on source tiles. When using this method the
@@ -109,7 +109,7 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     I: Component[?, ProjectedExtent]: (? => TilerKeyMethods[I, K]),
     V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
-    K: SpatialComponent: Boundable: ClassTag
+    K: GridComponent: Boundable: ClassTag
   ](
     rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
   )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) = {
@@ -151,11 +151,11 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     * @param id     Layout ID to b
     * @param rdd Tiled raster RDD with RasterMetadata
     * @param method Index Method that maps an instance of K to a Long
-    * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
+    * @tparam K  Key type with GridComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
   def save[
-    K: SpatialComponent: TypeTag,
+    K: GridComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], method: KeyIndexMethod[K]): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]

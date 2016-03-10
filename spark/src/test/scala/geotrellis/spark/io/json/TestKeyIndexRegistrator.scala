@@ -7,10 +7,10 @@ import geotrellis.spark.io.index._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-class TestKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
-  def toIndex(key: SpatialKey): Long = 1L
+class TestKeyIndex(val keyBounds: KeyBounds[GridKey]) extends KeyIndex[GridKey] {
+  def toIndex(key: GridKey): Long = 1L
 
-  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
+  def indexRanges(keyRange: (GridKey, GridKey)): Seq[(Long, Long)] =
     Seq((1L, 2L))
 }
 
@@ -32,7 +32,7 @@ class TestKeyIndexRegistrator extends KeyIndexRegistrator {
 
           properties.convertTo[JsObject].getFields("keyBounds") match {
             case Seq(kb) =>
-              new TestKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
+              new TestKeyIndex(kb.convertTo[KeyBounds[GridKey]])
             case _ =>
               throw new DeserializationException(
                 "Couldn't deserialize test key index.")
@@ -44,6 +44,6 @@ class TestKeyIndexRegistrator extends KeyIndexRegistrator {
   }
 
   def register(keyIndexRegistry: KeyIndexRegistry): Unit = {
-    keyIndexRegistry register KeyIndexFormatEntry[SpatialKey, TestKeyIndex](TestKeyIndexFormat.TYPE_NAME)
+    keyIndexRegistry register KeyIndexFormatEntry[GridKey, TestKeyIndex](TestKeyIndexFormat.TYPE_NAME)
   }
 }

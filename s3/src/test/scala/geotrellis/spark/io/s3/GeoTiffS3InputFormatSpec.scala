@@ -47,7 +47,7 @@ class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matcher
       /**
         * Actually failes due to LatLon issue: https://github.com/geotrellis/geotrellis/issues/1341
         */
-      /*Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng)){ (rdd, level) =>
+      /*Ingest[ProjectedExtent, GridKey](source, LatLng, ZoomedLayoutScheme(LatLng)){ (rdd, level) =>
         val rddCount = rdd.count
         rddCount should not be (0)
         info(s"Tiled RDD count: ${rddCount}")

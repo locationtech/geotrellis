@@ -24,20 +24,20 @@ object BufferTiles {
   case object Left extends Direction
   case object TopLeft extends Direction
 
-  def collectWithNeighbors[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
+  def collectWithNeighbors[K: GridComponent, V <: CellGrid: (? => CropMethods[V])](
     key: K,
     tile: V,
-    includeKey: SpatialKey => Boolean,
-    getBufferSizes: SpatialKey => BufferSizes
+    includeKey: GridKey => Boolean,
+    getBufferSizes: GridKey => BufferSizes
   ): Seq[(K, (Direction, V))] = {
-    val SpatialKey(col, row) = key.getComponent[SpatialKey]
+    val GridKey(col, row) = key.getComponent[GridKey]
     val parts = new ArrayBuffer[(K, (Direction, V))](9)
 
     val cols = tile.cols
     val rows = tile.rows
 
     // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
-    def addSlice(spatialKey: SpatialKey, direction: => Direction) {
+    def addSlice(spatialKey: GridKey, direction: => Direction) {
       if(includeKey(spatialKey)) {
         val bufferSizes = getBufferSizes(spatialKey)
 
@@ -59,23 +59,23 @@ object BufferTiles {
     }
 
     // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window
-    addSlice(SpatialKey(col,row), Center)
+    addSlice(GridKey(col,row), Center)
 
-    addSlice(SpatialKey(col-1, row), Right)
-    addSlice(SpatialKey(col+1, row), Left)
-    addSlice(SpatialKey(col, row-1), Bottom)
-    addSlice(SpatialKey(col, row+1), Top)
+    addSlice(GridKey(col-1, row), Right)
+    addSlice(GridKey(col+1, row), Left)
+    addSlice(GridKey(col, row-1), Bottom)
+    addSlice(GridKey(col, row+1), Top)
 
-    addSlice(SpatialKey(col-1, row-1), BottomRight)
-    addSlice(SpatialKey(col+1, row-1), BottomLeft)
-    addSlice(SpatialKey(col+1, row+1), TopLeft)
-    addSlice(SpatialKey(col-1, row+1), TopRight)
+    addSlice(GridKey(col-1, row-1), BottomRight)
+    addSlice(GridKey(col+1, row-1), BottomLeft)
+    addSlice(GridKey(col+1, row+1), TopLeft)
+    addSlice(GridKey(col-1, row+1), TopRight)
 
     parts
   }
 
   def bufferWithNeighbors[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag
   ](rdd: RDD[(K, Iterable[(Direction, V)])]): RDD[(K, BufferedTile[V])] = {
     rdd
@@ -138,7 +138,7 @@ object BufferTiles {
     *                                   any side if there is an adjacent, abutting tile to contribute the border pixels.
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](rdd: RDD[(K, V)], bufferSize: Int): RDD[(K, BufferedTile[V])] =
     apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
@@ -158,7 +158,7 @@ object BufferTiles {
     *                                   unused).
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](rdd: RDD[(K, V)], bufferSize: Int, layerBounds: GridBounds): RDD[(K, BufferedTile[V])] = {
     val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
@@ -188,7 +188,7 @@ object BufferTiles {
     * @param          getBufferSize     A function which returns the BufferSizes that should be used for a tile at this Key.
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](rdd: RDD[(K, V)], getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = {
     val bufferSizesPerKey =
@@ -214,26 +214,26 @@ object BufferTiles {
     * @param          bufferSizesPerKey        An RDD that holds the BufferSizes to use for each key.
     */
   def apply[
-    K: SpatialComponent: ClassTag,
+    K: GridComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](rdd: RDD[(K, V)], bufferSizesPerKey: RDD[(K, BufferSizes)]): RDD[(K, BufferedTile[V])] = {
-    val surroundingBufferSizes: RDD[(K, Map[SpatialKey, BufferSizes])] = {
+    val surroundingBufferSizes: RDD[(K, Map[GridKey, BufferSizes])] = {
       val contributingKeys =
         bufferSizesPerKey
           .flatMap { case (key, bufferSizes) =>
-            val spatialKey @ SpatialKey(col, row) = key.getComponent[SpatialKey]
+            val spatialKey @ GridKey(col, row) = key.getComponent[GridKey]
             Seq(
               (key, (spatialKey, bufferSizes)),
 
-              (key.setComponent(SpatialKey(col-1, row)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col+1, row)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col, row-1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col, row+1)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col-1, row)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col+1, row)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col, row-1)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col, row+1)), (spatialKey, bufferSizes)),
 
-              (key.setComponent(SpatialKey(col-1, row-1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col+1, row-1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col+1, row+1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col-1, row+1)), (spatialKey, bufferSizes))
+              (key.setComponent(GridKey(col-1, row-1)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col+1, row-1)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col+1, row+1)), (spatialKey, bufferSizes)),
+              (key.setComponent(GridKey(col-1, row+1)), (spatialKey, bufferSizes))
             )
 
           }

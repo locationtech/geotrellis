@@ -15,8 +15,8 @@ trait Implicits {
   implicit class withTilerMethods[K, V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]](self: RDD[(K, V)])
       extends TilerMethods[K, V](self)
 
-  implicit class withTupleTilerKeyMethods[K: SpatialComponent](val self: (K, Extent)) extends TilerKeyMethods[(K, Extent), K] {
+  implicit class withTupleTilerKeyMethods[K: GridComponent](val self: (K, Extent)) extends TilerKeyMethods[(K, Extent), K] {
     def extent = self._2
-    def translate(spatialKey: SpatialKey): K = self._1.setComponent(spatialKey)
+    def translate(spatialKey: GridKey): K = self._1.setComponent(spatialKey)
   }
 }

@@ -9,7 +9,7 @@ import geotrellis.util.MethodExtensions
 import scala.reflect.ClassTag
 
 
-abstract class RasterRDDMaskMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+abstract class RasterRDDMaskMethods[K: GridComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
 
   // As done by [[geotrellis.raster.rasterize.polygon.TestLineSet]] in [[geotrellis.raster.rasterize.polygon.PolygonRasterizer]].
   private def eliminateNotQualified(geom: Option[Geometry]): Option[Geometry] = {
@@ -38,7 +38,7 @@ abstract class RasterRDDMaskMethods[K: SpatialComponent: ClassTag] extends Metho
     val mapTransform = self.metadata.mapTransform
     val rdd =
       self.map { case (k, tile) =>
-        val key = k.getComponent[SpatialKey]
+        val key = k.getComponent[GridKey]
         val tileExtent = mapTransform(key)
         val result = masker(tileExtent, tile)
         (k, result)

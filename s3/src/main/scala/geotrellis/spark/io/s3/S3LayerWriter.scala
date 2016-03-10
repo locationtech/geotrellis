@@ -20,7 +20,7 @@ import scala.reflect._
  * @param keyPrefix       S3 prefix to write the raster to
  * @param keyIndexMethod  Method used to convert RDD keys to SFC indexes
  * @param attributeStore  AttributeStore to be used for storing raster metadata
- * @tparam K              Type of RDD Key (ex: SpatialKey)
+ * @tparam K              Type of RDD Key (ex: GridKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */

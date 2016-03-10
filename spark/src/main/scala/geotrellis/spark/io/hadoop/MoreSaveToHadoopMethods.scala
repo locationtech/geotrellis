@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.render._
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.{LayerId, GridKey}
 
 import java.net.URI
 import org.apache.hadoop.conf.Configuration
