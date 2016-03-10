@@ -13,8 +13,8 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connec
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, _, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, Unit](id)
+    val header = try {
+      attributeStore.readHeader[AccumuloLayerHeader](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
@@ -28,7 +28,6 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connec
     deleter.delete()
 
     attributeStore.delete(id)
-    attributeStore.clearCache()
   }
 }
 

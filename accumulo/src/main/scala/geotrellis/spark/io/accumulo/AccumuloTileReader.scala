@@ -25,8 +25,9 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
   val rowId = (index: Long) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val (header, _, keyIndex, writerSchema) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyIndex[K], Schema](layerId)
+    val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
+    val keyIndex = attributeStore.readKeyIndex[K](layerId)
+    val writerSchema = attributeStore.readSchema(layerId)
 
     def read(key: K): V = {
       val scanner = instance.connector.createScanner(header.tileTable, new Authorizations())

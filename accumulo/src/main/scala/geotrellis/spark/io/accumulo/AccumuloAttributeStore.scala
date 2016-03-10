@@ -28,7 +28,7 @@ object AccumuloAttributeStore {
     apply(instance.connector)
 }
 
-class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends AttributeStore with Logging {
+class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()
@@ -61,7 +61,10 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
       deleter.fetchColumnFamily(new Text(name))
     }
     deleter.delete()
-    clearCache(layerId)
+    attributeName match {
+      case Some(attribute) => clearCache(layerId, attribute)
+      case None => clearCache(layerId)
+    }
   }
 
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {

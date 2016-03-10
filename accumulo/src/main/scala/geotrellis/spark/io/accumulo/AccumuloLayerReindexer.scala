@@ -51,8 +51,7 @@ class AccumuloLayerReindexer(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (header, _, _, _) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val header = attributeStore.readHeader[AccumuloLayerHeader](id)
     val table = header.tileTable
 
     val layerReader = AccumuloLayerReader(instance)
@@ -74,8 +73,9 @@ class AccumuloLayerReindexer(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (header, _, existingKeyIndex, _) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val header = attributeStore.readHeader[AccumuloLayerHeader](id)
+    val existingKeyIndex = attributeStore.readKeyIndex[K](id)
+
     val table = header.tileTable
 
     val layerReader = AccumuloLayerReader(instance)

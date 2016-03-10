@@ -27,8 +27,8 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metaData, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metaData, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
