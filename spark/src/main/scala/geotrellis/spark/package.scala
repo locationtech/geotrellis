@@ -30,7 +30,7 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
-import monocle.{Lens, PLens}
+import monocle.Lens
 import monocle.syntax._
 
 import scala.reflect.ClassTag
@@ -68,7 +68,7 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type ComponentLens[K, C] = PLens[K, K, C, C]
+  type ComponentLens[K, C] = Lens[K, C]
 
   type SpatialComponent[K] = KeyComponent[K, SpatialKey]
   type TemporalComponent[K] = KeyComponent[K, TemporalKey]
