@@ -61,6 +61,10 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       null
     )
 
+  def jtsEnvelope: com.vividsolutions.jts.geom.Envelope =
+    new com.vividsolutions.jts.geom.Envelope(xmin, xmax, ymin, ymax)
+
+
   val width = xmax - xmin
   val height = ymax - ymin
 
