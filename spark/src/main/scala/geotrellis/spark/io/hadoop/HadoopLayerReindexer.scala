@@ -20,4 +20,7 @@ object HadoopLayerReindexer {
 
   def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] =
     apply(attributeStore.rootPath, attributeStore)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply(rootPath, HadoopAttributeStore(rootPath))
 }
