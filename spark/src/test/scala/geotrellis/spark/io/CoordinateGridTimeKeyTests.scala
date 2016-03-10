@@ -20,7 +20,7 @@ trait CoordinateGridTimeKeyTests { self: PersistenceSpec[GridTimeKey, Tile, Rast
   for(PersistenceSpecDefinition(keyIndexMethodName, _, layerIds) <- specLayerIds) {
     val layerId = layerIds.layerId
     val query = reader.query[GridTimeKey, Tile, RasterMetadata[GridTimeKey]](layerId)
-    describe(s"CoordinateSpaceTime query tests for $keyIndexMethodName") {
+    describe(s"CoordinateGridTimeKey query tests for $keyIndexMethodName") {
       it("query outside of layer bounds") {
         query.where(Intersects(GridBounds(10, 10, 15, 15))).toRDD.collect() should be(empty)
       }

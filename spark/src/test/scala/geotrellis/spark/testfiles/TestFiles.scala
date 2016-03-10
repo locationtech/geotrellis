@@ -53,7 +53,7 @@ object TestFiles extends Logging {
     new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 
-  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RasterRDD[GridTimeKey] = {
+  def generateGridTimeKey(layerName: String)(implicit sc: SparkContext): RasterRDD[GridTimeKey] = {
     val times =
       (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
 
@@ -98,7 +98,7 @@ object TestFiles extends Logging {
 trait TestFiles { self: TestEnvironment =>
   def gridKeyTestFile(name: String) = TestFiles.generateSpatial(name)
 
-  def gridTimeKeyTestFile(name: String) = TestFiles.generateSpaceTime(name)
+  def gridTimeKeyTestFile(name: String) = TestFiles.generateGridTimeKey(name)
 
   lazy val AllOnesTestFile =
     gridKeyTestFile("all-ones")
@@ -127,18 +127,18 @@ trait TestFiles { self: TestEnvironment =>
   lazy val Mod10000TestFile =
     gridKeyTestFile("mod-10000")
 
-  lazy val AllOnesSpaceTime =
+  lazy val AllOnesGridTimeKey =
     gridTimeKeyTestFile("gridtimekey-all-ones")
 
-  lazy val AllTwosSpaceTime =
+  lazy val AllTwosGridTimeKey =
     gridTimeKeyTestFile("gridtimekey-all-twos")
 
-  lazy val AllHundredsSpaceTime =
+  lazy val AllHundredsGridTimeKey =
     gridTimeKeyTestFile("gridtimekey-all-hundreds")
 
   /** Coordinates are CCC,RRR.TTT where C = column, R = row, T = time (year in 2010 + T).
     * So 34,025,004 would represent col 34, row 25, year 2014
     */
-  lazy val CoordinateSpaceTime =
+  lazy val CoordinateGridTimeKey =
     gridTimeKeyTestFile("gridtimekey-coordinates")
 }

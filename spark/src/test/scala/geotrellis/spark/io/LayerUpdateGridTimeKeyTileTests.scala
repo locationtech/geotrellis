@@ -74,7 +74,7 @@ trait LayerUpdateGridTimeKeyTileTests extends RasterRDDBuilders with TileBuilder
           )
 
         val rdd =
-          createSpaceTimeRasterRDD(
+          createGridTimeKeyRasterRDD(
             tiles,
             TileLayout(1, 1, 6, 4)
           )
@@ -85,7 +85,7 @@ trait LayerUpdateGridTimeKeyTileTests extends RasterRDDBuilders with TileBuilder
         assert(reader.read[GridTimeKey, Tile, RasterMetadata[GridTimeKey]](id).count == 4)
 
         val updateRdd =
-          createSpaceTimeRasterRDD(
+          createGridTimeKeyRasterRDD(
             Seq((createValueTile(6, 4, 5), new DateTime(2016, 1, 4, 12, 0, 0))),
             TileLayout(1, 1, 6, 4)
           )

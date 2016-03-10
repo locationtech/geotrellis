@@ -149,7 +149,7 @@ trait RasterRDDBuilders {
     new ContextRDD(tiled, metadata)
   }
 
-  def createSpaceTimeRasterRDD(
+  def createGridTimeKeyRasterRDD(
     tiles: Traversable[(Tile, DateTime)],
     tileLayout: TileLayout,
     cellType: CellType = IntConstantNoDataCellType)(implicit sc: SparkContext): RasterRDD[GridTimeKey] = {

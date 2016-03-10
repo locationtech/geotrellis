@@ -32,7 +32,7 @@ object PartitionerIndex {
     * This is hoped to be a reasonable default value.
     * The partitioner groups keys in 16x16 blocks spatially and by year temporally.
     */
-  implicit object SpaceTimePartitioner extends  PartitionerIndex[GridTimeKey] {
+  implicit object GridTimeKeyPartitioner extends  PartitionerIndex[GridTimeKey] {
     private def toZ(key: GridTimeKey): Z3 = Z3(key.col >> 4, key.row >> 4, key.time.getYear)
 
     def toIndex(key: GridTimeKey): Long = toZ(key).z

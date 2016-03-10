@@ -41,7 +41,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)  // size should be 4
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createSpaceTimeRasterRDD(Array((tile, new DateTime())), tileLayout)
+      val rdd = createGridTimeKeyRasterRDD(Array((tile, new DateTime())), tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 42 else 42)  // All values are 4
       rasterShouldBe(result, 42, 4)
@@ -77,7 +77,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)  // size should be 4
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createSpaceTimeRasterRDD(Array((tile, new DateTime())), tileLayout)
+      val rdd = createGridTimeKeyRasterRDD(Array((tile, new DateTime())), tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 1000 else z * 10)  // All values are 4
       rasterShouldBe(result, minMax=(10, 1000))

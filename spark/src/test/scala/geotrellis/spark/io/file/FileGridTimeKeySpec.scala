@@ -23,5 +23,5 @@ class FileGridTimeKeySpec
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val updater = FileLayerUpdater(outputLocalPath)
   lazy val tiles = FileTileReader[GridTimeKey, Tile](outputLocalPath)
-  lazy val sample =  CoordinateSpaceTime
+  lazy val sample =  CoordinateGridTimeKey
 }

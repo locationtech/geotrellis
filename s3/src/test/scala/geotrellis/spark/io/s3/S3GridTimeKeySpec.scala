@@ -51,5 +51,5 @@ class S3GridTimeKeySpec
   lazy val tiles = new S3TileReader[GridTimeKey, Tile](attributeStore) {
     override val s3Client = new MockS3Client
   }
-  lazy val sample =  CoordinateSpaceTime
+  lazy val sample =  CoordinateGridTimeKey
 }

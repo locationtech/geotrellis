@@ -25,7 +25,7 @@ class AccumuloGridTimeKeySpec
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val updater   = AccumuloLayerUpdater(instance, SocketWriteStrategy())
   lazy val tiles     = AccumuloTileReader[GridTimeKey, Tile](instance)
-  lazy val sample    = CoordinateSpaceTime
+  lazy val sample    = CoordinateGridTimeKey
   lazy val copier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover  = AccumuloLayerMover(copier, deleter)
 }

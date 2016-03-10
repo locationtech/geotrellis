@@ -30,7 +30,7 @@ class MockTemporalGeoTiffS3InputFormat extends TemporalGeoTiffS3InputFormat {
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
-  describe("SpaceTime GeoTiff S3 InputFormat") {
+  describe("GridTimeKey GeoTiff S3 InputFormat") {
     it("should read the time from a file") {
       val path = new java.io.File(inputHomeLocalPath, "test-time-tag.tif").getPath
 

@@ -24,5 +24,5 @@ class HadoopGridTimeKeySpec
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopTileReader[GridTimeKey, Tile](outputLocal)
-  lazy val sample =  CoordinateSpaceTime
+  lazy val sample =  CoordinateGridTimeKey
 }

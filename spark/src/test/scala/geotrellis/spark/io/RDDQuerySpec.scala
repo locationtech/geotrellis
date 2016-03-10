@@ -142,6 +142,6 @@ class RDDQuerySpec extends FunSpec
 
       found should contain theSameElementsAs expected
     }
-    // TODO: it would be nice to test SpaceTime too, but since time doesn't have a resolution we can not iterate
+    // TODO: it would be nice to test GridTimeKey too, but since time doesn't have a resolution we can not iterate
   }
 }
