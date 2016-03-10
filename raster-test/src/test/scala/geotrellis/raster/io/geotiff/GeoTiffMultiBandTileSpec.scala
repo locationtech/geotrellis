@@ -234,18 +234,6 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
   }
 
-  describe("MultiBand subset method") {
-
-    it("should be insensative to the order of bandSequence") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.subset(List(1, 2, 0))
-
-      tile0.band(0) should be theSameInstanceAs tile1.band(0)
-      tile0.band(1) should be theSameInstanceAs tile1.band(1)
-      tile0.band(2) should be theSameInstanceAs tile1.band(2)
-    }
-  }
-
   describe("GeoTiffMultiBandTile map") {
 
     it("should map a single band, striped, pixel interleave") {

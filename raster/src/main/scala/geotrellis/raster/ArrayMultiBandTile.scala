@@ -315,10 +315,4 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
 
   def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
     bands(bandSequence)
-
-  def subset(bandSequence: Seq[Int]): ArrayMultiBandTile =
-    bands(bandSequence.sorted)
-
-  def subset(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
-    bands(bandSequence.sorted)
 }
