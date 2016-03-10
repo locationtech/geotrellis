@@ -5,7 +5,7 @@ import geotrellis.vector._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.histogram._
 
-object HistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
+object IntHistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
   def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Histogram[Int] = {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
@@ -24,5 +24,6 @@ object HistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
   }
 
   def combineResults(rs: Seq[Histogram[Int]]): Histogram[Int] =
-    FastMapHistogram.fromHistograms(rs)
+    if (rs.nonEmpty) rs.reduce(_ merge _)
+    else FastMapHistogram()
 }

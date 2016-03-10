@@ -76,7 +76,7 @@ class RasterizerBenchmark extends OperationBenchmark {
     }
   }
 
-  //Because of a refactor Callback is not getting a geom as a param, since it can close over it if it really wanted
+  //Because of a refactor, Callback is not getting a geom as a param, since it can close over it if it really wanted
   //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
   def rasterizeUsingValue() {
     raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re) { (col: Int, row: Int) =>

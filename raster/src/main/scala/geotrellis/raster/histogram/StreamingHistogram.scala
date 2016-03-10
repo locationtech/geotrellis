@@ -19,12 +19,13 @@ package geotrellis.raster.histogram
 import geotrellis.raster._
 import geotrellis.raster.summary.Statistics
 import geotrellis.raster.doubleNODATA
-
-import java.util.TreeMap
-import java.util.Comparator
-import scala.collection.JavaConverters._
-import math.{abs, min, max, sqrt}
 import StreamingHistogram.{BucketType, DeltaType}
+
+import math.{abs, exp, min, max, sqrt}
+
+import java.util.Comparator
+import java.util.TreeMap
+import scala.collection.JavaConverters._
 
 
 object StreamingHistogram {
@@ -33,10 +34,21 @@ object StreamingHistogram {
 
   private val defaultSize = 80
 
-  def apply(m: Int = defaultSize) = new StreamingHistogram(m, None, None)
+  def apply(size: Int = defaultSize) =
+    new StreamingHistogram(size, None, None, Double.PositiveInfinity, Double.NegativeInfinity)
 
-  def apply(m: Int, buckets: TreeMap[Double, Int], deltas: TreeMap[DeltaType, Unit]) =
-    new StreamingHistogram(m, Some(buckets), Some(deltas))
+  def apply(
+    size: Int,
+    minimumSeen: Double,
+    maximumSeen: Double
+  ) =
+    new StreamingHistogram(size, None, None, minimumSeen, maximumSeen)
+
+  def fromTile(r: Tile): StreamingHistogram = {
+    val h = StreamingHistogram()
+    r.foreach(z => if (isData(z)) h.countItem(z, 1))
+    h
+  }
 }
 
 /**
@@ -47,10 +59,12 @@ object StreamingHistogram {
 class StreamingHistogram(
   m: Int,
   startingBuckets: Option[TreeMap[Double, Int]],
-  startingDeltas: Option[TreeMap[DeltaType, Unit]]
+  startingDeltas: Option[TreeMap[DeltaType, Unit]],
+  minimum: Double = Double.PositiveInfinity,
+  maximum: Double = Double.NegativeInfinity
 ) extends MutableHistogram[Double] {
 
-  class DeltaCompare extends Comparator[DeltaType] {
+  class DeltaCompare extends Comparator[DeltaType] with Serializable {
     def compare(a: DeltaType, b: DeltaType): Int =
       if (a._1 < b._1) -1
       else if (a._1 > b._1) 1
@@ -61,8 +75,10 @@ class StreamingHistogram(
       }
   }
 
-  private val buckets = startingBuckets.getOrElse(new TreeMap[Double, Int])
-  private val deltas = startingDeltas.getOrElse(new TreeMap[DeltaType, Unit](new DeltaCompare))
+  private var _min = minimum
+  private var _max = maximum
+  private val _buckets = startingBuckets.getOrElse(new TreeMap[Double, Int])
+  private val _deltas = startingDeltas.getOrElse(new TreeMap[DeltaType, Unit](new DeltaCompare))
 
   /**
     * Compute the area of the curve between the two buckets.
@@ -79,7 +95,7 @@ class StreamingHistogram(
   /**
     * Take two buckets and return their composite.
     */
-  private def merge(left: BucketType, right: BucketType): BucketType = {
+  private def compose(left: BucketType, right: BucketType): BucketType = {
     val (value1, count1) = left
     val (value2, count2) = right
 
@@ -93,7 +109,7 @@ class StreamingHistogram(
   }
 
   /**
-    * Merge the two closest-together buckets.
+    * Combine the two closest-together buckets.
     *
     * Before: left ----- middle1 ----- middle2 ----- right
     *
@@ -104,43 +120,43 @@ class StreamingHistogram(
     * removed and replaced with deltas between the mid-point and
     * respective extremes.
     */
-  private def merge(): Unit = {
-    val delta = deltas.firstKey
+  private def combine(): Unit = {
+    val delta = _deltas.firstKey
     val (_, middle1, middle2) = delta
-    val middle = merge(middle1, middle2)
+    val middle = compose(middle1, middle2)
     val left = {
-      val entry = buckets.lowerEntry(middle1._1)
+      val entry = _buckets.lowerEntry(middle1._1)
       if (entry != null) Some(entry.getKey, entry.getValue); else None
     }
     val right = {
-      val entry = buckets.higherEntry(middle2._1)
+      val entry = _buckets.higherEntry(middle2._1)
       if (entry != null) Some(entry.getKey, entry.getValue); else None
     }
 
     /* remove middle1 and middle2, as well as the delta between them.*/
-    buckets.remove(middle1._1)
-    buckets.remove(middle2._1)
-    deltas.remove(delta)
+    _buckets.remove(middle1._1)
+    _buckets.remove(middle2._1)
+    _deltas.remove(delta)
 
-    /* Remove delta to the left of the merged buckets */
+    /* Remove delta to the left of the combined buckets */
     if (left != None) {
       val oldDelta = middle1._1 - left.get._1
-      deltas.remove((oldDelta, left.get, middle1))
+      _deltas.remove((oldDelta, left.get, middle1))
     }
 
-    /* Remove delta to the right of the merged buckets */
+    /* Remove delta to the right of the combined buckets */
     if (right != None) {
       val oldDelta = right.get._1 - middle2._1
-      deltas.remove((oldDelta, middle2, right.get))
+      _deltas.remove((oldDelta, middle2, right.get))
     }
 
     /* Add delta covering the whole range */
     if (left != None && right != None) {
       val delta = right.get._1 - left.get._1
-      deltas.put((delta, left.get, right.get), Unit)
+      _deltas.put((delta, left.get, right.get), Unit)
     }
 
-    /* Add the average of the two merged buckets */
+    /* Add the average of the two combined buckets */
     countItem(middle)
   }
 
@@ -150,22 +166,25 @@ class StreamingHistogram(
     * one, or it can be used to incrementally merge two histograms.
     */
   private def countItem(b: BucketType): Unit = {
+    if (b._1 < _min && b._2 != 0) _min = b._1
+    if (b._1 > _max && b._2 != 0) _max = b._2
+
     /* First entry */
-    if (buckets.size == 0)
-      buckets.put(b._1, b._2)
+    if (_buckets.size == 0)
+      _buckets.put(b._1, b._2)
     /* Duplicate entry */
-    else if (buckets.containsKey(b._1)) {
-      buckets.put(b._1, buckets.get(b._1) + b._2)
+    else if (_buckets.containsKey(b._1)) {
+      _buckets.put(b._1, _buckets.get(b._1) + b._2)
       return
     }
     /* Create new entry */
     else {
       val smaller = {
-        val entry = buckets.lowerEntry(b._1)
+        val entry = _buckets.lowerEntry(b._1)
         if (entry != null) Some(entry.getKey, entry.getValue); else None
       }
       val larger = {
-        val entry = buckets.higherEntry(b._1)
+        val entry = _buckets.higherEntry(b._1)
         if (entry != null) Some(entry.getKey, entry.getValue); else None
       }
 
@@ -174,26 +193,26 @@ class StreamingHistogram(
         val large = larger.get
         val small = smaller.get
         val delta = large._1 - small._1
-        deltas.remove((delta, small, large))
+        _deltas.remove((delta, small, large))
       }
 
       /* Add delta between new bucket and next-largest bucket */
       if (larger != None) {
         val large = larger.get
         val delta = large._1 - b._1
-        deltas.put((delta, b, large), Unit)
+        _deltas.put((delta, b, large), Unit)
       }
 
       /* Add delta between new bucket and next-smallest bucket */
       if (smaller != None) {
         val small = smaller.get
         val delta = b._1 - small._1
-        deltas.put((delta, small, b), Unit)
+        _deltas.put((delta, small, b), Unit)
       }
     }
 
-    buckets.put(b._1, b._2)
-    if (buckets.size > m) merge
+    _buckets.put(b._1, b._2)
+    if (_buckets.size > m) combine()
   }
 
   /**
@@ -210,6 +229,8 @@ class StreamingHistogram(
 
   /**
     * Uncount item.
+    *
+    * Note: _min and _max are not changed by this.
     */
   def uncountItem(item: Double): Unit =
     countItem((item, -1))
@@ -217,33 +238,43 @@ class StreamingHistogram(
   /**
     * Get the (approximate) number of occurances of an item.
     */
-  def getItemCount(item: Double): Int = {
-    val lo = buckets.lowerEntry(item * 1.0001)
-    val hi = buckets.higherEntry(item * 1.0001)
-    val raw = {
-      if (lo == null && hi == null) 0
-      else if (lo == null) {
-        val x = item / hi.getKey
-        x * hi.getValue
-      }
-      else if (hi == null) {
-        val x = (lo.getKey - item) / lo.getKey
-        (1 - x) * lo.getValue
-      }
-      else {
-        val x = (item - lo.getKey) / (hi.getKey - lo.getKey)
-        x * (hi.getValue - lo.getValue) + lo.getValue
-      }
+  def itemCount(item: Double): Int = {
+    if (bucketCount() == 0) 0
+    else if (bucketCount() == 1) {
+      val (item2, count) = buckets().head
+      count / exp(abs(7 * (item2 - item))).toInt
     }
-    return ((raw / getAreaUnderCurve) * getTotalCount).toInt
+    else {
+      val lo = _buckets.lowerEntry(item * 1.0001)
+      val hi = _buckets.higherEntry(item * 1.0001)
+      val raw = {
+        if (lo == null && hi == null) 0
+        else if (lo == null) {
+          val x = item / hi.getKey
+          x * hi.getValue
+        }
+        else if (hi == null) {
+          val x = (lo.getKey - item) / lo.getKey
+            (1 - x) * lo.getValue
+        }
+        else {
+          val x = (item - lo.getKey) / (hi.getKey - lo.getKey)
+          x * (hi.getValue - lo.getValue) + lo.getValue
+        }
+      }
+      if (areaUnderCurve != 0) ((raw / areaUnderCurve) * totalCount).toInt
+      else 0
+    }
   }
 
   /**
     * Make a change to the distribution to approximate changing the
     * value of a particular item.
+    *
+    * Note: _min and _max are not changed by this.
     */
   def setItem(item: Double, count: Int): Unit = {
-    val oldCount = getItemCount(item)
+    val oldCount = itemCount(item)
     countItem(item, -oldCount)
     countItem(item, count)
   }
@@ -251,55 +282,71 @@ class StreamingHistogram(
   /**
     * Return an array of bucket values.
     */
-  def getValues(): Array[Double] = getBuckets.map(_._1).toArray
-  def rawValues(): Array[Double] = getValues
+  def values(): Array[Double] = buckets.map(_._1).toArray
+  def rawValues(): Array[Double] = values()
 
   /**
     * For each bucket ...
     */
   def foreach(f: (Double, Int) => Unit): Unit =
-    getBuckets.map({ case(item, count) => f(item, count) })
+    buckets.map({ case(item, count) => f(item, count) })
 
   /**
     * For each bucket label ...
     */
   def foreachValue(f: Double => Unit): Unit =
-    getBuckets.map({ case (item, _) => f(item) })
+    buckets.map({ case (item, _) => f(item) })
 
   /**
     * Generate Statistics.
     */
-  def generateStatistics(): Statistics[Double] = {
-    val dataCount = getTotalCount
-    val mean = getMean
-    val median = getMedian
-    val mode = getMode
-    val ex2 = getBuckets.map({ case(item, count) => item*item*count }).sum / getTotalCount
-    val stddev = sqrt(ex2 - mean*mean)
-    val zmin = getMinValue
-    val zmax = getMaxValue
+  def statistics(): Option[Statistics[Double]] = {
+    val zmin = minValue
+    val zmax = maxValue
 
-    Statistics[Double](dataCount, mean, median, mode, stddev, zmin, zmax)
+    if (zmin.nonEmpty && zmax.nonEmpty) {
+      val dataCount = totalCount
+      val localMean = mean.get
+      val localMedian = median.get
+      val localMode = mode.get
+      val ex2 = buckets.map({ case(item, count) => item*item*count }).sum / totalCount
+      val stddev = sqrt(ex2 - localMean * localMean)
+
+      Some(Statistics[Double](dataCount, localMean, localMedian, localMode, stddev, zmin.get, zmax.get))
+    }
+    else
+      None
   }
 
   /**
     * Update this histogram with the entries from another.
     */
-  def update(other: Histogram[Double]): Unit = {
-    require(other.isInstanceOf[StreamingHistogram])
-    this.countItems(other.asInstanceOf[StreamingHistogram].getBuckets)
+  def update(other: Histogram[Double]): Unit =
+    other.foreach({ case (item, count) => this.countItem((item, count)) })
+
+  def mutable(): StreamingHistogram = {
+    val sh = StreamingHistogram(this.m, this._min, this._max)
+    sh.countItems(this.buckets)
+    sh
   }
 
-  def mutable(): StreamingHistogram =
-    StreamingHistogram(this.m, this.buckets, this.deltas)
-
   /**
-    * Combine operator: create a new histogram from this one and
-    * another without altering either.
+    * Create a new histogram from this one and another without
+    * altering either.
     */
   def +(other: StreamingHistogram): StreamingHistogram = {
-    val sh = StreamingHistogram(this.m, this.buckets, this.deltas)
-    sh.countItems(other.getBuckets)
+    val sh = StreamingHistogram(this.m, this._min, this._max)
+    sh.countItems(this.buckets)
+    sh.countItems(other.buckets)
+    sh
+  }
+
+  def bucketCount():Int = _buckets.size
+
+  def merge(histogram: Histogram[Double]): Histogram[Double] = {
+    val sh = StreamingHistogram(this.m, this._min, this._max)
+    sh.countItems(this.buckets)
+    histogram.foreach({ (item: Double, count: Int) => sh.countItem((item, count)) })
     sh
   }
 
@@ -308,69 +355,78 @@ class StreamingHistogram(
     * by simply returning the label of most populous bucket (so this
     * answer could be really bad).
     */
-  def getMode(): Double = {
-    if (getTotalCount <= 0) doubleNODATA
+  def mode(): Option[Double] = {
+    if (totalCount <= 0)
+      None
     else
-      getBuckets.reduce({ (l,r) =>
-        if (l._2 > r._2) l; else r
-      })._1
+      Some(buckets.reduce({ (l,r) => if (l._2 > r._2) l; else r })._1)
   }
 
   /**
     * Median.
     */
-  def getMedian(): Double = getPercentile(0.50)
+  def median(): Option[Double] = {
+    if (totalCount <= 0)
+      None
+    else
+      Some(percentile(0.50))
+  }
 
   /**
     *  Mean.
     */
-  def getMean(): Double = {
-    val weightedSum =
-      getBuckets.foldLeft(0.0)({ (acc,bucket) =>
-          acc + (bucket._1 * bucket._2)
-        })
-    weightedSum / getTotalCount
+  def mean(): Option[Double] = {
+    if (totalCount <= 0)
+      None
+    else {
+      val weightedSum =
+        buckets.foldLeft(0.0)({ (acc,bucket) => acc + (bucket._1 * bucket._2) })
+      Some(weightedSum / totalCount)
+    }
   }
 
   /**
     * Return the area under the curve.
     */
-  def getAreaUnderCurve(): Double = {
-    getBuckets
+  def areaUnderCurve(): Double = {
+    buckets()
       .sliding(2)
-      .map({ case List(x,y) => computeArea(x,y) })
+      .map({
+        case List(x,y) => computeArea(x,y)
+        case List(_) => 0.0
+      })
       .sum
   }
 
   /**
     * Total number of samples used to build this histogram.
     */
-  def getTotalCount(): Int = getBuckets.map(_._2).sum
+  def totalCount(): Int = buckets.map(_._2).sum
 
   /**
     * Get the (approximate) min value.  This is only approximate
-    * because the lowest bucket may be a composite one.
+    * because the lowest bucket may be a combined one.
     */
-  def getMinValue(): Double = {
-    val entry = buckets.higherEntry(Double.NegativeInfinity)
-    if (entry != null) entry.getKey; else Double.NaN
+  def minValue(): Option[Double] = {
+    val entry = _buckets.higherEntry(Double.NegativeInfinity)
+    if (entry != null) Some(entry.getKey); else None
   }
 
   /**
     * Get the (approximate) max value.
     */
-  def getMaxValue(): Double = {
-    val entry = buckets.lowerEntry(Double.PositiveInfinity)
-    if (entry != null) entry.getKey; else Double.NaN
+  def maxValue(): Option[Double] = {
+    val entry = _buckets.lowerEntry(Double.PositiveInfinity)
+    if (entry != null) Some(entry.getKey); else None
   }
 
   /**
     * This returns a tuple of tuples, where the inner tuples contain a
     * bucket label and its percentile.
     */
-  private def getCdfIntervals(): Iterator[((Double, Double), (Double, Double))] = {
-    val bs = getBuckets
-    val n = getTotalCount
+  private def cdfIntervals(): Iterator[((Double, Double), (Double, Double))] = {
+    val bs = buckets
+    val n = totalCount
     val ds = bs.map(_._1)
     val pdf = bs.map(_._2.toDouble / n)
     val cdf = pdf.scanLeft(0.0)(_ + _).drop(1)
@@ -382,8 +438,8 @@ class StreamingHistogram(
   /**
     * Get the (approximate) percentile of this item.
     */
-  def getPercentileRanking(item: Double): Double = {
-    val data = getCdfIntervals
+  def percentileRanking(item: Double): Double = {
+    val data = cdfIntervals
     val tt = data.dropWhile(_._2._1 <= item).next
     val (d1, pct1) = tt._1
     val (d2, pct2) = tt._2
@@ -396,25 +452,37 @@ class StreamingHistogram(
     * For each q in qs, all between 0 and 1, find a number
     * (approximately) at the qth percentile.
     */
-  def getPercentileBreaks(qs: Seq[Double]): Seq[Double] = {
-    val data = getCdfIntervals
+  def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
+    val data = cdfIntervals
     qs.map({ q =>
-      val tt = data.dropWhile(_._2._2 <= q).next
-      val (d1, pct1) = tt._1
-      val (d2, pct2) = tt._2
-      val x = (q - pct1) / (pct2 - pct1)
+      if (q == 0.0) minValue().getOrElse(Double.NegativeInfinity)
+      else if (q == 1.0) maxValue().getOrElse(Double.PositiveInfinity)
+      else {
+        val tt = data.dropWhile(_._2._2 <= q).next
+        val (d1, pct1) = tt._1
+        val (d2, pct2) = tt._2
+        val x = (q - pct1) / (pct2 - pct1)
 
-      (1-x)*d1 + x*d2
+        (1-x)*d1 + x*d2
+      }
     })
   }
 
-  def getPercentile(q: Double): Double =
-    getPercentileBreaks(List(q)).head
+  def percentile(q: Double): Double =
+    percentileBreaks(List(q)).head
 
-  def getQuantileBreaks(num: Int): Array[Double] =
-    getPercentileBreaks(List.range(0,num).map(_ / num.toDouble)).toArray
+  /**
+    * This method return the (approximate) quantile breaks of the
+    * distribution of points that the histogram has seen so far.  It
+    * is guranteed that no value in the returned array will be outside
+    * the range minimum-maximum range of values seen.
+    *
+    * @param num The number of breaks desired
+    */
+  def quantileBreaks(num: Int): Array[Double] =
+    percentileBreaks(List.range(0,num).map(_ / num.toDouble)).toArray
 
-  def getBuckets(): List[BucketType] = buckets.asScala.toList
+  def buckets(): List[BucketType] = _buckets.asScala.toList
 
-  def getDeltas(): List[DeltaType] = deltas.keySet.asScala.toList
+  def deltas(): List[DeltaType] = _deltas.keySet.asScala.toList
 }

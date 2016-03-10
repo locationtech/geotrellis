@@ -17,10 +17,7 @@
 package geotrellis.raster.histogram
 
 import geotrellis.raster.summary.Statistics
-import geotrellis.raster.NODATA
-import math.{abs, round, sqrt}
 
-import spire.syntax.cfor._
 
 /**
   * Data object representing a histogram of values.
@@ -29,34 +26,41 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   /**
    * Return the number of occurances for 'item'.
    */
-  def getItemCount(item: T): Int
+  def itemCount(item: T): Int
 
   /**
    * Return the total number of occurances for all items.
    */
-  def getTotalCount(): Int
+  def totalCount(): Int
 
   /**
    * Return the smallest item seen.
    */
-  def getMinValue(): T
+  def minValue(): Option[T]
 
   /**
    * Return the largest item seen.
    */
-  def getMaxValue(): T
+  def maxValue(): Option[T]
 
   /**
    * Return the smallest and largest items seen as a tuple.
    */
-  def getMinMaxValues(): (T, T) = (getMinValue, getMaxValue)
+  def minMaxValues(): Option[(T, T)] = {
+    val min = minValue
+    val max = maxValue
+    if (min.nonEmpty && max.nonEmpty)
+      Some(min.get, max.get)
+    else
+      None
+  }
 
   /**
    * Return a mutable copy of this histogram.
    */
   def mutable(): MutableHistogram[T]
 
-  def getValues(): Array[T]
+  def values(): Array[T]
 
   def rawValues(): Array[T]
 
@@ -64,145 +68,17 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
 
   def foreachValue(f: T => Unit): Unit
 
-  def getQuantileBreaks(num: Int): Array[T]
+  def quantileBreaks(num: Int): Array[T]
 
-  def getMode(): T
+  def mode(): Option[T]
 
-  def getMedian(): T
+  def median(): Option[T]
 
-  def getMean(): Double
+  def mean(): Option[Double]
 
-  def generateStatistics(): Statistics[T]
+  def statistics(): Option[Statistics[T]]
 
-  def toJSON = {
-    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
-    s"[$counts]"
-  }
-}
+  def bucketCount(): Int
 
-abstract trait HistogramInt extends Histogram[Int] {
-  def foreach(f: (Int, Int) => Unit): Unit = {
-    getValues.foreach(z => f(z, getItemCount(z)))
-  }
-
-  def getMode(): Int = {
-    if(getTotalCount == 0) { return NODATA }
-    val values = getValues()
-    var mode = values(0)
-    var count = getItemCount(mode)
-    val len = values.length
-    cfor(1)(_ < len, _ + 1) { i =>
-      val z = values(i)
-      val c = getItemCount(z)
-      if (c > count) {
-        count = c
-        mode = z
-      }
-    }
-    mode
-  }
-
-  def getMedian() = if (getTotalCount == 0) {
-    NODATA
-  } else {
-    val values = getValues()
-    val middle: Int = getTotalCount() / 2
-    var total = 0
-    var i = 0
-    while (total <= middle) {
-      total += getItemCount(values(i))
-      i += 1
-    }
-    values(i-1)
-  }
-
-  def getMean(): Double = {
-    if(getTotalCount == 0) { return NODATA }
-
-    val values = rawValues()
-    var mean = 0.0
-    var total = 0.0
-    val len = values.length
-
-    cfor(0)(_ < len, _ + 1) { i =>
-      val value = values(i)
-      val count = getItemCount(value)
-      val delta = value - mean
-      total += count
-      mean += (count * delta) / total
-    }
-    mean
-  }
-
-  def generateStatistics() = {
-    val values = getValues()
-    if (values.length == 0) {
-      Statistics.EMPTYInt
-    } else {
-
-      var dataCount: Long = 0
-
-      var mode = 0
-      var modeCount = 0
-
-      var mean = 0.0
-      var total = 0
-
-      var median = 0
-      var needMedian = true
-      val limit = getTotalCount() / 2
-
-      val len = values.length
-
-      cfor(0)(_ < len, _ + 1) { i =>
-        val value = values(i)
-        val count = getItemCount(value)
-        dataCount = dataCount + count
-        if (count != 0) {
-          // update the mode
-          if (count > modeCount) {
-            mode = value
-            modeCount = count
-          }
-
-          // update the mean
-          val delta = value - mean
-          total += count
-          mean += (count * delta) / total
-
-          // update median if needed
-          if (needMedian && total > limit) {
-            median = values(i)
-            needMedian = false
-          }
-        }
-      }
-
-      // find the min value
-      val zmin = values(0)
-
-      // find the max value
-      val zmax = values(len - 1)
-
-      // find stddev
-      total = 0
-      var mean2 = 0.0
-      cfor(0)(_ < len, _ + 1) { i =>
-        val value = values(i)
-        val count = getItemCount(value)
-
-        if (count > 0) {
-          val x = value - mean
-          val y = x * x
-
-          val delta = y - mean2
-          total += count
-          mean2 += (count * delta) / total
-        }
-      }
-      val stddev = sqrt(mean2)
-
-      Statistics[Int](dataCount, mean, median, mode, stddev, zmin, zmax)
-    }
-  }
+  def merge(histogram: Histogram[T]): Histogram[T]
 }

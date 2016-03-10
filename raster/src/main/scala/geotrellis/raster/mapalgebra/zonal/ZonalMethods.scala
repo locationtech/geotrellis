@@ -8,19 +8,19 @@ import geotrellis.util.MethodExtensions
 
 trait ZonalMethods extends MethodExtensions[Tile] {
   def zonalHistogramInt(zones: Tile): Map[Int, Histogram[Int]] =
-    ZonalHistogramInt(self, zones)
+    IntZonalHistogram(self, zones)
 
   def zonalStatisticsInt(zones: Tile): Map[Int, Statistics[Int]] =
-    ZonalHistogramInt(self, zones)
-      .map { case (zone: Int, hist: Histogram[Int]) => (zone -> hist.generateStatistics) }
+    IntZonalHistogram(self, zones)
+      .map { case (zone: Int, hist: Histogram[Int]) => (zone -> hist.statistics.get) }
       .toMap
 
   def zonalHistogramDouble(zones: Tile): Map[Int, Histogram[Double]] =
-    ZonalHistogramDouble(self, zones)
+    DoubleZonalHistogram(self, zones)
 
   def zonalStatisticsDouble(zones: Tile): Map[Int, Statistics[Double]] =
-    ZonalHistogramDouble(self, zones)
-      .map { case (zone: Int, hist: Histogram[Double]) => (zone -> hist.generateStatistics) }
+    DoubleZonalHistogram(self, zones)
+      .map { case (zone: Int, hist: Histogram[Double]) => (zone -> hist.statistics.get) }
       .toMap
 
   def zonalPercentage(zones: Tile): Tile =
