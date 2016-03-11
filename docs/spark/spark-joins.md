@@ -1,13 +1,13 @@
 # GeoTrellis Spark Joins
 
-![visualized joins](../img/SQL_joins.png)
-
 In `geotrellis.spark` we represent a raster layer as a distributed
 collection of non-overlapping tiles indexed by keys according to some
 `TileLayout`. For instance a raster layer is represented as
 `RDD[(SpatialKey, Tile)]`. With this setup, we can represent certain
 decisions about how operations between layers should be performed in
 terms of the sort of 'join' to be performed.
+
+![visualized joins](../img/SQL_Joins.png)
 
 First, we'll set the stage for a discussion of joins in
 `geotrellis.spark` with a discussion of how metadata is used in this

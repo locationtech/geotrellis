@@ -23,7 +23,7 @@ GeoTrellis.
   - [raster input/output](raster/raster-io.md) // planned
   - [rendering](raster/rendering.md)
   - [resampling](raster/resampling.md)
-- [geotrellis.slick](spark/slick-intro.md) // planned
+- [geotrellis.slick](spark/slick-intro.md)
 - [geotrellis.spark](spark/spark-intro.md)
   - [indexing with the hilbert curve](spark/hilbert-index.md)
   - [working with joins](spark/spark-joins.md)
