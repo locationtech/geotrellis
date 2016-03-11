@@ -25,8 +25,8 @@ import geotrellis.vector.Extent
 import org.apache.spark.rdd._
 
 
-abstract class RasterRDDCropMethods[K: SpatialComponent] extends MethodExtensions[RasterRDD[K]] {
-  def crop(extent: Extent, options: Options): RasterRDD[K] = {
+abstract class TileLayerRDDCropMethods[K: SpatialComponent] extends MethodExtensions[TileLayerRDD[K]] {
+  def crop(extent: Extent, options: Options): TileLayerRDD[K] = {
     val md = self.metadata
     val mt = md.mapTransform
     val rdd = self
@@ -46,5 +46,5 @@ abstract class RasterRDDCropMethods[K: SpatialComponent] extends MethodExtension
     ContextRDD(rdd, md)
   }
 
-  def crop(extent:Extent): RasterRDD[K] = crop(extent, Options.DEFAULT)
+  def crop(extent:Extent): TileLayerRDD[K] = crop(extent, Options.DEFAULT)
 }

@@ -6,7 +6,7 @@ import geotrellis.raster.mapalgebra.focal._
 import geotrellis.util.MethodExtensions
 
 
-trait FocalRasterRDDMethods[K] extends FocalOperation[K] {
+trait FocalTileLayerRDDMethods[K] extends FocalOperation[K] {
 
   def focalSum(n: Neighborhood) = focal(n) { (tile, bounds) => Sum(tile, n, bounds) }
   def focalMin(n: Neighborhood) = focal(n) { (tile, bounds) => Min(tile, n, bounds) }

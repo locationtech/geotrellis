@@ -21,7 +21,7 @@ trait OpAsserter {self: TestEnvironment =>
     layoutRows: Int = 3
   )(
     rasterOp: (Tile, RasterExtent) => Tile,
-    sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+    sparkOp: TileLayerRDD[SpatialKey] => TileLayerRDD[SpatialKey],
     asserter: (Tile, Tile) => Unit = tilesEqual
   ) = {
     val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile
@@ -34,11 +34,11 @@ trait OpAsserter {self: TestEnvironment =>
     layoutRows: Int = 3
   )(
     rasterOp: (Tile, RasterExtent) => Tile,
-    sparkOp: RasterRDD[SpatialKey] => RasterRDD[SpatialKey],
+    sparkOp: TileLayerRDD[SpatialKey] => TileLayerRDD[SpatialKey],
     asserter: (Tile, Tile) => Unit = tilesEqual
   ) = {
     val (tile, rasterRDD) = 
-      createRasterRDD(
+      createTileLayerRDD(
         input,
         layoutCols,
         layoutRows

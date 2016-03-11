@@ -4,7 +4,7 @@ import geotrellis.spark.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.focal.hillshade._
 import geotrellis.raster.mapalgebra.focal._
 
-trait HillshadeRasterRDDMethods[K] extends FocalOperation[K] {
+trait HillshadeTileLayerRDDMethods[K] extends FocalOperation[K] {
   def hillshade(azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1) = {
     val n = Square(1)
     focalWithCellSize(n) { (tile, bounds, cellSize) =>

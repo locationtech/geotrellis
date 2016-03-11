@@ -9,7 +9,7 @@ import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
-class SpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]] {
+class SpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
-    HadoopLayerWriter(props("path")).writer[SpaceTimeKey, Tile, RasterMetadata[SpaceTimeKey]](method)
+    HadoopLayerWriter(props("path")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](method)
 }

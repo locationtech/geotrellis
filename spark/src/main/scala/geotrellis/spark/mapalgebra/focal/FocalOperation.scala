@@ -31,21 +31,21 @@ object FocalOperation {
       (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
     mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
 
-  def apply[K: SpatialComponent: ClassTag](rasterRDD: RasterRDD[K], neighborhood: Neighborhood)
-      (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
+  def apply[K: SpatialComponent: ClassTag](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood)
+      (calc: (Tile, Option[GridBounds]) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>
       apply(rdd, neighborhood, rasterRDD.metaData.gridBounds)(calc)
     }
 }
 
-abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
 
   def focal(n: Neighborhood)
-      (calc: (Tile, Option[GridBounds]) => Tile): RasterRDD[K] =
+      (calc: (Tile, Option[GridBounds]) => Tile): TileLayerRDD[K] =
     FocalOperation(self, n)(calc)
 
   def focalWithCellSize(n: Neighborhood)
-      (calc: (Tile, Option[GridBounds], CellSize) => Tile): RasterRDD[K] = {
+      (calc: (Tile, Option[GridBounds], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metaData.layout.cellSize
     FocalOperation(self, n){ (tile, bounds) =>
       calc(tile, bounds, cellSize)

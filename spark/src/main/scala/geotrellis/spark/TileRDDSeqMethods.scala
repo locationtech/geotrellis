@@ -6,6 +6,6 @@ import scala.reflect.ClassTag
 import org.apache.spark.rdd.RDD
 
 
-trait RasterRDDSeqMethods[K] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
+trait TileLayerRDDSeqMethods[K] extends MethodExtensions[Traversable[RDD[(K, Tile)]]] {
   implicit val keyClassTag: ClassTag[K]
 }

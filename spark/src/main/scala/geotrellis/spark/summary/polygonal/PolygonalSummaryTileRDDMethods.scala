@@ -12,7 +12,7 @@ import org.apache.spark.rdd._
 import reflect.ClassTag
 
 
-abstract class PolygonalSummaryRasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+abstract class PolygonalSummaryTileLayerRDDMethods[K: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
   import Implicits._
   protected implicit val _sc: SpatialComponent[K]
 

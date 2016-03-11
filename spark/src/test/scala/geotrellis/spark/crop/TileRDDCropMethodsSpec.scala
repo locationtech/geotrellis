@@ -7,13 +7,13 @@ import geotrellis.vector.Extent
 import org.scalatest.FunSpec
 
 
-class RasterRDDCropMethodsSpec extends FunSpec with TestEnvironment {
+class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
 
-  describe("RasterRDD Crop Methods") {
+  describe("TileLayerRDD Crop Methods") {
     val path = "raster-test/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
-    val (_, rdd) = createRasterRDD(originalRaster, 5, 5, gt.crs)
+    val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val md = rdd.metadata
     val overall = md.extent
     val Extent(xmin, ymin, xmax, ymax) = overall

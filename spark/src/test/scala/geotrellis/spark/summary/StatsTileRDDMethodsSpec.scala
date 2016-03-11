@@ -12,12 +12,12 @@ import org.scalatest.FunSpec
 
 import collection._
 
-class StatsRasterRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
+class StatsTileLayerRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("RDD Stats Method Operations") {
 
     it("gives correct class breaks for example raster histogram") {
-      val rdd = createRasterRDD(
+      val rdd = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           1, 1, 1,  1, 1, 1,  1, 1, 1,
@@ -40,7 +40,7 @@ class StatsRasterRDDMethodsSpec extends FunSpec with TestEnvironment with TestFi
     }
 
     it("should find integer min/max of AllOnesTestFile") {
-      val ones: RasterRDD[SpatialKey] = AllOnesTestFile
+      val ones: TileLayerRDD[SpatialKey] = AllOnesTestFile
       val (min, max) = ones.minMax
 
       min should be (1)
@@ -58,7 +58,7 @@ class StatsRasterRDDMethodsSpec extends FunSpec with TestEnvironment with TestFi
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(sc, tile, tileLayout)
+      val rdd = createTileLayerRDD(sc, tile, tileLayout)
 
       val (min, max) = rdd.minMax
 
@@ -77,7 +77,7 @@ class StatsRasterRDDMethodsSpec extends FunSpec with TestEnvironment with TestFi
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(sc, tile, tileLayout)
+      val rdd = createTileLayerRDD(sc, tile, tileLayout)
 
       val (min, max) = rdd.minMaxDouble
 

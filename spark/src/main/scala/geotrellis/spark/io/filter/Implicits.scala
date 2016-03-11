@@ -10,6 +10,6 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRasterRDDFilterMethods[K: Boundable : ClassTag, V: ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
-      extends RasterRDDFilterMethods[K, V, M]
+  implicit class withTileLayerRDDFilterMethods[K: Boundable : ClassTag, V: ClassTag, M](val self: RDD[(K, V)] with Metadata[M])
+      extends TileLayerRDDFilterMethods[K, V, M]
 }

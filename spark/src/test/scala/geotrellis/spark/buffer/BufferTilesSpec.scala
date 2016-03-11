@@ -29,7 +29,7 @@ class BufferTilesSpec extends FunSpec with TestEnvironment {
     val path = "raster-test/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
-    val (_, wholeRdd) = createRasterRDD(originalRaster, 5, 5, gt.crs)
+    val (_, wholeRdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val metadata = wholeRdd.metadata
 
     it("should work when the RDD is a diagonal strip") {

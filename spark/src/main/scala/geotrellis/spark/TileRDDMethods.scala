@@ -6,7 +6,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 
-abstract class RasterRDDMethods[K: ClassTag] extends MethodExtensions[RasterRDD[K]] {
+abstract class TileLayerRDDMethods[K: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
   def convert(cellType: CellType) =
     ContextRDD(
       self.mapValues(_.convert(cellType)),
