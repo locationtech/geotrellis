@@ -1,20 +1,26 @@
-# GeoTrellis Spark Raster Operations
+# GeoTrellis Spark Joins
+
+![visualized joins](../img/SQL_joins.png)
 
 In `geotrellis.spark` we represent a raster layer as a distributed
 collection of non-overlapping tiles indexed by keys according to some
-`TileLayout`. For instance a spatial raster is represented as
-`RDD[(SpatialKey, Tile)]` where `SpatialKey(col: Int, row: Int)` from
-a `TileLayout`. In this setup we represent operations between raster
-layers as a join.
+`TileLayout`. For instance a raster layer is represented as
+`RDD[(SpatialKey, Tile)]`. With this setup, we can represent certain
+decisions about how operations between layers should be performed in
+terms of the sort of 'join' to be performed.
+
+First, we'll set the stage for a discussion of joins in
+`geotrellis.spark` with a discussion of how metadata is used in this
+context.
 
 ## Metadata
 
-A previously tiled and saved GeoTrellis Raster RDD read in through an
-instance of geotrellis.spark.io.LayerReader will be mixed in with the
-Metadata[RasterMetaData] trait. This metadata describes the TileLayout
+A previously tiled and saved `RasterRDD` read in through an
+instance of `geotrellis.spark.io.LayerReader` will be mixed in with the
+`Metadata[RasterMetaData]` trait. This metadata describes the TileLayout
 used by the layer, the extent it covers, the CRS of its projection,
-and what the CellType of each tile is. This metadata allows you to
-verify that you are working with compatible layers.
+and what the CellType of each tile is. This metadata allows us to
+verify that we're working with compatible layers.
 
 ```scala
 import org.apache.spark._
@@ -41,14 +47,15 @@ val rdd3: RasterRDD[SpaitalKey] =
   reader.read(getLayerId(3))
 ```
 
-## Operations
 
-GeoTrellis provides API for interaction with RDDs of tiles as a single
-unit. We follow a pattern of providing symbolic methods where their
-meaning if obvious and explicit method names in all cases.
+## Default Joins
+
+GeoTrellis provides an API for interaction with RDDs of tiles as a single
+unit. Where possible, we attempt to provide symbolic methods where their
+meaning is obvious and explicit method names in *all* cases.
 
 ```scala
-import geotrellis.spark.op.local._
+import geotrellis.spark.mapalgebra.local._
 
  rdd1 + 1           // add 1 to every cell in the tiled raster
  rdd1 localAdd 1    // explicit method name for above operation
@@ -58,22 +65,22 @@ import geotrellis.spark.op.local._
  // all results are of type RDD[(SpatialKey, Tile)]
 ```
 
-Other supported operations can been seen `geotrellis.spark.op._`
-package and it's sub-packages.
+Other supported operations can been found in the
+`geotrellis.spark.mapalgebra` package and its sub-packages.
 
-In order to provide this concise and intuitive syntax for map
-algebra operations between two layers some assumptions need to
-be made regarding the mechanics of the join. Specifically by
-default GeoTrellis will use spark implementation of inner join
-deferring to spark to producer appropriate partitioner for the
-result. Thus if two layers being operated on are not aligned the
-result of the operation will contain only the intersecting tiles.
+In order to provide this concise and intuitive syntax for map algebra
+operations between two layers some assumptions need to be made regarding
+the mechanics of the join. So, by default, GeoTrellis will use the spark
+implementation of inner join deferring to spark for the production of an
+appropriate partitioner for the result. Thus, if two layers being
+operated on are not aligned the result of the operation will contain
+**only** the intersecting tiles.
 
-### Explicit Joins
+## Explicit Joins
 
 In cases where it is important to control the type of join a more
-explicit manner is required. We make direct call to
-`geotrellis.raster.op.local.Add` object to perform per tile operations.
+explicit method is required. We make a direct call to
+`geotrellis.raster.mapalgebra.local.Add.apply` to perform per tile operations.
 
 Because all binary operations must have the shape of `(V, V) => R`
 we provide an extension method on `RDD[(K, (V, V))]` that decomposes
@@ -82,7 +89,7 @@ taking two arguments.
 
 
 ```scala
-import geotrellis.raster.op.local._
+import geotrellis.raster.mapalgebra.local._
 
 // using spark API
 rdd1.join(rdd2).mapValues { case (tile1: Tile, tile2: Tile) => Add(tile1, tile2) }
@@ -118,13 +125,13 @@ rdd1.leftOuterJoin(rdd2).updateValues(Add(_, _))
 Given that we know the key bounds of our RDD, from accompanying
 `RasterMetaData`, before performing the join we may use a spark
 `Partitioner` that performs space partitioning. Such a partitioner
-has a number of benefits over standard `HashPartitioenr`:
+has a number of benefits over standard `HashPartitioner`:
 
 - Scales the number of partitions with the number of records in the RDD
 - Produces partitions with spatial locality which allow:
-- Faster focal operations
-- Shuffle free joins with other spatially partitioned RDDs
-- Efficient spatial region filtering
+    - Faster focal operations
+    - Shuffle free joins with other spatially partitioned RDDs
+    - Efficient spatial region filtering
 
 Because the partitioner requires ability to extract `Bounds` of the
 original RDD from it's `Metadata` it is able to provide the `Bounds`

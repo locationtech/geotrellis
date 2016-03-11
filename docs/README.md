@@ -9,12 +9,13 @@ to help you grapple with the various components which make up
 GeoTrellis.
 
 
-## Contributing to Geotrellis
+![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
 
 ## Index of package-specific documentation
 
 - [geotrellis.etl](etl/etl-intro.md)
 - [geotrellis.proj4](proj4/proj4-intro.md) // incomplete
+- [geotrellis.macros](macros/macros-intro.md)
 - [geotrellis.raster](raster/raster-intro.md)
   - [cell types](raster/celltype.md)
   - [cloud removal](raster/cloud-removal.md)
@@ -23,13 +24,12 @@ GeoTrellis.
   - [rendering](raster/rendering.md)
   - [resampling](raster/resampling.md)
 - [geotrellis.slick](spark/slick-intro.md) // planned
-- [geotrellis.spark](spark/spark-intro.md) // planned
+- [geotrellis.spark](spark/spark-intro.md)
   - [indexing with the hilbert curve](spark/hilbert-index.md)
-  - [map algebra (on spark)](spark/map-algebra.md)
+  - [working with joins](spark/spark-joins.md)
+  - [spark input/output](spark/spark-io.md)
 - [geotrellis.spark-etl](spark/spark-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)
   - [geojson support](vector/geojson-support.md)
   - [kriging interpolation](vector/kriging-interpolation.md)
-
-![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
 

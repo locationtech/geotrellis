@@ -1,23 +1,21 @@
-
 package geotrellis.spark.io
 
 import geotrellis.spark.{Boundable, KeyBounds}
 
 /**
- * Accumulation of [[RDDFilter]]s that will be asked to filter layer [[KeyBounds]]
- *
- * @tparam K  Type of key for the RDD being filtered
- * @tparam M  Type of metadata used for filtering
-
- */
+  * Accumulation of [[RDDFilter]]s that will be asked to filter layer [[KeyBounds]]
+  *
+  * @tparam K  Type of key for the RDD being filtered
+  * @tparam M  Type of metadata used for filtering
+  */
 class RDDQuery[K: Boundable, M](
   filterChain: ( (M, List[KeyBounds[K]]) ) => (M, List[KeyBounds[K]]) = { x: (M, List[KeyBounds[K]]) => x }) {
 
   /**
-   * @param metadata RasterMetaData of the layer being queried
-   * @param keyBounds Maximum [[KeyBounds]] of the layer
-   * @return A sequence of [[KeyBounds]] that cover the queried region
-   */
+    * @param metadata RasterMetaData of the layer being queried
+    * @param keyBounds Maximum [[KeyBounds]] of the layer
+    * @return A sequence of [[KeyBounds]] that cover the queried region
+    */
   def apply(metadata: M, keyBounds: KeyBounds[K]): Seq[KeyBounds[K]] = {
     val (_, keyBoundsList) = filterChain((metadata, List(keyBounds)))
     keyBoundsList
@@ -40,8 +38,8 @@ class RDDQuery[K: Boundable, M](
 }
 
 /**
- * Wrapper for [[RDDQuery]] that binds it to some function that is able to produce a [[geotrellis.spark.RasterRDD]].
- */
+  * Wrapper for [[RDDQuery]] that binds it to some function that is able to produce a [[geotrellis.spark.RasterRDD]].
+  */
 class BoundRDDQuery[K, M, ReturnType](query: RDDQuery[K, M], f: RDDQuery[K, M] => ReturnType) {
   def where[F, T](params: RDDFilter.Expression[F, T])(implicit ev: RDDFilter[K, F, T, M]): BoundRDDQuery[K, M, ReturnType] =
     new BoundRDDQuery(query.where(params), f)
