@@ -13,7 +13,7 @@ object TestFiles extends Logging {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 
-  def generateSpatial(layerName: String)(implicit sc: SparkContext): RasterRDD[SpatialKey] = {
+  def generateSpatial(layerName: String)(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = {
     val md = {
       val cellType = FloatConstantNoDataCellType
       val crs = LatLng
@@ -22,7 +22,7 @@ object TestFiles extends Logging {
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
       val keyBounds = KeyBounds(SpatialKey(1,1), SpatialKey(6,7))
-      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
+      TileLayerMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
     val gridBounds = md.gridBounds
@@ -53,7 +53,7 @@ object TestFiles extends Logging {
     new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 
-  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RasterRDD[SpaceTimeKey] = {
+  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = {
     val times =
       (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
 
@@ -66,7 +66,7 @@ object TestFiles extends Logging {
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
       val keyBounds = KeyBounds(SpaceTimeKey(1,1,times.min), SpaceTimeKey(6,7, times.max))
-      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
+      TileLayerMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
     val gridBounds = md.gridBounds

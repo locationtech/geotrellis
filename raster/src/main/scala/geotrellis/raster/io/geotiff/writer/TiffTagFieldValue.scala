@@ -116,9 +116,9 @@ object TiffTagFieldValue {
     // Not written (what goes here?):
     //GeoKeyDirectory ASCII     TagCodes.GeoAsciiParamsTag, TiffFieldType.AsciisFieldType, N = Number of Characters (pipe sparated |), GeoKeyAsciis _
 
-    // GDAL MetaData
-    val metaData = toBytes(new scala.xml.PrettyPrinter(80, 2).format(geoTiff.tags.toXml))
-    fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metaData.length, metaData)
+    // GDAL Metadata
+    val metadata = toBytes(new scala.xml.PrettyPrinter(80, 2).format(geoTiff.tags.toXml))
+    fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metadata.length, metadata)
 
     // Tags that are different if it is striped or tiled storage, and a function
     // that sets up a tag to point to the offsets of the image data.

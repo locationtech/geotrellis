@@ -70,7 +70,7 @@ res1: Double = 5.666666666666667
 Throughout this repo, you'll find readme documents specific to particular the modules in which they're found.
 
 1. [deploy-ec2](./scripts/deploy-ec2) - deploying GeoTrellis on AWS EC2
-2. [`geotrellis.graph`](./graph) - experimental code for converting to/from RasterRDDs and GraphX
+2. [`geotrellis.graph`](./graph) - experimental code for converting to/from TileLayerRDDs and GraphX
 3. [`geotrellis.proj4`](./proj4/src/main/scala/geotrellis/proj4) - converting raster data between projections
 4. [`geotrellis.raster`](./raster/src/main/scala/geotrellis/raster) - documentation about creating and using raster data
   1. [`geotrellis.raster.imagery`](./raster/src/main/scala/geotrellis/raster/imagery) - cloud removal with multi-band imagery

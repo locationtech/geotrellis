@@ -1,6 +1,6 @@
 package geotrellis.spark.etl
 
-import geotrellis.spark.{Metadata, LayerId, RasterRDD}
+import geotrellis.spark.{Metadata, LayerId, TileLayerRDD}
 import geotrellis.spark.io.{Writer, AttributeStore}
 import geotrellis.spark.io.index.KeyIndexMethod
 

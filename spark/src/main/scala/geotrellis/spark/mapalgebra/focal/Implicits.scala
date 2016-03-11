@@ -7,7 +7,7 @@ import reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits  {
-  implicit class withFocalRasterRDDMethods[K](val self: RasterRDD[K])
+  implicit class withFocalTileLayerRDDMethods[K](val self: TileLayerRDD[K])
     (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
-      extends FocalRasterRDDMethods[K]
+      extends FocalTileLayerRDDMethods[K]
 }

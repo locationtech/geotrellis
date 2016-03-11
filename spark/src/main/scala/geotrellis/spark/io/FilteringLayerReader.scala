@@ -22,7 +22,7 @@ abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
     *                        do not match the indexes of the query key bounds. This can include keys that
     *                        are not inside the query key bounds.
     * @tparam K              Type of RDD Key (ex: SpatialKey)
-    * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+    * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
     * @tparam M              Type of Metadata associated with the RDD[(K,V)]
 
     */

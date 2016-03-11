@@ -35,7 +35,7 @@ object AttributeStore {
     val metadataBlob = "metadata"
     val header = "header"
     val keyIndex = "keyIndex"
-    val metaData = "metadata"
+    val metadata = "metadata"
     val schema = "schema"
   }
 }
@@ -60,7 +60,7 @@ trait BlobLayerAttributeStore extends AttributeStore {
     cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.header).convertTo[H]
 
   def readMetadata[M: JsonFormat](id: LayerId): M =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metaData).convertTo[M]
+    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metadata).convertTo[M]
 
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
     cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.keyIndex).convertTo[KeyIndex[K]]
@@ -72,7 +72,7 @@ trait BlobLayerAttributeStore extends AttributeStore {
     val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
     LayerAttributes(
       blob.fields(Fields.header).convertTo[H],
-      blob.fields(Fields.metaData).convertTo[M],
+      blob.fields(Fields.metadata).convertTo[M],
       blob.fields(Fields.keyIndex).convertTo[KeyIndex[K]],
       blob.fields(Fields.schema).convertTo[Schema]
     )
@@ -82,7 +82,7 @@ trait BlobLayerAttributeStore extends AttributeStore {
     cacheWrite(id, Fields.metadataBlob,
       JsObject(
         Fields.header -> header.toJson,
-        Fields.metaData -> metadata.toJson,
+        Fields.metadata -> metadata.toJson,
         Fields.keyIndex -> keyIndex.toJson,
         Fields.schema -> schema.toJson
       )
@@ -97,7 +97,7 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
     cacheRead[H](id, Fields.header)
 
   def readMetadata[M: JsonFormat](id: LayerId): M =
-    cacheRead[M](id, Fields.metaData)
+    cacheRead[M](id, Fields.metadata)
 
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
     cacheRead[KeyIndex[K]](id, Fields.keyIndex)
@@ -116,7 +116,7 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
 
   def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema) = {
     cacheWrite(id, Fields.header, header)
-    cacheWrite(id, Fields.metaData, metadata)
+    cacheWrite(id, Fields.metadata, metadata)
     cacheWrite(id, Fields.keyIndex, keyIndex)
     cacheWrite(id, Fields.schema, schema)
   }

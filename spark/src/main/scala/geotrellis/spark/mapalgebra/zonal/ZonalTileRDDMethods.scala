@@ -27,21 +27,21 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
     res
   }
 
-  def zonalHistogram(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram[Int]] = {
+  def zonalHistogram(zonesTileLayerRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram[Int]] = {
     partitioner
-      .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
+      .fold(self.join(zonesTileLayerRDD))(self.join(zonesTileLayerRDD, _))
       .map((t: (K, (Tile, Tile))) => ZonalHistogramInt(t._2._1, t._2._2))
       .fold(Map[Int, Histogram[Int]]())(mergeMaps)
   }
 
-  def zonalPercentage(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
+  def zonalPercentage(zonesTileLayerRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val sc = self.sparkContext
-    val zoneHistogramMap = zonalHistogram(zonesRasterRDD, partitioner)
+    val zoneHistogramMap = zonalHistogram(zonesTileLayerRDD, partitioner)
     val zoneSumMap = zoneHistogramMap.map { case (k, v) => k -> v.getTotalCount }
     val bcZoneHistogramMap = sc.broadcast(zoneHistogramMap)
     val bcZoneSumMap = sc.broadcast(zoneSumMap)
 
-    self.combineValues(zonesRasterRDD, partitioner) { case (tile, zone) =>
+    self.combineValues(zonesTileLayerRDD, partitioner) { case (tile, zone) =>
       val zhm = bcZoneHistogramMap.value
       val zsm = bcZoneSumMap.value
 

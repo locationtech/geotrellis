@@ -3,7 +3,7 @@ package geotrellis.spark.mapalgebra.local
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.RasterRDD
+import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testfiles._
 
 import com.github.nscala_time.time.Imports.DateTime
@@ -23,7 +23,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 0 else z + 1)
       rasterShouldBeInt(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) 0 else 2)
@@ -41,7 +41,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)  // size should be 4
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createSpaceTimeRasterRDD(Array((tile, new DateTime())), tileLayout)
+      val rdd = createSpaceTimeTileLayerRDD(Array((tile, new DateTime())), tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 42 else 42)  // All values are 4
       rasterShouldBe(result, 42, 4)
@@ -59,7 +59,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 0 else z + 1)
       rasterShouldBe(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) 0.0 else 2.0)
@@ -77,7 +77,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)  // size should be 4
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createSpaceTimeRasterRDD(Array((tile, new DateTime())), tileLayout)
+      val rdd = createSpaceTimeTileLayerRDD(Array((tile, new DateTime())), tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 1000 else z * 10)  // All values are 4
       rasterShouldBe(result, minMax=(10, 1000))
@@ -95,7 +95,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(sc, tile, tileLayout)
+      val rdd = createTileLayerRDD(sc, tile, tileLayout)
 
       val result = rdd.localMapDouble((z: Double) => if (isNoData(z)) 0.0 else z + 1.0)
       rasterShouldBeInt(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) 0 else 2)
@@ -113,7 +113,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMapDouble((z: Double) => if (isNoData(z)) 0.0 else z + 0.3)
       rasterShouldBe(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) 0 else 1.8)
@@ -132,7 +132,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMapIfSet((z: Int) => z + 1)
       rasterShouldBeInt(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) NODATA else 2)
@@ -150,7 +150,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMapIfSet((z: Int) => z + 1)
       // for some reason this is being converted to a double raster tile
@@ -169,7 +169,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMapIfSetDouble((z: Double) => z + 1.0)
       rasterShouldBeInt(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) NODATA else 2)
@@ -187,7 +187,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createRasterRDD(tile, tileLayout)
+      val rdd = createTileLayerRDD(tile, tileLayout)
 
       val result = rdd.localMapIfSetDouble((z: Double) => z + 0.3)
       rasterShouldBe(result, (x: Int, y: Int) => if ((x == 0 && y == 0) || (x == 3 && y == 3)) Double.NaN else 1.8)

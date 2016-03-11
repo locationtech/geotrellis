@@ -48,7 +48,7 @@ class ZipCompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress aspect.tif with Zip correctly") {
-      val tile = SingleBandGeoTiff("raster-test/data/aspect.tif").tile
+      val tile = SinglebandGeoTiff("raster-test/data/aspect.tif").tile
 
       val compressedTile = tile.compress(Zip)
 
@@ -60,7 +60,7 @@ class ZipCompressedTileSpec extends FunSpec
     }
 
     it("should compress and decompress slope.tif with Zip correctly") {
-      val tile = SingleBandGeoTiff("raster-test/data/slope.tif").tile
+      val tile = SinglebandGeoTiff("raster-test/data/slope.tif").tile
 
       val compressedTile = tile.compress(Zip)
 
