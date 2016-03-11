@@ -10,14 +10,14 @@ import org.joda.time._
 /** Read single band GeoTiff from S3
   *
   * This can be configured with the hadoop configuration by providing:
-  * TemporalMultiBandGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalMultiBandGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * TemporalMultibandGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
+  * TemporalMultibandGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
   */
-class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, MultiBandTile] {
+class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new S3RecordReader[TemporalProjectedExtent, MultiBandTile] {
+    new S3RecordReader[TemporalProjectedExtent, MultibandTile] {
       def read(key: String, bytes: Array[Byte]) = {
-        val geoTiff = MultiBandGeoTiff(bytes)
+        val geoTiff = MultibandGeoTiff(bytes)
 
         val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
         val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)

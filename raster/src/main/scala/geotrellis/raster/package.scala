@@ -30,7 +30,7 @@ package object raster
     with reproject.Implicits {
   type CellType = DataType with NoDataHandling
   type SingleBandRaster = Raster[Tile]
-  type MultiBandRaster = Raster[MultiBandTile]
+  type MultibandRaster = Raster[MultibandTile]
 
   // Implicit conversion for unsigned integer celltypes; they are represented as 32bit floats
   implicit def unsignedIntIsFloat(uintCellType: UIntCells with NoDataHandling) =
@@ -85,20 +85,20 @@ package object raster
       with reproject.SingleBandTileReprojectMethods
       with resample.SingleBandTileResampleMethods
 
-  implicit class withMultiBandTileMethods(val self: MultiBandTile) extends MethodExtensions[MultiBandTile]
-      with crop.MultiBandTileCropMethods
-      with merge.MultiBandTileMergeMethods
-      with prototype.MultiBandTilePrototypeMethods
-      with reproject.MultiBandTileReprojectMethods
-      with resample.MultiBandTileResampleMethods
+  implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
+      with crop.MultibandTileCropMethods
+      with merge.MultibandTileMergeMethods
+      with prototype.MultibandTilePrototypeMethods
+      with reproject.MultibandTileReprojectMethods
+      with resample.MultibandTileResampleMethods
 
   implicit class withSingleBandRasterMethods(val self: SingleBandRaster) extends MethodExtensions[SingleBandRaster]
       with reproject.SingleBandRasterReprojectMethods
       with resample.SingleBandRasterResampleMethods
 
-  implicit class withMultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
-      with reproject.MultiBandRasterReprojectMethods
-      with resample.MultiBandRasterResampleMethods
+  implicit class withMultibandRasterMethodExtensions(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
+      with reproject.MultibandRasterReprojectMethods
+      with resample.MultibandRasterResampleMethods
 
   implicit class SingleBandRasterAnyRefMethods(val self: SingleBandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =

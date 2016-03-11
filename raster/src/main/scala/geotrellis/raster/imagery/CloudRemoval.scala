@@ -32,7 +32,7 @@ object CloudRemoval {
     result
   }
 
-  def cloudRemovalMultiBand(images: Array[MultiBandTile], threshold: Int): MultiBandTile = {
+  def cloudRemovalMultiband(images: Array[MultibandTile], threshold: Int): MultibandTile = {
     val numBands = images(0).bandCount
     val numImages = images.length
 
@@ -47,11 +47,11 @@ object CloudRemoval {
       cloudlessTiles(i) = cloudRemovalSingleBand(singleTiles, threshold)
     }
 
-    ArrayMultiBandTile(cloudlessTiles)
+    ArrayMultibandTile(cloudlessTiles)
   }
 
-  def cloudRemovalMultiBand(images: Array[MultiBandTile]): MultiBandTile = {
-    cloudRemovalMultiBand(images, 10000)
+  def cloudRemovalMultiband(images: Array[MultibandTile]): MultibandTile = {
+    cloudRemovalMultiband(images, 10000)
   }
 
 }

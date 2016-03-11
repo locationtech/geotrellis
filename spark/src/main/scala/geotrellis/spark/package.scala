@@ -64,9 +64,9 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type MultiBandRasterRDD[K] = RDD[(K, MultiBandTile)] with Metadata[RasterMetaData[K]]
-  object MultiBandRasterRDD {
-    def apply[K](rdd: RDD[(K, MultiBandTile)], metadata: RasterMetaData[K]): MultiBandRasterRDD[K] =
+  type MultibandRasterRDD[K] = RDD[(K, MultibandTile)] with Metadata[RasterMetaData[K]]
+  object MultibandRasterRDD {
+    def apply[K](rdd: RDD[(K, MultibandTile)], metadata: RasterMetaData[K]): MultibandRasterRDD[K] =
       new ContextRDD(rdd, metadata)
   }
 
@@ -123,8 +123,8 @@ package object spark
   implicit class withRasterRDDMaskMethods[K: SpatialComponent: ClassTag](val self: RasterRDD[K])
       extends mask.RasterRDDMaskMethods[K]
 
-  implicit class withMultiBandRasterRDDMethods[K](val self: MultiBandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends MultiBandRasterRDDMethods[K]
+  implicit class withMultibandRasterRDDMethods[K](val self: MultibandRasterRDD[K])(implicit val keyClassTag: ClassTag[K])
+    extends MultibandRasterRDDMethods[K]
 
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
