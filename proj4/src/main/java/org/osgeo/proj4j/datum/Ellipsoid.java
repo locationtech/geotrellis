@@ -48,6 +48,8 @@ package org.osgeo.proj4j.datum;
  *   
  * @see Datum
  */
+// In proj.4 the Ellipsoid information is stored directly in the PJ struct.
+// Named ellipsoids are defined in pj_datums.c
 public final class Ellipsoid implements Cloneable, java.io.Serializable
 {
 
