@@ -124,9 +124,18 @@ s3        | bucket, key, splitSize
 Output    | Options
 ----------|----------------
 hadoop    | path
-accumulo  | instance, zookeeper, user, password, table
+accumulo  | instance, zookeeper, user, password, table, strategy={hdfs|socket}, ingestPath
 s3        | bucket, key
 render    | path, encoding=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{RGBA};...'
+
+##### Accumulo Output
+
+Accumulo output module has two write strategies: 
+  - `hdfs` strategy uses Accumulo bulk import
+  - `socket` strategy uses Accumulo `BatchWriter`
+    
+When using `hdfs` strategy `ingestPath` argument will be used as the temporary directory where records will be written
+for use by Accumulo bulk import. This directory should ideally be an HDFS path.
 
 #### Layout Scheme
 
