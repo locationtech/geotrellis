@@ -28,7 +28,7 @@ then the index-order of the points will be different.
 Currently, the spatial and temporal resolution required to index the points,
 expressed in bits, must sum to 62 bits or fewer.
 
-For example, the following code appears in `HilbertSpacetimeKeyIndex.scala`:
+For example, the following code appears in `HilbertSpaceTimeKeyIndex.scala`:
 
 ```scala
 @transient lazy val chc = {
