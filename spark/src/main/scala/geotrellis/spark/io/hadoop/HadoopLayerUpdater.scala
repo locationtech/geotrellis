@@ -18,7 +18,7 @@ import spray.json._
 import scala.reflect._
 
 class HadoopLayerUpdater(
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   layerReader: HadoopLayerReader,
   layerWriter: HadoopLayerWriter,
   layerDeleter: HadoopLayerDeleter,
@@ -31,13 +31,11 @@ class HadoopLayerUpdater(
     M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader,M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
-
-    val path = header.path
 
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)

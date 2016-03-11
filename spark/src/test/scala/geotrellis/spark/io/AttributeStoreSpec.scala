@@ -15,7 +15,7 @@ abstract class AttributeStoreSpec
     with Matchers
     with TestEnvironment
     with TestFiles {
-  def attributeStore: AttributeStore[JsonFormat]
+  def attributeStore: AttributeStore
 
   it("should write to an attribute store") {
     attributeStore.write(LayerId("test1", 1), "test-att1", "test")

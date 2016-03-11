@@ -25,7 +25,7 @@ import scala.reflect._
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerWriter(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String
 ) extends LayerWriter[LayerId] with LazyLogging {
@@ -63,7 +63,7 @@ class S3LayerWriter(
 }
 
 object S3LayerWriter {
-  def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, prefix: String): S3LayerWriter =
+  def apply(attributeStore: AttributeStore, bucket: String, prefix: String): S3LayerWriter =
     new S3LayerWriter(attributeStore, bucket, prefix)
 
   def apply(attributeStore: S3AttributeStore): S3LayerWriter =

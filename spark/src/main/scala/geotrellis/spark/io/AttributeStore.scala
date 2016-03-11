@@ -1,25 +1,123 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.index._
+import geotrellis.spark.io.json.Implicits._
 
-trait AttributeStore[F[_]] extends AttributeCaching[F] {
-  type Format[T] = F[T]
+import org.apache.avro.Schema
+import spray.json._
+import spray.json.DefaultJsonProtocol.JsValueFormat
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T
-  def readAll[T: Format](attributeName: String): Map[LayerId, T]
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit
+import scala.reflect.ClassTag
+
+trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T]
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit
   def layerExists(layerId: LayerId): Boolean
   def delete(layerId: LayerId): Unit
   def delete(layerId: LayerId, attributeName: String): Unit
   def layerIds: Seq[LayerId]
+  def availableAttributes(id: LayerId): Seq[String]
+
+  def copy(from: LayerId, to: LayerId): Unit =
+    copy(from, to, availableAttributes(from))
+
+  def copy(from: LayerId, to: LayerId, attributes: Seq[String]): Unit = {
+    for (attribute <- attributes) {
+      write(to, attribute, read[JsValue](from, attribute))
+    }
+  }
 }
 
 object AttributeStore {
   object Fields {
+    val metadataBlob = "metadata"
     val header = "header"
-    val keyBounds = "keyBounds"
     val keyIndex = "keyIndex"
     val metaData = "metadata"
     val schema = "schema"
+  }
+}
+
+case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema)
+
+trait LayerAttributeStore {
+  def readHeader[H: JsonFormat](id: LayerId): H
+  def readMetadata[M: JsonFormat](id: LayerId): M
+  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K]
+  def readSchema(id: LayerId): Schema
+  def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K]
+  def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit
+}
+
+
+trait BlobLayerAttributeStore extends AttributeStore {
+  import AttributeStore._
+  import DefaultJsonProtocol._
+
+  def readHeader[H: JsonFormat](id: LayerId): H =
+    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.header).convertTo[H]
+
+  def readMetadata[M: JsonFormat](id: LayerId): M =
+    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metaData).convertTo[M]
+
+  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
+    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.keyIndex).convertTo[KeyIndex[K]]
+
+  def readSchema(id: LayerId): Schema =
+    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.schema).convertTo[Schema]
+
+  def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
+    val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
+    LayerAttributes(
+      blob.fields(Fields.header).convertTo[H],
+      blob.fields(Fields.metaData).convertTo[M],
+      blob.fields(Fields.keyIndex).convertTo[KeyIndex[K]],
+      blob.fields(Fields.schema).convertTo[Schema]
+    )
+  }
+
+  def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit = {
+    cacheWrite(id, Fields.metadataBlob,
+      JsObject(
+        Fields.header -> header.toJson,
+        Fields.metaData -> metadata.toJson,
+        Fields.keyIndex -> keyIndex.toJson,
+        Fields.schema -> schema.toJson
+      )
+    )
+  }
+}
+
+trait DiscreteLayerAttributeStore extends AttributeStore {
+  import AttributeStore._
+
+  def readHeader[H: JsonFormat](id: LayerId): H =
+    cacheRead[H](id, Fields.header)
+
+  def readMetadata[M: JsonFormat](id: LayerId): M =
+    cacheRead[M](id, Fields.metaData)
+
+  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
+    cacheRead[KeyIndex[K]](id, Fields.keyIndex)
+
+  def readSchema(id: LayerId): Schema =
+    cacheRead[Schema](id, Fields.schema)
+
+  def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
+    LayerAttributes(
+      readHeader[H](id),
+      readMetadata[M](id),
+      readKeyIndex[K](id),
+      readSchema(id)
+    )
+  }
+
+  def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema) = {
+    cacheWrite(id, Fields.header, header)
+    cacheWrite(id, Fields.metaData, metadata)
+    cacheWrite(id, Fields.keyIndex, keyIndex)
+    cacheWrite(id, Fields.schema, schema)
   }
 }

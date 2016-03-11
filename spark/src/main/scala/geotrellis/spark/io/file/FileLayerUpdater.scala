@@ -19,7 +19,7 @@ import scala.reflect._
 
 class FileLayerUpdater(
   catalogPath: String,
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   layerReader: FileLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
@@ -29,8 +29,8 @@ class FileLayerUpdater(
     M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[FileLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
@@ -79,7 +79,7 @@ class FileLayerUpdater(
 
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
-    attributeStore.writeLayerAttributes[FileLayerHeader, M, KeyIndex[K], Schema](id, header, updatedMetadata, keyIndex, schema)
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
     FileRDDWriter.write[K, V](updatedRdd, layerPath, keyPath)
   }
 }

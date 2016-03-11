@@ -10,12 +10,12 @@ import org.apache.spark._
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
-class HadoopLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[LayerId] {
+class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val header =
       try {
-      attributeStore.readLayerAttribute[HadoopLayerHeader](id, Fields.header)
+      attributeStore.readHeader[HadoopLayerHeader](id)
       } catch {
         case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
       }
@@ -27,10 +27,10 @@ class HadoopLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conf: C
 }
 
 object HadoopLayerDeleter {
-  def apply(attributeStore: AttributeStore[JsonFormat], conf: Configuration): HadoopLayerDeleter =
+  def apply(attributeStore: AttributeStore, conf: Configuration): HadoopLayerDeleter =
     new HadoopLayerDeleter(attributeStore, conf)
 
-  def apply(attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext): HadoopLayerDeleter =
+  def apply(attributeStore: AttributeStore)(implicit sc: SparkContext): HadoopLayerDeleter =
     apply(attributeStore, sc.hadoopConfiguration)
 
   def apply(rootPath: Path, conf: Configuration): HadoopLayerDeleter =

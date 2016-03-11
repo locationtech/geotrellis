@@ -11,7 +11,7 @@ import spray.json._
 import scala.reflect.ClassTag
 
 trait LayerWriter[ID] {
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,

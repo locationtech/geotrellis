@@ -8,7 +8,7 @@ import org.apache.spark._
 import spray.json._
 
 class MockS3LayerReader(
-  attributeStore: AttributeStore[JsonFormat]
+  attributeStore: AttributeStore
 )(implicit sc: SparkContext) extends S3LayerReader(attributeStore) {
   override def rddReader =
     new S3RDDReader {

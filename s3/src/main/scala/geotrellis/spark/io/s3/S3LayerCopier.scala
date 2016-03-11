@@ -16,7 +16,7 @@ import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 class S3LayerCopier(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   destBucket: String,
   destKeyPrefix: String
 ) extends LayerCopier[LayerId] {
@@ -40,8 +40,8 @@ class S3LayerCopier(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (header, metadata, keyIndex, schema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, KeyIndex[K], Schema](from)
+    val LayerAttributes(header, metadata, keyIndex, schema) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, K](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
     }
@@ -51,6 +51,7 @@ class S3LayerCopier(
     val s3Client = getS3Client()
 
     copyListing(s3Client, bucket, s3Client.listObjects(bucket, prefix), from, to)
+    attributeStore.copy(from, to)
     attributeStore.writeLayerAttributes(
       to, header.copy(
         bucket = destBucket,
@@ -61,7 +62,7 @@ class S3LayerCopier(
 }
 
 object S3LayerCopier {
-  def apply(attributeStore: AttributeStore[JsonFormat], destBucket: String, destKeyPrefix: String): S3LayerCopier =
+  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String): S3LayerCopier =
     new S3LayerCopier(attributeStore, destBucket, destKeyPrefix)
 
   def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier =

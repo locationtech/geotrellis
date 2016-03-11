@@ -28,7 +28,7 @@ object AccumuloAttributeStore {
     apply(instance.connector)
 }
 
-class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
+class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()
@@ -61,9 +61,13 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
       deleter.fetchColumnFamily(new Text(name))
     }
     deleter.delete()
+    attributeName match {
+      case Some(attribute) => clearCache(layerId, attribute)
+      case None => clearCache(layerId)
+    }
   }
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T = {
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     val values = fetch(Some(layerId), attributeName).toVector
 
     if(values.isEmpty) {
@@ -75,13 +79,13 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     }
   }
 
-  def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId,T] = {
     fetch(None, attributeName)
       .map { _.toString.parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation(layerIdText(layerId))
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),
@@ -113,5 +117,11 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
       }
       .toList
       .distinct
+  }
+
+  def availableAttributes(id: LayerId): Seq[String] = {
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    scanner.setRange(new Range(layerIdText(id)))
+    scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
   }
 }

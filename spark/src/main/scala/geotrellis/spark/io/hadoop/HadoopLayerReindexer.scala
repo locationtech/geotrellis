@@ -9,9 +9,9 @@ import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
 object HadoopLayerReindexer {
-  def apply(rootPath: Path)(implicit sc: SparkContext): LayerReindexer[LayerId] =
+  def apply(rootPath: Path, attributeStore: AttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] =
     GenericLayerReindexer[HadoopLayerHeader](
-      attributeStore = HadoopAttributeStore(rootPath),
+      attributeStore = attributeStore,
       layerReader    = HadoopLayerReader(rootPath),
       layerWriter    = HadoopLayerWriter(rootPath),
       layerDeleter   = HadoopLayerDeleter(rootPath),
@@ -19,5 +19,8 @@ object HadoopLayerReindexer {
     )
 
   def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply(attributeStore.rootPath)
+    apply(attributeStore.rootPath, attributeStore)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    apply(rootPath, HadoopAttributeStore(rootPath))
 }

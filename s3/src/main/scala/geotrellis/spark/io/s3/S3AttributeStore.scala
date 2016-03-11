@@ -9,16 +9,17 @@ import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
 import scala.io.Source
 import java.io.ByteArrayInputStream
 
+import scala.util.matching.Regex
+
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
  *
  * @param bucket    S3 bucket to use for attribute store
  * @param prefix  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(val bucket: String, val prefix: String) extends AttributeStore[JsonFormat] {
+class S3AttributeStore(val bucket: String, val prefix: String) extends AttributeStore with BlobLayerAttributeStore {
   val s3Client: S3Client = S3Client.default
-
-  val SEP = "__"
+  import S3AttributeStore._
 
   /** NOTE:
    * S3 is eventually consistent, therefore it is possible to write an attribute and fail to read it
@@ -34,7 +35,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
   def attributePrefix(attributeName: String): String =
     path(prefix, "_attributes", s"${attributeName}${SEP}")
 
-  private def readKey[T: Format](key: String): (LayerId, T) = {
+  private def readKey[T: JsonFormat](key: String): (LayerId, T) = {
     val is = s3Client.getObject(bucket, key).getObjectContent
     val json =
       try {
@@ -46,7 +47,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
     json.parseJson.convertTo[(LayerId, T)]
   }
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T =
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
     try {
       readKey[T](attributePath(layerId, attributeName))._2
     } catch {
@@ -54,7 +55,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
         throw new AttributeNotFoundError(attributeName, layerId).initCause(e)
     }
 
-  def readAll[T: Format](attributeName: String): Map[LayerId, T] =
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
     s3Client
       .listObjectsIterator(bucket, attributePrefix(attributeName))
       .map{ os =>
@@ -67,7 +68,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
       }
       .toMap
 
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
     val str = (layerId, value).toJson.compactPrint
     val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
@@ -83,17 +84,21 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
   def delete(layerId: LayerId, attributeName: String): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     s3Client.deleteObject(bucket, attributePath(layerId, attributeName))
+    clearCache(layerId, attributeName)
+  }
+
+  private def layerKeys(layerId: LayerId): Seq[String] = {
+    s3Client
+      .listObjectsIterator(bucket, path(prefix, "_attributes"))
+      .map { _.getKey }
+      .filter { _.contains(s"${SEP}${layerId.name}${SEP}${layerId.zoom}.json") }
+      .toVector
   }
 
   def delete(layerId: LayerId): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-    s3Client
-      .listObjectsIterator(bucket, path(prefix, "_attributes"))
-      .foreach { os =>
-        if(os.getKey.contains(s"${SEP}${layerId.name}${SEP}${layerId.zoom}.json")) {
-          s3Client.deleteObject(bucket, os.getKey)
-        }
-      }
+    layerKeys(layerId).foreach(s3Client.deleteObject(bucket, _))
+    clearCache(layerId)
   }
 
   def layerIds: Seq[LayerId] =
@@ -105,9 +110,17 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
         LayerId(name, zoomStr.replace(".json", "").toInt)
       }
       .distinct
+
+  def availableAttributes(layerId: LayerId): Seq[String] = {
+    layerKeys(layerId).map { key =>
+      new java.io.File(key).getName.split(SEP).head
+    }
+  }
 }
 
 object S3AttributeStore {
+  final val SEP = "__"
+
   def apply(bucket: String, root: String) =
     new S3AttributeStore(bucket, root)
 

@@ -15,17 +15,18 @@ import java.io.File
 import scala.reflect.ClassTag
 
 class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   catalogPath: String
 )  extends Reader[LayerId, Reader[K, V]] {
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
-    val (layerMetaData, _, keyIndex, writerSchema) =
-      attributeStore.readLayerAttributes[FileLayerHeader, Unit, KeyIndex[K], Schema](layerId)
+    val header = attributeStore.readHeader[FileLayerHeader](layerId)
+    val keyIndex = attributeStore.readKeyIndex[K](layerId)
+    val writerSchema = attributeStore.readSchema(layerId)
 
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = KeyPathGenerator(catalogPath, layerMetaData.path, keyIndex, maxWidth)
+    val keyPath = KeyPathGenerator(catalogPath, header.path, keyIndex, maxWidth)
 
     def read(key: K): V = {
       val path = keyPath(key)

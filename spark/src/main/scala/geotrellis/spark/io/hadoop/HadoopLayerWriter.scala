@@ -18,7 +18,7 @@ import scala.reflect._
 
 class HadoopLayerWriter(
   rootPath: Path,
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 ) extends LayerWriter[LayerId] {
 
   protected def _write[
@@ -46,7 +46,7 @@ class HadoopLayerWriter(
 }
 
 object HadoopLayerWriter {
-  def apply(rootPath: Path, attributeStore: AttributeStore[JsonFormat]): HadoopLayerWriter =
+  def apply(rootPath: Path, attributeStore: AttributeStore): HadoopLayerWriter =
     new HadoopLayerWriter(
       rootPath = rootPath,
       attributeStore = attributeStore
