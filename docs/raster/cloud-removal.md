@@ -35,9 +35,9 @@ def main(args: Array[String]) : Unit = {
   val multiBands = Array.ofDim[MultibandTile](numImages)
 
   cfor(0)(_ < numImages, _ + 1) { i =>
-    val red = SingleBandGeoTiff(fileListRed(i).toString).tile
-    val green = SingleBandGeoTiff(fileListGreen(i).toString).tile
-    val blue = SingleBandGeoTiff(fileListBlue(i).toString).tile
+    val red = SinglebandGeoTiff(fileListRed(i).toString).tile
+    val green = SinglebandGeoTiff(fileListGreen(i).toString).tile
+    val blue = SinglebandGeoTiff(fileListBlue(i).toString).tile
 
     multiBands(i) = ArrayMultibandTile(Array(red, green, blue))
   }

@@ -53,7 +53,7 @@ class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3Recor
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
 
   def read(key: String, bytes: Array[Byte]) = {
-    val geoTiff = SingleBandGeoTiff(bytes)
+    val geoTiff = SinglebandGeoTiff(bytes)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = DateTime.parse(dateTimeString, dateFormatter)

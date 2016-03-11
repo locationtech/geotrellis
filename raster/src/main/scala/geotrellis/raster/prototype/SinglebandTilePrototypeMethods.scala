@@ -2,7 +2,7 @@ package geotrellis.raster.prototype
 
 import geotrellis.raster._
 
-trait SingleBandTilePrototypeMethods extends TilePrototypeMethods[Tile] {
+trait SinglebandTilePrototypeMethods extends TilePrototypeMethods[Tile] {
   def prototype(cellType: CellType, cols: Int, rows: Int) =
     ArrayTile.empty(cellType, cols, rows)
 

@@ -22,7 +22,7 @@ import geotrellis.vector.Geometry
 import geotrellis.util.MethodExtensions
 
 
-trait SingleBandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends MethodExtensions[Raster[T]] {
+trait SinglebandRasterRasterizeMethods[T <: Tile, S <: Raster[T]] extends MethodExtensions[Raster[T]] {
   def foreachCell(
     geom : Geometry,
     options: Options = Options.DEFAULT

@@ -1,7 +1,7 @@
 package geotrellis.spark.crop
 
 import geotrellis.spark._
-import geotrellis.raster.io.geotiff.SingleBandGeoTiff
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.vector.Extent
 
 import org.scalatest.FunSpec
@@ -11,7 +11,7 @@ class RasterRDDCropMethodsSpec extends FunSpec with TestEnvironment {
 
   describe("RasterRDD Crop Methods") {
     val path = "raster-test/data/aspect.tif"
-    val gt = SingleBandGeoTiff(path)
+    val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
     val (_, rdd) = createRasterRDD(originalRaster, 5, 5, gt.crs)
     val md = rdd.metadata
