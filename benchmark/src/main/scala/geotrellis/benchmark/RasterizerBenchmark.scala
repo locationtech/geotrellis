@@ -70,18 +70,18 @@ class RasterizerBenchmark extends OperationBenchmark {
     transitRe = RasterExtent(ext, rasterSize, rasterSize)
   }
 
-  def rasterize() {
-    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re) { (col: Int, row: Int) =>
+  def rasterize() = {
+    poly.geom.foreach(re)({ (col: Int, row: Int) =>
       tile.set(col,row,4)
-    }
+    })
   }
 
-  //Because of a refactor Callback is not getting a geom as a param, since it can close over it if it really wanted
+  //Because of a refactor, Callback is not getting a geom as a param, since it can close over it if it really wanted
   //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
-  def rasterizeUsingValue() {
-    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re) { (col: Int, row: Int) =>
+  def rasterizeUsingValue() = {
+    poly.geom.foreach(re)({ (col: Int, row: Int) =>
       tile.set(col,row, poly.data)
-    }
+    })
   }
 
 
@@ -97,17 +97,17 @@ class RasterizerBenchmark extends OperationBenchmark {
   def rasterizeTransitPoly = {
     var x = 0
     val options = Options(includePartial = true, sampleType = PixelIsArea)
-    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, options) { (col: Int, row: Int) =>
+    transitPoly.foreach(transitRe, options)({ (col: Int, row: Int) =>
       x += (col + row)
-    }
+    })
   }
 
   def timeRasterizeTransitPolyNoHoles(reps: Int) = run(reps)(rasterizeTransitPolyNoHoles)
   def rasterizeTransitPolyNoHoles = {
     var x = 0
     val options = Options(includePartial = true, sampleType = PixelIsArea)
-    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, options) { (col: Int, row: Int) =>
+    transitPolyNoHoles.foreach(transitRe, options)({ (col: Int, row: Int) =>
       x += (col + row)
-    }
+    })
   }
 }

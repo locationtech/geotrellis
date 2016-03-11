@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,8 @@ import geotrellis.vector._
 import geotrellis.engine._
 
 import org.scalatest._
-class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with TestEngine {  
-  val tiledRS = 
+class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with TestEngine {
+  val tiledRS =
     createRasterSource(
       Array(  1, 2, 3,   4, 5, 6,   7, 8, 9,
               1, 2, 3,   4, 5, 6,   7, 8, 9,
@@ -34,7 +34,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
       ),
       3,2,3,2)
 
-  val tiledRSDouble = 
+  val tiledRSDouble =
     createRasterSource(
       Array(  0.1, 0.2, 0.3,   0.4, 0.5, 0.6,   0.7, 0.8, 0.9,
               0.1, 0.2, 0.3,   0.4, 0.5, 0.6,   0.7, 0.8, 0.9,
@@ -59,13 +59,13 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
 
 //      Polygon vertices are 0's (not contianed cells)
 //      X's are contained cells
-// 
+//
 //       *  *  *    *  *  *    *  *  *
 //       *  *  0    X  X  X    *  *  *
-// 
+//
 //       *  *  0    X  X  X    X  X  *
-//       *  *  *    *  *  *    *  *  *  
-// 
+//       *  *  *    *  *  *    *  *  *
+//
 
   val containedCells = Seq(
     (3,1),(4,1),(5,1),
@@ -87,7 +87,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
             for(col <- 0 until tiledR.cols) {
               val v = tiledR.get(col,row)
               if(isData(v)) {
-                result.getItemCount(v) should be (h.getItemCount(v))
+                result.itemCount(v) should be (h.itemCount(v))
               }
             }
           }
@@ -101,7 +101,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
 
   describe("zonalMax") {
     it("computes max on raster source and 5 edge polygon") {
-      val max = 
+      val max =
         containedCells
           .map { case (col,row) => tiledR.get(col,row) }
           .foldLeft(Int.MinValue) { (a,b) => if(isNoData(b)) a else math.max(a, b) }
@@ -118,7 +118,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
     }
 
     it("computes max on double raster source and 5 edge polygon") {
-      val max = 
+      val max =
         containedCells
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
           .foldLeft(Double.MinValue) { (a,b) => if(isNoData(b)) a else math.max(a, b) }
@@ -218,7 +218,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
 
   describe("zonalSum") {
     it("computes sum on raster source and 5 edge polygon") {
-      val sum = 
+      val sum =
         containedCells
           .map { case (col,row) => tiledR.get(col,row) }
           .foldLeft(0) { (a,b) => if(isNoData(b)) a else a + b }
@@ -235,7 +235,7 @@ class ZonalSummaryRasterSourceMethodsSpec extends FunSpec with Matchers with Tes
     }
 
     it("computes Double sum on raster source and 5 edge polygon") {
-      val sum = 
+      val sum =
         containedCells
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
           .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }

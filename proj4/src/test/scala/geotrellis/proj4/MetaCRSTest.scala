@@ -9,6 +9,7 @@ import java.net.URISyntaxException
 import java.util.List
 
 import org.scalatest._
+import org.scalatest.matchers.{ BeMatcher, MatchResult }
 
 import scala.collection.JavaConversions._
 
@@ -24,7 +25,7 @@ class MetaCRSTest extends FunSuite with Matchers {
     val file = new File("proj4/src/test/resources/TestData.csv")
     val tests = MetaCRSTestFileReader.readTests(file)
     for (test <- tests) {
-      test.execute(crsFactory)
+      test should be(passing)
     }
   }
 
@@ -32,8 +33,32 @@ class MetaCRSTest extends FunSuite with Matchers {
     val file = new File("proj4/src/test/resources/PROJ4_SPCS_EPSG_nad83.csv")
     val tests = MetaCRSTestFileReader.readTests(file)
     for (test <- tests) {
-      test.execute(crsFactory)
+      test should be(passing)
     }
+  }
+
+  test("PROJ4_Empirical") {
+    val file = new File("proj4/src/test/resources/proj4-epsg.csv")
+    val tests = MetaCRSTestFileReader.readTests(file)
+    for (test <- tests) {
+      test.testMethod match {
+        case "passing" => test should be(passing)
+        case "failing" => test should not(be(passing))
+        case "error" => intercept[org.osgeo.proj4j.Proj4jException] { test.execute(crsFactory) }
+      }
+    }
+  }
+}
+
+object passing extends BeMatcher[MetaCRSTestCase] {
+  val crsFactory = new CRSFactory
+  def apply(left: MetaCRSTestCase) = {
+    import left._
+    val (success, x, y) = left.execute(crsFactory)
+    MatchResult(
+      success,
+      f"$srcCrsAuth:$srcCrs→$tgtCrsAuth:$tgtCrs ($srcOrd1, $srcOrd2, $srcOrd3) → ($tgtOrd1, $tgtOrd2, $tgtOrd3); got ($x, $y)",
+      f"$srcCrsAuth:$srcCrs→$tgtCrsAuth:$tgtCrs in tolerance")
   }
 }
 
@@ -77,7 +102,7 @@ case class MetaCRSTestCase(
   //   this.crsCache = crsCache
   // }
   
-  def execute(csFactory: CRSFactory): Boolean = {
+  def execute(csFactory: CRSFactory): (Boolean, Double, Double) = {
     val srcCS = createCS(csFactory, srcCrsAuth, srcCrs)
     val tgtCS = createCS(csFactory, tgtCrsAuth, tgtCrs)
     executeTransform(srcCS, tgtCS)
@@ -92,7 +117,7 @@ case class MetaCRSTestCase(
     csFactory.createFromName(name)
   }
   
-  def executeTransform(srcCS: CoordinateReferenceSystem, tgtCS: CoordinateReferenceSystem): Boolean = {
+  def executeTransform(srcCS: CoordinateReferenceSystem, tgtCS: CoordinateReferenceSystem): (Boolean, Double, Double) = {
     srcPt.x = srcOrd1
     srcPt.y = srcOrd2
     // Testing: flip axis order to test SS sample file
@@ -105,8 +130,9 @@ case class MetaCRSTestCase(
     
     val dx = math.abs(resultPt.x - tgtOrd1)
     val dy = math.abs(resultPt.y - tgtOrd2)
+    // println(srcPt, resultPt, (tgtOrd1, tgtOrd2), (dx, dy), (tolOrd1, tolOrd2))
     
-    dx <= tolOrd1 && dy <= tolOrd2
+    (dx <= tolOrd1 && dy <= tolOrd2, resultPt.x, resultPt.y)
   }
 
   def print(isInTol: Boolean, srcCS: CoordinateReferenceSystem, tgtCS: CoordinateReferenceSystem) = {

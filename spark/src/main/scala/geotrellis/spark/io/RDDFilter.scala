@@ -1,15 +1,17 @@
 package geotrellis.spark.io
 
-import com.github.nscala_time.time.Imports._
+import geotrellis.raster._
 import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling.MapKeyTransform
 import geotrellis.vector.{Extent, Point, MultiPolygon}
 
-import scala.annotation.implicitNotFound
+import com.github.nscala_time.time.Imports._
 
+import scala.annotation.implicitNotFound
 import scala.collection.mutable
+
 
 @implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide RDDFilter[${K}, ${F}, ${T}, ${M}]")
 trait RDDFilter[K, F, T, M] {
@@ -140,14 +142,14 @@ object Intersects {
          * array of KeyBounds.
          */
         val tiles = new ConcurrentHashMap[(Int,Int), Unit]
-
-        Rasterizer.foreachCellByMultiPolygon(polygon, rasterExtent, options)( new Callback {
+        val fn = new Callback {
           def apply(col : Int, row : Int): Unit = {
             val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
             tiles.put(tile, Unit)
           }
-        })
+        }
 
+        polygon.foreach(rasterExtent, options)(fn)
         tiles.keys.asScala
           .map({ tile =>
             val qb = KeyBounds(

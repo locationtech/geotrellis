@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
+
 case class MeanResult(sum: Double, count: Long) {
   def mean: Double = if (count == 0) {
     Double.NaN
@@ -36,16 +37,16 @@ object MeanSummary extends TilePolygonalSummaryHandler[MeanResult] {
     var sum = 0.0
     var count = 0L
     if(tile.cellType.isFloatingPoint) {
-      Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+      polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
         val z = tile.getDouble(col, row)
         if (isData(z)) { sum = sum + z; count = count + 1 }
+      })
+      } else {
+        polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
+          val z = tile.get(col, row)
+          if (isData(z)) { sum = sum + z; count = count + 1 }
+        })
       }
-    } else {
-      Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
-        val z = tile.get(col, row)
-        if (isData(z)) { sum = sum + z; count = count + 1 }
-      }
-    }
 
     MeanResult(sum, count)
   }

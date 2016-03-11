@@ -18,7 +18,7 @@ trait BaseCoordinateTransformTest extends Matchers
   
   final val debug = true
   
-  val tester = new CoordinateTransformTester(true)
+  val tester = new CoordinateTransformTester(false)
   
   def p(pstr: String): ProjCoordinate = {
     val pord = pstr.split("\\s+")
