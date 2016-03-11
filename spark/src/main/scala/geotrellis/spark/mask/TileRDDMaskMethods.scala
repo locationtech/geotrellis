@@ -35,7 +35,7 @@ abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends Me
   }
 
   private def _mask(masker: (Extent, Tile) => Tile) = {
-    val mapTransform = self.metaData.mapTransform
+    val mapTransform = self.metadata.mapTransform
     val rdd =
       self.map { case (k, tile) =>
         val key = k.getComponent[SpatialKey]

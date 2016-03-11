@@ -34,11 +34,11 @@ class AccumuloLayerWriter(
         valueClass = classTag[V].toString(),
         tileTable = table
       )
-    val metaData = rdd.metadata
+    val metadata = rdd.metadata
     val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyIndex, schema)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
       AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table)
 
       // Create locality groups based on encoding strategy

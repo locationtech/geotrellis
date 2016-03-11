@@ -14,9 +14,9 @@ class MinSpec extends FunSpec with TestEnvironment with TestFiles {
   describe("Min Zonal Summary Operation") {
     val inc = IncreasingTestFile
 
-    val tileLayout = inc.metaData.tileLayout
+    val tileLayout = inc.metadata.tileLayout
     val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-    val totalExtent = inc.metaData.extent
+    val totalExtent = inc.metadata.extent
 
     it("should get correct min over whole raster extent") {
       inc.polygonalMin(totalExtent.toPolygon) should be(0)

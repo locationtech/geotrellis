@@ -28,8 +28,8 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
           tileLayout
         )
 
-        val kb = rasterRDD.metaData.bounds.get
-        val metaData = rasterRDD.metaData.copy(bounds =
+        val kb = rasterRDD.metadata.bounds.get
+        val metadata = rasterRDD.metadata.copy(bounds =
           KeyBounds(SpaceTimeKey(kb.minKey, TemporalKey(dates.min)),
             SpaceTimeKey(kb.maxKey, TemporalKey(dates.max)))
         )
@@ -37,20 +37,20 @@ class LocalTemporalSpec extends FunSpec with TestEnvironment {
           (SpaceTimeKey(spatialKey, TemporalKey(dateTime)), tile)
         }
 
-        new ContextRDD(rdd, metaData)
+        new ContextRDD(rdd, metadata)
       }
 
-      val metaData = rasterRDDs.head.metaData
+      val metadata = rasterRDDs.head.metadata
       val combinedRDDs = rasterRDDs.map(_.rdd).reduce(_ ++ _)
 
-      new ContextRDD(combinedRDDs, metaData)
+      new ContextRDD(combinedRDDs, metadata)
     }
 
     def groupTileLayerRDDToRastersByTemporalKey(rasterRDD: TileLayerRDD[SpaceTimeKey]): Map[DateTime, Tile] = {
-      val metaData = rasterRDD.metaData
-      val gridBounds = metaData.mapTransform(metaData.extent)
+      val metadata = rasterRDD.metadata
+      val gridBounds = metadata.mapTransform(metadata.extent)
       val tileLayout =
-        TileLayout(gridBounds.width, gridBounds.height, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
+        TileLayout(gridBounds.width, gridBounds.height, metadata.tileLayout.tileCols, metadata.tileLayout.tileRows)
 
       rasterRDD
         .groupBy { case (key, tile) =>
