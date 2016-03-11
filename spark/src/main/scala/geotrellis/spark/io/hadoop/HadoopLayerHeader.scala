@@ -10,14 +10,14 @@ case class HadoopLayerHeader(
   valueClass: String,
   path: Path
 ) extends LayerHeader {
-  def format = StorageFormat.HDFS
+  def format = "hdfs"
 }
 
 object HadoopLayerHeader {
   implicit object HadoopLayerMetaDataFormat extends RootJsonFormat[HadoopLayerHeader] {
     def write(md: HadoopLayerHeader) =
       JsObject(
-        "format" -> JsString(md.format.name),
+        "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "path" -> JsString(md.path.toString)

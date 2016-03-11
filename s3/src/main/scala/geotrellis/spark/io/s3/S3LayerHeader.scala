@@ -10,14 +10,14 @@ case class S3LayerHeader(
   bucket: String,
   key: String
 ) extends LayerHeader {
-  def format = StorageFormat.S3
+  def format = "s3"
 }
 
 object S3LayerHeader {
   implicit object S3LayerHeaderFormat extends RootJsonFormat[S3LayerHeader] {
     def write(md: S3LayerHeader) =
       JsObject(
-        "format" -> JsString(md.format.name),
+        "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "bucket" -> JsString(md.bucket.toString),

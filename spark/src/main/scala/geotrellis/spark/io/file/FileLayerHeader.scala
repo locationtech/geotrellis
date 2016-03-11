@@ -8,14 +8,14 @@ case class FileLayerHeader(
   valueClass: String,
   path: String
 ) extends LayerHeader {
-  def format = StorageFormat.File
+  def format = "file"
 }
 
 object FileLayerHeader {
   implicit object FileLayerHeaderFormat extends RootJsonFormat[FileLayerHeader] {
     def write(md: FileLayerHeader) =
       JsObject(
-        "format" -> JsString(md.format.name),
+        "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "path" -> JsString(md.path)
