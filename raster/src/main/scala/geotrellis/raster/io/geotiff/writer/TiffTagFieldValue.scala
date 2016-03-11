@@ -116,7 +116,7 @@ object TiffTagFieldValue {
     // Not written (what goes here?):
     //GeoKeyDirectory ASCII     TagCodes.GeoAsciiParamsTag, TiffFieldType.AsciisFieldType, N = Number of Characters (pipe sparated |), GeoKeyAsciis _
 
-    // GDAL MetaData
+    // GDAL Metadata
     val metaData = toBytes(new scala.xml.PrettyPrinter(80, 2).format(geoTiff.tags.toXml))
     fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metaData.length, metaData)
 

@@ -112,27 +112,27 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     K: SpatialComponent: Boundable: ClassTag
   ](
     rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
-  )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[RasterMetaData[K]]) = {
+  )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[RasterMetadata[K]]) = {
     val targetCellType = conf.cellType.get
     val destCrs = conf.crs()
 
-    def adjustCellType(md: RasterMetaData[K]) =
+    def adjustCellType(md: RasterMetadata[K]) =
       md.copy(cellType = targetCellType.getOrElse(md.cellType))
 
     conf.reproject() match {
       case PerTileReproject =>
         val reprojected = rdd.reproject(destCrs)
-        val (zoom: Int, md: RasterMetaData[K]) = scheme match {
+        val (zoom: Int, md: RasterMetadata[K]) = scheme match {
           case Left(layoutScheme) =>
-            RasterMetaData.fromRdd(rdd, layoutScheme)
+            RasterMetadata.fromRdd(rdd, layoutScheme)
           case Right(layoutDefinition) =>
-            RasterMetaData.fromRdd(rdd, layoutDefinition)
+            RasterMetadata.fromRdd(rdd, layoutDefinition)
         }
         val amd = adjustCellType(md)
         zoom -> ContextRDD(reprojected.tileToLayout[K](amd, method), amd)
 
       case BufferedReproject =>
-        val (_, md) = RasterMetaData.fromRdd(rdd, FloatingLayoutScheme(conf.tileSize()))
+        val (_, md) = RasterMetadata.fromRdd(rdd, FloatingLayoutScheme(conf.tileSize()))
         val amd = adjustCellType(md)
         val tiled = ContextRDD(rdd.tileToLayout[K](amd, method), amd)
         scheme match {
@@ -157,17 +157,17 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]], method: KeyIndexMethod[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]], method: KeyIndexMethod[K]): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
     val outputPlugin =
       combinedModule
-        .findSubclassOf[OutputPlugin[K, V, RasterMetaData[K]]]
+        .findSubclassOf[OutputPlugin[K, V, RasterMetadata[K]]]
         .find { _.suitableFor(conf.output()) }
         .getOrElse(sys.error(s"Unable to find output module of type '${conf.output()}'"))
 
-    def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[RasterMetaData[K]]): Unit = {
+    def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[RasterMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
       outputPlugin(currentId, rdd, method, conf.outputProps)
 

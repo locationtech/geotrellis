@@ -22,7 +22,7 @@ object TestFiles extends Logging {
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
       val keyBounds = KeyBounds(SpatialKey(1,1), SpatialKey(6,7))
-      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
+      RasterMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
     val gridBounds = md.gridBounds
@@ -66,7 +66,7 @@ object TestFiles extends Logging {
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
       val keyBounds = KeyBounds(SpaceTimeKey(1,1,times.min), SpaceTimeKey(6,7, times.max))
-      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
+      RasterMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
     val gridBounds = md.gridBounds

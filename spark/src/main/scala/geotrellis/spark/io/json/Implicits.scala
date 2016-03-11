@@ -64,8 +64,8 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
       }
   }
 
-  implicit def rasterMetaDataFormat[K: JsonFormat] = new RootJsonFormat[RasterMetaData[K]] {
-    def write(metaData: RasterMetaData[K]) =
+  implicit def rasterMetadataFormat[K: JsonFormat] = new RootJsonFormat[RasterMetadata[K]] {
+    def write(metaData: RasterMetadata[K]) =
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,
@@ -74,10 +74,10 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
         "bounds" -> metaData.bounds.get.toJson // we will only store non-empty bounds
       )
 
-    def read(value: JsValue): RasterMetaData[K] =
+    def read(value: JsValue): RasterMetadata[K] =
       value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "bounds") match {
         case Seq(cellType, extent, layoutDefinition, crs, bounds) =>
-          RasterMetaData(
+          RasterMetadata(
             cellType.convertTo[CellType],
             layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
@@ -85,7 +85,7 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
             bounds.convertTo[KeyBounds[K]]
           )
         case _ =>
-          throw new DeserializationException("RasterMetaData expected")
+          throw new DeserializationException("RasterMetadata expected")
       }
   }
 

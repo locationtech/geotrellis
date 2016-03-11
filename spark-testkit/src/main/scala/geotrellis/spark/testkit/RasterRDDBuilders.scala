@@ -142,7 +142,7 @@ trait RasterRDDBuilders {
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
     val (_, metadata) =
-      RasterMetaData.fromRdd(inputRdd, crs, layoutScheme)
+      RasterMetadata.fromRdd(inputRdd, crs, layoutScheme)
 
     val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
 
@@ -162,7 +162,7 @@ trait RasterRDDBuilders {
       val maxTime = tiles.maxBy(_._2)._2
       KeyBounds(SpaceTimeKey(colMin, rowMin, minTime), SpaceTimeKey(colMax, rowMax, maxTime))
     }
-    val metaData = RasterMetaData(
+    val metaData = RasterMetadata(
       cellType,
       layout,
       extent,
