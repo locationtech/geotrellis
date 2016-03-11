@@ -18,34 +18,72 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.{Geometry,Feature}
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.{Geometry,Feature}
 
 
 trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends MethodExtensions[T] {
-  def foreachCell(re : RasterExtent, options: Options = Options.DEFAULT) : Tile = {
-    val geom = self.geom
-    val data = self.data
-    geom.foreachCell(re, options)({ (x,y) => data })
-  }
 
-  def foreachCellDouble(re : RasterExtent, options: Options = Options.DEFAULT) : Tile = {
-    val geom = self.geom
-    val data = self.data
-    geom.foreachCellDouble(re, options)({ (x,y) => data.toDouble })
-  }
+  def foreach(
+    re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn: (Int, Int) => Unit): Unit =
+    self.geom.foreach(re, options)(fn)
+
+  def rasterize(
+    re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
+    self.geom.rasterize(re, options)(fn)
+
+  def rasterizeDouble(
+    re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
+    self.geom.rasterizeDouble(re, options)(fn)
+
+  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
+    self.geom.rasterize(re, value)
+
+  def rasterizeDouble(re: RasterExtent, value: Double): Tile =
+    self.geom.rasterizeDouble(re, value)
+
+  def rasterize(re: RasterExtent): Raster[ArrayTile] =
+    self.geom.rasterize(re, self.data)
+
+  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
+    self.geom.rasterizeDouble(re, self.data.toDouble)
 }
 
 trait FeatureDoubleRasterizeMethods[+G <: Geometry, T <: Feature[G,Double]] extends MethodExtensions[T] {
-  def foreachCell(re : RasterExtent, options: Options = Options.DEFAULT) : Tile = {
-    val geom = self.geom
-    val data = self.data
-    geom.foreachCell(re, options)({ (x,y) => data.toInt })
-  }
 
-  def foreachCellDouble(re : RasterExtent, options: Options = Options.DEFAULT) : Tile = {
-    val geom = self.geom
-    val data = self.data
-    geom.foreachCellDouble(re, options)({ (x,y) => data })
-  }
+  def foreach(
+    re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn: (Int, Int) => Unit): Unit =
+    self.geom.foreach(re, options)(fn)
+
+  def rasterize(
+    re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
+    self.geom.rasterize(re, options)(fn)
+
+  def rasterizeDouble(
+    re : RasterExtent,
+    options: Options = Options.DEFAULT
+  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
+    self.geom.rasterizeDouble(re, options)(fn)
+
+  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
+    self.geom.rasterize(re, value)
+
+  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
+    self.geom.rasterizeDouble(re, value)
+
+  def rasterize(re: RasterExtent): Raster[ArrayTile] =
+    self.geom.rasterize(re, self.data.toInt)
+
+  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
+    self.geom.rasterizeDouble(re, self.data)
 }

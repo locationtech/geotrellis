@@ -36,36 +36,10 @@ object FastMapHistogram {
     r.foreach(z => if (isData(z)) h.countItem(z, 1))
     h
   }
-
-  def fromHistograms(hs: TraversableOnce[Histogram[Int]]): FastMapHistogram = {
-    val total = FastMapHistogram()
-    hs.foreach(h => total.update(h))
-    total
-  }
-
-  /**
-   * Create a histogram from double values in a raster.
-   *
-   * FastMapHistogram only works with integer values, which is good for performance
-   * but means that, in order to use FastMapHistogram with double values, each value
-   * must be multiplied by a power of ten to preserve significant fractional digits.
-   *
-   * For example, if you want to save one significant digit (2.1 from 2.123), set
-   * sigificantDigits to 1, and the histogram will save 2.1 as "21".
-   *
-   * Important: Be sure that the maximum value in the rater multiplied by
-   *            10 ^ significantDigits does not overflow Int.MaxValue (2, 147, 483, 647).
-   */
-  def fromTileDouble(r: Tile, significantDigits: Int) = {
-    val h = FastMapHistogram()
-    val multiplier = math.pow(10, significantDigits)
-    r.foreachDouble(z => if (z != Double.NaN) h.countItem( (z * multiplier).toInt, 1))
-    h
-  }
 }
 
 class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int)
-    extends MutableHistogramInt {
+    extends MutableIntHistogram {
   if (_size <= 0) error("initializeSize must be > 0")
 
   // we are reserving this value
@@ -145,20 +119,22 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     }
   }
 
-  def countItem(item: Int, count: Int = 1) {
+  def countItem(item: Int, count: Int = 1):Unit = {
     // we use our hashing strategy to figure out which bucket this item gets.
     // if the bucket is empty, we're adding the item, whereas if its not we
     // are just inreasing the item's count.
-    val i = hashItem(item, mask, buckets)
-    if (buckets(i) == UNSET) {
-      buckets(i) = item
-      buckets(i + 1) = count
-      used += 1
-      if (used > limit) resize()
-    } else {
-      buckets(i + 1) += count
+    if (count != 0) {
+      val i = hashItem(item, mask, buckets)
+      if (buckets(i) == UNSET) {
+        buckets(i) = item
+        buckets(i + 1) = count
+        used += 1
+        if (used > limit) resize()
+      } else {
+        buckets(i + 1) += count
+      }
+      total += count
     }
-    total += count
   }
 
   def uncountItem(item: Int) {
@@ -207,7 +183,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     limit = (size * FACTOR).toInt
   }
 
-  def getTotalCount = total
+  def totalCount = total
 
   def mutable() = new FastMapHistogram(size, buckets.clone(), used, total)
 
@@ -226,7 +202,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     keys
   }
 
-  def getValues() = {
+  def values() = {
     val keys = rawValues()
     Sorting.quickSort(keys)
     keys
@@ -241,12 +217,12 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     }
   }
 
-  def getItemCount(item: Int) = {
+  def itemCount(item: Int) = {
     val i = hashItem(item, mask, buckets)
     if (buckets(i) == UNSET) 0 else buckets(i + 1)
   }
 
-  def getMinValue: Int = {
+  def minValue: Option[Int] = {
     val len = size * 2
     var zmin = Int.MaxValue
     var i = 0
@@ -255,10 +231,13 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
       if (z != UNSET && z < zmin) zmin = z
       i += 2
     }
-    zmin
+    if (zmin != Int.MaxValue)
+      Some(zmin)
+    else
+      None
   }
 
-  def getMaxValue: Int = {
+  def maxValue: Option[Int] = {
     val len = size * 2
     var zmax = Int.MinValue
     var i = 0
@@ -267,10 +246,13 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
       if (z != UNSET && z > zmax) zmax = z
       i += 2
     }
-    zmax
+    if (zmax != Int.MinValue)
+      Some(zmax)
+    else
+      None
   }
 
-  override def getMinMaxValues = {
+  override def minMaxValues: Option[(Int, Int)] = {
     val len = size * 2
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
@@ -287,7 +269,20 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     }
     // there's a small chance that we saw the max first, and zmin consumed it.
     // in that case we need to make sure to set zmax properly.
-    if (zmax == Int.MinValue && zmin > zmax) zmax = zmin
-    (zmin, zmax)
+    if (zmax == Int.MinValue && zmin == Int.MaxValue)
+      None
+    else if (zmax == Int.MinValue && zmin > zmax)
+      Some((zmin, zmin))
+    else
+      Some((zmin, zmax))
+  }
+
+  def bucketCount() = size
+
+  def merge(histogram: Histogram[Int]): Histogram[Int] = {
+    val total = FastMapHistogram()
+
+    total.update(this); total.update(histogram)
+    total
   }
 }

@@ -170,14 +170,14 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
       val hist = d.tileHistograms
       val hist2:DataSource[Histogram[Int], Histogram[Int]] = d.tileHistograms
       case class MinFromHistogram(h:Op[Histogram[Int]]) extends Op1(h)({
-        (h) => Result(h.getMinValue)
+        (h) => Result(h.minValue.get)
       })
 
       case class FindMin(ints:Op[Seq[Int]]) extends Op1(ints)({
         (ints) => Result(ints.reduce(math.min(_,_)))
       })
 
-      val ints:DataSource[Int,Seq[Int]] = hist.mapOp(MinFromHistogram(_))
+      val ints: DataSource[Int,Seq[Int]] = hist.mapOp(MinFromHistogram(_))
 
       val seqIntVS:ValueSource[Seq[Int]] = ints.converge
 
@@ -190,8 +190,8 @@ class RasterSourceSpec extends FunSpec with Matchers with TestEngine  {
       val intResult = get(intVS)
       val directIntResult = get(intVS2)
 
-      histogramResult.getMinValue should be (2231)
-      histogramResult.getMaxValue should be (8367)
+      histogramResult.minValue.get should be (2231)
+      histogramResult.maxValue.get should be (8367)
       intsResult.length should be (12)
       intResult should be (directIntResult)
 

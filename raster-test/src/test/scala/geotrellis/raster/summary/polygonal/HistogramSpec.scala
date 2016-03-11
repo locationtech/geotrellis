@@ -36,8 +36,20 @@ class HistogramSpec extends FunSpec
 
       val result = tile.polygonalHistogram(extent, zone)
 
-      result.getItemCount(1) should equal (40)
-      result.getItemCount(2) should equal (0)
+      result.itemCount(1) should equal (40)
+      result.itemCount(2) should equal (0)
+    }
+
+    it("computes double Histogram") {
+      val rs = createRaster(Array.fill(40*40)(1),40,40)
+      val tile = rs.tile
+      val extent = rs.extent
+      val zone = Extent(10,-10,50,10).toPolygon
+
+      val result = tile.polygonalHistogramDouble(extent, zone)
+
+      result.itemCount(1) should equal (40)
+      result.itemCount(2) should equal (0)
     }
   }
 }

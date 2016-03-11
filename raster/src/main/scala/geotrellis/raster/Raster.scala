@@ -1,9 +1,10 @@
 package geotrellis.raster
 
+import geotrellis.proj4.CRS
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
 import geotrellis.vector._
-import geotrellis.proj4.CRS
+
 
 object Raster {
   def apply[T <: CellGrid](feature: PolygonFeature[T]): Raster[T] =

@@ -48,10 +48,16 @@ trait PolygonalSummaryMethods extends MethodExtensions[Tile] {
   }
 
   def polygonalHistogram(extent: Extent, geom: Polygon): Histogram[Int] =
-    polygonalSummary(extent, geom, HistogramSummary)
+    polygonalSummary(extent, geom, IntHistogramSummary)
 
   def polygonalHistogram(extent: Extent, geom: MultiPolygon): Histogram[Int] =
-    polygonalSummary(extent, geom, HistogramSummary)
+    polygonalSummary(extent, geom, IntHistogramSummary)
+
+  def polygonalHistogramDouble(extent: Extent, geom: Polygon): Histogram[Double] =
+    polygonalSummary(extent, geom, DoubleHistogramSummary)
+
+  def polygonalHistogramDouble(extent: Extent, geom: MultiPolygon): Histogram[Double] =
+    polygonalSummary(extent, geom, DoubleHistogramSummary)
 
   def polygonalMax(extent: Extent, geom: Polygon): Int =
     polygonalSummary(extent, geom, MaxSummary)

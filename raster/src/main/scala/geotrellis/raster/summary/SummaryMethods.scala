@@ -16,49 +16,36 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     FastMapHistogram.fromTile(self)
 
   /**
-    * Implements a histogram in terms of an array of the given size.
-    * The size provided must be less than or equal to the number of distinct
-    * values in the Tile.
-    *
-    * @note     Tiles with a double type (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) will have their values
-    *           rounded to integers when making the Histogram.
-    */
-  def arrayHistogram(size: Int): ArrayHistogram =
-    ArrayHistogram.fromTile(self, size)
-
-  /**
     * Create a histogram from double values in a raster.
-    *
-    * FastMapHistogram only works with integer values, which is great for performance
-    * but means that, in order to use FastMapHistogram with double values, each value
-    * must be multiplied by a power of ten to preserve significant fractional digits.
-    *
-    * For example, if you want to save one significant digit (2.1 from 2.123), set
-    * sigificantDigits to 1, and the histogram will save 2.1 as "21" by multiplying
-    * each value by 10.  The multiplier is 10 raised to the power of significant digits
-    * (e.g. 1 digit: 10, 2 digits: 100, and so on).
-    *
-    * Important: Be sure that the maximum value in the rater multiplied by
-    *            10 ^ significantDigits does not overflow Int.MaxValue (2, 147, 483, 647).
-    *
-    * @param significantDigits   Number of significant digits to preserve by multiplying
     */
-  def doubleHistogram(significantDigits: Int): Histogram[Int] =
-    FastMapHistogram.fromTileDouble(self, significantDigits)
+  def doubleHistogram: Histogram[Double] =
+    StreamingHistogram.fromTile(self)
 
   /**
   * Generate quantile class breaks for a given raster.
   */
   def classBreaks(numBreaks: Int): Array[Int] =
-    histogram.getQuantileBreaks(numBreaks)
+    histogram.quantileBreaks(numBreaks)
+
+  /**
+  * Generate quantile class breaks for a given raster.
+  */
+  def classBreaksDouble(numBreaks: Int): Array[Double] =
+    doubleHistogram.quantileBreaks(numBreaks)
 
   /**
     * Determine statistical data for the given histogram.
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Statistics[Int] =
-    histogram.generateStatistics
+  def statistics: Option[Statistics[Int]] = histogram.statistics
+
+  /**
+    * Determine statistical data for the given histogram.
+    *
+    * This includes mean, median, mode, stddev, and min and max values.
+    */
+  def statisticsDouble: Option[Statistics[Double]] = doubleHistogram.statistics
 
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.
@@ -70,7 +57,8 @@ trait SummaryMethods extends MethodExtensions[Tile] {
    *                Ints.
    */
   def standardDeviations(factor: Double = 1.0): Tile = {
-    val Statistics(_, mean, _, _, stddev, _, _) = statistics
+    require(statistics.nonEmpty)
+    val Statistics(_, mean, _, _, stddev, _, _) = statistics.get
 
     val indata = self.toArray
     val len = indata.length

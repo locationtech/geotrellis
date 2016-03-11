@@ -153,6 +153,10 @@ public class ObliqueMercatorProjection extends CylindricalProjection {
 			u_0 = - u_0;
 	}
 
+    @Override public void setGamma(double gamma) {
+        this.Gamma = gamma;
+    }
+
 	public ProjCoordinate project(double lam, double phi, ProjCoordinate xy) {
 		double con, q, s, ul, us, vl, vs;
 

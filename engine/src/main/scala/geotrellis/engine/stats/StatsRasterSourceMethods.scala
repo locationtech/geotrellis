@@ -23,7 +23,8 @@ import geotrellis.raster.summary._
 
 @deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait StatsRasterSourceMethods extends RasterSourceMethods {
-  private def convergeHistograms(histograms: Seq[Histogram[Int]]): Histogram[Int] = FastMapHistogram.fromHistograms(histograms)
+  private def convergeHistograms(histograms: Seq[Histogram[Int]]): Histogram[Int] =
+    histograms.reduce(_ merge _)
 
   def tileHistograms(): DataSource[Histogram[Int], Histogram[Int]] =
     rasterSource map (_.histogram) withConverge(convergeHistograms)
@@ -32,8 +33,8 @@ trait StatsRasterSourceMethods extends RasterSourceMethods {
     rasterSource map(_.histogram) converge(convergeHistograms)
 
   def statistics(): ValueSource[Statistics[Int]] =
-    histogram map (_.generateStatistics())
+    histogram map (_.statistics().get)
 
   def classBreaks(numBreaks: Int): ValueSource[Array[Int]] =
-    histogram map (_.getQuantileBreaks(numBreaks))
+    histogram map (_.quantileBreaks(numBreaks))
 }

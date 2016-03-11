@@ -19,9 +19,6 @@ package geotrellis.raster.mapalgebra.zonal
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 
-import spire.syntax.cfor._
-
-import scala.collection.mutable
 
 /**
  * Given a raster, return a histogram summary of the cells within each zone.
@@ -32,49 +29,4 @@ import scala.collection.mutable
  */
 trait ZonalHistogram[@specialized (Int, Double) T <: AnyVal] {
   def apply(tile: Tile, zones: Tile): Map[Int, Histogram[T]]
-}
-
-object ZonalHistogramInt extends ZonalHistogram[Int] {
-
-  def apply(tile: Tile, zones: Tile): Map[Int, Histogram[Int]] = {
-    val histMap = mutable.Map[Int, MutableHistogram[Int]]()
-
-    val rows  = tile.rows
-    val cols  = tile.cols
-
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        val v = tile.get(col, row)
-        val z = zones.get(col, row)
-        if(!histMap.contains(z)) { histMap(z) = FastMapHistogram() }
-        histMap(z).countItem(v)
-      }
-    }
-
-    histMap.toMap
-  }
-}
-
-object ZonalHistogramDouble extends ZonalHistogram[Double] {
-
-  def apply(tile: Tile, zones: Tile): Map[Int, Histogram[Double]] =
-    apply(tile, zones, 80)
-
-  def apply(tile: Tile, zones: Tile, n: Int): Map[Int, Histogram[Double]] = {
-    val histMap = mutable.Map[Int, MutableHistogram[Double]]()
-
-    val rows  = tile.rows
-    val cols  = tile.cols
-
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        val v = tile.get(col, row)
-        val z = zones.get(col, row)
-        if(!histMap.contains(z)) { histMap(z) = StreamingHistogram(n) }
-        histMap(z).countItem(v)
-      }
-    }
-
-    histMap.toMap
-  }
 }

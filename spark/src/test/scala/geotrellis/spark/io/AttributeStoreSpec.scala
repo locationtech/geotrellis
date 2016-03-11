@@ -50,7 +50,7 @@ abstract class AttributeStoreSpec
     attributeStore.write(layerId, "histogram", histo)
 
     val loaded = attributeStore.read[Histogram[Int]](layerId, "histogram")
-    loaded.getMean should be (histo.getMean)
+    loaded.mean should be (histo.mean)
   }
 
   it("should save and load a random RootJsonReadable object") {

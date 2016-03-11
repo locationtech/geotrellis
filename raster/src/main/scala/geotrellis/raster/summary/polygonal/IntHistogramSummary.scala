@@ -1,19 +1,20 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.raster.rasterize._
 import geotrellis.raster.histogram._
+import geotrellis.raster.rasterize._
+import geotrellis.vector._
 
-object HistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
+
+object IntHistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
   def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Histogram[Int] = {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     val histogram = FastMapHistogram()
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.get(col, row)
       if (isData(z)) histogram.countItem(z, 1)
-    }
+    })
     histogram
   }
 
@@ -24,5 +25,6 @@ object HistogramSummary extends TilePolygonalSummaryHandler[Histogram[Int]] {
   }
 
   def combineResults(rs: Seq[Histogram[Int]]): Histogram[Int] =
-    FastMapHistogram.fromHistograms(rs)
+    if (rs.nonEmpty) rs.reduce(_ merge _)
+    else FastMapHistogram()
 }

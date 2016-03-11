@@ -30,7 +30,9 @@ object TileMoransICalculation {
       var `stddev^2` = 0.0
 
       val h = FastMapHistogram.fromTile(r)
-      val Statistics(_, m, _, _, s, _, _) = h.generateStatistics
+      val stats = h.statistics
+      require(stats.nonEmpty)
+      val Statistics(_, m, _, _, s, _, _) = stats.get
       mean = m
       `stddev^2` = s * s
 
@@ -80,7 +82,9 @@ object ScalarMoransICalculation {
       var ws: Int = 0
 
       val h = FastMapHistogram.fromTile(r)
-      val Statistics(_, m, _, _, s, _, _) = h.generateStatistics()
+      val stats = h.statistics
+      require(stats.nonEmpty)
+      val Statistics(_, m, _, _, s, _, _) = stats.get
       mean = m
       `stddev^2` = s * s
 

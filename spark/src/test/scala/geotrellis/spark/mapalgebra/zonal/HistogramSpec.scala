@@ -78,7 +78,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       for(zone <- result.keys) {
         val hist = result(zone)
         for(v <- expected(zone).keys) {
-          hist.getItemCount(v) should be (expected(zone)(v))
+          hist.itemCount(v) should be (expected(zone)(v))
         }
       }
     }

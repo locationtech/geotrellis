@@ -148,10 +148,10 @@ object VectorToRaster {
   }
 
   def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: (Int, Int) => Int): Tile =
-    Rasterizer.rasterize(feature, rasterExtent)(f)
+    feature.rasterize(rasterExtent)(f)
 
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent, value:Int): Tile =
-    Rasterizer.rasterizeWithValue(feature, rasterExtent, value)
+  def rasterize(feature: Geometry, rasterExtent: RasterExtent, value: Int): Tile =
+    feature.rasterize(rasterExtent, value)
 
 /**
  * Gives a raster that represents the number of occuring points per cell.

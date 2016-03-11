@@ -37,7 +37,7 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
   def zonalHistogramInt(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Int]]] = {
     ValueSource(
       (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
-        ZonalHistogramInt(tile, zones)
+        IntZonalHistogram(tile, zones)
       }
     )
   }
@@ -48,7 +48,7 @@ trait ZonalRasterSourceMethods extends RasterSourceMethods {
   def zonalHistogramDouble(zonesSource: RasterSource): ValueSource[Map[Int, Histogram[Double]]] = {
     ValueSource(
       (rasterSource.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
-        ZonalHistogramDouble(tile, zones)
+        DoubleZonalHistogram(tile, zones)
       }
     )
   }

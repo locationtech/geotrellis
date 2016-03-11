@@ -22,11 +22,9 @@ import com.vividsolutions.jts.geom.Coordinate
 import com.vividsolutions.jts.geom.Envelope
 
 import scala.collection.mutable
-import scala.collection.JavaConversions._
 
 object SpatialIndex {
-  def apply(points: Iterable[(Double, Double)])
-           (implicit di: DummyImplicit): SpatialIndex[(Double, Double)] = {
+  def apply(points: Iterable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
     val si = new SpatialIndex[(Double, Double)](Measure.Dumb)
     for(point <- points) {
       si.insert(point, point._1, point._2)
@@ -42,34 +40,54 @@ object SpatialIndex {
     }
     si
   }
+
+  def fromExtents[T](items: Iterable[T])(f: T => Extent): SpatialIndex[T] = {
+    val idx = new SpatialIndex[T]
+    items.foreach { i => idx.insert(i, f(i)) }
+    idx
+  }
 }
 
-class SpatialIndex[T](val measure: Measure) extends Serializable {
+class SpatialIndex[T](val measure: Measure = Measure.Dumb) extends Serializable {
   val rtree = new STRtree
-  val points = mutable.Set[T]()
+  val points = mutable.Set.empty[T]
 
   def insert(v: T, x: Double, y: Double) = {
     rtree.insert(new Envelope(new Coordinate(x, y)), v)
     points.add(v)
   }
 
-  def nearest(x: Double, y: Double): T = {
-    rtree.nearestNeighbour(new Envelope(new Coordinate(x, y)), null, measure).asInstanceOf[T]
+  def insert(v: T, ex: Extent) = {
+    rtree.insert(ex.jtsEnvelope, v)
+    points.add(v)
   }
+
+  def nearest(x: Double, y: Double): T =
+    rtree.nearestNeighbour(new Envelope(new Coordinate(x, y)), null, measure).asInstanceOf[T]
 
   def nearest(pt: (Double, Double)): T = {
     val e = new Envelope(new Coordinate(pt._1, pt._2))
     rtree.nearestNeighbour(e, null, measure).asInstanceOf[T]
   }
 
-  def pointsInExtent(extent: Extent): Seq[T] = {
-    rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax))
-         .map(_.asInstanceOf[T])
-  }
+  def nearest(ex: Extent): T =
+    rtree.nearestNeighbour(ex.jtsEnvelope, null, measure).asInstanceOf[T]
 
-  def pointsInExtentAsJavaList(extent: Extent): List[_] = {
-    rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).toList
-  }
+  def traversePointsInExtent(extent: Extent): Traversable[T] =
+    new Traversable[T] {
+      override def foreach[U](f: T => U): Unit = {
+        val visitor = new com.vividsolutions.jts.index.ItemVisitor {
+          override def visitItem(obj: AnyRef): Unit = f(obj.asInstanceOf[T])
+        }
+        rtree.query(extent.jtsEnvelope, visitor)
+      }
+    }
+
+  def pointsInExtent(extent: Extent): Vector[T] =
+    traversePointsInExtent(extent).to[Vector]
+
+  def pointsInExtentAsJavaList(extent: Extent): java.util.List[T] =
+    rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).asInstanceOf[java.util.List[T]]
 }
 
 object Measure {

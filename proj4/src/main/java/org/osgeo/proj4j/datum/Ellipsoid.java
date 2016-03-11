@@ -48,7 +48,7 @@ package org.osgeo.proj4j.datum;
  *   
  * @see Datum
  */
-public class Ellipsoid implements Cloneable, java.io.Serializable
+public final class Ellipsoid implements Cloneable, java.io.Serializable
 {
 
   public String name;
@@ -377,4 +377,27 @@ public class Ellipsoid implements Cloneable, java.io.Serializable
     return name;
   }
 
+  public int hashCode() {
+      return name.hashCode() 
+          | (7 * shortName.hashCode()) 
+          | (17 * Double.valueOf(equatorRadius).hashCode()) 
+          | (29 * Double.valueOf(poleRadius).hashCode()) 
+          | (37 * Double.valueOf(eccentricity).hashCode());
+  }
+
+  public boolean equals(Object that) {
+      if (this == that) return true;
+      if (that instanceof Ellipsoid) {
+          Ellipsoid e = (Ellipsoid) that;
+          if (this.name == null && e.name != null) return false;
+          if (!this.name.equals(e.name)) return false;
+          if (this.shortName == null && e.shortName != null) return false;
+          if (!this.shortName.equals(e.shortName)) return false;
+          return this.equatorRadius == e.equatorRadius
+              && this.poleRadius == e.poleRadius
+              && this.eccentricity == e.eccentricity;
+      } else {
+          return false;
+      }
+  }
 }
