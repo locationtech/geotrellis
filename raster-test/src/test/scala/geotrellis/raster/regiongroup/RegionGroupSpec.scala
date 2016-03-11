@@ -39,7 +39,7 @@ class RegionGroupSpec extends FunSpec
       val regions = r.regionGroup.tile
 
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (4)
 
     }
@@ -58,7 +58,7 @@ class RegionGroupSpec extends FunSpec
       val regions = r.regionGroup(options).tile
 
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (3)
 
     }
@@ -90,7 +90,7 @@ class RegionGroupSpec extends FunSpec
       val RegionGroupResult(regions,regionMap) = r.regionGroup
 
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (8)
 
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
@@ -143,7 +143,7 @@ class RegionGroupSpec extends FunSpec
         r.regionGroup(RegionGroupOptions(ignoreNoData = false))
 
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (9)
 
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
@@ -185,7 +185,7 @@ class RegionGroupSpec extends FunSpec
       val RegionGroupResult(regions,regionMap) = r.regionGroup
 
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (4)
 
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
@@ -226,7 +226,7 @@ class RegionGroupSpec extends FunSpec
       val RegionGroupResult(regions,regionMap) = r.regionGroup
 
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (1)
 
       for (col <- 0 until 7) {
@@ -265,7 +265,7 @@ class RegionGroupSpec extends FunSpec
       val r = ArrayTile(arr, cols, rows)
       val RegionGroupResult(regions,regionMap) = r.regionGroup
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (4)
 
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
@@ -310,7 +310,7 @@ class RegionGroupSpec extends FunSpec
       val RegionGroupResult(regions,regionMap) =
         r.regionGroup(RegionGroupOptions(ignoreNoData = false))
       val histogram = regions.histogram
-      val count = histogram.getValues.length
+      val count = histogram.values.length
       count should be (7)
 
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()

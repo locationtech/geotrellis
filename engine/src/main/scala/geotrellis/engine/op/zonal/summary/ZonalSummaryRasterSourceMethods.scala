@@ -101,10 +101,10 @@ trait ZonalSummaryRasterSourceMethods extends RasterSourceMethods {
       .converge(handler.combineResults)
 
   def zonalHistogram(p: Polygon): ValueSource[Histogram[Int]] =
-    zonalSummary(HistogramSummary, p, None)
+    zonalSummary(IntHistogramSummary, p, None)
 
   def zonalHistogram(p: Polygon, cached: DataSource[Histogram[Int], _]): ValueSource[Histogram[Int]] =
-    zonalSummary(HistogramSummary, p, Some(cached))
+    zonalSummary(IntHistogramSummary, p, Some(cached))
 
   def zonalSum(p: Polygon): ValueSource[Long] =
     zonalSummary(SumSummary, p, None)

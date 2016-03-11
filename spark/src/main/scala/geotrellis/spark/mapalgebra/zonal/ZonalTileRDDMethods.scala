@@ -14,12 +14,12 @@ import spire.syntax.cfor._
 
 trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
 
-  private def mergeMaps(a: Map[Int, Histogram[Int]], b: Map[Int, Histogram[Int]]) = {
+  private def mergeMaps[T <: AnyVal](a: Map[Int, Histogram[T]], b: Map[Int, Histogram[T]]) = {
     var res = a
     for ((k, v) <- b)
       res = res + (k ->
         (
-          if (res.contains(k)) FastMapHistogram.fromHistograms(Seq(res(k), v))
+          if (res.contains(k)) res(k).merge(v)
           else v
         )
       )
@@ -30,14 +30,21 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
   def zonalHistogram(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram[Int]] = {
     partitioner
       .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
-      .map((t: (K, (Tile, Tile))) => ZonalHistogramInt(t._2._1, t._2._2))
+      .map((t: (K, (Tile, Tile))) => IntZonalHistogram(t._2._1, t._2._2))
       .fold(Map[Int, Histogram[Int]]())(mergeMaps)
+  }
+
+  def zonalHistogramDouble(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): Map[Int, Histogram[Double]] = {
+    partitioner
+      .fold(self.join(zonesRasterRDD))(self.join(zonesRasterRDD, _))
+      .map((t: (K, (Tile, Tile))) => DoubleZonalHistogram(t._2._1, t._2._2))
+      .fold(Map[Int, Histogram[Double]]())(mergeMaps)
   }
 
   def zonalPercentage(zonesRasterRDD: RDD[(K, Tile)], partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val sc = self.sparkContext
     val zoneHistogramMap = zonalHistogram(zonesRasterRDD, partitioner)
-    val zoneSumMap = zoneHistogramMap.map { case (k, v) => k -> v.getTotalCount }
+    val zoneSumMap = zoneHistogramMap.map { case (k, v) => k -> v.totalCount }
     val bcZoneHistogramMap = sc.broadcast(zoneHistogramMap)
     val bcZoneSumMap = sc.broadcast(zoneSumMap)
 
@@ -53,7 +60,7 @@ trait ZonalTileRDDMethods[K] extends TileRDDMethods[K] {
         cfor(0)(_ < cols, _ + 1) { col =>
           val (v, z) = (tile.get(col, row), zone.get(col, row))
 
-          val (count, zoneCount) = (zhm(z).getItemCount(v), zsm(z))
+          val (count, zoneCount) = (zhm(z).itemCount(v), zsm(z))
 
           res.set(col, row, math.round((count / zoneCount.toDouble) * 100).toInt)
         }

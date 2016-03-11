@@ -2,10 +2,10 @@ package geotrellis.raster.mask
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.local.{Mask, InverseMask}
-import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.{Geometry, Extent}
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.{Geometry, Extent}
 
 
 trait TileMaskMethods extends MethodExtensions[Tile] {
@@ -49,13 +49,13 @@ trait TileMaskMethods extends MethodExtensions[Tile] {
     val result = ArrayTile.empty(self.cellType, self.cols, self.rows)
     for (g <- geoms) {
       if (self.cellType.isFloatingPoint) {
-        Rasterizer.foreachCellByGeometry(g, re, options) { (col: Int, row: Int) =>
+        g.foreach(re, options)({ (col: Int, row: Int) =>
           result.setDouble(col, row, self.getDouble(col, row))
-        }
+        })
       } else {
-        Rasterizer.foreachCellByGeometry(g, re, options) { (col: Int, row: Int) =>
+        g.foreach(re, options)({ (col: Int, row: Int) =>
           result.set(col, row, self.get(col, row))
-        }
+        })
       }
     }
     result

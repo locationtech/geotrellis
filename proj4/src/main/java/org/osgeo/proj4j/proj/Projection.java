@@ -17,7 +17,9 @@
 package org.osgeo.proj4j.proj;
 
 import org.osgeo.proj4j.*;
+import org.osgeo.proj4j.datum.AxisOrder;
 import org.osgeo.proj4j.datum.Ellipsoid;
+import org.osgeo.proj4j.datum.PrimeMeridian;
 import org.osgeo.proj4j.units.AngleFormat;
 import org.osgeo.proj4j.units.Unit;
 import org.osgeo.proj4j.units.Units;
@@ -178,6 +180,9 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
      * units of this projection.  Default is metres, but may be degrees
      */
     protected Unit unit = null;
+
+    private PrimeMeridian primeMeridian = PrimeMeridian.forName("greenwich");
+    private AxisOrder axes = AxisOrder.ENU;
 
     // Some useful constants
     protected final static double EPS10 = 1e-10;
@@ -434,6 +439,22 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
 
     public String toString() {
         return "None";
+    }
+
+    public void setAxisOrder(String axes) {
+        this.axes = AxisOrder.fromString(axes);
+    }
+
+    public AxisOrder getAxisOrder() {
+        return this.axes;
+    }
+
+    public void setPrimeMeridian(String primeMeridian) {
+        this.primeMeridian = PrimeMeridian.forName(primeMeridian);
+    }
+
+    public PrimeMeridian getPrimeMeridian() {
+        return this.primeMeridian;
     }
 
     /**
@@ -726,6 +747,10 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     {
         this.unit = unit;
     }
+
+    public Unit getUnits() {
+        return this.unit;
+    }
   
     /**
      * Initialize the projection. This should be called after setting parameters and before using the projection.
@@ -760,5 +785,8 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
         return angle;
     }
 
+    public void setGamma(double gamma) {
+        // no-op, overridden for Oblique Mercator
+    }
 }
 

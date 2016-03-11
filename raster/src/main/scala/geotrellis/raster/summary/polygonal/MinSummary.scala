@@ -1,18 +1,19 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.vector._
 import geotrellis.raster.rasterize._
+import geotrellis.vector._
+
 
 object MinSummary extends TilePolygonalSummaryHandler[Int] {
   def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Int = {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var min = NODATA
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.get(col, row)
       if (isData(z) && (z < min || isNoData(min)) ) { min = z }
-    }
+    })
     min
   }
 
@@ -39,10 +40,10 @@ object MinDoubleSummary extends TilePolygonalSummaryHandler[Double] {
     val Raster(tile, _) = raster
     val rasterExtent = raster.rasterExtent
     var min = Double.NaN
-    Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
+    polygon.foreach(rasterExtent)({ (col: Int, row: Int) =>
       val z = tile.getDouble(col, row)
       if (isData(z) && (z < min || isNoData(min))) { min = z }
-    }
+    })
 
     min
   }

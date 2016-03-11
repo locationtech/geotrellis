@@ -13,8 +13,10 @@ public class Proj4Keyword
   public static final String datum = "datum";
   public static final String ellps = "ellps";
   public static final String es = "es";
+  public static final String axis = "axis";
 
   public static final String azi = "azi";
+  public static final String gamma = "gamma";
   public static final String k = "k";
   public static final String k_0 = "k_0";
   public static final String lat_ts = "lat_ts";
@@ -49,6 +51,7 @@ public class Proj4Keyword
   public static final String nadgrids = "nadgrids";
   public static final String no_defs = "no_defs";
   public static final String wktext = "wktext";
+  public static final String no_uoff = "no_uoff"; // TODO: Implement no_uoff parameter
 
 
   private static Set<String> supportedParams = null;
@@ -86,13 +89,17 @@ public class Proj4Keyword
       supportedParams.add(towgs84);
       supportedParams.add(to_meter);
       supportedParams.add(units);
-      supportedParams.add(zone);
+      supportedParams.add(nadgrids);
+      supportedParams.add(pm);
+      supportedParams.add(axis);
+
+      supportedParams.add(gamma);       // Just for Oblique Mercator projection
+      supportedParams.add(zone);        // Just for Transverse Mercator projection
       
       supportedParams.add(title);       // no-op
       supportedParams.add(no_defs);     // no-op
       supportedParams.add(wktext);      // no-op
-      supportedParams.add(nadgrids);    // no-op for now
-
+      supportedParams.add(no_uoff);     // no-op
     }
     return supportedParams;
   }

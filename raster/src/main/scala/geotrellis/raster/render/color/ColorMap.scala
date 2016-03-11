@@ -178,7 +178,7 @@ case class CachedColorMap(colors: Array[Int], options: ColorMapOptions, h: Histo
   final val noDataColor = options.noDataColor
   def render(r: Tile) =
     r.map(this)
-  final def apply(z: Int) = { if(isNoData(z)) noDataColor else h.getItemCount(z) }
+  final def apply(z: Int) = { if(isNoData(z)) noDataColor else h.itemCount(z) }
   def cache(h: Histogram[Int]) = this
 }
 
@@ -243,7 +243,7 @@ case class DoubleColorMap(breaksToColors: Map[Double, Int],
       lazy val colors = cs
       val options = opts
       def render(r: Tile) =
-        r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
+        r.map { z => if(z == NODATA) options.noDataColor else ch.itemCount(z) }
       def cache(h: Histogram[Int]) = this
     }
   }

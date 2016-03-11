@@ -18,12 +18,12 @@ class RepeatedTransformTest extends FunSuite with Matchers {
     val destPt = new ProjCoordinate()
    
     transform.transform(srcPt, destPt)
-    System.out.println(srcPt + " ==> " + destPt)
+    // System.out.println(srcPt + " ==> " + destPt)
     
     // do it again
     val destPt2 = new ProjCoordinate()
     transform.transform(srcPt, destPt2)
-    System.out.println(srcPt + " ==> " + destPt2)
+    // System.out.println(srcPt + " ==> " + destPt2)
 
     destPt should be (destPt2)
   }

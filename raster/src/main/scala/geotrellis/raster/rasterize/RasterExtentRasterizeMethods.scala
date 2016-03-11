@@ -18,22 +18,43 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.Geometry
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.Geometry
+
+import spire.syntax.cfor._
 
 
 trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T] {
-  def foreachCell(
+
+  def foreach(
     geom : Geometry,
     options: Options = Options.DEFAULT,
     ct : CellType = IntConstantNoDataCellType
-  )(fn : (Int, Int) => Int) : Tile =
-    geom.foreachCell(self, options, ct)(fn)
+  )(fn : (Int, Int) => Unit) : Unit =
+    geom.foreach(self, options)(fn)
 
-  def foreachCellDouble(
-    geom : Geometry,
+  def foreach(fn: (Int, Int) => Unit): Unit = {
+    val cols = self.cols
+    val rows = self.rows
+
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        fn(col, row)
+      }
+    }
+  }
+
+  def rasterize(
+    geom: Geometry,
     options: Options = Options.DEFAULT,
-    ct : CellType = DoubleConstantNoDataCellType
-  )(fn : (Int, Int) => Double) : Tile =
-    geom.foreachCellDouble(self, options, ct)(fn)
+    ct: CellType = IntConstantNoDataCellType
+  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
+    geom.rasterize(self, options, ct)(fn)
+
+  def rasterizeDouble(
+    geom: Geometry,
+    options: Options = Options.DEFAULT,
+    ct: CellType = DoubleConstantNoDataCellType
+  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
+    geom.rasterizeDouble(self, options, ct)(fn)
 }

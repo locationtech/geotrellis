@@ -87,7 +87,7 @@ class ZonalHistogramSpec extends FunSpec with Matchers with TestEngine {
       for(zone <- result.keys) {
         val hist = result(zone)
         for(v <- expected(zone).keys) {
-          hist.getItemCount(v) should be (expected(zone)(v))
+          hist.itemCount(v) should be (expected(zone)(v))
         }
       }
     }

@@ -1,14 +1,16 @@
 package geotrellis.spark.summary
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.histogram._
+import geotrellis.raster.mapalgebra.local._
+import geotrellis.raster.summary._
 import geotrellis.spark._
 import geotrellis.spark.mapalgebra._
+
 import org.apache.spark.Partitioner
-import org.apache.spark.SparkContext._
-import geotrellis.raster.summary._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext._
+
 
 trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
 
@@ -31,11 +33,20 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
   def histogram: Histogram[Int] = {
     self
       .map { case (key, tile) => tile.histogram }
-      .reduce { (h1, h2) => FastMapHistogram.fromHistograms(Array(h1, h2)) }
+      .reduce { _ merge _ }
+  }
+
+  def doubleHistogram: Histogram[Double] = {
+    self
+      .map { case (key, tile) => tile.doubleHistogram }
+      .reduce { _ merge _ }
   }
 
   def classBreaks(numBreaks: Int): Array[Int] =
-    histogram.getQuantileBreaks(numBreaks)
+    histogram.quantileBreaks(numBreaks)
+
+  def classBreaksDouble(numBreaks: Int): Array[Double] =
+    doubleHistogram.quantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
     self.map(_._2.findMinMax)
