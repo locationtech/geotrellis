@@ -1,6 +1,7 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.io.{ StorageFormat, LayerHeader }
+import geotrellis.spark.io.LayerHeader
+
 import spray.json._
 
 case class AccumuloLayerHeader(

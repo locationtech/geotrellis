@@ -1,8 +1,8 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.{ StorageFormat, LayerHeader }
-import org.apache.hadoop.fs.Path
+import geotrellis.spark.io.LayerHeader
 
+import org.apache.hadoop.fs.Path
 import spray.json._
 
 case class HadoopLayerHeader(

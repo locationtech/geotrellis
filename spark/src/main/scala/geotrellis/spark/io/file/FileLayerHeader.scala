@@ -1,6 +1,6 @@
 package geotrellis.spark.io.file
 
-import geotrellis.spark.io.{ StorageFormat, LayerHeader }
+import geotrellis.spark.io.LayerHeader
 import spray.json._
 
 case class FileLayerHeader(
