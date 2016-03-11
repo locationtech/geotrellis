@@ -8,7 +8,7 @@ case class FileLayerHeader(
   valueClass: String,
   path: String
 ) extends LayerHeader {
-  def format = StorageFormat.S3
+  def format = StorageFormat.File
 }
 
 object FileLayerHeader {
