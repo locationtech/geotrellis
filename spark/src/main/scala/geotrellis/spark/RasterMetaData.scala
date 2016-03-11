@@ -52,11 +52,11 @@ case class RasterMetaData[K](
 }
 
 object RasterMetaData {
-  implicit def toLayoutDefinition(md: RasterMetaData[_]): LayoutDefinition =
-    md.layout
-
   implicit def toMapKeyTransform(md: RasterMetaData[_]): MapKeyTransform =
     md.layout.mapTransform
+
+  implicit def layoutComponent[K]: Component[RasterMetaData[K], LayoutDefinition] =
+    Component(_.layout, (md, b) => md.copy(layout = b))
 
   implicit def boundsComponent[K]: Component[RasterMetaData[K], Bounds[K]] =
     Component(_.bounds, (md, b) => md.copy(bounds = b))
