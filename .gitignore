@@ -35,3 +35,5 @@ _SUCCESS
 lib
 index.html
 index.js
+.ensime*
+tags

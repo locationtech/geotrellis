@@ -14,7 +14,7 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 class AccumuloLayerCopier(
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   layerReader: AccumuloLayerReader,
   getLayerWriter: LayerId => AccumuloLayerWriter
 ) extends LayerCopier[LayerId] {
@@ -26,8 +26,8 @@ class AccumuloLayerCopier(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (_, _, keyIndex, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](from)
+    val keyIndex = try {
+      attributeStore.readKeyIndex[K](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerCopyError(from, to).initCause(e)
     }
@@ -42,7 +42,7 @@ class AccumuloLayerCopier(
 
 object AccumuloLayerCopier {
   def apply(
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     layerReader: AccumuloLayerReader,
     getLayerWriter: LayerId => AccumuloLayerWriter
   )(implicit sc: SparkContext): AccumuloLayerCopier =
@@ -53,7 +53,7 @@ object AccumuloLayerCopier {
     )
 
   def apply(
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     layerReader: AccumuloLayerReader,
     layerWriter: AccumuloLayerWriter
   )(implicit sc: SparkContext): AccumuloLayerCopier =
@@ -104,7 +104,7 @@ object AccumuloLayerCopier {
       attributeStore,
       AccumuloLayerReader(instance),
       { layerId: LayerId =>
-        val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](layerId, Fields.header)
+        val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
         AccumuloLayerWriter(instance, header.tileTable, options)
       }
     )

@@ -17,7 +17,7 @@ import scala.reflect.ClassTag
 object AccumuloLayerReindexer {
   def apply(
     instance: AccumuloInstance,
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     options: AccumuloLayerWriter.Options
   )(implicit sc: SparkContext): AccumuloLayerReindexer =
     new AccumuloLayerReindexer(instance, attributeStore, options)
@@ -36,7 +36,7 @@ object AccumuloLayerReindexer {
 
 class AccumuloLayerReindexer(
   instance: AccumuloInstance,
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   options: AccumuloLayerWriter.Options
 )(implicit sc: SparkContext) extends LayerReindexer[LayerId] {
 
@@ -51,8 +51,7 @@ class AccumuloLayerReindexer(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (header, _, _, _) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val header = attributeStore.readHeader[AccumuloLayerHeader](id)
     val table = header.tileTable
 
     val layerReader = AccumuloLayerReader(instance)
@@ -74,8 +73,9 @@ class AccumuloLayerReindexer(
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (header, _, existingKeyIndex, _) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val header = attributeStore.readHeader[AccumuloLayerHeader](id)
+    val existingKeyIndex = attributeStore.readKeyIndex[K](id)
+
     val table = header.tileTable
 
     val layerReader = AccumuloLayerReader(instance)

@@ -8,9 +8,9 @@ import scala.reflect._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withZonalSummaryRasterRDDMethods[K](val self: RasterRDD[K])
+  implicit class withZonalSummaryTileLayerRDDMethods[K](val self: TileLayerRDD[K])
     (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
-      extends PolygonalSummaryRasterRDDMethods[K] with Serializable
+      extends PolygonalSummaryTileLayerRDDMethods[K] with Serializable
 
   implicit class withZonalSummaryFeatureRDDMethods[G <: Geometry, D](val featureRdd: RDD[Feature[G, D]])
       extends PolygonalSummaryFeatureRDDMethods[G, D]

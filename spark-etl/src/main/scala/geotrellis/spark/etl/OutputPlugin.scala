@@ -1,6 +1,6 @@
 package geotrellis.spark.etl
 
-import geotrellis.spark.{Metadata, LayerId, RasterRDD}
+import geotrellis.spark.{Metadata, LayerId, TileLayerRDD}
 import geotrellis.spark.io.{Writer, AttributeStore}
 import geotrellis.spark.io.index.KeyIndexMethod
 
@@ -12,7 +12,7 @@ import spray.json.JsonFormat
 trait OutputPlugin[K, V, M] extends Plugin {
   def name: String
 
-  def attributes(props: Parameters): AttributeStore[JsonFormat]
+  def attributes(props: Parameters): AttributeStore
 
   def writer(method: KeyIndexMethod[K], props: Parameters)(implicit sc: SparkContext): Writer[LayerId, RDD[(K, V)] with Metadata[M]]
 

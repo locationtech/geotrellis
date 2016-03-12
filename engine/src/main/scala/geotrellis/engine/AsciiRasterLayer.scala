@@ -60,7 +60,7 @@ extends RasterLayerBuilder {
       throw new java.io.IOException("[ERROR] Cannot find data (.asc or .grd file) for " +
                                    s"Ascii Raster '${getName(json)}' in catalog.")
     } else {
-      val (rasterExtent, noDataValue) = loadMetaData(path)
+      val (rasterExtent, noDataValue) = loadMetadata(path)
 
       val info =
         RasterLayerInfo(
@@ -81,7 +81,7 @@ extends RasterLayerBuilder {
     if(!f.exists) {
       sys.error(s"Path $path does not exist")
     }
-    val (rasterExtent, noDataValue) = loadMetaData(path)
+    val (rasterExtent, noDataValue) = loadMetadata(path)
 
     val name = Filesystem.basename(f.getName)
 
@@ -105,7 +105,7 @@ extends RasterLayerBuilder {
     new BufferedReader(fr)
   }
 
-  def loadMetaData(path: String): (RasterExtent, Int) = {
+  def loadMetadata(path: String): (RasterExtent, Int) = {
     var ncols: Int = 0
     var nrows: Int = 0
     var xllcorner: Double = 0.0

@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 
 
 package object render {
-  implicit class SpatialRasterRDDRenderMethods(rdd: RasterRDD[SpatialKey]) {
+  implicit class SpatialTileLayerRDDRenderMethods(rdd: TileLayerRDD[SpatialKey]) {
     /**
      * Renders each tile as a PNG.
      *
@@ -34,8 +34,8 @@ package object render {
      * Renders each tile as a GeoTiff.
      */
     def renderGeoTiff(): RDD[(SpatialKey, Array[Byte])] = {
-      val transform = rdd.metaData.mapTransform
-      val crs = rdd.metaData.crs
+      val transform = rdd.metadata.mapTransform
+      val crs = rdd.metadata.crs
       val paintTile = (k: SpatialKey, t: Tile) => GeoTiff(t, transform(k), crs).toByteArray
       rdd.map { case (k,t) => (k, paintTile(k,t)) }
     }

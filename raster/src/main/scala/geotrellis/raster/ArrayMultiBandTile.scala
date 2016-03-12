@@ -5,26 +5,26 @@ import geotrellis.raster.summary._
 
 import spire.syntax.cfor._
 
-object ArrayMultiBandTile {
-  def apply(bands: Tile*): ArrayMultiBandTile =
+object ArrayMultibandTile {
+  def apply(bands: Tile*): ArrayMultibandTile =
     apply(bands.toArray)
 
-  def apply(bands: Traversable[Tile]): ArrayMultiBandTile =
-    new ArrayMultiBandTile(bands.toArray)
+  def apply(bands: Traversable[Tile]): ArrayMultibandTile =
+    new ArrayMultibandTile(bands.toArray)
 
-  def apply(bands: Array[Tile]): ArrayMultiBandTile =
-    new ArrayMultiBandTile(bands)
+  def apply(bands: Array[Tile]): ArrayMultibandTile =
+    new ArrayMultibandTile(bands)
 
-  def alloc(t: CellType, bands: Int, cols: Int, rows: Int): ArrayMultiBandTile = {
-    ArrayMultiBandTile(for (_ <- 0 until bands) yield ArrayTile.alloc(t, cols, rows))
+  def alloc(t: CellType, bands: Int, cols: Int, rows: Int): ArrayMultibandTile = {
+    ArrayMultibandTile(for (_ <- 0 until bands) yield ArrayTile.alloc(t, cols, rows))
   }
 
-  def empty(t: CellType, bands: Int, cols: Int, rows: Int): ArrayMultiBandTile = {
-    ArrayMultiBandTile(for (_ <- 0 until bands) yield ArrayTile.empty(t, cols, rows))
+  def empty(t: CellType, bands: Int, cols: Int, rows: Int): ArrayMultibandTile = {
+    ArrayMultibandTile(for (_ <- 0 until bands) yield ArrayTile.empty(t, cols, rows))
   }
 }
 
-class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMultibandCombiners {
+class ArrayMultibandTile(bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners {
   val bandCount = bands.size
 
   assert(bandCount > 0, "Band count must be greater than 0")
@@ -46,13 +46,13 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
     bands(bandIndex)
   }
 
-  def convert(newCellType: CellType): MultiBandTile = {
+  def convert(newCellType: CellType): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
       newBands(i) = band(i).convert(newCellType)
     }
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /**
@@ -62,7 +62,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
     * @param    subset   A sequence containing the subset of bands that are of interest.
     * @param    f        A function to map over the bands.
     */
-  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultiBandTile = {
+  def map(subset: Seq[Int])(f: (Int, Int) => Int): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     val set = subset.toSet
 
@@ -79,7 +79,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
         newBands(b) = band(b)
     })
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /**
@@ -89,7 +89,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
     * @param    subset   A sequence containing the subset of bands that are of interest.
     * @param    f        A function to map over the bands.
     */
-  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultiBandTile = {
+  def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     val set = subset.toSet
 
@@ -106,54 +106,54 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
         newBands(b) = band(b).mapDouble({ z => z })
     })
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /** Map each band's int value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def map(f: (Int, Int) => Int): MultiBandTile = {
+  def map(f: (Int, Int) => Int): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
       newBands(i) = band(i).map { z => f(i, z) }
     }
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /** Map each band's double value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def mapDouble(f: (Int, Double) => Double): MultiBandTile = {
+  def mapDouble(f: (Int, Double) => Double): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
       newBands(i) = band(i).mapDouble { z => f(i, z) }
     }
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /** Map a single band's int value.
     * @param    bandIndex  Band index to map over.
     * @param    f          Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def map(b0: Int)(f: Int => Int): MultiBandTile = {
+  def map(b0: Int)(f: Int => Int): MultibandTile = {
     validateBand(b0)
     val newBands = bands.clone
     newBands(b0) = band(b0) map f
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /** Map each band's double value.
     * @param       f       Function that takes in a band number and a value, and returns the mapped value for that cell value.
     */
-  def mapDouble(b0: Int)(f: Double => Double): MultiBandTile = {
+  def mapDouble(b0: Int)(f: Double => Double): MultibandTile = {
     validateBand(b0)
     val newBands = bands.clone
     newBands(b0) = band(b0) mapDouble f
 
-    ArrayMultiBandTile(newBands)
+    ArrayMultibandTile(newBands)
   }
 
   /** Iterate over each band's int value.
@@ -298,7 +298,7 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
     result
   }
 
-  def subset(bands: Seq[Int]): ArrayMultiBandTile = {
+  def subset(bands: Seq[Int]): ArrayMultibandTile = {
     val newBands = Array.ofDim[Tile](bands.size)
     var i = 0
 
@@ -308,9 +308,9 @@ class ArrayMultiBandTile(bands: Array[Tile]) extends MultiBandTile with MacroMul
       i += 1
     })
 
-    new ArrayMultiBandTile(newBands)
+    new ArrayMultibandTile(newBands)
   }
 
-  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultiBandTile =
+  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultibandTile =
     subset(bands)
 }

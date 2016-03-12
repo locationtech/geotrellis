@@ -47,8 +47,8 @@ object TestEnvironment {
  * It uses commons-io in at least one case (recursive directory deletion)
  */
 trait TestEnvironment extends BeforeAndAfterAll
-  with RasterRDDBuilders
-  with RasterRDDMatchers
+  with TileLayerRDDBuilders
+  with TileLayerRDDMatchers
   with OpAsserter
 { self: Suite with BeforeAndAfterAll =>
 

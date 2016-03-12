@@ -13,7 +13,7 @@ class MaxSpec extends FunSpec with TestEnvironment {
     val nd = NODATA
 
     it("should square max for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 1,   1, 1, 1,   1, 1, 1,
@@ -39,7 +39,7 @@ class MaxSpec extends FunSpec with TestEnvironment {
     }
 
     it("should square max with 5 x 5 neighborhood") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 1,   1, 1, 1,   1, 1, 1,
@@ -65,7 +65,7 @@ class MaxSpec extends FunSpec with TestEnvironment {
     }
 
     it("should circle max for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 1,   1, 1, 1,   1, 1, 1,

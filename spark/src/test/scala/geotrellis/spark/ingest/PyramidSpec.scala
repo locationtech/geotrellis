@@ -51,7 +51,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
         ) , 8, 8)
 
       val rdd =
-        createSpaceTimeRasterRDD(
+        createSpaceTimeTileLayerRDD(
           Seq( (tile1, dt1), (tile2, dt2) ),
           tileLayout
         )
@@ -61,7 +61,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
       val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)
 
-      levelOneRDD.metaData.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
+      levelOneRDD.metadata.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
       val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
 
       results.map(_._1.temporalKey.instant).distinct.sorted.toSeq should be (Seq(dt1.getMillis, dt2.getMillis))

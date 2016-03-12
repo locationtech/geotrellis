@@ -24,12 +24,12 @@ object FileLayerCopier {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
-        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metaData)
+        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metadata)
         if(!sourceMetadataFile.exists) throw new LayerNotFoundError(from)
 
         // Read the metadata file out.
-        val (header, metadata, keyIndex, writerSchema) = try {
-          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyIndex[K], Schema](from)
+        val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, K](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
         }

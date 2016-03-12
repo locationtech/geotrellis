@@ -12,7 +12,7 @@ import spray.json._
 import scala.reflect.ClassTag
 
 abstract class GenericLayerReindexer[Header:JsonFormat](
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   layerReader: LayerReader[LayerId],
   layerWriter: LayerWriter[LayerId],
   layerDeleter: LayerDeleter[LayerId],
@@ -43,9 +43,7 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
 
-    val (_, _, index, _) =
-      attributeStore.readLayerAttributes[Header, M, KeyIndex[K], Schema](id)
-
+    val index = attributeStore.readKeyIndex[K](id)
     layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(index.keyBounds))
     layerDeleter.delete(id)
     layerCopier.copy[K, V, M](tmpId, id)
@@ -55,7 +53,7 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
 
 object GenericLayerReindexer {
   def apply[Header: JsonFormat](
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     layerReader: LayerReader[LayerId],
     layerWriter: LayerWriter[LayerId],
     layerDeleter: LayerDeleter[LayerId],

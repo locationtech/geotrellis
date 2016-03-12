@@ -19,7 +19,7 @@ import AccumuloLayerWriter.Options
 
 class AccumuloLayerUpdater(
   val instance: AccumuloInstance,
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   layerReader: AccumuloLayerReader,
   options: Options
 ) extends LayerUpdater[LayerId] with LazyLogging {
@@ -31,8 +31,8 @@ class AccumuloLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
@@ -79,7 +79,7 @@ class AccumuloLayerUpdater(
 
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
-    attributeStore.writeLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id, header, updatedMetadata, keyIndex, schema)
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
     AccumuloRDDWriter.write(updatedRdd, instance, encodeKey, options.writeStrategy, table)
   }
 }

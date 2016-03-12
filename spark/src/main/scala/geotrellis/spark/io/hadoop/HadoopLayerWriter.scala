@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -18,7 +18,7 @@ import scala.reflect._
 
 class HadoopLayerWriter(
   rootPath: Path,
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 ) extends LayerWriter[LayerId] {
 
   protected def _write[
@@ -34,10 +34,10 @@ class HadoopLayerWriter(
         valueClass = classTag[V].toString(),
         path = layerPath
       )
-    val metaData = rdd.metadata
+    val metadata = rdd.metadata
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyIndex, KeyValueRecordCodec[K, V].schema)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, KeyValueRecordCodec[K, V].schema)
       HadoopRDDWriter.write[K, V](rdd, layerPath, keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
@@ -46,7 +46,7 @@ class HadoopLayerWriter(
 }
 
 object HadoopLayerWriter {
-  def apply(rootPath: Path, attributeStore: AttributeStore[JsonFormat]): HadoopLayerWriter =
+  def apply(rootPath: Path, attributeStore: AttributeStore): HadoopLayerWriter =
     new HadoopLayerWriter(
       rootPath = rootPath,
       attributeStore = attributeStore

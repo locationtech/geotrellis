@@ -6,7 +6,7 @@ import geotrellis.spark.io.json._
 import spray.json._
 
 class MockS3LayerWriter(
-  attributeStore: AttributeStore[JsonFormat],
+  attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String
 ) extends S3LayerWriter(attributeStore, bucket, keyPrefix) {

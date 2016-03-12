@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
@@ -19,11 +19,11 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class FileLayerReader(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   catalogPath: String
 )(implicit sc: SparkContext) extends FilteringLayerReader[LayerId] with LazyLogging {
 
@@ -36,8 +36,8 @@ class FileLayerReader(
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[FileLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[FileLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -55,7 +55,7 @@ class FileLayerReader(
 }
 
 object FileLayerReader {
-  def apply(attributeStore: AttributeStore[JsonFormat], catalogPath: String)(implicit sc: SparkContext): FileLayerReader =
+  def apply(attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext): FileLayerReader =
     new FileLayerReader(attributeStore, catalogPath)
 
   def apply(catalogPath: String)(implicit sc: SparkContext): FileLayerReader =

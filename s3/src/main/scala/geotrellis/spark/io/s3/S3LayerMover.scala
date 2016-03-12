@@ -8,7 +8,7 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object S3LayerMover {
-  def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, keyPrefix: String): LayerMover[LayerId] =
+  def apply(attributeStore: AttributeStore, bucket: String, keyPrefix: String): LayerMover[LayerId] =
     new GenericLayerMover[LayerId](
       layerCopier  = S3LayerCopier(attributeStore, bucket, keyPrefix),
       layerDeleter = S3LayerDeleter(attributeStore)

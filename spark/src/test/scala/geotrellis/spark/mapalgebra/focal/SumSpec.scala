@@ -16,7 +16,7 @@ class SumSpec extends FunSpec with TestEnvironment {
     val nd = NODATA
 
     it("should square sum r = 1 for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,1, 1,   1, 1, 1,   1, 1, 1,
@@ -42,7 +42,7 @@ class SumSpec extends FunSpec with TestEnvironment {
     }
 
     it("should square sum with 5x5 neighborhood") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,1, 1,   1, 1, 1,   1, 1, 1,
@@ -68,7 +68,7 @@ class SumSpec extends FunSpec with TestEnvironment {
     }
 
     it("should circle sum for raster source") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,1, 1,   1, 1, 1,   1, 1, 1,

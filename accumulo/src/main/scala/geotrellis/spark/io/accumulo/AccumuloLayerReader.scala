@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -15,7 +15,7 @@ import spray.json._
 
 import scala.reflect._
 
-class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implicit sc: SparkContext, instance: AccumuloInstance)
+class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext, instance: AccumuloInstance)
     extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -27,13 +27,13 @@ class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implic
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val (header, metaData, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val queryKeyBounds = rasterQuery(metaData)
+    val queryKeyBounds = rasterQuery(metadata)
 
     val decompose = (bounds: KeyBounds[K]) =>
       keyIndex.indexRanges(bounds).map { case (min, max) =>
@@ -41,7 +41,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore[JsonFormat])(implic
       }
 
     val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
-    new ContextRDD(rdd, metaData)
+    new ContextRDD(rdd, metadata)
   }
 }
 

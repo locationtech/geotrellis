@@ -1,6 +1,6 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -21,11 +21,11 @@ import scala.reflect._
  * @param keyIndexMethod  Method used to convert RDD keys to SFC indexes
  * @param attributeStore  AttributeStore to be used for storing raster metadata
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerWriter(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String
 ) extends LayerWriter[LayerId] with LazyLogging {
@@ -63,7 +63,7 @@ class S3LayerWriter(
 }
 
 object S3LayerWriter {
-  def apply(attributeStore: AttributeStore[JsonFormat], bucket: String, prefix: String): S3LayerWriter =
+  def apply(attributeStore: AttributeStore, bucket: String, prefix: String): S3LayerWriter =
     new S3LayerWriter(attributeStore, bucket, prefix)
 
   def apply(attributeStore: S3AttributeStore): S3LayerWriter =

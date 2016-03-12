@@ -45,7 +45,7 @@ object TemporalGeoTiffInputFormat {
   */
 class TemporalGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, Tile) = {
-    val geoTiff = SingleBandGeoTiff(bytes)
+    val geoTiff = SinglebandGeoTiff(bytes)
 
     val timeTag = TemporalGeoTiffInputFormat.getTimeTag(context)
     val dateFormatter = TemporalGeoTiffInputFormat.getTimeFormatter(context)

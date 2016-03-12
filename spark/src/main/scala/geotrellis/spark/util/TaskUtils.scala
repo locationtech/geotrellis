@@ -26,7 +26,7 @@ object TaskUtils extends App {
           case x => Future.now(x)
         }
       }
-      Task.async { help(0).runAsync }
+      Task.async { help(0).unsafePerformAsync }
     }
   }
 }

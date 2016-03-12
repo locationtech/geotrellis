@@ -9,12 +9,12 @@ import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import spray.json.DefaultJsonProtocol._
 import scala.collection.JavaConversions._
 
-class AccumuloLayerDeleter(val attributeStore: AttributeStore[JsonFormat], connector: Connector) extends LayerDeleter[LayerId] {
+class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, _, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, Unit](id)
+    val header = try {
+      attributeStore.readHeader[AccumuloLayerHeader](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
@@ -28,15 +28,14 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conne
     deleter.delete()
 
     attributeStore.delete(id)
-    attributeStore.clearCache()
   }
 }
 
 object AccumuloLayerDeleter {
-  def apply(attributeStore: AttributeStore[JsonFormat], connector: Connector): AccumuloLayerDeleter =
+  def apply(attributeStore: AttributeStore, connector: Connector): AccumuloLayerDeleter =
     new AccumuloLayerDeleter(attributeStore, connector)
 
-  def apply(attributeStore: AttributeStore[JsonFormat], instance: AccumuloInstance): AccumuloLayerDeleter =
+  def apply(attributeStore: AttributeStore, instance: AccumuloInstance): AccumuloLayerDeleter =
     new AccumuloLayerDeleter(attributeStore, instance.connector)
 
   def apply(attributeStore: AccumuloAttributeStore): AccumuloLayerDeleter =

@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -14,7 +14,7 @@ import spray.json._
 import scala.reflect._
 
 class AccumuloLayerWriter(
-  val attributeStore: AttributeStore[JsonFormat],
+  val attributeStore: AttributeStore,
   instance: AccumuloInstance,
   table: String,
   options: AccumuloLayerWriter.Options
@@ -34,11 +34,11 @@ class AccumuloLayerWriter(
         valueClass = classTag[V].toString(),
         tileTable = table
       )
-    val metaData = rdd.metadata
+    val metadata = rdd.metadata
     val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metaData, keyIndex, schema)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
       AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table)
 
       // Create locality groups based on encoding strategy
@@ -88,7 +88,7 @@ object AccumuloLayerWriter {
 
   def apply(
     instance: AccumuloInstance,
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     table: String,
     options: Options
   ): AccumuloLayerWriter =
@@ -101,7 +101,7 @@ object AccumuloLayerWriter {
 
   def apply(
     instance: AccumuloInstance,
-    attributeStore: AttributeStore[JsonFormat],
+    attributeStore: AttributeStore,
     table: String
   ): AccumuloLayerWriter =
     new AccumuloLayerWriter(

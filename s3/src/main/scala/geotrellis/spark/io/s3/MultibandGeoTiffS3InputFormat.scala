@@ -6,11 +6,11 @@ import geotrellis.vector._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 /** Read multi band GeoTiff from S3 */
-class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, MultiBandTile] {
+class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new S3RecordReader[ProjectedExtent, MultiBandTile] {
+    new S3RecordReader[ProjectedExtent, MultibandTile] {
       def read(key: String, bytes: Array[Byte]) = {
-        val geoTiff = MultiBandGeoTiff(bytes)
+        val geoTiff = MultibandGeoTiff(bytes)
         val projectedExtent = ProjectedExtent(geoTiff.extent, geoTiff.crs)
         (projectedExtent, geoTiff.tile)
       }

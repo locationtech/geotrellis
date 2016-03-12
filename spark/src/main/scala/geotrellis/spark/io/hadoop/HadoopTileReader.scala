@@ -24,10 +24,10 @@ class HadoopTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCo
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
-    val (layerMetaData, _, keyIndex, schema) =
-      attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, KeyIndex[K], Schema](layerId)
-
-    val dataPath = layerMetaData.path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
+    val layerMetadata = attributeStore.readHeader[HadoopLayerHeader](layerId)
+    val keyIndex = attributeStore.readKeyIndex[K](layerId)
+    val schema = attributeStore.readSchema(layerId)
+    val dataPath = layerMetadata.path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
     val inputConf = conf.withInputPath(dataPath)
 
     val codec = KeyValueRecordCodec[K, V]

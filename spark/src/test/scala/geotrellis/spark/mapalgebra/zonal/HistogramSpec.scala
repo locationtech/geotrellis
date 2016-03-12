@@ -17,7 +17,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("Histogram Zonal Operation") {
     it("gives correct histogram for example raster rdds") {
-      val rdd = createRasterRDD(
+      val rdd = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           1, 2, 2,  2, 3, 1,  6, 5, 1,
@@ -34,7 +34,7 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
         TileLayout(3, 4, 3, 2)
       )
 
-      val zonesRDD = createRasterRDD(
+      val zonesRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           1, 1, 1,  4, 4, 4,  5, 6, 6,

@@ -10,7 +10,7 @@ import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 
 class AccumuloSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData[SpaceTimeKey]]
+  extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with AccumuloTestEnvironment

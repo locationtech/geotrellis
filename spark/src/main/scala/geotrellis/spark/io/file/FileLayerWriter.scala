@@ -19,7 +19,7 @@ import java.io.File
   * Handles writing Raster RDDs and their metadata to a filesystem.
   *
   * @tparam K                Type of RDD Key (ex: SpatialKey)
-  * @tparam V                Type of RDD Value (ex: Tile or MultiBandTile )
+  * @tparam V                Type of RDD Value (ex: Tile or MultibandTile )
   * @tparam M                Type of Metadata associated with the RDD[(K,V)]
   *
   * @param catalogPath  The root directory of this catalog.
@@ -28,7 +28,7 @@ import java.io.File
   * @param attributeStore    AttributeStore to be used for storing raster metadata
   */
 class FileLayerWriter(
-    val attributeStore: AttributeStore[JsonFormat],
+    val attributeStore: AttributeStore,
     catalogPath: String
 ) extends LayerWriter[LayerId] with LazyLogging {
 

@@ -74,7 +74,7 @@ trait S3RDDWriter {
       }
 
       val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { requests map write }
-      results.run.run
+      results.run.unsafePerformSync
       pool.shutdown()
     }
   }

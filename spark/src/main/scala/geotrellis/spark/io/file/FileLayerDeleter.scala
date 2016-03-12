@@ -18,7 +18,7 @@ object FileLayerDeleter {
         // Read the metadata file out.
         val header =
           try {
-            attributeStore.readLayerAttribute[FileLayerHeader](layerId, Fields.header)
+            attributeStore.readHeader[FileLayerHeader](layerId)
           } catch {
             case e: AttributeNotFoundError =>
               throw new LayerNotFoundError(layerId).initCause(e)

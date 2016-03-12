@@ -2,19 +2,29 @@ package geotrellis.spark.io
 
 import geotrellis.spark.LayerId
 
-trait AttributeCaching[F[_]] { self: AttributeStore[F] =>
+import spray.json.JsonFormat
+
+trait AttributeCaching { self: AttributeStore =>
   private val cache = new collection.mutable.HashMap[(LayerId, String), Any]
 
-  def cacheRead[T: Format](layerId: LayerId, attributeName: String): T = {
+  def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     cache.getOrElseUpdate(layerId -> attributeName, read[T](layerId, attributeName)).asInstanceOf[T]
   }
 
-  def cacheWrite[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     cache.update(layerId -> attributeName, value)
     write[T](layerId, attributeName, value)
   }
 
-  def clearCache() = {
+  def clearCache(): Unit = {
     cache.clear()
+  }
+
+  def clearCache(id: LayerId): Unit = {
+    cache.keySet.filter(_._1 == id).foreach(cache.remove)
+  }
+
+  def clearCache(id: LayerId, attribute: String): Unit = {
+    cache.remove((id, attribute))
   }
 }

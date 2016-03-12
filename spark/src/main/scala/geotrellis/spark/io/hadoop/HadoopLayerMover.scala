@@ -19,7 +19,7 @@ import scala.reflect.ClassTag
 
 class HadoopLayerMover(
   rootPath: Path,
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 )(implicit sc: SparkContext) extends LayerMover[LayerId] {
 
   override def move[
@@ -30,8 +30,8 @@ class HadoopLayerMover(
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)
 
-    val (header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](from)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, K](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerMoveError(from, to).initCause(e)
     }
@@ -48,7 +48,7 @@ class HadoopLayerMover(
 object HadoopLayerMover {
   def apply(
     rootPath: Path,
-    attributeStore: AttributeStore[JsonFormat]
+    attributeStore: AttributeStore
   )(implicit sc: SparkContext): HadoopLayerMover =
     new HadoopLayerMover(rootPath, attributeStore)
 

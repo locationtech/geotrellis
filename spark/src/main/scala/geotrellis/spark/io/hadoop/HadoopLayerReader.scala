@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -22,11 +22,11 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V       Type of RDD Value (ex: Tile or MultiBandTile )
+ * @tparam V       Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class HadoopLayerReader(
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 )(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
@@ -38,9 +38,8 @@ class HadoopLayerReader(
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, metadata, keyIndex, writerSchema) = try {
-      import spray.json.DefaultJsonProtocol._
-      attributeStore.readLayerAttributes[HadoopLayerHeader, M, KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
