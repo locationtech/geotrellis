@@ -23,14 +23,14 @@ object CutTiles {
     layoutDefinition: LayoutDefinition,
     resampleMethod: ResampleMethod = NearestNeighbor
   ): RDD[(K2, V)] = {
+    val mapTransform = layoutDefinition.mapTransform
     val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
 
     rdd
       .flatMap { tup =>
         val (inKey, tile) = tup
         val extent = inKey.extent
-        val mapTransform = layoutDefinition.mapTransform
-        val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+
         mapTransform(extent)
           .coords
           .map  { spatialComponent =>
