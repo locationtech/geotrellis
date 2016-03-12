@@ -791,4 +791,9 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setGamma(double gamma) {
         // no-op, overridden for Oblique Mercator
     }
+
+    /** Is this "projection" longlat? Overridden in LongLatProjection. */
+    public Boolean isGeographic() {
+        return false;
+    }
 }

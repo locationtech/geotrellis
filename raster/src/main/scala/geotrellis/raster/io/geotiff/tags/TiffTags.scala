@@ -363,16 +363,16 @@ case class TiffTags(
       TiffTags._metadataTags ^|->
       MetadataTags._dateTime get match {
         case Some(dateTime) =>
-          headTags = headTags + (("TIFFTAG_DATETIME", dateTime))
+          headTags = headTags + ((Tags.TIFFTAG_DATETIME, dateTime))
         case None =>
       }
 
     // pixel sample type
     pixelSampleType match {
       case Some(v) if v == PixelIsPoint =>
-        headTags = headTags + (("AREA_OR_POINT", "POINT"))
+        headTags = headTags + ((Tags.AREA_OR_POINT, "POINT"))
       case Some(v) if v == PixelIsArea =>
-        headTags = headTags + (("AREA_OR_POINT", "AREA"))
+        headTags = headTags + ((Tags.AREA_OR_POINT, "AREA"))
       case _ =>
     }
 

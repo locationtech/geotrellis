@@ -2,6 +2,9 @@ package geotrellis.raster.io.geotiff
 
 object Tags {
   def empty: Tags = Tags(Map(), List())
+
+  final val AREA_OR_POINT = "AREA_OR_POINT"
+  final val TIFFTAG_DATETIME = "TIFFTAG_DATETIME"
 }
 
 /** Tags are user data that the GeoTiff is tagged with.

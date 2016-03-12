@@ -79,7 +79,8 @@ object TiffTagFieldValue {
 
     createNoDataString(geoTiff.cellType) match {
       case Some(noDataString) =>
-        fieldValues += TiffTagFieldValue(GDALInternalNoDataTag, AsciisFieldType, noDataString.length + 1, toBytes(noDataString))
+        val bs = toBytes(noDataString)
+        fieldValues += TiffTagFieldValue(GDALInternalNoDataTag, AsciisFieldType, bs.length, bs)
       case _ => ()
     }
 
@@ -89,7 +90,7 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(ModelTiePointsTag, DoublesFieldType, 6, toBytes(Array(0.0, 0.0, 0.0, extent.xmin, extent.ymax, 0.0)))
 
     // GeoKeyDirectory: Tags that describe the CRS
-    val GeoDirectoryTags(shortGeoKeys, doubleGeoKeys) = CoordinateSystemParser.parse(geoTiff.crs)
+    val GeoDirectoryTags(shortGeoKeys, doubleGeoKeys) = CoordinateSystemParser.parse(geoTiff.crs, geoTiff.pixelSampleType)
 
     // Write the short values of the GeoKeyDirectory
     val shortValues = Array.ofDim[Short]( (shortGeoKeys.length + 1) * 4)
@@ -116,8 +117,26 @@ object TiffTagFieldValue {
     // Not written (what goes here?):
     //GeoKeyDirectory ASCII     TagCodes.GeoAsciiParamsTag, TiffFieldType.AsciisFieldType, N = Number of Characters (pipe sparated |), GeoKeyAsciis _
 
-    // GDAL MetaData
-    val metaData = toBytes(new scala.xml.PrettyPrinter(80, 2).format(geoTiff.tags.toXml))
+    // Metadata Tags
+    // Account for special metadata tags, and then write out the rest in XML as the metadata tag
+    val Tags(headerTags, bandTags) = geoTiff.tags
+    var modifiedHeaderTags = headerTags
+    geoTiff.pixelSampleType match {
+      case Some(_) =>
+        // This was captured in the GeoKeys already
+        modifiedHeaderTags -= Tags.AREA_OR_POINT
+      case None =>
+    }
+
+    modifiedHeaderTags.get(Tags.TIFFTAG_DATETIME) match {
+      case Some(dateTime) =>
+        val bs = toBytes(dateTime)
+        fieldValues += TiffTagFieldValue(DateTimeTag, AsciisFieldType, bs.length, bs)
+        modifiedHeaderTags -= Tags.TIFFTAG_DATETIME
+      case None =>
+    }
+
+    val metaData = toBytes(new scala.xml.PrettyPrinter(80, 2).format(Tags(modifiedHeaderTags, geoTiff.tags.bandTags).toXml))
     fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metaData.length, metaData)
 
     // Tags that are different if it is striped or tiled storage, and a function

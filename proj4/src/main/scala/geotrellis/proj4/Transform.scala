@@ -12,7 +12,7 @@ object Transform {
 
 object Proj4Transform {
   def apply(src: CRS, dest: CRS): Transform = {
-    val t = new BasicCoordinateTransform(src.crs, dest.crs)
+    val t = new BasicCoordinateTransform(src.proj4jCrs, dest.proj4jCrs)
 
     { (x: Double, y: Double) =>
       val srcP = new ProjCoordinate(x, y)

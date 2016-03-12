@@ -85,6 +85,11 @@ public class CoordinateReferenceSystem implements java.io.Serializable
         return buf.toString();
     }
 
+    public Boolean isGeographic()
+    {
+        return proj.isGeographic();
+    }
+
     /**
      * Creates a geographic (unprojected) {@link CoordinateReferenceSystem}
      * based on the {@link Datum} of this CRS.

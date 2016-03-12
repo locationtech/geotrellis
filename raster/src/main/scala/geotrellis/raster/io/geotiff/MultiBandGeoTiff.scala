@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-class MultiBandGeoTiff(
+case class MultiBandGeoTiff(
   val tile: MultiBandTile,
   val extent: Extent,
   val crs: CRS,
@@ -66,13 +66,11 @@ object MultiBandGeoTiff {
   def apply(path: String, decompress: Boolean): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(path, decompress)
 
-
   /** Read a multi-band GeoTIFF file from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): MultiBandGeoTiff =
     GeoTiffReader.readMultiBand(path, false)
-
 
   /** Read a multi-band GeoTIFF file from a byte array.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
@@ -94,18 +92,6 @@ object MultiBandGeoTiff {
     tags: Tags
   ): MultiBandGeoTiff =
     apply(tile, extent, crs, tags, GeoTiffOptions.DEFAULT)
-
-  def apply(
-    tile: MultiBandTile,
-    extent: Extent,
-    crs: CRS,
-    tags: Tags,
-    options: GeoTiffOptions
-  ): MultiBandGeoTiff =
-    new MultiBandGeoTiff(tile, extent, crs, tags, options)
-
-  def unapply(mbg: MultiBandGeoTiff): Option[(MultiBandTile, Extent, CRS, Tags)] =
-    Some((mbg.tile, mbg.extent, mbg.crs, mbg.tags))
 
   implicit def multiBandGeoTiffToTile(mbg: MultiBandGeoTiff): MultiBandTile =
     mbg.tile
