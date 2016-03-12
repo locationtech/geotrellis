@@ -48,6 +48,8 @@ import java.util.List;
  * Notable datums in common use include {@link #NAD83} and {@link #WGS84}.
  * 
  */
+// In proj.4 the datum information is a direct member of the PJ struct.
+// The well-known datums are defined in pj_datums.c
 public class Datum implements java.io.Serializable
 {
   public static final int TYPE_UNKNOWN = 0;

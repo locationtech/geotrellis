@@ -111,7 +111,7 @@ public class BasicCoordinateTransform
   
   
     /**
-     * Tranforms a coordinate from the source {@link CoordinateReferenceSystem} 
+     * Transforms a coordinate from the source {@link CoordinateReferenceSystem} 
      * to the target one.
      * 
      * @param src the input coordinate to be transformed
@@ -120,6 +120,7 @@ public class BasicCoordinateTransform
      * 
      * @throws Proj4jException if a computation error is encountered
      */
+    // transform corresponds to the pj_transform function in proj.4
     public ProjCoordinate transform( ProjCoordinate src, ProjCoordinate tgt )
         throws Proj4jException
     {

@@ -19,6 +19,13 @@ import org.osgeo.proj4j.util.FloatPolarCoordinate;
 import org.osgeo.proj4j.util.PolarCoordinate;
 import org.osgeo.proj4j.util.ProjectionMath;
 
+/**
+ * A Grid represents a geodetic datum defining some mapping between a
+ * coordinate system referenced to the surface of the earth and spherical
+ * coordinates.  Generally Grids are loaded from definition files in the proj4
+ * resource directory.
+ */
+// Grid corresponds to the PJ_GRIDINFO struct in proj.4
 public final class Grid implements Serializable {
     /**
      * Identifying name for this Grid. eg "conus" or ntv2_0.gsb
@@ -45,6 +52,10 @@ public final class Grid implements Serializable {
     private Grid next;
     private Grid child;
 
+    /**
+     * Merge (append) a named grid into the given gridlist.
+     */
+    // This method corresponds to the pj_gridlist_merge_gridfile function in proj.4
     public static void mergeGridFile(
         String name,
         List<Grid> gridList)
@@ -79,6 +90,10 @@ public final class Grid implements Serializable {
         mergeGridFile(name, gridList);
     }
 
+    /**
+     * Convert between this grid and WGS84, or vice versa if the <code>inverse</code> flag is set.
+     */
+    // This method corresponds to the pj_apply_gridshift function from proj.4
     public static void shift(List<Grid> grids, boolean inverse, ProjCoordinate in) {
         PolarCoordinate input = new PolarCoordinate(in.x, in.y),
                         output = new PolarCoordinate(Double.NaN, Double.NaN);
@@ -132,6 +147,7 @@ public final class Grid implements Serializable {
         }
     }
 
+    // This class corresponds to the CTABLE struct from proj.4
     public static final class ConversionTable implements Serializable {
         /**
          * ASCII info
@@ -186,6 +202,7 @@ public final class Grid implements Serializable {
         }
     }
 
+    // This method corresponds to the nad_cvt function in proj.4
     private static PolarCoordinate nad_cvt(PolarCoordinate in, boolean inverse, ConversionTable table) {
         PolarCoordinate t, tb;
         if (Double.isNaN(in.lam))
@@ -239,6 +256,7 @@ public final class Grid implements Serializable {
         return in;
     }
 
+    // This method corresponds to the nad_intr method in proj.4
     private static PolarCoordinate nad_intr(PolarCoordinate t, ConversionTable table) {
         t = new PolarCoordinate(t);
         PolarCoordinate val = new PolarCoordinate(Double.NaN, Double.NaN);
@@ -296,6 +314,8 @@ public final class Grid implements Serializable {
         return val;
     }
 
+
+    // This method corresponds to the pj_gridlist_from_nadgrids function in proj.4
     public static List<Grid> fromNadGrids(String grids) throws IOException {
         List<Grid> gridlist = new ArrayList<Grid>();
         synchronized(Grid.class) {
@@ -312,6 +332,7 @@ public final class Grid implements Serializable {
         return gridlist;
     }
 
+    // This method corresponds to the pj_gridinfo_init function in proj.4
     private static Grid gridinfoInit(String gridName) throws IOException {
         Grid grid = new Grid();
         grid.gridName = gridName;

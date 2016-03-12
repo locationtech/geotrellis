@@ -181,7 +181,15 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
      */
     protected Unit unit = null;
 
+    /**
+     * PrimeMeridian defining an offset from the Greenwich (the prime meridian used in WGS84)
+     */
     private PrimeMeridian primeMeridian = PrimeMeridian.forName("greenwich");
+
+    /**
+     * The order of axes for the coordinate system. Default is easting,
+     * northing, vertical (up)
+     */
     private AxisOrder axes = AxisOrder.ENU;
 
     // Some useful constants
