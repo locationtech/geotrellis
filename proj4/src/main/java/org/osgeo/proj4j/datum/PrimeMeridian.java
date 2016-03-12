@@ -5,6 +5,11 @@ import org.osgeo.proj4j.ProjCoordinate;
 import org.osgeo.proj4j.util.ProjectionMath;
 import org.osgeo.proj4j.units.AngleFormat;
 
+/**
+ * A PrimeMeridian represents a constant offset from Greenwich in radians of
+ * longitude.
+ */
+// The list of named prime meridians is defined in proj.4 in pj_datums.c
 public final class PrimeMeridian implements Serializable {
     private final String name;
     private final double offsetFromGreenwich;

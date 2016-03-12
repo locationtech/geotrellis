@@ -26,6 +26,7 @@ import org.osgeo.proj4j.units.Units;
  * @see CRSFactory
  *
  */
+// CoordinateReferenceSystem corresponds to the PJ struct from proj.4
 public class CoordinateReferenceSystem implements java.io.Serializable
 {
     // allows specifying transformations which convert to/from Geographic coordinates on the same datum
