@@ -22,14 +22,14 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
   extends Reader[LayerId, Reader[K, V]] {
 
   val codec = KeyValueRecordCodec[K, V]
-  val rowId = (index: Long) => new Text(long2Bytes(index))
+  val rowId = (index: Long) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val (layerMetaData, _, _, keyIndex, writerSchema) =
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, Unit, KeyIndex[K], Schema](layerId)
+    val (header, _, keyIndex, writerSchema) =
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, Unit, KeyIndex[K], Schema](layerId)
 
     def read(key: K): V = {
-      val scanner = instance.connector.createScanner(layerMetaData.tileTable, new Authorizations())
+      val scanner = instance.connector.createScanner(header.tileTable, new Authorizations())
       scanner.setRange(new ARange(rowId(keyIndex.toIndex(key))))
       scanner.fetchColumnFamily(columnFamily(layerId))
 
@@ -45,7 +45,7 @@ class AccumuloTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecord
       if (tiles.isEmpty) {
         throw new TileNotFoundError(key, layerId)
       } else if (tiles.size > 1) {
-        throw new CatalogError(s"Multiple tiles found for $key for layer $layerId")
+        throw new LayerIOError(s"Multiple tiles found for $key for layer $layerId")
       } else {
         tiles.head._2
       }

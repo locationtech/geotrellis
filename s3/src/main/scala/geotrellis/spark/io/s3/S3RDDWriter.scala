@@ -1,35 +1,43 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.raster.Tile
+import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.avro.{AvroRecordCodec, AvroEncoder}
+import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod, KeyIndex}
+import geotrellis.spark.util.KryoWrapper
 
+import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult, ObjectMetadata, PutObjectRequest}
+import com.typesafe.scalalogging.slf4j._
+import org.apache.spark.rdd.RDD
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
-import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult, ObjectMetadata, PutObjectRequest}
-import org.apache.spark.rdd.RDD
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import scala.reflect._
 
-class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]() {
+trait S3RDDWriter {
 
-  def getS3Client: () => S3Client = () => S3Client.default
-  val codec  = KeyValueRecordCodec[K, V]
-  val schema = codec.schema
+  def getS3Client: () => S3Client
 
-  def write(rdd: RDD[(K, V)], bucket: String, keyPath: K => String, oneToOne: Boolean): Unit = {
+  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](rdd: RDD[(K, V)], bucket: String, keyPath: K => String): Unit = {
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+
     implicit val sc = rdd.sparkContext
 
     val _getS3Client = getS3Client
     val _codec = codec
 
     val pathsToTiles =
-      if (oneToOne) {
-        rdd.map { case row => keyPath(row._1) -> Vector(row) }
-      } else {
-        rdd.groupBy { row => keyPath(row._1) }
-      }
+      // Call groupBy with numPartitions; if called without that argument or a partitioner,
+      // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
+      // on a key type that may no longer by valid for the key type of the resulting RDD.
+      rdd.groupBy({ row => keyPath(row._1) }, numPartitions = rdd.partitions.length)
 
     pathsToTiles.foreachPartition { partition =>
       import geotrellis.spark.util.TaskUtils._
@@ -70,4 +78,8 @@ class S3RDDWriter [K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag]()
       pool.shutdown()
     }
   }
+}
+
+object S3RDDWriter extends S3RDDWriter {
+   def getS3Client: () => S3Client = () => S3Client.default
 }

@@ -22,8 +22,8 @@ import AttributeStore.Fields
  */
 class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
 
-  def readLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat]
-    (id: LayerId):(Header, MetaData, KeyBounds, KeyIndex, Schema) = {
+  def readLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat]
+    (id: LayerId):(Header, MetaData, KeyIndex, Schema) = {
     val header = Try {
       attributeStore.cacheRead[JsObject](id, Fields.metaData)
         .convertTo[Header](fieldLens(Fields.header))
@@ -42,14 +42,6 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
         .convertTo[MetaData](fieldLens("rasterMetaData"))
     }
 
-    val keyBounds = Try {
-      attributeStore.cacheRead[JsObject](id, Fields.metaData)
-        .convertTo[KeyBounds](fieldLens(Fields.keyBounds))
-    }.getOrElse {
-      // Back in my day we stored keyBounds in it's own attribute
-      attributeStore.cacheRead[KeyBounds](id, Fields.keyBounds)
-    }
-
     val keyIndex = Try {
       attributeStore.cacheRead[JsObject](id, Fields.metaData)
         .convertTo[KeyIndex](fieldLens(Fields.keyIndex))
@@ -66,19 +58,18 @@ class JsonAttributeStoreMethods(attributeStore: AttributeStore[JsonFormat]) {
       attributeStore.cacheRead[Schema](id, Fields.schema)
     }
 
-    (header, metadata, keyBounds, keyIndex, schema)
+    (header, metadata, keyIndex, schema)
   }
 
   def readLayerAttribute[T: JsonFormat](id: LayerId, attributeName: String): T =
     attributeStore.cacheRead[JsObject](id, Fields.metaData).convertTo[T](fieldLens(attributeName))
 
-  def writeLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyBounds: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
-    id: LayerId, header: Header, metadata: MetaData, keyBounds: KeyBounds, keyIndex: KeyIndex, schema: Schema): Unit = {
+  def writeLayerAttributes[Header: JsonFormat, MetaData: JsonFormat, KeyIndex: JsonFormat, Schema: JsonFormat](
+    id: LayerId, header: Header, metadata: MetaData, keyIndex: KeyIndex, schema: Schema): Unit = {
 
     val obj = JsObject(
       Fields.header -> header.toJson,
       Fields.metaData -> metadata.toJson,
-      Fields.keyBounds -> keyBounds.toJson,
       Fields.keyIndex -> keyIndex.toJson,
       Fields.schema -> schema.toJson
     )

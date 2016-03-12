@@ -21,14 +21,14 @@ object Version {
    * One can envoke the cross-build to 2.11 by prefixing command with '+' (ex: + assembly)
    * Until the deployment of spark on 2.11 is fully addressed we are going to target 2.10 to minimize confusion.
    */
-  val scala       = "2.10.5"
-  val crossScala  = Seq("2.11.5", "2.10.5")
+  val scala       = "2.10.6"
+  val crossScala  = Seq("2.11.8", scala)
   val geotools    = "14.2"
   val akka        = "2.3.14"
   val spray       = "1.3.3"
   val sprayJson   = "1.3.2"
   val jackson     = "1.6.1"
-  val monocle     = "1.0.1"
+  val monocle     = "1.2.0"
   val accumulo    = "1.7.1"
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion

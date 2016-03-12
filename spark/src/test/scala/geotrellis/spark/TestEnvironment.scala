@@ -30,6 +30,7 @@ import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 
 import java.io.File
+import scala.collection.mutable
 
 object TestEnvironment {
   def getLocalFS(conf: Configuration): FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
@@ -49,12 +50,16 @@ trait TestEnvironment extends BeforeAndAfterAll
   with RasterRDDBuilders
   with RasterRDDMatchers
   with OpAsserter
-{ self: Suite =>
+{ self: Suite with BeforeAndAfterAll =>
+
+  private lazy val afterAlls = mutable.ListBuffer[() => Unit]()
+  def registerAfterAll(f: () => Unit): Unit =
+    afterAlls += f
 
   def extraConf(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
 
-  var _sc: SparkContext = {
+  lazy val _sc: SparkContext = {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
     System.setProperty("spark.ui.enabled", "false")
@@ -131,6 +136,9 @@ trait TestEnvironment extends BeforeAndAfterAll
   override def afterAll() = {
     FileUtil.fullyDelete(new File(outputLocal.toUri()))
     sc.stop()
+    if(afterAlls != null) {
+      for(f <- afterAlls) { f() }
+    }
   }
 
   // root directory name on both local file system and hdfs for all tests

@@ -20,9 +20,15 @@ object AccumuloAttributeStore {
 
   def apply(connector: Connector): AccumuloAttributeStore =
     apply(connector, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+
+  def apply(instance: AccumuloInstance, attributeTable: String): AccumuloAttributeStore =
+    apply(instance.connector, attributeTable)
+
+  def apply(instance: AccumuloInstance): AccumuloAttributeStore =
+    apply(instance.connector)
 }
 
-class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
+class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()
@@ -63,7 +69,7 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
     if(values.isEmpty) {
       throw new AttributeNotFoundError(attributeName, layerId)
     } else if(values.size > 1) {
-      throw new CatalogError(s"Multiple attributes found for $attributeName for layer $layerId")
+      throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
       values.head.toString.parseJson.convertTo[(LayerId, T)]._2
     }

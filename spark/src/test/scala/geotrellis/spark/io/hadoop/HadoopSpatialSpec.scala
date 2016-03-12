@@ -6,31 +6,20 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 
-abstract class HadoopSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData]
+class HadoopSpatialSpec
+  extends PersistenceSpec[SpatialKey, Tile, RasterMetaData[SpatialKey]]
+    with SpatialKeyIndexMethods
     with TestEnvironment
     with TestFiles
     with AllOnesTestTileTests {
 
-  lazy val reader = HadoopLayerReader[SpatialKey, Tile, RasterMetaData](outputLocal)
+  lazy val reader = HadoopLayerReader(outputLocal)
+  lazy val writer = HadoopLayerWriter(outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
-  lazy val copier = HadoopLayerCopier[SpatialKey, Tile, RasterMetaData](outputLocal)
-  lazy val mover  = HadoopLayerMover[SpatialKey, Tile, RasterMetaData](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpatialKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod)
+  lazy val copier = HadoopLayerCopier(outputLocal)
+  lazy val mover  = HadoopLayerMover(outputLocal)
+  lazy val reindexer = HadoopLayerReindexer(outputLocal)
+  lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
 }
-
-class HadoopSpatialRowMajorSpec extends HadoopSpatialSpec {
-  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocal, RowMajorKeyIndexMethod)
-}
-
-class HadoopSpatialZCurveSpec extends HadoopSpatialSpec {
-  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod)
-}
-
-class HadoopSpatialHilbertSpec extends HadoopSpatialSpec {
-  lazy val writer = HadoopLayerWriter[SpatialKey, Tile, RasterMetaData](outputLocal, HilbertKeyIndexMethod)
-}
-
-

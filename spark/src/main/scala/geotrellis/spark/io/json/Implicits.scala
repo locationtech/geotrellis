@@ -18,9 +18,7 @@ import scala.reflect.ClassTag
 
 object Implicits extends Implicits
 
-trait Implicits {
-  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
-    new JavaSerializationJsonFormat[index.KeyIndex[K]]
+trait Implicits extends KeyFormats with KeyIndexFormats {
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
@@ -66,23 +64,25 @@ trait Implicits {
       }
   }
 
-  implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
-    def write(metaData: RasterMetaData) =
+  implicit def rasterMetaDataFormat[K: JsonFormat] = new RootJsonFormat[RasterMetaData[K]] {
+    def write(metaData: RasterMetaData[K]) =
       JsObject(
         "cellType" -> metaData.cellType.toJson,
         "extent" -> metaData.extent.toJson,
         "layoutDefinition" -> metaData.layout.toJson,
-        "crs" -> metaData.crs.toJson
+        "crs" -> metaData.crs.toJson,
+        "bounds" -> metaData.bounds.get.toJson // we will only store non-empty bounds
       )
 
-    def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs") match {
-        case Seq(cellType, extent, layoutDefinition, crs) =>
+    def read(value: JsValue): RasterMetaData[K] =
+      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "bounds") match {
+        case Seq(cellType, extent, layoutDefinition, crs, bounds) =>
           RasterMetaData(
             cellType.convertTo[CellType],
             layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
-            crs.convertTo[CRS]
+            crs.convertTo[CRS],
+            bounds.convertTo[KeyBounds[K]]
           )
         case _ =>
           throw new DeserializationException("RasterMetaData expected")
@@ -106,4 +106,3 @@ trait Implicits {
     def write(obj: Schema) = obj.toString.parseJson
   }
 }
-

@@ -52,7 +52,6 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
       val rdd =
         createSpaceTimeRasterRDD(
-          sc,
           Seq( (tile1, dt1), (tile2, dt2) ),
           tileLayout
         )

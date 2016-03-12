@@ -1,6 +1,6 @@
 package geotrellis.spark.partitioner
 
-import geotrellis.spark.{SpaceTimeKey, SpatialKey}
+import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
 
@@ -8,7 +8,10 @@ import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
   * Coarseness means that multiple keys will be mapped to a single SFC value.
   * This many to one mapping forms spatially relate key blocks
   */
-trait PartitionerIndex[K] extends KeyIndex[K]
+trait PartitionerIndex[K] extends Serializable {
+  def toIndex(key: K): Long
+  def indexRanges(keyRange: (K, K)): Seq[(Long, Long)]
+}
 
 object PartitionerIndex {
 
@@ -27,7 +30,7 @@ object PartitionerIndex {
 
   /**
     * This is hoped to be a reasonable default value.
-    * Thi partitioner groups keys in 16x16 blocks spatially and by year temporally.
+    * The partitioner groups keys in 16x16 blocks spatially and by year temporally.
     */
   implicit object SpaceTimePartitioner extends  PartitionerIndex[SpaceTimeKey] {
     private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col >> 4, key.row >> 4, key.time.getYear)
@@ -35,6 +38,6 @@ object PartitionerIndex {
     def toIndex(key: SpaceTimeKey): Long = toZ(key).z
 
     def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] =
-      Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))  }
-
+      Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))
+  }
 }

@@ -1,16 +1,16 @@
 # GeoTrellis ETL
 
-When working with GeoTrellis often the first task is to load a set of rasters to perform reprojection, mosaicing and 
+When working with GeoTrellis often the first task is to load a set of rasters to perform reprojection, mosaicing and
 pyramiding before saving them as a GeoTrellis layer. It is possible, and not too difficult, to use core GreoTrellis
 features to write a program to accomplish this task. However, after writing a number of such programs we noticed two
 patterns emerge:
 
-  - Often an individual ETL process will require some modification that is orthogonal to the core ETL logic 
+  - Often an individual ETL process will require some modification that is orthogonal to the core ETL logic
   - When designing an ETL process it is useful to first run it a smaller dataset, perhaps locally, as a verification
-  - Once written it would be useful to re-run the same ETL process with different input and outputs storage mediums 
-   
-To assist these patterns `spark-etl` project implements a plugin architecture for tile input sources and output sinks 
-which allows you to write a compact ETL program without having to specify the type and the configuration of 
+  - Once written it would be useful to re-run the same ETL process with different input and outputs storage mediums
+
+To assist these patterns `spark-etl` project implements a plugin architecture for tile input sources and output sinks
+which allows you to write a compact ETL program without having to specify the type and the configuration of
 the input and output at compile time. The ETL process is broken into three stages: `load`, `tile`, and `save`.
 This affords an opportunity to modify the dataset using any of the GeoTrellis operations in between the stages.
 
@@ -28,7 +28,7 @@ import org.apache.spark.SparkConf
 
 object GeoTrellisETL extends App {
   implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
-    
+
   /* parse command line arguments */
   val etl = Etl(args)
   /* load source tiles using input module specified */
@@ -37,28 +37,28 @@ object GeoTrellisETL extends App {
   val (zoom, tiled) = etl.tile(sourceTiles)
   /* save and optionally pyramid the mosaiced layer */
   etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod())
-    
+
   sc.stop()
 }
 ```
 
 ### User defined ETL jobs
 
-The above sample application can be placed in a new SBT project that has a dependency on 
+The above sample application can be placed in a new SBT project that has a dependency on
 `"com.azavea.geotrellis" %% "geotrellis-spark-etl" % s"$VERSION"` in addition to dependency on `spark-core`.
- and built into an assembly with `sbt-assembly` plugin. You should be careful to include a `assemblyMergeStrategy` 
+ and built into an assembly with `sbt-assembly` plugin. You should be careful to include a `assemblyMergeStrategy`
  for sbt assembly plugin as it is provided in [spark-etl build file](build.sbt).
- 
+
 At this point you would create a seperate `App` object for each one of your ETL jobs.
 
 ### Build-in ETL jobs
 
-For convinence and as an example the `spark-etl` project provides two `App` objects that perform vanilla ETL: 
+For convinence and as an example the `spark-etl` project provides two `App` objects that perform vanilla ETL:
  * geotrellis.spark.etl.SinglebandIngest
  * geotrellis.spark.etl.MultibandIngest
 
 You may use them by building an assembly jar of `spark-etl` project as follows:
- 
+
  ```bash
  cd geotrellis
  sbt
@@ -108,7 +108,6 @@ cellSize      | Width and Height of each pixel (format: width,height)
 cellType      | Value of type of the target raster (ex: bool, int8, int32, int64, float32, float64)
 output        | Name of output module to use (ex: s3, hadoop, accumulo)
 outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
-clobber       | Overwrite the layer on save in output catalog
 pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
 histogram     | Save histogram to the output AttributeStore for every saved layer
 
@@ -125,9 +124,18 @@ s3        | bucket, key, splitSize
 Output    | Options
 ----------|----------------
 hadoop    | path
-accumulo  | instance, zookeeper, user, password, table
+accumulo  | instance, zookeeper, user, password, table, strategy={hdfs|socket}, ingestPath
 s3        | bucket, key
 render    | path, encoding=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{RGBA};...'
+
+##### Accumulo Output
+
+Accumulo output module has two write strategies: 
+  - `hdfs` strategy uses Accumulo bulk import
+  - `socket` strategy uses Accumulo `BatchWriter`
+    
+When using `hdfs` strategy `ingestPath` argument will be used as the temporary directory where records will be written
+for use by Accumulo bulk import. This directory should ideally be an HDFS path.
 
 #### Layout Scheme
 
@@ -149,12 +157,12 @@ Together with `tileSize` option this is enough to fully define the layout and st
 
 `spark-etl` project supports two methods of reprojection: `buffered` and `per-tile`. They provide a trade-off between accuracy and flexibility.
 
-Buffered reprojection method is able to sample pixels past the tile boundaries by performing a neighborhood join. 
+Buffered reprojection method is able to sample pixels past the tile boundaries by performing a neighborhood join.
 This method is the default and produces the best results. However it requires that all of the source tiles share the same CRS.
 
 Per tile teproject method can not consider pixels past the individual tile boundaries, even if they exist elsewhere in the dataset.
 Any pixels past the tile boundaries will be as `NODATA` when interpolating.
-This restriction allows for source tiles to have a different projections per tile. 
+This restriction allows for source tiles to have a different projections per tile.
 This is an effective way to unify the projections for instance when projection from multiple UTM projections to WebMercator.
 
 ### Rendering a Layer
@@ -166,11 +174,11 @@ The `path` module argument is actually a path template, that allows the followin
   - `{x}` tile x coordinate
   - `{y}` tile y coordinate
   - `{z}` layer zoom level
-  - `{name}` layer name 
+  - `{name}` layer name
 
 A sample render output configuration template could be:
  `--output render -O encodering=png path=s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png`.
- 
+
 ## Extension
 
 In order to provide your own input or output modules you must extend [`InputPlugin`](src/main/scala/geotrellis/spark/etl/InputPlugin) and

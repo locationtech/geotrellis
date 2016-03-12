@@ -25,7 +25,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.util.Filesystem
 
-import monocle.syntax._
+import monocle.syntax.apply._
 
 import scala.io._
 import scala.collection.mutable
