@@ -16,17 +16,56 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.filter._
+import geotrellis.proj4.LatLng
+import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
 import geotrellis.raster.io.geotiff.SingleBandGeoTiff
+import geotrellis.spark._
+import geotrellis.spark.filter._
+import geotrellis.spark.io._
+import geotrellis.spark.tiling._
 
 import org.scalatest.FunSpec
 
 
 class RasterRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
 
-  describe("RasterRDD Crop Methods") {
+  describe("SpaceTime RasterRDD Filter Methods") {
+    val rdd = sc.parallelize(List(
+      (SpaceTimeKey(0, 0, 1), true),
+      (SpaceTimeKey(0, 1, 2), true),
+      (SpaceTimeKey(1, 0, 2), true),
+      (SpaceTimeKey(1, 1, 3), true),
+      (SpaceTimeKey(0, 0, 3), true),
+      (SpaceTimeKey(0, 1, 3), true),
+      (SpaceTimeKey(1, 0, 4), true),
+      (SpaceTimeKey(1, 1, 4), true),
+      (SpaceTimeKey(0, 0, 4), true),
+      (SpaceTimeKey(0, 1, 4), true)))
+    val metadata: RasterMetaData = {
+      val cellType = FloatConstantNoDataCellType
+      val crs = LatLng
+      val tileLayout = TileLayout(8, 8, 3, 4)
+      val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
+      val gridBounds = GridBounds(1, 1, 6, 7)
+      val extent = mapTransform(gridBounds)
+      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
+    }
+    val rasterRDD = ContextRDD(rdd, metadata)
+
+    it("should filter out all items that are not at the given instant") {
+      rasterRDD.toSpatial(0).count should be (0)
+      rasterRDD.toSpatial(1).count should be (1)
+      rasterRDD.toSpatial(2).count should be (2)
+      rasterRDD.toSpatial(3).count should be (3)
+      rasterRDD.toSpatial(4).count should be (4)
+    }
+
+    it ("should produce an RDD whose keys are of type SpatialKey") {
+      rasterRDD.toSpatial(1).first._1 should be (SpatialKey(0,0))
+    }
+  }
+
+  describe("Spatial RasterRDD Filter Methods") {
     val path = "raster-test/data/aspect.tif"
     val gt = SingleBandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
