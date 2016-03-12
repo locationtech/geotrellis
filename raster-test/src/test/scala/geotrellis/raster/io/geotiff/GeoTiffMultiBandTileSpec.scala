@@ -190,30 +190,30 @@ class GeoTiffMultiBandTileSpec extends FunSpec
     }
   }
 
-  describe("MultiBand subset methods") {
+  describe("MultiBand bands (reorder) method") {
 
-    it("subset should be inexpensive") {
+    it("should be inexpensive") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.subset(List(1, 2, 0))
+      val tile1 = tile0.bands(List(1, 2, 0))
 
       tile0.band(0) should be theSameInstanceAs tile1.band(2)
       tile0.band(1) should be theSameInstanceAs tile1.band(0)
       tile0.band(2) should be theSameInstanceAs tile1.band(1)
     }
 
-    it("subset result should have correct bandCount") {
+    it("result should have correct bandCount") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.subset(List(1, 2, 0))
-      val tile2 = tile0.subset(List(1, 2))
+      val tile1 = tile0.bands(List(1, 2, 0))
+      val tile2 = tile0.bands(List(1, 2))
 
       tile1.bandCount should be (3)
       tile2.bandCount should be (2)
     }
 
-    it("subset result should work properly with foreach") {
+    it("result should work properly with foreach") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val tile1 = tile0.subset(List(1, 2, 0))
-      val tile2 = tile1.subset(List(1, 2, 0))
+      val tile1 = tile0.bands(List(1, 2, 0))
+      val tile2 = tile1.bands(List(1, 2, 0))
 
       tile0.band(0).foreach { z => z should be (1) }
       tile0.band(1).foreach { z => z should be (2) }
@@ -226,10 +226,10 @@ class GeoTiffMultiBandTileSpec extends FunSpec
       tile2.band(2).foreach { z => z should be (2) }
     }
 
-    it("should disallow \"invalid\" subsets") {
+    it("should disallow \"invalid\" bandSequences") {
       val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
       an [IllegalArgumentException] should be thrownBy {
-        tile0.subset(0,1,2,3) // There are only 3 bands
+        tile0.bands(0,1,2,3) // There are only 3 bands
       }
     }
   }
