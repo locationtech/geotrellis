@@ -134,7 +134,13 @@ object TiffTagFieldValue {
           { offsets: Array[Int] => TiffTagFieldValue(TileOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets)) }
         case s: Striped =>
           val rowsPerStrip = imageData.segmentLayout.tileLayout.tileRows
-          fieldValues += TiffTagFieldValue(RowsPerStripTag, IntsFieldType, 1, toBytes(rowsPerStrip))
+          fieldValues += {
+            if(rowsPerStrip < Short.MaxValue) {
+              TiffTagFieldValue(RowsPerStripTag, ShortsFieldType, 1, rowsPerStrip)
+            } else {
+              TiffTagFieldValue(RowsPerStripTag, IntsFieldType, 1, rowsPerStrip)
+            }
+          }
           fieldValues += TiffTagFieldValue(StripByteCountsTag, IntsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
 
           { offsets: Array[Int] => TiffTagFieldValue(StripOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets)) }

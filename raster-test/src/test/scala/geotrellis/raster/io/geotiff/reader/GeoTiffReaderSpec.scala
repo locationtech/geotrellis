@@ -249,7 +249,7 @@ class GeoTiffReaderSpec extends FunSpec
     it("must match aspect.tif geokeys") {
       val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
 
-      tiffTags.hasPixelArea should be (true)
+      tiffTags.tags.headTags("AREA_OR_POINT") should be ("AREA")
 
       val extent = tiffTags.extent
 
@@ -435,7 +435,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       tags.headTags("HEADTAG") should be ("1")
       tags.headTags("TAG_TYPE") should be ("HEAD")
-      tags.headTags.size should be (2)
+      tags.headTags.size should be (3)
 
       val bandCount = geoTiff.tile.bandCount
 

@@ -22,7 +22,9 @@ object CutTiles {
     cellType: CellType,
     layoutDefinition: LayoutDefinition,
     resampleMethod: ResampleMethod = NearestNeighbor
-  ): RDD[(K2, V)] =
+  ): RDD[(K2, V)] = {
+    val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+
     rdd
       .flatMap { tup =>
         val (inKey, tile) = tup
@@ -37,4 +39,5 @@ object CutTiles {
             (outKey, newTile.merge(mapTransform(outKey), extent, tile))
           }
       }
+  }
 }

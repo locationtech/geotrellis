@@ -3,6 +3,7 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.proj4._
+import geotrellis.proj4.util.UTM
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 
@@ -19,7 +20,7 @@ object ZoomedLayoutScheme {
 
 /** Layout for zoom levels based off of a power-of-2 scheme,
   * used in Leaflet et al.
-  * 
+  *
   * @param  crs                      The CRS this zoomed layout scheme will be using
   * @param  tileSize                 The size of each tile in this layout scheme
   * @param  resolutionThreshold      The percentage difference between a cell size and a zoom level
@@ -33,13 +34,16 @@ object ZoomedLayoutScheme {
 class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: Double) extends LayoutScheme {
   import ZoomedLayoutScheme.EARTH_CIRCUMFERENCE
 
-  /** This will calcluate the closest zoom level based on the resolution in web mercator.
+  /** This will calcluate the closest zoom level based on the resolution in a UTM zone containing the point.
     * The calculated zoom level is up to some percentage (determined by the resolutionThreshold) less resolute then the cellSize.
     * If the cellSize is more resolute than that threshold's allowance, this will return the next zoom level up.
     */
   def zoom(x: Double, y: Double, cellSize: CellSize): Int = {
-    val p1 = Point(x + cellSize.width, y + cellSize.height).reproject(crs, WebMercator)
-    val p2 = Point(x, y).reproject(crs, WebMercator)
+    val ll1 = Point(x + cellSize.width, y + cellSize.height).reproject(crs, LatLng)
+    val ll2 = Point(x, y).reproject(crs, LatLng)
+    val utmCrs = UTM.getZoneCrs(ll1.x, ll1.y)
+    val p1 = ll1.reproject(LatLng, utmCrs)
+    val p2 = ll2.reproject(LatLng, utmCrs)
     val dist = math.max(math.abs(p1.x - p2.x), math.abs(p1.y - p2.y))
     val z = (math.log(EARTH_CIRCUMFERENCE / (dist * tileSize)) / math.log(2)).toInt
     val zRes = EARTH_CIRCUMFERENCE / (math.pow(2, z) * tileSize)
@@ -60,11 +64,10 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
   private def tileCols(level: Int): Int = math.pow(2, level).toInt
   private def tileRows(level: Int): Int = math.pow(2, level).toInt
 
-  def levelFor(extent: Extent, cellSize: CellSize) = {
+  def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
     val worldExtent = crs.worldExtent
     val l =
       zoom(extent.xmin, extent.ymin, cellSize)
-
 
     levelForZoom(worldExtent, l)
   }

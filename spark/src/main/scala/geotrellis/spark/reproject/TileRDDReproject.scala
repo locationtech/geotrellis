@@ -89,7 +89,6 @@ object TileRDDReproject {
               } else {
                 // Reproject extra cells that are half the buffer size, as to avoid
                 // any missed cells between tiles.
-
                 GridBounds(
                   gridBounds.colMin / 2,
                   gridBounds.rowMin / 2,

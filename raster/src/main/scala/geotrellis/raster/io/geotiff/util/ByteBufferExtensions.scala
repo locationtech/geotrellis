@@ -37,7 +37,7 @@ trait ByteBufferExtensions {
       int & 0XFFFFFFFFL
 
     @inline
-    final def getUnsignedShort: Int = 
+    final def getUnsignedShort: Int =
       byteBuffer.getChar.toInt
 
     final def getByteArray(length: Int): Array[Short] = {
@@ -95,6 +95,7 @@ trait ByteBufferExtensions {
       arr
     }
 
+    /** Get these as Longs, since they are unsigned and we might want to deal with values greater than Int.MaxValue */
     final def getIntArray(length: Int, valueOffset: Int): Array[Long] = {
       val arr = Array.ofDim[Long](length)
 
