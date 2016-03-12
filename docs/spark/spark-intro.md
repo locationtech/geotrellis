@@ -78,6 +78,9 @@ work. GeoTrellis also ships with some concrete types which are designed
 specifically to distribute the kinds of operations you can find in
 `geotrellis.raster`.  
 
+- [More on `K`](./spark-keys.md)
+- [More on `V`](./spark-values.md)
+- [More on `M`](./spark-metadata.md)
 
 
 

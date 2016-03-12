@@ -60,4 +60,12 @@ in the focal operations of `geotrellis.spark`: focal operations require
 contextual information about neighboring cells - neighbors which might
 well exist on a different `Tile` altogether, thus necessitating some way
 of conveniently determining which other `Tile`s an operation might need
-to query. 
+to query.  
+
+#### Ingest Keys
+
+Difference between ingest and regular keys
+
+#### Keys as Lenses
+
+Explanation of KeyComponent[A, B] pattern

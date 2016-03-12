@@ -55,6 +55,7 @@ lazy val commonSettings = Seq(
 
 lazy val root = Project("geotrellis", file(".")).
   dependsOn(raster, vector, proj4, spark).
+  aggregate(raster, vector, proj4, spark).
   settings(commonSettings: _*).
   settings(
     scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",

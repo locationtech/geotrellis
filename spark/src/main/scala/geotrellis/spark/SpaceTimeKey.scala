@@ -50,11 +50,11 @@ object SpaceTimeKey {
 
   implicit object Boundable extends Boundable[SpaceTimeKey] {
     def minBound(a: SpaceTimeKey, b: SpaceTimeKey) = {
-      SpaceTimeKey(math.min(a.col, b.col), math.min(a.row, b.row), math.min(a.time < b.time))
+      SpaceTimeKey(math.min(a.col, b.col), math.min(a.row, b.row), if (a.time < b.time) a.time else b.time )
     }
 
     def maxBound(a: SpaceTimeKey, b: SpaceTimeKey) = {
-      SpaceTimeKey(math.max(a.col, b.col), math.max(a.row, b.row), math.max(a.time > b.time))
+      SpaceTimeKey(math.max(a.col, b.col), math.max(a.row, b.row), if (a.time > b.time) a.time else b.time )
     }
 
     def collectBounds[V](rdd: RDD[(SpaceTimeKey, V)]): Bounds[SpaceTimeKey] = {
