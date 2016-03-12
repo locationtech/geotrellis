@@ -58,6 +58,9 @@ object TileLayerMetadata {
   implicit def toMapKeyTransform(md: TileLayerMetadata[_]): MapKeyTransform =
     md.layout.mapTransform
 
+  implicit def layoutComponent[K]: Component[TileLayerMetadata[K], LayoutDefinition] =
+    Component(_.layout, (md, b) => md.copy(layout = b))
+
   implicit def boundsComponent[K]: Component[TileLayerMetadata[K], Bounds[K]] =
     Component(_.bounds, (md, b) => md.copy(bounds = b))
 
