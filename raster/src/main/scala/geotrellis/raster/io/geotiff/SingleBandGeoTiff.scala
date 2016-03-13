@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-class SingleBandGeoTiff(
+case class SingleBandGeoTiff(
   val tile: Tile,
   val extent: Extent,
   val crs: CRS,
@@ -26,9 +26,6 @@ class SingleBandGeoTiff(
 
 object SingleBandGeoTiff {
 
-  def unapply(sbg: SingleBandGeoTiff): Option[(Tile, Extent, CRS, Tags)] =
-    Some((sbg.tile, sbg.extent, sbg.crs, sbg.tags))
-
   def apply(
     tile: Tile,
     extent: Extent,
@@ -36,37 +33,28 @@ object SingleBandGeoTiff {
   ): SingleBandGeoTiff =
     new SingleBandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
 
-  def apply(
-    tile: Tile,
-    extent: Extent,
-    crs: CRS,
-    tags: Tags,
-    options: GeoTiffOptions
-  ): SingleBandGeoTiff =
-    new SingleBandGeoTiff(tile, extent, crs, tags, options)
-
   /** Read a single-band GeoTIFF file from a byte array.
     * The GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(bytes: Array[Byte]): SingleBandGeoTiff = 
+  def apply(bytes: Array[Byte]): SingleBandGeoTiff =
     GeoTiffReader.readSingleBand(bytes)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = 
+  def apply(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff =
     GeoTiffReader.readSingleBand(bytes, decompress)
-  
+
   /** Read a single-band GeoTIFF file from the file at the given path.
     * The GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String): SingleBandGeoTiff = 
+  def apply(path: String): SingleBandGeoTiff =
     GeoTiffReader.readSingleBand(path)
 
   /** Read a single-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean): SingleBandGeoTiff = 
+  def apply(path: String, decompress: Boolean): SingleBandGeoTiff =
     GeoTiffReader.readSingleBand(path, decompress)
 
 

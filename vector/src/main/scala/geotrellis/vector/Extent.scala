@@ -47,53 +47,39 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
   if (ymin > ymax) { throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)") }
 
-  def jtsGeom =
-    factory.createPolygon(
-      factory.createLinearRing(
-        Array(
-          new jts.Coordinate(xmin, ymax),
-          new jts.Coordinate(xmax, ymax),
-          new jts.Coordinate(xmax, ymin),
-          new jts.Coordinate(xmin, ymin),
-          new jts.Coordinate(xmin, ymax)
-        )
-      ),
-      null
-    )
-
   def jtsEnvelope: com.vividsolutions.jts.geom.Envelope =
     new com.vividsolutions.jts.geom.Envelope(xmin, xmax, ymin, ymax)
 
+  val width: Double = xmax - xmin
+  val height: Double = ymax - ymin
 
-  val width = xmax - xmin
-  val height = ymax - ymin
-
-  def min = Point(xmin, ymin)
-  def max = Point(xmax, ymax)
+  def min: Point = Point(xmin, ymin)
+  def max: Point = Point(xmax, ymax)
 
   /**
    * The SW corner (xmin, ymin) as a Point.
    */
-  def southWest = Point(xmin, ymin)
+  def southWest: Point = Point(xmin, ymin)
 
   /**
    * The SE corner (xmax, ymin) as a Point.
    */
-  def southEast = Point(xmax, ymin)
+  def southEast: Point = Point(xmax, ymin)
 
   /**
    * The NE corner (xmax, ymax) as a Point.
    */
-  def northEast = Point(xmax, ymax)
+  def northEast: Point = Point(xmax, ymax)
 
   /**
    * The NW corner (xmin, ymax) as a Point.
    */
-  def northWest = Point(xmin, ymax)
+  def northWest: Point = Point(xmin, ymax)
 
-  def area = width * height
-  def minExtent = if(width < height) width else height
-  def maxExtent = if(width > height) width else height
+  def area: Double = width * height
+  def minExtent: Double = if(width < height) width else height
+  def maxExtent: Double = if(width > height) width else height
+  def isEmpty: Boolean = area == 0
 
   def center: Point =
     Point((xmin + xmax) / 2.0, (ymin + ymax) / 2.0)

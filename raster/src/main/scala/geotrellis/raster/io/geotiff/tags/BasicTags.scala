@@ -11,7 +11,7 @@ case class BasicTags(
   compression: Int = 1,
   photometricInterp: Int = -1,
   resolutionUnit: Option[Int] = None,
-  rowsPerStrip: Long = (1 << 31) - 1,
+  rowsPerStrip: Long = 1,
   samplesPerPixel: Int = 1,
   stripByteCounts: Option[Array[Int]] = None,
   stripOffsets: Option[Array[Int]] = None,

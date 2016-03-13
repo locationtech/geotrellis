@@ -27,7 +27,7 @@ import org.osgeo.proj4j.util.ProjectionMath;
 
 /**
  * A map projection is a mathematical algorithm
- * for representing a spheroidal surface 
+ * for representing a spheroidal surface
  * on a plane.
  * A single projection
  * defines a (usually infinite) family of
@@ -196,11 +196,11 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     protected final static double EPS10 = 1e-10;
     protected final static double RTD = 180.0/Math.PI;
     protected final static double DTR = Math.PI/180.0;
-	
+
     protected Projection() {
         setEllipsoid( Ellipsoid.SPHERE );
     }
-	
+
     public Object clone() {
         try {
             Projection e = (Projection)super.clone();
@@ -210,14 +210,14 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
             throw new InternalError();
         }
     }
-	
+
     /**
-     * Projects a geographic point (in degrees), producing a projected result 
+     * Projects a geographic point (in degrees), producing a projected result
      * (in the units of the target coordinate system).
-     * 
+     *
      * @param src the input geographic coordinate (in degrees)
      * @param dst the projected coordinate (in coordinate system units)
-     * @return the target coordinate 
+     * @return the target coordinate
      */
     public ProjCoordinate project( ProjCoordinate src, ProjCoordinate dst ) {
         double x = src.x*DTR;
@@ -227,13 +227,13 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     }
 
     /**
-     * Projects a geographic point (in radians), producing a projected result 
+     * Projects a geographic point (in radians), producing a projected result
      * (in the units of the target coordinate system).
-     * 
+     *
      * @param src the input geographic coordinate (in radians)
      * @param dst the projected coordinate (in coordinate system units)
-     * @return the target coordinate 
-     * 
+     * @return the target coordinate
+     *
      */
     public ProjCoordinate projectRadians( ProjCoordinate src, ProjCoordinate dst ) {
         double x = src.x;
@@ -241,11 +241,11 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
             x = ProjectionMath.normalizeLongitude( x-projectionLongitude );
         return projectRadians(x, src.y, dst);
     }
-	
+
     /**
-     * Transform a geographic point (in radians), 
+     * Transform a geographic point (in radians),
      * producing a projected result (in the units of the target coordinate system).
-     * 
+     *
      * @param x the geographic x ordinate (in radians)
      * @param y the geographic y ordinate (in radians)
      * @param dst the projected coordinate (in coordinate system units)
@@ -253,7 +253,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
      */
     private ProjCoordinate projectRadians(double x, double y, ProjCoordinate dst ) {
         project(x, y, dst);
-        if (unit == Units.DEGREES) {
+        if (unit != null && unit.equals(Units.DEGREES)) {
             // convert radians to DD
             dst.x *= RTD;
             dst.y *= RTD;
@@ -267,10 +267,10 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     }
 
     /**
-     * Computes the projection of a given point 
-     * (i.e. from geographics to projection space). 
+     * Computes the projection of a given point
+     * (i.e. from geographics to projection space).
      * This should be overridden for all projections.
-     * 
+     *
      * @param x the geographic x ordinate (in radians)
      * @param y the geographic y ordinatee (in radians)
      * @param dst the projected coordinate (in coordinate system units)
@@ -283,9 +283,9 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     }
 
     /**
-     * Inverse-projects a point (in the units defined by the coordinate system), 
+     * Inverse-projects a point (in the units defined by the coordinate system),
      * producing a geographic result (in degrees)
-     * 
+     *
      * @param src the input projected coordinate (in coordinate system units)
      * @param dst the inverse-projected geographic coordinate (in degrees)
      * @return the target coordinate
@@ -298,18 +298,18 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     }
 
     /**
-     * Inverse-transforms a point (in the units defined by the coordinate system), 
+     * Inverse-transforms a point (in the units defined by the coordinate system),
      * producing a geographic result (in radians)
-     * 
+     *
      * @param src the input projected coordinate (in coordinate system units)
      * @param dst the inverse-projected geographic coordinate (in radians)
      * @return the target coordinate
-     * 
+     *
      */
     public ProjCoordinate inverseProjectRadians(ProjCoordinate src, ProjCoordinate dst) {
         double x;
         double y;
-        if (unit == Units.DEGREES) {
+        if (unit != null && unit.equals(Units.DEGREES)) {
             // convert DD to radians
             x = src.x * DTR;
             y = src.y * DTR;
@@ -318,21 +318,24 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
             x = (src.x - totalFalseEasting) / totalScale;
             y = (src.y - totalFalseNorthing) / totalScale;
         }
+
         projectInverse(x, y, dst);
+
         if (dst.x < -Math.PI)
             dst.x = -Math.PI;
         else if (dst.x > Math.PI)
             dst.x = Math.PI;
         if (projectionLongitude != 0)
             dst.x = ProjectionMath.normalizeLongitude(dst.x+projectionLongitude);
+
         return dst;
     }
 
     /**
-     * Computes the inverse projection of a given point 
-     * (i.e. from projection space to geographics). 
+     * Computes the inverse projection of a given point
+     * (i.e. from projection space to geographics).
      * This should be overridden for all projections.
-     * 
+     *
      * @param x the projected x ordinate (in coordinate system units)
      * @param y the projected y ordinate (in coordinate system units)
      * @param dst the inverse-projected geographic coordinate  (in radians)
@@ -344,35 +347,35 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
         return dst;
     }
 
-	
+
     /**
      * Tests whether this projection is conformal.
      * A conformal projection preserves local angles.
-     * 
+     *
      * @return true if this projection is conformal
      */
     public boolean isConformal() {
         return false;
     }
-	
+
     /**
      * Tests whether this projection is equal-area
      * An equal-area projection preserves relative sizes
      * of projected areas.
-     * 
+     *
      * @return true if this projection is equal-area
      */
     public boolean isEqualArea() {
         return false;
     }
-	
+
     /**
      * Tests whether this projection has an inverse.
      * If this method returns <tt>true</tt>
      * then the {@link #inverseProject(ProjCoordinate, ProjCoordinate)}
      * and {@link #inverseProjectRadians(ProjCoordinate, ProjCoordinate)}
      * methods will return meaningful results.
-     * 
+     *
      * @return true if this projection has an inverse
      */
     public boolean hasInverse() {
@@ -380,7 +383,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     }
 
     /**
-     * Tests whether under this projection lines of 
+     * Tests whether under this projection lines of
      * latitude and longitude form a rectangular grid
      */
     public boolean isRectilinear() {
@@ -408,7 +411,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setName( String name ) {
         this.name = name;
     }
-	
+
     public String getName() {
         if ( name != null )
             return name;
@@ -471,7 +474,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setMinLatitude( double minLatitude ) {
         this.minLatitude = minLatitude;
     }
-	
+
     public double getMinLatitude() {
         return minLatitude;
     }
@@ -482,7 +485,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setMaxLatitude( double maxLatitude ) {
         this.maxLatitude = maxLatitude;
     }
-	
+
     public double getMaxLatitude() {
         return maxLatitude;
     }
@@ -498,7 +501,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setMinLongitude( double minLongitude ) {
         this.minLongitude = minLongitude;
     }
-	
+
     public double getMinLongitude() {
         return minLongitude;
     }
@@ -506,7 +509,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setMinLongitudeDegrees( double minLongitude ) {
         this.minLongitude = DTR*minLongitude;
     }
-	
+
     public double getMinLongitudeDegrees() {
         return minLongitude*RTD;
     }
@@ -514,7 +517,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setMaxLongitude( double maxLongitude ) {
         this.maxLongitude = maxLongitude;
     }
-	
+
     public double getMaxLongitude() {
         return maxLongitude;
     }
@@ -522,7 +525,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setMaxLongitudeDegrees( double maxLongitude ) {
         this.maxLongitude = DTR*maxLongitude;
     }
-	
+
     public double getMaxLongitudeDegrees() {
         return maxLongitude*RTD;
     }
@@ -533,173 +536,173 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setProjectionLatitude( double projectionLatitude ) {
         this.projectionLatitude = projectionLatitude;
     }
-	
+
     public double getProjectionLatitude() {
         return projectionLatitude;
     }
-	
+
     /**
      * Set the projection latitude in degrees.
      */
     public void setProjectionLatitudeDegrees( double projectionLatitude ) {
         this.projectionLatitude = DTR*projectionLatitude;
     }
-	
+
     public double getProjectionLatitudeDegrees() {
         return projectionLatitude*RTD;
     }
-	
+
     /**
      * Set the projection longitude in radians.
      */
     public void setProjectionLongitude( double projectionLongitude ) {
         this.projectionLongitude = normalizeLongitudeRadians( projectionLongitude );
     }
-	
+
     public double getProjectionLongitude() {
         return projectionLongitude;
     }
-	
+
     /**
      * Set the projection longitude in degrees.
      */
     public void setProjectionLongitudeDegrees( double projectionLongitude ) {
         this.projectionLongitude = DTR*projectionLongitude;
     }
-	
+
     public double getProjectionLongitudeDegrees() {
         return projectionLongitude*RTD;
     }
-	
+
     /**
      * Set the latitude of true scale in radians. This is only used by certain projections.
      */
     public void setTrueScaleLatitude( double trueScaleLatitude ) {
         this.trueScaleLatitude = trueScaleLatitude;
     }
-	
+
     public double getTrueScaleLatitude() {
         return trueScaleLatitude;
     }
-	
+
     /**
      * Set the latitude of true scale in degrees. This is only used by certain projections.
      */
     public void setTrueScaleLatitudeDegrees( double trueScaleLatitude ) {
         this.trueScaleLatitude = DTR*trueScaleLatitude;
     }
-	
+
     public double getTrueScaleLatitudeDegrees() {
         return trueScaleLatitude*RTD;
     }
-	
+
     /**
      * Set the projection latitude in radians.
      */
     public void setProjectionLatitude1( double projectionLatitude1 ) {
         this.projectionLatitude1 = projectionLatitude1;
     }
-	
+
     public double getProjectionLatitude1() {
         return projectionLatitude1;
     }
-	
+
     /**
      * Set the projection latitude in degrees.
      */
     public void setProjectionLatitude1Degrees( double projectionLatitude1 ) {
         this.projectionLatitude1 = DTR*projectionLatitude1;
     }
-	
+
     public double getProjectionLatitude1Degrees() {
         return projectionLatitude1*RTD;
     }
-	
+
     /**
      * Set the projection latitude in radians.
      */
     public void setProjectionLatitude2( double projectionLatitude2 ) {
         this.projectionLatitude2 = projectionLatitude2;
     }
-	
+
     public double getProjectionLatitude2() {
         return projectionLatitude2;
     }
-	
+
     /**
      * Set the projection latitude in degrees.
      */
     public void setProjectionLatitude2Degrees( double projectionLatitude2 ) {
         this.projectionLatitude2 = DTR*projectionLatitude2;
     }
-	
+
     public double getProjectionLatitude2Degrees() {
         return projectionLatitude2*RTD;
     }
-	
+
     /**
      * Sets the alpha value.
      */
     public void setAlphaDegrees( double alpha ) {
         this.alpha = DTR * alpha;
     }
-  
+
     /**
      * Gets the alpha value, in radians.
-     * 
+     *
      * @return the alpha value
      */
     public double getAlpha()
-    { 
+    {
         return alpha;
     }
-  
+
     /**
      * Sets the lonc value.
      */
     public void setLonCDegrees( double lonc ) {
         this.lonc = DTR * lonc;
     }
-  
+
     /**
      * Gets the lonc value, in radians.
-     * 
+     *
      * @return the lonc value
      */
     public double getLonC()
-    { 
+    {
         return lonc;
     }
-  
+
     /**
      * Set the false Northing in projected units.
      */
     public void setFalseNorthing( double falseNorthing ) {
         this.falseNorthing = falseNorthing;
     }
-  
+
     public double getFalseNorthing() {
         return falseNorthing;
     }
-	
+
     /**
      * Set the false Easting in projected units.
      */
     public void setFalseEasting( double falseEasting ) {
         this.falseEasting = falseEasting;
     }
-	
+
     public double getFalseEasting() {
         return falseEasting;
     }
-	
+
     public void setSouthernHemisphere(boolean isSouth)
     {
         this.isSouth = isSouth;
     }
-  
+
     public boolean getSouthernHemisphere() { return isSouth; }
-  
+
     /**
      * Set the projection scale factor. This is set to 1 by default.
      * This value is called "k0" in PROJ.4.
@@ -711,7 +714,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     /**
      * Gets the projection scale factor.
      * This value is called "k0" in PROJ.4.
-     * 
+     *
      * @return
      */
     public double getScaleFactor() {
@@ -728,18 +731,18 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setFromMetres( double fromMetres ) {
         this.fromMetres = fromMetres;
     }
-	
+
     public double getFromMetres() {
         return fromMetres;
     }
-	
+
     public void setEllipsoid( Ellipsoid ellipsoid ) {
         this.ellipsoid = ellipsoid;
         a = ellipsoid.equatorRadius;
         e = ellipsoid.eccentricity;
         es = ellipsoid.eccentricity2;
     }
-	
+
     public Ellipsoid getEllipsoid() {
         return ellipsoid;
     }
@@ -750,7 +753,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public int getEPSGCode() {
         return 0;
     }
-	
+
     public void setUnits(Unit unit)
     {
         this.unit = unit;
@@ -759,7 +762,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public Unit getUnits() {
         return this.unit;
     }
-  
+
     /**
      * Initialize the projection. This should be called after setting parameters and before using the projection.
      * This is for performance reasons as initialization may be expensive.
@@ -770,7 +773,7 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
         rone_es = 1.0/one_es;
         totalScale = a * fromMetres;
         totalFalseEasting = falseEasting * fromMetres;
-        totalFalseNorthing = falseNorthing * fromMetres;		
+        totalFalseNorthing = falseNorthing * fromMetres;
     }
 
     public static float normalizeLongitude(float angle) {
@@ -796,5 +799,9 @@ public abstract class Projection implements Cloneable, java.io.Serializable {
     public void setGamma(double gamma) {
         // no-op, overridden for Oblique Mercator
     }
-}
 
+    /** Is this "projection" longlat? Overridden in LongLatProjection. */
+    public Boolean isGeographic() {
+        return false;
+    }
+}

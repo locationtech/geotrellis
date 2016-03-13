@@ -26,7 +26,7 @@ object ReprojectRasterExtent {
     val extent = gd.extent
     val (cols, rows) = (extent.width / gd.cellwidth, extent.height / gd.cellheight)
     val PIXEL_STEP = math.min(50.0, math.min(cols, rows)).toInt
-    
+
     // Find the threshold to densify the extent at.
     val xThreshold = (cols / PIXEL_STEP) * gd.cellwidth
     val yThreshold = (rows / PIXEL_STEP) * gd.cellheight

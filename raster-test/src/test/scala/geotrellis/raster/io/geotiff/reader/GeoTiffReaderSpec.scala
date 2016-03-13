@@ -249,7 +249,7 @@ class GeoTiffReaderSpec extends FunSpec
     it("must match aspect.tif geokeys") {
       val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
 
-      tiffTags.hasPixelArea should be (true)
+      tiffTags.tags.headTags("AREA_OR_POINT") should be ("AREA")
 
       val extent = tiffTags.extent
 
@@ -362,7 +362,7 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SingleBandGeoTiff(tile, extent, _, _) = SingleBandGeoTiff.compressed(s"$baseDataPath/$file")
+      val SingleBandGeoTiff(tile, extent, _, _, _) = SingleBandGeoTiff.compressed(s"$baseDataPath/$file")
 
       tile.polygonalMax(extent, extent.toPolygon) should be (max)
       tile.polygonalMin(extent, extent.toPolygon) should be (min)
@@ -388,7 +388,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val SingleBandGeoTiff(tile, extent, crs, _) = SingleBandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
+      val SingleBandGeoTiff(tile, extent, crs, _, _) = SingleBandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
 
       crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))
@@ -435,7 +435,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       tags.headTags("HEADTAG") should be ("1")
       tags.headTags("TAG_TYPE") should be ("HEAD")
-      tags.headTags.size should be (2)
+      tags.headTags.size should be (3)
 
       val bandCount = geoTiff.tile.bandCount
 
@@ -471,6 +471,39 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
+  describe("Reading and writing special metadata tags ") {
+    val temp = java.io.File.createTempFile("geotiff-writer", ".tif");
+    val path = temp.getPath()
+
+    it("must read a tif, change the pixel sample type, write it out, and then read the correct in") {
+      val gt = SingleBandGeoTiff.compressed(s"$baseDataPath/slope.tif")
+      var headTags = gt.tags.headTags
+      assert(headTags(Tags.AREA_OR_POINT) == "AREA")
+      headTags -= Tags.AREA_OR_POINT
+      headTags += ((Tags.AREA_OR_POINT, "POINT"))
+      val tags = Tags(headTags, gt.tags.bandTags)
+      val gt2 = gt.copy(tags = tags)
+      writer.GeoTiffWriter.write(gt2, path)
+      addToPurge(path)
+      val gt3 = SingleBandGeoTiff.compressed(path)
+
+      gt3.tags.headTags.get(Tags.AREA_OR_POINT) should be (Some("POINT"))
+    }
+
+    it("must read a tif, set a datetime, write it out, and then read the correct in") {
+      val gt = SingleBandGeoTiff.compressed(s"$baseDataPath/reproject/nlcd_tile_wsg84.tif")
+      var headTags = gt.tags.headTags
+      headTags += ((Tags.TIFFTAG_DATETIME, "1988:02:18 13:59:59"))
+      val tags = Tags(headTags, gt.tags.bandTags)
+      val gt2 = gt.copy(tags = tags)
+      writer.GeoTiffWriter.write(gt2, path)
+      addToPurge(path)
+      val gt3 = SingleBandGeoTiff.compressed(path)
+      assert(gt3.crs == LatLng)
+
+      gt3.tags.headTags.get(Tags.TIFFTAG_DATETIME) should be (Some("1988:02:18 13:59:59"))
+    }
+  }
 }
 
 class PackBitsGeoTiffReaderSpec extends FunSpec
