@@ -3,7 +3,7 @@ package geotrellis.slick
 import com.typesafe.config.{ConfigFactory,Config}
 import org.scalatest._
 
-import scala.slick.driver.PostgresDriver.simple._
+import slick.driver.PostgresDriver.api._
 
 object TestDatabase {
   def newInstance = {

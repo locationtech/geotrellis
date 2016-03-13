@@ -28,38 +28,39 @@
 
 package geotrellis.slick
 
+import java.sql.{PreparedStatement, ResultSet}
+
 import geotrellis.vector._
 import geotrellis.vector.io.wkb._
 import geotrellis.vector.io.wkt._
 
+import slick.ast.FieldSymbol
+import slick.driver.{JdbcDriver, PostgresDriver}
+import slick.jdbc.{PositionedParameters, PositionedResult, SetParameter}
 
-import scala.slick.driver.JdbcDriver
-import scala.slick.lifted.Column
 import scala.reflect.ClassTag
-import scala.slick.ast.ScalaBaseType
-import scala.slick.jdbc.{PositionedResult, PositionedParameters}
-import java.sql._
 
 /**
-  * A class which provides column types and extension methods for working with Geometry columns in PostGIS.
-  *
-  * @example {{{
-  * val PostGIS = new PostGisSupport(PostgresDriver)
-  * import PostGIS._
-  *
-  * class City(tag: Tag) extends Table[(Int,String,Point)](tag, "cities") {
-  *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-  *   def name = column[String]("name")
-  *   def geom = column[Point]("geom")
-  *   def * = (id, name, geom)
-  * }
-  * }}}
-  *
-  * @author Minglei Tu (modified by Azavea)
-  * @see [[package com.github.tminglei.slickpg.PgPostGISSupport]]
-  */
-class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
+ * This class provides column types and extension methods to work with Geometry columns in PostGIS.
+ *
+ * Sample Usage:
+ * <code>
+ * val PostGIS = new PostGisSupport(PostgresDriver)
+ * import PostGIS._
+ *
+ * class City(tag: Tag) extends Table[(Int,String,Point)](tag, "cities") {
+ *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+ *   def name = column[String]("name")
+ *   def geom = column[Point]("geom")
+ *   def * = (id, name, geom)
+ * }
+ * </code>
+ *
+ * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
+ */
+trait PostGisSupport extends PostGisExtensions { driver: PostgresDriver =>
   import PostGisSupportUtils._
+  import driver.api._
 
   type GEOMETRY           = Geometry
   type POINT              = Point
@@ -67,26 +68,27 @@ class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions 
   type POLYGON            = Polygon
   type GEOMETRYCOLLECTION = GeometryCollection
 
-  implicit val geometryTypeMapper = new GeometryJdbcType[GEOMETRY]
-  implicit val pointTypeMapper = new GeometryJdbcType[POINT]
-  implicit val lineTypeMapper = new GeometryJdbcType[LINESTRING]
-  implicit val polygonTypeMapper = new GeometryJdbcType[POLYGON]
-  implicit val geometryCollectionTypeMapper = new GeometryJdbcType[GEOMETRYCOLLECTION]  
-  implicit val multiPointTypeMapper = new GeometryJdbcType[MultiPoint]
-  implicit val multiPolygonTypeMapper = new GeometryJdbcType[MultiPolygon]
-  implicit val multiLineTypeMapper = new GeometryJdbcType[MultiLine]
+  trait PostGISAssistants extends BasePostGISAssistants[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION]
+  trait PostGISImplicits {
+    implicit val geometryTypeMapper = new GeometryJdbcType[GEOMETRY]
+    implicit val pointTypeMapper = new GeometryJdbcType[POINT]
+    implicit val lineTypeMapper = new GeometryJdbcType[LINESTRING]
+    implicit val polygonTypeMapper = new GeometryJdbcType[POLYGON]
+    implicit val geometryCollectionTypeMapper = new GeometryJdbcType[GEOMETRYCOLLECTION]
+    implicit val multiPointTypeMapper = new GeometryJdbcType[MultiPoint]
+    implicit val multiPolygonTypeMapper = new GeometryJdbcType[MultiPolygon]
+    implicit val multiLineTypeMapper = new GeometryJdbcType[MultiLine]
 
-  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
-    new GeometryColumnExtensionMethods[G1, G1](c)
+    implicit def geometryColumnExtensionMethods[G1 <: Geometry](c: Rep[G1]) =
+      new GeometryColumnExtensionMethods[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, G1, G1](c)
 
-  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Column[Option[G1]]) = 
-    new GeometryColumnExtensionMethods[G1, Option[G1]](c)
+    implicit def geometryOptionColumnExtensionMethods[G1 <: Geometry](c: Rep[Option[G1]]) =
+      new GeometryColumnExtensionMethods[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, G1, Option[G1]](c)
+  }
 
+  class GeometryJdbcType[T <: Geometry](implicit override val classTag: ClassTag[T]) extends DriverJdbcType[T]{
 
-  class GeometryJdbcType[T <: Geometry : ClassTag] extends driver.DriverJdbcType[T] {
-    override def scalaType = ScalaBaseType[T]
-
-    override def sqlTypeName: String = "geometry"
+    override def sqlTypeName(sym: Option[FieldSymbol]): String = "geometry"
 
     override def hasLiteralForm: Boolean = false
 
@@ -109,7 +111,7 @@ class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions 
   }
 }
 
-object PostGisSupportUtils {  
+object PostGisSupportUtils {
   def toLiteral(geom: Geometry): String = WKT.write(geom)
 
   def fromLiteral[T <: Geometry : ClassTag](value: String): T = {
@@ -117,7 +119,7 @@ object PostGisSupportUtils {
       case (srid, wkt) => { //TODO - SRID is ignored
         if (wkt.startsWith("00") || wkt.startsWith("01"))
           WKB.read(wkt).as[T].get
-        else 
+        else
           WKT.read(wkt).as[T].get
       }
     }
