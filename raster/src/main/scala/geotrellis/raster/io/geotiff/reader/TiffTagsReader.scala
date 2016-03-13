@@ -240,7 +240,7 @@ object TiffTagsReader {
           TiffTags._geoTiffTags ^|->
           GeoTiffTags._metadata set(Some(string))
         case GDALInternalNoDataTag =>
-          tiffTags.setGDALNoData(string)
+         tiffTags.setGDALNoData(string)
         case tag => tiffTags &|->
           TiffTags._nonStandardizedTags ^|->
           NonStandardizedTags._asciisMap modify(_ + (tag -> string))
@@ -434,6 +434,9 @@ object TiffTagsReader {
         case JpegInterchangeFormatLengthTag => tiffTags &|->
           TiffTags._jpegTags ^|->
           JpegTags._jpegInterchangeFormatLength set(Some(ints(0)))
+        case RowsPerStripTag => tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._rowsPerStrip set(ints(0))
         case StripOffsetsTag => tiffTags &|->
           TiffTags._basicTags ^|->
           BasicTags._stripOffsets set(Some(ints.map(_.toInt)))

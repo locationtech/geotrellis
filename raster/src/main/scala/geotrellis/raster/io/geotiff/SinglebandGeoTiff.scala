@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
-class SinglebandGeoTiff(
+case class SinglebandGeoTiff(
   val tile: Tile,
   val extent: Extent,
   val crs: CRS,
@@ -26,24 +26,12 @@ class SinglebandGeoTiff(
 
 object SinglebandGeoTiff {
 
-  def unapply(sbg: SinglebandGeoTiff): Option[(Tile, Extent, CRS, Tags)] =
-    Some((sbg.tile, sbg.extent, sbg.crs, sbg.tags))
-
   def apply(
     tile: Tile,
     extent: Extent,
     crs: CRS
   ): SinglebandGeoTiff =
     new SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
-
-  def apply(
-    tile: Tile,
-    extent: Extent,
-    crs: CRS,
-    tags: Tags,
-    options: GeoTiffOptions
-  ): SinglebandGeoTiff =
-    new SinglebandGeoTiff(tile, extent, crs, tags, options)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * The GeoTIFF will be fully decompressed and held in memory.
@@ -56,7 +44,7 @@ object SinglebandGeoTiff {
     */
   def apply(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, decompress)
-  
+
   /** Read a single-band GeoTIFF file from the file at the given path.
     * The GeoTIFF will be fully decompressed and held in memory.
     */
@@ -68,7 +56,6 @@ object SinglebandGeoTiff {
     */
   def apply(path: String, decompress: Boolean): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, decompress)
-
 
   /** Read a single-band GeoTIFF file from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.

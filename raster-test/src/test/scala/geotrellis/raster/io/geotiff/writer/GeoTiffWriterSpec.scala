@@ -43,7 +43,7 @@ class GeoTiffWriterSpec extends FunSpec
   private val testCRS = CRS.fromName("EPSG:3857")
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
-    val temp = File.createTempFile("geotiff-writer", ".tif"); 
+    val temp = File.createTempFile("geotiff-writer", ".tif")
     val path = temp.getPath()
 
     it("should write GeoTiff with tags") {
@@ -98,7 +98,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val SinglebandGeoTiff(tile, extent, crs, _) = SinglebandGeoTiff(path)
+      val SinglebandGeoTiff(tile, extent, crs, _, _) = SinglebandGeoTiff(path)
 
       extent should equal (e)
       crs should equal (testCRS)
@@ -115,7 +115,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val SinglebandGeoTiff(actualTile, actualExtent, actualCrs, _) = SinglebandGeoTiff(path)
+      val SinglebandGeoTiff(actualTile, actualExtent, actualCrs, _, _) = SinglebandGeoTiff(path)
 
       actualExtent should equal (extent)
       crs should equal (LatLng)

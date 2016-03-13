@@ -13,6 +13,15 @@ trait GeoTiffData {
   def extent: Extent
   def crs: CRS
   def tags: Tags
+
+  def pixelSampleType: Option[PixelSampleType] =
+    tags.headTags.get(Tags.AREA_OR_POINT).flatMap { aop =>
+      aop match {
+        case "AREA" => Some(PixelIsArea)
+        case "POINT" => Some(PixelIsPoint)
+        case _ => None
+      }
+    }
 }
 
 trait GeoTiff[T <: CellGrid] extends GeoTiffData {

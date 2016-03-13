@@ -1,13 +1,15 @@
 package geotrellis.spark.testfiles
 
-import com.github.nscala_time.time.Imports._
-import geotrellis.spark.tiling._
-import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
-import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
-import org.apache.spark._
-import geotrellis.spark._
 import geotrellis.proj4._
+import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
+import geotrellis.spark._
+import geotrellis.spark.tiling._
+import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
+
+import com.github.nscala_time.time.Imports._
+import org.apache.spark._
 import org.joda.time.DateTime
+
 
 object TestFiles extends Logging {
   val ZOOM_LEVEL = 8

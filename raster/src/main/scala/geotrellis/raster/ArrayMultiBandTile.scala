@@ -24,26 +24,26 @@ object ArrayMultibandTile {
   }
 }
 
-class ArrayMultibandTile(bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners {
+class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners with SimpleMultiBandTile {
   val bandCount = bands.size
 
   assert(bandCount > 0, "Band count must be greater than 0")
   private def validateBand(i: Int) = assert(i < bandCount, s"Band index out of bounds. Band Count: $bandCount Requested Band Index: $i")
 
-  val cellType = bands(0).cellType
-  val cols: Int = bands(0).cols
-  val rows: Int = bands(0).rows
+  val cellType = _bands(0).cellType
+  val cols: Int = _bands(0).cols
+  val rows: Int = _bands(0).rows
 
   // Check all bands for consistency.
   cfor(0)(_ < bandCount, _ + 1) { i =>
-    assert(bands(i).cellType == cellType, s"Band $i cell type does not match, ${bands(i).cellType} != $cellType")
-    assert(bands(i).cols == cols, s"Band $i cols does not match, ${bands(i).cols} != $cols")
-    assert(bands(i).rows == rows, s"Band $i rows does not match, ${bands(i).rows} != $rows")
+    assert(_bands(i).cellType == cellType, s"Band $i cell type does not match, ${_bands(i).cellType} != $cellType")
+    assert(_bands(i).cols == cols, s"Band $i cols does not match, ${_bands(i).cols} != $cols")
+    assert(_bands(i).rows == rows, s"Band $i rows does not match, ${_bands(i).rows} != $rows")
   }
 
   def band(bandIndex: Int): Tile = {
     if(bandIndex >= bandCount) { throw new IllegalArgumentException(s"Band $bandIndex does not exist") }
-    bands(bandIndex)
+    _bands(bandIndex)
   }
 
   def convert(newCellType: CellType): MultibandTile = {
@@ -139,7 +139,7 @@ class ArrayMultibandTile(bands: Array[Tile]) extends MultibandTile with MacroMul
     */
   def map(b0: Int)(f: Int => Int): MultibandTile = {
     validateBand(b0)
-    val newBands = bands.clone
+    val newBands = _bands.clone
     newBands(b0) = band(b0) map f
 
     ArrayMultibandTile(newBands)
@@ -150,7 +150,7 @@ class ArrayMultibandTile(bands: Array[Tile]) extends MultibandTile with MacroMul
     */
   def mapDouble(b0: Int)(f: Double => Double): MultibandTile = {
     validateBand(b0)
-    val newBands = bands.clone
+    val newBands = _bands.clone
     newBands(b0) = band(b0) mapDouble f
 
     ArrayMultibandTile(newBands)
@@ -298,19 +298,19 @@ class ArrayMultibandTile(bands: Array[Tile]) extends MultibandTile with MacroMul
     result
   }
 
-  def subset(bands: Seq[Int]): ArrayMultibandTile = {
-    val newBands = Array.ofDim[Tile](bands.size)
+  def bands(bandSequence: Seq[Int]): ArrayMultibandTile = {
+    val newBands = Array.ofDim[Tile](bandSequence.size)
     var i = 0
 
-    require(bands.size <= this.bandCount)
-    bands.foreach({ j =>
-      newBands(i) = this.band(j)
+    require(bandSequence.size <= bandCount)
+    bandSequence.foreach({ j =>
+      newBands(i) = band(j)
       i += 1
     })
 
     new ArrayMultibandTile(newBands)
   }
 
-  def subset(bands: Int*)(implicit d: DummyImplicit): ArrayMultibandTile =
-    subset(bands)
+  def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultibandTile =
+    bands(bandSequence)
 }

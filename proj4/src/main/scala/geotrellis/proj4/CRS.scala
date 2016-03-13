@@ -23,7 +23,7 @@ object CRS {
    */
   def fromString(proj4Params: String): CRS =
     new CRS {
-      val crs = crsFactory.createFromParameters(null, proj4Params)
+      val proj4jCrs = crsFactory.createFromParameters(null, proj4Params)
 
       def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
@@ -50,7 +50,7 @@ object CRS {
    */
   def fromString(name: String, proj4Params: String): CRS =
     new CRS {
-      val crs = crsFactory.createFromParameters(name, proj4Params)
+      val proj4jCrs = crsFactory.createFromParameters(name, proj4Params)
 
       def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
     }
@@ -90,11 +90,12 @@ object CRS {
    * @param name the name of a coordinate system, with optional authority prefix
    * @return the [[CoordinateReferenceSystem]] corresponding to the given name
    */
-  def fromName(name: String): CRS = new CRS {
-    val crs = crsFactory.createFromName(name)
+  def fromName(name: String): CRS =
+    new CRS {
+      val proj4jCrs = crsFactory.createFromName(name)
 
-    def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
-  }
+      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+    }
 
   /** Creates a [[CoordinateReferenceSystem]] (CRS) from an EPSG code. */
   def fromEpsgCode(epsgCode: Int) =
@@ -128,7 +129,7 @@ trait CRS extends Serializable {
 
   def epsgCode: Option[Int]
 
-  private[proj4] val crs: CoordinateReferenceSystem
+  def proj4jCrs: CoordinateReferenceSystem
 
   /** Override this function to handle reprojecting to another CRS in a more performant way */
   def alternateTransform(dest: CRS): Option[(Double, Double) => (Double, Double)] =
@@ -145,7 +146,9 @@ trait CRS extends Serializable {
   override
   def hashCode = toProj4String.hashCode
 
-  def toProj4String: String = crs.getParameterString
+  def toProj4String: String = proj4jCrs.getParameterString
+
+  def isGeographic: Boolean = proj4jCrs.isGeographic
 
   override
   def equals(o: Any): Boolean =

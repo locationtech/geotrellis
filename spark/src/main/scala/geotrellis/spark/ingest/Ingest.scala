@@ -68,10 +68,16 @@ object Ingest {
     )
     (sink: (TileLayerRDD[K], Int) => Unit): Unit =
   {
-    val (_, rasterMetadata) = TileLayerMetadata.fromRdd(sourceTiles, layoutScheme)
+    val (_, rasterMetadata) = RasterMetadata.fromRdd(sourceTiles, FloatingLayoutScheme(512))
     val tiledRdd = sourceTiles.tileToLayout(rasterMetadata, resampleMethod).cache()
+
     val contextRdd = new ContextRDD(tiledRdd, rasterMetadata)
-    val (zoom, rasterRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))
+    val (zoom, rasterRdd) =
+      bufferSize match {
+        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs)
+        case None => contextRdd.reproject(destCRS, layoutScheme)
+      }
+
     rasterRdd.persist(cacheLevel)
 
     def buildPyramid(zoom: Int, rdd: TileLayerRDD[K]): List[(Int, TileLayerRDD[K])] = {

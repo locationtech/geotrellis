@@ -33,7 +33,7 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
       19 -> 0.298       // 1:1,000
     )
 
-  describe("ZoomedLayoutScheme") { 
+  describe("ZoomedLayoutScheme") {
     it("Cuts up the world in two for lowest zoom level") {
       val LayoutLevel(_, tileLayout) = ZoomedLayoutScheme(LatLng).levelForZoom(LatLng.worldExtent, 1)
       tileLayout.layoutCols should be (2)
@@ -90,6 +90,14 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
         val z = wmScheme.zoom(0, 0, cellSize)
         z should be (zoom + 1)
       }
+    }
+
+    it("can handle extremely south coordinates") {
+      val (lat1, lon1) = (-81.572438, -148.041443)
+      val (lat2, lon2) = (-81.572543, -148.009213)
+      val scheme = ZoomedLayoutScheme(LatLng, 256)
+      val z = scheme.zoom(lon1, lat1, CellSize(lon2 - lon1, lat2 - lat1))
+      z should be (6)
     }
   }
 }

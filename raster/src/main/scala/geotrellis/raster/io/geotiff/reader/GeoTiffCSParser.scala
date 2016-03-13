@@ -39,7 +39,7 @@ import scala.collection.immutable.HashMap
 
 import monocle.syntax.apply._
 
-case class GeoTiffGDALParameters(
+case class GeoTiffCSParameters(
   var model: Int = UserDefinedCPV,
   var pcs: Int = UserDefinedCPV,
   var gcs: Int = UserDefinedCPV,
@@ -62,26 +62,26 @@ case class GeoTiffGDALParameters(
 )
 
 object GeoTiffCSParser {
-
-  def apply(directory: TiffTags) = new GeoTiffCSParser(directory)
-
+  def apply(directory: GeoKeyDirectory) = new GeoTiffCSParser(directory)
 }
 
 /**
   * This class is indirectly ported from the GDAL github repository.
   */
-class GeoTiffCSParser(directory: TiffTags) {
-
-  private val geoKeyDirectory = directory.geoKeyDirectory
+class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
 
   private val csvReader = EPSGCSVReader()
 
-  def getProj4String: Option[String] = getProj4String(createGeoTiffGDALParameters)
+  def getProj4String: Option[String] = getProj4String(createGeoTiffCSParameters)
 
-  lazy val pcs: Int = createGeoTiffGDALParameters.pcs
+  lazy val geoTiffCSParameters = createGeoTiffCSParameters
 
-  private def createGeoTiffGDALParameters: GeoTiffGDALParameters = {
-    val gtgp = GeoTiffGDALParameters()
+  def model: Int = geoTiffCSParameters.model
+  def pcs: Int = geoTiffCSParameters.pcs
+  def gcs: Int = geoTiffCSParameters.gcs
+
+  private def createGeoTiffCSParameters: GeoTiffCSParameters = {
+    val gtgp = GeoTiffCSParameters()
 
     gtgp.model = (geoKeyDirectory &|->
       GeoKeyDirectory._configKeys ^|->
@@ -264,7 +264,7 @@ class GeoTiffCSParser(directory: TiffTags) {
     gtgp
   }
 
-  private def getPCSData(pcs: Int, gtgp: GeoTiffGDALParameters) {
+  private def getPCSData(pcs: Int, gtgp: GeoTiffCSParameters) {
     val (optDatum, optZone, optMapSystem) = pcsToDatumZoneAndMapSystem(pcs)
 
     val optDatumName = optMapSystem match {
@@ -656,7 +656,7 @@ class GeoTiffCSParser(directory: TiffTags) {
     }
     else angle
 
-  private def setProjectionParameters(gtgp: GeoTiffGDALParameters) {
+  private def setProjectionParameters(gtgp: GeoTiffCSParameters) {
     var originLong, originLat, rectGridAngle = 0.0
     var falseEasting, falseNorthing = 0.0
     var originScale = 1.0
@@ -952,7 +952,7 @@ class GeoTiffCSParser(directory: TiffTags) {
       else Some((MapSys_State_Plane_27, projCode - 10000))
     } else None
 
-  private def getProj4String(gtgp: GeoTiffGDALParameters): Option[String] = {
+  private def getProj4String(gtgp: GeoTiffCSParameters): Option[String] = {
     val proj4SB = new StringBuilder
 
     val units = projectedLinearUnitsMap.get(gtgp.length) match {
