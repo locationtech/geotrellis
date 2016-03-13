@@ -15,23 +15,24 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
-  val attributeStore: AttributeStore[JsonFormat]
+  val attributeStore: AttributeStore
 )  extends Reader[LayerId, Reader[K, V]] {
 
   val s3Client: S3Client = S3Client.default
 
   def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+    val header = attributeStore.readHeader[S3LayerHeader](layerId)
+    val keyIndex = attributeStore.readKeyIndex[K](layerId)
+    val writerSchema = attributeStore.readSchema(layerId)
 
-    val (layerMetaData, _, keyBounds, keyIndex, writerSchema) =
-      attributeStore.readLayerAttributes[S3LayerHeader, Unit, KeyBounds[K], KeyIndex[K], Schema](layerId)
 
     def read(key: K): V = {
-      val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
-      val path = s"${layerMetaData.key}/${Index.encode(keyIndex.toIndex(key), maxWidth)}"
+      val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
+      val path = s"${header.key}/${Index.encode(keyIndex.toIndex(key), maxWidth)}"
 
       val is =
         try {
-          s3Client.getObject(layerMetaData.bucket, path).getObjectContent
+          s3Client.getObject(header.bucket, path).getObjectContent
         } catch {
           case e: AmazonS3Exception if e.getStatusCode == 404 =>
             throw new TileNotFoundError(key, layerId)

@@ -17,9 +17,9 @@ class SumSpec extends FunSpec
   describe("Sum Zonal Summary Operation") {
     val ones = AllOnesTestFile
 
-    val tileLayout = ones.metaData.tileLayout
+    val tileLayout = ones.metadata.tileLayout
     val count = (ones.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-    val totalExtent = ones.metaData.extent
+    val totalExtent = ones.metadata.extent
 
     it("should get correct sum over whole raster extent") {
       ones.polygonalSum(totalExtent.toPolygon) should be(count)

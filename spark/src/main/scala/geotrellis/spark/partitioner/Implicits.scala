@@ -10,7 +10,7 @@ trait Implicits {
   implicit class withSpatialJoinMethods[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: ? => Bounds[K]
+    M: Component[?, Bounds[K]]
   ](val self: RDD[(K, V)] with Metadata[M])
     extends SpatialJoinMethods[K, V, M]
 }

@@ -13,7 +13,7 @@ class GeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Tile] {
 
 class GeoTiffS3RecordReader extends S3RecordReader[ProjectedExtent, Tile] {
   def read(key: String, bytes: Array[Byte]) = {
-    val geoTiff = SingleBandGeoTiff(bytes)
+    val geoTiff = SinglebandGeoTiff(bytes)
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
     (ProjectedExtent(extent, crs), tile)
   }

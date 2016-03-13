@@ -18,9 +18,9 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
     val modHundred = Mod10000TestFile
     val ones = AllOnesTestFile
 
-    val tileLayout = modHundred.metaData.tileLayout
+    val tileLayout = modHundred.metadata.tileLayout
     val count = (modHundred.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-    val totalExtent = modHundred.metaData.extent
+    val totalExtent = modHundred.metadata.extent
 
     it("should get correct histogram over whole raster extent") {
       val histogram = modHundred.polygonalHistogram(totalExtent.toPolygon)

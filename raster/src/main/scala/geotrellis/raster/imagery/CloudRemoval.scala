@@ -2,14 +2,14 @@ package geotrellis.raster.imagery
 
 import geotrellis.raster._
 import geotrellis.raster.render._
-import geotrellis.raster.io.geotiff.SingleBandGeoTiff
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 
 import java.io.File
 import spire.syntax.cfor._
 
 object CloudRemoval {
 
-  def cloudRemovalSingleBand(images: Array[Tile], threshold: Int) : Tile = {
+  def cloudRemovalSingleband(images: Array[Tile], threshold: Int) : Tile = {
     val headImage = images(0)
     val result = ArrayTile.empty(headImage.cellType, headImage.cols, headImage.rows)
 
@@ -32,7 +32,7 @@ object CloudRemoval {
     result
   }
 
-  def cloudRemovalMultiBand(images: Array[MultiBandTile], threshold: Int): MultiBandTile = {
+  def cloudRemovalMultiband(images: Array[MultibandTile], threshold: Int): MultibandTile = {
     val numBands = images(0).bandCount
     val numImages = images.length
 
@@ -44,14 +44,14 @@ object CloudRemoval {
       cfor(0)(j => j < numImages, j => j + 1) { j =>
         singleTiles(j) = images(j).band(i)
       }
-      cloudlessTiles(i) = cloudRemovalSingleBand(singleTiles, threshold)
+      cloudlessTiles(i) = cloudRemovalSingleband(singleTiles, threshold)
     }
 
-    ArrayMultiBandTile(cloudlessTiles)
+    ArrayMultibandTile(cloudlessTiles)
   }
 
-  def cloudRemovalMultiBand(images: Array[MultiBandTile]): MultiBandTile = {
-    cloudRemovalMultiBand(images, 10000)
+  def cloudRemovalMultiband(images: Array[MultibandTile]): MultibandTile = {
+    cloudRemovalMultiband(images, 10000)
   }
 
 }

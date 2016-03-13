@@ -2,7 +2,7 @@ package geotrellis.spark.etl
 
 import geotrellis.proj4.CRS
 import geotrellis.raster.{CellType, Tile}
-import geotrellis.spark.{Metadata, RasterRDD}
+import geotrellis.spark.{Metadata, TileLayerRDD}
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

@@ -67,8 +67,8 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
     val rdd =
       self
         .map { case (key, tile) =>
-          val SpatialKey(col, row) = key.spatialComponent
-          val time = key.temporalComponent.time
+          val SpatialKey(col, row) = key.getComponent[SpatialKey]
+          val time = key.getComponent[TemporalKey].time
           val startDiff = getDifferenceByUnit(unit, start, time)
           val endDiff = getDifferenceByUnit(unit, time, end)
 
@@ -90,7 +90,7 @@ trait LocalTemporalTileRDDMethods[K] extends TileRDDMethods[K] {
       .map { case (_, iter) =>
         val (keys, tiles) = iter.unzip
 
-        val key = keys.min(Ordering.by { key: K => key.temporalComponent.time })
+        val key = keys.min(Ordering.by { key: K => key.getComponent[TemporalKey].time })
         val tile = reduceOp(tiles)
 
         (key, tile)

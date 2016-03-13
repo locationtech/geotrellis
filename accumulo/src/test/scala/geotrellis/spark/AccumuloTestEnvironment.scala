@@ -20,9 +20,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import org.scalatest._
 
-trait AccumuloTestEnvironment extends TestEnvironment
-{ self: Suite =>
-
+trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
   override def extraConf(conf: SparkConf) =
     conf.set("spark.kryo.registrator", "geotrellis.spark.AccumuloTestRegistrator")
 }

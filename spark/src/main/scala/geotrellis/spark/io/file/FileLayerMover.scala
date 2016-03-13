@@ -2,6 +2,7 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util.Filesystem
 import AttributeStore.Fields
@@ -13,18 +14,22 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerMover {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
+  def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerMover[LayerId] =
     new LayerMover[LayerId] {
-      def move(from: LayerId, to: LayerId): Unit = {
+      def move[
+        K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+        V: AvroRecordCodec: ClassTag,
+        M: JsonFormat: Component[?, Bounds[K]]
+      ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
-        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metaData)
+        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metadata)
         if(!sourceMetadataFile.exists) throw new LayerNotFoundError(from)
 
         // Read the metadata file out.
-        val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+        val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, K](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
         }
@@ -41,7 +46,7 @@ object FileLayerMover {
         val sourceLayerPath = new File(sourceAttributeStore.catalogPath, header.path)
         val targetHeader = header.copy(path = LayerPath(to))
 
-        targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyBounds, keyIndex, writerSchema)
+        targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyIndex, writerSchema)
 
         // Delete the metadata file in the source
         sourceMetadataFile.delete()
@@ -61,12 +66,12 @@ object FileLayerMover {
       }
     }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerMover[LayerId] =
-    apply[K, V, M](FileAttributeStore(catalogPath))
+  def apply(catalogPath: String): LayerMover[LayerId] =
+    apply(FileAttributeStore(catalogPath))
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerMover[LayerId] =
-    apply[K, V, M](attributeStore, attributeStore)
+  def apply(attributeStore: FileAttributeStore): LayerMover[LayerId] =
+    apply(attributeStore, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId] =
-    apply[K, V, M](FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
+  def apply(sourceCatalogPath: String, targetCatalogPath: String): LayerMover[LayerId] =
+    apply(FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
 }

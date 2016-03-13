@@ -65,7 +65,7 @@ class RowTransformSpec extends FunSpec
 
     it("should approximate WebMercator -> LatLng for raster extent") {
       val Raster(expected, expectedExtent) = 
-        SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
+        SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val re = RasterExtent(expected, expectedExtent)
 
@@ -95,7 +95,7 @@ class RowTransformSpec extends FunSpec
 
     it("should approximate EPSG:32618 -> WebMercator for raster extent") {
       val Raster(expected, expectedExtent) = 
-        SingleBandGeoTiff("raster-test/data/reproject/slope_epsg32618.tif").raster
+        SinglebandGeoTiff("raster-test/data/reproject/slope_epsg32618.tif").raster
 
       val re = RasterExtent(expected, expectedExtent)
 

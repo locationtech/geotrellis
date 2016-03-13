@@ -22,8 +22,8 @@ object Boilerplate {
   val templatesMacro: Seq[Template] = Seq(
     GenIntTileCombinersFunctions,
     GenDoubleTileCombinersFunctions,
-    GenMacroCombinableMultiBandTile,
-    GenMultiBandTileMacros,
+    GenMacroCombinableMultibandTile,
+    GenMultibandTileMacros,
     GenMacroCombineFunctions)
 
   val templatesRaster: Seq[Template] = Seq(
@@ -111,15 +111,15 @@ object Boilerplate {
     val typeString = "Double"    
   }
 
-  object GenMacroCombinableMultiBandTile extends Template {    
-    def filename(root: File) = root / "geotrellis" / "macros" / "MacroCombinableMultiBandTile.scala"
+  object GenMacroCombinableMultibandTile extends Template {
+    def filename(root: File) = root / "geotrellis" / "macros" / "MacroCombinableMultibandTile.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
       import tv._
 
       block"""
          |package geotrellis.macros
-         |trait MacroCombinableMultiBandTile[T] {
+         |trait MacroCombinableMultibandTile[T] {
         -  def combineIntTileCombiner(combiner: IntTileCombiner${arity}): T
         -  def combineDoubleTileCombiner(combiner: DoubleTileCombiner${arity}): T        
          |}        
@@ -127,8 +127,8 @@ object Boilerplate {
     }
   }
 
-  object GenMultiBandTileMacros extends Template {    
-    def filename(root: File) = root / "geotrellis" / "macros" / "MultiBandTileMacros.scala"
+  object GenMultibandTileMacros extends Template {
+    def filename(root: File) = root / "geotrellis" / "macros" / "MultibandTileMacros.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
       import tv._
@@ -152,10 +152,10 @@ object Boilerplate {
          |import spire.macros.InlineUtil
          |import scala.reflect.macros.Context
          |import scala.language.experimental.macros
-         |object MultiBandTileMacros {
-        -  def intCombine${arity}_impl[T, MBT <: MacroCombinableMultiBandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsInt}): c.Expr[T] = {
+         |object MultibandTileMacros {
+        -  def intCombine${arity}_impl[T, MBT <: MacroCombinableMultibandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsInt}): c.Expr[T] = {
         -    import c.universe._
-        -    val self = c.Expr[MacroCombinableMultiBandTile[T]](c.prefix.tree)
+        -    val self = c.Expr[MacroCombinableMultibandTile[T]](c.prefix.tree)
         -    val tree = 
         -    q\"\"\"$$self.combineIntTileCombiner(new geotrellis.macros.IntTileCombiner${arity} {
         -       ${quoted}
@@ -163,9 +163,9 @@ object Boilerplate {
         -    })\"\"\"
         -    new InlineUtil[c.type](c).inlineAndReset[T](tree)
         -  }
-        -  def doubleCombine${arity}_impl[T, MBT <: MacroCombinableMultiBandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsDouble}): c.Expr[T] = {
+        -  def doubleCombine${arity}_impl[T, MBT <: MacroCombinableMultibandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsDouble}): c.Expr[T] = {
         -    import c.universe._
-        -    val self = c.Expr[MacroCombinableMultiBandTile[T]](c.prefix.tree)
+        -    val self = c.Expr[MacroCombinableMultibandTile[T]](c.prefix.tree)
         -    val tree = 
         -    q\"\"\"$$self.combineDoubleTileCombiner(new geotrellis.macros.DoubleTileCombiner${arity} {
         -       ${quoted}
@@ -194,11 +194,11 @@ object Boilerplate {
       block"""
          |package geotrellis.macros
          |import scala.language.experimental.macros
-         |trait MacroCombineFunctions[T, MBT <: MacroCombinableMultiBandTile[T]] {
+         |trait MacroCombineFunctions[T, MBT <: MacroCombinableMultibandTile[T]] {
         -  def combine(${argsInt})(f: ${seqFInt}): T =
-        -    macro MultiBandTileMacros.intCombine${arity}_impl[T, MBT]
+        -    macro MultibandTileMacros.intCombine${arity}_impl[T, MBT]
         -  def combineDouble(${argsInt})(f: ${seqFDouble}): T =
-        -    macro MultiBandTileMacros.doubleCombine${arity}_impl[T, MBT]
+        -    macro MultibandTileMacros.doubleCombine${arity}_impl[T, MBT]
          |}        
       """
     }
@@ -218,7 +218,7 @@ object Boilerplate {
          |package geotrellis.raster
          |import geotrellis.macros._
          |import spire.syntax.cfor._              
-         |trait MacroMultibandCombiners { self: MultiBandTile =>      
+         |trait MacroMultibandCombiners { self: MultibandTile =>
         -  def combineIntTileCombiner(combiner: IntTileCombiner${arity}): Tile = {
         -    ${bandVals}
         -    val result = ArrayTile.empty(cellType, cols, rows)

@@ -314,14 +314,14 @@ trait TileCodecs {
     }
   }
 
-  implicit def multiBandTileCodec: AvroRecordCodec[MultiBandTile] = new AvroRecordCodec[MultiBandTile] {
+  implicit def multibandTileCodec: AvroRecordCodec[MultibandTile] = new AvroRecordCodec[MultibandTile] {
     def schema = SchemaBuilder
-      .record("ArrayMultiBandTile").namespace("geotrellis.raster")
+      .record("ArrayMultibandTile").namespace("geotrellis.raster")
       .fields()
       .name("bands").`type`().array().items.`type`(tileUnionCodec.schema).noDefault()
       .endRecord()
 
-    def encode(tile: MultiBandTile, rec: GenericRecord) = {
+    def encode(tile: MultibandTile, rec: GenericRecord) = {
       val bands = for (i <- 0 until tile.bandCount) yield tile.band(i)
       rec.put("bands", bands.map(tileUnionCodec.encode).asJavaCollection)
     }
@@ -333,7 +333,7 @@ trait TileCodecs {
         .map(tileUnionCodec.decode)
         .toArray
 
-      ArrayMultiBandTile(bands)
+      ArrayMultibandTile(bands)
     }
   }
 }

@@ -74,7 +74,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   }
 
   def apply[K: SpatialComponent](key: K): Extent = {
-    apply(key.spatialComponent)
+    apply(key.getComponent[SpatialKey])
   }
 
   def apply(key: SpatialKey): Extent =

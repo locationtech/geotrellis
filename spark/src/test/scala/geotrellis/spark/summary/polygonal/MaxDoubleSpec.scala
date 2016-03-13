@@ -14,9 +14,9 @@ class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
   describe("Max Double Zonal Summary Operation") {
     val inc = IncreasingTestFile
 
-    val tileLayout = inc.metaData.tileLayout
+    val tileLayout = inc.metadata.tileLayout
     val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
-    val totalExtent = inc.metaData.extent
+    val totalExtent = inc.metadata.extent
 
     it("should get correct double max over whole raster extent") {
       inc.polygonalMaxDouble(totalExtent.toPolygon) should be(count - 1)

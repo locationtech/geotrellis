@@ -1,16 +1,15 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.raster.MultiBandTile
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.hadoop.HadoopLayerWriter
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.SpaceTimeKey
 
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
 
-class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, MultiBandTile, RasterMetaData] {
-  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
-    HadoopLayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData](new Path(props("path")), method)
+class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
+  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
+    HadoopLayerWriter(props("path")).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](method)
 }
-

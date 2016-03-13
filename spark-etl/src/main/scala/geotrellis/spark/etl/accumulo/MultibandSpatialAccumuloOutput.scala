@@ -1,12 +1,14 @@
 package geotrellis.spark.etl.accumulo
 
-import geotrellis.raster.MultiBandTile
+import geotrellis.raster.MultibandTile
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.AccumuloLayerWriter
 import geotrellis.spark.io.index.KeyIndexMethod
 
-class MultibandSpatialAccumuloOutput extends AccumuloOutput[SpatialKey, MultiBandTile, RasterMetaData] {
-  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters) =
-    AccumuloLayerWriter[SpatialKey, MultiBandTile, RasterMetaData](getInstance(props), props("table"), method)
+import org.apache.spark.SparkContext
+
+class MultibandSpatialAccumuloOutput extends AccumuloOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {
+  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters)(implicit sc: SparkContext) =
+    AccumuloLayerWriter(getInstance(props), props("table"), strategy(props)).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](method)
 }

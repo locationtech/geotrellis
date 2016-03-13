@@ -1,6 +1,6 @@
 package geotrellis.spark.etl
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.{TemporalProjectedExtent, SpaceTimeKey, SpatialKey}
 import geotrellis.spark.ingest._
 import geotrellis.vector.ProjectedExtent

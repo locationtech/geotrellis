@@ -17,7 +17,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
       row <- 0 to 10
     } yield (SpatialKey(col, row), col + row)
   }
-  val pr1 = ContextRDD(rdd1, bounds1)
+  val pr1 = ContextRDD(rdd1, part1.bounds)
 
 
   val bounds2 = KeyBounds(SpatialKey(5,5), SpatialKey(15,15))
@@ -28,7 +28,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
       row <- 5 to 15
     } yield (SpatialKey(col, row), col + row)
   }
-  val pr2 = ContextRDD(rdd2, bounds2)
+  val pr2 = ContextRDD(rdd2, part2.bounds)
 
 
   val bounds3 = KeyBounds(SpatialKey(20,20), SpatialKey(25,25))
@@ -38,7 +38,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
       row <- 20 to 25
     } yield (SpatialKey(col, row), col + row)
   }
-  val pr3 = ContextRDD(rdd3, bounds3)
+  val pr3 = ContextRDD(rdd3, bounds3: Bounds[SpatialKey])
 
    val rddEmpty = sc.emptyRDD[(SpatialKey, Int)]
    val prEmpty = ContextRDD(rddEmpty, SpacePartitioner[SpatialKey](EmptyBounds))

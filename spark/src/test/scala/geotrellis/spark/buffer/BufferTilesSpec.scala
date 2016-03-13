@@ -18,7 +18,7 @@ package geotrellis.spark.buffer
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.raster.io.geotiff.SingleBandGeoTiff
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 
 import org.scalatest.FunSpec
 
@@ -27,9 +27,9 @@ class BufferTilesSpec extends FunSpec with TestEnvironment {
 
   describe("The BufferTiles functionality") {
     val path = "raster-test/data/aspect.tif"
-    val gt = SingleBandGeoTiff(path)
+    val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
-    val (_, wholeRdd) = createRasterRDD(originalRaster, 5, 5, gt.crs)
+    val (_, wholeRdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val metadata = wholeRdd.metadata
 
     it("should work when the RDD is a diagonal strip") {

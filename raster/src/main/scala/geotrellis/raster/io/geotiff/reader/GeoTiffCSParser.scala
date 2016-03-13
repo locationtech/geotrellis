@@ -37,7 +37,7 @@ import geotrellis.proj4.CSVFileConstants._
 
 import scala.collection.immutable.HashMap
 
-import monocle.syntax._
+import monocle.syntax.apply._
 
 case class GeoTiffCSParameters(
   var model: Int = UserDefinedCPV,

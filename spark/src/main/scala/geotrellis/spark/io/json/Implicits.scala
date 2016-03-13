@@ -18,9 +18,7 @@ import scala.reflect.ClassTag
 
 object Implicits extends Implicits
 
-trait Implicits {
-  implicit def keyIndexFormat[K: ClassTag]: RootJsonFormat[index.KeyIndex[K]] =
-    new JavaSerializationJsonFormat[index.KeyIndex[K]]
+trait Implicits extends KeyFormats with KeyIndexFormats {
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
@@ -66,26 +64,28 @@ trait Implicits {
       }
   }
 
-  implicit object RasterMetaDataFormat extends RootJsonFormat[RasterMetaData] {
-    def write(metaData: RasterMetaData) =
+  implicit def tileLayerMetadataFormat[K: JsonFormat] = new RootJsonFormat[TileLayerMetadata[K]] {
+    def write(metadata: TileLayerMetadata[K]) =
       JsObject(
-        "cellType" -> metaData.cellType.toJson,
-        "extent" -> metaData.extent.toJson,
-        "layoutDefinition" -> metaData.layout.toJson,
-        "crs" -> metaData.crs.toJson
+        "cellType" -> metadata.cellType.toJson,
+        "extent" -> metadata.extent.toJson,
+        "layoutDefinition" -> metadata.layout.toJson,
+        "crs" -> metadata.crs.toJson,
+        "bounds" -> metadata.bounds.get.toJson // we will only store non-empty bounds
       )
 
-    def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs") match {
-        case Seq(cellType, extent, layoutDefinition, crs) =>
-          RasterMetaData(
+    def read(value: JsValue): TileLayerMetadata[K] =
+      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "bounds") match {
+        case Seq(cellType, extent, layoutDefinition, crs, bounds) =>
+          TileLayerMetadata(
             cellType.convertTo[CellType],
             layoutDefinition.convertTo[LayoutDefinition],
             extent.convertTo[Extent],
-            crs.convertTo[CRS]
+            crs.convertTo[CRS],
+            bounds.convertTo[KeyBounds[K]]
           )
         case _ =>
-          throw new DeserializationException("RasterMetaData expected")
+          throw new DeserializationException("TileLayerMetadata expected")
       }
   }
 
@@ -106,4 +106,3 @@ trait Implicits {
     def write(obj: Schema) = obj.toString.parseJson
   }
 }
-

@@ -9,32 +9,20 @@ import geotrellis.spark.testfiles.TestFiles
 import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 
-abstract class HadoopSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, RasterMetaData]
+class HadoopSpaceTimeSpec
+  extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
+    with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests {
-  lazy val reader = HadoopLayerReader[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
+    with CoordinateSpaceTimeTests
+    with LayerUpdateSpaceTimeTileTests {
+  lazy val reader = HadoopLayerReader(outputLocal)
+  lazy val writer = HadoopLayerWriter(outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
-  lazy val copier = HadoopLayerCopier[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
-  lazy val mover  = HadoopLayerMover[SpaceTimeKey, Tile, RasterMetaData](outputLocal)
-  lazy val reindexer = HadoopLayerReindexer[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.byPattern("YMM"))
+  lazy val copier = HadoopLayerCopier(outputLocal)
+  lazy val mover  = HadoopLayerMover(outputLocal)
+  lazy val reindexer = HadoopLayerReindexer(outputLocal)
+  lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopTileReader[SpaceTimeKey, Tile](outputLocal)
   lazy val sample =  CoordinateSpaceTime
-}
-
-class HadoopSpaceTimeZCurveByYearSpec extends HadoopSpaceTimeSpec {
-  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.byYear)
-}
-
-class HadoopSpaceTimeZCurveByFuncSpec extends HadoopSpaceTimeSpec {
-  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, ZCurveKeyIndexMethod.by{ x =>  if (x < DateTime.now) 1 else 0 })
-}
-
-class HadoopSpaceTimeHilbertSpec extends HadoopSpaceTimeSpec {
-  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal, HilbertKeyIndexMethod(DateTime.now - 20.years, DateTime.now, 4))
-}
-
-class HadoopSpaceTimeHilbertWithResolutionSpec extends HadoopSpaceTimeSpec {
-  lazy val writer = HadoopLayerWriter[SpaceTimeKey, Tile, RasterMetaData](outputLocal,  HilbertKeyIndexMethod(2))
 }

@@ -216,6 +216,9 @@ object MockS3Client{
     }
   }
 
+  def reset(): Unit =
+    buckets.clear()
+
   val buckets = new ConcurrentHashMap[String, Bucket]()
 
   def getBucket(name: String): Bucket = {

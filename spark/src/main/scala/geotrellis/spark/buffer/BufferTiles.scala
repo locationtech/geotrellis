@@ -30,7 +30,7 @@ object BufferTiles {
     includeKey: SpatialKey => Boolean,
     getBufferSizes: SpatialKey => BufferSizes
   ): Seq[(K, (Direction, V))] = {
-    val SpatialKey(col, row) = key.spatialComponent
+    val SpatialKey(col, row) = key.getComponent[SpatialKey]
     val parts = new ArrayBuffer[(K, (Direction, V))](9)
 
     val cols = tile.cols
@@ -54,7 +54,7 @@ object BufferTiles {
             case BottomRight => tile.crop(0, 0, bufferSizes.right - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
           }
 
-        parts += ( (key.updateSpatialComponent(spatialKey), (direction, part)) )
+        parts += ( (key.setComponent(spatialKey), (direction, part)) )
       }
     }
 
@@ -221,19 +221,19 @@ object BufferTiles {
       val contributingKeys =
         bufferSizesPerKey
           .flatMap { case (key, bufferSizes) =>
-            val spatialKey @ SpatialKey(col, row) = key.spatialComponent
+            val spatialKey @ SpatialKey(col, row) = key.getComponent[SpatialKey]
             Seq(
               (key, (spatialKey, bufferSizes)),
 
-              (key.updateSpatialComponent(SpatialKey(col-1, row)), (spatialKey, bufferSizes)),
-              (key.updateSpatialComponent(SpatialKey(col+1, row)), (spatialKey, bufferSizes)),
-              (key.updateSpatialComponent(SpatialKey(col, row-1)), (spatialKey, bufferSizes)),
-              (key.updateSpatialComponent(SpatialKey(col, row+1)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col-1, row)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col+1, row)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col, row-1)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col, row+1)), (spatialKey, bufferSizes)),
 
-              (key.updateSpatialComponent(SpatialKey(col-1, row-1)), (spatialKey, bufferSizes)),
-              (key.updateSpatialComponent(SpatialKey(col+1, row-1)), (spatialKey, bufferSizes)),
-              (key.updateSpatialComponent(SpatialKey(col+1, row+1)), (spatialKey, bufferSizes)),
-              (key.updateSpatialComponent(SpatialKey(col-1, row+1)), (spatialKey, bufferSizes))
+              (key.setComponent(SpatialKey(col-1, row-1)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col+1, row-1)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col+1, row+1)), (spatialKey, bufferSizes)),
+              (key.setComponent(SpatialKey(col-1, row+1)), (spatialKey, bufferSizes))
             )
 
           }
