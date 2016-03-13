@@ -18,7 +18,7 @@ package geotrellis.spark.filter
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
-import geotrellis.raster.io.geotiff.SingleBandGeoTiff
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
@@ -40,27 +40,27 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
       (SpaceTimeKey(1, 1, 4), true),
       (SpaceTimeKey(0, 0, 4), true),
       (SpaceTimeKey(0, 1, 4), true)))
-    val metadata: RasterMetaData = {
+    val metadata = {
       val cellType = FloatConstantNoDataCellType
       val crs = LatLng
       val tileLayout = TileLayout(8, 8, 3, 4)
       val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
       val gridBounds = GridBounds(1, 1, 6, 7)
       val extent = mapTransform(gridBounds)
-      RasterMetaData(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs)
+      TileLayerMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, KeyBounds(SpaceTimeKey(0, 0, 1), SpaceTimeKey(1, 1, 4)))
     }
-    val rasterRDD = ContextRDD(rdd, metadata)
+    val tileLayerRdd = ContextRDD(rdd, metadata)
 
     it("should filter out all items that are not at the given instant") {
-      rasterRDD.toSpatial(0).count should be (0)
-      rasterRDD.toSpatial(1).count should be (1)
-      rasterRDD.toSpatial(2).count should be (2)
-      rasterRDD.toSpatial(3).count should be (3)
-      rasterRDD.toSpatial(4).count should be (4)
+      tileLayerRdd.toSpatial(0).count should be (0)
+      tileLayerRdd.toSpatial(1).count should be (1)
+      tileLayerRdd.toSpatial(2).count should be (2)
+      tileLayerRdd.toSpatial(3).count should be (3)
+      tileLayerRdd.toSpatial(4).count should be (4)
     }
 
     it ("should produce an RDD whose keys are of type SpatialKey") {
-      rasterRDD.toSpatial(1).first._1 should be (SpatialKey(0,0))
+      tileLayerRdd.toSpatial(1).first._1 should be (SpatialKey(0,0))
     }
   }
 

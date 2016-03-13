@@ -190,10 +190,10 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
   }
 
-  describe("MultiBand bands (reorder) method") {
+  describe("Multiband bands (reorder) method") {
 
     it("should be inexpensive") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
       val tile1 = tile0.bands(List(1, 2, 0))
 
       tile0.band(0) should be theSameInstanceAs tile1.band(2)
@@ -202,7 +202,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
 
     it("result should have correct bandCount") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
       val tile1 = tile0.bands(List(1, 2, 0))
       val tile2 = tile0.bands(List(1, 2))
 
@@ -211,7 +211,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
 
     it("result should work properly with foreach") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
       val tile1 = tile0.bands(List(1, 2, 0))
       val tile2 = tile1.bands(List(1, 2, 0))
 
@@ -227,7 +227,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
 
     it("should disallow \"invalid\" bandSequences") {
-      val tile0 = MultiBandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
       an [IllegalArgumentException] should be thrownBy {
         tile0.bands(0,1,2,3) // There are only 3 bands
       }

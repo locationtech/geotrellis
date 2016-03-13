@@ -179,7 +179,7 @@ val rddWithContext2: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
 val rddWithContext3: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   rdd1
     .withContext { _ localEqual 123 }
-    .mapContext { rmd: TileLayerMetadata => rmd.copy(cellType = TypeBit) }
+    .mapContext { metadata: TileLayerMetadata => metadata.copy(cellType = TypeBit) }
 ```
 
 ### Preserving Metadata Through Spatial Joins

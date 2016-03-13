@@ -61,7 +61,7 @@ object InterfaceSpec {
     // Sometimes you need to chain updating Metadata to operation that changes RDD meaning
     rdd1
       .withContext { _ localEqual 123 }
-      .mapContext { rmd => rmd.copy(cellType = BitCellType) }
+      .mapContext { metadata => metadata.copy(cellType = BitCellType) }
 
 
     // Chaining updates on results of spatialJoin is different because they produce Metadata

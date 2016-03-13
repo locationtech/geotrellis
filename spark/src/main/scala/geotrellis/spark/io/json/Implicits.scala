@@ -64,7 +64,7 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
       }
   }
 
-  implicit def rasterMetadataFormat[K: JsonFormat] = new RootJsonFormat[TileLayerMetadata[K]] {
+  implicit def tileLayerMetadataFormat[K: JsonFormat] = new RootJsonFormat[TileLayerMetadata[K]] {
     def write(metadata: TileLayerMetadata[K]) =
       JsObject(
         "cellType" -> metadata.cellType.toJson,

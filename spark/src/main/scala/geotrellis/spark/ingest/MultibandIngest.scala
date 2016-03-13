@@ -25,11 +25,11 @@ object MultibandIngest {
     bufferSize: Option[Int] = None)
     (sink: (MultibandTileLayerRDD[K], Int) => Unit): Unit =
   {
-    val (_, rasterMetadata) = TileLayerMetadata.fromRdd(sourceTiles, layoutScheme)
-    val tiledRdd = sourceTiles.tileToLayout(rasterMetadata, resampleMethod).cache()
-    val contextRdd = new ContextRDD(tiledRdd, rasterMetadata)
-    val (zoom, rasterRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))
-    rasterRdd.persist(cacheLevel)
+    val (_, tileLayerMetadata) = TileLayerMetadata.fromRdd(sourceTiles, layoutScheme)
+    val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
+    val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)
+    val (zoom, tileLayerRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))
+    tileLayerRdd.persist(cacheLevel)
 
     def buildPyramid(zoom: Int, rdd: MultibandTileLayerRDD[K]): List[(Int, MultibandTileLayerRDD[K])] = {
       if (zoom >= 1) {
@@ -42,10 +42,10 @@ object MultibandIngest {
     }
 
     if (pyramid)
-      buildPyramid(zoom, rasterRdd)
+      buildPyramid(zoom, tileLayerRdd)
         .foreach { case (z, rdd) => rdd.unpersist(true) }
     else
-      sink(rasterRdd, zoom)
+      sink(tileLayerRdd, zoom)
 
   }
 }

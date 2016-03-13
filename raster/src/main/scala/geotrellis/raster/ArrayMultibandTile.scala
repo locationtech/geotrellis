@@ -24,8 +24,8 @@ object ArrayMultibandTile {
   }
 }
 
-class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners with SimpleMultiBandTile {
-  val bandCount = bands.size
+class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners with SimpleMultibandTile {
+  val bandCount = _bands.size
 
   assert(bandCount > 0, "Band count must be greater than 0")
   private def validateBand(i: Int) = assert(i < bandCount, s"Band index out of bounds. Band Count: $bandCount Requested Band Index: $i")

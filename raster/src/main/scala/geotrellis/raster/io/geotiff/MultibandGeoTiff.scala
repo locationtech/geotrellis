@@ -93,18 +93,6 @@ object MultibandGeoTiff {
   ): MultibandGeoTiff =
     apply(tile, extent, crs, tags, GeoTiffOptions.DEFAULT)
 
-  def apply(
-    tile: MultibandTile,
-    extent: Extent,
-    crs: CRS,
-    tags: Tags,
-    options: GeoTiffOptions
-  ): MultibandGeoTiff =
-    new MultibandGeoTiff(tile, extent, crs, tags, options)
-
-  def unapply(mbg: MultibandGeoTiff): Option[(MultibandTile, Extent, CRS, Tags)] =
-    Some((mbg.tile, mbg.extent, mbg.crs, mbg.tags))
-
   implicit def multibandGeoTiffToTile(mbg: MultibandGeoTiff): MultibandTile =
     mbg.tile
 }
