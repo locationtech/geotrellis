@@ -69,6 +69,25 @@ lazy val root = Project("geotrellis", file(".")).
   )
   .settings(unidocSettings: _*)
 
+// Convenience aggregation project that compiles all tests.
+lazy val tests = Project("tests", file(".")).
+  aggregate(
+    vectorTest,
+    rasterTest,
+    engineTest,
+    spark,
+    s3,
+    accumulo,
+    sparkEtl
+  ).dependsOn(
+    vectorTest % "compile->test",
+    rasterTest % "compile->test",
+    engineTest % "compile->test",
+    spark % "compile->test",
+    s3 % "compile->test",
+    accumulo % "compile->test"
+  )
+
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
