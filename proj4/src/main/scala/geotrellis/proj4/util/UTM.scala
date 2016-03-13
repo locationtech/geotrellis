@@ -4,11 +4,14 @@ import geotrellis.proj4._
 
 // Ported from javascript https://github.com/chrisveness/geodesy by Chris Veness (MIT license)
 object UTM {
+  def inValidZone(lat: Double): Boolean =
+    (-80 <= lat && lat <= 84)
+
   /** Gets a UTM zone based on a LatLn coordinate.
     * @return Left(zone) if the zone is North and Right(zone) if the zone is right
     */
   def getZone(lon: Double, lat: Double): Either[Int, Int] = {
-    if (!(-80 <= lat && lat <= 84))
+    if (!inValidZone(lat))
       throw new IllegalArgumentException("Outside UTM limits")
 
     var zone = (math.floor((lon + 180) / 6) + 1).toInt

@@ -41,10 +41,20 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
   def zoom(x: Double, y: Double, cellSize: CellSize): Int = {
     val ll1 = Point(x + cellSize.width, y + cellSize.height).reproject(crs, LatLng)
     val ll2 = Point(x, y).reproject(crs, LatLng)
-    val utmCrs = UTM.getZoneCrs(ll1.x, ll1.y)
-    val p1 = ll1.reproject(LatLng, utmCrs)
-    val p2 = ll2.reproject(LatLng, utmCrs)
-    val dist = math.max(math.abs(p1.x - p2.x), math.abs(p1.y - p2.y))
+    // Try UTM zone, if not, use web mercator.
+    val dist: Double =
+      if(UTM.inValidZone(ll1.y)) {
+        val utmCrs = UTM.getZoneCrs(ll1.x, ll1.y)
+        val (p1, p2) = (ll1.reproject(LatLng, utmCrs), ll2.reproject(LatLng, utmCrs))
+
+        math.max(math.abs(p1.x - p2.x), math.abs(p1.y - p2.y))
+      } else {
+        // Use Haversine distance formula
+        val p = math.Pi / 180
+        val a = 0.5 - math.cos((ll2.y - ll1.y) * p) / 2 + math.cos(ll1.y * p) * math.cos(ll2.y * p) * (1 - math.cos((ll2.x - ll1.x) * p)) / 2
+
+        2 * EARTH_CIRCUMFERENCE * math.asin(math.sqrt(a))
+      }
     val z = (math.log(EARTH_CIRCUMFERENCE / (dist * tileSize)) / math.log(2)).toInt
     val zRes = EARTH_CIRCUMFERENCE / (math.pow(2, z) * tileSize)
     val nextZRes = EARTH_CIRCUMFERENCE / (math.pow(2, z + 1) * tileSize)
