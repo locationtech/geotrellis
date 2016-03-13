@@ -10,6 +10,26 @@ import java.util.Locale
 
 import math.BigDecimal
 
+object MultibandTile {
+  /** Creates a multiband tile from a sequence of tiles which represent the bands.
+    * This creates an ArrayMultibandTile, the default implementation of MultibandTile.
+    */
+  def apply(bands: Tile*): ArrayMultibandTile =
+    ArrayMultibandTile(bands)
+
+  /** Creates a multiband tile from a sequence of tiles which represent the bands.
+    * This creates an ArrayMultibandTile, the default implementation of MultibandTile.
+    */
+  def apply(bands: Traversable[Tile]): ArrayMultibandTile =
+    ArrayMultibandTile(bands)
+
+  /** Creates a multiband tile from a sequence of tiles which represent the bands.
+    * This creates an ArrayMultibandTile, the default implementation of MultibandTile.
+    */
+  def apply(bands: Array[Tile]): ArrayMultibandTile =
+    ArrayMultibandTile(bands)
+}
+
 trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
   def bandCount: Int
 
