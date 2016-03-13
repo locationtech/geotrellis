@@ -15,6 +15,10 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
 
   def band(bandIndex: Int): Tile
 
+  def bands(bandSequence: Seq[Int]): MultibandTile
+
+  def bands(bandSequence: Int*)(implicit d: DummyImplicit): MultibandTile
+
   def convert(newCellType: CellType): MultibandTile
 
   /**
