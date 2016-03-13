@@ -27,11 +27,11 @@
 
 package geotrellis.slick
 
-import scala.slick.driver.JdbcDriver
-import scala.slick.lifted.Column
+import slick.ast.FieldSymbol
+import slick.driver.{JdbcDriver, PostgresDriver}
+import slick.jdbc.{PositionedParameters, PositionedResult, SetParameter}
+
 import scala.reflect.ClassTag
-import scala.slick.ast.{ScalaBaseType}
-import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 import java.sql._
 
 import geotrellis.vector._
@@ -57,8 +57,9 @@ import geotrellis.vector.io.wkt._
  *
  * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
  */
-class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
+trait PostGisProjectionSupport extends PostGisExtensions { driver: PostgresDriver =>
   import PostGisProjectionSupportUtils._
+  import driver.api._
 
   type GEOMETRY           = Projected[Geometry]
   type POINT              = Projected[Point]
@@ -66,25 +67,27 @@ class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisE
   type POLYGON            = Projected[Polygon]
   type GEOMETRYCOLLECTION = Projected[GeometryCollection]
 
-  implicit val geometryTypeMapper           = new ProjectedGeometryJdbcType[GEOMETRY]
-  implicit val pointTypeMapper              = new ProjectedGeometryJdbcType[POINT]
-  implicit val lineTypeMapper               = new ProjectedGeometryJdbcType[LINESTRING]
-  implicit val polygonTypeMapper            = new ProjectedGeometryJdbcType[POLYGON]
+  trait PostGISProjectionAssistants extends BasePostGISAssistants[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION]
+trait PostGISProjectionImplicits {
+  implicit val geometryTypeMapper = new ProjectedGeometryJdbcType[GEOMETRY]
+  implicit val pointTypeMapper = new ProjectedGeometryJdbcType[POINT]
+  implicit val lineTypeMapper = new ProjectedGeometryJdbcType[LINESTRING]
+  implicit val polygonTypeMapper = new ProjectedGeometryJdbcType[POLYGON]
   implicit val geometryCollectionTypeMapper = new ProjectedGeometryJdbcType[GEOMETRYCOLLECTION]
-  implicit val multiPointTypeMapper         = new ProjectedGeometryJdbcType[Projected[MultiPoint]]
-  implicit val multiPolygonTypeMapper       = new ProjectedGeometryJdbcType[Projected[MultiPolygon]]
-  implicit val multiLineTypeMapper          = new ProjectedGeometryJdbcType[Projected[MultiLine]]
+  implicit val multiPointTypeMapper = new ProjectedGeometryJdbcType[Projected[MultiPoint]]
+  implicit val multiPolygonTypeMapper = new ProjectedGeometryJdbcType[Projected[MultiPolygon]]
+  implicit val multiLineTypeMapper = new ProjectedGeometryJdbcType[Projected[MultiLine]]
 
-  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
-    new GeometryColumnExtensionMethods[G1, G1](c)
-  
-  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Column[Option[G1]]) = 
-    new GeometryColumnExtensionMethods[G1, Option[G1]](c)
+  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Rep[G1]) =
+    new GeometryColumnExtensionMethods[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, G1, G1](c)
 
-  class ProjectedGeometryJdbcType[T <: Projected[Geometry] :ClassTag] extends driver.DriverJdbcType[T] {
-    override def scalaType = ScalaBaseType[T]
-    
-    override def sqlTypeName: String = "geometry"
+  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Rep[Option[G1]]) =
+    new GeometryColumnExtensionMethods[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, G1, Option[G1]](c)
+}
+
+  class ProjectedGeometryJdbcType[T <: Projected[Geometry] :ClassTag] extends DriverJdbcType[T] {
+
+    override def sqlTypeName(sym: Option[FieldSymbol]): String = "geometry"
     
     override def hasLiteralForm: Boolean = false
     
