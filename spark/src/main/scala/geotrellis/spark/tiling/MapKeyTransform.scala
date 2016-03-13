@@ -3,7 +3,6 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 object MapKeyTransform {

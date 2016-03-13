@@ -23,7 +23,8 @@ import com.vividsolutions.jts.{geom => jts}
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 
-package object vector extends SeqMethods {
+package object vector extends SeqMethods
+    with reproject.Implicits {
 
   type PointFeature[D] = Feature[Point, D]
   type LineFeature[D] = Feature[Line, D]
@@ -32,6 +33,19 @@ package object vector extends SeqMethods {
   type MultiLineFeature[D] = Feature[MultiLine, D]
   type MultiPolygonFeature[D] = Feature[MultiPolygon, D]
   type GeometryCollectionFeature[D] = Feature[GeometryCollection, D]
+
+  /**
+   * An extension class - when in scope, these methods are available from Geometry objects.
+   *
+   * The algorithms herein are all implemented in JTS, but the wrapper methods
+   * here make it straightforward to call them with geotrellis.vector classes.
+   */
+  implicit class withGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
+    with dissolve.DissolveMethods[G]
+    with convexhull.ConvexHullMethods[G]
+    with densify.DensifyMethods[G]
+    with simplify.SimplifyMethods[G]
+    with prepared.PreparedGeometryMethods[G]
 
   implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
     Point(t._1,t._2)
@@ -93,17 +107,4 @@ package object vector extends SeqMethods {
 
   implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection =
     GeometryCollection(gs)
-
-  /**
-   * An extension class - when in scope, these methods are available from Geometry objects.
-   *
-   * The algorithms herein are all implemented in JTS, but the wrapper methods
-   * here make it straightforward to call them with geotrellis.vector classes.
-   */
-  implicit class withGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
-    with dissolve.DissolveMethods[G]
-    with convexhull.ConvexHullMethods[G]
-    with densify.DensifyMethods[G]
-    with simplify.SimplifyMethods[G]
-    with prepared.PreparedGeometryMethods[G]
 }

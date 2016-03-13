@@ -1,11 +1,10 @@
 package geotrellis.spark.tiling
 
-import geotrellis.spark._
-import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.proj4.util.UTM
+import geotrellis.raster._
+import geotrellis.spark._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 
 object ZoomedLayoutScheme {
   val EARTH_RADIUS = 6378137 // Use what gdal2tiles uses.

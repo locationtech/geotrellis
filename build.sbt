@@ -69,8 +69,8 @@ lazy val root = Project("geotrellis", file(".")).
   )
   .settings(unidocSettings: _*)
 
-// Convenience aggregation project that compiles all tests.
-lazy val tests = Project("tests", file(".")).
+// Convenience aggregation project that compiles all projects, including tests.
+lazy val all = Project("all", file(".")).
   aggregate(
     vectorTest,
     rasterTest,
@@ -78,7 +78,8 @@ lazy val tests = Project("tests", file(".")).
     spark,
     s3,
     accumulo,
-    sparkEtl
+    sparkEtl,
+    slick
   ).dependsOn(
     vectorTest % "compile->test",
     rasterTest % "compile->test",
@@ -125,7 +126,7 @@ lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
-lazy val geotrellisSlick = Project("slick", file("slick")).
+lazy val slick = Project("slick", file("slick")).
   dependsOn(vector).
   settings(commonSettings: _*)
 

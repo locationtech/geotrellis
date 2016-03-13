@@ -4,7 +4,6 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.mosaic._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 import geotrellis.vector.io.json._
 import geotrellis.raster.testkit._
 import geotrellis.proj4._
@@ -53,7 +52,7 @@ class ReprojectSpec extends FunSpec
       val raster =
         SinglebandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
-      val Raster(expected, expectedExtent) = 
+      val Raster(expected, expectedExtent) =
         SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val Raster(actual, actualExtent) =
@@ -80,7 +79,7 @@ class ReprojectSpec extends FunSpec
       val raster =
         SinglebandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
-      val Raster(expected, expectedExtent) = 
+      val Raster(expected, expectedExtent) =
         SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
 
       val Raster(actual, actualExtent) =
@@ -144,10 +143,10 @@ class ReprojectSpec extends FunSpec
 
       // Now repreject; there should also be no lines.
 
-      val wmLeft @ Raster(wmLeftTile, wmLeftExtent) = 
+      val wmLeft @ Raster(wmLeftTile, wmLeftExtent) =
         mergedRaster.reproject(GridBounds(0, 0, 511, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
-      val wmRight @ Raster(wmRightTile, wmRightExtent) = 
+      val wmRight @ Raster(wmRightTile, wmRightExtent) =
         mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
       val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
@@ -175,7 +174,7 @@ class ReprojectSpec extends FunSpec
       val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
       val expandedRasterExtent = RasterExtent(expandedExtent, rasterExtent.cols + 20, rasterExtent.rows + 20)
 
-      val expandedTile = 
+      val expandedTile =
         IntArrayTile(Array.ofDim[Int](expandedRasterExtent.size).fill(1), expandedRasterExtent.cols, expandedRasterExtent.rows)
       val expandedRaster = Raster(expandedTile, expandedExtent)
 
