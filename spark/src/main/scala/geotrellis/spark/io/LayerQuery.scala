@@ -43,11 +43,11 @@ class LayerQuery[K: Boundable, M: Component[?, Bounds[K]]](
 }
 
 /**
- * Wrapper for [[LayerQuery]] that binds it to some function that is able to produce a resulting RDD.
+ * Wrapper for [[LayerQuery]] that binds it to some function that is able to produce a resulting value.
  */
 class BoundLayerQuery[K, M, ReturnType](query: LayerQuery[K, M], f: LayerQuery[K, M] => ReturnType) {
   def where[F, T](params: LayerFilter.Expression[F, T])(implicit ev: LayerFilter[K, F, T, M]): BoundLayerQuery[K, M, ReturnType] =
     new BoundLayerQuery(query.where(params), f)
 
-  def toRDD: ReturnType = f(query)
+  def result: ReturnType = f(query)
 }
