@@ -1,4 +1,4 @@
-package geotrellis.spark.partitioner
+package geotrellis.spark.partition
 
 import geotrellis.spark._
 import geotrellis.spark.io.index._
@@ -27,10 +27,6 @@ case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
   def numPartitions = regions.length
 
   def getPartition(key: Any): Int = {
-    val k = key.asInstanceOf[SpatialKey]
-    val x = index.asInstanceOf[PartitionerIndex[SpatialKey]]
-    x.toIndex(k)
-
     val region = index.toIndex(key.asInstanceOf[K])
     val regionIndex = regions.indexOf(region)
     if (regionIndex > -1) regionIndex
@@ -54,7 +50,7 @@ case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
     * If it is in sync with Bounds in the Metadata we assume it to be valid .
     * Otherwise we assume it has degraded to be a hash partitioner and we must perform a shuffle.
     */
-  def apply[V, M: Component[?, Bounds[K]]](rdd: RDD[(K, V)] with Metadata[M]) = {
+  def apply[V, M: Component[?, Bounds[K]]](rdd: RDD[(K, V)] with Metadata[M]): RDD[(K, V)] with Metadata[Bounds[K]] = {
     val kb: Bounds[K] = rdd.metadata.getComponent[Bounds[K]]
     rdd.partitioner match {
       case Some(part: SpacePartitioner[K]) if part.bounds == kb =>

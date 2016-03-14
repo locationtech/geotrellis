@@ -36,7 +36,7 @@ class HadoopLayerReader(
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: RDDQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, K](id)

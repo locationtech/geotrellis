@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,7 @@ import spire.syntax.cfor._
 object MultiPoint {
   lazy val EMPTY = MultiPoint(Seq[Point]())
 
-  def apply(ps: Point*): MultiPoint = 
+  def apply(ps: Point*): MultiPoint =
     apply(ps)
 
   def apply(ps: Traversable[Point]): MultiPoint =
@@ -53,7 +53,7 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
                                                   with ZeroDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): MultiPoint = { 
+  def normalized(): MultiPoint = {
     val geom = jtsGeom.clone.asInstanceOf[jts.MultiPoint]
     geom.normalize
     MultiPoint(geom)
@@ -123,7 +123,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
     */
   def intersection(g: AtLeastOneDimension): MultiPointAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
-
 
   // -- Union
 
@@ -205,7 +204,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def union(mp: MultiPolygon): MultiPointMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
 
-
   // -- Difference
 
   /** Computes a Result that represents a Geometry made up of all the points in
@@ -227,7 +225,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
     */
   def difference(g: Geometry): MultiPointGeometryDifferenceResult =
     jtsGeom.difference(g.jtsGeom)
-
 
   // -- SymDifference
 
@@ -276,7 +273,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def symDifference(mp: MultiPolygon): MultiPointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(mp.jtsGeom)
 
-
   // -- Misc.
 
 
@@ -294,9 +290,7 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
         sys.error(s"Unexpected result for MultiPoint convexHull: ${x.getGeometryType}")
     }
 
-
   // -- Predicates
-
 
   /** Tests whether this MultiPoint contains the specified ZeroDimensions g.
     * Returns true if the DE-9IM Intersection Matrix for the two geometries is

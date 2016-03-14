@@ -3,9 +3,9 @@ package geotrellis.vector.io.json
 import spray.json._
 
 import geotrellis.vector._
+import geotrellis.vector.io._
 import scala.util.{Try, Success, Failure}
 import scala.collection.mutable
-import FeatureFormats._
 import DefaultJsonProtocol._
 
 /** Accumulates GeoJson from Feature class instances and implements a Map keyed on geojson feature IDs.

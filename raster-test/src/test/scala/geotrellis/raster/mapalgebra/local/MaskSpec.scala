@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.local
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
 
 import org.scalatest._
 

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@ package geotrellis.vector
 import com.vividsolutions.jts.{geom => jts}
 import scala.reflect._
 
-private[vector] trait GeometryResultMethods { 
+private[vector] trait GeometryResultMethods {
   /** Returns this result as an option, unless this is NoResult, in which case it returns None */
   def toGeometry(): Option[Geometry]
 
@@ -103,7 +103,7 @@ object OneDimensionAtLeastOneDimensionIntersectionResult {
       case mp: jts.MultiPoint => MultiPointResult(mp)
       case ml: jts.MultiLineString => MultiLineResult(ml)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
-      case _ => 
+      case _ =>
         sys.error(s"Unexpected result for OneDimension-AtLeastOneDimension intersection: ${geom.getGeometryType}")
     }
 }
@@ -187,7 +187,7 @@ object PointZeroDimensionsUnionResult {
     geom match {
       case p: jts.Point => PointResult(p)
       case mp: jts.MultiPoint => MultiPointResult(mp)
-      case _ => 
+      case _ =>
         sys.error(s"Unexpected result for Point-ZeroDimensions union: ${geom.getGeometryType}")
     }
 }
@@ -210,7 +210,7 @@ object ZeroDimensionsLineUnionResult {
     geom match {
       case l: jts.LineString => LineResult(l)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
-      case _ => 
+      case _ =>
         sys.error(s"Unexpected result for ZeroDimensions-Line union: ${geom.getGeometryType}")
     }
 }
@@ -248,7 +248,7 @@ object LineOneDimensionUnionResult {
     geom match {
       case l: jts.LineString => LineResult(l)
       case ml: jts.MultiLineString => MultiLineResult(ml)
-      case _ => 
+      case _ =>
         sys.error(s"Unexpected result for Line-OneDimension union: ${geom.getGeometryType}")
     }
 }
@@ -697,6 +697,17 @@ object PointOrNoResult {
     }
 }
 
+abstract sealed trait PolygonOrNoResult extends GeometryResultMethods
+object PolygonOrNoResult {
+  implicit def jtsToResult(geom: jts.Geometry): PolygonOrNoResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
+      case p: jts.Polygon => PolygonResult(p)
+      case _ =>
+        sys.error(s"Unexpected result: ${geom.getGeometryType}")
+    }
+}
+
 case object NoResult extends GeometryResult
     with OneDimensionAtLeastOneDimensionIntersectionResult
     with TwoDimensionsTwoDimensionsIntersectionResult
@@ -715,6 +726,7 @@ case object NoResult extends GeometryResult
     with MultiPointMultiLineUnionResult
     with MultiPointMultiPolygonUnionResult
     with PointOrNoResult
+    with PolygonOrNoResult
     with MultiPointMultiLineSymDifferenceResult
     with MultiPointMultiPolygonSymDifferenceResult
     with MultiLineMultiLineUnionResult
@@ -806,6 +818,7 @@ case class PolygonResult(geom: Polygon) extends GeometryResult
     with PointMultiPolygonSymDifferenceResult
     with LineMultiPolygonSymDifferenceResult
     with PointMultiPolygonUnionResult
+    with PolygonOrNoResult
     with MultiPointMultiPolygonUnionResult
     with MultiPointMultiPolygonSymDifferenceResult
     with MultiLineMultiPolygonUnionResult

@@ -2,7 +2,6 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 import com.vividsolutions.jts.densify.Densifier

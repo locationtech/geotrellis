@@ -22,29 +22,9 @@ import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Extent
 
-import org.apache.spark.rdd._
-
-
 abstract class TileLayerRDDCropMethods[K: SpatialComponent] extends MethodExtensions[TileLayerRDD[K]] {
-  def crop(extent: Extent, options: Options): TileLayerRDD[K] = {
-    val md = self.metadata
-    val mt = md.mapTransform
-    val rdd = self
-      .mapPartitions({ partition =>
-        partition.flatMap({ case (key, tile) =>
-          val srcExtent = mt(key)
-          if (extent.contains(srcExtent))
-            Some((key, tile))
-          else if (extent.interiorIntersects(srcExtent)) {
-            val newTile = tile.crop(srcExtent, extent, options)
-            Some((key, newTile))
-          }
-          else None
-        })
-      }, preservesPartitioning = true)
-
-    ContextRDD(rdd, md)
-  }
+  def crop(extent: Extent, options: Options): TileLayerRDD[K] =
+    Crop(self, extent, options)
 
   def crop(extent:Extent): TileLayerRDD[K] = crop(extent, Options.DEFAULT)
 }

@@ -1,8 +1,8 @@
 package geotrellis.vector.io.json
 
 import geotrellis.vector._
+import geotrellis.vector.io._
 import spray.json._
-import GeometryFormats._
 
 trait FeatureFormats {
 

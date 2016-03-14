@@ -13,8 +13,8 @@ import scala.annotation.implicitNotFound
 import scala.collection.mutable
 
 
-@implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide RDDFilter[${K}, ${F}, ${T}, ${M}]")
-trait RDDFilter[K, F, T, M] {
+@implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide LayerFilter[${K}, ${F}, ${T}, ${M}]")
+trait LayerFilter[K, F, T, M] {
   /** Should reduce one of the dimensions in KeyBounds using information from param
     *
     * @param metadata  M of the layer being filtered
@@ -23,7 +23,7 @@ trait RDDFilter[K, F, T, M] {
     */
   def apply(metadata: M, kb: KeyBounds[K], param: T): Seq[KeyBounds[K]]
 
-  import RDDFilter._
+  import LayerFilter._
   /** Applies all the filters contained in the expression tree to input KeyBounds.
     * Resulting list may be equal to or less than the number of [[Value]]s in ast. */
   def apply(metadata: M, kb: KeyBounds[K], ast: Expression[_, T])(implicit boundable: Boundable[K]): List[KeyBounds[K]] = {
@@ -43,7 +43,7 @@ trait RDDFilter[K, F, T, M] {
   }
 }
 
-object RDDFilter {
+object LayerFilter {
 
   /** [[Value]] and [[Or]] form the leaf and nodes of the expression tree used by the filter.
     * F should be a companion object type (ex: RddIntersects.type) and is used to restrict
@@ -62,11 +62,11 @@ object Intersects {
   import collection.JavaConverters._
   import java.util.concurrent.ConcurrentHashMap
 
-  def apply[T](value: T) = RDDFilter.Value[Intersects.type, T](value)
+  def apply[T](value: T) = LayerFilter.Value[Intersects.type, T](value)
 
   /** Define Intersects filter for KeyBounds */
   implicit def forKeyBounds[K: Boundable, M] =
-    new RDDFilter[K, Intersects.type, KeyBounds[K], M] {
+    new LayerFilter[K, Intersects.type, KeyBounds[K], M] {
       def apply(metadata: M, kb1: KeyBounds[K], kb2: KeyBounds[K]) = {
         (kb2 intersect kb1) match {
           case kb: KeyBounds[K] => List(kb)
@@ -77,7 +77,7 @@ object Intersects {
 
   /** Define Intersects filter for Bounds */
   implicit def forBounds[K: Boundable, M] =
-    new RDDFilter[K, Intersects.type, Bounds[K], M] {
+    new LayerFilter[K, Intersects.type, Bounds[K], M] {
       def apply(metadata: M, kb: KeyBounds[K], bounds: Bounds[K]) = {
         (bounds intersect kb) match {
           case kb: KeyBounds[K] => List(kb)
@@ -88,7 +88,7 @@ object Intersects {
 
   /** Define Intersects filter for GridBounds */
   implicit def forGridBounds[K: SpatialComponent: Boundable, M] =
-    new RDDFilter[K, Intersects.type, GridBounds, M] {
+    new LayerFilter[K, Intersects.type, GridBounds, M] {
       def apply(metadata: M, kb: KeyBounds[K], bounds: GridBounds) = {
         val queryBounds = KeyBounds(
           kb.minKey setComponent SpatialKey(bounds.colMin, bounds.rowMin),
@@ -102,7 +102,7 @@ object Intersects {
 
   /** Define Intersects filter for Extent */
   implicit def forExtent[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
-    new RDDFilter[K, Intersects.type, Extent, M] {
+    new LayerFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
       val bounds = (metadata: MapKeyTransform)(extent)
       val queryBounds = KeyBounds(
@@ -117,7 +117,7 @@ object Intersects {
 
   /** Define Intersects filter for Polygon */
   implicit def forPolygon[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
-    new RDDFilter[K, Intersects.type, MultiPolygon, M] {
+    new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val extent = polygon.envelope
         val keyext = (metadata: MapKeyTransform)(kb.minKey)
@@ -166,11 +166,11 @@ object Intersects {
 }
 
 object At {
-  def apply[T](at: T) = RDDFilter.Value[At.type, T](at)
+  def apply[T](at: T) = LayerFilter.Value[At.type, T](at)
 
   /** Define At filter for a DateTime */
   implicit def forDateTime[K: TemporalComponent : Boundable, M] =
-    new RDDFilter[K, At.type, DateTime, M] {
+    new LayerFilter[K, At.type, DateTime, M] {
       def apply(metadata: M, kb: KeyBounds[K], at: DateTime) = {
         val queryBounds = KeyBounds(
           kb.minKey setComponent TemporalKey(at),
@@ -184,11 +184,11 @@ object At {
 }
 
 object Between {
-  def apply[T](start: T, end: T) = RDDFilter.Value[Between.type, (T, T)](start -> end)
+  def apply[T](start: T, end: T) = LayerFilter.Value[Between.type, (T, T)](start -> end)
 
   /** Define Between filter for a tuple of DateTimes */
   implicit def forDateTimeTuple[K: TemporalComponent : Boundable, M] =
-    new RDDFilter[K, Between.type, (DateTime, DateTime), M] {
+    new LayerFilter[K, Between.type, (DateTime, DateTime), M] {
       def apply(metadata: M, kb: KeyBounds[K], range: (DateTime, DateTime)) = {
         val queryBounds = KeyBounds(
           kb.minKey setComponent TemporalKey(range._1),
@@ -202,11 +202,11 @@ object Between {
 }
 
 object Contains {
-  def apply[T](value: T) = RDDFilter.Value[Contains.type, T](value)
+  def apply[T](value: T) = LayerFilter.Value[Contains.type, T](value)
 
   /** Define Intersects filter for Extent */
   implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
-    new RDDFilter[K, Contains.type, Point, M] {
+    new LayerFilter[K, Contains.type, Point, M] {
     def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
       val spatialKey = (metadata: MapKeyTransform)(point)
       val queryBounds =

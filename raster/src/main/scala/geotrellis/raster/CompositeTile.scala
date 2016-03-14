@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,7 @@ object CompositeTile {
       case ct: CompositeTile =>
         if(tileLayout != ct.tileLayout) {
           throw new GeoAttrsError("This tile is a composite tile with a different layout than" +
-                                  " the argument tile layout." +  
+                                  " the argument tile layout." +
                                  s" $tileLayout does not match ${ct.tileLayout}")
         }
         ct
@@ -36,76 +36,76 @@ object CompositeTile {
     }
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
-    * 
+    *
     * @param        tile              Tile to wrap.
-    * @param        tileCols       Number of tile columns of the resulting 
+    * @param        tileCols       Number of tile columns of the resulting
     *                              CompositeTile.
-    * @param        tileRows       Number of tile columns of the resulting 
+    * @param        tileRows       Number of tile columns of the resulting
     *                              CompositeTile.
-    */ 
+    */
   def wrap(tile: Tile, tileCols: Int, tileRows: Int): CompositeTile = {
     val tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)
     wrap(tile, tileLayout, true)
   }
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
-    * 
+    *
     * @param        tile           Tile to wrap.
-    * @param        tileCols       Number of tile columns of the resulting 
+    * @param        tileCols       Number of tile columns of the resulting
     *                              CompositeTile.
-    * @param        tileRows       Number of tile columns of the resulting 
+    * @param        tileRows       Number of tile columns of the resulting
     *                              CompositeTile.
     * @param        cropped        Set this flag to false if you
     *                              want the tiles to be ArrayTiles,
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
-    */ 
+    */
   def wrap(tile: Tile, tileCols: Int, tileRows: Int, cropped: Boolean): CompositeTile = {
     val tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)
     wrap(tile, tileLayout, cropped)
   }
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
-    * 
+    *
     * @param        tile           Tile to wrap.
-    * @param        tileLayout     TileLayout of the resulting 
+    * @param        tileLayout     TileLayout of the resulting
     *                              CompositeTile.
-    */ 
+    */
   def wrap(tile: Tile, tileLayout: TileLayout): CompositeTile =
     CompositeTile(split(tile, tileLayout, true), tileLayout)
 
   /** Converts a raster into a CompositeTile with the given tileLayout.
-    * 
+    *
     * @param        tile           Tile to wrap.
-    * @param        tileLayout     TileLayout of the resulting 
+    * @param        tileLayout     TileLayout of the resulting
     *                              CompositeTile.
     * @param        cropped        Set this flag to false if you
     *                              want the tiles to be ArrayTiles,
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
-    */ 
+    */
   def wrap(tile: Tile, tileLayout: TileLayout, cropped: Boolean): CompositeTile =
     CompositeTile(split(tile, tileLayout, cropped), tileLayout)
 
   /** Splits a raster into a CompositeTile into tiles.
-    * 
+    *
     * @param        tile           Tile to split.
-    * 
-    * @param        tileLayout     TileLayout defining the tiles to be 
+    *
+    * @param        tileLayout     TileLayout defining the tiles to be
     *                              generated.
-    * 
+    *
     * @param        cropped        Set this flag to false if you
     *                              want the tiles to be ArrayTiles,
     *                              otherwise they will be CroppedTiles
     *                              with the raster 'r' as the backing raster.
-    * 
+    *
     * @param        extend         Set this flag to false if you do not want the
     *                              resulting tiles to extend past the input Tile's
     *                              cols and rows based on the input tileLayout. For
     *                              instance, if the tile layout has tileRows = 50,
     *                              the input raster has rows = 90, and extend is false,
     *                              the tiles of the last row will have rows = 40 instead of rows = 50.
-    */ 
+    */
   def split(tile: Tile, tileLayout: TileLayout, cropped: Boolean = true, extend: Boolean = true): Array[Tile] = {
     val tileCols = tileLayout.tileCols
     val tileRows = tileLayout.tileRows
@@ -155,7 +155,7 @@ case class CompositeTile(tiles: Seq[Tile],
 
   def mutable(): MutableArrayTile = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
-      sys.error("This tiled raster is too big to convert into an array.") 
+      sys.error("This tiled raster is too big to convert into an array.")
     } else {
       val tile = ArrayTile.alloc(cellType, cols, rows)
       val len = cols * rows
@@ -196,7 +196,7 @@ case class CompositeTile(tiles: Seq[Tile],
 
   def toArray(): Array[Int] = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
-      sys.error("This tiled raster is too big to convert into an array.") 
+      sys.error("This tiled raster is too big to convert into an array.")
     } else {
       val arr = Array.ofDim[Int](cols * rows)
       val len = cols * rows
@@ -224,7 +224,7 @@ case class CompositeTile(tiles: Seq[Tile],
 
   def toArrayDouble(): Array[Double] = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
-      sys.error("This tiled raster is too big to convert into an array.") 
+      sys.error("This tiled raster is too big to convert into an array.")
     } else {
       val arr = Array.ofDim[Double](cols * rows)
       val len = cols * rows
@@ -270,100 +270,221 @@ case class CompositeTile(tiles: Seq[Tile],
   }
 
   def foreach(f: Int => Unit): Unit = {
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        f(get(col, row))
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            f(tile.get(pcol, prow))
+          }
+        }
       }
     }
   }
 
   def foreachDouble(f: Double => Unit): Unit = {
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        f(getDouble(col, row))
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            f(tile.getDouble(pcol, prow))
+          }
+        }
       }
     }
   }
 
   def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        visitor(col, row, get(col, row))
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            visitor(acol, arow, tile.get(pcol, prow))
+          }
+        }
       }
     }
   }
 
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        visitor(col, row, getDouble(col, row))
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            visitor(acol, arow, tile.getDouble(pcol, prow))
+          }
+        }
       }
     }
   }
 
   def map(f: Int => Int): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.set(col, row, f(get(col, row)))
+    val result = ArrayTile.alloc(cellType, cols, rows)
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            result.set(acol, arow, f(tile.get(pcol, prow)))
+          }
+        }
       }
     }
-    tile
+
+    result
   }
 
   def mapDouble(f: Double =>Double): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, f(getDouble(col, row)))
+    val result = ArrayTile.alloc(cellType, cols, rows)
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            result.setDouble(acol, arow, f(tile.getDouble(pcol, prow)))
+          }
+        }
       }
     }
-    tile
+
+    result
   }
 
   def mapIntMapper(mapper: IntTileMapper): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.set(col, row, mapper(col, row, get(col, row)))
+    val result = ArrayTile.alloc(cellType, cols, rows)
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            result.set(acol, arow, mapper(acol, arow, tile.get(pcol, prow)))
+          }
+        }
       }
     }
-    tile
+
+    result
   }
 
   def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, mapper(col, row, getDouble(col, row)))
+    val result = ArrayTile.alloc(cellType, cols, rows)
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            result.setDouble(acol, arow, mapper(acol, arow, tile.getDouble(pcol, prow)))
+          }
+        }
       }
     }
-    tile
+
+    result
   }
 
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.set(col, row, f(get(col, row), other.get(col, row)))
+    val result = ArrayTile.alloc(cellType, cols, rows)
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            result.set(acol, arow, f(tile.get(pcol, prow), other.get(acol, arow)))
+          }
+        }
       }
     }
 
-    tile
+    result
   }
 
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
     (this, other).assertEqualDimensions
 
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, f(getDouble(col, row), other.getDouble(col, row)))
+    val result = ArrayTile.alloc(cellType, cols, rows)
+    val layoutCols = tileLayout.layoutCols
+    val layoutRows = tileLayout.layoutRows
+    val tileCols = tileLayout.tileCols
+    val tileRows = tileLayout.tileRows
+
+    cfor(0)(_ < layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < layoutCols, _ + 1) { tcol =>
+        val tile = getTile(tcol, trow)
+        cfor(0)(_ < tileRows, _ + 1) { prow =>
+          cfor(0)(_ < tileCols, _ + 1) { pcol =>
+            val acol = (tileCols * tcol) + pcol
+            val arow = (tileRows * trow) + prow
+            result.setDouble(acol, arow, f(tile.getDouble(pcol, prow), other.getDouble(acol, arow)))
+          }
+        }
       }
     }
-    tile
+
+    result
   }
 
   override
@@ -397,6 +518,7 @@ case class CompositeTile(tiles: Seq[Tile],
         sb.append(s"  $rowDiv\n")
       }
     }
+
     sb.toString
   }
 }

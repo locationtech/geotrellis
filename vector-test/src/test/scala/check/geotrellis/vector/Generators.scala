@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ import Gen._
 import Arbitrary._
 
 object Generators {
-  lazy val genPoint: Gen[Point] = 
+  lazy val genPoint: Gen[Point] =
     for {
       x <- choose(-99999999999999999999.0,99999999999999999999.0)
       y <- choose(-99999999999999999999.0,99999999999999999999.0)
@@ -48,8 +48,8 @@ object Generators {
       subSet1 <- Gen.pick(subSize1,fullSet).map(_.toSeq)
       subSet2 <- Gen.pick(subSize2,fullSet).map(_.toSeq)
     } yield {
-      val polyOne = (subSet1 ++ sharedSet).convexHull
-      val polyTwo = (subSet2 ++ sharedSet).convexHull
+      val polyOne = MultiPoint(subSet1 ++ sharedSet).convexHull.as[Polygon].get
+      val polyTwo = MultiPoint(subSet2 ++ sharedSet).convexHull.as[Polygon].get
       polyOne | polyTwo match {
         case PolygonResult(p) => p
         case _ => sys.error("Should have resulted in a polygon.")

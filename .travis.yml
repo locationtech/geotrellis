@@ -2,6 +2,7 @@ sudo: false
 
 env:
   global:
+    - GEOTRELLIS_KRYO_REGREQ="YES"
     - secure: "XAhJXuXqnGlZlU2pGcIQKJ2rF44gIReA0arHwapFII/gR1h+2e6hgqnMXwrZaQa/EvNBaXq7nF3XcTBjrbK+ABeKA/0lOh/7ryIotP0i1YVrca69pSK9BY+Kr1y7ncLMqvoyjBziobOeVZmxbK4RflgUTIO7MKzzb5pNb9SnOK8="
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
     #Scaladocs
@@ -36,7 +37,6 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
-  - export GEOTRELLIS_KRYO_REGREQ="YES"
 
 deploy:
   - provider: script

@@ -15,7 +15,7 @@ import org.apache.spark.rdd._
  * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
-case class TileLayerMetadata[K](
+case class TileLayerMetadata[K: SpatialComponent](
   cellType: CellType,
   layout: LayoutDefinition,
   extent: Extent,
@@ -49,6 +49,20 @@ case class TileLayerMetadata[K](
           )
       )
   }
+
+  def updateBounds(newBounds: Bounds[K]): TileLayerMetadata[K] =
+    newBounds match {
+      case kb: KeyBounds[K] =>
+        val kbExtent = mapTransform(kb.toGridBounds)
+        kbExtent.intersection(extent) match {
+          case Some(e) =>
+            copy(bounds = newBounds, extent = e)
+          case None =>
+            copy(bounds = newBounds, extent = Extent(extent.xmin, extent.ymin, extent.xmin, extent.ymin))
+        }
+      case EmptyBounds =>
+        copy(bounds = newBounds, extent = Extent(extent.xmin, extent.ymin, extent.xmin, extent.ymin))
+    }
 }
 
 object TileLayerMetadata {
@@ -58,11 +72,11 @@ object TileLayerMetadata {
   implicit def toMapKeyTransform(md: TileLayerMetadata[_]): MapKeyTransform =
     md.layout.mapTransform
 
-  implicit def layoutComponent[K]: Component[TileLayerMetadata[K], LayoutDefinition] =
-    Component(_.layout, (md, b) => md.copy(layout = b))
+  implicit def layoutComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], LayoutDefinition] =
+    Component(_.layout, (md, l) => md.copy(layout = l))
 
-  implicit def boundsComponent[K]: Component[TileLayerMetadata[K], Bounds[K]] =
-    Component(_.bounds, (md, b) => md.copy(bounds = b))
+  implicit def boundsComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], Bounds[K]] =
+    Component(_.bounds, (md, b) => md.updateBounds(b))
 
   implicit def mergable[K]: merge.Mergable[TileLayerMetadata[K]] =
     new merge.Mergable[TileLayerMetadata[K]] {

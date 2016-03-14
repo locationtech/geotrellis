@@ -13,6 +13,7 @@ class TestRegistrator extends NormalKryoRegistrator {
     if (Properties.envOrNone("GEOTRELLIS_KRYO_REGREQ") != None) {
 
       kryo.register(classOf[geotrellis.proj4.CRS$$anon$1])
+      kryo.register(classOf[geotrellis.proj4.CRS$$anon$3])
       kryo.register(classOf[geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$1])
       kryo.register(classOf[geotrellis.spark.io.avro.codecs.KeyCodecs$$anon$2])
       kryo.register(classOf[geotrellis.spark.io.avro.codecs.TileCodecs$$anon$1])

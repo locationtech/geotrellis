@@ -1,6 +1,8 @@
 package geotrellis.spark
 
 import geotrellis.raster.GridBounds
+import geotrellis.util.MethodExtensions
+
 import org.apache.spark.rdd.RDD
 
 sealed trait Bounds[+A] extends Product with Serializable {
@@ -132,8 +134,11 @@ case class KeyBounds[+K](
 
   def get = this
 
-  def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]) =
+  def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     KeyBounds((minKey: B).setComponent(other.minKey), (maxKey: B).setComponent(other.maxKey))
+
+  def setSpatialBounds[B >: K](gb: GridBounds)(implicit ev: SpatialComponent[B]): KeyBounds[B] =
+    setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
 }
 
 object KeyBounds {
@@ -155,4 +160,12 @@ object KeyBounds {
   }
 
   implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
+
+  implicit class withSpatialComponentKeyBoundsMethods[K: SpatialComponent](val self: KeyBounds[K]) extends MethodExtensions[KeyBounds[K]] {
+    def toGridBounds(): GridBounds = {
+      val SpatialKey(minCol, minRow) = self.minKey.getComponent[SpatialKey]
+      val SpatialKey(maxCol, maxRow) = self.maxKey.getComponent[SpatialKey]
+      GridBounds(minCol, minRow, maxCol, maxRow)
+    }
+  }
 }

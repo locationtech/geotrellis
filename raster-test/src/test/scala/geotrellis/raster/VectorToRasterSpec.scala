@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,8 @@
 package geotrellis.raster
 
 import geotrellis.vector._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
+import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.raster.testkit._
 import spray.json.DefaultJsonProtocol._
 
@@ -25,8 +26,8 @@ import spray.json.DefaultJsonProtocol._
 
 import org.scalatest._
 
-class VectorToRasterSpec extends FunSpec 
-                            with Matchers 
+class VectorToRasterSpec extends FunSpec
+                            with Matchers
                             with RasterMatchers with TestFiles
                             with TileBuilders {
   describe("idwInterpolate") {
@@ -85,7 +86,7 @@ class VectorToRasterSpec extends FunSpec
         Point(45,58)
       )
       val result = VectorToRaster.countPoints(points,re)
-      
+
       val expected = Array.fill[Int](90)(0)
       expected(4*9 + 4) = 5
 
@@ -123,7 +124,7 @@ class VectorToRasterSpec extends FunSpec
 
       val tile = ArrayTile(arr,5, 5)
 
-      val kernel = 
+      val kernel =
         ArrayTile(
           Array(
             1,1,1,
