@@ -1,4 +1,4 @@
-package geotrellis.spark.partitioner
+package geotrellis.spark.partition
 
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex

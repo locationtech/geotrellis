@@ -1,4 +1,4 @@
-package geotrellis.spark.partitioner
+package geotrellis.spark.partition
 
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi

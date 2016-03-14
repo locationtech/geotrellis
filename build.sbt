@@ -55,7 +55,19 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = Project("geotrellis", file(".")).
-  dependsOn(raster, vector, proj4, spark, sparkEtl, s3, accumulo).
+  dependsOn(
+    raster,
+    rasterTest % "test",
+    vector,
+    vectorTest % "test",
+    proj4,
+    spark,
+    sparkEtl,
+    s3,
+    accumulo,
+    slick,
+    benchmark
+  ).
   settings(commonSettings: _*).
   settings(
     scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
@@ -68,26 +80,6 @@ lazy val root = Project("geotrellis", file(".")).
       """
   )
   .settings(unidocSettings: _*)
-
-// Convenience aggregation project that compiles all projects, including tests.
-lazy val all = Project("all", file(".")).
-  aggregate(
-    vectorTest,
-    rasterTest,
-    engineTest,
-    spark,
-    s3,
-    accumulo,
-    sparkEtl,
-    slick
-  ).dependsOn(
-    vectorTest % "compile->test",
-    rasterTest % "compile->test",
-    engineTest % "compile->test",
-    spark % "compile->test",
-    s3 % "compile->test",
-    accumulo % "compile->test"
-  )
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)

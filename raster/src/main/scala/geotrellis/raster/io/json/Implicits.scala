@@ -1,4 +1,4 @@
-package geotrellis.raster.io
+package geotrellis.raster.io.json
 
 import geotrellis.raster._
 import geotrellis.raster.histogram.{FastMapHistogram, Histogram}
@@ -7,7 +7,9 @@ import geotrellis.vector.io._
 
 import spray.json._
 
-package object json {
+object Implicits extends Implicits
+
+trait Implicits {
   implicit object HistogramFormat extends RootJsonFormat[Histogram[Int]] {
     def write(h: Histogram[Int]): JsValue = {
       var pairs: List[JsArray] = Nil

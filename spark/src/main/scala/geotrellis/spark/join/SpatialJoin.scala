@@ -1,19 +1,24 @@
-package geotrellis.spark.partitioner
+package geotrellis.spark.join
 
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.partition._
 import org.apache.spark.rdd._
 import geotrellis.util.MethodExtensions
 
 import scala.reflect._
 
-abstract class SpatialJoinMethods[
-  K: Boundable: PartitionerIndex: ClassTag,
-  V: ClassTag,
-  M: Component[?, Bounds[K]]
-] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
-  def left = self
-  def spatialLeftOuterJoin[W, M1: Component[?, Bounds[K]]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, Option[W]))] with Metadata[Bounds[K]] = {
+object SpatialJoin {
+
+  def leftOuterJoin[
+    K: Boundable: PartitionerIndex: ClassTag,
+    V: ClassTag,
+    M: Component[?, Bounds[K]],
+    W, M1: Component[?, Bounds[K]]
+  ](
+    left: RDD[(K, V)] with Metadata[M],
+    right: RDD[(K, W)] with Metadata[M1]
+  ): RDD[(K, (V, Option[W]))] with Metadata[Bounds[K]] = {
     val kb: Bounds[K] = left.metadata.getComponent[Bounds[K]]
     val part = SpacePartitioner(kb)
     val joinRdd =
@@ -30,7 +35,15 @@ abstract class SpatialJoinMethods[
     ContextRDD(joinRdd, part.bounds)
   }
 
-  def spatialJoin[W, M1: Component[?, Bounds[K]]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, W))] with Metadata[Bounds[K]] = {
+  def join[
+    K: Boundable: PartitionerIndex: ClassTag,
+    V: ClassTag,
+    M: Component[?, Bounds[K]],
+    W, M1: Component[?, Bounds[K]]
+  ](
+    left: RDD[(K, V)] with Metadata[M],
+    right: RDD[(K, W)] with Metadata[M1]
+  ): RDD[(K, (V, W))] with Metadata[Bounds[K]] = {
     val kbLeft: Bounds[K] = left.metadata.getComponent[Bounds[K]]
     val kbRight: Bounds[K] = right.metadata.getComponent[Bounds[K]]
     val part = SpacePartitioner(kbLeft intersect kbRight)
@@ -44,11 +57,5 @@ abstract class SpatialJoinMethods[
         }.asInstanceOf[RDD[(K, (V,W))]]
 
     ContextRDD(joinRdd, part.bounds)
-  }
-
-  def spatialFilter(bounds: KeyBounds[K]): RDD[(K, V)] with Metadata[Bounds[K]] = {
-    val part = SpacePartitioner(bounds)
-    val rdd = part(left).filter{ r => bounds.includes(r._1) }
-    ContextRDD(rdd, bounds)
   }
 }
