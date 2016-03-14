@@ -5,7 +5,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
 import geotrellis.vector.testkit._
 
 import org.scalatest._

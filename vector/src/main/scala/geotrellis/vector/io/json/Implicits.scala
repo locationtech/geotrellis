@@ -1,4 +1,4 @@
-package geotrellis.vector.io
+package geotrellis.vector.io.json
 
 import geotrellis.vector._
 import spray.json._
@@ -7,15 +7,17 @@ import scala.reflect.runtime.universe.TypeTag
 import scala.collection.mutable.ArrayBuffer
 import scala.util.{Try, Success, Failure}
 
-package object json extends GeoJsonSupport {
+object Implicits extends Implicits
 
-  implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) extends AnyVal {
+trait Implicits extends GeoJsonSupport {
+
+  implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) {
     def toGeoJson(): String = {
       GeometryCollection(geoms).toJson.compactPrint
     }
   }
 
-  implicit class ExtentsToGeoJson(val extent: Extent) extends AnyVal {
+  implicit class ExtentsToGeoJson(val extent: Extent) {
     def toGeoJson(): String = {
       extent.toPolygon.toGeoJson
     }
@@ -27,7 +29,7 @@ package object json extends GeoJsonSupport {
     }
   }
 
-  implicit class RichGeometry(val geom: Geometry) extends AnyVal {
+  implicit class RichGeometry(val geom: Geometry) {
     def toGeoJson(): String = geom.toJson.compactPrint
 
     def withCrs(crs: CRS) = WithCrs(geom, crs)
@@ -39,7 +41,7 @@ package object json extends GeoJsonSupport {
     def withCrs(crs: CRS) = WithCrs(feature, crs)
   }
 
-  implicit class RichString(val s: String) extends AnyVal {
+  implicit class RichString(val s: String) {
 
     /**
      * parseGeoJson, expects all the types in the json string to line up, throws if not

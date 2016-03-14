@@ -1,13 +1,14 @@
-package geotrellis.vector.op
+package geotrellis.vector.dissolve
 
 import geotrellis.vector._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
+import geotrellis.vector.io.json.JsonFeatureCollection
 
 import spire.syntax.cfor._
 
 import org.scalatest._
 
-class LineDissolveSpec extends FunSpec
+class DissolveMethodsSpec extends FunSpec
     with Matchers {
 
   object Timer {
@@ -27,7 +28,7 @@ class LineDissolveSpec extends FunSpec
     lines
   }
 
-  describe("LineDissolve") {
+  describe("Dissolve") {
 
     it("should handle two line segments not overlapping") {
       val s = MultiLine(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
@@ -38,7 +39,7 @@ class LineDissolveSpec extends FunSpec
     }
 
     it("should merge two lines that are coincidental at the middle") {
-      val s = 
+      val s =
         MultiLine(
           Line( (0, 0), (1, 1), (1, 2), (2, 3)),
           Line( (0, 3), (1, 2), (1, 1), (2, 0))
@@ -86,7 +87,7 @@ class LineDissolveSpec extends FunSpec
       val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
       val expected = s.map(_.jtsGeom.clone)
       val d = MultiLine(s).dissolve.as[MultiLine].get.lines
-      
+
       val coord = d(0).jtsGeom.getCoordinate()
       val newCoord = Point(5,5).jtsGeom.getCoordinate()
       coord.setCoordinate(newCoord)
@@ -95,27 +96,43 @@ class LineDissolveSpec extends FunSpec
       cfor(0)(_ < expected.length, _ + 1) { i =>
         js(i).equals(expected(i)) should be (true)
       }
+    }
 
+    it("should handle an empty MultiLine") {
+      val s = MultiLine()
+      s.dissolve should be (NoResult)
+    }
+
+    it("should handle an empty MultiPolygon") {
+      val s = MultiPolygon()
+      s.dissolve should be (NoResult)
+    }
+
+    it("should handle simple polygon") {
+      val l = Line((0, 0), (1, 1), (2, 2), (3, 0), (0, 0))
+      val s = Polygon(l)
+      s.dissolve.as[Line].get should be(l)
     }
   }
 
   describe("should read larger files and benchmark faster than MultiLine.union") {
 
-//    val seattleLines = readFile("vector-test/data/seattle.json") // (Taken out because the `union` call takes too long).
+    // (Taken out because the `union` call takes too long).
+    ignore("should read seattle lines [long run time]") {
+      val seattleLines = readFile("vector-test/data/seattle.json")
 
-    val septaRailLines = MultiLine(readFile("vector-test/data/septaRail.geojson"))
+      Timer.timedTask("seattle.json MultiLine.union") {
+        MultiLine(seattleLines).union
+      }
 
-    // it("should read seattle lines") {
-    //   Timer.timedTask("seattle.json MultiLine.union") {
-    //     MultiLine(seattleLines).union
-    //   }
-
-    //   Timer.timedTask("seattle.json fast de-duplication") {
-    //     seattleLines.dissolve
-    //   }
-    // }
+      Timer.timedTask("seattle.json fast de-duplication") {
+        MultiLine(seattleLines).dissolve
+      }
+    }
 
     it("should read septa rail lines") {
+      val septaRailLines = MultiLine(readFile("vector-test/data/septaRail.geojson"))
+
       Timer.timedTask("septaRail.geojson MultiLine.union") {
         septaRailLines.union
       }

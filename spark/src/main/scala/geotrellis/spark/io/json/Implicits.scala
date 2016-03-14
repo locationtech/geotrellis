@@ -8,7 +8,7 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.json._
 import geotrellis.vector._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
 
 import com.github.nscala_time.time.Imports._
 import org.apache.avro.Schema

@@ -18,9 +18,11 @@ package geotrellis.raster.interpolation
 
 import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
 import geotrellis.vector.interpolation._
-import geotrellis.vector.io.json._
-import geotrellis.raster.testkit._
 import geotrellis.vector._
+import geotrellis.vector.io._
+import geotrellis.vector.io.json.JsonFeatureCollection
+import geotrellis.raster.testkit._
+
 import spire.syntax.cfor._
 import spray.json.DefaultJsonProtocol._
 import org.scalatest._

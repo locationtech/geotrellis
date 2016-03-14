@@ -1,11 +1,10 @@
 package geotrellis.vector.io.json
 
-import org.scalatest._
-
 import geotrellis.vector._
+import geotrellis.vector.io._
 
+import org.scalatest._
 import spray.json._
-
 import spray.httpx.unmarshalling._
 import spray.httpx.marshalling._
 import spray.httpx.SprayJsonSupport._

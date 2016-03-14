@@ -34,18 +34,44 @@ package object vector extends SeqMethods
   type MultiPolygonFeature[D] = Feature[MultiPolygon, D]
   type GeometryCollectionFeature[D] = Feature[GeometryCollection, D]
 
+  // MethodExtensions
+
+  implicit class withPointMethod(val self: Point) extends MethodExtensions[Point]
+      with affine.PointTransformationMethods
+
+  implicit class LineTransformations(val self: Line) extends MethodExtensions[Line]
+      with affine.LineTransformationMethods
+      with dissolve.DissolveMethods[Line]
+
+  implicit class PolygonTransformations(val self: Polygon) extends MethodExtensions[Polygon]
+      with affine.PolygonTransformationMethods
+      with dissolve.DissolveMethods[Polygon]
+
+  implicit class MultiPointTransformations(val self: MultiPoint) extends MethodExtensions[MultiPoint]
+      with affine.MultiPointTransformationMethods
+
+  implicit class MultiLineTransformations(val self: MultiLine) extends MethodExtensions[MultiLine]
+      with affine.MultiLineTransformationMethods
+      with dissolve.DissolveMethods[MultiLine]
+
+  implicit class MultiPolygonTransformations(val self: MultiPolygon) extends MethodExtensions[MultiPolygon]
+      with affine.MultiPolygonTransformationMethods
+      with dissolve.DissolveMethods[MultiPolygon]
+
+  implicit class GeometryCollectionTransformations(val self: GeometryCollection) extends MethodExtensions[GeometryCollection]
+      with affine.GeometryCollectionTransformationMethods
+
   /**
    * An extension class - when in scope, these methods are available from Geometry objects.
    *
    * The algorithms herein are all implemented in JTS, but the wrapper methods
    * here make it straightforward to call them with geotrellis.vector classes.
    */
-  implicit class withGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
-    with dissolve.DissolveMethods[G]
-    with convexhull.ConvexHullMethods[G]
-    with densify.DensifyMethods[G]
-    with simplify.SimplifyMethods[G]
-    with prepared.PreparedGeometryMethods[G]
+  implicit class withAnyGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
+      with convexhull.ConvexHullMethods[G]
+      with densify.DensifyMethods[G]
+      with prepared.PreparedGeometryMethods[G]
+      with simplify.SimplifyMethods[G]
 
   implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
     Point(t._1,t._2)
