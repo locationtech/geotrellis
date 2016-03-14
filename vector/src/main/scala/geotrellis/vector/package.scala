@@ -94,12 +94,11 @@ package object vector extends SeqMethods {
   implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection =
     GeometryCollection(gs)
 
-  /**
-   * An extension class - when in scope, these methods are available from Geometry objects.
-   *
-   * The algorithms herein are all implemented in JTS, but the wrapper methods
-   * here make it straightforward to call them with geotrellis.vector classes.
-   */
+  /** An extension class - when in scope, these methods are available from Geometry objects.
+    *
+    * @note The algorithms herein are all implemented in JTS, but the wrapper methods
+    *       here make it straightforward to call them with geotrellis.vector classes.
+    */
   implicit class withGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
     with dissolve.DissolveMethods[G]
     with convexhull.ConvexHullMethods[G]

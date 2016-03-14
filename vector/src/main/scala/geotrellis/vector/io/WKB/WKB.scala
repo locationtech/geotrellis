@@ -16,13 +16,11 @@
 
 package geotrellis.vector.io.wkb
 
-import com.vividsolutions.jts.io.{WKBReader}
+import com.vividsolutions.jts.io.WKBReader
 import com.vividsolutions.jts.{geom => jts}
 import geotrellis.vector._
 
-/**
- * Wraps WKB Writer and Reader, thread safe
- */
+/** A thread-safe wraper for the WKB Writer and Reader */
 object WKB {
   private val readerBox = new ThreadLocal[WKBReader]
   private val writerBox = new ThreadLocal[WKBWriter]

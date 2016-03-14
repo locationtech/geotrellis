@@ -68,26 +68,26 @@ object UniversalKriging {
 }
 
 /**
- * @param points          Sample points for Universal Kriging model training
- * @param attrFunc        Attribute matrix transformation for a point (which decides how the point coordinates guide the pointData's value)
- * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
- * @param model           The [[ModelType]] to be used for prediction
- */
+  * @param points          Sample points for Universal Kriging model training
+  * @param attrFunc        Attribute matrix transformation for a point (which decides how the point coordinates guide the pointData's value)
+  * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+  * @param model           The [[ModelType]] to be used for prediction
+  */
 class UniversalKriging(points: Array[PointFeature[Double]],
                        attrFunc: (Double, Double) => Array[Double],
                        bandwidth: Double,
                        model: ModelType) extends Kriging {
   /**
-   * Overloaded constructor, for default attribute matrix generation
-   */
+    * Overloaded constructor, for default attribute matrix generation
+    */
   def this(points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType) {
     this(points, (x, y) => Array(x, y, x * x, x * y, y * y), bandwidth, model)
   }
 
   /**
-   * Universal Kriging training with the sample points
-   * @param numberOfPoints  Number of points to be Kriged
-   */
+    * Universal Kriging training with the sample points
+    * @param numberOfPoints  Number of points to be Kriged
+    */
   protected def createPredictorInit(numberOfPoints: Int): (Double, Double) => (Double, Double) = {
     val n: Int = points.length
     if (n == 0)
@@ -128,8 +128,10 @@ class UniversalKriging(points: Array[PointFeature[Double]],
         .scalarMultiply(res.nugget))
 
     val eyen = MatrixUtils.createRealIdentityMatrix(n)
-    //Inverse of covariogramMatrix(using the fitted semivariogram) utilizing Cholesky decomposition
-    //for faster computations (ensuring that the matrix is invertible)
+
+    /** Inverse of covariogramMatrix(using the fitted semivariogram) utilizing Cholesky
+      * decomposition for faster computations (ensuring that the matrix is invertible)
+      */
     val covariogramMatrixInv: RealMatrix =
       try {
         new LUDecomposition(

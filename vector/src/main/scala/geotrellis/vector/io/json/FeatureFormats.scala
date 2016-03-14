@@ -6,7 +6,7 @@ import GeometryFormats._
 
 trait FeatureFormats {
 
-  /** Serializes a geojson feature object
+  /** Serializes a feature object to a GeoJSON feature
     *
     * @param A Feature object
     * @tparam The type (which must have an implicit method to resolve the transformation from json)

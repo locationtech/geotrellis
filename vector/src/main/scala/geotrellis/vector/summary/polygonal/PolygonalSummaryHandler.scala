@@ -23,7 +23,7 @@ trait PolygonalSummaryHandler[G <: Geometry, D, T] extends Serializable {
       val rs: T =
         if (polygon.contains(feature.geom)) handleContains(feature)
         else {
-          val polys = 
+          val polys =
             polygon.intersection(feature.geom) match {
               case PolygonResult(intersectionPoly) => Seq(intersectionPoly)
               case MultiPolygonResult(mp) => mp.polygons.toSeq
@@ -46,7 +46,7 @@ trait PolygonalSummaryHandler[G <: Geometry, D, T] extends Serializable {
       val rs: T =
         if (multiPolygon.contains(feature.geom)) handleContains(feature)
         else {
-          val polys = 
+          val polys =
             multiPolygon.intersection(feature.geom) match {
               case PolygonResult(intersectionPoly) => Seq(intersectionPoly)
               case MultiPolygonResult(mp) => mp.polygons.toSeq

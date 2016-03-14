@@ -23,8 +23,9 @@ private[vector] trait GeometryResultMethods {
   /** Returns this result as an option, unless this is NoResult, in which case it returns None */
   def toGeometry(): Option[Geometry]
 
-  /** returns this result as the specified geometry type, unless it is not the correct geometry type or NoResult,
-    * in which case it returns None */
+  /** A typesafe method for casting to a particular geometry type
+    * @note If this fails to cast or is [[NoResult], will result in None
+    */
   def as[G <: Geometry : ClassTag]: Option[G] =
     toGeometry.flatMap { g =>
       if(classTag[G].runtimeClass.isInstance(g)) Some(g.asInstanceOf[G])

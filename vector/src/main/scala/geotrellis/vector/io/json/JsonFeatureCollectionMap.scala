@@ -8,31 +8,34 @@ import scala.collection.mutable
 import FeatureFormats._
 import DefaultJsonProtocol._
 
-/**
- * Accumulates GeoJson from Feature class instances and implements a Map keyed on geojson feature IDs.
- *
- * During serialization:
- * Each individual feature is parametrized on a class we need to accumulate geoJson per
- * instance of an object in order to use implicit scope resolution in finding the correct format.
- *
- * Features may be added using the .add, addAll methods, they are buffered as JsValues until .toJson is called
- *
- * During deserialization:
- * This object is instantiated with list of JsValues representing features.
- * It may be queried using .getAll[F <: Feature[_] ] method.
- *
- * It aggregates feature objects with data member still encoded in json
- */
+/** Accumulates GeoJson from Feature class instances and implements a Map keyed on geojson feature IDs.
+  *
+  * During serialization:
+  * Each individual feature is parametrized on a class we need to accumulate geoJson per
+  * instance of an object in order to use implicit scope resolution in finding the correct format.
+  *
+  * Features may be added using the .add, addAll methods, they are buffered as JsValues until .toJson is called
+  *
+  * During deserialization:
+  * This object is instantiated with list of JsValues representing features.
+  * It may be queried using .getAll[F <: Feature[_] ] method.
+  *
+  * It aggregates feature objects with data member still encoded in json
+  */
 class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
   private val buffer = mutable.ListBuffer(features:_*)
 
-  //-- Used for Serialization
+  /** Add a (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
   def add[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) =
     buffer += writeFeatureJsonWithID(featureMap)
+  /** Add a (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
   def +=[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) = add(featureMap)
 
+  /** Add a Seq of (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
   def addAll[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) =
     featureMaps.foreach{ f => buffer += writeFeatureJsonWithID(f) }
+
+  /** Add a Seq of (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
   def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
   def toJson: JsValue =

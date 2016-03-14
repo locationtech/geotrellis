@@ -20,6 +20,12 @@ package simplify
 import geotrellis.util.MethodExtensions
 
 trait SimplifyMethods[G <: Geometry] extends MethodExtensions[G] {
+  /** Simplify the given geometry
+    *
+    * @param tolerance The tolerance, in distance, for ignoring small variations. More tolerance
+    *                  means a simpler polygon and more edges removed
+    * @note Does not preserve topology: polygons may be split and holes may be created
+    */
   def simplify(tolerance: Double): G =
     Geometry(com.vividsolutions.jts.simplify.VWSimplifier.simplify(self.jtsGeom, tolerance)).asInstanceOf[G]
 }

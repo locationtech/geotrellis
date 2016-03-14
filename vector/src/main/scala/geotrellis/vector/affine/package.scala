@@ -1,6 +1,5 @@
 package geotrellis.vector
 
-
 package object affine {
 
   implicit class PointTransformations(val geom: Point) extends PointTransformationMethods

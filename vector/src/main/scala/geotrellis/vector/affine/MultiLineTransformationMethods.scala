@@ -2,9 +2,7 @@ package geotrellis.vector.affine
 
 import geotrellis.vector.MultiLine
 
-import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.util.AffineTransformation._
-
 
 trait MultiLineTransformationMethods extends Any {
   val geom: MultiLine

@@ -52,18 +52,18 @@ object OrdinaryKriging {
 }
 
 /**
- * @param points          Sample points for Ordinary Kriging model training
- * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
- * @param sv              The fitted [[Semivariogram]] to be used for prediction
- */
+  * @param points          Sample points for Ordinary Kriging model training
+  * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+  * @param sv              The fitted [[Semivariogram]] to be used for prediction
+  */
 class OrdinaryKriging(points: Array[PointFeature[Double]],
                       bandwidth: Double,
                       sv: Semivariogram) extends Kriging {
 
   /**
-   * Ordinary Kriging training with the sample points
-   * @param numberOfPoints  Number of points to be Kriged
-   */
+    * Ordinary Kriging training with the sample points
+    * @param numberOfPoints  Number of points to be Kriged
+    */
   protected def createPredictorInit(numberOfPoints: Int): (Double, Double) => (Double, Double) = {
     val n = points.length
     if (n == 0)

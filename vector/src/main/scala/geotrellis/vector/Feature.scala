@@ -16,10 +16,25 @@
 
 package geotrellis.vector
 
+/** A case class which represents a geometry with some metadata
+  *
+  * @tparam G A subtype of Geometry
+  * @tparam D The type of any provided metadata
+  * @param geom An instance of G
+  * @param data An instance of D
+  */
 case class Feature[+G <: Geometry, +D](geom: G, data: D) {
+  /** Method for manipulating this class' geom
+    * @tparam T A subtype of Geometry
+    * @param f A function from G to T
+    */
   def mapGeom[T <: Geometry](f: G => T): Feature[T, D] =
     Feature(f(geom), data)
 
+  /** Method for manipulating this class' data
+    * @tparam T The type of the data expected
+    * @param f A function from D to T
+    */
   def mapData[T](f: D => T): Feature[G, T] =
     Feature(geom, f(data))
 }

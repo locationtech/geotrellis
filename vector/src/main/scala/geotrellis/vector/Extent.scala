@@ -12,8 +12,9 @@ object Extent {
   def apply(env: jts.Envelope): Extent =
     Extent(env.getMinX, env.getMinY, env.getMaxX, env.getMaxY)
 
-  /** Parses a string in the format "xmin,ymin,xmax,ymax" form, e.g.
-    * 100.00,600.00,300.00,800.00
+  /** Create an extent from a string
+    *
+    * @param s   A string of the form "xmin,ymin,xmax,ymax"
     */
   def fromString(s:String) = {
     val Array(xmin,ymin,xmax,ymax) = s.split(",").map(_.toDouble)
@@ -27,6 +28,11 @@ object Extent {
     Extent(env)
 }
 
+/** A case class for an extent and its corresponding CRS
+  *
+  * @param extent The Extent which is projected
+  * @param crs    The CRS projection of this extent
+  */
 case class ProjectedExtent(extent: Extent, crs: CRS) {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
@@ -37,10 +43,13 @@ object ProjectedExtent {
   implicit def fromTupleB(tup: (CRS, Extent)):ProjectedExtent = ProjectedExtent(tup._2, tup._1)
 }
 
-/**
- * An Extent represents a rectangular region of geographic space (with a
- * particular projection). It is expressed in map coordinates.
- */
+/** A rectangular region of geographic space
+  *
+  * @param xmin The minimum x coordinate
+  * @param ymin The minimum y coordinate
+  * @param xmax The maximum x coordinate
+  * @param ymax The maximum y coordinate
+  */
 case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
 
   // Validation: Do not accept extents min values greater than max values.
@@ -56,24 +65,16 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def min: Point = Point(xmin, ymin)
   def max: Point = Point(xmax, ymax)
 
-  /**
-   * The SW corner (xmin, ymin) as a Point.
-   */
+  /** The SW corner (xmin, ymin) as a Point. */
   def southWest: Point = Point(xmin, ymin)
 
-  /**
-   * The SE corner (xmax, ymin) as a Point.
-   */
+  /** The SE corner (xmax, ymin) as a Point. */
   def southEast: Point = Point(xmax, ymin)
 
-  /**
-   * The NE corner (xmax, ymax) as a Point.
-   */
+  /** The NE corner (xmax, ymax) as a Point. */
   def northEast: Point = Point(xmax, ymax)
 
-  /**
-   * The NW corner (xmin, ymax) as a Point.
-   */
+  /** The NW corner (xmin, ymax) as a Point. */
   def northWest: Point = Point(xmin, ymax)
 
   def area: Double = width * height
@@ -112,20 +113,18 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       other.ymax <= ymax
   }
 
-  /**
-    * Tests if the given point lies in or on the envelope.
+  /** Tests if the given point lies in or on the envelope.
     *
-    * @note Note that this is the same definition as the SFS <tt>contains</tt>,
+    * @note This is the same definition as the SFS <tt>contains</tt>,
     *       which is unlike the JTS Envelope.contains, which would include the
     *       envelope boundary.
     */
   def contains(p: Point): Boolean =
     contains(p.x, p.y)
 
-  /**
-    * Tests if the given point lies in or on the envelope.
+  /** Tests if the given point lies in or on the envelope.
     *
-    * @note Note that this is the same definition as the SFS <tt>contains</tt>,
+    * @note This is the same definition as the SFS <tt>contains</tt>,
     *       which is unlike the JTS Envelope.contains, which would include the
     *       envelope boundary.
     */
@@ -169,6 +168,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
           math.sqrt(dx * dx + dy * dy)
     }
 
+  /** Create an optional extent which represents the intersection with a provided extent */
   def intersection(other: Extent): Option[Extent] = {
     val xminNew = if(xmin > other.xmin) xmin else other.xmin
     val yminNew = if(ymin > other.ymin) ymin else other.ymin
@@ -180,26 +180,26 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
     } else { None }
   }
 
+  /** Create an optional extent which represents the intersection with a provided extent */
   def &(other: Extent): Option[Extent] =
     intersection(other)
 
   def buffer(d: Double): Extent =
     Extent(xmin - d, ymin - d, xmax + d, ymax + d)
 
-  /**
-   * Orders two bounding boxes by their (geographically) lower-left corner. The bounding box
-   * that is further south (or west in the case of a tie) comes first.
-   *
-   * If the lower-left corners are the same, the upper-right corners are
-   * compared. This is mostly to assure that 0 is only returned when the
-   * extents are equal.
-   *
-   * Return type signals:
-   *
-   *   -1 this bounding box comes first
-   *    0 the bounding boxes have the same lower-left corner
-   *    1 the other bounding box comes first
-   */
+  /** Orders two bounding boxes by their (geographically) lower-left corner. The bounding box
+    * that is further south (or west in the case of a tie) comes first.
+    *
+    * If the lower-left corners are the same, the upper-right corners are
+    * compared. This is mostly to assure that 0 is only returned when the
+    * extents are equal.
+    *
+    * Return type signals:
+    *
+    *   -1 this bounding box comes first
+    *    0 the bounding boxes have the same lower-left corner
+    *    1 the other bounding box comes first
+    */
   def compare(other: Extent): Int = {
     var cmp = ymin compare other.ymin
     if (cmp != 0) return cmp
@@ -213,10 +213,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
     xmax compare other.xmax
   }
 
-  /**
-   * Return a the smallest extent that contains this extent and the provided
-   * extent. This is provides a union of the two extents.
-   */
+  /** Return the smallest extent that contains this extent and the provided extent. */
   def combine(other:Extent): Extent =
     Extent(
       if(xmin < other.xmin) xmin else other.xmin,
@@ -225,6 +222,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       if(ymax > other.ymax) ymax else other.ymax
     )
 
+  /** Return the smallest extent that contains this extent and the provided extent. */
   def expandToInclude(other: Extent): Extent =
     combine(other)
 

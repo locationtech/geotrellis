@@ -20,8 +20,7 @@ import geotrellis.vector._
 
 object NonLinearSemivariogram {
 
-  /** Explicit [[Gaussian]] Semivariogram model
-    */
+  /** Explicit [[Gaussian]] Semivariogram model */
   private def explicitGaussian(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -68,8 +67,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  /** Explicit [[Circular]] Semivariogram model
-    */
+  /** Explicit [[Circular]] Semivariogram model */
   private def explicitCircular(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -123,8 +121,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  /** Explicit [[Spherical]] Semivariogram model
-    */
+  /** Explicit [[Spherical]] Semivariogram model */
   private def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -177,8 +174,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  /** Explicit [[Exponential]] Semivariogram model
-   */
+  /** Explicit [[Exponential]] Semivariogram model */
   private def explicitExponential(r: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -224,8 +220,7 @@ object NonLinearSemivariogram {
     }
   }
 
-  /** Explicit [[Wave]] Semivariogram model
-    */
+  /** Explicit [[Wave]] Semivariogram model */
   private def explicitWave(w: Double, s: Double, a: Double): Double => Double = {
     h: Double => {
       if (h == 0) 0
@@ -291,22 +286,22 @@ object NonLinearSemivariogram {
   }
 
   /**
-   * @param svParam Semivariogram parameters in Array format (range, sill, nugget) or (range, sill)
-   * @param model   [[ModelType]] input
-   * @return        Semivariogram function
-   */
+    * @param svParam Semivariogram parameters in Array format (range, sill, nugget) or (range, sill)
+    * @param model   [[ModelType]] input
+    * @return        Semivariogram function
+    */
   def explicitModel(svParam: Array[Double], model: ModelType): Double => Double = {
     val (range: Double, sill: Double, nugget: Double) = (svParam(0), svParam(1), svParam(2))
     explicitModel(range, sill, nugget, model)
   }
 
   /**
-   * @param range   Range of Semivariogram
-   * @param sill    Sill (flattening value) of Semivariogram
-   * @param nugget  Nugget (intercept value) of Semivariogram
-   * @param model   [[ModelType]] input
-   * @return        Semivariogram function
-   */
+    * @param range   Range of Semivariogram
+    * @param sill    Sill (flattening value) of Semivariogram
+    * @param nugget  Nugget (intercept value) of Semivariogram
+    * @param model   [[ModelType]] input
+    * @return        Semivariogram function
+    */
   def explicitModel(range: Double, sill: Double, nugget: Double, model: ModelType): Double => Double = {
     model match {
       case Circular     =>  explicitCircular(range, sill, nugget)
@@ -320,10 +315,10 @@ object NonLinearSemivariogram {
   }
 
   /**
-   * @param variables The (range, sill, nugget) variable's current value being used while optimizing the function parameters
-   * @param model     The [[ModelType]] being fitted into
-   * @return          [[https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant]]
-   */
+    * @param variables The (range, sill, nugget) variable's current value being used while optimizing the function parameters
+    * @param model     The [[ModelType]] being fitted into
+    * @return          [[https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant]]
+    */
   def jacobianModel(variables: Array[Double], model: ModelType): Double => Array[Double] = {
     if(variables.length == 3)
       model match {
@@ -355,12 +350,12 @@ object NonLinearSemivariogram {
   }
 
   /**
-   * @param range   Range (Flattening point) of [[Semivariogram]]
-   * @param sill    Sill (flattening value) of [[Semivariogram]]
-   * @param nugget  Nugget (intercept value) of [[Semivariogram]]
-   * @param model   [[NonLinearModelType]] model to be returned
-   * @return        [[Semivariogram]]
-   */
+    * @param range   Range (Flattening point) of [[Semivariogram]]
+    * @param sill    Sill (flattening value) of [[Semivariogram]]
+    * @param nugget  Nugget (intercept value) of [[Semivariogram]]
+    * @param model   [[NonLinearModelType]] model to be returned
+    * @return        [[Semivariogram]]
+    */
   def apply(range: Double, sill: Double, nugget: Double, model: ModelType): Semivariogram =
     Semivariogram(explicitModel(range, sill, nugget, model), range, sill, nugget)
 
@@ -368,12 +363,12 @@ object NonLinearSemivariogram {
     Semivariogram(explicitNuggetModel(range, sill, model), range, sill, 0)
 
   /**
-   * @param pts                   Points to be modelled and fitted
-   * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram used for fitting
-   * @param binMaxCount           the maximum number of bins in the empirical variogram
-   * @param model                 The [[ModelType]] being fitted into
-   * @return                      [[Semivariogram]]
-   */
+    * @param pts                   Points to be modelled and fitted
+    * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram used for fitting
+    * @param binMaxCount           the maximum number of bins in the empirical variogram
+    * @param model                 The [[ModelType]] being fitted into
+    * @return                      [[Semivariogram]]
+    */
   def apply(pts: Array[PointFeature[Double]],
             maxDistanceBandwidth: Double,
             binMaxCount: Int,
