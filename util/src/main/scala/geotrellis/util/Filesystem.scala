@@ -16,14 +16,14 @@
 
 package geotrellis.util
 
-import java.nio.file._
-import java.nio.charset.StandardCharsets
 import java.io._
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
+import java.nio.charset.StandardCharsets
+import java.nio.file._
 
 object Filesystem {
-  def slurp(path: String, bs: Int = 262144): Array[Byte] = {
+  def slurp(path: String, bs: Int = (1<<18)): Array[Byte] = {
     val f = new File(path)
     val fis = new FileInputStream(f)
     val size = f.length.toInt
@@ -60,15 +60,17 @@ object Filesystem {
   /**
    * Return the path string with the final extension removed.
    */
-  def basename(p: String) = p.lastIndexOf(".") match {
-    case -1 => p
-    case n => p.substring(0, n)
-  }
+  def basename(path: String) =
+    path.lastIndexOf(".") match {
+      case -1 => path
+      case n => path.substring(0, n)
+    }
 
-  def split(p: String) = p.lastIndexOf(".") match {
-    case -1 => (p, "")
-    case n => (p.substring(0, n), p.substring(n + 1, p.length))
-  }
+  def split(path: String) =
+    path.lastIndexOf(".") match {
+      case -1 => (path, "")
+      case n => (path.substring(0, n), path.substring(n + 1, path.length))
+    }
 
   def join(parts: String*) = parts.mkString(File.separator)
 
