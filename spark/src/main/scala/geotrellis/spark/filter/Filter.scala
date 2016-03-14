@@ -19,11 +19,29 @@ object Filter {
     */
   def apply[K: Boundable, V, M: Component[?, Bounds[K]]](
     rdd: RDD[(K, V)] with Metadata[M],
-    keybounds: Seq[KeyBounds[K]]
-  ): RDD[(K, V)] with Metadata[M] = {
-    val filteredRdd =
-      rdd.filter({ case (k, _) => keybounds.exists({ kb => kb.includes(k) }) })
-    val metadata = rdd.metadata
-    ContextRDD(filteredRdd, metadata)
+    keyBounds: Seq[KeyBounds[K]]
+  ): RDD[(K, V)] with Metadata[M] =
+    rdd.metadata.getComponent[Bounds[K]] match {
+      case previousKeyBounds: KeyBounds[K] =>
+        val intersectingKeyBounds: Seq[KeyBounds[K]] =
+          keyBounds
+            .map(_.intersect(previousKeyBounds))
+            .filter(_ != EmptyBounds)
+            .map(_.get)
+
+        if(intersectingKeyBounds.isEmpty) {
+          ContextRDD(rdd.sparkContext.parallelize(Seq()), rdd.metadata.setComponent[Bounds[K]](EmptyBounds))
+        } else {
+          val filteredRdd =
+            rdd.filter({ case (k, _) => intersectingKeyBounds.exists({ kb => kb.includes(k) }) })
+          val newBounds  =
+            intersectingKeyBounds.foldLeft(previousKeyBounds: Bounds[K])(_.intersect(_))
+
+          val metadata = rdd.metadata.setComponent[Bounds[K]](newBounds)
+          ContextRDD(filteredRdd, metadata)
+        }
+      case EmptyBounds =>
+        rdd
+
   }
 }
