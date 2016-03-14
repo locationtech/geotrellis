@@ -55,19 +55,16 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = Project("geotrellis", file(".")).
-  dependsOn(
+  aggregate(
     raster,
-    rasterTest % "test",
+    rasterTest,
     vector,
-    vectorTest % "test",
+    vectorTest,
     proj4,
     spark,
-    spark % "test->test",
     sparkEtl,
     s3,
-    s3 % "test->test",
     accumulo,
-    accumulo % "test->test",
     slick,
     benchmark
   ).
