@@ -16,10 +16,12 @@
 
 package geotrellis.vector
 
+import geotrellis.proj4.CRS
+
 import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.TopologyException
 import GeomFactory._
-import geotrellis.proj4.CRS
+
 import scala.reflect.{ ClassTag, classTag }
 
 trait Geometry {

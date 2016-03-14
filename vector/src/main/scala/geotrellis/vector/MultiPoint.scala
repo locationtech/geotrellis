@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,7 @@ import spire.syntax.cfor._
 object MultiPoint {
   lazy val EMPTY = MultiPoint(Seq[Point]())
 
-  def apply(ps: Point*): MultiPoint = 
+  def apply(ps: Point*): MultiPoint =
     apply(ps)
 
   def apply(ps: Traversable[Point]): MultiPoint =
@@ -47,12 +47,12 @@ object MultiPoint {
   implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }
 
-case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry 
+case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
                                                   with Relatable
                                                   with ZeroDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): MultiPoint = { 
+  def normalized(): MultiPoint = {
     val geom = jtsGeom.clone.asInstanceOf[jts.MultiPoint]
     geom.normalize
     MultiPoint(geom)
@@ -129,7 +129,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    */
   def intersection(g: AtLeastOneDimension): MultiPointAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
-
 
   // -- Union
 
@@ -224,7 +223,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def union(mp: MultiPolygon): MultiPointMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
 
-
   // -- Difference
 
   /**
@@ -249,7 +247,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    */
   def difference(g: Geometry): MultiPointGeometryDifferenceResult =
     jtsGeom.difference(g.jtsGeom)
-
 
   // -- SymDifference
 
@@ -302,28 +299,7 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def symDifference(mp: MultiPolygon): MultiPointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(mp.jtsGeom)
 
-
-  // -- Misc.
-
-
-  /**
-   * Computes the smallest convex Polygon that contains all the points in the
-   * MultiPoint. Applies only to MultiPoints with three or more points.
-   *
-   * TODO: Assert that the MultiPoint has at least 3 points. Investigate the
-   * case where given 3 points that form a straight line, convexHull() returns
-   * a line instead of a polygon.
-   */
-  def convexHull(): Polygon =
-    jtsGeom.convexHull() match {
-      case p: jts.Polygon => Polygon(p)
-      case x =>
-        sys.error(s"Unexpected result for MultiPoint convexHull: ${x.getGeometryType}")
-    }
-
-
   // -- Predicates
-
 
   /**
    * Tests whether this MultiPoint contains the specified ZeroDimensions g.

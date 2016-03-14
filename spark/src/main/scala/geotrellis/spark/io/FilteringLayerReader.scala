@@ -30,20 +30,20 @@ abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M]
+  ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M]
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: ID, rasterQuery: RDDQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] =
+  ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, numPartitions, false)
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](id: ID, rasterQuery: RDDQuery[K, M]): RDD[(K, V)] with Metadata[M] =
+  ](id: ID, rasterQuery: LayerQuery[K, M]): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
@@ -51,19 +51,19 @@ abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M] =
-    read(id, new RDDQuery[K, M], numPartitions)
+    read(id, new LayerQuery[K, M], numPartitions)
 
   def query[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](layerId: ID): BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]] =
-    new BoundRDDQuery(new RDDQuery, read(layerId, _))
+  ](layerId: ID): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]
-  ](layerId: ID, numPartitions: Int): BoundRDDQuery[K, M, RDD[(K, V)] with Metadata[M]] =
-    new BoundRDDQuery(new RDDQuery, read(layerId, _, numPartitions))
+  ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }

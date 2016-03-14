@@ -1,4 +1,4 @@
-package geotrellis.spark.partitioner
+package geotrellis.spark.partition
 
 import geotrellis.spark._
 import org.apache.spark.rdd._
@@ -7,10 +7,10 @@ import scala.reflect._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withSpatialJoinMethods[
+  implicit class withSpatiallyPartitionLayerMethods[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
     M: Component[?, Bounds[K]]
-  ](val self: RDD[(K, V)] with Metadata[M])
-    extends SpatialJoinMethods[K, V, M]
+  ](self: RDD[(K, V)] with Metadata[M])
+    extends SpatiallyPartitionMethods[K, V, M](self)
 }

@@ -22,31 +22,36 @@ import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd._
 
-
-abstract class TileLayerRDDFilterMethods[K: Boundable, V, M] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
+abstract class TileLayerRDDFilterMethods[K: Boundable, V, M: Component[?, Bounds[K]]] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   /**
     * A method that takes a sequence of [[KeyBounds]] objects and
     * returns a [[TileLayerRDD]] in-which all keys in the original RDD
     * which are not contained in the union of the given KeyBounds have
     * been filtered-out.
     *
-    * @param  keybounds A sequence of KeyBounds[K] objects
+    * @param  keyBounds A sequence of KeyBounds[K] objects
     * @return           A filtered TileLayerRDD
     */
-  def filterByKeyBounds(keybounds: Seq[KeyBounds[K]]): RDD[(K, V)] with Metadata[M] = {
-    val rdd = self.filter({ case (k, _) => keybounds.exists({ kb => kb.includes(k) }) })
-    val metadata = self.metadata
-    ContextRDD(rdd, metadata)
-  }
+  def filterByKeyBounds(keyBounds: Seq[KeyBounds[K]]): RDD[(K, V)] with Metadata[M] =
+    Filter(self, keyBounds)
 
   /**
     * A method that takes a single [[KeyBounds]] objects and returns a
     * [[TileLayerRDD]] in-which all keys in the original RDD which are
     * not contained in the KeyBounds have been filtered-out.
     *
-    * @param  keybounds A sequence of KeyBounds[K] objects
+    * @param  keyBounds A sequence of KeyBounds[K] objects
     * @return           A filtered TileLayerRDD
     */
-  def filterByKeyBounds(kb: KeyBounds[K]): RDD[(K, V)] with Metadata[M] =
-    filterByKeyBounds(List(kb))
+  def filterByKeyBounds(keyBounds: KeyBounds[K]): RDD[(K, V)] with Metadata[M] =
+    filterByKeyBounds(List(keyBounds))
+
+  /**
+    * Filter an RDD by performing a LayerQuery against it.
+    * This method will return a LayerQuery object, which you can call
+    * "where" on with various filters, the same as you would when
+    * querying a layer out of a FilteringLayerReader.
+    */
+  def filter(): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    Filter(self)
 }

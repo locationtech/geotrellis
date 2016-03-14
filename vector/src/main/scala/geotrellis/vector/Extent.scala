@@ -1,6 +1,5 @@
 package geotrellis.vector
 
-import geotrellis.vector.reproject._
 import GeomFactory._
 import geotrellis.proj4.CRS
 

@@ -4,7 +4,6 @@ import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark.testkit._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 
 import org.apache.hadoop.fs.Path
 import org.scalatest._

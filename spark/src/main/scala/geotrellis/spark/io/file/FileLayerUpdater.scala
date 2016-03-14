@@ -53,7 +53,7 @@ class FileLayerUpdater(
 
       } else {
         val query =
-          new RDDQuery[K, M]
+          new LayerQuery[K, M]
             .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
 
         layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)

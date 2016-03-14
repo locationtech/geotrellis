@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package geotrellis.vector
-package dissolve
+package geotrellis.vector.dissolve
 
 import geotrellis.util.MethodExtensions
+import geotrellis.vector._
 
+/** Dissolves the linear components
+  * from a collection of geometries
+  * into a set of maximal-length {@link Linestring}s
+  * in which every unique segment appears once only.
+  *
+  * @note  This method does not work over Point, MultiPoint, or GeometryCollection types.
+  */
 trait DissolveMethods[G <: Geometry] extends MethodExtensions[G] {
-  def dissolve: LineOneDimensionUnionResult =
-    com.vividsolutions.jts.dissolve.LineDissolver.dissolve(self.jtsGeom)
+  def dissolve: MultiLineMultiLineUnionResult =
+    try {
+      com.vividsolutions.jts.dissolve.LineDissolver.dissolve(self.jtsGeom)
+    } catch {
+      case _: java.lang.NullPointerException =>
+        // If this is an empty multiline or multipolygon, the JTS code throws this exception.
+        NoResult
+    }
 }

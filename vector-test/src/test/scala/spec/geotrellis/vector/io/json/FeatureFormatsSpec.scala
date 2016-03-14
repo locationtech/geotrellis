@@ -2,6 +2,7 @@ package geotrellis.vector.io.json
 
 import org.scalatest._
 import geotrellis.vector._
+import geotrellis.vector.io._
 
 import spray.httpx.unmarshalling._
 import spray.httpx.marshalling._
@@ -91,7 +92,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   }
 
   it should "parse polygons out of a feature collection" in {
-    val geojson = 
+    val geojson =
       """
 {
     "type": "FeatureCollection",

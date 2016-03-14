@@ -22,11 +22,11 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, TileL
     val query = reader.query[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](layerId)
     describe(s"CoordinateSpaceTime query tests for $keyIndexMethodName") {
       it("query outside of layer bounds") {
-        query.where(Intersects(GridBounds(10, 10, 15, 15))).toRDD.collect() should be(empty)
+        query.where(Intersects(GridBounds(10, 10, 15, 15))).result.collect() should be(empty)
       }
 
       it("query disjunction on space") {
-        val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect()
+        val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).result.keys.collect()
 
         val expected = {
           for {
@@ -45,7 +45,7 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, TileL
 
       it("query disjunction on space and time") {
         val actual = query.where(Intersects(bounds1) or Intersects(bounds2))
-          .where(Between(dates(0), dates(1)) or Between(dates(3), dates(4))).toRDD.keys.collect()
+          .where(Between(dates(0), dates(1)) or Between(dates(3), dates(4))).result.keys.collect()
 
         val expected = {
           for {
@@ -63,9 +63,10 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, TileL
 
         actual should contain theSameElementsAs expected
       }
+
       it("query at particular times") {
         val actual = query.where(Intersects(bounds1) or Intersects(bounds2))
-          .where(At(dates(0)) or At(dates(4))).toRDD.keys.collect()
+          .where(At(dates(0)) or At(dates(4))).result.keys.collect()
 
         val expected = {
           for {

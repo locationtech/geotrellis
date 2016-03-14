@@ -3,7 +3,6 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 object MapKeyTransform {
@@ -38,17 +37,17 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
 
     // Pay attention to the exclusitivity of the east and south extent border.
     val colMax = {
-      val d = (otherExtent.xmax - extent.xmin) / extent.width
+      val d = (otherExtent.xmax - extent.xmin) / (extent.width / layoutCols)
 
-      if(d == math.floor(d)) { (d * layoutCols).toInt - 1 }
-      else { (d * layoutCols).toInt }
+      if(d == math.floor(d)) { d.toInt - 1 }
+      else { d.toInt }
     }
 
     val rowMax = {
-      val d = (extent.ymax - otherExtent.ymin) / extent.height
+      val d = (extent.ymax - otherExtent.ymin) / (extent.height / layoutRows)
 
-      if(d == math.floor(d)) { (d * layoutRows).toInt - 1 }
-      else { (d * layoutRows).toInt }
+      if(d == math.floor(d)) { d.toInt - 1 }
+      else { d.toInt }
     }
 
     GridBounds(colMin, rowMin, colMax, rowMax)

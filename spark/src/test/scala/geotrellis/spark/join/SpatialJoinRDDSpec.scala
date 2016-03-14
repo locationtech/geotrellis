@@ -1,13 +1,16 @@
-package geotrellis.spark.partitioner
+package geotrellis.spark.join
 
 import geotrellis.spark._
+import geotrellis.spark.partition._
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._
 import spire.math.interval.EmptyBound
 
 class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
-  import Implicits._
+  // Import the PartitionerIndex that we will be using for the tests.
+  import geotrellis.spark.partition.TestImplicits._
 
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))
   val part1 = SpacePartitioner(bounds1)
@@ -59,6 +62,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
 
     info(s"PairRDDFunctions partitioner: ${expected.partitioner}")
     info(s"SpaceRDD join partitioner: ${res.partitioner}")
+    info(s"  number of partitions: ${res.partitions.length}")
     res.partitioner.get should be (part1)
     res.collect() sameElements expected.collect()
     maxPartitionSize(res) should be <= 4
