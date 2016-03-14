@@ -3,53 +3,93 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.merge._
 
+import com.typesafe.scalalogging.slf4j._
 import org.apache.avro.Schema
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import spray.json._
 
 import scala.reflect._
 
-class AccumuloLayerUpdater[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: BaseAccumuloRDDWriter[K, V])
-  extends LayerUpdater[LayerId, K, V, M] {
+import AccumuloLayerWriter.Options
 
-  def update(id: LayerId, rdd: Container) = {
+class AccumuloLayerUpdater(
+  val instance: AccumuloInstance,
+  val attributeStore: AttributeStore,
+  layerReader: AccumuloLayerReader,
+  options: Options
+) extends LayerUpdater[LayerId] with LazyLogging {
+
+  protected def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    implicit val sc = rdd.sparkContext
 
-    val (existingHeader, _, existingKeyBounds, existingKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
-    val boundable = implicitly[Boundable[K]]
-    val keyBounds = boundable.collectBounds(rdd).getOrElse(throw new LayerUpdateError(id, "empty rdd update"))
+    val table = header.tileTable
 
-    if (!(existingKeyBounds includes keyBounds.minKey ) || !(existingKeyBounds includes keyBounds.maxKey))
-      throw new LayerOutOfKeyBoundsError(id)
+    if (!(keyIndex.keyBounds contains keyBounds))
+      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    val getRowId = (key: K) => index2RowId(existingKeyIndex.toIndex(key))
+    val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
-    try {
-      rddWriter.write(rdd, existingHeader.tileTable, columnFamily(id), getRowId, oneToOne = false)
-    } catch {
-      case e: Exception => throw new LayerWriteError(id).initCause(e)
-    }
+    logger.info(s"Saving updated RDD for layer ${id} to table $table")
+    val existingTiles =
+      if(schemaHasChanged[K, V](writerSchema)) {
+        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
+        layerReader
+          .read[K, V, M](id)
+
+      } else {
+        val query =
+          new RDDQuery[K, M]
+            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
+
+        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
+      }
+
+    val updatedMetadata: M =
+      metadata.merge(rdd.metadata)
+
+    val updatedRdd: RDD[(K, V)] =
+      existingTiles
+        .leftOuterJoin(rdd)
+        .mapValues { case (layerTile, updateTile) =>
+          updateTile match {
+            case Some(tile) =>
+              mergeFunc(layerTile, tile)
+            case None =>
+              layerTile
+          }
+      }
+
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+
+    // Write updated metadata, and the possibly updated schema
+    // Only really need to write the metadata and schema
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+    AccumuloRDDWriter.write(updatedRdd, instance, encodeKey, options.writeStrategy, table)
   }
 }
 
 object AccumuloLayerUpdater {
-  def defaultAccumuloWriteStrategy = HdfsWriteStrategy("/geotrellis-ingest")
-
-  def apply[K: SpatialComponent: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag, M: JsonFormat]
-  (instance: AccumuloInstance,
-   strategy: AccumuloWriteStrategy = defaultAccumuloWriteStrategy): AccumuloLayerUpdater[K, V, M] =
-    new AccumuloLayerUpdater[K, V, M](
+  def apply(instance: AccumuloInstance, options: Options = Options.DEFAULT)(implicit sc: SparkContext): AccumuloLayerUpdater =
+    new AccumuloLayerUpdater(
+      instance = instance,
       attributeStore = AccumuloAttributeStore(instance.connector),
-      rddWriter = new AccumuloRDDWriter[K, V](instance, strategy)
+      layerReader = AccumuloLayerReader(instance),
+      options = options
     )
 }

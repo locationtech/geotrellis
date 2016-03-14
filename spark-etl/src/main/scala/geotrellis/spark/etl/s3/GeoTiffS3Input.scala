@@ -1,7 +1,7 @@
 package geotrellis.spark.etl.s3
 
 import geotrellis.raster.Tile
-import geotrellis.spark.RasterMetaData
+import geotrellis.spark.TileLayerMetadata
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.s3.GeoTiffS3InputFormat
 import geotrellis.vector.ProjectedExtent

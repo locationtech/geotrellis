@@ -1,8 +1,20 @@
 package geotrellis.spark.io
 
+import geotrellis.spark._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.json._
+
+import spray.json._
+
+import scala.reflect.ClassTag
+
 class GenericLayerMover[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDeleter[ID]) extends LayerMover[ID] {
-  def move(from: ID, to: ID): Unit = {
-    layerCopier.copy(from, to)
+  def move[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](from: ID, to: ID): Unit = {
+    layerCopier.copy[K, V, M](from, to)
     layerDeleter.delete(from)
   }
 }

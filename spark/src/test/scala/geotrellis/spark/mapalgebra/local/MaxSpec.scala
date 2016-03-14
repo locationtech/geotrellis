@@ -19,7 +19,7 @@ package geotrellis.spark.mapalgebra.local
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.RasterRDD
+import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec

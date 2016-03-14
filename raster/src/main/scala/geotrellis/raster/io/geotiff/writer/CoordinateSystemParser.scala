@@ -22,6 +22,7 @@ import collection.mutable.ListBuffer
 
 import geotrellis.proj4.CRS
 
+import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags._
 import EllipsoidTypes._
 import DatumTypes._
@@ -40,11 +41,11 @@ object CoordinateSystemParser {
 
   val GeoTiffDoubleTag = 0x87b0
 
-  def apply(crs: CRS): CoordinateSystemParser =
-    new CoordinateSystemParser(crs)
+  def apply(crs: CRS, pixelSampleType: Option[PixelSampleType]): CoordinateSystemParser =
+    new CoordinateSystemParser(crs, pixelSampleType)
 
-  def parse(crs: CRS): GeoDirectoryTags = {
-    val (s, d) = apply(crs).parse
+  def parse(crs: CRS, pixelSampleType: Option[PixelSampleType]): GeoDirectoryTags = {
+    val (s, d) = apply(crs, pixelSampleType).parse
     GeoDirectoryTags(s, d)
   }
 
@@ -54,7 +55,7 @@ class MalformedProj4Exception(message: String) extends RuntimeException(message)
 
 class GeoTiffWriterLimitationException(message: String) extends RuntimeException(message)
 
-class CoordinateSystemParser(val crs: CRS) {
+class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSampleType]) {
 
   import CoordinateSystemParser._
 
@@ -100,17 +101,30 @@ class CoordinateSystemParser(val crs: CRS) {
     val geoKeysIntBuffer = ListBuffer[(Int, Int)]()
     val doublesBuffer = ListBuffer[(Int, Double)]()
 
-    // For the raster type is pixel area
-    geoKeysIntBuffer ++= List((GTRasterTypeGeoKey, 1))
+    pixelSampleType match {
+      case Some(PixelIsPoint) =>
+        geoKeysIntBuffer ++= List((GTRasterTypeGeoKey, 2))
+      case _ =>
+        // Default to PixelIsArea
+        geoKeysIntBuffer ++= List((GTRasterTypeGeoKey, 1))
+    }
 
-    val projectedCSTypkeGeoValue = crs.epsgCode.getOrElse(UserDefinedProjectionType)
+    val epsgCode = crs.epsgCode.getOrElse(UserDefinedProjectionType)
 
-    if (projectedCSTypkeGeoValue != UserDefinedProjectionType) {
-      val projPropsGeoKeysInt: List[(Int, Int)] = List(
-        (GTModelTypeGeoKey, ModelTypeProjected),
-        (GeogAngularUnitsGeoKey, 9102),
-        (ProjectedCSTypeGeoKey, projectedCSTypkeGeoValue)
-      )
+    if (epsgCode != UserDefinedProjectionType) {
+      val projPropsGeoKeysInt: List[(Int, Int)] =
+        if(crs.isGeographic) {
+          List(
+            (GTModelTypeGeoKey, ModelTypeGeographic),
+            (GeogTypeGeoKey, epsgCode)
+          )
+        } else {
+          List(
+            (GTModelTypeGeoKey, ModelTypeProjected),
+            (GeogAngularUnitsGeoKey, 9102),
+            (ProjectedCSTypeGeoKey, epsgCode)
+          )
+        }
       geoKeysIntBuffer ++= projPropsGeoKeysInt
     } else {
       val (projPropsGeoKeysInt, projPropsDoubles) = projProps

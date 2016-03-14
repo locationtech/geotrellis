@@ -2,6 +2,8 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index.KeyIndex
+import org.apache.avro.Schema
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -11,32 +13,39 @@ import java.io.PrintWriter
 
 import org.apache.hadoop.conf.Configuration
 
-class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir: Path) extends AttributeStore[JsonFormat] {
-  val fs = attributeDir.getFileSystem(hadoopConfiguration)
+import scala.util.matching.Regex
 
-  val SEP = "___"
+class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends BlobLayerAttributeStore {
+  import HadoopAttributeStore._
+
+  val attributePath = new Path(rootPath, "_attributes")
+  val fs = attributePath.getFileSystem(hadoopConfiguration)
 
   // Create directory if it doesn't exist
-  if(!fs.exists(attributeDir)) {
-    fs.mkdirs(attributeDir)
+  if(!fs.exists(attributePath)) {
+    fs.mkdirs(attributePath)
   }
 
   def attributePath(layerId: LayerId, attributeName: String): Path = {
     val fname = s"${layerId.name}${SEP}${layerId.zoom}${SEP}${attributeName}.json"
-    new Path(attributeDir, fname)
+    new Path(attributePath, fname)
   }
 
   private def delete(layerId: LayerId, path: Path): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     HdfsUtils
-      .listFiles(new Path(attributeDir, path), hadoopConfiguration)
+      .listFiles(new Path(attributePath, path), hadoopConfiguration)
       .foreach(fs.delete(_, false))
+    clearCache(layerId)
   }
 
   def attributeWildcard(attributeName: String): Path =
     new Path(s"*${SEP}${attributeName}.json")
 
-  private def readFile[T: Format](path: Path): Option[(LayerId, T)] = {
+  def layerWildcard(layerId: LayerId): Path =
+    new Path(s"${layerId.name}${SEP}${layerId.name}${SEP}*.json")
+
+  private def readFile[T: JsonFormat](path: Path): Option[(LayerId, T)] = {
     HdfsUtils
       .getLineScanner(path, hadoopConfiguration)
       .map{ in =>
@@ -51,25 +60,25 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
       }
   }
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T =
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
     readFile[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
       case None => throw new AttributeNotFoundError(attributeName, layerId)
     }
 
-  def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId,T] = {
     HdfsUtils
       .listFiles(attributeWildcard(attributeName), hadoopConfiguration)
       .map{ path: Path =>
         readFile[T](path) match {
           case Some(tup) => tup
-          case None => throw new CatalogError(s"Unable to list $attributeName attributes from $path")
+          case None => throw new LayerIOError(s"Unable to list $attributeName attributes from $path")
         }
       }
       .toMap
   }
 
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {
@@ -89,35 +98,53 @@ class HadoopAttributeStore(val hadoopConfiguration: Configuration, attributeDir:
 
   def layerExists(layerId: LayerId): Boolean =
     HdfsUtils
-      .listFiles(new Path(attributeDir, s"*.json"), hadoopConfiguration)
+      .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
       .exists { path: Path =>
         val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
         layerId == LayerId(name, zoomStr.toInt)
       }
 
-  def delete(layerId: LayerId): Unit =
+  def delete(layerId: LayerId): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))
+    clearCache(layerId)
+  }
 
-  def delete(layerId: LayerId, attributeName: String): Unit =
+  def delete(layerId: LayerId, attributeName: String): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}${attributeName}.json"))
+    clearCache(layerId, attributeName)
+  }
 
   def layerIds: Seq[LayerId] =
     HdfsUtils
-      .listFiles(new Path(attributeDir, s"*.json"), hadoopConfiguration)
+      .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
       .map { path: Path =>
         val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
         LayerId(name, zoomStr.toInt)
       }
       .distinct
+
+  def availableAttributes(layerId: LayerId): Seq[String] = {
+    HdfsUtils
+      .listFiles(layerWildcard(layerId), hadoopConfiguration)
+      .map { path: Path =>
+        val attributeRx(name, zoom, attribute) = path.getName
+        attribute
+      }
+      .toVector
+  }
 }
 
 object HadoopAttributeStore {
+  final val SEP = "___"
+
+  val attributeRx = {
+    val slug = "[a-zA-Z0-9-]+"
+    new Regex(s"""($slug)$SEP($slug)${SEP}($slug).json""", "layer", "zoom", "attribute")
+  }
+
   def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
-    new HadoopAttributeStore(config, rootPath)
+    new HadoopAttributeStore(rootPath, config)
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
-    new HadoopAttributeStore(sc.hadoopConfiguration, rootPath)
-
-  def default(rootPath: Path) =
-    HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration)
+    apply(rootPath, sc.hadoopConfiguration)
 }

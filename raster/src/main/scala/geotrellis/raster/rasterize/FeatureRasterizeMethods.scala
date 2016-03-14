@@ -22,7 +22,7 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Geometry,Feature}
 
 
-trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends MethodExtensions[T] {
+trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Int]] {
 
   def foreach(
     re : RasterExtent,
@@ -55,7 +55,7 @@ trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends Me
     self.geom.rasterizeDouble(re, self.data.toDouble)
 }
 
-trait FeatureDoubleRasterizeMethods[+G <: Geometry, T <: Feature[G,Double]] extends MethodExtensions[T] {
+trait FeatureDoubleRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Double]] {
 
   def foreach(
     re : RasterExtent,

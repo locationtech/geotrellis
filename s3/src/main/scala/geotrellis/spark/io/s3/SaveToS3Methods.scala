@@ -79,7 +79,7 @@ object SaveToS3Methods {
         requests map write
       }
 
-      results.run.run
+      results.run.unsafePerformSync
       pool.shutdown()
     }
   }

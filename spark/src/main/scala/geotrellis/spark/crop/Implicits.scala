@@ -7,6 +7,6 @@ import geotrellis.spark._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRasterRDDCropMethods[K: SpatialComponent](val self: RasterRDD[K])
-      extends RasterRDDCropMethods[K]
+  implicit class withTileLayerRDDCropMethods[K: SpatialComponent](val self: TileLayerRDD[K])
+      extends TileLayerRDDCropMethods[K]
 }

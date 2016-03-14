@@ -104,7 +104,6 @@ res1: Double = 5.666666666666667
 
 Feedback and contributions to the project, no matter what kind,
 are always very welcome. A CLA is required for contribution, see
-the [CLA FAQ](https://github.com/geotrellis/geotrellis/wiki/Contributor-license-agreement-FAQ)
-on the wiki for more information. Please refer to the
-[Scala style guide](http://docs.scala-lang.org/style/) for
-formatting patches to the codebase.
+[contributing.md](./contributing.md) for more information. Please
+refer to the [Scala style guide](http://docs.scala-lang.org/style/)
+for formatting patches to the codebase.

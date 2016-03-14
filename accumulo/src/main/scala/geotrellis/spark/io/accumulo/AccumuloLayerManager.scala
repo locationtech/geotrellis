@@ -1,9 +1,11 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.{Boundable, LayerId}
+import geotrellis.spark.io.index._
+import geotrellis.spark.io.json._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -11,30 +13,36 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: AccumuloInstance)(implicit sc: SparkContext) {
-  def delete[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](id: LayerId): Unit = {
-    val deleter = AccumuloLayerDeleter(attributeStore, instance)
-    deleter.delete(id)
-  }
+class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: AccumuloInstance)(implicit sc: SparkContext)
+    extends LayerManager[LayerId]{
+  def delete(id: LayerId): Unit =
+    AccumuloLayerDeleter(attributeStore, instance).delete(id)
 
-  def copy[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-  (from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
-    val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.header)
-    val copier = AccumuloLayerCopier[K, V, M](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-    copier.copy(from, to)
-  }
+  def copy[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](from: LayerId, to: LayerId): Unit =
+    AccumuloLayerCopier(instance).copy[K, V, M](from, to)
 
-  def move[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-  (from: LayerId, to: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
-    val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](from, Fields.header)
-    val mover = AccumuloLayerMover[K, V, M](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-    mover.move(from, to)
-  }
+  def move[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](from: LayerId, to: LayerId): Unit =
+    AccumuloLayerMover(instance).move[K, V, M](from, to)
 
-  def reindex[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat]
-  (id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
-    val header = attributeStore.readLayerAttribute[AccumuloLayerHeader](id, Fields.header)
-    val reindexer = AccumuloLayerReindexer[K, V, M](instance, header.tileTable, keyIndexMethod, AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-    reindexer.reindex(id)
-  }
+  def reindex[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
+    AccumuloLayerReindexer(instance).reindex[K, V, M](id, keyIndexMethod)
+
+  def reindex[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]
+  ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
+    AccumuloLayerReindexer(instance).reindex[K, V, M](id, keyIndex)
 }

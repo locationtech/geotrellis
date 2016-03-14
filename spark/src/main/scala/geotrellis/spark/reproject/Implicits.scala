@@ -7,7 +7,7 @@ import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
 import geotrellis.spark._
-import geotrellis.spark.ingest.ProjectedExtentComponent
+import geotrellis.vector._
 
 import org.apache.spark.rdd._
 
@@ -16,11 +16,11 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withProjectedExtentReprojectMethods[K: ProjectedExtentComponent, V <: CellGrid: (? => TileReprojectMethods[V])](self: RDD[(K, V)])
+  implicit class withProjectedExtentReprojectMethods[K: Component[?, ProjectedExtent], V <: CellGrid: (? => TileReprojectMethods[V])](self: RDD[(K, V)])
       extends ProjectedExtentComponentReprojectMethods[K, V](self) { }
 
   implicit class withTileRDDReprojectMethods[
-    K: SpatialComponent: ClassTag,
+    K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-  ](self: RDD[(K, V)] with Metadata[RasterMetaData]) extends TileRDDReprojectMethods[K, V](self)
+  ](self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends TileRDDReprojectMethods[K, V](self)
 }

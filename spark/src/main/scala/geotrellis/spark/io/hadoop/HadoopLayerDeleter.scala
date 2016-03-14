@@ -1,20 +1,25 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.LayerId
+import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.AttributeStore.Fields
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.spark._
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
-class HadoopLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conf: Configuration) extends LayerDeleter[LayerId] {
+class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, _, _, _) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader, Unit, Unit, Unit, Unit](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
-    }
+    val header =
+      try {
+      attributeStore.readHeader[HadoopLayerHeader](id)
+      } catch {
+        case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
+      }
+
     HdfsUtils.deletePath(header.path, conf)
     attributeStore.delete(id)
     attributeStore.clearCache()
@@ -22,12 +27,15 @@ class HadoopLayerDeleter(val attributeStore: AttributeStore[JsonFormat], conf: C
 }
 
 object HadoopLayerDeleter {
-  def apply(attributeStore: AttributeStore[JsonFormat], conf: Configuration): HadoopLayerDeleter =
+  def apply(attributeStore: AttributeStore, conf: Configuration): HadoopLayerDeleter =
     new HadoopLayerDeleter(attributeStore, conf)
 
-  def apply(rootPath: Path, conf: Configuration): HadoopLayerDeleter =
-    apply(HadoopAttributeStore(new Path(rootPath, "attributes"), conf), conf)
+  def apply(attributeStore: AttributeStore)(implicit sc: SparkContext): HadoopLayerDeleter =
+    apply(attributeStore, sc.hadoopConfiguration)
 
-  def apply(rootPath: Path): HadoopLayerDeleter =
-    apply(HadoopAttributeStore(new Path(rootPath, "attributes"), new Configuration), new Configuration)
+  def apply(rootPath: Path, conf: Configuration): HadoopLayerDeleter =
+    apply(HadoopAttributeStore(rootPath, conf), conf)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerDeleter =
+    apply(HadoopAttributeStore(rootPath, new Configuration), sc.hadoopConfiguration)
 }

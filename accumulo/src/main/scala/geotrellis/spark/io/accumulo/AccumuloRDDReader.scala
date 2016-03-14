@@ -16,29 +16,18 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 
-trait BaseAccumuloRDDReader[K, V] {
-  def read(
+object AccumuloRDDReader {
+  def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     table: String,
     columnFamily: Text,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
-    writerSchema: Option[Schema])
-    (implicit sc: SparkContext): RDD[(K, V)]
-}
-
-class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
-  instance: AccumuloInstance) extends BaseAccumuloRDDReader[K,V] {
-  def read(
-      table: String,
-      columnFamily: Text,
-      queryKeyBounds: Seq[KeyBounds[K]],
-      decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
-      writerSchema: Option[Schema] = None)
-    (implicit sc: SparkContext): RDD[(K, V)] = {
+    filterIndexOnly: Boolean,
+    writerSchema: Option[Schema] = None
+  )(implicit sc: SparkContext, instance: AccumuloInstance): RDD[(K, V)] = {
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
-    val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     instance.setAccumuloConfig(job)
@@ -59,7 +48,10 @@ class AccumuloRDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCo
       AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
     }
     .flatMap { pairs: Vector[(K, V)] =>
-      pairs.filter { pair => includeKey(pair._1) }
+      if(filterIndexOnly)
+        pairs
+      else
+        pairs.filter { pair => includeKey(pair._1) }
     }
   }
 }

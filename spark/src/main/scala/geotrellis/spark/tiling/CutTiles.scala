@@ -14,21 +14,23 @@ import scala.reflect.ClassTag
 
 object CutTiles {
   def apply[
-    K1: ? => TilerKeyMethods[K1, K2],
+    K1: (? => TilerKeyMethods[K1, K2]),
     K2: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ] (
     rdd: RDD[(K1, V)],
     cellType: CellType,
     layoutDefinition: LayoutDefinition,
     resampleMethod: ResampleMethod = NearestNeighbor
-  ): RDD[(K2, V)] =
+  ): RDD[(K2, V)] = {
+    val mapTransform = layoutDefinition.mapTransform
+    val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+
     rdd
       .flatMap { tup =>
         val (inKey, tile) = tup
         val extent = inKey.extent
-        val mapTransform = layoutDefinition.mapTransform
-        val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+
         mapTransform(extent)
           .coords
           .map  { spatialComponent =>
@@ -37,4 +39,5 @@ object CutTiles {
             (outKey, newTile.merge(mapTransform(outKey), extent, tile))
           }
       }
+  }
 }

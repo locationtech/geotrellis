@@ -51,7 +51,7 @@ lazy val commonSettings = Seq(
       </developers>),
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
   dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang")
-) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+)
 
 lazy val root = Project("geotrellis", file(".")).
   dependsOn(raster, vector, proj4, spark).
@@ -64,6 +64,7 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.spark._
       """
   )
   .settings(unidocSettings: _*)

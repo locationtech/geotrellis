@@ -8,7 +8,7 @@ import scala.util.Try
  */
 object GenerateTestCases {
   implicit class withAsStream(val a: String) extends AnyVal {
-    def asStream: java.io.InputStream = 
+    def asStream: java.io.InputStream =
       new java.io.ByteArrayInputStream(a.getBytes(java.nio.charset.StandardCharsets.UTF_8))
   }
 
@@ -21,7 +21,7 @@ object GenerateTestCases {
   }
 
   def main(args: Array[String]): Unit = {
-    val knownCodes = 
+    val knownCodes =
       loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/geotrellis/proj4/nad/epsg"))) { source =>
         source.getLines
           .filter { _ startsWith "<" }
@@ -29,7 +29,7 @@ object GenerateTestCases {
           .filterNot { _ == "4326" }
           .to[Vector]
       }
-    
+
     val output = new java.io.FileWriter("proj4/src/test/resources/proj4-epsg.csv");
 
     val csvWriter = new com.opencsv.CSVWriter(output)
@@ -57,21 +57,21 @@ object GenerateTestCases {
         "", // "dataSource",
         "", // "dataCmnts",
         "Auto-generated from proj.4 epsg database") // "maintenanceCmnts");
-    
+
     knownCodes.foreach { code =>
       val forward = cs2cs(4326, code.toInt, (1, -1, 0))
       for (pt @ (x, y, z) <- forward) {
-        val (method, tolerance) = 
+        val (method, tolerance) =
           try {
             val dst = CRS.fromName(s"EPSG:$code")
-            val tolerance = dst.crs.getProjection.getUnits match {
+            val tolerance = dst.proj4jCrs.getProjection.getUnits match {
               case null => 1
               case u if Set(org.osgeo.proj4j.units.Units.DEGREES) contains u => 1e-6 * u.value
               case u => 0.1 * u.value
             }
             val tx = Transform(LatLng, dst)
             val (u, v) = tx(1, -1)
-              if ((x - u).abs < tolerance && (v - y).abs < tolerance) 
+              if ((x - u).abs < tolerance && (v - y).abs < tolerance)
                 ("passing", tolerance)
               else
                 ("failing", tolerance)
@@ -85,7 +85,7 @@ object GenerateTestCases {
         // target coordinate system.  Until we do, the inverse transform tests won't all pass.
 
         // val inverse = cs2cs(code.toInt, 4326, forward.get)
-        // if (inverse.isDefined) 
+        // if (inverse.isDefined)
         //   csvWriter.writeNext(writeLine(code.toInt, 4326, forward.get, inverse.get))
       }
     }

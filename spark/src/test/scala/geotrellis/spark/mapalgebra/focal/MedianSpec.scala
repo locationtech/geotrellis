@@ -14,7 +14,7 @@ class MedianSpec extends FunSpec with TestEnvironment {
     val nd = NODATA
 
     it("should square median for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 1,   1, 3, 5,   9, 8, 2,

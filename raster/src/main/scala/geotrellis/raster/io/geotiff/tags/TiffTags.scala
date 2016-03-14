@@ -6,6 +6,8 @@ import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.util._
 import CommonPublicValues._
+import ModelTypes._
+import ProjectionTypesMap.UserDefinedProjectionType
 
 import geotrellis.vector.Extent
 
@@ -18,7 +20,7 @@ import collection.mutable.ListBuffer
 
 import xml._
 
-import monocle.syntax._
+import monocle.syntax.apply._
 import monocle.macros.Lenses
 
 import spire.syntax.cfor._
@@ -197,34 +199,34 @@ case class TiffTags(
     BandType(bitsPerSample, sampleFormat)
   }
 
-  def proj4String: Option[String] = try {
-    geoTiffCSTags.getProj4String
-  } catch {
-    case e: Exception => {
-      None
-    }
-  }
-
-  def projectedCoordinateSystem: Int =
-    if(geoTiffTags.geoKeyDirectory.isDefined) {
-      geoTiffCSTags.pcs
-    } else {
-      32767
-    }
+  def proj4String: Option[String] =
+    geoTiffCSTags.flatMap(_.getProj4String)
 
   lazy val crs: CRS = {
-    if (projectedCoordinateSystem != 32767) {
-      CRS.fromName(s"EPSG:${projectedCoordinateSystem}")
-    } else {
+    val fromCode: Option[CRS] =
+      geoTiffCSTags.flatMap { csTags =>
+        csTags.model match {
+          case ModelTypeProjected =>
+            val pcs = csTags.pcs
+            if (pcs != UserDefinedProjectionType)
+              Some(CRS.fromName(s"EPSG:${pcs}"))
+            else
+              None
+          case ModelTypeGeographic =>
+            val gcs = csTags.gcs
+            if (gcs != UserDefinedProjectionType)
+              Some(CRS.fromName(s"EPSG:${gcs}"))
+            else
+              None
+          case _ => None
+        }
+      }
+    fromCode.getOrElse({
       proj4String match {
         case Some(s) => CRS.fromString(s)
         case None => LatLng
       }
-    }
-  }
-
-  def geoKeyDirectory = geoTiffTags.geoKeyDirectory.getOrElse {
-    throw new IllegalAccessException("no geo key directory present")
+    })
   }
 
   private def getRasterBoundaries: Array[Pixel3D] = {
@@ -297,27 +299,25 @@ case class TiffTags(
            math.max(y1, y2))
   }
 
-  def hasPixelArea(): Boolean =
-    (geoKeyDirectory &|->
-      GeoKeyDirectory._configKeys ^|->
-      ConfigKeys._gtRasterType get) match {
-      case Some(UndefinedCPV) => throw new MalformedGeoTiffException(
-        "the raster type must be present."
-      )
-      case Some(UserDefinedCPV) => throw new GeoTiffReaderLimitationException(
-        "this reader doesn't support user defined raster types."
-      )
-      case Some(v) => v == 1
-      case None => true
+  def pixelSampleType(): Option[PixelSampleType] =
+    geoTiffTags.geoKeyDirectory.flatMap { dir =>
+      (dir
+        &|-> GeoKeyDirectory._configKeys
+        ^|-> ConfigKeys._gtRasterType get) match {
+        case Some(v) if v == 1 => Some(PixelIsArea)
+        case Some(v) if v == 2 => Some(PixelIsPoint)
+        case None => None
+      }
     }
 
   def setGDALNoData(input: String) = (this &|-> TiffTags._geoTiffTags
     ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
 
-  lazy val geoTiffCSTags = GeoTiffCSParser(this)
+  private lazy val geoTiffCSTags: Option[GeoTiffCSParser] =
+    geoTiffTags.geoKeyDirectory.map(GeoTiffCSParser(_))
 
   def tags: Tags = {
-    val (headTags, bandTags) =
+    var (headTags, bandTags) =
       (this &|->
         TiffTags._geoTiffTags ^|->
         GeoTiffTags._metadata get
@@ -355,14 +355,28 @@ case class TiffTags(
           (Map[String, String](), (0 until bandCount).map { i => Map[String, String]() }.toList)
       }
 
-      this &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._dateTime get match {
-          case Some(dateTime) =>
-            Tags(headTags + (("TIFFTAG_DATETIME", dateTime)), bandTags)
-          case None =>
-            Tags(headTags, bandTags)
-        }
+
+    // Account for special metadata that should be included as tags
+
+    // Date time tag
+    this &|->
+      TiffTags._metadataTags ^|->
+      MetadataTags._dateTime get match {
+        case Some(dateTime) =>
+          headTags = headTags + ((Tags.TIFFTAG_DATETIME, dateTime))
+        case None =>
+      }
+
+    // pixel sample type
+    pixelSampleType match {
+      case Some(v) if v == PixelIsPoint =>
+        headTags = headTags + ((Tags.AREA_OR_POINT, "POINT"))
+      case Some(v) if v == PixelIsArea =>
+        headTags = headTags + ((Tags.AREA_OR_POINT, "AREA"))
+      case _ =>
+    }
+
+    Tags(headTags, bandTags)
   }
 
   private def metadataNodeSeqToMap(ns: NodeSeq): Map[String, String] =

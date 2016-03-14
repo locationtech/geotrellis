@@ -22,15 +22,13 @@ import geotrellis.vector.Geometry
 import geotrellis.util.MethodExtensions
 
 
-trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
+trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
   def foreach(
     re : RasterExtent,
     options: Options = Options.DEFAULT
-  )(fn : (Int, Int) => Unit) : Unit = {
+  )(fn : (Int, Int) => Unit) : Unit =
     Rasterizer.foreachCellByGeometry(self, re, options)(fn)
-    Unit
-  }
 
   def rasterize(
     re : RasterExtent,

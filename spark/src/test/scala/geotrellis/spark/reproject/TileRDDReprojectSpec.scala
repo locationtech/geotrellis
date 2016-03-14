@@ -22,11 +22,11 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
   describe("TileRDDReproject") {
     val path = "raster-test/data/aspect.tif"
-    val gt = SingleBandGeoTiff(path)
+    val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
 
     val (raster, rdd) = {
-      val (raster, rdd) = createRasterRDD(originalRaster, 10, 10, gt.crs)
+      val (raster, rdd) = createTileLayerRDD(originalRaster, 10, 10, gt.crs)
       (raster, rdd.withContext { rdd => rdd.repartition(20) })
     }
 

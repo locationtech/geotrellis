@@ -82,7 +82,7 @@ object VectorToRaster {
               val destX = re.gridColToMap(col)
               val destY = re.gridRowToMap(row)
               val pts = index.pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
-              println(pts.size)
+
               if (pts.isEmpty) {
                 tile.set(col, row, NODATA)
               } else {

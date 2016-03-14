@@ -32,7 +32,7 @@ import geotrellis.spark.io.s3._
 
 implicit val sc: SparkContext = ???
 
-val reader : S3LayerReader[SpatialKey, Tile, RasterMetaData] =
+val reader : S3LayerReader[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] =
   S3LayerReader.spatial("bucket", "prefix")
 
 def getLayerId(idx: Int): LayerId = ???
@@ -40,10 +40,10 @@ def getLayerId(idx: Int): LayerId = ???
 val rdd1 =
   reader.read(getLayerId(1))
 
-val rdd2: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rdd2: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   reader.read(getLayerId(2))
 
-val rdd3: RasterRDD[SpaitalKey] =
+val rdd3: TileLayerRDD[SpaitalKey] =
   reader.read(getLayerId(3))
 ```
 
@@ -123,7 +123,7 @@ rdd1.leftOuterJoin(rdd2).updateValues(Add(_, _))
 #### Spatial Join
 
 Given that we know the key bounds of our RDD, from accompanying
-`RasterMetaData`, before performing the join we may use a spark
+`TileLayerMetadata`, before performing the join we may use a spark
 `Partitioner` that performs space partitioning. Such a partitioner
 has a number of benefits over standard `HashPartitioner`:
 
@@ -161,7 +161,7 @@ in GeoTrellis is `ContextRDD[K, V, M]`
 
 ```scala
 val rdd: RDD[(SpatialKey, Tile)] = rdd1 localAdd rdd2
-val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   ContextRDD(rdd, rdd1.metadata)
 ```
 
@@ -174,19 +174,19 @@ metadata while preserving the rdd.
 ```scala
 
 // .withContext preserves the RDD context, the Metadata
-val rddWithContext1: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext1: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   rdd1.withContext { _ localAdd rdd2 }
 
-val rddWithContext2: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext2: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   rdd1.withContext { _ localAdd rdd2 localAdd rdd3 }
 
 
 // .mapContext allows to chain changing Metadata after an operation
 // example: localEqual will produce tiles with CellType of TypeBit
-val rddWithContext3: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext3: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   rdd1
     .withContext { _ localEqual 123 }
-    .mapContext { rmd: RasterMetaData => rmd.copy(cellType = TypeBit) }
+    .mapContext { metadata: TileLayerMetadata => metadata.copy(cellType = TypeBit) }
 ```
 
 ### Preserving Metadata Through Spatial Joins
@@ -196,13 +196,13 @@ joins, we must use `.withContext` wrapper at every transformation in
 order to allow the updated `Bounds` to flow to the end where they can be used.
 
 For instance lets assume we wrote `updateLayout` that combines
-`Bounds[SpatialKey]` and `LayoutDefinition` from `RasterMetaData`
+`Bounds[SpatialKey]` and `LayoutDefinition` from `TileLayerMetadata`
 to produce an RDD with updated, smaller `TileLayout`.
 
 ```scala
-def updateLayout(md: RasterMetaData, bounds: Bounds[SpatialKey]): RasterMetaData = ???
+def updateLayout(md: TileLayerMetadata, bounds: Bounds[SpatialKey]): TileLayerMetadata = ???
 
-val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[RasterMetaData] =
+val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
   rdd1
     .spatialJoin(rdd2).withContext { _.combineValues(Add(_, _)) }
     .spatialJoin(rdd3).withContext { _.combineValues(Add(_, _)) }

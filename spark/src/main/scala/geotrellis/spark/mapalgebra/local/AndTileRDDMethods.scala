@@ -24,7 +24,7 @@ trait AndTileRDDMethods[K] extends TileRDDMethods[K] {
     self.combineValues(other, partitioner){ And.apply }
 
   /** And the values of each cell in each raster. */
-  def &(rs: RasterRDD[K]): RDD[(K, Tile)] = localAnd(rs, None)
+  def &(rs: TileLayerRDD[K]): RDD[(K, Tile)] = localAnd(rs, None)
 
   /** And the values of each cell in each raster.  */
   def localAnd(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAnd(others, None)

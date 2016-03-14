@@ -11,27 +11,47 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
   implicit def spatialKeyIndexMethod(m: ZCurveKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
       def createIndex(keyBounds: KeyBounds[SpatialKey]): KeyIndex[SpatialKey] =
-        new ZSpatialKeyIndex()
+        new ZSpatialKeyIndex(keyBounds)
     }
 
-  def byYear =
+  def byMilliseconds(millis: Long): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byYear()
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, millis)
     }
 
-  def byPattern(pattern: String) =
-    new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byPattern(pattern)
-    }
+  def bySecond(): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L)
 
-  def byMillisecondResolution(millis: Long) =
-    new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMillisecondResolution(millis)
-    }
+  def bySeconds(seconds: Int): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * seconds)
 
-  /** Note: the function timeToGrid has to be in a project scope. */
-  def by(timeToGrid: DateTime => Int) =
-    new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex(timeToGrid)
-    }
+  def byMinute(): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60)
+
+  def byMinutes(minutes: Int): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * minutes)
+
+  def byHour(): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60)
+
+  def byHours(hours: Int): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * hours)
+
+  def byDay(): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * 24)
+
+  def byDays(days: Int): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * 24 * days)
+
+  def byMonth(): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * 30)
+
+  def byMonths(months: Int): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * 30 * months)
+
+  def byYear(): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * 365)
+
+  def byYears(years: Int): KeyIndexMethod[SpaceTimeKey] =
+    byMilliseconds(1000L * 60 * 60 * 365 * years)
 }

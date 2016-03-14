@@ -15,7 +15,7 @@ class MinSpec extends FunSpec with TestEnvironment {
     val NaN = Double.NaN
 
     it("should square min for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 1,   1, 3, 5,   9, 8, 2,
@@ -41,7 +41,7 @@ class MinSpec extends FunSpec with TestEnvironment {
     }
 
     it("should square min for raster rdd with doubles") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           NaN, 7.1, 1.2,   1.4, 3.9, 5.1,   9.9, 8.1, 2.2,
@@ -67,7 +67,7 @@ class MinSpec extends FunSpec with TestEnvironment {
     }
 
     it("should square min with 5 x 5 neighborhood") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 7,   7, 3, 5,   9, 8, 2,
@@ -93,7 +93,7 @@ class MinSpec extends FunSpec with TestEnvironment {
     }
 
     it("should circle min for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 4,   5, 4, 2,   9,nd,nd,

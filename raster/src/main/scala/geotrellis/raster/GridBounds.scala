@@ -41,6 +41,7 @@ object GridBounds {
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
+  if(width.toLong * height.toLong > Int.MaxValue) { sys.error(s"Cannot construct grid bounds of this size: $width x $height") }
   def size = width * height
   def isEmpty = size == 0
 
