@@ -134,8 +134,11 @@ case class KeyBounds[+K](
 
   def get = this
 
-  def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]) =
+  def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     KeyBounds((minKey: B).setComponent(other.minKey), (maxKey: B).setComponent(other.maxKey))
+
+  def setSpatialBounds[B >: K](gb: GridBounds)(implicit ev: SpatialComponent[B]): KeyBounds[B] =
+    setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
 }
 
 object KeyBounds {

@@ -51,6 +51,7 @@ package object spark
     with mask.Implicits
     with merge.Implicits
     with partition.Implicits
+    with resample.Implicits
     with reproject.Implicits
     with stitch.Implicits
     with summary.polygonal.Implicits
