@@ -6,9 +6,9 @@ import com.vividsolutions.jts.{geom => jts}
 import scala.collection.mutable
 
 /**
- * Builder for GeometryCollection.
- * This builder can accumulate from both geotrellis geometries and JTS geometries
- */
+  * Builder for GeometryCollection.
+  * This builder can accumulate from both geotrellis geometries and JTS geometries
+  */
 class GeometryCollectionBuilder {
   val points = mutable.ListBuffer[Point]()
   val lines = mutable.ListBuffer[Line]()

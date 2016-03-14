@@ -1,21 +1,22 @@
-#geotrellis.vector
+# geotrellis.vector
 
 >"Raster is faster but vector is correcter."
 — Somebody
 
-##Features and Geometries
+## Features and Geometries
 
 In addition to working with raster data, Geotrellis provides
-a number of facilities for the creation, representation, and
+a number of tools for the creation, representation, and
 modification of vector data. The data types central to this
 functionality (`geotrellis.vector.Feature` and
 `geotrellis.vector.Geometry`) correspond - and not by accident -
-to certain objects found in [the GeoJson spec](http://geojson.org/geojson-spec.html).
-`Feature`s correspond to the objects listed  under `features`
-in a geojson `FeatureCollection`. `Geometry`s, to `geometries`
+to certain objects found in [the GeoJson
+spec](http://geojson.org/geojson-spec.html). `Feature`s
+correspond to the objects listed  under `features` in a
+geojson `FeatureCollection`. `Geometry`s, to `geometries`
 in a geojson `Feature`.
 
-##Geometries
+## Geometries
 
 The base `Geometry` class can be found in `Geometry.scala`.
 Concrete geometries include:
@@ -32,10 +33,10 @@ affair. Let's take a look:
 
 ```scala
 import geotrellis.vector._
-/*
- * First, let's create a Point. Then, we'll use its intersection method.
- * Note: we are also using intersection's alias '&'.
- */
+
+/** First, let's create a Point. Then, we'll use its intersection method.
+  * Note: we are also using intersection's alias '&'.
+  */
 val myPoint = Point(1.0, 1.1) // Create a point
 // Intersection method
 val selfIntersection = myPoint intersection Point(1.0, 1.1)
@@ -45,28 +46,28 @@ val nonIntersection = myPoint & Point(200, 300)
 
 At this point, the values `selfIntersection` and `nonIntersection`
 are `GeometryResult` containers. These containers are what many JTS
-operations on `Geometry` objects will wrap their results in. Source
-for the To idiomatically destructure these wrappers, we do the following:
+operations on `Geometry` objects will wrap their results in.
+To idiomatically destructure these wrappers, we can use the
+`as[G <: Geometry]` function which either returns `Some(G)` or `None`.
 
 ```scala
-def unwrapPoint(res: PointGeometryIntersectionResult): Option[Point] =
-  res match {
-    case PointResult(point) => Some(point)
-    case _ => None
-  }
-// Et voila:
-assert(unwrapPoint(selfIntersection) == Some(myPoint))  // Either some point
-assert(unwrapPoint(nonIntersection) == None)  // Or nothing at all
+val pointIntersection = (Point(1.0, 2.0) & Point(1.0, 2.0)).as[Point]
+val pointNonIntersection = (Point(1.0, 2.0) & Point(12.0, 4.0)).as[Point]
+
+assert(pointIntersection == Some(Point(1.0, 2.0)))  // Either some point
+assert(pointNonIntersection == None)                // Or nothing at all
 ```
 
 Beyond the methods which come with any `Geometry` object there are
 implicits in many geotrellis modules which will extend Geometry
 capabilities. For instance, after importing `geotrellis.vector._`,
 it becomes possible to call the `toGeoJson` method on any `Geometry`:
+
 ```scala
 import geotrellis.vector._
 assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
 ```
+
 If you need to move from a geometry to a serialized representation or
 vice-versa, take a look at the `io` directory's contents. This naming
 convention for input and output is common throughout Geotrellis.
@@ -76,6 +77,7 @@ program, spend some time seeing if the problem has already been solved.
 Methods which are specific to certain subclasses of `Geometry` exist too.
 For example, `geotrellis.vector.MultiLine` is implicitly extended by
 `geotrellis.vector.op` such that this becomes possible:
+
 ```scala
 import geotrellis.vector.op._
 val myML = MultiLine.EMPTY
@@ -83,122 +85,87 @@ myML.unionGeometries
 ```
 
 The following packages extend `Geometry` capabilities:
-- [geotrellis.vector.io.json](io/json/)
-- [geotrellis.vector.io.WKT](io/WKT/)
-- [geotrellis.vector.io.WKB](io/WKB/)
-- [geotrellis.vector.op](op/)
-- [geotrellis.vector.op.affine](op/affine/)
-- [geotrellis.vector.reproject](reproject/)
+- [geotrellis.vector.io.json](../../vector/src/main/scala/geotrellis/vector/io/json/)
+- [geotrellis.vector.io.WKT](../../src/main/scala/geotrellis/vector/io/WKT/)
+- [geotrellis.vector.io.WKB](../../src/main/scala/geotrellis/vector/io/WKB/)
+- [geotrellis.vector.op](../../src/main/scala/geotrellis/vector/op/)
+- [geotrellis.vector.op.affine](../../src/main/scala/geotrellis/vector/op/affine/)
+- [geotrellis.vector.reproject](../../src/main/scala/geotrellis/vector/reproject/)
 
-##Features
+## Features
 The `Feature` class is odd. At first blush, it thinly wraps one of the
 afforementioned `Geometry` objects along with some type of data. Its
 purpose will be clear if you can keep in mind the importance of the
 geojson format of serialization which is now ubiquitous in the GIS
 software space. It can be found in `Feature.scala`.
 
-Let's examine some source code so that this is all a bit clearer.
-From `geotrellis.vector.Feature.scala`:
-```scala
-abstract class Feature[D] {
-  type G <: Geometry
-  val geom: G ; val data: D
-}
-
-case class PointFeature[D](geom: Point, data: D) extends Feature[D] {type G = Point}
-```
-These type signatures tell us a good deal. Let's make this easy
-on ourselves and put our findings into a list.
-- The type `G` is [some instance or other](http://docs.scala-lang.org/tutorials/tour/upper-type-bounds.html)
-of `Geometry` (which we explored just above).
-- The value, `geom`, which anything the compiler recognizes as a
-`Feature` must make available in its immediate closure must be of type `G`.
-- As with `geom` the compiler will not be happy unless a `Feature` provides `data`.
+Let's examine some source code so that this is all a bit clearer. The type
+signatures in
+[Feature.scala](../../src/main/scala/geotrellis/vector/Feature.scala) tell
+us a good deal:
+- The type `G` is [some instance](http://docs.scala-lang.org/tutorials/tour/upper-type-bounds.html)
+  of `Geometry` (which we explored just above).
+- The compiler will not be happy unless a `Feature` provides `data` of
+  type `D`
 - Whereas, with `geom`, we could say a good deal about the types of
-stuff (only things we call geometries) that would satisfy the compiler,
-we have nothing in particular to say about `D`.
+  stuff (only things we call geometries) that would satisfy the compiler,
+  we have nothing in particular to say about `D`.
 
-Our difficulty with `D` is compounded by the fact that the
-`Point`-focused feature, `PointFeature` makes good on `geom`
-by using `Point` (which is one of the concrete instances of `Geometry`
-introduced above) while telling us nothing at all about `data`'s type.
+Our difficulty with `D` is shared by the `Point`-focused feature,
+`PointFeature`. `PointFeature` uses `Point` (which is one of the concrete instances
+of `Geometry` introduced above) while telling us nothing at all about `data`'s
+type. This is just sugar for passing around a `Point` and some
+associated metadata.
+
 Let's look at some code which does something with D (code which calls
 one of D's methods) so that we know what to expect. Remember: types are
-just contracts which the compiler is kind enough to enforce for us. In
-well-written code, types (and type variables!) can tell us a great deal
+just contracts which the compiler is kind enough to enforce. In
+well-written code, types (and type variables) can tell us a great deal
 about what was in the head of the author.
-There's only one package which does anything with `D`, so our job
-should be relatively easy. From `geotrellis.vector.io.json.FeatureFormats.scala`:
 
-```Scala
-def writeFeatureJson[D: JsonWriter](obj: Feature[D]): JsValue = {
-  JsObject(
-    "type" -> JsString("Feature"),
-    "geometry" -> GeometryFormat.write(obj.geom),
-    "properties" -> obj.data.toJson
-  )
-}
-def readFeatureJson[D: JsonReader, G <: Geometry: JsonReader, F <: Feature[D]](value: JsValue)(create : (G, D) => F): F = {
-  value.asJsObject.getFields("type", "geometry", "properties") match {
-    case Seq(JsString("Feature"), geom, data) =>
-      val g = geom.convertTo[G]
-      val d = data.convertTo[D]
-      create(g,d)
-    case _ => throw new DeserializationException("Feature expected")
-  }
-}
-```
+There's only one `package` which does anything with `D`, so the
+constraints (and our job) should be relatively easy.
+In [`geotrellis.vector.io.json.FeatureFormats.scala`](../../vector/src/main/scala/vector/io/json/FeatureFormats.scala)
+there are `ContextBound`s on `D` which ensure that they have JsonReader,
+JsonWriter, and JsonFormat implicits available (this is a
+[typeclass](http://danielwestheide.com/blog/2013/02/06/the-neophytes-guide-to-scala-part-12-type-classes.html),
+and it allows for something like type-safe duck-typing).
 
-`D`'s purpose is clear: any `D` which comes with the tools
+`D`'s purpose is clear enough: any `D` which comes with the tools
 necessary for json serialization and deserialization will suffice.
 In effect, `data` corresponds to the "properties" member of the
-geojson spec's Feature object.
+geojson spec's `Feature` object.
 
-If you can provide the serialization tools (almost certainly implicit
-conversions between some case class and [spray json](https://github.com/spray/spray-json)),
+If you can provide the serialization tools (that is, implicit
+conversions between some type (your `D`) and [spray json](https://github.com/spray/spray-json)),
 the `Feature` object in `geotrellis.vector` does the heavy lifting
 of embedding your (thus serializable) data into the larger structure
-which includes a geometry. There's even support for geojson IDs: the
+which includes a `Geometry`. There's even support for geojson IDs: the
 "ID" member of a geojson Feature is represented by the keys of a `Map`
 from `String` to `Feature[D]`. Data in both the ID and non-ID variants
 of geojson Feature formats is easily transformed.
 
-##GeoTrellis Extents
+## GeoTrellis Extents
 
 There's one more piece to the `geotrellis.vector` puzzle: `Extent`.
 A `geotrellis.vector.Extent` is nothing more than a rectangular
-polygon which is projected (look
-[here](../../../../../proj4/src/main/scalageotrellis/proj4) for more
-on projection). This is useful mainly as a tool for defining the
+polygon on projection). This is useful mainly as a tool for defining the
 extent covered by a tile - the two jointly yield a raster (for more
-on rasters, go [here](../../../../../raster/src/main/scalageotrellis/raster)).
-Constructing these bad boys is pretty easy. Since they're rectangles,
-we only need to provide four unique points. Take a look at this source:
-From Extent.scala:
+on rasters, go [here](../../raster/src/main/scala/geotrellis/raster)).
+Constructing `Extent`s is easy. Since they're rectangles,
+we only need to provide four unique values. Take a look at the
+[source](../../vector/src/main/scala/geotrellis/vector/Extent.scala) for
+more.
 
-```scala
-case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double)
-```
+Pay special attention to `ProjectedExtent` if you need your geometries
+to be projection-aware. Really, that's about all you need to know to get
+started with extents. They're a powerful tool for a tightly defined task.
 
-Not too shabby. But remember that the real sweet spot for these is
-their built in support for handling projections (seriously: go look
-at the link from above regarding projection if this is fuzzy).
-
-From Extent.scala:
-
-```scala
-case class ProjectedExtent(extent: Extent, crs: CRS) {
-  def reproject(dest: CRS): Extent = extent.reproject(crs, dest)
-}
-```
-
-Really, that's about all you need to know to get started with
-extents. They're a powerful tool for a tightly defined task.
-
-##Submodules
+## Submodules
 
 These submodules define useful methods for dealing with
 the entities that call `geotrellis.vector` home:
 - `geotrellis.vector.io` defines input/output (serialization) of geometries
 - `geotrellis.vector.op` defines common operations on geometries
 - `geotrellis.vector.reproject` defines methods for translating between projections
+
