@@ -63,6 +63,7 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, TileL
 
         actual should contain theSameElementsAs expected
       }
+
       it("query at particular times") {
         val actual = query.where(Intersects(bounds1) or Intersects(bounds2))
           .where(At(dates(0)) or At(dates(4))).result.keys.collect()

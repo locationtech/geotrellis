@@ -42,6 +42,10 @@ object Filter {
         }
       case EmptyBounds =>
         rdd
-
   }
+
+  def apply[K: Boundable, V, M: Component[?, Bounds[K]]](
+    rdd: RDD[(K, V)] with Metadata[M]
+  ): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    new BoundLayerQuery(new LayerQuery, { q => apply(rdd, q(rdd.metadata)) })
 }

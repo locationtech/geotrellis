@@ -45,4 +45,13 @@ abstract class TileLayerRDDFilterMethods[K: Boundable, V, M: Component[?, Bounds
     */
   def filterByKeyBounds(keyBounds: KeyBounds[K]): RDD[(K, V)] with Metadata[M] =
     filterByKeyBounds(List(keyBounds))
+
+  /**
+    * Filter an RDD by performing a LayerQuery against it.
+    * This method will return a LayerQuery object, which you can call
+    * "where" on with various filters, the same as you would when
+    * querying a layer out of a FilteringLayerReader.
+    */
+  def filter(): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    Filter(self)
 }

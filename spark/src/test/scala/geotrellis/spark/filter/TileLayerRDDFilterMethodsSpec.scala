@@ -22,6 +22,7 @@ import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
+import geotrellis.vector._
 
 import org.scalatest.FunSpec
 
@@ -99,6 +100,20 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
     it("should correctly filter by multiple ranges") {
       val filteredRdd = rdd.filterByKeyBounds(List(someKeys, moreKeys, noKeys))
       filteredRdd.count should be (10)
+    }
+
+    it("should filter query by extent") {
+      val md = rdd.metadata
+      val Extent(xmin, ymin, xmax, ymax) = md.extent
+      val half = Extent(xmin, ymin, xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2)
+
+      val filteredRdd = rdd.filter().where(Intersects(half)).result
+
+      val count = filteredRdd.count
+      count should be (9)
+
+      val gb = filteredRdd.metadata.bounds.get.toGridBounds
+      gb.width * gb.height should be (9)
     }
   }
 }
