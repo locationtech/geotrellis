@@ -102,8 +102,11 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
       var rdd = ContextRDD(sc.emptyRDD[(SpatialKey, Tile)], md)
       var zoom: Int = 13
 
-      while ( zoom > 0) {
+      while (zoom > 0) {
         val (newZoom, newRDD) = Pyramid.up(rdd, scheme, zoom)
+        val previousExtent = rdd.metadata.mapTransform(rdd.metadata.bounds.get.toGridBounds)
+        val nextExtent = newRDD.metadata.mapTransform(newRDD.metadata.bounds.get.toGridBounds)
+        nextExtent.contains(previousExtent) should be (true)
         zoom = newZoom
         rdd = newRDD
       }
