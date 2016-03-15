@@ -33,8 +33,8 @@ object AccumuloRDDWriter {
         // Map and sort first, so that partitioner is carried over to groupByKey
         raster
           .map { case (key, value) => (encodeKey(key), (key, value)) }
-          .sortByKey()
           .groupByKey()
+          .sortByKey()
       } else {
         // Call groupBy with numPartitions; if called without that argument or a partitioner,
         // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
