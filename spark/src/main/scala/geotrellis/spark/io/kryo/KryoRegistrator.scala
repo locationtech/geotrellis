@@ -18,9 +18,6 @@ package geotrellis.spark.io.kryo
 
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
-import org.apache.avro.Schema
-import org.apache.avro.Schema.{Field, Type}
-
 import com.esotericsoftware.kryo.Kryo
 import de.javakaffee.kryoserializers._
 
@@ -207,12 +204,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.math.Ordering.Int.getClass)
     kryo.register(scala.math.Ordering.Long.getClass)
     kryo.register(scala.None.getClass)
-
-    /* Special Handling: Avro */
-    kryo.register(new Field("a", Schema.create(Type.NULL), null, null).order.getClass)
-    classOf[org.apache.avro.Schema]
-      .getDeclaredClasses
-      .foreach({ c => kryo.register(c) })
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
     SynchronizedCollectionsSerializer.registerSerializers( kryo )
