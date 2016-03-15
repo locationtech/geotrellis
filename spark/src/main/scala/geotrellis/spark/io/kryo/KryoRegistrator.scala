@@ -209,7 +209,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.None.getClass)
 
     /* Special Handling: Avro */
-    kryo.register(new Field("a", Schema.create(Type.NULL), null, null: Object).order.getClass)
+    kryo.register(new Field("a", Schema.create(Type.NULL), null, null).order.getClass)
     classOf[org.apache.avro.Schema]
       .getDeclaredClasses
       .foreach({ c => kryo.register(c) })
