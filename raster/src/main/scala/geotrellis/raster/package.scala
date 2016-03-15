@@ -31,14 +31,6 @@ package object raster
   type SinglebandRaster = Raster[Tile]
   type MultibandRaster = Raster[MultibandTile]
 
-  // Implicit conversion for unsigned integer celltypes; they are represented as 32bit floats
-  implicit def unsignedIntIsFloat(uintCellType: UIntCells with NoDataHandling) =
-    uintCellType match {
-      case UIntCellType => FloatCellType
-      case UIntConstantNoDataCellType => FloatConstantNoDataCellType
-      case UIntUserDefinedNoDataCellType(nd) => FloatUserDefinedNoDataCellType(nd)
-    }
-
   // Implicit method extension for core types
 
   implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
