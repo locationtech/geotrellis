@@ -50,7 +50,7 @@ object Pyramid extends Logging {
             val SpatialKey(xmax, ymax) = kb.maxKey.getComponent[SpatialKey]
             Extent(xmin, ymin, xmax, ymax)
           }
-          val GridBounds(colMin, rowMin, colMax, rowMax ) = mp(sourceKeyBoundsAsExtent)
+          val GridBounds(colMin, rowMin, colMax, rowMax) = mp(sourceKeyBoundsAsExtent)
           KeyBounds(
             kb.minKey.setComponent(SpatialKey(colMin, rowMin)),
             kb.maxKey.setComponent(SpatialKey(colMax, rowMax)))
