@@ -20,8 +20,21 @@ import geotrellis.raster._
 import spire.syntax.cfor._
 import scala.collection.mutable._
 
+
+/**
+  * An object which houses functions related to hydrological
+  * accumulation.
+  */
 object Accumulation {
-  //checks if the encoded value includes the dirrecrion
+
+  /**
+    * The 'value' parameter represents a set of directions.  In the
+    * representation, a particular bit is asserted if there is flow in
+    * the direction, otherwise it is not.
+    *
+    * @param  value  The set of directions
+    * @param  dir    A particular direction
+    */
   def doesFlow(value: Int, dir: Int): Boolean = {
     if(value < dir) {
       false
@@ -34,6 +47,16 @@ object Accumulation {
     }
   }
 
+  /**
+    * Calculate the accumulation.  Given a location, accumulation
+    * information, and information about flow directions, compute the
+    * accumulation at the given point.
+    *
+    * @param  column         The column of the location
+    * @param  row            The row of the location
+    * @param  data           The accumulation information
+    * @param  flowDirection  The flow direction information
+    */
   def calcAcc(column: Int, row: Int, data: IntArrayTile, flowDirrection: Tile) = {
     var c = column
     var r = row
@@ -42,7 +65,8 @@ object Accumulation {
     val rows = data.rows
     var flag = 0
 
-    //map the flow dirrection that each  neighboring cell must have to flow into testthe current cell
+    // Map the flow direction that each neighboring cell must have to
+    // flow into the current cell
     val map = Map[Int, (Int, Int)](
       16 -> (c+1, r),
       32 -> (c+1, r+1),
@@ -64,10 +88,10 @@ object Accumulation {
         sum = 0
         flag = 0
 
-        //the neighboring cell
+        // The neighboring cell
         var n = map(16)
 
-        //right neighbour
+        // right neighbor
         if(c + 1 < cols && doesFlow(flowDirrection.get(n._1, n._2), 16)) {
           if(data.get(n._1, n._2) == -1) {
             stack.push(n)
@@ -167,7 +191,10 @@ object Accumulation {
     }
   }
 
-
+  /**
+    * Given a raster containing flow directions, compute the
+    * accumulation at each point.
+    */
   def apply(flowDirrection: Tile): Tile = {
     val cols = flowDirrection.cols
     val rows = flowDirrection.rows
