@@ -18,18 +18,34 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.Geometry
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.Geometry
 
 
+/**
+  * Extension methods for invoking the rasterizer on [[Geometry]]
+  * objects.
+  */
 trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
+  /**
+    * Call the function 'fn' on each cell of given [[RasterExtent]]
+    * that is covered by the present [[Geometry]].  The precise
+    * definition of the word "covered" is determined by the options
+    * parameter.
+    */
   def foreach(
     re : RasterExtent,
     options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Unit) : Unit =
     Rasterizer.foreachCellByGeometry(self, re, options)(fn)
 
+  /**
+    * Call the function 'fn' on each cell of given [[RasterExtent]]
+    * that is covered by the present [[Geometry]].  The precise
+    * definition of the word "covered" is determined by the options
+    * parameter.  The result is a [[Raster]].
+    */
   def rasterize(
     re : RasterExtent,
     options: Options = Options.DEFAULT,
@@ -42,6 +58,12 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     Raster(tile, extent)
   }
 
+  /**
+    * Call the function 'fn' on each cell of given [[RasterExtent]]
+    * that is covered by the present [[Geometry]].  The precise
+    * definition of the word "covered" is determined by the options
+    * parameter.  The result is a [[Raster]].
+    */
   def rasterizeDouble(
     re : RasterExtent,
     options: Options = Options.DEFAULT,
@@ -54,9 +76,19 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     Raster(tile, extent)
   }
 
+  /**
+    * Fill in 'value' at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Geometry]].  The result is a
+    * [[Raster]].
+    */
   def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
     rasterize(re)({ (col: Int, row: Int) => value })
 
+  /**
+    * Fill in 'value' at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Geometry]].  The result is a
+    * [[Raster]].
+    */
   def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
     rasterizeDouble(re)({ (col: Int, row: Int) => value })
 }
