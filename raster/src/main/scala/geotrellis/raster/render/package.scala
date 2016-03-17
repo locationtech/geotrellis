@@ -33,12 +33,4 @@ package object render {
       RGBA(r, g, b, (alphaPct * 2.55).toInt).int
     }
   }
-
-  // implicit class IntColorClassifierToColorRampCachingMethods(val self: ColorClassifier[Int]) {
-  //   /** Converts this color classifier based on a histogram. This is an optimization */
-  //   def toColorMap(histogram: Histogram[Int]): ColorMap = {
-  //     val colorMap: IntColorMap = ColorMap(self.getBreaks, self.getColors.map(_.int), self.cmapOptions)
-  //     colorMap.cache(histogram)
-  //   }
-  // }
 }
