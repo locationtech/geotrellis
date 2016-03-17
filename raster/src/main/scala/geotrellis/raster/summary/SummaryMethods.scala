@@ -18,7 +18,7 @@ trait SummaryMethods extends MethodExtensions[Tile] {
   /**
     * Create a histogram from double values in a raster.
     */
-  def doubleHistogram: Histogram[Double] =
+  def histogramDouble: Histogram[Double] =
     StreamingHistogram.fromTile(self)
 
   /**
@@ -31,7 +31,7 @@ trait SummaryMethods extends MethodExtensions[Tile] {
   * Generate quantile class breaks for a given raster.
   */
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    doubleHistogram.quantileBreaks(numBreaks)
+    histogramDouble.quantileBreaks(numBreaks)
 
   /**
     * Determine statistical data for the given histogram.
@@ -45,7 +45,7 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statisticsDouble: Option[Statistics[Double]] = doubleHistogram.statistics
+  def statisticsDouble: Option[Statistics[Double]] = histogramDouble.statistics
 
   /**
    * Calculate a raster in which each value is set to the standard deviation of that cell's value.

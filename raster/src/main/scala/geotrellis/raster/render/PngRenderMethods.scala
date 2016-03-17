@@ -3,7 +3,6 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.render.png._
 import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.summary._
 import geotrellis.util.MethodExtensions
 
 
@@ -21,17 +20,21 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
   def renderPng(): Png =
     new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(self)
 
-  def renderPng(colorClassifier: ColorClassifier[_]): Png =
-    renderPng(colorClassifier, None)
-
-  def renderPng(colors: Array[RGBA]): Png = {
-    val histogram = self.histogram
-    val colorClassifier = StrictColorClassifier.fromQuantileBreaks(histogram, colors)
-    renderPng(colorClassifier, Some(histogram))
+  def renderPng(colorMap: ColorMap): Png = {
+    val colorEncoding = PngColorEncoding(colorMap.colors, colorMap.options.noDataColor)
+    val convertedColorMap = colorEncoding.convertColorMap(colorMap)
+    renderPng(colorEncoding, convertedColorMap)
   }
 
-  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): Png =
-    renderPng(colorClassifier, Some(histogram))
+  def renderPng(colorRamp: ColorRamp): Png = {
+    if(self.cellType.isFloatingPoint) {
+      val histogram = self.histogram
+      renderPng(ColorMap.fromQuantileBreaks(histogram, colorRamp).cache(histogram))
+    } else {
+      val histogram = self.histogramDouble
+      renderPng(ColorMap.fromQuantileBreaks(histogram, colorRamp))
+    }
+  }
 
   /**
     * Generate a PNG image from a raster.
@@ -47,20 +50,8 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     * quantile class breaks.
     */
   private
-  def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram[Int]]): Png = {
-    val colorEncoding = PngColorEncoding(colorClassifier.getColors, colorClassifier.getNoDataColor)
-    colorEncoding.convertColorClassifier(colorClassifier)
-    val cmap = colorClassifier.toColorMap(histogram)
-    val r2 = self.cellType match {
-      case ct: ConstantNoData =>
-        cmap.render(self).convert(ByteConstantNoDataCellType)
-      case ct: UByteCells with UserDefinedNoData[Byte] =>
-        cmap.render(self).convert(UByteUserDefinedNoDataCellType(ct.noDataValue))
-      case ct: UShortCells with UserDefinedNoData[Short] =>
-        cmap.render(self).convert(UShortUserDefinedNoDataCellType(ct.noDataValue))
-      case _ =>
-        cmap.render(self).convert(ByteCellType)
-    }
-    new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(r2)
+  def renderPng(colorEncoding: PngColorEncoding, colorMap: ColorMap): Png = {
+    val encoder = new PngEncoder(Settings(colorEncoding, PaethFilter))
+    encoder.writeByteArray(colorMap.render(self))
   }
 }
