@@ -58,7 +58,7 @@ and it provides a canonical extension mechanism for users of the library.
 #### Usage ####
 
 Examples of how to use the mechanism provided by the `MethodExtensions` trait
-are pervasive throughout the Geotrellis codebase.
+are pervasive throughout the Geotrellis code base.
 
 One example is the addition of `RasterRDD` crop methods in
 [`spark/src/main/scala/geotrellis/spark/crop/TileLayerRDDCropMethods.scala`](https://github.com/geotrellis/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/crop/TileLayerRDDCropMethods.scala),
@@ -105,3 +105,26 @@ package object raster
 ...
 }
 ```
+
+There are a number of caveats that one should keep in mind when using this mechanism to add extension methods, three of those are given below.
+
+If you are going to be working with RDDs
+--and potentially serializing implicit parameters of the implicit class that will be extending the trait--
+you should define an object that contains the functionality, and the methods trait or abstract class should call out to that object.
+Housing the code in a function in an object, rather than in the method itself,
+reduces scope of the Spark "transforming closure" (thereby reducing the number of objects which must be serialized).
+An example is [here](https://github.com/geotrellis/geotrellis/blob/48162b824df222afbd75c6495fa1e4bc00344fd9/spark/src/main/scala/geotrellis/spark/filter/TileLayerRDDFilterMethods.scala#L35),
+where [the implicit values associated with the context bounds](http://docs.scala-lang.org/tutorials/FAQ/context-and-view-bounds.html)
+`Boundable` and `Component` would have otherwise been captured by the transformation closure.
+
+If your method extensions need context bounds or other implicit parameters, the Scala language forbids you from defining them with a trait.
+In this case, use an abstract class and extend the abstract class the same way that you would have done had you used a trait.
+An example of that can be found [here](https://github.com/geotrellis/geotrellis/blob/48162b824df222afbd75c6495fa1e4bc00344fd9/spark/src/main/scala/geotrellis/spark/stitch/StitchRDDMethods.scala#L38).
+
+If you do not require context bounds or other implicit parameters,
+but you are defining the extension methods on a core type of the library,
+then check to see if the package object already contains an implicit class that gives method extensions for that core type.
+If such a class exists, then use the existing one and do not define a new implicit class in an Implicits object.
+An example can be found [here](https://github.com/geotrellis/geotrellis/blob/48162b824df222afbd75c6495fa1e4bc00344fd9/raster/src/main/scala/geotrellis/raster/package.scala#L70).
+In that case, `PngRenderMethods` did not require context bounds and the `withTileMethods` class already existed,
+so the former was simply mixed into the latter.
