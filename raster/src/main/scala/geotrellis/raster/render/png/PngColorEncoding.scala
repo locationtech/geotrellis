@@ -35,7 +35,7 @@ case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
 // indexed color, using separate rgb and alpha channels
 case class IndexedPngEncoding(rgbs: Array[Int], as: Array[Int]) extends PngColorEncoding(3, 1) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColorsToIndex()
+   colorMap.mapColorsToIndex().withNoDataColor(255)
 }
 
 // greyscale and color rasters with an alpha byte
@@ -65,8 +65,8 @@ object PngColorEncoding {
         i += 1
       }
 
-      rgbs(255) = 0
-      as(255) = 0
+      rgbs(255) = noDataColor.toRGB
+      as(255) = noDataColor.alpha
       IndexedPngEncoding(rgbs, as)
     } else {
       var opaque = true

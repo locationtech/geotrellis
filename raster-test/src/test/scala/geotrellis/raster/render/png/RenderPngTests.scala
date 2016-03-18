@@ -70,6 +70,34 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     testPng(png, tile, colorMap)
   }
 
+  test("should render a PNG and match what is read in by ImageIO when written as Indexed with nodata values") {
+    val tileNW =
+      createValueTile(50, 1)
+    val tileNE =
+      createValueTile(50, 2)
+    val tileSW =
+      createValueTile(50, 3)
+    val tileSE =
+      createValueTile(50, NODATA)
+
+    val tile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+
+    val colorMap =
+      ColorMap(
+        Map(
+          1 -> RGBA(255, 0, 0, 255).int,
+          2 -> RGBA(0, 255, 0, 255).int,
+          3 -> RGBA(0, 0, 255, 255).int,
+          4 -> RGBA(0, 255, 255, 0xBB).int
+        )
+      ).withNoDataColor(0xFFFFFFAA)
+
+    val png = tile.renderPng(colorMap)
+
+    testPng(png, tile, colorMap)
+  }
+
   test("should render a PNG and match what is read in by ImageIO when written as RGBA") {
     val tileNW =
       createConsecutiveTile(50, 1)
@@ -88,6 +116,32 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
         .stops(1000)
         .setAlphaGradient(0xFF, 0xAA)
         .toColorMap(tile.histogram)
+
+    val path = "/Users/rob/tmp/color/striped.png"
+    val png = tile.renderPng(colorMap)
+
+    testPng(png, tile, colorMap)
+  }
+
+  test("should render a PNG and match what is read in by ImageIO when written as RGBA with nodata values") {
+    val tileNW =
+      createConsecutiveTile(50, 1)
+    val tileNE =
+      createConsecutiveTile(50, 2501)
+    val tileSW =
+      createConsecutiveTile(50, 5001)
+    val tileSE =
+      createValueTile(50, NODATA)
+
+    val tile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+
+    val colorMap =
+      ColorRamp(0xFF0000FF, 0x0000FFFF)
+        .stops(1000)
+        .setAlphaGradient(0xFF, 0xAA)
+        .toColorMap(tile.histogram)
+        .withNoDataColor(0xFFFFFFAA)
 
     val path = "/Users/rob/tmp/color/striped.png"
     val png = tile.renderPng(colorMap)
