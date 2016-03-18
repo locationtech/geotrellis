@@ -1,6 +1,6 @@
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster.{GridBounds, Tile}
+import geotrellis.raster._
 
 /**
  * Computes the maximum value of a neighborhood for a given raster.
@@ -16,10 +16,12 @@ object Max {
         with DoubleArrayTileResult
       {
         def calc(r: Tile, cursor: Cursor) = {
-          var m = Double.MinValue
+          var m = Double.NaN
           cursor.allCells.foreach { (x, y) =>
             val v = r.getDouble(x, y)
-            if(v > m) { m = v }
+            if (isData(v) && (v > m || isNoData(m))) {
+              m = v
+            }
           }
           resultTile.setDouble(cursor.col, cursor.row, m)
         }
@@ -44,4 +46,3 @@ object Max {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
     calculation(tile, n, bounds).execute()
 }
-
