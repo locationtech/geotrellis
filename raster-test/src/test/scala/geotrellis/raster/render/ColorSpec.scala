@@ -133,7 +133,7 @@ class ColorSpec extends FunSpec with Matchers {
       val colors = Vector(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Vector(0xff000000, 0x00ff007f, 0x0000ffff)
       val colorRamp =
-        ColorRamp(colors).alphaGradient(0, 0xFF)
+        ColorRamp(colors).setAlphaGradient(0, 0xFF)
       ColorSpec.hexstringify(colorRamp.colors) should be (ColorSpec.hexstringify(expected))
     }
   }

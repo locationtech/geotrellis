@@ -60,10 +60,11 @@ object PngColorEncoding {
       var i = 0
       while (i < len) {
         val c = colors(i)
-        rgbs(i) = c.int
+        rgbs(i) = c.toRGB
         as(i) = c.alpha
         i += 1
       }
+
       rgbs(255) = 0
       as(255) = 0
       IndexedPngEncoding(rgbs, as)
