@@ -22,7 +22,10 @@ object StandardDeviation {
         def calc(r: Tile, c: Cursor) = {
           c.removedCells.foreach { (x, y) =>
             val v = r.getDouble(x, y)
-            if(isData(v)) { count -= 1; sum -= v }
+            if(isData(v)) {
+              count -= 1
+              if (count == 0) sum = 0 else sum -= v
+            }
           }
 
           c.addedCells.foreach { (x, y) =>
