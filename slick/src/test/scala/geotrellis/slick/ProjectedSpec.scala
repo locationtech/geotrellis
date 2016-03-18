@@ -19,12 +19,13 @@ package geotrellis.slick
 import org.scalatest._
 
 import geotrellis.vector._
+import org.scalatest.concurrent.ScalaFutures
 import slick.driver.PostgresDriver
 
 import util._
 
 
-class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase {
+class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase with ScalaFutures {
   object driver extends PostgresDriver with PostGisProjectionSupport {
     override val api = new API with PostGISProjectionAssistants with PostGISProjectionImplicits
   }
@@ -39,60 +40,54 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase {
   }
   val CityTable = TableQuery[City]
 
-//  "ProjectedGeometry" should "not make Slick barf" in {
-//    db withSession { implicit  s =>
-//      try { CityTable.ddl.drop } catch { case e: Throwable =>  }
-//      CityTable.ddl.create
-//
-//      CityTable += (0, "Megacity 1", Projected(Point(1,1), 43211))
-//
-//      CityTable.ddl.drop
-//    }
-//  }
-//
-//  class LineRow(tag: Tag) extends Table[(Int,Projected[Line])](tag, "lines") {
-//    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-//    def geom = column[Projected[Line]]("geom")
-//
-//    def * = (id, geom)
-//  }
-//  val LineTable = TableQuery[LineRow]
-//
-//  it should "support PostGIS function mapping" in {
-//    db withSession { implicit s =>
-//      try { LineTable.ddl.drop } catch { case e: Throwable =>  }
-//      LineTable.ddl.create
-//
-//      LineTable += (0, Projected(Line(Point(1,1), Point(1,3)), 3131))
-//
-//      val q = for {
-//        line <- LineTable
-//      } yield (line.geom.length)
-//
-//      q.list.head should equal (2.0)
-//    }
-//  }
-//
-//  it should "support PostGIS multi points" in {
-//    class MPRow(tag: Tag) extends Table[(Int,Projected[MultiPoint])](tag, "points") {
-//      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-//      def geom = column[Projected[MultiPoint]]("geom")
-//      def * = (id, geom)
-//    }
-//    val MPTable = TableQuery[MPRow]
-//
-//    db withSession { implicit s =>
-//      try { MPTable.ddl.drop } catch { case e: Throwable =>  }
-//      MPTable.ddl.create
-//
-//      MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))
-//
-//      val q = for {
-//        mp <- MPTable
-//      } yield {mp.geom.centroid}
-//
-//     q.list.head should equal ( Projected(Point(1.5, 1.5), 3131) )
-//    }
-//  }
+  "ProjectedGeometry" should "not make Slick barf" in {
+      try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
+      db.run(CityTable.schema.create).futureValue
+
+      db.run(CityTable += (0, "Megacity 1", Projected(Point(1,1), 43211))).futureValue
+
+      db.run(CityTable.schema.drop).futureValue
+    }
+
+  class LineRow(tag: Tag) extends Table[(Int,Projected[Line])](tag, "lines") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def geom = column[Projected[Line]]("geom")
+
+    def * = (id, geom)
+  }
+  val LineTable = TableQuery[LineRow]
+
+  it should "support PostGIS function mapping" in {
+      try { db.run(LineTable.schema.drop).futureValue } catch { case e: Throwable =>  }
+      db.run(LineTable.schema.create).futureValue
+
+      db.run(LineTable += (0, Projected(Line(Point(1,1), Point(1,3)), 3131))).futureValue
+
+      val q = for {
+        line <- LineTable
+      } yield (line.geom.length)
+
+      db.run(q.result).futureValue.toList.head should equal (2.0)
+  }
+
+  it should "support PostGIS multi points" in {
+    class MPRow(tag: Tag) extends Table[(Int,Projected[MultiPoint])](tag, "points") {
+      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+      def geom = column[Projected[MultiPoint]]("geom")
+      def * = (id, geom)
+    }
+    val MPTable = TableQuery[MPRow]
+
+      try { db.run(MPTable.schema.drop).futureValue } catch { case e: Throwable =>  }
+      db.run(MPTable.schema.create).futureValue
+
+      db.run(MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))).futureValue
+
+      val q = for {
+        mp <- MPTable
+      } yield {mp.geom.centroid}
+
+     db.run(q.result).futureValue.toList.head should equal ( Projected(Point(1.5, 1.5), 3131) )
+  }
 
 }
