@@ -48,7 +48,7 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
     tile
   }
 
-  test("should render a JPG and roughly match what is read in by ImageIO when written") {
+  test("render a JPG and ensure it (roughly) matches what is read in by ImageIO when written") {
     val tileNW =
       createValueTile(50, 1)
     val tileNE =
@@ -64,15 +64,42 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
     val colorMap =
       ColorMap(
         Map(
-          1 -> RGBA(255, 0, 0, 255).int,
-          2 -> RGBA(0, 255, 0, 255).int,
-          3 -> RGBA(0, 0, 255, 255).int,
-          4 -> RGBA(0, 255, 255, 0xBB).int
+          1 -> RGB(255, 0, 0).int,
+          2 -> RGB(0, 255, 0).int,
+          3 -> RGB(0, 0, 255).int,
+          4 -> RGB(0, 255, 255).int
         )
       )
 
     val jpg = tile.renderJpg(colorMap)
 
     testJpg(jpg, tile, colorMap, threshold=250.0)
+  }
+
+  test("should render nodata to black (0x000000)") {
+    val tile = IntArrayTile.fill(Int.MinValue, 256, 256)
+
+    val colorMap =
+      ColorMap(
+        Map(
+          1 -> RGB(255, 0, 0).int,
+          2 -> RGB(0, 255, 0).int,
+          3 -> RGB(0, 0, 255).int,
+          4 -> RGB(0, 255, 255).int
+        )
+      )
+
+    val jpg = tile.renderJpg(colorMap)
+    val img = ImageIO.read(new ByteArrayInputStream(jpg.bytes))
+
+    img.getWidth should be (tile.cols)
+    img.getHeight should be (tile.rows)
+
+    var distances = 0.0
+    cfor(0)(_ < img.getWidth, _ + 1) { col =>
+      cfor(0)(_ < img.getHeight, _ + 1) { row =>
+        img.getRGB(col, row) should be (colorMap.options.noDataColor)
+      }
+    }
   }
 }

@@ -25,6 +25,47 @@ import org.scalatest._
 
 class ColorMapSpec extends FunSpec with Matchers
                                    with TileBuilders {
+  describe("color map construction") {
+    it("should classify ints to colors") {
+      val colorMap =
+        ColorMap(
+          123 -> 123,
+          1234 -> 1234,
+          1235 -> 1235,
+          1236 -> 1236
+        ).withNoDataColor(8675309)
+
+      colorMap.colors shouldBe (Array(123, 1234, 1235, 1236))
+      colorMap.options.noDataColor shouldBe (8675309)
+    }
+
+    it("should classify doubles to colors") {
+      val colorMap =
+        ColorMap(
+          123.23 -> 123,
+          12234.89 -> 1234,
+          45.342 -> 1235,
+          1236.13 -> 1236
+        ).withNoDataColor(8675309)
+      colorMap.colors shouldBe (Array(1235, 123, 1236, 1234))
+      colorMap.options.noDataColor shouldBe (8675309)
+    }
+  }
+
+  describe("color map creation") {
+    it("should build a color map with fully specifiable options") {
+      val ndColor = RGBA(0, 0, 0, 100.0)
+      val fallbackColor = RGBA(255, 0, 0, 0)
+      val colorMap =
+        ColorMap((0, 1))
+          .withNoDataColor(ndColor)
+          .withFallbackColor(fallbackColor)
+          .withBoundaryType(Exact)
+
+      colorMap.options shouldBe (ColorMap.Options(Exact, ndColor.int, fallbackColor.int, false))
+    }
+  }
+
   describe("PNG Color Mapping") {
     it("should correctly map values to colors") {
       val limits = Array(25,50,80,100)

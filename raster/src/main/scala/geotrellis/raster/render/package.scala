@@ -14,7 +14,7 @@ package object render {
     def isTransparent = (alpha == 0)
     def isGrey = (red == green) && (green == blue)
     def unzip = (red, green, blue, alpha)
-    def toRGB = int >> 8
+    def toARGB = (int >> 8) | (alpha << 24)
     def unzipRGBA: (Int, Int, Int, Int) = (red, green, blue, alpha)
     def unzipRGB: (Int, Int, Int) = (red, green, blue)
   }

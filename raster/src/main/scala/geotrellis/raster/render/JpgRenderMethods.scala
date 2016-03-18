@@ -57,6 +57,6 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     */
   def renderJpg(colorMap: ColorMap, settings: Settings): Jpg = {
     val encoder = new JpgEncoder(new Settings(1.0, false))
-    encoder.writeByteArray(colorMap.render(self).map(_.toRGB))
+    encoder.writeByteArray(colorMap.render(self).map(_.toARGB))
   }
 }

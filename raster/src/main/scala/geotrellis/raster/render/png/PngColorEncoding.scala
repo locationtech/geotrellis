@@ -29,7 +29,7 @@ case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
 }
 case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColors { c => c.toRGB }
+   colorMap.mapColors { c => c.toARGB }
 }
 
 // indexed color, using separate rgb and alpha channels
@@ -60,12 +60,12 @@ object PngColorEncoding {
       var i = 0
       while (i < len) {
         val c = colors(i)
-        rgbs(i) = c.toRGB
+        rgbs(i) = c.toARGB
         as(i) = c.alpha
         i += 1
       }
 
-      rgbs(255) = noDataColor.toRGB
+      rgbs(255) = noDataColor.toARGB
       as(255) = noDataColor.alpha
       IndexedPngEncoding(rgbs, as)
     } else {
