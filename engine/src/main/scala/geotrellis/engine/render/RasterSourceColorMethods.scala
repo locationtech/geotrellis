@@ -22,19 +22,18 @@ import geotrellis.engine._
 
 @deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait RasterSourceColorMethods extends RasterSourceMethods {
-  /*
   def color(breaksToColors: Map[Int, Int]): RasterSource =
-    color(breaksToColors, ColorMapOptions.Default)
+    color(ColorMap(breaksToColors, ColorMap.Options.DEFAULT))
 
-  def color(breaksToColors: Map[Int, Int], options: ColorMapOptions): RasterSource =
-    rasterSource.mapTile(_.color(breaksToColors, options))
+  def color(breaksToColors: Map[Int, Int], options: ColorMap.Options): RasterSource =
+    color(ColorMap(breaksToColors, options))
 
   def color(breaksToColors: Map[Double, Int])(implicit d: DI): RasterSource =
-    color(breaksToColors, ColorMapOptions.Default)
+    color(ColorMap(breaksToColors, ColorMap.Options.DEFAULT))
 
-  def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): RasterSource =
-    rasterSource.mapTile(_.color(breaksToColors, options))
-  */
-  def color(colorClassifier: ColorClassifier[_])(implicit d: DI): RasterSource =
-    rasterSource.mapTile(_.color(colorClassifier))
+  def color(breaksToColors: Map[Double, Int], options: ColorMap.Options)(implicit d: DI): RasterSource =
+    color(ColorMap(breaksToColors, options))
+
+  def color(colorMap: ColorMap)(implicit d: DI): RasterSource =
+    rasterSource.mapTile(_.color(colorMap))
 }

@@ -80,6 +80,9 @@ package object raster
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with reproject.MultibandTileReprojectMethods
+      with render.MultibandJpgRenderMethods
+      with render.MultibandColorMethods
+      with render.MultibandPngRenderMethods
       with resample.MultibandTileResampleMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]

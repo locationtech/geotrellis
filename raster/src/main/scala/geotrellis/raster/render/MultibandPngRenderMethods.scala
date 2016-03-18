@@ -1,11 +1,11 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
+
 import spire.syntax.cfor._
 
-trait MultibandPngRenderMethods {
-
-  val tile: MultibandTile
+trait MultibandPngRenderMethods extends MethodExtensions[MultibandTile] {
 
   /**
     * Generate a PNG image from a multiband raster.
@@ -17,19 +17,6 @@ trait MultibandPngRenderMethods {
     * with integer data whose values range from 0 to 255.
     */
   def renderPng(): Png = {
-    assert(tile.bandCount == 3)
-    val rgb =
-      tile.convert(IntConstantNoDataCellType).combine(0, 1, 2) { (rBand, gBand, bBand) =>
-        val r = if (isData(rBand)) { rBand } else 0
-        val g = if (isData(rBand)) { gBand } else 0
-        val b = if (isData(rBand)) { bBand } else 0
-
-        if(r + g + b == 0) 0
-        else {
-          ((r & 0xFF) << 24) | ((g & 0xFF) << 16) | ((b & 0xFF) << 8) | 0xFF
-        }
-      }
-
-    rgb.renderPng
+    self.color().renderPng
   }
 }
