@@ -105,7 +105,7 @@ class ColorSpec extends FunSpec with Matchers {
     }
   }
 
-  describe("ColorClassifier") {
+  describe("ColorMap") {
     it("should map breaks to colors") {
       val limits = Vector(2, 4, 6)
       val colors = Vector(0xff0000ff, 0x00ff00ff, 0x0000ffff)
@@ -114,7 +114,7 @@ class ColorSpec extends FunSpec with Matchers {
     }
   }
 
-  describe("Blending Color Classifier") {
+  describe("Blending Color Map") {
     it("should interpolate") {
       val colors = Vector(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Vector(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
@@ -135,6 +135,48 @@ class ColorSpec extends FunSpec with Matchers {
       val colorRamp =
         ColorRamp(colors).setAlphaGradient(0, 0xFF)
       ColorSpec.hexstringify(colorRamp.colors) should be (ColorSpec.hexstringify(expected))
+    }
+  }
+
+  describe("RGBA value class") {
+    it("should be able to create RGB values") {
+      // an RGB constructor should create an RGBA with a fully opaque A
+      RGB(1, 2, 3) should be (RGBA(1, 2, 3, 255))
+
+      // we need to be able to convert from RGBA to ARGB for the current jpg writer implementation
+      RGB(1, 2, 3) should be (RGBA(2, 3, 255, 1).toARGB)
+    }
+
+    it("should pick out individual colors") {
+      val color = 0x11223344
+      color.red should be (0x11)
+      color.green should be (0x22)
+      color.blue should be (0x33)
+      color.alpha should be (0x44)
+    }
+
+    it("should 'unzip' to a tuple of colors") {
+      val color = 0x11223344
+      color.unzip should be (0x11, 0x22, 0x33, 0x44)
+      color.unzipRGBA should be (0x11, 0x22, 0x33, 0x44)
+      color.unzipRGB should be (0x11, 0x22, 0x33)
+    }
+
+    it("should have correct predicates") {
+      val opaqueGrey = 0x222222ff
+      opaqueGrey.isGrey should be (true)
+      opaqueGrey.isOpaque should be (true)
+      opaqueGrey.isTransparent should be (false)
+
+      val transparentRed = 0xff000000
+      transparentRed.isGrey should be (false)
+      transparentRed.isOpaque should be (false)
+      transparentRed.isTransparent should be (true)
+
+      val spookyColor = 0x00000011
+      spookyColor.isGrey should be (true)
+      spookyColor.isOpaque should be (false)
+      spookyColor.isTransparent should be (false)
     }
   }
 }

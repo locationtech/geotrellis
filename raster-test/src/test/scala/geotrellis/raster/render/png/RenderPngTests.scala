@@ -70,7 +70,7 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     testPng(png, tile, colorMap)
   }
 
-  test("should render a PNG and match what is read in by ImageIO when written as Indexed with nodata values") {
+  test("should render a PNG from an Int tile and match what is read in by ImageIO when written as Indexed with nodata values") {
     val tileNW =
       createValueTile(50, 1)
     val tileNE =
@@ -98,6 +98,88 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     testPng(png, tile, colorMap)
   }
 
+  test("should render a PNG from a Double tile and match what is read in by ImageIO when written as Indexed with nodata values") {
+    val tileNW =
+      createValueTile(50, 1)
+    val tileNE =
+      createValueTile(50, 2)
+    val tileSW =
+      createValueTile(50, 3)
+    val tileSE =
+      createValueTile(50, NODATA)
+
+    val tile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
+        .convert(DoubleConstantNoDataCellType)
+        .toArrayTile
+
+    val colorMap =
+      ColorMap(
+        Map(
+          1.0 -> RGBA(255, 0, 0, 255).int,
+          2.0 -> RGBA(0, 255, 0, 255).int,
+          3.0 -> RGBA(0, 0, 255, 255).int,
+          4.0 -> RGBA(0, 255, 255, 0xBB).int
+        )
+      ).withNoDataColor(0xFFFFFFAA)
+
+    val png = tile.renderPng(colorMap)
+
+    testPng(png, tile, colorMap)
+  }
+
+  test("render int and double tiles similarly") {
+    val tileNW =
+      createValueTile(50, 1)
+    val tileNE =
+      createValueTile(50, 2)
+    val tileSW =
+      createValueTile(50, 3)
+    val tileSE =
+      createValueTile(50, 4)
+
+    val intTile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+
+    val doubleTile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
+        .convert(DoubleConstantNoDataCellType)
+        .toArrayTile
+
+
+    val intColorMap =
+      ColorMap(
+        Map(
+          1 -> RGB(255, 0, 0).int,
+          2 -> RGB(0, 255, 0).int,
+          3 -> RGB(0, 0, 255).int,
+          4 -> RGB(0, 255, 255).int
+        )
+      )
+
+    val doubleColorMap =
+      ColorMap(
+        Map(
+          1.0 -> RGB(255, 0, 0).int,
+          2.0 -> RGB(0, 255, 0).int,
+          3.0 -> RGB(0, 0, 255).int,
+          4.0 -> RGB(0, 255, 255).int
+        )
+    )
+
+    val intPng = intTile.renderPng(intColorMap)
+    val doublePng = doubleTile.renderPng(doubleColorMap)
+
+    val intImg = ImageIO.read(new ByteArrayInputStream(intPng.bytes))
+    val doubleImg = ImageIO.read(new ByteArrayInputStream(doublePng.bytes))
+
+    cfor(0)(_ < intImg.getWidth, _ + 1) { col =>
+      cfor(0)(_ < intImg.getHeight, _ + 1) { row =>
+        intImg.getRGB(col, row) should be (doubleImg.getRGB(col, row))
+      }
+    }
+  }
+
   test("should render a PNG and match what is read in by ImageIO when written as RGBA") {
     val tileNW =
       createConsecutiveTile(50, 1)
@@ -117,7 +199,6 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
         .setAlphaGradient(0xFF, 0xAA)
         .toColorMap(tile.histogram)
 
-    val path = "/Users/rob/tmp/color/striped.png"
     val png = tile.renderPng(colorMap)
 
     testPng(png, tile, colorMap)
@@ -143,7 +224,6 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
         .toColorMap(tile.histogram)
         .withNoDataColor(0xFFFFFFAA)
 
-    val path = "/Users/rob/tmp/color/striped.png"
     val png = tile.renderPng(colorMap)
 
     testPng(png, tile, colorMap)
@@ -160,9 +240,6 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
 
     val indexedPng = tile.renderPng(colorMap)
     val rgbaPng = colorMap.render(tile).renderPng()
-
-    indexedPng.write(pngIndexedTmpFile.getAbsolutePath())
-    rgbaPng.write(pngRGBATmpFile.getAbsolutePath())
 
     val indexedImg = ImageIO.read(new ByteArrayInputStream(indexedPng.bytes))
     val rgbaImg = ImageIO.read(new ByteArrayInputStream(rgbaPng))
