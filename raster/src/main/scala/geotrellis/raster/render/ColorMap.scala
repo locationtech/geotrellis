@@ -309,7 +309,7 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   private val len = orderedBreaks.length
 
-  def map(z: Int) = { println("a") ; mapDouble(i2d(z)) }
+  def map(z: Int) = { mapDouble(i2d(z)) }
 
   def mapDouble(z: Double) = {
     if(isNoData(z)) { options.noDataColor }

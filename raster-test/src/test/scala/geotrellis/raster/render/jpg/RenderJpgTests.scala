@@ -48,7 +48,38 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
     tile
   }
 
-  test("render a JPG and ensure it (roughly) matches what is read in by ImageIO when written") {
+  test("render a JPG from a Double tile and ensure it (roughly) matches what is read in by ImageIO when written") {
+    val tileNW =
+      createValueTile(50, 1)
+    val tileNE =
+      createValueTile(50, 2)
+    val tileSW =
+      createValueTile(50, 3)
+    val tileSE =
+      createValueTile(50, 4)
+
+    val tile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
+        .convert(DoubleConstantNoDataCellType)
+        .toArrayTile
+
+
+    val colorMap =
+      ColorMap(
+        Map(
+          1.0 -> RGB(255, 0, 0).int,
+          2.0 -> RGB(0, 255, 0).int,
+          3.0 -> RGB(0, 0, 255).int,
+          4.0 -> RGB(0, 255, 255).int
+        )
+      )
+
+    val jpg = tile.renderJpg(colorMap)
+
+    testJpg(jpg, tile, colorMap, threshold=250.0)
+  }
+
+  test("render a JPG from an Int tile and ensure it (roughly) matches what is read in by ImageIO when written") {
     val tileNW =
       createValueTile(50, 1)
     val tileNE =
@@ -76,6 +107,58 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
     testJpg(jpg, tile, colorMap, threshold=250.0)
   }
 
+  test("render int and double tiles similarly") {
+    val tileNW =
+      createValueTile(50, 1)
+    val tileNE =
+      createValueTile(50, 2)
+    val tileSW =
+      createValueTile(50, 3)
+    val tileSE =
+      createValueTile(50, 4)
+
+    val intTile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+
+    val doubleTile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
+        .convert(DoubleConstantNoDataCellType)
+        .toArrayTile
+
+
+    val intColorMap =
+      ColorMap(
+        Map(
+          1 -> RGB(255, 0, 0).int,
+          2 -> RGB(0, 255, 0).int,
+          3 -> RGB(0, 0, 255).int,
+          4 -> RGB(0, 255, 255).int
+        )
+      )
+
+    val doubleColorMap =
+      ColorMap(
+        Map(
+          1.0 -> RGB(255, 0, 0).int,
+          2.0 -> RGB(0, 255, 0).int,
+          3.0 -> RGB(0, 0, 255).int,
+          4.0 -> RGB(0, 255, 255).int
+        )
+    )
+
+    val intJpg = intTile.renderJpg(intColorMap)
+    val doubleJpg = doubleTile.renderJpg(doubleColorMap)
+
+    val intImg = ImageIO.read(new ByteArrayInputStream(intJpg.bytes))
+    val doubleImg = ImageIO.read(new ByteArrayInputStream(doubleJpg.bytes))
+
+    cfor(0)(_ < intImg.getWidth, _ + 1) { col =>
+      cfor(0)(_ < intImg.getHeight, _ + 1) { row =>
+        intImg.getRGB(col, row) should be (doubleImg.getRGB(col, row))
+      }
+    }
+  }
+
   test("should render nodata to black (0x000000)") {
     val tile = IntArrayTile.fill(Int.MinValue, 256, 256)
 
@@ -98,7 +181,7 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
     var distances = 0.0
     cfor(0)(_ < img.getWidth, _ + 1) { col =>
       cfor(0)(_ < img.getHeight, _ + 1) { row =>
-        img.getRGB(col, row) should be (colorMap.options.noDataColor)
+        img.getRGB(col, row).isTransparent should be (true)
       }
     }
   }
