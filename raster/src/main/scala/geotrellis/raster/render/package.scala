@@ -20,9 +20,7 @@ package object render {
   }
 
   object RGB {
-    def apply(i: Int): Int = (i << 8) + 0xff
-
-    def apply(r: Int, g: Int, b: Int, a: Int): Int = apply((r << 24) + (g << 16) + (b << 8))
+    def apply(r: Int, g: Int, b: Int): Int = ((r << 24) + (g << 16) + (b << 8)) | 0xFF
   }
 
   object RGBA {

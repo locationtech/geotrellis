@@ -51,27 +51,27 @@ class ColorMapSpec extends FunSpec with Matchers
       }
     }
 
-    // it("should correctly map redundant values to colors") {
-    //   val limits = Array(25,42,60)
-    //   val colors = Array(10,20,30)
-    //   val colorMap =
-    //     ColorMap(limits, colors).withNoDataColor(0)
+    it("should correctly map redundant values to colors") {
+      val limits = Array(25,42,60)
+      val colors = Array(10,20,30)
+      val colorMap =
+        ColorMap(limits, colors).withNoDataColor(0)
 
-    //   val arr = Array(10,10,10,10,10,10,10,20,20,20,20,30,30,30,40,50)
-    //   val r = createTile(arr)
+      val arr = Array(10,10,10,10,10,10,10,20,20,20,20,30,30,30,40,50)
+      val r = createTile(arr)
 
-    //   val color: IndexedPngEncoding =
-    //     PngColorEncoding(colorMap.colors, colorMap.options.noDataColor) match {
-    //       case i @ IndexedPngEncoding(_,_) => i
-    //       case _ =>
-    //         withClue(s"Color should be Indexed") { sys.error("") }
-    //     }
+      val color: IndexedPngEncoding =
+        PngColorEncoding(colorMap.colors, colorMap.options.noDataColor) match {
+          case i @ IndexedPngEncoding(_,_) => i
+          case _ =>
+            withClue(s"Color should be Indexed") { sys.error("") }
+        }
 
-    //   colorMap.map(10) should be (10)
-    //   colorMap.map(20) should be (10)
-    //   colorMap.map(30) should be (20)
-    //   colorMap.map(40) should be (20)
-    //   colorMap.map(50) should be (30)
-    // }
+      colorMap.map(10) should be (10)
+      colorMap.map(20) should be (10)
+      colorMap.map(30) should be (20)
+      colorMap.map(40) should be (20)
+      colorMap.map(50) should be (30)
+    }
   }
 }
