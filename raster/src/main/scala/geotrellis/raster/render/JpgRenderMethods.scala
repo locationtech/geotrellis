@@ -8,6 +8,10 @@ import geotrellis.util.MethodExtensions
 
 
 trait JpgRenderMethods extends MethodExtensions[Tile] {
+
+  def renderJpg(): Jpg =
+    renderJpg(Settings.DEFAULT)
+
   /** Generate a JPG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -19,31 +23,25 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * and alpha (with 0 being transparent and 255 being opaque).
     *
     */
-  def renderJpg(): Jpg =
-    new JpgEncoder().writeByteArray(self)
+  def renderJpg(settings: Settings): Jpg =
+    new JpgEncoder(settings).writeByteArray(self)
 
-  /**
-    * Generate a JPG image from a raster.
-    *
-    * Use this operation when you have a raster of data that you want to visualize
-    * with an image.
-    *
-    * To render a data raster into an image, the operation needs to know which
-    * values should be painted with which colors.  To that end, you'll need to
-    * generate a ColorBreaks object which represents the value ranges and the
-    * assigned color.  One way to create these color breaks is to use the
-    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks.
-    */
-  def renderJpg(colorClassifier: ColorClassifier[_]): Jpg =
-    renderJpg(colorClassifier, None)
+  def renderJpg(colorRamp: ColorRamp): Jpg =
+    renderJpg(colorRamp, Settings.DEFAULT)
 
-  def renderJpg(colors: Array[RGBA]): Jpg = {
-    val histogram = self.histogram
-    val colorClassifier = StrictColorClassifier.fromQuantileBreaks(histogram, colors)
-    renderJpg(colorClassifier, Some(histogram))
+  def renderJpg(colorRamp: ColorRamp, settings: Settings): Jpg = {
+    if(self.cellType.isFloatingPoint) {
+      val histogram = self.histogram
+      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp).cache(histogram), settings)
+    } else {
+      val histogram = self.histogramDouble
+      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp), settings)
+    }
   }
 
+  def renderJpg(colorMap: ColorMap): Jpg =
+    renderJpg(colorMap, Settings.DEFAULT)
+
   /**
     * Generate a JPG image from a raster.
     *
@@ -57,22 +55,8 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderJpg(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): Jpg =
-    renderJpg(colorClassifier, Some(histogram))
-
-  private
-  def renderJpg(colorClassifier: ColorClassifier[_], histogram: Option[Histogram[Int]]): Jpg = {
-    val cmap = colorClassifier.toColorMap(histogram)
-    val r2 = self.cellType match {
-      case ct: ConstantNoData =>
-        cmap.render(self).convert(ByteConstantNoDataCellType)
-      case ct: UByteCells with UserDefinedNoData[Byte] =>
-        cmap.render(self).convert(UByteUserDefinedNoDataCellType(ct.noDataValue))
-      case ct: UShortCells with UserDefinedNoData[Short] =>
-        cmap.render(self).convert(UShortUserDefinedNoDataCellType(ct.noDataValue))
-      case _ =>
-        cmap.render(self).convert(ByteCellType)
-    }
-    new JpgEncoder().writeByteArray(r2)
+  def renderJpg(colorMap: ColorMap, settings: Settings): Jpg = {
+    val encoder = new JpgEncoder(new Settings(1.0, false))
+    encoder.writeByteArray(colorMap.render(self).map(_.toARGB))
   }
 }

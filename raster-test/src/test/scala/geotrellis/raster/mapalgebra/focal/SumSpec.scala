@@ -38,18 +38,39 @@ class SumSpec extends FunSpec with RasterMatchers with TileBuilders with FocalOp
         for(removed <- defaultTestSets) {
           val filteredA = added.filter { x => isData(x) }
           val filteredR = removed.filter { x => isData(x) }
-          val expected = filteredA.sum - filteredR.sum
+          var expected: Int = NODATA
+
+          for (added <- filteredA) {
+            if (isNoData(expected)) expected = added
+            else expected += added
+          }
+
+          for (removed <- filteredR) {
+            if (isData(expected)) expected -= removed
+          }
+
           getCursorSumResult(MockCursor.fromAddRemove(added,removed)) should equal (expected)
         }
       }
     }
 
     it("should match sum against default sets in cellwise calculation") {
-      for(added <- defaultTestSets) {
-        for(removed <- defaultTestSets) {
+      for(removed <- defaultTestSets) {
+        for(added <- defaultTestSets) {
           val filteredA = added.filter { x => isData(x) }
           val filteredR = removed.filter { x => isData(x) }
-          val expected = filteredA.sum - filteredR.sum
+
+          var expected: Int = NODATA
+
+          for (added <- filteredA) {
+            if (isNoData(expected)) expected = added
+            else expected += added
+          }
+
+          for (removed <- filteredR) {
+            if (isData(expected)) expected -= removed
+          }
+
           getCellwiseSumResult(added,removed) should equal (expected)
         }
       }
@@ -144,6 +165,24 @@ class SumSpec extends FunSpec with RasterMatchers with TileBuilders with FocalOp
                                            15, 16, 16, 15))
       assertEqual(r.focalSum(Circle(5)), data16)
       assertEqual(r.focalSum(Circle(6)), data16)
+    }
+
+    it("should preserve source tile cell type for floating point tiles"){
+      val cellType = FloatUserDefinedNoDataCellType(13.3f)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      val res = tile.focalSum(Square(1))
+      assert(res.cellType == cellType)
+      res.foreachDouble { v =>
+        assert(isNoData(v))
+      }
+    }
+
+    it("should preserve source tile cell type for integer tiles"){
+      val cellType = ShortUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      val res = tile.focalSum(Square(1))
+      assert(res.cellType == cellType)
+      res.foreach( v => assert(isNoData(v)) )
     }
   }
 }

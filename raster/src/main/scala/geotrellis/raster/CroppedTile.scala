@@ -49,8 +49,8 @@ case class CroppedTile(sourceTile: Tile,
   private val sourceCols = sourceTile.cols
   private val sourceRows = sourceTile.rows
 
-  def convert(cellType: CellType): Tile =
-    LazyConvertedArrayTile(this, cellType)
+  def convert(targetCellType: CellType): Tile =
+    mutable(targetCellType)
 
   def get(col: Int, row: Int): Int = {
     val c = col + gridBounds.colMin
@@ -75,8 +75,11 @@ case class CroppedTile(sourceTile: Tile,
 
   def toArrayTile: ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+  def mutable(): MutableArrayTile =
+    mutable(cellType)
+
+  def mutable(targetCellType: CellType): MutableArrayTile = {
+    val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {
       cfor(0)(_ < rows, _ + 1) { row =>

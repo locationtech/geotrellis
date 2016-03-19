@@ -28,8 +28,25 @@ import spire.syntax.cfor._
 trait ArrayTile extends Tile with Serializable {
   def toArrayTile = this
 
-  def convert(cellType: CellType): Tile =
-    LazyConvertedArrayTile(this, cellType)
+  def convert(targetCellType: CellType): Tile = {
+    val tile = ArrayTile.alloc(targetCellType, cols, rows)
+
+    if(!cellType.isFloatingPoint) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
+          tile.set(col, row, get(col, row))
+        }
+      }
+    } else {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
+          tile.setDouble(col, row, getDouble(col, row))
+        }
+      }
+    }
+
+    tile
+  }
 
   def foreach(f: Int => Unit): Unit = {
     val len = size

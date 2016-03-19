@@ -23,19 +23,19 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
   def requiredKeys = Array("path", "encoding")
   def attributes(props: Map[String, String]) = null
   /**
-   * Parses to a ColorClassifier a string of limits and their colors in hex RGBA
+   * Parses to a ColorMap a string of limits and their colors in hex RGBA
    * Only used for rendering PNGs
    *
-   * @param classifications ex: "23:cc00ccff;30:aa00aaff;120->ff0000ff"
-   * @return
+   * @param color map in "BREAK:COLOR" format, ex: "23:cc00ccff;30:aa00aaff;120->ff0000ff"
+   * @return ColorMap
    */
-  def parseClassifications(classifications: Option[String]): Option[StrictColorClassifier[Int]] = {
+  def parseColorMaps(classifications: Option[String]): Option[ColorMap] = {
     classifications.map { blob =>
       try {
         val split = blob.split(";").map(_.trim.split(":"))
         val limits = split.map(pair => Integer.parseInt(pair(0)))
         val colors = split.map(pair => new BigInteger(pair(1), 16).intValue())
-        StrictColorClassifier(limits zip colors.map(RGBA(_)))
+        ColorMap(limits, colors)
       } catch {
         case e: Exception =>
           throw new BadFormatException(s"Unable to parse classifications, expected '{limit}:{RGBA};{limit}:{RGBA};...' got: '$blob'")
@@ -53,7 +53,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     val images =
       props("encoding").toLowerCase match {
         case "png" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(parseClassifications(props.get("breaks")))
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(parseColorMaps(props.get("breaks")))
         case "geotiff" =>
           rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff()
       }
