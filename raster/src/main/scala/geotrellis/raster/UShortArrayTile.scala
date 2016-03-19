@@ -94,8 +94,8 @@ object UShortArrayTile {
       new UShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(ushortNODATA), cols, rows)
     case UShortConstantNoDataCellType =>
       new UShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(ushortNODATA), cols, rows)
-    case udct @ UShortUserDefinedNoDataCellType(_) =>
-      new UShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(ushortNODATA), cols, rows, udct)
+    case udct @ UShortUserDefinedNoDataCellType(nd) =>
+      new UShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(nd), cols, rows, udct)
   }
 
   private def constructShortArray(bytes: Array[Byte]): Array[Short] = {

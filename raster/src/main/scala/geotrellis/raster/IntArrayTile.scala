@@ -62,7 +62,7 @@ final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, v
     extends IntArrayTile(arr, cols, rows)
        with UserDefinedIntNoDataConversions {
   val userDefinedIntNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = i2udi(arr(i))
+  def apply(i: Int): Int = udi2i(arr(i))
   def update(i: Int, z: Int) { arr(i) = udi2i(z) }
 }
 
@@ -103,8 +103,8 @@ object IntArrayTile {
         new IntRawArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
       case IntConstantNoDataCellType =>
         new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
-      case udct @ IntUserDefinedNoDataCellType(_) =>
-        new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows, udct)
+      case udct @ IntUserDefinedNoDataCellType(nd) =>
+        new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(nd), cols, rows, udct)
     }
 
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
