@@ -29,8 +29,7 @@ object Aspect {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize): Tile = {
     new SurfacePointCalculation[Tile](tile, n, bounds, cs)
       with DoubleArrayTileResult
-    {
-      //init(r)
+    {      
       def setValue(x: Int, y: Int, s: SurfacePoint) {
         resultTile.setDouble(x, y, degrees(s.aspect))
       }

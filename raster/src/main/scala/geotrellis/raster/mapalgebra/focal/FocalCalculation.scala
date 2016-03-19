@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,14 +51,14 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
     CursorStrategy.execute(cursor, { () => calc(tile, cursor) }, bounds, traversalStrategy)
     result
   }
-  
+
   def calc(tile: Tile, cursor: Cursor): Unit
 }
 
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds]) 
+abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds])
     extends FocalCalculation[T](tile, kernel, analysisArea)
 {
   // Benchmarking has declared ScanLineTraversalStrategy the unclear winner as a default (based on Convolve).
@@ -69,7 +69,7 @@ abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea
     CursorStrategy.execute(cursor, { () => calc(tile, cursor) }, bounds, traversalStrategy)
     result
   }
-  
+
   def calc(r: Tile, kernel: KernelCursor): Unit
 }
 
@@ -98,7 +98,7 @@ abstract class CellwiseCalculation[T] (
 /*
  * Mixin's that define common raster-result functionality
  * for FocalCalculations.
- * Access the resulting raster's array tile through the 
+ * Access the resulting raster's array tile through the
  * 'resultTile' member.
  */
 
@@ -153,7 +153,7 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   /** [[IntArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: IntArrayTile = IntArrayTile.empty(cols, rows)
+  val resultTile = IntArrayTile.empty(cols, rows)
 
   def result = resultTile
 }
@@ -181,7 +181,16 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: DoubleArrayTile = DoubleArrayTile.empty(cols, rows)
+  val resultTile = DoubleArrayTile.empty(cols, rows)
+
+  def result = resultTile
+}
+
+trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
+  def resultCellType: DataType with NoDataHandling = r.cellType
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val resultTile: MutableArrayTile = ArrayTile.empty(resultCellType, cols, rows)
 
   def result = resultTile
 }

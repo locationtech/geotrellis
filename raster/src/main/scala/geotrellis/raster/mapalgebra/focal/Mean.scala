@@ -78,7 +78,10 @@ class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   def calc(r: Tile, c: Cursor) = {
     c.removedCells.foreach { (x, y) =>
       val v = r.getDouble(x, y)
-      if(isData(v)) { count -= 1; sum -= v }
+      if(isData(v)) {
+        count -= 1
+        if (count == 0) sum = 0 else sum -= v
+      }
     }
     c.addedCells.foreach { (x, y) =>
       val v = r.getDouble(x, y)
@@ -104,10 +107,10 @@ class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds
   }
 
   def remove(r: Tile, x: Int, y: Int) = {
-    val z = r.getDouble(x, y)
-    if (isData(z)) {
+    val v = r.getDouble(x, y)
+    if(isData(v)) {
       count -= 1
-      sum -= z
+      if (count == 0) sum = 0 else sum -= v
     }
   }
 
