@@ -154,7 +154,6 @@ trait ColorMap extends Serializable {
   }
 
   def render(r: Tile): Tile =
-    // RETODO
     if(r.cellType.isFloatingPoint) {
       r.mapDouble { z => mapDouble(z).toInt }.convert(IntCellType)
     } else {
