@@ -18,7 +18,6 @@ package geotrellis.raster.render.jpg
 
 case class Settings(compressionQuality: Double, optimize: Boolean)
 
-// RETODO: Where to put options
 object Settings {
   def DEFAULT = new Settings(0.7, false)
   def HIGHEST_QUALITY = new Settings(1.0, false)

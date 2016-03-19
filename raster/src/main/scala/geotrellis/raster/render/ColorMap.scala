@@ -155,9 +155,9 @@ trait ColorMap extends Serializable {
 
   def render(r: Tile): Tile =
     if(r.cellType.isFloatingPoint) {
-      r.convert(IntCellType).mapDouble { z => mapDouble(z).toInt }
+      r.mapDouble { z => mapDouble(z).toInt }.convert(IntCellType)
     } else {
-      r.convert(IntCellType).map(map _)
+      r.map(map _).convert(IntCellType)
     }
 
   def map(v: Int): Int

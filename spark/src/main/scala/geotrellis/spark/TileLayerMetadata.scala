@@ -84,7 +84,7 @@ object TileLayerMetadata {
         t1.combine(t2)
     }
 
-  def collectMetadata[
+  private def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -93,6 +93,7 @@ object TileLayerMetadata {
       .map { case (key, grid) =>
         val extent = key.extent
         val boundsKey = key.translate(SpatialKey(0,0))
+        // Bounds are return to set the non-spatial dimensions of the keybounds; the spatial keybounds are set outside this call.
         (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), KeyBounds(boundsKey, boundsKey))
       }
       .reduce { (tuple1, tuple2) =>
@@ -107,7 +108,7 @@ object TileLayerMetadata {
       }
   }
 
-  def collectMetadataWithCRS[
+  private def collectMetadataWithCRS[
     K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -117,6 +118,7 @@ object TileLayerMetadata {
       .map { case (key, grid) =>
         val ProjectedExtent(extent, crs) = key.getComponent[ProjectedExtent]
         val boundsKey = key.translate(SpatialKey(0,0))
+        // Bounds are return to set the non-spatial dimensions of the keybounds; the spatial keybounds are set outside this call.
         (extent, grid.cellType, CellSize(extent, grid.cols, grid.rows), Set(crs), KeyBounds(boundsKey, boundsKey))
       }
       .reduce { (tuple1, tuple2) =>

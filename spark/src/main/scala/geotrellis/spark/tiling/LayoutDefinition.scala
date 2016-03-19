@@ -44,10 +44,10 @@ object LayoutDefinition {
     val layout = TileLayout(tileLayoutCols, tileLayoutRows, tileCols, tileRows)
     // we may have added padding on the lower/right border, need to compensate for that in new extent
     val layoutExtent = Extent(
-    extent.xmin,
-    extent.ymax - (layout.totalRows * cellSize.height),
-    extent.xmin + layout.totalCols * cellSize.width,
-    extent.ymax
+      extent.xmin,
+      extent.ymax - (layout.totalRows * cellSize.height),
+      extent.xmin + layout.totalCols * cellSize.width,
+      extent.ymax
     )
 
     LayoutDefinition(layoutExtent, layout)

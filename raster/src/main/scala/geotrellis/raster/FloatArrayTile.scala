@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,12 +25,8 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Float] (each cell as a Float).
  */
 abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
-    extends MutableArrayTile
-       with DoubleBasedArrayTile {
+    extends MutableArrayTile {
   val cellType: FloatCells with NoDataHandling
-
-  def applyDouble(i: Int): Double
-  def updateDouble(i: Int, z: Double)
 
   def toBytes: Array[Byte] = {
     val pixels = new Array[Byte](array.size * cellType.bytes)
@@ -45,22 +41,28 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
 final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
     extends FloatArrayTile(arr, cols, rows) {
   val cellType = FloatCellType
+  def apply(i: Int): Int = arr(i).toInt
   def applyDouble(i: Int): Double = arr(i).toDouble
+  def update(i: Int, z: Int) { arr(i) = z.toFloat }
   def updateDouble(i: Int, z: Double) { arr(i) = z.toFloat }
 }
 
 final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
     extends FloatArrayTile(arr, cols, rows) {
   val cellType = FloatConstantNoDataCellType
-  def applyDouble(i: Int): Double = arr(i).toDouble
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toFloat }
+  def apply(i: Int): Int = f2i(arr(i))
+  def applyDouble(i: Int): Double = f2d(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2f(z) }
+  def updateDouble(i: Int, z: Double) { arr(i) = d2f(z) }
 }
 
 final case class FloatUserDefinedNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int, val cellType: FloatUserDefinedNoDataCellType)
     extends FloatArrayTile(arr, cols, rows)
        with UserDefinedFloatNoDataConversions {
   val userDefinedFloatNoDataValue = cellType.noDataValue
+  def apply(i: Int): Int = udf2i(arr(i))
   def applyDouble(i: Int): Double = udf2d(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2udf(z) }
   def updateDouble(i: Int, z: Double) { arr(i) = d2udf(z) }
 }
 
@@ -74,7 +76,7 @@ object FloatArrayTile {
         new FloatRawArrayTile(arr, cols, rows)
       case FloatConstantNoDataCellType =>
         new FloatConstantNoDataArrayTile(arr, cols, rows)
-      case udct @ FloatUserDefinedNoDataCellType(_) =>
+      case udct: FloatUserDefinedNoDataCellType =>
         new FloatUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
@@ -87,7 +89,7 @@ object FloatArrayTile {
         new FloatRawArrayTile(Array.ofDim[Float](cols * rows), cols, rows)
       case FloatConstantNoDataCellType =>
         new FloatConstantNoDataArrayTile(Array.ofDim[Float](cols * rows), cols, rows)
-      case udct @ FloatUserDefinedNoDataCellType(_) =>
+      case udct: FloatUserDefinedNoDataCellType =>
         new FloatUserDefinedNoDataArrayTile(Array.ofDim[Float](cols * rows), cols, rows, udct)
     }
 
@@ -97,11 +99,11 @@ object FloatArrayTile {
   def empty(cols: Int, rows: Int, cellType: FloatCells with NoDataHandling): FloatArrayTile =
     cellType match {
       case FloatCellType =>
-        new FloatRawArrayTile(Array.ofDim[Float](cols * rows).fill(Float.NaN), cols, rows)
+        ofDim(cols, rows, cellType)
       case FloatConstantNoDataCellType =>
-        new FloatConstantNoDataArrayTile(Array.ofDim[Float](cols * rows).fill(Float.NaN), cols, rows)
-      case udct @ FloatUserDefinedNoDataCellType(_) =>
-        new FloatUserDefinedNoDataArrayTile(Array.ofDim[Float](cols * rows).fill(Float.NaN), cols, rows, udct)
+        fill(Float.NaN, cols, rows, cellType)
+      case FloatUserDefinedNoDataCellType(nd) =>
+        fill(nd, cols, rows, cellType)
     }
 
   def fill(v: Float, cols: Int, rows: Int): FloatArrayTile =
@@ -113,7 +115,7 @@ object FloatArrayTile {
         new FloatRawArrayTile(Array.ofDim[Float](cols * rows).fill(v), cols, rows)
       case FloatConstantNoDataCellType =>
         new FloatConstantNoDataArrayTile(Array.ofDim[Float](cols * rows).fill(v), cols, rows)
-      case udct @ FloatUserDefinedNoDataCellType(_) =>
+      case udct: FloatUserDefinedNoDataCellType =>
         new FloatUserDefinedNoDataArrayTile(Array.ofDim[Float](cols * rows).fill(v), cols, rows, udct)
     }
 
@@ -134,7 +136,7 @@ object FloatArrayTile {
         new FloatRawArrayTile(constructFloatArray(bytes), cols, rows)
       case FloatConstantNoDataCellType =>
         new FloatConstantNoDataArrayTile(constructFloatArray(bytes), cols, rows)
-      case udct @ FloatUserDefinedNoDataCellType(_) =>
+      case udct: FloatUserDefinedNoDataCellType =>
         new FloatUserDefinedNoDataArrayTile(constructFloatArray(bytes), cols, rows, udct)
     }
 }

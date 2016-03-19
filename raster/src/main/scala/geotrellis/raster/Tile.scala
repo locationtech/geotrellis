@@ -59,6 +59,11 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   /** Create a mutable copy of this tile */
   def mutable: MutableArrayTile
 
+  /** Converts the cell type of the tile.
+    *
+    * @note    This will immediately iterate over the tile and allocate a new
+    *          copy of data; this should be a performance consideration.
+    */
   def convert(cellType: CellType): Tile
 
   /**
@@ -85,6 +90,20 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
 
   def mapDouble(f: Double => Double): Tile
   def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile
+
+  def isNoDataTile: Boolean = {
+    var (c, r) = (0, 0)
+    while (r < rows) {
+      while(c < cols) {
+        if(cellType.isFloatingPoint) { if (isData(getDouble(c, r))) return false }
+        else { if(isData(get(c, r))) return false }
+        c += 1
+      }
+      c = 0; r += 1
+    }
+
+    true
+  }
 
   /**
     * Normalizes the values of this raster, given the current min and max, to a new min and max.
@@ -116,12 +135,12 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     mapIfSetDouble(z => ( ((z - oldMin) * dnew) / dold ) + newMin)
   }
 
-  def rescale(newMin: Int, newMax: Int) = {
+  def rescale(newMin: Int, newMax: Int): Tile = {
     val (min, max) = findMinMax
     normalize(min, max, newMin, newMax)
   }
 
-  def rescale(newMin: Double, newMax: Double) = {
+  def rescale(newMin: Double, newMax: Double): Tile = {
     val (min, max) = findMinMaxDouble
     normalize(min, max, newMin, newMax)
   }
@@ -178,7 +197,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     *         types will give the integer min and max of the rounded values of
     *         their cells.
     */
-  def findMinMax = {
+  def findMinMax: (Int, Int) = {
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
 
@@ -196,7 +215,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   /**
     * Return tuple of highest and lowest value in raster.
     */
-  def findMinMaxDouble = {
+  def findMinMaxDouble: (Double, Double) = {
     var zmin = Double.NaN
     var zmax = Double.NaN
 
@@ -277,7 +296,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   /**
     * Return ascii art of a range from this raster.
     */
-  def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int) = {
+  def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int): String = {
     var s = ""
     for (row <- rowMin to rowMax) {
       for (col <- colMin to colMax) {
@@ -291,19 +310,5 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
       s += "\n"
     }
     s
-  }
-
-  def isNoDataTile: Boolean = {
-    var (c, r) = (0, 0)
-    while (r < rows) {
-      while(c < cols) {
-        if(cellType.isFloatingPoint) { if (isData(getDouble(c, r))) return false }
-        else { if(isData(get(c, r))) return false }
-        c += 1
-      }
-      c = 0; r += 1
-    }
-
-    true
   }
 }

@@ -25,12 +25,8 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Double] (each cell as a Double).
  */
 abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
-    extends MutableArrayTile
-       with DoubleBasedArrayTile {
+    extends MutableArrayTile {
   val cellType: DoubleCells with NoDataHandling
-
-  def applyDouble(i: Int): Double
-  def updateDouble(i: Int, z: Double)
 
   override def toArrayDouble = array.clone
 
@@ -46,14 +42,18 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
 final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
     extends DoubleArrayTile(arr, cols, rows) {
   val cellType = DoubleCellType
+  def apply(i: Int): Int = arr(i).toInt
   def applyDouble(i: Int): Double = arr(i)
+  def update(i: Int, z: Int) { arr(i) = z.toDouble }
   def updateDouble(i: Int, z: Double) { arr(i) = z.toDouble }
 }
 
 final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
     extends DoubleArrayTile(arr, cols, rows) {
   val cellType = DoubleConstantNoDataCellType
+  def apply(i: Int): Int = d2i(arr(i))
   def applyDouble(i: Int): Double = arr(i)
+  def update(i: Int, z: Int) { arr(i) = i2d(z) }
   def updateDouble(i: Int, z: Double) { arr(i) = z }
 }
 
@@ -61,7 +61,9 @@ final case class DoubleUserDefinedNoDataArrayTile(arr: Array[Double], val cols: 
     extends DoubleArrayTile(arr, cols, rows)
        with UserDefinedDoubleNoDataConversions {
   val userDefinedDoubleNoDataValue = cellType.noDataValue
+  def apply(i: Int): Int = udd2i(arr(i))
   def applyDouble(i: Int): Double = udd2d(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2udd(z) }
   def updateDouble(i: Int, z: Double) { arr(i) = d2udd(z) }
 }
 
@@ -75,7 +77,7 @@ object DoubleArrayTile {
         new DoubleRawArrayTile(arr, cols, rows)
       case DoubleConstantNoDataCellType =>
         new DoubleConstantNoDataArrayTile(arr, cols, rows)
-      case udct @ DoubleUserDefinedNoDataCellType(_) =>
+      case udct: DoubleUserDefinedNoDataCellType =>
         new DoubleUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
@@ -88,7 +90,7 @@ object DoubleArrayTile {
         new DoubleRawArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
       case DoubleConstantNoDataCellType =>
         new DoubleConstantNoDataArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
-      case udct @ DoubleUserDefinedNoDataCellType(_) =>
+      case udct: DoubleUserDefinedNoDataCellType =>
         new DoubleUserDefinedNoDataArrayTile(Array.ofDim[Double](cols * rows), cols, rows, udct)
     }
 
@@ -97,11 +99,11 @@ object DoubleArrayTile {
 
   def empty(cols: Int, rows: Int, cellType: DoubleCells with NoDataHandling): DoubleArrayTile = cellType match {
     case DoubleCellType =>
-      new DoubleRawArrayTile(Array.ofDim[Double](cols * rows).fill(doubleNODATA), cols, rows)
+      ofDim(cols, rows, cellType)
     case DoubleConstantNoDataCellType =>
-      new DoubleConstantNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(doubleNODATA), cols, rows)
-    case udct @ DoubleUserDefinedNoDataCellType(_) =>
-      new DoubleUserDefinedNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(doubleNODATA), cols, rows, udct)
+      fill(doubleNODATA, cols, rows, cellType)
+    case DoubleUserDefinedNoDataCellType(nd) =>
+      fill(nd, cols, rows, cellType)
   }
 
   def fill(v: Double, cols: Int, rows: Int): DoubleArrayTile =
@@ -112,7 +114,7 @@ object DoubleArrayTile {
       new DoubleRawArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
     case DoubleConstantNoDataCellType =>
       new DoubleConstantNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
-    case udct @ DoubleUserDefinedNoDataCellType(_) =>
+    case udct: DoubleUserDefinedNoDataCellType =>
       new DoubleUserDefinedNoDataArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows, udct)
   }
 
@@ -132,7 +134,7 @@ object DoubleArrayTile {
       new DoubleRawArrayTile(constructDoubleArray(bytes), cols, rows)
     case DoubleConstantNoDataCellType =>
       new DoubleConstantNoDataArrayTile(constructDoubleArray(bytes), cols, rows)
-    case udct @ DoubleUserDefinedNoDataCellType(_) =>
+    case udct: DoubleUserDefinedNoDataCellType =>
       new DoubleUserDefinedNoDataArrayTile(constructDoubleArray(bytes), cols, rows, udct)
   }
 }

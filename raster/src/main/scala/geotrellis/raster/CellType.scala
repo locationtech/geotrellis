@@ -20,6 +20,9 @@ import scala.util.matching.Regex
 import java.awt.image.DataBuffer
 import java.lang.IllegalArgumentException
 
+// CellType defined in package object as
+// type CellType = DataType with NoDataHandling
+
 // DataType ADT
 sealed abstract class DataType extends Serializable { self: CellType =>
   val bits: Int
@@ -109,7 +112,6 @@ sealed trait NoDataHandling { cellType: CellType => }
 sealed trait ConstantNoData extends NoDataHandling { cellType: CellType => }
 sealed trait NoNoData extends NoDataHandling { cellType: CellType =>
   abstract override def toString: String = cellType.name + "raw"
-  //abstract override val name: String = cellType.name + "raw"
 }
 sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { cellType: CellType =>
   val noDataValue: T
