@@ -31,7 +31,7 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
-import monocle.{Lens, PLens}
+import monocle.Lens
 import monocle.syntax._
 
 import scala.reflect.ClassTag
@@ -70,11 +70,11 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type Component[T, C] = PLens[T, T, C, C]
+  type Component[T, C] = Lens[T, C]
 
   object Component {
     def apply[T, C](get: T => C, set: (T, C) => T): Component[T, C] =
-      PLens[T, T, C, C](get)(c => t => set(t, c))
+      Lens[T, C](get)(c => t => set(t, c))
   }
 
   implicit def identityComponent[T]: Component[T, T] =
