@@ -25,12 +25,8 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Int] (each cell as an Int).
  */
 abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
-    extends MutableArrayTile
-       with IntBasedArrayTile {
+    extends MutableArrayTile {
   val cellType: IntCells with NoDataHandling
-
-  def apply(i: Int): Int
-  def update(i: Int, z: Int)
 
   override def toArray = array.clone
 
@@ -48,22 +44,28 @@ final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
   val cellType = IntCellType
   def apply(i: Int): Int = arr(i)
+  def applyDouble(i: Int): Double = arr(i).toDouble
   def update(i: Int, z: Int) { arr(i) = z }
+  def updateDouble(i: Int, z: Double) { arr(i) = z.toInt }
 }
 
 final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
   val cellType = IntConstantNoDataCellType
   def apply(i: Int): Int = arr(i)
+  def applyDouble(i: Int): Double = i2d(arr(i))
   def update(i: Int, z: Int) { arr(i) = z }
+  def updateDouble(i: Int, z: Double) { arr(i) = d2i(z) }
 }
 
 final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int, val cellType: IntUserDefinedNoDataCellType)
     extends IntArrayTile(arr, cols, rows)
        with UserDefinedIntNoDataConversions {
   val userDefinedIntNoDataValue = cellType.noDataValue
-  def apply(i: Int): Int = i2udi(arr(i))
-  def update(i: Int, z: Int) { arr(i) = udi2i(z) }
+  def apply(i: Int): Int = udi2i(arr(i))
+  def applyDouble(i: Int): Double = udi2d(arr(i))
+  def update(i: Int, z: Int) { arr(i) = i2udi(z) }
+  def updateDouble(i: Int, z: Double) { arr(i) = d2udi(z) }
 }
 
 object IntArrayTile {
@@ -77,7 +79,7 @@ object IntArrayTile {
         new IntRawArrayTile(arr, cols, rows)
       case IntConstantNoDataCellType =>
         new IntConstantNoDataArrayTile(arr, cols, rows)
-      case udct @ IntUserDefinedNoDataCellType(_) =>
+      case udct: IntUserDefinedNoDataCellType =>
         new IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
@@ -90,7 +92,7 @@ object IntArrayTile {
         new IntRawArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
       case IntConstantNoDataCellType =>
         new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
-      case udct @ IntUserDefinedNoDataCellType(_) =>
+      case udct: IntUserDefinedNoDataCellType =>
         new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows), cols, rows, udct)
     }
 
@@ -100,11 +102,11 @@ object IntArrayTile {
   def empty(cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>
-        new IntRawArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
+        ofDim(cols, rows, cellType)
       case IntConstantNoDataCellType =>
-        new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
-      case udct @ IntUserDefinedNoDataCellType(_) =>
-        new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows, udct)
+        fill(NODATA, cols, rows, cellType)
+      case IntUserDefinedNoDataCellType(nd) =>
+        fill(nd, cols, rows, cellType)
     }
 
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
@@ -116,7 +118,7 @@ object IntArrayTile {
         new IntRawArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
       case IntConstantNoDataCellType =>
         new IntConstantNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
-      case udct @ IntUserDefinedNoDataCellType(_) =>
+      case udct: IntUserDefinedNoDataCellType =>
         new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows, udct)
     }
 
@@ -137,7 +139,7 @@ object IntArrayTile {
         new IntRawArrayTile(constructIntArray(bytes), cols, rows)
       case IntConstantNoDataCellType =>
         new IntConstantNoDataArrayTile(constructIntArray(bytes), cols, rows)
-      case udct @ IntUserDefinedNoDataCellType(_) =>
+      case udct: IntUserDefinedNoDataCellType =>
         new IntUserDefinedNoDataArrayTile(constructIntArray(bytes), cols, rows, udct)
     }
 }
