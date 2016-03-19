@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -80,7 +80,7 @@ a9 fe b1 58 17 27 8b 22 71 2e 5e be 0a c9 bb a8
 
     it("should produce different results for different compressions") {
       val defaultEncoder = new JpgEncoder
-      val losslessEncoder = new JpgEncoder(Settings.LOSSLESS)
+      val losslessEncoder = new JpgEncoder(Settings.HIGHEST_QUALITY)
 
       val bytes1 = defaultEncoder.writeByteArray(tile)
       val bytes2 = losslessEncoder.writeByteArray(tile)

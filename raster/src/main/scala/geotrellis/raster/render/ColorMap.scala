@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 
 import scala.collection.mutable
+import scala.util.Try
 
 /** Root element in hierarchy for specifying the type of boundary when classifying colors*/
 sealed trait ClassBoundaryType
@@ -108,6 +109,29 @@ object ColorMap {
 
   def fromQuantileBreaks(histogram: Histogram[Double], colorRamp: ColorRamp, options: Options): DoubleColorMap =
     apply(histogram.quantileBreaks(colorRamp.numStops).toVector, colorRamp.colors, options)
+
+  /** Parse an integer color map from a string of value:color;value:color;... */
+  def fromString(str: String): Option[IntColorMap] = {
+    val split = str.split(';').map(_.trim.split(':'))
+    Try {
+      val limits = split.map { pair => pair(0).toInt }
+      val colors = split.map { pair => BigInt(pair(1), 16).toInt }
+      require(limits.size == colors.size)
+      apply(limits, colors)
+    }.toOption
+  }
+
+  /** Parse an integer color map from a string of value:color;value:color;... */
+  def fromStringDouble(str: String): Option[DoubleColorMap] = {
+    val split = str.split(';').map(_.trim.split(':'))
+    Try {
+      val limits = split.map { pair => pair(0).toDouble }
+      val colors = split.map { pair => BigInt(pair(1), 16).toInt }
+      require(limits.size == colors.size)
+      apply(limits, colors)
+    }.toOption
+  }
+
 }
 
 import ColorMap.Options
@@ -285,7 +309,7 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   private val len = orderedBreaks.length
 
-  def map(z: Int) = { println("a") ; mapDouble(i2d(z)) }
+  def map(z: Int) = { mapDouble(i2d(z)) }
 
   def mapDouble(z: Double) = {
     if(isNoData(z)) { options.noDataColor }

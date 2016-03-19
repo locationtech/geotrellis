@@ -8,6 +8,10 @@ import geotrellis.util.MethodExtensions
 
 
 trait JpgRenderMethods extends MethodExtensions[Tile] {
+
+  def renderJpg(): Jpg =
+    renderJpg(Settings.DEFAULT)
+
   /** Generate a JPG from a raster of RGBA integer values.
     *
     * Use this operation when you have created a raster whose values are already
@@ -19,18 +23,24 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * and alpha (with 0 being transparent and 255 being opaque).
     *
     */
-  def renderJpg(): Jpg =
-    new JpgEncoder().writeByteArray(self)
+  def renderJpg(settings: Settings): Jpg =
+    new JpgEncoder(settings).writeByteArray(self)
 
-  def renderJpg(colorRamp: ColorRamp): Jpg = {
+  def renderJpg(colorRamp: ColorRamp): Jpg =
+    renderJpg(colorRamp, Settings.DEFAULT)
+
+  def renderJpg(colorRamp: ColorRamp, settings: Settings): Jpg = {
     if(self.cellType.isFloatingPoint) {
       val histogram = self.histogram
-      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp).cache(histogram))
+      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp).cache(histogram), settings)
     } else {
       val histogram = self.histogramDouble
-      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp))
+      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp), settings)
     }
   }
+
+  def renderJpg(colorMap: ColorMap): Jpg =
+    renderJpg(colorMap, Settings.DEFAULT)
 
   /**
     * Generate a JPG image from a raster.
@@ -45,8 +55,8 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
     * quantile class breaks.
     */
-  def renderJpg(colorMap: ColorMap): Jpg = {
-    val encoder = new JpgEncoder()
-    encoder.writeByteArray(colorMap.render(self))
+  def renderJpg(colorMap: ColorMap, settings: Settings): Jpg = {
+    val encoder = new JpgEncoder(new Settings(1.0, false))
+    encoder.writeByteArray(colorMap.render(self).map(_.toARGB))
   }
 }

@@ -15,33 +15,42 @@ object GeoTiffTile {
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
-    cellType: CellType
+    cellType: CellType,
+    bandType: Option[BandType] = None
   ): GeoTiffTile = {
-    cellType match {
-      case ct: BitCells =>
-        new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // Bytes
-      case ct: ByteCells =>
-        new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // UBytes
-      case ct: UByteCells =>
-        new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // Shorts
-      case ct: ShortCells =>
-        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // UShorts
-      case ct: UShortCells =>
-        new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: IntCells =>
-        new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: UIntCells =>
-        new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: FloatCells =>
-        new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: DoubleCells =>
-        new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+    bandType match {
+      case Some(UInt32BandType) =>
+        cellType match {
+          case ct: FloatCells =>
+            new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case _ =>
+            throw new IllegalArgumentException("UInt32BandType should always resolve to Float celltype")
+        }
+      case _ =>
+        cellType match {
+          case ct: BitCells =>
+            new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // Bytes
+          case ct: ByteCells =>
+            new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // UBytes
+          case ct: UByteCells =>
+            new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // Shorts
+          case ct: ShortCells =>
+            new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // UShorts
+          case ct: UShortCells =>
+            new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case ct: IntCells =>
+            new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case ct: FloatCells =>
+            new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case ct: DoubleCells =>
+            new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+        }
+      }
     }
-  }
 
   /** Convert a tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. */
   def apply(tile: Tile): GeoTiffTile =

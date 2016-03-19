@@ -93,11 +93,6 @@ sealed trait IntCells extends DataType { self: CellType =>
   val isFloatingPoint: Boolean = false
   val name = "int32"
 }
-sealed trait UIntCells extends DataType { self: CellType =>
-  val bits: Int = 32
-  val isFloatingPoint: Boolean = true
-  val name = "uint32"
-}
 sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
@@ -159,13 +154,6 @@ case object IntConstantNoDataCellType
     extends IntCells with ConstantNoData
 case class IntUserDefinedNoDataCellType(noDataValue: Int)
     extends IntCells with UserDefinedNoData[Int]
-
-case object UIntCellType
-    extends UIntCells with NoNoData
-case object UIntConstantNoDataCellType
-    extends UIntCells with ConstantNoData
-case class UIntUserDefinedNoDataCellType(noDataValue: Int)
-    extends UIntCells with UserDefinedNoData[Int]
 
 case object FloatCellType
     extends FloatCells with NoNoData
@@ -233,11 +221,6 @@ object CellType {
         throw new IllegalArgumentException(s"Cell type $name is not supported")
       }
       IntUserDefinedNoDataCellType(ndVal.toInt)
-    case ct if ct.startsWith("uint32ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      UIntUserDefinedNoDataCellType(ndVal.toInt)
     case ct if ct.startsWith("float32ud") =>
       val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).getOrElse {
         throw new IllegalArgumentException(s"Cell type $name is not supported")

@@ -14,15 +14,13 @@ package object render {
     def isTransparent = (alpha == 0)
     def isGrey = (red == green) && (green == blue)
     def unzip = (red, green, blue, alpha)
-    def toRGB = int >> 8
+    def toARGB = (int >> 8) | (alpha << 24)
     def unzipRGBA: (Int, Int, Int, Int) = (red, green, blue, alpha)
     def unzipRGB: (Int, Int, Int) = (red, green, blue)
   }
 
   object RGB {
-    def apply(i: Int): Int = (i << 8) + 0xff
-
-    def apply(r: Int, g: Int, b: Int, a: Int): Int = apply((r << 24) + (g << 16) + (b << 8))
+    def apply(r: Int, g: Int, b: Int): Int = ((r << 24) + (g << 16) + (b << 8)) | 0xFF
   }
 
   object RGBA {

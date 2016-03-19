@@ -1,5 +1,7 @@
 package geotrellis.raster.render
 
+import geotrellis.raster.histogram._
+
 /** A ColorRamp represents a sequence of RGBA color values */
 class ColorRamp(val colors: Vector[Int]) extends Serializable {
   def numStops: Int = colors.length
@@ -19,7 +21,7 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
     * @param stop  An integer whose last two bytes are the alpha value at the end of the
     *              gradient (default 255)
     */
-  def alphaGradient(start: Int = 0, stop: Int = 0xFF): ColorRamp = {
+  def setAlphaGradient(start: Int = 0, stop: Int = 0xFF): ColorRamp = {
     val alphas = ColorRamp.chooseColors(Vector(start, stop), colors.length).map(_.alpha)
 
     val newColors =
@@ -56,6 +58,46 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
 
     ColorRamp(newColors)
   }
+
+  /** Overloads for creating a ColorMap from a color ramp, for convenience.
+    * Try to keep parity with ColorMap object creations
+    */
+
+  def toColorMap(breaks: Array[Int]): IntColorMap =
+    toColorMap(breaks, ColorMap.Options.DEFAULT)
+
+  def toColorMap(breaks: Array[Int], options: ColorMap.Options): IntColorMap =
+    ColorMap(breaks.toVector, this, options)
+
+  def toColorMap(breaks: Vector[Int]): IntColorMap =
+    toColorMap(breaks, ColorMap.Options.DEFAULT)
+
+  def toColorMap(breaks: Vector[Int], options: ColorMap.Options): IntColorMap =
+    ColorMap(breaks.toVector, this, options)
+
+  def toColorMap(breaks: Array[Double]): DoubleColorMap =
+    toColorMap(breaks, ColorMap.Options.DEFAULT)
+
+  def toColorMap(breaks: Array[Double], options: ColorMap.Options): DoubleColorMap =
+    ColorMap(breaks.toVector, this, options)
+
+  def toColorMap(breaks: Vector[Double]): DoubleColorMap =
+    toColorMap(breaks, ColorMap.Options.DEFAULT)
+
+  def toColorMap(breaks: Vector[Double], options: ColorMap.Options): DoubleColorMap =
+    ColorMap(breaks.toVector, this, options)
+
+  def toColorMap(histogram: Histogram[Int]): IntColorMap =
+    toColorMap(histogram, ColorMap.Options.DEFAULT)
+
+  def toColorMap(histogram: Histogram[Int], options: ColorMap.Options): IntColorMap =
+    ColorMap.fromQuantileBreaks(histogram, this, options)
+
+  def toColorMap(histogram: Histogram[Double]): DoubleColorMap =
+    toColorMap(histogram, ColorMap.Options.DEFAULT)
+
+  def toColorMap(histogram: Histogram[Double], options: ColorMap.Options): DoubleColorMap =
+    ColorMap.fromQuantileBreaks(histogram, this, options)
 }
 
 object ColorRamp {
