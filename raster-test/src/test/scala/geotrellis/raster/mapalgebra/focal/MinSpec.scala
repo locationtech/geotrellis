@@ -164,6 +164,23 @@ class MinSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers
       assertEqual(tile.focalMin(Circle(1), Some(GridBounds(1,1,3,2))), expected)
     }
 
+    it("should preserve source tile cell type for floating point tiles"){
+      val cellType = FloatUserDefinedNoDataCellType(13.3f)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      val res = tile.focalMin(Square(1))
+      assert(res.cellType == cellType)
+      res.foreachDouble( v => assert(isNoData(v)) )
+    }
+
+    it("should preserve source tile cell type for integer tiles"){
+      val cellType = ShortUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      val res = tile.focalMin(Square(1))
+      assert(res.cellType == cellType)
+      res.foreach( v => assert(isNoData(v)) )
+    }
+
+
   }
 
 

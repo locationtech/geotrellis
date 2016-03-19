@@ -13,7 +13,7 @@ object Max {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if (tile.cellType.isFloatingPoint) {
       new CursorCalculation[Tile](tile, n, bounds)
-        with DoubleArrayTileResult
+        with ArrayTileResult
       {
         def calc(r: Tile, cursor: Cursor) = {
           var m = Double.NaN
@@ -29,7 +29,7 @@ object Max {
 
     } else {
       new CursorCalculation[Tile](tile, n, bounds)
-        with IntArrayTileResult
+        with ArrayTileResult
       {
         def calc(r: Tile, cursor: Cursor) = {
           var m = Int.MinValue

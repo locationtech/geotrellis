@@ -151,10 +151,9 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
  */
 trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[IntArrayTile]] that will be returned by the focal calculation */
-  def resultCellType: DataType with NoDataHandling = r.cellType
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: MutableArrayTile = ArrayTile.empty(resultCellType, cols, rows)
+  val resultTile = IntArrayTile.empty(cols, rows)
 
   def result = resultTile
 }
@@ -180,6 +179,14 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
  */
 trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val resultTile = DoubleArrayTile.empty(cols, rows)
+
+  def result = resultTile
+}
+
+trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   def resultCellType: DataType with NoDataHandling = r.cellType
   val cols: Int = bounds.width
   val rows: Int = bounds.height
