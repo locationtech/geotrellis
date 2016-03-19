@@ -14,7 +14,7 @@ object Min {
 
     if (tile.cellType.isFloatingPoint)
       new CursorCalculation[Tile](tile, n, bounds)
-        with DoubleArrayTileResult
+        with ArrayTileResult
       {
         def calc(r: Tile, cursor: Cursor) = {
           var m: Double = Double.NaN
@@ -30,7 +30,7 @@ object Min {
 
     else
       new CursorCalculation[Tile](tile, n, bounds)
-        with IntArrayTileResult
+        with ArrayTileResult
       {
         def calc(r: Tile, cursor: Cursor) = {
           var m = NODATA
@@ -47,4 +47,3 @@ object Min {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
     calculation(tile, n, bounds).execute()
 }
-
