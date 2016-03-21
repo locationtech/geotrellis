@@ -9,7 +9,7 @@
 ./sbt -J-Xmx2G "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G "project engine-test" test || { exit 1; }
 ./sbt -J-Xmx2G "project benchmark" compile || { exit 1; }
-./sbt -J-Xmx2G "project slick" test:compile || { exit 1; }
+./sbt -J-Xmx2G "project slick" test || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" compile || { exit 1; }
 ./sbt -J-Xmx2G "project util" compile || { exit 1; }
 ./sbt -J-Xmx2G "project raster-testkit" compile || { exit 1; }
