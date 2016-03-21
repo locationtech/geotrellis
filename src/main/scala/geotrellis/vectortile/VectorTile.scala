@@ -2,6 +2,8 @@ package geotrellis.vectortile
 
 import java.nio.file.{Files, Paths}
 
+import geotrellis.vector._
+
 /** A representation of a VectorTile. See:
   * https://github.com/mapbox/vector-tile-spec/tree/master/2.1
   *
@@ -9,7 +11,7 @@ import java.nio.file.{Files, Paths}
   *              vectortile/vector_tile/VectorTile.scala
   * @param _vector_tile the naively decoded tile
   */
-class VectorTile(_vector_tile: vector_tile.Tile) {
+class VectorTile(val _vector_tile: vector_tile.Tile) {
 
     val layers: Set[Layer] = _vector_tile.layers
                                          .map(x => new Layer(x))
@@ -19,7 +21,9 @@ class VectorTile(_vector_tile: vector_tile.Tile) {
       * @param filename the filename
       */
     def this(filename: String) {
-        this(vector_tile.Tile.parseFrom(Files.readAllBytes(Paths.get(filename))))
+        // http://stackoverflow.com/questions/7598135/
+        this(vector_tile.Tile
+                        .parseFrom(Files.readAllBytes(Paths.get(filename))))
     }
 
     /** A representation of a VectorTile Layer.
@@ -27,20 +31,20 @@ class VectorTile(_vector_tile: vector_tile.Tile) {
       * @constructor from the naively decoded protobuff
       * @param _layer the naively decoded layer
       */
-    class Layer(_layer: vector_tile.Tile.Layer) {
+    class Layer(val _layer: vector_tile.Tile.Layer) {
 
         val version: Int = _layer.version // originally unsigned
 
         val name: String = _layer.name
 
-        val features: Set[Feature] = _layer.features
-                                           .map(x => new Feature(x))
-                                           .toSet
-
         val keys: Seq[String] = _layer.keys
 
         val vals: Seq[Value] = _layer.values
                                      .map(x => new Value(x))
+
+        val features: Set[Feature] = _layer.features
+                                           .map(x => new Feature(x))
+                                           .toSet
 
         val extent: Int = _layer.extent match { // originally unsigned
             case None => 4096 // default
@@ -52,7 +56,7 @@ class VectorTile(_vector_tile: vector_tile.Tile) {
           * @constructor from a tile value
           * @param _value the tile value
           */
-        class Value(_value: vector_tile.Tile.Value) {
+        class Value(val _value: vector_tile.Tile.Value) {
 
             // doesn't support extensions yet
             val value: Any = List(_value.stringValue,
@@ -64,18 +68,32 @@ class VectorTile(_vector_tile: vector_tile.Tile) {
                                   _value.boolValue).flatten.head
         }
 
-        /** TODO
+        /** A representation of a VectorTile Feature.
+          *
+          * @constructor from a naively decoded protobuff
+          * @param _feature the naively decoded feature
           */
-        class Feature(_feature: vector_tile.Tile.Feature) {
+        class Feature(val _feature: vector_tile.Tile.Feature) {
+
 
             val id: Option[Long] = _feature.id
 
-            //val tags: Map[String, Value] = split(_feature.tags)
+            val tags: Map[String, Value] = pair(_feature.tags)
 
-            /**
-              *
-              */
-            // def split
+            val geometry: Geometry =
+                Command.parse(_feature.`type`.get, _feature.geometry)
+
+            /**  Pairs off the keys and value tags. */
+            private def pair(tags: Seq[Int]): Map[String, Value] = {
+                var idx: Int = 0
+                var paired: collection.mutable.Map[String, Value] =
+                    new collection.mutable.HashMap[String, Value]()
+                while (idx < tags.length) {
+                    paired += (keys(tags(idx)) -> vals(tags(idx+1)))
+                    idx += 2
+                }
+                return Map(paired.toList: _*)
+            }
 
         }
 
