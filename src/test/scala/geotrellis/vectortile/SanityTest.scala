@@ -5,8 +5,8 @@ import org.scalatest._
 class SanityTest extends FunSuite {
 
     test("simple test") {
-        val m = new VectorTileDecoder()
-        println(m)
+        val vt = new VectorTile("data/test.mvt")
+        println(vt)
     }
 
 }
