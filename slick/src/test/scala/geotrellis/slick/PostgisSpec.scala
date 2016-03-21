@@ -218,11 +218,10 @@ class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase with Sc
         (0, "paris", Some(pt(2.3470,48.8742))))
 
       db.run(OptCity ++= cities).futureValue
-
+     //For some reason isEmpty does not work
       val q1 = for {
-        c <- OptCity if c.geom isEmpty
+        c <- OptCity if !(c.geom isDefined)
       } yield (c.name, c.geom)
-
       db.run(q1.result).futureValue.toList should equal (List(("london",None)))
 
       val q2 = for {
