@@ -29,13 +29,13 @@ case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
 }
 case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColors { c => c.toRGB }
+   colorMap.mapColors { c => c.toARGB }
 }
 
 // indexed color, using separate rgb and alpha channels
 case class IndexedPngEncoding(rgbs: Array[Int], as: Array[Int]) extends PngColorEncoding(3, 1) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColorsToIndex()
+   colorMap.mapColorsToIndex().withNoDataColor(255)
 }
 
 // greyscale and color rasters with an alpha byte
@@ -60,12 +60,13 @@ object PngColorEncoding {
       var i = 0
       while (i < len) {
         val c = colors(i)
-        rgbs(i) = c.int
+        rgbs(i) = c.toARGB
         as(i) = c.alpha
         i += 1
       }
-      rgbs(255) = 0
-      as(255) = 0
+
+      rgbs(255) = noDataColor.toARGB
+      as(255) = noDataColor.alpha
       IndexedPngEncoding(rgbs, as)
     } else {
       var opaque = true

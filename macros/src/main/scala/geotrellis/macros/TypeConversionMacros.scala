@@ -76,6 +76,11 @@ object TypeConversionMacros {
     c.Expr(q"""{ val n = $n ; if(n == Short.MinValue) { 0.toByte } else { n.toByte } }""")
   }
 
+  def s2us_impl(c: Context)(n: c.Expr[Short]): c.Expr[Short] = {
+    import c.universe._
+    c.Expr(q"""{ val n = $n ; if(n == Short.MinValue) { 0.toShort } else { n } }""")
+  }
+
   def s2i_impl(c: Context)(n: c.Expr[Short]): c.Expr[Int] = {
     import c.universe._
     c.Expr(q"""{ val n = $n ; if(n == Short.MinValue) { Int.MinValue } else { n.toInt } }""")
@@ -138,9 +143,9 @@ object TypeConversionMacros {
     c.Expr(q"""{ val n = $n ; if(n == Int.MinValue) { Short.MinValue } else { n.toShort } }""")
   }
 
-  def i2us_impl(c: Context)(n: c.Expr[Int]): c.Expr[Byte] = {
+  def i2us_impl(c: Context)(n: c.Expr[Int]): c.Expr[Short] = {
     import c.universe._
-    c.Expr(q"""{ val n = $n ; if(n == Int.MinValue) { 0.toShort } else { n.toByte } }""")
+    c.Expr(q"""{ val n = $n ; if(n == Int.MinValue) { 0.toShort } else { n.toShort } }""")
   }
 
   def i2f_impl(c: Context)(n: c.Expr[Int]): c.Expr[Float] = {
@@ -181,7 +186,7 @@ object TypeConversionMacros {
 
   def f2d_impl(c: Context)(n: c.Expr[Float]): c.Expr[Double] = {
     import c.universe._
-    c.Expr(q"""{ val n = $n ; if(java.lang.Float.isNaN(n)) { Double.NaN } else { n.toDouble } }""")
+    c.Expr(q"""$n.toDouble""")
   }
 
 
@@ -212,7 +217,7 @@ object TypeConversionMacros {
 
   def d2f_impl(c: Context)(n: c.Expr[Double]): c.Expr[Float] = {
     import c.universe._
-    c.Expr(q"""{ val n = $n ; if(java.lang.Double.isNaN(n)) { Float.NaN } else { n.toFloat } }""")
+    c.Expr(q"""$n.toFloat""")
   }
 
 }

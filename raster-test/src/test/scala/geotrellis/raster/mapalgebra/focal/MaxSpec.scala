@@ -115,7 +115,27 @@ class MaxSpec extends FunSpec with Matchers with TileBuilders with RasterMatcher
       val input = createCompositeTile(tile, TileLayout(3, 2, 3, 2))
       assertEqual(input.focalMax(Circle(1)), createTile(expected, 9, 4))
     }
+
+    it("should perserve NoData values for Double tiles"){
+      val tile = ArrayTile.empty(DoubleConstantNoDataCellType, 5, 5)
+      val res = tile.focalMax(Square(1))
+      res.foreach( v => assert(isNoData(v)) )
+    }
+
+    it("should preserve source tile cell type for floating point tiles"){
+      val cellType = FloatUserDefinedNoDataCellType(13.3f)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      val res = tile.focalMax(Square(1))
+      assert(res.cellType == cellType)
+      res.foreachDouble( v => assert(isNoData(v)) )
+    }
+
+    it("should preserve source tile cell type for integer tiles"){
+      val cellType = ShortUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      val res = tile.focalMax(Square(1))
+      assert(res.cellType == cellType)
+      res.foreach( v => assert(isNoData(v)) )
+    }
   }
-
-
 }

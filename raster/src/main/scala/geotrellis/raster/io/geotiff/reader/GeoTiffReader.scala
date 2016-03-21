@@ -73,7 +73,8 @@ object GeoTiffReader {
           info.decompressor,
           info.segmentLayout,
           info.compression,
-          info.cellType
+          info.cellType,
+          Some(info.bandType)
         )
       } else {
         GeoTiffMultibandTile(
@@ -83,7 +84,8 @@ object GeoTiffReader {
           info.compression,
           info.bandCount,
           info.hasPixelInterleave,
-          info.cellType
+          info.cellType,
+          Some(info.bandType)
         ).band(0)
       }
 
@@ -115,7 +117,8 @@ object GeoTiffReader {
         info.compression,
         info.bandCount,
         info.hasPixelInterleave,
-        info.cellType
+        info.cellType,
+        Some(info.bandType)
       )
 
     new MultibandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
@@ -175,11 +178,11 @@ object GeoTiffReader {
         IntCellType
       // UInt32
       case (UInt32BandType, Some(nd)) if (nd.toLong > 0L && nd.toLong <= 4294967295L) =>
-        UIntUserDefinedNoDataCellType(nd.toInt)
+        FloatUserDefinedNoDataCellType(nd.toFloat)
       case (UInt32BandType, Some(nd)) if (nd.toLong == 0L) =>
-        IntConstantNoDataCellType
+        FloatConstantNoDataCellType
       case (UInt32BandType, _) =>
-        UIntCellType
+        FloatCellType
       // Float32
       case (Float32BandType, Some(nd)) if (isData(nd) & Float.MinValue.toDouble <= nd & Float.MaxValue.toDouble >= nd) =>
         FloatUserDefinedNoDataCellType(nd.toFloat)

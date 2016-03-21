@@ -148,16 +148,19 @@ case class CompositeTile(tiles: Seq[Tile],
 
   val cellType: CellType = tiles(0).cellType
 
-  def convert(cellType: CellType): Tile =
-    LazyConvertedArrayTile(this, cellType)
+  def convert(targetCellType: CellType): Tile =
+    mutable(targetCellType)
 
   def toArrayTile(): ArrayTile = mutable
 
-  def mutable(): MutableArrayTile = {
+  def mutable(): MutableArrayTile =
+    mutable(cellType)
+
+  def mutable(targetCellType: CellType): MutableArrayTile = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.")
     } else {
-      val tile = ArrayTile.alloc(cellType, cols, rows)
+      val tile = ArrayTile.alloc(targetCellType, cols, rows)
       val len = cols * rows
       val layoutCols = tileLayout.layoutCols
       val layoutRows = tileLayout.layoutRows

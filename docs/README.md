@@ -32,6 +32,7 @@ GeoTrellis.
   - [spark layer metadata](spark/spark-metadata.md)
   - [spark input/output](spark/spark-io.md)
 - [geotrellis.spark-etl](spark/spark-intro.md)
+- [geotrellis.util](util/util-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)
   - [geojson support](vector/geojson-support.md)
   - [kriging interpolation](vector/kriging-interpolation.md)
