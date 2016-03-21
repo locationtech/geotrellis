@@ -23,6 +23,10 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
+import java.io._
+import java.awt.Color
+import javax.imageio._
+
 class ColorMapSpec extends FunSpec with Matchers
                                    with TileBuilders {
   describe("color map construction") {
@@ -78,8 +82,8 @@ class ColorMapSpec extends FunSpec with Matchers
       val r = createTile(arr)
 
       val color: IndexedPngEncoding =
-        PngColorEncoding(colorMap.colors, colorMap.options.noDataColor) match {
-          case i @ IndexedPngEncoding(_,_) => i
+        PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.fallbackColor) match {
+          case i @ IndexedPngEncoding(_, _) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }
         }
@@ -102,8 +106,8 @@ class ColorMapSpec extends FunSpec with Matchers
       val r = createTile(arr)
 
       val color: IndexedPngEncoding =
-        PngColorEncoding(colorMap.colors, colorMap.options.noDataColor) match {
-          case i @ IndexedPngEncoding(_,_) => i
+        PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.noDataColor) match {
+          case i @ IndexedPngEncoding(_, _) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }
         }
@@ -113,6 +117,34 @@ class ColorMapSpec extends FunSpec with Matchers
       colorMap.map(30) should be (20)
       colorMap.map(40) should be (20)
       colorMap.map(50) should be (30)
+    }
+    it("should render transparent pixels for nodata and unmapped values on Double tiles"){
+      val arr = Array[Double](Double.NaN, 2.0, 9000.0)
+      val tile = DoubleArrayTile(arr, 3, 1)
+      val cmap = ColorMap(Map[Double, Int](3.0 -> 0xFF0000FF))
+      val png = tile.renderPng(cmap)
+
+      val img = ImageIO.read(new ByteArrayInputStream(png.bytes))
+
+      val nd = new Color(img.getRGB(0, 0), true)
+      nd.getAlpha should be (0)
+
+      val fallback = new Color(img.getRGB(2, 0), true)
+      fallback.getAlpha should be (0)
+    }
+    it("should render transparent pixels for nodata and unmapped values on Int tiles"){
+      val arr = Array[Int](Int.MinValue, 2, 9000)
+      val tile = IntArrayTile(arr, 3, 1)
+      val cmap = ColorMap(Map[Int, Int](3 -> 0xFF0000FF))
+      val png = tile.renderPng(cmap)
+
+      val img = ImageIO.read(new ByteArrayInputStream(png.bytes))
+
+      val nd = new Color(img.getRGB(0, 0), true)
+      nd.getAlpha should be (0)
+
+      val fallback = new Color(img.getRGB(2, 0), true)
+      fallback.getAlpha should be (0)
     }
   }
 }

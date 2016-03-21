@@ -21,7 +21,7 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(self)
 
   def renderPng(colorMap: ColorMap): Png = {
-    val colorEncoding = PngColorEncoding(colorMap.colors, colorMap.options.noDataColor)
+    val colorEncoding = PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.fallbackColor)
     val convertedColorMap = colorEncoding.convertColorMap(colorMap)
     renderPng(colorEncoding, convertedColorMap)
   }
