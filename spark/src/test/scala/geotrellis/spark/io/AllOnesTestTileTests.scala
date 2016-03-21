@@ -17,12 +17,12 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, TileLayerMe
 
     describe(s"AllOnes query tests for  $keyIndexMethodName") {
       it("filters past layout bounds") {
-        query.where(Intersects(GridBounds(6, 2, 7, 3))).toRDD.keys.collect() should
+        query.where(Intersects(GridBounds(6, 2, 7, 3))).result.keys.collect() should
         contain theSameElementsAs Array(SpatialKey(6, 3), SpatialKey(6, 2))
       }
 
       it("query inside layer bounds") {
-        val actual = query.where(Intersects(bounds1)).toRDD.keys.collect()
+        val actual = query.where(Intersects(bounds1)).result.keys.collect()
         val expected = for ((x, y) <- bounds1.coords) yield SpatialKey(x, y)
 
         if (expected.diff(actual).nonEmpty)
@@ -34,11 +34,11 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, TileLayerMe
       }
 
       it("query outside of layer bounds") {
-        query.where(Intersects(GridBounds(10, 10, 15, 15))).toRDD.collect() should be(empty)
+        query.where(Intersects(GridBounds(10, 10, 15, 15))).result.collect() should be(empty)
       }
 
       it("disjoint query on space") {
-        val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).toRDD.keys.collect()
+        val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).result.keys.collect()
         val expected = for ((x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x, y)
 
         if (expected.diff(actual).nonEmpty)
@@ -51,7 +51,7 @@ trait AllOnesTestTileTests { self: PersistenceSpec[SpatialKey, Tile, TileLayerMe
 
       it("should filter by extent") {
         val extent = Extent(-10, -10, 10, 10) // this should intersect the four central tiles in 8x8 layout
-        query.where(Intersects(extent)).toRDD.keys.collect() should
+        query.where(Intersects(extent)).result.keys.collect() should
         contain theSameElementsAs {
           for ((col, row) <- GridBounds(3, 3, 4, 4).coords) yield SpatialKey(col, row)
         }

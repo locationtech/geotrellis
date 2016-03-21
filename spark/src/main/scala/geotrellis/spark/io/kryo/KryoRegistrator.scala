@@ -18,9 +18,6 @@ package geotrellis.spark.io.kryo
 
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
-import org.apache.avro.Schema
-import org.apache.avro.Schema.{Field, Type}
-
 import com.esotericsoftware.kryo.Kryo
 import de.javakaffee.kryoserializers._
 
@@ -106,7 +103,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.ConstantTile])
     kryo.register(classOf[geotrellis.raster.CroppedTile])
     kryo.register(classOf[geotrellis.raster.DoubleConstantNoDataArrayTile])
-    kryo.register(classOf[geotrellis.raster.EmptyTile])
     kryo.register(classOf[geotrellis.raster.FloatConstantNoDataArrayTile])
     kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataArrayTile])
     kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataCellType])
@@ -150,9 +146,10 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(geotrellis.raster.UByteUserDefinedNoDataCellType.getClass)
     kryo.register(geotrellis.raster.ShortUserDefinedNoDataCellType.getClass)
     kryo.register(geotrellis.raster.UShortUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.IntUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.FloatUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.DoubleUserDefinedNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.DoubleUserDefinedNoDataCellType])
+    kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataCellType])
+    kryo.register(classOf[geotrellis.raster.IntUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.IntUserDefinedNoDataCellType])
     kryo.register(classOf[geotrellis.raster.UByteArrayTile])
     kryo.register(classOf[geotrellis.raster.UByteRawArrayTile])
     kryo.register(classOf[geotrellis.raster.UShortArrayTile])
@@ -192,6 +189,8 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[org.osgeo.proj4j.datum.Grid])
     kryo.register(classOf[org.osgeo.proj4j.datum.PrimeMeridian])
     kryo.register(classOf[org.osgeo.proj4j.proj.LambertConformalConicProjection])
+    kryo.register(classOf[org.osgeo.proj4j.proj.LongLatProjection])
+    kryo.register(classOf[org.osgeo.proj4j.units.DegreeUnit])
     kryo.register(classOf[org.osgeo.proj4j.units.Unit])
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofInt])
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofRef])
@@ -205,12 +204,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.math.Ordering.Int.getClass)
     kryo.register(scala.math.Ordering.Long.getClass)
     kryo.register(scala.None.getClass)
-
-    /* Special Handling: Avro */
-    kryo.register(new Field("a", Schema.create(Type.NULL), null, null: Object).order.getClass)
-    classOf[org.apache.avro.Schema]
-      .getDeclaredClasses
-      .foreach({ c => kryo.register(c) })
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
     SynchronizedCollectionsSerializer.registerSerializers( kryo )

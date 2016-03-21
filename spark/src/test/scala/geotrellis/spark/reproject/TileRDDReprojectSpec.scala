@@ -10,8 +10,6 @@ import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.vector._
-import geotrellis.vector.io.json._
-import geotrellis.vector.reproject._
 
 import geotrellis.proj4._
 

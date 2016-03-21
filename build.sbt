@@ -12,6 +12,7 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
+    "-feature",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
     "-language:higherKinds",
@@ -54,8 +55,19 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = Project("geotrellis", file(".")).
-  dependsOn(raster, vector, proj4, spark).
-  aggregate(raster, vector, proj4, spark).
+  aggregate(
+    raster,
+    rasterTest,
+    vector,
+    vectorTest,
+    proj4,
+    spark,
+    sparkEtl,
+    s3,
+    accumulo,
+    slick,
+    benchmark
+  ).
   settings(commonSettings: _*).
   settings(
     scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
@@ -106,7 +118,7 @@ lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
-lazy val geotrellisSlick = Project("slick", file("slick")).
+lazy val slick = Project("slick", file("slick")).
   dependsOn(vector).
   settings(commonSettings: _*)
 

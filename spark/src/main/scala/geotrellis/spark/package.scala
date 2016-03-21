@@ -31,7 +31,7 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
-import monocle.Lens
+import monocle.PLens
 import monocle.syntax._
 
 import scala.reflect.ClassTag
@@ -39,24 +39,24 @@ import scalaz.Functor
 
 package object spark
     extends buffer.Implicits
-    with mask.Implicits
-    with merge.Implicits
-    with reproject.Implicits
-    with tiling.Implicits
-    with stitch.Implicits
+    with crop.Implicits
+    with filter.Implicits
+    with join.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits
     with mapalgebra.focal.Implicits
+    with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.zonal.Implicits
+    with mask.Implicits
+    with merge.Implicits
+    with partition.Implicits
+    with resample.Implicits
+    with reproject.Implicits
+    with stitch.Implicits
     with summary.polygonal.Implicits
     with summary.Implicits
-    with mapalgebra.focal.hillshade.Implicits
-    with partitioner.Implicits
-    with crop.Implicits
-    with filter.Implicits
-    with Serializable // required for java serialization, even though it's mixed in
-{
+    with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
 
   object TileLayerRDD {
@@ -70,11 +70,11 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type Component[T, C] = Lens[T, C]
+  type Component[T, C] = PLens[T, T, C, C]
 
   object Component {
     def apply[T, C](get: T => C, set: (T, C) => T): Component[T, C] =
-      Lens[T, C](get)(c => t => set(t, c))
+      PLens[T, T, C, C](get)(c => t => set(t, c))
   }
 
   implicit def identityComponent[T]: Component[T, T] =
@@ -115,16 +115,16 @@ package object spark
     ContextRDD(tup._1, tup._2)
 
   implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
-    extends ContextRDDMethods[K, V, M](rdd)
+      extends ContextRDDMethods[K, V, M](rdd)
 
-  implicit class withTileLayerRDDMethods[K](val self: TileLayerRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends TileLayerRDDMethods[K]
+  implicit class withTileLayerRDDMethods[K: ClassTag: SpatialComponent](val self: TileLayerRDD[K])
+      extends TileLayerRDDMethods[K]
 
   implicit class withTileLayerRDDMaskMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends mask.TileLayerRDDMaskMethods[K]
 
-  implicit class withMultibandTileLayerRDDMethods[K](val self: MultibandTileLayerRDD[K])(implicit val keyClassTag: ClassTag[K])
-    extends MultibandTileLayerRDDMethods[K]
+  implicit class withMultibandTileLayerRDDMethods[K: ClassTag: SpatialComponent](val self: MultibandTileLayerRDD[K])
+      extends MultibandTileLayerRDDMethods[K]
 
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =

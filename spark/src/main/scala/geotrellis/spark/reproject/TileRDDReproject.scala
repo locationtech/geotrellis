@@ -1,10 +1,5 @@
 package geotrellis.spark.reproject
 
-import geotrellis.spark._
-import geotrellis.spark.mapalgebra._
-import geotrellis.spark.ingest._
-import geotrellis.spark.tiling._
-import geotrellis.spark.buffer._
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.crop._
@@ -13,8 +8,12 @@ import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
 import geotrellis.raster.stitch._
+import geotrellis.spark._
+import geotrellis.spark.mapalgebra._
+import geotrellis.spark.ingest._
+import geotrellis.spark.tiling._
+import geotrellis.spark.buffer._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel

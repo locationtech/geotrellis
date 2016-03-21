@@ -3,7 +3,6 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 object MapKeyTransform {
@@ -36,19 +35,25 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   def apply(otherExtent: Extent): GridBounds = {
     val SpatialKey(colMin, rowMin) = apply(otherExtent.xmin, otherExtent.ymax)
 
-    // Pay attention to the exclusitivity of the east and south extent border.
+    // For calculating GridBounds, the extent parameter is considered
+    // inclusive on it's north and west borders, and execlusive on
+    // it's east and south borders.
+    // If the Extent has xmin == xmax and/or ymin == ymax, then consider
+    // those zero length dimensions to represent the west and/or east
+    // borders (so they are inclusive). In this case, the tiles returned
+    // will be south and/or east of the line or point.
     val colMax = {
-      val d = (otherExtent.xmax - extent.xmin) / extent.width
+      val d = (otherExtent.xmax - extent.xmin) / (extent.width / layoutCols)
 
-      if(d == math.floor(d)) { (d * layoutCols).toInt - 1 }
-      else { (d * layoutCols).toInt }
+      if(d == math.floor(d) && d != colMin) { d.toInt - 1 }
+      else { d.toInt }
     }
 
     val rowMax = {
-      val d = (extent.ymax - otherExtent.ymin) / extent.height
+      val d = (extent.ymax - otherExtent.ymin) / (extent.height / layoutRows)
 
-      if(d == math.floor(d)) { (d * layoutRows).toInt - 1 }
-      else { (d * layoutRows).toInt }
+      if(d == math.floor(d) && d != rowMin) { d.toInt - 1 }
+      else { d.toInt }
     }
 
     GridBounds(colMin, rowMin, colMax, rowMax)

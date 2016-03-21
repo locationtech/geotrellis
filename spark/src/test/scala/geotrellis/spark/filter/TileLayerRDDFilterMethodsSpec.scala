@@ -22,6 +22,7 @@ import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
+import geotrellis.vector._
 
 import org.scalatest.FunSpec
 
@@ -60,7 +61,8 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
     }
 
     it ("should produce an RDD whose keys are of type SpatialKey") {
-      tileLayerRdd.toSpatial(1).first._1 should be (SpatialKey(0,0))
+      val spatial = tileLayerRdd.toSpatial(1)
+      spatial.first._1 should be (SpatialKey(0,0))
     }
   }
 
@@ -75,28 +77,43 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
     val noKeys = KeyBounds(SpatialKey(5,5), SpatialKey(6,6))
 
     it("should correctly filter by a covering range") {
-      val query = rdd.filterByKeyBounds(List(allKeys))
-      query.count should be (25)
+      val filteredRdd = rdd.filterByKeyBounds(List(allKeys))
+      filteredRdd.count should be (25)
     }
 
     it("should correctly filter by an intersecting range") {
-      val query = rdd.filterByKeyBounds(List(someKeys))
-      query.count should be (9)
+      val filteredRdd = rdd.filterByKeyBounds(List(KeyBounds(SpatialKey(2, 2), SpatialKey(5, 5))))
+      filteredRdd.count should be (9)
+      filteredRdd.metadata.bounds.get should be (KeyBounds(SpatialKey(2, 2), SpatialKey(4, 4)))
     }
 
     it("should correctly filter by an intersecting range given as a singleton") {
-      val query = rdd.filterByKeyBounds(someKeys)
-      query.count should be (9)
+      val filteredRdd = rdd.filterByKeyBounds(someKeys)
+      filteredRdd.count should be (9)
     }
 
     it("should correctly filter by a non-intersecting range") {
-      val query = rdd.filterByKeyBounds(List(noKeys))
-      query.count should be (0)
+      val filteredRdd = rdd.filterByKeyBounds(List(noKeys))
+      filteredRdd.count should be (0)
     }
 
     it("should correctly filter by multiple ranges") {
-      val query = rdd.filterByKeyBounds(List(someKeys, moreKeys, noKeys))
-      query.count should be (10)
+      val filteredRdd = rdd.filterByKeyBounds(List(someKeys, moreKeys, noKeys))
+      filteredRdd.count should be (10)
+    }
+
+    it("should filter query by extent") {
+      val md = rdd.metadata
+      val Extent(xmin, ymin, xmax, ymax) = md.extent
+      val half = Extent(xmin, ymin, xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2)
+
+      val filteredRdd = rdd.filter().where(Intersects(half)).result
+
+      val count = filteredRdd.count
+      count should be (9)
+
+      val gb = filteredRdd.metadata.bounds.get.toGridBounds
+      gb.width * gb.height should be (9)
     }
   }
 }

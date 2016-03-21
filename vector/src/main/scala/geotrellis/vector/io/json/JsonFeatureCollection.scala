@@ -3,10 +3,10 @@ package geotrellis.vector.io.json
 import spray.json._
 
 import geotrellis.vector._
+import geotrellis.vector.io._
 import scala.util.{Try, Success, Failure}
 import scala.collection.mutable
 import scala.collection.immutable.VectorBuilder
-import FeatureFormats._
 import DefaultJsonProtocol._
 
 /**
@@ -64,7 +64,7 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
     ret.result()
   }
 
-  def getAllFeatures[F <: Feature[_, _] :JsonReader]: Vector[F] = 
+  def getAllFeatures[F <: Feature[_, _] :JsonReader]: Vector[F] =
     getAll[F]
 
   def getAllPointFeatures[D: JsonReader]()         = getAll[PointFeature[D]]

@@ -36,9 +36,9 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .reduce { _ merge _ }
   }
 
-  def doubleHistogram: Histogram[Double] = {
+  def histogramDouble: Histogram[Double] = {
     self
-      .map { case (key, tile) => tile.doubleHistogram }
+      .map { case (key, tile) => tile.histogramDouble }
       .reduce { _ merge _ }
   }
 
@@ -46,7 +46,7 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
     histogram.quantileBreaks(numBreaks)
 
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    doubleHistogram.quantileBreaks(numBreaks)
+    histogramDouble.quantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
     self.map(_._2.findMinMax)

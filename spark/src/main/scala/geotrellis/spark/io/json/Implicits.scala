@@ -6,9 +6,9 @@ import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.spark.util._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
-import geotrellis.raster.io.json._
+import geotrellis.raster.io._
 import geotrellis.vector._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
 
 import com.github.nscala_time.time.Imports._
 import org.apache.avro.Schema
@@ -64,7 +64,7 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
       }
   }
 
-  implicit def tileLayerMetadataFormat[K: JsonFormat] = new RootJsonFormat[TileLayerMetadata[K]] {
+  implicit def tileLayerMetadataFormat[K: SpatialComponent: JsonFormat] = new RootJsonFormat[TileLayerMetadata[K]] {
     def write(metadata: TileLayerMetadata[K]) =
       JsObject(
         "cellType" -> metadata.cellType.toJson,

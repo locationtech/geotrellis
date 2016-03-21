@@ -11,7 +11,7 @@ case class MultibandGeoTiff(
   val crs: CRS,
   val tags: Tags,
   options: GeoTiffOptions
-) extends GeoTiff[MultibandTile] with SimpleMultibandTile {
+) extends GeoTiff[MultibandTile] {
   val cellType = tile.cellType
 
   def mapTile(f: MultibandTile => MultibandTile): MultibandGeoTiff =
@@ -22,23 +22,6 @@ case class MultibandGeoTiff(
       case gtt: GeoTiffMultibandTile => gtt
       case _ => GeoTiffMultibandTile(tile)
     }
-
-  def bands(bandSequence: Seq[Int]): ArrayMultibandTile = {
-    val mbTile = this.tile
-    val newBands = Array.ofDim[Tile](bandSequence.size)
-    var i = 0
-
-    require(bandSequence.size <= mbTile.bandCount)
-    bandSequence.foreach({ j =>
-      newBands(i) = mbTile.band(j)
-      i += 1
-    })
-
-    new ArrayMultibandTile(newBands)
-  }
-
-  def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultibandTile =
-    bands(bandSequence)
 }
 
 object MultibandGeoTiff {

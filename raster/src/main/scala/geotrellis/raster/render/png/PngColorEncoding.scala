@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,40 +18,39 @@ package geotrellis.raster.render.png
 
 import geotrellis.raster.render._
 
-sealed abstract class PngColorEncoding(val n:Byte, val depth:Int) {
- def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T]
+sealed abstract class PngColorEncoding(val n: Byte, val depth: Int) {
+ def convertColorMap(colorMap: ColorMap): ColorMap
 }
 
 // greyscale and color opaque rasters
 case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
- def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
-   classifier.mapColors { c => new RGBA(c.blue) }
+ def convertColorMap(colorMap: ColorMap): ColorMap =
+   colorMap.mapColors { c => c.blue }
 }
 case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
- def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
-   classifier.mapColors { c => c.toRGB }
+ def convertColorMap(colorMap: ColorMap): ColorMap =
+   colorMap.mapColors { c => c.toRGB }
 }
 
 // indexed color, using separate rgb and alpha channels
-case class IndexedPngEncoding(rgbs:Array[Int], as:Array[Int]) extends PngColorEncoding(3, 1) {
- def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
-   classifier.self
+case class IndexedPngEncoding(rgbs: Array[Int], as: Array[Int]) extends PngColorEncoding(3, 1) {
+ def convertColorMap(colorMap: ColorMap): ColorMap =
+   colorMap.mapColorsToIndex()
 }
 
 // greyscale and color rasters with an alpha byte
 case object GreyaPngEncoding extends PngColorEncoding(4, 4) {
- def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
-   classifier.mapColors { c => RGBA(c.int & 0xffff) }
+ def convertColorMap(colorMap: ColorMap): ColorMap =
+   colorMap.mapColors { c => c.int & 0xffff }
 }
 
 case object RgbaPngEncoding extends PngColorEncoding(6, 4) {
- def convertColorClassifier[T](classifier: ColorClassifier[T]): classifier.ClassifierInstance[T] =
-   classifier.self
+ def convertColorMap(colorMap: ColorMap): ColorMap =
+   colorMap
 }
 
-
 object PngColorEncoding {
-  def apply(colors: Array[RGBA], noDataColor: RGBA): PngColorEncoding = {
+  def apply(colors: Vector[Int], noDataColor: Int): PngColorEncoding = {
     val len = colors.length
     if(len <= 256) {
       val indices = (0 until len).toArray

@@ -65,7 +65,6 @@ object InterfaceSpec {
 
 
     // Chaining updates on results of spatialJoin is different because they produce Metadata
-    import geotrellis.spark.partitioner._
     def updateLayout(md: TileLayerMetadata[SpatialKey], bounds: Bounds[SpatialKey]): TileLayerMetadata[SpatialKey] = ???
 
     rdd1.spatialJoin(rdd2)

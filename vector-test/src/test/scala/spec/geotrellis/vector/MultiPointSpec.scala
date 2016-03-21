@@ -94,7 +94,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     // -- Union
 
     it("should union itself and merge points") {
-      val mp = 
+      val mp =
         MultiPoint(
           (0.0, 0.0),
           (1.0, 1.0),
@@ -102,14 +102,14 @@ class MultiPointSpec extends FunSpec with Matchers {
           (2.0, 2.0)
         )
 
-      val expected = 
+      val expected =
         MultiPoint(
           (0.0, 0.0),
           (1.0, 1.0),
           (2.0, 2.0)
         )
 
-      val actual = 
+      val actual =
         mp.union match {
           case MultiPointResult(mp) => mp
           case PointResult(p) => MultiPoint(p)
@@ -363,7 +363,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val mp = MultiPoint(Point(1,1), Point(2,2), Point(3,13))
       val result = mp.convexHull()
       result match {
-        case Polygon(_) => // expected
+        case PolygonResult(_) => // expected
         case _ => fail()
       }
     }
@@ -402,7 +402,7 @@ class MultiPointSpec extends FunSpec with Matchers {
 
     it ("should cross a MultiPolygon") {
       val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
-      val mpoly = 
+      val mpoly =
         MultiPolygon(Seq(Polygon(Line(Point(3,3), Point(3,6), Point(6,6), Point(6,3), Point(3,3)))))
       mp.crosses(mpoly) should be (true)
     }
@@ -432,7 +432,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should maintain immutability over normalization") {
-      val mp = MultiPoint(Point(2,2), Point(1,1), Point(3,2), Point(1,1))      
+      val mp = MultiPoint(Point(2,2), Point(1,1), Point(3,2), Point(1,1))
       val expected = mp.jtsGeom.clone
       mp.normalized
       mp.jtsGeom.equals(expected) should be (true)
@@ -440,13 +440,13 @@ class MultiPointSpec extends FunSpec with Matchers {
 
     it ("should maintain immutability over points") {
       val mp = MultiPoint(Point(1,1), Point(2,2))
-      
+
       val expected = mp.jtsGeom.clone
 
       val coord = mp.points(0).jtsGeom.getCoordinate()
       val newCoord = Point(5,5).jtsGeom.getCoordinate()
       coord.setCoordinate(newCoord)
-      
+
       mp.jtsGeom.equals(expected) should be (true)
     }
 

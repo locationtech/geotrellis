@@ -25,11 +25,6 @@ internalDependencyClasspath in Test <++=
 fork in Test := false
 parallelExecution in Test := false
 
-javaOptions ++= List(
-  "-Xmx2G",
-  "-XX:MaxPermSize=384m",
-  "-Dsun.io.serialization.extendedDebugInfo=true")
-
 initialCommands in console :=
   """
   import geotrellis.raster._

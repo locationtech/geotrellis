@@ -8,14 +8,14 @@ import geotrellis.vector._
 package object testkit {
   object GeometryMatcher {
     def apply[T <: Geometry](geom: T, t: Double, matchFunc: (T,T, Double) => Boolean) =
-      new GeometryMatcher[T] { 
+      new GeometryMatcher[T] {
         val g = geom
         val tolerance = t
         def doMatch(left: T): Boolean = matchFunc(left, g, tolerance)
       }
 
     def matchPoint(p1: Point, p2: Point, tolerance: Double): Boolean =
-      math.abs(p1.x - p2.x) < tolerance && math.abs(p1.y - p2.y) < tolerance
+      math.abs(p1.x - p2.x) <= tolerance && math.abs(p1.y - p2.y) <= tolerance
 
     def matchLine(l1: Line, l2: Line, tolerance: Double): Boolean =
       l1.normalized.points.zip(l2.normalized.points)
@@ -58,7 +58,7 @@ package object testkit {
     val tolerance:Double
     def doMatch(left: T): Boolean
 
-    def apply(left: T) = 
+    def apply(left: T) =
       MatchResult(
         doMatch(left),
         s"""$left did not match $g within tolerance $tolerance """,
@@ -67,11 +67,24 @@ package object testkit {
   }
 
 
-  def matchGeom(g: Point, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchPoint)
-  def matchGeom(g: Line, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchLine)
-  def matchGeom(g: Polygon, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchPolygon)
+  def matchGeom(g: Point): GeometryMatcher[Point] = matchGeom(g, 0.0)
+  def matchGeom(g: Point, tolerance: Double): GeometryMatcher[Point] = GeometryMatcher(g, tolerance, GeometryMatcher.matchPoint)
+
+  def matchGeom(g: Line): GeometryMatcher[Line] = matchGeom(g, 0.0)
+  def matchGeom(g: Line, tolerance: Double): GeometryMatcher[Line] = GeometryMatcher(g, tolerance, GeometryMatcher.matchLine)
+
+  def matchGeom(g: Polygon): GeometryMatcher[Polygon] = matchGeom(g, 0.0)
+  def matchGeom(g: Polygon, tolerance: Double): GeometryMatcher[Polygon] = GeometryMatcher(g, tolerance, GeometryMatcher.matchPolygon)
+
+  def matchGeom(g: MultiPoint): GeometryMatcher[MultiPoint] = matchGeom(g, 0.0)
   def matchGeom(g: MultiPoint, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiPoint)
-  def matchGeom(g: MultiLine, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiLine)
-  def matchGeom(g: MultiPolygon, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiPolygon)
-  def matchGeom(g: GeometryCollection, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchGeometryCollection)
+
+  def matchGeom(g: MultiLine): GeometryMatcher[MultiLine] = matchGeom(g, 0.0)
+  def matchGeom(g: MultiLine, tolerance: Double): GeometryMatcher[MultiLine] = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiLine)
+
+  def matchGeom(g: MultiPolygon): GeometryMatcher[MultiPolygon] = matchGeom(g, 0.0)
+  def matchGeom(g: MultiPolygon, tolerance: Double): GeometryMatcher[MultiPolygon] = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiPolygon)
+
+  def matchGeom(g: GeometryCollection): GeometryMatcher[GeometryCollection] = matchGeom(g, 0.0)
+  def matchGeom(g: GeometryCollection, tolerance: Double): GeometryMatcher[GeometryCollection] = GeometryMatcher(g, tolerance, GeometryMatcher.matchGeometryCollection)
 }

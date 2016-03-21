@@ -1,11 +1,10 @@
 package geotrellis.spark.tiling
 
-import geotrellis.spark._
-import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.proj4.util.UTM
+import geotrellis.raster._
+import geotrellis.spark._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
 
 object ZoomedLayoutScheme {
   val EARTH_RADIUS = 6378137 // Use what gdal2tiles uses.
@@ -14,8 +13,18 @@ object ZoomedLayoutScheme {
   val DEFAULT_TILE_SIZE = 256
   val DEFAULT_RESOLUTION_THRESHOLD = 0.1
 
+  def layoutColsForZoom(level: Int): Int = math.pow(2, level).toInt
+  def layoutRowsForZoom(level: Int): Int = math.pow(2, level).toInt
+
+
   def apply(crs: CRS, tileSize: Int = DEFAULT_TILE_SIZE, resolutionThreshold: Double = DEFAULT_RESOLUTION_THRESHOLD) =
     new ZoomedLayoutScheme(crs, tileSize, resolutionThreshold)
+
+  def layoutForZoom(zoom: Int, layoutExtent: Extent, tileSize: Int = DEFAULT_TILE_SIZE): LayoutDefinition = {
+    if(zoom < 1)
+      sys.error("TMS Tiling scheme does not have levels below 1")
+    LayoutDefinition(layoutExtent, TileLayout(layoutColsForZoom(zoom), layoutRowsForZoom(zoom), tileSize, tileSize))
+  }
 }
 
 /** Layout for zoom levels based off of a power-of-2 scheme,
@@ -33,6 +42,7 @@ object ZoomedLayoutScheme {
   * */
 class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: Double) extends LayoutScheme {
   import ZoomedLayoutScheme.EARTH_CIRCUMFERENCE
+  import ZoomedLayoutScheme.{layoutColsForZoom, layoutRowsForZoom}
 
   /** This will calcluate the closest zoom level based on the resolution in a UTM zone containing the point.
     * The calculated zoom level is up to some percentage (determined by the resolutionThreshold) less resolute then the cellSize.
@@ -71,9 +81,6 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
     zoom
   }
 
-  private def tileCols(level: Int): Int = math.pow(2, level).toInt
-  private def tileRows(level: Int): Int = math.pow(2, level).toInt
-
   def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
     val worldExtent = crs.worldExtent
     val l =
@@ -88,7 +95,7 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
   def levelForZoom(worldExtent: Extent, id: Int): LayoutLevel = {
     if(id < 1)
       sys.error("TMS Tiling scheme does not have levels below 1")
-    LayoutLevel(id, LayoutDefinition(worldExtent, TileLayout(tileCols(id), tileRows(id), tileSize, tileSize)))
+    LayoutLevel(id, LayoutDefinition(worldExtent, TileLayout(layoutColsForZoom(id), layoutRowsForZoom(id), tileSize, tileSize)))
   }
 
   def zoomOut(level: LayoutLevel) = {

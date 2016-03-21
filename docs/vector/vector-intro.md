@@ -61,11 +61,11 @@ assert(unwrapPoint(nonIntersection) == None)  // Or nothing at all
 
 Beyond the methods which come with any `Geometry` object there are
 implicits in many geotrellis modules which will extend Geometry
-capabilities. For instance, after importing `geotrellis.vector.io.json._`,
+capabilities. For instance, after importing `geotrellis.vector._`,
 it becomes possible to call the `toGeoJson` method on any `Geometry`:
 
 ```scala
-import geotrellis.vector.io.json._
+import geotrellis.vector._
 assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
 ```
 
@@ -206,4 +206,3 @@ the entities that call `geotrellis.vector` home:
 - `geotrellis.vector.io` defines input/output (serialization) of geometries
 - `geotrellis.vector.op` defines common operations on geometries
 - `geotrellis.vector.reproject` defines methods for translating between projections
-

@@ -2,8 +2,9 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.proj4.LatLng
+import geotrellis.proj4._
 import geotrellis.raster._
+import geotrellis.vector._
 
 import com.github.nscala_time.time.Imports._
 import org.scalatest._
@@ -80,6 +81,34 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
           case SpatialKey(1, 1) =>
             tile.toArray.distinct should be (Array(4 * multi))
         }
+      }
+    }
+
+    it("should pyramid Bounds[SpatialKey]") {
+      val md = TileLayerMetadata(
+        ByteCellType,
+        LayoutDefinition(
+          Extent(-2.0037508342789244E7, -2.0037508342789244E7,
+            2.0037508342789244E7, 2.0037508342789244E7),
+          TileLayout(8192,8192,256,256)
+        ),
+        Extent(-9634947.090382002, 4024185.376428919,
+          -9358467.589532925, 4300664.877277998),
+        WebMercator,
+        KeyBounds(SpatialKey(2126,3216),SpatialKey(2182,3273))
+      )
+
+      val scheme =  ZoomedLayoutScheme(WebMercator, 256)
+      var rdd = ContextRDD(sc.emptyRDD[(SpatialKey, Tile)], md)
+      var zoom: Int = 13
+
+      while (zoom > 0) {
+        val (newZoom, newRDD) = Pyramid.up(rdd, scheme, zoom)
+        val previousExtent = rdd.metadata.mapTransform(rdd.metadata.bounds.get.toGridBounds)
+        val nextExtent = newRDD.metadata.mapTransform(newRDD.metadata.bounds.get.toGridBounds)
+        nextExtent.contains(previousExtent) should be (true)
+        zoom = newZoom
+        rdd = newRDD
       }
     }
   }
