@@ -6,7 +6,7 @@ import geotrellis.spark.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark.io.s3._
-import geotrellis.spark.io.s3.SaveToS3Methods
+import geotrellis.spark.io.s3.SaveToS3
 
 import org.scalatest._
 
@@ -20,11 +20,11 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val template = "s3://mock-bucket/catalog/{name}/{z}/{x}/{y}.png"
       val id = LayerId("sample", 1)
       val bucket = "mock-bucket"
-      val keyToPath = SaveToS3Methods.spatialKeyToPath(id, template)
+      val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng()
       val maker = { () => new MockS3Client() }
 
-      SaveToS3Methods(keyToPath, rdd, maker)
+      SaveToS3(keyToPath, rdd, maker)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         mockClient.readBytes(bucket, s"catalog/sample/1/$col/$row.png") should be (bytes)
       }
@@ -34,11 +34,11 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val template = "s3://mock-bucket/catalog/{name}/{z}/{x}/{y}.jpg"
       val id = LayerId("sample", 1)
       val bucket = "mock-bucket"
-      val keyToPath = SaveToS3Methods.spatialKeyToPath(id, template)
+      val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng()
       val maker = { () => new MockS3Client() }
 
-      SaveToS3Methods(keyToPath, rdd, maker)
+      SaveToS3(keyToPath, rdd, maker)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         mockClient.readBytes(bucket, s"catalog/sample/1/$col/$row.jpg") should be (bytes)
       }
@@ -48,11 +48,11 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val template = "s3://mock-bucket/catalog/{name}/{z}/{x}/{y}.tiff"
       val id = LayerId("sample", 1)
       val bucket = "mock-bucket"
-      val keyToPath = SaveToS3Methods.spatialKeyToPath(id, template)
+      val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng()
       val maker = { () => new MockS3Client() }
 
-      SaveToS3Methods(keyToPath, rdd, maker)
+      SaveToS3(keyToPath, rdd, maker)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         mockClient.readBytes(bucket, s"catalog/sample/1/$col/$row.tiff") should be (bytes)
       }

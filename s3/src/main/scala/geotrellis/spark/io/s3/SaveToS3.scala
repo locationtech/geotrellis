@@ -16,7 +16,7 @@ import scalaz.stream._
 import scalaz.concurrent.Task
 
 
-object SaveToS3Methods {
+object SaveToS3 {
   /**
     * @param id           A Layer ID
     * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
@@ -45,7 +45,7 @@ object SaveToS3Methods {
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
-      require(uri.getScheme == "s3", s"SaveToS3Methods only supports s3 scheme: $uri")
+      require(uri.getScheme == "s3", s"SaveToS3 only supports s3 scheme: $uri")
       val bucket = uri.getAuthority
       val prefix = uri.getPath.substring(1) // drop the leading / from the prefix
       (bucket, prefix)
@@ -88,15 +88,5 @@ object SaveToS3Methods {
       results.run.unsafePerformSync
       pool.shutdown()
     }
-  }
-}
-
-class SaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) {
-  /**
-    * @param keyToPath A function from K (a key) to an S3 URI
-    * @param s3Client  An S3 Client (real or mock) into-which to save the data
-    */
-  def saveToS3(keyToPath: K => String): Unit = {
-    SaveToS3Methods(keyToPath, rdd, { () => S3Client.default })
   }
 }
