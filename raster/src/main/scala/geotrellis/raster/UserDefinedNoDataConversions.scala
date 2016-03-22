@@ -24,8 +24,8 @@ trait UserDefinedByteNoDataConversions {
   def s2udb(n: Short): Byte = if (n == Short.MinValue) userDefinedByteNoDataValue else n.toByte
   def us2udb(n: Short): Byte = if (n == 0.toShort) userDefinedByteNoDataValue else n.toByte
   def i2udb(n: Int): Byte = if (n == Int.MinValue) userDefinedByteNoDataValue else n.toByte
-  def f2udb(n: Float): Byte = if (n == Float.NaN) userDefinedByteNoDataValue else n.toByte
-  def d2udb(n: Double): Byte = if (n == Double.NaN) userDefinedByteNoDataValue else n.toByte
+  def f2udb(n: Float): Byte = if (isNoData(n)) userDefinedByteNoDataValue else n.toByte
+  def d2udb(n: Double): Byte = if (isNoData(n)) userDefinedByteNoDataValue else n.toByte
 }
 
 trait UserDefinedShortNoDataConversions {
@@ -48,8 +48,8 @@ trait UserDefinedShortNoDataConversions {
   def s2uds(n: Short): Short = if (n == Short.MinValue) userDefinedShortNoDataValue else n
   def us2uds(n: Short): Short = if (n == 0.toShort) userDefinedShortNoDataValue else n
   def i2uds(n: Int): Short = if (n == Int.MinValue) userDefinedShortNoDataValue else n.toShort
-  def f2uds(n: Float): Short = if (n == Float.NaN) userDefinedShortNoDataValue else n.toShort
-  def d2uds(n: Double): Short = if (n == Double.NaN) userDefinedShortNoDataValue else n.toShort
+  def f2uds(n: Float): Short = if (isNoData(n)) userDefinedShortNoDataValue else n.toShort
+  def d2uds(n: Double): Short = if (isNoData(n)) userDefinedShortNoDataValue else n.toShort
 }
 
 trait UserDefinedIntNoDataConversions {
@@ -69,8 +69,8 @@ trait UserDefinedIntNoDataConversions {
   def s2udi(n: Short): Int = if (n == Short.MinValue) userDefinedIntNoDataValue else n.toInt
   def us2udi(n: Short): Int = if (n == 0.toShort) userDefinedIntNoDataValue else n.toInt
   def i2udi(n: Int): Int = if (n == Int.MinValue) userDefinedIntNoDataValue else n
-  def f2udi(n: Float): Int = if (n == Float.NaN) userDefinedIntNoDataValue else n.toInt
-  def d2udi(n: Double): Int = if (n == Double.NaN) userDefinedIntNoDataValue else n.toInt
+  def f2udi(n: Float): Int = if (isNoData(n)) userDefinedIntNoDataValue else n.toInt
+  def d2udi(n: Double): Int = if (isNoData(n)) userDefinedIntNoDataValue else n.toInt
 }
 
 trait UserDefinedFloatNoDataConversions {
@@ -90,8 +90,8 @@ trait UserDefinedFloatNoDataConversions {
   def s2udf(n: Short): Float = if (n == Short.MinValue) userDefinedFloatNoDataValue else n.toFloat
   def us2udf(n: Short): Float = if (n == 0.toShort) userDefinedFloatNoDataValue else n.toFloat
   def i2udf(n: Int): Float = if (n == Int.MinValue) userDefinedFloatNoDataValue else n.toFloat
-  def f2udf(n: Float): Float = if (n == Float.NaN) userDefinedFloatNoDataValue else n
-  def d2udf(n: Double): Float = if (n == Double.NaN) userDefinedFloatNoDataValue else n.toFloat
+  def f2udf(n: Float): Float = if (isNoData(n)) userDefinedFloatNoDataValue else n
+  def d2udf(n: Double): Float = if (isNoData(n)) userDefinedFloatNoDataValue else n.toFloat
 }
 
 trait UserDefinedDoubleNoDataConversions {
@@ -111,6 +111,6 @@ trait UserDefinedDoubleNoDataConversions {
   def s2udd(n: Short): Double = if (n == Short.MinValue) userDefinedDoubleNoDataValue else n.toDouble
   def us2udd(n: Short): Double = if (n == 0.toShort) userDefinedDoubleNoDataValue else n.toDouble
   def i2udd(n: Int): Double = if (n == Int.MinValue) userDefinedDoubleNoDataValue else n.toDouble
-  def f2udd(n: Float): Double = if (n == Float.NaN) userDefinedDoubleNoDataValue else n.toDouble
-  def d2udd(n: Double): Double = if (n == Double.NaN) userDefinedDoubleNoDataValue else n
+  def f2udd(n: Float): Double = if (isNoData(n)) userDefinedDoubleNoDataValue else n.toDouble
+  def d2udd(n: Double): Double = if (isNoData(n)) userDefinedDoubleNoDataValue else n
 }

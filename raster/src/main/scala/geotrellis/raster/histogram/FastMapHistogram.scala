@@ -277,7 +277,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
       Some((zmin, zmax))
   }
 
-  def bucketCount() = size
+  def bucketCount() = used
 
   def merge(histogram: Histogram[Int]): Histogram[Int] = {
     val total = FastMapHistogram()

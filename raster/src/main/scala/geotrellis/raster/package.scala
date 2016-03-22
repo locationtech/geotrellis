@@ -31,14 +31,6 @@ package object raster
   type SinglebandRaster = Raster[Tile]
   type MultibandRaster = Raster[MultibandTile]
 
-  // Implicit conversion for unsigned integer celltypes; they are represented as 32bit floats
-  implicit def unsignedIntIsFloat(uintCellType: UIntCells with NoDataHandling) =
-    uintCellType match {
-      case UIntCellType => FloatCellType
-      case UIntConstantNoDataCellType => FloatConstantNoDataCellType
-      case UIntUserDefinedNoDataCellType(nd) => FloatUserDefinedNoDataCellType(nd)
-    }
-
   // Implicit method extension for core types
 
   implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
@@ -80,6 +72,9 @@ package object raster
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with reproject.MultibandTileReprojectMethods
+      with render.MultibandJpgRenderMethods
+      with render.MultibandColorMethods
+      with render.MultibandPngRenderMethods
       with resample.MultibandTileResampleMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
@@ -169,6 +164,7 @@ package object raster
 
   def s2b(n: Short): Byte = macro TypeConversionMacros.s2b_impl
   def s2ub(n: Short): Byte = macro TypeConversionMacros.s2ub_impl
+  def s2us(n: Short): Short = macro TypeConversionMacros.s2us_impl
   def s2i(n: Short): Int = macro TypeConversionMacros.s2i_impl
   def s2f(n: Short): Float = macro TypeConversionMacros.s2f_impl
   def s2d(n: Short): Double = macro TypeConversionMacros.s2d_impl
@@ -183,7 +179,7 @@ package object raster
   def i2b(n: Int): Byte = macro TypeConversionMacros.i2b_impl
   def i2ub(n: Int): Byte = macro TypeConversionMacros.i2ub_impl
   def i2s(n: Int): Short = macro TypeConversionMacros.i2s_impl
-  def i2us(n: Int): Short = macro TypeConversionMacros.i2s_impl
+  def i2us(n: Int): Short = macro TypeConversionMacros.i2us_impl
   def i2f(n: Int): Float = macro TypeConversionMacros.i2f_impl
   def i2d(n: Int): Double = macro TypeConversionMacros.i2d_impl
 
@@ -195,7 +191,7 @@ package object raster
   def f2d(n: Float): Double = macro TypeConversionMacros.f2d_impl
 
   def d2b(n: Double): Byte = macro TypeConversionMacros.d2b_impl
-  def d2ub(n: Double): Byte = macro TypeConversionMacros.d2b_impl
+  def d2ub(n: Double): Byte = macro TypeConversionMacros.d2ub_impl
   def d2s(n: Double): Short = macro TypeConversionMacros.d2s_impl
   def d2us(n: Double): Short = macro TypeConversionMacros.d2us_impl
   def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl

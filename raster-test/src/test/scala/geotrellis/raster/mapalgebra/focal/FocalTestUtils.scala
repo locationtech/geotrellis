@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,33 +61,33 @@ case class MockCursor(all: Seq[Int], added: Seq[Int], removed: Seq[Int]) extends
   centerOn(0, 0)
 
   override val allCells = new CellSet {
-    def foreach(f: (Int, Int)=>Unit) = { 
+    def foreach(f: (Int, Int)=>Unit) = {
       var i = 0
       for(x <- all) {
         f(i, 0)
         i += 1
-      } 
+      }
     }
   }
 
   override val addedCells = new CellSet {
-    def foreach(f: (Int, Int)=>Unit) = { 
+    def foreach(f: (Int, Int)=>Unit) = {
       var i = 0
       for(x <- added) {
         f(i, 1)
         i += 1
-      } 
+      }
     }
 
   }
 
   override val removedCells = new CellSet {
-    def foreach(f: (Int, Int)=>Unit) = { 
+    def foreach(f: (Int, Int)=>Unit) = {
       var i = 0
       for(x <- removed) {
         f(i, 2)
         i += 1
-      } 
+      }
     }
   }
 
@@ -204,7 +204,6 @@ trait FocalOpSpec extends TileBuilders with Matchers {
                         n: Neighborhood, added: Seq[Int], removed: Seq[Int]) = {
 
     val r = MockCursor.fromAddRemove(added, removed).raster
-    println(r)
     val calc = getCalc(r, n).asInstanceOf[CellwiseCalculation[Tile]]
 
     var i = 0
@@ -246,15 +245,15 @@ trait FocalOpSpec extends TileBuilders with Matchers {
   // to give varying cases.
   def defaultRaster = {
     val N = NODATA
-    createTile(Array[Int]( 1, 3, 2,  4, 5, 2,  8, 4, 6, 9, 
-                           1, 3, 2,  4, 5, 2, -2, 4, 6, 9, 
-                           1, 3, -9, 4,-5, 2, 10,-4, 6, 9, 
-                           1, 3, 2,-33, 5, 2, 88, 4, 6, 9, 
-                           N, 3, 2,  4, 5, 2,  5, 4, 6, 9, 
-                           1, 3, 2,  4, 0, 8, 33, 4, 6, 9, 
-                           1, 3, 2, 10, 5, 2, 10, N, 6, 9, 
-                           1, 3, 2,  4, 5, 1,-23,-4, 6, 9, 
-                           7, 3, 2,  2, 2, 2, 70, 4, N, 9, 
+    createTile(Array[Int]( 1, 3, 2,  4, 5, 2,  8, 4, 6, 9,
+                           1, 3, 2,  4, 5, 2, -2, 4, 6, 9,
+                           1, 3, -9, 4,-5, 2, 10,-4, 6, 9,
+                           1, 3, 2,-33, 5, 2, 88, 4, 6, 9,
+                           N, 3, 2,  4, 5, 2,  5, 4, 6, 9,
+                           1, 3, 2,  4, 0, 8, 33, 4, 6, 9,
+                           1, 3, 2, 10, 5, 2, 10, N, 6, 9,
+                           1, 3, 2,  4, 5, 1,-23,-4, 6, 9,
+                           7, 3, 2,  2, 2, 2, 70, 4, N, 9,
                            1, 3, 2,-24, 5, 0,  2, 4, 6, 9))
   }
 

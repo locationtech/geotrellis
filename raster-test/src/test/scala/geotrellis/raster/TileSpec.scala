@@ -54,6 +54,63 @@ class TileSpec extends FunSpec
       }
     }
 
+    it("should create empty tiles with user defined value NoData value for Double") {
+      val cellType = DoubleUserDefinedNoDataCellType(13.3)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
+    it("should create empty tiles with user defined value NoData value for Float") {
+      val cellType = FloatUserDefinedNoDataCellType(13f)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
+    it("should create empty tiles with user defined value NoData value for Int") {
+      val cellType = IntUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
+    it("should create empty tiles with user defined value NoData value for Short") {
+      val cellType = ShortUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
+    it("should create empty tiles with user defined value NoData value for UShort") {
+      val cellType = UShortUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
+
+    it("should create empty tiles with user defined value NoData value for Byte") {
+      val cellType = ByteUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
+    it("should create empty tiles with user defined value NoData value for UByte") {
+      val cellType = UByteUserDefinedNoDataCellType(13)
+      val tile = ArrayTile.empty(cellType, 5, 5)
+      assert(tile.cellType == cellType)
+      tile.foreachDouble( v => assert(isNoData(v)) )
+      tile.foreach( v => assert(isNoData(v)) )
+    }
+
     it("should be comparable to others") {
       val r0: Tile = null
       val r1 = ArrayTile(Array(1, 2, 3, 4), 2, 2)

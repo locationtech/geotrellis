@@ -18,7 +18,7 @@ This affords an opportunity to modify the dataset using any of the GeoTrellis op
 
 ```scala
 import geotrellis.raster.{Tile, MultibandTile}
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark._
 import geotrellis.spark.etl.Etl
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.util.SparkUtils
@@ -36,7 +36,7 @@ object GeoTrellisETL extends App {
   /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
   val (zoom, tiled) = etl.tile(sourceTiles)
   /* save and optionally pyramid the mosaiced layer */
-  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod())
+  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
 
   sc.stop()
 }

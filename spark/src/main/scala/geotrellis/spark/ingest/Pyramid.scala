@@ -43,17 +43,24 @@ object Pyramid extends Logging {
         case kb: KeyBounds[K] =>
           // If we treat previous layout as extent and next layout as tile layout we are able to hijack MapKeyTransform
           // to translate the spatial component of source KeyBounds to next KeyBounds
-          val sourceLayoutAsExtent = Extent(0, 0, sourceLayout.layoutCols, sourceLayout.layoutRows)
-          val mp = MapKeyTransform(sourceLayoutAsExtent, nextLayout.layoutCols, nextLayout.layoutRows)
-          val sourceKeyBoundsAsExtent = {
-            val SpatialKey(xmin, ymin) = kb.minKey.getComponent[SpatialKey]
-            val SpatialKey(xmax, ymax) = kb.maxKey.getComponent[SpatialKey]
-            Extent(xmin, ymin, xmax, ymax)
+          val extent = sourceLayout.extent
+          val sourceRe = RasterExtent(extent, sourceLayout.layoutCols, sourceLayout.layoutRows)
+          val targetRe = RasterExtent(extent, nextLayout.layoutCols, nextLayout.layoutRows)
+          val SpatialKey(sourceColMin, sourceRowMin) = kb.minKey.getComponent[SpatialKey]
+          val SpatialKey(sourceColMax, sourceRowMax) = kb.maxKey.getComponent[SpatialKey]
+          val (colMin, rowMin) = {
+            val (x, y) = sourceRe.gridToMap(sourceColMin, sourceRowMin)
+            targetRe.mapToGrid(x, y)
           }
-          val GridBounds(colMin, rowMin, colMax, rowMax ) = mp(sourceKeyBoundsAsExtent)
+
+          val (colMax, rowMax) = {
+            val (x, y) = sourceRe.gridToMap(sourceColMax, sourceRowMax)
+            targetRe.mapToGrid(x, y)
+          }
+
           KeyBounds(
             kb.minKey.setComponent(SpatialKey(colMin, rowMin)),
-            kb.minKey.setComponent(SpatialKey(colMax, rowMax)))
+            kb.maxKey.setComponent(SpatialKey(colMax, rowMax)))
       }
 
     val nextMetadata =

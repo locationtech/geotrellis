@@ -28,23 +28,12 @@ object AccumuloRDDWriter {
 
     instance.ensureTableExists(table)
 
-    val grouped: RDD[(Key, Iterable[(K, V)])] =
-      if(writeStrategy.requiresSort) {
-        // Map and sort first, so that partitioner is carried over to groupByKey
-        raster
-          .map { case (key, value) => (encodeKey(key), (key, value)) }
-          .sortByKey()
-          .groupByKey()
-      } else {
+    val kvPairs: RDD[(Key, Value)] =
+      raster
         // Call groupBy with numPartitions; if called without that argument or a partitioner,
         // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
         // on a key type that may no longer by valid for the key type of the resulting RDD.
-        raster
-          .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
-      }
-
-    val kvPairs: RDD[(Key, Value)] =
-      grouped
+        .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
         .map { case (key, pairs) =>
           (key, new Value(AvroEncoder.toBinary(pairs.toVector)(codec)))
         }
