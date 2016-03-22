@@ -34,17 +34,23 @@ object SaveToS3Methods {
   }
 
   /**
-    * @param bucket    name of the S3 bucket
-    * @param keyToPath maps each key to full path in the bucket
+    * @param keyToUri  A function that maps each key to full s3 uri
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
     * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the data
     */
   def apply[K](
-    bucket: String,
-    keyToPath: K => String,
+    keyToUri: K => String,
     rdd: RDD[(K, Array[Byte])],
     s3Maker: () => S3Client
   ): Unit = {
+    val keyToPrefix: K => (String, String) = key => {
+      val uri = new URI(keyToUri(key))
+      require(uri.getScheme == "s3", s"SaveToS3Methods only supports s3 scheme: $uri")
+      val bucket = uri.getAuthority
+      val prefix = uri.getPath.substring(1) // drop the leading / from the prefix
+      (bucket, prefix)
+    }
+
     rdd.persist() .foreachPartition { partition =>
       val s3Client = s3Maker()
       val requests: Process[Task, PutObjectRequest] =
@@ -54,7 +60,7 @@ object SaveToS3Methods {
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
-            val path = keyToPath(key)
+            val (bucket, path) = keyToPrefix(key)
             val request = new PutObjectRequest(bucket, path, is, metadata)
             Some(request, iter)
           } else {
@@ -91,8 +97,6 @@ class SaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) {
     * @param s3Client  An S3 Client (real or mock) into-which to save the data
     */
   def saveToS3(keyToPath: K => String): Unit = {
-    val bucket = new URI(keyToPath(rdd.first._1)).getAuthority
-
-    SaveToS3Methods(bucket, keyToPath, rdd, { () => S3Client.default })
+    SaveToS3Methods(keyToPath, rdd, { () => S3Client.default })
   }
 }

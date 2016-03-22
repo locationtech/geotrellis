@@ -11,8 +11,9 @@ import geotrellis.spark.io.s3.SaveToS3Methods
 import org.scalatest._
 
 
-class S3SaveImagesSpec extends FunSpec with TestEnvironment {
+class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
   lazy val sample = TestFiles.generateSpatial("all-ones")
+  val  mockClient = new MockS3Client()
 
   describe("Saving of Rendered Tiles to S3") {
     it ("should work with PNGs") {
@@ -23,7 +24,10 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment {
       val rdd = sample.renderPng()
       val maker = { () => new MockS3Client() }
 
-      SaveToS3Methods(bucket, keyToPath, rdd, maker)
+      SaveToS3Methods(keyToPath, rdd, maker)
+      rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
+        mockClient.readBytes(bucket, s"catalog/sample/1/$col/$row.png") should be (bytes)
+      }
     }
 
     it ("should work with JPEGs") {
@@ -34,7 +38,10 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment {
       val rdd = sample.renderPng()
       val maker = { () => new MockS3Client() }
 
-      SaveToS3Methods(bucket, keyToPath, rdd, maker)
+      SaveToS3Methods(keyToPath, rdd, maker)
+      rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
+        mockClient.readBytes(bucket, s"catalog/sample/1/$col/$row.jpg") should be (bytes)
+      }
     }
 
     it ("should work with GeoTIFFs") {
@@ -45,7 +52,10 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment {
       val rdd = sample.renderPng()
       val maker = { () => new MockS3Client() }
 
-      SaveToS3Methods(bucket, keyToPath, rdd, maker)
+      SaveToS3Methods(keyToPath, rdd, maker)
+      rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
+        mockClient.readBytes(bucket, s"catalog/sample/1/$col/$row.tiff") should be (bytes)
+      }
     }
   }
 }
