@@ -38,6 +38,32 @@ class MeanSpec extends FunSpec with TestEnvironment {
       arraysEqual(res, expected)
     }
 
+    it("should square mean only for na") {
+      val rasterRDD = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 3, 5,   9, 8, 2,
+          9, 1, 1,   2, 2, 2,   4, 3, 5,
+
+          3, 8, 1,   3, 3, 3,   1, 2, 2,
+          2, 4, 7,   1,nd, 1,   8, 4, 3
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
+
+      val res = rasterRDD.focalMean(Square(1), FocalTarget.NoData).stitch.toArrayDouble
+
+      val expected = Array(
+        5.666,7, 1,   1, 3, 5,   9, 8, 2,
+        9, 1, 1,   2, 2, 2,   4, 3, 5,
+
+        3, 8, 1,   3, 3, 3,   1, 2, 2,
+        2, 4, 7,   1, 2.2, 1,   8, 4, 3
+      )
+
+      arraysEqual(res, expected)
+    }
+
     it("should circle mean for raster rdd") {
       val rasterRDD = createTileLayerRDD(
         sc,

@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.{FocalCalculation, Neighborhood}
+import geotrellis.raster.mapalgebra.focal.{FocalCalculation, FocalTarget, Neighborhood}
 
 import scala.math._
 
@@ -105,7 +105,7 @@ class SurfacePoint() {
  * will be counted as having the same value as the focal point.
  */
 abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val cellSize: CellSize)
-  extends FocalCalculation[T](r, n, analysisArea)
+  extends FocalCalculation[T](r, n,  FocalTarget.Tmp, analysisArea)
 {
   var lastY = -1
 

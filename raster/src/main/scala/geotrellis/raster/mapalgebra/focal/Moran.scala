@@ -15,21 +15,20 @@ import geotrellis.raster.histogram.FastMapHistogram
  *
  * @note                  This operation requires that the whole raster be passed in;
  *                        it does not work over tiles.
- *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object TileMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile = {
-    new CursorCalculation[Tile](tile, n, bounds)
+    new CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
       with DoubleArrayTileResult
     {
 
       var mean = 0.0
       var `stddev^2` = 0.0
 
-      val h = FastMapHistogram.fromTile(r)
+      val h = FastMapHistogram.fromTile(tile)
       val stats = h.statistics
       require(stats.nonEmpty)
       val Statistics(_, m, _, _, s, _, _) = stats.get
@@ -66,14 +65,13 @@ object TileMoransICalculation {
  *
  * @note                  This operation requires that the whole raster be passed in;
  *                        it does not work over tiles.
- *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object ScalarMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {
-    new CursorCalculation[Double](tile, n, bounds)
+    new CursorCalculation[Double](tile, n, FocalTarget.Tmp, bounds)
     {
       var mean: Double = 0
       var `stddev^2`: Double = 0
@@ -81,7 +79,7 @@ object ScalarMoransICalculation {
       var count: Double = 0.0
       var ws: Int = 0
 
-      val h = FastMapHistogram.fromTile(r)
+      val h = FastMapHistogram.fromTile(tile)
       val stats = h.statistics
       require(stats.nonEmpty)
       val Statistics(_, m, _, _, s, _, _) = stats.get

@@ -1,6 +1,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
 import geotrellis.util.MethodExtensions
 
 
@@ -17,23 +18,23 @@ trait FocalMethods extends MethodExtensions[Tile] {
   }
 
   /** Computes the mode of a neighborhood */
-  def focalMode(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Mode(self, n, bounds)
+  def focalMode(n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): Tile = {
+    Mode(self, n, target, bounds)
   }
 
   /** Computes the median of a neighborhood */
-  def focalMedian(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Median(self, n, bounds)
+  def focalMedian(n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): Tile = {
+    Median(self, n, target, bounds)
   }
 
   /** Computes the mean of a neighborhood */
-  def focalMean(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Mean(self, n, bounds)
+  def focalMean(n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): Tile = {
+    Mean(self, n, target, bounds)
   }
 
   /** Computes the sum of a neighborhood */
-  def focalSum(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Sum(self, n, bounds)
+  def focalSum(n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): Tile = {
+    Sum(self, n, target, bounds)
   }
 
   /** Computes the standard deviation of a neighborhood */

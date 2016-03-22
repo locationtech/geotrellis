@@ -1,43 +1,44 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
 
 object Mean {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
       n match {
-        case Square(ext) => new CellwiseMeanCalcDouble(tile, n, bounds)
-        case _ => new CursorMeanCalcDouble(tile, n, bounds)
+        case Square(ext) => new CellwiseMeanCalcDouble(tile, n, target, bounds)
+        case _ => new CursorMeanCalcDouble(tile, n, target, bounds)
       }
     } else {
       n match {
-        case Square(ext) => new CellwiseMeanCalc(tile, n, bounds)
-        case _ => new CursorMeanCalc(tile, n, bounds)
+        case Square(ext) => new CellwiseMeanCalc(tile, n, target, bounds)
+        case _ => new CursorMeanCalc(tile, n, target, bounds)
       }
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
-    calculation(tile, n, bounds).execute()
+  def apply(tile: Tile, n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, target, bounds).execute()
 }
 
-class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CellwiseCalculation[Tile](r, n, bounds)
+class CellwiseMeanCalc(r: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds])
+  extends CellwiseCalculation[Tile](r, n, target, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
   var sum: Int = 0
 
-  def add(r: Tile, x: Int, y: Int) = {
-    val z = r.get(x, y)
+  def add(tile: Tile, x: Int, y: Int) = {
+    val z = tile.get(x, y)
     if (isData(z)) {
       count += 1
       sum   += z
     }
   }
 
-  def remove(r: Tile, x: Int, y: Int) = {
-    val z = r.get(x, y)
+  def remove(tile: Tile, x: Int, y: Int) = {
+    val z = tile.get(x, y)
     if (isData(z)) {
       count -= 1
       sum -= z
@@ -45,11 +46,15 @@ class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   }
 
   def setValue(x: Int, y: Int) = { resultTile.setDouble(x, y, sum / count.toDouble) }
+
   def reset() = { count = 0 ; sum = 0 }
+
+  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int) =
+    resultTile.set(x, y, tile.get(focusCol, focusRow))
 }
 
-class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorMeanCalc(r: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds])
+  extends CursorCalculation[Tile](r, n, target, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
@@ -68,8 +73,8 @@ class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   }
 }
 
-class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorMeanCalcDouble(r: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds])
+  extends CursorCalculation[Tile](r, n, target, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
@@ -91,23 +96,23 @@ class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   }
 }
 
-class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CellwiseCalculation[Tile](r, n, bounds)
+class CellwiseMeanCalcDouble(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds])
+  extends CellwiseCalculation[Tile](tile, n, target, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
   var sum: Double = 0.0
 
-  def add(r: Tile, x: Int, y: Int) = {
-    val z = r.getDouble(x, y)
+  def add(tile: Tile, x: Int, y: Int) = {
+    val z = tile.getDouble(x, y)
     if (isData(z)) {
       count += 1
       sum   += z
     }
   }
 
-  def remove(r: Tile, x: Int, y: Int) = {
-    val v = r.getDouble(x, y)
+  def remove(tile: Tile, x: Int, y: Int) = {
+    val v = tile.getDouble(x, y)
     if(isData(v)) {
       count -= 1
       if (count == 0) sum = 0 else sum -= v
@@ -115,5 +120,9 @@ class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds
   }
 
   def setValue(x: Int, y: Int) = { resultTile.setDouble(x, y, sum / count) }
+
   def reset() = { count = 0 ; sum = 0.0 }
+
+  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int) =
+    resultTile.setDouble(x, y, tile.getDouble(focusCol, focusRow))
 }

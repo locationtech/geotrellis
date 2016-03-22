@@ -43,7 +43,7 @@ object Fill {
 }
 
 class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double)
-  extends CursorCalculation[Tile](r, n, bounds)
+  extends CursorCalculation[Tile](r, n, FocalTarget.Tmp, bounds)
   with DoubleArrayTileResult
 {
   def calc(r: Tile, c: Cursor) = {
@@ -70,7 +70,7 @@ class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds],
 
 
 class CursorFillCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Int)
-  extends CursorCalculation[Tile](r, n, bounds)
+  extends CursorCalculation[Tile](r, n, FocalTarget.Tmp, bounds)
   with IntArrayTileResult
 {
   def calc(r: Tile, c: Cursor) = {

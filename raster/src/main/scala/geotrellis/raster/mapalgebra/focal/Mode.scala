@@ -1,6 +1,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
 
 /**
  * Computes the mode of a neighborhood for a given raster
@@ -10,20 +11,20 @@ import geotrellis.raster._
  *                  the data values will be rounded to integers.
  */
 object Mode {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     n match {
-      case Square(ext) => new CellwiseModeCalc(tile, n, bounds, ext)
+      case Square(ext) => new CellwiseModeCalc(tile, n, target, bounds, ext)
       case _ => new CursorModeCalc(tile, n, bounds, n.extent)
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
-    calculation(tile, n, bounds).execute()
+  def apply(tile: Tile, n: Neighborhood, target: FocalTarget = FocalTarget.All, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, target, bounds).execute()
 }
 
 
 class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
-  extends CursorCalculation[Tile](r, n, bounds)
+  extends CursorCalculation[Tile](r, n, FocalTarget.Tmp, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
@@ -45,28 +46,30 @@ class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], exten
 }
 
 
-class CellwiseModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
-  extends CellwiseCalculation[Tile](r, n, bounds)
+class CellwiseModeCalc(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds], extent: Int)
+  extends CellwiseCalculation[Tile](tile, n, target, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
   initArray(extent)
 
-  def add(r: Tile, x: Int, y: Int) = {
-    val v = r.get(x, y)
+  def add(tile: Tile, x: Int, y: Int) = {
+    val v = tile.get(x, y)
     if (isData(v)) {
       addValue(v)
     }
   }
 
-  def remove(r: Tile, x: Int, y: Int) = {
-    val v = r.get(x, y)
+  def remove(tile: Tile, x: Int, y: Int) = {
+    val v = tile.get(x, y)
     if (isData(v)) {
       removeValue(v)
     }
   }
 
-  def setValue(x: Int, y: Int) = {
-    resultTile.setDouble(x, y, mode)
-  }
+  def setValue(x: Int, y: Int) =
+    resultTile.set(x, y, mode)
+
+  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int) =
+    resultTile.set(x, y, tile.get(focusCol, focusRow))
 }

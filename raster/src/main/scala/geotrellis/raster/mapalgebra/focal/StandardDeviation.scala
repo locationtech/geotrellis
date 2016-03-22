@@ -13,7 +13,7 @@ object StandardDeviation {
 
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
-      new CursorCalculation[Tile](tile, n, bounds)
+      new CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
         with DoubleArrayTileResult
       {
         var count: Int = 0
@@ -47,7 +47,7 @@ object StandardDeviation {
         }
       }
     } else {
-      new CursorCalculation[Tile](tile, n, bounds)
+      new CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
         with DoubleArrayTileResult
       {
         var count: Int = 0

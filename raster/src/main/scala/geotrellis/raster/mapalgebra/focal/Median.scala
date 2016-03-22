@@ -1,22 +1,23 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
 
 
 object Median {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds]): FocalCalculation[Tile] = {
     n match {
-      case Square(ext) => new CellwiseMedianCalc(tile, n, bounds, ext)
+      case Square(ext) => new CellwiseMedianCalc(tile, n, target, bounds, ext)
       case _ => new CursorMedianCalc(tile, n, bounds, n.extent)
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile =
-    calculation(tile, n, bounds).execute()
+  def apply(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds]): Tile =
+    calculation(tile, n, target, bounds).execute()
 }
 
-class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorMedianCalc(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
+  extends CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
@@ -37,8 +38,8 @@ class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], ext
   }
 }
 
-class CellwiseMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
-  extends CellwiseCalculation[Tile](r, n, bounds)
+class CellwiseMedianCalc(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds], extent: Int)
+  extends CellwiseCalculation[Tile](tile, n, target, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
@@ -58,7 +59,11 @@ class CellwiseMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], e
     }
   }
 
-  def setValue(x: Int, y: Int) = { resultTile.setDouble(x, y, median) }
+  def setValue(x: Int, y: Int) =
+    resultTile.set(x, y, median)
+
+  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int) =
+    resultTile.set(x, y, tile.get(focusCol, focusRow))
 }
 
 

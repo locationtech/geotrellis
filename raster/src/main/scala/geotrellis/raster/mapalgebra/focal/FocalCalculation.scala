@@ -17,6 +17,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
 
 /**
  * Declares that implementers have a result
@@ -25,15 +26,19 @@ trait Resulting[T] {
   def result: T
 }
 
+object FocalTarget extends Enumeration {
+  type FocalTarget = Value
+  val NoData, Data, All, Tmp = Value
+}
+
 /**
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
-abstract class FocalCalculation[T](
-    val r: Tile, n: Neighborhood, analysisArea: Option[GridBounds])
+abstract class FocalCalculation[T](val tile: Tile, n: Neighborhood, target : FocalTarget, analysisArea: Option[GridBounds])
   extends Resulting[T]
 {
-  val bounds: GridBounds = analysisArea.getOrElse(GridBounds(r))
+  val bounds: GridBounds = analysisArea.getOrElse(GridBounds(tile))
 
   def execute(): T
 }
@@ -41,8 +46,9 @@ abstract class FocalCalculation[T](
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisArea: Option[GridBounds])
-  extends FocalCalculation[T](tile, n, analysisArea)
+// TODO: implement focal target
+abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, target: FocalTarget, val analysisArea: Option[GridBounds])
+  extends FocalCalculation[T](tile, n, target, analysisArea)
 {
   def traversalStrategy = TraversalStrategy.DEFAULT
 
@@ -58,8 +64,9 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds])
-    extends FocalCalculation[T](tile, kernel, analysisArea)
+// TODO: implement focal target
+abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, target: FocalTarget, val analysisArea: Option[GridBounds])
+    extends FocalCalculation[T](tile, kernel, target, analysisArea)
 {
   // Benchmarking has declared ScanLineTraversalStrategy the unclear winner as a default (based on Convolve).
   def traversalStrategy = ScanLineTraversalStrategy
@@ -76,23 +83,23 @@ abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea
 /**
  * A focal calculation that uses the Cellwise focal strategy
  */
-abstract class CellwiseCalculation[T] (
-    r: Tile, n: Neighborhood, analysisArea: Option[GridBounds])
-  extends FocalCalculation[T](r, n, analysisArea)
+abstract class CellwiseCalculation[T] (tile: Tile, n: Neighborhood, target: FocalTarget, analysisArea: Option[GridBounds])
+  extends FocalCalculation[T](tile, n, target, analysisArea)
 {
   def traversalStrategy: Option[TraversalStrategy] = None
 
   def execute(): T = n match {
     case s: Square =>
-      CellwiseStrategy.execute(r, s, this, bounds)
+      CellwiseStrategy.execute(tile, s, this, target, bounds)
       result
     case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
   }
 
-  def add(r: Tile, x: Int, y: Int)
-  def remove(r: Tile, x: Int, y: Int)
+  def add(tile: Tile, x: Int, y: Int)
+  def remove(tile: Tile, x: Int, y: Int)
   def reset(): Unit
   def setValue(x: Int, y: Int)
+  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int)
 }
 
 /*
@@ -187,7 +194,7 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
 }
 
 trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
-  def resultCellType: DataType with NoDataHandling = r.cellType
+  def resultCellType: DataType with NoDataHandling = tile.cellType
   val cols: Int = bounds.width
   val rows: Int = bounds.height
   val resultTile: MutableArrayTile = ArrayTile.empty(resultCellType, cols, rows)

@@ -16,7 +16,7 @@ object Convolve {
 
     if (tile.cellType.isFloatingPoint) {
       if(kernel.cellType.isFloatingPoint) {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel,  FocalTarget.Tmp, bounds) {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = Double.NaN
             cursor.foreachWithWeightDouble { (x, y, w) =>
@@ -32,7 +32,7 @@ object Convolve {
           def result = resultTile
         }
       } else {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel, FocalTarget.Tmp, bounds) {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = Double.NaN
             cursor.foreachWithWeight { (x, y, w) =>
@@ -50,7 +50,7 @@ object Convolve {
       }
     } else {
       if(kernel.cellType.isFloatingPoint) {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel,  FocalTarget.Tmp, bounds) {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = NODATA
             cursor.foreachWithWeightDouble { (x, y, w) =>
@@ -66,7 +66,7 @@ object Convolve {
           def result = resultTile
         }
       } else {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel,  FocalTarget.Tmp, bounds) {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = NODATA
             cursor.foreachWithWeight { (x, y, w) =>
