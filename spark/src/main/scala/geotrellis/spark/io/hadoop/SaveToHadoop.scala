@@ -28,27 +28,60 @@ object SaveToHadoop {
     }
   }
 
+
+  /** Saves records from an iterator and returns them unchanged.
+    *
+    * @param recs      Key, Value records to be saved
+    * @params keyToUri A function from K (a key) to Hadoop URI
+    * @params toBytes  A function from record to array of bytes
+    * @params conf     Hadoop Configuration to used to get FileSystem
+    */
+  def saveIterator[K, V](
+    recs: Iterator[(K, V)],
+    keyToUri: K => String,
+    conf: Configuration
+  )(toBytes: (K, V) => Array[Byte]): Iterator[(K, V)] = {
+    val fsCache = TrieMap.empty[String, FileSystem]
+
+    for ( row @ (key, data) <- recs ) yield {
+      val path = keyToUri(key)
+      val uri = new URI(path)
+      val fs = fsCache.getOrElseUpdate(
+        uri.getScheme,
+        FileSystem.get(uri, conf))
+      val out = fs.create(new Path(path))
+      try { out.write(toBytes(key, data)) }
+      finally { out.close() }
+      row
+    }
+  }
+
   /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.
     *
     * @param keyToUri A function from K (a key) to a Hadoop URI
     */
-  def setup[K](rdd: RDD[(K, Array[Byte])])(
+  def setup[K](
+    rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String
   ): RDD[(K, Array[Byte])] = {
     rdd.mapPartitions { partition =>
-      var fsCache = TrieMap.empty[String, FileSystem]
+      saveIterator(partition, keyToUri, new Configuration){ (k, v) => v }
+   }
+  }
 
-      for ( row @ (key, data) <- partition ) yield {
-        val path = keyToUri(key)
-        val uri = new URI(path)
-        val fs = fsCache.getOrElseUpdate(
-          uri.getScheme,
-          FileSystem.get(uri, rdd.context.hadoopConfiguration))
-        val out = fs.create(new Path(path))
-        try { out.write(data) }
-        finally { out.close() }
-        row
-      }
+  /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.
+    *
+    * @param keyToUri A function from K (a key) to a Hadoop URI
+    * @params toBytes  A function from record to array of bytes
+    */
+  def setup[K, V](
+    rdd: RDD[(K, V)],
+    keyToUri: K => String,
+    toBytes: (K, V) => Array[Byte]
+  ): RDD[(K, V)] = {
+    val conf = rdd.context.hadoopConfiguration
+    rdd.mapPartitions { partition =>
+      saveIterator(partition, keyToUri, new Configuration)(toBytes)
     }
   }
 
@@ -56,9 +89,21 @@ object SaveToHadoop {
     *
     * @param keyToUri A function from K (a key) to a Hadoop URI
     */
-  def apply[K](rdd: RDD[(K, Array[Byte])])(
+  def apply[K](
+    rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String
   ): Long =
-    setup(rdd)(keyToUri).count
+    setup(rdd, keyToUri).count
 
+  /** Saves to Hadoop FileSystem, returns an count of records saved.
+    *
+    * @param keyToUri A function from K (a key) to a Hadoop URI
+    * @params toBytes  A function from record to array of bytes
+    */
+  def apply[K, V](
+    rdd: RDD[(K, V)],
+    keyToUri: K => String,
+    toBytes: (K, V) => Array[Byte]
+  ): Long =
+    setup(rdd, keyToUri, toBytes).count
 }
