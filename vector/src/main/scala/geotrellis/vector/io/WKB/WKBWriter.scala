@@ -37,6 +37,7 @@ object WKBConstants {
   val wkbGeometryCollection: Byte = 7
 }
 
+/** Companion object to [[WKBWriter]] */
 object WKBWriter {
 
   /** Convert a byte array to a hexadecimal string.

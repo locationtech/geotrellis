@@ -21,7 +21,13 @@ import geotrellis.vector._
 
 import com.vividsolutions.jts.{geom => jts}
 
+/** Trait used to implicitly extend [[Geometry]] instances with densifying methods */
 trait DensifyMethods[G <: Geometry] extends MethodExtensions[G] {
+
+  /** Add vertices along the line segments contained with a geometry
+    *
+    * @param tolerance  the upper bound on line segment lengths after densification
+    */
   def densify(tolerance: Double): G =
     com.vividsolutions.jts.densify.Densifier.densify(self.jtsGeom, tolerance) match {
       case g: jts.Geometry if g.isEmpty => self

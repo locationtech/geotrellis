@@ -4,6 +4,7 @@ import geotrellis.vector._
 import geotrellis.vector.io._
 import spray.json._
 
+/** A trait for providing the Spray.json formats necessary to serialize [[Feature]] instances */
 trait FeatureFormats {
 
   /** Serializes a feature object to a GeoJSON feature

@@ -47,7 +47,8 @@ object EmpiricalVariogram {
 }
 
 object NonLinearEmpiricalVariogram {
-  /**
+  /** Computes a non-linear empirical variogram
+    *
     * @param pts                   Points to be modelled into variogram
     * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram
     * @param binMaxCount           the maximum number of bins in the empirical variogram
