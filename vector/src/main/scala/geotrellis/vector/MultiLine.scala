@@ -24,13 +24,14 @@ import scala.collection.JavaConversions._
 
 import spire.syntax.cfor._
 
+/** Companion object to [[MultiLine]] */
 object MultiLine {
   lazy val EMPTY = MultiLine(Seq[Line]())
 
-  def apply(ls: Line*): MultiLine = 
+  def apply(ls: Line*): MultiLine =
     MultiLine(ls)
 
-  def apply(ls: Traversable[Line]): MultiLine = 
+  def apply(ls: Traversable[Line]): MultiLine =
     MultiLine(factory.createMultiLineString(ls.map(_.jtsGeom).toArray))
 
   def apply(ls: Array[Line]): MultiLine = {
@@ -47,12 +48,12 @@ object MultiLine {
 }
 
 /** Class representing a geometry of multiple lines */
-case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry 
+case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
                                                       with Relatable
                                                       with OneDimension {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): MultiLine = { 
+  def normalized(): MultiLine = {
     val geom = jtsGeom.clone.asInstanceOf[jts.MultiLineString]
     geom.normalize
     MultiLine(geom)

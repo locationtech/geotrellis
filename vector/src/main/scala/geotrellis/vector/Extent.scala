@@ -37,6 +37,7 @@ case class ProjectedExtent(extent: Extent, crs: CRS) {
     extent.reproject(crs, dest)
 }
 
+/** ProjectedExtent companion object */
 object ProjectedExtent {
   implicit def fromTupleA(tup: (Extent, CRS)):ProjectedExtent = ProjectedExtent(tup._1, tup._2)
   implicit def fromTupleB(tup: (CRS, Extent)):ProjectedExtent = ProjectedExtent(tup._2, tup._1)
@@ -76,29 +77,41 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   /** The NW corner (xmin, ymax) as a Point. */
   def northWest: Point = Point(xmin, ymax)
 
+  /** The area of this extent */
   def area: Double = width * height
+
+  /** The minimum between the height and width of this extent */
   def minExtent: Double = if(width < height) width else height
+
+  /** The maximum between the height and width of this extent */
   def maxExtent: Double = if(width > height) width else height
+
+  /** Predicate for whether this extent has 0 area */
   def isEmpty: Boolean = area == 0
 
+  /** The centroid of this extent */
   def center: Point =
     Point((xmin + xmax) / 2.0, (ymin + ymax) / 2.0)
 
+  /** Predicate for whether this extent intersects the interior of another */
   def interiorIntersects(other: Extent): Boolean =
     !(other.xmax <= xmin ||
       other.xmin >= xmax) &&
     !(other.ymax <= ymin ||
       other.ymin >= ymax)
 
+  /** Predicate for whether this extent intersects another */
   def intersects(other: Extent): Boolean =
     !(other.xmax < xmin ||
       other.xmin > xmax) &&
     !(other.ymax < ymin ||
       other.ymin > ymax)
 
+  /** Predicate for whether this extent intersects another */
   def intersects(p: Point): Boolean =
     intersects(p.x, p.y)
 
+  /** Predicate for whether this extent intersects the specified point */
   def intersects(x: Double, y: Double): Boolean =
     x >= xmin && x <= xmax && y >= ymin && y <= ymax
 
@@ -130,15 +143,19 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def contains(x: Double, y: Double): Boolean =
     x > xmin && x < xmax && y > ymin && y < ymax
 
+  /** Predicate for whether this extent covers another */
   def covers(other: Extent): Boolean =
     contains(other)
 
+  /** Predicate for whether this extent covers a point */
   def covers(p: Point): Boolean =
     covers(p.x, p.y)
 
+  /** Predicate for whether this extent covers a point */
   def covers(x: Double, y: Double): Boolean =
     intersects(x, y)
 
+  /** Distance from another extent */
   def distance(other: Extent): Double =
     if(intersects(other)) 0
     else {
@@ -183,6 +200,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def &(other: Extent): Option[Extent] =
     intersection(other)
 
+  /** Create a new extent using a buffer around this extent */
   def buffer(d: Double): Extent =
     Extent(xmin - d, ymin - d, xmax + d, ymax + d)
 
@@ -225,9 +243,11 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def expandToInclude(other: Extent): Extent =
     combine(other)
 
+  /** Return the smallest extent that contains this extent and the provided point. */
   def expandToInclude(p: Point): Extent =
     expandToInclude(p.x, p.y)
 
+  /** Return the smallest extent that contains this extent and the provided point. */
   def expandToInclude(x: Double, y: Double): Extent =
     Extent(
       if(xmin < x) xmin else x,
@@ -236,10 +256,12 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       if(ymax > y) ymax else y
     )
 
+  /** Return an extent of this extent expanded by the provided distance on all sides */
   def expandBy(distance: Double): Extent =
     expandBy(distance, distance)
 
 
+  /** Return an extent of this extent expanded by the provided x and y distances */
   def expandBy(deltaX: Double, deltaY: Double): Extent =
     Extent(
       xmin - deltaX,
@@ -248,6 +270,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       ymax + deltaY
     )
 
+  /** Return this extent moved x and y amounts */
   def translate(deltaX: Double, deltaY: Double): Extent =
     Extent(
       xmin + deltaX,
@@ -256,9 +279,14 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
       ymin + deltaY
     )
 
+  /** Return this extent as a polygon */
   def toPolygon(): Polygon =
     Polygon( Line((xmin, ymin), (xmin, ymax), (xmax, ymax), (xmax, ymin), (xmin, ymin)) )
 
+  /** Equality check against this extent
+    *
+    * @note only returns true given another extent
+    */
   override
   def equals(o: Any): Boolean =
     o match {

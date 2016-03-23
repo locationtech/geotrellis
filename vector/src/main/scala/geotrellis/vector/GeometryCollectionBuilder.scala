@@ -5,9 +5,8 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom => jts}
 import scala.collection.mutable
 
-/**
-  * Builder for GeometryCollection.
-  * This builder can accumulate from both geotrellis geometries and JTS geometries
+/** Builder for GeometryCollection.
+  * @note This builder can accumulate from both geotrellis geometries and JTS geometries
   */
 class GeometryCollectionBuilder {
   val points = mutable.ListBuffer[Point]()
@@ -33,9 +32,9 @@ class GeometryCollectionBuilder {
 
   def addAll(geoms: Traversable[Geometry]) =
     geoms.foreach(g=> add(g))
+
   def ++=(geoms: Traversable[Geometry]) =
     addAll(geoms)
-
 
   def add(geom: jts.Geometry) =
     geom match {

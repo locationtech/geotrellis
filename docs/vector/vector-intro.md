@@ -58,13 +58,45 @@ assert(pointIntersection == Some(Point(1.0, 2.0)))  // Either some point
 assert(pointNonIntersection == None)                // Or nothing at all
 ```
 
+As convenient as `as[G <: Geometry]` is, it offers no guarantees about
+the domain over which it ranges. So, while you can expect a neatly
+packaged `Option[G <: Geometry]`, it isn't necessarily the case that the
+`GeometryResult` object produced by a given set of operations is
+possibly convertable to the `Geometry` subtype you choose. For example,
+a `PointGeometryIntersectionResult.as[Polygon]` will *always* return
+`None`.
+
+An alternative approach uses pattern matching and ensures an exhaustive
+check of the results.
+[`Results.scala`](../../vector/src/main/scala/geotrellis/engine/Results.scala)
+contains a large
+[ADT](https://en.wikipedia.org/wiki/Algebraic_data_type) which encodes
+the possible outcomes for different types of outcomes. The result type of
+a JTS-dependent vector operation can be found somewhere on this tree to
+the effect that an exhaustive match can be carried out to determine the
+`Geometry` (excepting cases of `NoResult`, for which there is no
+`Geometry`).
+
+For example, we note that a `Point`/`Point` intersection has
+the type `PointOrNoResult`. From this we can deduce that it is either a
+`Point` underneath or else nothing:
+
+```scala
+scala> import geotrellis.vector._
+scala> p1 & p2 match {
+     |   case PointResult(_) => println("A Point!)
+     |   case NoResult => println("Sorry, no result.")
+     | }
+A Point!
+```
+
 Beyond the methods which come with any `Geometry` object there are
 implicits in many geotrellis modules which will extend Geometry
 capabilities. For instance, after importing `geotrellis.vector._`,
 it becomes possible to call the `toGeoJson` method on any `Geometry`:
 
 ```scala
-import geotrellis.vector._
+import geotrellis.vector.io._
 assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
 ```
 
@@ -84,14 +116,6 @@ val myML = MultiLine.EMPTY
 myML.unionGeometries
 ```
 
-The following packages extend `Geometry` capabilities:
-- [geotrellis.vector.io.json](../../vector/src/main/scala/geotrellis/vector/io/json/)
-- [geotrellis.vector.io.WKT](../../src/main/scala/geotrellis/vector/io/WKT/)
-- [geotrellis.vector.io.WKB](../../src/main/scala/geotrellis/vector/io/WKB/)
-- [geotrellis.vector.op](../../src/main/scala/geotrellis/vector/op/)
-- [geotrellis.vector.op.affine](../../src/main/scala/geotrellis/vector/op/affine/)
-- [geotrellis.vector.reproject](../../src/main/scala/geotrellis/vector/reproject/)
-
 ## Features
 The `Feature` class is odd. At first blush, it thinly wraps one of the
 afforementioned `Geometry` objects along with some type of data. Its
@@ -101,7 +125,7 @@ software space. It can be found in `Feature.scala`.
 
 Let's examine some source code so that this is all a bit clearer. The type
 signatures in
-[Feature.scala](../../src/main/scala/geotrellis/vector/Feature.scala) tell
+[Feature.scala](../../vector/src/main/scala/geotrellis/vector/Feature.scala) tell
 us a good deal:
 - The type `G` is [some instance](http://docs.scala-lang.org/tutorials/tour/upper-type-bounds.html)
   of `Geometry` (which we explored just above).
@@ -149,7 +173,7 @@ of geojson Feature formats is easily transformed.
 
 There's one more piece to the `geotrellis.vector` puzzle: `Extent`.
 A `geotrellis.vector.Extent` is nothing more than a rectangular
-polygon on projection). This is useful mainly as a tool for defining the
+polygon on projection. This is useful mainly as a tool for defining the
 extent covered by a tile - the two jointly yield a raster (for more
 on rasters, go [here](../../raster/src/main/scala/geotrellis/raster)).
 Constructing `Extent`s is easy. Since they're rectangles,

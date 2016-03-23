@@ -24,7 +24,7 @@ import GeomFactory._
 
 import scala.reflect.{ ClassTag, classTag }
 
-/** A trait inhereted by classes which wrap a jts.Geometry */
+/** A trait inherited by classes which wrap a jts.Geometry */
 trait Geometry {
 
   /** Return the wrapped jts Geometry */
@@ -75,6 +75,7 @@ trait Geometry {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
+  /** Attempt to convert this Geometry to the provided type */
   def as[G <: Geometry : ClassTag]: Option[G] = {
     if (classTag[G].runtimeClass.isInstance(this))
       Some(this.asInstanceOf[G])
@@ -95,6 +96,7 @@ trait Geometry {
   override def toString = jtsGeom.toString
 }
 
+/** Geometry companion object */
 object Geometry {
 
   /** Wraps JTS Geometry in correct container. Useful when sourcing objects from JTS interface. */
