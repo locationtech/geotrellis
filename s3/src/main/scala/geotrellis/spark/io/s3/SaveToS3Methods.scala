@@ -13,5 +13,5 @@ class SaveToS3Methods[K](val self: RDD[(K, Array[Byte])]) extends MethodExtensio
     * @param keyToUri A function from K (a key) to an S3 URI
     */
   def saveToS3(keyToUri: K => String): Unit =
-    SaveToS3(self)(keyToUri)
+    SaveToS3(self, keyToUri)
 }

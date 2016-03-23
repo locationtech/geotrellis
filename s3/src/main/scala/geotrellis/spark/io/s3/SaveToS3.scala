@@ -40,9 +40,8 @@ object SaveToS3 {
     */
   def apply[K](
     rdd: RDD[(K, Array[Byte])],
+    keyToUri: K => String,
     s3Maker: () => S3Client = () => S3Client.default
-  )(
-    keyToUri: K => String
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
