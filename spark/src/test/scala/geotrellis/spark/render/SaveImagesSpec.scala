@@ -18,21 +18,21 @@ class SaveImagesSpec extends FunSpec with TestEnvironment {
     it ("should work with PNGs") {
       val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.png"
       val id = LayerId("sample", 1)
-      val keyToPath = SaveToHadoopMethods.spatialKeyToPath(id, template)
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
       sample.renderPng().saveToHadoop(keyToPath)
     }
 
     it ("should work with JPGs") {
       val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.jpg"
       val id = LayerId("sample", 1)
-      val keyToPath = SaveToHadoopMethods.spatialKeyToPath(id, template)
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
       sample.renderJpg().saveToHadoop(keyToPath)
     }
 
     it ("should work with GeoTiffs") {
       val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.tiff"
       val id = LayerId("sample", 1)
-      val keyToPath = SaveToHadoopMethods.spatialKeyToPath(id, template)
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
       sample.renderGeoTiff().saveToHadoop(keyToPath)
     }
   }

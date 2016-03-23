@@ -63,7 +63,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
       images.saveToS3(keyToPath)
     }
     else {
-      val keyToPath = SaveToHadoopMethods.spatialKeyToPath(id, props("path"))
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, props("path"))
       images.saveToHadoop(keyToPath)
     }
   }
