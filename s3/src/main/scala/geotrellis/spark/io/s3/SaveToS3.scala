@@ -39,9 +39,10 @@ object SaveToS3 {
     * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the data
     */
   def apply[K](
-    keyToUri: K => String,
     rdd: RDD[(K, Array[Byte])],
-    s3Maker: () => S3Client
+    s3Maker: () => S3Client = () => S3Client.default
+  )(
+    keyToUri: K => String
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
@@ -51,7 +52,7 @@ object SaveToS3 {
       (bucket, prefix)
     }
 
-    rdd.persist() .foreachPartition { partition =>
+    rdd.foreachPartition { partition =>
       val s3Client = s3Maker()
       val requests: Process[Task, PutObjectRequest] =
         Process.unfold(partition) { iter =>

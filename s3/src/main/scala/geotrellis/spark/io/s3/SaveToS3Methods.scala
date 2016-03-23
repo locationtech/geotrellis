@@ -10,9 +10,8 @@ class SaveToS3Methods[K](val self: RDD[(K, Array[Byte])]) extends MethodExtensio
   /**
     * Saves each RDD value to an S3 key.
     *
-    * @param keyToPath A function from K (a key) to an S3 URI
+    * @param keyToUri A function from K (a key) to an S3 URI
     */
-  def saveToS3(keyToPath: K => String): Unit = {
-    SaveToS3(keyToPath, self, { () => S3Client.default })
-  }
+  def saveToS3(keyToUri: K => String): Unit =
+    SaveToS3(self)(keyToUri)
 }
