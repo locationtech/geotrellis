@@ -92,7 +92,7 @@ A Point!
 
 Beyond the methods which come with any `Geometry` object there are
 implicits in many geotrellis modules which will extend Geometry
-capabilities. For instance, after importing `geotrellis.vector._`,
+capabilities. For instance, after importing `geotrellis.vector.io._`,
 it becomes possible to call the `toGeoJson` method on any `Geometry`:
 
 ```scala
