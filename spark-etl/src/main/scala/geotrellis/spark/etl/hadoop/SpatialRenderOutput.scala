@@ -59,7 +59,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
       }
 
     if (useS3) {
-      val keyToPath = SaveToS3Methods.spatialKeyToPath(id, props("path"))
+      val keyToPath = SaveToS3.spatialKeyToPath(id, props("path"))
       images.saveToS3(keyToPath)
     }
     else {
