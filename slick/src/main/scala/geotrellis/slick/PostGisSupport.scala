@@ -27,8 +27,6 @@
 
 package geotrellis.slick
 
-import java.sql.{PreparedStatement, ResultSet}
-
 import geotrellis.vector._
 import geotrellis.vector.io.wkb._
 import geotrellis.vector.io.wkt._
@@ -38,6 +36,7 @@ import slick.driver.{JdbcDriver, PostgresDriver}
 import slick.jdbc.{PositionedParameters, PositionedResult, SetParameter}
 
 import scala.reflect.ClassTag
+import java.sql.{PreparedStatement, ResultSet}
 
 /** 
  * This class provides column types and extension methods to work with Geometry columns in PostGIS.

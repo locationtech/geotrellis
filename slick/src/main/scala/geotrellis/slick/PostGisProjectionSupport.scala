@@ -27,16 +27,16 @@
 
 package geotrellis.slick
 
+import geotrellis.vector._
+import geotrellis.vector.io.wkb._
+import geotrellis.vector.io.wkt._
+
 import slick.ast.FieldSymbol
 import slick.driver.{JdbcDriver, PostgresDriver}
 import slick.jdbc.{PositionedParameters, PositionedResult, SetParameter}
 
-import scala.reflect.ClassTag
 import java.sql._
-
-import geotrellis.vector._
-import geotrellis.vector.io.wkb._
-import geotrellis.vector.io.wkt._
+import scala.reflect.ClassTag
 
 /** 
  * This class provides column types and extension methods to work with Geometry columns
