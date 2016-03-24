@@ -25,6 +25,7 @@ GeoTrellis.
   - [indexing with the hilbert curve](spark/hilbert-index.md)
   - [map algebra (on spark)](spark/map-algebra.md)
 - [geotrellis.spark-etl](spark/spark-intro.md)
+  - [geotrellis.spark-etl.run-examples](spark/spark-etl-run-examples.md)
 - [geotrellis.util](util/util-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)
   - [geojson support](vector/geojson-support.md)
