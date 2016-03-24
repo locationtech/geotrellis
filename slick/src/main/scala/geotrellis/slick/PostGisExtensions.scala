@@ -28,10 +28,10 @@
 
 package geotrellis.slick
 
-import slick.lifted._
 import slick.ast.{LiteralNode, TypedType}
 import slick.ast.Library.{SqlFunction, SqlOperator}
 import slick.driver.{JdbcDriver, JdbcTypesComponent, PostgresDriver}
+import slick.lifted._
 import slick.lifted.FunctionSymbolExtensionMethods._
 import slick.jdbc.JdbcType
 

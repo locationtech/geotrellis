@@ -8,10 +8,10 @@ import slick.driver.PostgresDriver.api._
 object TestDatabase {
   def newInstance = {
     val config = ConfigFactory.load
-    val pguser = "postgres"
-    val pgpass = "postgres"
-    val pgdb = "travis_ci_test"
-    val pghost = "localhost"
+    val pguser = config.getString("db.user")
+    val pgpass = config.getString("db.password")
+    val pgdb = config.getString("db.database")
+    val pghost = config.getString("db.host")
 
     val s = s"jdbc:postgresql://$pghost/$pgdb"
     println(s"Connecting to $s")

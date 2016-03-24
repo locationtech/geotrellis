@@ -18,16 +18,16 @@
 
 package geotrellis.slick
 
-import java.util.Locale
+import geotrellis.vector._
 
 import org.scalatest._
-
-import geotrellis.vector._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import slick.driver.PostgresDriver
-
 import util._
+
+import java.util.Locale
+
 
 class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase with ScalaFutures {
 
@@ -218,7 +218,7 @@ class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase with Sc
         (0, "paris", Some(pt(2.3470,48.8742))))
 
       db.run(OptCity ++= cities).futureValue
-     //For some reason isEmpty does not work
+
       val q1 = for {
         c <- OptCity if !(c.geom isDefined)
       } yield (c.name, c.geom)
