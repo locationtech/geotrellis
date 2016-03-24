@@ -64,6 +64,7 @@ spark-submit \
 $JAR \
 --input hadoop  --format {geotiff | temporal-geotiff} --cache NONE -I path="file:///Data/nlcd/tiles" \
 --output render -O encoding={png | geotiff} path=s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png \
+```
 
 ### Ingest singleband tiles from local fs or hdfs into rendered set of PNGs in hdfs or local fs
 
@@ -77,4 +78,4 @@ spark-submit \
 --driver-memory 2G \
 $JAR \
 --input hadoop  --format {geotiff | temporal-geotiff} --cache NONE -I path="file:///Data/nlcd/tiles" \
---output render -O encoding={png | geotiff} path=hdfs://tms-bucket/layers/{name}/{z}-{x}-{y}.png \
+--output render -O encoding={png | geotiff} path=hdfs://path/layers/{name}/{z}-{x}-{y}.png \
