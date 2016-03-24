@@ -3,20 +3,18 @@ package geotrellis.spark.io
 import geotrellis.spark._
 
 /**
- * Accumulation of [[LayerFilter]]s that will be asked to filter layer [[KeyBounds]]
- *
- * @tparam K  Type of key for the RDD being filtered
- * @tparam M  Type of metadata used for filtering
-
- */
+  * Accumulation of [[LayerFilter]]s that will be asked to filter layer [[KeyBounds]]
+  *
+  * @tparam K  Type of key for the RDD being filtered
+  * @tparam M  Type of metadata used for filtering
+  */
 class LayerQuery[K: Boundable, M: Component[?, Bounds[K]]](
   filterChain: ( (M, List[KeyBounds[K]]) ) => (M, List[KeyBounds[K]]) = { x: (M, List[KeyBounds[K]]) => x }) {
 
   /**
-   * @param metadata TileLayerMetadata of the layer being queried
-   * @param keyBounds Maximum [[KeyBounds]] of the layer
-   * @return A sequence of [[KeyBounds]] that cover the queried region
-   */
+    * @param metadata RasterMetaData of the layer being queried
+    * @return A sequence of [[KeyBounds]] that cover the queried region
+    */
   def apply(metadata: M): Seq[KeyBounds[K]] =
     metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -43,8 +41,8 @@ class LayerQuery[K: Boundable, M: Component[?, Bounds[K]]](
 }
 
 /**
- * Wrapper for [[LayerQuery]] that binds it to some function that is able to produce a resulting value.
- */
+  * Wrapper for [[LayerQuery]] that binds it to some function that is able to produce a resulting value.
+  */
 class BoundLayerQuery[K, M, ReturnType](query: LayerQuery[K, M], f: LayerQuery[K, M] => ReturnType) {
   def where[F, T](params: LayerFilter.Expression[F, T])(implicit ev: LayerFilter[K, F, T, M]): BoundLayerQuery[K, M, ReturnType] =
     new BoundLayerQuery(query.where(params), f)

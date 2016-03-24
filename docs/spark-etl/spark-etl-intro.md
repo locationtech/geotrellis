@@ -44,37 +44,43 @@ object GeoTrellisETL extends App {
 
 ### User defined ETL jobs
 
-The above sample application can be placed in a new SBT project that has a dependency on
-`"com.azavea.geotrellis" %% "geotrellis-spark-etl" % s"$VERSION"` in addition to dependency on `spark-core`.
- and built into an assembly with `sbt-assembly` plugin. You should be careful to include a `assemblyMergeStrategy`
- for sbt assembly plugin as it is provided in [spark-etl build file](build.sbt).
+The above sample application can be placed in a new SBT project that
+has a dependency on `"com.azavea.geotrellis" %% "geotrellis-spark-etl" % s"$VERSION"`
+in addition to dependency on `spark-core`.  and built into an assembly
+with `sbt-assembly` plugin. You should be careful to include a
+`assemblyMergeStrategy` for sbt assembly plugin as it is provided in
+[spark-etl build file](build.sbt).
 
-At this point you would create a seperate `App` object for each one of your ETL jobs.
+At this point you would create a seperate `App` object for each one
+of your ETL jobs.
 
 ### Build-in ETL jobs
 
-For convinence and as an example the `spark-etl` project provides two `App` objects that perform vanilla ETL:
- * geotrellis.spark.etl.SinglebandIngest
- * geotrellis.spark.etl.MultibandIngest
+For convinence and as an example the `spark-etl` project provides two
+`App` objects that perform vanilla ETL:
+- geotrellis.spark.etl.SinglebandIngest
+- geotrellis.spark.etl.MultibandIngest
 
 You may use them by building an assembly jar of `spark-etl` project as follows:
 
- ```bash
- cd geotrellis
- sbt
- sbt> project spark-etl
- sbt> assembly
- ```
+```bash
+cd geotrellis
+./sbt
+sbt> project spark-etl
+sbt> assembly
+```
 
 The assembly jar will be placed in `geotrellis/spark-etl/target/scala-2.10` directory.
 
 ## Running the Spark Job
 
-For maximum flexibility it is desirable to run spark jobs with `spark-submit`. In order to achieve this `spark-core`
-dependency must be listed as `provided` and `sbt-assembly` plugin used to create the fat jar as described above.
-Once the assembly jar is read outputs and inputs can be setup through command line arguments like so:
+For maximum flexibility it is desirable to run spark jobs with
+`spark-submit`. In order to achieve this `spark-core` dependency must
+be listed as `provided` and `sbt-assembly` plugin used to create the
+fat jar as described above. Once the assembly jar is read outputs and
+inputs can be setup through command line arguments like so:
 
-```sh
+```bash
 #!/bin/sh
 export JAR="geotrellis-etl-assembly-0.1-SNAPSHOT.jar"
 
@@ -88,7 +94,8 @@ $JAR \
 --layer nlcd-tms --crs EPSG:3857 --pyramid --layoutScheme tms
 ```
 
-Note that the arguments before the `$JAR` configure `SparkContext` and arguments after configure GeoTrellis ETL inputs and outputs.
+Note that the arguments before the `$JAR` configure `SparkContext`
+and arguments after configure GeoTrellis ETL inputs and outputs.
 
 ### Command Line Arguments
 
@@ -131,44 +138,57 @@ render    | path, encoding=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:
 ##### Accumulo Output
 
 Accumulo output module has two write strategies: 
-  - `hdfs` strategy uses Accumulo bulk import
-  - `socket` strategy uses Accumulo `BatchWriter`
-    
-When using `hdfs` strategy `ingestPath` argument will be used as the temporary directory where records will be written
-for use by Accumulo bulk import. This directory should ideally be an HDFS path.
+- `hdfs` strategy uses Accumulo bulk import
+- `socket` strategy uses Accumulo `BatchWriter`  
+When using `hdfs` strategy `ingestPath` argument will be used as
+the temporary directory where records will be written for use by
+Accumulo bulk import. This directory should ideally be an HDFS path.
 
 #### Layout Scheme
 
-GeoTrellis is able to tile layers in either `ZoomedLayoutScheme`, matching TMS pyramid, or `FloatingLayoutScheme`, matching the native resolution of input raster.
+GeoTrellis is able to tile layers in either `ZoomedLayoutScheme`,
+matching TMS pyramid, or `FloatingLayoutScheme`, matching the native
+resolution of input raster. These alternatives may be selecting by
+using the `layoutScheme` option.
 
-These alternatives may be selecting by using the `layoutScheme` option.
+Note that `ZoomedLayoutScheme` needs to know the world extent, which
+it gets from the CRS, in order to build the TMS pyramid layout. This
+will likely cause resampling of input rasters to match the resolution
+of the TMS levels.
 
-Note that `ZoomedLayoutScheme` needs to know the world extent, which it gets from the CRS, in order to build the TMS pyramid layout.
-This will likely cause resampling of input rasters to match the resolution of the TMS levels.
-
-On other hand `FloatingLayoutScheme` will discover the native resolution and extent and partition it by given tile size without resampling.
+On other hand `FloatingLayoutScheme` will discover the native resolution
+and extent and partition it by given tile size without resampling.
 
 ##### User Defined Layout
 
-You may bypass the layout scheme logic by providing `layoutExtent`, `cellSize`, and `cellType` instead of the `layoutScheme` option.
-Together with `tileSize` option this is enough to fully define the layout and start the tiling process.
+You may bypass the layout scheme logic by providing `layoutExtent`,
+`cellSize`, and `cellType` instead of the `layoutScheme` option. Together
+with `tileSize` option this is enough to fully define the layout and
+start the tiling process.
 
 #### Reprojection
 
-`spark-etl` project supports two methods of reprojection: `buffered` and `per-tile`. They provide a trade-off between accuracy and flexibility.
+`spark-etl` project supports two methods of reprojection: `buffered` and
+`per-tile`. They provide a trade-off between accuracy and flexibility.
 
-Buffered reprojection method is able to sample pixels past the tile boundaries by performing a neighborhood join.
-This method is the default and produces the best results. However it requires that all of the source tiles share the same CRS.
+Buffered reprojection method is able to sample pixels past the tile
+boundaries by performing a neighborhood join. This method is the default
+and produces the best results. However it requires that all of the
+source tiles share the same CRS.
 
-Per tile teproject method can not consider pixels past the individual tile boundaries, even if they exist elsewhere in the dataset.
-Any pixels past the tile boundaries will be as `NODATA` when interpolating.
-This restriction allows for source tiles to have a different projections per tile.
-This is an effective way to unify the projections for instance when projection from multiple UTM projections to WebMercator.
+Per tile teproject method can not consider pixels past the individual
+tile boundaries, even if they exist elsewhere in the dataset. Any pixels
+past the tile boundaries will be as `NODATA` when interpolating. This
+restriction allows for source tiles to have a different projections per tile.
+This is an effective way to unify the projections for instance when
+projection from multiple UTM projections to WebMercator.
 
 ### Rendering a Layer
 
-`render` output module is different from other modules in that it does not save a GeoTrellis layer but rather provides a way
-to render a layer, after tiling and projection, to a set of images. This is useful to either verify the ETL process or render a TMS pyramid.
+`render` output module is different from other modules in that it does not
+save a GeoTrellis layer but rather provides a way to render a layer, after
+tiling and projection, to a set of images. This is useful to either verify
+the ETL process or render a TMS pyramid.
 
 The `path` module argument is actually a path template, that allows the following substitution:
   - `{x}` tile x coordinate
@@ -181,5 +201,7 @@ A sample render output configuration template could be:
 
 ## Extension
 
-In order to provide your own input or output modules you must extend [`InputPlugin`](src/main/scala/geotrellis/spark/etl/InputPlugin) and
-[`OutputPlugin`](src/main/scala/geotrellis/spark/etl/OutputPlugin) and register them in the `Etl` constructor via a `TypedModule`.
+In order to provide your own input or output modules you must extend
+[`InputPlugin`](src/main/scala/geotrellis/spark/etl/InputPlugin) and
+[`OutputPlugin`](src/main/scala/geotrellis/spark/etl/OutputPlugin)
+and register them in the `Etl` constructor via a `TypedModule`.

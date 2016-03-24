@@ -1,9 +1,9 @@
-#geotrellis.vector
+# geotrellis.vector
 
 >"Raster is faster but vector is correcter."
 — Somebody
 
-##Features and Geometries
+## Features and Geometries
 
 In addition to working with raster data, Geotrellis provides
 a number of facilities for the creation, representation, and
@@ -15,7 +15,7 @@ to certain objects found in [the GeoJson spec](http://geojson.org/geojson-spec.h
 in a geojson `FeatureCollection`. `Geometry`s, to `geometries`
 in a geojson `Feature`.
 
-##Geometries
+## Geometries
 
 The base `Geometry` class can be found in `Geometry.scala`.
 Concrete geometries include:
@@ -63,10 +63,12 @@ Beyond the methods which come with any `Geometry` object there are
 implicits in many geotrellis modules which will extend Geometry
 capabilities. For instance, after importing `geotrellis.vector._`,
 it becomes possible to call the `toGeoJson` method on any `Geometry`:
+
 ```scala
 import geotrellis.vector._
 assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
 ```
+
 If you need to move from a geometry to a serialized representation or
 vice-versa, take a look at the `io` directory's contents. This naming
 convention for input and output is common throughout Geotrellis.
@@ -76,6 +78,7 @@ program, spend some time seeing if the problem has already been solved.
 Methods which are specific to certain subclasses of `Geometry` exist too.
 For example, `geotrellis.vector.MultiLine` is implicitly extended by
 `geotrellis.vector.op` such that this becomes possible:
+
 ```scala
 import geotrellis.vector.op._
 val myML = MultiLine.EMPTY
@@ -90,7 +93,7 @@ The following packages extend `Geometry` capabilities:
 - [geotrellis.vector.op.affine](op/affine/)
 - [geotrellis.vector.reproject](reproject/)
 
-##Features
+## Features
 The `Feature` class is odd. At first blush, it thinly wraps one of the
 afforementioned `Geometry` objects along with some type of data. Its
 purpose will be clear if you can keep in mind the importance of the
@@ -99,6 +102,7 @@ software space. It can be found in `Feature.scala`.
 
 Let's examine some source code so that this is all a bit clearer.
 From `geotrellis.vector.Feature.scala`:
+
 ```scala
 abstract class Feature[D] {
   type G <: Geometry
@@ -163,7 +167,7 @@ which includes a geometry. There's even support for geojson IDs: the
 from `String` to `Feature[D]`. Data in both the ID and non-ID variants
 of geojson Feature formats is easily transformed.
 
-##GeoTrellis Extents
+## GeoTrellis Extents
 
 There's one more piece to the `geotrellis.vector` puzzle: `Extent`.
 A `geotrellis.vector.Extent` is nothing more than a rectangular
@@ -195,7 +199,7 @@ case class ProjectedExtent(extent: Extent, crs: CRS) {
 Really, that's about all you need to know to get started with
 extents. They're a powerful tool for a tightly defined task.
 
-##Submodules
+## Submodules
 
 These submodules define useful methods for dealing with
 the entities that call `geotrellis.vector` home:
