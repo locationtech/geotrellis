@@ -25,12 +25,12 @@ GeoTrellis.
   - [resampling](raster/resampling.md)
 - [geotrellis.slick](spark/slick-intro.md)
 - [geotrellis.spark](spark/spark-intro.md)
-  - [indexing with the hilbert curve](spark/hilbert-index.md)
+  - [notes on the hilbert curve index](spark/hilbert-index.md)
   - [working with joins](spark/spark-joins.md)
-  - [spark layer keys](spark/spark-keys.md)
+  - [spark layer keys](spark/spark-keys.md) // incomplete
   - [spark layer values](spark/spark-values.md)
-  - [spark layer metadata](spark/spark-metadata.md)
-  - [spark input/output](spark/spark-io.md)
+  - [spark layer metadata](spark/spark-metadata.md) // planned
+  - [spark input/output](spark/spark-io.md) // planned
 - [geotrellis.spark-etl](spark/spark-intro.md)
 - [geotrellis.util](util/util-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)

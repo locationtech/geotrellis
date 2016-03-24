@@ -55,7 +55,8 @@ the type system as `RDD[(K, V)] with Metadata[M]`.
 > (RDD), which is a fault-tolerant collection of elements that can be
 > operated on in parallel.
 — [Apache Spark
-Documentation](http://spark.apache.org/docs/1.6.0/programming-guide.html#resilient-distributed-datasets-rdds) (version 1.6.0)
+Documentation](http://spark.apache.org/docs/1.6.0/programming-guide.html#resilient-distributed-datasets-rdds)
+(version 1.6.0)
 
 
 ### RDD[(K, V)] with Metadata[M]

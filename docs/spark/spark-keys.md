@@ -15,7 +15,7 @@ might represent its rows and columns of tile-images with the `GridKey`.
 [Upon closer inspection](../../spark/src/main/scala/geotrellis/spark/GridKey.scala)),
 we can see that `GridKey` is little more than a `Tuple2`.  
 
-#### Establishing boundaries
+### Establishing boundaries
 
 Unlike a simple tuple, `GridKey` implements the typeclass `Boundable`.
 This extension provides logic related to a key's boundaries which can be
@@ -31,7 +31,7 @@ In such instances, the `GridTimeKey` is more useful: it represents a
 column, a row, and an instant and can produce either a `GridKey` or a
 `TimeKey` on demand. And, as with `GridKey`, it is `Boundable`.  
 
-#### Operations on `V`s depend on `K`s
+### Operations on `V`s depend on `K`s
 
 We saw in the section on `V` types that even after we've settled on working
 with `Tile`s and `TileLayerMetadata`, `K` remains generic. This is
@@ -62,10 +62,10 @@ well exist on a different `Tile` altogether, thus necessitating some way
 of conveniently determining which other `Tile`s an operation might need
 to query.  
 
-#### Ingest Keys
+### Ingest Keys
 
-Difference between ingest and regular keys
+> TODO: Difference between ingest and regular keys
 
-#### Keys as Lenses
+### Keys as Lenses
 
-Explanation of KeyComponent[A, B] pattern
+> TODO: Explanation of KeyComponent[A, B] pattern

@@ -10,6 +10,7 @@ modify, and utilize rasters. In GeoTrellis, a raster is just a tile with an asso
 (read about extents [here](../vector/vector-intro.md)). A tile is just a two-dimensional,
 collection of evenly spaced data. Tiles are a lot like certain
 sequences of sequences (this array of arrays is like a 3x3 tile):
+
 ```scala
 val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
 /** It probably looks more like your mental model if we stack them up:
@@ -18,6 +19,7 @@ val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
   *  [1,2,3]]
   */
 ```
+
 In the raster module of GeoTrellis, the base type of tile is just `Tile`. All GeoTrellis
 compatible tiles will have inherited from that base class, so if you find yourself wondering
 what a given type of tile's powers are, that's a decent place to start your search. Here's an
@@ -67,13 +69,14 @@ From IntArrayTile.scala:
 final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
     extends MutableArrayTile with IntBasedArrayTile
 ```
+
 From DoubleArrayTile.scala:
 ```scala
 final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
   extends MutableArrayTile with DoubleBasedArrayTile
 ```  
 
-#### Tile geneaology
+#### Tile inheritance structure
 It looks like there are two different chains of inheritance here (`IntBasedArrayTile` and
 `DoubleBasedArrayTile`). Let's first look at what they share:
 1. `MutableArrayTile` adds some nifty methods for in-place manipulation of cells (GeoTrellis is
