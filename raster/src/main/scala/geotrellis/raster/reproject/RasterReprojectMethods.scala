@@ -1,11 +1,10 @@
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
 import geotrellis.proj4._
+import geotrellis.raster._
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
-
 
 trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
   import Reproject.Options
@@ -15,14 +14,17 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
   def reproject(targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform): T =
     reproject(targetRasterExtent, transform, inverseTransform, Options.DEFAULT)
 
-  def reproject(src: CRS, dest: CRS, options: Options): T = {
-    val transform = Transform(src, dest)
-    val inverseTransform = Transform(dest, src)
+  def reproject(src: CRS, dest: CRS, options: Options): T =
+    if(src == dest) {
+      self
+    } else {
+      val transform = Transform(src, dest)
+      val inverseTransform = Transform(dest, src)
 
-    val targetRasterExtent = ReprojectRasterExtent(self.rasterExtent, transform, options = options)
+      val targetRasterExtent = ReprojectRasterExtent(self.rasterExtent, transform, options = options)
 
-    reproject(targetRasterExtent, transform, inverseTransform, options)
-  }
+      reproject(targetRasterExtent, transform, inverseTransform, options)
+    }
 
   def reproject(src: CRS, dest: CRS): T =
     reproject(src, dest, Options.DEFAULT)

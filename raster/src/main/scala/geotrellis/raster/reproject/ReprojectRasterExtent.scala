@@ -80,7 +80,11 @@ object ReprojectRasterExtent {
     apply(ge, transform, Options.DEFAULT)
 
   def apply(ge: GridExtent, src: CRS, dest: CRS, options: Options): GridExtent =
-    apply(ge, Transform(src, dest), options)
+    if(src == dest) {
+      ge
+    } else {
+      apply(ge, Transform(src, dest), options)
+    }
 
   def apply(ge: GridExtent, src: CRS, dest: CRS): GridExtent =
     apply(ge, src, dest, Options.DEFAULT)
@@ -101,7 +105,11 @@ object ReprojectRasterExtent {
     apply(re, transform, Options.DEFAULT)
 
   def apply(re: RasterExtent, src: CRS, dest: CRS, options: Options): RasterExtent =
-    apply(re, Transform(src, dest), options)
+    if(src == dest) {
+      re
+    } else {
+      apply(re, Transform(src, dest), options)
+    }
 
   def apply(re: RasterExtent, src: CRS, dest: CRS): RasterExtent =
     apply(re, src, dest, Options.DEFAULT)
