@@ -77,7 +77,7 @@ class ColorMapSpec extends FunSpec with Matchers
 
       val colorMap1 =
         ColorMap(limits, colors)
-      val colorMap = colorMap1.withNoDataColor(0)
+      val colorMap = colorMap1.withNoDataColor(0).withBoundaryType(LessThanOrEqualTo)
       val arr = (0 until 90 by 5).toArray
       val r = createTile(arr)
 
@@ -118,6 +118,7 @@ class ColorMapSpec extends FunSpec with Matchers
       colorMap.map(40) should be (20)
       colorMap.map(50) should be (30)
     }
+
     it("should render transparent pixels for nodata and unmapped values on Double tiles"){
       val arr = Array[Double](Double.NaN, 2.0, 9000.0)
       val tile = DoubleArrayTile(arr, 3, 1)
@@ -132,6 +133,7 @@ class ColorMapSpec extends FunSpec with Matchers
       val fallback = new Color(img.getRGB(2, 0), true)
       fallback.getAlpha should be (0)
     }
+
     it("should render transparent pixels for nodata and unmapped values on Int tiles"){
       val arr = Array[Int](Int.MinValue, 2, 9000)
       val tile = IntArrayTile(arr, 3, 1)
@@ -145,6 +147,145 @@ class ColorMapSpec extends FunSpec with Matchers
 
       val fallback = new Color(img.getRGB(2, 0), true)
       fallback.getAlpha should be (0)
+    }
+  }
+
+  describe("ColorMap class boundary type option") {
+
+    it("should map LessThan correctly on class boundary borders - int") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19 -> 0xFF0000FF,
+            23 -> 0x00FF00FF,
+            26 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = LessThan)
+        )
+
+      val color = colorMap.map(23)
+      withClue(f"Actual color = ${color}%02X: - int") {
+        color should be (0x0000FFFF)
+      }
+    }
+
+    it("should map LessThanOrEqualTo correctly on class boundary borders - int") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19 -> 0xFF0000FF,
+            23 -> 0x00FF00FF,
+            26 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = LessThanOrEqualTo)
+        )
+
+      val color = colorMap.map(23)
+      withClue(f"Actual color = ${color}%02X: - int") {
+        color should be (0x00FF00FF)
+      }
+    }
+
+    it("should map GreaterThan correctly on class boundary borders - int") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19 -> 0xFF0000FF,
+            23 -> 0x00FF00FF,
+            26 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = GreaterThan)
+        )
+
+      val color = colorMap.map(23)
+      withClue(f"Actual color = ${color}%02X: - int") {
+        color should be (0xFF0000FF)
+      }
+    }
+
+    it("should map GreaterThanOrEqualTo correctly on class boundary borders - int") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19 -> 0xFF0000FF,
+            23 -> 0x00FF00FF,
+            26 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = GreaterThanOrEqualTo)
+        )
+
+      val color = colorMap.map(23)
+      withClue(f"Actual color = ${color}%02X:") {
+        color should be (0x00FF00FF)
+      }
+    }
+
+    it("should map LessThan correctly on class boundary borders - double") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19.5 -> 0xFF0000FF,
+            23.5 -> 0x00FF00FF,
+            26.5 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = LessThan)
+        )
+
+      val color = colorMap.mapDouble(23.5)
+      withClue(f"Actual color = ${color}%02X: - double") {
+        color should be (0x0000FFFF)
+      }
+    }
+
+    it("should map LessThanOrEqualTo correctly on class boundary borders - double") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19.5 -> 0xFF0000FF,
+            23.5 -> 0x00FF00FF,
+            26.5 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = LessThanOrEqualTo)
+        )
+
+      val color = colorMap.mapDouble(23.5)
+      withClue(f"Actual color = ${color}%02X: - double") {
+        color should be (0x00FF00FF)
+      }
+    }
+
+    it("should map GreaterThan correctly on class boundary borders - double") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19.5 -> 0xFF0000FF,
+            23.5 -> 0x00FF00FF,
+            26.5 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = GreaterThan)
+        )
+
+      val color = colorMap.mapDouble(23.5)
+      withClue(f"Actual color = ${color}%02X: - double") {
+        color should be (0xFF0000FF)
+      }
+    }
+
+    it("should map GreaterThanOrEqualTo correctly on class boundary borders - double") {
+      val colorMap =
+        ColorMap(
+          Map(
+            19.5 -> 0xFF0000FF,
+            23.5 -> 0x00FF00FF,
+            26.5 -> 0x0000FFFF
+          ),
+          ColorMap.Options(classBoundaryType = GreaterThanOrEqualTo)
+        )
+
+      val color = colorMap.mapDouble(23.5)
+      withClue(f"Actual color = ${color}%02X:") {
+        color should be (0x00FF00FF)
+      }
     }
   }
 }
