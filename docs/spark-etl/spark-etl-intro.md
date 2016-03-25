@@ -26,19 +26,23 @@ import geotrellis.spark.ingest._
 import geotrellis.vector.ProjectedExtent
 import org.apache.spark.SparkConf
 
-object GeoTrellisETL extends App {
-  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+object GeoTrellisETL {
+  def main(args: Array[String]): Unit = {
+    implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
 
-  /* parse command line arguments */
-  val etl = Etl(args)
-  /* load source tiles using input module specified */
-  val sourceTiles = etl.load[ProjectedExtent, Tile]
-  /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
-  val (zoom, tiled) = etl.tile(sourceTiles)
-  /* save and optionally pyramid the mosaiced layer */
-  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
-
-  sc.stop()
+    try {
+      /* parse command line arguments */
+      val etl = Etl(args)
+      /* load source tiles using input module specified */
+      val sourceTiles = etl.load[ProjectedExtent, Tile]
+      /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
+      val (zoom, tiled) = etl.tile(sourceTiles)
+      /* save and optionally pyramid the mosaiced layer */
+      etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
+    } finally {
+      sc.stop()
+    }
+  }
 }
 ```
 
