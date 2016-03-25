@@ -16,16 +16,14 @@
 
 package geotrellis.vector.io.wkb
 
-import java.io.{ByteArrayOutputStream}
+import java.io.ByteArrayOutputStream
 import java.util.Locale
 import com.vividsolutions.jts.io.{ByteOrderValues, OutStream, OutputStreamOutStream}
 import geotrellis.vector._
 import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.{Coordinate, CoordinateSequence}
 
-/**
-  * Constant values used by the WKB format
-  */
+/** Constant values used by the WKB format */
 object WKBConstants {
   val wkbXDR: Byte = 0
   val wkbNDR: Byte = 1
@@ -39,10 +37,10 @@ object WKBConstants {
   val wkbGeometryCollection: Byte = 7
 }
 
+/** Companion object to [[WKBWriter]] */
 object WKBWriter {
 
-  /**
-    * Converts a byte array to a hexadecimal string.
+  /** Convert a byte array to a hexadecimal string.
     *
     * @param bytes a byte array
     * @return a string of hexadecimal digits
@@ -50,10 +48,9 @@ object WKBWriter {
   def toHex(bytes: Array[Byte]): String  =  bytes.map(b => "%02x".formatLocal(Locale.ENGLISH, b)).mkString
 }
 
-/**
-  * Ported from JTS WKBWriter [[package com.vividsolutions.jts.io.WKBWriter]]
+/** Ported from JTS WKBWriter [[package com.vividsolutions.jts.io.WKBWriter]]
   *
-  * Original Author: Martin Davis
+  * @author Martin Davis
   */
 class WKBWriter(outputDimension: Int, byteOrder: Int) {
   require(outputDimension == 2 || outputDimension == 3, s"Output dimension ($outputDimension) must be 2 or 3")
@@ -70,8 +67,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
   private val byteArrayOutStream = new OutputStreamOutStream(byteArrayOS)
   private var srid: Option[Int] = None
 
-  /**
-    * Writes a {@link Geometry} into a byte array.
+  /** Writes a [[Geometry]] into a byte array.
     *
     * @param geom the geometry to write
     * @return the byte array containing the WKB
@@ -83,8 +79,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     byteArrayOS.toByteArray
   }
 
-  /**
-    * Writes a {@link Geometry} to an {@link OutStream}.
+  /** Writes a [[Geometry]] to an [[OutStream]]}.
     *
     * @param geom the geometry to write
     * @param os the out stream to write to

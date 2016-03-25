@@ -8,7 +8,7 @@ Ultimately, you want to move from a (valid, geojson) string to
 a scala representation.
 
 ```Scala
-val x: String = “””{
+val x: String = """{
                   |  “type”str: “FeatureCollection”,
                   |  “features”: [
                   |    {
@@ -23,7 +23,7 @@ val x: String = “””{
                   |      “id”: “target_32a63e"
                   |    }
                   |  ]
-                  |}”””.stripMargin
+                  |}""".stripMargin
 ```
 
 For example, `JsonFeatureCollectionMap.getAllFeatures[PointFeature[SomeProp]]`

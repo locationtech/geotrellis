@@ -2,9 +2,7 @@ package geotrellis.vector.io.json
 
 import spray.json._
 
-/**
- *
- */
+/** A trait specifying CRS/JSON conversion */
 trait CrsFormats {
   implicit object crsFormat extends RootJsonFormat[CRS] {
     override def read(json: JsValue): CRS = json.asJsObject.getFields("crs") match {

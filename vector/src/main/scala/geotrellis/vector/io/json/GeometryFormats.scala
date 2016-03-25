@@ -3,10 +3,9 @@ package geotrellis.vector.io.json
 import geotrellis.vector._
 import spray.json._
 
-/**
- * Implements Spray JsonFormats for Geometry objects.
- * Import or extend this object directly to use them with default spray-json (un)marshaller
- */
+/** A trait that implements Spray JsonFormats for Geometry objects.
+  * @note Import or extend this object directly to use them with default spray-json (un)marshaller
+  */
 trait GeometryFormats {
   /** Writes point to JsArray as [x, y] */
   private def writePointCoords(point: Point): JsArray =
@@ -214,11 +213,7 @@ trait GeometryFormats {
     }
   }
 
-  /**
-   * If given JSON is actually a Feature we extract 'geometry' field and discard the rest,
-   * in all other cases the value is returned unaltered.
-   * Thus we can comperehand any Feature as a Geometry if we don't care about 'properties'.
-   */
+  /** Unwrap feature geometry (ignoring its properties) */
   private def unwrapFeature(value: JsValue): JsValue = {
     value.asJsObject.getFields("type", "geometry") match {
       case Seq(JsString("Feature"), geom) =>  geom

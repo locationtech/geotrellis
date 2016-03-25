@@ -21,22 +21,21 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optim
 import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, LeastSquaresProblem, LevenbergMarquardtOptimizer}
 import spire.syntax.cfor._
 
-/**
- * Computes fitting of the given empirical semivariogram using a [[ModelType]]'s function definitions valueFunc() and jacobianFunc()
- * @param x     Empirical Semivariogram distance value
- * @param y     Empirical Semivariogram's corresponding variance values
- * @param start Starting point for finding the optimization values of Semivariogram's parameters (range, sill, 0)
- */
+/** Computes fitting of the given empirical semivariogram using a [[ModelType]]'s function definitions valueFunc() and jacobianFunc()
+  * @param x     Empirical Semivariogram distance value
+  * @param y     Empirical Semivariogram's corresponding variance values
+  * @param start Starting point for finding the optimization values of Semivariogram's parameters (range, sill, 0)
+  */
 abstract class LeastSquaresFittingProblem(x: Array[Double], y: Array[Double], start: Array[Double]) {
   /**
-   * @param r Denotes current Range of [[Semivariogram]] while performing fitting optimization
-   * @param s Denotes current Sill of [[Semivariogram]] while performing fitting optimization
-   */
+    * @param r Denotes current Range of [[Semivariogram]] while performing fitting optimization
+    * @param s Denotes current Sill of [[Semivariogram]] while performing fitting optimization
+    */
   def valueFunc(r: Double, s: Double, a: Double): Double => Double
 
   /**
-   * Computes the differential values at the current point of Levenberg-Marquard optimization
-   */
+    * Computes the differential values at the current point of Levenberg-Marquard optimization
+    */
   def jacobianFunc(variables: Array[Double]): Double => Array[Double]
 
   def retMVF(): MultivariateVectorFunction = {
@@ -63,7 +62,7 @@ abstract class LeastSquaresFittingProblem(x: Array[Double], y: Array[Double], st
     }
   }
 
-  //Actual method which performs the optimizations
+  // Actual method which performs the optimizations
   def optimum: Optimum = {
     val lsb: LeastSquaresBuilder = new LeastSquaresBuilder()
     val lmo: LevenbergMarquardtOptimizer = new LevenbergMarquardtOptimizer()

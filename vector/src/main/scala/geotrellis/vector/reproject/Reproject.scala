@@ -3,6 +3,7 @@ package geotrellis.vector.reproject
 import geotrellis.proj4._
 import geotrellis.vector._
 
+/** This object contains various overloads for performing reprojections over geometries */
 object Reproject {
   def apply(t: (Double, Double), src: CRS, dest: CRS): (Double, Double) =
     apply(t, Transform(src, dest))
