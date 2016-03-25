@@ -1,5 +1,9 @@
 package geotrellis.raster
 
+
+/**
+  * The trait from which [[Tile]]s are derived.
+  */
 trait CellGrid extends Serializable {
   def cols: Int
   def rows: Int

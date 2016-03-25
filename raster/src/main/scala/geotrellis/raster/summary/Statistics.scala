@@ -18,8 +18,10 @@ package geotrellis.raster.summary
 
 import geotrellis.raster.{doubleNODATA, NODATA}
 
+
 /**
-  * Data object for sharing the basic statistics about a raster or region.
+  * Data object for sharing the basic statistics about a raster or
+  * region.
   */
 case class Statistics[@specialized (Int, Double) T]
 (
@@ -32,7 +34,15 @@ case class Statistics[@specialized (Int, Double) T]
   zmax: T
 )
 
+/**
+  * Companion object for the [[Statistics]] type.  Contains functions
+  * for generating empty Statistics objects.
+  */
 object Statistics {
+
+  /**
+    * Empty integer [[Statistics]].
+    */
   def EMPTYInt() = {
     Statistics[Int](
       dataCells = 0,
@@ -45,6 +55,9 @@ object Statistics {
     )
   }
 
+  /**
+    * Empty double [[Statistics]].
+    */
   def EMPTYDouble() = {
     Statistics[Double](
       dataCells = 0,

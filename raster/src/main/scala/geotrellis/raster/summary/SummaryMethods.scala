@@ -5,9 +5,14 @@ import geotrellis.raster.histogram._
 import geotrellis.util.MethodExtensions
 
 
+/**
+  * Trait containing [[Tile]] extension methods for summaries.
+  */
 trait SummaryMethods extends MethodExtensions[Tile] {
+
   /**
-    * Contains several different operations for building a histograms of a raster.
+    * Contains several different operations for building a histograms
+    * of a raster.
     *
     * @note     Tiles with a double type (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) will have their values
     *           rounded to integers when making the Histogram.
@@ -22,14 +27,14 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     StreamingHistogram.fromTile(self)
 
   /**
-  * Generate quantile class breaks for a given raster.
-  */
+    * Generate quantile class breaks for a given raster.
+    */
   def classBreaks(numBreaks: Int): Array[Int] =
     histogram.quantileBreaks(numBreaks)
 
   /**
-  * Generate quantile class breaks for a given raster.
-  */
+    * Generate quantile class breaks for a given raster.
+    */
   def classBreaksDouble(numBreaks: Int): Array[Double] =
     histogramDouble.quantileBreaks(numBreaks)
 
@@ -48,14 +53,15 @@ trait SummaryMethods extends MethodExtensions[Tile] {
   def statisticsDouble: Option[Statistics[Double]] = histogramDouble.statistics
 
   /**
-   * Calculate a raster in which each value is set to the standard deviation of that cell's value.
-   *
-   * @return        Tile of IntConstantNoDataCellType data
-   *
-   * @note          Currently only supports working with integer types. If you pass in a Tile
-   *                with double type data (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) the values will be rounded to
-   *                Ints.
-   */
+    * Calculate a raster in which each value is set to the standard
+    * deviation of that cell's value.
+    *
+    * @return        Tile of IntConstantNoDataCellType data
+    *
+    * @note          Currently only supports working with integer types. If you pass in a Tile
+    *                with double type data (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) the values will be rounded to
+    *                Ints.
+    */
   def standardDeviations(factor: Double = 1.0): Tile = {
     require(statistics.nonEmpty)
     val Statistics(_, mean, _, _, stddev, _, _) = statistics.get

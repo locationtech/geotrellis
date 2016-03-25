@@ -20,19 +20,25 @@ import java.util.PriorityQueue
 
 import geotrellis.raster._
 
+
 /**
-  * Generate a Cost-Distance raster based on a set of starting points and a cost
-  * raster
-  *
-  * @param cost     Cost Tile (Int)
-  * @param points   List of starting points as tuples
-  *
-  * @note    Operation will only work with integer typed Cost Tiles (BitCellType, ByteConstantNoDataCellType, ShortConstantNoDataCellType, IntConstantNoDataCellType).
-  *          If a double typed Cost Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) is passed in, those costs will be rounded
-  *          to their floor integer values.
-  *
+  * Object housing various functions related to Cost-Distance
+  * computations.
   */
 object CostDistance {
+
+  /**
+    * Generate a Cost-Distance raster based on a set of starting points
+    * and a cost raster
+    *
+    * @param cost     Cost Tile (Int)
+    * @param points   List of starting points as tuples
+    *
+    * @note    Operation will only work with integer typed Cost Tiles (BitCellType, ByteConstantNoDataCellType, ShortConstantNoDataCellType, IntConstantNoDataCellType).
+    *          If a double typed Cost Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType) is passed in, those costs will be rounded
+    *          to their floor integer values.
+    *
+    */
   def apply(cost: Tile, points: Seq[(Int, Int)]): Tile = {
     val (cols, rows) = cost.dimensions
     val output = DoubleArrayTile.empty(cols, rows)
@@ -59,9 +65,19 @@ object CostDistance {
     output
   }
 
-  def isValid(c: Int, r: Int, cost: Tile): Boolean =
+  /**
+    * Predicate: are the given column and row within the bounds of the
+    * [[Tile]]?
+    *
+    * @param  c  The column
+    * @param  r  The row
+    */
+  private def isValid(c: Int, r: Int, cost: Tile): Boolean =
     c >= 0 && r >= 0 && c < cost.cols && r < cost.rows
 
+  /**
+    * A class encoding directions.
+    */
   final class Dir(val dc: Int, val dr: Int) {
     val diag = !(dc == 0 || dr == 0)
 
@@ -94,7 +110,7 @@ object CostDistance {
     * Output:
     * List((c, r)) <- list of cells set
     */
-  def calcCostCell(c: Int, r: Int, dir: Dir, cost: Tile, d: DoubleArrayTile) = {
+  private def calcCostCell(c: Int, r: Int, dir: Dir, cost: Tile, d: DoubleArrayTile) = {
     val cr = dir(c, r)
 
     if (isValid(cr._1, cr._2, cost)) {
@@ -165,7 +181,7 @@ object CostDistance {
 
   type Cost = (Int, Int, Double)
 
-  def calcNeighbors(c: Int, r: Int, cost: Tile, d: DoubleArrayTile, p: PriorityQueue[Cost]) {
+  private def calcNeighbors(c: Int, r: Int, cost: Tile, d: DoubleArrayTile, p: PriorityQueue[Cost]) {
     val l = dirs.length
     var z = 0
 
@@ -178,11 +194,11 @@ object CostDistance {
     }
   }
 
-  def factor(c: Int, r: Int, c1: Int, r1: Int) = if (c == c1 || r == r1) 1.0 else 1.41421356237
+  private def factor(c: Int, r: Int, c1: Int, r1: Int) = if (c == c1 || r == r1) 1.0 else 1.41421356237
 
-  def safeGet(c: Int, r: Int, cost: Tile): IOption = IOption(cost.get(c, r))
+  private def safeGet(c: Int, r: Int, cost: Tile): IOption = IOption(cost.get(c, r))
 
-  def calcCost(c: Int, r: Int, c2: Int, r2: Int, cost: Tile): DOption = {
+  private def calcCost(c: Int, r: Int, c2: Int, r2: Int, cost: Tile): DOption = {
     val cost1 = safeGet(c, r, cost)
     val cost2 = safeGet(c2, r2, cost)
 
@@ -193,16 +209,15 @@ object CostDistance {
     }
   }
 
-  def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Tile): DOption =
+  private def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Tile): DOption =
     calcCost(c, r, cr2._1, cr2._2, cost)
 
-  def calcCost(c: Int, r: Int, dir: Dir, cost: Tile): DOption =
+  private def calcCost(c: Int, r: Int, dir: Dir, cost: Tile): DOption =
     calcCost(c, r, dir(c, r), cost)
 }
 
 /**
-  * Represents an optional integer
-  * using 'Tile NODATA' as a flag
+  * Represents an optional integer using 'Tile NODATA' as a flag
   */
 private [costdistance]
 class IOption(val v: Int) extends AnyVal {
@@ -213,8 +228,7 @@ class IOption(val v: Int) extends AnyVal {
 }
 
 /**
-  * Represents an optional integer
-  * using 'Double.NaN' as a flag
+  * Represents an optional integer using 'Double.NaN' as a flag
   */
 private [costdistance]
 class DOption(val v: Double) extends AnyVal {

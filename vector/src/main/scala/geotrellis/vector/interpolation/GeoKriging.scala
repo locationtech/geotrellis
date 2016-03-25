@@ -68,20 +68,20 @@ object GeoKriging {
 }
 
 /**
- * @param points          Sample points for Geostatistical Kriging model training
- * @param attrFunc        Attribute matrix transformation for a point (which decides how the point coordinates guide the pointData's value)
- * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
- * @param model           The [[ModelType]] to be used for prediction
- */
+  * @param points          Sample points for Geostatistical Kriging model training
+  * @param attrFunc        Attribute matrix transformation for a point (which decides how the point coordinates guide the pointData's value)
+  * @param bandwidth       The maximum inter-point pair-distances which influence the prediction
+  * @param model           The [[ModelType]] to be used for prediction
+  */
 class GeoKriging(points: Array[PointFeature[Double]],
                  attrFunc: (Double, Double) => Array[Double],
                  bandwidth: Double,
                  model: ModelType) extends Kriging {
 
   /**
-   * Universal Kriging training with the sample points
-   * @param numberOfPoints  Number of points to be Kriged
-   */
+    * Universal Kriging training with the sample points
+    * @param numberOfPoints  Number of points to be Kriged
+    */
   protected def createPredictorInit(numberOfPoints: Int): (Double, Double) => (Double, Double) = {
     val n: Int = points.length
     if (n == 0)

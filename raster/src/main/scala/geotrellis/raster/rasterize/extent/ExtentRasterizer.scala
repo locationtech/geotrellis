@@ -17,23 +17,27 @@
 package geotrellis.raster.rasterize.extent
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
-import geotrellis.raster.rasterize._
 
 import math.{min, max, round, floor, ceil}
 
+
+/**
+  * Object holding extent rasterization functions.
+  */
 object ExtentRasterizer {
 
   /**
-   * This function causes the function f to be called on each pixel
-   * that interacts with the extent.  The definition of the word
-   * "interacts" is controlled by the options parameter.
-   *
-   * @param e        An extent to render
-   * @param re       A raster extent to render into
-   * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
-   */
+    * This function causes the function f to be called on each pixel
+    * that interacts with the extent.  The definition of the word
+    * "interacts" is controlled by the options parameter.
+    *
+    * @param e        An extent to render
+    * @param re       A raster extent to render into
+    * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
+    */
   def foreachCellByExtent(e: Extent, re: RasterExtent, options: Options = Options.DEFAULT)(f: (Int, Int) => Unit): Unit = {
     val xmin = re.mapXToGridDouble(e.xmin)
     val ymin = re.mapYToGridDouble(e.ymax)

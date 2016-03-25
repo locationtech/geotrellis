@@ -21,7 +21,10 @@ import geotrellis.vector._
 
 import com.vividsolutions.jts.{geom => jts}
 
+/** Trait used to implicitly extend [[Geometry]] instances with a convex hull method */
 trait ConvexHullMethods[G <: Geometry] extends MethodExtensions[G] {
+
+  /** Generate the smallest possible, convex polygon which includes all points */
   def convexHull(): PolygonOrNoResult = {
     val geom = self.jtsGeom.convexHull
     geom match {
