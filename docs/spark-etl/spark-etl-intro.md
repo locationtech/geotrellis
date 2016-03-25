@@ -116,7 +116,6 @@ cellType      | Value of type of the target raster (ex: bool, int8, int32, int64
 output        | Name of output module to use (ex: s3, hadoop, accumulo)
 outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
 pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
-histogram     | Save histogram to the output AttributeStore for every saved layer
 
 
 #### Supported Inputs
@@ -137,9 +136,9 @@ render    | path, encoding=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:
 
 ##### Accumulo Output
 
-Accumulo output module has two write strategies: 
+Accumulo output module has two write strategies:
 - `hdfs` strategy uses Accumulo bulk import
-- `socket` strategy uses Accumulo `BatchWriter`  
+- `socket` strategy uses Accumulo `BatchWriter`
 When using `hdfs` strategy `ingestPath` argument will be used as
 the temporary directory where records will be written for use by
 Accumulo bulk import. This directory should ideally be an HDFS path.
