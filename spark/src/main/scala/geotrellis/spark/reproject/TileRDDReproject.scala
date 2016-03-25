@@ -111,8 +111,10 @@ object TileRDDReproject {
           0 -> TileLayerMetadata.fromRdd(reprojectedTiles, destCrs, layoutDefinition)
       }
 
-    val tiled = reprojectedTiles
-      .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.rasterReprojectOptions.method, partitioner = bufferedTiles.partitioner))
+    val tiled =
+      reprojectedTiles
+        .tileToLayout(newMetadata, Tiler.Options(resampleMethod = options.rasterReprojectOptions.method, partitioner = bufferedTiles.partitioner))
+
     (zoom, ContextRDD(tiled, newMetadata))
   }
 
@@ -137,42 +139,65 @@ object TileRDDReproject {
     targetLayout: Either[LayoutScheme, LayoutDefinition],
     options: Options
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
-    val crs = rdd.metadata.crs
-    val mapTransform = rdd.metadata.layout.mapTransform
-    val tileLayout = rdd.metadata.layout.tileLayout
+    if(rdd.metadata.crs == destCrs) {
+      val layout = rdd.metadata.layout
 
-    val rasterExtents: RDD[(K, (RasterExtent, RasterExtent))] =
-      rdd
-        .mapPartitions({ partition =>
-          val transform = Transform(crs, destCrs)
-
-          partition.map { case (key, _) =>
-            val extent = mapTransform(key)
-            val rasterExtent = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
-            (key, (rasterExtent, ReprojectRasterExtent(rasterExtent, transform)))
-          }
-        }, preservesPartitioning = true)
-
-    val borderSizesPerKey =
-      rasterExtents
-        .mapValues { case (re1, re2) =>
-          // Reproject the extent back into the original CRS,
-          // to determine how many border pixels we need.
-          // Pad by one extra pixel.
-          val e = re2.extent.reproject(destCrs, crs)
-          val gb = re1.gridBoundsFor(e, clamp = false)
-          BufferSizes(
-            left = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
-            right = 1 + (if(gb.colMax >= re1.cols) gb.colMax - (re1.cols - 1) else 0),
-            top = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
-            bottom = 1 + (if(gb.rowMax >= re1.rows) gb.rowMax - (re1.rows - 1) else 0)
-          )
+      val (zoom, bail) =
+        targetLayout match {
+          case Left(layoutScheme) =>
+            val LayoutLevel(zoom, newLayout) = layoutScheme.levelFor(layout.extent, layout.cellSize)
+            (zoom, newLayout == layout)
+          case Right(layoutDefinition) =>
+            (0, layoutDefinition == layout)
         }
 
-    val bufferedTiles =
-      rdd.bufferTiles(borderSizesPerKey)
+      if(bail) {
+        // This is a no-op, just return the source
+        (zoom, rdd)
+      } else {
+        // We are tiling against a new layout but we
+        // don't need to worry about buffers since the source and target are
+        // in the same CRS.
+        apply(rdd, destCrs, targetLayout, bufferSize = 0, options = options)
+      }
+    } else {
+      val crs = rdd.metadata.crs
+      val mapTransform = rdd.metadata.layout.mapTransform
+      val tileLayout = rdd.metadata.layout.tileLayout
 
-    apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options)
+      val rasterExtents: RDD[(K, (RasterExtent, RasterExtent))] =
+        rdd
+          .mapPartitions({ partition =>
+            val transform = Transform(crs, destCrs)
+
+            partition.map { case (key, _) =>
+              val extent = mapTransform(key)
+              val rasterExtent = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
+              (key, (rasterExtent, ReprojectRasterExtent(rasterExtent, transform)))
+            }
+          }, preservesPartitioning = true)
+
+      val borderSizesPerKey =
+        rasterExtents
+          .mapValues { case (re1, re2) =>
+            // Reproject the extent back into the original CRS,
+            // to determine how many border pixels we need.
+            // Pad by one extra pixel.
+            val e = re2.extent.reproject(destCrs, crs)
+            val gb = re1.gridBoundsFor(e, clamp = false)
+            BufferSizes(
+              left = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
+              right = 1 + (if(gb.colMax >= re1.cols) gb.colMax - (re1.cols - 1) else 0),
+              top = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
+              bottom = 1 + (if(gb.rowMax >= re1.rows) gb.rowMax - (re1.rows - 1) else 0)
+            )
+          }
+
+      val bufferedTiles =
+        rdd.bufferTiles(borderSizesPerKey)
+
+      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options)
+    }
   }
 
   /** Reproject this keyed tile RDD, using a constant border size for the operation.

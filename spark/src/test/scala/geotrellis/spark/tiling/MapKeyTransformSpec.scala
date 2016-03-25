@@ -29,6 +29,17 @@ class MapKeyTransformSpec extends FunSpec with Matchers {
       gb should be (GridBounds(0, 4, 0, 4))
     }
 
+    it("should give the gridbounds of the entire layout if given the extent of that layout") {
+      val ld =
+        LayoutDefinition(
+          Extent(-31.456975828130908, 16.80232947236449, 53.8711521718691, 80.7984254723645),
+          TileLayout(4,3,256,256)
+        )
+
+      val gb = ld.mapTransform(ld.extent)
+      gb should be (GridBounds(0, 0, 3, 2))
+    }
+
     it("should resepect border conditions for single tile") {
       val mp = MapKeyTransform(Extent(0.0, 0.0, 1.0, 1.0), 1, 1)
       assert(mp(Extent(0,0,1,1)) === GridBounds(0, 0, 0, 0))
