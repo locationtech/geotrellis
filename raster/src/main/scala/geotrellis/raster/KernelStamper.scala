@@ -18,21 +18,39 @@ package geotrellis.raster
 
 import geotrellis.raster.mapalgebra.focal.Kernel
 
+
 /**
- * Supplies functionality to operations that do convolution.
- */
+  * Supplies functionality to operations that do convolution.
+  */
 trait KernelStamper {
+
+  /**
+    * Given a column, row, and value, apply the kernel at the given
+    * point.
+    */
   def stampKernel(col: Int, row: Int, z: Int): Unit
+
+  /**
+    * Given a column, row, and value, apply the kernel at the given
+    * point.
+    */
   def stampKernelDouble(col: Int, row: Int, z: Double): Unit
+
   def result: Tile
 }
 
+/**
+  * The companion object for the [[KernelStamper]] trait.
+  */
 object KernelStamper {
   def apply(cellType: CellType, cols: Int, rows: Int, k: Kernel): KernelStamper =
     if(k.cellType.isFloatingPoint) DoubleKernelStamper(cellType, cols, rows, k)
     else IntKernelStamper(cellType, cols, rows, k)
 }
 
+/**
+  * A [[KernelStamper]] for double-valued tiles.
+  */
 case class DoubleKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kernel) extends KernelStamper {
 
   val ktile = k.tile
@@ -41,6 +59,10 @@ case class DoubleKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kern
 
   val tile: MutableArrayTile = ArrayTile.empty(cellType, cols, rows)
 
+  /**
+    * Given a column, row, and value, apply the kernel at the given
+    * point.
+    */
   def stampKernel(col: Int, row: Int, z: Int) = {
     if(z == 0) {
       val o = tile.get(col, row)
@@ -91,6 +113,10 @@ case class DoubleKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kern
     }
   }
 
+  /**
+    * Given a column, row, and value, apply the kernel at the given
+    * point.
+    */
   def stampKernelDouble(col: Int, row: Int, z: Double) = {
     if(z == 0.0) {
       val o = tile.getDouble(col, row)
@@ -144,6 +170,9 @@ case class DoubleKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kern
   def result = tile
 }
 
+/**
+  * A [[KernelStamper]] for integer-valued tiles.
+  */
 case class IntKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kernel) extends KernelStamper {
 
   val ktile = k.tile
@@ -152,6 +181,10 @@ case class IntKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kernel)
 
   val tile: MutableArrayTile = ArrayTile.empty(cellType, cols, rows)
 
+  /**
+    * Given a column, row, and value, apply the kernel at the given
+    * point.
+    */
   def stampKernel(col: Int, row: Int, z: Int) = {
     if(z == 0) {
       val o = tile.get(col, row)
@@ -202,6 +235,10 @@ case class IntKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kernel)
     }
   }
 
+  /**
+    * Given a column, row, and value, apply the kernel at the given
+    * point.
+    */
   def stampKernelDouble(col: Int, row: Int, z: Double) = {
     if(z == 0.0) {
       val o = tile.getDouble(col, row)

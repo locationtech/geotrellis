@@ -17,7 +17,19 @@
 package geotrellis.raster.histogram
 
 
+/**
+  * Object housing [[DoubleHistogram]] constructors.
+  */
 object DoubleHistogram {
+
+  /**
+    * Produce a [[StreamingHistogram]].
+    */
   def apply() = StreamingHistogram()
+
+  /**
+    * Produce a [[StreamingHistogram]] with the given number of
+    * buckets.
+    */
   def apply(size: Int) = StreamingHistogram(size)
 }
