@@ -18,7 +18,7 @@ package geotrellis.raster.rasterize.extent
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 
 import math.{min, max, round, floor, ceil}

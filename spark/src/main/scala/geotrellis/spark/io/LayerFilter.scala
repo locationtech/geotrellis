@@ -2,7 +2,7 @@ package geotrellis.spark.io
 
 import geotrellis.raster._
 import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.vector.{Extent, Point, MultiPolygon}

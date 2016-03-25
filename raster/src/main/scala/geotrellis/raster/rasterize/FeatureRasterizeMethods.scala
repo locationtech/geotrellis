@@ -17,7 +17,7 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Geometry,Feature}
 

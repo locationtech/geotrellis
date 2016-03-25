@@ -25,7 +25,7 @@ import geotrellis.vector.io._
 import geotrellis.vector.io.json._
 import geotrellis.raster.PixelSampleType
 import geotrellis.raster.rasterize.polygon._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
