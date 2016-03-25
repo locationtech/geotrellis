@@ -1,5 +1,6 @@
 /* 
  * Copyright (c) 2013, Minglei Tu (tmlneu@gmail.com)
+ * Copyright (c) 2015, Azavea
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +35,11 @@ import scala.slick.driver.{JdbcDriver, PostgresDriver}
 import scala.slick.lifted.FunctionSymbolExtensionMethods._
 import scala.slick.jdbc.JdbcType
 
- /** based on [[package com.github.tminglei.slickpg.PgPostGISExtensions]] */
-trait PostGisExtensions { 
+ /**
+   * @author Minglei Tu (modified by Azavea)
+   * @see [[package com.github.tminglei.slickpg.PgPostGISExtensions]]
+   */
+trait PostGisExtensions {
   val driver: JdbcDriver
   import driver.Implicit._
 

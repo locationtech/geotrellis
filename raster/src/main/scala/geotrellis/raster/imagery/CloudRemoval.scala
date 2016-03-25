@@ -7,8 +7,16 @@ import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import java.io.File
 import spire.syntax.cfor._
 
+
+/**
+  * An object which houses various functions related to cloud removal.
+  */
 object CloudRemoval {
 
+  /**
+    * Attempt to remove clouds by averaging the values that are below
+    * a given threshold at a particular point over a series of images.
+    */
   def cloudRemovalSingleband(images: Array[Tile], threshold: Int) : Tile = {
     val headImage = images(0)
     val result = ArrayTile.empty(headImage.cellType, headImage.cols, headImage.rows)
@@ -24,7 +32,6 @@ object CloudRemoval {
             count += 1
           }
         }
-        
         result.set(col, row, sum / count)
       }
     }
@@ -32,6 +39,11 @@ object CloudRemoval {
     result
   }
 
+  /**
+    * Attempt to remove clouds by averaging the values that are below
+    * a given threshold at a particular point over a series of images.
+    * This is done on a band-by-band basis.
+    */
   def cloudRemovalMultiband(images: Array[MultibandTile], threshold: Int): MultibandTile = {
     val numBands = images(0).bandCount
     val numImages = images.length
@@ -50,6 +62,11 @@ object CloudRemoval {
     ArrayMultibandTile(cloudlessTiles)
   }
 
+  /**
+    * Attempt to remove clouds by averaging the values that are below
+    * a given threshold at a particular point over a series of images.
+    * This is done on a band-by-band basis.
+    */
   def cloudRemovalMultiband(images: Array[MultibandTile]): MultibandTile = {
     cloudRemovalMultiband(images, 10000)
   }

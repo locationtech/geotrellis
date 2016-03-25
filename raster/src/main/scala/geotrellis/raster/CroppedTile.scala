@@ -22,7 +22,21 @@ import geotrellis.vector.Extent
 import spire.syntax.cfor._
 import scala.collection.mutable
 
+
+/**
+  * The companion object for the [[CroppedTile]] type.
+  */
 object CroppedTile {
+
+  /**
+    * A function which produces a [[CroppedTile]] given a source
+    * [[Tile]], a source [[Extent]] and a target [[Extent]].
+    *
+    * @param   sourceTile    The source tile
+    * @param   sourceExtent  The extent of the source tile
+    * @param   targetExtent  The extent of the newly-created CroppedTile
+    * @return                The CroppedTile
+    */
   def apply(sourceTile: Tile,
             sourceExtent: Extent,
             targetExtent: Extent): CroppedTile =
@@ -36,6 +50,9 @@ object CroppedTile {
     )
 }
 
+/**
+  * The [[CroppedTile]] type.
+  */
 case class CroppedTile(sourceTile: Tile,
                        override val gridBounds: GridBounds) extends Tile {
 
@@ -49,9 +66,23 @@ case class CroppedTile(sourceTile: Tile,
   private val sourceCols = sourceTile.cols
   private val sourceRows = sourceTile.rows
 
+  /**
+    * Returns a [[Tile]] equivalent to this tile, except with cells of
+    * the given type.
+    *
+    * @param   cellType  The type of cells that the result should have
+    * @return            The new Tile
+    */
   def convert(targetCellType: CellType): Tile =
     mutable(targetCellType)
 
+  /**
+    * Fetch the datum at the given column and row of the tile.
+    *
+    * @param   col  The column
+    * @param   row  The row
+    * @return       The Int datum found at the given location
+    */
   def get(col: Int, row: Int): Int = {
     val c = col + gridBounds.colMin
     val r = row + gridBounds.rowMin
@@ -62,6 +93,13 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
+  /**
+    * Fetch the datum at the given column and row of the tile.
+    *
+    * @param   col  The column
+    * @param   row  The row
+    * @return       The Double datum found at the given location
+    */
   def getDouble(col: Int, row: Int): Double = {
     val c = col + gridBounds.colMin
     val r = row + gridBounds.rowMin
@@ -73,11 +111,26 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
+  /**
+    * Another name for the 'mutable' method on this class.
+    *
+    * @return  An [[ArrayTile]]
+    */
   def toArrayTile: ArrayTile = mutable
 
+  /**
+    * Return the [[MutableArrayTile]] equivalent of this tile.
+    *
+    * @return  An MutableArrayTile
+    */
   def mutable(): MutableArrayTile =
     mutable(cellType)
 
+  /**
+    * Return the [[MutableArrayTile]] equivalent of this tile.
+    *
+    * @return  An MutableArrayTile
+    */
   def mutable(targetCellType: CellType): MutableArrayTile = {
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
@@ -98,6 +151,11 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
+  /**
+    * Return the data behind this tile as an array of integers.
+    *
+    * @return  The copy as an Array[Int]
+    */
   def toArray: Array[Int] = {
     val arr = Array.ofDim[Int](cols * rows)
 
@@ -112,6 +170,11 @@ case class CroppedTile(sourceTile: Tile,
     arr
   }
 
+  /**
+    * Return the data behind this tile as an array of doubles.
+    *
+    * @return  The copy as an Array[Int]
+    */
   def toArrayDouble: Array[Double] = {
     val arr = Array.ofDim[Double](cols * rows)
 
@@ -126,8 +189,19 @@ case class CroppedTile(sourceTile: Tile,
     arr
   }
 
+  /**
+    * Return the underlying data behind this tile as an array.
+    *
+    * @return  An array of bytes
+    */
   def toBytes(): Array[Byte] = toArrayTile.toBytes
 
+  /**
+    * Execute a function on each cell of the tile.  The function
+    * returns Unit, so it presumably produces side-effects.
+    *
+    * @param  f  A function from Int to Unit
+    */
   def foreach(f: Int => Unit): Unit = {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
@@ -136,6 +210,12 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
+  /**
+    * Execute a function on each cell of the tile.  The function
+    * returns Unit, so it presumably produces side-effects.
+    *
+    * @param  f  A function from Double to Unit
+    */
   def foreachDouble(f: Double => Unit): Unit = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
@@ -146,6 +226,11 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
+  /**
+    * Execute an [[IntTileVisitor]] at each cell of the present tile.
+    *
+    * @param  visitor  An IntTileVisitor
+    */
   def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
@@ -154,6 +239,11 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
+  /**
+    * Execute an [[DoubleTileVisitor]] at each cell of the present tile.
+    *
+    * @param  visitor  An DoubleTileVisitor
+    */
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
@@ -162,6 +252,13 @@ case class CroppedTile(sourceTile: Tile,
     }
   }
 
+  /**
+    * Map each cell in the given tile to a new one, using the given
+    * function.
+    *
+    * @param   f  A function from Int to Int, executed at each point of the tile
+    * @return     The result, a [[Tile]]
+    */
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
@@ -174,6 +271,13 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
+  /**
+    * Map each cell in the given tile to a new one, using the given
+    * function.
+    *
+    * @param   f  A function from Double to Double, executed at each point of the tile
+    * @return     The result, a [[Tile]]
+    */
   def mapDouble(f: Double => Double): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
@@ -186,6 +290,12 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
+  /**
+    * Map an [[IntTileMapper]] over the present tile.
+    *
+    * @param   mapper  The mapper
+    * @return          The result, a [[Tile]]
+    */
   def mapIntMapper(mapper: IntTileMapper): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
@@ -196,6 +306,12 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
+  /**
+    * Map an [[DoubleTileMapper]] over the present tile.
+    *
+    * @param   mapper  The mapper
+    * @return          The result, a [[Tile]]
+    */
   def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
@@ -206,6 +322,16 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
+  /**
+    * Combine two tiles' cells into new cells using the given integer
+    * function. For every (x, y) cell coordinate, get each of the
+    * tiles' integer values, map them to a new value, and assign it to
+    * the output's (x, y) cell.
+    *
+    * @param   other  The other Tile
+    * @param   f      A function from (Int, Int) to Int
+    * @return         The result, an Tile
+    */
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
@@ -219,6 +345,16 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
+  /**
+    * Combine two tiles' cells into new cells using the given double
+    * function. For every (x, y) cell coordinate, get each of the
+    * tiles' double values, map them to a new value, and assign it to
+    * the output's (x, y) cell.
+    *
+    * @param   other  The other Tile
+    * @param   f      A function from (Int, Int) to Int
+    * @return         The result, an Tile
+    */
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
     (this, other).assertEqualDimensions
 

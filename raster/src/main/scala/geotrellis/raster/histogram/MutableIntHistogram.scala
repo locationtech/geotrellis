@@ -19,22 +19,36 @@ package geotrellis.raster.histogram
 import math.{abs, round, sqrt}
 
 
+/**
+  * All mutable integer histograms are derived from this class.
+  */
 abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogram {
+
+  /**
+    * Note the occurance of 'item'.
+    *
+    * The optional parameter 'count' allows histograms to be built
+    * more efficiently. Negative counts can be used to remove a
+    * particular number of occurances of 'item'.
+    */
   def countItemInt(item: Int, count: Int = 1): Unit = countItem(item, count)
 
+  /**
+    * Update this histogram with the entries from the other one.
+    */
   def update(other: Histogram[Int]): Unit = {
     other.foreach((z, count) => countItem(z, count))
   }
 
   /**
-   * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
-   */
+    * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
+    */
   private def evenQuantiles(num: Int) = (1 to num).map(_.toDouble / num).toArray
 
   /**
-   * This is a heuristic used by quantileBreaks, which mutates the
-   * histogram.
-   */
+    * This is a heuristic used by quantileBreaks, which mutates the
+    * histogram.
+    */
   private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram[Int] = {
     // see how many (if any) extreme values we have, and store their indices
     val localValue: Array[Int] = values()
@@ -83,6 +97,10 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     h
   }
 
+  /**
+    * Compute the quantile breaks of the histogram, where the latter
+    * are evenly spaced in 'num' increments starting at zero percent.
+    */
   def quantileBreaks(num: Int): Array[Int] = {
     // first, we create a list of percentages to use, along with determining
     // how many cells should fit in one "ideal" quantile bucket.

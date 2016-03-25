@@ -20,10 +20,10 @@ import scala.util.matching.Regex
 import java.awt.image.DataBuffer
 import java.lang.IllegalArgumentException
 
-// CellType defined in package object as
-// type CellType = DataType with NoDataHandling
-
-// DataType ADT
+/**
+  * CellType defined in package object as type CellType = DataType
+  * with NoDataHandling.  The [[DataType]] type.
+  */
 sealed abstract class DataType extends Serializable { self: CellType =>
   val bits: Int
   val isFloatingPoint: Boolean
@@ -31,14 +31,21 @@ sealed abstract class DataType extends Serializable { self: CellType =>
 
   def bytes = bits / 8
 
-  /*
-   * Union only checks to see that the correct bitsize and int vs floating point values are set.
-   * We can be sure that its operations are safe because all data is converted up to int or double
-   * where the internal GT "constant" nodata values are used for *all* tile types. So, for
-   * instance, if a UserDefinedNoData tile is converted to a different UserDefinedNoData tile,
-   * the user defined NoData value will be converted to Int.MinValue/Double.NaN during operations
-   * and then converted once more from that value down to the second UserDefinedNoData value.
-   */
+  /**
+    * Union only checks to see that the correct bitsize and int vs
+    * floating point values are set.  We can be sure that its
+    * operations are safe because all data is converted up to int or
+    * double where the internal GT "constant" nodata values are used
+    * for *all* tile types. So, for instance, if a [[UserDefinedNoData]]
+    * tile is converted to a different UserDefinedNoData tile, the
+    * user defined NoData value will be converted to
+    * Int.MinValue/Double.NaN during operations and then converted
+    * once more from that value down to the second UserDefinedNoData
+    * value.
+    *
+    * @param   other  The other cell type
+    * @return         The union of this data type and the other cell type
+    */
   def union(other: CellType) =
     if (bits < other.bits)
       other
@@ -49,6 +56,13 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     else
       other
 
+  /**
+    * Compute the intersection of the present data type and the given
+    * cell type.
+    *
+    * @param   other  The other cell type
+    * @return         The intersection of this data type and the other cell type
+    */
   def intersect(other: CellType) =
     if (bits < other.bits)
       self
@@ -59,65 +73,129 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     else
       self
 
+  /**
+    * Answer true if the present data type contains the other cell
+    * type, otherwise false.
+    *
+    * @param   other  The other cell type
+    * @return         True for containment, false otherwise
+    */
   def contains(other: CellType) = bits >= other.bits
 
+  /**
+    * Return the number of bytes that would be consumed by the given number of items of the present type.
+    *
+    * @param   size  The number of items
+    * @return        The number of bytes
+    */
   def numBytes(size: Int) = bytes * size
 
+  /**
+    * Return the string representation of this data type.
+    *
+    * @return  The string representation
+    */
   override def toString: String = name
 }
 
+/**
+  * The [[BitCells]] type, derived from [[DataType]]
+  */
 sealed trait BitCells extends DataType { self: CellType =>
   val bits: Int = 1
   val isFloatingPoint: Boolean = false
   val name = "bool"
 }
+
+/**
+  * The [[ByteCells]] type, derived from [[DataType]]
+  */
 sealed trait ByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "int8"
 }
+
+/**
+  * The [[UByteCells]] type, derived from [[DataType]]
+  */
 sealed trait UByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "uint8"
 }
+
+/**
+  * The [[ShortCells]] type, derived from [[DataType]]
+  */
 sealed trait ShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "int16"
 }
+
+/**
+  * The [[UShortCells]] type, derived from [[DataType]]
+  */
 sealed trait UShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "uint16"
 }
+
+/**
+  * The [[IntCells]] type, derived from [[DataType]]
+  */
 sealed trait IntCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = false
   val name = "int32"
 }
+
 sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
   val name = "float32"
 }
+
+/**
+  * The [[DoubleCells]] type, derived from [[DataType]]
+  */
 sealed trait DoubleCells extends DataType { self: CellType =>
   val bits: Int = 64
   val isFloatingPoint: Boolean = true
   val name = "float64"
 }
 
-// NoData ADT
+/**
+  * The [[NoDataHandling]].
+  */
 sealed trait NoDataHandling { cellType: CellType => }
+
+/**
+  * The [[ConstantNoData]] type, derived from [[NoDataHandling]].
+  */
 sealed trait ConstantNoData extends NoDataHandling { cellType: CellType => }
+
+/**
+  * The [[NoNoData]] type, derived from [[NoDataHandling]].
+  */
 sealed trait NoNoData extends NoDataHandling { cellType: CellType =>
   abstract override def toString: String = cellType.name + "raw"
 }
+
+/**
+  * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
+  */
 sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { cellType: CellType =>
   val noDataValue: T
   abstract override def toString: String = cellType.name + "ud" + noDataValue.toString
 }
 
+/**
+  * The [[BitCellType]] type, derived from [[BitCells]] and
+  * [[NoNoData]].
+  */
 case object BitCellType extends BitCells with NoNoData {
   override final def numBytes(size: Int) = (size + 7) / 8
 }
@@ -174,6 +252,14 @@ case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
 
 // No NoData
 object CellType {
+
+  /**
+    * Translate an integer representing a cell type into a
+    * [[CellType]].  This is the opposite of toAwtType.
+    *
+    * @param   awtType  An integer representing a cell type
+    * @return           The CellType corresponding to awtType
+    */
   def fromAwtType(awtType: Int): CellType = awtType match {
     case DataBuffer.TYPE_BYTE => ByteConstantNoDataCellType
     case DataBuffer.TYPE_SHORT => ShortConstantNoDataCellType
@@ -183,6 +269,12 @@ object CellType {
     case _ => throw new IllegalArgumentException(s"AWT type $awtType is not supported")
   }
 
+  /**
+    * Translate a string representing a cell type into a [[CellType]].
+    *
+    * @param   name  An integer representing a cell type, e.g. "uint32"
+    * @return        The CellType corresponding to name
+    */
   def fromString(name: String): CellType = name match {
     case "bool" | "boolraw" => BitCellType  // No NoData values
     case "int8raw" => ByteCellType
@@ -237,6 +329,13 @@ object CellType {
       throw new IllegalArgumentException(s"Cell type $name is not supported")
   }
 
+  /**
+    * Translate a [[CellType]] into the corresponding integer
+    * representation.  This is the opposite of fromAwtType.
+    *
+    * @param   cellType  A CellType
+    * @return            The corresponding integer representation of the given cell type
+    */
   def toAwtType(cellType: CellType): Int = cellType match {
     case _: BitCells => DataBuffer.TYPE_BYTE
     case _: ByteCells => DataBuffer.TYPE_BYTE

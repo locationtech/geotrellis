@@ -12,7 +12,7 @@ pixel intensity value below which the resultant cloudless-pixels'
 intensities would lie). The function returns a processed `MultibandTile`
 that can be rendered as a PNG.
 
-Here's an example of its usage:
+Here's an example of its use:
 
 ```scala
 import geotrellis.raster._

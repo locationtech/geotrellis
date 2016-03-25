@@ -17,19 +17,45 @@
 package geotrellis.raster.regiongroup
 
 import geotrellis.raster._
+
 import spire.syntax.cfor._
 
 import scala.collection.mutable
 
+
+/**
+  * A class encoding a region grouping.
+  */
 case class RegionGroupResult(tile: Tile, regionMap: Map[Int, Int])
 
-object RegionGroupOptions { val default = RegionGroupOptions() }
+/**
+  * A class encoding region grouping options (how the region-grouping
+  * procedure should behave).
+  */
 case class RegionGroupOptions(
   connectivity: Connectivity = FourNeighbors,
   ignoreNoData: Boolean = true
 )
 
+/**
+  * The companion object to the [[RegionGroupOptions]] type.  It
+  * contains a function which produces the default options choice.
+  */
+object RegionGroupOptions {
+  val default = RegionGroupOptions()
+}
+
+/**
+  * The [[RegionGroup]] object.  Contains a constructor which produces
+  * a [[RegionGroupResult]].
+  */
 object RegionGroup {
+
+  /**
+    * Given a [[Tile]] and some options, produce a
+    * [[RegionGroupResult]].  The options control exactly how the
+    * region group calculation is done.
+    */
   def apply(r: Tile, options: RegionGroupOptions = RegionGroupOptions.default): RegionGroupResult = {
     var regionId = -1
     val regions = new RegionPartition()
@@ -40,14 +66,14 @@ object RegionGroup {
     val ignoreNoData = options.ignoreNoData
 
     /* Go through each cell row by row, and set all considered neighbors
-     * whose values are equal to the current cell's values to be of the
-     * same region. If there are no equal considered neighbors, then the cell
-     * represents a new region. Considered neighbors are: west and north, for
-     * connectivity of FourNieghbors, and west, north, and northwest for connectivity
-     * of EightNeighbors.
+     * whose values are equal to the current cell's values to be of
+     * the same region. If there are no equal considered neighbors,
+     * then the cell represents a new region. Considered neighbors
+     * are: west and north, for connectivity of FourNeighbors, and
+     * west, north, and northwest for connectivity of EightNeighbors.
      *
-     * Code is duplicated for Four and Eight Neighbor connectivity for performance
-     * and to try and avoid a mess of conditionals.
+     * Code is duplicated for Four and Eight Neighbor connectivity for
+     * performance and to try and avoid a mess of conditionals.
      */
     if(options.connectivity == FourNeighbors) {
       cfor(0)(_ < rows, _ + 1) { row =>
@@ -188,7 +214,7 @@ object RegionGroup {
       }
     }
 
-    // Set equivilant regions to minimum
+    // Set equivalent regions to minimum
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = tile.get(col, row)
@@ -209,16 +235,30 @@ object RegionGroup {
   }
 }
 
+/**
+  * The [[RegionPartition]] type.
+  */
 class RegionPartition() {
   val regionMap = mutable.Map[Int, Partition]()
 
+  /**
+    * The companion object for the [[Partition]] type.  Contains
+    * constructors.
+    */
   object Partition {
+
+    /**
+      * Create a new partition containing 'x'.
+      */
     def apply(x: Int) = {
       val p = new Partition
       p += x
       p
     }
 
+    /**
+      * Create a new partition containing 'x' and 'y'.
+      */
     def apply(x: Int, y: Int) = {
       val p = new Partition
       p += x
@@ -227,18 +267,28 @@ class RegionPartition() {
     }
   }
 
+  /**
+    * A class to represent a partition.
+    */
   class Partition() {
     val members = mutable.Set[Int]()
     var _min = Int.MaxValue
 
     def min = _min
 
+    /**
+      * Add a new member to the 'x' to the region map and add 'x' to
+      * the number of members.
+      */
     def +=(x: Int) = {
       regionMap(x) = this
       members += x
       if(x < _min) { _min = x }
     }
 
+    /**
+      * Absorb the other partition into this one, mutating this one.
+      */
     def absorb(other: Partition) =
       if(this != other) {
         for(m <- other.members) { +=(m) }
@@ -247,11 +297,18 @@ class RegionPartition() {
     override def toString = s"PARTITION($min)"
   }
 
+  /**
+    * Make sure that 'x' is mapped.
+    */
   def add(x: Int) =
     if(!regionMap.contains(x)) {
       Partition(x)
     }
 
+  /**
+    * Make sure that both 'x' and 'y' are mapped and that they belong
+    * to the same partition.
+    */
   def add(x: Int, y: Int): Unit = {
     if(!regionMap.contains(x)) {
       if(!regionMap.contains(y)) {
@@ -271,6 +328,9 @@ class RegionPartition() {
     }
   }
 
+  /**
+    * Retrieve the partition containing 'x'.
+    */
   def getClass(x: Int) =
     if(!regionMap.contains(x)) { sys.error(s"There is no partition containing $x") }
     else {
