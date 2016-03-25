@@ -116,6 +116,14 @@ val myML = MultiLine.EMPTY
 myML.unionGeometries
 ```
 
+The following packages extend `Geometry` capabilities:
+- [geotrellis.vector.io.json](io/json/)
+- [geotrellis.vector.io.WKT](io/WKT/)
+- [geotrellis.vector.io.WKB](io/WKB/)
+- [geotrellis.vector.op](op/)
+- [geotrellis.vector.op.affine](op/affine/)
+- [geotrellis.vector.reproject](reproject/)
+
 ## Features
 The `Feature` class is odd. At first blush, it thinly wraps one of the
 afforementioned `Geometry` objects along with some type of data. Its
@@ -123,14 +131,24 @@ purpose will be clear if you can keep in mind the importance of the
 geojson format of serialization which is now ubiquitous in the GIS
 software space. It can be found in `Feature.scala`.
 
-Let's examine some source code so that this is all a bit clearer. The type
-signatures in
-[Feature.scala](../../vector/src/main/scala/geotrellis/vector/Feature.scala) tell
-us a good deal:
-- The type `G` is [some instance](http://docs.scala-lang.org/tutorials/tour/upper-type-bounds.html)
-  of `Geometry` (which we explored just above).
-- The compiler will not be happy unless a `Feature` provides `data` of
-  type `D`
+Let's examine some source code so that this is all a bit clearer.
+From `geotrellis.vector.Feature.scala`:
+
+```scala
+abstract class Feature[D] {
+  type G <: Geometry
+  val geom: G ; val data: D
+}
+
+case class PointFeature[D](geom: Point, data: D) extends Feature[D] {type G = Point}
+```
+These type signatures tell us a good deal. Let's make this easy
+on ourselves and put our findings into a list.
+- The type `G` is [some instance or other](http://docs.scala-lang.org/tutorials/tour/upper-type-bounds.html)
+of `Geometry` (which we explored just above).
+- The value, `geom`, which anything the compiler recognizes as a
+`Feature` must make available in its immediate closure must be of type `G`.
+- As with `geom` the compiler will not be happy unless a `Feature` provides `data`.
 - Whereas, with `geom`, we could say a good deal about the types of
   stuff (only things we call geometries) that would satisfy the compiler,
   we have nothing in particular to say about `D`.
@@ -185,6 +203,17 @@ Pay special attention to `ProjectedExtent` if you need your geometries
 to be projection-aware. Really, that's about all you need to know to get
 started with extents. They're a powerful tool for a tightly defined task.
 
+From Extent.scala:
+
+```scala
+case class ProjectedExtent(extent: Extent, crs: CRS) {
+  def reproject(dest: CRS): Extent = extent.reproject(crs, dest)
+}
+```
+
+Really, that's about all you need to know to get started with
+extents. They're a powerful tool for a tightly defined task.
+
 ## Submodules
 
 These submodules define useful methods for dealing with
@@ -192,4 +221,3 @@ the entities that call `geotrellis.vector` home:
 - `geotrellis.vector.io` defines input/output (serialization) of geometries
 - `geotrellis.vector.op` defines common operations on geometries
 - `geotrellis.vector.reproject` defines methods for translating between projections
-
