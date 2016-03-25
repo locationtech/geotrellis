@@ -19,10 +19,8 @@ package geotrellis.vector.dissolve
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-/** Dissolves the linear components
-  * from a collection of geometries
-  * into a set of maximal-length {@link Linestring}s
-  * in which every unique segment appears once only.
+/** Dissolves the linear components from a collection of geometries into a set
+  * of maximal-length [[Line]]s in which every unique segment appears once only.
   *
   * @note  This method does not work over Point, MultiPoint, or GeometryCollection types.
   */

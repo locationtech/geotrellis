@@ -33,6 +33,7 @@ object Point {
     Point(factory.createPoint(coord))
 }
 
+/** Class representing a point */
 case class Point(jtsGeom: jts.Point) extends Geometry
                                         with Relatable
                                         with ZeroDimensions {

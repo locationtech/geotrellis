@@ -8,7 +8,7 @@ case class Style(
   strokeWidth: Option[String],
   strokeOpacity: Option[Double],
   fillColor: Option[String],
-  fillOpacity: Option[Double] 
+  fillOpacity: Option[Double]
 )
 
 object Style {
@@ -18,7 +18,7 @@ object Style {
     strokeOpacity: Double = Double.NaN,
     fillColor: String = "",
     fillOpacity: Double = Double.NaN
-  ): Style = 
+  ): Style =
     Style(
       if(strokeColor != "") Some(strokeColor) else None,
       if(strokeWidth != "") Some(strokeWidth) else None,
