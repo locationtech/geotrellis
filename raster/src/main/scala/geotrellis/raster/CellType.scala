@@ -42,7 +42,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
   def union(other: CellType) =
     if (bits < other.bits)
       other
-    else if (bits < other.bits)
+    else if (bits > other.bits)
       self
     else if (isFloatingPoint && !other.isFloatingPoint)
       self
@@ -52,7 +52,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
   def intersect(other: CellType) =
     if (bits < other.bits)
       self
-    else if (bits < other.bits)
+    else if (bits > other.bits)
       other
     else if (isFloatingPoint && !other.isFloatingPoint)
       other
