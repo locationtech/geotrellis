@@ -22,6 +22,7 @@ import static org.osgeo.proj4j.util.ProjectionMath.SECONDS_TO_RAD;
 import static org.osgeo.proj4j.util.ProjectionMath.isIdentity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -73,7 +74,7 @@ public class Datum implements java.io.Serializable
   public static final Datum OSEB36 = new Datum("OSGB36", 446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894, Ellipsoid.AIRY, "Airy 1830");
 
   static {
-      Datum temp = null;
+      Datum temp = new Datum("NAD27", new ArrayList<Grid>(), Ellipsoid.CLARKE_1866, "North_American_Datum_1927");
       try {
           temp = new Datum("NAD27", Grid.fromNadGrids("@conus,@alaska,@ntv2_0.gsb,@ntv1_can.dat"), Ellipsoid.CLARKE_1866,"North_American_Datum_1927");
       } catch (IOException e) {
