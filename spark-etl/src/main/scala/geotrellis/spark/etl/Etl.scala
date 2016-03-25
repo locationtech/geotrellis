@@ -7,13 +7,11 @@ import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample.{ ResampleMethod, NearestNeighbor }
 import geotrellis.raster.stitch.Stitcher
+import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
-import org.slf4j.LoggerFactory
-import scala.reflect._
-import geotrellis.spark._
-import geotrellis.spark.ingest._
 import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 

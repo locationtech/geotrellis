@@ -31,9 +31,6 @@ case class TileLayerMetadata[K: SpatialComponent](
   /** GridBounds of data tiles in the layout */
   def gridBounds = mapTransform(extent)
 
-  def tileTransform(tileScheme: TileScheme): TileKeyTransform =
-    tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
-
   def combine(other: TileLayerMetadata[K]): TileLayerMetadata[K] = {
     val combinedExtent       = extent combine other.extent
     val combinedLayoutExtent = layout.extent combine other.layout.extent
@@ -69,8 +66,11 @@ object TileLayerMetadata {
   implicit def toLayoutDefinition(md: TileLayerMetadata[_]): LayoutDefinition =
     md.layout
 
-  implicit def toMapKeyTransform(md: TileLayerMetadata[_]): MapKeyTransform =
-    md.layout.mapTransform
+  implicit def extentComponent[K]: GetComponent[TileLayerMetadata[K], Extent] =
+    GetComponent(_.extent)
+
+  implicit def crsComponent[K]: GetComponent[TileLayerMetadata[K], CRS] =
+    GetComponent(_.crs)
 
   implicit def layoutComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], LayoutDefinition] =
     Component(_.layout, (md, l) => md.copy(layout = l))

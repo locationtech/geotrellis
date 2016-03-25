@@ -1,8 +1,8 @@
 package geotrellis.spark.render
 
+import geotrellis.proj4.CRS
 import geotrellis.raster.{Tile, TileLayout}
-import geotrellis.spark.{SpatialKey, LayerId}
-import geotrellis.spark.TestEnvironment
+import geotrellis.spark._
 import geotrellis.spark.render._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark.io.hadoop._
@@ -26,7 +26,7 @@ class SaveImagesSpec extends FunSpec with TestEnvironment {
       val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.png"
       val id = LayerId("sample", 1)
       val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
-      val rdd = sample.renderPng()
+      val rdd = sample.renderPng().mapValues(_.bytes)
       rdd.saveToHadoop(keyToPath)
       rdd.collect().foreach { case key @ (SpatialKey(col, row), bytes) =>
         val path = s"file:${tmpdir}/testFiles/catalog/sample/1/$col/$row.png"
@@ -38,7 +38,7 @@ class SaveImagesSpec extends FunSpec with TestEnvironment {
       val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.jpg"
       val id = LayerId("sample", 1)
       val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
-      val rdd = sample.renderJpg()
+      val rdd = sample.renderJpg().mapValues(_.bytes)
       rdd.saveToHadoop(keyToPath)
       rdd.collect().foreach { case key @ (SpatialKey(col, row), bytes) =>
         val path = s"file:${tmpdir}/testFiles/catalog/sample/1/$col/$row.jpg"

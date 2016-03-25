@@ -21,7 +21,7 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val id = LayerId("sample", 1)
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
-      val rdd = sample.renderPng()
+      val rdd = sample.renderPng().mapValues(_.bytes)
       val maker = { () => new MockS3Client() }
 
       SaveToS3(rdd, keyToPath, maker)
@@ -35,7 +35,7 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val id = LayerId("sample", 1)
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
-      val rdd = sample.renderPng()
+      val rdd = sample.renderPng().mapValues(_.bytes)
       val maker = { () => new MockS3Client() }
 
       SaveToS3(rdd, keyToPath, maker)
@@ -49,7 +49,7 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val id = LayerId("sample", 1)
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
-      val rdd = sample.renderPng()
+      val rdd = sample.renderPng().mapValues(_.bytes)
       val maker = { () => new MockS3Client() }
 
       SaveToS3(rdd, keyToPath, maker)

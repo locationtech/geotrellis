@@ -17,14 +17,22 @@
 package geotrellis.spark.crop
 
 import geotrellis.raster._
+import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.crop.Crop.Options
 import geotrellis.spark._
+import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Extent
 
-abstract class TileLayerRDDCropMethods[K: SpatialComponent] extends MethodExtensions[TileLayerRDD[K]] {
-  def crop(extent: Extent, options: Options): TileLayerRDD[K] =
+import org.apache.spark.rdd.RDD
+
+abstract class LayerRDDCropMethods[
+    K: SpatialComponent,
+    V <: CellGrid: (? => TileCropMethods[V]),
+    M: Component[?, Bounds[K]]: GetComponent[?, Extent]: GetComponent[?, LayoutDefinition]
+  ] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
+  def crop(extent: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     Crop(self, extent, options)
 
-  def crop(extent:Extent): TileLayerRDD[K] = crop(extent, Options.DEFAULT)
+  def crop(extent:Extent): RDD[(K, V)] with Metadata[M] = crop(extent, Options.DEFAULT)
 }

@@ -69,6 +69,7 @@ trait TestEnvironment extends BeforeAndAfterAll
       .setMaster("local")
       .setAppName("Test Context")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryoserializer.buffer.max", "500m")
     extraConf(conf)
 
     val sparkContext = new SparkContext(conf)

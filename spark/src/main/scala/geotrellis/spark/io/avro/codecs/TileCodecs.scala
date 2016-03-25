@@ -32,6 +32,7 @@ trait TileCodecs {
         case ShortConstantNoDataCellType => rec.put("noDataValue", Short.MinValue.toInt)
         case ShortUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case ShortCellType => rec.put("noDataValue", null)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
@@ -70,6 +71,7 @@ trait TileCodecs {
         case UShortConstantNoDataCellType => rec.put("noDataValue", 0)
         case UShortUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case UShortCellType => rec.put("noDataValue", null)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
@@ -106,6 +108,7 @@ trait TileCodecs {
         case IntConstantNoDataCellType => rec.put("noDataValue", 0)
         case IntUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
         case IntCellType => rec.put("noDataValue", null)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
@@ -155,6 +158,7 @@ trait TileCodecs {
         case FloatConstantNoDataCellType => rec.put("noDataValue", true)
         case FloatUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
         case FloatCellType => rec.put("noDataValue", false)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
@@ -206,6 +210,7 @@ trait TileCodecs {
         case DoubleConstantNoDataCellType => rec.put("noDataValue", true)
         case DoubleUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
         case DoubleCellType => rec.put("noDataValue", false)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
@@ -243,6 +248,7 @@ trait TileCodecs {
         case ByteConstantNoDataCellType => rec.put("noDataValue", 0)
         case ByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case ByteCellType => rec.put("noDataValue", null)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
@@ -277,6 +283,7 @@ trait TileCodecs {
         case UByteConstantNoDataCellType => rec.put("noDataValue", 0)
         case UByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case UByteCellType => rec.put("noDataValue", null)
+        case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
       }
     }
 
