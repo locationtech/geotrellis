@@ -3,19 +3,26 @@ package geotrellis.raster.merge
 import geotrellis.raster._
 import geotrellis.raster.resample.{Resample, ResampleMethod}
 import geotrellis.vector.Extent
+
 import spire.syntax.cfor._
 
+/**
+  * Trait containing extension methods for doing merge operations on
+  * single-band [[Tile]]s.
+  */
 trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
   /** Merges this tile with another tile.
     *
-    * This method will replace the values of these cells with the values of the
-    * other tile's corresponding cells, if the source cell is of the transparent value.
-    * The transparent value is determined by the tile's cell type;
-    * if the cell type has a NoData value, then that is considered the transparent value.
-    * If there is no NoData value associated with the cell type, then a 0 value is considered
-    * the transparent value. If this is not the desired effect, the caller is required to change
-    * the cell type before using this method to an appropriate cell type that has the desired NoData
-    * value.
+    * This method will replace the values of these cells with the
+    * values of the other tile's corresponding cells, if the source
+    * cell is of the transparent value.  The transparent value is
+    * determined by the tile's cell type; if the cell type has a
+    * NoData value, then that is considered the transparent value.  If
+    * there is no NoData value associated with the cell type, then a 0
+    * value is considered the transparent value. If this is not the
+    * desired effect, the caller is required to change the cell type
+    * before using this method to an appropriate cell type that has
+    * the desired NoData value.
     *
     * @note                         This method requires that the dimensions be the same between the tiles, and assumes
     *                               equal extents.
@@ -73,15 +80,16 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
 
   /** Merges this tile with another tile, given the extents both tiles.
     *
-    *
-    * This method will replace the values of these cells with a resampled value
-    * taken from the tile's cells, if the source cell is of the transparent value.
-    * The transparent value is determined by the tile's cell type;
-    * if the cell type has a NoData value, then that is considered the transparent value.
-    * If there is no NoData value associated with the cell type, then a 0 value is considered
-    * the transparent value. If this is not the desired effect, the caller is required to change
-    * the cell type before using this method to an appropriate cell type that has the desired NoData
-    * value.
+    * This method will replace the values of these cells with a
+    * resampled value taken from the tile's cells, if the source cell
+    * is of the transparent value.  The transparent value is
+    * determined by the tile's cell type; if the cell type has a
+    * NoData value, then that is considered the transparent value.  If
+    * there is no NoData value associated with the cell type, then a 0
+    * value is considered the transparent value. If this is not the
+    * desired effect, the caller is required to change the cell type
+    * before using this method to an appropriate cell type that has
+    * the desired NoData value.
     */
   def merge(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod): Tile =
     otherExtent & extent match {

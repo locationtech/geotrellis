@@ -56,27 +56,25 @@ object Semivariogram {
     }
 
   /**
-   * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
-   * @param model                   the [[ModelType]] into which the input has to be fitted
-   * @return                        [[Semivariogram]]
-   */
+    * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
+    * @param model                   the [[ModelType]] into which the input has to be fitted
+    * @return                        [[Semivariogram]]
+    */
   def fit(empiricalSemivariogram: EmpiricalVariogram, model: ModelType): Semivariogram = {
     fit(empiricalSemivariogram, model, Array.fill[Double](3)(1))
   }
 
   /**
-   * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
-   * @param model                   the [[ModelType]] into which the input has to be fitted
-   * @param begin                   the starting point of the optimization search of (range, sill, nugget) values
-   * @return                        [[Semivariogram]]
-   */
-  def fit(empiricalSemivariogram: EmpiricalVariogram,
-          model: ModelType,
-          begin: Array[Double]): Semivariogram = {
+    * @param empiricalSemivariogram  is the input which has to be fitted into a Semivariogram model
+    * @param model                   the [[ModelType]] into which the input has to be fitted
+    * @param begin                   the starting point of the optimization search of (range, sill, nugget) values
+    * @return                        [[Semivariogram]]
+    */
+  def fit(empiricalSemivariogram: EmpiricalVariogram, model: ModelType, begin: Array[Double]): Semivariogram = {
     model match {
-      //Least Squares minimization
+      // Least Squares minimization
       case Gaussian =>
-        //Gaussian Problem
+        // Gaussian Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
             override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
@@ -87,7 +85,7 @@ object Semivariogram {
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          //Gaussian Nugget Problem
+          // Gaussian Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
               override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
@@ -103,7 +101,7 @@ object Semivariogram {
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Gaussian)
 
       case Exponential =>
-        //Exponential Problem
+        // Exponential Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
             override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
@@ -129,7 +127,7 @@ object Semivariogram {
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Exponential)
 
       case Circular =>
-        //Circular Problem
+        // Circular Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
             override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
@@ -140,7 +138,7 @@ object Semivariogram {
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          //Circular Nugget Problem
+          // Circular Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
               override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
@@ -156,7 +154,7 @@ object Semivariogram {
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Circular)
 
       case Spherical =>
-        //Spherical Problem
+        // Spherical Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
             override def valueFunc(r: Double, s: Double, a: Double): (Double) => Double =
@@ -167,7 +165,7 @@ object Semivariogram {
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          //Spherical Nugget Problem
+          // Spherical Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
               override def valueFuncNugget(r: Double, s: Double): (Double) => Double =
@@ -183,7 +181,7 @@ object Semivariogram {
           NonLinearSemivariogram(optimalValues(0), optimalValues(1), optimalValues(2), Spherical)
 
       case Wave =>
-        //Wave Problem
+        // Wave Problem
         val problem =
           new LeastSquaresFittingProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin) {
             override def valueFunc(w: Double, s: Double, a: Double): (Double) => Double =
@@ -194,7 +192,7 @@ object Semivariogram {
         val optimalValues: Array[Double] = problem.optimum.getPoint.toArray
 
         if (optimalValues(2) < 0) {
-          //Wave Nugget Problem
+          // Wave Nugget Problem
           val nuggetProblem =
             new LeastSquaresFittingNuggetProblem(empiricalSemivariogram.distances, empiricalSemivariogram.variance, begin.dropRight(1)) {
               override def valueFuncNugget(w: Double, s: Double): (Double) => Double =

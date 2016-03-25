@@ -28,6 +28,6 @@ class HadoopSlippyTileWriter[T](uri: String, extension: String)(getBytes: (Spati
     val lExtension = extension
     val scheme = new Path("/Users").getFileSystem(sc.hadoopConfiguration).getScheme
     val keyToPath = { key: SpatialKey => new File(lUri, s"$lZoom/${key.col}/${key.row}.${lExtension}").getPath }
-    rdd.setupSaveToHadoop(scheme, keyToPath, getBytes)
+    rdd.setupSaveToHadoop(keyToPath)(getBytes)
   }
 }

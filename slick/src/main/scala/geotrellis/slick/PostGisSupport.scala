@@ -1,17 +1,18 @@
-/* 
+/*
  * Copyright (c) 2013, Minglei Tu (tmlneu@gmail.com)
+ * Copyright (c) 2015, Azavea
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,28 +36,28 @@ import geotrellis.vector.io.wkt._
 import scala.slick.driver.JdbcDriver
 import scala.slick.lifted.Column
 import scala.reflect.ClassTag
-import scala.slick.ast.{ScalaBaseType}
+import scala.slick.ast.ScalaBaseType
 import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 import java.sql._
 
-/** 
- * This class provides column types and extension methods to work with Geometry columns in PostGIS.
- *
- * Sample Usage: 
- * <code>
- * val PostGIS = new PostGisSupport(PostgresDriver)
- * import PostGIS._
- * 
- * class City(tag: Tag) extends Table[(Int,String,Point)](tag, "cities") {      
- *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
- *   def name = column[String]("name")
- *   def geom = column[Point]("geom")
- *   def * = (id, name, geom)
- * }
- * </code>
- *
- * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
- */
+/**
+  * A class which provides column types and extension methods for working with Geometry columns in PostGIS.
+  *
+  * @example {{{
+  * val PostGIS = new PostGisSupport(PostgresDriver)
+  * import PostGIS._
+  *
+  * class City(tag: Tag) extends Table[(Int,String,Point)](tag, "cities") {
+  *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  *   def name = column[String]("name")
+  *   def geom = column[Point]("geom")
+  *   def * = (id, name, geom)
+  * }
+  * }}}
+  *
+  * @author Minglei Tu (modified by Azavea)
+  * @see [[package com.github.tminglei.slickpg.PgPostGISSupport]]
+  */
 class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
   import PostGisSupportUtils._
 
@@ -77,18 +78,18 @@ class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions 
 
   implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
     new GeometryColumnExtensionMethods[G1, G1](c)
-  
+
   implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Column[Option[G1]]) = 
     new GeometryColumnExtensionMethods[G1, Option[G1]](c)
 
-  
+
   class GeometryJdbcType[T <: Geometry : ClassTag] extends driver.DriverJdbcType[T] {
     override def scalaType = ScalaBaseType[T]
-    
+
     override def sqlTypeName: String = "geometry"
-    
+
     override def hasLiteralForm: Boolean = false
-    
+
     override def valueToSQLLiteral(v: T) = toLiteral(v)
 
     def zero: T = null.asInstanceOf[T]

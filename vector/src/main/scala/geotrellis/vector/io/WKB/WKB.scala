@@ -16,27 +16,30 @@
 
 package geotrellis.vector.io.wkb
 
-import com.vividsolutions.jts.io.{WKBReader}
+import com.vividsolutions.jts.io.WKBReader
 import com.vividsolutions.jts.{geom => jts}
 import geotrellis.vector._
 
-/**
- * Wraps WKB Writer and Reader, thread safe
- */
+/** A thread-safe wrapper for the [https://en.wikipedia.org/wiki/Well-known_text#Well-known_binary WKB]
+  * Writer and Reader
+  */
 object WKB {
   private val readerBox = new ThreadLocal[WKBReader]
   private val writerBox = new ThreadLocal[WKBWriter]
 
+  /** Convert Well Known Binary to Geometry */
   def read(value: Array[Byte]): Geometry = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
     Geometry(readerBox.get.read(value))
   }
 
+  /** Convert Well Known Binary to Geometry */
   def read(hex: String): Geometry = {
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
     Geometry(readerBox.get.read(WKBReader.hexToBytes(hex)))
   }
 
+  /** Convert Geometry to Well Known Binary */
   def write(geom: Geometry, srid: Int = 0): Array[Byte] = {
     if (writerBox.get == null) writerBox.set(new WKBWriter(2))
     if (srid == 0)

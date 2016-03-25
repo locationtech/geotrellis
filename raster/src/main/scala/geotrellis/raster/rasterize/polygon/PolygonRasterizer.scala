@@ -17,16 +17,20 @@
 package geotrellis.raster.rasterize.polygon
 
 import geotrellis.raster._
+import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
-import geotrellis.raster.rasterize._
 
+import com.vividsolutions.jts.geom.Envelope
+import com.vividsolutions.jts.index.strtree.STRtree
 import spire.syntax.cfor._
 
 import scala.collection.JavaConverters._
-import com.vividsolutions.jts.index.strtree.STRtree
-import com.vividsolutions.jts.geom.Envelope
 
+
+/**
+  * Object holding polygon rasterization functions.
+  */
 object PolygonRasterizer {
   import scala.collection.mutable
   import java.util.{Arrays, Comparator}

@@ -68,24 +68,25 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.isClosed
 
   /**
-   * Tests whether this Line is simple.
-   * A Line is simple iff it does not self-intersect at points other than
-   * boundary points.
-   */
+    * Tests whether this Line is simple.
+    * A Line is simple iff it does not self-intersect at points other than
+    * boundary points.
+    */
   lazy val isSimple: Boolean =
     jtsGeom.isSimple
 
   /**
-   * Returns the boundary of this Line.
-   * The boundary of a non-closed Line consists of its two end points. The
-   * boundary of a closed Line is empty.
-   */
+    * Returns the boundary of this Line.
+    * The boundary of a non-closed Line consists of its two end points. The
+    * boundary of a closed Line is empty.
+    */
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
+  /** Returns the points which determine this line (i.e. its vertices */
   def points: Array[Point] = vertices
 
-  /** Returns this Line's vertices. */
+  /** Returns the points which determine this line (i.e. its vertices */
   def vertices: Array[Point] = {
     val size = jtsGeom.getNumPoints
     val arr = Array.ofDim[Point](size)
@@ -96,7 +97,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     arr
   }
 
-  /** Get the number of vertices in this geometry */
+  /** Returns the number of vertices in this geometry */
   lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /** Returns the length of this Line. */
@@ -113,103 +114,116 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   // -- Intersection
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Line and p.
-   */
+    * Computes a Result that represents a Geometry made up of the points shared
+    * by this Line and p.
+    * @param p  the point to intersect with
+    */
   def &(p: Point): PointOrNoResult =
     intersection(p)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Line and p.
-   */
+    * Computes a Result that represents a Geometry made up of the points shared
+    * by this Line and a Point.
+    * @param p  the point to intersect with
+    */
   def intersection(p: Point): PointOrNoResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Line and mp.
-   */
+    * Computes a Result that represents a Geometry made up of the points shared
+    * by this Line and a MultiPoint.
+    * @param mp  the multipoint to intersect with
+    */
   def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     intersection(mp)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Line and mp.
-   */
+    * Computes a Result that represents a Geometry made up of the points shared
+    * by this Line and a MultiPoint.
+    * @param mp  the multipoint to intersect with
+    */
   def intersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(mp.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Line and g.
-   */
+    * Computes a Result that represents a Geometry made up of the points shared
+    * by this Line and a geometry of at least one dimension.
+    * @param g  the geometry to intersect with
+    */
   def &(g: AtLeastOneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(g)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Line and g.
-   */
-
+    * Computes a Result that represents a Geometry made up of the points shared
+    * by this Line and g.
+    * @param g  the geometry to intersect with
+    */
   def intersection(g: AtLeastOneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
 
   // -- Union
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and g.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a a ZeroDimensions geometry.
+    * @param g  the geometry to union with
+    */
   def |(g: ZeroDimensions): ZeroDimensionsLineUnionResult =
     union(g)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and g.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a a ZeroDimensions geometry.
+    * @param g  the geometry to union with
+    */
   def union(g: ZeroDimensions): ZeroDimensionsLineUnionResult =
     jtsGeom.union(g.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and g.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a OneDimension geometry.
+    * @param g  the geometry to union with
+    */
   def |(g: OneDimension): LineOneDimensionUnionResult =
     union(g)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and g.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a OneDimension geometry.
+    * @param g  the geometry to union with
+    */
   def union(g: OneDimension): LineOneDimensionUnionResult =
     jtsGeom.union(g.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and p.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a Polygon.
+    * @param p  the geometry to union with
+    */
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and p.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a Polygon.
+    * @param p  the geometry to union with
+    */
   def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     jtsGeom.union(p.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and mp.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a MultiPolygon.
+    * @param p  the geometry to union with
+    */
   def |(mp: MultiPolygon): LineMultiPolygonUnionResult =
     union(mp)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line and mp.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line and a MultiPolygon.
+    * @param p  the geometry to union with
+    */
   def union(mp: MultiPolygon): LineMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
 
@@ -218,6 +232,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   /**
    * Computes a Result that represents a Geometry made up of all the points in
    * this Line that are not in g.
+   * @param g  the geometry to diff against
    */
   def -(g: ZeroDimensions): LineResult =
     difference(g)
@@ -225,6 +240,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   /**
    * Computes a Result that represents a Geometry made up of all the points in
    * this Line that are not in g.
+   * @param g  the geometry to diff against
    */
   def difference(g: ZeroDimensions): LineResult =
     jtsGeom.difference(g.jtsGeom)
@@ -232,14 +248,16 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   /**
    * Computes a Result that represents a Geometry made up of all the points in
    * this Line that are not in g.
+   * @param g  the geometry to diff against
    */
   def -(g: AtLeastOneDimension): LineAtLeastOneDimensionDifferenceResult =
     difference(g)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line that are not in g.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line that are not in g.
+   * @param g  the geometry to diff against
+    */
   def difference(g: AtLeastOneDimension): LineAtLeastOneDimensionDifferenceResult =
     jtsGeom.difference(g.jtsGeom)
 
@@ -247,34 +265,38 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   // -- SymDifference
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line that are not in g and all the points in g that are not in
-   * this Line.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line that are not in g and all the points in g that are not in
+    * this Line.
+   * @param g  the geometry to diff against
+    */
   def symDifference(g: ZeroDimensions): ZeroDimensionsLineSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line that are not in g and all the points in g that are not in
-   * this Line.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line that are not in g and all the points in g that are not in
+    * this Line.
+   * @param g  the geometry to diff against
+    */
   def symDifference(g: OneDimension): OneDimensionOneDimensionSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line that are not in p and all the points in p that are not in
-   * this Line.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line that are not in p and all the points in p that are not in
+    * this Line.
+   * @param p  the polygon to diff against
+    */
   def symDifference(p: Polygon): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Line that are not in mp and all the points in mp that are not in
-   * this Line.
-   */
+    * Computes a Result that represents a Geometry made up of all the points in
+    * this Line that are not in mp and all the points in mp that are not in
+    * this Line.
+   * @param mp  the multipolygon to diff against
+    */
   def symDifference(mp: MultiPolygon): LineMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(mp.jtsGeom)
 
@@ -282,7 +304,10 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   // -- Buffer
 
 
-  /** Computes a buffer area around this Line having width d. */
+  /**
+    * Computes a buffer area around this Line having width d.
+    * @param d  the buffer width
+    */
   def buffer(d: Double): Polygon =
     jtsGeom.buffer(d) match {
       case p: jts.Polygon => Polygon(p)
@@ -294,66 +319,74 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   // -- Predicates
 
   /**
-   * Tests whether this Line contains the specified AtMostOneDimension g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * T*****FF*.
-   */
+    * Tests whether this Line contains the specified AtMostOneDimension g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * T*****FF*.
+    * @param g  the geometry to use in containment check
+    */
   def contains(g: AtMostOneDimension): Boolean =
     jtsGeom.contains(g.jtsGeom)
 
   /**
-   * Tests whether this Line is covered by the specified AtLeastOneDimension g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is T*F**F*** or
-   * *TF**F*** or **FT*F*** or **F*TF***.
-   */
+    * Tests whether this Line is covered by the specified AtLeastOneDimension g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is T*F**F*** or
+    * *TF**F*** or **FT*F*** or **F*TF***.
+    * @param g  the geometry to use in checking whether this line is covered
+    */
   def coveredBy(g: AtLeastOneDimension): Boolean =
     jtsGeom.coveredBy(g.jtsGeom)
 
   /**
-   * Tests whether this Line covers the specified AtMostOneDimensions g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * T*****FF* or *T****FF* or ***T**FF* or ****T*FF*.
-   */
+    * Tests whether this Line covers the specified AtMostOneDimensions g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * T*****FF* or *T****FF* or ***T**FF* or ****T*FF*.
+    * @param g  the geometry to check for coverage over
+    */
   def covers(g: AtMostOneDimension): Boolean =
     jtsGeom.covers(g.jtsGeom)
 
   /**
-   * Tests whether this Line crosses the specified MultiPoint mp.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * T*****T** (L/P).
-   */
+    * Tests whether this Line crosses the specified MultiPoint mp.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * T*****T** (L/P).
+    * @param mp the multipoint to check if this line crosses
+    */
   def crosses(mp: MultiPoint): Boolean =
     jtsGeom.crosses(mp.jtsGeom)
 
   /**
-   * Tests whether this Line crosses the specified AtLeastOneDimension g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * 0******** (L/L) or T*T****** (L/A).
-   */
+    * Tests whether this Line crosses the specified AtLeastOneDimension g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * 0******** (L/L) or T*T****** (L/A).
+    * @param g the geometry to check if this line crosses
+    */
   def crosses(g: AtLeastOneDimension): Boolean =
     jtsGeom.crosses(g.jtsGeom)
 
   /**
-   * Tests whether this Line overlaps the specified OneDimension g.
-   * Returns true if The DE-9IM Intersection Matrix for the two geometries is
-   * 1*T***T**.
-   */
+    * Tests whether this Line overlaps the specified OneDimension g.
+    * Returns true if The DE-9IM Intersection Matrix for the two geometries is
+    * 1*T***T**.
+    * @param g  the geometry to check for overlap against
+    */
   def overlaps(g: OneDimension): Boolean =
     jtsGeom.overlaps(g.jtsGeom)
 
   /**
-   * Tests whether this Line touches the specified Geometry g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * FT*******, F**T***** or F***T****.
-   */
+    * Tests whether this Line touches the specified Geometry g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * FT*******, F**T***** or F***T****.
+    * @param g  the geometry to check if this line is touching
+    */
   def touches(g: Geometry): Boolean =
     jtsGeom.touches(g.jtsGeom)
 
   /**
-   * Tests whether this Line is within the specified AtLeastOneDimension g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * T*F**F***.
-   */
+    * Tests whether this Line is within the specified AtLeastOneDimension g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * T*F**F***.
+    * @param g  the geometry to check if this line is within
+    */
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
 }

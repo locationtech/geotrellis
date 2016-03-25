@@ -26,20 +26,22 @@ object Projected {
 }
 
 /**
- * This tuples Geometry with an SRID. It is up to the application developer to
- * ensure that the SRID parameter stays semantically consistent.
- *
- * Concretely this class exists because PostGIS requires an SRID to be stored
- * with the Geometry and the decision has been made not to encapsulate SRID
- * semantics in the Geometry hierarchy for the moment.
- *
- * Sample Usage: <code>
- * import geotrellis.proj4._
- *
- * val projected = Point(1,1).withSRID(4326)  // LatLng, trust me
- * val projected = projected.reproject(LatLng, WebMercator)(3857)
- * </code>
- */
+  * A case class which represents Geometry with an SRID.
+  *
+  * @note It is up to the application developer to ensure that
+  *       the SRID parameter stays semantically consistent.
+  *
+  * @note This exists because PostGIS requires an SRID to be stored
+  *       with the Geometry and the decision has been made not to encapsulate
+  *       SRID semantics in the Geometry hierarchy for the moment.
+  *
+  * @example {{{
+  * import geotrellis.proj4._
+  *
+  * val projected = Point(1,1).withSRID(4326)  // LatLng, trust me
+  * val projected = projected.reproject(LatLng, WebMercator)(3857)
+  * }}}
+  */
 case class Projected[+G <: Geometry](geom: G, srid: Int) {
   def reproject(src: CRS, dest: CRS)(destSRID: Int): Projected[G] =
     Projected(Reproject(geom, src, dest).asInstanceOf[G], destSRID)

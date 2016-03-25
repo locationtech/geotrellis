@@ -21,6 +21,7 @@ import com.vividsolutions.jts.{geom => jts}
 
 import GeomFactory._
 
+/** Companion object to [[GeometryCollection]] */
 object GeometryCollection {
   implicit def jtsToGeometryCollection(gc: jts.GeometryCollection): GeometryCollection =
     apply(gc)
@@ -62,6 +63,7 @@ object GeometryCollection {
           gc.geometryCollections))
 }
 
+/** A collection of geometries (itself a [[Geometry]]) */
 class GeometryCollection(
     val points: Seq[Point],
     val lines: Seq[Line],
@@ -74,10 +76,10 @@ class GeometryCollection(
   ) extends Geometry {
 
   def geometries: Seq[Geometry] =
-    points ++ lines ++ polygons ++ multiPoints ++ multiLines ++ multiPolygons ++ geometryCollections 
+    points ++ lines ++ polygons ++ multiPoints ++ multiLines ++ multiPolygons ++ geometryCollections
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): GeometryCollection = { 
+  def normalized(): GeometryCollection = {
     val geom = jtsGeom.clone.asInstanceOf[jts.GeometryCollection]
     geom.normalize
     GeometryCollection(geom)

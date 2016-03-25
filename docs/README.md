@@ -8,50 +8,32 @@ the collected notes, use-cases, and examples in this folder are intended
 to help you grapple with the various components which make up
 GeoTrellis.
 
+
 ![Raster vs Vector](./img/596px-Raster_vector_tikz.png)
+
+## Index of package-specific documentation
 
 - [geotrellis.etl](etl/etl-intro.md)
 - [geotrellis.proj4](proj4/proj4-intro.md) // incomplete
+- [geotrellis.macros](macros/macros-intro.md)
 - [geotrellis.raster](raster/raster-intro.md)
   - [cell types](raster/celltype.md)
   - [cloud removal](raster/cloud-removal.md)
-  - [interpolation](raster/interpolation.md) // planned
   - [map algebra](raster/map-algebra.md)
   - [raster input/output](raster/raster-io.md) // planned
   - [rendering](raster/rendering.md)
   - [resampling](raster/resampling.md)
-- [geotrellis.slick](spark/slick-intro.md) // planned
-- [geotrellis.spark](spark/spark-intro.md) // planned
-  - [indexing with the hilbert curve](spark/hilbert-index.md)
-  - [map algebra (on spark)](spark/map-algebra.md)
-- [geotrellis.spark-etl](spark-etl/spark-intro.md)
+- [geotrellis.slick](spark/slick-intro.md)
+- [geotrellis.spark](spark/spark-intro.md)
+  - [notes on the hilbert curve index](spark/hilbert-index.md)
+  - [working with joins](spark/spark-joins.md)
+  - [spark layer keys](spark/spark-keys.md) // incomplete
+  - [spark layer values](spark/spark-values.md)
+  - [spark layer metadata](spark/spark-metadata.md) // planned
+  - [spark input/output](spark/spark-io.md) // planned
+- [geotrellis.spark-etl](spark-etl/spark-etl-intro.md)
   - [geotrellis.spark-etl.run-examples](spark-etl/spark-etl-run-examples.md)
 - [geotrellis.util](util/util-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)
   - [geojson support](vector/geojson-support.md)
   - [kriging interpolation](vector/kriging-interpolation.md)
-
-
-
-## Rasters
-
-Information pertaining to operations on and with raster data
-
-## Vectors
-
-Information pertaining to operations on and with vector data
-
-## Distributing Work
-
-Information pertaining to the use of spark to distribute work across
-commodity hardware
-
-## Ingesting Data
-
-Documentation around the provided ETL (extract, transform, and
-load) facilities and their extension.
-
-## Misc.
-
-Documentation which doesn't neatly fit the package structure of
-GeoTrellis.
