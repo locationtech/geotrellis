@@ -22,4 +22,23 @@ class HadoopSpatialSpec
   lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
   lazy val sample = AllOnesTestFile
+
+  describe("HDFS layer names") {
+    it("should handle layer names with spaces") {
+      val layer = AllOnesTestFile
+      val layerId = LayerId("Some layer", 10)
+
+      writer.write[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
+      val backin = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId)
+    }
+
+    it("should fail gracefully with colon in name") {
+      val layer = AllOnesTestFile
+      val layerId = LayerId("Some:layer", 10)
+
+      intercept[InvalidLayerIdError] {
+        writer.write[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
+      }
+    }
+  }
 }
