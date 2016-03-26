@@ -1,17 +1,19 @@
 package geotrellis.spark.io.hadoop
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
+
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce.lib.output.{MapFileOutputFormat, SequenceFileOutputFormat}
 import org.apache.hadoop.mapreduce.Job
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+
 import scala.reflect._
 
 object HadoopRDDWriter extends LazyLogging {
@@ -57,10 +59,10 @@ object HadoopRDDWriter extends LazyLogging {
     // on a key type that may no longer by valid for the key type of the resulting RDD.
     rdd
       .groupBy({ case (key, _) => closureKeyIndex.toIndex(key) }, numPartitions = rdd.partitions.length)
+      .sortByKey(numPartitions = partitions)
       .map { case (index, pairs) =>
         (new LongWritable(index), new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
       }
-      .sortByKey(numPartitions = partitions)
       .saveAsNewAPIHadoopFile(
         path.toUri.toString,
         classOf[LongWritable],
