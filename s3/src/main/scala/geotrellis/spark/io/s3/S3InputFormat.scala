@@ -92,15 +92,17 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
         }
     } else {
       val partitionCount = partitionCountConf.toInt
-      logger.info(s"Building partitions of at most $partitionCountConf objects")
+      logger.info(s"Building partitions of at most $partitionCount objects")
       val keys =
         s3client
           .listObjectsIterator(request)
           .filter(! _.getKey.endsWith("/"))
           .toVector
 
+      val groupCount = math.max(1, keys.length / partitionCount)
+
       splits = keys
-        .grouped(keys.length / partitionCount)
+        .grouped(groupCount)
         .map { keys =>
           val split = makeNewSplit
           keys.foreach(split.addKey)
