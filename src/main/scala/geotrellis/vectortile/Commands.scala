@@ -46,7 +46,6 @@ object Command {
 
             case POLYGON =>
                 if (point_lists.length == 1) {
-                    println(point_lists)
                     Polygon(point_lists.head)
                 } else {
                     MultiPolygon(point_lists.map(
@@ -93,19 +92,24 @@ object Command {
                             if (point_list.isEmpty) {
                                 // this is unexpected and should be logged
                             }
-                            x += zigZagDecode(commands(idx))
-                            y += zigZagDecode(commands(idx+1))
+                            val dx = zigZagDecode(commands(idx))
+                            val dy = zigZagDecode(commands(idx+1))
+                            x += dx
+                            y += dy
                             idx += 2
-                            point_list += ((x / scale, y / scale))
+                            if (dx != 0 || dy != 0)
+                                point_list += ((x / scale, y / scale))
 
                         case ClosePath =>
                             if (point_list.isEmpty) {
-                                // this is unexpected and should be logged
-                            } else {
-                                point_list += point_list.head
-                                point_lists += point_list.toList
-                                point_list.clear
-                            }
+                                    // this is unexpected and should be logged
+                                } else {
+                                    if (point_list.head != point_list.last) {
+                                        point_list += point_list.head
+                                    }
+                                    point_lists += point_list.toList
+                                    point_list.clear
+                                }
 
                     }
 
