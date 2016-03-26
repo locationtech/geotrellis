@@ -31,9 +31,9 @@ GeoTrellis.
   - [spark layer values](spark/spark-values.md)
   - [spark layer metadata](spark/spark-metadata.md) // planned
   - [spark input/output](spark/spark-io.md) // planned
-- [geotrellis.spark-etl](spark/spark-intro.md)
+- [geotrellis.spark-etl](spark-etl/spark-etl-intro.md)
+  - [geotrellis.spark-etl.run-examples](spark-etl/spark-etl-run-examples.md)
 - [geotrellis.util](util/util-intro.md)
 - [geotrellis.vector](vector/vector-intro.md)
   - [geojson support](vector/geojson-support.md)
   - [kriging interpolation](vector/kriging-interpolation.md)
-
