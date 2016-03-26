@@ -23,37 +23,40 @@ class SaveImagesSpec extends FunSpec with TestEnvironment {
 
   describe("Saving of Rendered Tiles to Hadoop") {
     it ("should work with PNGs") {
-      val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.png"
+      val template = s"${outputLocal}/testFiles/catalog/{name}/{z}/{x}/{y}.png"
       val id = LayerId("sample", 1)
       val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
       rdd.saveToHadoop(keyToPath)
+      val ol = outputLocal
       rdd.collect().foreach { case key @ (SpatialKey(col, row), bytes) =>
-        val path = s"file:${tmpdir}/testFiles/catalog/sample/1/$col/$row.png"
+        val path = s"${ol}/testFiles/catalog/sample/1/$col/$row.png"
         readFile(path) should be (bytes)
       }
     }
 
     it ("should work with JPGs") {
-      val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.jpg"
+      val template = s"${outputLocal}/testFiles/catalog/{name}/{z}/{x}/{y}.jpg"
       val id = LayerId("sample", 1)
       val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
       val rdd = sample.renderJpg().mapValues(_.bytes)
       rdd.saveToHadoop(keyToPath)
+      val ol = outputLocal
       rdd.collect().foreach { case key @ (SpatialKey(col, row), bytes) =>
-        val path = s"file:${tmpdir}/testFiles/catalog/sample/1/$col/$row.jpg"
+        val path = s"${ol}/testFiles/catalog/sample/1/$col/$row.jpg"
         readFile(path) should be (bytes)
       }
     }
 
     it ("should work with GeoTiffs") {
-      val template = s"file:${tmpdir}/testFiles/catalog/{name}/{z}/{x}/{y}.tiff"
+      val template = s"${outputLocal}/testFiles/catalog/{name}/{z}/{x}/{y}.tiff"
       val id = LayerId("sample", 1)
       val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
       val rdd = sample.renderGeoTiff()
       rdd.saveToHadoop(keyToPath)
+      val ol = outputLocal
       rdd.collect().foreach { case key @ (SpatialKey(col, row), bytes) =>
-        val path = s"file:${tmpdir}/testFiles/catalog/sample/1/$col/$row.tiff"
+        val path = s"${ol}/testFiles/catalog/sample/1/$col/$row.tiff"
         readFile(path) should be (bytes)
       }
     }
