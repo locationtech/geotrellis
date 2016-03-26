@@ -35,6 +35,7 @@ class TestRegistrator extends NormalKryoRegistrator {
       kryo.register(classOf[scala.math.Ordering$$anonfun$by$1])
       kryo.register(classOf[scala.reflect.ClassTag$$anon$1])
       kryo.register(classOf[Array[Boolean]])
+      kryo.register(classOf[java.util.ArrayList[_]])
 
     /* Special Handling: Avro */
       kryo.register(new Field("a", Schema.create(Type.NULL), null, null: Object).order.getClass)
