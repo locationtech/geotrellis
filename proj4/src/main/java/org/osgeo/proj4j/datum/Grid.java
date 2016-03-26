@@ -61,33 +61,9 @@ public final class Grid implements Serializable {
         List<Grid> gridList)
     throws IOException
     {
-        boolean gotMatch = false;
-        Grid tail = null, thisGrid = null;
-        if (gridList.size() > 0) {
-            for (thisGrid = gridList.get(0); thisGrid != null; thisGrid = thisGrid.next) {
-                if (thisGrid.gridName.equals(name)) {
-                    gotMatch = true;
-                    if (thisGrid.table == null) return;
-                    gridList.add(thisGrid);
-                }
-
-                tail = thisGrid;
-            }
-        }
-
-        if (gotMatch) return;
-        thisGrid = gridinfoInit(name);
-
-        if (thisGrid == null) {
-            throw null;
-        }
-
-        if (tail != null)
-            tail.next = thisGrid;
-        else
-            gridList.add(thisGrid);
-
-        mergeGridFile(name, gridList);
+        gridList.add(gridinfoInit(name));
+        // TODO: Maintain cache of loaded grids so we never need more than one
+        // copy of the same grid file loaded in memory
     }
 
     /**
@@ -139,11 +115,12 @@ public final class Grid implements Serializable {
             output = nad_cvt(input, inverse, table);
         }
 
-        if (Double.isNaN(output.lam)) {
-            in.x = in.y = Double.NaN;
-        } else {
+        if (! Double.isNaN(output.lam)) {
             in.x = output.lam;
             in.y = output.phi;
+        } else {
+            // Proj.4 guards this with #ifdef ERR_GRID_AREA_TRANSIENT_SEVERE
+            // in.x = in.y = Double.NaN;
         }
     }
 
@@ -340,7 +317,7 @@ public final class Grid implements Serializable {
         grid.gridOffset = 0;
         DataInputStream gridDefinition = resolveGridDefinition(gridName);
         if (gridDefinition == null) {
-            throw new Error("Unknown grid: " + gridName);
+            throw new IOException("Unknown grid: " + gridName);
         }
         byte[] header = new byte[160];
         gridDefinition.mark(header.length);
@@ -352,6 +329,13 @@ public final class Grid implements Serializable {
             grid.table = CTABLEV2.init(gridDefinition);
             gridDefinition.reset();
             CTABLEV2.load(gridDefinition, grid);
+        }
+        if (NTV1.testHeader(header)) {
+            grid.format = "ntv1";
+            gridDefinition.mark(1024);
+            grid.table = NTV1.init(gridDefinition);
+            gridDefinition.reset();
+            NTV1.load(gridDefinition, grid);
         }
         return grid;
     }
@@ -399,5 +383,10 @@ public final class Grid implements Serializable {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Grid[" + gridName + "; " + format + "]";
     }
 }
