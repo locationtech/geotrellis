@@ -12,7 +12,7 @@ class GenericLayerMover[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDel
   def move[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](from: ID, to: ID): Unit = {
     layerCopier.copy[K, V, M](from, to)
     layerDeleter.delete(from)

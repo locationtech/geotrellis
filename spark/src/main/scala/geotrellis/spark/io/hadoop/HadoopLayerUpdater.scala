@@ -28,7 +28,7 @@ class HadoopLayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

@@ -38,7 +38,7 @@ class S3LayerWriter(
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     require(!attributeStore.layerExists(id), s"$id already exists")
     implicit val sc = rdd.sparkContext
