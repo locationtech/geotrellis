@@ -12,9 +12,9 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withSpatialTileLayoutRDDMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]](
     val self: RDD[(SpatialKey, V)] with Metadata[M]
-  ) extends SpatialTileLayoutRDDMethods[V, M]
+  ) extends SpatialTileLayoutRDDStitchMethods[V, M]
 
   implicit class withSpatialTileRDDMethods[V <: CellGrid: Stitcher](
     val self: RDD[(SpatialKey, V)]
-  ) extends SpatialTileRDDMethods[V]
+  ) extends SpatialTileRDDStitchMethods[V]
 }

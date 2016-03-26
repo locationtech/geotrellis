@@ -35,7 +35,7 @@ object TileLayoutStitcher {
   }
 }
 
-abstract class SpatialTileLayoutRDDMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]]
+abstract class SpatialTileLayoutRDDStitchMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]]
   extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {
@@ -45,7 +45,7 @@ abstract class SpatialTileLayoutRDDMethods[V <: CellGrid: Stitcher, M: GetCompon
   }
 }
 
-abstract class SpatialTileRDDMethods[V <: CellGrid: Stitcher]
+abstract class SpatialTileRDDStitchMethods[V <: CellGrid: Stitcher]
   extends MethodExtensions[RDD[(SpatialKey, V)]] {
 
   def stitch(): V = {
