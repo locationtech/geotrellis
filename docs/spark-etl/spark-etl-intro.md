@@ -17,13 +17,13 @@ This affords an opportunity to modify the dataset using any of the GeoTrellis op
 ## Sample ETL Application
 
 ```scala
-import geotrellis.raster.{Tile, MultibandTile}
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.etl.Etl
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.util.SparkUtils
-import geotrellis.spark.ingest._
 import geotrellis.vector.ProjectedExtent
+
 import org.apache.spark.SparkConf
 
 object GeoTrellisETL {
@@ -86,7 +86,7 @@ inputs can be setup through command line arguments like so:
 
 ```bash
 #!/bin/sh
-export JAR="geotrellis-etl-assembly-0.1-SNAPSHOT.jar"
+export JAR="geotrellis-etl-assembly-0.10-SNAPSHOT.jar"
 
 spark-submit \
 --class geotrellis.spark.etl.SinglebandIngest \
@@ -100,6 +100,8 @@ $JAR \
 
 Note that the arguments before the `$JAR` configure `SparkContext`
 and arguments after configure GeoTrellis ETL inputs and outputs.
+
+Extended run-scripts examples available [here](./spark-etl-run-examples.md).
 
 ### Command Line Arguments
 
@@ -121,12 +123,11 @@ output        | Name of output module to use (ex: s3, hadoop, accumulo)
 outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
 pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
 
-
 #### Supported Inputs
 
-Output    | Options
+Input     | Options
 ----------|----------------
-hadoop    | path
+hadoop    | path (local path / hdfs)
 s3        | bucket, key, splitSize
 
 #### Supported Outputs
@@ -137,6 +138,20 @@ hadoop    | path
 accumulo  | instance, zookeeper, user, password, table, strategy={hdfs|socket}, ingestPath
 s3        | bucket, key
 render    | path, encoding=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{RGBA};...'
+
+#### Supported Formats
+
+Format           | Options
+-----------------|----------------
+geotiff          | spatial ingest
+temporal-geotiff | temporal ingest
+
+#### Supported Layout Schemes
+
+Layout Scheme    | Options
+-----------------|----------------
+tms              | zoomed layout scheme
+floating         | floating layout scheme in a native projection
 
 ##### Accumulo Output
 
