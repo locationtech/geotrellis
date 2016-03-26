@@ -1,9 +1,9 @@
 package geotrellis.spark
 
+import com.github.nscala_time.time.Imports._
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
 import spray.json._
-import com.github.nscala_time.time.Imports._
 
 case class SpaceTimeKey(col: Int, row: Int, instant: Long) {
   def spatialKey: SpatialKey = SpatialKey(col, row)

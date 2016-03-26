@@ -19,7 +19,6 @@ package geotrellis.raster.rasterize
 import geotrellis.raster._
 import geotrellis.raster.rasterize.extent.ExtentRasterizer
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
-import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.vector._
 
 import spire.syntax.cfor._
@@ -35,6 +34,22 @@ trait Transformer[+B] {
   * An object holding rasterizer functions.
   */
 object Rasterizer {
+
+  /**
+    * A type encoding rasterizer options.
+    */
+  case class Options(
+    includePartial: Boolean,
+    sampleType: PixelSampleType
+  )
+
+  /**
+    * A companion object for the [[Options]] type.  Includes a
+    * function to produce the default options settings.
+    */
+  object Options {
+    def DEFAULT = Options(includePartial = true, sampleType = PixelIsPoint)
+  }
 
   /**
     * Create a raster from a geometry feature.

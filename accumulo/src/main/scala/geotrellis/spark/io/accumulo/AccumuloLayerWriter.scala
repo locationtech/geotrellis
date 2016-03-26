@@ -37,6 +37,17 @@ class AccumuloLayerWriter(
     val metadata = rdd.metadata
     val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
+    // If no table exists, add the table and set the splits according to the
+    // key index's keybounds and the number of partitions in the RDD.
+    // This is a "best guess" scenario; users should use AccumuloUtils to
+    // manually create splits based on their cluster configuration for best
+    // performance.
+    val ops = instance.connector.tableOperations()
+    if (!ops.exists(table)) {
+      ops.create(table)
+      AccumuloUtils.addSplits(table, instance, keyIndex.keyBounds, keyIndex, rdd.partitions.length)
+    }
+
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
       AccumuloRDDWriter.write(rdd, instance, encodeKey, options.writeStrategy, table)

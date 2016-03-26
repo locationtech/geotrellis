@@ -100,17 +100,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
         val targetCS = CellSize(sharedExtent, colMax, rowMax)
 
         self.cellType match {
-          case BitCellType =>
-            val interpolate = Resample(method, other, otherExtent, targetCS).resample _
-            cfor(0)(_ < self.rows, _ + 1) { row =>
-              cfor(0)(_ < self.cols, _ + 1) { col =>
-                if (other.get(col, row) == 1) {
-                  val (x, y) = re.gridToMap(col, row)
-                  mutableTile.set(col, row, interpolate(x, y))
-                }
-              }
-            }
-          case ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
+          case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
             val interpolate = Resample(method, other, otherExtent, targetCS).resample _
             // Assume 0 as the transparent value
             cfor(0)(_ < self.rows, _ + 1) { row =>

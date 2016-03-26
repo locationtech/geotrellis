@@ -9,20 +9,20 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 
 
-class SaveToHadoopMethods[K](rdd: RDD[(K, Array[Byte])]) {
-
-  /** Saves to Hadoop FileSystem, returns a count of records saved.
-    * 
-    * @param keyToUri A function from K (a key) to a Hadoop URI
-    */
-  def saveToHadoop(keyToUri: K => String): Long =
-    SaveToHadoop(rdd, keyToUri)
-
+class SaveToHadoopMethods[K, V](rdd: RDD[(K, V)]) {
   /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.
     *
-    * @param scheme    URI scheme, used to get a hadoop FileSystem object
-    * @param keyToUri A function from K (a key) to a Hadoop URI
+    * @param keyToUri      maps each key to full hadoop supported path
+    * @param getBytes  K and V both provided in case K contains required information, like extent.
     */
-  def setupSaveToHadoop(keyToUri: K => String): RDD[(K, Array[Byte])] =
-    SaveToHadoop.setup(rdd, keyToUri)
+  def setupSaveToHadoop(keyToUri: K => String)(getBytes: (K, V) => Array[Byte]): RDD[(K, V)] =
+    SaveToHadoop.setup(rdd, keyToUri, getBytes)
+
+  /** Saves to Hadoop, but returns a count of records saved.
+    *
+    * @param keyToUri      maps each key to full hadoop supported path
+    * @param getBytes  K and V both provided in case K contains required information, like extent.
+    */
+  def saveToHadoop(keyToUri: K => String)(getBytes: (K, V) => Array[Byte]): Long =
+    SaveToHadoop(rdd, keyToUri, getBytes)
 }

@@ -53,7 +53,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     val images =
       props("encoding").toLowerCase match {
         case "png" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(parseColorMaps(props.get("breaks")))
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(parseColorMaps(props.get("breaks"))).mapValues(_.bytes)
         case "geotiff" =>
           rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff()
       }

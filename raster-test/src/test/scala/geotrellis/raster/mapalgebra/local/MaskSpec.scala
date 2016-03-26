@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 import geotrellis.vector.io._
 

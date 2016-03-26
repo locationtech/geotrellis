@@ -79,10 +79,6 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "pyramid layer on save (default: false)",
                       default = Some(false))
 
-  val histogram    = opt[Boolean]("histogram",
-                      descr = "compute and store histogram on save (default: false)",
-                      default = Some(false))
-
   val outputProps  = props[String]('O',
                       descr = "parameters for output module")
 

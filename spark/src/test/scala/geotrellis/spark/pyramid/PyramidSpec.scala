@@ -1,4 +1,4 @@
-package geotrellis.spark.ingest
+package geotrellis.spark.pyramid
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._

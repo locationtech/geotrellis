@@ -26,19 +26,23 @@ import geotrellis.vector.ProjectedExtent
 
 import org.apache.spark.SparkConf
 
-object GeoTrellisETL extends App {
-  implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+object GeoTrellisETL {
+  def main(args: Array[String]): Unit = {
+    implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
 
-  /* parse command line arguments */
-  val etl = Etl(args)
-  /* load source tiles using input module specified */
-  val sourceTiles = etl.load[ProjectedExtent, Tile]
-  /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
-  val (zoom, tiled) = etl.tile(sourceTiles)
-  /* save and optionally pyramid the mosaiced layer */
-  etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
-
-  sc.stop()
+    try {
+      /* parse command line arguments */
+      val etl = Etl(args)
+      /* load source tiles using input module specified */
+      val sourceTiles = etl.load[ProjectedExtent, Tile]
+      /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
+      val (zoom, tiled) = etl.tile(sourceTiles)
+      /* save and optionally pyramid the mosaiced layer */
+      etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
+    } finally {
+      sc.stop()
+    }
+  }
 }
 ```
 
@@ -120,7 +124,6 @@ cellType      | Value of type of the target raster (ex: bool, int8, int32, int64
 output        | Name of output module to use (ex: s3, hadoop, accumulo)
 outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
 pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
-histogram     | Save histogram to the output AttributeStore for every saved layer
 
 #### Supported Inputs
 
@@ -154,9 +157,9 @@ floating         | floating layout scheme in a native projection
 
 ##### Accumulo Output
 
-Accumulo output module has two write strategies: 
+Accumulo output module has two write strategies:
 - `hdfs` strategy uses Accumulo bulk import
-- `socket` strategy uses Accumulo `BatchWriter`  
+- `socket` strategy uses Accumulo `BatchWriter`
 When using `hdfs` strategy `ingestPath` argument will be used as
 the temporary directory where records will be written for use by
 Accumulo bulk import. This directory should ideally be an HDFS path.

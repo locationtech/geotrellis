@@ -19,7 +19,7 @@ package geotrellis.raster.rasterize.extent
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.raster.testkit._
 
 import math.{max,min,round}

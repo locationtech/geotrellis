@@ -14,7 +14,7 @@ class RenderMethodsSpec extends FunSpec with Matchers
 
       val limits = Array(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
       val colors = Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-      val colorMap = ColorMap(limits, colors, ColorMap.Options(classBoundaryType = LessThanOrEqualTo))
+      val colorMap = ColorMap(limits, colors, ColorMap.Options(classBoundaryType = LessThan))
 
       val result = tile.color(colorMap)
 
@@ -31,7 +31,7 @@ class RenderMethodsSpec extends FunSpec with Matchers
 
       val limits = Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
       val colors = Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-      val colorMap = ColorMap(limits, colors, ColorMap.Options(classBoundaryType = LessThanOrEqualTo))
+      val colorMap = ColorMap(limits, colors, ColorMap.Options(classBoundaryType = LessThan))
 
       val result = tile.color(colorMap)
 
