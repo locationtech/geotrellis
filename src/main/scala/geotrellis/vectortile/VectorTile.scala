@@ -81,7 +81,7 @@ class VectorTile(val _vector_tile: vector_tile.Tile) {
             val tags: Map[String, Value] = pair(_feature.tags)
 
             val geometry: Geometry =
-                Command.parse(_feature.`type`.get, _feature.geometry)
+                Command.parse(_feature.`type`.get, extent, _feature.geometry)
 
             /**  Pairs off the keys and value tags. */
             private def pair(tags: Seq[Int]): Map[String, Value] = {
