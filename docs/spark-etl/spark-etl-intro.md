@@ -97,7 +97,9 @@ $JAR \
 Note that the arguments before the `$JAR` configure `SparkContext`
 and arguments after configure GeoTrellis ETL inputs and outputs.
 
-Extended run-scripts examples available [here](./spark-etl-run-examples.md).
+### Examples
+
+[Extended run-scripts examples available here](./spark-etl-run-examples.md).
 
 ### Command Line Arguments
 
