@@ -37,6 +37,11 @@ class VectorTile(val _vector_tile: vector_tile.Tile) {
 
         val name: String = _layer.name
 
+        val extent: Int = _layer.extent match { // originally unsigned
+            case None => 4096 // default
+            case Some(ext) => ext
+        }
+
         val keys: Seq[String] = _layer.keys
 
         val vals: Seq[Value] = _layer.values
@@ -45,11 +50,6 @@ class VectorTile(val _vector_tile: vector_tile.Tile) {
         val features: Set[Feature] = _layer.features
                                            .map(x => new Feature(x))
                                            .toSet
-
-        val extent: Int = _layer.extent match { // originally unsigned
-            case None => 4096 // default
-            case Some(ext) => ext
-        }
 
         /** The extracted value from the ``singleton'' tile value.
           *

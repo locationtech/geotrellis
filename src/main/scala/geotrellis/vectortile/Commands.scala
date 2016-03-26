@@ -16,7 +16,6 @@ object Command {
     val POINT = vector_tile.Tile.GeomType.POINT
     val LINESTRING = vector_tile.Tile.GeomType.LINESTRING
     val POLYGON = vector_tile.Tile.GeomType.POLYGON
-    val UNKNOWN = vector_tile.Tile.GeomType.UNKNOWN
 
     def parse(geomType: GeomType, extent: Int, commands: Seq[Int]): Geometry = {
 
@@ -29,11 +28,30 @@ object Command {
 
         return geomType match {
 
-            case POINT => // case on the length of the point_list, then map
+            case POINT =>
+                if (point_lists.length == 1) {
+                    Point(point_lists.head.head)
+                } else {
+                    MultiPoint(point_lists.map(
+                        (pt: List[(Double, Double)]) => Point(pt.head)))
+                }
 
-            case LINESTRING => null // NYI
+            case LINESTRING =>
+                if (point_lists.length == 1) {
+                    Line(point_lists.head)
+                } else {
+                    MultiLine(point_lists.map(
+                        (ln: List[(Double, Double)]) => Line(ln)))
+                }
 
-            case POLYGON => null // NYI
+            case POLYGON =>
+                if (point_lists.length == 1) {
+                    println(point_lists)
+                    Polygon(point_lists.head)
+                } else {
+                    MultiPolygon(point_lists.map(
+                        (pg: List[(Double, Double)]) => Polygon(pg)))
+                }
 
             case _ =>
                 // this should probably be logged.
@@ -98,6 +116,8 @@ object Command {
             if (!point_list.isEmpty) { point_lists += point_list.toList }
 
         }
+
+        return null
 
     }
 
