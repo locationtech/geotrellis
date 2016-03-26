@@ -128,7 +128,7 @@ pyramid       | Pyramid the layer on save starting from current zoom level to zo
 Input     | Options
 ----------|----------------
 hadoop    | path (local path / hdfs)
-s3        | bucket, key, splitSize
+s3        | bucket, key, partitionCount, partitionBytes
 
 #### Supported Outputs
 
