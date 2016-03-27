@@ -1,70 +1,71 @@
 package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
 
-trait LocalSeqMethods extends TileSeqMethods {
+trait LocalSeqMethods extends MethodExtensions[Traversable[Tile]] {
   def localAdd(): Tile =
-    Add(tiles)
+    Add(self)
   def +(): Tile = localAdd()
 
   def localSubtract(): Tile =
-    Subtract(tiles)
+    Subtract(self)
   def -(): Tile = localSubtract()
 
   def localMultiply(): Tile =
-    Multiply(tiles)
+    Multiply(self)
   def *(): Tile = localMultiply()
 
   def localDivide(): Tile =
-    Divide(tiles)
+    Divide(self)
 
   def localPow(): Tile =
-    Pow(tiles.toSeq)
+    Pow(self.toSeq)
   def **(): Tile = localPow()
 
- /** Gives the count of unique values at each location in a set of Tiles.*/
+ /** Gives the count of unique values at each location in a set of Self.*/
   def localVariety(): Tile =
-    Variety(tiles)
+    Variety(self)
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(): Tile =
-    Mean(tiles)
+    Mean(self)
 
   def localMin(): Tile =
-    Min(tiles)
+    Min(self)
 
   def localMinN(n: Int): Tile =
-    MinN(n, tiles.toSeq)
+    MinN(n, self.toSeq)
 
   def localMax(): Tile =
-    Max(tiles)
+    Max(self)
 
   def localMaxN(n: Int): Tile =
-    MaxN(n, tiles.toSeq)
+    MaxN(n, self.toSeq)
 
   def localMinority(): Tile =
-    Minority(tiles.toSeq)
+    Minority(self.toSeq)
 
   def localMinority(level: Int): Tile =
-    Minority(level, tiles.toSeq)
+    Minority(level, self.toSeq)
 
   def localMajority(): Tile =
-    Majority(tiles.toSeq)
+    Majority(self.toSeq)
 
   def localMajority(level: Int): Tile =
-    Majority(level, tiles.toSeq)
+    Majority(level, self.toSeq)
 
   def localVariance(): Tile =
-    Variance(tiles)
+    Variance(self)
 
   def localAnd(): Tile =
-    And(tiles)
+    And(self)
 
   def localOr(): Tile =
-    Or(tiles.toSeq)
+    Or(self.toSeq)
   def |(): Tile = localOr()
 
   def localXor(): Tile =
-    Xor(tiles.toSeq)
+    Xor(self.toSeq)
   def ^(): Tile = localXor()
 }
