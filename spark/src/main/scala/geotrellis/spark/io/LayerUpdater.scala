@@ -18,7 +18,7 @@ abstract class LayerUpdater[ID] {
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit
 
   protected def schemaHasChanged[K: AvroRecordCodec, V: AvroRecordCodec](writerSchema: Schema): Boolean = {
@@ -30,7 +30,7 @@ abstract class LayerUpdater[ID] {
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit =
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -42,7 +42,7 @@ abstract class LayerUpdater[ID] {
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit =
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>

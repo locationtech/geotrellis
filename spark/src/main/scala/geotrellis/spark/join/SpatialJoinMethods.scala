@@ -11,7 +11,7 @@ import scala.reflect._
 abstract class SpatialJoinMethods[
   K: Boundable: PartitionerIndex: ClassTag,
   V: ClassTag,
-  M: Component[?, Bounds[K]]
+  M: GetComponent[?, Bounds[K]]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   def spatialLeftOuterJoin[W, M1: Component[?, Bounds[K]]](right: RDD[(K, W)] with Metadata[M1]): RDD[(K, (V, Option[W]))] with Metadata[Bounds[K]] =
     SpatialJoin.leftOuterJoin(self, right)

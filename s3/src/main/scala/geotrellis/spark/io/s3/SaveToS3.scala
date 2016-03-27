@@ -36,11 +36,13 @@ object SaveToS3 {
   /**
     * @param keyToUri  A function that maps each key to full s3 uri
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
+    * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
     * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the data
     */
   def apply[K](
     rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String,
+    putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
     s3Maker: () => S3Client = () => S3Client.default
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
@@ -61,7 +63,7 @@ object SaveToS3 {
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
             val (bucket, path) = keyToPrefix(key)
-            val request = new PutObjectRequest(bucket, path, is, metadata)
+            val request = putObjectModifier(new PutObjectRequest(bucket, path, is, metadata))
             Some(request, iter)
           } else {
             None

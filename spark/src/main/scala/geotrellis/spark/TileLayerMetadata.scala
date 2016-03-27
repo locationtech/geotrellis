@@ -109,7 +109,7 @@ object TileLayerMetadata {
   }
 
   private def collectMetadataWithCRS[
-    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
@@ -164,7 +164,7 @@ object TileLayerMetadata {
   }
 
   def fromRdd[
-    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
@@ -176,7 +176,7 @@ object TileLayerMetadata {
   }
 
   def fromRdd[
-    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): (Int, TileLayerMetadata[K2]) = {

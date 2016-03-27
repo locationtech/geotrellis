@@ -16,7 +16,7 @@ import geotrellis.spark.tiling._
 import geotrellis.vector._
 
 import com.typesafe.scalalogging.slf4j.Logger
-import org.apache.spark.SparkContext
+import org.apache.spark._
 import org.apache.spark.rdd.RDD
 import org.slf4j.LoggerFactory
 
@@ -132,7 +132,9 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
       case BufferedReproject =>
         val (_, md) = TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(conf.tileSize()))
         val amd = adjustCellType(md)
-        val tiled = ContextRDD(rdd.tileToLayout[K](amd, method), amd)
+        // Keep the same number of partitions after tiling.
+        val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))
+        val tiled = ContextRDD(rdd.tileToLayout[K](amd, tilerOptions), amd)
         scheme match {
           case Left(layoutScheme) =>
             tiled.reproject(destCrs, layoutScheme, method)

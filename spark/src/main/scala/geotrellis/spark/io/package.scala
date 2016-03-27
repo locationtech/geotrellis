@@ -24,6 +24,9 @@ package object io extends json.Implicits with avro.codecs.Implicits {
   class LayerNotFoundError(layerId: LayerId)
     extends LayerIOError(s"Layer $layerId not found in the catalog")
 
+  class InvalidLayerIdError(layerId: LayerId)
+    extends LayerIOError(s"Invalid layer name: $layerId")
+
   class LayerWriteError(layerId: LayerId, message: String = "")
     extends LayerIOError(s"Failed to write $layerId" + (if (message.nonEmpty) ": " + message else message))
 

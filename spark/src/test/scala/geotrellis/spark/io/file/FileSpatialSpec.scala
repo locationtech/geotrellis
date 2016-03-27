@@ -21,4 +21,15 @@ class FileSpatialSpec
   lazy val updater = FileLayerUpdater(outputLocalPath)
   lazy val tiles = FileTileReader[SpatialKey, Tile](outputLocalPath)
   lazy val sample = AllOnesTestFile
+
+  describe("Filesystem layer names") {
+    it("should not throw with bad characters in name") {
+      val layer = AllOnesTestFile
+      val layerId = LayerId("Some!layer:%@~`{}id", 10)
+
+      println(outputLocalPath)
+      writer.write[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
+      val backin = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId)
+    }
+  }
 }

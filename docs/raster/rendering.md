@@ -1,4 +1,4 @@
-# Rendering
+# Raster Rendering
 
 ## Rendering Common Image Formats
 At some point, you'll want to output a visual representation of the
@@ -138,16 +138,16 @@ You can create your own color ramp with a list of integar values, constructed us
 ```scala
 val colorRamp =
   ColorRamp(
-    RGB(0,255,0).int,
-    RGB(63, 255 ,51).int,
-    RGB(102,255,102).int,
-    RGB(178, 255,102).int,
-    RGB(255,255,0).int,
-    RGB(255,255,51).int,
-    RGB(255,153, 51).int,
-    RGB(255,128,0).int,
-    RGB(255,51,51).int,
-    RGB(255,0,0).int
+    RGB(0,255,0),
+    RGB(63, 255 ,51),
+    RGB(102,255,102),
+    RGB(178, 255,102),
+    RGB(255,255,0),
+    RGB(255,255,51),
+    RGB(255,153, 51),
+    RGB(255,128,0),
+    RGB(255,51,51),
+    RGB(255,0,0)
   )
 ```
 
@@ -181,8 +181,8 @@ You can create RGB and RGBA colors in a variety of ways:
 ```scala
 import geotrellis.raster.render._
 
-val color1: Int = RGB(r = 255, g = 170, b = 85).int
-val color2: Int = RGBA(0xFF, 0xAA, 0x55, 0xFF).int
+val color1: Int = RGB(r = 255, g = 170, b = 85)
+val color2: Int = RGBA(0xFF, 0xAA, 0x55, 0xFF)
 val color3: Int = 0xFFAA55FF
 assert(color1 == color2 && color2 == color3)
 ```
@@ -220,16 +220,16 @@ import geotrellis.render._
 val colorMap1 =
   ColorMap(
     Map(
-      3.5 -> RGB(0,255,0).int,
-      7.5 -> RGB(63,255,51).int,
-      11.5 -> RGB(102,255,102).int,
-      15.5 -> RGB(178,255,102).int,
-      19.5 -> RGB(255,255,0).int,
-      23.5 -> RGB(255,255,51).int,
-      26.5 -> RGB(255,153,51).int,
-      31.5 -> RGB(255,128,0).int,
-      35.0 -> RGB(255,51,51).int,
-      40.0 -> RGB(255,0,0).int
+      3.5 -> RGB(0,255,0),
+      7.5 -> RGB(63,255,51),
+      11.5 -> RGB(102,255,102),
+      15.5 -> RGB(178,255,102),
+      19.5 -> RGB(255,255,0),
+      23.5 -> RGB(255,255,51),
+      26.5 -> RGB(255,153,51),
+      31.5 -> RGB(255,128,0),
+      35.0 -> RGB(255,51,51),
+      40.0 -> RGB(255,0,0)
     )
   )
 
@@ -238,16 +238,16 @@ val colorMap1 =
 val colorMap2 =
   ColorMap(
     Map(
-      3.5 -> RGB(0,255,0).int,
-      7.5 -> RGB(63,255,51).int,
-      11.5 -> RGB(102,255,102).int,
-      15.5 -> RGB(178,255,102).int,
-      19.5 -> RGB(255,255,0).int,
-      23.5 -> RGB(255,255,51).int,
-      26.5 -> RGB(255,153,51).int,
-      31.5 -> RGB(255,128,0).int,
-      35.0 -> RGB(255,51,51).int,
-      40.0 -> RGB(255,0,0).int
+      3.5 -> RGB(0,255,0),
+      7.5 -> RGB(63,255,51),
+      11.5 -> RGB(102,255,102),
+      15.5 -> RGB(178,255,102),
+      19.5 -> RGB(255,255,0),
+      23.5 -> RGB(255,255,51),
+      26.5 -> RGB(255,153,51),
+      31.5 -> RGB(255,128,0),
+      35.0 -> RGB(255,51,51),
+      40.0 -> RGB(255,0,0)
     ),
   ColorMap.Options(
     classBoundaryType = GreaterThanOrEqualTo,
@@ -260,7 +260,7 @@ val colorMap2 =
 If we were to use the `mapDouble` method of the color maps to find color values of the following points, we'd see the following:
 
 ```scala
-scala> colorMap1.mapDouble(2.0) == RGB(0, 255, 0).int
+scala> colorMap1.mapDouble(2.0) == RGB(0, 255, 0)
 res1: Boolean = true
 
 scala> colorMap2.mapDouble(2.0) == 0xFFFFFFFF
@@ -272,10 +272,10 @@ However, because `colorMap2` is based on the `GreaterThanOrEqualTo` class bounda
 greater than or equal to any of the mapped values, it maps `2.0` to the `fallbackColor`.
 
 ```scala
-scala> colorMap1.mapDouble(23.5) == RGB(255,153,51).int
+scala> colorMap1.mapDouble(23.5) == RGB(255,153,51)
 res4: Boolean = true
 
-scala> colorMap2.mapDouble(23.5) == RGB(255,255,51).int
+scala> colorMap2.mapDouble(23.5) == RGB(255,255,51)
 res5: Boolean = true
 ```
 

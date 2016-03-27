@@ -34,5 +34,6 @@ abstract class LayerRDDCropMethods[
   def crop(extent: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     Crop(self, extent, options)
 
-  def crop(extent:Extent): RDD[(K, V)] with Metadata[M] = crop(extent, Options.DEFAULT)
+  def crop(extent:Extent): RDD[(K, V)] with Metadata[M] =
+    crop(extent, Options.DEFAULT)
 }
