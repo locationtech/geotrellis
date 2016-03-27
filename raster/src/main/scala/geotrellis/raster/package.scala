@@ -83,9 +83,12 @@ package object raster
       with resample.SinglebandRasterResampleMethods
       with vectorize.SinglebandRasterVectorizeMethods
 
-  implicit class withMultibandRasterMethodExtensions(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
+  implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
       with reproject.MultibandRasterReprojectMethods
       with resample.MultibandRasterResampleMethods
+
+  implicit class withTileSeqMethods(val self: Traversable[Tile]) extends MethodExtensions[Traversable[Tile]]
+      with mapalgebra.local.LocalSeqMethods
 
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
