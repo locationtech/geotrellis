@@ -62,16 +62,16 @@ object Cursor {
  * Represents a cursor that can be used to iterate over cells within a focal
  * neighborhood.
  *
- * @param      r                     Tile that this cursor runs over
+ * @param      tile                     Tile that this cursor runs over
  * @param      analysisArea          Analysis area
  * @param      extent                The distance from the focus that the
  *                                   bounding box of this cursor extends.
  *                                   e.g. if the bounding box is 3x3, then
  *                                   the distance from center is 1.
  */
-class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
-  private val rows = r.rows
-  private val cols = r.cols
+class Cursor(tile: Tile, analysisArea: GridBounds, val extent: Int) {
+  private val rows = tile.rows
+  private val cols = tile.cols
 
   // How many columns from the left/top of the input raster does the analysis area begin?
   val analysisOffsetCols = analysisArea.colMin
@@ -114,13 +114,13 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
    *  the previous position and the current position */
   def isReset = movement == NoMovement
 
-  /** 
+  /**
    *  Cursor column relative to the analysis area.
    *
    *  For example, if the analysis area starts at col 2 and the focusX is currently 3,
-   *  then the col should be 1. 
+   *  then the col should be 1.
    */
-  def col = _col - analysisOffsetCols 
+  def col = _col - analysisOffsetCols
 
   /** Cursor row relative to the analysis area */
   def row = _row - analysisOffsetRows
@@ -133,7 +133,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
    * @param   col    Column of raster to center on.
    * @param   row    Row of raster to center on.
    */
-  def centerOn(col: Int, row: Int) = { 
+  def centerOn(col: Int, row: Int) = {
     movement = NoMovement
     _col = col
     _row = row
@@ -161,7 +161,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
   def move(m: Movement) = {
     movement = m
     m match {
-      case Up => 
+      case Up =>
         addedRow = _rowmin - 1
         removedRow = _row + extent
         _row -= 1
@@ -177,7 +177,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
         addedCol = _colmax + 1
         removedCol = _col - extent
         _col += 1
-      case _ => 
+      case _ =>
     }
 
     _colmin = max(0, _col - extent)
@@ -270,7 +270,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
    */
   protected def foreachAdded(f: (Int, Int)=>Unit): Unit = {
     if(movement == NoMovement) {
-      foreach(f) 
+      foreach(f)
     } else if (movement.isVertical) {
       if(0 <= addedRow && addedRow < rows) {
         if(!hasMask) {
@@ -287,7 +287,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
             }
           }
         }
-      }        
+      }
     } else { // Horizontal
       if(0 <= addedCol && addedCol < cols) {
         if(!hasMask) {
@@ -313,7 +313,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
             }
           }
         }
-      }        
+      }
     }
 
     if(hasMask) {
@@ -329,7 +329,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
 
   /**
    * Iterates over all cell values of the raster which
-   * are no longer covered by the cursor 
+   * are no longer covered by the cursor
    * as part of the last move last move of the cursor.
    *
    * For instance, if move(Movement.Up) is called, then there will
@@ -415,7 +415,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
     var row = 0
     allCells.foreach { (cl, rw) =>
       if(row != rw) { sb.append("\n") ; row += 1 }
-      val s = r.get(cl, rw).toString
+      val s = tile.get(cl, rw).toString
       val pad = " " * math.max(6 - s.size, 0)
       sb.append(s"$pad$s")
     }

@@ -17,6 +17,7 @@
 package geotrellis.raster.hydrology
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 import geotrellis.raster.mapalgebra.focal._
 
 case class FillOptions(threshold: Double)
@@ -34,66 +35,71 @@ object FillOptions {
   *        the threshold appropriately.
   */
 object Fill {
-  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double): Tile = {
-    if (r.cellType.isFloatingPoint) {
-      new CursorFillCalcDouble(r, Square(1), bounds, threshold)
+  def apply(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds], threshold: Double): Tile = {
+    if (tile.cellType.isFloatingPoint) {
+      new CursorDoubleFillCalc(tile, Square(1), target, bounds, threshold)
     } else {
-      new CursorFillCalc(r, Square(1), bounds, threshold.toInt)
+      new CursorFillCalc(tile, Square(1), target, bounds, threshold.toInt)
     }
   }.execute()
 }
 
-class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double)
-  extends CursorCalculation[Tile](r, n, FocalTarget.Tmp, bounds)
+class CursorDoubleFillCalc(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds], threshold: Double)
+  extends CursorCalculation[Tile](tile, n, target, bounds)
   with DoubleArrayTileResult
 {
-  def calc(r: Tile, c: Cursor) = {
+  def calc(tile: Tile, cursor: Cursor) = {
     var count: Int = 0
     var totalCount: Int = 0
     var sum: Double = 0
-    val cVal: Double = r.getDouble(c.col, c.row)
-    c.allCells.foreach { (col, row) =>
-      if(c.col != col || c.row != row){
-        if((r.getDouble(col, row) - cVal).abs > threshold ){
+    val cVal: Double = tile.getDouble(cursor.col, cursor.row)
+    cursor.allCells.foreach { (col, row) =>
+      if(cursor.col != col || cursor.row != row){
+        if((tile.getDouble(col, row) - cVal).abs > threshold ){
           count = count + 1
         }
         totalCount = totalCount + 1
-        sum = sum + r.get(col, row)
+        sum = sum + tile.get(col, row)
       }
     }
-    if(count == totalCount){
-      resultTile.setDouble(c.col, c.row, sum / totalCount)
+
+    val res = if(count == totalCount){
+      sum / totalCount
     } else {
-      resultTile.setDouble(c.col, c.row, cVal)
+      cVal
     }
+
+    setValidDoubleResult(cursor, res)
   }
 }
 
 
-class CursorFillCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Int)
-  extends CursorCalculation[Tile](r, n, FocalTarget.Tmp, bounds)
+class CursorFillCalc(r: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds], threshold: Int)
+  extends CursorCalculation[Tile](r, n, target, bounds)
   with IntArrayTileResult
 {
-  def calc(r: Tile, c: Cursor) = {
+  def calc(tile: Tile, cursor: Cursor) = {
     var count: Int = 0
     var totalCount: Int = 0
     var sum: Int = 0
-    val cVal = r.get(c.col, c.row)
-    c.allCells
+    val cVal = tile.get(cursor.col, cursor.row)
+    cursor.allCells
       .foreach { (col, row) =>
-      if (c.col != col || c.row != row) {
-        if ((r.get(col, row) - cVal).abs > threshold) {
+      if (cursor.col != col || cursor.row != row) {
+        if ((tile.get(col, row) - cVal).abs > threshold) {
           count = count + 1
         }
         totalCount = totalCount + 1
-        sum = sum + r.get(col, row)
+        sum = sum + tile.get(col, row)
       }
     }
 
-    if(count == totalCount){
-      resultTile.set(c.col, c.row, sum / totalCount)
+    val res = if(count == totalCount){
+      sum / totalCount
     } else {
-      resultTile.set(c.col, c.row, cVal)
+      cVal
     }
+
+    setValidResult(cursor, res)
   }
 }

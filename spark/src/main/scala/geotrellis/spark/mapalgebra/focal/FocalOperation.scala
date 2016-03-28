@@ -3,7 +3,7 @@ package geotrellis.spark.mapalgebra.focal
 import geotrellis.spark._
 import geotrellis.spark.buffer._
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
@@ -40,11 +40,11 @@ object FocalOperation {
 
 abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
 
-  def focal(n: Neighborhood, target: FocalTarget = FocalTarget.All)
+  def focal(n: Neighborhood)
       (calc: (Tile, Option[GridBounds]) => Tile): TileLayerRDD[K] =
     FocalOperation(self, n)(calc)
 
-  def focalWithCellSize(n: Neighborhood, target: FocalTarget = FocalTarget.All)
+  def focalWithCellSize(n: Neighborhood)
       (calc: (Tile, Option[GridBounds], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metadata.layout.cellSize
     FocalOperation(self, n){

@@ -12,7 +12,7 @@ class MeanSpec extends FunSpec with TestEnvironment {
   describe("Mean Focal Spec") {
     val nd = NODATA
 
-    it("should square mean for raster rdd") {
+    it("should square mean for all cells") {
       val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
@@ -51,7 +51,7 @@ class MeanSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMean(Square(1), FocalTarget.NoData).stitch.toArrayDouble
+      val res = rasterRDD.focalMean(Square(1), TargetCell.NoData).stitch.toArrayDouble
 
       val expected = Array(
         5.666,7, 1,   1, 3, 5,   9, 8, 2,

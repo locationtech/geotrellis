@@ -54,7 +54,7 @@ class SumSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1), FocalTarget.NoData).stitch.toArray
+      val res = rasterRDD.focalSum(Square(1), TargetCell.NoData).stitch.toArray
 
       val expected = Array(
         11,12, 13,   21, 22, 23,   31, 32, 33,
@@ -80,7 +80,7 @@ class SumSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1), FocalTarget.NoData).stitch.toArray
+      val res = rasterRDD.focalSum(Square(1), TargetCell.NoData).stitch.toArray
 
       val expected = Array(
         3,1, 1,   1, 1, 1,   1, 1, 1,
@@ -106,7 +106,7 @@ class SumSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1), FocalTarget.Data).stitch.toArray
+      val res = rasterRDD.focalSum(Square(1), TargetCell.Data).stitch.toArray
 
       val expected = Array(
         nd, 5, 7,    8, 9, 8,    7, 6, 4,
@@ -145,7 +145,33 @@ class SumSpec extends FunSpec with TestEnvironment {
       res should be (expected)
     }
 
-    it("should circle sum for raster source") {
+    it("should square sum with 5x5 neighborhood for NoData cells") {
+      val rasterRDD = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,1, 1,   1, 1, 1,   1, 1, 1,
+          1, 1, 1,   2, 2, 2,    1, 1, 1,
+
+          1, 1, 1,   3, 3, 3,    1, 1, 1,
+          1, 1, 1,   1,nd, 1,    1, 1, 1
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
+
+      val res = rasterRDD.focalSum(Square(2), TargetCell.NoData).stitch.toArray
+
+      val expected = Array(
+        8,1, 1,   1, 1, 1,   1, 1, 1,
+        1, 1, 1,   2, 2, 2,    1, 1, 1,
+
+        1, 1, 1,   3, 3, 3,    1, 1, 1,
+        1, 1, 1,   1,23, 1,    1, 1, 1
+      )
+
+      res should be (expected)
+    }
+
+    it("should circle sum for all cells") {
       val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
@@ -166,6 +192,32 @@ class SumSpec extends FunSpec with TestEnvironment {
 
         4, 5, 7,   10,11,10,    7, 5, 4,
         3, 4, 4,    5, 5, 5,    4, 4, 3
+      )
+
+      res should be (expected)
+    }
+
+    it("should circle sum for data cells") {
+      val rasterRDD = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,1, 1,   1, 1, 1,   1, 1, 1,
+          1, 1, 1,   2, 2, 2,    1, 1, 1,
+
+          1, 1, 1,   3, 3, 3,    1, 1, 1,
+          1, 1, 1,   1,nd, 1,    1, 1, 1
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
+
+      val res = rasterRDD.focalSum(Circle(1), TargetCell.Data).stitch.toArray
+
+      val expected = Array(
+        nd, 3, 4,    5, 5, 5,    4, 4, 3,
+        3, 5, 6,    9,10, 9,    6, 5, 4,
+
+        4, 5, 7,   10,11,10,    7, 5, 4,
+        3, 4, 4,    5, nd, 5,    4, 4, 3
       )
 
       res should be (expected)

@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 
 /**
  * Declares that implementers have a result
@@ -26,28 +26,79 @@ trait Resulting[T] {
   def result: T
 }
 
-object FocalTarget extends Enumeration {
-  type FocalTarget = Value
-  val NoData, Data, All, Tmp = Value
+object TargetCell extends Enumeration {
+  type TargetCell = Value
+  val NoData, Data, All = Value
 }
 
 /**
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
-abstract class FocalCalculation[T](val tile: Tile, n: Neighborhood, target : FocalTarget, analysisArea: Option[GridBounds])
+abstract class FocalCalculation[T](val tile: Tile, n: Neighborhood, target : TargetCell, analysisArea: Option[GridBounds])
   extends Resulting[T]
 {
   val bounds: GridBounds = analysisArea.getOrElse(GridBounds(tile))
 
   def execute(): T
+
+  def setValidResult(x: Int, y: Int, focusCol: Int, focusRow: Int, value: Int) {
+    val cellValue = tile.get(focusCol, focusRow)
+
+    set(x, y, {if (validTargetCell(cellValue)) value else cellValue})
+  }
+
+  def setValidResult(cursor: Cursor, value: Int) {
+    val (focusCol, focusRow) = focusPosition(cursor)
+
+    setValidResult(cursor.col, cursor.row, focusCol, focusRow, value)
+  }
+
+
+  // Some focal ops may produce double results from int input, i.e. mean
+  def setValidDoubleResultFromInt(x: Int, y: Int, focusCol: Int, focusRow: Int, value: Double) {
+    val cellValue = tile.get(focusCol, focusRow)
+
+    setDouble(x, y, {if (validTargetCell(cellValue)) value else cellValue})
+  }
+
+  def setValidDoubleResultFromInt(cursor: Cursor, value: Double) {
+    val (focusCol, focusRow) = focusPosition(cursor)
+
+    setValidDoubleResultFromInt(cursor.col, cursor.row, focusCol, focusRow, value)
+  }
+
+  def setValidDoubleResult(x: Int, y: Int, focusCol: Int, focusRow: Int, value: Double) {
+    val cellValue = tile.get(focusCol, focusRow)
+
+    setDouble(x, y, {if (validTargetCell(cellValue)) value else cellValue})
+  }
+
+  def setValidDoubleResult(cursor: Cursor, value: Double) {
+    val (focusCol, focusRow) = focusPosition(cursor)
+
+    setValidDoubleResult(cursor.col, cursor.row, focusCol, focusRow, value)
+  }
+
+  def focusPosition(cursor: Cursor) =
+    (cursor.analysisOffsetCols + cursor.col, cursor.analysisOffsetRows + cursor.row)
+
+
+  def set(x: Int, y: Int, value: Int)
+
+  def setDouble(x: Int, y: Int, value: Double)
+
+  def validTargetCell(value: Int) =
+    target == TargetCell.All || {if (isData(value)) TargetCell.Data else TargetCell.NoData} == target
+
+  def validTargetCell(value: Double) =
+    target == TargetCell.All || {if (isData(value)) TargetCell.Data else TargetCell.NoData} == target
 }
 
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-// TODO: implement focal target
-abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, target: FocalTarget, val analysisArea: Option[GridBounds])
+abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, target: TargetCell, val analysisArea: Option[GridBounds])
   extends FocalCalculation[T](tile, n, target, analysisArea)
 {
   def traversalStrategy = TraversalStrategy.DEFAULT
@@ -64,8 +115,7 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, target: FocalTa
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-// TODO: implement focal target
-abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, target: FocalTarget, val analysisArea: Option[GridBounds])
+abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, target: TargetCell, val analysisArea: Option[GridBounds])
     extends FocalCalculation[T](tile, kernel, target, analysisArea)
 {
   // Benchmarking has declared ScanLineTraversalStrategy the unclear winner as a default (based on Convolve).
@@ -77,13 +127,13 @@ abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, target: FocalTar
     result
   }
 
-  def calc(r: Tile, kernel: KernelCursor): Unit
+  def calc(tile: Tile, kernel: KernelCursor): Unit
 }
 
 /**
  * A focal calculation that uses the Cellwise focal strategy
  */
-abstract class CellwiseCalculation[T] (tile: Tile, n: Neighborhood, target: FocalTarget, analysisArea: Option[GridBounds])
+abstract class CellwiseCalculation[T] (tile: Tile, n: Neighborhood, target: TargetCell, analysisArea: Option[GridBounds])
   extends FocalCalculation[T](tile, n, target, analysisArea)
 {
   def traversalStrategy: Option[TraversalStrategy] = None
@@ -98,8 +148,7 @@ abstract class CellwiseCalculation[T] (tile: Tile, n: Neighborhood, target: Foca
   def add(tile: Tile, x: Int, y: Int)
   def remove(tile: Tile, x: Int, y: Int)
   def reset(): Unit
-  def setValue(x: Int, y: Int)
-  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int)
+  def setValue(x: Int, y: Int, focusCol: Int, focusRow: Int)
 }
 
 /*
@@ -135,6 +184,12 @@ trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile]
   val resultTile: ByteArrayTile = ByteArrayTile.empty(cols, rows)
 
   def result = resultTile
+
+  def set(x: Int, y: Int, value: Int) =
+    result.set(x, y, value)
+
+  def setDouble(x: Int, y: Int, value: Double) =
+    result.setDouble(x, y, value)
 }
 
 /**
@@ -149,6 +204,12 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   val resultTile: ShortArrayTile = ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
 
   def result = resultTile
+
+  def set(x: Int, y: Int, value: Int) =
+    result.set(x, y, value)
+
+  def setDouble(x: Int, y: Int, value: Double) =
+    result.setDouble(x, y, value)
 }
 
 /**
@@ -163,6 +224,12 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   val resultTile = IntArrayTile.empty(cols, rows)
 
   def result = resultTile
+
+  def set(x: Int, y: Int, value: Int) =
+    result.set(x, y, value)
+
+  def setDouble(x: Int, y: Int, value: Double) =
+    result.setDouble(x, y, value)
 }
 
 /**
@@ -177,6 +244,12 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   val resultTile: FloatArrayTile = FloatArrayTile.empty(cols, rows)
 
   def result = resultTile
+
+  def set(x: Int, y: Int, value: Int) =
+    result.set(x, y, value)
+
+  def setDouble(x: Int, y: Int, value: Double) =
+    result.setDouble(x, y, value)
 }
 
 /**
@@ -191,6 +264,12 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
   val resultTile = DoubleArrayTile.empty(cols, rows)
 
   def result = resultTile
+
+  def set(x: Int, y: Int, value: Int) =
+    result.set(x, y, value)
+
+  def setDouble(x: Int, y: Int, value: Double) =
+    result.setDouble(x, y, value)
 }
 
 trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
@@ -200,4 +279,10 @@ trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   val resultTile: MutableArrayTile = ArrayTile.empty(resultCellType, cols, rows)
 
   def result = resultTile
+
+  def set(x: Int, y: Int, value: Int) =
+    result.set(x, y, value)
+
+  def setDouble(x: Int, y: Int, value: Double) =
+    result.setDouble(x, y, value)
 }

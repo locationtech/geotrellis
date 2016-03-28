@@ -1,11 +1,10 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
 
 object Conway {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
-    new CellwiseCalculation[Tile](tile, n, FocalTarget.All, bounds)
+    new CellwiseCalculation[Tile](tile, n, TargetCell.All, bounds)
       with ByteArrayTileResult
     {
       var count = 0
@@ -24,12 +23,11 @@ object Conway {
         }
       }
 
-      def setValue(x: Int, y: Int) = resultTile.set(x, y, if(count == 3 || count == 2) 1 else NODATA)
+      def setValue(x: Int, y: Int, focusCol: Int, focusRow: Int) =
+        setValidResult(x, y, focusCol, focusRow, if(count == 3 || count == 2) 1 else NODATA)
 
       def reset() = { count = 0 }
 
-      def copy(focusCol: Int, focusRow: Int, x: Int, y: Int) =
-        resultTile.setDouble(x, y, tile.getDouble(focusCol, focusRow))
     }
   }
 

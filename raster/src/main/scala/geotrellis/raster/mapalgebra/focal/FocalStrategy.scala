@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.focal
 import scala.math._
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 
 sealed trait TraversalStrategy
 case object ZigZagTraversalStrategy extends TraversalStrategy
@@ -197,10 +197,10 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(tile: Tile, n: Square, calc: CellwiseCalculation[_], target: FocalTarget, analysisArea: GridBounds): Unit =
+  def execute(tile: Tile, n: Square, calc: CellwiseCalculation[_], target: TargetCell, analysisArea: GridBounds): Unit =
     handleScanLine(tile, n.extent, calc, target, analysisArea)
 
-  private def handleScanLine(tile: Tile, n: Int, calc: CellwiseCalculation[_], target: FocalTarget, analysisArea: GridBounds) = {
+  private def handleScanLine(tile: Tile, n: Int, calc: CellwiseCalculation[_], target: TargetCell, analysisArea: GridBounds) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax
@@ -233,12 +233,9 @@ object CellwiseStrategy {
 
       var x = focusCol - colMin
       val y = focusRow - rowMin
-      if (applies(tile, colMin, focusRow, target)) {
-        // offset output col & row to analysis area coordinates
-        calc.setValue(x, y)
-      } else {
-        calc.copy(focusCol, focusRow, x, y)
-      }
+
+      // offset output col & row to analysis area coordinates
+      calc.setValue(x, y, focusCol, focusRow)
 
       focusCol += 1
       while (focusCol <= colMax) {
@@ -263,29 +260,12 @@ object CellwiseStrategy {
         }
 
         x = focusCol - colMin
-        if (applies(tile, focusCol, focusRow, target)) {
-          // offset output col & row to analysis area coordinates
-          calc.setValue(x, y)
-        } else {
-          calc.copy(focusCol, focusRow, x, y)
-        }
+        // offset output col & row to analysis area coordinates
+        calc.setValue(x, y, focusCol, focusRow)
 
         focusCol += 1
       }
       focusRow += 1
-    }
-  }
-
-  private def applies(tile: Tile, x: Int, y: Int, target: FocalTarget) = {
-    if (target == FocalTarget.All) {
-      true
-    } else {
-      val data = if (tile.cellType.isFloatingPoint) {
-        if (isData(tile.getDouble(x, y))) FocalTarget.Data else FocalTarget.NoData
-      } else {
-        if (isData(tile.get(x, y))) FocalTarget.Data else FocalTarget.NoData
-      }
-      data == target
     }
   }
 }

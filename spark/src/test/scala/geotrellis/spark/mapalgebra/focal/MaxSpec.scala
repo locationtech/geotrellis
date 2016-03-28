@@ -12,7 +12,7 @@ class MaxSpec extends FunSpec with TestEnvironment {
 
     val nd = NODATA
 
-    it("should square max for raster rdd") {
+    it("should square max for all cells") {
       val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
@@ -33,6 +33,32 @@ class MaxSpec extends FunSpec with TestEnvironment {
 
         9, 9, 8,    7, 3, 8,    8, 8, 3,
         8, 8, 8,    7, 3, 8,    8, 8, 2
+      )
+
+      res should be (expected)
+    }
+
+    it("should square max for na cells") {
+      val rasterRDD = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 1, 1,   1, 1, 1,
+          9, 1, 1,   2, 2, 2,   1, 3, 1,
+
+          3, 8, 1,   3, 3, 3,   1, 1, 2,
+          2, 1, 7,   1, nd,1,   8, 1, 1
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
+
+      val res = rasterRDD.focalMax(Square(1), TargetCell.NoData).stitch.toArray
+
+      val expected = Array(
+        9, 7, 1,   1, 1, 1,   1, 1, 1,
+        9, 1, 1,   2, 2, 2,   1, 3, 1,
+
+        3, 8, 1,   3, 3, 3,   1, 1, 2,
+        2, 1, 7,   1, 3,1,   8, 1, 1
       )
 
       res should be (expected)
@@ -64,7 +90,7 @@ class MaxSpec extends FunSpec with TestEnvironment {
       res should be(expected)
     }
 
-    it("should circle max for raster rdd") {
+    it("should circle max for all cells") {
       val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
@@ -90,5 +116,30 @@ class MaxSpec extends FunSpec with TestEnvironment {
       res should be (expected)
     }
 
+    it("should circle max for na cells") {
+      val rasterRDD = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 1, 1,   1, 1, 1,
+          9, 1, 1,   2, 2, 2,   1, 3, 1,
+
+          3, 8, 1,   3, 3, 3,   1, 1, 2,
+          2, 1, 7,   1, nd,1,   8, 1, 1
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      )
+
+      val res = rasterRDD.focalMax(Circle(1), TargetCell.NoData).stitch.toArray
+
+      val expected = Array(
+        9,7, 1,   1, 1, 1,   1, 1, 1,
+        9, 1, 1,   2, 2, 2,   1, 3, 1,
+
+        3, 8, 1,   3, 3, 3,   1, 1, 2,
+        2, 1, 7,   1, 3,1,   8, 1, 1
+      )
+
+      res should be (expected)
+    }
   }
 }

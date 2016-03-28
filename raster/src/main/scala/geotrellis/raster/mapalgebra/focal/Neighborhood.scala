@@ -90,7 +90,7 @@ case class Circle(radius:Double) extends Neighborhood {
   }
 }
 
-/** A neighborhood that includes a column and row intersectin the focus.
+/** A neighborhood that includes a column and row intersecting the focus.
  *
  * @param   extent   Extent of the neighborhood.
  *                   The extent is how many cells past the focus the bounding box goes.

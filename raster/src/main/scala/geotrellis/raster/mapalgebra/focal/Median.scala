@@ -1,23 +1,23 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.FocalTarget.FocalTarget
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 
 
 object Median {
-  def calculation(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds]): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds]): FocalCalculation[Tile] = {
     n match {
       case Square(ext) => new CellwiseMedianCalc(tile, n, target, bounds, ext)
-      case _ => new CursorMedianCalc(tile, n, bounds, n.extent)
+      case _ => new CursorMedianCalc(tile, n, target, bounds, n.extent)
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds]): Tile =
+  def apply(tile: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds]): Tile =
     calculation(tile, n, target, bounds).execute()
 }
 
-class CursorMedianCalc(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
-  extends CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
+class CursorMedianCalc(tile: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds], extent: Int)
+  extends CursorCalculation[Tile](tile, n, target, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
@@ -38,7 +38,7 @@ class CursorMedianCalc(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], 
   }
 }
 
-class CellwiseMedianCalc(tile: Tile, n: Neighborhood, target: FocalTarget, bounds: Option[GridBounds], extent: Int)
+class CellwiseMedianCalc(tile: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds], extent: Int)
   extends CellwiseCalculation[Tile](tile, n, target, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
@@ -59,11 +59,8 @@ class CellwiseMedianCalc(tile: Tile, n: Neighborhood, target: FocalTarget, bound
     }
   }
 
-  def setValue(x: Int, y: Int) =
-    resultTile.set(x, y, median)
-
-  def copy(focusCol: Int, focusRow: Int, x: Int, y: Int) =
-    resultTile.set(x, y, tile.get(focusCol, focusRow))
+  def setValue(x: Int, y: Int, focusCol: Int, focusRow: Int) =
+    setValidResult(x, y, focusCol, focusRow, median)
 }
 
 

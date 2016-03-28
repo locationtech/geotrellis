@@ -1,6 +1,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 
 /**
  * Computes the minimum value of a neighborhood for a given raster
@@ -10,40 +11,40 @@ import geotrellis.raster._
  *                  the data values will be rounded to integers.
  */
 object Min {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
 
     if (tile.cellType.isFloatingPoint)
-      new CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
+      new CursorCalculation[Tile](tile, n, target, bounds)
         with ArrayTileResult
       {
-        def calc(r: Tile, cursor: Cursor) = {
-          var m: Double = Double.NaN
+        def calc(tile: Tile, cursor: Cursor) = {
+          var min: Double = doubleNODATA
           cursor.allCells.foreach { (col, row) =>
-            val v = r.getDouble(col, row)
-            if (isData(v) && (v < m || isNoData(m))) {
-              m = v
+            val v = tile.getDouble(col, row)
+            if (isData(v) && (v < min || isNoData(min))) {
+              min = v
             }
           }
-          resultTile.setDouble(cursor.col, cursor.row, m)
+          setValidDoubleResult(cursor, min)
         }
       }
 
     else
-      new CursorCalculation[Tile](tile, n, FocalTarget.Tmp, bounds)
+      new CursorCalculation[Tile](tile, n, target, bounds)
         with ArrayTileResult
       {
-        def calc(r: Tile, cursor: Cursor) = {
-          var m = NODATA
+        def calc(tile: Tile, cursor: Cursor) = {
+          var min = NODATA
           cursor.allCells.foreach { (col, row) =>
-            val v = r.get(col, row)
-            if(isData(v) && (v < m || isNoData(m))) { m = v }
+            val v = tile.get(col, row)
+            if(isData(v) && (v < min || isNoData(min))) { min = v }
           }
 
-          resultTile.set(cursor.col, cursor.row, m)
+          setValidResult(cursor, min)
         }
       }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
-    calculation(tile, n, bounds).execute()
+  def apply(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, target, bounds).execute()
 }
