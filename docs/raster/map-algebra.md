@@ -49,6 +49,45 @@ and the zonal tile has a distribution of zone 1, zone 2, and zone 3 values, we w
 back the statistics such as mean, median and mode for all cells in the input tile that correspond
 to each of those zone values.
 
+## How to use Map Algebra operations
+
+Map Algebra operations are defined as implicits methods on `Tile` or `Traversable[Tile]`,
+which are imported with `import geotrellis.raster._`.
+
+```scala
+import geotrellis.raster._
+
+val tile1: Tile = ???
+val tile2: Tile = ???
+
+// If tile1 and tile2 are the same dimensions, we can combine
+// them using local operations
+
+tile1.localAdd(tile2)
+
+// There are operators for some local operations.
+// This is equivalent to the localAdd call above
+
+tile1 + tile2
+
+// There is a local operation called "reclassify" in literature,
+// which transforms each value of the function.
+// We actually have a map method defined on Tile,
+// which serves this purpose.
+
+tile1.map { z => z + 1 } // Map over integer values.
+
+tile2.mapDouble { z => z + 1.1 } // Map over double values.
+
+tile1.dualMap({ z => z + 1 })({ z => z + 1.1 }) // Call either the integer value or double version, depending on cellType.
+
+// You can also combine values in a generic way with the combine funciton.
+// This is another local operation that is actually defined on Tile directly.
+
+tile1.combine(tile2) { (z1, z2) => z1 + z2 }
+```
+
+
 The following packages are where Map Algebra operations are defined in GeoTrellis:
 
 - [`geotrellis.raster.local`](../../raster/src/main/scala/geotrellis/raster/mapalgebra/local)
