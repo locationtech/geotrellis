@@ -17,20 +17,21 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.hadoop.HdfsUtils
-import geotrellis.spark.util.SparkUtils
-import org.apache.spark.{SparkConf, SparkContext}
 import geotrellis.spark.testkit._
-import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
+import geotrellis.spark.util.SparkUtils
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 
 import java.io.File
 import scala.collection.mutable
+import scala.util.Properties
 
 object TestEnvironment {
   def getLocalFS(conf: Configuration): FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
@@ -56,7 +57,7 @@ trait TestEnvironment extends BeforeAndAfterAll
   def registerAfterAll(f: () => Unit): Unit =
     afterAlls += f
 
-  def extraConf(conf: SparkConf): Unit =
+  def setKryoRegistrator(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
 
   lazy val _sc: SparkContext = {
@@ -68,8 +69,13 @@ trait TestEnvironment extends BeforeAndAfterAll
     conf
       .setMaster("local")
       .setAppName("Test Context")
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    extraConf(conf)
+
+    if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER") == None) {
+      conf
+        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .set("spark.kryoserializer.buffer.max", "500m")
+      setKryoRegistrator(conf)
+    }
 
     val sparkContext = new SparkContext(conf)
 

@@ -17,12 +17,21 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.Geometry
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.Geometry
 
 
+/**
+  * Extension methods for [[Raster]]s.
+  */
 trait SinglebandRasterRasterizeMethods[T <: Tile] extends MethodExtensions[Raster[T]] {
+
+  /**
+    * Call the function 'fn' on each cell of present [[Raster]] that
+    * is covered by the [[Geometry]].  The precise definition of the
+    * word "covered" is determined by the options parameter.
+    */
   def foreachCell(
     geom : Geometry,
     options: Options = Options.DEFAULT
@@ -44,6 +53,11 @@ trait SinglebandRasterRasterizeMethods[T <: Tile] extends MethodExtensions[Raste
     mutableTile
   }
 
+  /**
+    * Call the function 'fn' on each cell of present [[Raster]] that
+    * is covered by the [[Geometry]].  The precise definition of the
+    * word "covered" is determined by the options parameter.
+    */
   def foreachCellDouble(
     geom : Geometry,
     options: Options = Options.DEFAULT

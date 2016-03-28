@@ -58,10 +58,10 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     val colorMap =
       ColorMap(
         Map(
-          1 -> RGBA(255, 0, 0, 255).int,
-          2 -> RGBA(0, 255, 0, 255).int,
-          3 -> RGBA(0, 0, 255, 255).int,
-          4 -> RGBA(0, 255, 255, 0xBB).int
+          1 -> RGBA(255, 0, 0, 255),
+          2 -> RGBA(0, 255, 0, 255),
+          3 -> RGBA(0, 0, 255, 255),
+          4 -> RGBA(0, 255, 255, 0xBB)
         )
       )
 
@@ -86,10 +86,10 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     val colorMap =
       ColorMap(
         Map(
-          1 -> RGBA(255, 0, 0, 255).int,
-          2 -> RGBA(0, 255, 0, 255).int,
-          3 -> RGBA(0, 0, 255, 255).int,
-          4 -> RGBA(0, 255, 255, 0xBB).int
+          1 -> RGBA(255, 0, 0, 255),
+          2 -> RGBA(0, 255, 0, 255),
+          3 -> RGBA(0, 0, 255, 255),
+          4 -> RGBA(0, 255, 255, 0xBB)
         )
       ).withNoDataColor(0xFFFFFFAA)
 
@@ -116,10 +116,10 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     val colorMap =
       ColorMap(
         Map(
-          1.0 -> RGBA(255, 0, 0, 255).int,
-          2.0 -> RGBA(0, 255, 0, 255).int,
-          3.0 -> RGBA(0, 0, 255, 255).int,
-          4.0 -> RGBA(0, 255, 255, 0xBB).int
+          1.0 -> RGBA(255, 0, 0, 255),
+          2.0 -> RGBA(0, 255, 0, 255),
+          3.0 -> RGBA(0, 0, 255, 255),
+          4.0 -> RGBA(0, 255, 255, 0xBB)
         )
       ).withNoDataColor(0xFFFFFFAA)
 
@@ -150,20 +150,20 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     val intColorMap =
       ColorMap(
         Map(
-          1 -> RGB(255, 0, 0).int,
-          2 -> RGB(0, 255, 0).int,
-          3 -> RGB(0, 0, 255).int,
-          4 -> RGB(0, 255, 255).int
+          1 -> RGB(255, 0, 0),
+          2 -> RGB(0, 255, 0),
+          3 -> RGB(0, 0, 255),
+          4 -> RGB(0, 255, 255)
         )
       )
 
     val doubleColorMap =
       ColorMap(
         Map(
-          1.0 -> RGB(255, 0, 0).int,
-          2.0 -> RGB(0, 255, 0).int,
-          3.0 -> RGB(0, 0, 255).int,
-          4.0 -> RGB(0, 255, 255).int
+          1.0 -> RGB(255, 0, 0),
+          2.0 -> RGB(0, 255, 0),
+          3.0 -> RGB(0, 0, 255),
+          4.0 -> RGB(0, 255, 255)
         )
     )
 

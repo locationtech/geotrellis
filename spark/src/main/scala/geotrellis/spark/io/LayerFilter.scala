@@ -2,9 +2,9 @@ package geotrellis.spark.io
 
 import geotrellis.raster._
 import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
-import geotrellis.spark.tiling.MapKeyTransform
+import geotrellis.spark.tiling._
 import geotrellis.vector.{Extent, Point, MultiPolygon}
 
 import com.github.nscala_time.time.Imports._
@@ -46,7 +46,7 @@ trait LayerFilter[K, F, T, M] {
 object LayerFilter {
 
   /** [[Value]] and [[Or]] form the leaf and nodes of the expression tree used by the filter.
-    * F should be a companion object type (ex: RddIntersects.type) and is used to restrict
+    * F should be a companion object type (ex: Intersects.type) and is used to restrict
     * combination of disjunctions to a single type.
     * T is the actual parameter value of the expression */
   sealed trait Expression[F, T] {
@@ -101,10 +101,10 @@ object Intersects {
     }
 
   /** Define Intersects filter for Extent */
-  implicit def forExtent[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
+  implicit def forExtent[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
-      val bounds = (metadata: MapKeyTransform)(extent)
+      val bounds = metadata.getComponent[LayoutDefinition].mapTransform(extent)
       val queryBounds = KeyBounds(
         kb.minKey setComponent SpatialKey(bounds.colMin, bounds.rowMin),
         kb.maxKey setComponent SpatialKey(bounds.colMax, bounds.rowMax))
@@ -116,12 +116,13 @@ object Intersects {
   }
 
   /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
+  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
+        val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
         val extent = polygon.envelope
-        val keyext = (metadata: MapKeyTransform)(kb.minKey)
-        val bounds = (metadata: MapKeyTransform)(extent)
+        val keyext = mapTransform(kb.minKey)
+        val bounds = mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
         /*

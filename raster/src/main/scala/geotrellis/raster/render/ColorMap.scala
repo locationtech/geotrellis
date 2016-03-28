@@ -54,8 +54,7 @@ object ColorMap {
   def apply(breaksToColors: Map[Int, Int]): IntColorMap =
     apply(breaksToColors, Options.DEFAULT)
 
-  def apply(breaksToColors: Map[Int, Int],
-            options: Options): IntColorMap =
+  def apply(breaksToColors: Map[Int, Int], options: Options): IntColorMap =
     new IntColorMap(breaksToColors, options)
 
   def apply(breaksToColors: (Double, Int)*): DoubleColorMap =
@@ -188,13 +187,13 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
   private val zCheck: (Int, Int) => Boolean =
     options.classBoundaryType match {
       case LessThan =>
-        { (z: Int, i: Int) => z > orderedBreaks(i) }
-      case LessThanOrEqualTo =>
         { (z: Int, i: Int) => z >= orderedBreaks(i) }
+      case LessThanOrEqualTo =>
+        { (z: Int, i: Int) => z > orderedBreaks(i) }
       case GreaterThan =>
-        { (z: Int, i: Int) => z < orderedBreaks(i) }
-      case GreaterThanOrEqualTo =>
         { (z: Int, i: Int) => z <= orderedBreaks(i) }
+      case GreaterThanOrEqualTo =>
+        { (z: Int, i: Int) => z < orderedBreaks(i) }
       case Exact =>
         { (z: Int, i: Int) => z != orderedBreaks(i) }
     }
@@ -296,13 +295,13 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
   private val zCheck: (Double, Int) => Boolean =
     options.classBoundaryType match {
       case LessThan =>
-        { (z: Double, i: Int) => z > orderedBreaks(i) }
-      case LessThanOrEqualTo =>
         { (z: Double, i: Int) => z >= orderedBreaks(i) }
+      case LessThanOrEqualTo =>
+        { (z: Double, i: Int) => z > orderedBreaks(i) }
       case GreaterThan =>
-        { (z: Double, i: Int) => z < orderedBreaks(i) }
-      case GreaterThanOrEqualTo =>
         { (z: Double, i: Int) => z <= orderedBreaks(i) }
+      case GreaterThanOrEqualTo =>
+        { (z: Double, i: Int) => z < orderedBreaks(i) }
       case Exact =>
         { (z: Double, i: Int) => z != orderedBreaks(i) }
     }

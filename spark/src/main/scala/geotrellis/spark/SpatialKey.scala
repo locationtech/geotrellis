@@ -1,6 +1,5 @@
 package geotrellis.spark
 
-import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */

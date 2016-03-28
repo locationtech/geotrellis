@@ -1,9 +1,15 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.{ Bounds, Boundable, KeyBounds, EmptyBounds }
+import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+
+import org.apache.accumulo.core.data.Key
 import org.apache.hadoop.io.Text
 import org.apache.spark.rdd.RDD
+
+import scala.collection.JavaConverters._
+
 
 object AccumuloUtils {
   /**
@@ -46,4 +52,32 @@ object AccumuloUtils {
     }
     arr
   }
+
+  /**
+    * Split the given Accumulo table into the given number of tablets.
+    * This should improve the ingest performance, as it will allow
+    * more than one tablet server to participate in the ingestion.
+    *
+    * @param  tableName         The name of the table to be split
+    * @param  accumuloInstnace  The Accumulo instance associated with the ingest
+    * @param  keyBounds         The [[KeyBounds]] of the RDD that is being stored in the table
+    * @param  keyIndexer        The indexing scheme used to turn keys K into Accumulo keys
+    * @param  count             The number of tablets to split the table into
+    */
+  def addSplits[K](
+    tableName: String,
+    accumuloInstance: AccumuloInstance,
+    keyBounds: KeyBounds[K],
+    keyIndexer: KeyIndex[K],
+    count: Int
+  ) = {
+    val ops = accumuloInstance.connector.tableOperations
+
+    val splits = AccumuloUtils
+      .getSplits(keyBounds, keyIndexer, count)
+      .map({ i => AccumuloKeyEncoder.index2RowId(i) })
+
+    ops.addSplits(tableName, new java.util.TreeSet(splits.asJava))
+  }
+
 }

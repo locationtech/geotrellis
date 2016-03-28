@@ -66,7 +66,7 @@ trait RasterMatchers extends Matchers {
   def assertEqual(ta: Tile, tb: Tile): Unit = tilesEqual(ta, tb)
 
   def assertEqual(ta: Tile, tb: Tile, threshold: Double): Unit = tilesEqual(ta, tb, threshold)
-  
+
   def arraysEqual(a1: Array[Double], a2: Array[Double], eps: Double = Eps) =
     a1.zipWithIndex.foreach { case (v, i) => v should be (a2(i) +- eps) }
 
@@ -85,6 +85,32 @@ trait RasterMatchers extends Matchers {
           if (v1.isNaN) v2.isNaN should be (true)
           else if (v2.isNaN) v1.isNaN should be (true)
           else v1 should be (v2 +- eps)
+        }
+      }
+    }
+  }
+
+  def assertEqual(ta: MultibandTile, tb: MultibandTile): Unit = assertEqual(ta, tb, Eps)
+
+  def assertEqual(ta: MultibandTile, tb: MultibandTile, threshold: Double): Unit = {
+    val (cols, rows) = (ta.cols, ta.rows)
+    val (bands1, bands2) = (ta.bandCount, tb.bandCount)
+
+    (cols, rows) should be((tb.cols, tb.rows))
+    bands1 should be (bands2)
+
+    cfor(0)(_ < bands1, _ + 1) { b =>
+      val tab = ta.band(b)
+      val tbb = tb.band(b)
+      cfor(0)(_ < cols, _ + 1) { col =>
+        cfor(0)(_ < rows, _ + 1) { row =>
+          val v1 = tab.getDouble(col, row)
+          val v2 = tbb.getDouble(col, row)
+          withClue(s"BAND $b wasn't equal on col: $col, row: $row (v1=$v1, v2=$v2)") {
+            if (v1.isNaN) v2.isNaN should be (true)
+            else if (v2.isNaN) v1.isNaN should be (true)
+            else v1 should be (v2 +- threshold)
+          }
         }
       }
     }

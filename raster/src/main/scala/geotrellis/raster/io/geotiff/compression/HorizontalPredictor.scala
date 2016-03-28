@@ -15,8 +15,14 @@ object HorizontalPredictor {
 
     val bandType = tiffTags.bandType
 
-    new HorizontalPredictor(colsPerRow, rowsInSegment, tiffTags.bandCount)
-      .forBandType(bandType)
+    val predictor =
+      if(tiffTags.hasPixelInterleave) {
+        new HorizontalPredictor(colsPerRow, rowsInSegment, tiffTags.bandCount)
+      } else {
+        new HorizontalPredictor(colsPerRow, rowsInSegment, 1)
+      }
+
+    predictor.forBandType(bandType)
   }
 }
 
@@ -31,7 +37,7 @@ class HorizontalPredictor(cols: Int, rowsInSegment: Int => Int, bandCount: Int) 
           throw new MalformedGeoTiffException(s"""Horizontal differencing "Predictor" not supported with ${bandType.bitsPerSample} bits per sample""")
       }
 
-    new Predictor { 
+    new Predictor {
       val checkEndian = true
       def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         applyFunc(bytes, segmentIndex)
@@ -43,7 +49,7 @@ class HorizontalPredictor(cols: Int, rowsInSegment: Int => Int, bandCount: Int) 
 
     cfor(0)(_ < rows, _ + 1) { row =>
       var count = bandCount * (row * cols + 1)
-      cfor(bandCount)(_ < cols * bandCount, _ + 1) { k =>
+      cfor(bandCount)({ k => k < cols * bandCount && k < bytes.length }, _ + 1) { k =>
         bytes(count) = (bytes(count) + bytes(count - bandCount)).toByte
         count += 1
       }

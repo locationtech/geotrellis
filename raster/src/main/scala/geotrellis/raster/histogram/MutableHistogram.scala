@@ -17,16 +17,27 @@
 package geotrellis.raster.histogram
 
 
+/**
+  * All mutable histograms are derived from this type.
+  */
 abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends Histogram[T] {
+
   /**
-   * Note the occurance of 'item'.
-   *
-   * The optional parameter 'count' allows histograms to be built more
-   * efficiently. Negative counts can be used to remove a particular number
-   * of occurances of 'item'.
-   */
+    * Note the occurance of 'item'.
+    *
+    * The optional parameter 'count' allows histograms to be built
+    * more efficiently. Negative counts can be used to remove a
+    * particular number of occurances of 'item'.
+    */
   def countItem(item: T, count: Int = 1): Unit
 
+  /**
+    * Note the occurance of 'item'.
+    *
+    * The optional parameter 'count' allows histograms to be built
+    * more efficiently. Negative counts can be used to remove a
+    * particular number of occurances of 'item'.
+    */
   def countItemInt(item: Int, count: Int = 1): Unit
 
   /**
@@ -34,6 +45,9 @@ abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends 
    */
   def uncountItem(item: T): Unit
 
+  /**
+    * Update this histogram with the entries from the other one.
+    */
   def update(other: Histogram[T]): Unit
 
   /**
@@ -41,5 +55,9 @@ abstract class MutableHistogram[@specialized (Int, Double) T <: AnyVal] extends 
    */
   def setItem(item: T, count: Int): Unit
 
+  /**
+    * Compute the quantile breaks of the histogram, where the latter
+    * are evenly spaced in 'num' increments starting at zero percent.
+    */
   def quantileBreaks(num: Int): Array[T]
 }

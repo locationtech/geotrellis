@@ -61,12 +61,9 @@ package object vector extends SeqMethods
   implicit class GeometryCollectionTransformations(val self: GeometryCollection) extends MethodExtensions[GeometryCollection]
       with affine.GeometryCollectionTransformationMethods
 
-  /**
-   * An extension class - when in scope, these methods are available from Geometry objects.
-   *
-   * The algorithms herein are all implemented in JTS, but the wrapper methods
-   * here make it straightforward to call them with geotrellis.vector classes.
-   */
+  /** The algorithms herein are all implemented in JTS, but the wrapper methods
+    * here make it straightforward to call them with geotrellis.vector classes.
+    */
   implicit class withAnyGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
       with convexhull.ConvexHullMethods[G]
       with densify.DensifyMethods[G]

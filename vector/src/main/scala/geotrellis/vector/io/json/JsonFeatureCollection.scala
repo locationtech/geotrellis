@@ -9,48 +9,49 @@ import scala.collection.mutable
 import scala.collection.immutable.VectorBuilder
 import DefaultJsonProtocol._
 
-/**
- * Accumulates GeoJson from Feature class instances.
- *
- * During serialization:
- * Each individual feature is parametrized on a class we need to accumulate geoJson per
- * instance of an object in order to use implicit scope resolution in finding the correct format.
- *
- * Features may be added using the .add, addAll methods, they are buffered as JsValues until .toJson is called
- *
- * During deserialization:
- * This object is instantiated with list of JsValues representing features.
- * It may be queried using .getAll[F <: Feature[_] ] method.
- *
- * It aggregates feature objects with data member still encoded in json
- */
+/** Accumulates GeoJson from Feature class instances.
+  *
+  * During serialization:
+  * Each individual feature is parametrized on a class we need to accumulate geoJson per
+  * instance of an object in order to use implicit scope resolution in finding the correct format.
+  *
+  * Features may be added using the .add, addAll methods, they are buffered as JsValues until .toJson is called
+  *
+  * During deserialization:
+  * This object is instantiated with list of JsValues representing features.
+  * It may be queried using .getAll[F <: Feature[_] ] method.
+  *
+  * It aggregates feature objects with data member still encoded in json
+  */
 class JsonFeatureCollection(features: List[JsValue] = Nil) {
   private val buffer = mutable.ListBuffer(features:_*)
 
-  //-- Used for Serialization
+  /** Add a [[JsValue]] to the buffer, pending an ultimate call of toJson */
   def add[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) =
     buffer += writeFeatureJson(feature)
+  /** Add a [[JsValue]] to the buffer, pending an ultimate call of toJson */
   def +=[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) = add(feature)
 
+  /** Add a Seq of [[JsValue]] to the buffer, pending an ultimate call of toJson */
   def addAll[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) =
     features.foreach{ f => buffer += writeFeatureJson(f) }
 
+  /** Add a Seq of [[JsValue]] to the buffer, pending an ultimate call of toJson */
   def ++=[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) = addAll(features)
 
+  /** Carry out serialization on all buffered [[JsValue]]s */
   def toJson: JsValue =
     JsObject(
       "type" -> JsString("FeatureCollection"),
       "features" -> JsArray(buffer.toVector)
     )
 
-  //-- Used for Deserialization
-  /**
-   * This method locates the correct JsonFormat for F through implicit scope and
-   * attempts to use it to parse each contained JsValue.
-   *
-   * @tparam F type of Feature to return
-   * @return Vector or Feature objects that were successfully parsed
-   */
+  /** This method locates the correct JsonFormat for F through implicit scope and
+    * attempts to use it to parse each contained JsValue.
+    *
+    * @tparam F type of Feature to return
+    * @return Vector of Feature objects (type F) that were successfully parsed
+    */
   def getAll[F: JsonReader]: Vector[F] = {
     val ret = new VectorBuilder[F]()
     features.foreach{ f =>

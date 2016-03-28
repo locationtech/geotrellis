@@ -17,15 +17,24 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry
 
 import spire.syntax.cfor._
 
 
+/**
+  * Extension methods for invoking the rasterizer on
+  * [[RasterExtent]]s.
+  */
 trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T] {
 
+  /**
+    * Call the function 'fn' on each cell of present [[RasterExtent]]
+    * that is covered by the [[Geometry]].  The precise definition of
+    * the word "covered" is determined by the options parameter.
+    */
   def foreach(
     geom : Geometry,
     options: Options = Options.DEFAULT,
@@ -33,6 +42,9 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
   )(fn : (Int, Int) => Unit) : Unit =
     geom.foreach(self, options)(fn)
 
+  /**
+    * Call the function 'fn' on each cell of present [[RasterExtent]].
+    */
   def foreach(fn: (Int, Int) => Unit): Unit = {
     val cols = self.cols
     val rows = self.rows
@@ -44,6 +56,12 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
     }
   }
 
+  /**
+    * Call the function 'fn' on each cell of present [[RasterExtent]]
+    * that is covered by the [[Geometry]].  The precise definition of
+    * the word "covered" is determined by the options parameter.  The
+    * result is a new [[Raster]].
+    */
   def rasterize(
     geom: Geometry,
     options: Options = Options.DEFAULT,
@@ -51,6 +69,12 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
   )(fn: (Int, Int) => Int): Raster[ArrayTile] =
     geom.rasterize(self, options, ct)(fn)
 
+  /**
+    * Call the function 'fn' on each cell of present [[RasterExtent]]
+    * that is covered by the [[Geometry]].  The precise definition of
+    * the word "covered" is determined by the options parameter.  The
+    * result is a new [[Raster]].
+    */
   def rasterizeDouble(
     geom: Geometry,
     options: Options = Options.DEFAULT,

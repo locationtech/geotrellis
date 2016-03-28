@@ -31,7 +31,7 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
-import monocle.Lens
+import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
@@ -70,11 +70,37 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type Component[T, C] = Lens[T, C]
+  trait Component[T, C] extends GetComponent[T, C] with SetComponent[T, C]
+
+  trait GetComponent[T, C] extends Serializable {
+    def get: T => C
+  }
+
+  trait SetComponent[T, C] extends Serializable {
+    def set: (T, C) => T
+  }
 
   object Component {
-    def apply[T, C](get: T => C, set: (T, C) => T): Component[T, C] =
-      Lens[T, C](get)(c => t => set(t, c))
+    def apply[T, C](_get: T => C, _set: (T, C) => T): Component[T, C] =
+      new Component[T, C] {
+        val get = _get
+        val set = _set
+      }
+  }
+
+  object GetComponent {
+    def apply[T, C](_get: T => C): GetComponent[T, C] =
+      new GetComponent[T, C] {
+        val get = _get
+      }
+  }
+
+
+  object SetComponent {
+    def apply[T, C](_set: (T, C) => T): SetComponent[T, C] =
+      new SetComponent[T, C] {
+        val set = _set
+      }
   }
 
   implicit def identityComponent[T]: Component[T, T] =
@@ -84,12 +110,14 @@ package object spark
     * an implicitly defined lens into a component of that object
     * with a specific type.
     */
-  implicit class ComponentMethods[T](val self: T) extends MethodExtensions[T] {
-    def getComponent[C]()(implicit component: Component[T, C]): C =
+  implicit class withGetComponentMethods[T](val self: T) extends MethodExtensions[T] {
+    def getComponent[C]()(implicit component: GetComponent[T, C]): C =
       component.get(self)
+  }
 
-    def setComponent[C](value: C)(implicit component: Component[T, C]): T =
-      component.set(value)(self)
+  implicit class withSetComponentMethods[T](val self: T) extends MethodExtensions[T] {
+    def setComponent[C](value: C)(implicit component: SetComponent[T, C]): T =
+      component.set(self, value)
   }
 
   type SpatialComponent[K] = Component[K, SpatialKey]
@@ -117,14 +145,17 @@ package object spark
   implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
       extends ContextRDDMethods[K, V, M](rdd)
 
-  implicit class withTileLayerRDDMethods[K: ClassTag: SpatialComponent](val self: TileLayerRDD[K])
+  implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends TileLayerRDDMethods[K]
 
   implicit class withTileLayerRDDMaskMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends mask.TileLayerRDDMaskMethods[K]
 
-  implicit class withMultibandTileLayerRDDMethods[K: ClassTag: SpatialComponent](val self: MultibandTileLayerRDD[K])
+  implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
       extends MultibandTileLayerRDDMethods[K]
+
+  implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
+      extends CellGridLayoutRDDMethods[K, V, M]
 
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =

@@ -8,7 +8,6 @@ import com.esotericsoftware.kryo.Kryo
 
 import scala.util.Properties
 
-
 class TestRegistrator extends NormalKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
     super.registerClasses(kryo)
@@ -34,6 +33,8 @@ class TestRegistrator extends NormalKryoRegistrator {
       kryo.register(classOf[scala.math.Ordering$$anon$9])
       kryo.register(classOf[scala.math.Ordering$$anonfun$by$1])
       kryo.register(classOf[scala.reflect.ClassTag$$anon$1])
+      kryo.register(classOf[Array[Boolean]])
+      kryo.register(classOf[java.util.ArrayList[_]])
 
     /* Special Handling: Avro */
       kryo.register(new Field("a", Schema.create(Type.NULL), null, null: Object).order.getClass)

@@ -76,6 +76,7 @@ object Polygon {
   }
 }
 
+/** Class representing a polygon */
 case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                             with Relatable
                                             with TwoDimensions {

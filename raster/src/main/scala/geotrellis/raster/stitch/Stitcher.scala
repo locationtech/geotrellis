@@ -2,12 +2,53 @@ package geotrellis.raster.stitch
 
 import geotrellis.raster._
 
+
+/**
+  * The Stitcher base trait.
+  */
 trait Stitcher[T <: CellGrid] extends Serializable {
+
+  /**
+    * Stitch an [[Iterable]] of tile, corner pairs into a new tile
+    * with the given number of columns and rows.
+    *
+    * The parameter 'pieces' is an iterable of (T, (Int, Int)) tuples,
+    * were the first item in the tuple is a tile and the second one is
+    * the position that the tile should occupy (given by smallest
+    * column and smallest row).
+    *
+    * @param   pieces  An iterable of tile, corner pairs
+    * @param   cols    The number of columns in the result tile
+    * @param   rows    The number of rows in the result tile
+    * @return          The result tile
+    */
   def stitch(pieces: Iterable[(T, (Int, Int))], cols: Int, rows: Int): T
 }
 
+/**
+  * Stitcher object.
+  */
 object Stitcher {
+
+  /**
+    * Implicit object holding [[Tile]] stitcher function.
+    */
   implicit object TileStitcher extends Stitcher[Tile] {
+
+  /**
+    * Stitch an [[Iterable]] of [[Tile]], corner pairs into a new Tile
+    * with the given number of columns and rows.
+    *
+    * The parameter 'pieces' is an iterable of (T, (Int, Int)) tuples,
+    * were the first item in the tuple is a Tile and the second one is
+    * the position that the Tile should occupy (given by smallest
+    * column and smallest row).
+    *
+    * @param   pieces  An iterable of Tile, corner pairs
+    * @param   cols    The number of columns in the result Tile
+    * @param   rows    The number of rows in the result Tile
+    * @return          The result Tile
+    */
     def stitch(pieces: Iterable[(Tile, (Int, Int))], cols: Int, rows: Int): Tile = {
       val result = ArrayTile.empty(pieces.head._1.cellType, cols, rows)
       for((tile, (updateColMin, updateRowMin)) <- pieces) {
@@ -17,7 +58,25 @@ object Stitcher {
     }
   }
 
+  /**
+    * Implicit object holding [[MultibandTile]] stitcher function.
+    */
   implicit object MultibandTileStitcher extends Stitcher[MultibandTile] {
+
+  /**
+    * Stitch an [[Iterable]] of [[MultibandTile]], corner pairs into a
+    * new MultibandTile with the given number of columns and rows.
+    *
+    * The parameter 'pieces' is an iterable of (T, (Int, Int)) tuples,
+    * were the first item in the tuple is a MultibandTile and the
+    * second one is the position that the MultibandTile should occupy
+    * (given by smallest column and smallest row).
+    *
+    * @param   pieces  An iterable of MultibandTile, corner pairs
+    * @param   cols    The number of columns in the result MultibandTile
+    * @param   rows    The number of rows in the result MultibandTile
+    * @return          The result MultibandTile
+    */
     def stitch(pieces: Iterable[(MultibandTile, (Int, Int))], cols: Int, rows: Int): MultibandTile = {
       val headTile = pieces.head._1
       val bands = Array.fill[MutableArrayTile](headTile.bandCount)(ArrayTile.empty(headTile.cellType, cols, rows))

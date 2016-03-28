@@ -3,10 +3,24 @@ package geotrellis.raster
 import scala.collection.mutable
 import spire.syntax.cfor._
 
+/**
+  * The companion object for the [[GridBounds]] type.
+  */
 object GridBounds {
+  /**
+    * Given a [[CellGrid]], produce the corresponding [[GridBounds]].
+    *
+    * @param  r  The given CellGrid
+    */
   def apply(r: CellGrid): GridBounds =
     GridBounds(0, 0, r.cols-1, r.rows-1)
 
+  /**
+    * Given a sequence of keys, return a [[GridBounds]] of minimal
+    * size which covers them.
+    *
+    * @param  keys  The sequence of keys to cover
+    */
   def envelope(keys: Iterable[Product2[Int, Int]]): GridBounds = {
     var colMin = Integer.MAX_VALUE
     var colMax = Integer.MIN_VALUE
@@ -24,8 +38,12 @@ object GridBounds {
     GridBounds(colMin, rowMin, colMax, rowMax)
   }
 
-  /** Creates a sequence of distinct GridBounds out of a set of potentially overlapping
-    * grid bounds */
+  /**
+    * Creates a sequence of distinct [[GridBounds]] out of a set of
+    * potentially overlapping grid bounds.
+    *
+    * @param  gridBounds  A traversable collection of GridBounds
+    */
   def distinct(gridBounds: Traversable[GridBounds]): Seq[GridBounds] =
     gridBounds.foldLeft(Seq[GridBounds]()) { (acc, bounds) =>
       acc ++ acc.foldLeft(Seq(bounds)) { (cuts, bounds) =>
@@ -35,9 +53,9 @@ object GridBounds {
 }
 
 /**
- * Represents grid coordinates of a subsection of a RasterExtent.
- * These coordinates are inclusive.
- */
+  * Represents grid coordinates of a subsection of a RasterExtent.
+  * These coordinates are inclusive.
+  */
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
@@ -45,15 +63,41 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def size = width * height
   def isEmpty = size == 0
 
+  /**
+    * Return true if the present [[GridBounds]] contains the position
+    * pointed to by the given column and row, otherwise false.
+    *
+    * @param  col  The column
+    * @param  row  The row
+    */
   def contains(col: Int, row: Int): Boolean =
     (colMin <= col && col <= colMax) &&
     (rowMin <= row && row <= rowMax)
 
+  /**
+    * Returns true if the present [[GridBounds]] and the given one
+    * intersect (including their boundaries), otherwise returns false.
+    *
+    * @param  other  The other GridBounds
+    */
   def intersects(other: GridBounds): Boolean =
     !(colMax < other.colMin || other.colMax < colMin) &&
     !(rowMax < other.rowMin || other.rowMax < rowMin)
 
+  /**
+    * Another name for the 'minus' method.
+    *
+    * @param  other  The other GridBounds
+    */
   def -(other: GridBounds): Seq[GridBounds] = minus(other)
+
+  /**
+    * Returns the difference of the present [[GridBounds]] and the
+    * given one.  This returns a sequence, because the difference may
+    * consist of more than one GridBounds.
+    *
+    * @param  other  The other GridBounds
+    */
   def minus(other: GridBounds): Seq[GridBounds] =
     if(!intersects(other)) {
       Seq(this)
@@ -97,6 +141,9 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       result
     }
 
+  /**
+    * Return the coordinates covered by the present [[GridBounds]].
+    */
   def coords: Array[(Int, Int)] = {
     val arr = Array.ofDim[(Int, Int)](width*height)
     cfor(0)(_ < height, _ + 1) { row =>
@@ -108,9 +155,21 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     arr
   }
 
+  /**
+    * Return the intersection of the present [[GridBounds]] and the
+    * given [[CellGrid]].
+    *
+    * @param  cellGrid  The cellGrid to intersect with
+    */
   def intersection(cellGrid: CellGrid): Option[GridBounds] =
     intersection(GridBounds(cellGrid))
 
+  /**
+    * Return the intersection of the present [[GridBounds]] and the
+    * given [[GridBounds]].
+    *
+    * @param  other  The other GridBounds
+    */
   def intersection(other: GridBounds): Option[GridBounds] =
     if(!intersects(other)) {
       None
