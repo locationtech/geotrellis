@@ -64,7 +64,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
       (rasterDefinition, logic.Collect(tiles)).map { (rd, tileSeq) =>
         if(rd.isTiled) {
           val r = f(CompositeTile(tileSeq.toSeq, rd.tileLayout))
-          CompositeTile.split(r, rd.tileLayout).map(Literal(_))
+          r.split(rd.tileLayout).map(Literal(_))
         } else {
           Seq(f(tileSeq(0)))
         }
@@ -77,7 +77,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
       (rasterDefinition, logic.Collect(tiles)).flatMap { (rd, tileSeq) =>
         if(rd.isTiled) {
           f(CompositeTile(tileSeq.toSeq, rd.tileLayout)).map { r =>
-            CompositeTile.split(r, rd.tileLayout).map(Literal(_))
+            r.split(rd.tileLayout).map(Literal(_))
           }
         } else {
           Seq(f(tileSeq(0)))

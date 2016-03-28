@@ -53,6 +53,7 @@ package object spark
     with partition.Implicits
     with resample.Implicits
     with reproject.Implicits
+    with split.Implicits
     with stitch.Implicits
     with summary.polygonal.Implicits
     with summary.Implicits
