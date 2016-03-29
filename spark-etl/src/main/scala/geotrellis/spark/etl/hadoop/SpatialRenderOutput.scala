@@ -67,7 +67,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
               rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg().mapValues(_.bytes)
           }
         case "geotiff" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff()
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff().mapValues(_.toByteArray)
       }
 
     if (useS3) {
