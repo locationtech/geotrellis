@@ -7,6 +7,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.avro.Schema

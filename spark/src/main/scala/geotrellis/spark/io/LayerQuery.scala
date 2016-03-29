@@ -1,6 +1,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.util._
 
 /**
   * Accumulation of [[LayerFilter]]s that will be asked to filter layer [[KeyBounds]]

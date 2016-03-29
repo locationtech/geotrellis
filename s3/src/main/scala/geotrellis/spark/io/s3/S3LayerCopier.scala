@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import com.amazonaws.services.s3.model.ObjectListing
 import org.apache.avro.Schema

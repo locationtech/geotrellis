@@ -5,6 +5,7 @@ import geotrellis.spark.{LayerId, Boundable}
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._
+import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

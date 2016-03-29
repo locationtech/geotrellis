@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.partition._
 import org.apache.spark.rdd._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import scala.reflect._
 

@@ -1,10 +1,11 @@
 package geotrellis.spark.io.file
 
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.raster.{MultibandTile, Tile}
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext

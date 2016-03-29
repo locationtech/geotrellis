@@ -5,7 +5,7 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

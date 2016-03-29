@@ -6,6 +6,7 @@ import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

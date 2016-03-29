@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration

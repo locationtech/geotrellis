@@ -3,6 +3,8 @@ package geotrellis.spark.partition
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
+import geotrellis.util._
+
 import org.apache.spark._
 import org.apache.spark.rdd.{ShuffledRDD, RDD}
 

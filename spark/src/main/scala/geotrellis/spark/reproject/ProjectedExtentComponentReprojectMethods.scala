@@ -6,10 +6,9 @@ import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.vector._
 import geotrellis.proj4._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd._
-
 
 class ProjectedExtentComponentReprojectMethods[K: Component[?, ProjectedExtent], V <: CellGrid: (? => TileReprojectMethods[V])](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {

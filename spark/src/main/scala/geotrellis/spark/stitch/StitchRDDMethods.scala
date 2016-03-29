@@ -5,7 +5,7 @@ import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

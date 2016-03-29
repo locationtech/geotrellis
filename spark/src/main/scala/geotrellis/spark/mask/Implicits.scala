@@ -2,8 +2,8 @@ package geotrellis.spark.mask
 
 import geotrellis.spark._
 import geotrellis.spark.TileLayerRDD
-import scala.reflect.ClassTag
 
+import scala.reflect.ClassTag
 
 object Implicits extends Implicits
 

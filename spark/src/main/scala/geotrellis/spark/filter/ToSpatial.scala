@@ -2,7 +2,7 @@ package geotrellis.spark.filter
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 
