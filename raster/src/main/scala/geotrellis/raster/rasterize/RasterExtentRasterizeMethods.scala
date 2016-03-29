@@ -37,24 +37,9 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
     */
   def foreach(
     geom : Geometry,
-    options: Options = Options.DEFAULT,
-    ct : CellType = IntConstantNoDataCellType
+    options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Unit) : Unit =
     geom.foreach(self, options)(fn)
-
-  /**
-    * Call the function 'fn' on each cell of present [[RasterExtent]].
-    */
-  def foreach(fn: (Int, Int) => Unit): Unit = {
-    val cols = self.cols
-    val rows = self.rows
-
-    cfor(0)(_ < cols, _ + 1) { col =>
-      cfor(0)(_ < rows, _ + 1) { row =>
-        fn(col, row)
-      }
-    }
-  }
 
   /**
     * Call the function 'fn' on each cell of present [[RasterExtent]]
@@ -67,7 +52,7 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
     options: Options = Options.DEFAULT,
     ct: CellType = IntConstantNoDataCellType
   )(fn: (Int, Int) => Int): Raster[ArrayTile] =
-    geom.rasterize(self, options, ct)(fn)
+    geom.rasterize(self, ct, options)(fn)
 
   /**
     * Call the function 'fn' on each cell of present [[RasterExtent]]
@@ -80,5 +65,5 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
     options: Options = Options.DEFAULT,
     ct: CellType = DoubleConstantNoDataCellType
   )(fn: (Int, Int) => Double): Raster[ArrayTile] =
-    geom.rasterizeDouble(self, options, ct)(fn)
+    geom.rasterizeDouble(self, ct, options)(fn)
 }

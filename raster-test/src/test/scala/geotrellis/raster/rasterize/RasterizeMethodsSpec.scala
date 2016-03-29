@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.raster
+package geotrellis.raster.rasterize
 
-import geotrellis.raster.rasterize.Rasterizer
+import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.{Extent, Feature}
 
@@ -55,49 +55,31 @@ class RasterizeMethodsSpec extends FunSpec
     it("should agree with Rasterizer.rasterizeWithValue for a point") {
       val actual1 = Feature[Point, Int](point, magicNumber).rasterize(re)
         .toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Point, Int](point, magicNumber).rasterizeDouble(re)
-        .toArray.filter(_ == magicNumber).length
-      val actual3 = Feature[Point, Double](point, magicNumber).rasterize(re)
-        .toArray.filter(_ == magicNumber).length
-      val actual4 = Feature[Point, Double](point, magicNumber).rasterizeDouble(re)
+      val actual2 = Feature[Point, Double](point, magicNumber).rasterize(re)
         .toArray.filter(_ == magicNumber).length
 
       assert(actual1 == pointExpected)
       assert(actual2 == pointExpected)
-      assert(actual3 == pointExpected)
-      assert(actual4 == pointExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a line") {
       val actual1 = Feature[Line, Int](line, magicNumber).rasterize(re)
         .toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Line, Int](line, magicNumber).rasterizeDouble(re)
-        .toArray.filter(_ == magicNumber).length
-      val actual3 = Feature[Line, Double](line, magicNumber).rasterize(re)
-        .toArray.filter(_ == magicNumber).length
-      val actual4 = Feature[Line, Double](line, magicNumber).rasterizeDouble(re)
+      val actual2 = Feature[Line, Double](line, magicNumber).rasterize(re)
         .toArray.filter(_ == magicNumber).length
 
       assert(actual1 == lineExpected)
       assert(actual2 == lineExpected)
-      assert(actual3 == lineExpected)
-      assert(actual4 == lineExpected)
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a polygon") {
       val actual1 = Feature[Polygon, Int](square, magicNumber).rasterize(re)
         .toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Polygon, Int](square, magicNumber).rasterizeDouble(re)
-        .toArray.filter(_ == magicNumber).length
-      val actual3 = Feature[Polygon, Double](square, magicNumber).rasterize(re)
-        .toArray.filter(_ == magicNumber).length
-      val actual4 = Feature[Polygon, Double](square, magicNumber).rasterizeDouble(re)
+      val actual2 = Feature[Polygon, Double](square, magicNumber).rasterize(re)
         .toArray.filter(_ == magicNumber).length
 
       assert(actual1 == squareExpected)
       assert(actual2 == squareExpected)
-      assert(actual3 == squareExpected)
-      assert(actual4 == squareExpected)
     }
   }
 
@@ -172,13 +154,6 @@ class RasterizeMethodsSpec extends FunSpec
 
       assert(actual1 == triangleExpected)
       assert(actual2 == triangleExpected)
-    }
-
-    it("foreach should iterate over the extent") {
-      var sum = 0
-
-      re.foreach({ (x, y) => sum += (x + y) })
-      sum should be (900)
     }
   }
 

@@ -81,7 +81,6 @@ package object raster
       with split.MultibandTileSplitMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
-      with rasterize.SinglebandRasterRasterizeMethods[Tile]
       with reproject.SinglebandRasterReprojectMethods
       with resample.SinglebandRasterResampleMethods
       with vectorize.SinglebandRasterVectorizeMethods

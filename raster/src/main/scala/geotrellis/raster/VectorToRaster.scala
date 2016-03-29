@@ -186,32 +186,6 @@ object VectorToRaster {
   }
 
   /**
-    * Draw the given [[Geometry]] into the given [[RasterExtent]]
-    * using the function 'f'.  The function 'f' takes two parameters,
-    * the current column and row, and returns a raster value for that
-    * position.  The result is a [[Tile]].
-    *
-    * @param   feature       The geometry to draw
-    * @param   rasterExtent  The extent into-which the geometry should be drawn
-    * @param   f             A function from (Int, Int) to Int
-    * @Return                The geometry drawn into a Tile
-    */
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: (Int, Int) => Int): Tile =
-    feature.rasterize(rasterExtent)(f)
-
-  /**
-    * Draw the given [[Geometry]] into the given [[RasterExtent]] with
-    * the given value.  The result is a [[Tile]].
-    *
-    * @param   feature       The geometry to draw
-    * @param   rasterExtent  The extent into-which the geometry should be drawn
-    * @param   value         The value to be used
-    * @Return                The geometry drawn into a Tile
-    */
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent, value: Int): Tile =
-    feature.rasterize(rasterExtent, value)
-
-  /**
     * Gives a raster that represents the number of occurring points per
     * cell.
     *
