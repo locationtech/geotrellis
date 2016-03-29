@@ -230,9 +230,6 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
   }
 
   test("png encoding produces the same colors for indexed and RGBA") {
-    val pngIndexedTmpFile = File.createTempFile("png-indexed-img", ".png")
-    val pngRGBATmpFile = File.createTempFile("png-rgba-img", ".png")
-
     val tile: IntArrayTile = IntArrayTile(1 to 256*256 toArray, 256, 256)
     val ramp = ColorRamp(0xff0000ff, 0x0000ffff)  // red to blue
     val stops = Array(10000, 20000, 30000, 40000, 50000, 60000, 70000)
@@ -241,7 +238,7 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     val indexedPng = tile.renderPng(colorMap)
     val rgbaPng = colorMap.render(tile).renderPng()
 
-    val indexedImg = ImageIO.read(new ByteArrayInputStream(indexedPng.bytes))
+    val indexedImg = ImageIO.read(new ByteArrayInputStream(indexedPng))
     val rgbaImg = ImageIO.read(new ByteArrayInputStream(rgbaPng))
 
     cfor(0)(_ < tile.rows, _ + 1) { row =>
@@ -249,6 +246,52 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
         val actual = indexedImg.getRGB(col, row)
         val expected = rgbaImg.getRGB(col, row)
         withClue(f"$actual%02X does not equal $expected%02X") {
+          actual should be (expected)
+        }
+      }
+    }
+  }
+
+  test("png encoding produces the same colors for RGB and RGBA") {
+    val tile: IntArrayTile = IntArrayTile(1 to 256*256 toArray, 256, 256)
+    val ramp = ColorRamp(0xff0000ff, 0x0000ffff)  // red to blue
+    val stops = Array(10000, 20000, 30000, 40000, 50000, 60000, 70000)
+    val colorMap = ColorMap(stops, ramp)
+
+    val rgbPng = colorMap.render(tile).map(z => z >> 8).renderPng(RgbPngEncoding(0x00))
+    val rgbaPng = colorMap.render(tile).renderPng()
+
+    val rgbImg = ImageIO.read(new ByteArrayInputStream(rgbPng))
+    val rgbaImg = ImageIO.read(new ByteArrayInputStream(rgbaPng))
+
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val actual = rgbImg.getRGB(col, row)
+        val expected = rgbaImg.getRGB(col, row)
+        withClue(f"$actual%02X does not equal $expected%02X") {
+          actual should be (expected)
+        }
+      }
+    }
+  }
+
+  test("png encoding produces the same colors for Grey and Greya") {
+    val tile: IntArrayTile = IntArrayTile(1 to 256*256 toArray, 256, 256)
+    val ramp = ColorRamp(0xff0000ff, 0x0000ffff)  // red to blue
+    val stops = Array(10000, 20000, 30000, 40000, 50000, 60000, 70000)
+    val colorMap = ColorMap(stops, ramp)
+
+    val greyPng = colorMap.render(tile).map(z => z >> 8 & 0xFF).renderPng(GreyPngEncoding(0x00))
+    val greyaPng = colorMap.render(tile).map(z => (z & 0xFF00) | 0xFF).renderPng(GreyaPngEncoding)
+
+    val greyImg = ImageIO.read(new ByteArrayInputStream(greyPng))
+    val greyaImg = ImageIO.read(new ByteArrayInputStream(greyaPng))
+
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val actual = greyImg.getRGB(col, row)
+        val expected = greyaImg.getRGB(col, row)
+        withClue(f"FAIL ($col, $row): $actual%02X does not equal $expected%02X") {
           actual should be (expected)
         }
       }
