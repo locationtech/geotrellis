@@ -1,5 +1,7 @@
 package geotrellis.spark
 
+import geotrellis.util._
+
 import com.github.nscala_time.time.Imports._
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime

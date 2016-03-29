@@ -2,7 +2,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 

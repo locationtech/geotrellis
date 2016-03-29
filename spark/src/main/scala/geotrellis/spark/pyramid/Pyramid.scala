@@ -6,6 +6,7 @@ import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.resample._
 import geotrellis.raster.prototype._
+import geotrellis.util._
 import geotrellis.vector.Extent
 
 import org.apache.spark.{Partitioner, Logging}

@@ -1,7 +1,7 @@
 package geotrellis.spark
 
 import geotrellis.raster.GridBounds
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

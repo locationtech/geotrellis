@@ -3,7 +3,7 @@ package geotrellis.spark.render
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
 import geotrellis.spark._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

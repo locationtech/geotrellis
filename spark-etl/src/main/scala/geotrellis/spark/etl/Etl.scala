@@ -10,9 +10,9 @@ import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
+import geotrellis.util._
 import geotrellis.vector._
 
 import com.typesafe.scalalogging.slf4j.Logger

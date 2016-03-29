@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

@@ -6,6 +6,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 import com.typesafe.scalalogging.slf4j._

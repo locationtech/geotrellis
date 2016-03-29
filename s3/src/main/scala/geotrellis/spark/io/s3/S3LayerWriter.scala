@@ -6,6 +6,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
+import geotrellis.util._
 
 import com.amazonaws.services.s3.model.PutObjectRequest
 import com.typesafe.scalalogging.slf4j._

@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.util._
 import geotrellis.vector.Extent
 
 import org.apache.spark.rdd.RDD

@@ -7,6 +7,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD

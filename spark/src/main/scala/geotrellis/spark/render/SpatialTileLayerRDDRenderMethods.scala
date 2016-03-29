@@ -6,7 +6,7 @@ import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render._
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

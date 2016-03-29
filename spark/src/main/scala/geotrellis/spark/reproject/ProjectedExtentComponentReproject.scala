@@ -7,6 +7,8 @@ import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.vector._
+import geotrellis.util._
+
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

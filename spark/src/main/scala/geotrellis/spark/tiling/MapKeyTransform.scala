@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
+import geotrellis.util._
 
 object MapKeyTransform {
   def apply(crs: CRS, level: LayoutLevel): MapKeyTransform =

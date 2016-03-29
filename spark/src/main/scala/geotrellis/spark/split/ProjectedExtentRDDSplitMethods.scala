@@ -5,7 +5,7 @@ import geotrellis.raster.split.SplitMethods
 import geotrellis.raster.split.Split.Options
 import geotrellis.spark._
 import geotrellis.vector.ProjectedExtent
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 

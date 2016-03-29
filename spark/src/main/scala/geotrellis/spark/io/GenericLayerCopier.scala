@@ -3,6 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
+import geotrellis.util._
 
 
 import org.apache.avro.Schema
