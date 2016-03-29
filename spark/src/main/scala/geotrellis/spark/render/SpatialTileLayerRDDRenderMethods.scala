@@ -1,8 +1,8 @@
 package geotrellis.spark.render
 
 import geotrellis.proj4.CRS
-import geotrellis.raster.Tile
-import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.{Tile, MultibandTile}
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.render._
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
@@ -14,6 +14,14 @@ abstract class SpatialTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComp
   /**
     * Renders each tile as a GeoTiff, represented by the bytes of the GeoTiff file.
     */
-  def renderGeoTiff(): RDD[(SpatialKey, Array[Byte])] =
+  def renderGeoTiff(): RDD[(SpatialKey, SinglebandGeoTiff)] =
+    Render.renderGeoTiff(self)
+}
+
+abstract class SpatialMultiBandTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]] extends MethodExtensions[RDD[(SpatialKey, MultibandTile)] with Metadata[M]] {
+  /**
+    * Renders each tile as a GeoTiff, represented by the bytes of the GeoTiff file.
+    */
+  def renderGeoTiff(): RDD[(SpatialKey, MultibandGeoTiff)] =
     Render.renderGeoTiff(self)
 }
