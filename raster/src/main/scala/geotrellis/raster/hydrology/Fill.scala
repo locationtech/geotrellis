@@ -35,7 +35,7 @@ object FillOptions {
   *        the threshold appropriately.
   */
 object Fill {
-  def apply(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds], threshold: Double): Tile = {
+  def apply(tile: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds], threshold: Double): Tile = {
     if (tile.cellType.isFloatingPoint) {
       new CursorDoubleFillCalc(tile, Square(1), target, bounds, threshold)
     } else {
@@ -44,7 +44,7 @@ object Fill {
   }.execute()
 }
 
-class CursorDoubleFillCalc(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds], threshold: Double)
+class CursorDoubleFillCalc(tile: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds], threshold: Double)
   extends CursorCalculation[Tile](tile, n, target, bounds)
   with DoubleArrayTileResult
 {
@@ -74,7 +74,7 @@ class CursorDoubleFillCalc(tile: Tile, n: Neighborhood, target: TargetCell = Tar
 }
 
 
-class CursorFillCalc(r: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds], threshold: Int)
+class CursorFillCalc(r: Tile, n: Neighborhood, target: TargetCell, bounds: Option[GridBounds], threshold: Int)
   extends CursorCalculation[Tile](r, n, target, bounds)
   with IntArrayTileResult
 {
