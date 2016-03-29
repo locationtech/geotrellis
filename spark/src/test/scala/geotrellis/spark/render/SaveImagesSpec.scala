@@ -52,7 +52,7 @@ class SaveImagesSpec extends FunSpec with TestEnvironment {
       val template = s"${outputLocal}/testFiles/catalog/{name}/{z}/{x}/{y}.tiff"
       val id = LayerId("sample", 1)
       val keyToPath = SaveToHadoop.spatialKeyToPath(id, template)
-      val rdd = sample.renderGeoTiff()
+      val rdd = sample.renderGeoTiff().mapValues(_.toByteArray)
       rdd.saveToHadoop(keyToPath)
       val ol = outputLocal
       rdd.collect().foreach { case key @ (SpatialKey(col, row), bytes) =>
