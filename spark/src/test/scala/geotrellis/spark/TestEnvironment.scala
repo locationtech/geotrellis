@@ -70,6 +70,8 @@ trait TestEnvironment extends BeforeAndAfterAll
       .setMaster("local")
       .setAppName("Test Context")
 
+    // Shortcut out of using Kryo serialization if we want to test against
+    // java serialization.
     if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER") == None) {
       conf
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
