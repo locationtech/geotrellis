@@ -29,68 +29,15 @@ import geotrellis.vector.{Geometry,Feature}
 trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Int]] {
 
   /**
-    * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Feature]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.
-    */
-  def foreach(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Unit): Unit =
-    self.geom.foreach(re, options)(fn)
-
-  /**
-    * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Feature]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.  The result is a [[Raster]].
+    * Fill in this feature's data value at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Feature]].  The result is a [[Raster]].
     */
   def rasterize(
-    re : RasterExtent,
+    re: RasterExtent,
+    ct: CellType = IntConstantNoDataCellType,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, options)(fn)
-
-  /**
-    * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Feature]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.  The result is a [[Raster]].
-    */
-  def rasterizeDouble(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, options)(fn)
-
-  /**
-    * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Feature]].  The result is a [[Raster]].
-    */
-  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, value)
-
-  /**
-    * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Feature]].  The result is a [[Raster]].
-    */
-  def rasterizeDouble(re: RasterExtent, value: Double): Tile =
-    self.geom.rasterizeDouble(re, value)
-
-  /**
-    * Rasterize the present [[Feature]] into the given
-    * [[RasterExtent]].  The result is a [[Raster]].
-    */
-  def rasterize(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterize(re, self.data)
-
-  /**
-    * Rasterize the present [[Feature]] into the given
-    * [[RasterExtent]].  The result is a [[Raster]].
-    */
-  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, self.data.toDouble)
+  ): Raster[Tile] =
+    self.geom.rasterizeWithValueDouble(re, self.data, ct, options)
 }
 
 /**
@@ -100,66 +47,13 @@ trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Featur
 trait FeatureDoubleRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Double]] {
 
   /**
-    * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Feature]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.
-    */
-  def foreach(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Unit): Unit =
-    self.geom.foreach(re, options)(fn)
-
-  /**
-    * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Feature]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.  The result is a [[Raster]].
+    * Fill in this feature's data value at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Feature]].  The result is a [[Raster]].
     */
   def rasterize(
-    re : RasterExtent,
+    re: RasterExtent,
+    ct: CellType = DoubleConstantNoDataCellType,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, options)(fn)
-
-  /**
-    * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Feature]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.  The result is a [[Raster]].
-    */
-  def rasterizeDouble(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, options)(fn)
-
-  /**
-    * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Feature]].  The result is a [[Raster]].
-    */
-  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, value)
-
-  /**
-    * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Feature]].  The result is a [[Raster]].
-    */
-  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, value)
-
-  /**
-    * Rasterize the present [[Feature]] into the given
-    * [[RasterExtent]].  The result is a [[Raster]].
-    */
-  def rasterize(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterize(re, self.data.toInt)
-
-  /**
-    * Rasterize the present [[Feature]] into the given
-    * [[RasterExtent]].  The result is a [[Raster]].
-    */
-  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, self.data)
+  ): Raster[Tile] =
+    self.geom.rasterizeWithValueDouble(re, self.data, ct, options)
 }
