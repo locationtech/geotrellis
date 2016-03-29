@@ -29,7 +29,7 @@ case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
 }
 case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColors { c => c.toARGB }
+   colorMap.mapColors { c => c >> 8 }
 }
 
 // indexed color, using separate rgb and alpha channels
@@ -39,7 +39,7 @@ case class IndexedPngEncoding(rgbs: Array[Int], as: Array[Int]) extends PngColor
 }
 
 // greyscale and color rasters with an alpha byte
-case object GreyaPngEncoding extends PngColorEncoding(4, 4) {
+case object GreyaPngEncoding extends PngColorEncoding(4, 2) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
    colorMap.mapColors { c => c.int & 0xffff }
 }

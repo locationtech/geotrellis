@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -74,7 +74,7 @@ case class PngEncoder(settings: Settings) {
     settings.colorType match {
       case GreyPngEncoding(ndColor) => {
         // write a single 2-byte color value
-        // our data is presumed to be in RGBA
+        // NoData color is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
         cTRNS.writeByte(0x00)
         cTRNS.writeByte(shift(ndColor, 8))
@@ -83,7 +83,7 @@ case class PngEncoder(settings: Settings) {
 
       case RgbPngEncoding(ndColor) => {
         // write three 2-byte color values
-        // our data is presumed to be in RGBA
+        // NoData color is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
         cTRNS.writeByte(0x00)
         cTRNS.writeByte(shift(ndColor, 24))
@@ -115,9 +115,6 @@ case class PngEncoder(settings: Settings) {
       case RgbaPngEncoding => {}
     }
   }
-
-  // def createByteBuffer(raster: Tile) =
-  //   ByteBuffer.wrap(raster.toArrayByte)
 
   def createByteBuffer(raster: Tile) = {
     val size = raster.size
@@ -236,7 +233,7 @@ case class PngEncoder(settings: Settings) {
         if (pa < 0) pa = -pa
         if (pb < 0) pb = -pb
         if (pc < 0) pc = -pc
-          
+
         // find closest neighbor; assign that neighbor's value to 'c'
         if (pa <= pb && pa <= pc) c = a else if(pb <= pc) c = b
 
