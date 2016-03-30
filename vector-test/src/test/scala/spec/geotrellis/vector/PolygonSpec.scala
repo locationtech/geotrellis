@@ -213,9 +213,21 @@ class PolygonSpec extends FunSpec with Matchers {
     it ("should union with a MultiPolygon and return a PolygonResult") {
       val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p1 = Polygon(l1)
-      val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
-      val l3 = Line(Point(0,3), Point(3,3), Point(2,3), Point(2,0), Point(0,3))
-      val mp = MultiPolygon(Polygon(l2), Polygon(l3))
+      val mp = {
+        val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
+        require(l2.isValid)
+        val l3 = Line(Point(0,3), Point(2,3), Point(2,0), Point(0,3))
+        require(l3.isValid)
+        val p2 = Polygon(l2)
+        require(p2.isValid)
+        val p3 = Polygon(l3)
+        require(p3.isValid)
+
+        MultiPolygon(p2, p3)
+      }
+
+      require(p1.isValid)
+      require(mp.isValid)
       p1 | mp should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4), Point(0,5), Point(0,7),
         Point(5,7), Point(5,5), Point(5,4), Point(5,0),
         Point(0,0)))))
@@ -227,12 +239,12 @@ class PolygonSpec extends FunSpec with Matchers {
       val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
       val p2 = Polygon(l2)
       val mp = MultiPolygon(Polygon(l1), Polygon(l2))
-      (mp.jtsGeom.isValid) should be (false)
+      (mp.isValid) should be (false)
       val mpUnion = mp.union match {
         case PolygonResult(p) => p
         case MultiPolygonResult(mp) => mp
       }
-      (mpUnion.jtsGeom.isValid) should be (true)
+      (mpUnion.isValid) should be (true)
       mpUnion should be (Polygon(Line(Point(0, 0), Point(0, 4), Point(0, 5), Point(0, 7),
         Point(5, 7), Point(5, 5), Point(5, 4), Point(5, 0), Point(0, 0))))
     }
@@ -241,8 +253,10 @@ class PolygonSpec extends FunSpec with Matchers {
     it ("should cascade union with a Polygon and return a PolygonResult") {
       val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p1 = Polygon(l1)
+      require(p1.isValid)
       val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
       val p2 = Polygon(l2)
+      require(p2.isValid)
       val geomList = List(p1, p2)
       geomList.unionGeometries should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4),
         Point(0,5), Point(0,7), Point(5,7), Point(5,5), Point(5,4), Point(5,0),
@@ -261,9 +275,11 @@ class PolygonSpec extends FunSpec with Matchers {
     it ("should cascade union with a MultiPolygon and return a PolygonResult") {
       val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p1 = Polygon(l1)
+      require(p1.isValid)
       val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
-      val l3 = Line(Point(0,3), Point(3,3), Point(2,3), Point(2,0), Point(0,3))
+      val l3 = Line(Point(0,3), Point(2,3), Point(2,0), Point(0,3))
       val mp = MultiPolygon(Polygon(l2), Polygon(l3))
+      require(mp.isValid)
       val geomList = List(MultiPolygon(p1), mp)
       geomList.unionGeometries should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4),
         Point(0,5), Point(0,7), Point(5,7), Point(5,5), Point(5,4), Point(5,0),
@@ -597,6 +613,12 @@ class PolygonSpec extends FunSpec with Matchers {
       coord.setCoordinate(newCoord)
 
       p.jtsGeom.equals(expected) should be (true)
+    }
+
+    it("should let an invalid polygon remain invalid") {
+      val l = Line( (0.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1.0, 0.0), (0.0, 0.0))
+      val p = Polygon(l)
+      p.exterior should matchGeom(l)
     }
   }
 }
