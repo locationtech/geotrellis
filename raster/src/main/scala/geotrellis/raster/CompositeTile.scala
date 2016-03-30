@@ -16,12 +16,27 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.split.Split
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
+
 import scala.collection.mutable
 
+/**
+  * The companion object for the [[CompositeTile]] type.
+  */
 object CompositeTile {
+
+  /**
+    * Given a [[Tile]] and a [[TileLayout]], produce a
+    * [[CompositeTile]].
+    *
+    * @param   tile        The tile
+    * @param   tileLayout  The layout
+    *
+    * @return              The CompositeTile
+    */
   def apply(tile: Tile, tileLayout: TileLayout): CompositeTile =
     tile match {
       case ct: CompositeTile =>
@@ -35,106 +50,71 @@ object CompositeTile {
         wrap(tile, tileLayout)
     }
 
-  /** Converts a raster into a CompositeTile with the given tileLayout.
+  /**
+    * Converts a [[Tile]] into a [[CompositeTile]] with the given tile
+    * layout.
     *
-    * @param        tile              Tile to wrap.
-    * @param        tileCols       Number of tile columns of the resulting
-    *                              CompositeTile.
-    * @param        tileRows       Number of tile columns of the resulting
-    *                              CompositeTile.
+    * @param        tile           Tile to wrap.
+    * @param        tileCols       Number of tile columns of the resulting CompositeTile.
+    * @param        tileRows       Number of tile columns of the resulting CompositeTile.
+    *
+    * @return                      The CompositeTile
     */
   def wrap(tile: Tile, tileCols: Int, tileRows: Int): CompositeTile = {
     val tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)
     wrap(tile, tileLayout, true)
   }
 
-  /** Converts a raster into a CompositeTile with the given tileLayout.
+  /**
+    * Converts a [[Tile]] into a [[CompositeTile]] with the given tile
+    * layout.  Set the 'cropped' flag to false if you want the tiles
+    * to be [[ArrayTile]]s, otherwise they will be [[CroppedTile]]s
+    * with the Tile 'tile' as the backing.
     *
     * @param        tile           Tile to wrap.
-    * @param        tileCols       Number of tile columns of the resulting
-    *                              CompositeTile.
-    * @param        tileRows       Number of tile columns of the resulting
-    *                              CompositeTile.
-    * @param        cropped        Set this flag to false if you
-    *                              want the tiles to be ArrayTiles,
-    *                              otherwise they will be CroppedTiles
-    *                              with the raster 'r' as the backing raster.
+    * @param        tileCols       Number of tile columns of the resulting CompositeTile.
+    * @param        tileRows       Number of tile columns of the resulting CompositeTile.
+    * @param        cropped        Boolean to control cropping
+    *
+    * @return                      The CompositeTile
     */
   def wrap(tile: Tile, tileCols: Int, tileRows: Int, cropped: Boolean): CompositeTile = {
     val tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)
     wrap(tile, tileLayout, cropped)
   }
 
-  /** Converts a raster into a CompositeTile with the given tileLayout.
+  /**
+    * Converts a [[Tile] into a [[CompositeTile]] with the given
+    * [[TileLayout]].
     *
     * @param        tile           Tile to wrap.
-    * @param        tileLayout     TileLayout of the resulting
-    *                              CompositeTile.
+    * @param        tileLayout     TileLayout of the resulting CompositeTile.
+    *
+    * @return                      The CompositeTile
     */
   def wrap(tile: Tile, tileLayout: TileLayout): CompositeTile =
-    CompositeTile(split(tile, tileLayout, true), tileLayout)
+    CompositeTile(tile.split(tileLayout, Split.Options(cropped = true)), tileLayout)
 
-  /** Converts a raster into a CompositeTile with the given tileLayout.
+  /**
+    * Converts a [[Tile]] into a [[CompositeTile]] with the given
+    * [[TileLayout]].  Set the 'cropped' flag to false if you want the
+    * tiles to be [[ArrayTile]]s, otherwise they will be
+    * [[CroppedTile]]s with the Tile 'tile' as the backing.
     *
     * @param        tile           Tile to wrap.
-    * @param        tileLayout     TileLayout of the resulting
-    *                              CompositeTile.
-    * @param        cropped        Set this flag to false if you
-    *                              want the tiles to be ArrayTiles,
-    *                              otherwise they will be CroppedTiles
-    *                              with the raster 'r' as the backing raster.
+    * @param        tileLayout     TileLayout of the resulting CompositeTile.
+    * @param        cropped        Boolean to control cropping
+    *
+    * @return                      The CompositeTile
     */
   def wrap(tile: Tile, tileLayout: TileLayout, cropped: Boolean): CompositeTile =
-    CompositeTile(split(tile, tileLayout, cropped), tileLayout)
+    CompositeTile(tile.split(tileLayout, Split.Options(cropped = cropped)), tileLayout)
 
-  /** Splits a raster into a CompositeTile into tiles.
-    *
-    * @param        tile           Tile to split.
-    *
-    * @param        tileLayout     TileLayout defining the tiles to be
-    *                              generated.
-    *
-    * @param        cropped        Set this flag to false if you
-    *                              want the tiles to be ArrayTiles,
-    *                              otherwise they will be CroppedTiles
-    *                              with the raster 'r' as the backing raster.
-    *
-    * @param        extend         Set this flag to false if you do not want the
-    *                              resulting tiles to extend past the input Tile's
-    *                              cols and rows based on the input tileLayout. For
-    *                              instance, if the tile layout has tileRows = 50,
-    *                              the input raster has rows = 90, and extend is false,
-    *                              the tiles of the last row will have rows = 40 instead of rows = 50.
-    */
-  def split(tile: Tile, tileLayout: TileLayout, cropped: Boolean = true, extend: Boolean = true): Array[Tile] = {
-    val tileCols = tileLayout.tileCols
-    val tileRows = tileLayout.tileRows
-
-    val tiles = Array.ofDim[Tile](tileLayout.layoutCols * tileLayout.layoutRows)
-    cfor(0)(_ < tileLayout.layoutRows, _ + 1) { layoutRow =>
-      cfor(0)(_ < tileLayout.layoutCols, _ + 1) { layoutCol =>
-        val firstCol = layoutCol * tileCols
-        val lastCol = {
-          val x = firstCol + tileCols - 1
-          if(!extend && x > tile.cols - 1) tile.cols - 1
-          else x
-        }
-        val firstRow = layoutRow * tileRows
-        val lastRow = {
-          val x = firstRow + tileRows - 1
-          if(!extend && x > tile.rows - 1) tile.rows - 1
-          else x
-        }
-        val gb = GridBounds(firstCol, firstRow, lastCol, lastRow)
-        tiles(layoutRow * tileLayout.layoutCols + layoutCol) =
-          if(cropped) CroppedTile(tile, gb)
-          else CroppedTile(tile, gb).toArrayTile
-      }
-    }
-    return tiles
-  }
 }
 
+/**
+  * The [[CompositeTile]] type.
+  */
 case class CompositeTile(tiles: Seq[Tile],
                          tileLayout: TileLayout) extends Tile {
   assert(tileLayout.totalCols.isValidInt, "Total cols is not integer, cannot create such a large composite tile.")
@@ -148,14 +128,34 @@ case class CompositeTile(tiles: Seq[Tile],
 
   val cellType: CellType = tiles(0).cellType
 
+  /**
+    * Returns a [[Tile]] equivalent to this [[CompositeTile]], except
+    * with cells of the given type.
+    *
+    * @param   cellType  The type of cells that the result should have
+    * @return            The new Tile
+    */
   def convert(targetCellType: CellType): Tile =
     mutable(targetCellType)
 
+  /**
+    * Another name for the 'mutable' method on this class.
+    */
   def toArrayTile(): ArrayTile = mutable
 
+  /**
+    * Return the [[MutableArrayTile]] equivalent of this [[CompositeTile]].
+    *
+    * @return  The MutableArrayTile
+    */
   def mutable(): MutableArrayTile =
     mutable(cellType)
 
+  /**
+    * Return the [[MutableArrayTile]] equivalent of this [[CompositeTile]].
+    *
+    * @return  The MutableArrayTile
+    */
   def mutable(targetCellType: CellType): MutableArrayTile = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.")
@@ -197,6 +197,11 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Return a copy of the data contained in this tile as an array.
+    *
+    * @return  The array of integers
+    */
   def toArray(): Array[Int] = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.")
@@ -225,6 +230,12 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Return a copy of the data contained in this tile as an array of
+    * doubles.
+    *
+    * @return  The array of doubles
+    */
   def toArrayDouble(): Array[Double] = {
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.")
@@ -253,8 +264,22 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Return the underlying data behind this [[CompositeTile]] as an
+    * array.
+    *
+    * @return  An array of bytes
+    */
   def toBytes(): Array[Byte] = toArrayTile.toBytes
 
+  /**
+    * Fetch the datum at the given column and row of the
+    * [[CompositeTile]].
+    *
+    * @param   col  The column
+    * @param   row  The row
+    * @return       The Int datum found at the given location
+    */
   def get(col: Int, row: Int): Int = {
     val tcol = col / tileLayout.tileCols
     val trow = row / tileLayout.tileRows
@@ -264,6 +289,14 @@ case class CompositeTile(tiles: Seq[Tile],
     getTile(tcol, trow).get(pcol, prow)
   }
 
+  /**
+    * Fetch the datum at the given column and row of the
+    * [[CompositeTile]].
+    *
+    * @param   col  The column
+    * @param   row  The row
+    * @return       The Double datum found at the given location
+    */
   def getDouble(col: Int, row: Int): Double = {
     val tcol = col / tileLayout.tileCols
     val trow = row / tileLayout.tileRows
@@ -272,6 +305,11 @@ case class CompositeTile(tiles: Seq[Tile],
     getTile(tcol, trow).getDouble(pcol, prow)
   }
 
+  /**
+    * Execute a function on each cell of the [[CompositeTile]].
+    *
+    * @param  f  A function from Int to Unit.  Presumably, the function is executed for side-effects.
+    */
   def foreach(f: Int => Unit): Unit = {
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
@@ -290,6 +328,11 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Execute a function on each cell of the [[CompositeTile]].
+    *
+    * @param  f  A function from Double to Unit.  Presumably, the function is executed for side-effects.
+    */
   def foreachDouble(f: Double => Unit): Unit = {
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
@@ -308,6 +351,12 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Execute an [[IntTileVisitor]] at each cell of the
+    * [[CompositeTile]].
+    *
+    * @param  visitor  An IntTileVisitor
+    */
   def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
@@ -328,6 +377,12 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Execute an [[DoubleTileVisitor]] at each cell of the
+    * [[CompositeTile]].
+    *
+    * @param  visitor  A DoubleTileVisitor
+    */
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
@@ -348,6 +403,13 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
+  /**
+    * Map each cell in the given raster to a new one, using the given
+    * function.
+    *
+    * @param   f  A function from Int to Int, executed at each point of the tile
+    * @return     The result, a [[Tile]]
+    */
   def map(f: Int => Int): Tile = {
     val result = ArrayTile.alloc(cellType, cols, rows)
     val layoutCols = tileLayout.layoutCols
@@ -371,6 +433,13 @@ case class CompositeTile(tiles: Seq[Tile],
     result
   }
 
+  /**
+    * Map each cell in the given raster to a new one, using the given
+    * function.
+    *
+    * @param   f  A function from Double to Double, executed at each point of the tile
+    * @return     The result, a [[Tile]]
+    */
   def mapDouble(f: Double =>Double): Tile = {
     val result = ArrayTile.alloc(cellType, cols, rows)
     val layoutCols = tileLayout.layoutCols
@@ -394,6 +463,12 @@ case class CompositeTile(tiles: Seq[Tile],
     result
   }
 
+  /**
+    * Map an [[IntTileMapper]] over the present tile.
+    *
+    * @param   mapper  The mapper
+    * @return          The result, a [[Tile]]
+    */
   def mapIntMapper(mapper: IntTileMapper): Tile = {
     val result = ArrayTile.alloc(cellType, cols, rows)
     val layoutCols = tileLayout.layoutCols
@@ -417,6 +492,12 @@ case class CompositeTile(tiles: Seq[Tile],
     result
   }
 
+  /**
+    * Map an [[DoubleTileMapper]] over the present tile.
+    *
+    * @param   mapper  The mapper
+    * @return          The result, a [[Tile]]
+    */
   def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
     val result = ArrayTile.alloc(cellType, cols, rows)
     val layoutCols = tileLayout.layoutCols
@@ -440,6 +521,16 @@ case class CompositeTile(tiles: Seq[Tile],
     result
   }
 
+  /**
+    * Combine two [[CompositeTile]]s' cells into new cells using the
+    * given integer function. For every (x, y) cell coordinate, get
+    * each of the Tiles' integer value, map them to a new value, and
+    * assign it to the output's (x, y) cell.
+    *
+    * @param   other  The other [[Tile]]
+    * @param   f      A function from (Int, Int) to Int, the respective arguments are from the respective Tiles
+    * @return         The result, an Tile
+    */
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
@@ -465,6 +556,16 @@ case class CompositeTile(tiles: Seq[Tile],
     result
   }
 
+  /**
+    * Combine two [[CompositeTile]]s' cells into new cells using the
+    * given double function. For every (x, y) cell coordinate, get
+    * each of the Tiles' integer value, map them to a new value, and
+    * assign it to the output's (x, y) cell.
+    *
+    * @param   other  The other [[Tile]]
+    * @param   f      A function from (Int, Int) to Int, the respective arguments are from the respective Tiles
+    * @return         The result, an Tile
+    */
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
     (this, other).assertEqualDimensions
 
@@ -490,8 +591,12 @@ case class CompositeTile(tiles: Seq[Tile],
     result
   }
 
-  override
-  def asciiDraw(): String = {
+  /**
+    * Return an ascii-art representation of this Tile.
+    *
+    * @return  A string containing the ascii art
+    */
+  override def asciiDraw(): String = {
     val sb = new StringBuilder
     for(layoutRow <- 0 until tileLayout.layoutRows) {
       for(row <- 0 until tileLayout.tileRows) {

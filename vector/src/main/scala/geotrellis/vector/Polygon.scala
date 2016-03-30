@@ -62,20 +62,11 @@ object Polygon {
         }
       }).toArray
 
-    val p = factory.createPolygon(extGeom, holeGeoms)
-    // Sometimes polygons are invalid even if they aren't.
-    // Try buffer(0) per http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#G
-    if(!p.isValid) {
-      val buffered = p.buffer(0)
-      buffered match {
-        case p: jts.Polygon if p.isValid => p
-        case _ => sys.error(s"Invalid polygon: $p")
-      }
-    }
-    else { p }
+    Polygon(factory.createPolygon(extGeom, holeGeoms))
   }
 }
 
+/** Class representing a polygon */
 case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                             with Relatable
                                             with TwoDimensions {

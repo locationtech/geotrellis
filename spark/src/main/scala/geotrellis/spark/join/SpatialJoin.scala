@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.partition._
 import org.apache.spark.rdd._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import scala.reflect._
 
@@ -13,8 +13,9 @@ object SpatialJoin {
   def leftOuterJoin[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: Component[?, Bounds[K]],
-    W, M1: Component[?, Bounds[K]]
+    M: GetComponent[?, Bounds[K]],
+    W,
+    M1: GetComponent[?, Bounds[K]]
   ](
     left: RDD[(K, V)] with Metadata[M],
     right: RDD[(K, W)] with Metadata[M1]
@@ -38,8 +39,9 @@ object SpatialJoin {
   def join[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: Component[?, Bounds[K]],
-    W, M1: Component[?, Bounds[K]]
+    M: GetComponent[?, Bounds[K]],
+    W,
+    M1: GetComponent[?, Bounds[K]]
   ](
     left: RDD[(K, V)] with Metadata[M],
     right: RDD[(K, W)] with Metadata[M1]

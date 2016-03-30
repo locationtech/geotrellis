@@ -216,27 +216,47 @@ class StreamingHistogram(
   }
 
   /**
-    * Additional countItem(|s)(|Int) methods.
+    * Note the occurance of 'item'.
+    *
+    * The optional parameter 'count' allows histograms to be built
+    * more efficiently. Negative counts can be used to remove a
+    * particular number of occurances of 'item'.
     */
   def countItem(item: Double, count: Int = 1): Unit =
     countItem((item, count))
+
+  /**
+    * Note the occurance of 'item'.
+    *
+    * The optional parameter 'count' allows histograms to be built
+    * more efficiently. Negative counts can be used to remove a
+    * particular number of occurances of 'item'.
+    */
   def countItemInt(item: Int, count: Int = 1): Unit =
     countItem((item.toDouble, count))
+
+  /**
+    * Note the occurances of 'items'.
+    */
   def countItems(items: Seq[BucketType]): Unit =
     items.foreach({ item => countItem(item) })
+
+  /**
+    * Note the occurances of 'items'.
+    */
   def countItems(items: Seq[Double])(implicit dummy: DummyImplicit): Unit =
     items.foreach({ item => countItem((item, 1)) })
 
   /**
     * Uncount item.
     *
-    * Note: _min and _max are not changed by this.
+    * @note _min and _max, the minimum and maximum values seen by the histogram,  are not changed by this.
     */
   def uncountItem(item: Double): Unit =
     countItem((item, -1))
 
   /**
-    * Get the (approximate) number of occurances of an item.
+    * Get the (approximate) number of occurrences of an item.
     */
   def itemCount(item: Double): Int = {
     if (bucketCount() == 0) 0
@@ -271,7 +291,7 @@ class StreamingHistogram(
     * Make a change to the distribution to approximate changing the
     * value of a particular item.
     *
-    * Note: _min and _max are not changed by this.
+    * @note _min and _max, the minimum and maximum values seen by the histogram,  are not changed by this.
     */
   def setItem(item: Double, count: Int): Unit = {
     val oldCount = itemCount(item)
@@ -286,13 +306,15 @@ class StreamingHistogram(
   def rawValues(): Array[Double] = values()
 
   /**
-    * For each bucket ...
+    * Execute the given function on each bucket.  The value contained
+    * by the bucket is a Double, and the count is an integer (ergo the
+    * signature of the function 'f').
     */
   def foreach(f: (Double, Int) => Unit): Unit =
     buckets.map({ case(item, count) => f(item, count) })
 
   /**
-    * For each bucket label ...
+    * Execute the given function on each bucket label.
     */
   def foreachValue(f: Double => Unit): Unit =
     buckets.map({ case (item, _) => f(item) })
@@ -324,6 +346,9 @@ class StreamingHistogram(
   def update(other: Histogram[Double]): Unit =
     other.foreach({ case (item, count) => this.countItem((item, count)) })
 
+  /**
+   * Return a mutable copy of this histogram.
+   */
   def mutable(): StreamingHistogram = {
     val sh = StreamingHistogram(this.m, this._min, this._max)
     sh.countItems(this.buckets)
@@ -341,8 +366,16 @@ class StreamingHistogram(
     sh
   }
 
+  /**
+    * The number of buckets utilized by this [[Histogram]].
+    */
   def bucketCount():Int = _buckets.size
 
+  /**
+    * Return the sum of this histogram and the given one (the sum is
+    * the histogram that would result from seeing all of the values
+    * seen by the two antecedent histograms).
+    */
   def merge(histogram: Histogram[Double]): Histogram[Double] = {
     val sh = StreamingHistogram(this.m, this._min, this._max)
     sh.countItems(this.buckets)
@@ -363,7 +396,7 @@ class StreamingHistogram(
   }
 
   /**
-    * Median.
+    * Return the approximate median of the histogram.
     */
   def median(): Option[Double] = {
     if (totalCount <= 0)
@@ -373,7 +406,7 @@ class StreamingHistogram(
   }
 
   /**
-    *  Mean.
+    *  Return the approximate mean of the histogram.
     */
   def mean(): Option[Double] = {
     if (totalCount <= 0)
@@ -474,7 +507,7 @@ class StreamingHistogram(
   /**
     * This method return the (approximate) quantile breaks of the
     * distribution of points that the histogram has seen so far.  It
-    * is guranteed that no value in the returned array will be outside
+    * is guaranteed that no value in the returned array will be outside
     * the range minimum-maximum range of values seen.
     *
     * @param num The number of breaks desired
@@ -482,7 +515,15 @@ class StreamingHistogram(
   def quantileBreaks(num: Int): Array[Double] =
     percentileBreaks(List.range(0,num).map(_ / num.toDouble)).toArray
 
+  /**
+    * Return the list of buckets of this histogram.  Primarily useful
+    * for debugging.
+    */
   def buckets(): List[BucketType] = _buckets.asScala.toList
 
+  /**
+    * Return the list of deltas of this histogram.  Primarily useful
+    * for debugging.
+    */
   def deltas(): List[DeltaType] = _deltas.keySet.asScala.toList
 }

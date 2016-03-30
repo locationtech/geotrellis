@@ -1,12 +1,9 @@
 package geotrellis.spark.mask
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
 import geotrellis.spark._
 import geotrellis.spark.TileLayerRDD
-import geotrellis.vector._
-import scala.reflect.ClassTag
 
+import scala.reflect.ClassTag
 
 object Implicits extends Implicits
 

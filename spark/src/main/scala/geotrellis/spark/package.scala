@@ -31,7 +31,7 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
-import monocle.Lens
+import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
@@ -53,6 +53,7 @@ package object spark
     with partition.Implicits
     with resample.Implicits
     with reproject.Implicits
+    with split.Implicits
     with stitch.Implicits
     with summary.polygonal.Implicits
     with summary.Implicits
@@ -70,32 +71,10 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  type Component[T, C] = Lens[T, C]
-
-  object Component {
-    def apply[T, C](get: T => C, set: (T, C) => T): Component[T, C] =
-      Lens[T, C](get)(c => t => set(t, c))
-  }
-
-  implicit def identityComponent[T]: Component[T, T] =
-    Component(v => v, (_, v) => v)
-
-  /** Describes a getter and setter for an object that has
-    * an implicitly defined lens into a component of that object
-    * with a specific type.
-    */
-  implicit class ComponentMethods[T](val self: T) extends MethodExtensions[T] {
-    def getComponent[C]()(implicit component: Component[T, C]): C =
-      component.get(self)
-
-    def setComponent[C](value: C)(implicit component: Component[T, C]): T =
-      component.set(value)(self)
-  }
+  type TileBounds = GridBounds
 
   type SpatialComponent[K] = Component[K, SpatialKey]
   type TemporalComponent[K] = Component[K, TemporalKey]
-
-  type TileBounds = GridBounds
 
   /** Auto wrap a partitioner when something is requestion an Option[Partitioner];
     * useful for Options that take an Option[Partitioner]
@@ -117,14 +96,17 @@ package object spark
   implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
       extends ContextRDDMethods[K, V, M](rdd)
 
-  implicit class withTileLayerRDDMethods[K: ClassTag: SpatialComponent](val self: TileLayerRDD[K])
+  implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends TileLayerRDDMethods[K]
 
   implicit class withTileLayerRDDMaskMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends mask.TileLayerRDDMaskMethods[K]
 
-  implicit class withMultibandTileLayerRDDMethods[K: ClassTag: SpatialComponent](val self: MultibandTileLayerRDD[K])
+  implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
       extends MultibandTileLayerRDDMethods[K]
+
+  implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
+      extends CellGridLayoutRDDMethods[K, V, M]
 
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =

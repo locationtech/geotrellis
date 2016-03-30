@@ -45,6 +45,7 @@ object MultiPolygon {
   implicit def jts2MultiPolygon(jtsGeom: jts.MultiPolygon): MultiPolygon = apply(jtsGeom)
 }
 
+/** Class representing a geometry of multiple polygons */
 case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
                                                    with Relatable
                                                    with TwoDimensions {

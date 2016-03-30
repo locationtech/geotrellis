@@ -6,6 +6,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
+import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -23,7 +24,7 @@ class AccumuloLayerWriter(
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
@@ -36,6 +37,17 @@ class AccumuloLayerWriter(
       )
     val metadata = rdd.metadata
     val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
+
+    // If no table exists, add the table and set the splits according to the
+    // key index's keybounds and the number of partitions in the RDD.
+    // This is a "best guess" scenario; users should use AccumuloUtils to
+    // manually create splits based on their cluster configuration for best
+    // performance.
+    val ops = instance.connector.tableOperations()
+    if (!ops.exists(table)) {
+      ops.create(table)
+      AccumuloUtils.addSplits(table, instance, keyIndex.keyBounds, keyIndex, rdd.partitions.length)
+    }
 
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)

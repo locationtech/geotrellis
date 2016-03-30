@@ -6,6 +6,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
@@ -24,9 +25,15 @@ class HadoopLayerWriter(
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
-    val layerPath = new Path(rootPath,  s"${id.name}/${id.zoom}")
+    val layerPath =
+      try {
+        new Path(rootPath,  s"${id.name}/${id.zoom}")
+      } catch {
+        case e: Exception =>
+          throw new InvalidLayerIdError(id).initCause(e)
+      }
 
     val header =
       HadoopLayerHeader(

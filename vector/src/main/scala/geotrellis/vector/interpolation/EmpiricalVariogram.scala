@@ -40,19 +40,20 @@ object EmpiricalVariogram {
     NonLinearEmpiricalVariogram(pts, maxdist, binmax)
 
   /**
-   * Computes empirical semivariogram  for [[Linear]] model
-   */
+    * Computes empirical semivariogram  for [[Linear]] model
+    */
   def linear(pts: Array[PointFeature[Double]], radius: Option[Double] = None, lag: Double = 0.0): Array[(Double, Double)] =
     LinearEmpiricalVariogram(pts, radius, lag)
 }
 
 object NonLinearEmpiricalVariogram {
-  /**
-   * @param pts                   Points to be modelled into variogram
-   * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram
-   * @param binMaxCount           the maximum number of bins in the empirical variogram
-   * @return                      [[EmpiricalVariogram]]
-   */
+  /** Computes a non-linear empirical variogram
+    *
+    * @param pts                   Points to be modelled into variogram
+    * @param maxDistanceBandwidth  the maximum inter-point distance to be captured into the empirical semivariogram
+    * @param binMaxCount           the maximum number of bins in the empirical variogram
+    * @return                      [[EmpiricalVariogram]]
+    */
   def apply(pts: Array[PointFeature[Double]], maxDistanceBandwidth: Double, binMaxCount: Int): EmpiricalVariogram = {
     val points = pts.toArray
     val n: Int = points.length

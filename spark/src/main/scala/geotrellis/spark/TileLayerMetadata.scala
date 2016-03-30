@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.vector.{ProjectedExtent, Extent}
+import geotrellis.util._
 
 import geotrellis.proj4.CRS
 
@@ -30,9 +31,6 @@ case class TileLayerMetadata[K: SpatialComponent](
   def layoutExtent = layout.extent
   /** GridBounds of data tiles in the layout */
   def gridBounds = mapTransform(extent)
-
-  def tileTransform(tileScheme: TileScheme): TileKeyTransform =
-    tileScheme(layout.tileLayout.layoutCols, layout.tileLayout.layoutRows)
 
   def combine(other: TileLayerMetadata[K]): TileLayerMetadata[K] = {
     val combinedExtent       = extent combine other.extent
@@ -69,8 +67,11 @@ object TileLayerMetadata {
   implicit def toLayoutDefinition(md: TileLayerMetadata[_]): LayoutDefinition =
     md.layout
 
-  implicit def toMapKeyTransform(md: TileLayerMetadata[_]): MapKeyTransform =
-    md.layout.mapTransform
+  implicit def extentComponent[K]: GetComponent[TileLayerMetadata[K], Extent] =
+    GetComponent(_.extent)
+
+  implicit def crsComponent[K]: GetComponent[TileLayerMetadata[K], CRS] =
+    GetComponent(_.crs)
 
   implicit def layoutComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], LayoutDefinition] =
     Component(_.layout, (md, l) => md.copy(layout = l))
@@ -109,7 +110,7 @@ object TileLayerMetadata {
   }
 
   private def collectMetadataWithCRS[
-    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
@@ -164,12 +165,11 @@ object TileLayerMetadata {
   }
 
   def fromRdd[
-    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
-
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
@@ -177,7 +177,7 @@ object TileLayerMetadata {
   }
 
   def fromRdd[
-    K: Component[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): (Int, TileLayerMetadata[K2]) = {

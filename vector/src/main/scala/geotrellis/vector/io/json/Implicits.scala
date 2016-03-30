@@ -43,19 +43,16 @@ trait Implicits extends GeoJsonSupport {
 
   implicit class RichString(val s: String) {
 
-    /**
-     * parseGeoJson, expects all the types in the json string to line up, throws if not
-     * @tparam T type of geometry or feature expected in the json string to be parsed
-     * @return The geometry or feature of type T
-     */
+    /** Parses geojson if type matches type T, throws if not
+      * @tparam T type of geometry or feature expected in the json string to be parsed
+      * @return The geometry or feature of type T
+      */
     def parseGeoJson[T: JsonReader]() = s.parseJson.convertTo[T]
 
-    /**
-     * extractGeometries, extracts geometries from json string,
-     * if type matches requested type G, if not it'll be empty
-     * @tparam G type of geometry desired to extract
-     * @return Seq[G] containing geometries
-     */
+    /** Extracts geometries from json string if type matches type G
+      * @tparam G type of geometry desired to extract
+      * @return Seq[G] containing geometries
+      */
     def extractGeometries[G <: Geometry : JsonReader: TypeTag](): Seq[G] =
       Try(s.parseJson.convertTo[G]) match {
         case Success(g) => Seq(g)
@@ -76,12 +73,10 @@ trait Implicits extends GeoJsonSupport {
           throw e
       }
 
-    /**
-     * extractFeatures, extracts features from json string,
-     * if type matches requested type F, if not it'll be empty
-     * @tparam F type of feature desired to extract
-     * @return Seq[F] containing features
-     */
+    /** Extracts features from json string if type matches type F
+      * @tparam F type of feature desired to extract
+      * @return Seq[F] containing features
+      */
     def extractFeatures[F <: Feature[_, _]: JsonReader](): Seq[F] =
       Try(s.parseJson.convertTo[F]) match {
         case Success(g) => Seq(g)

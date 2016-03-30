@@ -22,14 +22,21 @@ import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
- * ArrayTile based on Array[Int] (each cell as an Int).
- */
+  * [[ArrayTile]] based on Array[Int] (each cell as an Int).
+  */
 abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     extends MutableArrayTile {
   val cellType: IntCells with NoDataHandling
 
+  /**
+    * Return the array associated with the present [[IntArrayTile]].
+    */
   override def toArray = array.clone
 
+  /**
+    * Return an array of bytes representing the data behind this
+    * [[IntArrayTile]].
+    */
   def toBytes: Array[Byte] = {
     val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
@@ -37,42 +44,163 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     pixels
   }
 
+  /**
+    * Return a copy of the present [[IntArrayTile]].
+    *
+    * @return  The copy
+    */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 }
 
+/**
+  * The [[IntRawArrayTile]] derived from [[IntArrayTile]].
+  */
 final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
   val cellType = IntCellType
+
+  /**
+    * Fetch the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @return     The datum found at the index
+    */
   def apply(i: Int): Int = arr(i)
+
+  /**
+    * Fetch the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @return     The datum found at the index
+    */
   def applyDouble(i: Int): Double = arr(i).toDouble
+
+  /**
+    * Update the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @param   z  The value to place at that index
+    */
   def update(i: Int, z: Int) { arr(i) = z }
+
+  /**
+    * Update the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @param   z  The value to place at that index
+    */
   def updateDouble(i: Int, z: Double) { arr(i) = z.toInt }
 }
 
+/**
+  * The [[IntConstantNoDataArrayTile]] derived from [[IntArrayTile]].
+  */
 final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
   val cellType = IntConstantNoDataCellType
+
+  /**
+    * Fetch the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @return     The datum found at the index
+    */
   def apply(i: Int): Int = arr(i)
+
+  /**
+    * Fetch the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @return     The datum found at the index
+    */
   def applyDouble(i: Int): Double = i2d(arr(i))
+
+  /**
+    * Update the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @param   z  The value to place at that index
+    */
   def update(i: Int, z: Int) { arr(i) = z }
+
+  /**
+    * Update the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @param   z  The value to place at that index
+    */
   def updateDouble(i: Int, z: Double) { arr(i) = d2i(z) }
 }
 
+/**
+  * The [[IntUserDefinedNoDataArrayTile]] derived from
+  * [[IntArrayTile]].
+  */
 final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int, val cellType: IntUserDefinedNoDataCellType)
     extends IntArrayTile(arr, cols, rows)
        with UserDefinedIntNoDataConversions {
   val userDefinedIntNoDataValue = cellType.noDataValue
+
+  /**
+    * Fetch the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @return     The datum found at the index
+    */
   def apply(i: Int): Int = udi2i(arr(i))
+
+  /**
+    * Fetch the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @return     The datum found at the index
+    */
   def applyDouble(i: Int): Double = udi2d(arr(i))
+
+  /**
+    * Update the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @param   z  The value to place at that index
+    */
   def update(i: Int, z: Int) { arr(i) = i2udi(z) }
+
+  /**
+    * Update the datum at the given index in the array.
+    *
+    * @param   i  The index
+    * @param   z  The value to place at that index
+    */
   def updateDouble(i: Int, z: Double) { arr(i) = d2udi(z) }
 }
 
+/**
+  * The companion object for the [[IntArray]] type.
+  */
 object IntArrayTile {
+
+  /**
+    * Create a new [[IntArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr   An array of integer
+    * @param   cols  The number of columns
+    * @param   rows  The number of rows
+    * @return        A new IntArrayTile
+    */
   def apply(arr: Array[Int], cols: Int, rows: Int): IntArrayTile =
     apply(arr, cols, rows, IntConstantNoDataCellType)
 
-
+  /**
+    * Create a new [[IntArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr       An array of integers
+    * @param   cols      The number of columns
+    * @param   rows      The number of rows
+    * @param   cellType  The type from which to take the NODATA value
+    * @return            A new IntArrayTile
+    */
   def apply(arr: Array[Int], cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>
@@ -83,9 +211,25 @@ object IntArrayTile {
         new IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
+  /**
+    * Produce a [[IntArrayTile]] of the specified dimensions.
+    *
+    * @param   cols  The number of columns
+    * @param   rows  The number of rows
+    * @return        The new IntArrayTile
+    */
   def ofDim(cols: Int, rows: Int): IntArrayTile =
     ofDim(cols, rows, IntConstantNoDataCellType)
 
+  /**
+    * Produce a [[IntArrayTile]] of the specified dimensions.  The
+    * NODATA value for the tile is inherited from the given cell type.
+    *
+    * @param   cols      The number of columns
+    * @param   rows      The number of rows
+    * @param   cellType  The cell type from which to derive the NODATA
+    * @return            The new IntArrayTile
+    */
   def ofDim(cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>
@@ -96,9 +240,25 @@ object IntArrayTile {
         new IntUserDefinedNoDataArrayTile(Array.ofDim[Int](cols * rows), cols, rows, udct)
     }
 
+  /**
+    * Produce an empty, new [[IntArrayTile]].
+    *
+    * @param   cols  The number of columns
+    * @param   rows  The number of rows
+    * @return        The new IntArrayTile
+    */
   def empty(cols: Int, rows: Int): IntArrayTile =
     empty(cols, rows, IntConstantNoDataCellType)
 
+  /**
+    * Produce an empty, new [[IntArrayTile]].  The NODATA type for
+    * the tile is derived from the given cell type.
+    *
+    * @param   cols      The number of columns
+    * @param   rows      The number of rows
+    * @param   cellType  The cell type from which to derive the NODATA
+    * @return            The new IntArrayTile
+    */
   def empty(cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>
@@ -109,9 +269,28 @@ object IntArrayTile {
         fill(nd, cols, rows, cellType)
     }
 
+  /**
+    * Produce a new [[IntArrayTile]] and fill it with the given value.
+    *
+    * @param   v     the values to fill into the new tile
+    * @param   cols  The number of columns
+    * @param   rows  The number of rows
+    * @return        The new IntArrayTile
+    */
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
     fill(v, cols, rows, IntConstantNoDataCellType)
 
+  /**
+    * Produce a new [[IntArrayTile]] and fill it with the given value.
+    * The NODATA value for the tile is inherited from the given cell
+    * type.
+    *
+    * @param   v         the values to fill into the new tile
+    * @param   cols      The number of columns
+    * @param   rows      The number of rows
+    * @param   cellType  The cell type from which to derive the NODATA
+    * @return            The new IntArrayTile
+    */
   def fill(v: Int, cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>
@@ -130,9 +309,27 @@ object IntArrayTile {
     intArray
   }
 
+  /**
+    * Produce a new [[IntArrayTile]] from an array of bytes.
+    *
+    * @param   bytes  the data to fill into the new tile
+    * @param   cols   The number of columns
+    * @param   rows   The number of rows
+    * @return         The new IntArrayTile
+    */
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): IntArrayTile =
     fromBytes(bytes, cols, rows, IntConstantNoDataCellType)
 
+  /**
+    * Produce a new [[IntArrayTile]] from an array of bytes.  The
+    * NODATA value for the tile is inherited from the given cell type.
+    *
+    * @param   bytes     the data to fill into the new tile
+    * @param   cols      The number of columns
+    * @param   rows      The number of rows
+    * @param   cellType  The cell type from which to derive the NODATA
+    * @return            The new IntArrayTile
+    */
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>

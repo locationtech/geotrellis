@@ -2,6 +2,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path

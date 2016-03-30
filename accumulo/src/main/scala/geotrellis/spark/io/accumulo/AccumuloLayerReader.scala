@@ -5,6 +5,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
@@ -23,7 +24,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

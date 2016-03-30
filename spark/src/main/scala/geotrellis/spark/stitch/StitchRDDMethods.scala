@@ -4,8 +4,8 @@ import geotrellis.raster._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
 import geotrellis.spark._
-import geotrellis.spark.tiling.MapKeyTransform
-import geotrellis.util.MethodExtensions
+import geotrellis.spark.tiling._
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 
@@ -35,20 +35,20 @@ object TileLayoutStitcher {
   }
 }
 
-abstract class SpatialTileLayoutRDDMethods[V <: CellGrid, M: ? => MapKeyTransform]
+abstract class SpatialTileLayoutRDDStitchMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]]
   extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
-  def stitch(implicit stitcher: Stitcher[V]): Raster[V] = {
+  def stitch(): Raster[V] = {
     val (tile, bounds) = TileLayoutStitcher.stitch(self.collect())
-    val mkt: MapKeyTransform = self.metadata
-    Raster(tile, mkt(bounds))
+    val mapTransform = self.metadata.getComponent[LayoutDefinition].mapTransform
+    Raster(tile, mapTransform(bounds))
   }
 }
 
-abstract class SpatialTileRDDMethods[V <: CellGrid]
+abstract class SpatialTileRDDStitchMethods[V <: CellGrid: Stitcher]
   extends MethodExtensions[RDD[(SpatialKey, V)]] {
 
-  def stitch(implicit stitcher: Stitcher[V]): V = {
+  def stitch(): V = {
     TileLayoutStitcher.stitch(self.collect())._1
   }
 }

@@ -149,6 +149,53 @@ trait TileLayerRDDBuilders {
     new ContextRDD(tiled, metadata)
   }
 
+  def createMultibandTileLayerRDD(
+    tile: MultibandTile,
+    tileLayout: TileLayout
+  )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
+    createMultibandTileLayerRDD(sc, tile, tileLayout)
+
+  def createMultibandTileLayerRDD(
+    sc: SparkContext,
+    tile: MultibandTile,
+    tileLayout: TileLayout
+  ): MultibandTileLayerRDD[SpatialKey] =
+    createMultibandTileLayerRDD(sc, tile, tileLayout, defaultCRS)
+
+  def createMultibandTileLayerRDD(
+    sc: SparkContext,
+    tile: MultibandTile,
+    tileLayout: TileLayout,
+    crs: CRS
+  ): MultibandTileLayerRDD[SpatialKey] = {
+    val extent = crs.worldExtent
+    createMultibandTileLayerRDD(sc, Raster(tile, extent), tileLayout, crs)
+  }
+
+  def createMultibandTileLayerRDD(
+    sc: SparkContext,
+    raster: Raster[MultibandTile],
+    tileLayout: TileLayout
+  ): MultibandTileLayerRDD[SpatialKey] =
+    createMultibandTileLayerRDD(sc, raster, tileLayout, defaultCRS)
+
+  def createMultibandTileLayerRDD(
+    sc: SparkContext,
+    raster: Raster[MultibandTile],
+    tileLayout: TileLayout,
+    crs: CRS
+  ): MultibandTileLayerRDD[SpatialKey] = {
+    val layoutScheme = FloatingLayoutScheme(tileLayout.tileCols, tileLayout.tileRows)
+    val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
+
+    val (_, metadata) =
+      TileLayerMetadata.fromRdd(inputRdd, crs, layoutScheme)
+
+    val tiled: RDD[(SpatialKey, MultibandTile)] = inputRdd.cutTiles(metadata)
+
+    new ContextRDD(tiled, metadata)
+  }
+
   def createSpaceTimeTileLayerRDD(
     tiles: Traversable[(Tile, DateTime)],
     tileLayout: TileLayout,

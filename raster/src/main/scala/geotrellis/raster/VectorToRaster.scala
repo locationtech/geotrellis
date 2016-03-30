@@ -22,8 +22,24 @@ import geotrellis.raster.mapalgebra.focal.Kernel
 
 import spire.syntax.cfor._
 
+/**
+  * Object that holds various functions for vector-to-raster
+  * computations.
+  */
 object VectorToRaster {
 
+  /**
+    * Computes a Density raster based on the Kernel and set of points provided.
+    *
+    * @param      points           Sequence of point features who's values will be used to
+    *                              compute the density.
+    * @param      kernel           [[Kernel]] to be used in the computation.
+    * @param      rasterExtent     Raster extent of the resulting raster.
+    *
+    * @note                        KernelDensity does not currently support Double raster data.
+    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
+    *                              the data values will be rounded to integers.
+    */
   def kernelDensity[D](points: Seq[PointFeature[D]],
                        kernel: Kernel,
                        rasterExtent: RasterExtent)
@@ -59,12 +75,34 @@ object VectorToRaster {
     stamper.result
   }
 
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    */
   def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent): Tile =
     idwInterpolate(points, re, None)
 
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    */
   def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Int): Tile =
     idwInterpolate(points, re, Some(radius))
 
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @return          The data interpolated across the study area
+    */
   def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int]): Tile = {
     val cols = re.cols
     val rows = re.rows
@@ -147,19 +185,13 @@ object VectorToRaster {
     }
   }
 
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: (Int, Int) => Int): Tile =
-    feature.rasterize(rasterExtent)(f)
-
-  def rasterize(feature: Geometry, rasterExtent: RasterExtent, value: Int): Tile =
-    feature.rasterize(rasterExtent, value)
-
-/**
- * Gives a raster that represents the number of occuring points per cell.
- *
- *  @param points               Sequence of points to be counted.
- *  @param rasterExtent         RasterExtent of the resulting raster.
- *
- */
+  /**
+    * Gives a raster that represents the number of occurring points per
+    * cell.
+    *
+    * @param points        Sequence of points to be counted.
+    * @param rasterExtent  RasterExtent of the resulting raster.
+    */
   def countPoints(points: Seq[Point], rasterExtent: RasterExtent): Tile = {
     val (cols, rows) = (rasterExtent.cols, rasterExtent.rows)
     val array = Array.ofDim[Int](cols * rows).fill(0)

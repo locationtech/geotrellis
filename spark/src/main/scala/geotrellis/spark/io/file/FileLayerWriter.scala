@@ -6,6 +6,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.raster._
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 import com.typesafe.scalalogging.slf4j._
@@ -35,7 +36,7 @@ class FileLayerWriter(
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val catalogPathFile = new File(catalogPath)
 

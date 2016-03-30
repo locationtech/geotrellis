@@ -6,11 +6,13 @@ import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import org.apache.avro._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+
 import scala.reflect.ClassTag
 
 class AccumuloLayerCopier(
@@ -21,7 +23,7 @@ class AccumuloLayerCopier(
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

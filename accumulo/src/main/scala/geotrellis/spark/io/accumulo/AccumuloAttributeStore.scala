@@ -3,14 +3,15 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 
+import com.typesafe.config.ConfigFactory
 import spray.json._
-import DefaultJsonProtocol._
+import spray.json.DefaultJsonProtocol._
 import org.apache.spark.Logging
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
-import com.typesafe.config.ConfigFactory
+
 
 import scala.collection.JavaConversions._
 

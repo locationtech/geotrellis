@@ -53,17 +53,29 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     val images =
       props("encoding").toLowerCase match {
         case "png" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(parseColorMaps(props.get("breaks")))
+          parseColorMaps(props.get("breaks")) match {
+            case Some(colorMap) =>
+              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(colorMap).mapValues(_.bytes)
+            case None =>
+              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng().mapValues(_.bytes)
+          }
+        case "jpg" =>
+          parseColorMaps(props.get("breaks")) match {
+            case Some(colorMap) =>
+              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg(colorMap).mapValues(_.bytes)
+            case None =>
+              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg().mapValues(_.bytes)
+          }
         case "geotiff" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff()
+          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff().mapValues(_.toByteArray)
       }
 
     if (useS3) {
-      val keyToPath = SaveToS3Methods.spatialKeyToPath(id, props("path"))
+      val keyToPath = SaveToS3.spatialKeyToPath(id, props("path"))
       images.saveToS3(keyToPath)
     }
     else {
-      val keyToPath = SaveToHadoopMethods.spatialKeyToPath(id, props("path"))
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, props("path"))
       images.saveToHadoop(keyToPath)
     }
   }

@@ -24,7 +24,12 @@ trait S3RDDWriter {
 
   def getS3Client: () => S3Client
 
-  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](rdd: RDD[(K, V)], bucket: String, keyPath: K => String): Unit = {
+  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
+    rdd: RDD[(K, V)],
+    bucket: String,
+    keyPath: K => String,
+    putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }
+  ): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
@@ -54,7 +59,7 @@ trait S3RDDWriter {
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
-            val request = new PutObjectRequest(bucket, key, is, metadata)
+            val request = putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
             Some(request, iter)
           } else  {
             None

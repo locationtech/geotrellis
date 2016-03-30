@@ -29,17 +29,17 @@ case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
 }
 case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColors { c => c.toARGB }
+   colorMap.mapColors { c => c >> 8 }
 }
 
 // indexed color, using separate rgb and alpha channels
 case class IndexedPngEncoding(rgbs: Array[Int], as: Array[Int]) extends PngColorEncoding(3, 1) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColorsToIndex().withNoDataColor(255)
+   colorMap.mapColorsToIndex().withNoDataColor(255).withFallbackColor(254)
 }
 
 // greyscale and color rasters with an alpha byte
-case object GreyaPngEncoding extends PngColorEncoding(4, 4) {
+case object GreyaPngEncoding extends PngColorEncoding(4, 2) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
    colorMap.mapColors { c => c.int & 0xffff }
 }
@@ -50,13 +50,16 @@ case object RgbaPngEncoding extends PngColorEncoding(6, 4) {
 }
 
 object PngColorEncoding {
-  def apply(colors: Vector[Int], noDataColor: Int): PngColorEncoding = {
+  def apply(colors: Vector[Int], noDataColor: Int, fallbackColor: Int): PngColorEncoding = {
     val len = colors.length
-    if(len <= 256) {
-      val indices = (0 until len).toArray
+
+    // indexed PNGs can have up to 254 mapped colors (to leave room for nodata and fallback)
+    if(len <= 254) {
+      // PNG header lookup array
       val rgbs = new Array[Int](256)
       val as = new Array[Int](256)
 
+      // Produce the array to be stored in the PNG header for color lookup
       var i = 0
       while (i < len) {
         val c = colors(i)
@@ -65,6 +68,11 @@ object PngColorEncoding {
         i += 1
       }
 
+      // Fallback index
+      rgbs(254) = fallbackColor.toARGB
+      as(254) = fallbackColor.alpha
+
+      // NoData index
       rgbs(255) = noDataColor.toARGB
       as(255) = noDataColor.alpha
       IndexedPngEncoding(rgbs, as)
@@ -78,6 +86,10 @@ object PngColorEncoding {
         grey &&= c.isGrey
         i += 1
       }
+      opaque &&= fallbackColor.isOpaque
+      grey &&= fallbackColor.isGrey
+      opaque &&= noDataColor.isOpaque
+      grey &&= noDataColor.isGrey
 
       if (grey && opaque) {
         GreyPngEncoding(noDataColor.int)

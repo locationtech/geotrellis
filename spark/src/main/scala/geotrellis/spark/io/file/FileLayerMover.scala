@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.util.Filesystem
+import geotrellis.util._
 import AttributeStore.Fields
 
 import spray.json.JsonFormat
@@ -19,7 +19,7 @@ object FileLayerMover {
       def move[
         K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
         V: AvroRecordCodec: ClassTag,
-        M: JsonFormat: Component[?, Bounds[K]]
+        M: JsonFormat: GetComponent[?, Bounds[K]]
       ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)

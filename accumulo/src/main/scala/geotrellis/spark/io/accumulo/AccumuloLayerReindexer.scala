@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
@@ -46,7 +47,7 @@ class AccumuloLayerReindexer(
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -68,7 +69,7 @@ class AccumuloLayerReindexer(
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)

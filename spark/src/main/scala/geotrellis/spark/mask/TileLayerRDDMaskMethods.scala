@@ -1,13 +1,13 @@
 package geotrellis.spark.mask
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
 import geotrellis.spark.TileLayerRDD
 import geotrellis.vector._
-import geotrellis.util.MethodExtensions
-import scala.reflect.ClassTag
+import geotrellis.util._
 
+import scala.reflect.ClassTag
 
 abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
 

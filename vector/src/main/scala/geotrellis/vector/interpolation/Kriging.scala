@@ -44,11 +44,10 @@ trait Kriging extends Function2[Double, Double, (Double, Double)] {
     varianceMatrix
   }
 
-  /**
-   * Returns the indices of points close to the point for prediction within the given bandwidth
-   * In case the number of points < minPoints; it returns the closest minPoints number of points
-   */
-
+  /** Returns the indices of points close to the point for prediction within the given bandwidth
+    *
+    * @note In case the number of points < minPoints; it returns the closest minPoints number of points
+    */
   protected def getPointDistancesSorted(points: Array[PointFeature[Double]],
                                         minPoints: Int,
                                         bandwidth: Double,
@@ -68,9 +67,7 @@ trait Kriging extends Function2[Double, Double, (Double, Double)] {
       result
   }
 
-  /**
-   * Returns the absolute values of a given array
-   */
+  /** Returns the absolute values of a given array */
   protected def absArray(arr: Array[Double]): Array[Double] = {
     cfor(0)(_ < arr.length, _ + 1) { i =>
       arr(i) = math.abs(arr(i))
@@ -87,8 +84,7 @@ trait Kriging extends Function2[Double, Double, (Double, Double)] {
   def apply(x: Double, y: Double): (Double, Double) =
     _apply(x, y)
 
-  /**
-   * Kriging Prediction for an Array of points
+  /** Kriging Prediction for an Array of points
    * @param pointMatrix Points to be Kriged
    * @return            Tuples of (krigedValues, krigedVariance) for each of the kriged points
    */

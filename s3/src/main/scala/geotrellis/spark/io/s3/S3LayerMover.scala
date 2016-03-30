@@ -1,7 +1,8 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io._
 import geotrellis.spark.LayerId
+import geotrellis.spark.io._
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat

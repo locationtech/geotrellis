@@ -19,9 +19,9 @@ object ContextRDD {
 class ContextRDD[K, V, M](val rdd: RDD[(K, V)], val metadata: M) extends RDD[(K, V)](rdd) with Metadata[M] {
   override val partitioner = rdd.partitioner
 
-  override def compute(split: Partition, context: TaskContext) =
+  def compute(split: Partition, context: TaskContext) =
     rdd.iterator(split, context)
 
-  override def getPartitions: Array[Partition] =
+  def getPartitions: Array[Partition] =
     rdd.partitions
 }
