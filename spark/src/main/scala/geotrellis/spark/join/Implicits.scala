@@ -2,7 +2,10 @@ package geotrellis.spark.join
 
 import geotrellis.spark._
 import geotrellis.spark.partition._
+import geotrellis.util._
+
 import org.apache.spark.rdd._
+
 import scala.reflect._
 
 object Implicits extends Implicits

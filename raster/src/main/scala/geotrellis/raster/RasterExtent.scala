@@ -125,8 +125,9 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * The map coordinate of a grid cell is the center point.
     */
   final def gridToMap(col: Int, row: Int): (Double, Double) = {
-    val x = max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
-    val y = min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
+    val x = col * cellwidth + extent.xmin + (cellwidth / 2)
+    val y = extent.ymax - (row * cellheight) - (cellheight / 2)
+
     (x, y)
   }
 
@@ -135,7 +136,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * grid of the present [[RasterExtent]].
     */
   final def gridColToMap(col: Int): Double = {
-    max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
+    col * cellwidth + extent.xmin + (cellwidth / 2)
   }
 
   /**
@@ -143,7 +144,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * of the present [[RasterExtent]].
     */
   final def gridRowToMap(row: Int): Double = {
-    min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
+    extent.ymax - (row * cellheight) - (cellheight / 2)
   }
 
   /**
@@ -247,6 +248,18 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
                         extent.xmin + (cellwidth*totalCols), extent.ymax)
 
     RasterExtent(resampledExtent, cellwidth, cellheight, totalCols, totalRows)
+  }
+
+  /**
+    * Returns a new RasterExtent which represents the GridBounds in relation to this
+    * RasterExtent.
+    */
+  def rasterExtentFor(gridBounds: GridBounds): RasterExtent = {
+    val (xminCenter, ymaxCenter) = gridToMap(gridBounds.colMin, gridBounds.rowMin)
+    val (xmaxCenter, yminCenter) = gridToMap(gridBounds.colMax, gridBounds.rowMax)
+    val (hcw, hch) = (cellwidth / 2, cellheight / 2)
+    val e = Extent(xminCenter - hcw, yminCenter - hch, xmaxCenter + hcw, ymaxCenter + hch)
+    RasterExtent(e, cellwidth, cellheight, gridBounds.width, gridBounds.height)
   }
 }
 

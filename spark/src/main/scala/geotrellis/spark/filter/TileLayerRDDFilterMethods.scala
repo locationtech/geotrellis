@@ -18,7 +18,7 @@ package geotrellis.spark.filter
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 

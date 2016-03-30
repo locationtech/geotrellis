@@ -10,9 +10,9 @@ import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
+import geotrellis.util._
 import geotrellis.vector._
 
 import com.typesafe.scalalogging.slf4j.Logger
@@ -122,12 +122,13 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
         val reprojected = rdd.reproject(destCrs)
         val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
           case Left(layoutScheme) =>
-            TileLayerMetadata.fromRdd(rdd, layoutScheme)
+            TileLayerMetadata.fromRdd(reprojected, layoutScheme)
           case Right(layoutDefinition) =>
-            TileLayerMetadata.fromRdd(rdd, layoutDefinition)
+            TileLayerMetadata.fromRdd(reprojected, layoutDefinition)
         }
         val amd = adjustCellType(md)
-        zoom -> ContextRDD(reprojected.tileToLayout[K](amd, method), amd)
+        val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))
+        zoom -> ContextRDD(reprojected.tileToLayout[K](amd, tilerOptions), amd)
 
       case BufferedReproject =>
         val (_, md) = TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(conf.tileSize()))

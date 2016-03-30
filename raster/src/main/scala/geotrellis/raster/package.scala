@@ -24,9 +24,10 @@ import geotrellis.util.MethodExtensions
 
 package object raster
     extends crop.Implicits
-    with merge.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
-    with reproject.Implicits {
+    with merge.Implicits
+    with reproject.Implicits
+    with split.Implicits {
   type CellType = DataType with NoDataHandling
   type SinglebandRaster = Raster[Tile]
   type MultibandRaster = Raster[MultibandTile]
@@ -62,6 +63,7 @@ package object raster
       with render.PngRenderMethods
       with reproject.SinglebandTileReprojectMethods
       with resample.SinglebandTileResampleMethods
+      with split.SinglebandTileSplitMethods
       with summary.SummaryMethods
       with summary.polygonal.PolygonalSummaryMethods
       with viewshed.ViewshedMethods
@@ -76,16 +78,19 @@ package object raster
       with render.MultibandColorMethods
       with render.MultibandPngRenderMethods
       with resample.MultibandTileResampleMethods
+      with split.MultibandTileSplitMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
-      with rasterize.SinglebandRasterRasterizeMethods[Tile]
       with reproject.SinglebandRasterReprojectMethods
       with resample.SinglebandRasterResampleMethods
       with vectorize.SinglebandRasterVectorizeMethods
 
-  implicit class withMultibandRasterMethodExtensions(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
+  implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
       with reproject.MultibandRasterReprojectMethods
       with resample.MultibandRasterResampleMethods
+
+  implicit class withTileSeqMethods(val self: Traversable[Tile]) extends MethodExtensions[Traversable[Tile]]
+      with mapalgebra.local.LocalSeqMethods
 
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =

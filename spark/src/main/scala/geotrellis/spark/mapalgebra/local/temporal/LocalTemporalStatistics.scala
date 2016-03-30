@@ -5,7 +5,7 @@ import geotrellis.raster.mapalgebra.local._
 import geotrellis.spark._
 import geotrellis.spark.mapalgebra._
 import org.apache.spark.Partitioner
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._

@@ -6,6 +6,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path

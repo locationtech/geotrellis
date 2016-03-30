@@ -4,7 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.util.Filesystem
+import geotrellis.util._
 import AttributeStore.Fields
 
 import spray.json.JsonFormat

@@ -53,6 +53,7 @@ package object spark
     with partition.Implicits
     with resample.Implicits
     with reproject.Implicits
+    with split.Implicits
     with stitch.Implicits
     with summary.polygonal.Implicits
     with summary.Implicits
@@ -70,60 +71,10 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  trait Component[T, C] extends GetComponent[T, C] with SetComponent[T, C]
-
-  trait GetComponent[T, C] extends Serializable {
-    def get: T => C
-  }
-
-  trait SetComponent[T, C] extends Serializable {
-    def set: (T, C) => T
-  }
-
-  object Component {
-    def apply[T, C](_get: T => C, _set: (T, C) => T): Component[T, C] =
-      new Component[T, C] {
-        val get = _get
-        val set = _set
-      }
-  }
-
-  object GetComponent {
-    def apply[T, C](_get: T => C): GetComponent[T, C] =
-      new GetComponent[T, C] {
-        val get = _get
-      }
-  }
-
-
-  object SetComponent {
-    def apply[T, C](_set: (T, C) => T): SetComponent[T, C] =
-      new SetComponent[T, C] {
-        val set = _set
-      }
-  }
-
-  implicit def identityComponent[T]: Component[T, T] =
-    Component(v => v, (_, v) => v)
-
-  /** Describes a getter and setter for an object that has
-    * an implicitly defined lens into a component of that object
-    * with a specific type.
-    */
-  implicit class withGetComponentMethods[T](val self: T) extends MethodExtensions[T] {
-    def getComponent[C]()(implicit component: GetComponent[T, C]): C =
-      component.get(self)
-  }
-
-  implicit class withSetComponentMethods[T](val self: T) extends MethodExtensions[T] {
-    def setComponent[C](value: C)(implicit component: SetComponent[T, C]): T =
-      component.set(self, value)
-  }
+  type TileBounds = GridBounds
 
   type SpatialComponent[K] = Component[K, SpatialKey]
   type TemporalComponent[K] = Component[K, TemporalKey]
-
-  type TileBounds = GridBounds
 
   /** Auto wrap a partitioner when something is requestion an Option[Partitioner];
     * useful for Options that take an Option[Partitioner]

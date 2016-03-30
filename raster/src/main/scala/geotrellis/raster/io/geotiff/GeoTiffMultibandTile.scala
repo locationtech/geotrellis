@@ -1,8 +1,9 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.io.geotiff.compression._
+import geotrellis.raster.resample.ResampleMethod
+import geotrellis.raster.split._
 import geotrellis.vector.Extent
 
 import java.util.BitSet
@@ -68,8 +69,8 @@ object GeoTiffMultibandTile {
     cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
       val bandTiles =
         options.storageMethod match {
-          case _: Tiled => CompositeTile.split(tile.band(bandIndex), segmentLayout.tileLayout)
-          case _: Striped => CompositeTile.split(tile.band(bandIndex), segmentLayout.tileLayout, extend = false)
+          case _: Tiled => tile.band(bandIndex).split(segmentLayout.tileLayout)
+          case _: Striped => tile.band(bandIndex).split(segmentLayout.tileLayout, Split.Options(extend = false))
         }
 
       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>

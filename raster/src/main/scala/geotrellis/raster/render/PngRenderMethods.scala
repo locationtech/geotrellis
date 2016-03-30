@@ -18,7 +18,15 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(self)
+    renderPng(RgbaPngEncoding)
+
+  /** Generate a PNG from a raster of color encoded values.
+    *
+    * Use this operation when you have created a raster whose values are already
+    * encoded color values that you wish to render into a PNG.
+    */
+  def renderPng(colorEncoding: PngColorEncoding): Png =
+    new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(self)
 
   def renderPng(colorMap: ColorMap): Png = {
     val colorEncoding = PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.fallbackColor)
@@ -36,19 +44,6 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     }
   }
 
-  /**
-    * Generate a PNG image from a raster.
-    *
-    * Use this operation when you have a raster of data that you want to visualize
-    * with an image.
-    *
-    * To render a data raster into an image, the operation needs to know which
-    * values should be painted with which colors.  To that end, you'll need to
-    * generate a ColorBreaks object which represents the value ranges and the
-    * assigned color.  One way to create these color breaks is to use the
-    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks.
-    */
   private
   def renderPng(colorEncoding: PngColorEncoding, colorMap: ColorMap): Png = {
     val encoder = new PngEncoder(Settings(colorEncoding, PaethFilter))

@@ -24,6 +24,7 @@ import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.reproject._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
+import geotrellis.util._
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._

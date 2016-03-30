@@ -48,8 +48,8 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     */
   def rasterize(
     re : RasterExtent,
-    options: Options = Options.DEFAULT,
-    ct : CellType = IntConstantNoDataCellType
+    ct : CellType = IntConstantNoDataCellType,
+    options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Int) : Raster[ArrayTile] = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     val extent = re.extent
@@ -57,6 +57,18 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.set(x,y,fn(x,y)) })
     Raster(tile, extent)
   }
+  /**
+    * Fill in 'value' at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Geometry]].  The result is a
+    * [[Raster]].
+    */
+  def rasterizeWithValue(
+    re: RasterExtent,
+    value: Int,
+    ct : CellType = IntConstantNoDataCellType,
+    options: Options = Options.DEFAULT
+  ): Raster[ArrayTile] =
+    rasterize(re, ct, options)({ (col: Int, row: Int) => value })
 
   /**
     * Call the function 'fn' on each cell of given [[RasterExtent]]
@@ -66,8 +78,8 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     */
   def rasterizeDouble(
     re : RasterExtent,
-    options: Options = Options.DEFAULT,
-    ct : CellType = DoubleConstantNoDataCellType
+    ct : CellType = DoubleConstantNoDataCellType,
+    options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Double) : Raster[ArrayTile] = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     val extent = re.extent
@@ -81,14 +93,11 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     * covered by the present [[Geometry]].  The result is a
     * [[Raster]].
     */
-  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
-    rasterize(re)({ (col: Int, row: Int) => value })
-
-  /**
-    * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Geometry]].  The result is a
-    * [[Raster]].
-    */
-  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
+  def rasterizeWithValueDouble(
+    re: RasterExtent,
+    value: Double,
+    ct : CellType = DoubleConstantNoDataCellType,
+    options: Options = Options.DEFAULT
+  ): Raster[ArrayTile] =
     rasterizeDouble(re)({ (col: Int, row: Int) => value })
 }

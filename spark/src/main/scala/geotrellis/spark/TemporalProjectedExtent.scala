@@ -1,8 +1,10 @@
 package geotrellis.spark
 
-import com.github.nscala_time.time.Imports._
 import geotrellis.proj4._
 import geotrellis.vector._
+import geotrellis.util._
+
+import com.github.nscala_time.time.Imports._
 
 /** A key for a Tile with temporal as well as spatial dimension */
 case class TemporalProjectedExtent(extent: Extent, crs: CRS, instant: Long) {
