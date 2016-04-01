@@ -25,8 +25,9 @@ import math.{abs, exp, min, max, sqrt}
 
 import java.util.Comparator
 import java.util.TreeMap
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
+import scala.collection.mutable.{ListBuffer => MutableListBuffer}
 
 object StreamingHistogram {
   private type BucketType = (Double, Int)
@@ -57,7 +58,7 @@ object StreamingHistogram {
   * (2010): 849-872.
   */
 class StreamingHistogram(
-  m: Int,
+  size: Int,
   startingBuckets: Option[TreeMap[Double, Int]],
   startingDeltas: Option[TreeMap[DeltaType, Unit]],
   minimum: Double = Double.PositiveInfinity,
@@ -212,7 +213,7 @@ class StreamingHistogram(
     }
 
     _buckets.put(b._1, b._2)
-    if (_buckets.size > m) combine()
+    if (_buckets.size > size) combine()
   }
 
   /**
@@ -350,7 +351,7 @@ class StreamingHistogram(
    * Return a mutable copy of this histogram.
    */
   def mutable(): StreamingHistogram = {
-    val sh = StreamingHistogram(this.m, this._min, this._max)
+    val sh = StreamingHistogram(this.size, this._min, this._max)
     sh.countItems(this.buckets)
     sh
   }
@@ -360,7 +361,7 @@ class StreamingHistogram(
     * altering either.
     */
   def +(other: StreamingHistogram): StreamingHistogram = {
-    val sh = StreamingHistogram(this.m, this._min, this._max)
+    val sh = StreamingHistogram(this.size, this._min, this._max)
     sh.countItems(this.buckets)
     sh.countItems(other.buckets)
     sh
@@ -377,7 +378,7 @@ class StreamingHistogram(
     * seen by the two antecedent histograms).
     */
   def merge(histogram: Histogram[Double]): Histogram[Double] = {
-    val sh = StreamingHistogram(this.m, this._min, this._max)
+    val sh = StreamingHistogram(this.size, this._min, this._max)
     sh.countItems(this.buckets)
     histogram.foreach({ (item: Double, count: Int) => sh.countItem((item, count)) })
     sh
@@ -437,21 +438,24 @@ class StreamingHistogram(
   def totalCount(): Int = buckets.map(_._2).sum
 
   /**
-    * Get the (approximate) min value.  This is only approximate
-    * because the lowest bucket may be a combined one.
+    * Get the minimum value this histogram has seen.
     */
-  def minValue(): Option[Double] = {
-    val entry = _buckets.higherEntry(Double.NegativeInfinity)
-    if (entry != null) Some(entry.getKey); else None
-  }
+  def minValue(): Option[Double] =
+    if(_min ==  Double.PositiveInfinity) {
+      None
+    } else {
+      Some(_min)
+    }
 
   /**
-    * Get the (approximate) max value.
+    * Gets the maximum value this histogram has seen
     */
-  def maxValue(): Option[Double] = {
-    val entry = _buckets.lowerEntry(Double.PositiveInfinity)
-    if (entry != null) Some(entry.getKey); else None
-  }
+  def maxValue(): Option[Double] =
+    if(_max == Double.NegativeInfinity) {
+      None
+    } else {
+      Some(_max)
+    }
 
   /**
     * This returns a tuple of tuples, where the inner tuples contain a
@@ -487,18 +491,34 @@ class StreamingHistogram(
     */
   def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
     val data = cdfIntervals
-    qs.map({ q =>
-      if (q == 0.0) minValue().getOrElse(Double.NegativeInfinity)
-      else if (q == 1.0) maxValue().getOrElse(Double.PositiveInfinity)
-      else {
-        val tt = data.dropWhile(_._2._2 <= q).next
-        val (d1, pct1) = tt._1
-        val (d2, pct2) = tt._2
+    if(!data.hasNext) {
+      Seq()
+    } else {
+      val result = MutableListBuffer[Double]()
+      var curr = data.next
+      def getValue(q: Double): Double = {
+        val (d1, pct1) = curr._1
+        val (d2, pct2) = curr._2
         val x = (q - pct1) / (pct2 - pct1)
 
         (1-x)*d1 + x*d2
       }
-    })
+
+      for(q <- qs) {
+        if (q == 0.0) { result += minValue().getOrElse(Double.NegativeInfinity) }
+        else if (q == 1.0) { result += maxValue().getOrElse(Double.PositiveInfinity) }
+        else {
+          if(q < curr._2._2) {
+            result += getValue(q)
+          } else {
+            while(data.hasNext && curr._2._2 <= q) { curr = data.next }
+            result += getValue(q)
+          }
+        }
+      }
+
+      result.toSeq
+    }
   }
 
   def percentile(q: Double): Double =
@@ -513,7 +533,7 @@ class StreamingHistogram(
     * @param num The number of breaks desired
     */
   def quantileBreaks(num: Int): Array[Double] =
-    percentileBreaks(List.range(0,num).map(_ / num.toDouble)).toArray
+    percentileBreaks((1 to num).map(_ / num.toDouble)).toArray
 
   /**
     * Return the list of buckets of this histogram.  Primarily useful
