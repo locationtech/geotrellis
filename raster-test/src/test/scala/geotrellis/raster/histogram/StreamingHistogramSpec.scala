@@ -30,6 +30,24 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
     59049, 59049, 100000, 161051, 248832, 248832, 371293, 537824, 537824, 759375, 1048576,
     1419857, 1419857, 1889568, 2476099, 2147483647)
 
+  describe("quantile breaks") {
+    it("should not throw when there are more breaks than buckets") {
+      val h = StreamingHistogram()
+
+      Iterator
+        .continually(List(1,2,3))
+        .flatten
+        .take(10000)
+        .foreach({ i => h.countItem(i.toDouble) })
+
+      val breaks = h.quantileBreaks(50).toList
+
+      breaks.length should be (50)
+      breaks.max should be > (2.9)
+      breaks.min should be < (1.1)
+    }
+  }
+
   describe("mode calculation") {
     it("should return None if no items are counted") {
       val h = StreamingHistogram()

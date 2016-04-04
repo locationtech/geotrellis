@@ -265,8 +265,8 @@ class StreamingHistogram(
       count / exp(abs(7 * (item2 - item))).toInt
     }
     else {
-      val lo = _buckets.lowerEntry(item * 1.0001)
-      val hi = _buckets.higherEntry(item * 1.0001)
+      val lo = _buckets.floorEntry(item)
+      val hi = _buckets.ceilingEntry(item)
       val raw = {
         if (lo == null && hi == null) 0
         else if (lo == null) {
@@ -441,16 +441,14 @@ class StreamingHistogram(
     * because the lowest bucket may be a combined one.
     */
   def minValue(): Option[Double] = {
-    val entry = _buckets.higherEntry(Double.NegativeInfinity)
-    if (entry != null) Some(entry.getKey); else None
+    if (_min == Double.NegativeInfinity) None; else Some(_min)
   }
 
   /**
     * Get the (approximate) max value.
     */
   def maxValue(): Option[Double] = {
-    val entry = _buckets.lowerEntry(Double.PositiveInfinity)
-    if (entry != null) Some(entry.getKey); else None
+    if (_max == Double.PositiveInfinity) None; else Some(_max)
   }
 
   /**
@@ -486,12 +484,13 @@ class StreamingHistogram(
     * (approximately) at the qth percentile.
     */
   def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
-    val data = cdfIntervals
+    var data = cdfIntervals.toList
     qs.map({ q =>
       if (q == 0.0) minValue().getOrElse(Double.NegativeInfinity)
       else if (q == 1.0) maxValue().getOrElse(Double.PositiveInfinity)
       else {
-        val tt = data.dropWhile(_._2._2 <= q).next
+        data = data.dropWhile(_._2._2 <= q)
+        val tt = data.head
         val (d1, pct1) = tt._1
         val (d2, pct2) = tt._2
         val x = (q - pct1) / (pct2 - pct1)
