@@ -37,12 +37,14 @@ abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends Me
   private def _mask(masker: (Extent, Tile) => Tile) = {
     val mapTransform = self.metadata.mapTransform
     val rdd =
-      self.map { case (k, tile) =>
-        val key = k.getComponent[SpatialKey]
-        val tileExtent = mapTransform(key)
-        val result = masker(tileExtent, tile)
-        (k, result)
-      }
+      self.mapPartitions({ partition =>
+        partition.map { case (k, tile) =>
+          val key = k.getComponent[SpatialKey]
+          val tileExtent = mapTransform(key)
+          val result = masker(tileExtent, tile)
+          (k, result)
+        }
+      }, preservesPartitioning = true)
     ContextRDD(rdd, self.metadata)
   }
 
