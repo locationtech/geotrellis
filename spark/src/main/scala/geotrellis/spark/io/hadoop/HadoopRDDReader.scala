@@ -51,6 +51,8 @@ object HadoopRDDReader extends LazyLogging {
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None)
   (implicit sc: SparkContext): RDD[(K, V)] = {
+    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+
     val dataPath = path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
 
     logger.debug(s"Loading from $dataPath")
