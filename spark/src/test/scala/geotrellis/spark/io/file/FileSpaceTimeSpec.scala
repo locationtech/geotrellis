@@ -22,6 +22,6 @@ class FileSpaceTimeSpec
   lazy val mover  = FileLayerMover(outputLocalPath)
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val updater = FileLayerUpdater(outputLocalPath)
-  lazy val tiles = FileTileReader[SpaceTimeKey, Tile](outputLocalPath)
+  lazy val tiles = FileTileReader(outputLocalPath)
   lazy val sample =  CoordinateSpaceTime
 }

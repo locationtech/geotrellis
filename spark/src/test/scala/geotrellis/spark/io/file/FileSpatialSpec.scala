@@ -19,7 +19,7 @@ class FileSpatialSpec
   lazy val mover  = FileLayerMover(outputLocalPath)
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val updater = FileLayerUpdater(outputLocalPath)
-  lazy val tiles = FileTileReader[SpatialKey, Tile](outputLocalPath)
+  lazy val tiles = FileTileReader(outputLocalPath)
   lazy val sample = AllOnesTestFile
 
   describe("Filesystem layer names") {
