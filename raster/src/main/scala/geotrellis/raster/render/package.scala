@@ -3,7 +3,8 @@ package geotrellis.raster
 import geotrellis.raster.histogram._
 
 package object render {
-  // RGB and RGBA colors
+  // RGB and RGBA
+  // Note: GeoTrellis by default expects colors to be in RGBA format.
 
   implicit class RGBA(val int: Int) extends AnyVal {
     def red = (int >> 24) & 0xff
@@ -24,11 +25,12 @@ package object render {
   }
 
   object RGBA {
-    def apply(r: Int, g: Int, b: Int, a: Int): Int = new RGBA((r << 24) + (g << 16) + (b << 8) + a).int
+    def apply(r: Int, g: Int, b: Int, a: Int): Int =
+      new RGBA((r << 24) + (g << 16) + (b << 8) + a).int
 
     def apply(r: Int, g: Int, b: Int, alphaPct: Double): Int = {
       assert(0 <= alphaPct && alphaPct <= 100)
-      RGBA(r, g, b, (alphaPct * 2.55).toInt).int
+      RGBA(r, g, b, (alphaPct * 2.55).toInt)
     }
   }
 }

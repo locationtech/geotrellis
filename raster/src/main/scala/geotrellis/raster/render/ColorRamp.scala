@@ -63,40 +63,40 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
     * Try to keep parity with ColorMap object creations
     */
 
-  def toColorMap(breaks: Array[Int]): IntColorMap =
+  def toColorMap(breaks: Array[Int]): ColorMap =
     toColorMap(breaks, ColorMap.Options.DEFAULT)
 
-  def toColorMap(breaks: Array[Int], options: ColorMap.Options): IntColorMap =
+  def toColorMap(breaks: Array[Int], options: ColorMap.Options): ColorMap =
     ColorMap(breaks.toVector, this, options)
 
-  def toColorMap(breaks: Vector[Int]): IntColorMap =
+  def toColorMap(breaks: Vector[Int]): ColorMap =
     toColorMap(breaks, ColorMap.Options.DEFAULT)
 
-  def toColorMap(breaks: Vector[Int], options: ColorMap.Options): IntColorMap =
+  def toColorMap(breaks: Vector[Int], options: ColorMap.Options): ColorMap =
     ColorMap(breaks.toVector, this, options)
 
-  def toColorMap(breaks: Array[Double]): DoubleColorMap =
+  def toColorMap(breaks: Array[Double])(implicit d: DummyImplicit): ColorMap =
     toColorMap(breaks, ColorMap.Options.DEFAULT)
 
-  def toColorMap(breaks: Array[Double], options: ColorMap.Options): DoubleColorMap =
+  def toColorMap(breaks: Array[Double], options: ColorMap.Options)(implicit d: DummyImplicit): ColorMap =
     ColorMap(breaks.toVector, this, options)
 
-  def toColorMap(breaks: Vector[Double]): DoubleColorMap =
+  def toColorMap(breaks: Vector[Double])(implicit d: DummyImplicit): ColorMap =
     toColorMap(breaks, ColorMap.Options.DEFAULT)
 
-  def toColorMap(breaks: Vector[Double], options: ColorMap.Options): DoubleColorMap =
+  def toColorMap(breaks: Vector[Double], options: ColorMap.Options)(implicit d: DummyImplicit): ColorMap =
     ColorMap(breaks.toVector, this, options)
 
-  def toColorMap(histogram: Histogram[Int]): IntColorMap =
+  def toColorMap(histogram: Histogram[Int]): ColorMap =
     toColorMap(histogram, ColorMap.Options.DEFAULT)
 
-  def toColorMap(histogram: Histogram[Int], options: ColorMap.Options): IntColorMap =
+  def toColorMap(histogram: Histogram[Int], options: ColorMap.Options): ColorMap =
     ColorMap.fromQuantileBreaks(histogram, this, options)
 
-  def toColorMap(histogram: Histogram[Double]): DoubleColorMap =
+  def toColorMap(histogram: Histogram[Double])(implicit d: DummyImplicit): ColorMap =
     toColorMap(histogram, ColorMap.Options.DEFAULT)
 
-  def toColorMap(histogram: Histogram[Double], options: ColorMap.Options): DoubleColorMap =
+  def toColorMap(histogram: Histogram[Double], options: ColorMap.Options)(implicit d: DummyImplicit): ColorMap =
     ColorMap.fromQuantileBreaks(histogram, this, options)
 }
 
