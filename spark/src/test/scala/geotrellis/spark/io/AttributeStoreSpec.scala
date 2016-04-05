@@ -45,7 +45,7 @@ abstract class AttributeStoreSpec
 
   it("should save and pull out a histogram") {
     val layerId = LayerId("test", 3)
-    val histo = DecreasingTestFile.histogram
+    val histo = DecreasingTestFile.histogramExactInt
 
     attributeStore.write(layerId, "histogram", histo)
 
