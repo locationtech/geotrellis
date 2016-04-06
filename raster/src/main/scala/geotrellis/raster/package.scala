@@ -50,7 +50,7 @@ package object raster
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
       with hydrology.HydrologyMethods
-      with mask.TileMaskMethods
+      with mask.SinglebandTileMaskMethods
       with merge.SinglebandTileMergeMethods
       with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
@@ -71,6 +71,7 @@ package object raster
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with crop.MultibandTileCropMethods
+      with mask.MultibandTileMaskMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with reproject.MultibandTileReprojectMethods
