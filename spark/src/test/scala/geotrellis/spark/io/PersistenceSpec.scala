@@ -104,7 +104,7 @@ abstract class PersistenceSpec[
       }
 
       it("should read a single value") {
-        val tileReader = tiles.read[K, V](layerId)
+        val tileReader = tiles.reader[K, V](layerId)
         val key = sample.keys.first()
         val readV: V = tileReader.read(key)
         val expectedV: V = sample.filter(_._1 == key).values.first()

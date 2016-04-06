@@ -19,7 +19,7 @@ class FileTileReader(
   catalogPath: String
 ) extends TileReader[LayerId] {
 
-  def read[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
     val header = attributeStore.readHeader[FileLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
