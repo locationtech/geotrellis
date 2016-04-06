@@ -10,10 +10,9 @@ import geotrellis.vector.{Geometry, Extent}
 
 /**
   * A trait containing extension methods related to masking of
-  * tiles.
+  * [[MultibandTile]]s.
   */
-trait TileMaskMethods[T] extends MethodExtensions[T] {
-
+trait MultibandTileMaskMethods extends TileMaskMethods[MultibandTile] {
   /**
     * Generate a raster with the values from the first raster, but
     * only include cells in which the corresponding cell in the second
@@ -23,7 +22,12 @@ trait TileMaskMethods[T] extends MethodExtensions[T] {
     * readMask value, the output raster will be empty -- all values
     * set to NODATA.
     */
-  def localMask(r: T, readMask: Int, writeMask: Int): T
+  def localMask(r: MultibandTile, readMask: Int, writeMask: Int): MultibandTile =
+    ArrayMultibandTile(
+      self.bands
+        .zip(r.bands)
+        .map { case (t, m) => t.localMask(m, readMask, writeMask) }
+    )
 
   /**
     * Generate a raster with the values from the first raster, but
@@ -34,30 +38,18 @@ trait TileMaskMethods[T] extends MethodExtensions[T] {
     * readMask value, the output raster will be identical to the first
     * raster.
     */
-  def localInverseMask(r: T, readMask: Int, writeMask: Int): T
-
-  /**
-    * Masks this tile by the given Geometry. Do not include polygon
-    * exteriors.
-    */
-  def mask(ext: Extent, geom: Geometry): T =
-    mask(ext, Seq(geom), Options.DEFAULT)
-
-  /**
-    * Masks this tile by the given Geometry.
-    */
-  def mask(ext: Extent, geom: Geometry, options: Options): T =
-    mask(ext, Seq(geom), options)
-
-  /**
-    * Masks this tile by the given Geometry. Do not include polygon
-    * exteriors.
-    */
-  def mask(ext: Extent, geoms: Traversable[Geometry]): T =
-    mask(ext, geoms, Options.DEFAULT)
+  def localInverseMask(r: MultibandTile, readMask: Int, writeMask: Int): MultibandTile =
+    ArrayMultibandTile(
+      self.bands
+        .zip(r.bands)
+        .map { case (t, m) => t.localInverseMask(m, readMask, writeMask) }
+    )
 
   /**
     * Masks this tile by the given Geometry.
     */
-  def mask(ext: Extent, geoms: Traversable[Geometry], options: Options): T
+  def mask(ext: Extent, geoms: Traversable[Geometry], options: Options): MultibandTile =
+    ArrayMultibandTile(
+      self.bands.map(_.mask(ext, geoms, options))
+    )
 }

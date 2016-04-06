@@ -31,11 +31,9 @@ class TileLayerRDDMaskMethodsSpec extends FunSpec
       assertEqual(layer.mask(mask.toPolygon).stitch.tile,
         FloatArrayTile(
           Array(
-            n, n, n,  n, n, n,
-            n, n, n,  n, n, n,
             n, n, 15, 16, 17, n,
             n, n, 21, 22, 23, 24
-          ), 6, 4, FloatUserDefinedNoDataCellType(-1.1f)
+          ), 6, 2, FloatUserDefinedNoDataCellType(-1.1f)
         )
       )
     }

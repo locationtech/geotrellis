@@ -55,7 +55,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
     }
 
     // TODO: Un-ignore this after rasterization fixes.
-    ignore ("should be masked by random polygons") {
+    it ("should be masked by random polygons") {
       randomPolygons()(width, height) foreach { poly =>
         val masked = rdd.mask(poly).stitch
         val expected = tile.mask(worldExt, poly)
@@ -77,7 +77,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
     }
 
     // TODO: Un-ignore this after rasterization fixes.
-    ignore ("should be masked by random multipolygons") {
+    it ("should be masked by random multipolygons") {
       val polygons = randomPolygons()(width, height)
       val multipolygons = polygons.zip(polygons.reverse).map { case (a, b) =>
         MultiPolygon(a, b)
@@ -104,7 +104,7 @@ class LocalSpatialSpec extends FunSpec with TestEnvironment with TestFiles {
     }
 
     // TODO: Un-ignore this after rasterization fixes.
-    ignore ("should be masked by random extents") {
+    it ("should be masked by random extents") {
       val extents = randomPolygons()(width, height).map(_.envelope)
       extents foreach { extent =>
         val masked = rdd.mask(extent).stitch

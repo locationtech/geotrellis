@@ -1,16 +1,18 @@
 package geotrellis.spark.mask
 
 import geotrellis.raster._
+import geotrellis.raster.mask._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
-import geotrellis.spark.TileLayerRDD
+import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util._
 
+import org.apache.spark.rdd.RDD
+
 import scala.reflect.ClassTag
 
-abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
-
+object Mask {
   // As done by [[geotrellis.raster.rasterize.polygon.TestLineSet]] in [[geotrellis.raster.rasterize.polygon.PolygonRasterizer]].
   private def eliminateNotQualified(geom: Option[Geometry]): Option[Geometry] = {
 
@@ -34,10 +36,14 @@ abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends Me
     }
   }
 
-  private def _mask(masker: (Extent, Tile) => Option[Tile]) = {
-    val mapTransform = self.metadata.mapTransform
-    val rdd =
-      self.mapPartitions({ partition =>
+  private def _mask[
+    K: SpatialComponent: ClassTag,
+    V,
+    M: GetComponent[?, LayoutDefinition]
+  ](rdd: RDD[(K, V)] with Metadata[M], masker: (Extent, V) => Option[V]): RDD[(K, V)] with Metadata[M] = {
+    val mapTransform = rdd.metadata.getComponent[LayoutDefinition].mapTransform
+    val masked =
+      rdd.mapPartitions({ partition =>
         partition.flatMap { case (k, tile) =>
           val key = k.getComponent[SpatialKey]
           val tileExtent = mapTransform(key)
@@ -46,19 +52,15 @@ abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends Me
           }
         }
       }, preservesPartitioning = true)
-    ContextRDD(rdd, self.metadata)
+    ContextRDD(masked, rdd.metadata)
   }
 
-  /** Masks this raster by the given Polygon. */
-  def mask(geom: Polygon): TileLayerRDD[K] = mask(Seq(geom), Options.DEFAULT)
-
-  def mask(geom: Polygon, options: Options): TileLayerRDD[K] = mask(Seq(geom), options)
-
-  /** Masks this raster by the given Polygons. */
-  def mask(geoms: Traversable[Polygon]): TileLayerRDD[K] = mask(geoms, Options.DEFAULT)
-
-  def mask(geoms: Traversable[Polygon], options: Options): TileLayerRDD[K] =
-    _mask { case (tileExtent, tile) =>
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
+    _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.safeIntersection(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
@@ -67,16 +69,15 @@ abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends Me
       else {
         Some(tile.mask(tileExtent, tileGeoms, options))
       }
-    }
-
-  /** Masks this raster by the given MultiPolygon. */
-  def mask(geom: MultiPolygon): TileLayerRDD[K] = mask(geom, Options.DEFAULT)
-
-  def mask(geom: MultiPolygon, options: Options): TileLayerRDD[K] = mask(Seq(geom), options)
+    })
 
   /** Masks this raster by the given MultiPolygons. */
-  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): TileLayerRDD[K] =
-    _mask { case (tileExtent, tile) =>
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
+    _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.safeIntersection(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
@@ -85,16 +86,20 @@ abstract class TileLayerRDDMaskMethods[K: SpatialComponent: ClassTag] extends Me
       else {
         Some(tile.mask(tileExtent, tileGeoms, options))
       }
-    }
+    })
 
   /** Masks this raster by the given Extent. */
-  def mask(ext: Extent, options: Options = Options.DEFAULT): TileLayerRDD[K] =
-    _mask { case (tileExtent, tile) =>
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](rdd: RDD[(K, V)] with Metadata[M], ext: Extent, options: Options = Options.DEFAULT): RDD[(K, V)] with Metadata[M] =
+    _mask(rdd, { case (tileExtent, tile) =>
       val tileExts = ext.intersection(tileExtent)
       tileExts match {
         case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options))
         case _ => None
       }
-    }
+    })
 
 }
