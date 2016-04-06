@@ -22,7 +22,7 @@ class HadoopTileReader(val attributeStore: HadoopAttributeStore)
 
   val conf = attributeStore.hadoopConfiguration
 
-  def read[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
     val layerMetadata = attributeStore.readHeader[HadoopLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)

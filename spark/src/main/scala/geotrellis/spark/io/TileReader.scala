@@ -9,5 +9,5 @@ import spray.json._
 import scala.reflect._
 
 trait TileReader[ID] {
-  def read[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
+  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
 }
