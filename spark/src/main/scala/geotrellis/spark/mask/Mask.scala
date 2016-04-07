@@ -2,7 +2,7 @@ package geotrellis.spark.mask
 
 import geotrellis.raster._
 import geotrellis.raster.mask._
-import geotrellis.raster.rasterize.Rasterizer.Options
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
@@ -13,6 +13,23 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 object Mask {
+  /** Options for masking tile RDDs.
+    *
+    * @param     rasterizerOptions        Options that dictate how to rasterize the masking geometries.
+    * @param     filterEmptyTiles         If true, tiles that are completely masked will be filtered out
+    *                                     of the RDD. If not, the empty tiles will still be elements of
+    *                                     the resulting RDD.
+    */
+  case class Options(
+    rasterizerOptions: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    filterEmptyTiles: Boolean = true
+  )
+
+  object Options {
+    def DEFAULT = Options()
+    implicit def rasterizerOptionsToOptions(opt: Rasterizer.Options) = Options(opt)
+  }
+
   // As done by [[geotrellis.raster.rasterize.polygon.TestLineSet]] in [[geotrellis.raster.rasterize.polygon.PolygonRasterizer]].
   private def eliminateNotQualified(geom: Option[Geometry]): Option[Geometry] = {
 
@@ -65,9 +82,9 @@ object Mask {
         val intersections = g.safeIntersection(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
-      if(tileGeoms.isEmpty) { None }
+      if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
       else {
-        Some(tile.mask(tileExtent, tileGeoms, options))
+        Some(tile.mask(tileExtent, tileGeoms, options.rasterizerOptions))
       }
     })
 
@@ -82,9 +99,9 @@ object Mask {
         val intersections = g.safeIntersection(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
-      if(tileGeoms.isEmpty) { None }
+      if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
       else {
-        Some(tile.mask(tileExtent, tileGeoms, options))
+        Some(tile.mask(tileExtent, tileGeoms, options.rasterizerOptions))
       }
     })
 
@@ -97,8 +114,9 @@ object Mask {
     _mask(rdd, { case (tileExtent, tile) =>
       val tileExts = ext.intersection(tileExtent)
       tileExts match {
-        case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options))
-        case _ => None
+        case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options.rasterizerOptions))
+        case _ if options.filterEmptyTiles == true => None
+        case _ => Some(tile.mask(tileExtent, Extent(0.0, 0.0, 0.0, 0.0), options.rasterizerOptions))
       }
     })
 
