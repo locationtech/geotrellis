@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.mapalgebra.local
+package geotrellis.raster.mask
 
+import geotrellis.raster.testkit._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
@@ -24,16 +25,13 @@ import geotrellis.vector.io._
 import org.scalatest._
 
 import scala.math.min
-
-import geotrellis.raster.testkit._
-
 import scala.util.Random
 
-class MaskSpec extends FunSpec
+class SinglebandTileMaskMethodsSpec extends FunSpec
                   with Matchers
                   with RasterMatchers
                   with TileBuilders {
-  describe("Mask") {
+  describe("singleband tile mask") {
     it("should work with integers") {
       val r1 = createTile(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
