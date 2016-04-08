@@ -55,9 +55,9 @@ object StreamingHistogram {
       }
   }
 
-  private val defaultSize = 80
+  def DEFAULT_NUM_BUCKETS = 80
 
-  def apply(size: Int = defaultSize) =
+  def apply(size: Int = DEFAULT_NUM_BUCKETS) =
     new StreamingHistogram(size, Double.PositiveInfinity, Double.NegativeInfinity)
 
   def apply(
@@ -67,8 +67,11 @@ object StreamingHistogram {
   ) =
     new StreamingHistogram(size, minimumSeen, maximumSeen)
 
-  def fromTile(r: Tile): StreamingHistogram = {
-    val h = StreamingHistogram()
+  def fromTile(r: Tile): StreamingHistogram =
+    fromTile(r, DEFAULT_NUM_BUCKETS)
+
+  def fromTile(r: Tile, numBuckets: Int): StreamingHistogram = {
+    val h = StreamingHistogram(numBuckets)
     r.foreachDouble  { z => if (isData(z)) h.countItem(z) }
     h
   }

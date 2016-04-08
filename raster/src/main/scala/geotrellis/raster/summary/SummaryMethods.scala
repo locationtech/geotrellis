@@ -23,7 +23,13 @@ trait SummaryMethods extends MethodExtensions[Tile] {
   /**
     * Create a histogram from double values in a raster.
     */
-  def histogramDouble: Histogram[Double] =
+  def histogramDouble(): Histogram[Double] =
+    histogramDouble(StreamingHistogram.DEFAULT_NUM_BUCKETS)
+
+  /**
+    * Create a histogram from double values in a raster.
+    */
+  def histogramDouble(numBuckets: Int): Histogram[Double] =
     StreamingHistogram.fromTile(self)
 
   /**

@@ -139,9 +139,11 @@ class TileRDDMaskMethodsSpec extends FunSpec
 
     it ("should be masked by random polygons") {
       randomPolygons()(width, height) foreach { poly =>
-        val masked = rdd.mask(poly, options = opts).stitch
-        val expected = tile.mask(worldExt, poly)
-        masked.toArray() shouldEqual expected.toArray()
+        if(poly.isValid) {
+          val masked = rdd.mask(poly, options = opts).stitch
+          val expected = tile.mask(worldExt, poly)
+          masked.toArray() shouldEqual expected.toArray()
+        }
       }
     }
 
@@ -164,9 +166,11 @@ class TileRDDMaskMethodsSpec extends FunSpec
         MultiPolygon(a, b)
       }
       multipolygons foreach { multipoly =>
-        val masked = rdd.mask(multipoly, options = opts).stitch
-        val expected = tile.mask(worldExt, multipoly)
-        masked.toArray() shouldEqual expected.toArray()
+        if(multipolygon.isValid) {
+          val masked = rdd.mask(multipoly, options = opts).stitch
+          val expected = tile.mask(worldExt, multipoly)
+          masked.toArray() shouldEqual expected.toArray()
+        }
       }
     }
 
