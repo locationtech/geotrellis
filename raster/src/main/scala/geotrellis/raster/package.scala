@@ -25,6 +25,7 @@ import geotrellis.util.MethodExtensions
 package object raster
     extends crop.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
+    with mask.Implicits
     with merge.Implicits
     with reproject.Implicits
     with split.Implicits {
@@ -50,7 +51,7 @@ package object raster
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
       with hydrology.HydrologyMethods
-      with mask.TileMaskMethods
+      with mask.SinglebandTileMaskMethods
       with merge.SinglebandTileMergeMethods
       with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
@@ -71,6 +72,7 @@ package object raster
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with crop.MultibandTileCropMethods
+      with mask.MultibandTileMaskMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with reproject.MultibandTileReprojectMethods

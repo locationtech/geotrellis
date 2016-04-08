@@ -127,20 +127,20 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     * Adjust the histogram so that that it is as if the given value
     * 'item' has been seen 'count' times.
     */
-  def setItem(item: Int, count: Int) {
+  def setItem(item: Int, count: Long) {
     // We use our hashing strategy to figure out which bucket this
     // item gets.  if the bucket is empty, we're adding the item,
     // whereas if its not we are just increasing the item's count.
     val i = hashItem(item, mask, buckets)
     if (buckets(i) == UNSET) {
       buckets(i) = item
-      buckets(i + 1) = count
+      buckets(i + 1) = count.toInt
       used += 1
       if (used > limit) resize()
-      total += count
+      total += count.toInt
     } else {
-      total = total - buckets(i + 1) + count
-      buckets(i + 1) = count
+      total = total - buckets(i + 1) + count.toInt
+      buckets(i + 1) = count.toInt
     }
   }
 
@@ -148,7 +148,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     * For the value 'item', register the appearance of 'count' more
     * instances of it.
     */
-  def countItem(item: Int, count: Int = 1):Unit = {
+  def countItem(item: Int, count: Long):Unit = {
     // We use our hashing strategy to figure out which bucket this
     // item gets.  if the bucket is empty, we're adding the item,
     // whereas if its not we are just increasing the item's count.
@@ -156,13 +156,13 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
       val i = hashItem(item, mask, buckets)
       if (buckets(i) == UNSET) {
         buckets(i) = item
-        buckets(i + 1) = count
+        buckets(i + 1) = count.toInt
         used += 1
         if (used > limit) resize()
       } else {
-        buckets(i + 1) += count
+        buckets(i + 1) += count.toInt
       }
-      total += count
+      total += count.toInt
     }
   }
 

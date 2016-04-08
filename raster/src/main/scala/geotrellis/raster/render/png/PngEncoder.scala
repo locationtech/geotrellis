@@ -72,16 +72,15 @@ case class PngEncoder(settings: Settings) {
 
   def writeBackgroundInfo(dos: DataOutputStream) {
     settings.colorType match {
-      case GreyPngEncoding(ndColor) => {
+      case GreyPngEncoding(Some(ndColor)) =>
         // write a single 2-byte color value
         // NoData color is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
         cTRNS.writeByte(0x00)
         cTRNS.writeByte(shift(ndColor, 8))
         cTRNS.writeTo(dos)
-      }
 
-      case RgbPngEncoding(ndColor) => {
+      case RgbPngEncoding(Some(ndColor)) =>
         // write three 2-byte color values
         // NoData color is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
@@ -92,9 +91,8 @@ case class PngEncoder(settings: Settings) {
         cTRNS.writeByte(0x00)
         cTRNS.writeByte(shift(ndColor, 8))
         cTRNS.writeTo(dos)
-      }
 
-      case IndexedPngEncoding(rgbs, alphas) => {
+      case IndexedPngEncoding(rgbs, alphas) =>
         // write 3-byte RGB values for every index entry
         val cPLTE = new Chunk(PLTE)
         rgbs.foreach {
@@ -109,10 +107,8 @@ case class PngEncoder(settings: Settings) {
         val cTRNS = new Chunk(TRNS)
         alphas.foreach(a => cTRNS.writeByte(byte(a)))
         cTRNS.writeTo(dos)
-      }
 
-      case GreyaPngEncoding => {}
-      case RgbaPngEncoding => {}
+      case _ =>
     }
   }
 

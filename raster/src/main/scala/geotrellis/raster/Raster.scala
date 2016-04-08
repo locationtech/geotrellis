@@ -72,6 +72,8 @@ case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, E
     */
   def asFeature(): PolygonFeature[T] = PolygonFeature(extent.toPolygon, tile: T)
 
+  def mapTile[A <: CellGrid](f: T => A): Raster[A] = Raster(f(tile), extent)
+
   def _1: T = tile
 
   def _2: Extent = extent

@@ -207,7 +207,10 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
-  def bands(bandSequence: Seq[Int]): ArrayMultibandTile = {
+  def bands: Vector[Tile] =
+    (0 until bandCount).map(band(_)).toVector
+
+  def subsetBands(bandSequence: Seq[Int]): ArrayMultibandTile = {
     val newBands = Array.ofDim[Tile](bandSequence.size)
     var i = 0
 
@@ -219,9 +222,6 @@ abstract class GeoTiffMultibandTile(
 
     new ArrayMultibandTile(newBands)
   }
-
-  def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultibandTile =
-    bands(bandSequence)
 
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile }):_*)

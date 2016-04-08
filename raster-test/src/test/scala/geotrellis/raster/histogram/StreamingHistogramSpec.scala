@@ -140,4 +140,42 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("quantileBreaks") {
+    it("should return a single element when only one type of value has been counted") {
+      val arrTile = FloatArrayTile.fill(1.0f, 100, 200, FloatConstantNoDataCellType)
+      val hist = arrTile.histogramDouble
+      hist.quantileBreaks(5) should be (Seq(1.0, 1.0, 1.0, 1.0, 1.0))
+    }
+
+    it("should return a single element when only one type of value has been counted, merged with an empty tile histogram") {
+      val arrTile = FloatArrayTile.fill(1.0f, 100, 200, FloatConstantNoDataCellType)
+      val arrTile2 = FloatArrayTile.empty(100, 200, FloatConstantNoDataCellType)
+      val hist = arrTile.histogramDouble.merge(arrTile2.histogramDouble)
+      hist.quantileBreaks(5) should be (Seq(1.0, 1.0, 1.0, 1.0, 1.0))
+    }
+
+    it("should get quantile breaks on tile with only 2 types of values") {
+      val arrTile = FloatArrayTile.fill(1.0f, 100, 200, FloatConstantNoDataCellType)
+      arrTile.setDouble(5, 4, 3.0)
+      arrTile.setDouble(5, 5, 4.0)
+      val hist = arrTile.histogramDouble
+      hist.quantileBreaks(10).toSeq should be ((1 to 9).map { z => 1.0f } ++ Seq(4.0f))
+    }
+
+    it("should not throw when there are more breaks than buckets") {
+      val h = StreamingHistogram()
+
+      Iterator
+        .continually(List(1,2,3))
+        .flatten
+        .take(10000)
+        .foreach({ i => h.countItem(i.toDouble) })
+
+      val breaks = h.quantileBreaks(50).toList
+
+      breaks.length should be (50)
+      breaks.max should be > (2.9)
+      breaks.min should be < (1.1)
+    }
+  }
 }

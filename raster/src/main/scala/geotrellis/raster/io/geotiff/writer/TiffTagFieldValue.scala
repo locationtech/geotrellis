@@ -52,7 +52,7 @@ object TiffTagFieldValue {
       case IntConstantNoDataCellType => Some(NODATA.toString)
       case IntUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
-      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toDouble.toString) // Convert to a double, since there can be some weirdness with float toString.
       case DoubleUserDefinedNoDataCellType(nd) => Some(nd.toString)
     }
 

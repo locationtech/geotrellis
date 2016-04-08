@@ -19,12 +19,37 @@ package geotrellis.spark.io.kryo
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
 import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.serializers._
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output
 import de.javakaffee.kryoserializers._
 
-import java.util.{Arrays, Collections}
+import java.util.{Arrays, Collections, Comparator, TreeMap}
+
+/** Account for a bug in Kryo < 2.22 for serializing TreeMaps */
+class XTreeMapSerializer extends MapSerializer {
+  override def write (kryo: Kryo, output: Output, map: java.util.Map[_, _]) {
+    val treeMap = map.asInstanceOf[TreeMap[_, _]]
+    kryo.writeClassAndObject(output, treeMap.comparator())
+    super.write(kryo, output, map)
+  }
+
+  protected override def create (kryo: Kryo, input: Input, t: Class[java.util.Map[_, _]]): java.util.Map[_, _] = {
+    new TreeMap(kryo.readClassAndObject(input).asInstanceOf[Comparator[_]])
+  }
+
+  protected override def createCopy (kryo: Kryo, original: java.util.Map[_, _]): java.util.Map[_, _] = {
+    new TreeMap(original.asInstanceOf[TreeMap[_, _]].comparator())
+  }
+}
 
 class KryoRegistrator extends SparkKryoRegistrator {
+
   override def registerClasses(kryo: Kryo) {
+    // TreeMap serializaiton has a bug; we fix it here as we're stuck on low
+    // Kryo versions due to Spark. Hack-tastic.
+    kryo.register(classOf[TreeMap[_, _]], (new XTreeMapSerializer).asInstanceOf[com.esotericsoftware.kryo.Serializer[TreeMap[_, _]]])
+
     kryo.register(classOf[(_,_)])
     kryo.register(classOf[::[_]])
     kryo.register(classOf[geotrellis.raster.ByteArrayFiller])
@@ -161,7 +186,9 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.histogram.Histogram[Any]])
     kryo.register(classOf[geotrellis.raster.histogram.MutableHistogram[Any]])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram])
-    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram$DeltaCompare])
+    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.DeltaCompare])
+    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Delta])
+    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Bucket])
     kryo.register(classOf[geotrellis.raster.KernelStamper])
     kryo.register(classOf[geotrellis.raster.summary.polygonal.MeanResult])
     kryo.register(classOf[geotrellis.raster.ProjectedRaster[Any]])
