@@ -30,11 +30,13 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .mapValues { case (tile, count) => tile / count}
   }
 
-  def histogram: Histogram[Double] = {
+  def histogram(): Histogram[Double] =
+    histogram(StreamingHistogram.DEFAULT_NUM_BUCKETS)
+
+  def histogram(numBuckets: Int): Histogram[Double] =
     self
-      .map { case (key, tile) => tile.histogramDouble }
+      .map { case (key, tile) => tile.histogramDouble(numBuckets) }
       .reduce { _ merge _ }
-  }
 
   /** Gives a histogram that uses exact counts of integer values.
     * @note This cannot handle counts that are larger than Int.MaxValue, and
