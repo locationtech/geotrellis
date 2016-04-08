@@ -1,5 +1,8 @@
 package geotrellis.spark.io
 
+import spray.json._
+import spray.json.DefaultJsonProtocol._
+
 /** Base trait for layer headers that store location information for a saved layer */
 trait LayerHeader {
   def format: String
