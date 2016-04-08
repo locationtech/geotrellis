@@ -30,6 +30,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.{ListBuffer => MutableListBuffer}
 
 object StreamingHistogram {
+
   case class Bucket(label: Double, count: Long) {
     def _1 = label
     def _2 = count
@@ -57,14 +58,14 @@ object StreamingHistogram {
   private val defaultSize = 80
 
   def apply(size: Int = defaultSize) =
-    new StreamingHistogram(size, None, None, Double.PositiveInfinity, Double.NegativeInfinity)
+    new StreamingHistogram(size, Double.PositiveInfinity, Double.NegativeInfinity)
 
   def apply(
     size: Int,
     minimumSeen: Double,
     maximumSeen: Double
   ) =
-    new StreamingHistogram(size, None, None, minimumSeen, maximumSeen)
+    new StreamingHistogram(size, minimumSeen, maximumSeen)
 
   def fromTile(r: Tile): StreamingHistogram = {
     val h = StreamingHistogram()
@@ -80,16 +81,14 @@ object StreamingHistogram {
   */
 class StreamingHistogram(
   size: Int,
-  startingBuckets: Option[TreeMap[Double, Long]],
-  startingDeltas: Option[TreeMap[Delta, Unit]],
   minimum: Double = Double.PositiveInfinity,
   maximum: Double = Double.NegativeInfinity
 ) extends MutableHistogram[Double] {
 
   private var _min = minimum
   private var _max = maximum
-  private val _buckets = startingBuckets.getOrElse(new TreeMap[Double, Long])
-  private val _deltas = startingDeltas.getOrElse(new TreeMap[Delta, Unit](new DeltaCompare))
+  private val _buckets = new TreeMap[Double, Long]
+  private val _deltas = new TreeMap[Delta, Unit](new DeltaCompare)
 
   /**
     * Compute the area of the curve between the two buckets.
@@ -560,8 +559,8 @@ class StreamingHistogram(
   /**
     * This method return the (approximate) quantile breaks of the
     * distribution of points that the histogram has seen so far.  It
-    * is guaranteed that no value in the returned array will be outside
-    * the range minimum-maximum range of values seen.
+    * is guaranteed that no value in the returned array will be
+    * outside the range minimum-maximum range of values seen.
     *
     * @param num The number of breaks desired
     */
@@ -570,7 +569,7 @@ class StreamingHistogram(
 
   /**
     * Return the list of buckets of this histogram.  Primarily useful
-    * for debugging.
+    * for debugging and serialization.
     */
   def buckets(): List[Bucket] = _buckets.asScala.map { tup => tup: Bucket }.toList
 
@@ -579,4 +578,10 @@ class StreamingHistogram(
     * for debugging.
     */
   def deltas(): List[Delta] = _deltas.keySet.asScala.toList
+
+  /**
+    * Return the maximum number of buckets of this histogram.
+    * Primarily useful for debugging and serialization.
+    */
+  def maxBuckets(): Int = size
 }
