@@ -166,7 +166,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
         MultiPolygon(a, b)
       }
       multipolygons foreach { multipoly =>
-        if(multipolygon.isValid) {
+        if(multipoly.isValid) {
           val masked = rdd.mask(multipoly, options = opts).stitch
           val expected = tile.mask(worldExt, multipoly)
           masked.toArray() shouldEqual expected.toArray()
