@@ -17,6 +17,8 @@
 package geotrellis.raster.histogram
 
 import geotrellis.raster._
+import geotrellis.raster.io._
+import spray.json._
 
 import org.scalatest._
 import math.abs
@@ -178,4 +180,95 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       breaks.min should be < (1.1)
     }
   }
+
+  describe("Json Serialization") {
+
+    it("should successfully round-trip a trivial histogram") {
+      val h1 = StreamingHistogram()
+      val h2 = h1.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+
+      h1.statistics should equal (h2.statistics)
+      h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
+      h1.bucketCount should equal (h2.bucketCount)
+      h1.maxBuckets should equal (h2.maxBuckets)
+    }
+
+    it("should successfully round-trip a non-trivial histogram") {
+      val h1 = StreamingHistogram()
+
+      Iterator
+        .continually(list1)
+        .flatten
+        .take(10000)
+        .foreach({ i => h1.countItem(i.toDouble) })
+
+      val h2 = h1.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+
+      h1.statistics should equal (h2.statistics)
+      h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
+      h1.bucketCount should equal (h2.bucketCount)
+      h1.maxBuckets should equal (h2.maxBuckets)
+    }
+
+    it("should produce a result which behaves the same as the original") {
+      val h1 = StreamingHistogram()
+
+      Iterator
+        .continually(list1)
+        .flatten
+        .take(10000)
+        .foreach({ i => h1.countItem(i.toDouble) })
+
+      val h2 = h1.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+
+      Iterator
+        .continually(list2)
+        .flatten
+        .take(20000)
+        .foreach({ i =>
+          h1.countItem(i.toDouble)
+          h2.countItem(i.toDouble)
+        })
+
+      h1.statistics should equal (h2.statistics)
+      h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
+      h1.bucketCount should equal (h2.bucketCount)
+      h1.maxBuckets should equal (h2.maxBuckets)
+    }
+
+    it("should produce non-sterile offspring") {
+      val h1 = StreamingHistogram()
+
+      Iterator
+        .continually(list1)
+        .flatten
+        .take(10000)
+        .foreach({ i => h1.countItem(i.toDouble) })
+
+      val h2 = {
+        var h = h1
+        var i = 0; while (i < 107) {
+          h = h.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+          i += 1
+        }
+        h
+      }
+
+      Iterator
+        .continually(list2)
+        .flatten
+        .take(20000)
+        .foreach({ i =>
+          h1.countItem(i.toDouble)
+          h2.countItem(i.toDouble)
+        })
+
+      h1.statistics should equal (h2.statistics)
+      h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
+      h1.bucketCount should equal (h2.bucketCount)
+      h1.maxBuckets should equal (h2.maxBuckets)
+    }
+
+  }
+
 }
