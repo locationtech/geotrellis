@@ -23,6 +23,6 @@ class HadoopSpaceTimeSpec
   lazy val mover  = HadoopLayerMover(outputLocal)
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val updater = HadoopLayerUpdater(outputLocal)
-  lazy val tiles = HadoopTileReader(outputLocal)
+  lazy val tiles = HadoopValueReader(outputLocal)
   lazy val sample =  CoordinateSpaceTime
 }

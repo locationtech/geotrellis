@@ -103,7 +103,7 @@ Implemented instances include:
   - `Polygon`
 
 
-## Tile Readers
+## Value Readers
 
 Unlike layer readers, which produce a future distributed collection, an `RDD`, a tile reader for a layer is essentially a reader provider. The provided reader is able to read a single value from a specified layer.
 
@@ -112,11 +112,20 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.s3._
 
-val readerProvider = S3TileReader("my-bucket", "catalog-prefix")
+val attributeStore = S3AttributeStore("my-bucket", "catalog-prefix")
+val nlcdReader: Reader[SpatialKey, Tile] = S3ValueReader[SpatialKey, Tile](attributeStore, LayerId("NLCD", 10))
+val tile: Tile = nlcdReader.read(SpatialKey(1,2))
+```
+
+`ValueReader` class is very useful for creating an endpoint for a tile server because it both provides a cheap low latency access to saved tiles and does not require an instance of `SparkContext` to operate.
+
+If you wish to abstract over the backend specific arguments but delay specification of the key and value types you may use an alternative constructor like os:
+
+```scala
+val attributeStore = S3AttributeStore("my-bucket", "catalog-prefix")
+val readerProvider: ValueReader[LayerId] = S3ValueReader(attributeStore)
 val nlcdReader: Reader[SpatialKey, Tile] = readerProvider.reader[SpatialKey, Tile](LayerId("NLCD", 10))
 val tile: Tile = nlcdReader.read(SpatialKey(1,2))
 ```
 
 The idea is similar to the `LayerReader.reader` method except in this case we're producing a reader for single tiles. Additionally it must be noted that the layer metadata is accessed during the construction of the `Reader[SpatialKey, Tile]` and saved for all future calls to read a tile.
-
-`TileReader` class is very useful for creating an endpoint for a tile server because it both provides a cheap low latency access to saved tiles and does not require an instance of `SparkContext` to operate. 
