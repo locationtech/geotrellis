@@ -54,7 +54,7 @@ object S3ValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    new S3ValueReader[K, V](attributeStore).reader(layerId)
+    new S3ValueReader(attributeStore).reader[K, V](layerId)
 
   def apply(bucket: String, root: String): S3ValueReader =
     new S3ValueReader(new S3AttributeStore(bucket, root))

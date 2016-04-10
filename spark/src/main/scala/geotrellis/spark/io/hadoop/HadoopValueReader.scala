@@ -61,7 +61,7 @@ object HadoopValueReader {
     attributeStore: HadoopAttributeStore,
     layerId: LayerId
   )(implicit sc: SparkContext): Reader[K, V] =
-    new HadoopValueReader(attributeStore).reader(layerId)
+    new HadoopValueReader(attributeStore).reader[K, V](layerId)
 
   def apply(attributeStore: HadoopAttributeStore)
     (implicit sc: SparkContext): HadoopValueReader =

@@ -60,7 +60,7 @@ object AccumuloValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    new AccumuloValueReader(instance, attributeStore).reader(layerId)
+    new AccumuloValueReader(instance, attributeStore).reader[K, V](layerId)
 
   def apply(instance: AccumuloInstance): AccumuloValueReader =
     new AccumuloValueReader(
