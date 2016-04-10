@@ -14,10 +14,10 @@ import spray.json.DefaultJsonProtocol._
 import java.io.File
 import scala.reflect.ClassTag
 
-class FileTileReader(
+class FileValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String
-) extends TileReader[LayerId] {
+) extends ValueReader[LayerId] {
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
@@ -45,10 +45,16 @@ class FileTileReader(
   }
 }
 
-object FileTileReader {
-  def apply(catalogPath: String): FileTileReader =
-    new FileTileReader(new FileAttributeStore(catalogPath), catalogPath)
+object FileValueReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    attributeStore: AttributeStore,
+    layerId: LayerId
+  ): Reader[K, V] =
+    new FileValueReader(attributeStore, catalogPath).reader(layerId)
 
-  def apply(attributeStore: FileAttributeStore): FileTileReader =
-    new FileTileReader(attributeStore, attributeStore.catalogPath)
+  def apply(catalogPath: String): FileValueReader =
+    new FileValueReader(new FileAttributeStore(catalogPath), catalogPath)
+
+  def apply(attributeStore: FileAttributeStore): FileValueReader =
+    new FileValueReader(attributeStore, attributeStore.catalogPath)
 }

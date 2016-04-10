@@ -17,8 +17,8 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class HadoopTileReader(val attributeStore: HadoopAttributeStore)
-    (implicit sc: SparkContext) extends TileReader[LayerId] {
+class HadoopValueReader(val attributeStore: HadoopAttributeStore)
+    (implicit sc: SparkContext) extends ValueReader[LayerId] {
 
   val conf = attributeStore.hadoopConfiguration
 
@@ -56,12 +56,18 @@ class HadoopTileReader(val attributeStore: HadoopAttributeStore)
   }
 }
 
-object HadoopTileReader {
+object HadoopValueReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    attributeStore: HadoopAttributeStore,
+    layerId: LayerId
+  )(implicit sc: SparkContext): Reader[K, V] =
+    new HadoopValueReader(attributeStore).reader(layerId)
+
   def apply(attributeStore: HadoopAttributeStore)
-    (implicit sc: SparkContext): HadoopTileReader =
-    new HadoopTileReader(attributeStore)
+    (implicit sc: SparkContext): HadoopValueReader =
+    new HadoopValueReader(attributeStore)
 
   def apply(rootPath: Path)
-    (implicit sc: SparkContext): HadoopTileReader =
+    (implicit sc: SparkContext): HadoopValueReader =
     apply(HadoopAttributeStore(rootPath))
 }

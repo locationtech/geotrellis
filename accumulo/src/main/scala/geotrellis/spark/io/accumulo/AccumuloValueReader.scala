@@ -16,10 +16,10 @@ import spray.json.DefaultJsonProtocol._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-class AccumuloTileReader(
+class AccumuloValueReader(
   instance: AccumuloInstance,
-  val attributeStore: AccumuloAttributeStore
-) extends TileReader[LayerId] {
+  val attributeStore: AttributeStore
+) extends ValueReader[LayerId] {
 
   val rowId = (index: Long) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
@@ -54,9 +54,16 @@ class AccumuloTileReader(
   }
 }
 
-object AccumuloTileReader {
-  def apply(instance: AccumuloInstance): AccumuloTileReader =
-    new AccumuloTileReader(
+object AccumuloValueReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    instance: AccumuloInstance,
+    attributeStore: AttributeStore,
+    layerId: LayerId
+  ): Reader[K, V] =
+    new AccumuloValueReader(instance, attributeStore).reader(layerId)
+
+  def apply(instance: AccumuloInstance): AccumuloValueReader =
+    new AccumuloValueReader(
       instance = instance,
       attributeStore = AccumuloAttributeStore(instance.connector))
 }
