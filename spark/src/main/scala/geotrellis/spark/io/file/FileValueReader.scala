@@ -48,6 +48,7 @@ class FileValueReader(
 object FileValueReader {
   def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
+    catalogPath: String,
     layerId: LayerId
   ): Reader[K, V] =
     new FileValueReader(attributeStore, catalogPath).reader(layerId)
