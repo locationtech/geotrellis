@@ -40,7 +40,7 @@ abstract class PersistenceSpec[
   type TestCopier = LayerCopier[LayerId]
   type TestMover = LayerMover[LayerId]
   type TestReindexer = LayerReindexer[LayerId]
-  type TestTileReader = Reader[LayerId, Reader[K, V]]
+  type TestTileReader = ValueReader[LayerId]
   type TestUpdater = LayerUpdater[LayerId]
 
   def sample: RDD[(K, V)] with Metadata[M]
@@ -104,7 +104,7 @@ abstract class PersistenceSpec[
       }
 
       it("should read a single value") {
-        val tileReader = tiles.read(layerId)
+        val tileReader = tiles.reader[K, V](layerId)
         val key = sample.keys.first()
         val readV: V = tileReader.read(key)
         val expectedV: V = sample.filter(_._1 == key).values.first()

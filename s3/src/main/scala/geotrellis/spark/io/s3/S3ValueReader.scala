@@ -14,13 +14,13 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+class S3ValueReader(
   val attributeStore: AttributeStore
-)  extends Reader[LayerId, Reader[K, V]] {
+) extends ValueReader[LayerId] {
 
   val s3Client: S3Client = S3Client.default
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
@@ -49,10 +49,16 @@ class S3TileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec]
   }
 }
 
-object S3TileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String, root: String): S3TileReader[K, V] =
-    new S3TileReader[K, V](new S3AttributeStore(bucket, root))
+object S3ValueReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    attributeStore: AttributeStore,
+    layerId: LayerId
+  ): Reader[K, V] =
+    new S3ValueReader(attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](bucket: String): S3TileReader[K, V] =
+  def apply(bucket: String, root: String): S3ValueReader =
+    new S3ValueReader(new S3AttributeStore(bucket, root))
+
+  def apply(bucket: String): S3ValueReader =
     apply(bucket, "")
 }

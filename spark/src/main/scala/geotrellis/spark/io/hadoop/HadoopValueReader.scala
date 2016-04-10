@@ -17,12 +17,12 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect.ClassTag
 
-class HadoopTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](val attributeStore: HadoopAttributeStore)
-    (implicit sc: SparkContext) extends Reader[LayerId, Reader[K, V]] {
+class HadoopValueReader(val attributeStore: HadoopAttributeStore)
+    (implicit sc: SparkContext) extends ValueReader[LayerId] {
 
   val conf = attributeStore.hadoopConfiguration
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
     val layerMetadata = attributeStore.readHeader[HadoopLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
@@ -56,12 +56,18 @@ class HadoopTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCo
   }
 }
 
-object HadoopTileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](attributeStore: HadoopAttributeStore)
-    (implicit sc: SparkContext): HadoopTileReader[K, V] =
-    new HadoopTileReader[K, V](attributeStore)
+object HadoopValueReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    attributeStore: HadoopAttributeStore,
+    layerId: LayerId
+  )(implicit sc: SparkContext): Reader[K, V] =
+    new HadoopValueReader(attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](rootPath: Path)
-    (implicit sc: SparkContext): HadoopTileReader[K, V] =
+  def apply(attributeStore: HadoopAttributeStore)
+    (implicit sc: SparkContext): HadoopValueReader =
+    new HadoopValueReader(attributeStore)
+
+  def apply(rootPath: Path)
+    (implicit sc: SparkContext): HadoopValueReader =
     apply(HadoopAttributeStore(rootPath))
 }

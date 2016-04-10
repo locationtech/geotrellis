@@ -14,12 +14,12 @@ import spray.json.DefaultJsonProtocol._
 import java.io.File
 import scala.reflect.ClassTag
 
-class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+class FileValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String
-)  extends Reader[LayerId, Reader[K, V]] {
+) extends ValueReader[LayerId] {
 
-  def read(layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
     val header = attributeStore.readHeader[FileLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
@@ -45,10 +45,17 @@ class FileTileReader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCode
   }
 }
 
-object FileTileReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](catalogPath: String): FileTileReader[K, V] =
-    new FileTileReader[K, V](new FileAttributeStore(catalogPath), catalogPath)
+object FileValueReader {
+  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    attributeStore: AttributeStore,
+    catalogPath: String,
+    layerId: LayerId
+  ): Reader[K, V] =
+    new FileValueReader(attributeStore, catalogPath).reader(layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](attributeStore: FileAttributeStore): FileTileReader[K, V] =
-    new FileTileReader[K, V](attributeStore, attributeStore.catalogPath)
+  def apply(catalogPath: String): FileValueReader =
+    new FileValueReader(new FileAttributeStore(catalogPath), catalogPath)
+
+  def apply(attributeStore: FileAttributeStore): FileValueReader =
+    new FileValueReader(attributeStore, attributeStore.catalogPath)
 }
