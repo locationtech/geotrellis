@@ -23,13 +23,24 @@ sealed abstract class PngColorEncoding(val n: Byte, val depth: Int) {
 }
 
 // greyscale and color opaque rasters
-case class GreyPngEncoding(transparent: Int) extends PngColorEncoding(0, 1) {
+case class GreyPngEncoding(transparent: Option[Int]) extends PngColorEncoding(0, 1) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
    colorMap.mapColors { c => c.blue }
 }
-case class RgbPngEncoding(transparent: Int) extends PngColorEncoding(2, 3) {
+trait GreyPngEncodingConvertable { implicit def toGreyPngEncoding(self: GreyPngEncodingConvertable): GreyPngEncoding = GreyPngEncoding() }
+object GreyPngEncoding extends GreyPngEncodingConvertable {
+  def apply(transparent: Int): GreyPngEncoding = GreyPngEncoding(Some(transparent))
+  def apply(): GreyPngEncoding = GreyPngEncoding(None)
+}
+
+case class RgbPngEncoding(transparent: Option[Int]) extends PngColorEncoding(2, 3) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
    colorMap.mapColors { c => c >> 8 }
+}
+trait RgbPngEncodingConvertable { implicit def toRgbPngEncoding(self: RgbPngEncodingConvertable): RgbPngEncoding = RgbPngEncoding() }
+object RgbPngEncoding extends RgbPngEncodingConvertable {
+  def apply(transparent: Int): RgbPngEncoding = RgbPngEncoding(Some(transparent))
+  def apply(): RgbPngEncoding = RgbPngEncoding(None)
 }
 
 // indexed color, using separate rgb and alpha channels

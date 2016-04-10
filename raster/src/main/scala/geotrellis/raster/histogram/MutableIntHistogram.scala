@@ -31,7 +31,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     * more efficiently. Negative counts can be used to remove a
     * particular number of occurances of 'item'.
     */
-  def countItemInt(item: Int, count: Int = 1): Unit = countItem(item, count)
+  def countItemInt(item: Int, count: Long): Unit = countItem(item, count)
 
   /**
     * Update this histogram with the entries from the other one.
@@ -89,9 +89,9 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // X * Q - X * E = T
     // X * (Q - E)   = T
     // X             = T / (Q - E)
-    val eSubtotal: Int = eItems.foldLeft(0)((t, i) => t + h.itemCount(i))
-    val oSubtotal: Int = h.totalCount - eSubtotal
-    var eValue: Int = oSubtotal / (num - eLen)
+    val eSubtotal: Long = eItems.foldLeft(0L)((t, i) => t + h.itemCount(i))
+    val oSubtotal: Long = h.totalCount - eSubtotal
+    var eValue: Long = oSubtotal / (num - eLen)
 
     eItems.foreach(i => h.setItem(i, eValue))
     h
@@ -130,7 +130,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     val localValue = values()
 
     // the current total of all previous values we've seen
-    var currTotal = 0
+    var currTotal = 0L
 
     // we're going to move incrementally through the values while comparing
     // a running total against our current quantile (qIndex). we know that the

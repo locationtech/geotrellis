@@ -20,7 +20,7 @@ class HadoopSpatialSpec
   lazy val mover  = HadoopLayerMover(outputLocal)
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val updater = HadoopLayerUpdater(outputLocal)
-  lazy val tiles = HadoopTileReader[SpatialKey, Tile](outputLocal)
+  lazy val tiles = HadoopValueReader(outputLocal)
   lazy val sample = AllOnesTestFile
 
   describe("HDFS layer names") {

@@ -99,9 +99,6 @@ package object spark
   implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends TileLayerRDDMethods[K]
 
-  implicit class withTileLayerRDDMaskMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
-      extends mask.TileLayerRDDMaskMethods[K]
-
   implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
       extends MultibandTileLayerRDDMethods[K]
 
@@ -130,12 +127,22 @@ package object spark
   implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, TileLayerMetadata[K2]) = {
-      TileLayerMetadata.fromRdd(rdd, crs, layoutScheme)
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, crs, layoutScheme)
     }
 
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layout: LayoutDefinition)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): TileLayerMetadata[K2] = {
-      TileLayerMetadata.fromRdd(rdd, crs, layout)
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, crs, layout)
     }
-  }
+
+    def collectMetadata[K2: Boundable: SpatialComponent](layoutScheme: LayoutScheme)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, layoutScheme)
+    }
+
+    def collectMetadata[K2: Boundable: SpatialComponent](layout: LayoutDefinition)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, layout)
+    }
+ }
 }

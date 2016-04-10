@@ -9,7 +9,7 @@ import spray.json._
 
 object Implicits extends Implicits
 
-trait Implicits {
+trait Implicits extends StreamingHistogramJson {
   implicit object HistogramFormat extends RootJsonFormat[Histogram[Int]] {
     def write(h: Histogram[Int]): JsValue = {
       var pairs: List[JsArray] = Nil

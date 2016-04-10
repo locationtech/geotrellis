@@ -30,18 +30,6 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     }
   }
 
-  def createConsecutiveTile(d: Int, start: Int): Tile = {
-    val tile = ArrayTile.empty(IntCellType, d, d)
-    var i = start
-    cfor(0)(_ < d, _ + 1) { row =>
-      cfor(0)(_ < d, _ + 1) { col =>
-        tile.set(col, row, i)
-        i += 1
-      }
-    }
-    tile
-  }
-
   test("should render a PNG and match what is read in by ImageIO when written as Indexed") {
     val tileNW =
       createValueTile(50, 1)
@@ -182,13 +170,13 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
 
   test("should render a PNG and match what is read in by ImageIO when written as RGBA") {
     val tileNW =
-      createConsecutiveTile(50, 1)
+      createConsecutiveTile(50, 50, 1)
     val tileNE =
-      createConsecutiveTile(50, 2501)
+      createConsecutiveTile(50, 50, 2501)
     val tileSW =
-      createConsecutiveTile(50, 5001)
+      createConsecutiveTile(50, 50, 5001)
     val tileSE =
-      createConsecutiveTile(50, 7501)
+      createConsecutiveTile(50, 50, 7501)
 
     val tile =
       CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
@@ -204,13 +192,42 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     testPng(png, tile, colorMap)
   }
 
+  test("should render a PNG and match what is read in by ImageIO when written as RGBA with float tile") {
+    val tileNW =
+      createConsecutiveTile(50, 50, 1).convert(FloatConstantNoDataCellType)
+    val tileNE =
+      createConsecutiveTile(50, 50, 2501).convert(FloatConstantNoDataCellType)
+    val tileSW =
+      createConsecutiveTile(50, 50, 5001).convert(FloatConstantNoDataCellType)
+    val tileSE =
+      createConsecutiveTile(50, 50, 7501).convert(FloatConstantNoDataCellType)
+
+    val tile =
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+
+    val colorMap =
+      ColorRamp(0xFF0000FF, 0x0000FFFF)
+        .stops(1000)
+        .setAlphaGradient(0xFF, 0xAA)
+        .toColorMap(tile.histogram)
+
+    val colored = colorMap.render(tile)
+    colored.combineDouble(tile) { (z1, z2) =>
+      val expected = colorMap.mapDouble(z2)
+      withClue(f"${z1.toInt}%02X does not equal ${expected.toInt}%02X (${expected.toFloat.toInt}%02X) -") {
+        z1 should be (expected)
+      }
+      1.0
+    }
+  }
+
   test("should render a PNG and match what is read in by ImageIO when written as RGBA with nodata values") {
     val tileNW =
-      createConsecutiveTile(50, 1)
+      createConsecutiveTile(50, 50, 1)
     val tileNE =
-      createConsecutiveTile(50, 2501)
+      createConsecutiveTile(50, 50, 2501)
     val tileSW =
-      createConsecutiveTile(50, 5001)
+      createConsecutiveTile(50, 50, 5001)
     val tileSE =
       createValueTile(50, NODATA)
 
@@ -252,6 +269,29 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     }
   }
 
+  test("png encoding produces the same colors for indexed and RGBA with a float tile") {
+    val tile: FloatArrayTile = FloatArrayTile((1 to 256*256).map(_.toFloat).toArray, 256, 256)
+    val ramp = ColorRamp(0xff0000ff, 0x0000ffff)  // red to blue
+    val stops = Array(10000, 20000, 30000, 40000, 50000, 60000, 70000)
+    val colorMap = ColorMap(stops, ramp)
+
+    val indexedPng = tile.renderPng(colorMap)
+    val rgbaPng = colorMap.render(tile).renderPng()
+
+    val indexedImg = ImageIO.read(new ByteArrayInputStream(indexedPng))
+    val rgbaImg = ImageIO.read(new ByteArrayInputStream(rgbaPng))
+
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val actual = indexedImg.getRGB(col, row)
+        val expected = rgbaImg.getRGB(col, row)
+        withClue(f"At $col, $row: $actual%02X does not equal $expected%02X - ") {
+          actual should be (expected)
+        }
+      }
+    }
+  }
+
   test("png encoding produces the same colors for RGB and RGBA") {
     val tile: IntArrayTile = IntArrayTile(1 to 256*256 toArray, 256, 256)
     val ramp = ColorRamp(0xff0000ff, 0x0000ffff)  // red to blue
@@ -282,6 +322,29 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
     val colorMap = ColorMap(stops, ramp)
 
     val greyPng = colorMap.render(tile).map(z => z >> 8 & 0xFF).renderPng(GreyPngEncoding(0x00))
+    val greyaPng = colorMap.render(tile).map(z => (z & 0xFF00) | 0xFF).renderPng(GreyaPngEncoding)
+
+    val greyImg = ImageIO.read(new ByteArrayInputStream(greyPng))
+    val greyaImg = ImageIO.read(new ByteArrayInputStream(greyaPng))
+
+    cfor(0)(_ < tile.rows, _ + 1) { row =>
+      cfor(0)(_ < tile.cols, _ + 1) { col =>
+        val actual = greyImg.getRGB(col, row)
+        val expected = greyaImg.getRGB(col, row)
+        withClue(f"FAIL ($col, $row): $actual%02X does not equal $expected%02X") {
+          actual should be (expected)
+        }
+      }
+    }
+  }
+
+  test("png encoding respects set NoData color") {
+    val tile: IntArrayTile = IntArrayTile((0 to 256*256 - 1) toArray, 256, 256)
+    val ramp = ColorRamp(0xff0000ff, 0x0000ffff)  // red to blue
+    val stops = Array(10000, 20000, 30000, 40000, 50000, 60000, 70000)
+    val colorMap = ColorMap(stops, ramp)
+
+    val greyPng = colorMap.render(tile).map(z => z >> 8 & 0xFF).renderPng(GreyPngEncoding)
     val greyaPng = colorMap.render(tile).map(z => (z & 0xFF00) | 0xFF).renderPng(GreyaPngEncoding)
 
     val greyImg = ImageIO.read(new ByteArrayInputStream(greyPng))
