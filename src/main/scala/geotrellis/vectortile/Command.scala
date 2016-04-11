@@ -4,6 +4,9 @@ import collection.mutable.ListBuffer
 
 import geotrellis.vector._
 
+/** Interprets the commands from a VectorTile and converts them into
+  * Geometries.
+  */
 object Command {
 
     val MoveTo: Int = 1
@@ -20,8 +23,16 @@ object Command {
     case class UnsupportedGeomType(message: String) extends Exception(message)
     case class UnsupportedCommand(message: String) extends Exception(message)
     case class TooFewCommandArgs(message: String) extends Exception(message)
-    case class NoGeometry(message:String) extends Exception(message)
+    case class NoGeometryToExtend(message:String) extends Exception(message)
 
+    /** Interprets the commands, converts the resulting data into a geometry,
+      * then returns the geometry.
+      *
+      * @param geomType the type of geometry to expect
+      * @param extent the extent of the geometry
+      * @param commands the list of commands and arguments to interpret
+      * @return the geometry that was described
+      */
     def parse(geomType: GeomType, extent: Int, commands: Seq[Int]): Geometry = {
 
         val scale: Double = extent / 256.0
@@ -62,6 +73,13 @@ object Command {
 
     }
 
+    /** A helper function for parse. Builds lists of points out of the
+      * commands and arguments.
+      *
+      * @param scale the scale of the geometry
+      * @param commands the commands to interpet
+      * @return a list of lists of points
+      */
     private def interpret_commands(scale: Double, commands: Seq[Int]):
     List[List[(Double, Double)]] = {
 
@@ -100,7 +118,7 @@ object Command {
                 case LineTo =>
                     for(_ <- 0 until count) {
                         if (point_list.isEmpty) {
-                            throw NoGeometry("Source: LineTo")
+                            throw NoGeometryToExtend("Source: LineTo")
                         }
                         if (idx + 2 > commands.length) {
                             throw TooFewCommandArgs("Source: MoveTo command.")
@@ -115,10 +133,9 @@ object Command {
                     idx += 2
 
                 case ClosePath =>
-                    // TODO is it valid to close a path numerous times?
                     for(_ <- 0 until count) {
                         if (point_list.isEmpty) {
-                                // this is unexpected and should be logged
+                                throw NoGeometryToExtend("Source: ClosePath")
                             } else {
                                 if (point_list.head != point_list.last) {
                                     point_list += point_list.head

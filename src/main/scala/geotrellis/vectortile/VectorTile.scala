@@ -26,6 +26,24 @@ class VectorTile(val _vector_tile: vector_tile.Tile) {
                         .parseFrom(Files.readAllBytes(Paths.get(filename))))
     }
 
+    /** A convenience function that extracts all geometries of a certain type
+      * from the VectorTile. This may need to be extended later to Not throw
+      * away so much information (eg. only want roads, not rivers even though
+      * both might be LineStrings).
+      *
+      * @param geomType the type of geometry to filter on
+      * @return a list of all the geometries of that type
+      */
+    def geometriesByType(geomType : vector_tile.Tile.GeomType.EnumVal) {
+        val geometries = (
+            for(layer <- layers; feature <- layer.features)
+                yield {
+                    if (feature.geomType == geomType)
+                        feature.geometry
+                }
+            )
+    }
+
     /** A representation of a VectorTile Layer.
       *
       * @constructor from the naively decoded protobuff
@@ -80,8 +98,10 @@ class VectorTile(val _vector_tile: vector_tile.Tile) {
 
             val tags: Map[String, Value] = pair(_feature.tags)
 
+            val geomType: vector_tile.Tile.GeomType.EnumVal = _feature.`type`.get
+
             val geometry: Geometry =
-                Command.parse(_feature.`type`.get, extent, _feature.geometry)
+                Command.parse(geomType, extent, _feature.geometry)
 
             /**  Pairs off the keys and value tags. */
             private def pair(tags: Seq[Int]): Map[String, Value] = {
