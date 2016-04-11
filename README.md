@@ -9,19 +9,16 @@ functionality to decode, manipulate, and encode in the Vector Tile Format.
 
 ## 2. Instructions
 
-TODO
+To decode a VectorTile from a file, use the filename constructor for the
+VectorTile class:
+
+```scala
+val VectorTile vt = new VectorTile("filename.mvt")
+```
 
 ## 3. Examples
 
 TODO
 
 ## 4. Notes and References
-
-TODO
-
-* There is some uncertainty about what kinds of inputs are useful to decode.
-For instance, should it be valid to close a polygon when it is a single
-line? How about if it is a single point? We have take a rather lenient approach,
-prioritizing speed and accept the commands as written and leave it to jts to
-decide whether it is valid or not.
 

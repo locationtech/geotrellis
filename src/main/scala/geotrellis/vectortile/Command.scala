@@ -60,6 +60,7 @@ object Command {
 
             case POLYGON =>
                 if (point_lists.length == 1) {
+                    println(point_lists.head)
                     Polygon(point_lists.head)
                 } else {
                     MultiPolygon(point_lists.map(
@@ -67,7 +68,7 @@ object Command {
                 }
 
             case _ =>
-                throw UnsupportedGeomType("Geometry ${geomType} not supported.")
+                throw UnsupportedGeomType(s"Geometry ${geomType} not supported.")
 
         }
 
@@ -112,8 +113,8 @@ object Command {
                         x += zigZagDecode(commands(idx))
                         y += zigZagDecode(commands(idx+1))
                         point_list += ((x / scale, y / scale))
+                        idx += 2
                     }
-                    idx += 2
 
                 case LineTo =>
                     for(_ <- 0 until count) {
@@ -129,8 +130,8 @@ object Command {
                         y += dy
                         if (dx != 0 || dy != 0)
                             point_list += ((x / scale, y / scale))
+                        idx += 2
                     }
-                    idx += 2
 
                 case ClosePath =>
                     for(_ <- 0 until count) {
@@ -147,7 +148,7 @@ object Command {
 
                 case _ =>
                     throw UnsupportedCommand(
-                        "Unsupported Command ID: ${id}")
+                        s"Unsupported Command ID: ${id}")
 
             }
 

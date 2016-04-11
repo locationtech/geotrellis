@@ -98,6 +98,8 @@ class CommandTest extends FunSuite {
         val commands = Seq[Int](
             commandEncode(id = MoveTo, count = 2),
             zigZagEncode(coords(0)._1*SCALE),
+            zigZagEncode(coords(0)._2*SCALE),
+            zigZagEncode(coords(0)._1*SCALE),
             zigZagEncode(coords(0)._2*SCALE)
         )
         val geometry = Command.parse(POINT, EXTENT, commands)
@@ -147,6 +149,33 @@ class CommandTest extends FunSuite {
         )
         val geometry = Command.parse(LINESTRING, EXTENT, commands)
         assert(geometry == Line(coords.map(c => toPoint(c))))
+    }
+
+    test("Valid Iterated LineTo") {
+        val coords = Seq[(Int, Int)](
+            (0, 0),
+            (5, 0)
+        )
+        val expected = Seq[(Int, Int)](
+            (0, 0),
+            (5, 0),
+            (10, 0),
+            (15, 0)
+        )
+        val commands = Seq[Int](
+            commandEncode(id = MoveTo, count = 1),
+            zigZagEncode(coords(0)._1*SCALE),
+            zigZagEncode(coords(0)._2*SCALE),
+            commandEncode(id = LineTo, count = 3),
+            zigZagEncode(coords(1)._1*SCALE),
+            zigZagEncode(coords(1)._2*SCALE),
+            zigZagEncode(coords(1)._1*SCALE),
+            zigZagEncode(coords(1)._2*SCALE),
+            zigZagEncode(coords(1)._1*SCALE),
+            zigZagEncode(coords(1)._2*SCALE)
+        )
+        val geometry = Command.parse(LINESTRING, EXTENT, commands)
+        assert(geometry == Line(expected.map(c => toPoint(c))))
     }
 
     test("Invalid Line: Insufficient Args 0") {
@@ -515,18 +544,37 @@ class CommandTest extends FunSuite {
     }
 
     test("Invalid Command in the Middle") {
-        assert(false)
-        // NYI
-    }
-
-    test("Unexpected Commands in the Middle") {
-        assert(false)
-        // NYI
-    }
-
-    test("Real Data") {
-        assert(false)
-        // NYI
+        val coords = Seq[Seq[(Int, Int)]](
+            Seq((0, 0),
+                (5, 5),
+                (0, -5)),
+            Seq((-5, 5),
+                (5, 5),
+                (0, -5))
+        )
+        val commands = Seq[Int](
+            commandEncode(id = MoveTo, count = 1),
+            zigZagEncode(coords(0)(0)._1*SCALE),
+            zigZagEncode(coords(0)(0)._2*SCALE),
+            commandEncode(id = LineTo, count = 1),
+            zigZagEncode(coords(0)(1)._1*SCALE),
+            zigZagEncode(coords(0)(1)._2*SCALE),
+            commandEncode(id = LineTo, count = 1),
+            zigZagEncode(coords(0)(2)._1*SCALE),
+            zigZagEncode(coords(0)(2)._2*SCALE),
+            commandEncode(id = 0, count =1),
+            commandEncode(id = ClosePath, count = 1),
+            commandEncode(id = MoveTo, count = 1),
+            zigZagEncode(coords(1)(0)._1*SCALE),
+            zigZagEncode(coords(1)(0)._2*SCALE),
+            commandEncode(id = LineTo, count = 1),
+            zigZagEncode(coords(1)(1)._1*SCALE),
+            zigZagEncode(coords(1)(1)._2*SCALE),
+            commandEncode(id = ClosePath, count = 1)
+        )
+        intercept[Command.UnsupportedCommand] {
+            val geometry = Command.parse(POLYGON, EXTENT, commands)
+        }
     }
 
 }
