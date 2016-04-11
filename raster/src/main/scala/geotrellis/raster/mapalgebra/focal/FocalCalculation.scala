@@ -144,7 +144,7 @@ trait BitArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   val rows: Int = bounds.height
   val resultTile = target.mask(BitArrayTile.empty(rows, cols))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
@@ -162,7 +162,7 @@ trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile]
   val rows: Int = bounds.height
   val resultTile = target.mask(ByteArrayTile.empty(cols, rows))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
@@ -180,7 +180,7 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   val rows: Int = bounds.height
   val resultTile = target.mask(ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
@@ -198,7 +198,7 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   val rows: Int = bounds.height
   val resultTile = target.mask(IntArrayTile.empty(cols, rows))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
@@ -216,7 +216,7 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   val rows: Int = bounds.height
   val resultTile = target.mask(FloatArrayTile.empty(cols, rows))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
@@ -234,7 +234,7 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
   val rows: Int = bounds.height
   val resultTile = target.mask(DoubleArrayTile.empty(cols, rows))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
@@ -247,7 +247,7 @@ trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   val rows: Int = bounds.height
   val resultTile: MutableArrayTile = target.mask(ArrayTile.empty(resultCellType, cols, rows))
 
-  def result = 
+  def result =
     resultTile match {
       case (t: MaskedMutableArrayTile) => t.tile
       case _ => resultTile
