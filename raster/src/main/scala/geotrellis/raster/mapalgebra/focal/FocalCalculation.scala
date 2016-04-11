@@ -69,7 +69,7 @@ abstract class FocalCalculation[T](val tile: Tile, n: Neighborhood, target : Tar
   }
 
   def setValidDoubleResult(x: Int, y: Int, focusCol: Int, focusRow: Int, value: Double) {
-    val cellValue = tile.get(focusCol, focusRow)
+    val cellValue = tile.getDouble(focusCol, focusRow)
 
     setDouble(x, y, {if (validTargetCell(cellValue)) value else cellValue})
   }
