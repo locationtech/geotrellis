@@ -25,6 +25,8 @@ import org.geotools.coverage.grid.io._
 
 import scala.math.{min, max}
 
+import java.awt.image.DataBuffer
+
 
 object GridCoverage2DToRaster {
 
@@ -43,6 +45,16 @@ object GridCoverage2DToRaster {
     Extent(min(xmin, xmax), min(ymin, ymax), max(xmin, xmax), max(ymin, ymax))
   }
 
+  def noData(gridCoverage: GridCoverage2D) = {
+    val n = gridCoverage.getNumSampleDimensions
+    val noDataList = (0 until n)
+      .map({ i => gridCoverage.getSampleDimension(i).getNoDataValues })
+      .filter({ _ != null })
+      .flatten
+
+    if (noDataList.nonEmpty) Some(noDataList.head); else None
+  }
+
   def cellType(gridCoverage: GridCoverage2D): CellType = {
     val n = gridCoverage.getNumSampleDimensions
     val noDataValue = noData(gridCoverage)
@@ -52,12 +64,12 @@ object GridCoverage2DToRaster {
 
     if (noDataValue.isEmpty) {
       typeEnum match {
-        case 0 => UByteCellType
-        case 1 => UShortCellType
-        case 2 => ShortCellType
-        case 3 => IntCellType
-        case 4 => FloatCellType
-        case 5 => DoubleCellType
+        case DataBuffer.TYPE_BYTE => UByteCellType
+        case DataBuffer.TYPE_USHORT => UShortCellType
+        case DataBuffer.TYPE_SHORT => ShortCellType
+        case DataBuffer.TYPE_INT => IntCellType
+        case DataBuffer.TYPE_FLOAT => FloatCellType
+        case DataBuffer.TYPE_DOUBLE => DoubleCellType
         case _ => throw new Exception("Unknown CellType")
       }
     }
