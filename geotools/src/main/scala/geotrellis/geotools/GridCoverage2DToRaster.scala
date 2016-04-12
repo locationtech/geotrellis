@@ -16,13 +16,16 @@
 
 package geotrellis.geotools
 
+import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
 
 import org.geotools.coverage.grid._
-import org.geotools.gce.geotiff._
 import org.geotools.coverage.grid.io._
+import org.geotools.gce.geotiff._
+import org.osgeo.proj4j._
 
+import scala.collection.JavaConverters._
 import scala.math.{min, max}
 
 import java.awt.image.DataBuffer
@@ -85,5 +88,26 @@ object GridCoverage2DToRaster {
         case _ => throw new Exception("Unknown CellType")
       }
     }
+  }
+
+  def crs(gridCoverage: GridCoverage2D): Option[CRS] = {
+    val crs = gridCoverage
+      .getCoordinateReferenceSystem2D
+      .getIdentifiers
+      .asScala.head
+    val code = crs.getCode.toInt
+    val crsFactory = new CRSFactory
+
+    var result: Option[CRS] = None
+    try {
+      require(crs.getCodeSpace.equals("EPSG"))
+      result = Some(
+        new CRS {
+          val proj4jCrs = crsFactory.createFromName(s"EPSG:$code")
+          def epsgCode: Option[Int] = Some(code)
+        })
+    } catch { case e: Exception => }
+
+    result
   }
 }
