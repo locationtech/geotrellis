@@ -25,23 +25,13 @@ class GridCoverage2DMultibandTile(gridCoverage: GridCoverage2D)
   private def getFiber(col: Int, row: Int) = sampleModel.getPixel(col, row, _array, buffer)
   private def getFiberDouble(col: Int, row: Int) = sampleModel.getPixel(col, row, _arrayDouble, buffer)
 
-  def bandCount = renderedImage.getSampleModel.getNumBands
+  val bandCount: Int = renderedImage.getSampleModel.getNumBands
 
-  def cellType: CellType = {
-    buffer.getDataType match { // XXX handle NODATA
-      case 0 => ByteCellType
-      case 1 => UShortCellType
-      case 2 => ShortCellType
-      case 3 => IntCellType
-      case 4 => FloatCellType
-      case 5 => DoubleCellType
-      case _ => throw new Exception("Unknown CellType")
-    }
-  }
+  val cellType: CellType = GridCoverage2DToRaster.cellType(gridCoverage)
 
-  def rows: Int = renderedImage.getHeight
+  val rows: Int = renderedImage.getHeight
 
-  def cols: Int = renderedImage.getWidth
+  val cols: Int = renderedImage.getWidth
 
   def band(bandIndex: Int) =
     GridCoverage2DTile(gridCoverage, bandIndex)

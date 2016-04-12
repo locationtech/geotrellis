@@ -23,11 +23,11 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   private val _array = Array.ofDim[Int](bandCount)
   private val _arrayDouble = Array.ofDim[Double](bandCount)
 
-  def cellType: CellType = ???
+  val cellType: CellType = GridCoverage2DToRaster.cellType(gridCoverage)
 
-  def rows = renderedImage.getHeight
+  val rows: Int = renderedImage.getHeight
 
-  def cols = renderedImage.getWidth
+  val cols: Int = renderedImage.getWidth
 
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
     var col = 0; while (col < cols) {
