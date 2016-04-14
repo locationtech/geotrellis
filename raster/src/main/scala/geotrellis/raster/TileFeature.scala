@@ -16,6 +16,13 @@
 
 package geotrellis.raster
 
+/**
+  * The TileFeature Type.  This is used for packaging a CellGrid (a
+  * Tile or MultibandTile) together with some metadata.
+  *
+  * @param  tile  The CellGrid-derived tile
+  * @param  data  The additional metadata
+  */
 case class TileFeature[+T <: CellGrid,D](tile: T, data: D) {
   def cellType: CellType = tile.cellType
   def cols: Int = tile.cols
