@@ -58,7 +58,8 @@ case class GeoTiffCSParameters(
   var ctProjection: Int = UserDefinedCPV,
   var mapSystem: Int = UserDefinedCPV,
   var zone: Int = 0,
-  var projectionParameters: Array[(Int, Double)] = Array()
+  var projectionParameters: Array[(Int, Double)] = Array(),
+  var pcsCitation: Option[String] = None
 )
 
 object GeoTiffCSParser {
@@ -72,7 +73,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
 
   private val csvReader = EPSGCSVReader()
 
-  def getProj4String: Option[String] = getProj4String(createGeoTiffCSParameters)
+  def getProj4String: Option[String] = getProj4String(geoTiffCSParameters)
 
   lazy val geoTiffCSParameters = createGeoTiffCSParameters
 
@@ -260,6 +261,11 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
         if (gtgp.mapSystem == MapSys_UTM_North) 0.0 else 10000000.0
       )
     }
+
+    gtgp.pcsCitation =
+      (geoKeyDirectory &|->
+        GeoKeyDirectory._projectedCSParameterKeys ^|->
+        ProjectedCSParameterKeys._pcsCitation get).map { strings => strings(0) }
 
     gtgp
   }
@@ -1229,10 +1235,22 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
       proj4SB.append(s" +a=${gtgp.semiMajor} +b=${gtgp.semiMinor}")
     }
 
-    if (proj4SB.length == 0 ||
+    if (
+      proj4SB.length == 0 ||
       gtgp.ctProjection == CT_TransvMercator_SouthOriented ||
-      !proj4SB.toString.contains("+proj")) None
-    else Some(proj4SB.append(units).toString)
+      !proj4SB.toString.contains("+proj")
+    ) {
+      // Account for special cases
+      gtgp.pcsCitation.flatMap { citation =>
+        if(citation.contains("PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\"")) {
+          // Handle an ESRI written EPSG:3857
+          Some("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs")
+        } else {
+          None
+        }
+      }
+    } else {
+      Some(proj4SB.append(units).toString)
+    }
   }
-
 }
