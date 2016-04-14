@@ -3,10 +3,11 @@ import Dependencies._
 name := "geotrellis-geotools"
 
 libraryDependencies ++= Seq(
-  "org.geotools" % "gt-main" % Version.geotools,
   "org.geotools" % "gt-coverage" % Version.geotools,
-  "org.geotools" % "gt-geotiff" % Version.geotools,
   "org.geotools" % "gt-epsg-hsql" % Version.geotools,
+  "org.geotools" % "gt-geotiff" % Version.geotools,
+  "org.geotools" % "gt-main" % Version.geotools,
+  "org.geotools" % "gt-referencing" % Version.geotools,
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   spire,
   scalatest % "test")
@@ -26,6 +27,7 @@ initialCommands in console :=
   val policy = AbstractGridFormat.OVERVIEW_POLICY.createValue
   policy.setValue(OverviewPolicy.IGNORE)
   val gridSize = AbstractGridFormat.SUGGESTED_TILE_SIZE.createValue
+  gridSize.setValue("1024,1024")
   val useJaiRead = AbstractGridFormat.USE_JAI_IMAGEREAD.createValue
   useJaiRead.setValue(true)
   """
