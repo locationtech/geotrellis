@@ -25,7 +25,7 @@ import geotrellis.raster.summary.polygonal._
 
 import geotrellis.vector.{Point, Extent}
 import geotrellis.raster.testkit._
-import geotrellis.proj4.{CRS, LatLng}
+import geotrellis.proj4._
 
 import monocle.syntax.apply._
 import org.scalactic.Tolerance
@@ -502,6 +502,13 @@ class GeoTiffReaderSpec extends FunSpec
       assert(gt3.crs == LatLng)
 
       gt3.tags.headTags.get(Tags.TIFFTAG_DATETIME) should be (Some("1988:02:18 13:59:59"))
+    }
+  }
+
+  describe("handling special CRS cases") {
+    it("can handle an ESRI written GeoTiff in WebMercator") {
+      val tif = SinglebandGeoTiff.compressed(s"$baseDataPath/propval_bg_01_01.tif")
+      tif.crs should be (WebMercator)
     }
   }
 }

@@ -32,7 +32,7 @@ case object Exact extends ClassBoundaryType
 
 object ColorMap {
   case class Options(
-    classBoundaryType: ClassBoundaryType = LessThan,
+    classBoundaryType: ClassBoundaryType = LessThanOrEqualTo,
     /** Rgba value for NODATA */
     noDataColor: Int = 0x00000000,
     /** Rgba value for data that doesn't fit the map */
