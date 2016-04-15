@@ -39,6 +39,7 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .reduce { _ merge _ }
 
   /** Gives a histogram that uses exact counts of integer values.
+    *
     * @note This cannot handle counts that are larger than Int.MaxValue, and
     *       should not be used with very large datasets whose counts will overflow.
     *       These histograms can get very large with a wide range of values.
@@ -50,10 +51,19 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
   }
 
   def classBreaks(numBreaks: Int): Array[Int] =
-    histogram.quantileBreaks(numBreaks).map(_.toInt)
+    classBreaksDouble(numBreaks).map(_.toInt)
 
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    histogram.quantileBreaks(numBreaks)
+    histogram(numBreaks).quantileBreaks(numBreaks)
+
+  /** Gives class breaks using a histogram that uses exact counts of integer values.
+    *
+    * @note This cannot handle counts that are larger than Int.MaxValue, and
+    *       should not be used with very large datasets whose counts will overflow.
+    *       These histograms can get very large with a wide range of values.
+    */
+  def classBreaksExactInt(numBreaks: Int): Array[Int] =
+    histogramExactInt.quantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
     self.map(_._2.findMinMax)
