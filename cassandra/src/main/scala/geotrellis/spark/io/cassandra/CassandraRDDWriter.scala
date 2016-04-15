@@ -28,13 +28,13 @@ object CassandraRDDWriter {
     val session = instance.session
 
     {
-      val schema = SchemaBuilder.createTable(instance.keySpace, table).ifNotExists()
-        .addPartitionKey("key", bigint)
-        .addClusteringColumn("name", text)
-        .addClusteringColumn("zoom", cint)
-        .addColumn("value", blob)
-
-      session.execute(schema)
+      session.execute(
+        SchemaBuilder.createTable(instance.keySpace, table).ifNotExists()
+          .addPartitionKey("key", bigint)
+          .addClusteringColumn("name", text)
+          .addClusteringColumn("zoom", cint)
+          .addColumn("value", blob)
+      )
     }
 
     val job = Job.getInstance(sc.hadoopConfiguration)

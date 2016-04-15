@@ -28,12 +28,12 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
 
   //create the attribute table if it does not exist
   {
-    val schema = SchemaBuilder.createTable(instance.keySpace, attributeTable).ifNotExists()
+    session.execute(
+      SchemaBuilder.createTable(instance.keySpace, attributeTable).ifNotExists()
       .addPartitionKey("layerId", text)
       .addClusteringColumn("name", text)
       .addColumn("value", text)
-
-    session.execute(schema)
+    )
   }
 
   val SEP = "__.__"
