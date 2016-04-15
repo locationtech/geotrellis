@@ -2,19 +2,27 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-
 import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConversions._
 
-class CassandraAttributeStore(val attributeTable: String, val instance: CassandraInstance) extends DiscreteLayerAttributeStore with Logging {
+object CassandraAttributeStore {
+  def apply(instance: CassandraInstance, attributeTable: String): CassandraAttributeStore =
+    new CassandraAttributeStore(instance, attributeTable)
+
+  def apply(instance: CassandraInstance): CassandraAttributeStore =
+    apply(instance, ConfigFactory.load().getString("geotrellis.cassandra.catalog"))
+}
+
+class CassandraAttributeStore(val instance: CassandraInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
 
   val session = instance.session
 
