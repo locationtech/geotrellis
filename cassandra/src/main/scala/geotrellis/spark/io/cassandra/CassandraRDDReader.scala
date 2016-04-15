@@ -4,10 +4,10 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{Row, Token}
 import org.apache.avro.Schema
 import org.apache.cassandra.hadoop.cql3.{CqlConfigHelper, CqlInputFormat}
+import org.apache.cassandra.utils.ByteBufferUtil
 import org.apache.hadoop.mapreduce.{InputFormat, Job}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -46,7 +46,7 @@ object CassandraRDDReader {
           AvroEncoder
             .fromBinary(
               kwWriterSchema.value.getOrElse(codec.value.schema),
-              value.get("name", classOf[Array[Byte]]))(codec.value)
+              ByteBufferUtil.getArray(value.getBytes("name")))(codec.value)
         }
         .flatMap { pairs: Vector[(K, V)] =>
           if(filterIndexOnly) pairs
