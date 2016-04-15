@@ -26,7 +26,7 @@ trait HydrologyRasterSourceMethods extends RasterSourceMethods with FocalOperati
   def accumulation() = rasterSource.globalOp(Accumulation(_))
   def fill(threshold: Double) =
     focal(Square(1)) {
-      (r,n,bounds) => Fill(r, n, bounds, threshold)
+      (r,n,bounds) => Fill(r, n, TargetCell.All, bounds, threshold)
     }
   def flowDirection() = rasterSource.globalOp(FlowDirection(_))
 }

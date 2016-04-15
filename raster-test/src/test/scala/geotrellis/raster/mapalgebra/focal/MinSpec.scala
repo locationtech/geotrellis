@@ -161,7 +161,7 @@ class MinSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers
       ), 3, 2)
 
 
-      assertEqual(tile.focalMin(Circle(1), Some(GridBounds(1,1,3,2))), expected)
+      assertEqual(tile.focalMin(Circle(1), bounds = Some(GridBounds(1,1,3,2))), expected)
     }
 
     it("should preserve source tile cell type for floating point tiles"){

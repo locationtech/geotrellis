@@ -17,9 +17,9 @@
 package geotrellis.raster.mapalgebra.focal
 
 import scala.math._
-
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 
 sealed trait TraversalStrategy
 case object ZigZagTraversalStrategy extends TraversalStrategy
@@ -197,49 +197,54 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r: Tile, n: Square, calc: CellwiseCalculation[_], analysisArea: GridBounds): Unit =
-    handleScanLine(r, n.extent, calc, analysisArea)
+  def execute(tile: Tile, n: Square, calc: CellwiseCalculation[_], target: TargetCell, analysisArea: GridBounds): Unit =
+    handleScanLine(tile, n.extent, calc, target, analysisArea)
 
-  private def handleScanLine(r: Tile, n: Int, calc: CellwiseCalculation[_], analysisArea: GridBounds) = {
+  private def handleScanLine(tile: Tile, n: Int, calc: CellwiseCalculation[_], target: TargetCell, analysisArea: GridBounds) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax
-    val rowBorderMax = r.rows - 1
     val colMax = analysisArea.colMax
-    val colBorderMax = r.cols - 1
+    val rowBorderMax = tile.rows - 1
+    val colBorderMax = tile.cols - 1
 
     val analysisOffsetCols = analysisArea.colMin
     val analysisOffsetRows = analysisArea.rowMin
 
     var focusRow = rowMin
     while (focusRow <= rowMax) {
+      var focusCol = colMin
       val curRowMin = max(0, focusRow - n)
+      val curColMin = max(0, colMin - n)
       val curRowMax = min(rowBorderMax, focusRow + n )
+      val curColMax = min(colBorderMax, colMin + n)
 
       calc.reset()
-      val curColMax = min(colBorderMax, colMin + n)
-      val curColMin = max(0, colMin - n)
+
       var curRow = curRowMin
       while (curRow <= curRowMax) {
         var curCol = curColMin
         while (curCol <= curColMax) {
-          calc.add(r, curCol, curRow)
+          calc.add(tile, curCol, curRow)
           curCol += 1
         }
         curRow += 1
       }
 
-      // offset output col & row to analysis area coordinates
-      calc.setValue(0, focusRow - rowMin) 
+      var x = focusCol - colMin
+      val y = focusRow - rowMin
 
-      var focusCol = colMin + 1
+      // offset output col & row to analysis area coordinates
+      calc.setValue(x, y, focusCol, focusRow)
+
+      focusCol += 1
       while (focusCol <= colMax) {
         // Remove the western most column that is no longer part of the neighborhood
         val oldWestCol = focusCol - n - 1
         if (oldWestCol >= 0) {
           var yy = curRowMin
           while (yy <= curRowMax) {
-            calc.remove(r, oldWestCol, yy)
+            calc.remove(tile, oldWestCol, yy)
             yy += 1
           }
         }
@@ -247,15 +252,17 @@ object CellwiseStrategy {
         // Add the eastern most column that is now part of the neighborhood
         val newEastCol = focusCol + n
         if (newEastCol <= colBorderMax) {
-            var yy = curRowMin
-            while (yy <= curRowMax) {
-              calc.add(r, newEastCol, yy)
-              yy += 1
-            }
+          var yy = curRowMin
+          while (yy <= curRowMax) {
+            calc.add(tile, newEastCol, yy)
+            yy += 1
           }
+        }
 
+        x = focusCol - colMin
         // offset output col & row to analysis area coordinates
-        calc.setValue(focusCol - colMin, focusRow - rowMin)
+        calc.setValue(x, y, focusCol, focusRow)
+
         focusCol += 1
       }
       focusRow += 1

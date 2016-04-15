@@ -1,44 +1,45 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 import geotrellis.util.MethodExtensions
 
 
 trait FocalMethods extends MethodExtensions[Tile] {
 
   /** Computes the minimum value of a neighborhood */
-  def focalMin(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Min(self, n, bounds)
+  def focalMin(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    Min(self, n, target, bounds)
   }
 
   /** Computes the maximum value of a neighborhood */
-  def focalMax(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Max(self, n, bounds)
+  def focalMax(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    Max(self, n, target, bounds)
   }
 
   /** Computes the mode of a neighborhood */
-  def focalMode(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Mode(self, n, bounds)
+  def focalMode(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    Mode(self, n, target, bounds)
   }
 
   /** Computes the median of a neighborhood */
-  def focalMedian(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Median(self, n, bounds)
+  def focalMedian(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    Median(self, n, target, bounds)
   }
 
   /** Computes the mean of a neighborhood */
-  def focalMean(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Mean(self, n, bounds)
+  def focalMean(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    Mean(self, n, target, bounds)
   }
 
   /** Computes the sum of a neighborhood */
-  def focalSum(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Sum(self, n, bounds)
+  def focalSum(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    Sum(self, n, target, bounds)
   }
 
   /** Computes the standard deviation of a neighborhood */
-  def focalStandardDeviation(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    StandardDeviation(self, n, bounds)
+  def focalStandardDeviation(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    StandardDeviation(self, n, target, bounds)
   }
 
   /** Computes the next step of Conway's Game of Life */
@@ -52,14 +53,16 @@ trait FocalMethods extends MethodExtensions[Tile] {
   }
 
   /** Calculates spatial autocorrelation of cells based on the similarity to neighboring values.
-   * @see [[TileMoransICalculation]]
+    *
+    * @see [[TileMoransICalculation]]
    */
-  def tileMoransI(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    TileMoransICalculation(self, n, bounds)
+  def tileMoransI(n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds] = None): Tile = {
+    TileMoransICalculation(self, n, target, bounds)
   }
 
   /** Calculates global spatial autocorrelation of a raster based on the similarity to neighboring values.
-   * @see [[ScalarMoransICalculation]]
+    *
+    * @see [[ScalarMoransICalculation]]
    */
   def scalarMoransI(n: Neighborhood, bounds: Option[GridBounds] = None): Double = {
     ScalarMoransICalculation(self, n, bounds)
@@ -67,6 +70,7 @@ trait FocalMethods extends MethodExtensions[Tile] {
 
   /**
     * Calculates the slope of each cell in a raster.
+    *
     * @param   cs         cellSize of the raster
     * @param   zFactor    Number of map units to one elevation unit.
     * @see [[Slope]]
@@ -76,6 +80,7 @@ trait FocalMethods extends MethodExtensions[Tile] {
 
   /**
     * Calculates the aspect of each cell in a raster.
+    *
     * @param   cs          cellSize of the raster
     * @see [[Aspect]]
     */

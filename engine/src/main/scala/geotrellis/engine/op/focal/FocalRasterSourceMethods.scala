@@ -18,21 +18,22 @@ package geotrellis.engine.op.focal
 
 import geotrellis.engine._
 import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 import geotrellis.raster.mapalgebra.focal._
 
 @deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait FocalRasterSourceMethods extends RasterSourceMethods with FocalOperation {
-  def focalSum(n: Neighborhood) = focal(n)(Sum.apply)
-  def focalMin(n: Neighborhood) = focal(n)(Min.apply)
-  def focalMax(n: Neighborhood) = focal(n)(Max.apply)
-  def focalMean(n: Neighborhood) = focal(n)(Mean.apply)
-  def focalMedian(n: Neighborhood) = focal(n)(Median.apply)
-  def focalMode(n: Neighborhood) = focal(n)(Mode.apply)
-  def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation.apply)
+  def focalSum(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => Sum(tile, n, target, bounds) }
+  def focalMin(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => Min(tile, n, target, bounds) }
+  def focalMax(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => Max(tile, n, target, bounds) }
+  def focalMean(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => Mean(tile, n, target, bounds) }
+  def focalMedian(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => Median(tile, n, target, bounds) }
+  def focalMode(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => Mode(tile, n, target, bounds) }
+  def focalStandardDeviation(n: Neighborhood, target: TargetCell = TargetCell.All) = focal(n){ (tile, n, bounds) => StandardDeviation(tile, n, target, bounds) }
   def focalConway() = focal(Square(1))(Conway.apply)
 
-  def tileMoransI(n: Neighborhood) =
-    rasterSource.globalOp(TileMoransICalculation.apply(_, n, None))
+  def tileMoransI(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    rasterSource.globalOp(TileMoransICalculation.apply(_, n, target, None))
 
   def scalarMoransI(n: Neighborhood): ValueSource[Double] = {
     rasterSource.converge.map(ScalarMoransICalculation(_, n, None))

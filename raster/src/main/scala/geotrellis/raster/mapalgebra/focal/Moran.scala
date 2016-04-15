@@ -3,6 +3,7 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import geotrellis.raster.summary.Statistics
 import geotrellis.raster.histogram.FastMapHistogram
+import geotrellis.raster.mapalgebra.focal.TargetCell.TargetCell
 
 /**
  * Calculates spatial autocorrelation of cells based on the similarity to
@@ -15,42 +16,40 @@ import geotrellis.raster.histogram.FastMapHistogram
  *
  * @note                  This operation requires that the whole raster be passed in;
  *                        it does not work over tiles.
- *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object TileMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile = {
-    new CursorCalculation[Tile](tile, n, bounds)
-      with DoubleArrayTileResult
-    {
+  def apply(tile: Tile, n: Neighborhood, target: TargetCell = TargetCell.All, bounds: Option[GridBounds]): Tile = {
+    new CursorCalculation[Tile](tile, n, target, bounds)
+      with DoubleArrayTileResult {
 
       var mean = 0.0
       var `stddev^2` = 0.0
 
-      val h = FastMapHistogram.fromTile(r)
+      val h = FastMapHistogram.fromTile(tile)
       val stats = h.statistics
       require(stats.nonEmpty)
       val Statistics(_, m, _, _, s, _, _) = stats.get
       mean = m
       `stddev^2` = s * s
 
-      def calc(r: Tile, cursor: Cursor) = {
+      def calc(tile: Tile, cursor: Cursor) = {
         var z = 0.0
         var w = 0
         var base = 0.0
 
         cursor.allCells.foreach { (x, y) =>
-          if(x == cursor.col && y == cursor.row) {
-            base = r.getDouble(x, y) - mean
+          if (x == cursor.col && y == cursor.row) {
+            base = tile.getDouble(x, y) - mean
           } else {
-            z += r.getDouble(x, y) - mean
+            z += tile.getDouble(x, y) - mean
             w += 1
           }
         }
 
-        resultTile.setDouble(cursor.col, cursor.row, (base / `stddev^2` * z) / w)
+        setValidDoubleResult(cursor, (base / `stddev^2` * z) / w)
       }
     }
   }.execute()
@@ -66,14 +65,13 @@ object TileMoransICalculation {
  *
  * @note                  This operation requires that the whole raster be passed in;
  *                        it does not work over tiles.
- *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object ScalarMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {
-    new CursorCalculation[Double](tile, n, bounds)
+    new CursorCalculation[Double](tile, n, TargetCell.All, bounds)
     {
       var mean: Double = 0
       var `stddev^2`: Double = 0
@@ -81,24 +79,28 @@ object ScalarMoransICalculation {
       var count: Double = 0.0
       var ws: Int = 0
 
-      val h = FastMapHistogram.fromTile(r)
+      val h = FastMapHistogram.fromTile(tile)
       val stats = h.statistics
       require(stats.nonEmpty)
       val Statistics(_, m, _, _, s, _, _) = stats.get
       mean = m
       `stddev^2` = s * s
 
-      def calc(r: Tile, cursor: Cursor) = {
-        val base = r.getDouble(cursor.col, cursor.row) - mean
+      def calc(tile: Tile, cursor: Cursor) = {
+        val base = tile.getDouble(cursor.col, cursor.row) - mean
         var z = -base
 
-        cursor.allCells.foreach { (x, y) => z += r.getDouble(x, y) - mean; ws += 1}
+        cursor.allCells.foreach { (x, y) => z += tile.getDouble(x, y) - mean; ws += 1}
 
         count += base / `stddev^2` * z
         ws -= 1 // subtract one to account for focus
       }
 
       def result = count / ws
+
+      def set(x: Int, y: Int, value: Int) {}
+
+      def setDouble(x: Int, y: Int, value: Double) {}
     }
   }.execute()
 }

@@ -4,27 +4,30 @@ import geotrellis.raster._
 
 object Conway {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
-    new CellwiseCalculation[Tile](tile, n, bounds)
+    new CellwiseCalculation[Tile](tile, n, TargetCell.All, bounds)
       with ByteArrayTileResult
     {
       var count = 0
 
-      def add(r: Tile, x: Int, y: Int) = {
-        val z = r.get(x, y)
+      def add(tile: Tile, x: Int, y: Int) = {
+        val z = tile.get(x, y)
         if (isData(z)) {
           count += 1
         }
       }
 
-      def remove(r: Tile, x: Int, y: Int) = {
-        val z = r.get(x, y)
+      def remove(tile: Tile, x: Int, y: Int) = {
+        val z = tile.get(x, y)
         if (isData(z)) {
           count -= 1
         }
       }
 
-      def setValue(x: Int, y: Int) = resultTile.set(x, y, if(count == 3 || count == 2) 1 else NODATA)
+      def setValue(x: Int, y: Int, focusCol: Int, focusRow: Int) =
+        setValidResult(x, y, focusCol, focusRow, if(count == 3 || count == 2) 1 else NODATA)
+
       def reset() = { count = 0 }
+
     }
   }
 
