@@ -1,28 +1,24 @@
 package geotrellis.spark.io.cassandra
 
-import java.nio.ByteBuffer
-import java.util.Collections
-
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import org.apache.avro.Schema
-import org.apache.hadoop.io.Text
+
+import com.datastax.driver.core.schemabuilder.SchemaBuilder
+import com.datastax.driver.core.querybuilder.QueryBuilder
 import org.apache.spark.rdd.RDD
 import com.datastax.driver.core.DataType._
-import org.apache.cassandra.hadoop.ConfigHelper
 import org.apache.cassandra.hadoop.cql3._
 import org.apache.cassandra.utils.ByteBufferUtil
 import org.apache.hadoop.mapreduce.Job
 
-import scala.collection.JavaConversions._
+import java.nio.ByteBuffer
 
 object CassandraRDDWriter {
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
     instance: CassandraInstance,
-    decomposeKey: K => (Long, Int, String),
+    decomposeKey: K => (Long, String, Int),
     table: String
   ): Unit = {
     implicit val sc = raster.sparkContext
@@ -47,6 +43,7 @@ object CassandraRDDWriter {
     job.setOutputFormatClass(classOf[CqlBulkOutputFormat])
     CqlConfigHelper.setOutputCql(job.getConfiguration, s"UPDATE ${instance.keySpace}.${table} SET value=?")
 
+    QueryBuilder.update(instance.keySpace, table)
     val kvPairs =
       raster
         .groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
