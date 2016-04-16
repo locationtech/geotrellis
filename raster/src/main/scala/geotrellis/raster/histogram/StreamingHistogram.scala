@@ -67,6 +67,12 @@ object StreamingHistogram {
   ) =
     new StreamingHistogram(size, minimumSeen, maximumSeen)
 
+  def apply(other: Histogram[Double]): StreamingHistogram = {
+    val h = apply(other.maxBucketCount)
+    other.foreach(h.countItem _)
+    h
+  }
+
   def fromTile(r: Tile): StreamingHistogram =
     fromTile(r, DEFAULT_NUM_BUCKETS)
 
@@ -391,6 +397,11 @@ class StreamingHistogram(
   def bucketCount():Int = _buckets.size
 
   /**
+    * Return the maximum number of buckets of this histogram.
+    */
+  def maxBucketCount(): Int = size
+
+  /**
     * Return the sum of this histogram and the given one (the sum is
     * the histogram that would result from seeing all of the values
     * seen by the two antecedent histograms).
@@ -581,10 +592,4 @@ class StreamingHistogram(
     * for debugging.
     */
   def deltas(): List[Delta] = _deltas.keySet.asScala.toList
-
-  /**
-    * Return the maximum number of buckets of this histogram.
-    * Primarily useful for debugging and serialization.
-    */
-  def maxBuckets(): Int = size
 }
