@@ -21,13 +21,14 @@ import geotrellis.raster.histogram._
 
 import spray.json._
 
+import scala.collection.mutable.ArrayBuffer
 
 trait HistogramJsonFormats {
   implicit object HistogramIntFormat extends RootJsonFormat[Histogram[Int]] {
     def write(h: Histogram[Int]): JsValue = {
-      var pairs: List[JsArray] = Nil
-      h.foreach{ (value, count) => pairs = JsArray(JsNumber(value), JsNumber(count)) :: pairs }
-      JsArray(pairs:_*)
+      var pairs = ArrayBuffer[JsArray]()
+      h.foreach { (value, count) => pairs += JsArray(JsNumber(value), JsNumber(count))}
+      JsArray(pairs: _*)
     }
 
     def read(json: JsValue): FastMapHistogram = json match {
@@ -47,54 +48,49 @@ trait HistogramJsonFormats {
 
   implicit object HistogramDoubleFormat extends RootJsonFormat[Histogram[Double]] {
 
-    def write(h: Histogram[Double]): JsValue = {
-      var buckets: List[JsArray] = Nil
-      h.foreach{ (value, count) => buckets = JsArray(JsNumber(value), JsNumber(count)) :: buckets }
+    def write(h: Histogram[Double]): JsValue =
+      h.minValue.flatMap { min =>
+        h.maxValue.map { max => (min, max) }
+      } match {
+        case Some((min, max)) =>
+          var pairs = ArrayBuffer[JsArray]()
+          h.foreach { (value, count) => pairs += JsArray(JsNumber(value), JsNumber(count)) }
 
-      val min = h.minValue match {
-        case None => JsString("none")
-        case Some(x) => JsNumber(x)
+          JsObject(
+            "buckets" -> JsArray(pairs: _*),
+            "maxBucketCount" -> JsNumber(h.maxBucketCount),
+            "minimum" -> JsNumber(min),
+            "maximum" -> JsNumber(max)
+          )
+        case None => // Empty histogram
+          JsObject(
+            "maxBucketCount" -> JsNumber(h.maxBucketCount)
+          )
       }
 
-      val max = h.maxValue match {
-        case None => JsString("none")
-        case Some(x) => JsNumber(x)
-      }
+    def read(json: JsValue): Histogram[Double] =
+      json.asJsObject.getFields("maxBucketCount") match {
+        case Seq(JsNumber(maxBucketCount)) =>
+          json.asJsObject.getFields("buckets", "minimum", "maximum") match {
+            case Seq(JsArray(bucketArray), JsNumber(min), JsNumber(max)) =>
+              val histogram = StreamingHistogram(maxBucketCount.toInt, min.toDouble, max.toDouble)
 
-      JsObject(
-        "buckets" -> JsArray(buckets:_*),
-        "maxBucketCount" -> JsNumber(h.maxBucketCount),
-        "minimum" -> min,
-        "maximum" -> max
-      )
-    }
+              bucketArray.foreach({ pair =>
+                pair match {
+                  case JsArray(Vector(JsNumber(label), JsNumber(count))) =>
+                    histogram.countItem(label.toDouble, count.toLong)
+                  case _ =>
+                    throw new DeserializationException("Array of [label, count] pairs expected")
+                }
+              })
 
-    def read(json: JsValue): Histogram[Double] = {
-      json.asJsObject.getFields("buckets", "maxBucketCount", "minimum", "maximum") match {
+              histogram
 
-        // A Histogram that contains something
-        case Seq(JsArray(bucketArray), JsNumber(maxBucketCount), JsNumber(min), JsNumber(max)) =>
-          val histogram = StreamingHistogram(maxBucketCount.toInt, min.toDouble, max.toDouble)
-
-          bucketArray.foreach({ pair =>
-            pair match {
-              case JsArray(Vector(JsNumber(label), JsNumber(count))) =>
-                histogram.countItem(label.toDouble, count.toLong)
-              case _ =>
-                throw new DeserializationException("Array of [label, count] pairs expected")
-            }
-          })
-
-          histogram
-        // A Histogram that contains nothing
-        case Seq(JsArray(bucketArray), JsNumber(maxBucketCount), JsString(_), JsString(_)) =>
-          StreamingHistogram(maxBucketCount.toInt)
-
+            case _ => // Emtpy histogram
+              StreamingHistogram(maxBucketCount.toInt)
+          }
         // Parsing error
         case _ => throw new DeserializationException("Histogram[Double] expected")
       }
-    }
-
   }
-
 }
