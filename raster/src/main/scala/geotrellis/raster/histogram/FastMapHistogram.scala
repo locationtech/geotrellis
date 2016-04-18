@@ -346,6 +346,11 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
   def bucketCount() = used
 
   /**
+    * The maximum number of buckets this histogram can hold.
+    */
+  def maxBucketCount: Int = MAXSIZE
+
+  /**
     * Return the sum of this histogram and the given one (the sum is
     * the histogram that would result from seeing all of the values
     * seen by the two antecedent histograms).
