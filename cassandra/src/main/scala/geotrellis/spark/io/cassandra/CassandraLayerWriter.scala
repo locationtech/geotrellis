@@ -47,6 +47,7 @@ class CassandraLayerWriter(
     }*/
 
     try {
+      instance.ensureKeySpaceExists
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
       CassandraRDDWriter.write(rdd, instance, encodeKey, table)
 

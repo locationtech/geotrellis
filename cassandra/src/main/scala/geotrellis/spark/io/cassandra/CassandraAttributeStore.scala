@@ -28,6 +28,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
 
   //create the attribute table if it does not exist
   {
+    instance.ensureKeySpaceExists
     session.execute(
       SchemaBuilder.createTable(instance.keySpace, attributeTable).ifNotExists()
       .addPartitionKey("layerId", text)

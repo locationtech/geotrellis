@@ -25,8 +25,12 @@ trait CassandraInstance extends Serializable {
   def setCassandraConfig(job: Job) = {
     ConfigHelper.setInputInitialAddress(job.getConfiguration, host)
     ConfigHelper.setInputRpcPort(job.getConfiguration, port)
-    ConfigHelper.setInputKeyspaceUserNameAndPassword(job.getConfiguration, username, password)
-    ConfigHelper.setOutputKeyspaceUserNameAndPassword(job.getConfiguration, username, password)
+    ConfigHelper.setOutputInitialAddress(job.getConfiguration, host)
+    ConfigHelper.setOutputRpcPort(job.getConfiguration, port)
+    if(username.nonEmpty && password.nonEmpty) {
+      ConfigHelper.setInputKeyspaceUserNameAndPassword(job.getConfiguration, username, password)
+      ConfigHelper.setOutputKeyspaceUserNameAndPassword(job.getConfiguration, username, password)
+    }
   }
 
   def setInputColumnFamily(job: Job, columnFamily: String) =
@@ -38,15 +42,15 @@ trait CassandraInstance extends Serializable {
   lazy val session = Cluster.builder().addContactPoint(host).build().connect()
 
   def ensureKeySpaceExists: Unit =
-    session.execute(s"CREATE KEYSPACE IF NOT EXISTS ${keySpace} WITH REPLICATION = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")
+    session.execute(s"CREATE KEYSPACE IF NOT EXISTS ${keySpace} WITH REPLICATION = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }").all()
 
 }
 
 case class BaseCassandraInstance(
   host: String,
   port: String,
-  username: String,
-  password: String,
   keySpace: String,
+  username: String = "",
+  password: String = "",
   replicationStrategy: String = "SimpleStrategy",
   replicationFactor: Int = 1) extends CassandraInstance
