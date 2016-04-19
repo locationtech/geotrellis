@@ -66,18 +66,17 @@ of the source](./docs).
 Contributions to the project, no matter what kind, are always very
 welcome.
 Everyone who contributes code to GeoTrellis will be asked to sign the
-Apache and Eclipse Contributor License Agreements.
+GeoTrellis and Eclipse Contributor License Agreements. We currently require both CLAs to be signed. The Eclipse CLA requires an Eclipse account and is signed electronically. The GeoTrellis CLA will be kept as a hard copy by Azavea, Inc.
 
-1. Download a copy of the [Apache Individual Contributor License
-   Agreement](http://geotrellis.github.com/files/2014_05_20-GeoTrellis-Open-Source-Contributor-Agreement-Individual.pdf?raw=true)
-   or the [Apache Corporate Contributor License
-   Agreement](http://geotrellis.github.com/files/2012_04_04-GeoTrellis-Open-Source-Contributor-Agreement-Corporate.pdf?raw=true)
-   and the [Eclipse Contributor License
+1. Electronically sign the [Eclipse Contributor License
    Agreement](http://www.eclipse.org/legal/CLA.php).
 
-2. Print out the CLAs and sign them.
+2. Download a copy of the [GeoTrellis Inidividual CLA](http://geotrellis.github.com/files/2014_05_20-GeoTrellis-Open-Source-Contributor-Agreement-Individual.pdf?raw=true), 
+   or the [GeoTrellis Corporate CLA](http://geotrellis.github.com/files/2012_04_04-GeoTrellis-Open-Source-Contributor-Agreement-Corporate.pdf?raw=true).
 
-3. Send the CLAs to Azavea by one of:
+3. Sign the GeoTrellis CLA, either with PDF signing software or by printing out the CLA and hand signing.
+
+4. Send the GeoTrellis CLA to Azavea by one of:
   - Scanning and emailing the document to cla -at- azavea -dot- com
   - Faxing a copy to +1-215-925-2600.
   - Mailing a hardcopy to:
