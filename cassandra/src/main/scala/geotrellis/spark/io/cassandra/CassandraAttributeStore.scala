@@ -111,7 +111,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
         .where(eqs("name", attributeName))
 
     val preparedStatement = session.prepare(
-      s"""SELECT value FROM ${instance.keySpace}.${attributeTable} WHERE name=? ALLOW FILTERING;""".stripMargin)
+      s"SELECT value FROM ${instance.keySpace}.${attributeTable} WHERE name=? ALLOW FILTERING;")
 
     session.execute(preparedStatement.bind(attributeName))
       .all

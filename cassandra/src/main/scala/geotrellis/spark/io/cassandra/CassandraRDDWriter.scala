@@ -2,24 +2,22 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import org.apache.spark.rdd.RDD
-import com.datastax.driver.core.DataType._
-import org.apache.cassandra.hadoop.cql3.{CqlBulkOutputFormat, _}
-import org.apache.cassandra.utils.ByteBufferUtil
-import org.apache.hadoop.mapreduce.Job
 import geotrellis.spark.LayerId
-import org.apache.cassandra.hadoop.ConfigHelper
+import com.datastax.driver.core.schemabuilder.SchemaBuilder
+import com.datastax.driver.core.DataType._
+import com.datastax.driver.core.ResultSetFuture
+import org.apache.spark.rdd.RDD
+
+import scalaz.concurrent.Task
+import scalaz.stream.{Process, nondeterminism}
+
+import java.nio.ByteBuffer
+import java.util.concurrent.Executors
 
 import scala.collection.JavaConversions._
-import java.nio.ByteBuffer
-import java.util
-
-import org.apache.cassandra.config.Config
-import org.apache.cassandra.io.sstable.CQLSSTableWriter
 
 object CassandraRDDWriter {
+  type KV = ((java.lang.Long, java.lang.String, java.lang.Integer), ByteBuffer)
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
@@ -29,55 +27,59 @@ object CassandraRDDWriter {
   ): Unit = {
     implicit val sc = raster.sparkContext
 
-    val codec   = KeyValueRecordCodec[K, V]
-    val schema  = codec.schema
-    val session = instance.session
+    val codec = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+    val _session = instance.session
 
-    Config.setClientMode(true)
-    val job = Job.getInstance(sc.hadoopConfiguration)
-    ConfigHelper.setOutputColumnFamily(job.getConfiguration, instance.keySpace, table)
-    ConfigHelper.setOutputRpcPort(job.getConfiguration, instance.port)
-    ConfigHelper.setOutputInitialAddress(job.getConfiguration, instance.host)
-    ConfigHelper.setOutputPartitioner(job.getConfiguration, "ByteOrderedPartitioner")
-    job.setOutputFormatClass(classOf[CqlBulkOutputFormat])
-    CqlBulkOutputFormat.setTableSchema(
-      job.getConfiguration,
-      table,
-      s"""CREATE TABLE IF NOT EXISTS ${instance.keySpace}.${table} (
-         |key bigint,
-         |name text,
-         |zoom int,
-         |value blob,
-         |PRIMARY KEY (key, (name, zoom))
-         |)""".stripMargin
-    )
-    CqlBulkOutputFormat.setTableInsertStatement(
-      job.getConfiguration,
-      table,
-      s"INSERT INTO ${instance.keySpace}.${table} (key, name, zoom, value) VALUES (?, ?, ?, ?)"
-    )
+    {
+      _session.execute(
+        SchemaBuilder.createTable(instance.keySpace, table).ifNotExists()
+          .addPartitionKey("key", bigint)
+          .addClusteringColumn("name", text)
+          .addClusteringColumn("zoom", cint)
+          .addColumn("value", blob)
+      )
+    }
 
-    val kvPairs: RDD[(util.Map[String, ByteBuffer], util.List[ByteBuffer])] =
-      raster
-        .groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-        .map { case ((key, layerId), pairs) =>
-          val outKey = Map(
-            "key"  -> ByteBufferUtil.bytes(key.toString),
-            "name" -> ByteBufferUtil.bytes(layerId.name),
-            "zoom" -> ByteBufferUtil.bytes(layerId.zoom.toString)
-          )
 
-          val outVal = ByteBuffer.wrap(AvroEncoder.toBinary(pairs.toVector)(codec)) :: Nil
-          (outKey, outVal)
+    // Call groupBy with numPartitions; if called without that argument or a partitioner,
+    // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
+    // on a key type that may no longer by valid for the key type of the resulting RDD.
+      raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
+        .foreachPartition { partition =>
+          import geotrellis.spark.util.TaskUtils._
+          val session = instance.session
+
+          val statement = session.prepare(s"INSERT INTO ${instance.keySpace}.${table} (key, name, zoom, value) VALUES (?, ?, ?, ?)")
+          val queries: Process[Task, KV] =
+            Process.unfold(partition) { iter =>
+              if (iter.hasNext) {
+                val recs = iter.next()
+                val (id, layerId) = recs._1
+                val pairs = recs._2.toVector
+                val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
+                Some(((id, layerId.name, layerId.zoom), bytes), iter)
+              } else {
+                None
+              }
+            }
+
+          val pool = Executors.newFixedThreadPool(8)
+
+          val write: KV => Process[Task, ResultSetFuture] = {
+            case ((id, name, zoom), value) =>
+              Process eval Task {
+                session.executeAsync(statement.bind(id, name, zoom, value))
+              }(pool).retryEBO {
+                case _ => false
+              }
+          }
+
+          val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { queries map write }
+          results.run.unsafePerformSync
+          pool.shutdown()
         }
-        //.sortByKey()
 
-    kvPairs.saveAsNewAPIHadoopFile(
-      instance.keySpace,
-      classOf[util.Map[String, ByteBuffer]],
-      classOf[util.List[ByteBuffer]],
-      classOf[CqlBulkOutputFormat],
-      job.getConfiguration
-    )
+    instance.closeAsync
   }
 }

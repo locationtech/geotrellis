@@ -2,9 +2,6 @@ import Dependencies._
 
 name := "geotrellis-cassandra"
 libraryDependencies ++= Seq(
-  "org.apache.cassandra" % "cassandra-all" % Version.cassandra
-    excludeAll (ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"), ExclusionRule("org.slf4j"))
-    exclude("org.apache.hadoop", "hadoop-client"),
   "com.datastax.cassandra" % "cassandra-driver-core" % "3.0.0"
     excludeAll (ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"), ExclusionRule("org.slf4j"))
     exclude("org.apache.hadoop", "hadoop-client"),

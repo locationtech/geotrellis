@@ -31,10 +31,7 @@ class CassandraLayerReader(val attributeStore: AttributeStore)(implicit sc: Spar
 
     val queryKeyBounds = rasterQuery(metadata)
 
-    val decompose = (bounds: KeyBounds[K]) =>
-      keyIndex.indexRanges(bounds).map { case (min, max) =>
-        new KeyRange().setStart_key(CassandraKeyEncoder.encode(id, min)).setEnd_key(CassandraKeyEncoder.encode(id, max))
-      }
+    val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
     val rdd = CassandraRDDReader.read[K, V](header.tileTable, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
     new ContextRDD(rdd, metadata)
