@@ -35,26 +35,9 @@ class CassandraLayerWriter(
     val metadata = rdd.metadata
     val encodeKey = (key: K) => (keyIndex.toIndex(key), id)
 
-    /*// If no table exists, add the table and set the splits according to the
-    // key index's keybounds and the number of partitions in the RDD.
-    // This is a "best guess" scenario; users should use CassandraUtils to
-    // manually create splits based on their cluster configuration for best
-    // performance.
-    val ops = instance.connector.tableOperations()
-    if (!ops.exists(table)) {
-      ops.create(table)
-      CassandraUtils.addSplits(table, instance, keyIndex.keyBounds, keyIndex, rdd.partitions.length)
-    }*/
-
     try {
-      instance.ensureKeySpaceExists
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
       CassandraRDDWriter.write(rdd, instance, encodeKey, table)
-
-      /*// Create locality groups based on encoding strategy
-      for(lg <- CassandraKeyEncoder.getLocalityGroups(id)) {
-        instance.makeLocalityGroup(table, lg)
-      }*/
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
