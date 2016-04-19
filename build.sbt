@@ -65,8 +65,7 @@ lazy val root = Project("geotrellis", file(".")).
     sparkEtl,
     s3,
     accumulo,
-    slick,
-    benchmark
+    slick
   ).
   settings(commonSettings: _*).
   settings(
@@ -149,6 +148,3 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
-lazy val benchmark: Project = Project("benchmark", file("benchmark")).
-  dependsOn(raster, engine).
-  settings(commonSettings: _*)

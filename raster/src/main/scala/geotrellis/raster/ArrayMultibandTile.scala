@@ -99,6 +99,8 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     _bands(bandIndex)
   }
 
+  def bands = _bands.toVector
+
   /**
     * Convert the present [[ArrayMultibandTile]] into a
     * [[MultibandTile]] with the given CellType.
@@ -414,7 +416,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     * @param  bandSequence  The list of indices to use to create the new ArrayMultibandTile.
     * @return               The resulting ArrayMultibandTile.
     */
-  def bands(bandSequence: Seq[Int]): ArrayMultibandTile = {
+  def subsetBands(bandSequence: Seq[Int]): ArrayMultibandTile = {
     val newBands = Array.ofDim[Tile](bandSequence.size)
     var i = 0
 
@@ -426,17 +428,4 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
 
     new ArrayMultibandTile(newBands)
   }
-
-  /**
-    * Produce a new [[ArrayMultibandTile]] whose bands are taken from
-    * the source ArrayMultibandTile according to the bandSequence.
-    * For example, if the bandSequence consists of a 4 followed by a
-    * 2, then the new ArrayMultibandTile will have two bands, the
-    * fifth and third from the source ArrayMultibandTile.
-    *
-    * @param  bandSequence  The indices to use to create the new ArrayMultibandTile.
-    * @return               The resulting ArrayMultibandTile.
-    */
-  def bands(bandSequence: Int*)(implicit d: DummyImplicit): ArrayMultibandTile =
-    bands(bandSequence)
 }

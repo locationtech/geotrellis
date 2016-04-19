@@ -180,9 +180,9 @@ object TileLayerMetadata {
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
-  ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): (Int, TileLayerMetadata[K2]) = {
+  ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): TileLayerMetadata[K2] = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
     val kb = bounds.setSpatialBounds(KeyBounds(layoutDefinition.mapTransform(extent)))
-    (0, TileLayerMetadata(cellType, layoutDefinition, extent, crs, kb))
+    TileLayerMetadata(cellType, layoutDefinition, extent, crs, kb)
   }
 }

@@ -15,6 +15,6 @@ class Float32UserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefined
   def getInt(i: Int): Int = udf2i(get(i))
   def getDouble(i: Int): Double = udf2d(get(i))
 
-  protected def intToFloatOut(v: Int): Float = i2f(v)
-  protected def doubleToFloatOut(v: Double): Float = d2f(v)
+  protected def intToFloatOut(v: Int): Float = i2udf(v)
+  protected def doubleToFloatOut(v: Double): Float = d2udf(v)
 }

@@ -37,7 +37,7 @@ abstract trait IntHistogram extends Histogram[Int] {
     * Execute the given function on the value and count of each bucket
     * in the histogram.
     */
-  def foreach(f: (Int, Int) => Unit): Unit = {
+  def foreach(f: (Int, Long) => Unit): Unit = {
     values.foreach(z => f(z, itemCount(z)))
   }
 
@@ -71,8 +71,8 @@ abstract trait IntHistogram extends Histogram[Int] {
       None
     } else {
       val localValues = values()
-      val middle: Int = totalCount() / 2
-      var total = 0
+      val middle: Long = totalCount() / 2
+      var total = 0L
       var i = 0
       while (total <= middle) {
         total += itemCount(localValues(i))
@@ -118,10 +118,10 @@ abstract trait IntHistogram extends Histogram[Int] {
       var dataCount: Long = 0
 
       var mode = 0
-      var modeCount = 0
+      var modeCount = 0L
 
       var mean = 0.0
-      var total = 0
+      var total = 0L
 
       var median = 0
       var needMedian = true

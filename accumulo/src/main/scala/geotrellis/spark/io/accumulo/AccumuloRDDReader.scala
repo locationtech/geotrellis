@@ -25,6 +25,7 @@ object AccumuloRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None
   )(implicit sc: SparkContext, instance: AccumuloInstance): RDD[(K, V)] = {
+    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val codec = KryoWrapper(KeyValueRecordCodec[K, V])
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)

@@ -14,6 +14,8 @@ import org.apache.spark.rdd.RDD
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable
 
+object TileLayerRDDBuilders extends TileLayerRDDBuilders
+
 trait TileLayerRDDBuilders {
 
   lazy val defaultCRS = LatLng

@@ -5,6 +5,7 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 
 import geotrellis.vector._
 
@@ -34,9 +35,9 @@ class StatsTileLayerRDDMethodsSpec extends FunSpec with TestEnvironment with Tes
         TileLayout(3, 4, 3, 2)
       )
 
-      val classBreaks = rdd.classBreaks(3)
+      val classBreaks = rdd.classBreaksDouble(4)
 
-      classBreaks should be (Array(1, 3, 4))
+      classBreaks should be (Array(1.0, 2.0, 3.0, 4.0))
     }
 
     it("should find integer min/max of AllOnesTestFile") {
@@ -85,5 +86,16 @@ class StatsTileLayerRDDMethodsSpec extends FunSpec with TestEnvironment with Tes
       max should be (4.1)
     }
 
+    it ("should find double histogram of aspect and match merged quantile breaks") {
+      val path = "raster-test/data/aspect.tif"
+      val gt = SinglebandGeoTiff(path)
+      val originalRaster = gt.raster.resample(500, 500)
+      val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
+
+      val hist = rdd.histogram
+      val hist2 = rdd.histogram
+
+      hist.merge(hist2).quantileBreaks(70) should be (hist.quantileBreaks(70))
+    }
   }
 }

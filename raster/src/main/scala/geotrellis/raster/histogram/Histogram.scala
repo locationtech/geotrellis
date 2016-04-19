@@ -27,12 +27,12 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   /**
    * Return the number of occurrences for 'item'.
    */
-  def itemCount(item: T): Int
+  def itemCount(item: T): Long
 
   /**
    * Return the total number of occurrences for all items.
    */
-  def totalCount(): Int
+  def totalCount(): Long
 
   /**
    * Return the smallest item seen.
@@ -75,7 +75,7 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
     * Execute the given function on the value and count of each bucket
     * in the histogram.
     */
-  def foreach(f: (T, Int) => Unit): Unit
+  def foreach(f: (T, Long) => Unit): Unit
 
   /**
     * Execute the given function on the value of each bucket in the
@@ -120,6 +120,11 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
     * The number of buckets utilized by this [[Histogram]].
     */
   def bucketCount(): Int
+
+  /**
+    * Return the maximum number of buckets of this histogram.
+    */
+  def maxBucketCount(): Int
 
   /**
     * Return the sum of this histogram and the given one (the sum is

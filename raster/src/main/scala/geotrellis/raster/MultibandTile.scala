@@ -45,16 +45,22 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def band(bandIndex: Int): Tile
 
   /**
-    * Retrieve a subset of the bands of the present [[MultibandTile]]
-    * as a new [[MultibandTile]].
+    * A vector of all bands in this MultibandTile.
     */
-  def bands(bandSequence: Seq[Int]): MultibandTile
+  def bands: Vector[Tile]
 
   /**
     * Retrieve a subset of the bands of the present [[MultibandTile]]
     * as a new [[MultibandTile]].
     */
-  def bands(bandSequence: Int*)(implicit d: DummyImplicit): MultibandTile
+  def subsetBands(bandSequence: Seq[Int]): MultibandTile
+
+  /**
+    * Retrieve a subset of the bands of the present [[MultibandTile]]
+    * as a new [[MultibandTile]].
+    */
+  def subsetBands(bandSequence: Int*)(implicit d: DummyImplicit): MultibandTile =
+    subsetBands(bandSequence)
 
   /**
     * Returns a [[MultibandTile]] equivalent to this one, except with

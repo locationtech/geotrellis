@@ -32,7 +32,8 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
   def renderJpg(colorRamp: ColorRamp, settings: Settings): Jpg = {
     if(self.cellType.isFloatingPoint) {
       val histogram = self.histogram
-      renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp).cache(histogram), settings)
+      val quantileBreaks = histogram.quantileBreaks(colorRamp.numStops)
+      renderJpg(new IntColorMap(quantileBreaks.zip(colorRamp.colors).toMap).cache(histogram), settings)
     } else {
       val histogram = self.histogramDouble
       renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp), settings)

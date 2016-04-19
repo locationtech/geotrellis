@@ -24,7 +24,7 @@ class AccumuloSpaceTimeSpec
   lazy val deleter   = AccumuloLayerDeleter(instance)
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val updater   = AccumuloLayerUpdater(instance, SocketWriteStrategy())
-  lazy val tiles     = AccumuloTileReader[SpaceTimeKey, Tile](instance)
+  lazy val tiles     = AccumuloValueReader(instance)
   lazy val sample    = CoordinateSpaceTime
   lazy val copier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover  = AccumuloLayerMover(copier, deleter)

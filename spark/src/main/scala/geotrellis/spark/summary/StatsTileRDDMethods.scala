@@ -30,23 +30,40 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .mapValues { case (tile, count) => tile / count}
   }
 
-  def histogram: Histogram[Int] = {
+  def histogram(): Histogram[Double] =
+    histogram(StreamingHistogram.DEFAULT_NUM_BUCKETS)
+
+  def histogram(numBuckets: Int): Histogram[Double] =
+    self
+      .map { case (key, tile) => tile.histogramDouble(numBuckets) }
+      .reduce { _ merge _ }
+
+  /** Gives a histogram that uses exact counts of integer values.
+    *
+    * @note This cannot handle counts that are larger than Int.MaxValue, and
+    *       should not be used with very large datasets whose counts will overflow.
+    *       These histograms can get very large with a wide range of values.
+    */
+  def histogramExactInt: Histogram[Int] = {
     self
       .map { case (key, tile) => tile.histogram }
       .reduce { _ merge _ }
   }
 
-  def histogramDouble: Histogram[Double] = {
-    self
-      .map { case (key, tile) => tile.histogramDouble }
-      .reduce { _ merge _ }
-  }
-
   def classBreaks(numBreaks: Int): Array[Int] =
-    histogram.quantileBreaks(numBreaks)
+    classBreaksDouble(numBreaks).map(_.toInt)
 
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    histogramDouble.quantileBreaks(numBreaks)
+    histogram(numBreaks).quantileBreaks(numBreaks)
+
+  /** Gives class breaks using a histogram that uses exact counts of integer values.
+    *
+    * @note This cannot handle counts that are larger than Int.MaxValue, and
+    *       should not be used with very large datasets whose counts will overflow.
+    *       These histograms can get very large with a wide range of values.
+    */
+  def classBreaksExactInt(numBreaks: Int): Array[Int] =
+    histogramExactInt.quantileBreaks(numBreaks)
 
   def minMax: (Int, Int) =
     self.map(_._2.findMinMax)
