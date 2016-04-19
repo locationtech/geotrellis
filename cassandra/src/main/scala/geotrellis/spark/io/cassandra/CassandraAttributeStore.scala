@@ -2,6 +2,7 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+
 import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._

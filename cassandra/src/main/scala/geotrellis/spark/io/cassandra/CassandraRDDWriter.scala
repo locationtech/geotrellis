@@ -3,11 +3,11 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
+
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.ResultSetFuture
 import org.apache.spark.rdd.RDD
-
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
 
@@ -41,7 +41,6 @@ object CassandraRDDWriter {
       )
     }
 
-
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
@@ -50,7 +49,9 @@ object CassandraRDDWriter {
           import geotrellis.spark.util.TaskUtils._
           val session = instance.session
 
-          val statement = session.prepare(s"INSERT INTO ${instance.keySpace}.${table} (key, name, zoom, value) VALUES (?, ?, ?, ?)")
+          val statement = session.prepare(
+            s"insert into ${instance.keySpace}.${table} (key, name, zoom, value) values (?, ?, ?, ?)"
+          )
           val queries: Process[Task, KV] =
             Process.unfold(partition) { iter =>
               if (iter.hasNext) {

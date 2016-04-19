@@ -39,7 +39,9 @@ object CassandraRDDReader {
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
           val session = instance.session
 
-          val statement = session.prepare(s"SELECT value FROM ${instance.keySpace}.${table} WHERE key = ?")
+          val statement = session.prepare(
+            s"select value from ${instance.keySpace}.${table} where key = ?"
+          )
           val tileSeq: Iterator[Seq[(K, V)]] =
             for {
               rangeList <- partition // Unpack the one element of this partition, the rangeList.
@@ -60,6 +62,7 @@ object CassandraRDDReader {
 
           tileSeq.flatten
         }
+
     instance.closeAsync
     rdd
   }
