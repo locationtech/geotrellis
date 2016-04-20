@@ -31,7 +31,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
   {
     instance.ensureKeySpaceExists
     session.execute(
-      SchemaBuilder.createTable(instance.keySpace, attributeTable).ifNotExists()
+      SchemaBuilder.createTable(instance.keyspace, attributeTable).ifNotExists()
       .addPartitionKey("layerId", text)
       .addClusteringColumn("name", text)
       .addColumn("value", text)
@@ -48,12 +48,12 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
       layerId match {
         case Some(id) =>
           QueryBuilder.select.column("value")
-            .from(instance.keySpace, attributeTable)
+            .from(instance.keyspace, attributeTable)
             .where (eqs("layerId", layerIdString(id)))
             .and   (eqs("name", attributeName))
         case None =>
           QueryBuilder.select.column("value")
-            .from(instance.keySpace, attributeTable)
+            .from(instance.keyspace, attributeTable)
             .where(eqs("name", attributeName))
       }
 
@@ -67,12 +67,12 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
       attributeName match {
         case Some(name) =>
           QueryBuilder.delete()
-            .from(instance.keySpace, attributeTable)
+            .from(instance.keyspace, attributeTable)
             .where (eqs("layerId", layerIdString(layerId)))
             .and   (eqs ("name", name))
         case None =>
           QueryBuilder.delete()
-            .from(instance.keySpace, attributeTable)
+            .from(instance.keyspace, attributeTable)
             .where (eqs("layerId", layerIdString(layerId)))
       }
 
@@ -87,7 +87,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     val query =
       QueryBuilder.select.column("value")
-        .from(instance.keySpace, attributeTable)
+        .from(instance.keyspace, attributeTable)
         .where (eqs("layerId", layerIdString(layerId)))
         .and   (eqs("name", attributeName))
 
@@ -108,11 +108,11 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
 
     val query =
       QueryBuilder.select.column("value")
-        .from(instance.keySpace, attributeTable)
+        .from(instance.keyspace, attributeTable)
         .where(eqs("name", attributeName))
 
     val preparedStatement = session.prepare(
-      s"SELECT value FROM ${instance.keySpace}.${attributeTable} WHERE name=? ALLOW FILTERING;")
+      s"SELECT value FROM ${instance.keyspace}.${attributeTable} WHERE name=? ALLOW FILTERING;")
 
     session.execute(preparedStatement.bind(attributeName))
       .all
@@ -122,7 +122,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
 
   def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val update =
-      QueryBuilder.update(instance.keySpace, attributeTable)
+      QueryBuilder.update(instance.keyspace, attributeTable)
         .`with`(set("value", (layerId, value).toJson.compactPrint))
         .where (eqs("layerId", layerIdString(layerId)))
         .and   (eqs("name", attributeName))
@@ -133,7 +133,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
   def layerExists(layerId: LayerId): Boolean = {
     val query =
       QueryBuilder.select.column("layerId")
-        .from(instance.keySpace, attributeTable)
+        .from(instance.keyspace, attributeTable)
         .where (eqs("layerId", layerIdString(layerId)))
 
     session.execute(query).exists { key =>
@@ -149,7 +149,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
   def layerIds: Seq[LayerId] = {
     val query =
       QueryBuilder.select.column("key")
-        .from(instance.keySpace, attributeTable)
+        .from(instance.keyspace, attributeTable)
 
     session.execute(query).map { key =>
       val List(name, zoomStr) = key.getString("layerId").split(SEP).toList
@@ -162,7 +162,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
   def availableAttributes(layerId: LayerId): Seq[String] = {
     val query =
       QueryBuilder.select("name")
-        .from(instance.keySpace, attributeTable)
+        .from(instance.keyspace, attributeTable)
         .where (eqs("layerId", layerIdString(layerId)))
 
     session.execute(query).map (_.getString("name")).toVector

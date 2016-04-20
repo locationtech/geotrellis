@@ -9,7 +9,7 @@ trait CassandraInstance extends Serializable {
   val password: String
 
   // column family is a table name
-  val keySpace: String
+  val keyspace: String
 
   // probably there is a more conviniet way to do it
   val replicationStrategy: String
@@ -21,10 +21,10 @@ trait CassandraInstance extends Serializable {
     builder.build()
   }
 
-  @transient lazy val session = cluster.connect()
+  @transient lazy val session = cluster.newSession()
 
   def ensureKeySpaceExists: Unit =
-    session.execute(s"CREATE KEYSPACE IF NOT EXISTS ${keySpace} WITH REPLICATION = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")
+    session.execute(s"create keyspace if not exists ${keyspace} with replication = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")
 
   def close = { session.close(); cluster.close() }
   def closeAsync = { session.closeAsync(); cluster.closeAsync() }
@@ -32,7 +32,7 @@ trait CassandraInstance extends Serializable {
 
 case class BaseCassandraInstance(
   hosts: Seq[String],
-  keySpace: String,
+  keyspace: String,
   username: String = "",
   password: String = "",
   replicationStrategy: String = "SimpleStrategy",

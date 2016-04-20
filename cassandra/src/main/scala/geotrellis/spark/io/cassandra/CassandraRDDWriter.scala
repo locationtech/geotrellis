@@ -3,14 +3,13 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
-
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-import com.datastax.driver.core.ResultSetFuture
+import com.datastax.driver.core.{ResultSet, ResultSetFuture}
 import org.apache.spark.rdd.RDD
+
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
-
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
@@ -33,7 +32,7 @@ object CassandraRDDWriter {
 
     {
       _session.execute(
-        SchemaBuilder.createTable(instance.keySpace, table).ifNotExists()
+        SchemaBuilder.createTable(instance.keyspace, table).ifNotExists()
           .addPartitionKey("key", bigint)
           .addClusteringColumn("name", text)
           .addClusteringColumn("zoom", cint)
@@ -50,7 +49,7 @@ object CassandraRDDWriter {
           val session = instance.session
 
           val statement = session.prepare(
-            s"insert into ${instance.keySpace}.${table} (key, name, zoom, value) values (?, ?, ?, ?)"
+            s"insert into ${instance.keyspace}.${table} (key, name, zoom, value) values (?, ?, ?, ?)"
           )
           val queries: Process[Task, KV] =
             Process.unfold(partition) { iter =>
@@ -67,10 +66,10 @@ object CassandraRDDWriter {
 
           val pool = Executors.newFixedThreadPool(8)
 
-          val write: KV => Process[Task, ResultSetFuture] = {
+          val write: KV => Process[Task, ResultSet] = {
             case ((id, name, zoom), value) =>
               Process eval Task {
-                session.executeAsync(statement.bind(id, name, zoom, value))
+                session.execute(statement.bind(id, name, zoom, value))
               }(pool).retryEBO {
                 case _ => false
               }
@@ -81,6 +80,6 @@ object CassandraRDDWriter {
           pool.shutdown()
         }
 
-    instance.closeAsync
+    //instance.closeAsync
   }
 }

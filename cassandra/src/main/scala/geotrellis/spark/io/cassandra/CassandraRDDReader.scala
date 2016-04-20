@@ -40,7 +40,7 @@ object CassandraRDDReader {
           val session = instance.session
 
           val statement = session.prepare(
-            s"select value from ${instance.keySpace}.${table} where key = ?"
+            s"select value from ${instance.keyspace}.${table} where key = ?"
           )
           val tileSeq: Iterator[Seq[(K, V)]] =
             for {

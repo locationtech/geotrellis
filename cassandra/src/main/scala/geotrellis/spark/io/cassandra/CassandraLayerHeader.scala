@@ -9,7 +9,7 @@ case class CassandraLayerHeader(
   valueClass: String,
   tileTable: String
 ) extends LayerHeader {
-  def format = "accumulo"
+  def format = "cassandra"
 }
 
 object CassandraLayerHeader {
