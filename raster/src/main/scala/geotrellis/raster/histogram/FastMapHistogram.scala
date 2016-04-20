@@ -60,8 +60,14 @@ object FastMapHistogram {
   * The [[FastMapHistogram]] class.  Quickly compute histograms over
   * integer data.
   */
-class FastMapHistogram(var size: Int, var buckets: Array[Int], var counts: Array[Long], var used: Int, var total: Long)
+class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _used: Int, _total: Long)
     extends MutableIntHistogram {
+  private var size = _size
+  private var buckets = _buckets
+  private var counts = _counts
+  private var used = _used
+  private var total = _total
+
   if (size <= 0) error("size must be > 0")
 
   // We are reserving this value
