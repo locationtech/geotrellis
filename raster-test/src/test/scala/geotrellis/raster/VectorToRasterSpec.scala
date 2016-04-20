@@ -55,6 +55,18 @@ class VectorToRasterSpec extends FunSpec
         }
       }
     }
+
+    it("keeps sampled values") {
+      val re = RasterExtent(Extent(0,0,90,100),10,10,9,10)
+      val value = 15
+      val points = Seq(
+        PointFeature(Point(5,95), value),
+        PointFeature(Point(15,80), 10)
+      )
+      val result = VectorToRaster.idwInterpolate(points,re)
+
+      assert(result.get(0, 0) === value)
+    }
   }
 
   describe("CountPoints") {
