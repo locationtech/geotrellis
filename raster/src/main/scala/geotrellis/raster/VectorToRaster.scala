@@ -111,6 +111,8 @@ object VectorToRaster {
     val cols = re.cols
     val rows = re.rows
     val tile = ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
+    val w0 = 1e10 // weight for samples at interpolation point
+
     if(points.isEmpty) {
       tile
     } else {
@@ -141,13 +143,8 @@ object VectorToRaster {
                   val d = dX * dX + dY * dY
                   i += 1
 
-                  if (d == 0) {
-                    c = 1
-                    s = point.data
-                    ws = 1
-                    i = length
-                  } else if (d < rr) {
-                    val w = 1 / d
+                  if (d < rr) {
+                    val w = if (d == 0) w0 else 1 / d
                     s += point.data * w
                     ws += w
                     c += 1
@@ -181,17 +178,10 @@ object VectorToRaster {
                 val d = dX * dX + dY * dY
                 i += 1
 
-                if (d == 0) {
-                  c = 1
-                  s = point.data
-                  ws = 1
-                  i = length
-                } else {
-                  val w = 1 / d
-                  s += point.data * w
-                  ws += w
-                  c += 1
-                }
+                val w = if (d == 0) w0 else 1 / d
+                s += point.data * w
+                ws += w
+                c += 1
               }
 
               if (c == 0) {
@@ -211,6 +201,8 @@ object VectorToRaster {
     val cols = re.cols
     val rows = re.rows
     val tile = ArrayTile.empty(DoubleConstantNoDataCellType, cols, rows)
+    val w0 = 1e10 // weight for samples at interpolation point
+
     if(points.isEmpty) {
       tile
     } else {
@@ -241,13 +233,8 @@ object VectorToRaster {
                   val d = dX * dX + dY * dY
                   i += 1
 
-                  if (d == 0) {
-                    c = 1
-                    s = point.data
-                    ws = 1
-                    i = length
-                  } else if (d < rr) {
-                    val w = 1 / d
+                  if (d < rr) {
+                    val w = if (d == 0) w0 else 1 / d
                     s += point.data * w
                     ws += w
                     c += 1
@@ -281,17 +268,10 @@ object VectorToRaster {
                 val d = dX * dX + dY * dY
                 i += 1
 
-                if (d == 0) {
-                  c = 1
-                  s = point.data
-                  ws = 1
-                  i = length
-                } else {
-                  val w = 1 / d
-                  s += point.data * w
-                  ws += w
-                  c += 1
-                }
+                val w = if (d == 0) w0 else 1 / d
+                s += point.data * w
+                ws += w
+                c += 1
               }
 
               if (c == 0) {

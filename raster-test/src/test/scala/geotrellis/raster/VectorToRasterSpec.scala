@@ -61,7 +61,7 @@ class VectorToRasterSpec extends FunSpec
       val value = 15
       val points = Seq(
         PointFeature(Point(5,95), value),
-        PointFeature(Point(15,80), 10)
+        PointFeature(Point(0,90), 10)
       )
       val result = VectorToRaster.idwInterpolate(points,re)
 
