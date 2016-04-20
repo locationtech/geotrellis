@@ -5,6 +5,9 @@ import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
+
+import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -14,13 +17,14 @@ import scala.reflect.ClassTag
 
 object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
+    instance: CassandraInstance,
     table: String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None
-  )(implicit sc: SparkContext, instance: CassandraInstance): RDD[(K, V)] = {
+  )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
@@ -34,36 +38,41 @@ object CassandraRDDReader {
 
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
-    val rdd =
+    val query = QueryBuilder.select("value")
+      .from(instance.keyspace, table)
+      .where(eqs("key", QueryBuilder.bindMarker()))
+      .toString
+
+    val rdd: RDD[(K, V)] =
       sc.parallelize(bins, bins.size)
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          val session = instance.session
+          val session = instance.getSession
+          val statement = session.prepare(query)
 
-          val statement = session.prepare(
-            s"select value from ${instance.keyspace}.${table} where key = ?"
-          )
           val tileSeq: Iterator[Seq[(K, V)]] =
             for {
               rangeList <- partition // Unpack the one element of this partition, the rangeList.
               range <- rangeList
               index <- range._1 to range._2
             } yield {
-              try {
-                val bytes = session.execute(statement.bind(index.asInstanceOf[java.lang.Long])).one().getBytes("value").array()
+              val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
+              if (row.nonEmpty) {
+                val bytes = row.one().getBytes("value").array()
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                if(filterIndexOnly)
+
+                if (filterIndexOnly)
                   recs
                 else
                   recs.filter { row => includeKey(row._1) }
-              } catch {
-                case _: Exception => Seq.empty
+              } else {
+                Seq.empty
               }
             }
 
-          tileSeq.flatten
+          // add last element as a session close; dirty but lazy and async
+          (tileSeq ++ Iterator({ session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)] })).flatten
         }
 
-    instance.closeAsync
     rdd
   }
 }

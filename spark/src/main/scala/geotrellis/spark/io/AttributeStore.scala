@@ -28,6 +28,8 @@ trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
       write(to, attribute, read[JsValue](from, attribute))
     }
   }
+
+  def close(): Unit = { }
 }
 
 object AttributeStore {

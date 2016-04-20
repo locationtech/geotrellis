@@ -3,13 +3,15 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
+
+import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-import com.datastax.driver.core.{ResultSet, ResultSetFuture}
+import com.datastax.driver.core.ResultSet
 import org.apache.spark.rdd.RDD
-
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
+
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
@@ -28,7 +30,7 @@ object CassandraRDDWriter {
 
     val codec = KeyValueRecordCodec[K, V]
     val schema = codec.schema
-    val _session = instance.session
+    val _session = instance.getSession
 
     {
       _session.execute(
@@ -40,17 +42,24 @@ object CassandraRDDWriter {
       )
     }
 
+    val query =
+      QueryBuilder
+        .insertInto(instance.keyspace, table)
+        .value("key", QueryBuilder.bindMarker())
+        .value("name", QueryBuilder.bindMarker())
+        .value("zoom", QueryBuilder.bindMarker())
+        .value("value", QueryBuilder.bindMarker())
+        .toString
+
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
       raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
         .foreachPartition { partition =>
           import geotrellis.spark.util.TaskUtils._
-          val session = instance.session
+          val session = instance.getSession
+          val statement = session.prepare(query)
 
-          val statement = session.prepare(
-            s"insert into ${instance.keyspace}.${table} (key, name, zoom, value) values (?, ?, ?, ?)"
-          )
           val queries: Process[Task, KV] =
             Process.unfold(partition) { iter =>
               if (iter.hasNext) {
@@ -75,11 +84,15 @@ object CassandraRDDWriter {
               }
           }
 
-          val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { queries map write }
+          val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { queries map write } onComplete {
+            Process eval Task { session.closeAsync(); session.getCluster.closeAsync() }
+          }
+
           results.run.unsafePerformSync
           pool.shutdown()
         }
 
-    //instance.closeAsync
+    _session.closeAsync()
+    _session.getCluster.closeAsync()
   }
 }

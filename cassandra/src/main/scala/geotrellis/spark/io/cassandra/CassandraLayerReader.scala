@@ -5,13 +5,12 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.util._
 
-import org.apache.cassandra.thrift.KeyRange
 import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.reflect._
 
-class CassandraLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext, instance: CassandraInstance)
+class CassandraLayerReader(val attributeStore: AttributeStore, instance: CassandraInstance)(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
@@ -33,19 +32,16 @@ class CassandraLayerReader(val attributeStore: AttributeStore)(implicit sc: Spar
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
-    val rdd = CassandraRDDReader.read[K, V](header.tileTable, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
+    val rdd = CassandraRDDReader.read[K, V](instance, header.tileTable, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
     new ContextRDD(rdd, metadata)
   }
 }
 
 object CassandraLayerReader {
   def apply(instance: CassandraInstance)(implicit sc: SparkContext): CassandraLayerReader =
-    new CassandraLayerReader(CassandraAttributeStore(instance))(sc, instance)
+    new CassandraLayerReader(CassandraAttributeStore(instance), instance)(sc)
 
-  def apply(attributeStore: CassandraAttributeStore)(implicit sc: SparkContext, instance: CassandraInstance): CassandraLayerReader =
-    new CassandraLayerReader(attributeStore)
-
-  def apply()(implicit sc: SparkContext, instance: CassandraInstance): CassandraLayerReader =
-    new CassandraLayerReader(CassandraAttributeStore(instance))
+  def apply(attributeStore: CassandraAttributeStore, instance: CassandraInstance)(implicit sc: SparkContext): CassandraLayerReader =
+    new CassandraLayerReader(attributeStore, instance)
 }
 

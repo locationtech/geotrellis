@@ -4,10 +4,10 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 
 import com.datastax.driver.core.ResultSet
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
-import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
+import com.datastax.driver.core.schemabuilder.SchemaBuilder
+import com.datastax.driver.core.DataType._
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import spray.json._
@@ -25,11 +25,11 @@ object CassandraAttributeStore {
 
 class CassandraAttributeStore(val instance: CassandraInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
 
-  val session = instance.session
+  lazy val session = instance.getSession
 
   //create the attribute table if it does not exist
   {
-    instance.ensureKeySpaceExists
+    instance.ensureKeySpaceExists(session)
     session.execute(
       SchemaBuilder.createTable(instance.keyspace, attributeTable).ifNotExists()
       .addPartitionKey("layerId", text)
@@ -105,15 +105,11 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
   }
 
   def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
+    val query = QueryBuilder.select("value")
+      .from(instance.keyspace, attributeTable).allowFiltering()
+      .where(eqs("name", QueryBuilder.bindMarker()))
 
-    val query =
-      QueryBuilder.select.column("value")
-        .from(instance.keyspace, attributeTable)
-        .where(eqs("name", attributeName))
-
-    val preparedStatement = session.prepare(
-      s"SELECT value FROM ${instance.keyspace}.${attributeTable} WHERE name=? ALLOW FILTERING;")
-
+    val preparedStatement = session.prepare(query)
     session.execute(preparedStatement.bind(attributeName))
       .all
       .map { _.getString("value").parseJson.convertTo[(LayerId, T)] }
@@ -167,4 +163,6 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
 
     session.execute(query).map (_.getString("name")).toVector
   }
+
+  override def close = { session.closeAsync(); session.getCluster.closeAsync() }
 }
