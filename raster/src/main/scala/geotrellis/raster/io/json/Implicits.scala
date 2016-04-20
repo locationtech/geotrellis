@@ -9,28 +9,7 @@ import spray.json._
 
 object Implicits extends Implicits
 
-trait Implicits extends StreamingHistogramJson {
-  implicit object HistogramFormat extends RootJsonFormat[Histogram[Int]] {
-    def write(h: Histogram[Int]): JsValue = {
-      var pairs: List[JsArray] = Nil
-      h.foreach{ (value, count) => pairs = JsArray(JsNumber(value), JsNumber(count)) :: pairs }
-      JsArray(pairs:_*)
-    }
-
-    def read(json: JsValue): FastMapHistogram = json match {
-      case JsArray(pairs) =>
-        val hist = FastMapHistogram()
-        for(pair <- pairs) {
-          pair match {
-            case JsArray(Vector(JsNumber(item), JsNumber(count))) =>  hist.countItem(item.toInt, count.toInt)
-            case _ => throw new DeserializationException("Array of [value, count] pairs expected")
-          }
-        }
-        hist
-      case _ =>
-        throw new DeserializationException("Array of [value, count] pairs expected")
-    }
-  }
+trait Implicits extends HistogramJsonFormats {
 
   implicit object CellTypeFormat extends RootJsonFormat[CellType] {
     def write(cellType: CellType) =

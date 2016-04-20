@@ -182,15 +182,14 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
   }
 
   describe("Json Serialization") {
-
     it("should successfully round-trip a trivial histogram") {
       val h1 = StreamingHistogram()
-      val h2 = h1.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+      val h2 = (h1: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]]
 
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
       h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBuckets should equal (h2.maxBuckets)
+      h1.maxBucketCount should equal (h2.maxBucketCount)
     }
 
     it("should successfully round-trip a non-trivial histogram") {
@@ -202,12 +201,12 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .take(10000)
         .foreach({ i => h1.countItem(i.toDouble) })
 
-      val h2 = h1.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+      val h2 = (h1: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]]
 
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
       h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBuckets should equal (h2.maxBuckets)
+      h1.maxBucketCount should equal (h2.maxBucketCount)
     }
 
     it("should produce a result which behaves the same as the original") {
@@ -219,7 +218,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .take(10000)
         .foreach({ i => h1.countItem(i.toDouble) })
 
-      val h2 = h1.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+      val h2 = StreamingHistogram((h1: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]])
 
       Iterator
         .continually(list2)
@@ -233,7 +232,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
       h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBuckets should equal (h2.maxBuckets)
+      h1.maxBucketCount should equal (h2.maxBucketCount)
     }
 
     it("should produce non-sterile offspring") {
@@ -246,12 +245,12 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .foreach({ i => h1.countItem(i.toDouble) })
 
       val h2 = {
-        var h = h1
+        var h: Histogram[Double] = h1
         var i = 0; while (i < 107) {
-          h = h.toJson.prettyPrint.parseJson.convertTo[StreamingHistogram]
+          h = (h: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]]
           i += 1
         }
-        h
+        StreamingHistogram(h)
       }
 
       Iterator
@@ -266,7 +265,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
       h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBuckets should equal (h2.maxBuckets)
+      h1.maxBucketCount should equal (h2.maxBucketCount)
     }
 
   }

@@ -122,6 +122,11 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   def bucketCount(): Int
 
   /**
+    * Return the maximum number of buckets of this histogram.
+    */
+  def maxBucketCount(): Int
+
+  /**
     * Return the sum of this histogram and the given one (the sum is
     * the histogram that would result from seeing all of the values
     * seen by the two antecedent histograms).
