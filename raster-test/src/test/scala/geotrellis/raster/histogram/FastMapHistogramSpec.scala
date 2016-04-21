@@ -85,4 +85,15 @@ class FastMapHistogramSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("adding large counts") {
+    it("should provide correct results for counts > Int.MaxValue") {
+      val h = FastMapHistogram ()
+      val shft : (Long,Long) => Long = (_ << _)
+      h.countItem(10, shft(1,40))
+
+      val count = h.itemCount(10)
+      count should equal (1099511627776L)
+      
+    }
+  }
 }
