@@ -46,31 +46,34 @@ object CassandraRDDReader {
     val rdd: RDD[(K, V)] =
       sc.parallelize(bins, bins.size)
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          val session = instance.getSession
-          val statement = session.prepare(query)
+          instance.withSession { session =>
+            val statement = session.prepare(query)
 
-          val tileSeq: Iterator[Seq[(K, V)]] =
-            for {
-              rangeList <- partition // Unpack the one element of this partition, the rangeList.
-              range <- rangeList
-              index <- range._1 to range._2
-            } yield {
-              val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
-              if (row.nonEmpty) {
-                val bytes = row.one().getBytes("value").array()
-                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+            val tileSeq: Iterator[Seq[(K, V)]] =
+              for {
+                rangeList <- partition // Unpack the one element of this partition, the rangeList.
+                range <- rangeList
+                index <- range._1 to range._2
+              } yield {
+                val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
+                if (row.nonEmpty) {
+                  val bytes = row.one().getBytes("value").array()
+                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
 
-                if (filterIndexOnly)
-                  recs
-                else
-                  recs.filter { row => includeKey(row._1) }
-              } else {
-                Seq.empty
+                  if (filterIndexOnly)
+                    recs
+                  else
+                    recs.filter { row => includeKey(row._1) }
+                } else {
+                  Seq.empty
+                }
               }
-            }
 
-          // add last element as a session close; dirty but lazy and async
-          (tileSeq ++ Iterator({ session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)] })).flatten
+            /** Close partition session; is there a better way to do it? */
+            (tileSeq ++ Iterator({
+              session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
+            })).flatten
+          }
         }
 
     rdd
