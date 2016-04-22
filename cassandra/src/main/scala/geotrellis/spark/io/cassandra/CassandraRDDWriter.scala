@@ -72,6 +72,7 @@ object CassandraRDDWriter {
                 }
               }
 
+            /** magic number 8; for no reason; just because */
             val pool = Executors.newFixedThreadPool(8)
 
             val write: KV => Process[Task, ResultSet] = {

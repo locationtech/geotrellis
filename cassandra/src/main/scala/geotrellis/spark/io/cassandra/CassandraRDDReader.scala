@@ -55,6 +55,7 @@ object CassandraRDDReader {
                 range <- rangeList
                 index <- range._1 to range._2
               } yield {
+                // mb to use iterator there?
                 val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
                 if (row.nonEmpty) {
                   val bytes = row.one().getBytes("value").array()
