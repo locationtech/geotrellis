@@ -18,8 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
-import geotrellis.raster.mapalgebra.focal.Kernel
-
+import geotrellis.raster.mapalgebra.focal.{Circle, Kernel, Square}
 import spire.syntax.cfor._
 
 /**
@@ -90,12 +89,15 @@ object VectorToRaster {
     * extent from the given set known-points.  Please see
     * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
     * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @param   radius  Interpolation radius in cells
+    * @return          The data interpolated across the study area
     */
-  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Int): Tile =
-    idwInterpolate(points, re, Some(radius))
-
-  def idwInterpolateDouble(points: Seq[PointFeature[Double]], re: RasterExtent, radius: Int): Tile =
-    idwInterpolateDouble(points, re, Some(radius))
+  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Circle): Tile = {
+    idwInterpolate(points, re, radius.extent * Math.max(re.cellwidth, re.cellheight))
+  }
 
   /**
     * Compute an Inverse Distance Weighting raster over the given
@@ -105,9 +107,54 @@ object VectorToRaster {
     *
     * @param   points  A collection of known-points
     * @param   re      The study area
+    * @param   radius  Interpolation radius in cells
     * @return          The data interpolated across the study area
     */
-  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int]): Tile = {
+  def idwInterpolateDouble(points: Seq[PointFeature[Double]], re: RasterExtent, radius: Circle): Tile =
+    idwInterpolateDouble(points, re, radius.extent * Math.max(re.cellwidth, re.cellheight))
+
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @param   radius  Interpolation radius in coordinate unit
+    * @return          The data interpolated across the study area
+    */
+  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Double): Tile = {
+    idwInterpolate(points, re, Some(radius))
+  }
+
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @param   radius  Interpolation radius in coordinate unit
+    * @return          The data interpolated across the study area
+    */
+  def idwInterpolateDouble(points: Seq[PointFeature[Double]], re: RasterExtent, radius: Double): Tile = {
+    idwInterpolateDouble(points, re, Some(radius))
+  }
+
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @param   radius  Interpolation radius in coordinate unit
+    * @return          The data interpolated across the study area
+    */
+  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Double]): Tile = {
     val cols = re.cols
     val rows = re.rows
     val tile = ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
@@ -117,7 +164,7 @@ object VectorToRaster {
       tile
     } else {
       val r = radius match {
-        case Some(r: Int) =>
+        case Some(r: Double) =>
           val rr = r*r
           val index: SpatialIndex[PointFeature[Int]] = SpatialIndex(points)(p => (p.geom.x, p.geom.y))
 
@@ -197,7 +244,18 @@ object VectorToRaster {
     }
   }
 
-  def idwInterpolateDouble(points: Seq[PointFeature[Double]], re: RasterExtent, radius: Option[Int]): Tile = {
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @param   radius  Interpolation radius in coordinate unit
+    * @return          The data interpolated across the study area
+    */
+  def idwInterpolateDouble(points: Seq[PointFeature[Double]], re: RasterExtent, radius: Option[Double]): Tile = {
     val cols = re.cols
     val rows = re.rows
     val tile = ArrayTile.empty(DoubleConstantNoDataCellType, cols, rows)
@@ -207,7 +265,7 @@ object VectorToRaster {
       tile
     } else {
       val r = radius match {
-        case Some(r: Int) =>
+        case Some(r: Double) =>
           val rr = r*r
           val index: SpatialIndex[PointFeature[Double]] = SpatialIndex(points)(p => (p.geom.x, p.geom.y))
 
