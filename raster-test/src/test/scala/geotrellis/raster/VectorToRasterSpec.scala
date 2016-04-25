@@ -16,14 +16,12 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.mapalgebra.focal.Circle
 import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.raster.testkit._
 import spray.json.DefaultJsonProtocol._
-
-import spray.json.DefaultJsonProtocol._
-
 import org.scalatest._
 
 class VectorToRasterSpec extends FunSpec
@@ -66,6 +64,90 @@ class VectorToRasterSpec extends FunSpec
       val result = VectorToRaster.idwInterpolate(points,re)
 
       assert(result.get(0, 0) === value)
+    }
+
+    it("uses points closer than radius in cell units") {
+      val re = RasterExtent(Extent(0,0,0.5,0.5),0.05,0.05,10,10)
+
+      val points = Seq(
+        PointFeature(Point(0.075,0.475), 10),
+        PointFeature(Point(0.025,0.425), 20),
+        PointFeature(Point(0.175,0.475), 500)
+      )
+
+      val result = VectorToRaster.idwInterpolate(points,re, Circle(1))
+
+      assert(result.get(0, 0) === 15)
+      assert(result.get(3, 0) === 500)
+    }
+
+    it("uses points closer than radius in raster units") {
+      val re = RasterExtent(Extent(0,0,0.5,0.5),0.05,0.05,10,10)
+
+      val points = Seq(
+        PointFeature(Point(0.075,0.475), 10),
+        PointFeature(Point(0.025,0.425), 20),
+        PointFeature(Point(0.175,0.475), 500)
+      )
+
+      val result = VectorToRaster.idwInterpolate(points,re, 0.05)
+
+      assert(result.get(0, 0) === 15)
+      assert(result.get(3, 0) === 500)
+    }
+  }
+
+  describe("idwInterpolateDouble") {
+    it("keeps sampled values") {
+      val re = RasterExtent(Extent(0,0,90,100),10,10,9,10)
+      val value = 15.5
+      val points = Seq(
+        PointFeature[Double](Point(5,95), value),
+        PointFeature[Double](Point(0,90), 10)
+      )
+      val result = VectorToRaster.idwInterpolateDouble(points,re)
+
+      value should be (result.getDouble(0, 0) +- 0.001)
+    }
+
+    it("uses points closer than radius in cell units") {
+      val re = RasterExtent(Extent(0,0,0.5,0.5),0.05,0.05,10,10)
+
+      val a = 10.2
+      val b = 20.8
+      val c = 500.0
+      val expected = (a + b) / 2
+
+      val points = Seq(
+        PointFeature[Double](Point(0.075,0.475), a),
+        PointFeature[Double](Point(0.025,0.425), b),
+        PointFeature[Double](Point(0.175,0.475), c)
+      )
+
+      val result = VectorToRaster.idwInterpolateDouble(points,re, Circle(1))
+
+      expected should be (result.getDouble(0, 0) +- 0.001)
+      c should be (result.getDouble(3, 0) +- 0.001)
+    }
+
+    it("uses points closer than radius in raster units") {
+      val re = RasterExtent(Extent(0,0,0.5,0.5),0.05,0.05,10,10)
+
+      val a = 10.2
+      val b = 20.8
+      val c = 500.0
+      val expected = (a + b) / 2
+
+      val points = Seq(
+        PointFeature[Double](Point(0.075,0.475), a),
+        PointFeature[Double](Point(0.025,0.425), b),
+        PointFeature[Double](Point(0.175,0.475), c)
+      )
+
+      val result = VectorToRaster.idwInterpolateDouble(points,re, 0.05)
+
+      expected should be (result.getDouble(0, 0) +- 0.001)
+      c should be (result.getDouble(3, 0) +- 0.001)
     }
   }
 
