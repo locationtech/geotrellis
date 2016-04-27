@@ -8,6 +8,7 @@
       "project spark" publish \
       "project s3" publish \
       "project accumulo" publish \
+      "project cassandra" publish \
       "project shapefile" publish \
       "project util" publish \
       "project raster-testkit" publish \

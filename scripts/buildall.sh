@@ -6,6 +6,7 @@
 ./sbt -J-Xmx2G "project spark" test  || { exit 1; }
 ./sbt -J-Xmx2G "project s3" test  || { exit 1; }
 ./sbt -J-Xmx2G "project accumulo" test  || { exit 1; }
+./sbt -J-Xmx2G "project cassandra" test  || { exit 1; }
 ./sbt -J-Xmx2G "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G "project engine-test" test || { exit 1; }
 ./sbt -J-Xmx2G "project slick" test:compile || { exit 1; }
