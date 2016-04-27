@@ -32,7 +32,7 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
-    val rdd = CassandraRDDReader.read[K, V](instance, header.tileTable, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
+    val rdd = CassandraRDDReader.read[K, V](instance, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
     new ContextRDD(rdd, metadata)
   }
 }

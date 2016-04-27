@@ -23,11 +23,13 @@ class CassandraValueReader(
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
 
-    def read(key: K): V = instance.withSessionDo { session =>
+    def read(key: K): V = instance.withSession { session =>
       val statement = session.prepare(
         QueryBuilder.select("value")
           .from(instance.keyspace, header.tileTable)
           .where(eqs("key", QueryBuilder.bindMarker()))
+          .and(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
       )
 
       val row = session.execute(statement.bind(keyIndex.toIndex(key).asInstanceOf[java.lang.Long])).iterator()
@@ -42,7 +44,7 @@ class CassandraValueReader(
       if (tiles.isEmpty) {
         throw new TileNotFoundError(key, layerId)
       } else if (tiles.size > 1) {
-        throw new LayerIOError(s"Multiple tiles found for $key for layer $layerId")
+        throw new LayerIOError(s"Multiple tiles(${tiles.size}) found for $key for layer $layerId")
       } else {
         tiles.head._2
       }

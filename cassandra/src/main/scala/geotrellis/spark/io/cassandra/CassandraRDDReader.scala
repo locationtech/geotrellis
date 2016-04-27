@@ -2,10 +2,9 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.spark.{Boundable, KeyBounds}
+import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
-
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import org.apache.avro.Schema
@@ -19,6 +18,7 @@ object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,
     table: String,
+    layerId: LayerId,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
@@ -41,6 +41,8 @@ object CassandraRDDReader {
     val query = QueryBuilder.select("value")
       .from(instance.keyspace, table)
       .where(eqs("key", QueryBuilder.bindMarker()))
+      .and(eqs("name", layerId.name))
+      .and(eqs("zoom", layerId.zoom))
       .toString
 
     val rdd: RDD[(K, V)] =

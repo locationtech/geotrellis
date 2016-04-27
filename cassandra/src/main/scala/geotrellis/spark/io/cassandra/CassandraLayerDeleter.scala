@@ -6,6 +6,8 @@ import geotrellis.spark.io._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
+import scala.collection.JavaConversions._
+
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
@@ -16,13 +18,21 @@ class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: Cassan
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
 
-    instance.withSessionDo { session =>
-      session.execute(
-        QueryBuilder.delete()
-          .from(instance.keyspace, header.tileTable)
-          .where(eqs("name", id.name))
-          .and(eqs("zoom", id.zoom))
-      )
+    instance.withSession { session =>
+      val squery = QueryBuilder.select("key")
+        .from(instance.keyspace, header.tileTable).allowFiltering()
+        .where(eqs("name", id.name))
+        .and(eqs("zoom", id.zoom))
+
+      val dquery = QueryBuilder.delete()
+        .from(instance.keyspace, header.tileTable)
+        .where(eqs("key", QueryBuilder.bindMarker()))
+
+      val statement = session.prepare(dquery)
+
+      session.execute(squery).iterator().map { entry =>
+        session.execute(statement.bind(entry.getString("key")))
+      }
     }
 
     attributeStore.delete(id)

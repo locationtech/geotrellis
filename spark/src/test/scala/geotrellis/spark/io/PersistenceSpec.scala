@@ -34,6 +34,9 @@ abstract class PersistenceSpec[
   M: JsonFormat: Component[?, Bounds[K]]
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
+  def beforeAllPesisteceSpec() = {}
+  beforeAllPesisteceSpec()
+
   type TestReader = FilteringLayerReader[LayerId]
   type TestWriter = LayerWriter[LayerId]
   type TestDeleter = LayerDeleter[LayerId]
@@ -152,7 +155,7 @@ abstract class PersistenceSpec[
       }
 
       it("should reindex a layer") {
-        for((n, reindexMethod) <- keyIndexMethods.filter(_._1 != keyIndexMethodName)) {
+        for ((n, reindexMethod) <- keyIndexMethods.filter(_._1 != keyIndexMethodName)) {
           val rid = reindexedLayerId.copy(name = s"""${reindexedLayerId.name}-reindex-${n.replace(" ", "_")}""")
           withClue(s"Failed on method $n") {
             copier.copy[K, V, M](layerId, rid)
@@ -162,6 +165,6 @@ abstract class PersistenceSpec[
           }
         }
       }
-  }
+    }
   }
 }
