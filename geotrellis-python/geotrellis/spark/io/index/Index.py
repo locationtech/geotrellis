@@ -10,5 +10,5 @@ class Index(object):
         if (x < 10):
             return 1
         else:
-            return digits(x/10)
+            return Index.digits(x/10)
 
