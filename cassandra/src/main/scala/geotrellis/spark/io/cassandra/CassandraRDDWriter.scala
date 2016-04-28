@@ -3,15 +3,14 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
-
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-import com.datastax.driver.core.ResultSet
+import com.datastax.driver.core.{ResultSet, ResultSetFuture}
 import org.apache.spark.rdd.RDD
+
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
-
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
@@ -31,7 +30,7 @@ object CassandraRDDWriter {
     val codec = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
-    instance.withSessionDo {
+    instance.withSession {
       _.execute(
         SchemaBuilder.createTable(instance.keyspace, table).ifNotExists()
           .addPartitionKey("key", bigint)
@@ -58,6 +57,23 @@ object CassandraRDDWriter {
           import geotrellis.spark.util.TaskUtils._
           instance.withSession { session =>
             val statement = session.prepare(query)
+
+            /*val queries: Iterator[Option[ResultSetFuture]] = (partition.map { recs =>
+              val ((key, layerId), pairs) = (recs._1, recs._2.toVector)
+              val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
+              Some(session.executeAsync(
+                statement.bind(
+                  key.asInstanceOf[java.lang.Integer],
+                  layerId.name,
+                  layerId.zoom.asInstanceOf[java.lang.Integer],
+                  bytes
+                )
+              ))
+            }) ++ Iterator({
+              session.closeAsync(); session.getCluster.closeAsync(); Option.empty[ResultSetFuture]
+            })
+
+            queries.map(_.map((_: ResultSetFuture).getUninterruptibly()))*/
 
             val queries: Process[Task, KV] =
               Process.unfold(partition) { iter =>

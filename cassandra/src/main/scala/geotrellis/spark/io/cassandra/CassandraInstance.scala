@@ -16,10 +16,10 @@ trait CassandraInstance extends Serializable {
 
   /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
   def getCluster = Cluster.builder().addContactPoints(hosts: _*).build()
-  def getSession = getCluster.connect()
+  def getSession = getCluster.newSession()
 
   @transient lazy val cluster = getCluster
-  @transient lazy val session = cluster.connect()
+  @transient lazy val session = cluster.newSession()
 
   def ensureKeySpaceExists(session: Session): Unit =
     session.execute(s"create keyspace if not exists ${keyspace} with replication = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")

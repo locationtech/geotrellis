@@ -25,7 +25,7 @@ object CassandraAttributeStore {
 class CassandraAttributeStore(val instance: CassandraInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
   import Cassandra._
 
-  val session: Session = instance
+  lazy val session: Session = instance
 
   //create the attribute table if it does not exist
   instance.ensureKeySpaceExists(session)

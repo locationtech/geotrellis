@@ -142,7 +142,7 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
   settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo).
+  dependsOn(spark, s3, accumulo, cassandra).
   settings(commonSettings: _*)
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
