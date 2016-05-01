@@ -9,9 +9,9 @@ class CommandTest extends FunSuite {
     val EXTENT = 4096
     val SCALE = EXTENT / 256
 
-    val POINT = vector_tile.Tile.GeomType.POINT
-    val LINESTRING = vector_tile.Tile.GeomType.LINESTRING
-    val POLYGON = vector_tile.Tile.GeomType.POLYGON
+    val POINT = VectorTile.POINT
+    val LINESTRING = VectorTile.LINESTRING
+    val POLYGON = VectorTile.POLYGON
 
     val MoveTo = Command.MoveTo // 1
     val LineTo = Command.LineTo // 2

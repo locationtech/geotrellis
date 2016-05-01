@@ -10,20 +10,18 @@ import geotrellis.vector._
 object Command {
 
     val MoveTo: Int = 1
-
     val LineTo: Int = 2
-
     val ClosePath: Int = 7
 
-    type GeomType = vector_tile.Tile.GeomType.EnumVal
-    val POINT = vector_tile.Tile.GeomType.POINT
-    val LINESTRING = vector_tile.Tile.GeomType.LINESTRING
-    val POLYGON = vector_tile.Tile.GeomType.POLYGON
+    type GeomType = VectorTile.GeomType
+    val POINT = VectorTile.POINT
+    val LINESTRING = VectorTile.LINESTRING
+    val POLYGON = VectorTile.POLYGON
 
     case class UnsupportedGeomType(message: String) extends Exception(message)
     case class UnsupportedCommand(message: String) extends Exception(message)
     case class TooFewCommandArgs(message: String) extends Exception(message)
-    case class NoGeometryToExtend(message:String) extends Exception(message)
+    case class NoGeometryToExtend(message: String) extends Exception(message)
 
     /** Interprets the commands, converts the resulting data into a geometry,
       * then returns the geometry.
@@ -60,7 +58,6 @@ object Command {
 
             case POLYGON =>
                 if (point_lists.length == 1) {
-                    println(point_lists.head)
                     Polygon(point_lists.head)
                 } else {
                     MultiPolygon(point_lists.map(
