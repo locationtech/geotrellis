@@ -10,12 +10,8 @@ class CassandraSpaceTimeSpec
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
-
-  /*override def beforeAllPesisteceSpec() = {
-    CassandraMock.start
-  }*/
+    /*with CoordinateSpaceTimeTests
+    with LayerUpdateSpaceTimeTileTests*/ {
 
   lazy val instance = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
 

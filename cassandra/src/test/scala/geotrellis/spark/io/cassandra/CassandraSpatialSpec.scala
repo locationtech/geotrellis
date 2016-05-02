@@ -12,10 +12,6 @@ class CassandraSpatialSpec
     with TestFiles
     with AllOnesTestTileTests {
 
-  /*override def beforeAllPesisteceSpec() = {
-    CassandraMock.start
-  }*/
-
   lazy val instance = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
 
   lazy val reader    = CassandraLayerReader(instance)

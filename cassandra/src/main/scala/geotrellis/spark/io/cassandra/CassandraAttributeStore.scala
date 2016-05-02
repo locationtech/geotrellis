@@ -23,25 +23,24 @@ object CassandraAttributeStore {
 }
 
 class CassandraAttributeStore(val instance: CassandraInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
-  import Cassandra._
-
-  lazy val session: Session = instance
 
   //create the attribute table if it does not exist
-  instance.ensureKeySpaceExists(session)
-  session.execute(
-    SchemaBuilder.createTable(instance.keyspace, attributeTable).ifNotExists()
-    .addPartitionKey("layerId", text)
-    .addClusteringColumn("name", text)
-    .addColumn("value", text)
-  )
+  instance.withSessionDo { session =>
+    instance.ensureKeySpaceExists(session)
+    session.execute(
+      SchemaBuilder.createTable(instance.keyspace, attributeTable).ifNotExists()
+        .addPartitionKey("layerId", text)
+        .addClusteringColumn("name", text)
+        .addColumn("value", text)
+    )
+  }
 
   val SEP = "__.__"
 
   def layerIdString(layerId: LayerId): String =
     s"${layerId.name}${SEP}${layerId.zoom}"
 
-  private def fetch(layerId: Option[LayerId], attributeName: String): ResultSet = {
+  private def fetch(layerId: Option[LayerId], attributeName: String): ResultSet = instance.withSessionDo { session =>
     val query =
       layerId match {
         case Some(id) =>
@@ -58,7 +57,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
     session.execute(query)
   }
 
-  private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
+  private def delete(layerId: LayerId, attributeName: Option[String]): Unit = instance.withSessionDo { session =>
     if (!layerExists(layerId)) throw new LayerNotFoundError(layerId)
 
     val query =
@@ -82,7 +81,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
     }
   }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = instance.withSessionDo { session =>
     val query =
       QueryBuilder.select.column("value")
         .from(instance.keyspace, attributeTable)
@@ -102,7 +101,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
     }
   }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = instance.withSessionDo { session =>
     val query = QueryBuilder.select("value")
       .from(instance.keyspace, attributeTable).allowFiltering()
       .where(eqs("name", QueryBuilder.bindMarker()))
@@ -116,7 +115,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
       .toMap
   }
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = instance.withSessionDo { session =>
     val update =
       QueryBuilder.update(instance.keyspace, attributeTable)
         .`with`(set("value", (layerId, value).toJson.compactPrint))
@@ -126,7 +125,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
     session.execute(update)
   }
 
-  def layerExists(layerId: LayerId): Boolean = {
+  def layerExists(layerId: LayerId): Boolean = instance.withSessionDo { session =>
     val query =
       QueryBuilder.select.column("layerId")
         .from(instance.keyspace, attributeTable)
@@ -142,7 +141,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
 
   def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
 
-  def layerIds: Seq[LayerId] = {
+  def layerIds: Seq[LayerId] = instance.withSessionDo { session =>
     val query =
       QueryBuilder.select.column("layerId")
         .from(instance.keyspace, attributeTable)
@@ -155,7 +154,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeTabl
       .distinct
   }
 
-  def availableAttributes(layerId: LayerId): Seq[String] = {
+  def availableAttributes(layerId: LayerId): Seq[String] = instance.withSessionDo { session =>
     val query =
       QueryBuilder.select("name")
         .from(instance.keyspace, attributeTable)

@@ -24,6 +24,9 @@ cache:
   - "$HOME/.ivy2"
   - "$HOME/.sbt"
 
+services:
+  - cassandra
+
 script:
   - ./scripts/buildall.sh
 

@@ -34,9 +34,6 @@ abstract class PersistenceSpec[
   M: JsonFormat: Component[?, Bounds[K]]
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
-  def beforeAllPesisteceSpec() = {}
-  beforeAllPesisteceSpec()
-
   type TestReader = FilteringLayerReader[LayerId]
   type TestWriter = LayerWriter[LayerId]
   type TestDeleter = LayerDeleter[LayerId]
