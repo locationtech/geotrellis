@@ -12,15 +12,16 @@ class CassandraSpatialSpec
     with TestFiles
     with AllOnesTestTileTests {
 
-  lazy val instance = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
+  lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
+  lazy val attributeStore = CassandraAttributeStore(instance)
 
-  lazy val reader    = CassandraLayerReader(instance)
-  lazy val writer    = CassandraLayerWriter(instance, "tiles")
-  lazy val deleter   = CassandraLayerDeleter(instance)
-  lazy val reindexer = CassandraLayerReindexer(instance)
-  lazy val updater   = CassandraLayerUpdater(instance)
-  lazy val tiles     = CassandraValueReader(instance)
+  lazy val reader    = CassandraLayerReader(attributeStore)
+  lazy val writer    = CassandraLayerWriter(attributeStore, "tiles")
+  lazy val deleter   = CassandraLayerDeleter(attributeStore)
+  lazy val reindexer = CassandraLayerReindexer(instance, attributeStore)
+  lazy val updater   = CassandraLayerUpdater(attributeStore)
+  lazy val tiles     = CassandraValueReader(attributeStore)
   lazy val sample    = AllOnesTestFile
-  lazy val copier    = CassandraLayerCopier(instance, reader, writer)
+  lazy val copier    = CassandraLayerCopier(attributeStore, reader, writer)
   lazy val mover     = CassandraLayerMover(copier, deleter)
 }

@@ -87,4 +87,11 @@ object CassandraLayerUpdater {
       attributeStore = CassandraAttributeStore(instance),
       layerReader = CassandraLayerReader(instance)
     )
+
+  def apply(attributeStore: CassandraAttributeStore)(implicit sc: SparkContext): CassandraLayerUpdater =
+    new CassandraLayerUpdater(
+      instance = attributeStore.instance,
+      attributeStore = attributeStore,
+      layerReader = CassandraLayerReader(attributeStore.instance)
+    )
 }

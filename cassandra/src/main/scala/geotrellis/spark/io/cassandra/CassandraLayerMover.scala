@@ -30,4 +30,13 @@ object CassandraLayerMover {
       layerCopier = CassandraLayerCopier(instance, table),
       layerDeleter = CassandraLayerDeleter(instance)
     )
+
+  def apply(
+    attributeStore: CassandraAttributeStore,
+    table: String
+  )(implicit sc: SparkContext): LayerMover[LayerId] =
+    apply(
+      layerCopier = CassandraLayerCopier(attributeStore.instance, table),
+      layerDeleter = CassandraLayerDeleter(attributeStore.instance)
+    )
 }

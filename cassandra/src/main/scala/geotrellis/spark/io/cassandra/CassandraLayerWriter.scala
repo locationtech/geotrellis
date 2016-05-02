@@ -56,13 +56,12 @@ object CassandraLayerWriter {
     )
 
   def apply(
-    instance: CassandraInstance,
-    attributeStore: AttributeStore,
+    attributeStore: CassandraAttributeStore,
     table: String
   ): CassandraLayerWriter =
     new CassandraLayerWriter(
       attributeStore = attributeStore,
-      instance = instance,
+      instance = attributeStore.instance,
       table = table
     )
 }

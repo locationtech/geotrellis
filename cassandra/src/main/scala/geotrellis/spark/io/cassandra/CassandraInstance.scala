@@ -1,6 +1,6 @@
 package geotrellis.spark.io.cassandra
 
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.{Cluster, HostDistance, PoolingOptions, Session}
 
 trait CassandraInstance extends Serializable {
   val hosts: Seq[String]

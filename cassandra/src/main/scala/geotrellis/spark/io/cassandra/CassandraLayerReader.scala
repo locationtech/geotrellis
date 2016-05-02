@@ -41,7 +41,7 @@ object CassandraLayerReader {
   def apply(instance: CassandraInstance)(implicit sc: SparkContext): CassandraLayerReader =
     new CassandraLayerReader(CassandraAttributeStore(instance), instance)(sc)
 
-  def apply(attributeStore: CassandraAttributeStore, instance: CassandraInstance)(implicit sc: SparkContext): CassandraLayerReader =
-    new CassandraLayerReader(attributeStore, instance)
+  def apply(attributeStore: CassandraAttributeStore)(implicit sc: SparkContext): CassandraLayerReader =
+    new CassandraLayerReader(attributeStore, attributeStore.instance)
 }
 
