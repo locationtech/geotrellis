@@ -30,7 +30,7 @@ object CassandraRDDWriter {
     val codec = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
-    instance.withSession {
+    instance.withSessionDo {
       _.execute(
         SchemaBuilder.createTable(instance.keyspace, table).ifNotExists()
           .addPartitionKey("key", bigint)
