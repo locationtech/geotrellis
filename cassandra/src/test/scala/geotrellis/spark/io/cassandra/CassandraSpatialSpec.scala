@@ -12,11 +12,11 @@ class CassandraSpatialSpec
     with TestFiles
     with AllOnesTestTileTests {
 
-  override def beforeAllPesisteceSpec() = {
+  /*override def beforeAllPesisteceSpec() = {
     CassandraMock.start
-  }
+  }*/
 
-  lazy val instance = BaseCassandraInstance(Seq("localhost"), "geotrellis")
+  lazy val instance = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
 
   lazy val reader    = CassandraLayerReader(instance)
   lazy val writer    = CassandraLayerWriter(instance, "tiles")
@@ -25,7 +25,6 @@ class CassandraSpatialSpec
   lazy val updater   = CassandraLayerUpdater(instance)
   lazy val tiles     = CassandraValueReader(instance)
   lazy val sample    = AllOnesTestFile
-
-  lazy val copier = CassandraLayerCopier(instance, reader, writer)
-  lazy val mover  = CassandraLayerMover(copier, deleter)
+  lazy val copier    = CassandraLayerCopier(instance, reader, writer)
+  lazy val mover     = CassandraLayerMover(copier, deleter)
 }

@@ -15,7 +15,8 @@ class CassandraAttributeStoreSpec extends FunSpec
   with TestEnvironment
   with TestFiles {
 
-  CassandraMock.withBaseCassandraInstance(Seq("localhost"), "geotrellis") { instance =>
+  lazy val instance = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
+ // CassandraMock.withBaseCassandraInstance(Seq("localhost"), "geotrellis") { instance =>
 
     lazy val attributeStore = new CassandraAttributeStore(instance, "attributes")
 
@@ -80,6 +81,6 @@ class CassandraAttributeStoreSpec extends FunSpec
       attributeStore.write(layerId, "foo", foo)
       attributeStore.read[Foo](layerId, "foo") should be(foo)
     }
-  }
+  //}
 }
 

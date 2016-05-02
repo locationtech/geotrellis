@@ -13,11 +13,11 @@ class CassandraSpaceTimeSpec
     with CoordinateSpaceTimeTests
     with LayerUpdateSpaceTimeTileTests {
 
-  override def beforeAllPesisteceSpec() = {
+  /*override def beforeAllPesisteceSpec() = {
     CassandraMock.start
-  }
+  }*/
 
-  lazy val instance = BaseCassandraInstance(Seq("localhost"), "geotrellis")
+  lazy val instance = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
 
   lazy val reader    = CassandraLayerReader(instance)
   lazy val writer    = CassandraLayerWriter(instance, "tiles")
