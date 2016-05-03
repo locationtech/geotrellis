@@ -20,10 +20,10 @@ class CassandraSpaceTimeSpec
   lazy val reader    = CassandraLayerReader(attributeStore)
   lazy val writer    = CassandraLayerWriter(attributeStore, "tiles")
   lazy val deleter   = CassandraLayerDeleter(attributeStore)
-  lazy val reindexer = CassandraLayerReindexer(instance, attributeStore)
   lazy val updater   = CassandraLayerUpdater(attributeStore)
   lazy val tiles     = CassandraValueReader(attributeStore)
   lazy val sample    = CoordinateSpaceTime
   lazy val copier    = CassandraLayerCopier(attributeStore, reader, writer)
+  lazy val reindexer = CassandraLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover     = CassandraLayerMover(copier, deleter)
 }

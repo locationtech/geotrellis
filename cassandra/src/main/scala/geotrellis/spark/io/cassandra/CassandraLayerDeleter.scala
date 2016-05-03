@@ -18,7 +18,7 @@ class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: Cassan
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
 
-    instance.withSession { session =>
+    instance.withSessionDo { session =>
       val squery = QueryBuilder.select("key")
         .from(instance.keyspace, header.tileTable).allowFiltering()
         .where(eqs("name", id.name))
@@ -27,11 +27,13 @@ class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: Cassan
       val dquery = QueryBuilder.delete()
         .from(instance.keyspace, header.tileTable)
         .where(eqs("key", QueryBuilder.bindMarker()))
+        .and(eqs("name", id.name))
+        .and(eqs("zoom", id.zoom))
 
       val statement = session.prepare(dquery)
 
-      session.execute(squery).iterator().map { entry =>
-        session.execute(statement.bind(entry.getString("key")))
+      session.execute(squery).all().map { entry =>
+        session.execute(statement.bind(entry.getLong("key").asInstanceOf[java.lang.Long]))
       }
     }
 

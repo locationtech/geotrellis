@@ -13,6 +13,18 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 object CassandraLayerReindexer {
+  def apply(attributeStore: AttributeStore,
+            layerReader : LayerReader[LayerId],
+            layerWriter : LayerWriter[LayerId],
+            layerDeleter: LayerDeleter[LayerId],
+            layerCopier : LayerCopier[LayerId])(implicit sc: SparkContext): LayerReindexer[LayerId] =
+    GenericLayerReindexer[CassandraLayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
+
+  def apply(
+    attributeStore: CassandraAttributeStore
+  )(implicit sc: SparkContext): CassandraLayerReindexer =
+    new CassandraLayerReindexer(attributeStore.instance, attributeStore)
+
   def apply(
     instance: CassandraInstance,
     attributeStore: AttributeStore

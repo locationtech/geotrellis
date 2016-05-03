@@ -38,7 +38,7 @@ class CassandraLayerUpdater(
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    val encodeKey = (key: K) => (keyIndex.toIndex(key), id)
+    val encodeKey = (key: K) => keyIndex.toIndex(key)
 
     logger.info(s"Saving updated RDD for layer ${id} to table $table")
     val existingTiles =
@@ -76,7 +76,7 @@ class CassandraLayerUpdater(
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
     attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-    CassandraRDDWriter.write(updatedRdd, instance, encodeKey, table)
+    CassandraRDDWriter.write(updatedRdd, instance, id, encodeKey, table)
   }
 }
 

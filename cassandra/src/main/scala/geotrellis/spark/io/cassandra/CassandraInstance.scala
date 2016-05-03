@@ -1,6 +1,6 @@
 package geotrellis.spark.io.cassandra
 
-import com.datastax.driver.core.{Cluster, HostDistance, PoolingOptions, Session}
+import com.datastax.driver.core.{Cluster, Session}
 
 trait CassandraInstance extends Serializable {
   val hosts: Seq[String]
@@ -16,10 +16,10 @@ trait CassandraInstance extends Serializable {
 
   /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
   def getCluster = Cluster.builder().addContactPoints(hosts: _*).build()
-  def getSession = getCluster.newSession()
+  def getSession = getCluster.connect()
 
   @transient lazy val cluster = getCluster
-  @transient lazy val session = cluster.newSession()
+  @transient lazy val session = cluster.connect()
 
   def ensureKeySpaceExists(session: Session): Unit =
     session.execute(s"create keyspace if not exists ${keyspace} with replication = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")

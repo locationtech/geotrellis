@@ -17,12 +17,13 @@ import java.util.concurrent.Executors
 import scala.collection.JavaConversions._
 
 object CassandraRDDWriter {
-  type KV = ((java.lang.Long, java.lang.String, java.lang.Integer), ByteBuffer)
+  type KV = (java.lang.Long, ByteBuffer)
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
     instance: CassandraInstance,
-    decomposeKey: K => (Long, LayerId),
+    layerId: LayerId,
+    decomposeKey: K => Long,
     table: String
   ): Unit = {
     implicit val sc = raster.sparkContext
@@ -43,9 +44,9 @@ object CassandraRDDWriter {
     val query =
       QueryBuilder
         .insertInto(instance.keyspace, table)
+        .value("name", layerId.name)
+        .value("zoom", layerId.zoom)
         .value("key", QueryBuilder.bindMarker())
-        .value("name", QueryBuilder.bindMarker())
-        .value("zoom", QueryBuilder.bindMarker())
         .value("value", QueryBuilder.bindMarker())
         .toString
 
@@ -79,10 +80,10 @@ object CassandraRDDWriter {
               Process.unfold(partition) { iter =>
                 if (iter.hasNext) {
                   val recs = iter.next()
-                  val (id, layerId) = recs._1
+                  val id    = recs._1
                   val pairs = recs._2.toVector
                   val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
-                  Some(((id, layerId.name, layerId.zoom), bytes), iter)
+                  Some((id, bytes), iter)
                 } else {
                   None
                 }
@@ -92,9 +93,9 @@ object CassandraRDDWriter {
             val pool = Executors.newFixedThreadPool(8)
 
             val write: KV => Process[Task, ResultSet] = {
-              case ((id, name, zoom), value) =>
+              case (id, value) =>
                 Process eval Task {
-                  session.execute(statement.bind(id, name, zoom, value))
+                  session.execute(statement.bind(id, value))
                 }(pool).retryEBO {
                   case _ => false
                 }

@@ -33,11 +33,11 @@ class CassandraLayerWriter(
         tileTable = table
       )
     val metadata = rdd.metadata
-    val encodeKey = (key: K) => (keyIndex.toIndex(key), id)
+    val encodeKey = (key: K) => keyIndex.toIndex(key)
 
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
-      CassandraRDDWriter.write(rdd, instance, encodeKey, table)
+      CassandraRDDWriter.write(rdd, instance, id, encodeKey, table)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
