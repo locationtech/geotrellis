@@ -14,7 +14,7 @@ class S3TileFeatureSpatialSpec
     with SpatialKeyIndexMethods
     with TestEnvironment
     with TestTileFeatureFiles
-    with AllOnesTestTileFeatureTests {
+    with AllOnesTestTileFeatureSpec {
 
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"

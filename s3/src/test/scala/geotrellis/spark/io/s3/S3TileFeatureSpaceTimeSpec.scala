@@ -16,8 +16,8 @@ class S3TileFeatureSpaceTimeSpec
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestTileFeatureFiles
-    with CoordinateSpaceTimeTileFeatureTests
-    with LayerUpdateSpaceTimeTileFeatureTests
+    with CoordinateSpaceTimeTileFeatureSpec
+    with LayerUpdateSpaceTimeTileFeatureSpec
     with BeforeAndAfterAll {
 
   registerAfterAll { () =>

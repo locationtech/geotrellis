@@ -12,7 +12,7 @@ class HadoopTileFeatureSpatialSpec
     with SpatialKeyIndexMethods
     with TestEnvironment
     with TestTileFeatureFiles
-    with AllOnesTestTileFeatureTests {
+    with AllOnesTestTileFeatureSpec {
 
   lazy val reader = HadoopLayerReader(outputLocal)
   lazy val writer = HadoopLayerWriter(outputLocal)

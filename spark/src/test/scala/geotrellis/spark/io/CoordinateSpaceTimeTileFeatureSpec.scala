@@ -8,7 +8,7 @@ import geotrellis.spark.io.json._
 import org.joda.time.DateTime
 
 
-trait CoordinateSpaceTimeTileFeatureTests { self: PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]] =>
+trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]] =>
   val dates = Vector( // all the dates in the layer
     new DateTime(2010,1,1,0,0,0, DateTimeZone.UTC),
     new DateTime(2011,1,1,0,0,0, DateTimeZone.UTC),

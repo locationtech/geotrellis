@@ -16,8 +16,8 @@ class AccumuloTileFeatureSpaceTimeSpec
     with TestEnvironment
     with AccumuloTestEnvironment
     with TestTileFeatureFiles
-    with CoordinateSpaceTimeTileFeatureTests
-    with LayerUpdateSpaceTimeTileFeatureTests {
+    with CoordinateSpaceTimeTileFeatureSpec
+    with LayerUpdateSpaceTimeTileFeatureSpec {
   implicit lazy val instance = MockAccumuloInstance()
 
   lazy val reader    = AccumuloLayerReader(instance)

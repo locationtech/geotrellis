@@ -14,7 +14,7 @@ class FileTileFeatureSpatialSpec
     with SpatialKeyIndexMethods
     with TestEnvironment
     with TestTileFeatureFiles
-    with AllOnesTestTileFeatureTests {
+    with AllOnesTestTileFeatureSpec {
   lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)

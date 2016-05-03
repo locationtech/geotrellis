@@ -15,8 +15,8 @@ class HadoopTileFeatureSpaceTimeSpec
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestTileFeatureFiles
-    with CoordinateSpaceTimeTileFeatureTests
-    with LayerUpdateSpaceTimeTileFeatureTests {
+    with CoordinateSpaceTimeTileFeatureSpec
+    with LayerUpdateSpaceTimeTileFeatureSpec {
   lazy val reader = HadoopLayerReader(outputLocal)
   lazy val writer = HadoopLayerWriter(outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
