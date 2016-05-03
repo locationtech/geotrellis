@@ -9,6 +9,7 @@ class CassandraSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment
+    with CassandraTestEnvironment
     with TestFiles
     with AllOnesTestTileTests {
 

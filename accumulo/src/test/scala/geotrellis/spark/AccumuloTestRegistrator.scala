@@ -4,7 +4,6 @@ import com.esotericsoftware.kryo.Kryo
 
 import scala.util.Properties
 
-
 class AccumuloTestRegistrator extends TestRegistrator {
   override def registerClasses(kryo: Kryo) {
     super.registerClasses(kryo)
