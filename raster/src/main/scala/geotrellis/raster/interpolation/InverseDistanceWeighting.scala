@@ -1,8 +1,7 @@
 package geotrellis.raster.interpolation
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.Circle
-import geotrellis.vector.{Extent, PointFeature, SpatialIndex}
+import geotrellis.vector._
 import spire.syntax.cfor._
 
 object InverseDistanceWeighting {
@@ -12,14 +11,14 @@ object InverseDistanceWeighting {
     * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
     * more details.
     *
-    * @param   points    A collection of known-points
-    * @param   rasterExtent The study area
-    * @param   radius    Interpolation radius in coordinate unit
+    * @param   points            A collection of known-points
+    * @param   rasterExtent      The study area
+    * @param   radius            Interpolation radius in coordinate unit
     * @param   equalWeightRadius If any points lie at that distance from a cell, the interpolation result for it would
     *                            be the mean of those points
-    * @param   cellType  Interpolation radius in coordinate unit
-    * @param   f         Function to be applied before storing interpolation values
-    * @return            The data interpolated across the study area
+    * @param   cellType          Interpolation radius in coordinate unit
+    * @param   onSet             Function to be applied before storing interpolation values
+    * @return The data interpolated across the study area
     */
   def apply[D](
                 points: Seq[PointFeature[D]],
@@ -27,7 +26,7 @@ object InverseDistanceWeighting {
                 radius: Double = Double.PositiveInfinity,
                 equalWeightRadius: Double = 0,
                 cellType: CellType = IntConstantNoDataCellType,
-                f: Double => Double = x => x
+                onSet: Double => Double = x => x
               )(implicit ev: D => Double): Tile = {
     val cols = rasterExtent.cols
     val rows = rasterExtent.rows
@@ -36,7 +35,7 @@ object InverseDistanceWeighting {
     if (points.isEmpty) {
       tile
     } else {
-      val ewr2 = equalWeightRadius*equalWeightRadius
+      val ewr2 = equalWeightRadius * equalWeightRadius
 
       def idw(points: Seq[PointFeature[D]], x: Double, y: Double)(filter: Double => Boolean) = {
         var sum = 0.0
@@ -67,10 +66,10 @@ object InverseDistanceWeighting {
           if (count == 0) {
             doubleNODATA
           } else {
-            f(sum / weightSum)
+            onSet(sum / weightSum)
           }
         } else {
-          f(sampleSum / sampleCount)
+          onSet(sampleSum / sampleCount)
         }
       }
 
@@ -106,34 +105,5 @@ object InverseDistanceWeighting {
       }
       tile
     }
-  }
-
-
-  /**
-    * Compute an Inverse Distance Weighting raster over the given
-    * extent from the given set known-points.  Please see
-    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
-    * more details.
-    *
-    * @param   points    A collection of known-points
-    * @param   rasterExtent The study area
-    * @param   radius    Interpolation radius in cell units
-    * @param   equalWeightRadius If any points lie at that distance from a cell, the interpolation result for it would
-    *                            be the mean of those points
-    * @param   cellType  Interpolation radius in coordinate unit
-    * @param   f         Function to be applied before storing interpolation values
-    * @return            The data interpolated across the study area
-    */
-  def closerThan[D](
-                points: Seq[PointFeature[D]],
-                rasterExtent: RasterExtent,
-                radius: Circle,
-                equalWeightRadius: Double = 0,
-                cellType: CellType = IntConstantNoDataCellType,
-                f: Double => Double = x => x
-              )(implicit ev: D => Double): Tile = {
-    val r = (0.5 + radius.extent) * Math.max(rasterExtent.cellwidth, rasterExtent.cellheight)
-
-    apply(points, rasterExtent, r, equalWeightRadius, cellType, f)
   }
 }
