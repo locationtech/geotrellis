@@ -105,7 +105,7 @@ trait TileCodecs {
       rec.put("rows", tile.rows)
       rec.put("cells", java.util.Arrays.asList(tile.array:_*))
       tile.cellType match {
-        case IntConstantNoDataCellType => rec.put("noDataValue", 0)
+        case IntConstantNoDataCellType => rec.put("noDataValue", Int.MinValue)
         case IntUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd)
         case IntCellType => rec.put("noDataValue", null)
         case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
@@ -245,7 +245,7 @@ trait TileCodecs {
       rec.put("rows", tile.rows)
       rec.put("cells", ByteBuffer.wrap(tile.array))
       tile.cellType match {
-        case ByteConstantNoDataCellType => rec.put("noDataValue", 0)
+        case ByteConstantNoDataCellType => rec.put("noDataValue", Byte.MinValue)
         case ByteUserDefinedNoDataCellType(nd) => rec.put("noDataValue", nd.toInt)
         case ByteCellType => rec.put("noDataValue", null)
         case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
