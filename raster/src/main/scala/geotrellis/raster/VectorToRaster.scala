@@ -29,53 +29,6 @@ import spire.syntax.cfor._
 object VectorToRaster {
 
   /**
-    * Computes a Density raster based on the Kernel and set of points provided.
-    *
-    * @param      points           Sequence of point features who's values will be used to
-    *                              compute the density.
-    * @param      kernel           [[Kernel]] to be used in the computation.
-    * @param      rasterExtent     Raster extent of the resulting raster.
-    *
-    * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-    *                              the data values will be rounded to integers.
-    */
-  def kernelDensity[D](points: Seq[PointFeature[D]],
-                       kernel: Kernel,
-                       rasterExtent: RasterExtent)
-                      (implicit transform:D => Int): Tile =
-    kernelDensity(points, transform, kernel, rasterExtent)
-
-  /**
-    * Computes a Density raster based on the Kernel and set of points provided.
-    *
-    * @param      points           Sequence of point features who's values will be used to
-    *                              compute the density.
-    * @param      transform        Function that transforms the point feature's data into
-    *                              an Int value.
-    * @param      kernel           [[Kernel]] to be used in the computation.
-    * @param      rasterExtent     Raster extent of the resulting raster.
-    *
-    * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-    *                              the data values will be rounded to integers.
-    */
-  def kernelDensity[D](points: Seq[PointFeature[D]],
-                       transform: D => Int,
-                       kernel: Kernel,
-                       rasterExtent: RasterExtent): Tile = {
-    val stamper = KernelStamper(IntConstantNoDataCellType, rasterExtent.cols, rasterExtent.rows, kernel)
-
-    for(point <- points) {
-      val col = rasterExtent.mapXToGrid(point.geom.x)
-      val row = rasterExtent.mapYToGrid(point.geom.y)
-      stamper.stampKernel(col, row, transform(point.data))
-    }
-
-    stamper.result
-  }
-
-  /**
     * Compute an Inverse Distance Weighting raster over the given
     * extent from the given set known-points.  Please see
     * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
