@@ -61,24 +61,9 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature(Point(5,92), sampleValue2),
         PointFeature(Point(0,90), 10)
       )
-      val result = InverseDistanceWeighting(points,re, equalWeightRadius = 3, f = x => Math.round(x))
+      val result = InverseDistanceWeighting(points,re, equalWeightRadius = 3, onSet = x => Math.round(x))
 
       assert(result.get(0, 0) === Math.round((sampleValue1+sampleValue2)/2.0))
-    }
-
-    it("uses points closer than radius in cell units") {
-      val re = RasterExtent(Extent(0,0,0.5,0.5),0.05,0.05,10,10)
-
-      val points = Seq(
-        PointFeature(Point(0.075,0.475), 10),
-        PointFeature(Point(0.025,0.425), 20),
-        PointFeature(Point(0.175,0.475), 500)
-      )
-
-      val result = InverseDistanceWeighting.closerThan(points,re, Circle(1))
-
-      assert(result.get(0, 0) === 15)
-      assert(result.get(3, 0) === 500)
     }
 
     it("uses points closer than radius in raster units") {
@@ -122,26 +107,6 @@ class InverseDistanceWeightingSpec extends FunSpec
       val result = InverseDistanceWeighting(points,re, equalWeightRadius = 3, cellType = DoubleConstantNoDataCellType)
 
       assert(result.getDouble(0, 0) === (sampleValue1+sampleValue2)/2.0)
-    }
-
-    it("uses points closer than radius in cell units") {
-      val re = RasterExtent(Extent(0,0,0.5,0.5),0.05,0.05,10,10)
-
-      val a = 10.2
-      val b = 20.8
-      val c = 500.0
-      val expected = (a + b) / 2
-
-      val points = Seq(
-        PointFeature[Double](Point(0.075,0.475), a),
-        PointFeature[Double](Point(0.025,0.425), b),
-        PointFeature[Double](Point(0.175,0.475), c)
-      )
-
-      val result = InverseDistanceWeighting.closerThan(points,re, Circle(1), cellType = DoubleConstantNoDataCellType)
-
-      expected should be (result.getDouble(0, 0) +- 0.001)
-      c should be (result.getDouble(3, 0) +- 0.001)
     }
 
     it("uses points closer than radius in raster units") {
