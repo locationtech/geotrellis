@@ -6,10 +6,18 @@ class LayerId(object):
         self.name = name
         self.zoom = zoom
 
+    def __eq__(self, other):
+        if not isinstance(other, LayerId):
+            return False
+        return self.name == other.name and self.zoom == other.zoom
+
+    def __hash__(self):
+        return hash((name, zoom))
+
     def __str__(self):
         return "Layer(name=\"{0}\", zoom={1})".format(self.name, self.zoom)
 
     @staticmethod
-    def from_tuple(tup):
+    def fromTuple(tup):
         return LayerId(tup[0], tup[1])
 

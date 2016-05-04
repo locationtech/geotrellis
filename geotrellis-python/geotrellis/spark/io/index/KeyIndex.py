@@ -12,10 +12,11 @@ class _KeyIndexMeta(object):
 KeyIndex = _KeyIndexMeta()
 
 class _KeyIndex(object):
-    def key_bounds(self):
+    @property
+    def keyBounds(self):
         pass
-    def to_index(self, key):
+    def toIndex(self, key):
         pass
-    def index_ranges(self, key_range):
+    def indexRanges(self, keyRange):
         pass
 

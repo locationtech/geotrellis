@@ -5,8 +5,8 @@ from geotrellis.spark.Boundable import Boundable
 class SpatialKey(object):
     implicits = {'format': lambda: SpatialKeyFormat()}
     def __init__(self, col, row):
-        self.col = col
-        self.row = row
+        self.col = int(col)
+        self.row = int(row)
     def __getitem__(self, index):
         if index == 0:
             return self.col
@@ -15,7 +15,7 @@ class SpatialKey(object):
         else:
             raise Exception("Index {0} is out of [0,1] bounds.".format(index))
     def __lt__(self, other):
-        return SpatialKey.to_tuple(self) < SpatialKey.to_tuple(other)
+        return SpatialKey.toTuple(self) < SpatialKey.toTuple(other)
 
     def __eq__(self, other):
         if not isinstance(other, SpatialKey):
@@ -23,14 +23,14 @@ class SpatialKey(object):
         return (self.col == other.col and
                 self.row == other.row)
     def __hash__(self):
-        return hash(tuple(col, row))
+        return hash((col, row))
 
     @staticmethod
-    def to_tuple(key):
+    def toTuple(key):
         return (key.col, key.row)
 
     @staticmethod
-    def from_tuple(tup):
+    def fromTuple(tup):
         col, row = tup
         return SpatialKey(col, row)
 

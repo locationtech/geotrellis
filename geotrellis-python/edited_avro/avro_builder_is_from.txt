@@ -1,0 +1,1 @@
+https://github.com/clin7/avro/blob/trunk/lang/py/src/avro/avro_builder.py

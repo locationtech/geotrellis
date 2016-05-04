@@ -7,6 +7,8 @@ class Index(object):
 
     @staticmethod
     def digits(x):
+        if isinstance(x, float):
+            x = int(x)
         if (x < 10):
             return 1
         else:

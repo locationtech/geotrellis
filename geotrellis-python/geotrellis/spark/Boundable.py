@@ -1,35 +1,35 @@
 from geotrellis.spark.KeyBounds import KeyBounds
 
 class Boundable(object):
-    def __init__(self, min_bound_func, max_bound_func):
-        self.min_bound_func = min_bound_func
-        self.max_bound_func = max_bound_func
+    def __init__(self, minBoundFunc, maxBoundFunc):
+        self.minBoundFunc = minBoundFunc
+        self.maxBoundFunc = maxBoundFunc
 
-    def min_bound(self, p1, p2):
-        return self.min_bound_func(p1, p2)
+    def minBound(self, p1, p2):
+        return self.minBoundFunc(p1, p2)
 
-    def max_bound(self, p1, p2):
-        return self.max_bound_func(p1, p2)
+    def maxBound(self, p1, p2):
+        return self.maxBoundFunc(p1, p2)
 
     def include(self, p, bounds):
         return KeyBounds(
-                self.min_bound(bounds.min_key, p),
-                self.max_bound(bounds.max_key, p))
+                self.minBound(bounds.minKey, p),
+                self.maxBound(bounds.maxKey, p))
 
     def includes(self, p, bounds):
         return bounds == self.include(p, bounds)
 
     def combine(self, b1, b2):
         return KeyBounds(
-                self.min_bound(b1.min_key, b2.min_key),
-                self.max_bound(b2.max_key, b2.max_key))
+                self.minBound(b1.minKey, b2.minKey),
+                self.maxBound(b2.maxKey, b2.maxKey))
 
     def intersect(self, b1, b2):
         kb = KeyBounds(
-                self.max_bound(b1.min_key, b2.min_key),
-                self.min_bound(b2.max_key, b2.max_key))
+                self.maxBound(b1.minKey, b2.minKey),
+                self.minBound(b2.maxKey, b2.maxKey))
 
-        if self.min_bound(kb.min_key, kb.max_key) == kb.min_key:
+        if self.minBound(kb.minKey, kb.maxKey) == kb.minKey:
             return kb
         else:
             return None

@@ -2,6 +2,12 @@
 from geotrellis.python.util.CustomComparator import CustomComparatorSeq, CustomComparator
 import bisect
 
+def mergeQueue(ranges):
+    mq = MergeQueue()
+    for r in ranges:
+        mq += r
+    return mq.toSeq()
+
 class MergeQueue(object):
     def __init__(self, initial_size = 1, lt_func = None):
         self.initial_size = initial_size
@@ -9,6 +15,7 @@ class MergeQueue(object):
         self._array = []
         self._size = 0
 
+    @property
     def size(self):
         return self._size
 
@@ -77,5 +84,6 @@ class MergeQueue(object):
                 self += right_remainder
         return self
     
-    def to_seq(self):
+    @property
+    def toSeq(self):
         return self._array[:]

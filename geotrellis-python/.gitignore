@@ -1,4 +1,5 @@
 build/
 dist/
+.lvimrc
 *.egg-info
 *.pyc

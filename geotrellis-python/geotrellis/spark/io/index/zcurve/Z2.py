@@ -1,6 +1,6 @@
 from geotrellis.spark.io.index.package_scala import zdiv
 from geotrellis.spark.io.index.MergeQueue import MergeQueue
-from geotrellis.python.util.utils import to_binary_string
+from geotrellis.python.util.utils import toBinaryString
 from . import *
 
 class Z2(object):
@@ -48,9 +48,9 @@ class Z2(object):
 
     def bitsToString(self):
         return "({0:16s})({1:8s},{2:8s})".format(
-                to_binary_string(self.z),
-                to_binary_string(self.dim(0)),
-                to_binary_string(self.dim(1))
+                toBinaryString(self.z),
+                toBinaryString(self.dim(0)),
+                toBinaryString(self.dim(1))
                 )
 
     def __str__(self):
@@ -123,5 +123,5 @@ class Z2(object):
         prefix = 0
         offset = Z2.MAX_BITS * Z2.MAX_DIM
         _zranges(prefix, offset, 0)
-        mq.toSeq
+        return mq.toSeq
 

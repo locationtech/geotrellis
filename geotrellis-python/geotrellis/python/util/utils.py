@@ -1,8 +1,24 @@
+from __future__ import absolute_import
 import os.path
+
+_INTMIN = - (2 ** 31)
+_INTMAX = - _INTMIN - 1
+
+def isValidInt(num):
+    return _INTMIN <= num <= _INTMAX
 
 def file_exists(path):
     return os.path.isfile(path)
 
+def fullname(typeObject):
+    name = typeObject.__name__
+    module = typeObject.__module__
+    lastdot = module.rfind(".")
+    withoutLast = module[:lastdot]
+    return module + "." + name
+
+def getOrElse(first, second):
+    return first if first is not None else second
 
 class JSONFormat(object):
     def get_fields(self, dct, *fieldnames):
@@ -17,7 +33,7 @@ def find(seq, predicate):
     return next(ifilter(predicate, seq), None)
 
 
-def to_binary_string(num):
+def toBinaryString(num):
     return "{0:b}".format(num)
 
 
@@ -27,6 +43,12 @@ def fold_left(seq, zero, func):
 def flat_map(seq, func):
     mapped = map(func, seq)
     return reduce(lambda a, b: a + [b], [[]] + mapped)
+
+def flatten_list(lst):
+    def flat(acc, b):
+        addition = b if isinstance(b, list) else [b]
+        return acc + addition
+    return reduce(flat, [[]] + lst)
 
 def key_index_formats():
     from geotrellis.spark.io.index.KeyIndex import KeyIndex
@@ -43,15 +65,13 @@ import avro.schema
 
 import zlib
 import json
-import tempfile
 import numpy
+import cStringIO
 
 def from_file(schema, file_path):
     with open(file_path, "rb") as file_compressed:
         decompressed = zlib.decompress(file_compressed.read())
-        with tempfile.TemporaryFile() as f:
-            f.write(decompressed)
-            f.seek(0)
+        with cStringIO.StringIO(decompressed) as f:
             decoder = BinaryDecoder(f)
             datum_reader = DatumReader(schema)
             return datum_reader.read(decoder)

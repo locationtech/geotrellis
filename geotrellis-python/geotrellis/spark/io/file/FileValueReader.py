@@ -1,4 +1,3 @@
-from . import *
 from geotrellis.spark.io.index.Index import Index
 from geotrellis.spark.io.package_scala import TileNotFoundError
 from geotrellis.spark.io.file.FileAttributeStore import FileAttributeStore
@@ -10,7 +9,7 @@ def file_value_reader(first, second = None):
     def get_params():
         if second is None:
             if isinstance(first, FileAttributeStore):
-                return first, first.catalog_path
+                return first, first.catalogPath
             elif isinstance(first, str):
                 return FileAttributeStore(first), first
             else:
@@ -19,11 +18,11 @@ def file_value_reader(first, second = None):
             return first, second
     attribute_store, catalog_path = get_params()
     def reader(key_type, value_type, layer_id):
-        header          = attribute_store.read_header(FileLayerHeader, layer_id)
-        key_index       = attribute_store.read_key_index(key_type, layer_id)
-        writer_schema   = attribute_store.read_schema(layer_id)
+        header          = attribute_store.readHeader(FileLayerHeader, layer_id)
+        key_index       = attribute_store.readKeyIndex(key_type, layer_id)
+        writer_schema   = attribute_store.readSchema(layer_id)
 
-        max_width = Index.digits(key_index.to_index(key_index.key_bounds().max_key))
+        max_width = Index.digits(key_index.toIndex(key_index.keyBounds.maxKey))
         key_path = generate_key_path_func(catalog_path, header.path, key_index, max_width)
         def read_func(key):
             path = key_path(key)

@@ -5,9 +5,9 @@ class LayerHeader(object):
     implicits = {'format': lambda: LayerHeaderFormat()}
     def format(self):
         pass
-    def key_class(self):
+    def keyClass(self):
         pass
-    def value_class(self):
+    def valueClass(self):
         pass
 
 class LayerHeaderFormat(JSONFormat):
@@ -19,9 +19,9 @@ class LayerHeaderFormat(JSONFormat):
         class TempLayerHeader(LayerHeader):
             def format(self):
                 return _format
-            def key_class(self):
+            def keyClass(self):
                 return _key_class
-            def value_class(self):
+            def valueClass(self):
                 return _value_class
         return TempLayerHeader()
 
