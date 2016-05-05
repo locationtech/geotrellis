@@ -4,6 +4,7 @@ import org.scalatest._
 import Matchers._
 
 import geotrellis.raster._
+import geotrellis.util.MethodExtensions
 
 trait AvroTools { self: Matchers =>
   import AvroTools._
@@ -17,7 +18,7 @@ trait AvroTools { self: Matchers =>
     fromJson shouldBe thing
   }
 
-  def roundTripWithNoDataCheck[T <% NoDataValueChecker[T]](thing: T)(implicit codec: AvroRecordCodec[T]): Unit = {
+  def roundTripWithNoDataCheck[T : AvroRecordCodec : (? => AvroNoDataCheckMethods[T])](thing: T): Unit = {
     val bytes = AvroEncoder.toBinary(thing)
     val fromBytes = AvroEncoder.fromBinary[T](bytes)
     fromBytes shouldBe thing
@@ -30,6 +31,9 @@ trait AvroTools { self: Matchers =>
 
 object AvroTools {
   import scala.util.parsing.json._
+  trait AvroNoDataCheckMethods[T] extends MethodExtensions[T] {
+    def checkNoData(json: String): Unit
+  }
   trait NoDataValueChecker[T] {
     def checkNoData(json: String): Unit = {
       val noDataParsed: Option[Any] = extractNoData(json)
@@ -42,9 +46,10 @@ object AvroTools {
     }
     def doCheck(noData: Option[Any]): Unit = ()
   }
-  implicit def shortNoDataChecker(tile: ShortArrayTile): NoDataValueChecker[ShortArrayTile] = shortNoDataChecker(tile.cellType)
+  implicit class ShortNoDataValueCheckMethods(val self: ShortArrayTile) extends
+    ShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ShortArrayTile] {}
   
-  def shortNoDataChecker(cellType: CellType): NoDataValueChecker[ShortArrayTile] = new NoDataValueChecker[ShortArrayTile] {
+  class ShortNoDataChecker(cellType: CellType) extends NoDataValueChecker[ShortArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case ShortConstantNoDataCellType => nodata shouldBe Some(Map("int" -> shortNODATA.toInt))
@@ -55,9 +60,10 @@ object AvroTools {
     }
   }
 
-  implicit def uShortNoDataChecker(tile: UShortArrayTile): NoDataValueChecker[UShortArrayTile] = uShortNoDataChecker(tile.cellType)
+  implicit class UShortNoDataValueCheckMethods(val self: UShortArrayTile) extends
+    UShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[UShortArrayTile] {}
 
-  def uShortNoDataChecker(cellType: CellType): NoDataValueChecker[UShortArrayTile] = new NoDataValueChecker[UShortArrayTile] {
+  class UShortNoDataChecker(cellType: CellType) extends NoDataValueChecker[UShortArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case UShortConstantNoDataCellType => nodata shouldBe Some(Map("int" -> ushortNODATA.toInt))
@@ -68,9 +74,10 @@ object AvroTools {
     }
   }
 
-  implicit def intNoDataChecker(tile: IntArrayTile): NoDataValueChecker[IntArrayTile] = intNoDataChecker(tile.cellType)
+  implicit class IntNoDataValueCheckMethods(val self: IntArrayTile) extends
+    IntNoDataChecker(self.cellType) with AvroNoDataCheckMethods[IntArrayTile] {}
 
-  def intNoDataChecker(cellType: CellType): NoDataValueChecker[IntArrayTile] = new NoDataValueChecker[IntArrayTile] {
+  class IntNoDataChecker(cellType: CellType) extends NoDataValueChecker[IntArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case IntConstantNoDataCellType => nodata shouldBe Some(Map("int" -> NODATA))
@@ -81,9 +88,10 @@ object AvroTools {
     }
   }
 
-  implicit def floatNoDataChecker(tile: FloatArrayTile): NoDataValueChecker[FloatArrayTile] = floatNoDataChecker(tile.cellType)
+  implicit class FloatNoDataValueCheckMethods(val self: FloatArrayTile) extends
+    FloatNoDataChecker(self.cellType) with AvroNoDataCheckMethods[FloatArrayTile] {}
 
-  def floatNoDataChecker(cellType: CellType): NoDataValueChecker[FloatArrayTile] = new NoDataValueChecker[FloatArrayTile] {
+  class FloatNoDataChecker(cellType: CellType) extends NoDataValueChecker[FloatArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case FloatConstantNoDataCellType => nodata shouldBe Some(Map("boolean" -> true))
@@ -97,9 +105,10 @@ object AvroTools {
     }
   }
 
-  implicit def doubleNoDataChecker(tile: DoubleArrayTile): NoDataValueChecker[DoubleArrayTile] = doubleNoDataChecker(tile.cellType)
+  implicit class DoubleNoDataValueCheckMethods(val self: DoubleArrayTile) extends
+    DoubleNoDataChecker(self.cellType) with AvroNoDataCheckMethods[DoubleArrayTile] {}
 
-  def doubleNoDataChecker(cellType: CellType): NoDataValueChecker[DoubleArrayTile] = new NoDataValueChecker[DoubleArrayTile] {
+  class DoubleNoDataChecker(cellType: CellType) extends NoDataValueChecker[DoubleArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case DoubleConstantNoDataCellType => nodata shouldBe Some(Map("boolean" -> true))
@@ -110,9 +119,10 @@ object AvroTools {
     }
   }
 
-  implicit def byteNoDataChecker(tile: ByteArrayTile): NoDataValueChecker[ByteArrayTile] = byteNoDataChecker(tile.cellType)
+  implicit class ByteNoDataValueCheckMethods(val self: ByteArrayTile) extends
+    ByteNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ByteArrayTile] {}
 
-  def byteNoDataChecker(cellType: CellType): NoDataValueChecker[ByteArrayTile] = new NoDataValueChecker[ByteArrayTile] {
+  class ByteNoDataChecker(cellType: CellType) extends NoDataValueChecker[ByteArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case ByteConstantNoDataCellType => nodata shouldBe Some(Map("int" -> byteNODATA))
@@ -123,9 +133,10 @@ object AvroTools {
     }
   }
 
-  implicit def ubyteNoDataChecker(tile: UByteArrayTile): NoDataValueChecker[UByteArrayTile] = ubyteNoDataChecker(tile.cellType)
+  implicit class UByteNoDataValueCheckMethods(val self: UByteArrayTile) extends
+    UByteNoDataChecker(self.cellType) with AvroNoDataCheckMethods[UByteArrayTile] {}
 
-  def ubyteNoDataChecker(cellType: CellType): NoDataValueChecker[UByteArrayTile] = new NoDataValueChecker[UByteArrayTile] {
+  class UByteNoDataChecker(cellType: CellType) extends NoDataValueChecker[UByteArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
         case UByteConstantNoDataCellType => nodata shouldBe Some(Map("int" -> ubyteNODATA))
@@ -136,32 +147,32 @@ object AvroTools {
     }
   }
 
-  implicit def bitNoDataChecker(tile: BitArrayTile): NoDataValueChecker[BitArrayTile] = bitNoDataChecker(tile.cellType)
+  implicit class BitNoDataValueCheckMethods(val self: BitArrayTile) extends
+    BitNoDataChecker(self.cellType) with AvroNoDataCheckMethods[BitArrayTile] {}
 
-  def bitNoDataChecker(cellType: CellType): NoDataValueChecker[BitArrayTile] = new NoDataValueChecker[BitArrayTile] {
+  class BitNoDataChecker(cellType: CellType) extends NoDataValueChecker[BitArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       nodata shouldBe None
     }
   }
 
-  implicit def multibandNoDataChecker(tile: MultibandTile): NoDataValueChecker[MultibandTile] =
-    new NoDataValueChecker[MultibandTile] {
+  implicit class MultibandNoDataValueCheckMethods(val self: MultibandTile) extends AvroNoDataCheckMethods[MultibandTile] {
       override def checkNoData(json: String): Unit = {
         JSON.parseFull(json) foreach {
             case m: Map[String, Seq[Map[String, Any]]] =>
               m("bands") foreach { case bandWrapper : Map[String, Map[String, Any]] =>
                 bandWrapper(bandWrapper.keys.head) match { case band: Map[String,Any] =>
                   val nodata = band.get("noDataValue")
-                  tile.cellType match {
-                    case ct: ShortCells =>   shortNoDataChecker(ct).doCheck(nodata)
-                    case ct: UShortCells =>  uShortNoDataChecker(ct).doCheck(nodata)
-                    case ct: IntCells =>     intNoDataChecker(ct).doCheck(nodata)
-                    case ct: FloatCells =>   floatNoDataChecker(ct).doCheck(nodata)
-                    case ct: DoubleCells =>  doubleNoDataChecker(ct).doCheck(nodata)
-                    case ct: ByteCells =>    byteNoDataChecker(ct).doCheck(nodata)
-                    case ct: UByteCells =>   ubyteNoDataChecker(ct).doCheck(nodata)
-                    case ct: BitCells =>     bitNoDataChecker(ct).doCheck(nodata)
-                    case _ => sys.error(s"Cell type ${tile.cellType} was unexpected")
+                  self.cellType match {
+                    case ct: ShortCells =>   new ShortNoDataChecker(ct).doCheck(nodata)
+                    case ct: UShortCells =>  new UShortNoDataChecker(ct).doCheck(nodata)
+                    case ct: IntCells =>     new IntNoDataChecker(ct).doCheck(nodata)
+                    case ct: FloatCells =>   new FloatNoDataChecker(ct).doCheck(nodata)
+                    case ct: DoubleCells =>  new DoubleNoDataChecker(ct).doCheck(nodata)
+                    case ct: ByteCells =>    new ByteNoDataChecker(ct).doCheck(nodata)
+                    case ct: UByteCells =>   new UByteNoDataChecker(ct).doCheck(nodata)
+                    case ct: BitCells =>     new BitNoDataChecker(ct).doCheck(nodata)
+                    case _ => sys.error(s"Cell type ${self.cellType} was unexpected")
                   }
                 }
               }

@@ -429,22 +429,17 @@ class ArrayMultibandTile(private val _bands: Array[Tile]) extends MultibandTile 
     new ArrayMultibandTile(newBands)
   }
 
-  override def equals(other: Any) = {
+  override def equals(other: Any): Boolean = {
     if (other == null) {
       false
     } else other match {
       case that : ArrayMultibandTile =>
-        case class NotEqualException() extends Exception()
-        var result = true
-        try {
-          for (b <- 0 until bandCount) {
-            if (band(b) != that.band(b)) throw NotEqualException()
-          }
-        } catch {
-          case e : NotEqualException =>
-            result = false
+        var i = 0
+        while (i < bandCount) {
+          if (band(i) != that.band(i)) return false
+          i += 1
         }
-        result
+        true
       case _ =>
         false
     }
