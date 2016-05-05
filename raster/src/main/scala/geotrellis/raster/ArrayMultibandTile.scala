@@ -434,12 +434,11 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
       false
     } else other match {
       case that : ArrayMultibandTile =>
-        var i = 0
-        while (i < bandCount) {
-          if (band(i) != that.band(i)) return false
-          i += 1
+        var result = true
+        cfor(0)(result && _ < bandCount, _ + 1) { i =>
+          if (band(i) != that.band(i)) result = false
         }
-        true
+        result
       case _ =>
         false
     }
