@@ -71,7 +71,7 @@ object ArrayMultibandTile {
 /**
   * The [[ArrayMultibandTile]] type.
   */
-class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners {
+class ArrayMultibandTile(private val _bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners {
   val bandCount = _bands.size
 
   assert(bandCount > 0, "Band count must be greater than 0")
@@ -427,5 +427,26 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     })
 
     new ArrayMultibandTile(newBands)
+  }
+
+  override def equals(other: Any) = {
+    if (other == null) {
+      false
+    } else other match {
+      case that : ArrayMultibandTile =>
+        case class NotEqualException() extends Exception()
+        var result = true
+        try {
+          for (b <- 0 until bandCount) {
+            if (band(b) != that.band(b)) throw NotEqualException()
+          }
+        } catch {
+          case e : NotEqualException =>
+            result = false
+        }
+        result
+      case _ =>
+        false
+    }
   }
 }
