@@ -40,8 +40,8 @@ object AvroTools {
       doCheck(noDataParsed)
     }
     def extractNoData(json: String): Option[Any] = {
-      JSON.parseFull(json) map {
-        case m: Map[String,Any] => m("noDataValue")
+      JSON.parseFull(json) flatMap {
+        case m: Map[String,Any] => m.get("noDataValue")
       }
     }
     def doCheck(noData: Option[Any]): Unit = ()
