@@ -35,10 +35,10 @@ object Dependencies {
 
   val spire         = "org.spire-math" %% "spire" % "0.11.0"
 
-  val sprayClient   = "io.spray"        %% "spray-client"  % Version.spray
-  val sprayRouting  = "io.spray"        %% "spray-routing" % Version.spray
-  val sprayTestkit  = "io.spray"        %% "spray-testkit" % Version.spray
-  val sprayCan      = "io.spray"        %% "spray-can"     % Version.spray
+//  val sprayClient   = "io.spray"        %% "spray-client"  % Version.spray
+//  val sprayRouting  = "io.spray"        %% "spray-routing" % Version.spray
+//  val sprayTestkit  = "io.spray"        %% "spray-testkit" % Version.spray
+//  val sprayCan      = "io.spray"        %% "spray-can"     % Version.spray
   val sprayHttpx    = "io.spray"        %% "spray-httpx"   % Version.spray
   val sprayJson     = "io.spray"        %% "spray-json"    % Version.sprayJson
 
