@@ -3,7 +3,6 @@ import Dependencies._
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  "com.azavea.geotrellis" %% "geotrellis-s3" % Version.geotrellis,
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "de.javakaffee" % "kryo-serializers" % "0.28" exclude("com.esotericsoftware.kryo", "kryo") exclude("com.esotericsoftware", "kryo"),
   "com.esotericsoftware.kryo" % "kryo" % "2.21",
