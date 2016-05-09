@@ -3,6 +3,7 @@ import Dependencies._
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  "com.azavea.geotrellis" %% "geotrellis-s3" % Version.geotrellis,
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
   logging,
