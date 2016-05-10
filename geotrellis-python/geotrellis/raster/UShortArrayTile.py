@@ -92,7 +92,13 @@ class UShortArrayTile(MutableArrayTile):
         elif isinstance(cellType, UShortUserDefinedNoDataCellType):
             return UShortUserDefinedNoDataArrayTile(arr, cols, rows, cellType)
 
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.TileCodecs import UShortArrayTileCodec
+    return UShortArrayTileCodec()
+
 def UShortRawArrayTile(UShortArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         UShortArrayTile.__init__(self, arr, cols, rows)
         self._cellType = UShortCellType
@@ -120,6 +126,8 @@ def UShortRawArrayTile(UShortArrayTile):
         self.array[i] = intToShort(int(z))
 
 def UShortConstantNoDataArrayTile(UShortArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         UShortArrayTile.__init__(self, arr, cols, rows)
         self._cellType = UShortConstantNoDataCellType
@@ -147,6 +155,8 @@ def UShortConstantNoDataArrayTile(UShortArrayTile):
         self.array[i] = d2us(z)
 
 class UShortUserDefinedNoDataArrayTile(UserDefinedShortNoDataConversions, UShortArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows, cellType):
         UShortArrayTile.__init__(self, arr, cols, rows)
         self._cellType = cellType

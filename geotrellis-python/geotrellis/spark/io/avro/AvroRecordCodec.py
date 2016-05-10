@@ -1,8 +1,8 @@
 from geotrellis.spark.io.avro.AvroCodec import AvroCodec
 
 class AvroRecordCodec(AvroCodec):
-    #def __init__(self, record_type):
-    #    AvroCodec.__init__(self, record_type):
+    def __init__(self, record_type):
+        AvroCodec.__init__(self, record_type):
     @property
     def schema(self):
         pass
@@ -15,3 +15,5 @@ class AvroRecordCodec(AvroCodec):
             dct = {}
         self._encode(thing, dct)
         return dct
+    def supported(self, thing):
+        return isinstance(thing, self.thing_type)

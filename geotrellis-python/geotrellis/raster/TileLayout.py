@@ -21,7 +21,7 @@ class TileLayout(object):
 
     @property
     def isTiled(self):
-        return self.layoutCols > 1 || self.layoutRows > 1
+        return self.layoutCols > 1 or self.layoutRows > 1
 
     @property
     def totalCols(self):

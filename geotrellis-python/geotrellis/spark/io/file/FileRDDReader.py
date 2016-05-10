@@ -25,7 +25,7 @@ class FileRDDReader(object):
             ranges = mergeQueue(ranges)
         bins = IndexRanges.bin(ranges, getOrElse(numPartitions, sc.defaultParallelism))
         boundable = K.implicits["Boundable"]() # TODO will it work for all types?
-        includeKey = lambda key: KeyBounds.includeKey(queryKeyBounds, key)
+        includeKey = lambda key: KeyBounds.includeKey(queryKeyBounds, key, boundable)
         recordCodec = KeyValueRecordCodec(K, V)
         # kwWriterSchema = KryoWrapper(writerSchema)
 

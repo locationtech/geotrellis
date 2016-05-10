@@ -1,7 +1,9 @@
 from . import *
 from geotrellis.spark.io.json.KeyFormats import SpatialKeyFormat
 from geotrellis.spark.Boundable import Boundable
+import functools
 
+@functools.total_ordering
 class SpatialKey(object):
     implicits = {'format': lambda: SpatialKeyFormat()}
     def __init__(self, col, row):

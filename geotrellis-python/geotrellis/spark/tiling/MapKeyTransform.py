@@ -2,6 +2,8 @@ from geotrellis.raster.GridBounds import GridBounds
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.tiling.package_scala import worldExtent
 from geotrellis.vector.Extent import Extent
+from geotrellis.proj4.CRS import CRS
+from geotrellis.spark.tiling.LayoutScheme import LayoutLevel
 
 class MapKeyTransform(object):
     def __init__(self, first, second, third = None):

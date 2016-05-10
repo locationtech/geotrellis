@@ -4,6 +4,7 @@ from edited_avro.avro_builder import AvroSchemaBuilder
 
 class KeyValueRecordCodec(AvroRecordCodec):
     def __init__(self, key_type, value_type):
+        AvroRecordCodec.__init__(self, list)
         self.pairCodec = TupleCodec(key_type, value_type)
 
     @property

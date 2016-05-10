@@ -12,7 +12,7 @@ class LayerId(object):
         return self.name == other.name and self.zoom == other.zoom
 
     def __hash__(self):
-        return hash((name, zoom))
+        return hash((self.name, self.zoom))
 
     def __str__(self):
         return "Layer(name=\"{0}\", zoom={1})".format(self.name, self.zoom)

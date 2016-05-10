@@ -15,7 +15,7 @@ def fullname(typeObject):
     module = typeObject.__module__
     lastdot = module.rfind(".")
     withoutLast = module[:lastdot]
-    return module + "." + name
+    return withoutLast + "." + name
 
 def getOrElse(first, second):
     return first if first is not None else second
@@ -71,10 +71,12 @@ import cStringIO
 def from_file(schema, file_path):
     with open(file_path, "rb") as file_compressed:
         decompressed = zlib.decompress(file_compressed.read())
-        with cStringIO.StringIO(decompressed) as f:
-            decoder = BinaryDecoder(f)
-            datum_reader = DatumReader(schema)
-            return datum_reader.read(decoder)
+        f = cStringIO.StringIO(decompressed)
+        decoder = BinaryDecoder(f)
+        datum_reader = DatumReader(schema)
+        result = datum_reader.read(decoder)
+        f.close()
+        return result
 
 def from_avro_file(file_path):
     with open(file_path, "rb") as f:

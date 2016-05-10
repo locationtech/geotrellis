@@ -94,7 +94,13 @@ class IntArrayTile(MutableArrayTile):
         elif isinstance(cellType, IntUserDefinedNoDataCellType):
             return IntUserDefinedNoDataArrayTile(arr, cols, rows, cellType)
 
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.TileCodecs import IntArrayTileCodec
+    return IntArrayTileCodec()
+
 def IntRawArrayTile(IntArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         IntArrayTile.__init__(self, arr, cols, rows)
         self._cellType = IntCellType
@@ -122,6 +128,8 @@ def IntRawArrayTile(IntArrayTile):
         self.array[i] = int(z)
 
 def IntConstantNoDataArrayTile(IntArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         IntArrayTile.__init__(self, arr, cols, rows)
         self._cellType = IntConstantNoDataCellType
@@ -149,6 +157,8 @@ def IntConstantNoDataArrayTile(IntArrayTile):
         self.array[i] = d2i(z)
 
 class IntUserDefinedNoDataArrayTile(UserDefinedIntNoDataConversions, IntArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows, cellType):
         IntArrayTile.__init__(self, arr, cols, rows)
         self._cellType = cellType

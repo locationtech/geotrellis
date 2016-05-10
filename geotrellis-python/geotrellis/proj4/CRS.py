@@ -1,0 +1,3 @@
+
+class CRS(object):
+    pass

@@ -3,7 +3,13 @@ from geotrellis.raster.CellType import BitCellType
 from geotrellis.raster.ConstantTile import BitConstantTile
 from geotrellis.raster.package_scala import isData, i2d, d2i, intToByte
 
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.TileCodecs import BitArrayTileCodec
+    return BitArrayTileCodec()
+
 class BitArrayTile(MutableArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         if len(arr) != (cols*rows + 7) / 8:
             raise Exception("BitArrayTile array length must " +

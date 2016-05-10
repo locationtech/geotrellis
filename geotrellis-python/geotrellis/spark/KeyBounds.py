@@ -104,8 +104,8 @@ class _KeyBoundsMeta(object):
 
     # static methods
 
-    def includeKey(self, seq, key):
-        mapped = map(lambda kb: kb.includes(key), seq)
+    def includeKey(self, seq, key, boundable):
+        mapped = map(lambda kb: kb.includes(key, boundable), seq)
         return reduce(lambda a, b: a or b, mapped)
 
     def toTuple(self, keyBounds):

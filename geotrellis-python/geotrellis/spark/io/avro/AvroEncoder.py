@@ -43,8 +43,10 @@ class AvroEncoder(object):
         schema = codec.schema
 
         decompressed = AvroEncoder.decompress(contents)
-        with cStringIO.StringIO(decompressed) as f:
-            decoder = BinaryDecoder(f)
-            datum_reader = DatumReader(writerSchema, schema)
-            dct = datum_reader.read(decoder)
-            return codec.decode(dct)
+        f = cStringIO.StringIO(decompressed)
+        decoder = BinaryDecoder(f)
+        datum_reader = DatumReader(writerSchema, schema)
+        dct = datum_reader.read(decoder)
+        result = codec.decode(dct)
+        f.close()
+        return result

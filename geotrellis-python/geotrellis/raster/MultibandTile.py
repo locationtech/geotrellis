@@ -1,7 +1,13 @@
 from geotrellis.raster.CellGrid import CellGrid
 from geotrellis.raster.ArrayMultibandTile import ArrayMultibandTile
 
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.TileCodecs import MultibandTileCodec
+    return MultibandTileCodec()
+
 class MultibandTile(CellGrid):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def subsetBands(self, *bandSequence):
         if len(bandSequence) == 1 and isinstance(bandSequence[0], list):
             bandSequence = bandSequence[0]

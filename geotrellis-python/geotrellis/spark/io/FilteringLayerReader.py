@@ -3,7 +3,7 @@ from geotrellis.spark.io.LayerReader import LayerReader
 
 class FilteringLayerReader(LayerReader):
 
-    def _read1(self, K, V, M, _id, rasterQuery, numPartitions, indexFilterOnly):
+    def _read1(self, K, V, M, _id, rasterQuery):
         return self._read2(K, V, M, _id, rasterQuery, self.defaultNumPartitions)
 
     def _read2(self, K, V, M, _id, rasterQuery, numPartitions):

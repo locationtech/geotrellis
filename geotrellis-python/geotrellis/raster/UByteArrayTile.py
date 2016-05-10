@@ -91,7 +91,13 @@ class UByteArrayTile(MutableArrayTile):
         elif isinstance(cellType, UByteUserDefinedNoDataCellType):
             return UByteUserDefinedNoDataArrayTile(arr, cols, rows, cellType)
 
-def UByteRawArrayTile(UByteArrayTile):
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.TileCodecs import UByteArrayTileCodec
+    return UByteArrayTileCodec()
+
+class UByteRawArrayTile(UByteArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         UByteArrayTile.__init__(self, arr, cols, rows)
         self._cellType = UByteCellType
@@ -118,7 +124,9 @@ def UByteRawArrayTile(UByteArrayTile):
     def updateDouble(self, i, z):
         self.array[i] = intToByte(int(z))
 
-def UByteConstantNoDataArrayTile(UByteArrayTile):
+class UByteConstantNoDataArrayTile(UByteArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows):
         UByteArrayTile.__init__(self, arr, cols, rows)
         self._cellType = UByteConstantNoDataCellType
@@ -146,6 +154,8 @@ def UByteConstantNoDataArrayTile(UByteArrayTile):
         self.array[i] = d2ub(z)
 
 class UByteUserDefinedNoDataArrayTile(UserDefinedByteNoDataConversions, UByteArrayTile):
+    implicits = {"AvroRecordCodec": generateCodec}
+
     def __init__(self, arr, cols, rows, cellType):
         UByteArrayTile.__init__(self, arr, cols, rows)
         self._cellType = cellType

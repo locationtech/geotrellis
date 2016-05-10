@@ -3,6 +3,7 @@ from edited_avro.avro_builder import AvroSchemaBuilder
 
 class TupleCodec(AvroRecordCodec):
     def __init__(self, keytype, valuetype):
+        AvroRecordCodec.__init__(self, tuple)
         self.keytype = keytype
         self.valuetype = valuetype
         self.a = keytype.implicits["AvroRecordCodec"]()
@@ -13,9 +14,9 @@ class TupleCodec(AvroRecordCodec):
         builder = AvroSchemaBuilder()
         builder.begin_record("Tuple2", namespace = "scala")
         builder.add_field("_1",
-                builder.begin_with_schema_json(self.a.schema()).end())
+                builder.begin_with_schema_json(self.a.schema).end())
         builder.add_field("_2",
-                builder.begin_with_schema_json(self.b.schema()).end())
+                builder.begin_with_schema_json(self.b.schema).end())
         return builder.end()
 
     def _encode(self, tup, dct):
