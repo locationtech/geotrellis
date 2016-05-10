@@ -1,7 +1,7 @@
+from geotrellis.spark.io.index.zcurve.Z2Range import Z2Range
 from geotrellis.spark.io.index.package_scala import zdiv
 from geotrellis.spark.io.index.MergeQueue import MergeQueue
 from geotrellis.python.util.utils import toBinaryString
-from . import *
 
 class Z2(object):
     def __init__(self, x, y = None):
@@ -34,6 +34,10 @@ class Z2(object):
     def __ne__(self, other):
         return self.z != other.z
 
+    def __hash__(self):
+        return hash(self.z)
+
+    @property
     def decode(self):
         return (Z2.combine(z), Z2.combine(z >> 1))
 
@@ -46,6 +50,7 @@ class Z2(object):
         else:
             return Z2(self.z + (p.z - self.z)/2)
 
+    @property
     def bitsToString(self):
         return "({0:16s})({1:8s},{2:8s})".format(
                 toBinaryString(self.z),
@@ -54,7 +59,7 @@ class Z2(object):
                 )
 
     def __str__(self):
-        return "" + z + self.decode()
+        return "" + z + self.decode
 
     MAX_BITS = 31
     MAX_MASK = 0x7fffffff
@@ -115,10 +120,10 @@ class Z2(object):
                 mq += (qr.min.z, qr.max.z)
                 report_counter += 1
             elif offset > 0 and sr.overlaps(qr):
-                _zranges(min, offset - MAX_DIM, 0)
-                _zranges(min, offset - MAX_DIM, 1)
-                _zranges(min, offset - MAX_DIM, 2)
-                _zranges(min, offset - MAX_DIM, 3)
+                _zranges(min, offset - Z2.MAX_DIM, 0)
+                _zranges(min, offset - Z2.MAX_DIM, 1)
+                _zranges(min, offset - Z2.MAX_DIM, 2)
+                _zranges(min, offset - Z2.MAX_DIM, 3)
 
         prefix = 0
         offset = Z2.MAX_BITS * Z2.MAX_DIM

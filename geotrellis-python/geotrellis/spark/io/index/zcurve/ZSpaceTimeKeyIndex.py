@@ -1,5 +1,21 @@
+from geotrellis.spark.io.index.KeyIndex import KeyIndex
+from geotrellis.spark.io.index.zcurve.Z3 import Z3
+from geotrellis.spark.SpaceTimeKey import SpaceTimeKey
 
-class ZSpaceTimeKeyIndex(object):
+class ZSpaceTimeKeyIndex(KeyIndex[SpaceTimeKey]):
+    def __init__(self, keyBounds, temporalResolution):
+        self.keyBounds = keyBounds
+        self.temporalResolution = temporalResolution
+
+    def _toz(self, key):
+        return Z3(key.col, key.row, int(key.instant / self.temporalResolution))
+
+    def toIndex(self, key):
+        return self._toz(key).z
+
+    def indexRanges(self, keyRange):
+        return Z3.zranges(self._toz(keyRange[0]), self._toz(keyRange[1]))
+
     @staticmethod
     def byMilliseconds(keyBounds, millis):
         return ZSpaceTimeKeyIndex(keyBounds, millis)
@@ -46,8 +62,8 @@ class ZSpaceTimeKeyIndex(object):
 
     @staticmethod
     def byYear(keyBounds):
-        return ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 30 * 365)
+        return ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 365)
 
     @staticmethod
     def byYears(keyBounds, years):
-        return ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 30 * 365 * years)
+        return ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 365 * years)

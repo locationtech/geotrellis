@@ -3,7 +3,8 @@ from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex import RowMajorSpatialKeyIndex
 
 class _RowMajor(object):
-    def spatialKeyIndexMethod(self):
+    @staticMethod
+    def spatialKeyIndexMethod():
         class TempKeyIndexMethod(KeyIndexMethod[SpatialKey]):
             def createIndex(self, keyBounds):
                 return RowMajorSpatialKeyIndex(keyBounds)
