@@ -27,7 +27,7 @@ class AvroUnionCodec(AvroRecordCodec):
         format._encode(thing, dct)
 
     def decode(self, dct):
-        schemaFullName = dct.keys().head
+        schemaFullName = dct.keys()[0]
         format = self._findFormat(
                 lambda x: x.schema.fullname == schemaFullName,
                 schemaFullName)

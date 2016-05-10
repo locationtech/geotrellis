@@ -1,4 +1,5 @@
-from . import *
+from geotrellis.util.GetComponent import GetComponent
+from geotrellis.util.SetComponent import SetComponent
 
 class Component(GetComponent, SetComponent):
     pass

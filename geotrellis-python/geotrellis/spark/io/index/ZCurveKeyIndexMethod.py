@@ -21,49 +21,49 @@ class _ZCurveKeyIndexMethod(object):
         return TempKeyIndexMethod()
 
     @staticmethod
-    def bySecond(keyBounds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000)
+    def bySecond():
+        return ZCurveKeyIndexMethod.byMilliseconds(1000)
 
     @staticmethod
-    def bySeconds(keyBounds, seconds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * seconds)
+    def bySeconds(seconds):
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * seconds)
 
     @staticmethod
-    def byMinute(keyBounds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60)
+    def byMinute():
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60)
 
     @staticmethod
-    def byMinutes(keyBounds, minutes):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * minutes)
+    def byMinutes(minutes):
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * minutes)
 
     @staticmethod
-    def byHour(keyBounds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60)
+    def byHour():
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60)
 
     @staticmethod
-    def byHours(keyBounds, hours):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * hours)
+    def byHours(hours):
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * hours)
 
     @staticmethod
-    def byDay(keyBounds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24)
+    def byDay():
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * 24)
 
     @staticmethod
-    def byDays(keyBounds, days):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * days)
+    def byDays(days):
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * 24 * days)
 
     @staticmethod
-    def byMonth(keyBounds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 30)
+    def byMonth():
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * 24 * 30)
 
     @staticmethod
-    def byMonths(keyBounds, months):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 30 * months)
+    def byMonths(months):
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * 24 * 30 * months)
 
     @staticmethod
-    def byYear(keyBounds):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 365)
+    def byYear():
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * 24 * 365)
 
     @staticmethod
-    def byYears(keyBounds, years):
-        return ZCurveKeyIndexMethod.byMilliseconds(keyBounds, 1000 * 60 * 60 * 24 * 365 * years)
+    def byYears(years):
+        return ZCurveKeyIndexMethod.byMilliseconds(1000 * 60 * 60 * 24 * 365 * years)

@@ -1,5 +1,17 @@
 from geotrellis.python.util.utils import fullname
 
+class _PersistenceSpecMeta(object):
+    items = {}
+    def __getitem__(self, key):
+        if key in items.keys():
+            return items[key]
+        class tempo(_PersistenceSpec):
+            K, V, M = key
+        items[key] = tempo
+        return tempo
+
+PersistenceSpec = _PersistenceSpecMeta()
+
 class _PersistenceSpec(object):
     def getLayerIds(self, keyIndexMethod):
         suffix = keyIndexMethod.replace(" ", "_")
@@ -19,6 +31,7 @@ class _PersistenceSpec(object):
         return result
 
     def persistence_spec_checks(self):
+        K, V, M = self.K, self.V, self.M
         for (keyIndexMethodName, keyIndexMethod,
                 (layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)) in self.specLayerIds:
             print("using key index method {mn}".format(mn=keyIndexMethodName))

@@ -20,7 +20,7 @@ add_pyspark_path() # Now we can import pyspark
 from pyspark import SparkContext, SparkConf
 from geotrellis.spark.util.SparkUtils import SparkUtils
 from geotrellis.spark.io.hadoop.HdfsUtils import HdfsUtils
-from geotrellis.python.util.utils import file_exists
+from geotrellis.python.util.utils import file_exists, fullname
 import os
 import os.path
 
@@ -36,7 +36,7 @@ class _TestEnvironment(object):
         self.afterAlls = []
         self._sc()
         self._jvm = self.sc._jvm
-        self.name = type(self).__name__
+        self.name = fullname(type(self))
         self.conf = SparkUtils.hadoopConfiguration(self._jvm)
         self.localFS = _TestEnvironment.getLocalFS(self.conf, self._jvm)
         self.inputHome = _TestEnvironment.inputHome(self._jvm)

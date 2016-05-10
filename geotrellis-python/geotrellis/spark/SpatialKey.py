@@ -1,4 +1,3 @@
-from . import *
 from geotrellis.spark.io.json.KeyFormats import SpatialKeyFormat
 from geotrellis.spark.Boundable import Boundable
 import functools

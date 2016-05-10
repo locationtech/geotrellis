@@ -8,6 +8,7 @@ class FileAttributeStoreSpec(_AttributeStoreSpec):
         _AttributeStoreSpec.__init__(self):
 
     @tools.nottest
+    @property
     def attributeStore(self):
         if self._store:
             return self._store
