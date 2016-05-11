@@ -430,7 +430,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
   }
 
   override def equals(other: Any): Boolean = other match {
-    case that : ArrayMultibandTile =>
+    case that: ArrayMultibandTile =>
       var result = (bandCount == that.bandCount)
 
       cfor(0)(result && _ < bandCount, _ + 1) { i =>
