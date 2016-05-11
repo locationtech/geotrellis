@@ -34,6 +34,7 @@ import geotrellis.vector.io.wkt._
 import slick.ast.FieldSymbol
 import slick.driver.{JdbcDriver, PostgresDriver}
 import slick.jdbc.{PositionedParameters, PositionedResult, SetParameter}
+import com.github.tminglei.slickpg.geom.PgPostGISExtensions
 
 import scala.reflect.ClassTag
 import java.sql.{PreparedStatement, ResultSet}
@@ -56,7 +57,7 @@ import java.sql.{PreparedStatement, ResultSet}
  *
  * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
  */
-trait PostGisSupport extends PostGisExtensions { driver: PostgresDriver =>
+trait PostGisSupport extends PgPostGISExtensions { driver: PostgresDriver =>
   import PostGisSupportUtils._
   import driver.api._
 

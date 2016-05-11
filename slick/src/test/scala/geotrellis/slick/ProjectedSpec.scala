@@ -32,7 +32,7 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase with 
   }
   import driver.api._
 
-  class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {      
+  class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def geom = column[Projected[Point]]("geom")
@@ -42,13 +42,13 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase with 
   val CityTable = TableQuery[City]
 
   "ProjectedGeometry" should "not make Slick barf" in {
-      try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
-      db.run(CityTable.schema.create).futureValue
+    try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
+    db.run(CityTable.schema.create).futureValue
 
-      db.run(CityTable += (0, "Megacity 1", Projected(Point(1,1), 43211))).futureValue
+    db.run(CityTable += (0, "Megacity 1", Projected(Point(1,1), 43211))).futureValue
 
-      db.run(CityTable.schema.drop).futureValue
-    }
+    db.run(CityTable.schema.drop).futureValue
+  }
 
   class LineRow(tag: Tag) extends Table[(Int,Projected[Line])](tag, "lines") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
@@ -56,19 +56,19 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase with 
 
     def * = (id, geom)
   }
-  val LineTable = TableQuery[LineRow]
 
   it should "support PostGIS function mapping" in {
-      try { db.run(LineTable.schema.drop).futureValue } catch { case e: Throwable =>  }
-      db.run(LineTable.schema.create).futureValue
+    val LineTable = TableQuery[LineRow]
+    try { db.run(LineTable.schema.drop).futureValue } catch { case e: Throwable =>  }
+    db.run(LineTable.schema.create).futureValue
 
-      db.run(LineTable += (0, Projected(Line(Point(1,1), Point(1,3)), 3131))).futureValue
+    db.run(LineTable += (0, Projected(Line(Point(1,1), Point(1,3)), 3131))).futureValue
 
-      val q = for {
-        line <- LineTable
-      } yield (line.geom.length)
+    val q = for {
+      line <- LineTable
+    } yield (line.geom.length)
 
-      db.run(q.result).futureValue.toList.head should equal (2.0)
+    db.run(q.result).futureValue.toList.head should equal (2.0)
   }
 
   it should "support PostGIS multi points" in {
@@ -79,16 +79,16 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase with 
     }
     val MPTable = TableQuery[MPRow]
 
-      try { db.run(MPTable.schema.drop).futureValue } catch { case e: Throwable =>  }
-      db.run(MPTable.schema.create).futureValue
+    try { db.run(MPTable.schema.drop).futureValue } catch { case e: Throwable =>  }
+    db.run(MPTable.schema.create).futureValue
 
-      db.run(MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))).futureValue
+    db.run(MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))).futureValue
 
-      val q = for {
-        mp <- MPTable
-      } yield {mp.geom.centroid}
+    val q = for {
+      mp <- MPTable
+    } yield {mp.geom.centroid}
 
-     db.run(q.result).futureValue.toList.head should equal ( Projected(Point(1.5, 1.5), 3131) )
+    db.run(q.result).futureValue.toList.head should equal ( Projected(Point(1.5, 1.5), 3131) )
   }
 
 }

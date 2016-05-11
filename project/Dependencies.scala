@@ -65,4 +65,6 @@ object Dependencies {
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop
 
   val avro          = "org.apache.avro" % "avro" % "1.8.0"
+
+  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.0"
 }
