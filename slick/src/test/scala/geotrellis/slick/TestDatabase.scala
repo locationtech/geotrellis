@@ -15,11 +15,13 @@ object TestDatabase {
 
     val s = s"jdbc:postgresql://$pghost/$pgdb"
     println(s"Connecting to $s")
-    Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
+
+    Database.forURL(
+      "jdbc:postgresql://" + pghost + "/" + pgdb,
       driver="org.postgresql.Driver",
       user=pguser,
-      password=pgpass)
-
+      password=pgpass
+    )
   }
 }
 
