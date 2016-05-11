@@ -29,6 +29,7 @@ trait TestDatabase extends BeforeAndAfterAll { self: Suite =>
   protected var db: Database = null
 
   override def beforeAll() = {
+    val config = ConfigFactory.load
     db = TestDatabase.newInstance
   }
 }
