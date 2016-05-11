@@ -28,11 +28,23 @@ object IntHistogram {
   def apply(size: Int) = FastMapHistogram(size)
 }
 
+/**
+  * The base trait for all integer-containing histograms.
+  */
 abstract trait IntHistogram extends Histogram[Int] {
-  def foreach(f: (Int, Int) => Unit): Unit = {
+
+  /**
+    * Execute the given function on the value and count of each bucket
+    * in the histogram.
+    */
+  def foreach(f: (Int, Long) => Unit): Unit = {
     values.foreach(z => f(z, itemCount(z)))
   }
 
+  /**
+    * Compute the mode of the distribution represented by the
+    * histogram.
+    */
   def mode(): Option[Int] = {
     if(totalCount == 0) { return None }
     val localValues = values()
@@ -50,13 +62,17 @@ abstract trait IntHistogram extends Histogram[Int] {
     Some(mode)
   }
 
+  /**
+    * Compute the median of the distribution represented by the
+    * histogram.
+    */
   def median(): Option[Int] = {
     if (totalCount == 0) {
       None
     } else {
       val localValues = values()
-      val middle: Int = totalCount() / 2
-      var total = 0
+      val middle: Long = totalCount() / 2
+      var total = 0L
       var i = 0
       while (total <= middle) {
         total += itemCount(localValues(i))
@@ -66,6 +82,10 @@ abstract trait IntHistogram extends Histogram[Int] {
     }
   }
 
+  /**
+    * Compute the mean of the distribution represented by the
+    * histogram.
+    */
   def mean(): Option[Double] = {
     if(totalCount == 0) { return None }
 
@@ -84,6 +104,11 @@ abstract trait IntHistogram extends Histogram[Int] {
     Some(mean)
   }
 
+  /**
+    * Return a statistics object for the distribution represented by
+    * the histogram.  Contains among other things: mean, mode, median,
+    * and so-forth.
+    */
   def statistics() = {
     val localValues = values()
     if (localValues.length == 0) {
@@ -93,10 +118,10 @@ abstract trait IntHistogram extends Histogram[Int] {
       var dataCount: Long = 0
 
       var mode = 0
-      var modeCount = 0
+      var modeCount = 0L
 
       var mean = 0.0
-      var total = 0
+      var total = 0L
 
       var median = 0
       var needMedian = true

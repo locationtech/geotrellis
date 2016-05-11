@@ -1,12 +1,13 @@
 package geotrellis.spark.etl.s3
 
-import geotrellis.raster.MultiBandTile
+import geotrellis.raster.MultibandTile
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.s3._
 import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.s3.S3LayerWriter
+import org.apache.spark.SparkContext
 
-class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultiBandTile, RasterMetaData] {
-  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters) =
-    S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData](props("bucket"), props("key"), method)
+class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
+  def writer(method: KeyIndexMethod[SpaceTimeKey], props: Parameters)(implicit sc: SparkContext) =
+    S3LayerWriter(props("bucket"), props("key")).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](method)
 }

@@ -3,7 +3,6 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.render.png._
 import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.summary._
 import geotrellis.util.MethodExtensions
 
 
@@ -19,48 +18,36 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
     * and alpha (with 0 being transparent and 255 being opaque).
     */
   def renderPng(): Png =
-    new PngEncoder(Settings(RgbaPngEncoding, PaethFilter)).writeByteArray(self)
+    renderPng(RgbaPngEncoding)
 
-  def renderPng(colorClassifier: ColorClassifier[_]): Png =
-    renderPng(colorClassifier, None)
+  /** Generate a PNG from a raster of color encoded values.
+    *
+    * Use this operation when you have created a raster whose values are already
+    * encoded color values that you wish to render into a PNG.
+    */
+  def renderPng(colorEncoding: PngColorEncoding): Png =
+    new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(self)
 
-  def renderPng(colors: Array[RGBA]): Png = {
-    val histogram = self.histogram
-    val colorClassifier = StrictColorClassifier.fromQuantileBreaks(histogram, colors)
-    renderPng(colorClassifier, Some(histogram))
+  def renderPng(colorMap: ColorMap): Png = {
+    val colorEncoding = PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.fallbackColor)
+    val convertedColorMap = colorEncoding.convertColorMap(colorMap)
+    renderPng(colorEncoding, convertedColorMap)
   }
 
-  def renderPng(colorClassifier: ColorClassifier[_], histogram: Histogram[Int]): Png =
-    renderPng(colorClassifier, Some(histogram))
-
-  /**
-    * Generate a PNG image from a raster.
-    *
-    * Use this operation when you have a raster of data that you want to visualize
-    * with an image.
-    *
-    * To render a data raster into an image, the operation needs to know which
-    * values should be painted with which colors.  To that end, you'll need to
-    * generate a ColorBreaks object which represents the value ranges and the
-    * assigned color.  One way to create these color breaks is to use the
-    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks.
-    */
-  private
-  def renderPng(colorClassifier: ColorClassifier[_], histogram: Option[Histogram[Int]]): Png = {
-    val colorEncoding = PngColorEncoding(colorClassifier.getColors, colorClassifier.getNoDataColor)
-    colorEncoding.convertColorClassifier(colorClassifier)
-    val cmap = colorClassifier.toColorMap(histogram)
-    val r2 = self.cellType match {
-      case ct: ConstantNoData =>
-        cmap.render(self).convert(ByteConstantNoDataCellType)
-      case ct: UByteCells with UserDefinedNoData[Byte] =>
-        cmap.render(self).convert(UByteUserDefinedNoDataCellType(ct.noDataValue))
-      case ct: UShortCells with UserDefinedNoData[Short] =>
-        cmap.render(self).convert(UShortUserDefinedNoDataCellType(ct.noDataValue))
-      case _ =>
-        cmap.render(self).convert(ByteCellType)
+  def renderPng(colorRamp: ColorRamp): Png = {
+    if(self.cellType.isFloatingPoint) {
+      val histogram = self.histogram
+      val quantileBreaks = histogram.quantileBreaks(colorRamp.numStops)
+      renderPng(new IntColorMap(quantileBreaks.zip(colorRamp.colors).toMap).cache(histogram))
+    } else {
+      val histogram = self.histogramDouble
+      renderPng(ColorMap.fromQuantileBreaks(histogram, colorRamp))
     }
-    new PngEncoder(Settings(colorEncoding, PaethFilter)).writeByteArray(r2)
+  }
+
+  private
+  def renderPng(colorEncoding: PngColorEncoding, colorMap: ColorMap): Png = {
+    val encoder = new PngEncoder(Settings(colorEncoding, PaethFilter))
+    encoder.writeByteArray(colorMap.render(self))
   }
 }

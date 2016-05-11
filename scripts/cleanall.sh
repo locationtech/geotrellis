@@ -7,7 +7,6 @@
 ./sbt -J-Xmx2G "project s3" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project engine-test" clean || { exit 1; }
-./sbt -J-Xmx2G "project benchmark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project slick" clean || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" clean || { exit 1; }
 ./sbt -J-Xmx2G "project util" clean || { exit 1; }
@@ -23,7 +22,6 @@ rm -r s3/target
 rm -r accumulo/target
 rm -r engine/target
 rm -r engine-test/target
-rm -r benchmark/target
 rm -r slick/target
 rm -r shapefile/target
 rm -r util/target

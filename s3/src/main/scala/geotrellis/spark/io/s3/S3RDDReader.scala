@@ -5,38 +5,42 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{MergeQueue, KeyIndex, IndexRanges}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.spark.util.cache.Cache
+
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
 
-class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](implicit sc: SparkContext) {
+trait S3RDDReader {
 
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client
 
-  def read(
+  def read[
+    K: AvroRecordCodec: Boundable,
+    V: AvroRecordCodec
+  ](
     bucket: String,
     keyPath: Long => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    cache: Option[Cache[Long, Array[Byte]]] = None,
-    numPartitions: Int = sc.defaultParallelism
-  ): RDD[(K, V)] = {
+    numPartitions: Option[Int] = None
+  )(implicit sc: SparkContext): RDD[(K, V)] = {
+    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = IndexRanges.bin(ranges, numPartitions)
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
-    val boundable = implicitly[Boundable[K]]
-    val includeKey = (key: K) => queryKeyBounds.includeKey(key)(boundable)
+    val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
     val _getS3Client = getS3Client
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
@@ -57,14 +61,12 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
 
               try {
                 val bytes: Array[Byte] =
-                  cache match {
-                    case Some(cache) =>
-                      cache.getOrInsert(index, getS3Bytes())
-                    case None =>
-                      getS3Bytes()
-                  }
+                  getS3Bytes()
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                recs.filter { row => includeKey(row._1) }
+                if(filterIndexOnly)
+                  recs
+                else
+                  recs.filter { row => includeKey(row._1) }
               } catch {
                 case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
               }
@@ -75,4 +77,8 @@ class S3RDDReader[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: C
 
     rdd
   }
+}
+
+object S3RDDReader extends S3RDDReader {
+  def getS3Client: () => S3Client = () => S3Client.default
 }

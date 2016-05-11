@@ -52,7 +52,7 @@ object TiffTagFieldValue {
       case IntConstantNoDataCellType => Some(NODATA.toString)
       case IntUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
-      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toDouble.toString) // Convert to a double, since there can be some weirdness with float toString.
       case DoubleUserDefinedNoDataCellType(nd) => Some(nd.toString)
     }
 
@@ -136,8 +136,8 @@ object TiffTagFieldValue {
       case None =>
     }
 
-    val metaData = toBytes(new scala.xml.PrettyPrinter(80, 2).format(Tags(modifiedHeaderTags, geoTiff.tags.bandTags).toXml))
-    fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metaData.length, metaData)
+    val metadata = toBytes(new scala.xml.PrettyPrinter(80, 2).format(Tags(modifiedHeaderTags, geoTiff.tags.bandTags).toXml))
+    fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metadata.length, metadata)
 
     // Tags that are different if it is striped or tiled storage, and a function
     // that sets up a tag to point to the offsets of the image data.

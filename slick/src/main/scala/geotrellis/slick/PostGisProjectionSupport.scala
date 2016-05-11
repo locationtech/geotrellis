@@ -1,17 +1,18 @@
-/* 
+/*
  * Copyright (c) 2013, Minglei Tu (tmlneu@gmail.com)
+ * Copyright (c) 2015, Azavea
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -39,16 +40,16 @@ import com.github.tminglei.slickpg.geom.PgPostGISExtensions
 import java.sql._
 import scala.reflect.ClassTag
 
-/** 
+/**
  * This class provides column types and extension methods to work with Geometry columns
  *  associated with an SRID in PostGIS.
  *
- * Sample Usage: 
+ * Sample Usage:
  * <code>
  * val PostGIS = new PostGisProjectionSupport(PostgresDriver)
  * import PostGIS._
- * 
- * class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {      
+ *
+ * class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {
  *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
  *   def name = column[String]("name")
  *   def geom = column[Projected[Point]]("geom")
@@ -89,9 +90,9 @@ trait PostGISProjectionImplicits {
   class ProjectedGeometryJdbcType[T <: Projected[Geometry] :ClassTag] extends DriverJdbcType[T] {
 
     override def sqlTypeName(sym: Option[FieldSymbol]): String = "geometry"
-    
+
     override def hasLiteralForm: Boolean = false
-    
+
     override def valueToSQLLiteral(v: T) = toLiteral(v)
 
     def zero: T = null.asInstanceOf[T]
@@ -111,10 +112,10 @@ trait PostGISProjectionImplicits {
   }
 }
 
-object PostGisProjectionSupportUtils {  
+object PostGisProjectionSupportUtils {
   def toLiteral(pg: Projected[Geometry]): String = s"SRID=${pg.srid};${WKT.write(pg.geom)}"
 
-  def fromLiteral[T <: Projected[_]](value: String): T = 
+  def fromLiteral[T <: Projected[_]](value: String): T =
     splitRSIDAndWKT(value) match {
       case (srid, wkt) =>
         val geom =

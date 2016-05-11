@@ -13,7 +13,7 @@ class MeanSpec extends FunSpec with TestEnvironment {
     val nd = NODATA
 
     it("should square mean for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           nd,7, 1,   1, 3, 5,   9, 8, 2,
@@ -39,7 +39,7 @@ class MeanSpec extends FunSpec with TestEnvironment {
     }
 
     it("should circle mean for raster rdd") {
-      val rasterRDD = createRasterRDD(
+      val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           5.666,  3.8, 2.166,  1.666,   2.5, 4.166,  5.166, 5.166,   4.5,

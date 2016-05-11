@@ -179,49 +179,6 @@ object HdfsUtils extends Logging {
     bytes
   }
 
-  def readArray[T: HadoopWritable: ClassTag](path: Path, conf: Configuration): Array[T] = {
-    val writable = implicitly[HadoopWritable[T]]
-    import writable.implicits._
-    logDebug(s"Reading array form $path")
-    val fs = path.getFileSystem(conf)
-    val in = new ObjectInputStream(fs.open(path))
-    try {
-      val size = in.readInt
-      val arr = Array.ofDim[T](size)
-      var i = 0
-      while(i < size) {
-        val x = writable.newWritable
-        x.readFields(in)
-        arr(i) = x.toValue
-        i += 1
-      }
-      arr
-    } finally {
-      in.close()
-    }
-  }
-
-  def writeArray[T: HadoopWritable](path: Path, conf: Configuration, arr: Array[T]): Unit = {
-    val writable = implicitly[HadoopWritable[T]]
-    import writable.implicits._
-    logDebug(s"Writing array of size ${arr.size} to $path")
-    val fs = path.getFileSystem(conf)
-
-    val out = new ObjectOutputStream(fs.create(path))
-    try {
-      val size = arr.size
-
-      out.writeInt(size)
-      var i = 0
-      while(i < size) {
-        arr(i).toWritable.write(out)
-        i += 1
-      }
-    } finally {
-      out.close
-    }
-  }
-
   def getLineScanner(path: Path, conf: Configuration): Option[LineScanner] = {
     path.getFileSystem(conf) match {
       case localFS: LocalFileSystem =>

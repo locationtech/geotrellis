@@ -17,25 +17,39 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
-import geotrellis.vector.Geometry
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.Geometry
 
 
-trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
+/**
+  * Extension methods for invoking the rasterizer on [[Geometry]]
+  * objects.
+  */
+trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
+  /**
+    * Call the function 'fn' on each cell of given [[RasterExtent]]
+    * that is covered by the present [[Geometry]].  The precise
+    * definition of the word "covered" is determined by the options
+    * parameter.
+    */
   def foreach(
     re : RasterExtent,
     options: Options = Options.DEFAULT
-  )(fn : (Int, Int) => Unit) : Unit = {
+  )(fn : (Int, Int) => Unit) : Unit =
     Rasterizer.foreachCellByGeometry(self, re, options)(fn)
-    Unit
-  }
 
+  /**
+    * Call the function 'fn' on each cell of given [[RasterExtent]]
+    * that is covered by the present [[Geometry]].  The precise
+    * definition of the word "covered" is determined by the options
+    * parameter.  The result is a [[Raster]].
+    */
   def rasterize(
     re : RasterExtent,
-    options: Options = Options.DEFAULT,
-    ct : CellType = IntConstantNoDataCellType
+    ct : CellType = IntConstantNoDataCellType,
+    options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Int) : Raster[ArrayTile] = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     val extent = re.extent
@@ -43,11 +57,29 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
     Rasterizer.foreachCellByGeometry(self, re, options)({ (x,y) => tile.set(x,y,fn(x,y)) })
     Raster(tile, extent)
   }
+  /**
+    * Fill in 'value' at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Geometry]].  The result is a
+    * [[Raster]].
+    */
+  def rasterizeWithValue(
+    re: RasterExtent,
+    value: Int,
+    ct : CellType = IntConstantNoDataCellType,
+    options: Options = Options.DEFAULT
+  ): Raster[ArrayTile] =
+    rasterize(re, ct, options)({ (col: Int, row: Int) => value })
 
+  /**
+    * Call the function 'fn' on each cell of given [[RasterExtent]]
+    * that is covered by the present [[Geometry]].  The precise
+    * definition of the word "covered" is determined by the options
+    * parameter.  The result is a [[Raster]].
+    */
   def rasterizeDouble(
     re : RasterExtent,
-    options: Options = Options.DEFAULT,
-    ct : CellType = DoubleConstantNoDataCellType
+    ct : CellType = DoubleConstantNoDataCellType,
+    options: Options = Options.DEFAULT
   )(fn : (Int, Int) => Double) : Raster[ArrayTile] = {
     val tile = ArrayTile.empty(ct, re.cols, re.rows)
     val extent = re.extent
@@ -56,9 +88,16 @@ trait GeometryRasterizeMethods[T <: Geometry] extends MethodExtensions[T] {
     Raster(tile, extent)
   }
 
-  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
-    rasterize(re)({ (col: Int, row: Int) => value })
-
-  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
+  /**
+    * Fill in 'value' at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Geometry]].  The result is a
+    * [[Raster]].
+    */
+  def rasterizeWithValueDouble(
+    re: RasterExtent,
+    value: Double,
+    ct : CellType = DoubleConstantNoDataCellType,
+    options: Options = Options.DEFAULT
+  ): Raster[ArrayTile] =
     rasterizeDouble(re)({ (col: Int, row: Int) => value })
 }

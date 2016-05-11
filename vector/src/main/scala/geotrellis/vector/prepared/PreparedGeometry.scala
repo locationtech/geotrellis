@@ -3,6 +3,11 @@ package prepared
 
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory
 
+/** This case class provides functionality corresponding to JTS' prepared geometries.
+  * Prepared geometries carry out some computations which, in certain cases, provide significant
+  * performance enhancements to operations over those geometries. See Chris Bennight's
+  * [[https://github.com/chrisbennight/intersection-test writeup and benchmarks]] for more.
+  */
 case class PreparedGeometry[G <: Geometry](val geom: Geometry) {
   private val prepared = PreparedGeometry.factory.create(geom.jtsGeom)
   def contains(that: Geometry): Boolean =
@@ -36,6 +41,7 @@ case class PreparedGeometry[G <: Geometry](val geom: Geometry) {
     prepared.within(that.jtsGeom)
 }
 
+/** Companion object to [[PreparedGeometry]] */
 object PreparedGeometry {
   private val factory = new PreparedGeometryFactory 
 }

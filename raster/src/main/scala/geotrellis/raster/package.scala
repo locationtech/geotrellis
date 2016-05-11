@@ -19,84 +19,82 @@ package geotrellis
 import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
-import geotrellis.raster.rasterize._
 import geotrellis.util.MethodExtensions
 
 
 package object raster
     extends crop.Implicits
-    with merge.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
-    with reproject.Implicits {
+    with mask.Implicits
+    with merge.Implicits
+    with reproject.Implicits
+    with split.Implicits {
   type CellType = DataType with NoDataHandling
-  type SingleBandRaster = Raster[Tile]
-  type MultiBandRaster = Raster[MultiBandTile]
-
-  // Implicit conversion for unsigned integer celltypes; they are represented as 32bit floats
-  implicit def unsignedIntIsFloat(uintCellType: UIntCells with NoDataHandling) =
-    uintCellType match {
-      case UIntCellType => FloatCellType
-      case UIntConstantNoDataCellType => FloatConstantNoDataCellType
-      case UIntUserDefinedNoDataCellType(nd) => FloatUserDefinedNoDataCellType(nd)
-    }
+  type SinglebandRaster = Raster[Tile]
+  type MultibandRaster = Raster[MultibandTile]
 
   // Implicit method extension for core types
 
   implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
-      with RasterExtentRasterizeMethods[RasterExtent]
-
-  implicit class withSingleBandRasterRasterizeMethods(val self: SingleBandRaster) extends MethodExtensions[Raster[Tile]]
-      with vectorize.SingleBandRasterVectorizeMethods
+      with rasterize.RasterExtentRasterizeMethods[RasterExtent]
 
   implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
-      with GeometryRasterizeMethods[Geometry]
+      with rasterize.GeometryRasterizeMethods
 
-  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int])
-      extends MethodExtensions[Feature[Geometry, Int]]
-      with FeatureIntRasterizeMethods[Geometry, Feature[Geometry, Int]]
+  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int]) extends MethodExtensions[Feature[Geometry, Int]]
+      with rasterize.FeatureIntRasterizeMethods[Geometry]
 
-  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double])
-      extends MethodExtensions[Feature[Geometry, Double]]
-      with FeatureDoubleRasterizeMethods[Geometry, Feature[Geometry, Double]]
+  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double]) extends MethodExtensions[Feature[Geometry, Double]]
+      with rasterize.FeatureDoubleRasterizeMethods[Geometry]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
-      with crop.SingleBandTileCropMethods
-      with mask.TileMaskMethods
-      with merge.SingleBandTileMergeMethods
+      with costdistance.CostDistanceMethods
+      with crop.SinglebandTileCropMethods
+      with hydrology.HydrologyMethods
+      with mask.SinglebandTileMaskMethods
+      with merge.SinglebandTileMergeMethods
       with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.zonal.ZonalMethods
       with mapalgebra.focal.hillshade.HillshadeMethods
-      with hydrology.HydrologyMethods
-      with viewshed.ViewshedMethods
-      with costdistance.CostDistanceMethods
+      with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
-      with vectorize.VectorizeMethods
-      with summary.SummaryMethods
-      with summary.polygonal.PolygonalSummaryMethods
-      with prototype.SingleBandTilePrototypeMethods
       with render.ColorMethods
       with render.JpgRenderMethods
       with render.PngRenderMethods
-      with reproject.SingleBandTileReprojectMethods
-      with resample.SingleBandTileResampleMethods
+      with reproject.SinglebandTileReprojectMethods
+      with resample.SinglebandTileResampleMethods
+      with split.SinglebandTileSplitMethods
+      with summary.SummaryMethods
+      with summary.polygonal.PolygonalSummaryMethods
+      with viewshed.ViewshedMethods
+      with vectorize.VectorizeMethods
 
-  implicit class withMultiBandTileMethods(val self: MultiBandTile) extends MethodExtensions[MultiBandTile]
-      with crop.MultiBandTileCropMethods
-      with merge.MultiBandTileMergeMethods
-      with prototype.MultiBandTilePrototypeMethods
-      with reproject.MultiBandTileReprojectMethods
-      with resample.MultiBandTileResampleMethods
+  implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
+      with crop.MultibandTileCropMethods
+      with mask.MultibandTileMaskMethods
+      with merge.MultibandTileMergeMethods
+      with prototype.MultibandTilePrototypeMethods
+      with reproject.MultibandTileReprojectMethods
+      with render.MultibandJpgRenderMethods
+      with render.MultibandColorMethods
+      with render.MultibandPngRenderMethods
+      with resample.MultibandTileResampleMethods
+      with split.MultibandTileSplitMethods
 
-  implicit class withSingleBandRasterMethods(val self: SingleBandRaster) extends MethodExtensions[SingleBandRaster]
-      with reproject.SingleBandRasterReprojectMethods
-      with resample.SingleBandRasterResampleMethods
+  implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
+      with reproject.SinglebandRasterReprojectMethods
+      with resample.SinglebandRasterResampleMethods
+      with vectorize.SinglebandRasterVectorizeMethods
 
-  implicit class withMultiBandRasterMethodExtensions(val self: MultiBandRaster) extends MethodExtensions[MultiBandRaster]
-      with reproject.MultiBandRasterReprojectMethods
-      with resample.MultiBandRasterResampleMethods
+  implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
+      with reproject.MultibandRasterReprojectMethods
+      with resample.MultibandRasterResampleMethods
 
-  implicit class SingleBandRasterAnyRefMethods(val self: SingleBandRaster) extends AnyRef {
+  implicit class withTileSeqMethods(val self: Traversable[Tile]) extends MethodExtensions[Traversable[Tile]]
+      with mapalgebra.local.LocalSeqMethods
+
+  implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
       getValueAtPoint(point.x, point.y)
 
@@ -173,6 +171,7 @@ package object raster
 
   def s2b(n: Short): Byte = macro TypeConversionMacros.s2b_impl
   def s2ub(n: Short): Byte = macro TypeConversionMacros.s2ub_impl
+  def s2us(n: Short): Short = macro TypeConversionMacros.s2us_impl
   def s2i(n: Short): Int = macro TypeConversionMacros.s2i_impl
   def s2f(n: Short): Float = macro TypeConversionMacros.s2f_impl
   def s2d(n: Short): Double = macro TypeConversionMacros.s2d_impl
@@ -187,7 +186,7 @@ package object raster
   def i2b(n: Int): Byte = macro TypeConversionMacros.i2b_impl
   def i2ub(n: Int): Byte = macro TypeConversionMacros.i2ub_impl
   def i2s(n: Int): Short = macro TypeConversionMacros.i2s_impl
-  def i2us(n: Int): Short = macro TypeConversionMacros.i2s_impl
+  def i2us(n: Int): Short = macro TypeConversionMacros.i2us_impl
   def i2f(n: Int): Float = macro TypeConversionMacros.i2f_impl
   def i2d(n: Int): Double = macro TypeConversionMacros.i2d_impl
 
@@ -199,7 +198,7 @@ package object raster
   def f2d(n: Float): Double = macro TypeConversionMacros.f2d_impl
 
   def d2b(n: Double): Byte = macro TypeConversionMacros.d2b_impl
-  def d2ub(n: Double): Byte = macro TypeConversionMacros.d2b_impl
+  def d2ub(n: Double): Byte = macro TypeConversionMacros.d2ub_impl
   def d2s(n: Double): Short = macro TypeConversionMacros.d2s_impl
   def d2us(n: Double): Short = macro TypeConversionMacros.d2us_impl
   def d2i(n: Double): Int = macro TypeConversionMacros.d2i_impl

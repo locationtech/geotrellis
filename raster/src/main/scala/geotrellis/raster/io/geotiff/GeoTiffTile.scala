@@ -1,8 +1,9 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.io.geotiff.compression._
+import geotrellis.raster.resample.ResampleMethod
+import geotrellis.raster.split._
 import geotrellis.vector.Extent
 
 import java.util.BitSet
@@ -15,33 +16,42 @@ object GeoTiffTile {
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
-    cellType: CellType
+    cellType: CellType,
+    bandType: Option[BandType] = None
   ): GeoTiffTile = {
-    cellType match {
-      case ct: BitCells =>
-        new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // Bytes
-      case ct: ByteCells =>
-        new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // UBytes
-      case ct: UByteCells =>
-        new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // Shorts
-      case ct: ShortCells =>
-        new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      // UShorts
-      case ct: UShortCells =>
-        new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: IntCells =>
-        new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: UIntCells =>
-        new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: FloatCells =>
-        new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
-      case ct: DoubleCells =>
-        new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+    bandType match {
+      case Some(UInt32BandType) =>
+        cellType match {
+          case ct: FloatCells =>
+            new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case _ =>
+            throw new IllegalArgumentException("UInt32BandType should always resolve to Float celltype")
+        }
+      case _ =>
+        cellType match {
+          case ct: BitCells =>
+            new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // Bytes
+          case ct: ByteCells =>
+            new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // UBytes
+          case ct: UByteCells =>
+            new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // Shorts
+          case ct: ShortCells =>
+            new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          // UShorts
+          case ct: UShortCells =>
+            new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case ct: IntCells =>
+            new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case ct: FloatCells =>
+            new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+          case ct: DoubleCells =>
+            new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+        }
+      }
     }
-  }
 
   /** Convert a tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. */
   def apply(tile: Tile): GeoTiffTile =
@@ -58,8 +68,8 @@ object GeoTiffTile {
     val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
     val segmentTiles =
       options.storageMethod match {
-        case _: Tiled => CompositeTile.split(tile, segmentLayout.tileLayout)
-        case _: Striped => CompositeTile.split(tile, segmentLayout.tileLayout, extend = false)
+        case _: Tiled => tile.split(segmentLayout.tileLayout)
+        case _: Striped => tile.split(segmentLayout.tileLayout, Split.Options(extend = false))
       }
 
     cfor(0)(_ < segmentCount, _ + 1) { i =>
@@ -231,7 +241,7 @@ abstract class GeoTiffTile(
       }
     }
   }
-   
+
   def mapIntMapper(mapper: IntTileMapper): Tile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
@@ -311,7 +321,7 @@ abstract class GeoTiffTile(
         }
     }
 
-  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = 
+  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile =
     other match {
       case otherGeoTiff: GeoTiffTile if segmentLayout.tileLayout == otherGeoTiff.segmentLayout.tileLayout =>
         // GeoTiffs with the same segment sizes, can map over segments.

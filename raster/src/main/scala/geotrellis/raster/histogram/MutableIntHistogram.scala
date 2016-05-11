@@ -19,22 +19,36 @@ package geotrellis.raster.histogram
 import math.{abs, round, sqrt}
 
 
+/**
+  * All mutable integer histograms are derived from this class.
+  */
 abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogram {
-  def countItemInt(item: Int, count: Int = 1): Unit = countItem(item, count)
 
+  /**
+    * Note the occurance of 'item'.
+    *
+    * The optional parameter 'count' allows histograms to be built
+    * more efficiently. Negative counts can be used to remove a
+    * particular number of occurances of 'item'.
+    */
+  def countItemInt(item: Int, count: Long): Unit = countItem(item, count)
+
+  /**
+    * Update this histogram with the entries from the other one.
+    */
   def update(other: Histogram[Int]): Unit = {
     other.foreach((z, count) => countItem(z, count))
   }
 
   /**
-   * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
-   */
+    * Return 'num' evenly spaced Doubles from 0.0 to 1.0.
+    */
   private def evenQuantiles(num: Int) = (1 to num).map(_.toDouble / num).toArray
 
   /**
-   * This is a heuristic used by quantileBreaks, which mutates the
-   * histogram.
-   */
+    * This is a heuristic used by quantileBreaks, which mutates the
+    * histogram.
+    */
   private def normalizeExtremeValues(num: Int, cutoff: Int): Histogram[Int] = {
     // see how many (if any) extreme values we have, and store their indices
     val localValue: Array[Int] = values()
@@ -75,14 +89,18 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // X * Q - X * E = T
     // X * (Q - E)   = T
     // X             = T / (Q - E)
-    val eSubtotal: Int = eItems.foldLeft(0)((t, i) => t + h.itemCount(i))
-    val oSubtotal: Int = h.totalCount - eSubtotal
-    var eValue: Int = oSubtotal / (num - eLen)
+    val eSubtotal: Long = eItems.foldLeft(0L)((t, i) => t + h.itemCount(i))
+    val oSubtotal: Long = h.totalCount - eSubtotal
+    var eValue: Long = oSubtotal / (num - eLen)
 
     eItems.foreach(i => h.setItem(i, eValue))
     h
   }
 
+  /**
+    * Compute the quantile breaks of the histogram, where the latter
+    * are evenly spaced in 'num' increments starting at zero percent.
+    */
   def quantileBreaks(num: Int): Array[Int] = {
     // first, we create a list of percentages to use, along with determining
     // how many cells should fit in one "ideal" quantile bucket.
@@ -112,7 +130,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     val localValue = values()
 
     // the current total of all previous values we've seen
-    var currTotal = 0
+    var currTotal = 0L
 
     // we're going to move incrementally through the values while comparing
     // a running total against our current quantile (qIndex). we know that the

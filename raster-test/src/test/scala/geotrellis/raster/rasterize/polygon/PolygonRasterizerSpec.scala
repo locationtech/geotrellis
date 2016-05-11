@@ -18,7 +18,7 @@ package geotrellis.raster.rasterize.polygon
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 import geotrellis.raster.testkit._
 
@@ -136,7 +136,7 @@ class PolygonRasterizerSpec extends FunSuite
     // 390, 332
     // 390, 333
 
-    val r1 = VectorToRaster.rasterize(p1, rasterExtent, 0x55)
+    val r1 = p1.rasterizeWithValue(rasterExtent, 0x55)
     var sum = 0
     r1.foreach(f => if (isData(f)) sum = sum + 1 )
     assert(sum === 3)

@@ -60,16 +60,16 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
 
   val output       = opt[String]("output", required = true,
                       descr ="name of output module (ex: s3, hadoop, accumulo")
+
   val layerName    = opt[String]("layer", required = true,
                       descr = "Name of the input layer")
+
   val crs          = opt[CRS]("crs", required = true,
                       descr = "target CRS for the layer (ex: EPSG:3857")
+
   val tileSize     = opt[Int]("tileSize",
                       descr = "Tile size in pixels (default: 256)",
                       default = Some(256))
-  val clobber      = opt[Boolean]("clobber",
-                      descr = "clobber layer on save (default: false)",
-                      default = Some(false))
 
   val reproject    = opt[ReprojectMethod]("reproject",
                       descr = "reproject method to use during the tiling stege",
@@ -77,10 +77,6 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
 
   val pyramid      = opt[Boolean]("pyramid",
                       descr = "pyramid layer on save (default: false)",
-                      default = Some(false))
-
-  val histogram    = opt[Boolean]("histogram",
-                      descr = "compute and store histogram on save (default: false)",
                       default = Some(false))
 
   val outputProps  = props[String]('O',
@@ -186,4 +182,3 @@ object EtlConf {
     val argType = org.rogach.scallop.ArgType.SINGLE
   }
 }
-

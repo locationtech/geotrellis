@@ -25,6 +25,10 @@ import scala.collection.JavaConversions._
 import scalaz.concurrent.Task
 import scalaz.stream._
 
+object AccumuloWriteStrategy {
+  def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
+}
+
 sealed trait AccumuloWriteStrategy {
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit
 }
@@ -40,6 +44,7 @@ sealed trait AccumuloWriteStrategy {
  * @param ingestPath Path where spark will write RDD records for ingest
  */
 case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
+  /** Requires that the RDD be pre-sorted */
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val sc = kvPairs.sparkContext
     val job = Job.getInstance(sc.hadoopConfiguration)
@@ -50,7 +55,7 @@ case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
 
     HdfsUtils.ensurePathExists(failuresPath, conf)
     kvPairs
-      .sortBy{ case (key, _) => key }
+      .sortByKey()
       .saveAsNewAPIHadoopFile(
         outPath.toString,
         classOf[Key],
@@ -94,7 +99,7 @@ object HdfsWriteStrategy {
  * @param config Configuration for the BatchWriters
  */
 case class SocketWriteStrategy(
-  config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32) 
+  config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32)
 ) extends AccumuloWriteStrategy {
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
@@ -116,7 +121,7 @@ case class SocketWriteStrategy(
 
       val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } }
       val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-      nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes).run.run
+      nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes).run.unsafePerformSync
       writer.close()
     }
   }

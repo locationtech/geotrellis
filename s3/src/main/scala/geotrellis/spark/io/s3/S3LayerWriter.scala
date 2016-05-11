@@ -1,43 +1,47 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.{MultiBandTile, Tile}
+import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
+import geotrellis.util._
 
+import com.amazonaws.services.s3.model.PutObjectRequest
+import com.typesafe.scalalogging.slf4j._
 import org.apache.spark.rdd.RDD
 import spray.json._
-import com.typesafe.scalalogging.slf4j._
 
 import scala.reflect._
 
 /**
  * Handles writing Raster RDDs and their metadata to S3.
  *
- * @param bucket          S3 bucket to be written to
- * @param keyPrefix       S3 prefix to write the raster to
- * @param keyIndexMethod  Method used to convert RDD keys to SFC indexes
- * @param clobber         flag to overwrite raster if already present on S3
- * @param attributeStore  AttributeStore to be used for storing raster metadata
- * @tparam K              Type of RDD Key (ex: SpatialKey)
- * @tparam V              Type of RDD Value (ex: Tile or MultiBandTile )
- * @tparam M              Type of Metadata associated with the RDD[(K,V)]
+ * @param bucket             S3 bucket to be written to
+ * @param keyPrefix          S3 prefix to write the raster to
+ * @param keyIndexMethod     Method used to convert RDD keys to SFC indexes
+ * @param attributeStore     AttributeStore to be used for storing raster metadata
+ * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
+ * @tparam K                 Type of RDD Key (ex: SpatialKey)
+ * @tparam V                 Type of RDD Value (ex: Tile or MultibandTile )
+ * @tparam M                 Type of Metadata associated with the RDD[(K,V)]
  */
-class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-    val attributeStore: AttributeStore[JsonFormat],
-    rddWriter: S3RDDWriter[K, V],
-    keyIndexMethod: KeyIndexMethod[K],
-    bucket: String,
-    keyPrefix: String,
-    clobber: Boolean = true,
-    oneToOne: Boolean = false)
-  extends Writer[LayerId, RDD[(K, V)] with Metadata[M]] with LazyLogging {
+class S3LayerWriter(
+  val attributeStore: AttributeStore,
+  bucket: String,
+  keyPrefix: String,
+  putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }
+) extends LayerWriter[LayerId] with LazyLogging {
 
-  def getS3Client: () => S3Client = () => S3Client.default
+  def rddWriter: S3RDDWriter = S3RDDWriter
 
-  def write(id: LayerId, rdd: RDD[(K, V)] with Metadata[M]) = {
-    require(!attributeStore.layerExists(id) || clobber, s"$id already exists")
+  protected def _write[
+    K: AvroRecordCodec: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
+    require(!attributeStore.layerExists(id), s"$id already exists")
     implicit val sc = rdd.sparkContext
     val prefix = makePath(keyPrefix, s"${id.name}/${id.zoom}")
     val metadata = rdd.metadata
@@ -47,17 +51,15 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
       bucket = bucket,
       key = prefix)
 
-    val keyBounds = implicitly[Boundable[K]].collectBounds(rdd)
-      .getOrElse(throw new LayerWriteError(id, "empty rdd write"))
-    val keyIndex = keyIndexMethod.createIndex(keyBounds)
-    val maxWidth = Index.digits(keyIndex.toIndex(keyBounds.maxKey))
+    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
+    val schema = KeyValueRecordCodec[K, V].schema
 
     try {
-      attributeStore.writeLayerAttributes(id, header, metadata, keyBounds, keyIndex, rddWriter.schema)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
 
       logger.info(s"Saving RDD ${id.name} to $bucket  $prefix")
-      rddWriter.write(rdd, bucket, keyPath, oneToOne = oneToOne)
+      rddWriter.write(rdd, bucket, keyPath, putObjectModifier)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -65,80 +67,22 @@ class S3LayerWriter[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonForm
 }
 
 object S3LayerWriter {
-  case class Options(clobber: Boolean, oneToOne: Boolean)
-  object Options {
-    def DEFAULT = Options(clobber = true, oneToOne = false)
-  }
+  def apply(attributeStore: AttributeStore, bucket: String, prefix: String, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
+    new S3LayerWriter(attributeStore, bucket, prefix, putObjectModifier)
 
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K], options: Options): S3LayerWriter[K, V, M] =
-    new S3LayerWriter[K, V, M](
-      attributeStore,
-      new S3RDDWriter[K, V],
-      keyIndexMethod,
-      attributeStore.bucket,
-      attributeStore.prefix,
-      options.clobber,
-      options.oneToOne
-    )
+  def apply(attributeStore: AttributeStore, bucket: String, prefix: String): S3LayerWriter =
+    new S3LayerWriter(attributeStore, bucket, prefix)
 
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](attributeStore: S3AttributeStore, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
-    apply[K, V, M](attributeStore, keyIndexMethod, Options.DEFAULT)
+  def apply(attributeStore: S3AttributeStore): S3LayerWriter =
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix)
 
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K], options: Options): S3LayerWriter[K, V, M] =
-    apply[K, V, M](S3AttributeStore(bucket, prefix), keyIndexMethod, options)
+  def apply(attributeStore: S3AttributeStore, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, putObjectModifier)
 
-  def apply[
-    K: Boundable: AvroRecordCodec: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat
-  ](bucket: String, prefix: String, keyIndexMethod: KeyIndexMethod[K]): S3LayerWriter[K, V, M] =
-    apply[K, V, M](bucket, prefix, keyIndexMethod, Options.DEFAULT)
+  def apply(bucket: String, prefix: String): S3LayerWriter =
+    apply(S3AttributeStore(bucket, prefix))
 
-  def spatial(
-    bucket: String,
-    prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey],
-    clobber: Boolean = true,
-    oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, Tile, RasterMetaData] =
-    apply[SpatialKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
+  def apply(bucket: String, prefix: String, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
+    apply(S3AttributeStore(bucket, prefix), putObjectModifier)
 
-  def spatialMultiBand(
-    bucket: String,
-    prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpatialKey],
-    clobber: Boolean = true,
-    oneToOne: Boolean = false
-  ): S3LayerWriter[SpatialKey, MultiBandTile, RasterMetaData] =
-    apply[SpatialKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
-
-  def spaceTime(
-    bucket: String,
-    prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
-    clobber: Boolean = true,
-    oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, Tile, RasterMetaData] =
-    apply[SpaceTimeKey, Tile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
-
-  def spaceTimeMultiBand(
-    bucket: String,
-    prefix: String,
-    keyIndexMethod: KeyIndexMethod[SpaceTimeKey],
-    clobber: Boolean = true,
-    oneToOne: Boolean = false
-  ): S3LayerWriter[SpaceTimeKey, MultiBandTile, RasterMetaData] =
-    apply[SpaceTimeKey, MultiBandTile, RasterMetaData](bucket, prefix, keyIndexMethod, Options(clobber, oneToOne))
 }

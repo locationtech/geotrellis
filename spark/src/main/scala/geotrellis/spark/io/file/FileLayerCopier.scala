@@ -2,8 +2,9 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
-import geotrellis.util.Filesystem
+import geotrellis.util._
 import AttributeStore.Fields
 
 import spray.json.JsonFormat
@@ -13,18 +14,22 @@ import scala.reflect.ClassTag
 import java.io.File
 
 object FileLayerCopier {
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId] =
+  def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId] =
     new LayerCopier[LayerId] {
-      def copy(from: LayerId, to: LayerId): Unit = {
+      def copy[
+        K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+        V: AvroRecordCodec: ClassTag,
+        M: JsonFormat: GetComponent[?, Bounds[K]]
+      ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)
 
-        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metaData)
+        val sourceMetadataFile = sourceAttributeStore.attributeFile(from, Fields.metadata)
         if(!sourceMetadataFile.exists) throw new LayerNotFoundError(from)
 
         // Read the metadata file out.
-        val (header, metadata, keyBounds, keyIndex, writerSchema) = try {
-          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, KeyBounds[K], KeyIndex[K], Schema](from)
+        val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+          sourceAttributeStore.readLayerAttributes[FileLayerHeader, M, K](from)
         } catch {
           case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
         }
@@ -39,7 +44,7 @@ object FileLayerCopier {
         val sourceLayerPath = new File(sourceAttributeStore.catalogPath, header.path)
         val targetHeader = header.copy(path = LayerPath(to))
 
-        targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyBounds, keyIndex, writerSchema)
+        targetAttributeStore.writeLayerAttributes(to, targetHeader, metadata, keyIndex, writerSchema)
 
         // Move all the elements
         val targetLayerPath = Filesystem.ensureDirectory(LayerPath(targetAttributeStore.catalogPath, to))
@@ -56,12 +61,12 @@ object FileLayerCopier {
       }
     }
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](catalogPath: String): LayerCopier[LayerId] =
-    apply[K, V, M](FileAttributeStore(catalogPath))
+  def apply(catalogPath: String): LayerCopier[LayerId] =
+    apply(FileAttributeStore(catalogPath))
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](attributeStore: FileAttributeStore): LayerCopier[LayerId] =
-    apply[K, V, M](attributeStore, attributeStore)
+  def apply(attributeStore: FileAttributeStore): LayerCopier[LayerId] =
+    apply(attributeStore, attributeStore)
 
-  def apply[K: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](sourceCatalogPath: String, targetCatalogPath: String): LayerCopier[LayerId] =
-    apply[K, V, M](FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
+  def apply(sourceCatalogPath: String, targetCatalogPath: String): LayerCopier[LayerId] =
+    apply(FileAttributeStore(sourceCatalogPath), FileAttributeStore(targetCatalogPath))
 }

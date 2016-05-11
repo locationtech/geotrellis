@@ -41,11 +41,10 @@ class GetColorsAndBreaksSpec extends FunSpec
       }
 
       val h = testTile.histogram
-      val (g, y, o, r) = (RGBA(0x00ff00ff), RGBA(0xffff00ff), RGBA(0xff7f00ff), RGBA(0xff0000ff))
-      val colors: Array[RGBA] = Array(g, y, o, r)
-      val colorClassifier = StrictColorClassifier.fromQuantileBreaks(h, colors)
-      colorClassifier.getBreaks should be (Array(12, 15, 66, 95))
-      colorClassifier.getColors should be (Array(g, y, o, r))
+      val (g, y, o, r) = (0x00ff00ff, 0xffff00ff, 0xff7f00ff, 0xff0000ff)
+      val colors: Array[Int] = Array(g, y, o, r)
+      val colorMap = ColorMap.fromQuantileBreaks(h, colors)
+      colorMap.colors.toArray should be (Array(g, y, o, r))
     }
 
     it("gets color breaks for test double raster.") {
@@ -60,15 +59,11 @@ class GetColorsAndBreaksSpec extends FunSpec
           5, 4)
       }
 
-      val h = testTile.doubleHistogram
-      val (g, y, o, r) = (RGBA(0x00ff00ff), RGBA(0xffff00ff), RGBA(0xff7f00ff), RGBA(0xff0000ff))
-      val colors: Array[RGBA] = Array(g, y, o, r)
-      val colorClassifier = StrictColorClassifier.fromQuantileBreaksDouble(h, colors)
-      val breaks = colorClassifier.getBreaks
-
-      breaks(0) should be (11.0)
-      breaks.length should be (4)
-      colorClassifier.getColors should be (Array(g, y, o, r))
+      val h = testTile.histogramDouble
+      val (g, y, o, r) = (0x00ff00ff, 0xffff00ff, 0xff7f00ff, 0xff0000ff)
+      val colors: Array[Int] = Array(g, y, o, r)
+      val colorMap = ColorMap.fromQuantileBreaks(h, colors)
+      colorMap.colors.toArray should be (Array(g, y, o, r))
     }
   }
 }

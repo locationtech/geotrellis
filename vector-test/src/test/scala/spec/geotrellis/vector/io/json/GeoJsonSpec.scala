@@ -1,6 +1,7 @@
 package geotrellis.vector.io.json
 
 import geotrellis.vector._
+import geotrellis.vector.io._
 import geotrellis.vector.testkit._
 
 import spray.json._
@@ -217,12 +218,9 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val t12 = jsonFeatCol.extractFeatures[LineFeature[SomeData]]
     t12 should be (Seq(linefeature2))
 
-    // catch java.lang.AssertionError from Polygon.scala "Empty Geometry"
-    intercept[java.lang.AssertionError] {
-      val line2 = Line(point1, point1, point1, point1, point1)
-      val poly2: Polygon = Polygon(line2)
-      poly2.toGeoJson.extractGeometries[Polygon] should be (Seq())
-    }
+    val line2 = Line(point1, point1, point1, point1, point1)
+    val poly2: Polygon = Polygon(line2)
+    poly2.toGeoJson.extractGeometries[Polygon].head should matchGeom (poly2)
   }
 
   it should "create a feature collection out of a set of features" in {

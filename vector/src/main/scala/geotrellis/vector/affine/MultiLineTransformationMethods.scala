@@ -1,34 +1,66 @@
 package geotrellis.vector.affine
 
-import geotrellis.vector.MultiLine
+import geotrellis.util.MethodExtensions
+import geotrellis.vector._
 
-import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.util.AffineTransformation._
 
+/** Trait used to implicitly extend [[MultiLine]] instances with transformation methods */
+trait MultiLineTransformationMethods extends MethodExtensions[MultiLine] {
 
-trait MultiLineTransformationMethods extends Any {
-  val geom: MultiLine
+  /** Transform according to a provided [[AffineTransformation]] instance
+    * @param trans  an AffineTransformation
+    */
+  def transform(trans: AffineTransformation) = trans.transform(self)
 
-  def transform(trans: AffineTransformation) = trans.transform(geom)
+  /** Reflect over the provided point */
+  def reflect(p: Point): MultiLine =
+    reflect(p.x, p.y)
 
-  def reflect(x: Double, y: Double): MultiLine = 
-    Reflection(x, y).transform(geom)
+  /** Reflect over the provided point */
+  def reflect(x: Double, y: Double): MultiLine =
+    Reflection(x, y).transform(self)
 
-  def reflect(x0: Double, y0: Double, x1: Double, y1: Double): MultiLine = 
-    Reflection(x0, y0, x1, y1).transform(geom)
-  
-  def rotate(theta: Double): MultiLine = 
-    Rotation(theta).transform(geom)
+  /** Reflect over the line between two points */
+  def reflect(p0: Point, p1: Point): MultiLine =
+    reflect(p0.x, p0.y, p1.x, p1.y)
 
-  def rotate(sinTheta: Double, cosTheta: Double): MultiLine = 
-    Rotation(sinTheta, cosTheta).transform(geom)
+  /** Reflect over the line between two points */
+  def reflect(x0: Double, y0: Double, x1: Double, y1: Double): MultiLine =
+    Reflection(x0, y0, x1, y1).transform(self)
 
-  def scale(xscale: Double, yscale: Double): MultiLine = 
-    Scaling(xscale, yscale).transform(geom)
+  /** Rotate about its origin by the specified radians
+    * @param theta  The number of radians about the origin to rotate this multiline. Positive
+    *               numbers correspond to counter-clockwise rotation
+    */
+  def rotate(theta: Double): MultiLine =
+    Rotation(theta).transform(self)
 
-  def shear(xshear: Double, yshear: Double): MultiLine = 
-    Shearing(xshear, yshear).transform(geom)
+  /** Rotate about its origin by the specified angle
+    * @param sinTheta  The sin of the angle angle about the origin to rotate this multiline
+    * @param cosTheta  The cosin of the angle about the origin to rotate this multiline
+    */
+  def rotate(sinTheta: Double, cosTheta: Double): MultiLine =
+    Rotation(sinTheta, cosTheta).transform(self)
 
-  def translate(x: Double, y: Double): MultiLine = 
-    Translation(x, y).transform(geom)
+  /** Change the scale of this multiline
+    * @param xscale  the updated scale on the x-axis
+    * @param yscale  the updated scale on the y-axis
+    */
+  def scale(xscale: Double, yscale: Double): MultiLine =
+    Scaling(xscale, yscale).transform(self)
+
+  /** Shear the provided multiline
+    * @param xshear  Shear on the x axis
+    * @param yshear  Shear on the y axis
+    */
+  def shear(xshear: Double, yshear: Double): MultiLine =
+    Shearing(xshear, yshear).transform(self)
+
+  /** Translate the provided multiline
+    * @param x  the value to translate by in the x direction
+    * @param y  the value to translate by in the y direction
+    */
+  def translate(x: Double, y: Double): MultiLine =
+    Translation(x, y).transform(self)
 }

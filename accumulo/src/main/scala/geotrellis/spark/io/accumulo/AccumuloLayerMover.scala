@@ -1,40 +1,60 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.{LayerId, Boundable}
+import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index._
+import geotrellis.spark.io.json._
+import geotrellis.util._
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+
 import scala.reflect.ClassTag
 
 object AccumuloLayerMover {
-  def apply[K: Boundable: JsonFormat: ClassTag, V: ClassTag, M: JsonFormat](
-   instance: AccumuloInstance,
-   layerReader: AccumuloLayerReader[K, V, M],
-   layerWriter: AccumuloLayerWriter[K, V, M])
-  (implicit sc: SparkContext): LayerMover[LayerId] = {
+  def apply(
+    layerCopier: AccumuloLayerCopier,
+    layerDeleter: AccumuloLayerDeleter
+  ): LayerMover[LayerId] =
+    new GenericLayerMover(layerCopier, layerDeleter)
+
+  def apply(
+   instance: AccumuloInstance
+  )(implicit sc: SparkContext): LayerMover[LayerId] = {
     val attributeStore = AccumuloAttributeStore(instance.connector)
-    new GenericLayerMover[LayerId](
-      layerCopier = AccumuloLayerCopier[K, V, M](
-        attributeStore = attributeStore,
-        layerReader    = layerReader,
-        layerWriter    = layerWriter
-      ),
-      layerDeleter = AccumuloLayerDeleter(AccumuloAttributeStore(instance.connector), instance.connector)
+    apply(
+      layerCopier = AccumuloLayerCopier(instance),
+      layerDeleter = AccumuloLayerDeleter(attributeStore)
     )
   }
 
-  def apply[K: Boundable: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat](
+  def apply(
     instance: AccumuloInstance,
     table: String,
-    indexMethod: KeyIndexMethod[K],
-    strategy: AccumuloWriteStrategy = AccumuloLayerWriter.defaultAccumuloWriteStrategy)
-   (implicit sc: SparkContext): LayerMover[LayerId] =
-    apply[K, V, M](
-      instance    = instance,
-      layerReader = AccumuloLayerReader[K, V, M](instance),
-      layerWriter = AccumuloLayerWriter[K, V, M](instance, table, indexMethod, strategy)
+    options: AccumuloLayerWriter.Options
+  )(implicit sc: SparkContext): LayerMover[LayerId] =
+    apply(
+      layerCopier = AccumuloLayerCopier(instance, table, options),
+      layerDeleter = AccumuloLayerDeleter(instance)
+    )
+
+  def apply(
+    instance: AccumuloInstance,
+    table: String
+  )(implicit sc: SparkContext): LayerMover[LayerId] =
+    apply(
+      layerCopier = AccumuloLayerCopier(instance, table),
+      layerDeleter = AccumuloLayerDeleter(instance)
+    )
+
+  def apply(
+    instance: AccumuloInstance,
+    options: AccumuloLayerWriter.Options
+  )(implicit sc: SparkContext): LayerMover[LayerId] =
+    apply(
+      layerCopier = AccumuloLayerCopier(instance, options),
+      layerDeleter = AccumuloLayerDeleter(instance)
     )
 }

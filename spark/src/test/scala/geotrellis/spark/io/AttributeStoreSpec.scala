@@ -3,7 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import geotrellis.spark.testfiles._
 import geotrellis.spark.summary._
-import geotrellis.raster.io.json._
+import geotrellis.raster.io._
 import geotrellis.raster.histogram._
 
 import org.scalatest._
@@ -15,7 +15,7 @@ abstract class AttributeStoreSpec
     with Matchers
     with TestEnvironment
     with TestFiles {
-  def attributeStore: AttributeStore[JsonFormat]
+  def attributeStore: AttributeStore
 
   it("should write to an attribute store") {
     attributeStore.write(LayerId("test1", 1), "test-att1", "test")
@@ -45,7 +45,7 @@ abstract class AttributeStoreSpec
 
   it("should save and pull out a histogram") {
     val layerId = LayerId("test", 3)
-    val histo = DecreasingTestFile.histogram
+    val histo = DecreasingTestFile.histogramExactInt
 
     attributeStore.write(layerId, "histogram", histo)
 

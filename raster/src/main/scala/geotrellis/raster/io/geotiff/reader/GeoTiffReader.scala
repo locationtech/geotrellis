@@ -25,7 +25,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.util.Filesystem
 
-import monocle.syntax._
+import monocle.syntax.apply._
 
 import scala.io._
 import scala.collection.mutable
@@ -45,25 +45,25 @@ object GeoTiffReader {
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleBand(path: String): SingleBandGeoTiff =
-    readSingleBand(path, true)
+  def readSingleband(path: String): SinglebandGeoTiff =
+    readSingleband(path, true)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleBand(path: String, decompress: Boolean): SingleBandGeoTiff =
-    readSingleBand(Filesystem.slurp(path), decompress)
+  def readSingleband(path: String, decompress: Boolean): SinglebandGeoTiff =
+    readSingleband(Filesystem.slurp(path), decompress)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleBand(bytes: Array[Byte]): SingleBandGeoTiff =
-    readSingleBand(bytes, true)
+  def readSingleband(bytes: Array[Byte]): SinglebandGeoTiff =
+    readSingleband(bytes, true)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleBand(bytes: Array[Byte], decompress: Boolean): SingleBandGeoTiff = {
+  def readSingleband(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
 
     val geoTiffTile =
@@ -73,52 +73,55 @@ object GeoTiffReader {
           info.decompressor,
           info.segmentLayout,
           info.compression,
-          info.cellType
+          info.cellType,
+          Some(info.bandType)
         )
       } else {
-        GeoTiffMultiBandTile(
+        GeoTiffMultibandTile(
           info.compressedBytes,
           info.decompressor,
           info.segmentLayout,
           info.compression,
           info.bandCount,
           info.hasPixelInterleave,
-          info.cellType
+          info.cellType,
+          Some(info.bandType)
         ).band(0)
       }
 
-    SingleBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
+    SinglebandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
   }
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(path: String): MultiBandGeoTiff =
-    readMultiBand(path, true)
+  def readMultiband(path: String): MultibandGeoTiff =
+    readMultiband(path, true)
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(path: String, decompress: Boolean): MultiBandGeoTiff =
-    readMultiBand(Filesystem.slurp(path), decompress)
+  def readMultiband(path: String, decompress: Boolean): MultibandGeoTiff =
+    readMultiband(Filesystem.slurp(path), decompress)
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiBand(bytes: Array[Byte]): MultiBandGeoTiff =
-    readMultiBand(bytes, true)
+  def readMultiband(bytes: Array[Byte]): MultibandGeoTiff =
+    readMultiband(bytes, true)
 
-  def readMultiBand(bytes: Array[Byte], decompress: Boolean): MultiBandGeoTiff = {
+  def readMultiband(bytes: Array[Byte], decompress: Boolean): MultibandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
     val geoTiffTile =
-      GeoTiffMultiBandTile(
+      GeoTiffMultibandTile(
         info.compressedBytes,
         info.decompressor,
         info.segmentLayout,
         info.compression,
         info.bandCount,
         info.hasPixelInterleave,
-        info.cellType
+        info.cellType,
+        Some(info.bandType)
       )
 
-    new MultiBandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
+    new MultibandGeoTiff(if(decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
   }
 
   case class GeoTiffInfo(
@@ -175,11 +178,11 @@ object GeoTiffReader {
         IntCellType
       // UInt32
       case (UInt32BandType, Some(nd)) if (nd.toLong > 0L && nd.toLong <= 4294967295L) =>
-        UIntUserDefinedNoDataCellType(nd.toInt)
+        FloatUserDefinedNoDataCellType(nd.toFloat)
       case (UInt32BandType, Some(nd)) if (nd.toLong == 0L) =>
-        IntConstantNoDataCellType
+        FloatConstantNoDataCellType
       case (UInt32BandType, _) =>
-        UIntCellType
+        FloatCellType
       // Float32
       case (Float32BandType, Some(nd)) if (isData(nd) & Float.MinValue.toDouble <= nd & Float.MaxValue.toDouble >= nd) =>
         FloatUserDefinedNoDataCellType(nd.toFloat)

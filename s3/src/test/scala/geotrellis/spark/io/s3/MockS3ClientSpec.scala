@@ -8,7 +8,7 @@ import scala.collection.JavaConverters._
 class MockS3ClientSpec extends FunSpec
   with Matchers
 {
-  describe("MockS3Clinet") {
+  describe("MockS3Client") {
     import S3Client._
 
     val client = new MockS3Client
@@ -18,7 +18,7 @@ class MockS3ClientSpec extends FunSpec
 
     it("should read a key") {
       val obj = client.getObject("bucket", "firstKey")
-      val str = Source.fromInputStream(obj.getObjectContent).mkString      
+      val str = Source.fromInputStream(obj.getObjectContent).mkString
       str should be ("data")
     }
 

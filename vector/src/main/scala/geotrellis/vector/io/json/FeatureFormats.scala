@@ -1,12 +1,13 @@
 package geotrellis.vector.io.json
 
 import geotrellis.vector._
+import geotrellis.vector.io._
 import spray.json._
-import GeometryFormats._
 
+/** A trait for providing the Spray.json formats necessary to serialize [[Feature]] instances */
 trait FeatureFormats {
 
-  /** Serializes a geojson feature object
+  /** Serializes a feature object to a GeoJSON feature
     *
     * @param A Feature object
     * @tparam The type (which must have an implicit method to resolve the transformation from json)

@@ -7,5 +7,5 @@ package object s3 {
   def makePath(chunks: String*) =
     chunks.filter(_.nonEmpty).mkString("/")
 
-  implicit class withSaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) extends SaveToS3Methods[K](rdd)
+  implicit class withSaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) extends SaveToS3Methods(rdd)
 }

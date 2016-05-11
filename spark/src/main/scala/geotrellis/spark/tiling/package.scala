@@ -1,39 +1,15 @@
 package geotrellis.spark
 
-import geotrellis.vector.Extent
-import geotrellis.vector.reproject._
+import geotrellis.vector._
 import geotrellis.proj4._
 
 /**
- * This package is concerned with translation of coordinates or extents between:
- *  - geographic extents
- *  - arbitrary tiling scheme, which defines origin and and axis
- *  - arbitrary indexing scheme which linearize two dimensional tiling space
- *
- *  In order to facilitate these transformations each of the above spaces maps to
- *  a "Grid Space" which is a special case of a tiling scheme with the origin
- *  defined as upper left and (x, y) coordinate representing (col, row), Java array order.
- *
- *  @see [[geotrellis.spark.tiling.MapGridTransform]]
- *  @see [[geotrellis.spark.tiling.TileGridTransform]]
- *  @see [[geotrellis.spark.tiling.SpatialKeyGridTransform]]
- */
+  * This package is concerned with translation of coordinates or extents between
+  * geographic extents and the grid space represented by SpatialKey(col, row) coordinates,
+  * the layout that defines that grid space, as well as functionality for cutting tiles into
+  * a uniform grid space.
+  */
 package object tiling {
-  /**
-   * Tile Coordinate in a tiling scheme. The origin and axes
-   * are defined by the scheme.
-   */
-  type TileCoord = (Int, Int)
-  /**
-   * Grid Coordinate always has the upper left as the origin.
-   * The tuple always interpreted a (col, row)
-   */
-  type GridCoord = (Int, Int)
-  /**
-   * Geographic Map Coordinate, uses left is the origin
-   */
-  type MapCoord = (Double, Double)
-
   private final val WORLD_WSG84 = Extent(-180, -89.99999, 179.99999, 89.99999)
 
   implicit class CRSWorldExtent(crs: CRS) {

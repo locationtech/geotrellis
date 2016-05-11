@@ -18,25 +18,6 @@ import scala.reflect._
 package object hadoop {
   implicit def stringToPath(path: String): Path = new Path(path)
 
-  class SpatialKeyWritable() extends AvroKeyWritable[SpatialKey, SpatialKeyWritable]
-  class SpaceTimeKeyWritable() extends AvroKeyWritable[SpaceTimeKey, SpaceTimeKeyWritable]
-  class TileWritable() extends AvroWritable[Tile]
-  class MultiBandTileWritable() extends AvroWritable[MultiBandTile]
-
-  class SpatialFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, TileWritable]
-  class SpaceTimeFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, TileWritable]
-  class SpatialMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpatialKey, SpatialKeyWritable, MultiBandTileWritable]
-  class SpaceTimeMultiBandFilterMapFileInputFormat extends FilterMapFileInputFormat[SpaceTimeKey, SpaceTimeKeyWritable, MultiBandTileWritable]
-
-  implicit def spatialHadoopFormat =
-    HadoopFormat.Aux[SpatialKey, Tile, SpatialKeyWritable, TileWritable, SpatialFilterMapFileInputFormat]
-  implicit def spaceTimeHadoopFormat =
-    HadoopFormat.Aux[SpaceTimeKey, Tile, SpaceTimeKeyWritable, TileWritable, SpaceTimeFilterMapFileInputFormat]
-  implicit def spatialMultiBandHadoopFormat =
-    HadoopFormat.Aux[SpatialKey, MultiBandTile, SpatialKeyWritable, MultiBandTileWritable, SpatialMultiBandFilterMapFileInputFormat]
-  implicit def spaceTimeMultiBandHadoopFormat =
-    HadoopFormat.Aux[SpaceTimeKey, MultiBandTile, SpaceTimeKeyWritable, MultiBandTileWritable, SpaceTimeMultiBandFilterMapFileInputFormat]
-
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 
   implicit class withHadoopConfigurationMethods(val self: Configuration) extends MethodExtensions[Configuration] {
@@ -82,6 +63,6 @@ package object hadoop {
     }
   }
 
-  implicit class withSaveToHadoopMethods[K](rdd: RDD[(K, Array[Byte])]) extends SaveToHadoopMethods[K](rdd)
-  implicit class withMoreSaveToHadoopMethods[K,V](rdd: RDD[(K,V)]) extends MoreSaveToHadoopMethods[K, V](rdd)
+  implicit class withSaveBytesToHadoopMethods[K](rdd: RDD[(K, Array[Byte])]) extends SaveBytesToHadoopMethods[K](rdd)
+  implicit class withSaveToHadoopMethods[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
 }

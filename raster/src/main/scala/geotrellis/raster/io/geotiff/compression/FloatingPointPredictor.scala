@@ -13,7 +13,11 @@ object FloatingPointPredictor {
 
     val bandType = tiffTags.bandType
 
-    new FloatingPointPredictor(colsPerRow, rowsInSegment, bandType, tiffTags.bandCount)
+    if(tiffTags.hasPixelInterleave) {
+      new FloatingPointPredictor(colsPerRow, rowsInSegment, bandType, tiffTags.bandCount)
+    } else {
+      new FloatingPointPredictor(colsPerRow, rowsInSegment, bandType, 1)
+    }
   }
 }
 
@@ -27,7 +31,6 @@ class FloatingPointPredictor(colsPerRow: Int, rowsInSegment: Int => Int, bandTyp
 
     val colValuesPerRow = colsPerRow * bandCount
     val bytesPerRow = colValuesPerRow * bytesPerSample
-
     cfor(0)(_ < rows, _ + 1) { row =>
       // Undo the byte differencing
       val rowByteIndex = row * bytesPerRow

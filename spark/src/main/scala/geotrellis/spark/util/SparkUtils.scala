@@ -40,10 +40,6 @@ object SparkUtils extends Logging {
         }
     }
 
-  /**
-   * TODO: decide if this needs to be removed
-   * It's not clear if this way of driving spark will continue to be support, perhaps for debugging
-   */
   def createLocalSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
     sparkConf
       .setMaster(sparkMaster)

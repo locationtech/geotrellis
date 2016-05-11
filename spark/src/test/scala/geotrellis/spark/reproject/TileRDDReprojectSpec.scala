@@ -10,8 +10,6 @@ import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.vector._
-import geotrellis.vector.io.json._
-import geotrellis.vector.reproject._
 
 import geotrellis.proj4._
 
@@ -22,11 +20,11 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
   describe("TileRDDReproject") {
     val path = "raster-test/data/aspect.tif"
-    val gt = SingleBandGeoTiff(path)
+    val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
 
     val (raster, rdd) = {
-      val (raster, rdd) = createRasterRDD(originalRaster, 10, 10, gt.crs)
+      val (raster, rdd) = createTileLayerRDD(originalRaster, 10, 10, gt.crs)
       (raster, rdd.withContext { rdd => rdd.repartition(20) })
     }
 
@@ -114,6 +112,26 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
     it("should reproject a raster split into tiles the same as the raster itself: dynamic border and NearestNeighbor") {
       testReproject(NearestNeighbor, false)
+    }
+  }
+
+  describe("Reprojected with the same scheme and CRS") {
+    it("should tile with minimum number of tiles") {
+      val tiff = SinglebandGeoTiff(new java.io.File(inputHomeLocalPath, "aspect.tif").getAbsolutePath)
+      val rdd = sc.parallelize(Seq( (tiff.projectedExtent, tiff.tile) ))
+      val scheme = FloatingLayoutScheme(256)
+      val extent = Extent(-31.4569758,  27.6350020, 40.2053192,  80.7984255)
+      val cellSize = CellSize(0.083328250000000, 0.083328250000000)
+      val re = RasterExtent(extent, cellSize)
+
+      val (_, md) = TileLayerMetadata.fromRdd(rdd, scheme)
+      val tiled = ContextRDD(rdd.tileToLayout[SpatialKey](md, NearestNeighbor), md)
+      val beforeMetadata = tiled.metadata
+
+      val (_, reprojected) = tiled.reproject(tiled.metadata.crs, scheme)
+      val afterMetadata = reprojected.metadata
+
+      afterMetadata.layout should be (beforeMetadata.layout)
     }
   }
 }

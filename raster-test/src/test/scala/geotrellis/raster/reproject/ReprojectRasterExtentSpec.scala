@@ -1,16 +1,12 @@
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.raster.mosaic._
-import geotrellis.vector._
-import geotrellis.vector.reproject._
-import geotrellis.vector.io.json._
-import geotrellis.raster.testkit._
-import geotrellis.vector.testkit._
 import geotrellis.proj4._
+import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.testkit._
+import geotrellis.vector._
+import geotrellis.vector.io._
+import geotrellis.vector.testkit._
 
 import org.scalatest._
 import spire.syntax.cfor._
@@ -28,14 +24,14 @@ class ReprojectRasterExtentSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL for EPSG:4326 to EPSG:3857") {
-      val sourceGt = SingleBandGeoTiff.compressed("raster-test/data/reproject/nlcd_tile_wsg84.tif")
+      val sourceGt = SinglebandGeoTiff.compressed("raster-test/data/reproject/nlcd_tile_wsg84.tif")
       val sourceRaster = sourceGt.raster
 
-      val rea @ RasterExtent(actualExtent, actualCellWidth, actualCellHeight, actualCols, actualRows) = 
+      val rea @ RasterExtent(actualExtent, actualCellWidth, actualCellHeight, actualCols, actualRows) =
         ReprojectRasterExtent(sourceRaster.rasterExtent, sourceGt.crs, WebMercator)
 
-      val ree @ RasterExtent(expectedExtent, expectedCellWidth, expectedCellHeight, expectedCols, expectedRows) = 
-        SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster.rasterExtent
+      val ree @ RasterExtent(expectedExtent, expectedCellWidth, expectedCellHeight, expectedCols, expectedRows) =
+        SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster.rasterExtent
 
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))

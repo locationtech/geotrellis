@@ -12,6 +12,7 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
+    "-feature",
     "-language:implicitConversions",
     "-language:reflectiveCalls",
     "-language:higherKinds",
@@ -51,10 +52,21 @@ lazy val commonSettings = Seq(
       </developers>),
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
   dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang")
-) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+)
 
 lazy val root = Project("geotrellis", file(".")).
-  dependsOn(raster, vector, proj4, spark).
+  aggregate(
+    raster,
+    rasterTest,
+    vector,
+    vectorTest,
+    proj4,
+    spark,
+    sparkEtl,
+    s3,
+    accumulo,
+    slick
+  ).
   settings(commonSettings: _*).
   settings(
     scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
@@ -63,6 +75,7 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.spark._
       """
   )
   .settings(unidocSettings: _*)
@@ -78,7 +91,8 @@ lazy val vectorTest = Project("vector-test", file("vector-test")).
   dependsOn(vector, vectorTestkit)
 
 lazy val proj4 = Project("proj4", file("proj4")).
-  settings(commonSettings: _*)
+  settings(commonSettings: _*).
+  settings(javacOptions ++= Seq("-encoding", "UTF-8"))
 
 lazy val raster = Project("raster", file("raster")).
   dependsOn(util, macros, vector).
@@ -104,7 +118,7 @@ lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
-lazy val geotrellisSlick = Project("slick", file("slick")).
+lazy val slick = Project("slick", file("slick")).
   dependsOn(vector).
   settings(commonSettings: _*)
 
@@ -135,6 +149,3 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
-lazy val benchmark: Project = Project("benchmark", file("benchmark")).
-  dependsOn(raster, engine).
-  settings(commonSettings: _*)

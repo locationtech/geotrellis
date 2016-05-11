@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,7 @@ import scala.collection.mutable
 
 object SpatialIndex {
   def apply(points: Iterable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
-    val si = new SpatialIndex[(Double, Double)](Measure.Dumb)
+    val si = new SpatialIndex[(Double, Double)](Measure.Euclidean)
     for(point <- points) {
       si.insert(point, point._1, point._2)
     }
@@ -33,7 +33,7 @@ object SpatialIndex {
   }
 
   def apply[T](points: Iterable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
-    val si = new SpatialIndex[T](Measure.Dumb)
+    val si = new SpatialIndex[T](Measure.Euclidean)
     for(point <- points) {
       val (x, y) = f(point)
       si.insert(point, x, y)
@@ -48,7 +48,7 @@ object SpatialIndex {
   }
 }
 
-class SpatialIndex[T](val measure: Measure = Measure.Dumb) extends Serializable {
+class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializable {
   val rtree = new STRtree
   val points = mutable.Set.empty[T]
 
@@ -91,7 +91,7 @@ class SpatialIndex[T](val measure: Measure = Measure.Dumb) extends Serializable 
 }
 
 object Measure {
-  def Dumb = new DumbMeasure
+  def Euclidean = new EuclideanMeasure
 }
 
 trait Measure extends ItemDistance with Serializable {
@@ -104,7 +104,7 @@ trait Measure extends ItemDistance with Serializable {
   }
 }
 
-class DumbMeasure() extends Measure {
+class EuclideanMeasure() extends Measure {
   def distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = {
     val x = x2 - x1
     val y = y2 - y1

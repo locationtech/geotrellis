@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,14 +28,6 @@ import org.scalatest._
 import spire.syntax.cfor._
 
 class HillshadeSpec extends FunSuite with RasterMatchers with TileBuilders {
-
-  def grayscale(n: Int) = {
-    val ns = (1 to 128).toArray
-    val limits = ns.map(i => i * n)
-    val colors = ns.map(i => ((i * 65536 * 2 + i * 256 * 2 + i * 2) << 8) | 255).map(RGBA(_))
-    val bcc = new BlendingIntColorClassifier
-    bcc.addBreaks(limits).addColors(colors)
-  }
 
   def time() = System.currentTimeMillis()
 

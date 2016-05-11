@@ -27,38 +27,94 @@ import math.BigDecimal
 
 import collection.mutable.ArrayBuffer
 
+
 /**
   * Base trait for a Tile.
   */
 trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
 
+  /**
+    * Execute a function at each pixel of a [[Tile]].  Two functions
+    * are given: an integer version which is used if the tile is an
+    * integer-tile, and the other in the case of a floating-tile.
+    *
+    * @param  f  A function from Int to Unit
+    * @param  g  A function from Double to Unit
+    */
   def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
     if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)
 
+  /**
+    * Conditionally execute (or don't) the given function at each
+    * pixel of a [[Tile]], depending on whether that pixel is NODATA or
+    * not.  The result of the mapping is returned as a tile.
+    *
+    * @param  f  A function from Int to Int
+    */
   def mapIfSet(f: Int => Int): Tile =
     map { i =>
       if(isNoData(i)) i
       else f(i)
     }
 
+  /**
+    * Conditionally execute (or don't) the given function at each
+    * pixel of a [[Tile]], depending on whether that pixel is NODATA or
+    * not.  The result of the mapping is returned as a tile.
+    *
+    * @param  f  A function from Double to Double
+    */
   def mapIfSetDouble(f: Double => Double): Tile =
     mapDouble { d =>
       if(isNoData(d)) d
       else f(d)
     }
 
+  /**
+    * Map one of the two given functions across the [[Tile]] to
+    * produce a new one.  One of the functions is from Int to Int, and
+    * the other from Double to Double.
+    *
+    * @param  f  A function from Int to Int
+    * @param  g  A function from Double to Double
+    */
   def dualMap(f: Int => Int)(g: Double => Double): Tile =
     if (cellType.isFloatingPoint) mapDouble(g) else map(f)
 
+  /**
+    * Conditionally map across the [[Tile]] with one of two functions,
+    * depending on whether the tile is an integer- or a floating-tile.
+    * A pixel is mapped only if it is set.
+    *
+    * @param  f  A function from Int to Int
+    * @param  g  A function from Double to Double
+    */
   def dualMapIfSet(f: Int => Int)(g: Double => Double): Tile =
     if (cellType.isFloatingPoint) mapIfSetDouble(g) else mapIfSet(f)
 
+  /**
+    * Combine two [[Tile]]s together using one of two given functions.
+    * If the union of the types of the two cells is floating-point,
+    * then the floating function is used, otherwise the integer
+    * function is used.
+    *
+    * @param  r2  The tile to combine with the present one
+    * @param  f   The integer function
+    * @param  g   The double function
+    */
   def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
     if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
-  /** Create a mutable copy of this tile */
+  /**
+    * Create a mutable copy of this tile
+    */
   def mutable: MutableArrayTile
 
+  /** Converts the cell type of the tile.
+    *
+    * @note    This will immediately iterate over the tile and allocate a new
+    *          copy of data; this should be a performance consideration.
+    */
   def convert(cellType: CellType): Tile
 
   /**
@@ -71,28 +127,87 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     */
   def getDouble(col: Int, row: Int): Double
 
+  /**
+    * Convert the present [[Tile]] to an [[ArrayTile]].
+    */
   def toArrayTile(): ArrayTile
-  def toArray(): Array[Int]
-  def toArrayDouble(): Array[Double]
-  def toBytes(): Array[Byte]
-
-  def foreach(f: Int=>Unit): Unit
-
-  def foreachDouble(f: Double=>Unit): Unit
-
-  def map(f: Int => Int): Tile
-  def combine(r2: Tile)(f: (Int, Int) => Int): Tile
-
-  def mapDouble(f: Double => Double): Tile
-  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile
 
   /**
-    * Normalizes the values of this raster, given the current min and max, to a new min and max.
+    * Return the data behind this [[Tile]], or a copy, as an Array of
+    * integers.
+    */
+  def toArray(): Array[Int]
+
+  /**
+    * Return the data behind this [[Tile]], or a copy, as an Array of
+    * doubles.
+    */
+  def toArrayDouble(): Array[Double]
+
+  /**
+    * Return the data behind this [[Tile]], or a copy, as an Array of
+    * bytes.
+    */
+  def toBytes(): Array[Byte]
+
+  /**
+    * Execute the given function at each pixel of the present
+    * [[Tile]].
+    */
+  def foreach(f: Int=>Unit): Unit
+
+  /**
+    * Execute the given function at each pixel of the present
+    * [[Tile]].
+    */
+  def foreachDouble(f: Double=>Unit): Unit
+
+  /**
+    * Map the given function across the present [[Tile]].  The result
+    * is another Tile.
+    */
+  def map(f: Int => Int): Tile
+
+  /**
+    * Combine the given [[Tile]] with the present one using the given
+    * function.
+    */
+  def combine(r2: Tile)(f: (Int, Int) => Int): Tile
+
+  /**
+    * Map the given function across the present [[Tile]].  The result
+    * is another Tile.
+    */
+  def mapDouble(f: Double => Double): Tile
+
+  /**
+    * Combine the given [[Tile]] with the present one using the given
+    * function.
+    */
+  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile
+
+  def isNoDataTile: Boolean = {
+    var (c, r) = (0, 0)
+    while (r < rows) {
+      while(c < cols) {
+        if(cellType.isFloatingPoint) { if (isData(getDouble(c, r))) return false }
+        else { if(isData(get(c, r))) return false }
+        c += 1
+      }
+      c = 0; r += 1
+    }
+
+    true
+  }
+
+  /**
+    * Normalizes the values of this raster, given the current min and
+    * max, to a new min and max.
     *
-    *   @param oldMin    Old mininum value
-    *   @param oldMax    Old maximum value
-    *   @param newMin     New minimum value
-    *   @param newMax     New maximum value
+    * @param oldMin  Old minimum value
+    * @param oldMax  Old maximum value
+    * @param newMin  New minimum value
+    * @param newMax  New maximum value
     */
   def normalize(oldMin: Int, oldMax: Int, newMin: Int, newMax: Int): Tile = {
     val dnew = newMax - newMin
@@ -102,12 +217,13 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   }
 
   /**
-    * Normalizes the values of this raster, given the current min and max, to a new min and max.
+    * Normalizes the values of this raster, given the current min and
+    * max, to a new min and max.
     *
-    *   @param oldMin    Old mininum value
-    *   @param oldMax    Old maximum value
-    *   @param newMin     New minimum value
-    *   @param newMax     New maximum value
+    * @param oldMin  Old minimum value
+    * @param oldMax  Old maximum value
+    * @param newMin  New minimum value
+    * @param newMax  New maximum value
     */
   def normalize(oldMin: Double, oldMax: Double, newMin: Double, newMax: Double): Tile = {
     val dnew = newMax - newMin
@@ -116,16 +232,31 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
     mapIfSetDouble(z => ( ((z - oldMin) * dnew) / dold ) + newMin)
   }
 
-  def rescale(newMin: Int, newMax: Int) = {
+  /**
+    * Rescale the values in this [[Tile]] so that they are between the
+    * two given values.
+    */
+  def rescale(newMin: Int, newMax: Int): Tile = {
     val (min, max) = findMinMax
     normalize(min, max, newMin, newMax)
   }
 
-  def rescale(newMin: Double, newMax: Double) = {
+  /**
+    * Rescale the values in this [[Tile]] so that they are between the
+    * two given values.
+    */
+  def rescale(newMin: Double, newMax: Double): Tile = {
     val (min, max) = findMinMaxDouble
     normalize(min, max, newMin, newMax)
   }
 
+  /**
+    * Reduce the resolution of the present [[Tile]] to the given
+    * number of columns and rows.  A new Tile is returned.
+    *
+    * @param  newCols  The number of columns in the new Tile
+    * @param  newRows  The number of rows in the new Tile
+    */
   def downsample(newCols: Int, newRows: Int)(f: CellSet => Int): Tile = {
     val colsPerBlock = math.ceil(cols / newCols.toDouble).toInt
     val rowsPerBlock = math.ceil(rows / newRows.toDouble).toInt
@@ -173,12 +304,13 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   /**
     * Return tuple of highest and lowest value in raster.
     *
-    * @note   Currently does not support double valued raster data types
-    *         (FloatConstantNoDataCellType, DoubleConstantNoDataCellType). Calling findMinMax on rasters of those
-    *         types will give the integer min and max of the rounded values of
-    *         their cells.
+    * @note Currently does not support double valued raster data types
+    *       (FloatConstantNoDataCellType,
+    *       DoubleConstantNoDataCellType). Calling findMinMax on
+    *       rasters of those types will give the integer min and max
+    *       of the rounded values of their cells.
     */
-  def findMinMax = {
+  def findMinMax: (Int, Int) = {
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
 
@@ -196,7 +328,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   /**
     * Return tuple of highest and lowest value in raster.
     */
-  def findMinMaxDouble = {
+  def findMinMaxDouble: (Double, Double) = {
     var zmin = Double.NaN
     var zmax = Double.NaN
 
@@ -234,8 +366,8 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   }
 
   /**
-    * Return ascii art of this raster. The single int parameter indicates the
-    * number of significant digits to be printed.
+    * Return ascii art of this raster. The single int parameter
+    * indicates the number of significant digits to be printed.
     */
   def asciiDrawDouble(significantDigits: Int = Int.MaxValue): String = {
     val buff = ArrayBuffer[String]()
@@ -277,7 +409,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
   /**
     * Return ascii art of a range from this raster.
     */
-  def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int) = {
+  def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int): String = {
     var s = ""
     for (row <- rowMin to rowMax) {
       for (col <- colMin to colMax) {
@@ -291,19 +423,5 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
       s += "\n"
     }
     s
-  }
-
-  def isNoDataTile: Boolean = {
-    var (c, r) = (0, 0)
-    while (r < rows) {
-      while(c < cols) {
-        if(cellType.isFloatingPoint) { if (isData(getDouble(c, r))) return false }
-        else { if(isData(get(c, r))) return false }
-        c += 1
-      }
-      c = 0; r += 1
-    }
-
-    true
   }
 }

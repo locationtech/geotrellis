@@ -18,27 +18,110 @@ package geotrellis.spark.io.kryo
 
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
-import org.apache.avro.Schema
-import org.apache.avro.Schema.{Field, Type}
-
 import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.serializers._
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output
 import de.javakaffee.kryoserializers._
 
-import java.util.{Arrays, Collections}
+import java.util.{Arrays, Collections, Comparator, TreeMap}
+
+/** Account for a bug in Kryo < 2.22 for serializing TreeMaps */
+class XTreeMapSerializer extends MapSerializer {
+  override def write (kryo: Kryo, output: Output, map: java.util.Map[_, _]) {
+    val treeMap = map.asInstanceOf[TreeMap[_, _]]
+    kryo.writeClassAndObject(output, treeMap.comparator())
+    super.write(kryo, output, map)
+  }
+
+  protected override def create (kryo: Kryo, input: Input, t: Class[java.util.Map[_, _]]): java.util.Map[_, _] = {
+    new TreeMap(kryo.readClassAndObject(input).asInstanceOf[Comparator[_]])
+  }
+
+  protected override def createCopy (kryo: Kryo, original: java.util.Map[_, _]): java.util.Map[_, _] = {
+    new TreeMap(original.asInstanceOf[TreeMap[_, _]].comparator())
+  }
+}
 
 class KryoRegistrator extends SparkKryoRegistrator {
+
   override def registerClasses(kryo: Kryo) {
+    // TreeMap serializaiton has a bug; we fix it here as we're stuck on low
+    // Kryo versions due to Spark. Hack-tastic.
+    kryo.register(classOf[TreeMap[_, _]], (new XTreeMapSerializer).asInstanceOf[com.esotericsoftware.kryo.Serializer[TreeMap[_, _]]])
+
     kryo.register(classOf[(_,_)])
     kryo.register(classOf[::[_]])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.SpatialKeyWritable])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.SpaceTimeKeyWritable])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.TileWritable])
-    kryo.register(classOf[geotrellis.raster.BitArrayTile])
     kryo.register(classOf[geotrellis.raster.ByteArrayFiller])
-    kryo.register(classOf[geotrellis.raster.FloatArrayTile])
-    kryo.register(classOf[geotrellis.raster.DoubleArrayTile])
-    kryo.register(classOf[geotrellis.raster.ShortArrayTile])
-    kryo.register(classOf[geotrellis.raster.IntArrayTile])
+
+    // CellTypes
+    kryo.register(geotrellis.raster.BitCellType.getClass)                     // Bit
+    kryo.register(geotrellis.raster.ByteCellType.getClass)                    // Byte
+    kryo.register(geotrellis.raster.ByteConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.ByteUserDefinedNoDataCellType])
+    kryo.register(geotrellis.raster.UByteCellType.getClass)                   // UByte
+    kryo.register(geotrellis.raster.UByteConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.UByteUserDefinedNoDataCellType])
+    kryo.register(geotrellis.raster.ShortCellType.getClass)                   // Short
+    kryo.register(geotrellis.raster.ShortConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.ShortUserDefinedNoDataCellType])
+    kryo.register(geotrellis.raster.UShortCellType.getClass)                  // UShort
+    kryo.register(geotrellis.raster.UShortConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.UShortUserDefinedNoDataCellType])
+    kryo.register(geotrellis.raster.IntCellType.getClass)                     // Int
+    kryo.register(geotrellis.raster.IntConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.IntUserDefinedNoDataCellType])
+    kryo.register(geotrellis.raster.FloatCellType.getClass)                   // Float
+    kryo.register(geotrellis.raster.FloatConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataCellType])
+    kryo.register(geotrellis.raster.DoubleCellType.getClass)                  // Double
+    kryo.register(geotrellis.raster.DoubleConstantNoDataCellType.getClass)
+    kryo.register(classOf[geotrellis.raster.DoubleUserDefinedNoDataCellType])
+
+    // ArrayTiles
+    kryo.register(classOf[geotrellis.raster.BitArrayTile])                    // Bit
+    kryo.register(classOf[geotrellis.raster.ByteArrayTile])                   // Byte
+    kryo.register(classOf[geotrellis.raster.ByteRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.ByteConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.ByteUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.UByteArrayTile])                  // UByte
+    kryo.register(classOf[geotrellis.raster.UByteRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.UByteConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.UByteUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.ShortArrayTile])                  // Short
+    kryo.register(classOf[geotrellis.raster.ShortRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.ShortConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.ShortUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.UShortArrayTile])                 // UShort
+    kryo.register(classOf[geotrellis.raster.UShortRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.UShortConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.UShortUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.IntArrayTile])                    // Int
+    kryo.register(classOf[geotrellis.raster.IntRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.IntConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.IntUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.FloatArrayTile])                  // Float
+    kryo.register(classOf[geotrellis.raster.FloatRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.FloatConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.DoubleArrayTile])                 // Double
+    kryo.register(classOf[geotrellis.raster.DoubleRawArrayTile])
+    kryo.register(classOf[geotrellis.raster.DoubleConstantNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.DoubleUserDefinedNoDataArrayTile])
+    kryo.register(classOf[geotrellis.raster.Tile])
+
+    kryo.register(classOf[geotrellis.raster.ArrayMultibandTile])
+    kryo.register(classOf[Array[geotrellis.raster.Tile]])
+    kryo.register(classOf[geotrellis.raster.CompositeTile])
+    kryo.register(classOf[geotrellis.raster.ConstantTile])
+    kryo.register(classOf[geotrellis.raster.CroppedTile])
+    kryo.register(classOf[geotrellis.raster.Raster[_]])
+    kryo.register(classOf[geotrellis.raster.RasterExtent])
+    kryo.register(classOf[geotrellis.raster.CellGrid])
+    kryo.register(classOf[geotrellis.raster.CellSize])
+    kryo.register(classOf[geotrellis.raster.GridBounds])
+    kryo.register(classOf[geotrellis.raster.GridExtent])
+
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
     kryo.register(classOf[org.joda.time.DateTime], new jodatime.JodaDateTimeSerializer)
@@ -78,10 +161,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[Array[com.vividsolutions.jts.geom.Coordinate]])
     kryo.register(classOf[Array[com.vividsolutions.jts.geom.LinearRing]])
     kryo.register(classOf[Array[com.vividsolutions.jts.geom.Polygon]])
-    kryo.register(classOf[Array[geotrellis.raster.Tile]])
     kryo.register(classOf[Array[geotrellis.spark.io.avro.AvroRecordCodec[Any]]])
-    kryo.register(classOf[Array[geotrellis.spark.io.hadoop.SpaceTimeKeyWritable]])
-    kryo.register(classOf[Array[geotrellis.spark.io.hadoop.SpatialKeyWritable]])
     kryo.register(classOf[Array[geotrellis.spark.SpaceTimeKey]])
     kryo.register(classOf[Array[geotrellis.spark.SpatialKey]])
     kryo.register(classOf[Array[geotrellis.vector.Feature[Any,Any]]])
@@ -102,72 +182,23 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[com.vividsolutions.jts.geom.Polygon])
     kryo.register(classOf[com.vividsolutions.jts.geom.PrecisionModel])
     kryo.register(classOf[com.vividsolutions.jts.geom.PrecisionModel.Type])
-    kryo.register(classOf[geotrellis.raster.ArrayMultiBandTile])
-    kryo.register(classOf[geotrellis.raster.ArrayTile])
-    kryo.register(classOf[geotrellis.raster.ByteArrayTile])
-    kryo.register(classOf[geotrellis.raster.CellGrid])
-    kryo.register(classOf[geotrellis.raster.CellSize])
-    kryo.register(classOf[geotrellis.raster.CompositeTile])
-    kryo.register(classOf[geotrellis.raster.ConstantTile])
-    kryo.register(classOf[geotrellis.raster.CroppedTile])
-    kryo.register(classOf[geotrellis.raster.DoubleConstantNoDataArrayTile])
-    kryo.register(classOf[geotrellis.raster.EmptyTile])
-    kryo.register(classOf[geotrellis.raster.FloatConstantNoDataArrayTile])
-    kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataArrayTile])
-    kryo.register(classOf[geotrellis.raster.FloatUserDefinedNoDataCellType])
-    kryo.register(classOf[geotrellis.raster.GridBounds])
-    kryo.register(classOf[geotrellis.raster.GridExtent])
     kryo.register(classOf[geotrellis.raster.histogram.FastMapHistogram])
     kryo.register(classOf[geotrellis.raster.histogram.Histogram[Any]])
     kryo.register(classOf[geotrellis.raster.histogram.MutableHistogram[Any]])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram])
-    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram$DeltaCompare])
-    kryo.register(classOf[geotrellis.raster.IntBasedArrayTile])
-    kryo.register(classOf[geotrellis.raster.IntConstantNoDataArrayTile])
-    kryo.register(classOf[geotrellis.raster.IterableTile])
+    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.DeltaCompare])
+    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Delta])
+    kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Bucket])
     kryo.register(classOf[geotrellis.raster.KernelStamper])
-    kryo.register(classOf[geotrellis.raster.LazyConvertedArrayTile])
-    kryo.register(classOf[geotrellis.raster.MultiBandTile])
-    kryo.register(classOf[geotrellis.raster.MutableArrayTile])
     kryo.register(classOf[geotrellis.raster.summary.polygonal.MeanResult])
     kryo.register(classOf[geotrellis.raster.ProjectedRaster[Any]])
-    kryo.register(classOf[geotrellis.raster.Raster[Any]])
-    kryo.register(classOf[geotrellis.raster.RasterExtent])
-    kryo.register(classOf[geotrellis.raster.ShortConstantNoDataArrayTile])
-    kryo.register(classOf[geotrellis.raster.Tile])
     kryo.register(classOf[geotrellis.raster.TileLayout])
-    kryo.register(geotrellis.raster.BitCellType.getClass)
-    kryo.register(geotrellis.raster.ByteCellType.getClass)
-    kryo.register(geotrellis.raster.UByteCellType.getClass)
-    kryo.register(geotrellis.raster.ShortCellType.getClass)
-    kryo.register(geotrellis.raster.UShortCellType.getClass)
-    kryo.register(geotrellis.raster.IntCellType.getClass)
-    kryo.register(geotrellis.raster.FloatCellType.getClass)
-    kryo.register(geotrellis.raster.DoubleCellType.getClass)
-    kryo.register(geotrellis.raster.ByteConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.UByteConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.ShortConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.UShortConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.IntConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.FloatConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.DoubleConstantNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.ByteUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.UByteUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.ShortUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.UShortUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.IntUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.FloatUserDefinedNoDataCellType.getClass)
-    kryo.register(geotrellis.raster.DoubleUserDefinedNoDataCellType.getClass)
-    kryo.register(classOf[geotrellis.raster.UByteArrayTile])
-    kryo.register(classOf[geotrellis.raster.UByteRawArrayTile])
-    kryo.register(classOf[geotrellis.raster.UShortArrayTile])
+    kryo.register(classOf[geotrellis.spark.TemporalProjectedExtent])
     kryo.register(classOf[geotrellis.spark.buffer.BufferSizes])
     kryo.register(classOf[geotrellis.spark.io.avro.AvroRecordCodec[Any]])
     kryo.register(classOf[geotrellis.spark.io.avro.AvroUnionCodec[Any]])
     kryo.register(classOf[geotrellis.spark.io.avro.codecs.KeyValueRecordCodec[Any,Any]])
     kryo.register(classOf[geotrellis.spark.io.avro.codecs.TupleCodec[Any,Any]])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.SpaceTimeKeyWritable])
-    kryo.register(classOf[geotrellis.spark.io.hadoop.SpatialKeyWritable])
     kryo.register(classOf[geotrellis.spark.KeyBounds[Any]])
     kryo.register(classOf[geotrellis.vector.Feature[Any,Any]])
     kryo.register(classOf[geotrellis.vector.Geometry])
@@ -186,6 +217,9 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[java.util.HashSet[Any]])
     kryo.register(classOf[java.util.LinkedHashMap[Any,Any]])
     kryo.register(classOf[java.util.LinkedHashSet[Any]])
+    kryo.register(classOf[org.apache.hadoop.io.BytesWritable])
+    kryo.register(classOf[org.apache.hadoop.io.LongWritable])
+    kryo.register(classOf[Array[org.apache.hadoop.io.LongWritable]])
     kryo.register(classOf[org.codehaus.jackson.node.BooleanNode])
     kryo.register(classOf[org.codehaus.jackson.node.IntNode])
     kryo.register(classOf[org.osgeo.proj4j.CoordinateReferenceSystem])
@@ -194,8 +228,17 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[org.osgeo.proj4j.datum.Datum])
     kryo.register(classOf[org.osgeo.proj4j.datum.Ellipsoid])
     kryo.register(classOf[org.osgeo.proj4j.datum.Grid])
+    kryo.register(classOf[org.osgeo.proj4j.datum.Grid.ConversionTable])
+    kryo.register(classOf[org.osgeo.proj4j.util.PolarCoordinate])
+    kryo.register(classOf[org.osgeo.proj4j.util.FloatPolarCoordinate])
+    kryo.register(classOf[org.osgeo.proj4j.util.IntPolarCoordinate])
+    kryo.register(classOf[Array[org.osgeo.proj4j.util.FloatPolarCoordinate]])
     kryo.register(classOf[org.osgeo.proj4j.datum.PrimeMeridian])
     kryo.register(classOf[org.osgeo.proj4j.proj.LambertConformalConicProjection])
+    kryo.register(classOf[org.osgeo.proj4j.proj.LongLatProjection])
+    kryo.register(classOf[org.osgeo.proj4j.proj.TransverseMercatorProjection])
+    kryo.register(classOf[org.osgeo.proj4j.proj.MercatorProjection])
+    kryo.register(classOf[org.osgeo.proj4j.units.DegreeUnit])
     kryo.register(classOf[org.osgeo.proj4j.units.Unit])
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofInt])
     kryo.register(classOf[scala.collection.mutable.WrappedArray$ofRef])
@@ -209,12 +252,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.math.Ordering.Int.getClass)
     kryo.register(scala.math.Ordering.Long.getClass)
     kryo.register(scala.None.getClass)
-
-    /* Special Handling: Avro */
-    kryo.register(new Field("a", Schema.create(Type.NULL), null, null).order.getClass)
-    classOf[org.apache.avro.Schema]
-      .getDeclaredClasses
-      .foreach({ c => kryo.register(c) })
 
     UnmodifiableCollectionsSerializer.registerSerializers( kryo )
     SynchronizedCollectionsSerializer.registerSerializers( kryo )

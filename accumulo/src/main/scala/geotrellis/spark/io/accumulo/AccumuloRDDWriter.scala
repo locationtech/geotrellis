@@ -12,57 +12,32 @@ import org.apache.accumulo.core.data.{Key, Value}
 
 import scala.collection.JavaConversions._
 
-trait BaseAccumuloRDDWriter[K, TileType] {
-  def schema: Schema
-  def instance: AccumuloInstance
+object AccumuloRDDWriter {
 
-  def ensureTableExists(tableName: String): Unit = {
-    val ops = instance.connector.tableOperations()
-    if (! ops.exists(tableName))
-      ops.create(tableName)
-  }
-
-  def makeLocalityGroup(tableName: String, columnFamily: String): Unit = {
-    val ops = instance.connector.tableOperations()
-    val groups = ops.getLocalityGroups(tableName)
-    val newGroup: java.util.Set[Text] = Set(new Text(columnFamily))
-    ops.setLocalityGroups(tableName, groups.updated(tableName, newGroup))
-  }
-
-  def write(raster: RDD[(K, TileType)], table: String, columnFamily: String, keyToRowId: (K) => Text, oneToOne: Boolean = false): Unit
-}
-
-class AccumuloRDDWriter[K: AvroRecordCodec, V: AvroRecordCodec](
-    val instance: AccumuloInstance,
-    strategy: AccumuloWriteStrategy)
-  extends BaseAccumuloRDDWriter[K, V] {
-
-  val codec  = KeyValueRecordCodec[K, V]
-  val schema = codec.schema
-
-  def write(
-      raster: RDD[(K, V)],
-      table: String,
-      columnFamily: String,
-      keyToRowId: (K) => Text,
-      oneToOne: Boolean = false): Unit = {
+  def write[K: AvroRecordCodec, V: AvroRecordCodec](
+    raster: RDD[(K, V)],
+    instance: AccumuloInstance,
+    encodeKey: K => Key,
+    writeStrategy: AccumuloWriteStrategy,
+    table: String
+  ): Unit = {
     implicit val sc = raster.sparkContext
 
-    ensureTableExists(table)
-    makeLocalityGroup(table, columnFamily.toString)
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
 
-    val encodeKey = (key: K) => new Key(keyToRowId(key), columnFamily)
-    val _codec = codec
+    instance.ensureTableExists(table)
 
-    val kvPairs: RDD[(Key, Value)] = {
-      if (oneToOne)
-        raster.map { case row => encodeKey(row._1) -> Vector(row) }
-      else
-        raster.groupBy { row => encodeKey(row._1) }
-    }.map { case (key, pairs) =>
-      (key, new Value(AvroEncoder.toBinary(pairs.toVector)(_codec)))
-    }
+    val kvPairs: RDD[(Key, Value)] =
+      raster
+        // Call groupBy with numPartitions; if called without that argument or a partitioner,
+        // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
+        // on a key type that may no longer by valid for the key type of the resulting RDD.
+        .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
+        .map { case (key, pairs) =>
+          (key, new Value(AvroEncoder.toBinary(pairs.toVector)(codec)))
+        }
 
-    strategy.write(kvPairs, instance, table)
+    writeStrategy.write(kvPairs, instance, table)
   }
 }

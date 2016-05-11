@@ -7,27 +7,21 @@ case class HadoopCatalogConfig(
     * one block on a Hadoop-readable file system. */
   compressionFactor: Double,
 
-  /** Name of the splits file that contains the partitioner data */
-  splitsFile: String,
-
   /** Name of file that will contain the metadata under the layer path. */
-  metaDataFileName: String,
+  metadataFileName: String,
 
   /** Creates a subdirectory path based on a layer id. */
   layerDataDir: LayerId => String
-) {
-  /** Sequence file data directory for reading data.
-    * Don't see a reason why the API would allow this to be modified
-    */
-  final val SEQFILE_GLOB = "/*[0-9]*/data"
-}
+)
 
 object HadoopCatalogConfig {
+  /** Sequence file data directory for reading data. */
+  final val SEQFILE_GLOB = "/*[0-9]*/data"
+
   val DEFAULT =
     HadoopCatalogConfig(
       compressionFactor = 1.3, // Assume tiles can be compressed 30% (so, compressionFactor - 1)
-      splitsFile = "splits",
-      metaDataFileName = "metadata.json",
+      metadataFileName = "metadata.json",
       layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" }
     )
 }

@@ -10,13 +10,15 @@ import DefaultJsonProtocol._
 
 import java.io._
 
+import scala.util.matching.Regex
+
 /**
  * Stores and retrieves layer attributes from the file system.
  *
  * @param catalogPath      The directory of the base catalog
  */
-class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFormat] {
-  val SEP = "__.__"
+class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStore {
+  import FileAttributeStore._
 
   val attributeDirectory = new File(catalogPath, "attributes")
   if(!attributeDirectory.exists)
@@ -32,12 +34,12 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
         (att.substring(0, att.length - 5), f)
       }
 
-  def read[T: Format](file: File): (LayerId, T) =
+  def read[T: JsonFormat](file: File): (LayerId, T) =
     Filesystem.readText(file)
       .parseJson
       .convertTo[(LayerId, T)]
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T = {
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     val file = attributeFile(layerId, attributeName)
 
     if(!file.exists)
@@ -46,13 +48,13 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
     read[T](attributeFile(layerId, attributeName))._2
   }
 
-  def readAll[T: Format](attributeName: String): Map[LayerId, T] =
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
     attributeDirectory
       .listFiles(new WildcardFileFilter(s"*${SEP}${attributeName}.json"): FileFilter)
       .map(read[T])
       .toMap
 
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val f = attributeFile(layerId, attributeName)
     val text = (layerId, value).toJson.compactPrint
     Filesystem.writeText(f.getAbsolutePath, text)
@@ -74,6 +76,7 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
       case Some(f) => f.delete()
       case _ =>
     }
+    clearCache(layerId, attributeName)
   }
 
   def delete(layerId: LayerId): Unit = {
@@ -82,6 +85,7 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
     if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
     layerFiles.foreach { f => f.delete() }
+    clearCache(layerId)
   }
 
   def layerIds: Seq[LayerId] =
@@ -92,9 +96,23 @@ class FileAttributeStore(val catalogPath: String) extends AttributeStore[JsonFor
         LayerId(name, zoomStr.toInt)
       }
       .distinct
+
+  def availableAttributes(layerId: LayerId): Seq[String] = {
+    layerAttributeFiles(layerId).map { file =>
+      val attributeRx(name, zoom, attribute) = file.getName
+      attribute
+    }
+  }
 }
 
 object FileAttributeStore {
+  val SEP = "__.__"
+
+  val attributeRx = {
+    val slug = "[a-zA-Z0-9-]+"
+    new Regex(s"""($slug)$SEP($slug)${SEP}($slug).json""", "layer", "zoom", "attribute")
+  }
+
   def apply(catalogPath: String) =
     new FileAttributeStore(catalogPath)
 }

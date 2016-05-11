@@ -8,7 +8,7 @@ import geotrellis.vector._
 import org.scalatest._
 
 class MapKeyTransformSpec extends FunSpec with Matchers {
-  describe("MapKeyTransform") { 
+  describe("MapKeyTransform") {
     it("converts a grid bounds that is on the borders of the tile layout correctly") {
       val crs = LatLng
       val tileLayout = TileLayout(8, 8, 3, 4)
@@ -18,6 +18,55 @@ class MapKeyTransformSpec extends FunSpec with Matchers {
       val result = mapTransform(extent)
 
       result should be (gridBounds)
+    }
+
+    it("should correctly give grid bounds for an extent that is exactly one layout tile") {
+      val ld = LayoutDefinition(Extent(630000.0, 215000.0, 645000.0, 228500.0),TileLayout(5,5,100,100))
+      val e = Extent(630000.0, 215000.0, 633000.0, 217700.0)
+      val mapTransform = ld.mapTransform
+      val gb = mapTransform(e)
+
+      gb should be (GridBounds(0, 4, 0, 4))
+    }
+
+    it("should give the gridbounds of the entire layout if given the extent of that layout") {
+      val ld =
+        LayoutDefinition(
+          Extent(-31.456975828130908, 16.80232947236449, 53.8711521718691, 80.7984254723645),
+          TileLayout(4,3,256,256)
+        )
+
+      val gb = ld.mapTransform(ld.extent)
+      gb should be (GridBounds(0, 0, 3, 2))
+    }
+
+    it("should resepect border conditions for single tile") {
+      val mp = MapKeyTransform(Extent(0.0, 0.0, 1.0, 1.0), 1, 1)
+      assert(mp(Extent(0,0,1,1)) === GridBounds(0, 0, 0, 0))
+    }
+
+    it("should produce the tile south of an extent that is a point on the tile layout border") {
+      val e = Extent(33.0, 50.0, 33.0, 50.0)
+      val mapTransform = MapKeyTransform(Extent(0.0, 0.0, 128.0, 128.0), 64, 64)
+      val gb = mapTransform(e)
+
+      gb should be (GridBounds(16,39,16,39))
+    }
+
+    it("should return grid bounds representing the south tile for a horizontal line extent along the border of the tile layout") {
+      val mp = MapKeyTransform(Extent(0.0, 0.0, 1.0, 1.0), 1, 1)
+      assert(mp(Extent(0,0,1,0)) === GridBounds(0, 1, 0, 1))
+    }
+
+    it("should resepect various border conditions") {
+      val mp = MapKeyTransform(Extent(0.0, 0.0, 2.0, 2.0), 2, 2)
+      assert(mp(Extent(0,0,1,1)) === GridBounds(0, 1, 0, 1))
+      assert(mp(Extent(1,0,2,1)) === GridBounds(1, 1, 1, 1))
+      assert(mp(Extent(1,1,2,2)) === GridBounds(1, 0, 1, 0))
+      assert(mp(Extent(0,1,1,2)) === GridBounds(0, 0, 0, 0))
+
+      assert(mp(Extent(0,0,0,0)) === GridBounds(0, 2, 0, 2))
+      assert(mp(Extent(0,0,2,0)) === GridBounds(0, 2, 1, 2))
     }
   }
 }

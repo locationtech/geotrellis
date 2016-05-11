@@ -18,26 +18,16 @@ package geotrellis.spark.filter
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 import org.joda.time.DateTime
 
+abstract class SpaceTimeToSpatialMethods[K: SpatialComponent: TemporalComponent, V, M: Component[?, Bounds[K]]]
+    extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
+  def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] =
+    ToSpatial(self, instant)
 
-abstract class SpaceTimeToSpatialMethods[K : SpatialComponent : TemporalComponent, V, M] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
-  def toSpatial(instant: DateTime): RDD[(SpatialKey, V)] with Metadata[M] = {
-    val rdd = self.mapPartitions({ p =>
-      p.flatMap({ case (key, tile) =>
-        if (key.temporalComponent.time == instant) Some((key.spatialComponent, tile))
-        else None
-      })
-    }, preservesPartitioning = true)
-    val metadata = self.metadata
-    ContextRDD(rdd, metadata)
-  }
-
-  def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] = {
-    val dtInstant = SpaceTimeKey(0, 0, instant).time
-    toSpatial(dtInstant)
-  }
+  def toSpatial(dateTime: DateTime): RDD[(SpatialKey, V)] with Metadata[M] =
+    toSpatial(dateTime.getMillis)
 }

@@ -4,8 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.mosaic._
 import geotrellis.vector._
-import geotrellis.vector.reproject._
-import geotrellis.vector.io.json._
+import geotrellis.vector.io._
 import geotrellis.raster.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
@@ -22,10 +21,10 @@ class ReprojectSpec extends FunSpec
     import Reproject.Options
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val ProjectedRaster(raster, crs) = SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
+      val ProjectedRaster(raster, crs) = SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
 
       val ree @ Raster(expected, expectedExtent) =
-        SingleBandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
+        SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
 
       val rea @ Raster(actual, actualExtent) =
         raster.reproject(crs, WebMercator, Options(method = NearestNeighbor, errorThreshold = 0.0))
@@ -51,10 +50,10 @@ class ReprojectSpec extends FunSpec
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {
       val raster =
-        SingleBandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
+        SinglebandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
-      val Raster(expected, expectedExtent) = 
-        SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
+      val Raster(expected, expectedExtent) =
+        SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
 
       val Raster(actual, actualExtent) =
         raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.0))
@@ -78,10 +77,10 @@ class ReprojectSpec extends FunSpec
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif and an error threshold of 0.125") {
       val raster =
-        SingleBandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
+        SinglebandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
 
-      val Raster(expected, expectedExtent) = 
-        SingleBandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
+      val Raster(expected, expectedExtent) =
+        SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
 
       val Raster(actual, actualExtent) =
         raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.124))
@@ -144,10 +143,10 @@ class ReprojectSpec extends FunSpec
 
       // Now repreject; there should also be no lines.
 
-      val wmLeft @ Raster(wmLeftTile, wmLeftExtent) = 
+      val wmLeft @ Raster(wmLeftTile, wmLeftExtent) =
         mergedRaster.reproject(GridBounds(0, 0, 511, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
-      val wmRight @ Raster(wmRightTile, wmRightExtent) = 
+      val wmRight @ Raster(wmRightTile, wmRightExtent) =
         mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator, Options(method = Bilinear))
 
       val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
@@ -175,7 +174,7 @@ class ReprojectSpec extends FunSpec
       val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
       val expandedRasterExtent = RasterExtent(expandedExtent, rasterExtent.cols + 20, rasterExtent.rows + 20)
 
-      val expandedTile = 
+      val expandedTile =
         IntArrayTile(Array.ofDim[Int](expandedRasterExtent.size).fill(1), expandedRasterExtent.cols, expandedRasterExtent.rows)
       val expandedRaster = Raster(expandedTile, expandedExtent)
 

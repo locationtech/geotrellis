@@ -3,14 +3,15 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 
+import com.typesafe.config.ConfigFactory
 import spray.json._
-import DefaultJsonProtocol._
+import spray.json.DefaultJsonProtocol._
 import org.apache.spark.Logging
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
-import com.typesafe.config.ConfigFactory
+
 
 import scala.collection.JavaConversions._
 
@@ -20,9 +21,15 @@ object AccumuloAttributeStore {
 
   def apply(connector: Connector): AccumuloAttributeStore =
     apply(connector, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+
+  def apply(instance: AccumuloInstance, attributeTable: String): AccumuloAttributeStore =
+    apply(instance.connector, attributeTable)
+
+  def apply(instance: AccumuloInstance): AccumuloAttributeStore =
+    apply(instance.connector)
 }
 
-class AccumuloAttributeStore(connector: Connector, val attributeTable: String) extends AttributeStore[JsonFormat] with Logging {
+class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()
@@ -55,27 +62,31 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
       deleter.fetchColumnFamily(new Text(name))
     }
     deleter.delete()
+    attributeName match {
+      case Some(attribute) => clearCache(layerId, attribute)
+      case None => clearCache(layerId)
+    }
   }
 
-  def read[T: Format](layerId: LayerId, attributeName: String): T = {
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     val values = fetch(Some(layerId), attributeName).toVector
 
     if(values.isEmpty) {
       throw new AttributeNotFoundError(attributeName, layerId)
     } else if(values.size > 1) {
-      throw new CatalogError(s"Multiple attributes found for $attributeName for layer $layerId")
+      throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
       values.head.toString.parseJson.convertTo[(LayerId, T)]._2
     }
   }
 
-  def readAll[T: Format](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId,T] = {
     fetch(None, attributeName)
       .map { _.toString.parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 
-  def write[T: Format](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation(layerIdText(layerId))
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),
@@ -107,5 +118,11 @@ class AccumuloAttributeStore(connector: Connector, val attributeTable: String) e
       }
       .toList
       .distinct
+  }
+
+  def availableAttributes(id: LayerId): Seq[String] = {
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    scanner.setRange(new Range(layerIdText(id)))
+    scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
   }
 }

@@ -5,14 +5,14 @@ import geotrellis.spark.io._
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
-class S3LayerDeleter(val attributeStore: AttributeStore[JsonFormat]) extends LayerDeleter[LayerId] {
+class S3LayerDeleter(val attributeStore: AttributeStore) extends LayerDeleter[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.default
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val (header, _, _, _, _) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, Unit, Unit, Unit, Unit](id)
+    val header = try {
+      attributeStore.readHeader[S3LayerHeader](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
@@ -23,12 +23,11 @@ class S3LayerDeleter(val attributeStore: AttributeStore[JsonFormat]) extends Lay
 
     s3Client.deleteListing(bucket, s3Client.listObjects(bucket, prefix))
     attributeStore.delete(id)
-    attributeStore.clearCache()
   }
 }
 
 object S3LayerDeleter {
-  def apply(attributeStore: AttributeStore[JsonFormat]): S3LayerDeleter = new S3LayerDeleter(attributeStore)
+  def apply(attributeStore: AttributeStore): S3LayerDeleter = new S3LayerDeleter(attributeStore)
 
   def apply(bucket: String, prefix: String): S3LayerDeleter = apply(S3AttributeStore(bucket, prefix))
 }

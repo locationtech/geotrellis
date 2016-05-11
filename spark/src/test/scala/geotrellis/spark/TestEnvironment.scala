@@ -17,19 +17,21 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.hadoop.HdfsUtils
-import geotrellis.spark.util.SparkUtils
-import org.apache.spark.{SparkConf, SparkContext}
 import geotrellis.spark.testkit._
-import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
+import geotrellis.spark.util.SparkUtils
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 
 import java.io.File
+import scala.collection.mutable
+import scala.util.Properties
 
 object TestEnvironment {
   def getLocalFS(conf: Configuration): FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
@@ -46,15 +48,19 @@ object TestEnvironment {
  * It uses commons-io in at least one case (recursive directory deletion)
  */
 trait TestEnvironment extends BeforeAndAfterAll
-  with RasterRDDBuilders
-  with RasterRDDMatchers
+  with TileLayerRDDBuilders
+  with TileLayerRDDMatchers
   with OpAsserter
-{ self: Suite =>
+{ self: Suite with BeforeAndAfterAll =>
 
-  def extraConf(conf: SparkConf): Unit =
+  private lazy val afterAlls = mutable.ListBuffer[() => Unit]()
+  def registerAfterAll(f: () => Unit): Unit =
+    afterAlls += f
+
+  def setKryoRegistrator(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
 
-  var _sc: SparkContext = {
+  lazy val _sc: SparkContext = {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
     System.setProperty("spark.ui.enabled", "false")
@@ -63,8 +69,15 @@ trait TestEnvironment extends BeforeAndAfterAll
     conf
       .setMaster("local")
       .setAppName("Test Context")
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    extraConf(conf)
+
+    // Shortcut out of using Kryo serialization if we want to test against
+    // java serialization.
+    if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER") == None) {
+      conf
+        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .set("spark.kryoserializer.buffer.max", "500m")
+      setKryoRegistrator(conf)
+    }
 
     val sparkContext = new SparkContext(conf)
 
@@ -131,6 +144,9 @@ trait TestEnvironment extends BeforeAndAfterAll
   override def afterAll() = {
     FileUtil.fullyDelete(new File(outputLocal.toUri()))
     sc.stop()
+    if(afterAlls != null) {
+      for(f <- afterAlls) { f() }
+    }
   }
 
   // root directory name on both local file system and hdfs for all tests

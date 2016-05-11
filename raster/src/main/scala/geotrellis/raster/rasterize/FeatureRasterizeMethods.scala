@@ -17,73 +17,43 @@
 package geotrellis.raster.rasterize
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterize.Options
+import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Geometry,Feature}
 
 
-trait FeatureIntRasterizeMethods[+G <: Geometry, T <: Feature[G,Int]] extends MethodExtensions[T] {
+/**
+  * A trait providing extension methods for invoking the rasterizer on
+  * [[Feature]] objects.
+  */
+trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Int]] {
 
-  def foreach(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Unit): Unit =
-    self.geom.foreach(re, options)(fn)
-
+  /**
+    * Fill in this feature's data value at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Feature]].  The result is a [[Raster]].
+    */
   def rasterize(
-    re : RasterExtent,
+    re: RasterExtent,
+    ct: CellType = IntConstantNoDataCellType,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, options)(fn)
-
-  def rasterizeDouble(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, options)(fn)
-
-  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, value)
-
-  def rasterizeDouble(re: RasterExtent, value: Double): Tile =
-    self.geom.rasterizeDouble(re, value)
-
-  def rasterize(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterize(re, self.data)
-
-  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, self.data.toDouble)
+  ): Raster[Tile] =
+    self.geom.rasterizeWithValueDouble(re, self.data, ct, options)
 }
 
-trait FeatureDoubleRasterizeMethods[+G <: Geometry, T <: Feature[G,Double]] extends MethodExtensions[T] {
+/**
+  * A trait providing extension methods for invoking the rasterizer on
+  * [[Feature]] objects.
+  */
+trait FeatureDoubleRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Double]] {
 
-  def foreach(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Unit): Unit =
-    self.geom.foreach(re, options)(fn)
-
+  /**
+    * Fill in this feature's data value at each cell of given [[RasterExtent]] that is
+    * covered by the present [[Feature]].  The result is a [[Raster]].
+    */
   def rasterize(
-    re : RasterExtent,
+    re: RasterExtent,
+    ct: CellType = DoubleConstantNoDataCellType,
     options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, options)(fn)
-
-  def rasterizeDouble(
-    re : RasterExtent,
-    options: Options = Options.DEFAULT
-  )(fn: (Int, Int) => Double): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, options)(fn)
-
-  def rasterize(re: RasterExtent, value: Int): Raster[ArrayTile] =
-    self.geom.rasterize(re, value)
-
-  def rasterizeDouble(re: RasterExtent, value: Double): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, value)
-
-  def rasterize(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterize(re, self.data.toInt)
-
-  def rasterizeDouble(re: RasterExtent): Raster[ArrayTile] =
-    self.geom.rasterizeDouble(re, self.data)
+  ): Raster[Tile] =
+    self.geom.rasterizeWithValueDouble(re, self.data, ct, options)
 }
