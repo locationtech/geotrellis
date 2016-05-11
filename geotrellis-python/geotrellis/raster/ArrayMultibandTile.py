@@ -256,6 +256,16 @@ class ArrayMultibandTile(MultibandTile):
 
         return ArrayMultibandTile(newBands)
 
+    def __eq__(self, other):
+        if (other is None or
+                not isinstance(other, ArrayMultibandTile) or
+                self.bandCount != other.bandCount):
+            return False
+        for i in xrange(0, self.bandCount):
+            if self.band(i) != other.band(i):
+                return False
+        return True
+
     @staticmethod
     def alloc(t, bands, cols, rows):
         return ArrayMultibandTile([ArrayTile.alloc(t, cols, rows) for i in xrange(0, bands)])

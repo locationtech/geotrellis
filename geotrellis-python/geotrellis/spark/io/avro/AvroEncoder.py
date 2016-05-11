@@ -70,6 +70,7 @@ class AvroEncoder(object):
         dct = _read_loaded_json(schema, json.loads(jsonString))
         return codec.decode(dct)
 
+# see avro.io.DatumReader._read_default_value
 def _read_loaded_json(field_schema, loaded_json):
     if field_schema.type in [ 'null', 'boolean', 'int', 'long', 'float', 'double', 'enum', 'fixed', 'string', 'bytes']:
         return loaded_json
