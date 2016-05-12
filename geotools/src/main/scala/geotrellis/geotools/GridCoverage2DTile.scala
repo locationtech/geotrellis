@@ -22,21 +22,94 @@ import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
 import org.geotools.coverage.grid.io._
 
+import java.awt.image.DataBuffer
+import scala.collection.JavaConverters._
+
 
 /**
-  * The GridCoverage2DTile Object, houses a constructor.
+  * The [[GridCoverage2DTile]] object, houses a constructor.
   */
 object GridCoverage2DTile {
 
   /**
-    * Takes a GridCoverage2D and an index, and produces a singleband
-    * tile in which only the given band is accessible.
+    * Takes a [[GridCoverage2D]] and an index, and produces a
+    * singleband tile in which only the given band is accessible.
     *
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
     */
   def apply(gridCoverage: GridCoverage2D, bandIndex: Int) =
     new GridCoverage2DTile(gridCoverage, bandIndex)
+
+  /**
+    * Given a [[GridCoverage2D]] and an index, this function
+    * optionally produces the unique NODATA value of the band (if
+    * there is one), otherwise it produces None or raises an
+    * exception.
+    *
+    * @param  gridCoverage2D  The GeoTools GridCoverage2D object
+    * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
+    */
+  def noData(gridCoverage: GridCoverage2D, bandIndex: Int): Option[Double] = {
+    val sd = gridCoverage.getSampleDimension(bandIndex)
+
+    sd.getNoDataValues match {
+      case null =>
+        if (sd.getCategories.asScala.exists(_.toString.contains("NaN"))) Some(Double.NaN)
+        else None
+      case Array(nd) => Some(nd)
+      case _ => throw new Exception("Only know how to handle one NODATA value")
+    }
+  }
+
+  /**
+    * Given a [[GridCoverage2D]] and an index, this function return
+    * the Geotrellis [[CellType]] that best approximates that of the
+    * given layer.
+    *
+    * @param  gridCoverage2D  The GeoTools GridCoverage2D object
+    * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
+    */
+  def cellType(gridCoverage: GridCoverage2D, bandIndex: Int): CellType = {
+    val noDataValue = noData(gridCoverage, bandIndex)
+    val renderedImage = gridCoverage.getRenderedImage
+    val buffer = renderedImage.getData.getDataBuffer
+    val typeEnum = buffer.getDataType
+
+    (noDataValue, typeEnum) match {
+      case (None, DataBuffer.TYPE_BYTE) => UByteCellType
+      case (None, DataBuffer.TYPE_USHORT) => UShortCellType
+      case (None, DataBuffer.TYPE_SHORT) => ShortCellType
+      case (None, DataBuffer.TYPE_INT) => IntCellType
+      case (None, DataBuffer.TYPE_FLOAT) => FloatCellType
+      case (None, DataBuffer.TYPE_DOUBLE) => DoubleCellType
+      case (Some(nd), DataBuffer.TYPE_BYTE) =>
+        val byte = nd.toByte
+        if (byte == ubyteNODATA) UByteConstantNoDataCellType
+        else UByteUserDefinedNoDataCellType(byte)
+      case (Some(nd), DataBuffer.TYPE_USHORT) =>
+        val short = nd.toShort
+        if (short == ushortNODATA) UShortConstantNoDataCellType
+        else UShortUserDefinedNoDataCellType(short)
+      case (Some(nd), DataBuffer.TYPE_SHORT) =>
+        val short = nd.toShort
+        if (short == shortNODATA) ShortConstantNoDataCellType
+        else ShortUserDefinedNoDataCellType(short)
+      case (Some(nd), DataBuffer.TYPE_INT) =>
+        val int = nd.toInt
+        if (int == NODATA) IntConstantNoDataCellType
+        else IntUserDefinedNoDataCellType(int)
+      case (Some(nd), DataBuffer.TYPE_FLOAT) =>
+        val float = nd.toFloat
+        if (float == floatNODATA) FloatConstantNoDataCellType
+        else FloatUserDefinedNoDataCellType(float)
+      case (Some(nd), DataBuffer.TYPE_DOUBLE) =>
+        val double = nd.toDouble
+        if (double == doubleNODATA) DoubleConstantNoDataCellType
+        else DoubleUserDefinedNoDataCellType(double)
+      case _ => throw new Exception("Unknown or Undefined Cell Type")
+    }
+  }
 }
 
 /**
@@ -56,7 +129,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   private val _array = Array.ofDim[Int](bandCount)
   private val _arrayDouble = Array.ofDim[Double](bandCount)
 
-  val cellType: CellType = GridCoverage2DToRaster.cellType(gridCoverage)
+  val cellType: CellType = GridCoverage2DTile.cellType(gridCoverage, bandIndex)
 
   val rows: Int = renderedImage.getHeight
 
@@ -256,8 +329,9 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * @param   row  The row
     * @return       The Int datum found at the given location
     */
-  def get(col: Int,row: Int): Int =
+  def get(col: Int,row: Int): Int = {
     sampleModel.getPixel(col, row, _array, buffer)(bandIndex)
+  }
 
   /**
     * Fetch the datum at the given column and row of the
