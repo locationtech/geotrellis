@@ -15,8 +15,8 @@ class FileSpaceTimeSpec(
         Spec,
         PersistenceSpec[SpatialKey, Tile, TileLayerMetadata],
         _SpaceTimeKeyIndexMethods,
-        _TestEnvironment,
-        _TestFiles):
+        _TestFiles,
+        _TestEnvironment):
 
     @property
     def reader(self):

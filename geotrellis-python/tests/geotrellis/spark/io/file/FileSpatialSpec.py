@@ -15,8 +15,8 @@ class FileSpatialSpec(
         Spec,
         PersistenceSpec[SpatialKey, Tile, TileLayerMetadata],
         _SpatialKeyIndexMethods,
-        _TestEnvironment,
-        _TestFiles):
+        _TestFiles,
+        _TestEnvironment):
 
     @property
     def reader(self):

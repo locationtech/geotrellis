@@ -3,11 +3,11 @@ from geotrellis.python.util.utils import fullname
 class _PersistenceSpecMeta(object):
     items = {}
     def __getitem__(self, key):
-        if key in items.keys():
-            return items[key]
+        if key in self.items.keys():
+            return self.items[key]
         class tempo(_PersistenceSpec):
             K, V, M = key
-        items[key] = tempo
+        self.items[key] = tempo
         return tempo
 
 PersistenceSpec = _PersistenceSpecMeta()

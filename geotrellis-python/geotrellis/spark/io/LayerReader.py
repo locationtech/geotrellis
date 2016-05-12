@@ -29,5 +29,5 @@ class LayerReader(object):
     def reader(self, K, V, M):
         class tempo(Reader):
             def read(innerself, _id):
-                return self.read(K, V, M, _id):
+                return self.read(K, V, M, _id)
         return tempo()

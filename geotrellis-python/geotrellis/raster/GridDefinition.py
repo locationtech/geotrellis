@@ -1,7 +1,7 @@
 from geotrellis.raster.CellSize import CellSize
-from geotrellis.raster.RasterExtent import RasterExtent, GeoAttrsError
+#from geotrellis.raster.RasterExtent import RasterExtent, GeoAttrsError
 from geotrellis.vector.Extent import Extent
-from geotrellis.vector.GridExtent import GridExtent
+#from geotrellis.raster.GridExtent import GridExtent
 from geotrellis.raster.package_scala import INTMAX
 
 class GridDefinition(object):
@@ -11,9 +11,11 @@ class GridDefinition(object):
 
     @property
     def toGridExtent(self):
+        from geotrellis.raster.GridExtent import GridExtent
         return GridExtent(self.extent, self.cellwidth, self.cellheight)
 
     def toRasterExtent(self):
+        from geotrellis.raster.RasterExtent import RasterExtent, GeoAttrsError
         targetCols = round( float(self.extent.width) / self.cellwidth)
         targetRows = round( float(self.extent.height) / self.cellheight)
         if targetCols > INTMAX:
@@ -29,6 +31,7 @@ class GridDefinition(object):
         return RasterExtent(self.extent, self.cellwidth, self.cellheight, targetCols, targetRows)
 
     def createAlignedGridExtent(self, targetExtent):
+        from geotrellis.raster.GridExtent import GridExtent
         xmin = self.extent.xmin + (math.floor((targetExtent.xmin - self.extent.xmin) / self.cellwidth) * self.cellwidth)
         xmax = self.extent.xmax - (math.floor((self.extent.xmax - targetExtent.xmax) / self.cellwidth) * self.cellwidth)
         ymin = self.extent.ymin + (math.floor((targetExtent.ymin - self.extent.ymin) / self.cellheight) * self.cellheight)

@@ -1,4 +1,4 @@
-from geotrellis.spark.io.index.zcurve.Z2Range import Z2Range
+#from geotrellis.spark.io.index.zcurve.Z2Range import Z2Range
 from geotrellis.spark.io.index.package_scala import zdiv
 from geotrellis.spark.io.index.MergeQueue import MergeQueue
 from geotrellis.python.util.utils import toBinaryString
@@ -103,6 +103,7 @@ class Z2(object):
 
     @staticmethod
     def zranges(min_z2, max_z2):
+        from geotrellis.spark.io.index.zcurve.Z2Range import Z2Range
         mq = MergeQueue()
         sr = Z2Range(min_z2, max_z2)
 

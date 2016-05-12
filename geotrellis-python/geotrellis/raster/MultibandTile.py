@@ -1,5 +1,5 @@
 from geotrellis.raster.CellGrid import CellGrid
-from geotrellis.raster.ArrayMultibandTile import ArrayMultibandTile
+#from geotrellis.raster.ArrayMultibandTile import ArrayMultibandTile
 
 def generateCodec():
     from geotrellis.spark.io.avro.codecs.TileCodecs import MultibandTileCodec
@@ -15,6 +15,7 @@ class MultibandTile(CellGrid):
 
     @staticmethod
     def applyStatic(*bands):
+        from geotrellis.raster.ArrayMultibandTile import ArrayMultibandTile
         if len(bands) == 1 and isinstance(bands[0], list):
             bands = bands[0]
         return ArrayMultibandTile.applyStatic(bands)

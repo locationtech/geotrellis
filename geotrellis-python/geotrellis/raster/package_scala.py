@@ -1,4 +1,3 @@
-from geotrellis.raster.RasterExtent import GeoAttrsError
 import math
 
 INTMIN = - (2 ** 31)
@@ -31,6 +30,7 @@ def isData(num):
 
 def assertEqualDimensions(first, second):
     if first.dimensions != second.dimensions:
+        from geotrellis.raster.RasterExtent import GeoAttrsError
         raise GeoAttrsError("Cannot combine rasters with different dimensions. "
                 "{d1} does not match {d2}".format(d1 = first.dimensions, d2 = second.dimensions))
 
@@ -43,6 +43,24 @@ def f2d(num):
 def d2s(num):
     if math.isnan(num):
         return SHORTMIN
+    else:
+        return intToShort(int(num))
+
+def d2us(num):
+    if math.isnan(num):
+        return ushortNODATA
+    else:
+        return intToShort(int(num))
+
+def d2b(num):
+    if math.isnan(num):
+        return byteNODATA
+    else:
+        return intToShort(int(num))
+
+def d2ub(num):
+    if math.isnan(num):
+        return ubyteNODATA
     else:
         return intToShort(int(num))
 

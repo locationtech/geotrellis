@@ -1,4 +1,4 @@
-from geotrellis.spark.io.index.zcurve.Z3Range import Z3Range
+#from geotrellis.spark.io.index.zcurve.Z3Range import Z3Range
 from geotrellis.spark.io.index.package_scala import zdiv
 from geotrellis.spark.io.index.MergeQueue import MergeQueue
 from geotrellis.python.util.utils import toBinaryString
@@ -116,6 +116,7 @@ class Z3(object):
             _min = prefix | (quad << offset)
             _max = _min | (1L << offset) - 1
 
+            from geotrellis.spark.io.index.zcurve.Z3Range import Z3Range
             qr = Z3Range(Z3(_min), Z3(_max))
             if sr.contains(qr):
                 mq += (qr.min.z, qr.max.z)

@@ -3,6 +3,7 @@ from geotrellis.raster.Tile import Tile
 from edited_avro.avro_builder import AvroSchemaBuilder
 from geotrellis.python.util.utils import fullname
 from itertools import ifilter
+import avro.schema
 
 class AvroUnionCodec(AvroRecordCodec):
     def __init__(self, record_type, *formats):
@@ -12,8 +13,9 @@ class AvroUnionCodec(AvroRecordCodec):
     @property
     def schema(self):
         _ = AvroSchemaBuilder()
-        _.begin_union(*[x.schema for x in self.formats])
-        return _.end()
+        _.begin_union(*[x.schema.to_json() for x in self.formats])
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def encode(self, thing, dct = None):
         if dct is None:

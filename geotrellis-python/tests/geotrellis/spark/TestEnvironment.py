@@ -2,19 +2,20 @@ from nose import tools
 
 @tools.nottest
 def add_pyspark_path():
-        """
-        Add PySpark to the PYTHONPATH
-        Thanks go to this project: https://github.com/holdenk/sparklingpandas
-        """
-        import sys
-        import os
-        try:
-            sys.path.append(os.path.join(os.environ['SPARK_HOME'], "python"))
-            sys.path.append(os.path.join(os.environ['SPARK_HOME'],
-                "python","lib","py4j-0.8.2.1-src.zip"))
-        except KeyError:
-            print "SPARK_HOME not set"
-            sys.exit(1)
+    """
+    Add PySpark to the PYTHONPATH
+    Thanks go to this project: https://github.com/holdenk/sparklingpandas
+    """
+    import sys
+    import os
+    import os.path
+    try:
+        sys.path.append(os.path.join(os.environ['SPARK_HOME'], "python"))
+        sys.path.append(os.path.join(os.environ['SPARK_HOME'],
+            "python","lib","py4j-0.8.2.1-src.zip"))
+    except KeyError:
+        print "SPARK_HOME not set"
+        sys.exit(1)
 
 add_pyspark_path() # Now we can import pyspark
 from pyspark import SparkContext, SparkConf
@@ -27,13 +28,15 @@ import os.path
 
 @tools.nottest
 def get_temp_dir():
-    return os.environ["java.io.tmpdir"] # TODO is it ok to use java.io.tmpdir here?
+    #return os.environ["java.io.tmpdir"] # TODO is it ok to use java.io.tmpdir here?
+    return "/tmp"
 
 @tools.nottest
 class _TestEnvironment(object):
     def __init__(self):
         self.outputHome = "testFiles"
         self.afterAlls = []
+        self.sc = None
         self._sc()
         self._jvm = self.sc._jvm
         self.name = fullname(type(self))
@@ -66,7 +69,7 @@ class _TestEnvironment(object):
 
     @staticmethod
     def getLocalFS(conf, jvm):
-        tmdir = get_temp_dir()
+        tmpdir = get_temp_dir()
         return jvm.org.apache.hadoop.fs.Path(tmpdir).getFileSystem(conf)
 
     @staticmethod
@@ -95,7 +98,7 @@ class _TestEnvironment(object):
             conf.set("spark.kryoserializer.buffer.max", "500m")
             self.setKryoRegistrator(conf)
 
-        sparkContext = SparkContext(conf)
+        sparkContext = SparkContext(conf = conf)
 
         del os.environ["spark.driver.port"]
         del os.environ["spark.hostPort"]

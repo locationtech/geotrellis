@@ -7,7 +7,7 @@ class ArrayMultibandTile(MultibandTile):
             bands = bands[0]
         self._bands = bands
         self.bandCount = len(bands)
-        if bandCount == 0:
+        if self.bandCount == 0:
             raise Exception("Band count must be greater than 0")
 
         cellType = bands[0].cellType

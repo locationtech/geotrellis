@@ -124,7 +124,7 @@ def _collectMetadata(rdd):
         boundsKey = key.translate(SpatialKey(0,0))
         return (extent,
                 grid.cellType,
-                CellSize(extent, grid.cols, grid.rows)
+                CellSize(extent, grid.cols, grid.rows),
                 KeyBounds(boundsKey, boundsKey))
     def reducer(tuple1, tuple2):
         extent1, cellType1, cellSize1, bounds1 = tuple1

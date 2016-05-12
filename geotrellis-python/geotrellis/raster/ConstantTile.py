@@ -3,13 +3,13 @@ from geotrellis.raster.ArrayTile import ArrayTile
 from geotrellis.raster.CellType import (BitCellType, ByteConstantNoDataCellType,
         ShortConstantNoDataCellType, IntConstantNoDataCellType,
         FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-from geotrellis.raster.BitArrayTile import BitArrayTile
-from geotrellis.raster.ByteArrayTile import ByteArrayTile
-from geotrellis.raster.ShortArrayTile import ShortArrayTile
-from geotrellis.raster.UShortArrayTile import UShortArrayTile
-from geotrellis.raster.IntArrayTile import IntArrayTile
-from geotrellis.raster.FloatArrayTile import FloatArrayTile
-from geotrellis.raster.DoubleArrayTile import DoubleArrayTile
+#from geotrellis.raster.BitArrayTile import BitArrayTile
+#from geotrellis.raster.ByteArrayTile import ByteArrayTile
+#from geotrellis.raster.ShortArrayTile import ShortArrayTile
+#from geotrellis.raster.UShortArrayTile import UShortArrayTile
+#from geotrellis.raster.IntArrayTile import IntArrayTile
+#from geotrellis.raster.FloatArrayTile import FloatArrayTile
+#from geotrellis.raster.DoubleArrayTile import DoubleArrayTile
 from geotrellis.raster.package_scala import (i2b, b2i, b2d, i2ub, ub2i, ub2d,
         i2s, s2i, s2d, i2us, us2i, us2d, i2d, d2f, d2i, f2i, f2d,
         intToByte)
@@ -140,6 +140,7 @@ class BitConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.BitArrayTile import BitArrayTile
         return BitArrayTile.fill(v, self.cols, self.rows)
     
     def toBytes(self):
@@ -180,12 +181,14 @@ class ByteConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.ByteArrayTile import ByteArrayTile
         return ByteArrayTile.fill(self._v, self.cols, self.rows)
 
     def toBytes(self):
         return array.array('b', [self._v])
 
 class UByteConstantTile(ConstantTile):
+    def __init__(self, v, cols, rows):
         self._v = v
         self._ival = ub2i(v)
         self._dval = ub2d(v)
@@ -218,6 +221,7 @@ class UByteConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.ByteArrayTile import ByteArrayTile
         return ByteArrayTile.fill(self._v, self.cols, self.rows)
 
     def toBytes(self):
@@ -260,6 +264,7 @@ class ShortConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.ShortArrayTile import ShortArrayTile
         return ShortArrayTile.fill(self._v, self.cols, self.rows)
 
     def toBytes(self):
@@ -301,6 +306,7 @@ class UShortConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.UShortArrayTile import UShortArrayTile
         return UShortArrayTile.fill(self._v, self.cols, self.rows)
 
     def toBytes(self):
@@ -344,6 +350,7 @@ class IntConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.IntArrayTile import IntArrayTile
         return IntArrayTile.fill(self._ival, self.cols, self.rows)
 
     def toBytes(self):
@@ -385,6 +392,7 @@ class FloatConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.IntArrayTile import IntArrayTile
         return FloatArrayTile.fill(self._v, self.cols, self.rows)
 
     def toBytes(self):
@@ -425,6 +433,7 @@ class DoubleConstantTile(ConstantTile):
         return self.mutable()
 
     def mutable(self):
+        from geotrellis.raster.IntArrayTile import IntArrayTile
         return DoubleArrayTile.fill(self._dval, self.cols, self.rows)
 
     def toBytes(self):

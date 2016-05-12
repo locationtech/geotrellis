@@ -1,5 +1,6 @@
 from geotrellis.raster.GridDefinition import GridDefinition
 from geotrellis.raster.TileLayout import TileLayout
+#from geotrellis.vector.Extent import Extent
 from geotrellis.spark.tiling.MapKeyTransform import MapKeyTransform
 
 class LayoutDefinition(GridDefinition):
@@ -55,6 +56,7 @@ class LayoutDefinition(GridDefinition):
         return hash((self.extent, self.tileLayout))
 
 def _get_params(first, second, third):
+    from geotrellis.vector.Extent import Extent
     if isinstance(first, Extent):
         return first, second
     grid = first

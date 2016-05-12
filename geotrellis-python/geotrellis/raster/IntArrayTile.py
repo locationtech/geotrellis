@@ -1,6 +1,6 @@
 from geotrellis.raster.UserDefinedNoDataConversions import UserDefinedIntNoDataConversions
 from geotrellis.raster.MutableArrayTile import MutableArrayTile
-from geotrellis.raster.CellType import IntCellType, IntConstantNoDataCellType
+from geotrellis.raster.CellType import IntCellType, IntConstantNoDataCellType, IntUserDefinedNoDataCellType
 from geotrellis.raster.package_scala import i2d, d2i, NODATA
 
 import array
@@ -98,7 +98,7 @@ def generateCodec():
     from geotrellis.spark.io.avro.codecs.TileCodecs import IntArrayTileCodec
     return IntArrayTileCodec()
 
-def IntRawArrayTile(IntArrayTile):
+class IntRawArrayTile(IntArrayTile):
     implicits = {"AvroRecordCodec": generateCodec}
 
     def __init__(self, arr, cols, rows):
@@ -127,7 +127,7 @@ def IntRawArrayTile(IntArrayTile):
     def updateDouble(self, i, z):
         self.array[i] = int(z)
 
-def IntConstantNoDataArrayTile(IntArrayTile):
+class IntConstantNoDataArrayTile(IntArrayTile):
     implicits = {"AvroRecordCodec": generateCodec}
 
     def __init__(self, arr, cols, rows):

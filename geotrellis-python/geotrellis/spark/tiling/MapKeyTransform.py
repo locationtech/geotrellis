@@ -4,6 +4,7 @@ from geotrellis.spark.tiling.package_scala import worldExtent
 from geotrellis.vector.Extent import Extent
 from geotrellis.proj4.CRS import CRS
 from geotrellis.spark.tiling.LayoutScheme import LayoutLevel
+import math
 
 class MapKeyTransform(object):
     def __init__(self, first, second, third = None):
@@ -18,22 +19,22 @@ class MapKeyTransform(object):
     def tileWidth(self):
         if self._tileWidth is not None:
             return self._tileWidth
-        self._tileWidth = self.extent.width / layoutCols
+        self._tileWidth = self.extent.width / self.layoutCols
         return self._tileWidth
 
     @property
     def tileHeight(self):
         if self._tileHeight is not None:
             return self._tileHeight
-        self._tileHeight = self.extent.height / layoutRows
+        self._tileHeight = self.extent.height / self.layoutRows
         return self._tileHeight
 
     def __call__(self, first, second = None):
         if second is not None and isinstance(first, float) and isinstance(second, float):
             x, y = first, second
-            tcol = ((x - self.extent.xmin) / self.extent.width) * layoutCols
-            trow = ((self.extent.ymax - y) / self.extent.height) * layoutRows
-            return (int(tcol), int(trow))
+            tcol = ((x - self.extent.xmin) / self.extent.width) * self.layoutCols
+            trow = ((self.extent.ymax - y) / self.extent.height) * self.layoutRows
+            return SpatialKey.fromTuple((int(tcol), int(trow)))
         elif second is not None:
             col, row = first, second
             return Extent(

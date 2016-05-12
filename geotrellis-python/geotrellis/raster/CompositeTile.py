@@ -319,7 +319,7 @@ class CompositeTile(Tile):
         tileLayout, cropped = _get_params(tile, one, two, three)
         return CompositeTile(tile.split(tileLayout, Split.Options(cropped = cropped)), tileLayout)
 
-_get_params(tile, one, two, three):
+def _get_params(tile, one, two, three):
     if three is not None:
         tileCols, tileRows, cropped = one, two, three
         tileLayout = TileLayout(tileCols, tileRows, ((tile.cols - 1) / tileCols) + 1, ((tile.rows - 1) / tileRows) + 1)

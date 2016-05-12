@@ -1,5 +1,3 @@
-LayerPath = _LayerPath()
-
 import os.path
 
 class _LayerPath(object):
@@ -10,7 +8,9 @@ class _LayerPath(object):
         else:
             catalogPath = first
             layerid = second
-            return os.path.join(catalogPath, namezoom(layerid))
+            return os.path.join(catalogPath, _namezoom(layerid))
 
 def _namezoom(layerid):
     return "{name}/{zoom}".format(name = layerid.name, zoom = layerid.zoom)
+
+LayerPath = _LayerPath()

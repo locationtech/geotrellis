@@ -5,7 +5,7 @@ from geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex import ZSpatialKeyIndex
 from geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex import ZSpaceTimeKeyIndex
 from geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex import RowMajorSpatialKeyIndex
 
-class _ZCurveKeyIndexMethod(object):
+class ZCurveKeyIndexMethod(object):
     @staticmethod
     def spatialKeyIndexMethod():
         class TempKeyIndexMethod(KeyIndexMethod[SpatialKey]):

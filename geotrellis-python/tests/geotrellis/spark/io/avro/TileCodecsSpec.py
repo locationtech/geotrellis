@@ -1,4 +1,20 @@
 from tests.geotrellis.spark.io.avro.AvroTools import AvroTools
+from geotrellis.raster.CellType import (
+        ShortCellType,
+        ShortUserDefinedNoDataCellType,
+        UShortCellType,
+        UShortUserDefinedNoDataCellType,
+        IntCellType,
+        IntUserDefinedNoDataCellType,
+        FloatCellType,
+        FloatUserDefinedNoDataCellType,
+        DoubleCellType,
+        DoubleUserDefinedNoDataCellType,
+        ByteCellType,
+        ByteUserDefinedNoDataCellType,
+        UByteCellType,
+        UByteUserDefinedNoDataCellType
+        )
 from geotrellis.raster.ShortArrayTile import ShortArrayTile
 from geotrellis.raster.UShortArrayTile import UShortArrayTile
 from geotrellis.raster.IntArrayTile import IntArrayTile

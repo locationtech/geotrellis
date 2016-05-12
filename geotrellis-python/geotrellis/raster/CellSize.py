@@ -1,3 +1,4 @@
+#from geotrellis.vector.Extent import Extent
 import math
 
 class CellSize(object):
@@ -24,6 +25,7 @@ class CellSize(object):
         return CellSize(width, height)
 
 def _get_params(first, second, third):
+    from geotrellis.vector.Extent import Extent
     if not isinstance(first, Extent):
         return first, second
 

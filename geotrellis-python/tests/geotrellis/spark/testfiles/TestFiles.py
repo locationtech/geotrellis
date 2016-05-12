@@ -15,8 +15,23 @@ from geotrellis.proj4.LatLng import LatLng
 from geotrellis.spark.KeyBounds import KeyBounds
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.TileLayerMetadata import TileLayerMetadata
+from geotrellis.spark.ContextRDD import ContextRDD
 
 class _TestFiles(_TestEnvironment):
+
+    _AllOnesTestFile = None
+    _AllTwosTestFile = None
+    _AllHundredsTestFile = None
+    _IncreasingTestFile = None
+    _DecreasingTestFile = None
+    _EveryOtherUndefinedTestFile = None
+    _EveryOther0Point99Else1Point01TestFile = None
+    _EveryOther1ElseMinus1TestFile = None
+    _Mod10000TestFile = None
+    _AllOnesSpaceTime = None
+    _AllTwosSpaceTime = None
+    _AllHundredsSpaceTime = None
+    _CoordinateSpaceTime = None
 
     ZOOM_LEVEL = 8
     partitionCount = 4
@@ -31,7 +46,7 @@ class _TestFiles(_TestEnvironment):
             gridBounds = GridBounds(1,1,6,7)
             extent = mapTransform(gridBounds)
             keyBounds = KeyBounds(SpatialKey(1,1), SpatialKey(6,7))
-            return TileLayerMetadata(cellType, LayoutDefinition(worldExtent(crs), tileLayout), extent, crs, bounds)
+            return TileLayerMetadata(cellType, LayoutDefinition(worldExtent(crs), tileLayout), extent, crs, keyBounds)
             
         md = generateMetadata()
         gridBounds = md.gridBounds
@@ -66,7 +81,7 @@ class _TestFiles(_TestEnvironment):
         return ContextRDD(sc.parallelize(tiles, _TestFiles.partitionCount), md)
 
     def spatialTestFile(self, name):
-        return _TestFiles.generateSpatial(name)
+        return _TestFiles.generateSpatial(name, self._sc())
 
     def spaceTimeTestFile(self, name):
         # return _TestFiles.generateSpaceTime(name)

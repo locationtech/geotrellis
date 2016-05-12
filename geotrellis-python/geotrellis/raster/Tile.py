@@ -1,6 +1,6 @@
 from geotrellis.raster.CellGrid import CellGrid
 from geotrellis.raster.CellSet import CellSet
-from geotrellis.raster.ArrayTile import ArrayTile
+#from geotrellis.raster.ArrayTile import ArrayTile
 from geotrellis.raster.package_scala import isData, isNoData, NODATA
 
 import math
@@ -76,6 +76,7 @@ class Tile(CellGrid):
         colsPerBlock = int(math.ceil(self.cols / float(newCols)))
         rowsPerBlock = int(math.ceil(self.rows / float(newRows)))
 
+        from geotrellis.raster.ArrayTile import ArrayTile
         tile = ArrayTile.empty(self.cellType, newCols, newRows)
 
         class DownsampleCellSet(CellSet):

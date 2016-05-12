@@ -21,7 +21,9 @@ from geotrellis.raster.MultibandTile import MultibandTile
 
 from geotrellis.spark.io.avro.codecs.Implicits import tileUnionCodec
 
-from geotrellis.raster.package_scala import SHORTMIN, BYTEMIN, isNoData
+from geotrellis.raster.package_scala import SHORTMIN, BYTEMIN, isNoData, shortNODATA, ushortNODATA, NODATA, byteNODATA, ubyteNODATA
+
+import avro.schema
 
 import array
 
@@ -42,14 +44,15 @@ class ShortArrayTileCodec(AvroRecordCodec):
                     _.create_int(),
                     _.create_null()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells
+        dct["cells"] = tile.array.tolist()
         if tile.cellType is ShortConstantNoDataCellType:
-            dct["noDataValue"] = SHORTMIN
+            dct["noDataValue"] = shortNODATA
         elif tile.cellType is ShortCellType:
             dct["noDataValue"] = None # TODO find matching java's null alternative
         elif isinstance(tile.cellType, ShortUserDefinedNoDataCellType):
@@ -89,14 +92,15 @@ class UShortArrayTileCodec(AvroRecordCodec):
                     _.create_int(),
                     _.create_null()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells
+        dct["cells"] = tile.array.tolist()
         if tile.cellType is UShortConstantNoDataCellType:
-            dct["noDataValue"] = 0
+            dct["noDataValue"] = ushortNODATA
         elif tile.cellType is UShortCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, UShortUserDefinedNoDataCellType):
@@ -136,14 +140,15 @@ class IntArrayTileCodec(AvroRecordCodec):
                     _.create_int(),
                     _.create_null()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells
+        dct["cells"] = tile.array.tolist()
         if tile.cellType is IntConstantNoDataCellType:
-            dct["noDataValue"] = INTMIN
+            dct["noDataValue"] = NODATA
         elif tile.cellType is IntCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, IntUserDefinedNoDataCellType):
@@ -183,12 +188,13 @@ class FloatArrayTileCodec(AvroRecordCodec):
                     _.create_boolean(),
                     _.create_float()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells
+        dct["cells"] = tile.array.tolist()
         if tile.cellType is FloatConstantNoDataCellType:
             dct["noDataValue"] = True
         elif tile.cellType is FloatCellType:
@@ -208,6 +214,7 @@ class FloatArrayTileCodec(AvroRecordCodec):
             cellType = FloatCellType
         else:
             cellType = FloatUserDefinedNoDataCellType(nodata)
+        print("~~~ float codec nodata: {0}, result: {1}".format(nodata, cellType))
 
         cols = dct["cols"]
         rows = dct["rows"]
@@ -230,12 +237,13 @@ class DoubleArrayTileCodec(AvroRecordCodec):
                     _.create_boolean(),
                     _.create_double()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells
+        dct["cells"] = tile.array.tolist()
         if tile.cellType is DoubleConstantNoDataCellType:
             dct["noDataValue"] = True
         elif tile.cellType is DoubleCellType:
@@ -255,6 +263,8 @@ class DoubleArrayTileCodec(AvroRecordCodec):
             cellType = DoubleCellType
         else:
             cellType = DoubleUserDefinedNoDataCellType(nodata)
+        print("~~~ double codec nodata: {0}, result: {1}".format(nodata, cellType))
+        print("schema: {0}".format(self.schema.to_json()))
 
         cols = dct["cols"]
         rows = dct["rows"]
@@ -276,14 +286,15 @@ class ByteArrayTileCodec(AvroRecordCodec):
                     _.create_int(),
                     _.create_null()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells # TODO wrap if needed
+        dct["cells"] = tile.array.tolist() # TODO wrap if needed
         if tile.cellType is ByteConstantNoDataCellType:
-            dct["noDataValue"] = 0
+            dct["noDataValue"] = byteNODATA
         elif tile.cellType is ByteCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, ByteUserDefinedNoDataCellType):
@@ -322,14 +333,15 @@ class UByteArrayTileCodec(AvroRecordCodec):
                     _.create_int(),
                     _.create_null()
                     ).end())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells # TODO wrap if needed
+        dct["cells"] = tile.array.tolist() # TODO wrap if needed
         if tile.cellType is UByteConstantNoDataCellType:
-            dct["noDataValue"] = 0
+            dct["noDataValue"] = ubyteNODATA
         elif tile.cellType is UByteCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, UByteUserDefinedNoDataCellType):
@@ -363,12 +375,13 @@ class BitArrayTileCodec(AvroRecordCodec):
         _.add_field("cols", _.create_int())
         _.add_field("rows", _.create_int())
         _.add_field("cells", _.create_bytes())
-        return _.end()
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.cells # TODO wrap if needed
+        dct["cells"] = tile.array.tolist() # TODO wrap if needed
 
     def decode(self, dct):
         arr = array.array('b', dct["cells"])
@@ -386,8 +399,11 @@ class MultibandTileCodec(AvroRecordCodec):
         _ = AvroSchemaBuilder()
         _.begin_record("ArrayMultibandTile", namespace = "geotrellis.raster")
         _.add_field("bands", _.begin_array(
-            _.begin_with_schema_json(self._tileUnioncodec.schema)).end())
-        return _.end()
+            #_.begin_with_schema_json(self._tileUnionCodec.schema.to_json())
+            self._tileUnionCodec.schema.to_json()
+            ).end())
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tile, dct):
         bands = [tile.band(i) for i in xrange(0, tile.bandCount)]

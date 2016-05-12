@@ -1,6 +1,6 @@
 from geotrellis.raster.UserDefinedNoDataConversions import UserDefinedByteNoDataConversions
 from geotrellis.raster.MutableArrayTile import MutableArrayTile
-from geotrellis.raster.CellType import UByteCellType, UByteConstantNoDataCellType
+from geotrellis.raster.CellType import UByteCellType, UByteConstantNoDataCellType, UByteUserDefinedNoDataCellType
 from geotrellis.raster.package_scala import intToByte, ub2i, ub2d, i2ub, d2ub, ubyteNODATA
 
 import array

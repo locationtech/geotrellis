@@ -24,7 +24,7 @@ from geotrellis.raster.ByteArrayTile import ByteArrayTile
 from geotrellis.raster.UByteArrayTile import UByteArrayTile
 from geotrellis.raster.BitArrayTile import BitArrayTile
 from geotrellis.raster.MultibandTile import MultibandTile
-from geotrellis.raster.package_scala import SHORTMIN, BYTEMIN, isNoData
+from geotrellis.raster.package_scala import SHORTMIN, BYTEMIN, isNoData, NODATA, byteNODATA, ubyteNODATA
 from geotrellis.spark.io.avro.AvroEncoder import AvroEncoder
 import json
 

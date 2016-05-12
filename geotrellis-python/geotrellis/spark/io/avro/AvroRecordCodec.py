@@ -2,7 +2,7 @@ from geotrellis.spark.io.avro.AvroCodec import AvroCodec
 
 class AvroRecordCodec(AvroCodec):
     def __init__(self, record_type):
-        AvroCodec.__init__(self, record_type):
+        AvroCodec.__init__(self, record_type)
     @property
     def schema(self):
         pass
