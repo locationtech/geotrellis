@@ -261,7 +261,7 @@ object CellType {
     * @return           The CellType corresponding to awtType
     */
   def fromAwtType(awtType: Int): CellType = awtType match {
-    case DataBuffer.TYPE_BYTE => ByteConstantNoDataCellType
+    case DataBuffer.TYPE_BYTE => UByteConstantNoDataCellType
     case DataBuffer.TYPE_SHORT => ShortConstantNoDataCellType
     case DataBuffer.TYPE_INT => IntConstantNoDataCellType
     case DataBuffer.TYPE_FLOAT => FloatConstantNoDataCellType
