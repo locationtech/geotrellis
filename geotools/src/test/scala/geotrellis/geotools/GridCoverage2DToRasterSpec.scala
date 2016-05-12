@@ -22,6 +22,7 @@ import geotrellis.vector._
 import org.geotools.coverage.grid._
 import org.geotools.coverage.grid.io._
 import org.geotools.gce.geotiff._
+import org.opengis.parameter.GeneralParameterValue
 import org.scalatest._
 
 
@@ -30,17 +31,13 @@ trait GridCoverage2DToRasterSpec
     with Matchers {
 
   def getImage(path: String): GridCoverage2D = {
-    val policy = AbstractGridFormat.OVERVIEW_POLICY.createValue
     val gridSize = AbstractGridFormat.SUGGESTED_TILE_SIZE.createValue
-    val useJaiRead = AbstractGridFormat.USE_JAI_IMAGEREAD.createValue
     val file = new java.io.File(path)
     val reader = new GeoTiffReader(file)
 
-    policy.setValue(OverviewPolicy.IGNORE)
     gridSize.setValue("1024,1024")
-    useJaiRead.setValue(true)
 
-    val image = reader.read(List(policy, gridSize, useJaiRead).toArray)
+    val image = reader.read(Array(gridSize))
     val renderedImage = image.getRenderedImage
 
     require(renderedImage.getHeight <= 1024)
@@ -61,7 +58,7 @@ trait GridCoverage2DToRasterSpec
   lazy val renderedImage = image.getRenderedImage
   lazy val buffer = renderedImage.getData.getDataBuffer
   lazy val sampleModel = renderedImage.getSampleModel
-  lazy val Raster(tile, extent) = GridCoverage2DToRaster(image)
+  lazy val Raster(tile, extent) = GridCoverage2DToRaster(image).head
 
   def sumOfAllSamples: Int = {
     val array = Array.ofDim[Int](sampleModel.getNumBands)
@@ -70,7 +67,7 @@ trait GridCoverage2DToRasterSpec
     var col = 0; while (col < renderedImage.getWidth) {
       var row = 0; while (row < renderedImage.getHeight) {
         sampleModel.getPixel(col, row, array, buffer)
-        result += array.sum
+        result += array.head
         row += 1
       }
       col += 1
@@ -86,7 +83,7 @@ trait GridCoverage2DToRasterSpec
     var col = 0; while (col < renderedImage.getWidth) {
       var row = 0; while (row < renderedImage.getHeight) {
         sampleModel.getPixel(col, row, array, buffer)
-        result += array.sum
+        result += array.head
         row += 1
       }
       col += 1
@@ -105,19 +102,8 @@ trait GridCoverage2DToRasterSpec
       tile.rows should be (height)
     }
 
-    it("should correctly extract bandCount") {
-      tile.bandCount should be (bandCount)
-    }
-
     it("should correctly extract cellType") {
       tile.cellType.toString.take(typeStr.length) should be (typeStr)
-    }
-
-    it("should correctly extract NODATA value") {
-      val actual = GridCoverage2DToRaster.noData(image)
-      val expected = noData
-
-      actual should equal (expected)
     }
 
     it("should correctly extract the CRS") {
@@ -131,78 +117,63 @@ trait GridCoverage2DToRasterSpec
     }
   }
 
-  describe("The GridCoverage2DMultibandTile Class") {
+  describe("The GridCoverage2DTile Class") {
 
     it("should have a working foreach method") {
       var result: Int = 0
-      tile.foreach({ (_,z) => result += z })
+      tile.foreach({ z => result += z })
 
       result should be (sumOfAllSamples)
     }
 
     it("should have a working foreachDouble method") {
       var result: Double = 0
-      tile.foreachDouble({ (_,z) => result += z })
+      tile.foreachDouble({ z => result += z })
 
       result should be (sumOfAllSamplesDouble)
     }
 
     it("should have a working combine method") {
-      val n = tile.bandCount
-      val subset = (0 until n).filter(_ != 1)
-      val array = Array.ofDim[Int](n)
-      val actual = tile.combine(subset)({ xs => xs.sum }).get(10, 10)
+      var a: Int = 0
+      var b: Int = 0
+      val array = Array.ofDim[Int](sampleModel.getNumBands)
+      val actual = tile.combine(tile)({ (x, y) => (x % 0x7f) + (y % 0x7f)}).get(10, 10)
       sampleModel.getPixel(10, 10, array, buffer)
-      val expected = subset.map({ i => array(i) }).sum
+      val expected = (array.head % 0x7f) + (array.head % 0x7f)
 
+      println(s"${tile.cellType}")
       actual should be (expected)
     }
 
     it("should have a working combineDouble method") {
-      val n = tile.bandCount
-      val subset = (0 until n).filter(_ != 1)
-      val array = Array.ofDim[Double](n)
-      val actual = tile.combineDouble(subset)({ xs => xs.sum }).getDouble(10, 10)
+      val array = Array.ofDim[Double](sampleModel.getNumBands)
+      val actual = tile.combineDouble(tile)({ (x, y) => (x % 0x7f) + (y % 0x7f)}).getDouble(10, 10)
       sampleModel.getPixel(10, 10, array, buffer)
-      val expected = subset.map({ i => array(i) }).sum
+      val expected = (array.head % 0x7f).toDouble + (array.head % 0x7f).toDouble
 
       actual should be (expected)
     }
 
     it("should have a working map method") {
-      val n = tile.bandCount
-      val subset = (0 until n).filter(_ != 1)
-      val array = Array.ofDim[Int](n)
-      val mappedTile = tile.map(subset)({ (i,z) => i + z + 1 })
-      val actual = (0 until n).map({ i => mappedTile.bands(i).get(10, 10) }).toList
+      val array = Array.ofDim[Int](sampleModel.getNumBands)
+      val mappedTile = tile.map({ z => (z % 0xff) + 1 })
+      val actual = mappedTile.get(10, 10)
 
       sampleModel.getPixel(10, 10, array, buffer)
-      var b = 0; while (b < n) {
-        if (b != 1)
-          array(b) += (b + 1)
-        b += 1
-      }
 
-      val expected = array.toList.take(n)
+      val expected = ((array.head % 0xff) + 1)
 
       actual should be (expected)
     }
 
     it("should have a working mapDouble method") {
-      val n = tile.bandCount
-      val subset = (0 until n).filter(_ != 1)
-      val array = Array.ofDim[Double](n)
-      val mappedTile = tile.mapDouble(subset)({ (i,z) => i + z + 1.1 })
-      val actual = (0 until n).map({ i => mappedTile.bands(i).getDouble(10, 10) }).toList
+      val array = Array.ofDim[Double](sampleModel.getNumBands)
+      val mappedTile = tile.mapDouble({ z => (z % 0xff) + 1.0 })
+      val actual = mappedTile.getDouble(10, 10)
 
       sampleModel.getPixel(10, 10, array, buffer)
-      var b = 0; while (b < n) {
-        if (b != 1)
-          array(b) += (b + 1.1)
-        b += 1
-      }
 
-      val expected = array.toList.take(n)
+      val expected = ((array.head % 0xff) + 1.0)
 
       actual should be (expected)
     }

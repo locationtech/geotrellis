@@ -51,9 +51,6 @@ trait RasterToGridCoverage2DSpec[T <: CellGrid]
 
   def getBandCount: Int = sampleModel.getNumBands
 
-  def getDataType: CellType =
-    GridCoverage2DToRaster.cellType(gridCoverage)
-
   def getCrs: Option[CRS] =
     GridCoverage2DToRaster.crs(gridCoverage)
 
@@ -62,7 +59,6 @@ trait RasterToGridCoverage2DSpec[T <: CellGrid]
 
   def getPixel(col: Int, row: Int) = {
     val n = getBandCount
-    val cellType = getDataType
 
     buffer.getDataType match {
       case DataBuffer.TYPE_FLOAT =>
@@ -88,10 +84,6 @@ trait RasterToGridCoverage2DSpec[T <: CellGrid]
 
     it("should produce the correct height") {
       getHeight should be (tile.rows)
-    }
-
-    it("should produce the correct cellType") {
-      getDataType should be (tile.cellType)
     }
 
     it("should produce the correct CRS") {
