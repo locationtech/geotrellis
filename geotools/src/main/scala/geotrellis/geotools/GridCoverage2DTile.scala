@@ -329,9 +329,8 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * @param   row  The row
     * @return       The Int datum found at the given location
     */
-  def get(col: Int,row: Int): Int = {
-    sampleModel.getPixel(col, row, _array, buffer)(bandIndex)
-  }
+  def get(col: Int,row: Int): Int =
+    sampleModel.getPixel(col, row, _array.clone, buffer)(bandIndex)
 
   /**
     * Fetch the datum at the given column and row of the
@@ -342,7 +341,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * @return       The Double datum found at the given location
     */
   def getDouble(col: Int,row: Int): Double =
-    sampleModel.getPixel(col, row, _arrayDouble, buffer)(bandIndex)
+    sampleModel.getPixel(col, row, _arrayDouble.clone, buffer)(bandIndex)
 
   /**
     * Map each cell in the given tile to a new one, using the given
