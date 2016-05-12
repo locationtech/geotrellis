@@ -28,18 +28,36 @@ import org.osgeo.proj4j._
 import scala.collection.JavaConverters._
 import scala.math.{min, max}
 
-import java.awt.image.DataBuffer
 
-
+/**
+  * The [[GridCoverage2DRaster]] object, contains a constructor, as
+  * well as other functions for converting a [[GridCoverage2D]] to a
+  * Geotrellis [[Raster]].
+  */
 object GridCoverage2DToRaster {
 
-  def apply(gridCoverage: GridCoverage2D): Raster[MultibandTile] = {
+  /**
+    * This constructor takes a [[GridCoverage2D]] and returns a
+    * sequence of Geotrellis [[Raster]]s.
+    *
+    * @param  gridCoverage  The  GeoTools GridCoverage2D object
+    * @return               A sequence of rasters of singleband Geotrellis [[Tile]]s
+    */
+  def apply(gridCoverage: GridCoverage2D): Seq[Raster[Tile]] = {
     val extent = GridCoverage2DToRaster.extent(gridCoverage)
-    val tile = GridCoverage2DMultibandTile(gridCoverage)
 
-    Raster(tile, extent)
+    (0 until bandCount(gridCoverage)).map({ i =>
+      val tile = GridCoverage2DTile(gridCoverage, i)
+      Raster(tile, extent)
+    })
   }
 
+  /**
+    * This function extracts a Geotrellis [[Extent]] from the extent
+    * information stored in the given [[GridCoverage2D]].
+    *
+    * @param  gridCoverage  The GeoTools GridCoverage2D object
+    */
   def extent(gridCoverage: GridCoverage2D): Extent = {
     val envelope = gridCoverage.getEnvelope
     val Array(xmin, ymin) = envelope.getUpperCorner.getCoordinate
@@ -48,48 +66,12 @@ object GridCoverage2DToRaster {
     Extent(min(xmin, xmax), min(ymin, ymax), max(xmin, xmax), max(ymin, ymax))
   }
 
-  def noData(gridCoverage: GridCoverage2D) = {
-    val n = gridCoverage.getNumSampleDimensions
-    val noDataList = (0 until n)
-      .map({ i => gridCoverage.getSampleDimension(i).getNoDataValues })
-      .filter({ _ != null })
-      .flatten
-
-    if (noDataList.nonEmpty) Some(noDataList.head); else None
-  }
-
-  def cellType(gridCoverage: GridCoverage2D): CellType = {
-    val n = gridCoverage.getNumSampleDimensions
-    val noDataValue = noData(gridCoverage)
-    val renderedImage = gridCoverage.getRenderedImage
-    val buffer = renderedImage.getData.getDataBuffer
-    val typeEnum = buffer.getDataType
-
-    if (noDataValue.isEmpty) {
-      typeEnum match {
-        case DataBuffer.TYPE_BYTE => UByteCellType
-        case DataBuffer.TYPE_USHORT => UShortCellType
-        case DataBuffer.TYPE_SHORT => ShortCellType
-        case DataBuffer.TYPE_INT => IntCellType
-        case DataBuffer.TYPE_FLOAT => FloatCellType
-        case DataBuffer.TYPE_DOUBLE => DoubleCellType
-        case _ => throw new Exception("Unknown CellType")
-      }
-    }
-    else {
-      val noData = noDataValue.get
-      typeEnum match {
-        case 0 => ByteUserDefinedNoDataCellType(noDataValue.get.toByte)
-        case 1 => UShortUserDefinedNoDataCellType(noDataValue.get.toShort)
-        case 2 => ShortUserDefinedNoDataCellType(noDataValue.get.toShort)
-        case 3 => IntUserDefinedNoDataCellType(noDataValue.get.toInt)
-        case 4 => FloatUserDefinedNoDataCellType(noDataValue.get.toFloat)
-        case 5 => DoubleUserDefinedNoDataCellType(noDataValue.get.toDouble)
-        case _ => throw new Exception("Unknown CellType")
-      }
-    }
-  }
-
+  /**
+    * This function extracts a Geotrellis [[CRS]] from the CRS
+    * information stored in the given [[GridCoverage2D]].
+    *
+    * @param  gridCoverage  The GeoTools GridCoverage2D object
+    */
   def crs(gridCoverage: GridCoverage2D): Option[CRS] = {
     val crs = gridCoverage
       .getCoordinateReferenceSystem2D
@@ -109,5 +91,18 @@ object GridCoverage2DToRaster {
     } catch { case e: Exception => }
 
     result
+  }
+
+  /**
+    * Get the number of bands present in a [[GridCoverage2D]].
+    *
+    * @param  gridCoverage  The GeoTools GridCoverage2D object
+    */
+  def bandCount(gridCoverage: GridCoverage2D): Int = {
+    val renderedImage = gridCoverage.getRenderedImage
+    val buffer = renderedImage.getData.getDataBuffer
+    val sampleModel = renderedImage.getSampleModel
+
+    sampleModel.getNumBands
   }
 }
