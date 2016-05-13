@@ -83,6 +83,10 @@ lazy val root = Project("geotrellis", file(".")).
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
+lazy val vectorTile = Project("vectortile", file("vectortile")).
+  dependsOn(vector).
+  settings(commonSettings: _*)
+
 lazy val vector = Project("vector", file("vector")).
   dependsOn(proj4, util).
   settings(commonSettings: _*)

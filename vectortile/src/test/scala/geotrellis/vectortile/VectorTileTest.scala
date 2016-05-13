@@ -6,13 +6,13 @@ import geotrellis.vector._
 
 class VectorTileTest extends FunSuite {
 
-    // Test cases generated from java-vector-tile
-    // https://github.com/ElectronicChartCentre/java-vector-tile
+    // Test cases generated from java-vectortile
+    // https://github.com/ElectronicChartCentre/java-vectortile
     // some of the source code used to generate the test files can be found in
-    // scala-vector-tile/data/DataGen/
+    // scala-vectortile/vector-tile/data/DataGen/
 
     test("SingleLayer") {
-        val vt = new VectorTile("data/SingleLayer.mvt")
+        val vt = new VectorTile("vectortile/data/SingleLayer.mvt")
         assert(vt.layers.size == 1)
         val geometries = vt.geometries()
         assert(geometries.size == 1)
@@ -25,7 +25,7 @@ class VectorTileTest extends FunSuite {
     }
 
     test("MultiLayer") {
-        val vt = new VectorTile("data/MultiLayer.mvt")
+        val vt = new VectorTile("vectortile/data/MultiLayer.mvt")
         assert(vt.layers.size == 2)
         val geometries1 = vt.geometriesByName(Set[String]("DEPCNT"))
         val geometries2 = vt.geometriesByName(Set[String]("TNCPED"))
@@ -48,12 +48,12 @@ class VectorTileTest extends FunSuite {
 
     test("GrabBag") {
         // a bunch of differen types of geometries
-        val vt = new VectorTile("data/GrabBag.mvt")
+        val vt = new VectorTile("vectortile/data/GrabBag.mvt")
         // just a sanity check, the command tests are sufficient.
     }
 
     test("PolygonWithHole") {
-        // https://github.com/mapbox/vector-tile-spec/tree/master/2.1
+        // https://github.com/mapbox/vectortile-spec/tree/master/2.1
         // right before section 4 there's an example of ``negative space''
         // the current build does not deal with this and instead makes each
         // polygon separate. when this is decided upon, a test should be added
@@ -61,12 +61,12 @@ class VectorTileTest extends FunSuite {
 
         // options: comp geo to figure it out, additional command that
         // indicates that the next polygon is a hole, etc
-        val vt = new VectorTile("data/PolygonWithHole.mvt")
+        val vt = new VectorTile("vectortile/data/PolygonWithHole.mvt")
         assert(false)
     }
 
     test("Tagged") {
-        val vt = new VectorTile("data/Tagged.mvt")
+        val vt = new VectorTile("vectortile/data/Tagged.mvt")
         val expected = Point(3, 6)
         var geometries = vt.filteredGeometries(
             (layer, feature) => feature.tags("key1").value == "value1"
@@ -105,8 +105,8 @@ class VectorTileTest extends FunSuite {
     }
 
     test("BigTile Data") {
-        // https://github.com/ElectronicChartCentre/java-vector-tile/blob/master/src/test/resources/bigtile.vector.pbf
-        val vt = new VectorTile("data/BigTile.mvt")
+        // https://github.com/ElectronicChartCentre/java-vectortile/blob/master/src/test/resources/bigtile.vector.pbf
+        val vt = new VectorTile("vectortile/data/BigTile.mvt")
         // just a sanity check that I can read data I didn't write
     }
 
