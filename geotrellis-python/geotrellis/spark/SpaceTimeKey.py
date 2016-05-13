@@ -1,13 +1,22 @@
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.TemporalKey import TemporalKey
+from geotrellis.spark.io.json.KeyFormats import SpaceTimeKeyFormat
 from geotrellis.spark.Boundable import Boundable
 
 import datetime
 import pytz
 import functools
 
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.KeyCodecs import SpaceTimeKeyAvroCodec
+    return SpaceTimeKeyAvroCodec()
+
 @functools.total_ordering
 class SpaceTimeKey(object):
+    implicits = {
+            'format': lambda: SpaceTimeKeyFormat(),
+            'AvroRecordCodec': generateCodec}
+
     def __init__(self, col, row, instant):
         self.col = col
         self.row = row

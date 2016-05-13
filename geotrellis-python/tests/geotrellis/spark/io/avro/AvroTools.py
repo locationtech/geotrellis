@@ -29,24 +29,27 @@ from geotrellis.spark.io.avro.AvroEncoder import AvroEncoder
 from geotrellis.python.util.utils import float_eq
 import json
 
+from nose import tools
+
+@tools.nottest
 class AvroTools(object):
     def roundTrip(self, thing, codec = None):
         T = type(thing)
         bytesarray = AvroEncoder.toBinary(thing, codec)
-        fromBytes = AvroEncoder.fromBinary(T, bytesarray, codec)
+        fromBytes = AvroEncoder.fromBinary(T, bytesarray, codec=codec)
         assert fromBytes == thing
         jason = AvroEncoder.toJson(thing, codec)
-        fromJson = AvroEncoder.fromJson(T, jason, codec)
+        fromJson = AvroEncoder.fromJson(T, jason, codec=codec)
         assert fromJson == thing
 
     def roundTripWithNoDataCheck(self, thing, codec = None):
         T = type(thing)
         bytesarray = AvroEncoder.toBinary(thing, codec)
-        fromBytes = AvroEncoder.fromBinary(T, bytesarray, codec)
+        fromBytes = AvroEncoder.fromBinary(T, bytesarray, codec=codec)
         assert fromBytes == thing
         jason = AvroEncoder.toJson(thing, codec)
         _checkNoData(thing, jason)
-        fromJson = AvroEncoder.fromJson(T, jason, codec)
+        fromJson = AvroEncoder.fromJson(T, jason, codec=codec)
         assert fromJson == thing
 
 def _checkNoData(thing, jason):
@@ -79,6 +82,7 @@ def _nodataChecker(thing):
 
 _noDataAttrName = "noDataValue"
 
+@tools.nottest
 class NoDataChecker(object):
     def checkNoData(self, jason):
         dct = json.loads(jason)
@@ -93,6 +97,7 @@ class NoDataChecker(object):
     def doCheck(self, nodata):
         pass
 
+@tools.nottest
 class ShortNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -109,6 +114,7 @@ class ShortNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class UShortNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -125,6 +131,7 @@ class UShortNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class IntNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -141,6 +148,7 @@ class IntNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class FloatNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -160,6 +168,7 @@ class FloatNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class DoubleNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -179,6 +188,7 @@ class DoubleNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class ByteNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -195,6 +205,7 @@ class ByteNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class UByteNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -211,6 +222,7 @@ class UByteNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
+@tools.nottest
 class BitNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -218,6 +230,7 @@ class BitNoDataChecker(NoDataChecker):
     def doCheck(self, nodata):
         assert nodata is None
 
+@tools.nottest
 class MultibandNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType

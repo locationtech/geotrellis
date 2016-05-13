@@ -24,3 +24,12 @@ class SpatialKeyFormat(JSONFormat):
         col, row = fields
         from geotrellis.spark.SpatialKey import SpatialKey
         return SpatialKey(col, row)
+
+class SpaceTimeKeyFormat(JSONFormat):
+    def from_dict(self, dct):
+        fields = self.get_fields(dct, 'col', 'row', 'instant')
+        if not fields:
+            raise DeserializationException("SpatialKey expected. got: " + json.dumps(dct))
+        col, row, instant = fields
+        from geotrellis.spark.SpaceTimeKey import SpaceTimeKey
+        return SpaceTimeKey(col, row, instant)

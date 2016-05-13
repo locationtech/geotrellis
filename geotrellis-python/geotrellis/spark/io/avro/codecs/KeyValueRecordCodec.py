@@ -1,19 +1,22 @@
 from geotrellis.spark.io.avro.AvroRecordCodec import AvroRecordCodec
 from geotrellis.spark.io.avro.codecs.TupleCodec import TupleCodec
 from edited_avro.avro_builder import AvroSchemaBuilder
+import avro.schema
 
 class KeyValueRecordCodec(AvroRecordCodec):
-    def __init__(self, key_type, value_type):
+    def __init__(self, key_type, value_type, keycodec = None, valuecodec = None):
         AvroRecordCodec.__init__(self, list)
-        self.pairCodec = TupleCodec(key_type, value_type)
+        self.pairCodec = TupleCodec(key_type, value_type, keycodec, valuecodec)
 
     @property
     def schema(self):
-        builder = AvroSchemaBuilder()
-        builder.begin_record("KeyValueRecord", namespace = "geotrellis.spark.io")
-        builder.add_field("pairs",
-                builder.begin_array(self.pairCodec.schema()).end())
-        return builder.end()
+        _ = AvroSchemaBuilder()
+        _.begin_record("KeyValueRecord", namespace = "geotrellis.spark.io")
+        _.add_field("pairs",
+                _.begin_array(self.pairCodec.schema.to_json()).end())
+
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
     
     def _encode(self, pairs, dct):
         dct["pairs"] = map(lambda p: self.pairCodec.encode(p), pairs)

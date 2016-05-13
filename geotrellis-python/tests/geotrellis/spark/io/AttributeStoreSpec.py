@@ -12,6 +12,7 @@ class _AttributeStoreSpec(_TestEnvironment):
     def attributeStore(self):
         pass
 
+    @tools.istest
     def test_01_should_write_to_an_attribute_store(self):
         """should write to an attribute store"""
         store = self.attributeStore
@@ -20,6 +21,7 @@ class _AttributeStoreSpec(_TestEnvironment):
         store.write(str, LayerId("test2", 2), "test-att2", "test")
         store.write(str, LayerId("test3", 3), "test-att1", "test")
 
+    @tools.istest
     def test_02_should_know_that_these_new_IDs_exist(self):
         """should know that these new IDs exist"""
         store = self.attributeStore
@@ -27,12 +29,14 @@ class _AttributeStoreSpec(_TestEnvironment):
         ok_(store.layerExists(LayerId("test2", 2)) == True)
         ok_(store.layerExists(LayerId("test3", 3)) == True)
 
+    @tools.istest
     def test_03_should_read_layer_ids(self):
         """should read layer ids"""
         store = self.attributeStore
         layerids = sorted(store.layerIds(), key = lambda layerid: layerid.zoom)
         ok_(layerids == [LayerId("test1", 1), LayerId("test2", 2), LayerId("test3", 3)])
 
+    @tools.istest
     def test_04_should_clear_out(self):
         """should clear out the attribute store"""
         store = self.attributeStore
@@ -42,6 +46,7 @@ class _AttributeStoreSpec(_TestEnvironment):
         length = len(store.layerIds())
         ok_(length == 0)
 
+    @tools.istest
     def test_should_save_and_load_a_random_object(self):
         """should save and load a random object convertable to/from json"""
         layerid = LayerId("test", 3)

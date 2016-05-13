@@ -1,4 +1,5 @@
 from geotrellis.python.util.utils import fullname
+from nose import tools
 
 class _PersistenceSpecMeta(object):
     items = {}
@@ -12,6 +13,7 @@ class _PersistenceSpecMeta(object):
 
 PersistenceSpec = _PersistenceSpecMeta()
 
+@tools.nottest
 class _PersistenceSpec(object):
     def getLayerIds(self, keyIndexMethod):
         suffix = keyIndexMethod.replace(" ", "_")
@@ -30,6 +32,7 @@ class _PersistenceSpec(object):
             result.append((keyIndexMethodName, keyIndexMethod, self.getLayerIds(keyIndexMethodName)))
         return result
 
+    @tools.istest
     def persistence_spec_checks(self):
         K, V, M = self.K, self.V, self.M
         for (keyIndexMethodName, keyIndexMethod,

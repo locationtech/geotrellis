@@ -1,23 +1,32 @@
 from geotrellis.spark.io.avro.AvroRecordCodec import AvroRecordCodec
 from edited_avro.avro_builder import AvroSchemaBuilder
+import avro.schema
 
 class TupleCodec(AvroRecordCodec):
-    def __init__(self, keytype, valuetype):
+    def __init__(self, keytype, valuetype, keycodec = None, valuecodec = None):
         AvroRecordCodec.__init__(self, tuple)
         self.keytype = keytype
         self.valuetype = valuetype
-        self.a = keytype.implicits["AvroRecordCodec"]()
-        self.b = valuetype.implicits["AvroRecordCodec"]()
+
+        if keycodec is None:
+            self.a = keytype.implicits["AvroRecordCodec"]()
+        else:
+            self.a = keycodec
+
+        if valuecodec is None:
+            self.b = valuetype.implicits["AvroRecordCodec"]()
+        else:
+            self.b = valuecodec
 
     @property
     def schema(self):
-        builder = AvroSchemaBuilder()
-        builder.begin_record("Tuple2", namespace = "scala")
-        builder.add_field("_1",
-                builder.begin_with_schema_json(self.a.schema).end())
-        builder.add_field("_2",
-                builder.begin_with_schema_json(self.b.schema).end())
-        return builder.end()
+        _ = AvroSchemaBuilder()
+        _.begin_record("Tuple2", namespace = "scala")
+        _.add_field("_1", self.a.schema.to_json())
+        _.add_field("_2", self.b.schema.to_json())
+
+        dct = _.end()
+        return avro.schema.make_avsc_object(dct)
 
     def _encode(self, tup, dct):
         dct["_1"] = self.a.encode(tup[0])

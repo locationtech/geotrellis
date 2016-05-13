@@ -2,9 +2,16 @@ from geotrellis.spark.io.json.KeyFormats import SpatialKeyFormat
 from geotrellis.spark.Boundable import Boundable
 import functools
 
+def generateCodec():
+    from geotrellis.spark.io.avro.codecs.KeyCodecs import SpatialKeyAvroCodec
+    return SpatialKeyAvroCodec()
+
 @functools.total_ordering
 class SpatialKey(object):
-    implicits = {'format': lambda: SpatialKeyFormat()}
+    implicits = {
+            'format': lambda: SpatialKeyFormat(),
+            'AvroRecordCodec': generateCodec}
+
     def __init__(self, col, row):
         self.col = int(col)
         self.row = int(row)
