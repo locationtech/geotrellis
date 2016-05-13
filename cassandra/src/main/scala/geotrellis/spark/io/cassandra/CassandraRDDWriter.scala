@@ -6,7 +6,7 @@ import geotrellis.spark.LayerId
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-import com.datastax.driver.core.{ResultSet, ResultSetFuture}
+import com.datastax.driver.core.ResultSet
 import org.apache.spark.rdd.RDD
 
 import scalaz.concurrent.Task
@@ -17,7 +17,6 @@ import java.util.concurrent.Executors
 import scala.collection.JavaConversions._
 
 object CassandraRDDWriter {
-  type KV = (java.lang.Long, ByteBuffer)
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
@@ -55,28 +54,10 @@ object CassandraRDDWriter {
     // on a key type that may no longer by valid for the key type of the resulting RDD.
       raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
         .foreachPartition { partition =>
-          import geotrellis.spark.util.TaskUtils._
           instance.withSession { session =>
             val statement = session.prepare(query)
 
-            /*val queries: Iterator[Option[ResultSetFuture]] = (partition.map { recs =>
-              val ((key, layerId), pairs) = (recs._1, recs._2.toVector)
-              val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
-              Some(session.executeAsync(
-                statement.bind(
-                  key.asInstanceOf[java.lang.Integer],
-                  layerId.name,
-                  layerId.zoom.asInstanceOf[java.lang.Integer],
-                  bytes
-                )
-              ))
-            }) ++ Iterator({
-              session.closeAsync(); session.getCluster.closeAsync(); Option.empty[ResultSetFuture]
-            })
-
-            queries.map(_.map((_: ResultSetFuture).getUninterruptibly()))*/
-
-            val queries: Process[Task, KV] =
+            val queries: Process[Task, (java.lang.Long, ByteBuffer)] =
               Process.unfold(partition) { iter =>
                 if (iter.hasNext) {
                   val recs = iter.next()
@@ -89,19 +70,17 @@ object CassandraRDDWriter {
                 }
               }
 
-            /** magic number 8; for no reason; just because */
-            val pool = Executors.newFixedThreadPool(8)
+            /** magic number 32; for no reason; just because */
+            val pool = Executors.newFixedThreadPool(32)
 
-            val write: KV => Process[Task, ResultSet] = {
+            val write: ((java.lang.Long, ByteBuffer)) => Process[Task, ResultSet] = {
               case (id, value) =>
                 Process eval Task {
                   session.execute(statement.bind(id, value))
-                }(pool).retryEBO {
-                  case _ => false
-                }
+                }(pool)
             }
 
-            val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) {
+            val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 32) {
               queries map write
             } onComplete {
               Process eval Task {
