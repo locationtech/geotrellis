@@ -18,9 +18,10 @@ class AvroUnionCodec(AvroRecordCodec):
         return avro.schema.make_avsc_object(dct)
 
     def encode(self, thing, dct = None):
-        if dct is None:
-            dct = {}
         format = self._findFormat(lambda x: x.supported(thing), fullname(type(thing)))
+        if dct is None:
+            from avro.io import GenericRecord
+            dct = GenericRecord(format.schema)
         format._encode(thing, dct)
         return dct
 
@@ -29,7 +30,8 @@ class AvroUnionCodec(AvroRecordCodec):
         format._encode(thing, dct)
 
     def decode(self, dct):
-        schemaFullName = dct.keys()[0]
+        #schemaFullName = dct.keys()[0]
+        schemaFullName = dct.schema.fullname
         format = self._findFormat(
                 lambda x: x.schema.fullname == schemaFullName,
                 schemaFullName)

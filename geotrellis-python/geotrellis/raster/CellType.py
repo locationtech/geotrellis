@@ -1,3 +1,4 @@
+from geotrellis.python.util.utils import float_eq
 import re
 import math
 
@@ -223,6 +224,10 @@ FloatConstantNoDataCellType = type(
 class FloatUserDefinedNoDataCellType(UserDefinedNoData, FloatCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
+    def __eq__(self, other):
+        if not isinstance(other, FloatUserDefinedNoDataCellType):
+            return False
+        return float_eq(self.noDataValue, other.noDataValue)
 
 DoubleCellType = type("DoubleCellType", (NoNoData, DoubleCells), {})()
 DoubleConstantNoDataCellType = type(
@@ -232,6 +237,10 @@ DoubleConstantNoDataCellType = type(
 class DoubleUserDefinedNoDataCellType(UserDefinedNoData, DoubleCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
+    def __eq__(self, other):
+        if not isinstance(other, DoubleUserDefinedNoDataCellType):
+            return False
+        return float_eq(self.noDataValue, other.noDataValue)
 
 TYPE_BYTE = 0
 TYPE_SHORT = 2

@@ -18,6 +18,7 @@ from geotrellis.raster.ByteArrayTile import ByteArrayTile
 from geotrellis.raster.UByteArrayTile import UByteArrayTile
 from geotrellis.raster.BitArrayTile import BitArrayTile
 from geotrellis.raster.MultibandTile import MultibandTile
+from geotrellis.raster.ArrayMultibandTile import ArrayMultibandTile
 
 from geotrellis.spark.io.avro.codecs.Implicits import tileUnionCodec
 
@@ -185,8 +186,8 @@ class FloatArrayTileCodec(AvroRecordCodec):
                 _.begin_array(_.create_float()).end())
         _.add_field("noDataValue",
                 _.begin_union(
-                    _.create_boolean(),
-                    _.create_float()
+                    _.create_float(),
+                    _.create_boolean()
                     ).end())
         dct = _.end()
         return avro.schema.make_avsc_object(dct)
@@ -214,7 +215,6 @@ class FloatArrayTileCodec(AvroRecordCodec):
             cellType = FloatCellType
         else:
             cellType = FloatUserDefinedNoDataCellType(nodata)
-        print("~~~ float codec nodata: {0}, result: {1}".format(nodata, cellType))
 
         cols = dct["cols"]
         rows = dct["rows"]
@@ -234,8 +234,8 @@ class DoubleArrayTileCodec(AvroRecordCodec):
                 _.begin_array(_.create_double()).end())
         _.add_field("noDataValue",
                 _.begin_union(
-                    _.create_boolean(),
-                    _.create_double()
+                    _.create_double(),
+                    _.create_boolean()
                     ).end())
         dct = _.end()
         return avro.schema.make_avsc_object(dct)
@@ -263,8 +263,6 @@ class DoubleArrayTileCodec(AvroRecordCodec):
             cellType = DoubleCellType
         else:
             cellType = DoubleUserDefinedNoDataCellType(nodata)
-        print("~~~ double codec nodata: {0}, result: {1}".format(nodata, cellType))
-        print("schema: {0}".format(self.schema.to_json()))
 
         cols = dct["cols"]
         rows = dct["rows"]
@@ -292,7 +290,8 @@ class ByteArrayTileCodec(AvroRecordCodec):
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.array.tolist() # TODO wrap if needed
+        #dct["cells"] = tile.array.tolist() # TODO wrap if needed
+        dct["cells"] = tile.array.tostring()
         if tile.cellType is ByteConstantNoDataCellType:
             dct["noDataValue"] = byteNODATA
         elif tile.cellType is ByteCellType:
@@ -304,7 +303,8 @@ class ByteArrayTileCodec(AvroRecordCodec):
                     "CellType {ct} was unexpected".format(ct = tile.cellType))
 
     def decode(self, dct):
-        arr = array.array('b', dct["cells"])
+        arr = array.array('b')
+        arr.fromstring(dct["cells"])
         nodata = dct["noDataValue"]
         if nodata is None:
             cellType = ByteCellType
@@ -339,7 +339,8 @@ class UByteArrayTileCodec(AvroRecordCodec):
     def _encode(self, tile, dct):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
-        dct["cells"] = tile.array.tolist() # TODO wrap if needed
+        #dct["cells"] = tile.array.tolist() # TODO wrap if needed
+        dct["cells"] = tile.array.tostring()
         if tile.cellType is UByteConstantNoDataCellType:
             dct["noDataValue"] = ubyteNODATA
         elif tile.cellType is UByteCellType:
@@ -351,7 +352,8 @@ class UByteArrayTileCodec(AvroRecordCodec):
                     "CellType {ct} was unexpected".format(ct = tile.cellType))
 
     def decode(self, dct):
-        arr = array.array('B', dct["cells"])
+        arr = array.array('B')
+        arr.fromstring(dct["cells"])
         nodata = dct["noDataValue"]
         if nodata is None:
             cellType = UByteCellType
@@ -411,4 +413,4 @@ class MultibandTileCodec(AvroRecordCodec):
 
     def decode(self, dct):
         bands = map(self._tileUnionCodec.decode, dct["bands"])
-        return ArrayMultibandTile.applyStatic(bands)
+        return ArrayMultibandTile(bands)

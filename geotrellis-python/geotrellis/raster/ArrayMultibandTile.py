@@ -2,6 +2,8 @@ from geotrellis.raster.MultibandTile import MultibandTile
 from geotrellis.raster.ArrayTile import ArrayTile
 
 class ArrayMultibandTile(MultibandTile):
+    implicits = dict(MultibandTile.implicits)
+
     def __init__(self, *bands):
         if len(bands) == 1 and isinstance(bands[0], list):
             bands = bands[0]
@@ -19,21 +21,21 @@ class ArrayMultibandTile(MultibandTile):
         self._rows = rows
 
         for i in xrange(1, self.bandCount):
-            if bands[i].cellType != cellType:
+            if not bands[i].cellType == cellType:
                 raise Exception(
                         "Band {i} cell type does not match, " +
                         "{actual} != {exp}".format(
-                            i=i, actual=bands[0].cellType, exp=cellType))
+                            i=i, actual=bands[i].cellType, exp=cellType))
             if bands[i].cols != cols:
                 raise Exception(
                         "Band {i} cols does not match, " +
                         "{actual} != {exp}".format(
-                            i=i, actual=bands[0].cols, exp=cols))
+                            i=i, actual=bands[i].cols, exp=cols))
             if bands[i].rows != rows:
                 raise Exception(
                         "Band {i} rows does not match, " +
                         "{actual} != {exp}".format(
-                            i=i, actual=bands[0].rows, exp=rows))
+                            i=i, actual=bands[i].rows, exp=rows))
 
     @property
     def cellType(self):
@@ -258,11 +260,11 @@ class ArrayMultibandTile(MultibandTile):
 
     def __eq__(self, other):
         if (other is None or
-                not isinstance(other, ArrayMultibandTile) or
+                (not isinstance(other, ArrayMultibandTile)) or
                 self.bandCount != other.bandCount):
             return False
         for i in xrange(0, self.bandCount):
-            if self.band(i) != other.band(i):
+            if not self.band(i) == other.band(i):
                 return False
         return True
 

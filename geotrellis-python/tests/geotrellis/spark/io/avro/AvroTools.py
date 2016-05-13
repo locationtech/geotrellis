@@ -26,6 +26,7 @@ from geotrellis.raster.BitArrayTile import BitArrayTile
 from geotrellis.raster.MultibandTile import MultibandTile
 from geotrellis.raster.package_scala import SHORTMIN, BYTEMIN, isNoData, NODATA, byteNODATA, ubyteNODATA
 from geotrellis.spark.io.avro.AvroEncoder import AvroEncoder
+from geotrellis.python.util.utils import float_eq
 import json
 
 class AvroTools(object):
@@ -80,10 +81,10 @@ _noDataAttrName = "noDataValue"
 
 class NoDataChecker(object):
     def checkNoData(self, jason):
-        nodata = self.extractNoData(jason)
-        self.doCheck(nodata)
-    def extractNoData(self, jason):
         dct = json.loads(jason)
+        nodata = self.extractNoData(dct)
+        self.doCheck(nodata)
+    def extractNoData(self, dct):
         if dct.has_key(_noDataAttrName):
             nodata = dct[_noDataAttrName]  
             return (nodata,)
@@ -151,7 +152,10 @@ class FloatNoDataChecker(NoDataChecker):
         elif cellType is FloatCellType:
             assert nodata == ({"boolean": False},)
         elif isinstance(cellType, FloatUserDefinedNoDataCellType):
-            assert nodata == ({"float": cellType.noDataValue},)
+            #assert nodata == ({"float": cellType.noDataValue},)
+            result = (len(nodata) == 1 and
+                    nodata[0].keys() == ["float"] and
+                    float_eq(nodata[0]["float"], cellType.noDataValue))
         else:
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
@@ -167,7 +171,10 @@ class DoubleNoDataChecker(NoDataChecker):
         elif cellType is DoubleCellType:
             assert nodata == ({"boolean": False},)
         elif isinstance(cellType, DoubleUserDefinedNoDataCellType):
-            assert nodata == ({"double": cellType.noDataValue},)
+            #assert nodata == ({"double": cellType.noDataValue},)
+            result = (len(nodata) == 1 and
+                    nodata[0].keys() == ["double"] and
+                    float_eq(nodata[0]["double"], cellType.noDataValue))
         else:
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
@@ -216,23 +223,29 @@ class MultibandNoDataChecker(NoDataChecker):
         self.cellType = cellType
 
     def checkNoData(self, jason):
+        def performCheck(checkerFunc):
+            dct = json.loads(jason)
+            for bandWrapper in dct["bands"]:
+                band = bandWrapper[bandWrapper.keys()[0]]
+                nodata = self.extractNoData(band)
+                checkerFunc(nodata)
         cellType = self.cellType
         if isinstance(cellType, BitCells):
-            BitNoDataChecker(cellType).checkNoData(jason)
+            performCheck(BitNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, ShortCells):
-            ShortNoDataChecker(cellType).checkNoData(jason)
+            performCheck(ShortNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, UShortCells):
-            UShortNoDataChecker(cellType).checkNoData(jason)
+            performCheck(UShortNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, IntCells):
-            IntNoDataChecker(cellType).checkNoData(jason)
+            performCheck(IntNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, FloatCells):
-            FloatNoDataChecker(cellType).checkNoData(jason)
+            performCheck(FloatNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, DoubleCells):
-            DoubleNoDataChecker(cellType).checkNoData(jason)
+            performCheck(DoubleNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, ByteCells):
-            ByteNoDataChecker(cellType).checkNoData(jason)
+            performCheck(ByteNoDataChecker(cellType).doCheck)
         elif isinstance(cellType, UByteCells):
-            UByteNoDataChecker(cellType).checkNoData(jason)
+            performCheck(UByteNoDataChecker(cellType).doCheck)
         else:
             raise Exception(
                     "cellType {ct} was not expected.".format(ct = cellType))

@@ -7,6 +7,24 @@ _INTMAX = - _INTMIN - 1
 def isValidInt(num):
     return _INTMIN <= num <= _INTMAX
 
+import math
+
+def float_eq(a, b):
+    if math.isnan(a):
+        return math.isnan(b)
+    elif math.isnan(b):
+        return False
+    elif math.isinf(a):
+        return math.isinf(b) and a * b > 0
+    elif math.isinf(b):
+        return False
+    else:
+        return isclose(a, b)
+
+# floating-point numbers comparator
+def isclose(a, b, rel_tol=1e-06, abs_tol=0.0):
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 def file_exists(path):
     return os.path.isfile(path)
 

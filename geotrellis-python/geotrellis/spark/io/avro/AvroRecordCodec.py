@@ -12,7 +12,8 @@ class AvroRecordCodec(AvroCodec):
         pass
     def encode(self, thing, dct = None):
         if dct is None:
-            dct = {}
+            from avro.io import GenericRecord
+            dct = GenericRecord(self.schema)
         self._encode(thing, dct)
         return dct
     def supported(self, thing):

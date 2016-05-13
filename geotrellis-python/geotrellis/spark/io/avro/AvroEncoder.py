@@ -96,11 +96,13 @@ def _read_loaded_json(field_schema, loaded_json):
                 fail_msg = "value is None, but no null schema found"
                 raise schema.AvroException(fail_msg)
         next_type = loaded_json.keys()[0]
-        next_schema = find(field_schema.schemas, lambda s:s.type == next_type)
+        next_schema = find(field_schema.schemas, lambda s:s.fullname == next_type)
         loaded_json = loaded_json[next_type]
         return _read_loaded_json(next_schema, loaded_json)
     elif field_schema.type == 'record':
-        read_record = {}
+        #read_record = {}
+        from avro.io import GenericRecord
+        read_record = GenericRecord(field_schema)
         for field in field_schema.fields:
             json_val = loaded_json.get(field.name)
             if json_val is None: json_val = field.default
