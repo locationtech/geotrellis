@@ -2,6 +2,7 @@
 
 ./sbt "project macros" +publish-m2 \
       "project vector" +publish-m2 \
+      "project vectortile" +publish-m2 \
       "project proj4" +publish-m2 \
       "project raster" +publish-m2 \
       "project engine" +publish-m2 \

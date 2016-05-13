@@ -1,5 +1,6 @@
 #!/bin/bash
 
+./sbt -J-Xmx2G ++2.11.8 "project vectortile" test || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project proj4" test || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project vector-test" test || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project raster-test" test || { exit 1; }

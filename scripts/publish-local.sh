@@ -2,6 +2,7 @@
 # Publish local for main scala version (2.10)
 ./sbt "project macros" publish-local && \
 ./sbt "project vector" publish-local && \
+./sbt "project vectortile" publish-local && \
 ./sbt "project proj4" publish-local && \
 ./sbt "project raster" publish-local && \
 ./sbt "project engine" publish-local && \
